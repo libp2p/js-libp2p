@@ -1,4 +1,4 @@
-var swarm = require('./network/swarm')
+var swarm = require('./../src')
 
 swarm.listen()
 

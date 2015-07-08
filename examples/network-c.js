@@ -1,6 +1,6 @@
-var swarm = require('./network/swarm')
-var Peer = require('./routing/routers/dht/peer')
-var Id = require('./routing/routers/dht/peer/id')
+var swarm = require('./../src')
+var Peer = require('ipfs-peer')
+var Id = require('ipfs-peer-id')
 var multiaddr = require('multiaddr')
 
 // create Id
