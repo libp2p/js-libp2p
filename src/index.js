@@ -14,7 +14,6 @@ var handles = []
 // set the listener
 
 exports.listen = function () {
-
   tcp.createServer(function (socket) {
     var ms = new Select()
     ms.handle(socket)
@@ -63,7 +62,6 @@ exports.openStream = function (peer, protocol, cb) {
 
   // If no connection open yet, open it
   if (!connections[peer.id.toB58String()]) {
-
     // Establish a socket with one of the addresses
     var gotOne = false
     async.eachSeries(peer.multiaddrs, function (multiaddr, callback) {
@@ -158,4 +156,3 @@ function registerHandles (spdyStream) {
     msH.addHandler(handle.protocol, handle.func)
   })
 }
-

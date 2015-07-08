@@ -25,16 +25,14 @@ exports.inquiry = function (spdyConnection, cb) {
       })
     })
   })
-  // 0. open a stream
-  // 1. negotiate /ipfs/identify/1.0.0
-  // 2. check other peerId
-  // 3. reply back with cb(null, connection, peerId)
+// 0. open a stream
+// 1. negotiate /ipfs/identify/1.0.0
+// 2. check other peerId
+// 3. reply back with cb(null, connection, peerId)
 }
 
 // peer asking which pairs ip:port does the other peer see
-exports.whoAmI = function () {
-
-}
+exports.whoAmI = function () {}
 
 exports.start = function (peerSelf) {
   swarm.registerHandle('/ipfs/identify/1.0.0', function (ds) {
