@@ -53,8 +53,8 @@ function Swarm () {
         // attach multistream handlers to incoming streams
         conn.on('stream', registerHandles)
 
-        // IDENTIFY DOES THAT FOR US
-        // conn.on('close', function () { delete self.connections[conn.peerId] })
+      // IDENTIFY DOES THAT FOR US
+      // conn.on('close', function () { delete self.connections[conn.peerId] })
       })
     }).listen(self.port, ready)
   }
@@ -63,10 +63,8 @@ function Swarm () {
 
   // open stream account for connection reuse
   self.openStream = function (peer, protocol, cb) {
-
     // If no connection open yet, open it
     if (!self.connections[peer.id.toB58String()]) {
-
       // Establish a socket with one of the addresses
       var socket
       async.eachSeries(peer.multiaddrs, function (multiaddr, next) {
@@ -85,7 +83,7 @@ function Swarm () {
       }, function done () {
         if (!socket) {
           return cb(new Error('Not able to open a scoket with peer - ',
-                peer.id.toB58String()))
+            peer.id.toB58String()))
         }
         gotSocket(socket)
       })
