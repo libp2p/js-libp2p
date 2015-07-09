@@ -7,4 +7,10 @@ ipfs-swarm Node.js implementation
 
 # Description
 
+ipfs-swarm is an abstraction for the network layer on IPFS. It offers an API to open streams between peers on a specific protocol.
+
+Ref link (still a WiP) - https://github.com/diasdavid/specs/blob/protocol-spec/protocol/layers.md#network-layer
+
 # Usage
+
+

@@ -30,7 +30,7 @@ function Identify (swarm, peerSelf) {
     })
 
     stream.on('end', function () {
-      console.log(JSON.prse(answer))
+      console.log(JSON.parse(answer))
       self.emit('thenews', answer)
     })
 

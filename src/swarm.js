@@ -40,83 +40,72 @@ function Swarm () {
       ms.handle(socket)
       ms.addHandler('/spdy/3.1.0', function (ds) {
         log.info('Negotiated spdy with incoming socket')
-        log.info('Buffer should be clean  - ', ds.read())
-        var spdyConnection = spdy.connection.create(ds, {
+
+        var conn = spdy.connection.create(ds, {
           protocol: 'spdy',
           isServer: true
         })
 
-        spdyConnection.start(3.1)
+        conn.start(3.1)
 
-        self.emit('connection', spdyConnection)
+        self.emit('connection', conn)
 
         // attach multistream handlers to incoming streams
-        spdyConnection.on('stream', function (spdyStream) {
-          registerHandles(spdyStream)
-        })
+        conn.on('stream', registerHandles)
 
-        // close the connection when all the streams close
-        spdyConnection.on('close', function () {
-          delete self.connections[spdyConnection.peerId]
-        })
+        // IDENTIFY DOES THAT FOR US
+        // conn.on('close', function () { delete self.connections[conn.peerId] })
       })
     }).listen(self.port, ready)
   }
 
   // interface
 
+  // open stream account for connection reuse
   self.openStream = function (peer, protocol, cb) {
-    // if Connection already open, open a new stream, otherwise, create a new Connection
-    // then negoatite the protocol and return the opened stream
 
     // If no connection open yet, open it
     if (!self.connections[peer.id.toB58String()]) {
+
       // Establish a socket with one of the addresses
-      var gotOne = false
-      async.eachSeries(peer.multiaddrs, function (multiaddr, callback) {
-        if (gotOne) {
-          return callback()
-        }
-        var socket = tcp.connect(multiaddr.toOptions(), function connected () {
-          gotSocket(socket)
+      var socket
+      async.eachSeries(peer.multiaddrs, function (multiaddr, next) {
+        if (socket) { return next() }
+
+        var tmp = tcp.connect(multiaddr.toOptions(), function () {
+          socket = tmp
+          next()
         })
 
-        socket.once('error', function (err) {
-          log.warn('Could not connect using one of the address of peer - ', peer.id.toB58String(), err)
-          callback()
+        tmp.once('error', function (err) {
+          log.warn(multiaddr.toString(), 'on', peer.id.toB58String(), 'not available', err)
+          next()
         })
 
       }, function done () {
-        if (!gotOne) {
-          cb(new Error('Not able to open a scoket with peer - ', peer.id.toB58String()))
+        if (!socket) {
+          return cb(new Error('Not able to open a scoket with peer - ',
+                peer.id.toB58String()))
         }
+        gotSocket(socket)
       })
-
     } else {
       createStream(peer, protocol, cb)
     }
 
     // do the spdy people dance (multistream-select into spdy)
     function gotSocket (socket) {
-      gotOne = true
       var msi = new Interactive()
       msi.handle(socket, function () {
         msi.select('/spdy/3.1.0', function (err, ds) {
-          if (err) {
-            return console.log('err', err)
-          }
-          var spdyConnection = spdy.connection.create(ds, {
-            protocol: 'spdy',
-            isServer: false
-          })
-          spdyConnection.start(3.1)
+          if (err) { cb(err) }
 
-          self.connections[peer.id.toB58String()] = spdyConnection
+          var conn = spdy.connection.create(ds, { protocol: 'spdy', isServer: false })
+          conn.start(3.1)
+          conn.on('stream', registerHandles)
+          self.connections[peer.id.toB58String()] = conn
 
-          // attach multistream handlers to incoming streams
-          spdyConnection.on('stream', function (spdyStream) {
-            registerHandles(spdyStream)
-          })
+          conn.on('close', function () { delete self.connections[peer.id.toB58String()] })
 
           createStream(peer, protocol, cb)
         })
@@ -124,40 +113,28 @@ function Swarm () {
     }
 
     function createStream (peer, protocol, cb) {
-      // 1. to pop a new stream on the connection
-      // 2. negotiate the requested protocol through multistream
-      // 3. return back the stream when that is negotiated
+      // spawn new stream
       var conn = self.connections[peer.id.toB58String()]
       conn.request({path: '/', method: 'GET'}, function (err, stream) {
-        if (err) {
-          return cb(err)
-        }
+        if (err) { return cb(err) }
+
+        // negotiate desired protocol
         var msi = new Interactive()
         msi.handle(stream, function () {
           msi.select(protocol, function (err, ds) {
-            if (err) {
-              return cb(err)
-            }
-            cb(null, ds) // wohoo we finally delivered the stream the user wanted
+            if (err) { return cb(err) }
+            cb(null, ds) // return the stream
           })
         })
       })
-
-      conn.on('close', function () {
-        // TODO(daviddias) remove it from collections
-      })
-
     }
-
   }
 
-  self.registerHandle = function (protocol, cb) {
+  self.registerHandle = function (protocol, handleFunc) {
     if (self.handles[protocol]) {
-      var err = new Error('Handle for protocol already exists', protocol)
-      log.error(err)
-      return cb(err)
+      throw new Error('Handle for protocol already exists', protocol)
     }
-    self.handles.push({ protocol: protocol, func: cb })
+    self.handles.push({ protocol: protocol, func: handleFunc })
     log.info('Registered handler for protocol:', protocol)
   }
 
@@ -190,8 +167,6 @@ function Counter (target, callback) {
 
   function count () {
     c += 1
-    if (c === target) {
-      callback()
-    }
+    if (c === target) { callback() }
   }
 }
