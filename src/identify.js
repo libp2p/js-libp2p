@@ -3,7 +3,7 @@
  * pairs a specific peer is available through
  */
 
-var swarm = require('./')
+var swarm = require('./').singleton
 var Interactive = require('multistream-select').Interactive
 
 exports = module.exports

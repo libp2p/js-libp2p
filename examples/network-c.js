@@ -1,4 +1,4 @@
-var swarm = require('./../src')
+var swarm = require('./../src').singleton
 var Peer = require('ipfs-peer')
 var Id = require('ipfs-peer-id')
 var multiaddr = require('multiaddr')

@@ -1,4 +1,4 @@
-var swarm = require('./../src')
+var swarm = require('./../src').singleton
 
 swarm.listen()
 
