@@ -2,11 +2,14 @@ var tcp = require('net')
 var Select = require('multistream-select').Select
 var Interactive = require('multistream-select').Interactive
 var spdy = require('spdy-transport')
-// var identify = require('./identify')
 var log = require('ipfs-logger').group('swarm')
 var async = require('async')
+var EventEmitter = require('events').EventEmitter
+var util = require('util')
 
 exports = module.exports = Swarm
+
+util.inherits(Swarm, EventEmitter)
 
 function Swarm () {
   var self = this
@@ -16,20 +19,26 @@ function Swarm () {
   }
 
   self.port = parseInt(process.env.IPFS_SWARM_PORT, 10) || 4001
+
   self.connections = {}
   self.handles = []
 
   // set the listener
 
-  self.listen = function () {
-    console.log('GOING TO LISTEN ON: ', self.port)
-    tcp.createServer(function (socket) {
-      console.log('GOT INCOMING CONNECTION')
+  self.listen = function (port, ready) {
+    if (!ready) {
+      ready = function noop () {}
+    }
+    if (typeof port === 'function') {
+      ready = port
+    } else if (port) {
+      self.port = port
+    }
 
+    tcp.createServer(function (socket) {
       var ms = new Select()
       ms.handle(socket)
       ms.addHandler('/spdy/3.1.0', function (ds) {
-        console.log('GOT SPDY HANDLER REQUEST')
         log.info('Negotiated spdy with incoming socket')
         log.info('Buffer should be clean  - ', ds.read())
         var spdyConnection = spdy.connection.create(ds, {
@@ -39,31 +48,19 @@ function Swarm () {
 
         spdyConnection.start(3.1)
 
+        self.emit('connection', spdyConnection)
+
         // attach multistream handlers to incoming streams
         spdyConnection.on('stream', function (spdyStream) {
           registerHandles(spdyStream)
         })
-
-        // learn about the other peer Identity
-        /* TODO(daviddias)
-        identify.inquiry(spdyConnection, function (err, spdyConnection, peerIdB58) {
-          if (err) {
-            return log.error(err)
-          }
-          if (self.connections[peerIdB58]) {
-            return log.error('New connection established with a peer(' + peerIdB58 + ') that we already had a connection')
-          }
-          spdyConnection.peerId = peerIdB58
-          self.connections[peerIdB58] = spdyConnection
-        })
-        */
 
         // close the connection when all the streams close
         spdyConnection.on('close', function () {
           delete self.connections[spdyConnection.peerId]
         })
       })
-    }).listen(self.port)
+    }).listen(self.port, ready)
   }
 
   // interface
@@ -81,7 +78,6 @@ function Swarm () {
           return callback()
         }
         var socket = tcp.connect(multiaddr.toOptions(), function connected () {
-          console.log('CONNECTED TO: ', multiaddr.toString())
           gotSocket(socket)
         })
 
@@ -102,11 +98,9 @@ function Swarm () {
 
     // do the spdy people dance (multistream-select into spdy)
     function gotSocket (socket) {
-      console.log('GOT SOCKET')
       gotOne = true
       var msi = new Interactive()
       msi.handle(socket, function () {
-        console.log('GOING TO NEGOTIATE SPDY')
         msi.select('/spdy/3.1.0', function (err, ds) {
           if (err) {
             return console.log('err', err)
@@ -116,6 +110,7 @@ function Swarm () {
             isServer: false
           })
           spdyConnection.start(3.1)
+
           self.connections[peer.id.toB58String()] = spdyConnection
 
           // attach multistream handlers to incoming streams
@@ -166,6 +161,18 @@ function Swarm () {
     log.info('Registered handler for protocol:', protocol)
   }
 
+  self.close = function (cb) {
+    var keys = Object.keys(self.connections)
+    var number = keys.length
+    if (number === 0) { cb() }
+    var c = new Counter(number, cb)
+
+    keys.map(function (key) {
+      c.hit()
+      self.connections[key].end()
+    })
+  }
+
   function registerHandles (spdyStream) {
     log.info('Preparing stream to handle the registered protocols')
     var msH = new Select()
@@ -175,4 +182,16 @@ function Swarm () {
     })
   }
 
+}
+
+function Counter (target, callback) {
+  var c = 0
+  this.hit = count
+
+  function count () {
+    c += 1
+    if (c === target) {
+      callback()
+    }
+  }
 }

@@ -13,59 +13,72 @@ var Id = require('ipfs-peer-id')
 var Peer = require('ipfs-peer')
 var Swarm = require('../src/index.js')
 
-experiment(': ', function () {
-  var a
-  var b
-  var peerA
-  var peerB
+var swarmA
+var swarmB
+var peerA
+var peerB
 
-  beforeEach(function (done) {
-    a = new Swarm()
-    a.port = 4000
-    a.listen()
-    peerA = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/' + a.port)])
+beforeEach(function (done) {
+  swarmA = new Swarm()
+  swarmB = new Swarm()
+  var c = new Counter(2, done)
 
-    b = new Swarm()
-    b.port = 4001
-    b.listen()
-    peerB = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/' + b.port)])
-
-    setTimeout(done, 1000)
+  swarmA.listen(4000, function () {
+    peerA = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/' + swarmA.port)])
+    c.hit()
   })
 
-  afterEach(function (done) {
-    // a.close()
-    // b.close()
-    done()
+  swarmB.listen(4001, function () {
+    peerB = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/' + swarmB.port)])
+    c.hit()
   })
+})
+
+afterEach(function (done) {
+  var c = new Counter(2, done)
+  swarmA.close(function () {
+    c.hit()
+  })
+  swarmB.close(function () {
+    c.hit()
+  })
+})
+
+experiment('BASE', function () {
 
   test('Open a stream', {timeout: false}, function (done) {
     var protocol = '/sparkles/3.3.3'
     var c = new Counter(2, done)
 
-    b.registerHandle(protocol, function (stream) {
-      console.log('bim')
-      c.unamas()
+    swarmB.registerHandle(protocol, function (stream) {
+      c.hit()
     })
 
-    a.openStream(peerB, protocol, function (err, stream) {
-      console.log('pim')
+    swarmA.openStream(peerB, protocol, function (err, stream) {
       expect(err).to.not.be.instanceof(Error)
-      c.unamas()
+      c.hit()
     })
   })
+})
 
-  function Counter (target, callback) {
-    var c = 0
-
-    this.unamas = count
-
-    function count () {
-      c += 1
-      if (c === target) {
-        callback()
-      }
-    }
-  }
+experiment('IDENTIFY', function () {
 
 })
+
+experiment('HARDNESS', function () {
+
+})
+
+function Counter (target, callback) {
+  var c = 0
+  this.hit = count
+
+  function count () {
+    c += 1
+    if (c === target) {
+      callback()
+    }
+  }
+}
+
+

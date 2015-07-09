@@ -3,41 +3,93 @@
  * pairs a specific peer is available through
  */
 
-var swarm = require('./').singleton
 var Interactive = require('multistream-select').Interactive
+var EventEmmiter = require('events').EventEmitter
+var util = require('util')
 
-exports = module.exports
+exports = module.exports = Identify
 
-// peer acting as server, asking whom is talking
-exports.inquiry = function (spdyConnection, cb) {
-  spdyConnection.request({method: 'GET', path: '/', headers: {}}, function (stream) {
-    var msi = new Interactive()
-    msi.handle(stream)
-    msi.select('/ipfs/identify/1.0.0', function (ds) {
-      var peerId = ''
-      ds.setEncoding('utf8')
+util.inherits(Identify, EventEmmiter)
 
-      ds.on('data', function (chunk) {
-        peerId += chunk
-      })
-      ds.on('end', function () {
-        cb(null, spdyConnection, peerId)
+function Identify (swarm, peerSelf) {
+  var self = this
+
+  swarm.registerHandle('/ipfs/identify/1.0.0', function (stream) {
+    var identifyMsg = {}
+    identifyMsg = {}
+    identifyMsg.sender = exportPeer(peerSelf)
+    // TODO (daviddias) populate with the way I see the other peer
+    // identifyMsg.receiver =
+
+    stream.write(JSON.stringify(identifyMsg))
+
+    var answer = ''
+
+    stream.on('data', function (chunk) {
+      answer += chunk.toString()
+    })
+
+    stream.on('end', function () {
+      console.log(JSON.prse(answer))
+      self.emit('thenews', answer)
+    })
+
+    stream.end()
+
+    // receive their info and how they see us
+    // send back our stuff
+  })
+
+  swarm.on('connection', function (spdyConnection) {
+    spdyConnection.request({
+      path: '/',
+      method: 'GET'
+    }, function (err, stream) {
+      if (err) {
+        return console.log(err)
+      }
+      var msi = new Interactive()
+      msi.handle(stream, function () {
+        msi.select('/ipfs/identify/1.0.0', function (err, ds) {
+          if (err) {
+            return console.log('err')
+          }
+
+          var identifyMsg = {}
+          identifyMsg = {}
+          identifyMsg.sender = exportPeer(peerSelf)
+          // TODO (daviddias) populate with the way I see the other peer
+          // identifyMsg.receiver =
+
+          stream.write(JSON.stringify(identifyMsg))
+
+          var answer = ''
+
+          stream.on('data', function (chunk) {
+            answer += chunk.toString()
+          })
+
+          stream.on('end', function () {
+            console.log(JSON.parse(answer))
+            // TODO (daviddias), push to the connections list on swarm that we have a new known connection
+            self.emit('thenews', answer)
+          })
+
+          stream.end()
+        })
       })
     })
+    // open a spdy stream
+    // do the multistream handshake
+    // send them our data
   })
-// 0. open a stream
-// 1. negotiate /ipfs/identify/1.0.0
-// 2. check other peerId
-// 3. reply back with cb(null, connection, peerId)
-}
 
-// peer asking which pairs ip:port does the other peer see
-exports.whoAmI = function () {}
-
-exports.start = function (peerSelf) {
-  swarm.registerHandle('/ipfs/identify/1.0.0', function (ds) {
-    ds.setDefaultEncoding('utf8')
-    ds.write(peerSelf.toB58String())
-    ds.end()
-  })
+  function exportPeer (peer) {
+    return {
+      id: peer.id.toB58String(),
+      multiaddrs: peer.multiaddrs.map(function (mh) {
+        return mh.toString()
+      })
+    }
+  }
 }

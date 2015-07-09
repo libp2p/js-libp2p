@@ -1,19 +1,23 @@
-var swarm = require('./../src').singleton
+var Identify = require('./../src/identify')
+var Swarm = require('./../src')
 var Peer = require('ipfs-peer')
 var Id = require('ipfs-peer-id')
 var multiaddr = require('multiaddr')
 
-// create Id
-// create multiaddr
-// create Peer
-// openStream
+var a = new Swarm()
+a.port = 4000
+// a.listen()
+var peerA = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/' + a.port)])
 
-var peerId = Id.create()
-var mhs = []
-mhs.push(multiaddr('/ip4/127.0.0.1/tcp/4001'))
-var p = new Peer(peerId, mhs)
+// attention, peerB Id isn't going to match, but whateves
+var peerB = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/4001')])
 
-swarm.openStream(p, '/ipfs/sparkles/1.2.3', function (err, stream) {
+var i = new Identify(a, peerA)
+i.on('thenews', function (news) {
+  console.log('such news')
+})
+
+a.openStream(peerB, '/ipfs/sparkles/1.2.3', function (err, stream) {
   if (err) {
     return console.log('ERR - ', err)
   }
