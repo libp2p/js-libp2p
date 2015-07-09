@@ -36,8 +36,8 @@ function Identify (swarm, peerSelf) {
 
     stream.end()
 
-    // receive their info and how they see us
-    // send back our stuff
+  // receive their info and how they see us
+  // send back our stuff
   })
 
   swarm.on('connection', function (spdyConnection) {
@@ -79,9 +79,9 @@ function Identify (swarm, peerSelf) {
         })
       })
     })
-    // open a spdy stream
-    // do the multistream handshake
-    // send them our data
+  // open a spdy stream
+  // do the multistream handshake
+  // send them our data
   })
 
   function exportPeer (peer) {

@@ -45,7 +45,6 @@ afterEach(function (done) {
 })
 
 experiment('BASE', function () {
-
   test('Open a stream', {timeout: false}, function (done) {
     var protocol = '/sparkles/3.3.3'
     var c = new Counter(2, done)
@@ -61,13 +60,9 @@ experiment('BASE', function () {
   })
 })
 
-experiment('IDENTIFY', function () {
+experiment('IDENTIFY', function () {})
 
-})
-
-experiment('HARDNESS', function () {
-
-})
+experiment('HARDNESS', function () {})
 
 function Counter (target, callback) {
   var c = 0
@@ -80,5 +75,3 @@ function Counter (target, callback) {
     }
   }
 }
-
-
