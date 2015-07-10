@@ -36,10 +36,7 @@ function Swarm () {
     }
 
     self.listener = tcp.createServer(function (socket) {
-      socket.on('error', function (err) {
-        // self.emit('error', err)
-      })
-      socket.on('close', function () {})
+      socket.on('error', errorEmit)
       var ms = new Select()
       ms.handle(socket)
       ms.addHandler('/spdy/3.1.0', function (ds) {
@@ -56,16 +53,13 @@ function Swarm () {
 
         // attach multistream handlers to incoming streams
         conn.on('stream', registerHandles)
-        conn.on('error', function (err) {
-          // self.emit('error', err)
-        })
-        conn.on('close', function () {})
+        conn.on('error', errorEmit)
 
       // IDENTIFY DOES THAT FOR US
       // conn.on('close', function () { delete self.connections[conn.peerId] })
       })
     }).listen(self.port, ready)
-    self.listener.on('error', function (err) { self.emit('error', err) })
+    self.listener.on('error', errorEmit)
 
   }
 
@@ -82,7 +76,7 @@ function Swarm () {
 
         var tmp = tcp.connect(multiaddr.toOptions(), function () {
           socket = tmp
-          socket.on('error', function (err) { self.emit('error', err) })
+          socket.on('error', errorEmit)
           next()
         })
 
@@ -115,7 +109,7 @@ function Swarm () {
           self.connections[peer.id.toB58String()] = conn
 
           conn.on('close', function () { delete self.connections[peer.id.toB58String()] })
-          conn.on('error', function (err) { self.emit('error', err) })
+          conn.on('error', errorEmit)
 
           createStream(peer, protocol, cb)
         })
@@ -127,6 +121,7 @@ function Swarm () {
       var conn = self.connections[peer.id.toB58String()]
       conn.request({path: '/', method: 'GET'}, function (err, stream) {
         if (err) { return cb(err) }
+        stream.on('error', errorEmit)
 
         // negotiate desired protocol
         var msi = new Interactive()
@@ -164,14 +159,17 @@ function Swarm () {
     self.listener.close(cb)
   }
 
-  function registerHandles (spdyStream) {
-    log.info('Preparing stream to handle the registered protocols')
+  function registerHandles (stream) {
+    log.info('Registering protocol handlers on new stream')
+    stream.on('error', errorEmit)
     var msH = new Select()
-    msH.handle(spdyStream)
+    msH.handle(stream)
     self.handles.forEach(function (handle) {
       msH.addHandler(handle.protocol, handle.func)
     })
   }
+
+  function errorEmit (err) { self.emit('error', err) }
 
 }
 

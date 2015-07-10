@@ -13,6 +13,10 @@ i.on('thenews', function (news) {
   console.log('such news')
 })
 
+b.on('error', function (err) {
+  if (err) return
+})
+
 b.listen()
 
 b.registerHandle('/ipfs/sparkles/1.2.3', function (stream) {
