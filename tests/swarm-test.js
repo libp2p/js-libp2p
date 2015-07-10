@@ -32,34 +32,21 @@ beforeEach(function (done) {
     peerB = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/' + swarmB.port)])
     c.hit()
   })
+
 })
 
-afterEach({ timeout: 5000 }, function (done) {
-  var c = new Counter(4, done)
-  swarmA.closeConns(function () {
-    c.hit()
-    swarmA.closeListener(function () {
-      console.log('AAA CLOSE')
-      c.hit()
-    })
-  })
-
-  swarmB.closeConns(function () {
-    console.log('bb')
-    c.hit()
-    swarmB.closeListener(function () {
-      console.log('BBB CLOSE')
-      c.hit()
-    })
-  })
+afterEach(function (done) {
+  swarmA.closeListener()
+  swarmB.closeListener()
+  done()
 })
 
 experiment('BASE', function () {
-  test('Open a stream', {timeout: false}, function (done) {
+  test('Open a stream', function (done) {
     var protocol = '/sparkles/3.3.3'
     var c = new Counter(2, done)
 
-    swarmB.registerHandle(protocol, function (stream) {
+    swarmB.registerHandler(protocol, function (stream) {
       c.hit()
     })
 
@@ -69,17 +56,21 @@ experiment('BASE', function () {
     })
   })
 
-  test('Reuse stream (from dialer)', {timeout: false}, function (done) {
+  test('Reuse connection (from dialer)', function (done) {
     var protocol = '/sparkles/3.3.3'
-    var c = new Counter(2, done)
 
-    swarmB.registerHandle(protocol, function (stream) {
-      c.hit()
+    swarmB.registerHandler(protocol, function (err, stream) {
+      expect(err).to.not.be.instanceof(Error)
     })
 
     swarmA.openStream(peerB, protocol, function (err, stream) {
       expect(err).to.not.be.instanceof(Error)
-      c.hit()
+
+      swarmA.openStream(peerB, protocol, function (err, stream) {
+        expect(err).to.not.be.instanceof(Error)
+        expect(swarmA.connections.length === 1)
+        done()
+      })
     })
   })
 })
@@ -98,4 +89,9 @@ function Counter (target, callback) {
       callback()
     }
   }
+}
+
+function checkErr (err) {
+  console.log('err')
+  expect(err).to.be.instanceof(Error)
 }

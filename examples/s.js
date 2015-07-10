@@ -14,11 +14,11 @@ i.on('thenews', function (news) {
 })
 
 b.on('error', function (err) {
-  if (err) return
+  console.log(err)
 })
 
 b.listen()
 
-b.registerHandle('/ipfs/sparkles/1.2.3', function (stream) {
+b.registerHandle('/ipfs/sparkles/1.2.3', function (err, stream) {
   console.log('woop got a stream')
 })

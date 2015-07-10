@@ -26,26 +26,19 @@ function Swarm () {
   // set the listener
 
   self.listen = function (port, ready) {
-    if (!ready) {
-      ready = function noop () {}
-    }
+    if (!ready) { ready = function noop () {} }
     if (typeof port === 'function') {
       ready = port
-    } else if (port) {
-      self.port = port
-    }
+    } else if (port) { self.port = port }
 
     self.listener = tcp.createServer(function (socket) {
-      socket.on('error', errorEmit)
+      errorUp(self, socket)
       var ms = new Select()
       ms.handle(socket)
       ms.addHandler('/spdy/3.1.0', function (ds) {
         log.info('Negotiated spdy with incoming socket')
 
-        var conn = spdy.connection.create(ds, {
-          protocol: 'spdy',
-          isServer: true
-        })
+        var conn = spdy.connection.create(ds, { protocol: 'spdy', isServer: true })
 
         conn.start(3.1)
 
@@ -53,14 +46,13 @@ function Swarm () {
 
         // attach multistream handlers to incoming streams
         conn.on('stream', registerHandles)
-        conn.on('error', errorEmit)
+        errorUp(self, conn)
 
       // IDENTIFY DOES THAT FOR US
       // conn.on('close', function () { delete self.connections[conn.peerId] })
       })
     }).listen(self.port, ready)
-    self.listener.on('error', errorEmit)
-
+    errorUp(self, self.listener)
   }
 
   // interface
@@ -76,7 +68,7 @@ function Swarm () {
 
         var tmp = tcp.connect(multiaddr.toOptions(), function () {
           socket = tmp
-          socket.on('error', errorEmit)
+          errorUp(self, socket)
           next()
         })
 
@@ -109,7 +101,7 @@ function Swarm () {
           self.connections[peer.id.toB58String()] = conn
 
           conn.on('close', function () { delete self.connections[peer.id.toB58String()] })
-          conn.on('error', errorEmit)
+          errorUp(self, conn)
 
           createStream(peer, protocol, cb)
         })
@@ -121,7 +113,7 @@ function Swarm () {
       var conn = self.connections[peer.id.toB58String()]
       conn.request({path: '/', method: 'GET'}, function (err, stream) {
         if (err) { return cb(err) }
-        stream.on('error', errorEmit)
+        errorUp(self, stream)
 
         // negotiate desired protocol
         var msi = new Interactive()
@@ -135,11 +127,11 @@ function Swarm () {
     }
   }
 
-  self.registerHandle = function (protocol, handleFunc) {
+  self.registerHandler = function (protocol, handlerFunc) {
     if (self.handles[protocol]) {
-      throw new Error('Handle for protocol already exists', protocol)
+      return handlerFunc(new Error('Handle for protocol already exists', protocol))
     }
-    self.handles.push({ protocol: protocol, func: handleFunc })
+    self.handles.push({ protocol: protocol, func: handlerFunc })
     log.info('Registered handler for protocol:', protocol)
   }
 
@@ -161,7 +153,7 @@ function Swarm () {
 
   function registerHandles (stream) {
     log.info('Registering protocol handlers on new stream')
-    stream.on('error', errorEmit)
+    errorUp(self, stream)
     var msH = new Select()
     msH.handle(stream)
     self.handles.forEach(function (handle) {
@@ -169,8 +161,12 @@ function Swarm () {
     })
   }
 
-  function errorEmit (err) { self.emit('error', err) }
+}
 
+function errorUp (self, emitter) {
+  emitter.on('error', function (err) {
+    self.emit('error', err)
+  })
 }
 
 function Counter (target, callback) {

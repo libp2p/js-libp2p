@@ -13,4 +13,17 @@ Ref link (still a WiP) - https://github.com/diasdavid/specs/blob/protocol-spec/p
 
 # Usage
 
+## API calls
 
+.openStream
+.registerHandle
+
+## Events emmited
+
+.on('error')
+
+.on('connection')
+.on('connection-unknown')
+
+.on('stream')
+.on('stream-unknown')
