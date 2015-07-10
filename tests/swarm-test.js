@@ -11,7 +11,8 @@ var expect = Code.expect
 var multiaddr = require('multiaddr')
 var Id = require('ipfs-peer-id')
 var Peer = require('ipfs-peer')
-var Swarm = require('../src/index.js')
+var Swarm = require('../src/')
+var Identify = require('../src/identify')
 
 var swarmA
 var swarmB
@@ -75,7 +76,49 @@ experiment('BASE', function () {
   })
 })
 
-experiment('IDENTIFY', function () {})
+experiment('IDENTIFY', function () {
+  test('Attach Identify, open a stream, see a peer update', function (done) {
+    var protocol = '/sparkles/3.3.3'
+
+    var identifyA = new Identify(swarmA, peerA)
+    var identifyB = new Identify(swarmB, peerB)
+
+    swarmB.registerHandler(protocol, function (stream) {})
+
+    swarmA.openStream(peerB, protocol, function (err, stream) {
+      expect(err).to.not.be.instanceof(Error)
+    })
+
+    identifyB.on('peer-update', function (answer) {
+      done()
+    })
+    identifyA.on('peer-update', function (answer) {})
+  })
+
+  test('Attach Identify, open a stream, reuse stream', function (done) {
+    var protocol = '/sparkles/3.3.3'
+
+    var identifyA = new Identify(swarmA, peerA)
+    var identifyB = new Identify(swarmB, peerB)
+
+    swarmA.registerHandler(protocol, function (stream) {})
+    swarmB.registerHandler(protocol, function (stream) {})
+
+    swarmA.openStream(peerB, protocol, function (err, stream) {
+      expect(err).to.not.be.instanceof(Error)
+    })
+
+    identifyB.on('peer-update', function (answer) {
+      expect(Object.keys(swarmB.connections).length).to.equal(1)
+      swarmB.openStream(peerA, protocol, function (err, stream) {
+        expect(err).to.not.be.instanceof(Error)
+        expect(Object.keys(swarmB.connections).length).to.equal(1)
+        done()
+      })
+    })
+    identifyA.on('peer-update', function (answer) {})
+  })
+})
 
 experiment('HARDNESS', function () {})
 
@@ -91,7 +134,7 @@ function Counter (target, callback) {
   }
 }
 
-function checkErr (err) {
-  console.log('err')
-  expect(err).to.be.instanceof(Error)
-}
+// function checkErr (err) {
+//   console.log('err')
+//  expect(err).to.be.instanceof(Error)
+//  }

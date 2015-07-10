@@ -14,7 +14,7 @@ util.inherits(Identify, EventEmmiter)
 function Identify (swarm, peerSelf) {
   var self = this
 
-  swarm.registerHandle('/ipfs/identify/1.0.0', function (stream) {
+  swarm.registerHandler('/ipfs/identify/1.0.0', function (stream) {
     var identifyMsg = {}
     identifyMsg = {}
     identifyMsg.sender = exportPeer(peerSelf)
@@ -30,8 +30,7 @@ function Identify (swarm, peerSelf) {
     })
 
     stream.on('end', function () {
-      console.log(JSON.parse(answer))
-      self.emit('thenews', answer)
+      self.emit('peer-update', answer)
     })
 
     stream.end()
@@ -40,7 +39,7 @@ function Identify (swarm, peerSelf) {
   // send back our stuff
   })
 
-  swarm.on('connection', function (spdyConnection) {
+  swarm.on('connection-unknown', function (spdyConnection) {
     spdyConnection.request({
       path: '/',
       method: 'GET'
@@ -51,28 +50,27 @@ function Identify (swarm, peerSelf) {
       var msi = new Interactive()
       msi.handle(stream, function () {
         msi.select('/ipfs/identify/1.0.0', function (err, ds) {
-          if (err) {
-            return console.log('err')
-          }
+          if (err) { return console.log('err') }
 
           var identifyMsg = {}
           identifyMsg = {}
           identifyMsg.sender = exportPeer(peerSelf)
           // TODO (daviddias) populate with the way I see the other peer
-          // identifyMsg.receiver =
 
           stream.write(JSON.stringify(identifyMsg))
 
           var answer = ''
 
           stream.on('data', function (chunk) {
-            answer += chunk.toString()
+            answer = answer + chunk.toString()
           })
 
           stream.on('end', function () {
-            console.log(JSON.parse(answer))
-            // TODO (daviddias), push to the connections list on swarm that we have a new known connection
-            self.emit('thenews', answer)
+            answer = JSON.parse(answer)
+
+            swarm.connections[answer.sender.id] = spdyConnection
+
+            self.emit('peer-update', answer)
           })
 
           stream.end()

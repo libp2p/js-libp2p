@@ -42,7 +42,7 @@ function Swarm () {
 
         conn.start(3.1)
 
-        self.emit('connection', conn)
+        self.emit('connection-unknown', conn)
 
         // attach multistream handlers to incoming streams
         conn.on('stream', registerHandles)
