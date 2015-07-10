@@ -35,7 +35,11 @@ function Swarm () {
       self.port = port
     }
 
-    tcp.createServer(function (socket) {
+    self.listener = tcp.createServer(function (socket) {
+      socket.on('error', function (err) {
+        // self.emit('error', err)
+      })
+      socket.on('close', function () {})
       var ms = new Select()
       ms.handle(socket)
       ms.addHandler('/spdy/3.1.0', function (ds) {
@@ -52,11 +56,18 @@ function Swarm () {
 
         // attach multistream handlers to incoming streams
         conn.on('stream', registerHandles)
+        conn.on('error', function (err) {
+          // self.emit('error', err)
+        })
+        conn.on('close', function () {
+        })
 
       // IDENTIFY DOES THAT FOR US
       // conn.on('close', function () { delete self.connections[conn.peerId] })
       })
     }).listen(self.port, ready)
+    self.listener.on('error', function (err) { self.emit('error', err) })
+
   }
 
   // interface
@@ -72,6 +83,7 @@ function Swarm () {
 
         var tmp = tcp.connect(multiaddr.toOptions(), function () {
           socket = tmp
+          socket.on('error', function (err) { self.emit('error', err) })
           next()
         })
 
@@ -104,6 +116,7 @@ function Swarm () {
           self.connections[peer.id.toB58String()] = conn
 
           conn.on('close', function () { delete self.connections[peer.id.toB58String()] })
+          conn.on('error', function (err) { self.emit('error', err) })
 
           createStream(peer, protocol, cb)
         })
@@ -136,7 +149,7 @@ function Swarm () {
     log.info('Registered handler for protocol:', protocol)
   }
 
-  self.close = function (cb) {
+  self.closeConns = function (cb) {
     var keys = Object.keys(self.connections)
     var number = keys.length
     if (number === 0) { cb() }
@@ -146,6 +159,10 @@ function Swarm () {
       c.hit()
       self.connections[key].end()
     })
+  }
+
+  self.closeListener = function (cb) {
+    self.listener.close(cb)
   }
 
   function registerHandles (spdyStream) {
