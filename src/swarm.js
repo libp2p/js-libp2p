@@ -59,8 +59,7 @@ function Swarm () {
         conn.on('error', function (err) {
           // self.emit('error', err)
         })
-        conn.on('close', function () {
-        })
+        conn.on('close', function () {})
 
       // IDENTIFY DOES THAT FOR US
       // conn.on('close', function () { delete self.connections[conn.peerId] })
