@@ -19,26 +19,32 @@ function Swarm () {
   }
 
   self.port = parseInt(process.env.IPFS_SWARM_PORT, 10) || 4001
-
   self.connections = {}
   self.handles = []
 
   // set the listener
 
   self.listen = function (port, ready) {
-    if (!ready) { ready = function noop () {} }
+    if (!ready) {
+      ready = function noop () {}
+    }
     if (typeof port === 'function') {
       ready = port
     } else if (port) { self.port = port }
 
+    //
+
     self.listener = tcp.createServer(function (socket) {
-      errorUp(self, socket)
+      socket.on('error', function (err) {
+        console.log('listener socket err - ', err)
+      })
+
       var ms = new Select()
       ms.handle(socket)
       ms.addHandler('/spdy/3.1.0', function (ds) {
         log.info('Negotiated spdy with incoming socket')
 
-        var conn = new Muxer().attach(ds, false)
+        var conn = new Muxer().attach(ds, true)
 
         // attach multistream handlers to incoming streams
 
