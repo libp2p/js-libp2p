@@ -96,7 +96,6 @@ experiment('IDENTIFY', function () {
       })
 
       identifyB.on('peer-update', function (answer) {
-        console.log('SUCH PEER-UPDATE')
         done()
       })
       identifyA.on('peer-update', function (answer) {})

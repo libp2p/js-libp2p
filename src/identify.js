@@ -15,8 +15,6 @@ function Identify (swarm, peerSelf) {
   var self = this
 
   swarm.registerHandler('/ipfs/identify/1.0.0', function (stream) {
-    console.log('DO I EVER GET CALLED?')
-
     var identifyMsg = {}
     identifyMsg = {}
     identifyMsg.sender = exportPeer(peerSelf)
@@ -42,22 +40,12 @@ function Identify (swarm, peerSelf) {
   })
 
   swarm.on('connection-unknown', function (conn) {
-    console.log('IDENTIFY - DIALING STREAM FROM SERVER')
-
-    conn.on('error', function (err) {
-      console.log('CAPUT-A', err)
-    })
     conn.dialStream(function (err, stream) {
       if (err) {
         return console.log(err)
       }
-      stream.on('error', function (err) {
-        console.log('CAPUT-B', err)
-      })
-      console.log('GOT STREAM')
       var msi = new Interactive()
       msi.handle(stream, function () {
-        console.log('HANDLE GOOD')
         msi.select('/ipfs/identify/1.0.0', function (err, ds) {
           if (err) { return console.log(err) }
           var identifyMsg = {}
@@ -78,7 +66,6 @@ function Identify (swarm, peerSelf) {
 
             swarm.connections[answer.sender.id] = conn
 
-            console.log('BAM')
             self.emit('peer-update', answer)
           })
 

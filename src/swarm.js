@@ -35,10 +35,7 @@ function Swarm () {
     //
 
     self.listener = tcp.createServer(function (socket) {
-      socket.on('error', function (err) {
-        console.log('listener socket err - ', err)
-      })
-
+      errorUp(self, socket)
       var ms = new Select()
       ms.handle(socket)
       ms.addHandler('/spdy/3.1.0', function (ds) {
@@ -47,13 +44,6 @@ function Swarm () {
         var conn = new Muxer().attach(ds, true)
 
         // attach multistream handlers to incoming streams
-
-        conn.on('stream', function () {
-          console.log('HERE')
-        })
-        conn.on('error', function () {
-          console.log('error here')
-        })
 
         conn.on('stream', registerHandles)
         errorUp(self, conn)
@@ -109,12 +99,6 @@ function Swarm () {
           if (err) { cb(err) }
 
           var conn = new Muxer().attach(ds, false)
-          conn.on('stream', function () {
-            console.log('WOOHO NEW STREAM')
-          })
-          conn.on('error', function () {
-            console.log('BADUM TSS')
-          })
           conn.on('stream', registerHandles)
           self.connections[peer.id.toB58String()] = conn
           conn.on('close', function () { delete self.connections[peer.id.toB58String()] })
@@ -131,9 +115,6 @@ function Swarm () {
       conn.dialStream(function (err, stream) {
         if (err) { return cb(err) }
         errorUp(self, stream)
-        stream.on('error', function (err) {
-          console.log('error here - ', err)
-        })
         // negotiate desired protocol
         var msi = new Interactive()
         msi.handle(stream, function () {
@@ -147,9 +128,7 @@ function Swarm () {
   }
 
   self.registerHandler = function (protocol, handlerFunc) {
-    console.log('new handler coming in for - ', protocol)
     if (self.handles[protocol]) {
-      console.log('here already - ', protocol)
       return handlerFunc(new Error('Handle for protocol already exists', protocol))
     }
     self.handles.push({ protocol: protocol, func: handlerFunc })
@@ -174,12 +153,10 @@ function Swarm () {
 
   function registerHandles (stream) {
     log.info('Registering protocol handlers on new stream')
-    console.log('REGISTERING HANDLES')
     errorUp(self, stream)
     var msH = new Select()
     msH.handle(stream)
     self.handles.forEach(function (handle) {
-      console.log('  ->', handle.protocol)
       msH.addHandler(handle.protocol, handle.func)
     })
   }
