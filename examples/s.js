@@ -20,9 +20,9 @@ b.on('error', function (err) {
 b.listen()
 
 b.registerHandler('/ipfs/sparkles/1.2.3', function (stream) {
-//  if (err) {
-//    return console.log(err)
-//  }
+  //  if (err) {
+  //    return console.log(err)
+  //  }
 
   console.log('woop got a stream')
 })

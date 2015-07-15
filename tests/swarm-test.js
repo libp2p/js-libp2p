@@ -76,7 +76,6 @@ experiment('BASE', function () {
 */
 experiment('IDENTIFY', function () {
   test('Attach Identify, open a stream, see a peer update', function (done) {
-
     swarmA.on('error', function (err) {
       console.log('A - ', err)
     })
@@ -103,31 +102,31 @@ experiment('IDENTIFY', function () {
       identifyA.on('peer-update', function (answer) {})
     }, 500)
   })
-  /*
-  test('Attach Identify, open a stream, reuse stream', function (done) {
-    var protocol = '/sparkles/3.3.3'
+/*
+test('Attach Identify, open a stream, reuse stream', function (done) {
+  var protocol = '/sparkles/3.3.3'
 
-    var identifyA = new Identify(swarmA, peerA)
-    var identifyB = new Identify(swarmB, peerB)
+  var identifyA = new Identify(swarmA, peerA)
+  var identifyB = new Identify(swarmB, peerB)
 
-    swarmA.registerHandler(protocol, function (stream) {})
-    swarmB.registerHandler(protocol, function (stream) {})
+  swarmA.registerHandler(protocol, function (stream) {})
+  swarmB.registerHandler(protocol, function (stream) {})
 
-    swarmA.openStream(peerB, protocol, function theOTHER (err, stream) {
-      expect(err).to.not.be.instanceof(Error)
-    })
-
-    identifyB.on('peer-update', function (answer) {
-      expect(Object.keys(swarmB.connections).length).to.equal(1)
-      swarmB.openStream(peerA, protocol, function theCALLBACK (err, stream) {
-        expect(err).to.not.be.instanceof(Error)
-        expect(Object.keys(swarmB.connections).length).to.equal(1)
-        done()
-      })
-    })
-    identifyA.on('peer-update', function (answer) {})
+  swarmA.openStream(peerB, protocol, function theOTHER (err, stream) {
+    expect(err).to.not.be.instanceof(Error)
   })
-  */
+
+  identifyB.on('peer-update', function (answer) {
+    expect(Object.keys(swarmB.connections).length).to.equal(1)
+    swarmB.openStream(peerA, protocol, function theCALLBACK (err, stream) {
+      expect(err).to.not.be.instanceof(Error)
+      expect(Object.keys(swarmB.connections).length).to.equal(1)
+      done()
+    })
+  })
+  identifyA.on('peer-update', function (answer) {})
+})
+*/
 })
 
 experiment('HARDNESS', function () {})

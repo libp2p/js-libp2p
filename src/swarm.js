@@ -55,8 +55,8 @@ function Swarm () {
         // FOR IDENTIFY
         self.emit('connection-unknown', conn)
 
-        // IDENTIFY DOES THIS FOR US
-        // conn.on('close', function () { delete self.connections[conn.peerId] })
+      // IDENTIFY DOES THIS FOR US
+      // conn.on('close', function () { delete self.connections[conn.peerId] })
       })
     }).listen(self.port, ready)
     errorUp(self, self.listener)
