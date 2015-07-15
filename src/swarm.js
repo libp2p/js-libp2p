@@ -1,7 +1,7 @@
 var tcp = require('net')
 var Select = require('multistream-select').Select
 var Interactive = require('multistream-select').Interactive
-var spdy = require('spdy-transport')
+var Muxer = require('./stream-muxer')
 var log = require('ipfs-logger').group('swarm')
 var async = require('async')
 var EventEmitter = require('events').EventEmitter
@@ -38,18 +38,25 @@ function Swarm () {
       ms.addHandler('/spdy/3.1.0', function (ds) {
         log.info('Negotiated spdy with incoming socket')
 
-        var conn = spdy.connection.create(ds, { protocol: 'spdy', isServer: true })
-
-        conn.start(3.1)
-
-        self.emit('connection-unknown', conn)
+        var conn = new Muxer().attach(ds, false)
 
         // attach multistream handlers to incoming streams
+
+        conn.on('stream', function () {
+          console.log('HERE')
+        })
+        conn.on('error', function () {
+          console.log('error here')
+        })
+
         conn.on('stream', registerHandles)
         errorUp(self, conn)
 
-      // IDENTIFY DOES THAT FOR US
-      // conn.on('close', function () { delete self.connections[conn.peerId] })
+        // FOR IDENTIFY
+        self.emit('connection-unknown', conn)
+
+        // IDENTIFY DOES THIS FOR US
+        // conn.on('close', function () { delete self.connections[conn.peerId] })
       })
     }).listen(self.port, ready)
     errorUp(self, self.listener)
@@ -95,11 +102,15 @@ function Swarm () {
         msi.select('/spdy/3.1.0', function (err, ds) {
           if (err) { cb(err) }
 
-          var conn = spdy.connection.create(ds, { protocol: 'spdy', isServer: false })
-          conn.start(3.1)
+          var conn = new Muxer().attach(ds, false)
+          conn.on('stream', function () {
+            console.log('WOOHO NEW STREAM')
+          })
+          conn.on('error', function () {
+            console.log('BADUM TSS')
+          })
           conn.on('stream', registerHandles)
           self.connections[peer.id.toB58String()] = conn
-
           conn.on('close', function () { delete self.connections[peer.id.toB58String()] })
           errorUp(self, conn)
 
@@ -109,12 +120,14 @@ function Swarm () {
     }
 
     function createStream (peer, protocol, cb) {
-      // spawn new stream
+      // spawn new muxed stream
       var conn = self.connections[peer.id.toB58String()]
-      conn.request({path: '/', method: 'GET'}, function (err, stream) {
+      conn.dialStream(function (err, stream) {
         if (err) { return cb(err) }
         errorUp(self, stream)
-
+        stream.on('error', function (err) {
+          console.log('error here - ', err)
+        })
         // negotiate desired protocol
         var msi = new Interactive()
         msi.handle(stream, function () {
@@ -128,7 +141,9 @@ function Swarm () {
   }
 
   self.registerHandler = function (protocol, handlerFunc) {
+    console.log('new handler coming in for - ', protocol)
     if (self.handles[protocol]) {
+      console.log('here already - ', protocol)
       return handlerFunc(new Error('Handle for protocol already exists', protocol))
     }
     self.handles.push({ protocol: protocol, func: handlerFunc })
@@ -153,10 +168,12 @@ function Swarm () {
 
   function registerHandles (stream) {
     log.info('Registering protocol handlers on new stream')
+    console.log('REGISTERING HANDLES')
     errorUp(self, stream)
     var msH = new Select()
     msH.handle(stream)
     self.handles.forEach(function (handle) {
+      console.log('  ->', handle.protocol)
       msH.addHandler(handle.protocol, handle.func)
     })
   }
