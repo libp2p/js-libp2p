@@ -34,9 +34,11 @@
   },
   "dependencies": {
     "async": "^1.3.0",
+    "ip-address": "^4.0.0",
     "multiaddr": "^1.0.0",
     "multiplex-stream-muxer": "^0.2.0",
     "multistream-select": "^0.6.1",
+    "protocol-buffers-stream": "^1.2.0",
     "spdy-stream-muxer": "^0.2.0"
   }
 }

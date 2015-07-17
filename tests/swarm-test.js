@@ -103,6 +103,8 @@ experiment('IDENTIFY', function () {
   })
 
   test('Attach Identify, open a stream, reuse stream', function (done) {
+    console.log('\n\n\n')
+
     var protocol = '/sparkles/3.3.3'
 
     var identifyA = new Identify(swarmA, peerA)
@@ -111,13 +113,13 @@ experiment('IDENTIFY', function () {
     swarmA.registerHandler(protocol, function (stream) {})
     swarmB.registerHandler(protocol, function (stream) {})
 
-    swarmA.openStream(peerB, protocol, function theOTHER (err, stream) {
+    swarmA.openStream(peerB, protocol, function (err, stream) {
       expect(err).to.not.be.instanceof(Error)
     })
 
     identifyB.on('peer-update', function (answer) {
       expect(Object.keys(swarmB.connections).length).to.equal(1)
-      swarmB.openStream(peerA, protocol, function theCALLBACK (err, stream) {
+      swarmB.openStream(peerA, protocol, function (err, stream) {
         expect(err).to.not.be.instanceof(Error)
         expect(Object.keys(swarmB.connections).length).to.equal(1)
         done()

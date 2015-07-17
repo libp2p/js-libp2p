@@ -19,7 +19,7 @@ function Swarm () {
   }
 
   self.port = parseInt(process.env.IPFS_SWARM_PORT, 10) || 4001
-  self.connections = {}
+  self.connections = {} // {conn: <>, socket: <>}
   self.handles = []
 
   // set the listener
@@ -49,7 +49,7 @@ function Swarm () {
         errorUp(self, conn)
 
         // FOR IDENTIFY
-        self.emit('connection-unknown', conn)
+        self.emit('connection-unknown', conn, socket)
 
       // IDENTIFY DOES THIS FOR US
       // conn.on('close', function () { delete self.connections[conn.peerId] })
@@ -100,7 +100,10 @@ function Swarm () {
 
           var conn = new Muxer().attach(ds, false)
           conn.on('stream', registerHandles)
-          self.connections[peer.id.toB58String()] = conn
+          self.connections[peer.id.toB58String()] = {
+            conn: conn,
+            socket: socket
+          }
           conn.on('close', function () { delete self.connections[peer.id.toB58String()] })
           errorUp(self, conn)
 
@@ -111,7 +114,7 @@ function Swarm () {
 
     function createStream (peer, protocol, cb) {
       // spawn new muxed stream
-      var conn = self.connections[peer.id.toB58String()]
+      var conn = self.connections[peer.id.toB58String()].conn
       conn.dialStream(function (err, stream) {
         if (err) { return cb(err) }
         errorUp(self, stream)
@@ -143,7 +146,7 @@ function Swarm () {
 
     keys.map(function (key) {
       c.hit()
-      self.connections[key].end()
+      self.connections[key].conn.end()
     })
   }
 

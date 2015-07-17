@@ -18,7 +18,7 @@ message Identify {
   // oservedAddr is the multiaddr of the remote endpoint that the sender node perceives
   // this is useful information to convey to the other side, as it helps the remote endpoint
   // determine whether its connection to the local peer goes through NAT.
-  // optional bytes observedAddr = 4;
+  optional bytes observedAddr = 4;
 
   // (DEPRECATED) protocols are the services this node is running
   // repeated string protocols = 3;

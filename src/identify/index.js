@@ -9,6 +9,9 @@ var util = require('util')
 var protobufs = require('protocol-buffers-stream')
 var fs = require('fs')
 var schema = fs.readFileSync(__dirname + '/identify.proto')
+var v6 = require('ip-address').v6
+var Id = require('ipfs-peer-id')
+var multiaddr = require('multiaddr')
 
 exports = module.exports = Identify
 
@@ -22,28 +25,32 @@ function Identify (swarm, peerSelf) {
     var ps = self.createProtoStream()
 
     ps.on('identify', function (msg) {
-      console.log('RECEIVED PROTOBUF - ', msg)
-      // 1. wrap the msg
-      // 2. create a Peer obj using the publick key to derive the ID
-      // 3. populate it with observedAddr
-      // 4. maybe emit 2 peers update to update the other peer and also ourselfs?
-      self.emit('peer-update', {})
-    })
+      // console.log('RECEIVED PROTOBUF - ', msg)
+      updateSelf(peerSelf, msg.observedAddr)
 
-    ps.identify({
-      protocolVersion: 'na',
-      agentVersion: 'na',
-      publicKey: peerSelf.id.pubKey,
-      listenAddrs: peerSelf.multiaddrs
-    // observedAddr: new Buffer()
-    })
+      var peerId = Id.createFromPubKey(msg.publicKey)
 
+      var socket = swarm.connections[peerId.toB58String()].socket
+      var mh = getMultiaddr(socket)
+      ps.identify({
+        protocolVersion: 'na',
+        agentVersion: 'na',
+        publicKey: peerSelf.id.pubKey,
+        listenAddrs: peerSelf.multiaddrs.map(function (mh) {return mh.buffer}),
+        observedAddr: mh.buffer
+      })
+
+      self.emit('peer-update', {
+        peerId: peerId,
+        listenAddrs: msg.listenAddrs.map(function (mhb) {return multiaddr(mhb)})
+      })
+
+      ps.finalize()
+    })
     ps.pipe(stream).pipe(ps)
-
-  // TODO(daviddias) ps.end() based on https://github.com/mafintosh/protocol-buffers-stream/issues/1
   })
 
-  swarm.on('connection-unknown', function (conn) {
+  swarm.on('connection-unknown', function (conn, socket) {
     conn.dialStream(function (err, stream) {
       if (err) { return console.log(err) }
       var msi = new Interactive()
@@ -54,28 +61,67 @@ function Identify (swarm, peerSelf) {
           var ps = self.createProtoStream()
 
           ps.on('identify', function (msg) {
-            console.log('RECEIVED PROTOBUF - ', msg)
-            // 1. wrap the msg
-            // 2. create a Peer obj using the publick key to derive the ID
-            // 3. populate it with observedAddr
-            // 4. maybe emit 2 peers update to update the other peer and also ourselfs?
-            // 5. add the conn to connections list -> swarm.connections[otherPeerId] = conn
-            self.emit('peer-update', {})
+            // console.log('RECEIVED PROTOBUF - SIDE ZZ ', msg)
+            var peerId = Id.createFromPubKey(msg.publicKey)
+
+            updateSelf(peerSelf, msg.observedAddr)
+
+            swarm.connections[peerId.toB58String()] = {
+              conn: conn,
+              socket: socket
+            }
+
+            self.emit('peer-update', {
+              peerId: peerId,
+              listenAddrs: msg.listenAddrs.map(function (mhb) {return multiaddr(mhb)})
+            })
           })
+
+          var mh = getMultiaddr(socket)
 
           ps.identify({
             protocolVersion: 'na',
             agentVersion: 'na',
             publicKey: peerSelf.id.pubKey,
-            listenAddrs: peerSelf.multiaddrs
-          // observedAddr: new Buffer()
+            listenAddrs: peerSelf.multiaddrs.map(function (mh) {return mh.buffer}),
+            observedAddr: mh.buffer
           })
 
           ps.pipe(ds).pipe(ps)
-
-        // TODO(daviddias) ps.end() based on https://github.com/mafintosh/protocol-buffers-stream/issues/1
+          ps.finalize()
         })
       })
     })
   })
 }
+
+function getMultiaddr (socket) {
+  var mh
+  if (~socket.remoteAddress.indexOf(':')) {
+    var addr = new v6.Address(socket.remoteAddress)
+    if (addr.v4) {
+      var ip4 = socket.remoteAddress.split(':')[3]
+      mh = multiaddr('/ip4/' + ip4 + '/tcp/' + socket.remotePort)
+    } else {
+      mh = multiaddr('/ip6/' + socket.remoteAddress + '/tcp/' + socket.remotePort)
+    }
+  } else {
+    mh = multiaddr('/ip4/' + socket.remoteAddress + '/tcp/' + socket.remotePort)
+  }
+  return mh
+}
+
+function updateSelf (peerSelf, observedAddr) {
+  var omh = multiaddr(observedAddr)
+  var isIn = false
+  peerSelf.multiaddrs.forEach(function (mh) {
+    if (mh.toString() === omh.toString()) {
+      isIn = true
+    }
+  })
+
+  if (!isIn) {
+    peerSelf.multiaddrs.push(omh)
+  }
+}
+
