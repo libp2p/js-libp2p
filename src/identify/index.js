@@ -124,4 +124,3 @@ function updateSelf (peerSelf, observedAddr) {
     peerSelf.multiaddrs.push(omh)
   }
 }
-
