@@ -25,7 +25,6 @@ function Identify (swarm, peerSelf) {
     var ps = self.createProtoStream()
 
     ps.on('identify', function (msg) {
-      // console.log('RECEIVED PROTOBUF - ', msg)
       updateSelf(peerSelf, msg.observedAddr)
 
       var peerId = Id.createFromPubKey(msg.publicKey)
@@ -113,14 +112,31 @@ function getMultiaddr (socket) {
 
 function updateSelf (peerSelf, observedAddr) {
   var omh = multiaddr(observedAddr)
-  var isIn = false
-  peerSelf.multiaddrs.forEach(function (mh) {
-    if (mh.toString() === omh.toString()) {
-      isIn = true
-    }
-  })
 
-  if (!isIn) {
-    peerSelf.multiaddrs.push(omh)
+  if (!peerSelf.previousObservedAddrs) {
+    peerSelf.previousObservedAddrs = []
+  }
+
+  for (var i = 0; i < peerSelf.previousObservedAddrs.length; i++) {
+    if (peerSelf.previousObservedAddrs[i].toString() === omh.toString()) {
+      peerSelf.previousObserveredAddrs.splice(i, 1)
+      addToSelf()
+      return
+    }
+  }
+
+  peerSelf.previousObservedAddrs.push(observedAddr)
+
+  function addToSelf () {
+    var isIn = false
+    peerSelf.multiaddrs.forEach(function (mh) {
+      if (mh.toString() === omh.toString()) {
+        isIn = true
+      }
+    })
+
+    if (!isIn) {
+      peerSelf.multiaddrs.push(omh)
+    }
   }
 }
