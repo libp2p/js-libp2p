@@ -1,0 +1,27 @@
+{
+  "name": "ipfs-ping",
+  "version": "0.0.0",
+  "description": "Node.js IPFS Ping protocol implementation",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diasdavid/node-ipfs-ping.git"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "author": "David Dias <daviddias@ipfs.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/diasdavid/node-ipfs-ping/issues"
+  },
+  "homepage": "https://github.com/diasdavid/node-ipfs-ping",
+  "devDependencies": {
+    "code": "^1.4.1",
+    "lab": "^5.13.0",
+    "standard": "^4.5.4"
+  }
+}
