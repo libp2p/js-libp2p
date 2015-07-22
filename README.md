@@ -5,4 +5,18 @@ node-ipfs-ping
 
 > Node.js IPFS ping protocol implementation
 
+## Usage
 
+
+```javascript
+var Ping = require('ipfs-ping')
+
+Ping.pingEcho(swarm) // Enable this peer to echo Ping requests
+
+var p = new Ping(swarm, peerDst) // Ping peerDst, peerDst must be a ipfs-peer object
+
+p.on('ping', function (time) {
+  console.log(time + 'ms')
+  p.stop() // stop sending pings
+})
+```

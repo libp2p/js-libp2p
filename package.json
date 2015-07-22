@@ -4,7 +4,7 @@
   "description": "Node.js IPFS Ping protocol implementation",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/lab tests/*-test.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,14 @@
   "homepage": "https://github.com/diasdavid/node-ipfs-ping",
   "devDependencies": {
     "code": "^1.4.1",
+    "ipfs-peer": "^0.3.0",
+    "ipfs-peer-id": "^0.3.0",
+    "ipfs-swarm": "^0.1.1",
     "lab": "^5.13.0",
+    "multiaddr": "^1.0.0",
     "standard": "^4.5.4"
+  },
+  "dependencies": {
+    "async-buffered-reader": "^1.2.1"
   }
 }
