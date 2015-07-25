@@ -25,11 +25,11 @@ function Sonar (peerSelf, options, swarmSelf) {
 
   // option arguments
 
-  self.broadcast = options && options.broadcast || true
+  self.broadcast = options && options.broadcast ? options.broadcast : true
   // self.query = options.query || true // TODO implement a switch
-  self.interval = options && options.interval || (1e3 * 5)
-  self.serviceTag = options && options.serviceTag || 'discovery.ipfs.io.local'
-  self.verify = options && options.verify || true
+  self.interval = options && options.interval ? options.interval : (1e3 * 5)
+  self.serviceTag = options && options.serviceTag ? options.serviceTag : 'discovery.ipfs.io.local'
+  self.verify = options && options.verify ? options.verify : false
 
   if (self.verify) {
     if (!(swarmSelf instanceof Swarm)) {
@@ -37,7 +37,7 @@ function Sonar (peerSelf, options, swarmSelf) {
     }
   }
 
-  self.mdns = multicastDNS({ port: options && options.port || 5353 })
+  self.mdns = multicastDNS({ port: options && options.port ? options.port : 5353 })
 
   // query the network
 
@@ -105,8 +105,6 @@ function Sonar (peerSelf, options, swarmSelf) {
 
     log.info('peer found -', b58Id)
 
-    console.log('peer found -', b58Id)
-
     var peerId = Id.createFromB58String(b58Id)
 
     verify(new Peer(peerId, multiaddrs))
@@ -114,6 +112,7 @@ function Sonar (peerSelf, options, swarmSelf) {
 
   function verify (peer) {
     if (self.verify) {
+      console.log('not doing verify, yet')
       // TODO(daviddias) check if I should swarm open a connection to it
     } else {
       self.emit('peer', peer)
@@ -148,7 +147,7 @@ function Sonar (peerSelf, options, swarmSelf) {
         data: {
           priority: 10,
           weight: 1,
-          port: swarmSelf.port,
+          port: swarmSelf ? swarmSelf.port : 4001,
           target: os.hostname()
         }
       })
@@ -228,4 +227,5 @@ function Sonar (peerSelf, options, swarmSelf) {
        class: 1,
        ttl: 120,
        data: 'QmbBHw1Xx9pUpAbrVZUKTPL5Rsph5Q9GQhRvcWVBPFgGtC' } ],
+
 */
