@@ -1,0 +1,35 @@
+{
+  "name": "ipfs-mdns",
+  "version": "0.0.0",
+  "description": "Node.js IPFS mDNS implementation for peer discovery",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diasdavid/node-ipfs-mdns.git"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "author": "David Dias <daviddias@ipfs.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/diasdavid/node-ipfs-mdns/issues"
+  },
+  "homepage": "https://github.com/diasdavid/node-ipfs-mdns",
+  "devDependencies": {
+    "code": "^1.4.1",
+    "lab": "^5.13.0",
+    "standard": "^4.5.4"
+  },
+  "dependencies": {
+    "ipfs-logger": "^0.1.0",
+    "ipfs-peer": "^0.3.0",
+    "ipfs-peer-id": "^0.3.0",
+    "ipfs-swarm": "^0.1.1",
+    "multiaddr": "^1.0.0",
+    "multicast-dns": "^3.0.0"
+  }
+}
