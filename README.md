@@ -39,6 +39,15 @@ s.closeListener()
 s.registerHandler('/name/protocol/you/want/version', function (stream) {})
 ```
 
+### Open a new connection
+
+Used when we want to make sure we can connect to a given peer, but do not intend to establish a stream with any of the services offered right away.
+
+```
+s.openConnection(peerConnection, function (err) {})
+```
+
+
 ### Dial a new stream
 
 ```

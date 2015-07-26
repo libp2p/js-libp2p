@@ -61,7 +61,7 @@ function Swarm () {
   // interface
 
   // open stream account for connection reuse
-  self.openStream = function (peer, protocol, cb) {
+  self.openConnection = function (peer, cb) {
     // If no connection open yet, open it
     if (!self.connections[peer.id.toB58String()]) {
       // Establish a socket with one of the addresses
@@ -88,7 +88,7 @@ function Swarm () {
         gotSocket(socket)
       })
     } else {
-      createStream(peer, protocol, cb)
+      cb()
     }
 
     // do the spdy people dance (multistream-select into spdy)
@@ -107,12 +107,17 @@ function Swarm () {
           conn.on('close', function () { delete self.connections[peer.id.toB58String()] })
           errorUp(self, conn)
 
-          createStream(peer, protocol, cb)
+          cb()
         })
       })
     }
+  }
 
-    function createStream (peer, protocol, cb) {
+  self.openStream = function (peer, protocol, cb) {
+    self.openConnection(peer, function (err) {
+      if (err) {
+        return cb(err)
+      }
       // spawn new muxed stream
       var conn = self.connections[peer.id.toB58String()].conn
       conn.dialStream(function (err, stream) {
@@ -127,7 +132,7 @@ function Swarm () {
           })
         })
       })
-    }
+    })
   }
 
   self.registerHandler = function (protocol, handlerFunc) {
