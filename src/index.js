@@ -112,8 +112,12 @@ function Sonar (peerSelf, options, swarmSelf) {
 
   function verify (peer) {
     if (self.verify) {
-      console.log('not doing verify, yet')
-      // TODO(daviddias) check if I should swarm open a connection to it
+      swarmSelf.openConnection(peer, function (err) {
+        if (err) {
+          return log.warn('Was not able to connect to new found peer', err)
+        }
+        self.emit('peer', peer)
+      })
     } else {
       self.emit('peer', peer)
     }

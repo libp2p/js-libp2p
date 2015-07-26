@@ -26,12 +26,12 @@ experiment('Without verify on', function () {
   test('Find the other peer', { timeout: 1e3 * 10 }, function (done) {
     var sA = new Sonar(pA, {
       verify: false,
-      port: 5353
+      port: 9095
     })
 
     var sB = new Sonar(pB, {
       verify: false,
-      port: 5353
+      port: 9095
     })
 
     sA.once('peer', function (peer) {
