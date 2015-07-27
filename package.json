@@ -1,6 +1,6 @@
 {
   "name": "ipfs-railing",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
   "main": "src/index.js",
   "scripts": {
