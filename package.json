@@ -1,6 +1,6 @@
 {
   "name": "ipfs-ping",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Node.js IPFS Ping protocol implementation",
   "main": "src/index.js",
   "scripts": {
