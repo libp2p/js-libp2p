@@ -19,7 +19,7 @@ function Swarm () {
   }
 
   self.port = parseInt(process.env.IPFS_SWARM_PORT, 10) || 4001
-  self.connections = {} // {conn: <>, socket: <>}
+  self.connections = {} // {peerIdB58: {conn: <>, socket: <>}
   self.handles = []
 
   // set the listener
@@ -128,6 +128,7 @@ function Swarm () {
         msi.handle(stream, function () {
           msi.select(protocol, function (err, ds) {
             if (err) { return cb(err) }
+            peer.lastSeen = new Date()
             cb(null, ds) // return the stream
           })
         })
