@@ -42,6 +42,39 @@ afterEach(function (done) {
   done()
 })
 
+experiment('BASICS', function () {
+  experiment('Swarm', function () {
+    test('enforces instantiation with new', function (done) {
+      expect(function () {
+        Swarm()
+      }).to.throw('Swarm must be called with new')
+      done()
+    })
+
+    test('parses $IPFS_SWARM_PORT', function (done) {
+      process.env.IPFS_SWARM_PORT = 1111
+      var swarm = new Swarm()
+      expect(swarm.port).to.be.equal(1111)
+      process.env.IPFS_SWARM_PORT = undefined
+      done()
+    })
+  })
+
+  experiment('Swarm.listen', function (done) {
+    test('handles missing port', function (done) {
+      var swarm = new Swarm()
+      swarm.listen(done)
+    })
+
+    test('handles passed in port', function (done) {
+      var swarm = new Swarm()
+      swarm.listen(1234)
+      expect(swarm.port).to.be.equal(1234)
+      done()
+    })
+  })
+})
+
 experiment('BASE', function () {
   test('Open a stream', function (done) {
     var protocol = '/sparkles/3.3.3'
