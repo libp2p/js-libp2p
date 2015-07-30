@@ -72,6 +72,18 @@ experiment('BASE', function () {
       })
     })
   })
+  test('Check for lastSeen', function (done) {
+    var protocol = '/sparkles/3.3.3'
+
+    swarmB.registerHandler(protocol, function (stream) {})
+
+    swarmA.openStream(peerB, protocol, function (err, stream) {
+      expect(err).to.not.be.instanceof(Error)
+      expect(peerB.lastSeen).to.be.instanceof(Date)
+      done()
+    })
+  })
+
 })
 
 experiment('IDENTIFY', function () {
