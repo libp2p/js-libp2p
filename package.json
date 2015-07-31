@@ -7,7 +7,7 @@
     "test": "./node_modules/.bin/lab tests/*-test.js",
     "coverage": "./node_modules/.bin/lab -t 100 tests/*-test.js",
     "codestyle": "./node_modules/.bin/standard --format",
-    "lint": "jshint .",
+    "lint": "./node_modules/.bin/standard",
     "validate": "npm ls"
   },
   "repository": {
