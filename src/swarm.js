@@ -150,9 +150,9 @@ function Swarm () {
     if (number === 0) { cb() }
     var c = new Counter(number, cb)
 
-    keys.map(function (key) {
-      c.hit()
+    keys.forEach(function (key) {
       self.connections[key].conn.end()
+      c.hit()
     })
   }
 

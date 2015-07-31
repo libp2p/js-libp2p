@@ -1,5 +1,6 @@
 var Lab = require('lab')
 var Code = require('code')
+var sinon = require('sinon')
 var lab = exports.lab = Lab.script()
 
 var experiment = lab.experiment
@@ -82,6 +83,19 @@ experiment('BASICS', function () {
         expect(err).to.be.an.instanceOf(Error)
         expect(err.message).to.be.equal('Handle for protocol already exists')
         done()
+      })
+    })
+  })
+
+  experiment('Swarm.closeConns', function () {
+    test('calls end on all connections', function (done) {
+      swarmA.openConnection(peerB, function () {
+        var key = Object.keys(swarmA.connections)[0]
+        sinon.spy(swarmA.connections[key].conn, 'end')
+        swarmA.closeConns(function () {
+          expect(swarmA.connections[key].conn.end.called).to.be.equal(true)
+          done()
+        })
       })
     })
   })
