@@ -73,6 +73,18 @@ experiment('BASICS', function () {
       done()
     })
   })
+
+  experiment('Swarm.registerHandler', function () {
+    test('throws when registering a protcol handler twice', function (done) {
+      var swarm = new Swarm()
+      swarm.registerHandler('/sparkles/1.1.1', function () {})
+      swarm.registerHandler('/sparkles/1.1.1', function (err) {
+        expect(err).to.be.an.instanceOf(Error)
+        expect(err.message).to.be.equal('Handle for protocol already exists')
+        done()
+      })
+    })
+  })
 })
 
 experiment('BASE', function () {
