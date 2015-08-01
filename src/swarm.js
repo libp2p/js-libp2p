@@ -20,7 +20,7 @@ function Swarm () {
 
   self.port = parseInt(process.env.IPFS_SWARM_PORT, 10) || 4001
   self.connections = {} // {peerIdB58: {conn: <>, socket: <>}
-  self.handles = []
+  self.handles = {}
 
   // set the listener
 
@@ -140,7 +140,7 @@ function Swarm () {
     if (self.handles[protocol]) {
       return handlerFunc(new Error('Handle for protocol already exists', protocol))
     }
-    self.handles.push({ protocol: protocol, func: handlerFunc })
+    self.handles[protocol] = handlerFunc
     log.info('Registered handler for protocol:', protocol)
   }
 
@@ -150,9 +150,9 @@ function Swarm () {
     if (number === 0) { cb() }
     var c = new Counter(number, cb)
 
-    keys.map(function (key) {
-      c.hit()
+    keys.forEach(function (key) {
       self.connections[key].conn.end()
+      c.hit()
     })
   }
 
@@ -165,8 +165,8 @@ function Swarm () {
     errorUp(self, stream)
     var msH = new Select()
     msH.handle(stream)
-    self.handles.forEach(function (handle) {
-      msH.addHandler(handle.protocol, handle.func)
+    Object.keys(self.handles).forEach(function (protocol) {
+      msH.addHandler(protocol, self.handles[protocol])
     })
   }
 

@@ -7,7 +7,7 @@
     "test": "./node_modules/.bin/lab tests/*-test.js",
     "coverage": "./node_modules/.bin/lab -t 100 tests/*-test.js",
     "codestyle": "./node_modules/.bin/standard --format",
-    "lint": "jshint .",
+    "lint": "./node_modules/.bin/standard",
     "validate": "npm ls"
   },
   "repository": {
@@ -31,6 +31,7 @@
     "code": "^1.4.1",
     "lab": "^5.13.0",
     "precommit-hook": "^3.0.0",
+    "sinon": "^1.15.4",
     "standard": "^4.5.2",
     "stream-pair": "^1.0.3"
   },
