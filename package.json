@@ -45,6 +45,6 @@
     "multiplex-stream-muxer": "^0.2.0",
     "multistream-select": "^0.6.1",
     "protocol-buffers-stream": "^1.2.0",
-    "spdy-stream-muxer": "^0.4.0"
+    "spdy-stream-muxer": "^0.6.0"
   }
 }
