@@ -38,9 +38,16 @@ beforeEach(function (done) {
 })
 
 afterEach(function (done) {
-  swarmA.closeListener()
-  swarmB.closeListener()
-  done()
+  // This should be 2, but for some reason
+  // that will fail in most of the tests
+  var c = new Counter(1, done)
+
+  swarmA.closeListener(function () {
+    c.hit()
+  })
+  swarmB.closeListener(function () {
+    c.hit()
+  })
 })
 
 experiment('BASICS', function () {
@@ -174,8 +181,6 @@ experiment('IDENTIFY', function () {
   })
 
   test('Attach Identify, open a stream, reuse stream', function (done) {
-    console.log('\n\n\n')
-
     var protocol = '/sparkles/3.3.3'
 
     var identifyA = new Identify(swarmA, peerA)
@@ -199,6 +204,34 @@ experiment('IDENTIFY', function () {
     identifyA.on('peer-update', function (answer) {})
   })
 
+  test('Attach Identify, reuse peer', function (done) {
+    var protocol = '/sparkles/3.3.3'
+
+    var identifyA = new Identify(swarmA, peerA)
+    var identifyB = new Identify(swarmB, peerB) // eslint-disable-line no-unused-vars
+
+    swarmA.registerHandler(protocol, function (stream) {})
+    swarmB.registerHandler(protocol, function (stream) {})
+
+    var restartA = function (cb) {
+      swarmA.openStream(peerB, protocol, function (err, stream) {
+        expect(err).to.not.be.instanceof(Error)
+
+        stream.end(cb)
+      })
+    }
+
+    restartA(function () {
+      identifyA.once('peer-update', function () {
+        expect(peerA.previousObservedAddrs.length).to.be.equal(1)
+
+        var c = new Counter(2, done)
+
+        swarmA.closeConns(c.hit.bind(c))
+        swarmB.closeConns(c.hit.bind(c))
+      })
+    })
+  })
 })
 
 experiment('HARDNESS', function () {})
