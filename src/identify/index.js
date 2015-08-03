@@ -60,7 +60,6 @@ function Identify (swarm, peerSelf) {
           var ps = self.createProtoStream()
 
           ps.on('identify', function (msg) {
-            // console.log('RECEIVED PROTOBUF - SIDE ZZ ', msg)
             var peerId = Id.createFromPubKey(msg.publicKey)
 
             updateSelf(peerSelf, msg.observedAddr)
@@ -119,13 +118,13 @@ function updateSelf (peerSelf, observedAddr) {
 
   for (var i = 0; i < peerSelf.previousObservedAddrs.length; i++) {
     if (peerSelf.previousObservedAddrs[i].toString() === omh.toString()) {
-      peerSelf.previousObserveredAddrs.splice(i, 1)
+      peerSelf.previousObservedAddrs.splice(i, 1)
       addToSelf()
       return
     }
   }
 
-  peerSelf.previousObservedAddrs.push(observedAddr)
+  peerSelf.previousObservedAddrs.push(omh)
 
   function addToSelf () {
     var isIn = false
