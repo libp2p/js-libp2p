@@ -13,6 +13,7 @@
   "keywords": [
     "IPFS"
   ],
+  "pre-commit": [],
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
