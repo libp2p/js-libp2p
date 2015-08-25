@@ -1,0 +1,26 @@
+{
+  "name": "libp2p",
+  "version": "0.0.0",
+  "description": "Node.js implementation of libp2p",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diasdavid/node-libp2p.git"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "author": "David Dias <daviddias@ipfs.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/diasdavid/node-libp2p/issues"
+  },
+  "homepage": "https://github.com/diasdavid/node-libp2p",
+  "devDependencies": {
+    "pre-commit": "^1.1.1",
+    "standard": "^5.1.0"
+  }
+}
