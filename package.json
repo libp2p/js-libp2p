@@ -1,6 +1,6 @@
 {
   "name": "ipfs-railing",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
   "main": "src/index.js",
   "scripts": {
@@ -18,7 +18,9 @@
   "bugs": {
     "url": "https://github.com/diasdavid/node-ipfs-railing/issues"
   },
-  "engines" : { "node" : "^4.0.0" },
+  "engines": {
+    "node": "^4.0.0"
+  },
   "homepage": "https://github.com/diasdavid/node-ipfs-railing",
   "devDependencies": {
     "code": "^1.4.1",
