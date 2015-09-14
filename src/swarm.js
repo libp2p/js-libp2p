@@ -104,7 +104,7 @@ function Swarm () {
             conn: conn,
             socket: socket
           }
-          conn.on('close', function () { delete self.connections[peer.id.toB58String()] })
+          conn.on('close', function () { delete self.connections[peer.id.toB58String()]})
           errorUp(self, conn)
 
           cb()
