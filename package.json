@@ -1,6 +1,6 @@
 {
   "name": "ipfs-swarm",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "IPFS swarm implementation in Node.js",
   "main": "src/index.js",
   "scripts": {
@@ -27,7 +27,9 @@
     "codestyle",
     "test"
   ],
-  "engines" : { "node" : "^4.0.0" },
+  "engines": {
+    "node": "^4.0.0"
+  },
   "devDependencies": {
     "code": "^1.4.1",
     "lab": "^5.13.0",
