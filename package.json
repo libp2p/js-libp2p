@@ -27,6 +27,7 @@
     "codestyle",
     "test"
   ],
+  "engines" : { "node" : "^4.0.0" },
   "devDependencies": {
     "code": "^1.4.1",
     "lab": "^5.13.0",
