@@ -18,6 +18,7 @@
   "bugs": {
     "url": "https://github.com/diasdavid/node-ipfs-railing/issues"
   },
+  "engines" : { "node" : "^4.0.0" },
   "homepage": "https://github.com/diasdavid/node-ipfs-railing",
   "devDependencies": {
     "code": "^1.4.1",
