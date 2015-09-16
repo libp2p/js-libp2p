@@ -4,10 +4,9 @@
   "description": "Node.js implementation of the TCP module that libp2p uses, which implements the abstract-connection interface",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/test-ac.js"
   },
-  "pre-commit": [
-  ],
+  "pre-commit": [],
   "repository": {
     "type": "git",
     "url": "https://github.com/diasdavid/node-libp2p-tcp.git"
@@ -22,8 +21,12 @@
   },
   "homepage": "https://github.com/diasdavid/node-libp2p-tcp",
   "devDependencies": {
+    "abstract-connection": "^0.1.0",
     "pre-commit": "^1.1.1",
     "standard": "^5.2.2",
     "tape": "^4.2.0"
+  },
+  "dependencies": {
+    "multiaddr": "^1.0.0"
   }
 }
