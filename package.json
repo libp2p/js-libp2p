@@ -21,7 +21,8 @@
   },
   "homepage": "https://github.com/diasdavid/node-libp2p-tcp",
   "devDependencies": {
-    "abstract-connection": "^0.1.0",
+    "abstract-connection": "0.0.1",
+    "abstract-transport": "^0.1.0",
     "pre-commit": "^1.1.1",
     "standard": "^5.2.2",
     "tape": "^4.2.0"
