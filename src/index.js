@@ -1,5 +1,5 @@
-var Id = require('ipfs-peer-id')
-var Peer = require('ipfs-peer')
+var Id = require('peer-id')
+var Peer = require('peer-info')
 var multiaddr = require('multiaddr')
 var log = require('ipfs-logger').group('discovery ipfs-railing')
 var EventEmitter = require('events').EventEmitter
