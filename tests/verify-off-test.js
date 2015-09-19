@@ -8,8 +8,8 @@ var before = lab.before
 var expect = Code.expect
 
 var multiaddr = require('multiaddr')
-var Id = require('ipfs-peer-id')
-var Peer = require('ipfs-peer')
+var Id = require('peer-id')
+var Peer = require('peer-info')
 
 var Sonar = require('./../src')
 
