@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "ipfs-logger": "^0.1.0",
-    "ipfs-peer": "^0.3.0",
-    "ipfs-peer-id": "^0.3.0",
+    "peer-info": "^0.3.2",
+    "peer-id": "^0.3.3",
     "ipfs-swarm": "^0.2.0",
     "multiaddr": "^1.0.0",
     "multicast-dns": "^3.0.0"
