@@ -19,10 +19,6 @@ function Sonar (peerSelf, options, swarmSelf) {
     throw new Error('Sonar must be instantiated with new')
   }
 
-  if (!(peerSelf instanceof Peer)) {
-    throw new Error('First argument must be of the type Peer (ipfs-peer)')
-  }
-
   // option arguments
 
   self.broadcast = options && options.broadcast ? options.broadcast : true
