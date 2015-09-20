@@ -21,7 +21,9 @@
   },
   "homepage": "https://github.com/diasdavid/node-libp2p",
   "devDependencies": {
+    "code": "^1.5.0",
+    "lab": "^5.17.0",
     "pre-commit": "^1.1.1",
-    "standard": "^5.1.0"
+    "standard": "^5.3.1"
   }
 }
