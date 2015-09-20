@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Node.js implementation of libp2p",
   "main": "src/index.js",
   "scripts": {
@@ -13,7 +13,9 @@
   "keywords": [
     "IPFS"
   ],
-  "engines" : { "node" : "^4.0.0" },
+  "engines": {
+    "node": "^4.0.0"
+  },
   "pre-commit": [],
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
