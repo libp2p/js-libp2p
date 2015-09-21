@@ -1,29 +1,14 @@
 var Swarm = require('./../src')
 
+var Peer = require('peer-info')
+var Id = require('peer-id')
+var multiaddr = require('multiaddr')
+var tcp = require('libp2p-tcp')
 
-var Peer = require('ipfs-peer')
-// var Id = require('ipfs-peer-id')
-// var multiaddr = require('multiaddr')
+var mh = multiaddr('/ip4/127.0.0.1/tcp/8010')
+var p = new Peer(Id.create(), [])
+var sw = new Swarm(p)
 
-var b = new Swarm()
-b.port = 4001
-// var peerB = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/' + b.port)])
-
-// var i = new Identify(b, peerB)
-// i.on('thenews', function (news) {
-//   console.log('such news')
-// })
-
-b.on('error', function (err) {
-  console.log(err)
-})
-
-b.listen()
-
-b.registerHandler('/ipfs/sparkles/1.2.3', function (stream) {
-  //  if (err) {
-  //    return console.log(err)
-  //  }
-
-  console.log('woop got a stream')
+sw.addTransport('tcp', tcp, { multiaddr: mh }, {}, {port: 8010}, function () {
+  console.log('transport added')
 })

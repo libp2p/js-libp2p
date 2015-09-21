@@ -1,4 +1,3 @@
-
 exports = module.exports = Swarm
 
 function Swarm (peerInfo) {
@@ -26,14 +25,14 @@ function Swarm (peerInfo) {
 
   // public interface
 
-  self.addTransport = function (transport, options, dialOptions, listenOptions, callback) {
+  self.addTransport = function (name, transport, options, dialOptions, listenOptions, callback) {
     // set up the transport and add the list of incoming streams
     // add transport to the list of transports
 
     var listener = transport.createListener(options, listen)
 
     listener.listen(listenOptions, function ready () {
-      self.transports[options.name] = {
+      self.transports[name] = {
         transport: transport,
         dialOptions: dialOptions,
         listenOptions: listenOptions,
@@ -49,13 +48,9 @@ function Swarm (peerInfo) {
     })
   }
 
-  self.addUpgrade = function (ConnUpgrade, options) {
+  self.addUpgrade = function (ConnUpgrade, options) {}
 
-  }
-
-  self.addStreamMuxer = function (StreamMuxer, options) {
-
-  }
+  self.addStreamMuxer = function (StreamMuxer, options) {}
 
   self.dial = function (peerInfo, options, protocol, callback) {
     // 1. check if we have transports we support
@@ -70,15 +65,13 @@ function Swarm (peerInfo) {
     // close everything
   }
 
-  self.handleProtocol = function (protocol, handlerFunction) {
-
-  }
+  self.handleProtocol = function (protocol, handlerFunction) {}
 
   // internals
 
   function listen (conn) {
     console.log('Received new connection')
-    // apply upgrades
-    // then add it to the multistreamHandler
+  // apply upgrades
+  // then add it to the multistreamHandler
   }
 }
