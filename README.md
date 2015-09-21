@@ -56,7 +56,7 @@ sw.addStreamMuxer(streamMuxer, [options])
 ### Dial to another peer
 
 ```JavaScript
-sw.dial(PeerInfo, protocol, options)
+sw.dial(PeerInfo, options, protocol)
 sw.dial(PeerInfo, options) 
 ```
 

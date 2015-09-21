@@ -1,6 +1,7 @@
-// var Identify = require('./../src/identify')
 var Swarm = require('./../src')
-// var Peer = require('ipfs-peer')
+
+
+var Peer = require('ipfs-peer')
 // var Id = require('ipfs-peer-id')
 // var multiaddr = require('multiaddr')
 
