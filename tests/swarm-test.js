@@ -18,6 +18,11 @@ experiment('Basics', function () {
 })
 */
 
+// because of Travis-CI
+process.on('uncaughtException', function (err) {
+  console.log('Caught exception: ' + err)
+})
+
 experiment('Without a Stream Muxer', function () {
   experiment('tcp', function () {
     test('add the transport', function (done) {

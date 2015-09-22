@@ -28,7 +28,9 @@ function Swarm (peerInfo) {
 
   self.protocols = {}
 
-  self.muxer
+  // muxerName: { muxer: muxer
+  //              options: options }
+  self.muxers = {}
 
   // public interface
 
