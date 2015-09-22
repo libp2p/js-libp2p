@@ -48,6 +48,68 @@ experiment('Without a Stream Muxer', function () {
       var sw2 = new Swarm(p2)
       sw2.addTransport('tcp', tcp, { multiaddr: mh2 }, {}, {port: 8020}, ready)
 
+      var readyCounter = 0
+
+      function ready () {
+        readyCounter++
+        if (readyCounter < 2) {
+          return
+        }
+
+        sw1.dial(p2, {}, function (err) {
+          expect(err).to.equal(undefined)
+          expect(Object.keys(sw1.conns).length).to.equal(1)
+          var cleaningCounter = 0
+          sw1.closeConns(cleaningUp)
+          sw2.closeConns(cleaningUp)
+
+          sw1.closeListener('tcp', cleaningUp)
+          sw2.closeListener('tcp', cleaningUp)
+
+          function cleaningUp () {
+            cleaningCounter++
+            if (cleaningCounter < 4) {
+              return
+            }
+
+            done()
+          }
+        })
+      }
+    })
+
+    test('dial a conn on a protocol', function (done) {
+      var mh1 = multiaddr('/ip4/127.0.0.1/tcp/8010')
+      var p1 = new Peer(Id.create(), [])
+      var sw1 = new Swarm(p1)
+      sw1.addTransport('tcp', tcp, { multiaddr: mh1 }, {}, {port: 8010}, ready)
+
+      var mh2 = multiaddr('/ip4/127.0.0.1/tcp/8020')
+      var p2 = new Peer(Id.create(), [])
+      var sw2 = new Swarm(p2)
+      sw2.addTransport('tcp', tcp, { multiaddr: mh2 }, {}, {port: 8020}, ready)
+
+      sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
+        conn.end()
+        conn.on('end', function () {
+          var cleaningCounter = 0
+          sw1.closeConns(cleaningUp)
+          sw2.closeConns(cleaningUp)
+
+          sw1.closeListener('tcp', cleaningUp)
+          sw2.closeListener('tcp', cleaningUp)
+
+          function cleaningUp () {
+            cleaningCounter++
+            if (cleaningCounter < 4) {
+              return
+            }
+
+            done()
+          }
+        })
+      })
+
       var count = 0
 
       function ready () {
@@ -56,13 +118,14 @@ experiment('Without a Stream Muxer', function () {
           return
         }
 
-        sw1.dial(p2, {}, function () {
-          expect(Object.keys(sw1.conns).length).to.equal(1)
-          done()
+        sw1.dial(p2, {}, '/sparkles/1.0.0', function (err, conn) {
+          expect(err).to.equal(null)
+          expect(Object.keys(sw1.conns).length).to.equal(0)
+          conn.end()
         })
       }
     })
-    test('dial a conn on a protocol', function (done) { done() })
+
     test('dial a protocol on a previous created conn', function (done) { done() })
     test('add an upgrade', function (done) { done() })
     test('dial a conn on top of a upgrade', function (done) { done() })

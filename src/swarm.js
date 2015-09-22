@@ -79,6 +79,7 @@ function Swarm (peerInfo) {
     //   if it is and no protocol was selected, do nothing and call and empty callback
 
     if (self.conns[peerInfo.id.toB58String()]) {
+      console.log('Had conn warmed up')
       if (protocol) {
         multistreamHandshake(self.conns[peerInfo.id.toB58String()])
         self.conns[peerInfo.id.toB58String()] = undefined
@@ -97,7 +98,7 @@ function Swarm (peerInfo) {
 
     // TODO - check if there is a preference in protocol to use on
     // options.protocol
-    var supportedTransports = Object.keys(self.protocols)
+    var supportedTransports = Object.keys(self.transports)
     var multiaddrs = peerInfo.multiaddrs.filter(function (multiaddr) {
       return multiaddr.protoNames().some(function (proto) {
         return supportedTransports.indexOf(proto) >= 0
@@ -120,7 +121,7 @@ function Swarm (peerInfo) {
 
       connTry.once('error', function (err) {
         if (err) {
-          return // TODO handle error
+          return console.log(err) // TODO handle error
         }
         next() // try next multiaddr
       })
@@ -151,6 +152,9 @@ function Swarm (peerInfo) {
       // TODO apply stream muxer
       // if no protocol is selected, save it in the pool
       // if protocol is selected, multistream that protocol
+      if (!conn) {
+        callback(new Error('Unable to open a connection'))
+      }
 
       if (protocol) {
         multistreamHandshake(conn)
@@ -166,10 +170,9 @@ function Swarm (peerInfo) {
     }
 
     function multistreamHandshake (conn) {
-      var msS = new multistream.Select()
-      msS.handle(conn)
-      self.protocols.forEach(function (protocol) {
-        msS.addHandler(protocol, self.protocols[protocol])
+      var msI = new multistream.Interactive()
+      msI.handle(conn, function () {
+        msI.select(protocol, callback)
       })
     }
   }
@@ -182,6 +185,16 @@ function Swarm (peerInfo) {
       delete self.transports[transportName]
       callback()
     }
+  }
+
+  self.closeConns = function (callback) {
+    // close warmed up cons so that the listener can gracefully exit
+    Object.keys(self.conns).forEach(function (conn) {
+      self.conns[conn].destroy()
+    })
+    self.conns = {}
+
+    callback()
   }
 
   self.close = function (callback) {
