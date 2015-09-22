@@ -79,10 +79,10 @@ function Swarm (peerInfo) {
     //   if it is and no protocol was selected, do nothing and call and empty callback
 
     if (self.conns[peerInfo.id.toB58String()]) {
-      console.log('Had conn warmed up')
       if (protocol) {
         multistreamHandshake(self.conns[peerInfo.id.toB58String()])
         self.conns[peerInfo.id.toB58String()] = undefined
+        delete self.conns[peerInfo.id.toB58String()]
         return
       } else {
         return callback()
@@ -208,7 +208,6 @@ function Swarm (peerInfo) {
   // internals
 
   function listen (conn) {
-    console.log('Received new connection')
     // TODO apply upgrades
     // TODO then add StreamMuxer if available (and point streams from muxer to userProtocolMuxer)
 
