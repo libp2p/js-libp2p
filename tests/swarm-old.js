@@ -1,85 +1,55 @@
 var Lab = require('lab')
 var Code = require('code')
+var sinon = require('sinon')
 var lab = exports.lab = Lab.script()
 
 var experiment = lab.experiment
 var test = lab.test
+var beforeEach = lab.beforeEach
+var afterEach = lab.afterEach
 var expect = Code.expect
 
 var multiaddr = require('multiaddr')
-var Id = require('peer-id')
-var Peer = require('peer-info')
-var Swarm = require('../src')
-var tcp = require('libp2p-tcp')
+var Id = require('ipfs-peer-id')
+var Peer = require('ipfs-peer')
+var Swarm = require('../src/')
+var Identify = require('../src/identify')
 
-/* TODO
-experiment('Basics', function () {
-  test('enforces creation with new', function (done) {done() })
-})
-*/
+var swarmA
+var swarmB
+var peerA
+var peerB
 
-experiment('Without a Stream Muxer', function () {
-  experiment('tcp', function () {
-    test('add the transport', function (done) {
-      var mh = multiaddr('/ip4/127.0.0.1/tcp/8010')
-      var p = new Peer(Id.create(), [])
-      var sw = new Swarm(p)
+beforeEach(function (done) {
+  swarmA = new Swarm()
+  swarmB = new Swarm()
+  var c = new Counter(2, done)
 
-      sw.addTransport('tcp', tcp,
-          { multiaddr: mh }, {}, {port: 8010}, function () {
-        expect(sw.transports['tcp'].options).to.deep.equal({ multiaddr: mh })
-        expect(sw.transports['tcp'].dialOptions).to.deep.equal({})
-        expect(sw.transports['tcp'].listenOptions).to.deep.equal({port: 8010})
-        expect(sw.transports['tcp'].transport).to.deep.equal(tcp)
-        sw.closeListener('tcp', function () {
-          done()
-        })
-      })
-    })
-
-    test('dial a conn', function (done) {
-      done()
-    })
-    test('dial a conn on a protocol', function (done) { done() })
-    test('add an upgrade', function (done) { done() })
-    test('dial a conn on top of a upgrade', function (done) { done() })
-    test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
+  swarmA.listen(8100, function () {
+    peerA = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/' + swarmA.port)])
+    c.hit()
   })
 
-  /* TODO
-  experiment('udp', function () {
-    test('add the transport', function (done) { done() })
-    test('dial a conn', function (done) { done() })
-    test('dial a conn on a protocol', function (done) { done() })
-    test('add an upgrade', function (done) { done() })
-    test('dial a conn on top of a upgrade', function (done) { done() })
-    test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
-  }) */
+  swarmB.listen(8101, function () {
+    peerB = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/' + swarmB.port)])
+    c.hit()
+  })
 
-  /* TODO
-  experiment('udt', function () {
-      test('add the transport', function (done) { done() })
-      test('dial a conn', function (done) { done() })
-      test('dial a conn on a protocol', function (done) { done() })
-      test('add an upgrade', function (done) { done() })
-      test('dial a conn on top of a upgrade', function (done) { done() })
-      test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
-  }) */
-
-  /* TODO
-  experiment('utp', function () {
-    test('add the transport', function (done) { done() })
-    test('dial a conn', function (done) { done() })
-    test('dial a conn on a protocol', function (done) { done() })
-    test('add an upgrade', function (done) { done() })
-    test('dial a conn on top of a upgrade', function (done) { done() })
-    test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
-  }) */
 })
 
-experiment('With a SPDY Stream Muxer', function () {})
+afterEach(function (done) {
+  // This should be 2, but for some reason
+  // that will fail in most of the tests
+  var c = new Counter(1, done)
 
-/* OLD
+  swarmA.closeListener(function () {
+    c.hit()
+  })
+  swarmB.closeListener(function () {
+    c.hit()
+  })
+})
+
 experiment('BASICS', function () {
   experiment('Swarm', function () {
     test('enforces instantiation with new', function (done) {
@@ -277,7 +247,6 @@ function Counter (target, callback) {
     }
   }
 }
-*/
 
 // function checkErr (err) {
 //   console.log('err')

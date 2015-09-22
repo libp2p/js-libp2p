@@ -1,3 +1,5 @@
+var multistream = require('multistream-select')
+
 exports = module.exports = Swarm
 
 function Swarm (peerInfo) {
@@ -23,6 +25,8 @@ function Swarm (peerInfo) {
 
   self.listeners = {}
 
+  self.protocols = {}
+
   // public interface
 
   self.addTransport = function (name, transport, options, dialOptions, listenOptions, callback) {
@@ -34,9 +38,10 @@ function Swarm (peerInfo) {
     listener.listen(listenOptions, function ready () {
       self.transports[name] = {
         transport: transport,
+        options: options,
         dialOptions: dialOptions,
         listenOptions: listenOptions,
-        listeners: [listener]
+        listener: listener
       }
 
       // If a known multiaddr is passed, then add to our list of multiaddrs
@@ -48,30 +53,53 @@ function Swarm (peerInfo) {
     })
   }
 
-  self.addUpgrade = function (ConnUpgrade, options) {}
+  self.addUpgrade = function (ConnUpgrade, options) {
 
-  self.addStreamMuxer = function (StreamMuxer, options) {}
+  }
+
+  self.addStreamMuxer = function (StreamMuxer, options) {
+
+  }
 
   self.dial = function (peerInfo, options, protocol, callback) {
     // 1. check if we have transports we support
   }
 
   self.closeListener = function (transportName, callback) {
-    // close a specific listener
-    // remove it from available transports
+    self.transports[transportName].listener.close(closed)
+
+    // only gets called when all the streams on this transport are closed too
+    function closed () {
+      delete self.transports[transportName]
+      callback()
+    }
   }
 
   self.close = function (callback) {
     // close everything
   }
 
-  self.handleProtocol = function (protocol, handlerFunction) {}
+  self.handleProtocol = function (protocol, handlerFunction) {
+    self.protocols[protocol] = handlerFunction
+  }
 
   // internals
 
   function listen (conn) {
     console.log('Received new connection')
-  // apply upgrades
-  // then add it to the multistreamHandler
+    // TODO apply upgrades
+    // TODO then add StreamMuxer if available
+
+    // if no stream muxer, then
+    userProtocolMuxer(conn)
+  }
+
+  // Handle user given protocols
+  function userProtocolMuxer (conn) {
+    var msS = new multistream.Select()
+    msS.handle(conn)
+    Object.keys(self.protocols).forEach(function (protocol) {
+      msS.addHandler(protocol, self.protocols[protocol])
+    })
   }
 }

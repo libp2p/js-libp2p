@@ -1,14 +1,13 @@
 {
-  "name": "ipfs-swarm",
+  "name": "libp2p-swarm",
   "version": "0.4.1",
   "description": "IPFS swarm implementation in Node.js",
   "main": "src/index.js",
   "scripts": {
     "test": "./node_modules/.bin/lab tests/*-test.js",
     "coverage": "./node_modules/.bin/lab -t 100 tests/*-test.js",
-    "codestyle": "./node_modules/.bin/standard --format",
-    "lint": "./node_modules/.bin/standard",
-    "validate": "npm ls"
+    "laf": "./node_modules/.bin/standard --format",
+    "lint": "./node_modules/.bin/standard"
   },
   "repository": {
     "type": "git",
@@ -24,7 +23,7 @@
   },
   "homepage": "https://github.com/diasdavid/node-ipfs-swarm",
   "pre-commit": [
-    "codestyle",
+    "lint",
     "test"
   ],
   "engines": {
