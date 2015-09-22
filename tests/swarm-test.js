@@ -38,9 +38,32 @@ experiment('Without a Stream Muxer', function () {
     })
 
     test('dial a conn', function (done) {
-      done()
+      var mh1 = multiaddr('/ip4/127.0.0.1/tcp/8010')
+      var p1 = new Peer(Id.create(), [])
+      var sw1 = new Swarm(p1)
+      sw1.addTransport('tcp', tcp, { multiaddr: mh1 }, {}, {port: 8010}, ready)
+
+      var mh2 = multiaddr('/ip4/127.0.0.1/tcp/8020')
+      var p2 = new Peer(Id.create(), [])
+      var sw2 = new Swarm(p2)
+      sw2.addTransport('tcp', tcp, { multiaddr: mh2 }, {}, {port: 8020}, ready)
+
+      var count = 0
+
+      function ready () {
+        count++
+        if (count < 2) {
+          return
+        }
+
+        sw1.dial(p2, {}, function () {
+          expect(Object.keys(sw1.conns).length).to.equal(1)
+          done()
+        })
+      }
     })
     test('dial a conn on a protocol', function (done) { done() })
+    test('dial a protocol on a previous created conn', function (done) { done() })
     test('add an upgrade', function (done) { done() })
     test('dial a conn on top of a upgrade', function (done) { done() })
     test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
