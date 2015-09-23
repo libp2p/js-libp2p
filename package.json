@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "./node_modules/.bin/lab tests/*-test.js",
-    "coverage": "./node_modules/.bin/lab -t 100 tests/*-test.js",
+    "coverage": "./node_modules/.bin/lab -t 88 tests/*-test.js",
     "laf": "./node_modules/.bin/standard --format",
     "lint": "./node_modules/.bin/standard"
   },
@@ -24,7 +24,8 @@
   "homepage": "https://github.com/diasdavid/node-ipfs-swarm",
   "pre-commit": [
     "lint",
-    "test"
+    "test",
+    "coverage"
   ],
   "engines": {
     "node": "^4.0.0"
