@@ -67,9 +67,7 @@ function Swarm (peerInfo) {
     })
   }
 
-  self.addUpgrade = function (ConnUpgrade, options) {
-
-  }
+  self.addUpgrade = function (ConnUpgrade, options) {}
 
   self.addStreamMuxer = function (name, StreamMuxer, options) {
     self.muxers[name] = {
@@ -260,7 +258,7 @@ function Swarm (peerInfo) {
     // we pass muxedConns so that identify can access the socket of the other
     // peer
     self.handleProtocol(identify.protoId,
-        identify.getHandlerFunction(self.peerInfo, self.muxedConns))
+      identify.getHandlerFunction(self.peerInfo, self.muxedConns))
   }
 
   self.handleProtocol = function (protocol, handlerFunction) {
@@ -299,7 +297,7 @@ function Swarm (peerInfo) {
         muxer.on('stream', userProtocolMuxer)
       })
     } else {
-       // if no stream muxer, then
+      // if no stream muxer, then
       userProtocolMuxer(conn)
     }
   }

@@ -32,15 +32,15 @@ experiment('Without a Stream Muxer', function () {
       var sw = new Swarm(p)
 
       sw.addTransport('tcp', tcp,
-          { multiaddr: mh }, {}, {port: 8010}, function () {
-        expect(sw.transports['tcp'].options).to.deep.equal({ multiaddr: mh })
-        expect(sw.transports['tcp'].dialOptions).to.deep.equal({})
-        expect(sw.transports['tcp'].listenOptions).to.deep.equal({port: 8010})
-        expect(sw.transports['tcp'].transport).to.deep.equal(tcp)
-        sw.closeListener('tcp', function () {
-          done()
+        { multiaddr: mh }, {}, {port: 8010}, function () {
+          expect(sw.transports['tcp'].options).to.deep.equal({ multiaddr: mh })
+          expect(sw.transports['tcp'].dialOptions).to.deep.equal({})
+          expect(sw.transports['tcp'].listenOptions).to.deep.equal({port: 8010})
+          expect(sw.transports['tcp'].transport).to.deep.equal(tcp)
+          sw.closeListener('tcp', function () {
+            done()
+          })
         })
-      })
     })
 
     test('dial a conn', function (done) {
@@ -185,9 +185,9 @@ experiment('Without a Stream Muxer', function () {
       }
     })
 
-    // test('add an upgrade', function (done) { done() })
-    // test('dial a conn on top of a upgrade', function (done) { done() })
-    // test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
+  // test('add an upgrade', function (done) { done() })
+  // test('dial a conn on top of a upgrade', function (done) { done() })
+  // test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
   })
 
   /* TODO
@@ -210,15 +210,15 @@ experiment('Without a Stream Muxer', function () {
       test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
   }) */
 
-  /* TODO
-  experiment('utp', function () {
-    test('add the transport', function (done) { done() })
-    test('dial a conn', function (done) { done() })
-    test('dial a conn on a protocol', function (done) { done() })
-    test('add an upgrade', function (done) { done() })
-    test('dial a conn on top of a upgrade', function (done) { done() })
-    test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
-  }) */
+/* TODO
+experiment('utp', function () {
+  test('add the transport', function (done) { done() })
+  test('dial a conn', function (done) { done() })
+  test('dial a conn on a protocol', function (done) { done() })
+  test('add an upgrade', function (done) { done() })
+  test('dial a conn on top of a upgrade', function (done) { done() })
+  test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
+}) */
 })
 
 experiment('With a SPDY Stream Muxer', function () {

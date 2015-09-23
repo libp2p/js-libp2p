@@ -38,14 +38,14 @@ function identify (muxedConns, peerInfoSelf, socket, conn, muxer) {
           socket: socket
         }
 
-        // TODO: Pass the new discovered info about the peer that contacted us
-        // to something like the Kademlia Router, so the peerInfo for this peer
-        // is fresh
-        //   - before this was exectued through a event emitter
-        // self.emit('peer-update', {
-        //   peerId: peerId,
-        //   listenAddrs: msg.listenAddrs.map(function (mhb) {return multiaddr(mhb)})
-        // })
+      // TODO: Pass the new discovered info about the peer that contacted us
+      // to something like the Kademlia Router, so the peerInfo for this peer
+      // is fresh
+      //   - before this was exectued through a event emitter
+      // self.emit('peer-update', {
+      //   peerId: peerId,
+      //   listenAddrs: msg.listenAddrs.map(function (mhb) {return multiaddr(mhb)})
+      // })
       })
 
       var mh = getMultiaddr(socket)

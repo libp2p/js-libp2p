@@ -6,7 +6,6 @@
   "scripts": {
     "test": "./node_modules/.bin/lab tests/*-test.js",
     "coverage": "./node_modules/.bin/lab -t 88 tests/*-test.js",
-    "laf": "./node_modules/.bin/standard --format",
     "lint": "./node_modules/.bin/standard"
   },
   "repository": {
