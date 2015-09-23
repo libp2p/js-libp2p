@@ -1,82 +1,69 @@
-ipfs-swarm Node.js implementation
+libp2p-swarm Node.js implementation
 =================================
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io) [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/) [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs) [![Build Status](https://img.shields.io/travis/diasdavid/node-ipfs-swarm/master.svg?style=flat-square)](https://travis-ci.org/diasdavid/node-ipfs-swarm)
 
-> IPFS swarm implementation in Node.js
+> libp2p swarm implementation in Node.js
 
 # Description
 
-ipfs-swarm is an abstraction for the network layer on IPFS. It offers an API to open streams between peers on a specific protocol.
+libp2p-swarm is a connection abstraction that is able to leverage several transports and connection upgrades, such as congestion control, channel encryption, multiplexing several streams in one connection, and more. It does this by bringing protocol multiplexing to the application level (instead of the traditional Port level) using multicodec and multistream.
 
-Ref spec (WIP) - https://github.com/diasdavid/specs/blob/protocol-spec/protocol/layers.md#network-layer
+libp2p-swarm is used by libp2p but it can be also used as a standalone module.
 
 # Usage
 
-### Create a new Swarm
+### Install and create a Swarm
 
-```javascript
-var Swarm = require('ipfs-swarm')
+libp2p-swarm is available on npm and so, like any other npm module, just:
 
-var s = new Swarm([port]) // `port` defalts to 4001
+```bash
+$ npm install libp2p-swarm --save
 ```
 
-### Set the swarm to listen for incoming streams
+And use it in your Node.js code as:
 
-```javascript
-s.listen([port], [callback]) // `port` defaults to 4001, `callback` gets called when the socket starts listening
+```JavaScript
+var Swarm = require('libp2p-swarm')
+
+var sw = new Swarm(peerInfoSelf)
 ```
 
-### Close the listener/socket and every open stream that was multiplexed on it
+peerInfoSelf is a [PeerInfo](https://github.com/diasdavid/node-peer-info) object that represents the peer creating this swarm instance.
 
-```javascript
-s.closeListener()
+### Support a transport
+
+libp2p-swarm expects transports that implement [abstract-transport](https://github.com/diasdavid/abstract-transport). For example [libp2p-tcp](https://github.com/diasdavid/node-libp2p-tcp), a simple shim on top of the `net` module to make it work with swarm expectations.
+
+```JavaScript
+sw.addTransport(transport, [options, dialOptions, listenOptions])
 ```
 
-### Register a protocol to be handled by an incoming stream
+### Add a connection upgrade
 
-```javascript
-s.registerHandler('/name/protocol/you/want/version', function (stream) {})
+A connection upgrade must be able to receive and return something that implements the [abstract-connection](https://github.com/diasdavid/abstract-connection) interface.
+
+```JavaScript
+sw.addUpgrade(connUpgrade, [options])
 ```
 
-### Open a new connection
+Upgrading a connection to use a stream muxer is still considered an upgrade, but a special case since once this connection is applied, the returned obj will implement the [abstract-stream-muxer](https://github.com/diasdavid/abstract-stream-muxer) interface.
 
-Used when we want to make sure we can connect to a given peer, but do not intend to establish a stream with any of the services offered right away.
-
-```
-s.openConnection(peerConnection, function (err) {})
+```JavaScript
+sw.addStreamMuxer(streamMuxer, [options])
 ```
 
+### Dial to another peer
 
-### Dial a new stream
-
-```
-s.openStream(peerInfo, protocol, function (err, stream) {})
-```
-
-peerInfo must be a [`ipfs-peer`](https://www.npmjs.com/package/ipfs-peer) object, contaning both peer-id and multiaddrs.
-
-## Events emitted
-
-```
-.on('error')
-
-.on('connection')
-.on('connection-unknown') // used by Identify to start the Identify protocol from listener to dialer
+```JavaScript
+sw.dial(PeerInfo, options, protocol)
+sw.dial(PeerInfo, options) 
 ```
 
-## Identify protocol
+dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, than do nothing.
 
-The Identify protocol is an integral part to Swarm. It enables peers to share observedAddrs, identities and other possible address available. This enables us to do better NAT traversal.
+### Accept requests on a specific protocol
 
-To instantiate Identify:
-
+```JavaScript
+sw.handleProtocol(protocol, handlerFunction)
 ```
-var Identify = require('ipfs-swarm/identify')
-
-var i = new Identify(swarmInstance, peerSelf)
-```
-
-`swarmInstance` must be an Instance of swarm and `peerSelf` must be a instance of `ipfs-peer` that represents the peer that instantiated this Identify
-
-Identify emits a `peer-update` event each time it receives information from another peer.
