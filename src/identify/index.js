@@ -37,7 +37,6 @@ function identify (muxedConns, peerInfoSelf, socket, conn, muxer) {
           muxer: muxer,
           socket: socket
         }
-        console.log('do I get back')
 
         // TODO: Pass the new discovered info about the peer that contacted us
         // to something like the Kademlia Router, so the peerInfo for this peer

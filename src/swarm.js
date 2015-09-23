@@ -292,7 +292,6 @@ function Swarm (peerInfo) {
               return console.log(err) // TODO Treat error
             }
             // conn === socket at this point
-            console.log('bimbas')
             identify(self.muxedConns, self.peerInfo, conn, stream, muxer)
           })
         }
