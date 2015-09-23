@@ -34,6 +34,9 @@ function Swarm (peerInfo) {
   //              options: options }
   self.muxers = {}
 
+  // for connection reuse
+  self.identify = false
+
   // public interface
 
   self.addTransport = function (name, transport, options, dialOptions, listenOptions, callback) {
