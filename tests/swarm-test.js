@@ -185,9 +185,9 @@ experiment('Without a Stream Muxer', function () {
       }
     })
 
-    test('add an upgrade', function (done) { done() })
-    test('dial a conn on top of a upgrade', function (done) { done() })
-    test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
+    // test('add an upgrade', function (done) { done() })
+    // test('dial a conn on top of a upgrade', function (done) { done() })
+    // test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
   })
 
   /* TODO
