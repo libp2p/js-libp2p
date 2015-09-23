@@ -32,6 +32,7 @@
   "devDependencies": {
     "code": "^1.4.1",
     "lab": "^5.13.0",
+    "libp2p-spdy": "^0.1.0",
     "libp2p-tcp": "^0.1.1",
     "precommit-hook": "^3.0.0",
     "sinon": "^1.15.4",

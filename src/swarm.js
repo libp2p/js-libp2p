@@ -24,11 +24,13 @@ function Swarm (peerInfo) {
   //                  listeners: [] }
   self.transports = {}
 
+  // transportName: listener
   self.listeners = {}
 
+  // protocolName: handlerFunc
   self.protocols = {}
 
-  // muxerName: { muxer: muxer
+  // muxerName: { Muxer: Muxer // Muxer is a constructor
   //              options: options }
   self.muxers = {}
 
@@ -62,8 +64,11 @@ function Swarm (peerInfo) {
 
   }
 
-  self.addStreamMuxer = function (StreamMuxer, options) {
-
+  self.addStreamMuxer = function (name, StreamMuxer, options) {
+    self.muxers[name] = {
+      Muxer: StreamMuxer,
+      options: options
+    }
   }
 
   self.dial = function (peerInfo, options, protocol, callback) {
@@ -82,7 +87,12 @@ function Swarm (peerInfo) {
 
     if (self.conns[peerInfo.id.toB58String()]) {
       if (protocol) {
-        multistreamHandshake(self.conns[peerInfo.id.toB58String()])
+        if (self.muxers['spdy']) {
+          // TODO upgrade this conn to a muxer
+          console.log('TODO: upgrade a warm conn to muxer that was added after')
+        } else {
+          multistreamHandshake(self.conns[peerInfo.id.toB58String()])
+        }
         self.conns[peerInfo.id.toB58String()] = undefined
         delete self.conns[peerInfo.id.toB58String()]
         return
@@ -93,7 +103,11 @@ function Swarm (peerInfo) {
 
     // check if a stream muxer for this peer is available
     if (self.muxedConns[peerInfo.id.toB58String()]) {
-      return openMuxedStream()
+      if (protocol) {
+        return openMuxedStream(self.muxedConns[peerInfo.id.toB58String()])
+      } else {
+        return callback()
+      }
     }
 
     // Creating a new conn with this peer routine
@@ -151,24 +165,49 @@ function Swarm (peerInfo) {
 
     function done () {
       // TODO apply upgrades
-      // TODO apply stream muxer
+      // apply stream muxer
       // if no protocol is selected, save it in the pool
       // if protocol is selected, multistream that protocol
       if (!conn) {
         callback(new Error('Unable to open a connection'))
       }
 
-      if (protocol) {
-        multistreamHandshake(conn)
+      if (self.muxers['spdy']) {
+        var spdy = new self.muxers['spdy'].Muxer(self.muxers['spdy'].options)
+        spdy.attach(conn, false, function (err, muxer) {
+          if (err) {
+            return console.log(err) // TODO Treat error
+          }
+
+          muxer.on('stream', userProtocolMuxer)
+
+          self.muxedConns[peerInfo.id.toB58String()] = muxer
+
+          if (protocol) {
+            openMuxedStream(muxer)
+          } else {
+            callback()
+          }
+        })
       } else {
-        self.conns[peerInfo.id.toB58String()] = conn
-        callback()
+        if (protocol) {
+          multistreamHandshake(conn)
+        } else {
+          self.conns[peerInfo.id.toB58String()] = conn
+          callback()
+        }
       }
     }
 
-    function openMuxedStream () {
+    function openMuxedStream (muxer) {
       // 1. create a new stream on this muxedConn and pass that to
       // multistreamHanshake
+      muxer.dialStream(function (err, conn) {
+        if (err) {
+          return console.log(err) // TODO Treat error
+        }
+        multistreamHandshake(conn)
+      })
     }
 
     function multistreamHandshake (conn) {
@@ -213,8 +252,21 @@ function Swarm (peerInfo) {
     // TODO apply upgrades
     // TODO then add StreamMuxer if available (and point streams from muxer to userProtocolMuxer)
 
-    // if no stream muxer, then
-    userProtocolMuxer(conn)
+    if (self.muxers['spdy']) {
+      var spdy = new self.muxers['spdy'].Muxer(self.muxers['spdy'].options)
+      spdy.attach(conn, true, function (err, muxer) {
+        if (err) {
+          return console.log(err) // TODO treat error
+        }
+
+        // TODO This muxer has to be identified!
+
+        muxer.on('stream', userProtocolMuxer)
+      })
+    } else {
+       // if no stream muxer, then
+      userProtocolMuxer(conn)
+    }
   }
 
   // Handle user given protocols
