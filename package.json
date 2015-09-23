@@ -1,7 +1,7 @@
 {
   "name": "libp2p-swarm",
   "version": "0.4.1",
-  "description": "IPFS swarm implementation in Node.js",
+  "description": "libp2p swarm implementation in Node.js",
   "main": "src/index.js",
   "scripts": {
     "test": "./node_modules/.bin/lab tests/*-test.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/diasdavid/node-ipfs-swarm.git"
+    "url": "https://github.com/diasdavid/node-libp2p-swarm.git"
   },
   "keywords": [
     "IPFS"
@@ -18,9 +18,9 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/diasdavid/node-ipfs-swarm/issues"
+    "url": "https://github.com/diasdavid/node-libp2p-swarm/issues"
   },
-  "homepage": "https://github.com/diasdavid/node-ipfs-swarm",
+  "homepage": "https://github.com/diasdavid/node-libp2p-swarm",
   "pre-commit": [
     "lint",
     "test",
