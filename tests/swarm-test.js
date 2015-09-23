@@ -358,8 +358,69 @@ experiment('With a SPDY Stream Muxer', function () {
         })
       }
     })
+
     test('identify', function (done) {
-      done()
+      var mh1 = multiaddr('/ip4/127.0.0.1/tcp/8010')
+      var p1 = new Peer(Id.create(), [])
+      var sw1 = new Swarm(p1)
+      sw1.addTransport('tcp', tcp, { multiaddr: mh1 }, {}, {port: 8010}, ready)
+      sw1.addStreamMuxer('spdy', Spdy, {})
+      sw1.enableIdentify()
+
+      var mh2 = multiaddr('/ip4/127.0.0.1/tcp/8020')
+      var p2 = new Peer(Id.create(), [])
+      var sw2 = new Swarm(p2)
+      sw2.addTransport('tcp', tcp, { multiaddr: mh2 }, {}, {port: 8020}, ready)
+      sw2.addStreamMuxer('spdy', Spdy, {})
+      sw2.enableIdentify()
+
+      sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
+        // formallity so that the conn starts flowing
+        conn.on('data', function (chunk) {})
+
+        conn.end()
+        conn.on('end', function () {
+          expect(Object.keys(sw1.muxedConns).length).to.equal(1)
+
+          var cleaningCounter = 0
+          sw1.closeConns(cleaningUp)
+          sw2.closeConns(cleaningUp)
+
+          sw1.closeListener('tcp', cleaningUp)
+          sw2.closeListener('tcp', cleaningUp)
+
+          function cleaningUp () {
+            cleaningCounter++
+            // TODO FIX: here should be 4, but because super wrapping of
+            // streams, it makes it so hard to properly close the muxed
+            // streams - https://github.com/indutny/spdy-transport/issues/14
+            if (cleaningCounter < 3) {
+              return
+            }
+            // give time for identify to finish
+            setTimeout(function () {
+              expect(Object.keys(sw2.muxedConns).length).to.equal(1)
+              done()
+            }, 500)
+          }
+        })
+      })
+
+      var count = 0
+
+      function ready () {
+        count++
+        if (count < 2) {
+          return
+        }
+
+        sw1.dial(p2, {}, '/sparkles/1.0.0', function (err, conn) {
+          conn.on('data', function () {})
+          expect(err).to.equal(null)
+          expect(Object.keys(sw1.conns).length).to.equal(0)
+          conn.end()
+        })
+      }
     })
   })
 })

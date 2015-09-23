@@ -1,5 +1,6 @@
 var multistream = require('multistream-select')
 var async = require('async')
+var identify = require('./identify')
 
 exports = module.exports = Swarm
 
@@ -15,7 +16,10 @@ function Swarm (peerInfo) {
   // peerIdB58: { conn: <conn> }
   self.conns = {}
 
-  // peerIdB58: { muxer: <muxer> }
+  // peerIdB58: {
+  //   muxer: <muxer>,
+  //   socket: socket // so we can extract the info we need for identify
+  // }
   self.muxedConns = {}
 
   // transportName: { transport: transport,
@@ -107,7 +111,7 @@ function Swarm (peerInfo) {
     // check if a stream muxer for this peer is available
     if (self.muxedConns[peerInfo.id.toB58String()]) {
       if (protocol) {
-        return openMuxedStream(self.muxedConns[peerInfo.id.toB58String()])
+        return openMuxedStream(self.muxedConns[peerInfo.id.toB58String()].muxer)
       } else {
         return callback()
       }
@@ -184,7 +188,10 @@ function Swarm (peerInfo) {
 
           muxer.on('stream', userProtocolMuxer)
 
-          self.muxedConns[peerInfo.id.toB58String()] = muxer
+          self.muxedConns[peerInfo.id.toB58String()] = {
+            muxer: muxer,
+            socket: conn
+          }
 
           if (protocol) {
             openMuxedStream(muxer)
@@ -245,6 +252,17 @@ function Swarm (peerInfo) {
     // close everything
   }
 
+  self.enableIdentify = function () {
+    // set flag to true
+    // add identify to the list of handled protocols
+    self.identify = true
+
+    // we pass muxedConns so that identify can access the socket of the other
+    // peer
+    self.handleProtocol(identify.protoId,
+        identify.getHandlerFunction(self.peerInfo, self.muxedConns))
+  }
+
   self.handleProtocol = function (protocol, handlerFunction) {
     self.protocols[protocol] = handlerFunction
   }
@@ -253,7 +271,7 @@ function Swarm (peerInfo) {
 
   function listen (conn) {
     // TODO apply upgrades
-    // TODO then add StreamMuxer if available (and point streams from muxer to userProtocolMuxer)
+    // add StreamMuxer if available (and point streams from muxer to userProtocolMuxer)
 
     if (self.muxers['spdy']) {
       var spdy = new self.muxers['spdy'].Muxer(self.muxers['spdy'].options)
@@ -263,6 +281,21 @@ function Swarm (peerInfo) {
         }
 
         // TODO This muxer has to be identified!
+        // pass to identify a reference of
+        //   our muxedConn list
+        //   ourselves (peerInfo)
+        //   the conn, which is the socket
+        //   and a stream it can send stuff
+        if (self.identify) {
+          muxer.dialStream(function (err, stream) {
+            if (err) {
+              return console.log(err) // TODO Treat error
+            }
+            // conn === socket at this point
+            console.log('bimbas')
+            identify(self.muxedConns, self.peerInfo, conn, stream, muxer)
+          })
+        }
 
         muxer.on('stream', userProtocolMuxer)
       })

@@ -4,93 +4,111 @@
  */
 
 var Interactive = require('multistream-select').Interactive
-var EventEmmiter = require('events').EventEmitter
-var util = require('util')
 var protobufs = require('protocol-buffers-stream')
 var fs = require('fs')
 var schema = fs.readFileSync(__dirname + '/identify.proto')
 var v6 = require('ip-address').v6
-var Id = require('ipfs-peer-id')
+var Id = require('peer-id')
 var multiaddr = require('multiaddr')
 
-exports = module.exports = Identify
+exports = module.exports = identify
 
-util.inherits(Identify, EventEmmiter)
+var protoId = '/ipfs/identify/1.0.0'
 
-function Identify (swarm, peerSelf) {
-  var self = this
-  self.createProtoStream = protobufs(schema)
+exports.protoId = protoId
+var createProtoStream = protobufs(schema)
 
-  swarm.registerHandler('/ipfs/identify/1.0.0', function (stream) {
-    var ps = self.createProtoStream()
+function identify (muxedConns, peerInfoSelf, socket, conn, muxer) {
+  var msi = new Interactive()
+  msi.handle(conn, function () {
+    msi.select(protoId, function (err, ds) {
+      if (err) {
+        return console.log(err) // TODO Treat error
+      }
 
-    ps.on('identify', function (msg) {
-      updateSelf(peerSelf, msg.observedAddr)
+      var ps = createProtoStream()
 
-      var peerId = Id.createFromPubKey(msg.publicKey)
+      ps.on('identify', function (msg) {
+        var peerId = Id.createFromPubKey(msg.publicKey)
 
-      var socket = swarm.connections[peerId.toB58String()].socket
+        updateSelf(peerInfoSelf, msg.observedAddr)
+
+        muxedConns[peerId.toB58String()] = {
+          muxer: muxer,
+          socket: socket
+        }
+        console.log('do I get back')
+
+        // TODO: Pass the new discovered info about the peer that contacted us
+        // to something like the Kademlia Router, so the peerInfo for this peer
+        // is fresh
+        //   - before this was exectued through a event emitter
+        // self.emit('peer-update', {
+        //   peerId: peerId,
+        //   listenAddrs: msg.listenAddrs.map(function (mhb) {return multiaddr(mhb)})
+        // })
+      })
+
       var mh = getMultiaddr(socket)
+
       ps.identify({
         protocolVersion: 'na',
         agentVersion: 'na',
-        publicKey: peerSelf.id.pubKey,
-        listenAddrs: peerSelf.multiaddrs.map(function (mh) {return mh.buffer}),
+        publicKey: peerInfoSelf.id.pubKey,
+        listenAddrs: peerInfoSelf.multiaddrs.map(function (mh) {
+          return mh.buffer
+        }),
         observedAddr: mh.buffer
       })
 
-      self.emit('peer-update', {
-        peerId: peerId,
-        listenAddrs: msg.listenAddrs.map(function (mhb) {return multiaddr(mhb)})
+      ps.pipe(ds).pipe(ps)
+      ps.finalize()
+    })
+  })
+}
+
+exports.getHandlerFunction = function (peerInfoSelf, muxedConns) {
+  return function (conn) {
+    // wait for the other peer to identify itself
+    // update our multiaddr with observed addr list
+    // then get the socket from our list of muxedConns and send the reply back
+
+    var ps = createProtoStream()
+
+    ps.on('identify', function (msg) {
+      updateSelf(peerInfoSelf, msg.observedAddr)
+
+      var peerId = Id.createFromPubKey(msg.publicKey)
+
+      var socket = muxedConns[peerId.toB58String()].socket
+
+      var mh = getMultiaddr(socket)
+
+      ps.identify({
+        protocolVersion: 'na',
+        agentVersion: 'na',
+        publicKey: peerInfoSelf.id.pubKey,
+        listenAddrs: peerInfoSelf.multiaddrs.map(function (mh) {
+          return mh.buffer
+        }),
+        observedAddr: mh.buffer
       })
+
+      // TODO: Pass the new discovered info about the peer that contacted us
+      // to something like the Kademlia Router, so the peerInfo for this peer
+      // is fresh
+      //   - before this was exectued through a event emitter
+      // self.emit('peer-update', {
+      //   peerId: peerId,
+      //   listenAddrs: msg.listenAddrs.map(function (mhb) {
+      //     return multiaddr(mhb)
+      //   })
+      // })
 
       ps.finalize()
     })
-    ps.pipe(stream).pipe(ps)
-  })
-
-  swarm.on('connection-unknown', function (conn, socket) {
-    conn.dialStream(function (err, stream) {
-      if (err) { return console.log(err) }
-      var msi = new Interactive()
-      msi.handle(stream, function () {
-        msi.select('/ipfs/identify/1.0.0', function (err, ds) {
-          if (err) { return console.log(err) }
-
-          var ps = self.createProtoStream()
-
-          ps.on('identify', function (msg) {
-            var peerId = Id.createFromPubKey(msg.publicKey)
-
-            updateSelf(peerSelf, msg.observedAddr)
-
-            swarm.connections[peerId.toB58String()] = {
-              conn: conn,
-              socket: socket
-            }
-
-            self.emit('peer-update', {
-              peerId: peerId,
-              listenAddrs: msg.listenAddrs.map(function (mhb) {return multiaddr(mhb)})
-            })
-          })
-
-          var mh = getMultiaddr(socket)
-
-          ps.identify({
-            protocolVersion: 'na',
-            agentVersion: 'na',
-            publicKey: peerSelf.id.pubKey,
-            listenAddrs: peerSelf.multiaddrs.map(function (mh) {return mh.buffer}),
-            observedAddr: mh.buffer
-          })
-
-          ps.pipe(ds).pipe(ps)
-          ps.finalize()
-        })
-      })
-    })
-  })
+    ps.pipe(conn).pipe(ps)
+  }
 }
 
 function getMultiaddr (socket) {
