@@ -11,31 +11,41 @@ var after = lab.after
 var multiaddr = require('multiaddr')
 var Id = require('peer-id')
 var Peer = require('peer-info')
-var Swarm = require('ipfs-swarm')
+var Swarm = require('libp2p-swarm')
+var tcp = require('libp2p-tcp')
 
 var Broadcast = require('./../src')
 
-// var pA
+var pA
 var pB
 var swA
 var swB
 
 before(function (done) {
-  // pA = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/8100')])
-  pB = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/8101')])
-  swA = new Swarm()
-  swB = new Swarm()
+  var mh1 = multiaddr('/ip4/127.0.0.1/tcp/8010')
+  pA = new Peer(Id.create(), [])
+  swA = new Swarm(pA)
+  swA.addTransport('tcp', tcp, { multiaddr: mh1 }, {}, {port: 8010}, ready)
 
-  swA.listen(8100, function () {
-    swB.listen(8101, function () {
-      done()
-    })
-  })
+  var mh2 = multiaddr('/ip4/127.0.0.1/tcp/8020')
+  pB = new Peer(Id.create(), [])
+  swB = new Swarm(pB)
+  swB.addTransport('tcp', tcp, { multiaddr: mh2 }, {}, {port: 8020}, ready)
+
+  var readyCounter = 0
+
+  function ready () {
+    readyCounter++
+    if (readyCounter < 2) {
+      return
+    }
+    done()
+  }
 })
 
 after(function (done) {
-  swA.closeListener()
-  swB.closeListener()
+  swA.close()
+  swB.close()
   done()
 })
 
