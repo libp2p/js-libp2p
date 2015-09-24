@@ -1,7 +1,6 @@
 var Id = require('peer-id')
 var Peer = require('peer-info')
 var multiaddr = require('multiaddr')
-var log = require('ipfs-logger').group('discovery ipfs-railing')
 var EventEmitter = require('events').EventEmitter
 var util = require('util')
 
@@ -25,7 +24,7 @@ function Bootstrap (peerList, options, swarm) {
       var p = new Peer(peerId, [mh])
 
       if (options && options.verify) {
-        swarm.openConnection(p, function (err) {
+        swarm.dial(p, {}, function (err) {
           if (err) {
             return
           }
@@ -36,5 +35,4 @@ function Bootstrap (peerList, options, swarm) {
       }
     })
   })
-
 }
