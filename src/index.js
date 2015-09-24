@@ -5,7 +5,6 @@ var Multiaddr = require('multiaddr')
 var log = require('ipfs-logger').group('discovery ipfs-mdns')
 var EventEmitter = require('events').EventEmitter
 var util = require('util')
-var Swarm = require('ipfs-swarm')
 var os = require('os')
 
 exports = module.exports = Sonar
@@ -28,8 +27,8 @@ function Sonar (peerSelf, options, swarmSelf) {
   self.verify = options && options.verify ? options.verify : false
 
   if (self.verify) {
-    if (!(swarmSelf instanceof Swarm)) {
-      throw new Error('If verify is selected, the third argument must be of type Swarm (ipfs-swarm)')
+    if (!swarmSelf) {
+      throw new Error('If verify is selected, the third argument must be a libp2p-swarm')
     }
   }
 
@@ -108,7 +107,7 @@ function Sonar (peerSelf, options, swarmSelf) {
 
   function verify (peer) {
     if (self.verify) {
-      swarmSelf.openConnection(peer, function (err) {
+      swarmSelf.dial(peer, {}, function (err) {
         if (err) {
           return log.warn('Was not able to connect to new found peer', err)
         }
@@ -139,6 +138,9 @@ function Sonar (peerSelf, options, swarmSelf) {
         data: peerSelf.id.toB58String() + '.' + self.serviceTag
       })
 
+      var port = peerSelf.multiaddrs[0].toString().split('/')[4]
+      // console.log(port)
+
       answers.push({
         name: peerSelf.id.toB58String() + '.' + self.serviceTag,
         type: 'SRV',
@@ -147,7 +149,7 @@ function Sonar (peerSelf, options, swarmSelf) {
         data: {
           priority: 10,
           weight: 1,
-          port: swarmSelf ? swarmSelf.port : 4001,
+          port: port,
           target: os.hostname()
         }
       })
@@ -181,13 +183,10 @@ function Sonar (peerSelf, options, swarmSelf) {
           })
           return
         }
-
       })
-
       self.mdns.respond(answers)
     }
   }
-
 }
 
 /* for reference
