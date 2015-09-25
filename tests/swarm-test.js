@@ -24,6 +24,16 @@ process.on('uncaughtException', function (err) {
   console.log('Caught exception: ' + err)
 })
 
+experiment('Without a peer', function () {
+  test('it throws an exception', function (done) {
+    expect(function () {
+      var sw = new Swarm()
+      sw.close()
+    }).to.throw(Error)
+    done()
+  })
+})
+
 experiment('Without a Stream Muxer', function () {
   experiment('tcp', function () {
     test('add the transport', function (done) {
