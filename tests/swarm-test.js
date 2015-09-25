@@ -13,15 +13,33 @@ var Swarm = require('../src')
 var tcp = require('libp2p-tcp')
 var Spdy = require('libp2p-spdy')
 
-/* TODO
-experiment('Basics', function () {
-  test('enforces creation with new', function (done) {done() })
-})
-*/
-
 // because of Travis-CI
 process.on('uncaughtException', function (err) {
   console.log('Caught exception: ' + err)
+})
+
+experiment('Basics', function () {
+  test('enforces creation with new', function (done) {
+    expect(function () {
+      Swarm()
+    }).to.throw()
+    done()
+  })
+})
+
+experiment('When dialing', function () {
+  experiment('if the swarm does add any of the peer transports', function () {
+    test('it returns an error', function (done) {
+      var peerOne = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/8090')])
+      var peerTwo = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/8091')])
+      var swarm = new Swarm(peerOne)
+
+      swarm.dial(peerTwo, {}, function (err) {
+        expect(err).to.exist()
+        done()
+      })
+    })
+  })
 })
 
 experiment('Without a Stream Muxer', function () {
