@@ -11,6 +11,10 @@ function Swarm (peerInfo) {
     throw new Error('Swarm must be called with new')
   }
 
+  if (!peerInfo) {
+    throw new Error('You must provide a value for `peerInfo`')
+  }
+
   self.peerInfo = peerInfo
 
   // peerIdB58: { conn: <conn> }
