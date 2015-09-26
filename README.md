@@ -67,3 +67,27 @@ dial uses the best transport (whatever works first, in the future we can have so
 ```JavaScript
 sw.handleProtocol(protocol, handlerFunction)
 ```
+
+### Cleaning up before exiting
+
+Each time you add a transport or dial you create connections. Be sure to close
+them up before exiting. To do so you can:
+
+Close a transport listener:
+
+```js
+sw.closeListener(transportName, callback)
+sw.closeAllListeners(callback)
+```
+
+Close all open connections
+
+```js
+sw.closeConns(callback)
+```
+
+Close everything!
+
+```js
+sw.close(callback)
+```

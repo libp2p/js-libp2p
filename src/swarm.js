@@ -47,6 +47,12 @@ function Swarm (peerInfo) {
     // set up the transport and add the list of incoming streams
     // add transport to the list of transports
 
+    var multiaddr = options.multiaddr
+    if (multiaddr) {
+      // no need to pass that to the transports
+      delete options.multiaddr
+    }
+
     var listener = transport.createListener(options, listen)
 
     listener.listen(listenOptions, function ready () {
@@ -59,8 +65,8 @@ function Swarm (peerInfo) {
       }
 
       // If a known multiaddr is passed, then add to our list of multiaddrs
-      if (options.multiaddr) {
-        self.peerInfo.multiaddrs.push(options.multiaddr)
+      if (multiaddr) {
+        self.peerInfo.multiaddrs.push(multiaddr)
       }
 
       callback()
@@ -236,6 +242,14 @@ function Swarm (peerInfo) {
     }
   }
 
+  // Iterates all the listeners closing them
+  // one by one. It calls back once all are closed.
+  self.closeAllListeners = function (callback) {
+    var transportNames = Object.keys(self.transports)
+
+    async.each(transportNames, self.closeListener, callback)
+  }
+
   self.closeConns = function (callback) {
     // close warmed up cons so that the listener can gracefully exit
     Object.keys(self.conns).forEach(function (conn) {
@@ -246,8 +260,14 @@ function Swarm (peerInfo) {
     callback()
   }
 
+  // Closes both transport listeners and
+  // connections. It calls back once everything
+  // is closed
   self.close = function (callback) {
-    // close everything
+    async.parallel([
+      self.closeAllListeners,
+      self.closeConns
+    ], callback)
   }
 
   self.enableIdentify = function () {
