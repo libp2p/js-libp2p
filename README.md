@@ -11,25 +11,31 @@ node-libp2p
 
 libp2p expects a [Record Store interface](https://github.com/diasdavid/abstract-record-store), a swarm and one or more Peer Routers that implement the [Peer Routing](https://github.com/diasdavid/abstract-peer-routing), the goal is to keep simplicity and plugability while the remaining modules execute the heavy lifting.
 
+libp2p becomes very simple and basically acts as a glue for every module that compose this library. Since it can be highly customized, it requires some setup. What we recommend is to have a libp2p build for the system you are developing taking into account in your needs (e.g. for a browser working version of libp2p that acts as the network layer of IPFS, we have a built and minified version that browsers can require)
+
 ### Setting everything up
 
 ```
-var libp2p = require('libp2p')
+var Libp2p = require('libp2p')
+
+// set up a Swarm, Peer Routing and Record Store instances, the last two are optional
+
+var p2p = new Libp2p(swarm, [peerRouting, recordStore])
 ```
 
 ### Dialing and listening
 
-libp2p.swarm.dialStream(peerInfo, protocol, options, function (err, stream) {})
-libp2p.swarm.handleProtocol(protocol, options, handlerFunction)
+p2p.swarm.dial(peerInfo, options, protocol, function (err, stream) {})
+p2p.swarm.handleProtocol(protocol, options, handlerFunction)
 
 ### Using Peer Routing
 
-libp2p.routing.findPeers(key, function (err, peerInfos) {})
+p2p.routing.findPeers(key, function (err, peerInfos) {})
 
 ### Using Records
 
-libp2p.record.get(key, function (err, records) {})
-libp2p.record.store(key, record)
+p2p.record.get(key, function (err, records) {})
+p2p.record.store(key, record)
 
 ### Stats
 
