@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Node.js implementation of libp2p",
   "main": "src/index.js",
   "scripts": {
