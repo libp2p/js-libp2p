@@ -56,8 +56,8 @@ sw.addStreamMuxer(streamMuxer, [options])
 ### Dial to another peer
 
 ```JavaScript
-sw.dial(PeerInfo, options, protocol)
-sw.dial(PeerInfo, options) 
+sw.dial(PeerInfo, options, protocol, callback)
+sw.dial(PeerInfo, options, callback)
 ```
 
 dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, than do nothing.
