@@ -136,6 +136,11 @@ function Swarm (peerInfo) {
       })
     })
 
+    if (!multiaddrs.length) {
+      callback(new Error("The swarm doesn't support any of the peer transports"))
+      return
+    }
+
     var conn
 
     async.eachSeries(multiaddrs, function (multiaddr, next) {
@@ -185,6 +190,7 @@ function Swarm (peerInfo) {
       // if protocol is selected, multistream that protocol
       if (!conn) {
         callback(new Error('Unable to open a connection'))
+        return
       }
 
       if (self.muxers['spdy']) {
