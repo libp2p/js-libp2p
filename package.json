@@ -1,6 +1,6 @@
 {
   "name": "libp2p-tcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Node.js implementation of the TCP module that libp2p uses, which implements the abstract-connection interface",
   "main": "src/index.js",
   "scripts": {
