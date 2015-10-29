@@ -1,9 +1,9 @@
-libp2p-swarm Node.js implementation
-=================================
+libp2p-swarm JavaScript implementation
+======================================
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io) [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/) [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs) [![Build Status](https://img.shields.io/travis/diasdavid/node-ipfs-swarm/master.svg?style=flat-square)](https://travis-ci.org/diasdavid/node-ipfs-swarm)
+[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io) [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/) [![](https://img.shields.io/badge/freejs-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs) [![Build Status](https://img.shields.io/travis/diasdavid/js-ipfs-swarm/master.svg?style=flat-square)](https://travis-ci.org/diasdavid/js-ipfs-swarm)
 
-> libp2p swarm implementation in Node.js
+> libp2p swarm implementation in JavaScript
 
 # Description
 
@@ -29,11 +29,11 @@ var Swarm = require('libp2p-swarm')
 var sw = new Swarm(peerInfoSelf)
 ```
 
-peerInfoSelf is a [PeerInfo](https://github.com/diasdavid/node-peer-info) object that represents the peer creating this swarm instance.
+peerInfoSelf is a [PeerInfo](https://github.com/diasdavid/js-peer-info) object that represents the peer creating this swarm instance.
 
 ### Support a transport
 
-libp2p-swarm expects transports that implement [abstract-transport](https://github.com/diasdavid/abstract-transport). For example [libp2p-tcp](https://github.com/diasdavid/node-libp2p-tcp), a simple shim on top of the `net` module to make it work with swarm expectations.
+libp2p-swarm expects transports that implement [abstract-transport](https://github.com/diasdavid/abstract-transport). For example [libp2p-tcp](https://github.com/diasdavid/js-libp2p-tcp), a simple shim on top of the `net` module to make it work with swarm expectations.
 
 ```JavaScript
 sw.addTransport(transport, [options, dialOptions, listenOptions])
