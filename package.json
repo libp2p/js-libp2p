@@ -9,7 +9,7 @@
   "pre-commit": [],
   "repository": {
     "type": "git",
-    "url": "https://github.com/diasdavid/node-libp2p-tcp.git"
+    "url": "https://github.com/diasdavid/js-libp2p-tcp.git"
   },
   "keywords": [
     "IPFS"
@@ -17,9 +17,9 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/diasdavid/node-libp2p-tcp/issues"
+    "url": "https://github.com/diasdavid/js-libp2p-tcp/issues"
   },
-  "homepage": "https://github.com/diasdavid/node-libp2p-tcp",
+  "homepage": "https://github.com/diasdavid/js-libp2p-tcp",
   "devDependencies": {
     "abstract-connection": "0.0.1",
     "abstract-transport": "^0.1.0",
