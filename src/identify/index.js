@@ -7,7 +7,7 @@ var Interactive = require('multistream-select').Interactive
 var protobufs = require('protocol-buffers-stream')
 var fs = require('fs')
 var schema = fs.readFileSync(__dirname + '/identify.proto')
-var v6 = require('ip-address').v6
+var Address6 = require('ip-address').Address6
 var Id = require('peer-id')
 var multiaddr = require('multiaddr')
 
@@ -112,10 +112,10 @@ exports.getHandlerFunction = function (peerInfoSelf, muxedConns) {
 
 function getMultiaddr (socket) {
   var mh
-  if (~socket.remoteAddress.indexOf(':')) {
-    var addr = new v6.Address(socket.remoteAddress)
+  if (socket.remoteFamily === 'IPv6') {
+    var addr = new Address6(socket.remoteAddress)
     if (addr.v4) {
-      var ip4 = socket.remoteAddress.split(':')[3]
+      var ip4 = addr.to4().correctForm()
       mh = multiaddr('/ip4/' + ip4 + '/tcp/' + socket.remotePort)
     } else {
       mh = multiaddr('/ip6/' + socket.remoteAddress + '/tcp/' + socket.remotePort)
