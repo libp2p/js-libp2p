@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "async": "^1.3.0",
-    "ip-address": "^4.0.0",
+    "ip-address": "^5.0.2",
     "ipfs-logger": "^0.1.0",
     "multiaddr": "^1.0.0",
     "multiplex-stream-muxer": "^0.2.0",
