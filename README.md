@@ -31,7 +31,7 @@ libp2p implementation in JavaScript is a work in progress. As such, there's a fe
 
 - [libp2p](https://github.com/diasdavid/js-libp2p) (entry point)
 - **Swarm**
-  - [libp2p-swarm](https://github.com/diasdavid/js-libp2p-swarm)
+  - [libp2p-swarm](https://github.com/diasdavid/js-libp2p-swarm) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/22)
   - [libp2p-identify](https://github.com/diasdavid/js-libp2p-swarm/tree/master/src/identify)
   - [libp2p-ping](https://github.com/diasdavid/js-libp2p-ping)
   - Transports
@@ -43,7 +43,7 @@ libp2p implementation in JavaScript is a work in progress. As such, there's a fe
     - [libp2p-utp](https://github.com/diasdavid/js-libp2p-utp)
     - [libp2p-webrtc]()
     - [libp2p-cjdns]()
-  - Stream Muxing
+  - Stream Muxing [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](LINK HERE)
     - [abstract-stream-muxer](https://github.com/diasdavid/abstract-stream-muxer)
     - [libp2p-spdy](https://github.com/diasdavid/js-libp2p-spdy)
     - [libp2p-multiplex]()
@@ -51,13 +51,13 @@ libp2p implementation in JavaScript is a work in progress. As such, there's a fe
     - [libp2p-tls]()
     - [libp2p-secio]()
 - **Peer Routing**
-  - [libp2p-kad-routing](https://github.com/diasdavid/js-libp2p-kad-routing)
+  - [libp2p-kad-routing](https://github.com/diasdavid/js-libp2p-kad-routing) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/18)
   - [libp2p-mDNS-routing]()
 - **Discovery**
   - [libp2p-mdns-discovery](https://github.com/diasdavid/js-libp2p-mdns-discovery)
-  - [libp2p-random-walk](https://github.com/diasdavid/js-libp2p-random-walk)
-  - [libp2p-railing](https://github.com/diasdavid/js-libp2p-railing)
-- **Distributed Record Store**
+  - [libp2p-random-walk](https://github.com/diasdavid/js-libp2p-random-walk) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/20)
+  - [libp2p-railing](https://github.com/diasdavid/js-libp2p-railing) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/21)
+- **Distributed Record Store** [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/25)
   - [libp2p-record](https://github.com/diasdavid/js-libp2p-record)
   - [abstract-record-store](https://github.com/diasdavid/abstract-record-store)
   - [libp2p-distributed-record-store](https://github.com/diasdavid/js-libp2p-distributed-record-store)
@@ -65,14 +65,13 @@ libp2p implementation in JavaScript is a work in progress. As such, there's a fe
 - **Generic**
   - [PeerInfo](https://github.com/diasdavid/js-peer-info)
   - [PeerId](https://github.com/diasdavid/js-peer-id)
-  - [multihash](https://github.com/jbenet/js-multihash)
-  - [multihashing](https://github.com/jbenet/js-multihashing)
+  - [multihash](https://github.com/jbenet/js-multihash) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/26)
+  - [multihashing](https://github.com/jbenet/js-multihashing) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/26)
   - [multiaddr](https://github.com/jbenet/js-multiaddr)
   - [multistream](https://github.com/diasdavid/js-multistream)
-  - [multicodec]()
   - [ipld](https://github.com/diasdavid/js-ipld)
-  - [repo](https://github.com/ipfs/js-ipfs-repo)
-  - [webcrypto](https://github.com/diasdavid/webcrypto)
+  - [repo](https://github.com/ipfs/js-ipfs-repo) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/36)
+  - [webcrypto](https://github.com/diasdavid/webcrypto) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/27)
 - [**Specs**](https://github.com/ipfs/specs/tree/master/protocol/network)
 - [**Website**](https://github.com/diasdavid/libp2p-website)
 
