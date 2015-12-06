@@ -7,13 +7,13 @@ libp2p-mdns-discovery JavaScript Implementation
 
 # Usage 
 
-```
+```js
 var Sonar = require('libp2p-mdns-discovery')
 
 var snr = new Sonar(peer, options, swarm)
 
 snr.on('peer', function (peerInfo) {
-  console.log('Found a peer in the local network', peerFound.id.toB58String())
+  console.log('Found a peer in the local network', peerInfo.id.toB58String())
 })
 ```
 
