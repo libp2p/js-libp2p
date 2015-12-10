@@ -26,6 +26,12 @@
   "devDependencies": {
     "code": "^1.5.0",
     "lab": "^5.17.0",
+    "libp2p-spdy": "^0.1.0",
+    "libp2p-swarm": "^0.5.5",
+    "libp2p-tcp": "^0.1.2",
+    "multiaddr": "^1.1.1",
+    "peer-id": "^0.4.0",
+    "peer-info": "^0.4.0",
     "pre-commit": "^1.1.1",
     "standard": "^5.3.1"
   }
