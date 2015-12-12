@@ -12,14 +12,14 @@ var mh = multiaddr('/ip4/127.0.0.1/tcp/8010')
 var p = new Peer(Id.create(), [])
 var sw = new Swarm(p)
 
-sw.addTransport('tcp', tcp, {multiaddr: mh}, {}, {port: 8010}, function () {
+// create a libp2p node
+
+var node = new Libp2p(sw)
+
+node.swarm.addTransport('tcp', tcp, {multiaddr: mh}, {}, {port: 8010}, function () {
   // Ready to receive incoming connections
 
   sw.addStreamMuxer('spdy', Spdy, {})
-
-  // create a libp2p node
-
-  var node = new Libp2p(sw)
 
   // dial to another node
 
@@ -30,6 +30,8 @@ sw.addTransport('tcp', tcp, {multiaddr: mh}, {}, {port: 8010}, function () {
     if (err) {
       return console.error(err)
     }
+
+    console.log('-> connection is ready')
     process.stdin.pipe(conn).pipe(process.stdout)
   })
 })
