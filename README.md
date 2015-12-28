@@ -1,7 +1,7 @@
 libp2p-swarm JavaScript implementation
 ======================================
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io) [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/) [![](https://img.shields.io/badge/freejs-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs) [![Build Status](https://img.shields.io/travis/diasdavid/js-ipfs-swarm/master.svg?style=flat-square)](https://travis-ci.org/diasdavid/js-ipfs-swarm)
+[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io) [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/) [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs) [![Build Status](https://img.shields.io/travis/diasdavid/js-ipfs-swarm/master.svg?style=flat-square)](https://travis-ci.org/diasdavid/js-ipfs-swarm)
 
 > libp2p swarm implementation in JavaScript
 
