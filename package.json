@@ -1,0 +1,34 @@
+{
+  "name": "libp2p-websockets",
+  "version": "0.0.0",
+  "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the abstract-transport interface ",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "pre-commit": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diasdavid/js-libp2p-websockets.git"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "author": "David Dias <daviddias@ipfs.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/diasdavid/js-libp2p-websockets/issues"
+  },
+  "homepage": "https://github.com/diasdavid/js-libp2p-websockets#readme",
+  "dependencies": {
+    "multiaddr": "^1.1.1",
+    "simple-websocket": "github:diasdavid/simple-websocket#ec31437"
+  },
+  "devDependencies": {
+    "interface-connection": "0.0.3",
+    "interface-transport": "^0.1.1",
+    "pre-commit": "^1.1.1",
+    "standard": "^5.2.2",
+    "tape": "^4.2.0"
+  }
+}
