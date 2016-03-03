@@ -4,10 +4,9 @@
   "description": "libp2p swarm implementation in Node.js",
   "main": "src/index.js",
   "scripts": {
-    "test": "./node_modules/.bin/lab tests/*-test.js",
-    "coverage": "./node_modules/.bin/lab -t 88 tests/*-test.js",
-    "lint": "./node_modules/.bin/standard",
-    "validate": "npm ls"
+    "test": "mocha tests/*-test.js",
+    "coverage": "istanbul cover --print both -- _mocha tests/*-test.js",
+    "lint": "standard"
   },
   "repository": {
     "type": "git",
@@ -24,20 +23,20 @@
   "homepage": "https://github.com/diasdavid/js-libp2p-swarm",
   "pre-commit": [
     "lint",
-    "test",
-    "coverage"
+    "test"
   ],
   "engines": {
     "node": "^4.0.0"
   },
   "devDependencies": {
-    "code": "^1.4.1",
-    "lab": "^5.13.0",
+    "chai": "^3.5.0",
+    "istanbul": "^0.4.2",
     "libp2p-spdy": "^0.1.0",
     "libp2p-tcp": "^0.1.1",
-    "precommit-hook": "^3.0.0",
+    "mocha": "^2.4.5",
+    "pre-commit": "^1.1.2",
     "sinon": "^1.15.4",
-    "standard": "^4.5.2",
+    "standard": "^6.0.7",
     "stream-pair": "^1.0.3"
   },
   "dependencies": {
@@ -49,7 +48,6 @@
     "multistream-select": "^0.6.1",
     "peer-id": "^0.3.3",
     "peer-info": "^0.3.2",
-    "protocol-buffers-stream": "^1.2.0",
-    "spdy-stream-muxer": "^0.6.0"
+    "protocol-buffers-stream": "^1.2.0"
   }
 }
