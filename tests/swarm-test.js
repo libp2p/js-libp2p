@@ -1,13 +1,7 @@
-var Lab = require('lab')
-var Code = require('code')
-var lab = exports.lab = Lab.script()
-var async = require('async')
+/* eslint-env mocha */
 
-var experiment = lab.experiment
-var test = lab.test
-var beforeEach = lab.beforeEach
-var afterEach = lab.afterEach
-var expect = Code.expect
+var async = require('async')
+var expect = require('chai').expect
 
 var multiaddr = require('multiaddr')
 var Id = require('peer-id')
@@ -21,15 +15,15 @@ process.on('uncaughtException', function (err) {
   console.log('Caught exception: ' + err)
 })
 
-experiment('Basics', function () {
-  test('enforces creation with new', function (done) {
+describe('Basics', function () {
+  it('enforces creation with new', function (done) {
     expect(function () {
       Swarm()
     }).to.throw()
     done()
   })
 
-  test('it throws an exception without peerSelf', function (done) {
+  it('it throws an exception without peerSelf', function (done) {
     expect(function () {
       var sw = new Swarm()
       sw.close()
@@ -38,24 +32,24 @@ experiment('Basics', function () {
   })
 })
 
-experiment('When dialing', function () {
-  experiment('if the swarm does add any of the peer transports', function () {
-    test('it returns an error', function (done) {
+describe('When dialing', function () {
+  describe('if the swarm does add any of the peer transports', function () {
+    it('it returns an error', function (done) {
       var peerOne = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/8090')])
       var peerTwo = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/8091')])
       var swarm = new Swarm(peerOne)
 
       swarm.dial(peerTwo, {}, function (err) {
-        expect(err).to.exist()
+        expect(err).to.exist
         done()
       })
     })
   })
 })
 
-experiment('Without a Stream Muxer', function () {
-  experiment('and one swarm over tcp', function () {
-    test('add the transport', function (done) {
+describe('Without a Stream Muxer', function () {
+  describe('and one swarm over tcp', function () {
+    it('add the transport', function (done) {
       var mh = multiaddr('/ip4/127.0.0.1/tcp/8010')
       var p = new Peer(Id.create(), [])
       var sw = new Swarm(p)
@@ -73,7 +67,7 @@ experiment('Without a Stream Muxer', function () {
     })
   })
 
-  experiment('and two swarms over tcp', function () {
+  describe('and two swarms over tcp', function () {
     var mh1, p1, sw1, mh2, p2, sw2
 
     beforeEach(function (done) {
@@ -99,7 +93,7 @@ experiment('Without a Stream Muxer', function () {
       async.parallel([sw1.close, sw2.close], done)
     })
 
-    test('dial a conn', function (done) {
+    it('dial a conn', function (done) {
       sw1.dial(p2, {}, function (err) {
         expect(err).to.equal(undefined)
         expect(Object.keys(sw1.conns).length).to.equal(1)
@@ -107,7 +101,7 @@ experiment('Without a Stream Muxer', function () {
       })
     })
 
-    test('dial a conn on a protocol', function (done) {
+    it('dial a conn on a protocol', function (done) {
       sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
         conn.end()
         conn.on('end', done)
@@ -120,7 +114,7 @@ experiment('Without a Stream Muxer', function () {
       })
     })
 
-    test('dial a protocol on a previous created conn', function (done) {
+    it('dial a protocol on a previous created conn', function (done) {
       sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
         conn.end()
         conn.on('end', done)
@@ -139,46 +133,46 @@ experiment('Without a Stream Muxer', function () {
       })
     })
 
-  // test('add an upgrade', function (done) { done() })
-  // test('dial a conn on top of a upgrade', function (done) { done() })
-  // test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
+  // it('add an upgrade', function (done) { done() })
+  // it('dial a conn on top of a upgrade', function (done) { done() })
+  // it('dial a conn on a protocol on top of a upgrade', function (done) { done() })
   })
 
   /* TODO
-  experiment('udp', function () {
-    test('add the transport', function (done) { done() })
-    test('dial a conn', function (done) { done() })
-    test('dial a conn on a protocol', function (done) { done() })
-    test('add an upgrade', function (done) { done() })
-    test('dial a conn on top of a upgrade', function (done) { done() })
-    test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
+  describe('udp', function () {
+    it('add the transport', function (done) { done() })
+    it('dial a conn', function (done) { done() })
+    it('dial a conn on a protocol', function (done) { done() })
+    it('add an upgrade', function (done) { done() })
+    it('dial a conn on top of a upgrade', function (done) { done() })
+    it('dial a conn on a protocol on top of a upgrade', function (done) { done() })
   }) */
 
   /* TODO
-  experiment('udt', function () {
-      test('add the transport', function (done) { done() })
-      test('dial a conn', function (done) { done() })
-      test('dial a conn on a protocol', function (done) { done() })
-      test('add an upgrade', function (done) { done() })
-      test('dial a conn on top of a upgrade', function (done) { done() })
-      test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
+  describe('udt', function () {
+      it('add the transport', function (done) { done() })
+      it('dial a conn', function (done) { done() })
+      it('dial a conn on a protocol', function (done) { done() })
+      it('add an upgrade', function (done) { done() })
+      it('dial a conn on top of a upgrade', function (done) { done() })
+      it('dial a conn on a protocol on top of a upgrade', function (done) { done() })
   }) */
 
 /* TODO
-experiment('utp', function () {
-  test('add the transport', function (done) { done() })
-  test('dial a conn', function (done) { done() })
-  test('dial a conn on a protocol', function (done) { done() })
-  test('add an upgrade', function (done) { done() })
-  test('dial a conn on top of a upgrade', function (done) { done() })
-  test('dial a conn on a protocol on top of a upgrade', function (done) { done() })
+describe('utp', function () {
+  it('add the transport', function (done) { done() })
+  it('dial a conn', function (done) { done() })
+  it('dial a conn on a protocol', function (done) { done() })
+  it('add an upgrade', function (done) { done() })
+  it('dial a conn on top of a upgrade', function (done) { done() })
+  it('dial a conn on a protocol on top of a upgrade', function (done) { done() })
 }) */
 })
 
-experiment('With a SPDY Stream Muxer', function () {
-  experiment('and one swarm over tcp', function () {
-    // TODO: What is the test here?
-    test('add Stream Muxer', function (done) {
+describe('With a SPDY Stream Muxer', function () {
+  describe('and one swarm over tcp', function () {
+    // TODO: What is the it here?
+    it('add Stream Muxer', function (done) {
       // var mh = multiaddr('/ip4/127.0.0.1/tcp/8010')
       var p = new Peer(Id.create(), [])
       var sw = new Swarm(p)
@@ -188,7 +182,7 @@ experiment('With a SPDY Stream Muxer', function () {
     })
   })
 
-  experiment('and two swarms over tcp', function () {
+  describe('and two swarms over tcp', function () {
     var mh1, p1, sw1, mh2, p2, sw2
 
     beforeEach(function (done) {
@@ -233,7 +227,7 @@ experiment('With a SPDY Stream Muxer', function () {
       }
     }
 
-    test('dial a conn on a protocol', function (done) {
+    it('dial a conn on a protocol', function (done) {
       sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
         // formallity so that the conn starts flowing
         conn.on('data', function (chunk) {})
@@ -254,7 +248,7 @@ experiment('With a SPDY Stream Muxer', function () {
       })
     })
 
-    test('dial two conns (transport reuse)', function (done) {
+    it('dial two conns (transport reuse)', function (done) {
       sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
         // formality so that the conn starts flowing
         conn.on('data', function (chunk) {})
@@ -287,7 +281,7 @@ experiment('With a SPDY Stream Muxer', function () {
     })
   })
 
-  experiment('and two identity enabled swarms over tcp', function () {
+  describe('and two identity enabled swarms over tcp', function () {
     var mh1, p1, sw1, mh2, p2, sw2
 
     beforeEach(function (done) {
@@ -337,7 +331,7 @@ experiment('With a SPDY Stream Muxer', function () {
       }
     })
 
-    test('identify', function (done) {
+    it('identify', function (done) {
       sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
         // formallity so that the conn starts flowing
         conn.on('data', function (chunk) {})
