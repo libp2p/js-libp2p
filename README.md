@@ -18,18 +18,23 @@ libp2p-swarm is used by libp2p but it can be also used as a standalone module.
 libp2p-swarm is available on npm and so, like any other npm module, just:
 
 ```bash
-$ npm install libp2p-swarm --save
+> npm install libp2p-swarm --save
 ```
 
 And use it in your Node.js code as:
 
 ```JavaScript
-var Swarm = require('libp2p-swarm')
+const Swarm = require('libp2p-swarm')
 
-var sw = new Swarm(peerInfoSelf)
+const sw = new Swarm(peerInfo)
 ```
 
-peerInfoSelf is a [PeerInfo](https://github.com/diasdavid/js-peer-info) object that represents the peer creating this swarm instance.
+peerInfo is a [PeerInfo](https://github.com/diasdavid/js-peer-info) object that represents the peer creating this swarm instance.
+
+
+---------- 
+BELOW NEEDS AN UPDATE
+
 
 ### Support a transport
 

@@ -1,14 +1,161 @@
-var multistream = require('multistream-select')
-var async = require('async')
-var identify = require('./identify')
+// const multistream = require('multistream-select')
+// const async = require('async')
+// const identify = require('./identify')
+const PassThrough = require('stream').PassThrough
 
 exports = module.exports = Swarm
 
 function Swarm (peerInfo) {
-  var self = this
+  if (!(this instanceof Swarm)) {
+    return new Swarm(peerInfo)
+  }
 
-  if (!(self instanceof Swarm)) {
-    throw new Error('Swarm must be called with new')
+  if (!peerInfo) {
+    throw new Error('You must provide a value for `peerInfo`')
+  }
+
+  // transports --
+
+  // { key: transport }; e.g { tcp: <tcp> }
+  this.transports = {}
+
+  this.transport = {}
+
+  this.transport.add = (key, transport, options, callback) => {
+    if (typeof options === 'function') {
+      callback = options
+      options = {}
+    }
+    if (!callback) { callback = noop }
+
+    if (this.transports[key]) {
+      throw new Error('There is already a transport with this key')
+    }
+    this.transports[key] = transport
+    callback()
+  }
+
+  this.transport.dial = (key, multiaddrs, callback) => {
+    const t = this.transports[key]
+
+    // a) if multiaddrs.length = 1, return the conn from the
+    // transport, otherwise, create a passthrough
+    if (!Array.isArray(multiaddrs)) {
+      multiaddrs = [multiaddrs]
+    }
+    if (multiaddrs.length === 1) {
+      const conn = t.dial(multiaddrs.shift(), {ready: () => {
+        const cb = callback
+        callback = noop // this is done to avoid connection drops as connect errors
+        cb(null, conn)
+      }})
+      conn.once('error', () => {
+        callback(new Error('failed to connect to every multiaddr'))
+      })
+      return conn
+    }
+
+    // b) multiaddrs should already be a filtered list
+    // specific for the transport we are using
+    const pt = new PassThrough()
+
+    next(multiaddrs.shift())
+    return pt
+    function next (multiaddr) {
+      const conn = t.dial(multiaddr, {ready: () => {
+        pt.pipe(conn).pipe(pt)
+        const cb = callback
+        callback = noop // this is done to avoid connection drops as connect errors
+        cb(null, pt)
+      }})
+
+      conn.once('error', () => {
+        if (multiaddrs.length === 0) {
+          return callback(new Error('failed to connect to every multiaddr'))
+        }
+        next(multiaddrs.shift())
+      })
+    }
+  }
+
+  this.transport.listen = (key, options, handler, callback) => {
+    // if no callback is passed, we pass conns to connHandler
+    if (!handler) { handler = connHandler }
+
+    const multiaddrs = peerInfo.multiaddrs.filter((m) => {
+      if (m.toString().indexOf('tcp') !== -1) {
+        return m
+      }
+    })
+
+    this.transports[key].createListener(multiaddrs, handler, (err, maUpdate) => {
+      if (err) {
+        return callback(err)
+      }
+      if (maUpdate) {
+        // because we can listen on port 0...
+        peerInfo.multiaddr.replace(multiaddrs, maUpdate)
+      }
+
+      callback()
+    })
+  }
+
+  this.transport.close = (key, callback) => {
+    this.transports[key].close(callback)
+  }
+
+  // connections --
+
+  // { peerIdB58: { conn: <conn> }}
+  this.conns = {}
+
+  // {
+  //   peerIdB58: {
+  //     muxerName: {
+  //       muxer: <muxer>
+  //       rawSocket: socket // to abstract info required for the Identify Protocol
+  //     }
+  //   }
+  this.muxedConns = {}
+
+  this.connection = {}
+  this.connection.addUpgrade = () => {}
+  this.connection.addStreamMuxer = () => {}
+
+  // enable the Identify protocol
+  this.connection.reuse = () => {}
+
+  // main API - higher level abstractions --
+
+  this.dial = () => {
+    // TODO
+  }
+  this.handle = (protocol, callback) => {
+    // TODO
+  }
+  this.close = (callback) => {
+    var count = 0
+
+    Object.keys(this.transports).forEach((key) => {
+      this.transports[key].close(() => {
+        if (++count === Object.keys(this.transports).length) {
+          callback()
+        }
+      })
+    })
+  }
+
+  function connHandler (conn) {
+    // do all the multistream select handshakes (this should be probably done recursively
+  }
+}
+
+/*
+function Swarm (peerInfo) {
+  var self = this
+  if (!(this instanceof Swarm)) {
+    return new Swarm(peerInfo)
   }
 
   if (!peerInfo) {
@@ -341,3 +488,6 @@ function Swarm (peerInfo) {
     })
   }
 }
+*/
+
+function noop () {}
