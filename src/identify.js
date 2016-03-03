@@ -6,7 +6,8 @@
 var Interactive = require('multistream-select').Interactive
 var protobufs = require('protocol-buffers-stream')
 var fs = require('fs')
-var schema = fs.readFileSync(__dirname + '/identify.proto')
+var path = require('path')
+var schema = fs.readFileSync(path.join(__dirname, '/identify.proto'))
 var Address6 = require('ip-address').Address6
 var Id = require('peer-id')
 var multiaddr = require('multiaddr')

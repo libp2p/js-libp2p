@@ -1,3 +1,4 @@
+
 # Logs
 logs
 *.log
@@ -27,6 +28,6 @@ build/Release
 node_modules
 
 
-
+coverage
 .jshintrc
 .jshintignore
