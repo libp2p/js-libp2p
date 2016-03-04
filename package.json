@@ -1,12 +1,20 @@
 {
   "name": "libp2p-tcp",
   "version": "0.1.2",
-  "description": "Node.js implementation of the TCP module that libp2p uses, which implements the abstract-connection interface",
+  "description": "Node.js implementation of the TCP module that libp2p uses, which implements the interface-connection and interface-transport interfaces",
   "main": "src/index.js",
   "scripts": {
-    "test": "node tests/test-ac.js"
+    "test:compliance:connection": "node tests/connection.js",
+    "test:compliance:transport": "node tests/transport.js",
+    "test:specific": "mocha tests/*-test.js",
+    "test": "npm run test:specific",
+    "test-2": "npm run test:specific && npm run test:compliance:transport && npm run test:compliance:connection",
+    "lint": "standard"
   },
-  "pre-commit": [],
+  "pre-commit": [
+    "lint",
+    "test"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/diasdavid/js-libp2p-tcp.git"
@@ -21,10 +29,14 @@
   },
   "homepage": "https://github.com/diasdavid/js-libp2p-tcp",
   "devDependencies": {
-    "abstract-connection": "0.0.1",
-    "abstract-transport": "^0.1.0",
-    "pre-commit": "^1.1.1",
-    "standard": "^5.2.2",
+    "chai": "^3.5.0",
+    "interface-connection": "0.0.3",
+    "interface-transport": "^0.1.1",
+    "istanbul": "^0.4.2",
+    "mocha": "^2.4.5",
+    "multiaddr": "^1.1.1",
+    "pre-commit": "^1.1.2",
+    "standard": "^6.0.7",
     "tape": "^4.2.0"
   },
   "dependencies": {
