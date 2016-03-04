@@ -1,6 +1,7 @@
-const debug = require('debug')
-const log = debug('libp2p:tcp')
+// const debug = require('debug')
+// const log = debug('libp2p:tcp')
 const tcp = require('net')
+const multiaddr = require('multiaddr')
 
 exports = module.exports = TCP
 
@@ -31,13 +32,24 @@ function TCP () {
     }
 
     var count = 0
+    const freshMultiaddrs = []
 
     multiaddrs.forEach((m) => {
       const listener = tcp.createServer(handler)
       listener.listen(m.toOptions(), () => {
-        log('listening on: ', m.toString())
+        // Node.js likes to convert addr to IPv6 (when 0.0.0.0 for e.g)
+        const address = listener.address()
+        if (m.toString().indexOf('ip4')) {
+          m = m.decapsulate('tcp')
+          m = m.encapsulate('/tcp/' + address.port)
+          freshMultiaddrs.push(m)
+        }
+        if (address.family === 'IPv6') {
+          freshMultiaddrs.push(multiaddr('/ip6/' + address.address + '/tcp/' + address.port))
+        }
+
         if (++count === multiaddrs.length) {
-          callback()
+          callback(null, freshMultiaddrs)
         }
       })
       listeners.push(listener)
