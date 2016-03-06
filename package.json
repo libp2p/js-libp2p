@@ -36,7 +36,7 @@
     "libp2p-tcp": "^0.2.1",
     "mocha": "^2.4.5",
     "multiaddr": "^1.1.1",
-    "peer-id": "^0.5.1",
+    "peer-id": "^0.5.3",
     "peer-info": "^0.5.2",
     "pre-commit": "^1.1.2",
     "standard": "^6.0.7",

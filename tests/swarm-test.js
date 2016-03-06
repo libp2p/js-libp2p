@@ -173,7 +173,9 @@ describe('transport - tcp', function () {
   })
 })
 
-describe('transport - udt', () => {
+describe('transport - udt', function () {
+  this.timeout(10000)
+
   before((done) => { done() })
 
   it.skip('add', (done) => {})
@@ -182,7 +184,9 @@ describe('transport - udt', () => {
   it.skip('close', (done) => {})
 })
 
-describe('transport - websockets', () => {
+describe('transport - websockets', function () {
+  this.timeout(10000)
+
   before((done) => { done() })
 
   it.skip('add', (done) => {})
@@ -191,37 +195,119 @@ describe('transport - websockets', () => {
   it.skip('close', (done) => {})
 })
 
-describe('high level API - 1st stage, without stream multiplexing (on TCP)', () => {
-  it.skip('handle a protocol', (done) => {})
-  it.skip('dial on protocol', (done) => {})
-  it.skip('dial to warm conn', (done) => {})
-  it.skip('dial on protocol, reuse warmed conn', (done) => {})
-  it.skip('close', (done) => {})
+describe('high level API - 1st without stream multiplexing (on TCP)', function () {
+  this.timeout(10000)
+
+  var swarmA
+  var peerA
+  var swarmB
+  var peerB
+
+  before((done) => {
+    peerA = new Peer()
+    peerB = new Peer()
+
+    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
+
+    swarmA = new Swarm(peerA)
+    swarmB = new Swarm(peerB)
+
+    swarmA.transport.add('tcp', new TCP())
+    swarmA.transport.listen('tcp', {}, null, ready)
+
+    swarmB.transport.add('tcp', new TCP())
+    swarmB.transport.listen('tcp', {}, null, ready)
+
+    var counter = 0
+
+    function ready () {
+      if (++counter === 2) {
+        done()
+      }
+    }
+  })
+
+  after((done) => {
+    var counter = 0
+
+    swarmA.close(closed)
+    swarmB.close(closed)
+
+    function closed () {
+      if (++counter === 2) {
+        done()
+      }
+    }
+  })
+
+  it('handle a protocol', (done) => {
+    swarmB.handle('/bananas/1.0.0', (conn) => {
+      conn.pipe(conn)
+    })
+    expect(Object.keys(swarmB.protocols).length).to.equal(1)
+    done()
+  })
+
+  it('dial on protocol', (done) => {
+    swarmB.handle('/pineapple/1.0.0', (conn) => {
+      conn.pipe(conn)
+    })
+
+    swarmA.dial(peerB, '/pineapple/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      conn.end()
+      conn.on('end', done)
+    })
+  })
+
+  it('dial to warm a conn', (done) => {
+    swarmA.dial(peerB, (err) => {
+      expect(err).to.not.exist
+      done()
+    })
+  })
+
+  it('dial on protocol, reuse warmed conn', (done) => {
+    swarmA.dial(peerB, '/bananas/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      conn.end()
+      conn.on('end', done)
+    })
+  })
 })
 
-describe('stream muxing (on TCP)', () => {
+describe('stream muxing (on TCP)', function () {
+  this.timeout(10000)
+
   describe('multiplex', () => {
     before((done) => { done() })
+    after((done) => { done() })
+
     it.skip('add', (done) => {})
     it.skip('handle + dial on protocol', (done) => {})
     it.skip('dial to warm conn', (done) => {})
     it.skip('dial on protocol, reuse warmed conn', (done) => {})
     it.skip('enable identify to reuse incomming muxed conn', (done) => {})
-    it.skip('close', (done) => {})
   })
   describe('spdy', () => {
+    before((done) => { done() })
+    after((done) => { done() })
+
     it.skip('add', (done) => {})
     it.skip('handle + dial on protocol', (done) => {})
     it.skip('dial to warm conn', (done) => {})
     it.skip('dial on protocol, reuse warmed conn', (done) => {})
     it.skip('enable identify to reuse incomming muxed conn', (done) => {})
-    it.skip('close', (done) => {})
   })
 })
 
-describe('conn upgrades', () => {
+describe('conn upgrades', function () {
+  this.timeout(10000)
+
   describe('secio on tcp', () => {
     before((done) => { done() })
+    after((done) => { done() })
 
     it.skip('add', (done) => {})
     it.skip('dial', (done) => {})
@@ -229,6 +315,7 @@ describe('conn upgrades', () => {
   })
   describe('tls on tcp', () => {
     before((done) => { done() })
+    after((done) => { done() })
 
     it.skip('add', (done) => {})
     it.skip('dial', (done) => {})
@@ -236,7 +323,9 @@ describe('conn upgrades', () => {
   })
 })
 
-describe('high level API = 2nd stage, with everything all together!', () => {
+describe('high level API - with everything mixed all together!', function () {
+  this.timeout(10000)
+
   before((done) => { done() })
 
   it.skip('add tcp', (done) => {})
