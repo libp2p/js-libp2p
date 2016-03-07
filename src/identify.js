@@ -1,30 +1,47 @@
 /*
- * Identify is one of the protocols swarms speaks in order to broadcast and learn
- * about the ip:port pairs a specific peer is available through
+ * Identify is one of the protocols swarms speaks in order to
+ * broadcast and learn about the ip:port pairs a specific peer
+ * is available through
  */
 
-var Interactive = require('multistream-select').Interactive
-var protobufs = require('protocol-buffers-stream')
-var fs = require('fs')
-var path = require('path')
-var schema = fs.readFileSync(path.join(__dirname, 'identify.proto'))
-var Address6 = require('ip-address').Address6
-var Id = require('peer-id')
-var multiaddr = require('multiaddr')
+// var multistream = require('multistream-select')
+// var protobufs = require('protocol-buffers-stream')
+// var fs = require('fs')
+// var path = require('path')
+// var protobufs = require('protocol-buffers-stream')
+// var schema = fs.readFileSync(path.join(__dirname, 'identify.proto'))
+// var Address6 = require('ip-address').Address6
+// var Id = require('peer-id')
+// var multiaddr = require('multiaddr')
 
-exports = module.exports = identify
+exports = module.exports
 
-var protoId = '/ipfs/identify/1.0.0'
+exports.multicodec = '/ipfs/identify/1.0.0'
 
-exports.protoId = protoId
-var createProtoStream = protobufs(schema)
+exports.exec = (muxedConn, callback) => {
+  // TODO
+  // 1. open a stream
+  // 2. multistream into identify
+  // 3. send what I see from this other peer
+  // 4. receive what the other peer sees from me
+  // 4. callback with (err, peerInfo)
+}
 
+exports.handler = (peerInfo) => {
+  return function (conn) {
+    // TODO
+    // 1. receive incoming observed info about me
+    // 2. send back what I see from the other
+  }
+}
+
+/*
 function identify (muxedConns, peerInfoSelf, socket, conn, muxer) {
   var msi = new Interactive()
   msi.handle(conn, function () {
     msi.select(protoId, function (err, ds) {
       if (err) {
-        return console.log(err) // TODO Treat error
+        return console.log(err)
       }
 
       var ps = createProtoStream()
@@ -38,16 +55,6 @@ function identify (muxedConns, peerInfoSelf, socket, conn, muxer) {
           muxer: muxer,
           socket: socket
         }
-
-      // TODO: Pass the new discovered info about the peer that contacted us
-      // to something like the Kademlia Router, so the peerInfo for this peer
-      // is fresh
-      //   - before this was exectued through a event emitter
-      // self.emit('peer-update', {
-      //   peerId: peerId,
-      //   listenAddrs: msg.listenAddrs.map(function (mhb) {return multiaddr(mhb)})
-      // })
-      })
 
       var mh = getMultiaddr(socket)
 
@@ -156,4 +163,4 @@ function updateSelf (peerSelf, observedAddr) {
       peerSelf.multiaddrs.push(omh)
     }
   }
-}
+}*/

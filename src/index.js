@@ -1,6 +1,6 @@
 const multistream = require('multistream-select')
 // const async = require('async')
-// const identify = require('./identify')
+const identify = require('./identify')
 const PassThrough = require('stream').PassThrough
 
 exports = module.exports = Swarm
@@ -130,16 +130,28 @@ function Swarm (peerInfo) {
   // { muxerCodec: <muxer> } e.g { '/spdy/0.3.1': spdy }
   this.muxers = {}
   this.connection.addStreamMuxer = (muxer) => {
-    // TODO
-    // .handle(protocol, () => {
-    //   after attaching the stream muxer, check if identify is enabled
-    // })
-    // TODO add to the list of muxers available
+    // for dialing
+    this.muxers[muxer.multicodec] = muxer
+
+    // for listening
+    this.handle(muxer.multicodec, (conn) => {
+      const muxedConn = muxer(conn, true)
+      muxedConn.on('stream', connHandler)
+
+      if (this.identify) {
+        identify.exec(muxedConn, (err, pi) => {
+          if (err) {}
+          // TODO muxedConns[pi.id.toB58String()].muxer = muxedConn
+        })
+      }
+    })
   }
 
   // enable the Identify protocol
+  this.identify = false
   this.connection.reuse = () => {
-    // TODO identify
+    this.identify = true
+    this.handle(identify.multicodec, identify.handler(peerInfo))
   }
 
   const self = this // couldn't get rid of this
@@ -224,14 +236,40 @@ function Swarm (peerInfo) {
     }
 
     function attemptMuxerUpgrade (conn, cb) {
-      if (Object.keys(self.muxers).length === 0) {
+      const muxers = Object.keys(self.muxers)
+      if (muxers.length === 0) {
         return cb(new Error('no muxers available'))
       }
-      // TODO add muxer to the muxedConns object for the peerId
-      // TODO if it succeeds, add incomming open coons to connHandler
+
+      // 1. try to handshake in one of the muxers available
+      // 2. if succeeds
+      //  - add the muxedConn to the list of muxedConns
+      //  - add incomming new streams to connHandler
+
+      nextMuxer(muxers.shift())
+
+      function nextMuxer (key) {
+        var msI = new multistream.Interactive()
+        msI.handle(conn, function () {
+          msI.select(key, (err, conn) => {
+            if (err) {
+              if (muxers.length === 0) {
+                cb(new Error('could not upgrade to stream muxing'))
+              } else {
+                nextMuxer(muxers.shift())
+              }
+            }
+
+            const muxedConn = self.muxers[key](conn, false)
+            self.muxedConns[b58Id] = {}
+            self.muxedConns[b58Id].muxer = muxedConn
+            cb(null, muxedConn)
+          })
+        })
+      }
     }
     function openConnInMuxedConn (muxer, cb) {
-      // TODO open a conn in this muxer
+      cb(muxer.newStream())
     }
 
     function protocolHandshake (conn, protocol, cb) {
@@ -254,6 +292,10 @@ function Swarm (peerInfo) {
 
   this.close = (callback) => {
     var count = 0
+
+    Object.keys(this.muxedConns).forEach((key) => {
+      this.muxedConns[key].muxer.end()
+    })
 
     Object.keys(this.transports).forEach((key) => {
       this.transports[key].close(() => {
