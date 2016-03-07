@@ -1,0 +1,37 @@
+{
+  "name": "libp2p-multiplex",
+  "version": "0.0.0",
+  "description": "multiplex implementation wrapper that is compatible with libp2p Stream Muxer expected interface",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "standard",
+    "test": "mocha tests/*-test.js",
+    "compliance": "node tests/compliance.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diasdavid/js-libp2p-multiplex.git"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "author": "David Dias <daviddias@ipfs.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/diasdavid/js-libp2p-multiplex/issues"
+  },
+  "homepage": "https://github.com/diasdavid/js-libp2p-multiplex#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "interface-stream-muxer": "^0.3.1",
+    "pre-commit": "^1.1.2",
+    "standard": "^6.0.7",
+    "stream-pair": "^1.0.3",
+    "tape": "^4.2.0",
+    "timed-tape": "^0.1.0",
+    "mocha": "^2.4.5"
+  },
+  "dependencies": {
+    "multiplex": "github:diasdavid/multiplex#3f15f490ed9244aa4108cebc3177c4aecff92312"
+  }
+}
