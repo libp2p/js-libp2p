@@ -32,6 +32,6 @@
     "mocha": "^2.4.5"
   },
   "dependencies": {
-    "multiplex": "github:diasdavid/multiplex#3f15f490ed9244aa4108cebc3177c4aecff92312"
+    "multiplex": "^6.7.0"
   }
 }

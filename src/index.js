@@ -27,7 +27,7 @@ module.exports = function (transport, isListener) {
   // muxer.on('close', () => {})
   // muxer.on('error', (err) => {})
   // muxer.end()
-  muxer.multicodec = '/multiplex/6.6.1'
+  muxer.multicodec = '/multiplex/6.7.0'
   return muxer
 }
 
