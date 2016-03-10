@@ -13,13 +13,17 @@ libp2p-swarm is used by libp2p but it can be also used as a standalone module.
 
 # Usage
 
-### Install and create a Swarm
+## Install 
 
 libp2p-swarm is available on npm and so, like any other npm module, just:
 
 ```bash
 > npm install libp2p-swarm --save
 ```
+
+## API
+
+#### Create a libp2p Swarm
 
 And use it in your Node.js code as:
 
@@ -31,68 +35,77 @@ const sw = new Swarm(peerInfo)
 
 peerInfo is a [PeerInfo](https://github.com/diasdavid/js-peer-info) object that represents the peer creating this swarm instance.
 
+### Transports
 
----------- 
-BELOW NEEDS AN UPDATE
+##### `swarm.transport.add(key, transport, options, callback)`
 
+libp2p-swarm expects transports that implement [interface-transport](https://github.com/diasdavid/abstract-transport). For example [libp2p-tcp](https://github.com/diasdavid/js-libp2p-tcp).
 
-### Support a transport
+- `key` - the transport identifier
+- `transport` - 
+- `options`
+- `callback`
 
-libp2p-swarm expects transports that implement [abstract-transport](https://github.com/diasdavid/abstract-transport). For example [libp2p-tcp](https://github.com/diasdavid/js-libp2p-tcp), a simple shim on top of the `net` module to make it work with swarm expectations.
+##### `swarm.transport.dial(key, multiaddrs, callback)`
 
-```JavaScript
-sw.addTransport(transport, [options, dialOptions, listenOptions])
-```
+Dial to a peer on a specific transport.
 
-### Add a connection upgrade
+- `key`
+- `multiaddrs`
+- `callback`
 
-A connection upgrade must be able to receive and return something that implements the [abstract-connection](https://github.com/diasdavid/abstract-connection) interface.
+##### `swarm.transport.listen(key, options, handler, callback)`
 
-```JavaScript
-sw.addUpgrade(connUpgrade, [options])
-```
+Set a transport to start listening mode.
 
-Upgrading a connection to use a stream muxer is still considered an upgrade, but a special case since once this connection is applied, the returned obj will implement the [abstract-stream-muxer](https://github.com/diasdavid/abstract-stream-muxer) interface.
+- `key`
+- `options`
+- `handler`
+- `callback`
 
-```JavaScript
-sw.addStreamMuxer(streamMuxer, [options])
-```
+##### `swarm.transport.close(key, callback)`
 
-### Dial to another peer
+Close the listeners of a given transport.
 
-```JavaScript
-sw.dial(PeerInfo, options, protocol, callback)
-sw.dial(PeerInfo, options, callback)
-```
+- `key`
+- `callback`
+
+### Connection
+
+##### `swarm.connection.addUpgrade()`
+
+A connection upgrade must be able to receive and return something that implements the [interface-connection](https://github.com/diasdavid/interface-connection) specification.
+
+> **WIP**
+
+##### `swarm.connection.addStreamMuxer(muxer)`
+
+Upgrading a connection to use a stream muxer is still considered an upgrade, but a special case since once this connection is applied, the returned obj will implement the [interface-stream-muxer](https://github.com/diasdavid/interface-stream-muxer) spec.
+
+- `muxer`
+
+##### `swarm.connection.reuse()`
+
+Enable the identify protocol
+
+### `swarm.dial(pi, protocol, callback)`
 
 dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, than do nothing.
 
-### Accept requests on a specific protocol
+- `pi` - peer info project
+- `protocol`
+- `callback`
 
-```JavaScript
-sw.handleProtocol(protocol, handlerFunction)
-```
+### `swarm.handle(protocol, handler)`
 
-### Cleaning up before exiting
+handle a new protocol.
 
-Each time you add a transport or dial you create connections. Be sure to close
-them up before exiting. To do so you can:
+- `protocol`
+- `handler` - function called when we receive a dial on `protocol. Signature must be `function (conn) {}`
 
-Close a transport listener:
+### `swarm.close(callback)`
 
-```js
-sw.closeListener(transportName, callback)
-sw.closeAllListeners(callback)
-```
+close all the listeners and muxers.
 
-Close all open connections
+- `callback`
 
-```js
-sw.closeConns(callback)
-```
-
-Close everything!
-
-```js
-sw.close(callback)
-```
