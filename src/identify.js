@@ -1,159 +1,93 @@
 /*
- * Identify is one of the protocols swarms speaks in order to broadcast and learn
- * about the ip:port pairs a specific peer is available through
+ * Identify is one of the protocols swarms speaks in order to
+ * broadcast and learn about the ip:port pairs a specific peer
+ * is available through and to know when a new stream muxer is
+ * established, so a conn can be reused
  */
 
-var Interactive = require('multistream-select').Interactive
-var protobufs = require('protocol-buffers-stream')
-var fs = require('fs')
-var path = require('path')
-var schema = fs.readFileSync(path.join(__dirname, 'identify.proto'))
-var Address6 = require('ip-address').Address6
-var Id = require('peer-id')
-var multiaddr = require('multiaddr')
+const multistream = require('multistream-select')
+const fs = require('fs')
+const path = require('path')
+const pbStream = require('protocol-buffers-stream')(
+    fs.readFileSync(path.join(__dirname, 'identify.proto')))
+const Info = require('peer-info')
+const Id = require('peer-id')
+const multiaddr = require('multiaddr')
 
-exports = module.exports = identify
+exports = module.exports
+exports.multicodec = '/ipfs/identify/1.0.0'
 
-var protoId = '/ipfs/identify/1.0.0'
+exports.exec = (rawConn, muxer, peerInfo, callback) => {
+  // 1. open a stream
+  // 2. multistream into identify
+  // 3. send what I see from this other peer (extract fro conn)
+  // 4. receive what the other peer sees from me
+  // 4. callback with (err, peerInfo)
 
-exports.protoId = protoId
-var createProtoStream = protobufs(schema)
+  const conn = muxer.newStream()
 
-function identify (muxedConns, peerInfoSelf, socket, conn, muxer) {
-  var msi = new Interactive()
-  msi.handle(conn, function () {
-    msi.select(protoId, function (err, ds) {
+  var msI = new multistream.Interactive()
+  msI.handle(conn, () => {
+    msI.select(exports.multicodec, (err, ds) => {
       if (err) {
-        return console.log(err) // TODO Treat error
+        return callback(err)
       }
 
-      var ps = createProtoStream()
+      var pbs = pbStream()
 
-      ps.on('identify', function (msg) {
-        var peerId = Id.createFromPubKey(msg.publicKey)
+      pbs.on('identify', (msg) => {
+        peerInfo.multiaddr.addSafe(msg.observedAddr)
 
-        updateSelf(peerInfoSelf, msg.observedAddr)
+        const peerId = Id.createFromPubKey(msg.publicKey)
+        const otherPeerInfo = new Info(peerId)
+        msg.listenAddrs.forEach((ma) => {
+          otherPeerInfo.multiaddr.add(multiaddr(ma))
+        })
 
-        muxedConns[peerId.toB58String()] = {
-          muxer: muxer,
-          socket: socket
-        }
-
-      // TODO: Pass the new discovered info about the peer that contacted us
-      // to something like the Kademlia Router, so the peerInfo for this peer
-      // is fresh
-      //   - before this was exectued through a event emitter
-      // self.emit('peer-update', {
-      //   peerId: peerId,
-      //   listenAddrs: msg.listenAddrs.map(function (mhb) {return multiaddr(mhb)})
-      // })
+        callback(null, otherPeerInfo)
       })
 
-      var mh = getMultiaddr(socket)
+      const obsMultiaddr = rawConn.getObservedAddrs()[0]
 
-      ps.identify({
+      pbs.identify({
         protocolVersion: 'na',
         agentVersion: 'na',
-        publicKey: peerInfoSelf.id.pubKey,
-        listenAddrs: peerInfoSelf.multiaddrs.map(function (mh) {
-          return mh.buffer
-        }),
-        observedAddr: mh.buffer
+        publicKey: peerInfo.id.pubKey,
+        listenAddrs: peerInfo.multiaddrs.map((mh) => { return mh.buffer }),
+        observedAddr: obsMultiaddr ? obsMultiaddr.buffer : null
       })
 
-      ps.pipe(ds).pipe(ps)
-      ps.finalize()
+      pbs.pipe(ds).pipe(pbs)
+      pbs.finalize()
     })
   })
 }
 
-exports.getHandlerFunction = function (peerInfoSelf, muxedConns) {
+exports.handler = (peerInfo, swarm) => {
   return function (conn) {
-    // wait for the other peer to identify itself
-    // update our multiaddr with observed addr list
-    // then get the socket from our list of muxedConns and send the reply back
+    // 1. receive incoming observed info about me
+    // 2. update my own information (on peerInfo)
+    // 3. send back what I see from the other (get from swarm.muxedConns[incPeerID].conn.getObservedAddrs()
+    var pbs = pbStream()
 
-    var ps = createProtoStream()
+    pbs.on('identify', function (msg) {
+      peerInfo.multiaddr.addSafe(msg.observedAddr)
 
-    ps.on('identify', function (msg) {
-      updateSelf(peerInfoSelf, msg.observedAddr)
+      const peerId = Id.createFromPubKey(msg.publicKey)
+      const conn = swarm.muxedConns[peerId.toB58String()].conn
+      const obsMultiaddr = conn.getObservedAddrs()[0]
 
-      var peerId = Id.createFromPubKey(msg.publicKey)
-
-      var socket = muxedConns[peerId.toB58String()].socket
-
-      var mh = getMultiaddr(socket)
-
-      ps.identify({
+      pbs.identify({
         protocolVersion: 'na',
         agentVersion: 'na',
-        publicKey: peerInfoSelf.id.pubKey,
-        listenAddrs: peerInfoSelf.multiaddrs.map(function (mh) {
-          return mh.buffer
+        publicKey: peerInfo.id.pubKey,
+        listenAddrs: peerInfo.multiaddrs.map(function (ma) {
+          return ma.buffer
         }),
-        observedAddr: mh.buffer
+        observedAddr: obsMultiaddr ? obsMultiaddr.buffer : null
       })
-
-      // TODO: Pass the new discovered info about the peer that contacted us
-      // to something like the Kademlia Router, so the peerInfo for this peer
-      // is fresh
-      //   - before this was exectued through a event emitter
-      // self.emit('peer-update', {
-      //   peerId: peerId,
-      //   listenAddrs: msg.listenAddrs.map(function (mhb) {
-      //     return multiaddr(mhb)
-      //   })
-      // })
-
-      ps.finalize()
+      pbs.finalize()
     })
-    ps.pipe(conn).pipe(ps)
-  }
-}
-
-function getMultiaddr (socket) {
-  var mh
-  if (socket.remoteFamily === 'IPv6') {
-    var addr = new Address6(socket.remoteAddress)
-    if (addr.v4) {
-      var ip4 = addr.to4().correctForm()
-      mh = multiaddr('/ip4/' + ip4 + '/tcp/' + socket.remotePort)
-    } else {
-      mh = multiaddr('/ip6/' + socket.remoteAddress + '/tcp/' + socket.remotePort)
-    }
-  } else {
-    mh = multiaddr('/ip4/' + socket.remoteAddress + '/tcp/' + socket.remotePort)
-  }
-  return mh
-}
-
-function updateSelf (peerSelf, observedAddr) {
-  var omh = multiaddr(observedAddr)
-
-  if (!peerSelf.previousObservedAddrs) {
-    peerSelf.previousObservedAddrs = []
-  }
-
-  for (var i = 0; i < peerSelf.previousObservedAddrs.length; i++) {
-    if (peerSelf.previousObservedAddrs[i].toString() === omh.toString()) {
-      peerSelf.previousObservedAddrs.splice(i, 1)
-      addToSelf()
-      return
-    }
-  }
-
-  peerSelf.previousObservedAddrs.push(omh)
-
-  function addToSelf () {
-    var isIn = false
-    peerSelf.multiaddrs.forEach(function (mh) {
-      if (mh.toString() === omh.toString()) {
-        isIn = true
-      }
-    })
-
-    if (!isIn) {
-      peerSelf.multiaddrs.push(omh)
-    }
+    pbs.pipe(conn).pipe(pbs)
   }
 }

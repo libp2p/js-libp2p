@@ -1,354 +1,442 @@
 /* eslint-env mocha */
 
-var async = require('async')
-var expect = require('chai').expect
+const expect = require('chai').expect
+// const async = require('async')
 
-var multiaddr = require('multiaddr')
-var Id = require('peer-id')
-var Peer = require('peer-info')
-var Swarm = require('../src')
-var tcp = require('libp2p-tcp')
-var Spdy = require('libp2p-spdy')
+const multiaddr = require('multiaddr')
+// const Id = require('peer-id')
+const Peer = require('peer-info')
+const Swarm = require('../src')
+const TCP = require('libp2p-tcp')
+const bl = require('bl')
+const spdy = require('libp2p-spdy')
 
-// because of Travis-CI
-process.on('uncaughtException', function (err) {
-  console.log('Caught exception: ' + err)
-})
-
-describe('Basics', function () {
-  it('enforces creation with new', function (done) {
-    expect(function () {
-      Swarm()
-    }).to.throw()
-    done()
-  })
-
-  it('it throws an exception without peerSelf', function (done) {
-    expect(function () {
-      var sw = new Swarm()
-      sw.close()
-    }).to.throw(Error)
+describe('basics', () => {
+  it('throws on missing peerInfo', (done) => {
+    expect(Swarm).to.throw(Error)
     done()
   })
 })
 
-describe('When dialing', function () {
-  describe('if the swarm does add any of the peer transports', function () {
-    it('it returns an error', function (done) {
-      var peerOne = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/8090')])
-      var peerTwo = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/8091')])
-      var swarm = new Swarm(peerOne)
+describe('transport - tcp', function () {
+  this.timeout(10000)
 
-      swarm.dial(peerTwo, {}, function (err) {
-        expect(err).to.exist
-        done()
-      })
-    })
-  })
-})
+  var swarmA
+  var swarmB
+  var peerA = new Peer()
+  var peerB = new Peer()
 
-describe('Without a Stream Muxer', function () {
-  describe('and one swarm over tcp', function () {
-    it('add the transport', function (done) {
-      var mh = multiaddr('/ip4/127.0.0.1/tcp/8010')
-      var p = new Peer(Id.create(), [])
-      var sw = new Swarm(p)
-
-      sw.addTransport('tcp', tcp, { multiaddr: mh }, {}, {port: 8010}, ready)
-
-      function ready () {
-        expect(sw.transports['tcp'].options).to.deep.equal({})
-        expect(sw.transports['tcp'].dialOptions).to.deep.equal({})
-        expect(sw.transports['tcp'].listenOptions).to.deep.equal({port: 8010})
-        expect(sw.transports['tcp'].transport).to.deep.equal(tcp)
-
-        sw.close(done)
-      }
-    })
+  before((done) => {
+    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999'))
+    swarmA = new Swarm(peerA)
+    swarmB = new Swarm(peerB)
+    done()
   })
 
-  describe('and two swarms over tcp', function () {
-    var mh1, p1, sw1, mh2, p2, sw2
-
-    beforeEach(function (done) {
-      mh1 = multiaddr('/ip4/127.0.0.1/tcp/8010')
-      p1 = new Peer(Id.create(), [])
-      sw1 = new Swarm(p1)
-
-      mh2 = multiaddr('/ip4/127.0.0.1/tcp/8020')
-      p2 = new Peer(Id.create(), [])
-      sw2 = new Swarm(p2)
-
-      async.parallel([
-        function (cb) {
-          sw1.addTransport('tcp', tcp, { multiaddr: mh1 }, {}, {port: 8010}, cb)
-        },
-        function (cb) {
-          sw2.addTransport('tcp', tcp, { multiaddr: mh2 }, {}, {port: 8020}, cb)
-        }
-      ], done)
-    })
-
-    afterEach(function (done) {
-      async.parallel([sw1.close, sw2.close], done)
-    })
-
-    it('dial a conn', function (done) {
-      sw1.dial(p2, {}, function (err) {
-        expect(err).to.equal(undefined)
-        expect(Object.keys(sw1.conns).length).to.equal(1)
-        done()
-      })
-    })
-
-    it('dial a conn on a protocol', function (done) {
-      sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
-        conn.end()
-        conn.on('end', done)
-      })
-
-      sw1.dial(p2, {}, '/sparkles/1.0.0', function (err, conn) {
-        expect(err).to.equal(null)
-        expect(Object.keys(sw1.conns).length).to.equal(0)
-        conn.end()
-      })
-    })
-
-    it('dial a protocol on a previous created conn', function (done) {
-      sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
-        conn.end()
-        conn.on('end', done)
-      })
-
-      sw1.dial(p2, {}, function (err) {
-        expect(err).to.equal(undefined)
-        expect(Object.keys(sw1.conns).length).to.equal(1)
-
-        sw1.dial(p2, {}, '/sparkles/1.0.0', function (err, conn) {
-          expect(err).to.equal(null)
-          expect(Object.keys(sw1.conns).length).to.equal(0)
-
-          conn.end()
-        })
-      })
-    })
-
-  // it('add an upgrade', function (done) { done() })
-  // it('dial a conn on top of a upgrade', function (done) { done() })
-  // it('dial a conn on a protocol on top of a upgrade', function (done) { done() })
-  })
-
-  /* TODO
-  describe('udp', function () {
-    it('add the transport', function (done) { done() })
-    it('dial a conn', function (done) { done() })
-    it('dial a conn on a protocol', function (done) { done() })
-    it('add an upgrade', function (done) { done() })
-    it('dial a conn on top of a upgrade', function (done) { done() })
-    it('dial a conn on a protocol on top of a upgrade', function (done) { done() })
-  }) */
-
-  /* TODO
-  describe('udt', function () {
-      it('add the transport', function (done) { done() })
-      it('dial a conn', function (done) { done() })
-      it('dial a conn on a protocol', function (done) { done() })
-      it('add an upgrade', function (done) { done() })
-      it('dial a conn on top of a upgrade', function (done) { done() })
-      it('dial a conn on a protocol on top of a upgrade', function (done) { done() })
-  }) */
-
-/* TODO
-describe('utp', function () {
-  it('add the transport', function (done) { done() })
-  it('dial a conn', function (done) { done() })
-  it('dial a conn on a protocol', function (done) { done() })
-  it('add an upgrade', function (done) { done() })
-  it('dial a conn on top of a upgrade', function (done) { done() })
-  it('dial a conn on a protocol on top of a upgrade', function (done) { done() })
-}) */
-})
-
-describe('With a SPDY Stream Muxer', function () {
-  describe('and one swarm over tcp', function () {
-    // TODO: What is the it here?
-    it('add Stream Muxer', function (done) {
-      // var mh = multiaddr('/ip4/127.0.0.1/tcp/8010')
-      var p = new Peer(Id.create(), [])
-      var sw = new Swarm(p)
-      sw.addStreamMuxer('spdy', Spdy, {})
-
+  it('add', (done) => {
+    swarmA.transport.add('tcp', new TCP())
+    expect(Object.keys(swarmA.transports).length).to.equal(1)
+    swarmB.transport.add('tcp', new TCP(), () => {
+      expect(Object.keys(swarmB.transports).length).to.equal(1)
       done()
     })
   })
 
-  describe('and two swarms over tcp', function () {
-    var mh1, p1, sw1, mh2, p2, sw2
+  it('listen', (done) => {
+    var count = 0
+    swarmA.transport.listen('tcp', {}, (conn) => {
+      conn.pipe(conn)
+    }, ready)
+    swarmB.transport.listen('tcp', {}, (conn) => {
+      conn.pipe(conn)
+    }, ready)
 
-    beforeEach(function (done) {
-      mh1 = multiaddr('/ip4/127.0.0.1/tcp/8010')
-      p1 = new Peer(Id.create(), [])
-      sw1 = new Swarm(p1)
-      sw1.addStreamMuxer('spdy', Spdy, {})
-
-      mh2 = multiaddr('/ip4/127.0.0.1/tcp/8020')
-      p2 = new Peer(Id.create(), [])
-      sw2 = new Swarm(p2)
-      sw2.addStreamMuxer('spdy', Spdy, {})
-
-      async.parallel([
-        function (cb) {
-          sw1.addTransport('tcp', tcp, { multiaddr: mh1 }, {}, {port: 8010}, cb)
-        },
-        function (cb) {
-          sw2.addTransport('tcp', tcp, { multiaddr: mh2 }, {}, {port: 8020}, cb)
-        }
-      ], done)
-    })
-
-    function afterEach (done) {
-      var cleaningCounter = 0
-      sw1.closeConns(cleaningUp)
-      sw2.closeConns(cleaningUp)
-
-      sw1.closeListener('tcp', cleaningUp)
-      sw2.closeListener('tcp', cleaningUp)
-
-      function cleaningUp () {
-        cleaningCounter++
-        // TODO FIX: here should be 4, but because super wrapping of
-        // streams, it makes it so hard to properly close the muxed
-        // streams - https://github.com/indutny/spdy-transport/issues/14
-        if (cleaningCounter < 3) {
-          return
-        }
-
+    function ready () {
+      if (++count === 2) {
+        expect(peerA.multiaddrs.length).to.equal(1)
+        expect(peerA.multiaddrs[0]).to.deep.equal(multiaddr('/ip4/127.0.0.1/tcp/9888'))
+        expect(peerB.multiaddrs.length).to.equal(1)
+        expect(peerB.multiaddrs[0]).to.deep.equal(multiaddr('/ip4/127.0.0.1/tcp/9999'))
         done()
       }
     }
+  })
 
-    it('dial a conn on a protocol', function (done) {
-      sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
-        // formallity so that the conn starts flowing
-        conn.on('data', function (chunk) {})
+  it('dial to a multiaddr', (done) => {
+    const conn = swarmA.transport.dial('tcp', multiaddr('/ip4/127.0.0.1/tcp/9999'), (err, conn) => {
+      expect(err).to.not.exist
+    })
+    conn.pipe(bl((err, data) => {
+      expect(err).to.not.exist
+      done()
+    }))
+    conn.write('hey')
+    conn.end()
+  })
 
-        conn.end()
-        conn.on('end', function () {
-          expect(Object.keys(sw1.muxedConns).length).to.equal(1)
-          expect(Object.keys(sw2.muxedConns).length).to.equal(0)
-          afterEach(done)
-        })
-      })
+  it('dial to set of multiaddr, only one is available', (done) => {
+    const conn = swarmA.transport.dial('tcp', [
+      multiaddr('/ip4/127.0.0.1/tcp/9910'),
+      multiaddr('/ip4/127.0.0.1/tcp/9999'),
+      multiaddr('/ip4/127.0.0.1/tcp/9309')
+    ], (err, conn) => {
+      expect(err).to.not.exist
+    })
+    conn.pipe(bl((err, data) => {
+      expect(err).to.not.exist
+      done()
+    }))
+    conn.write('hey')
+    conn.end()
+  })
 
-      sw1.dial(p2, {}, '/sparkles/1.0.0', function (err, conn) {
-        conn.on('data', function () {})
-        expect(err).to.equal(null)
-        expect(Object.keys(sw1.conns).length).to.equal(0)
-        conn.end()
-      })
+  it('close', (done) => {
+    var count = 0
+    swarmA.transport.close('tcp', closed)
+    swarmB.transport.close('tcp', closed)
+
+    function closed () {
+      if (++count === 2) {
+        done()
+      }
+    }
+  })
+
+  it('support port 0', (done) => {
+    var swarm
+    var peer = new Peer()
+    peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
+    swarm = new Swarm(peer)
+    swarm.transport.add('tcp', new TCP())
+    swarm.transport.listen('tcp', {}, (conn) => {
+      conn.pipe(conn)
+    }, ready)
+
+    function ready () {
+      expect(peer.multiaddrs.length).to.equal(1)
+      expect(peer.multiaddrs[0]).to.not.deep.equal(multiaddr('/ip4/127.0.0.1/tcp/0'))
+      swarm.close(done)
+    }
+  })
+
+  it('support addr /ip4/0.0.0.0/tcp/9050', (done) => {
+    var swarm
+    var peer = new Peer()
+    peer.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/9050'))
+    swarm = new Swarm(peer)
+    swarm.transport.add('tcp', new TCP())
+    swarm.transport.listen('tcp', {}, (conn) => {
+      conn.pipe(conn)
+    }, ready)
+
+    function ready () {
+      expect(peer.multiaddrs.length).to.equal(1)
+      expect(peer.multiaddrs[0]).to.deep.equal(multiaddr('/ip4/0.0.0.0/tcp/9050'))
+      swarm.close(done)
+    }
+  })
+
+  it('support addr /ip4/0.0.0.0/tcp/0', (done) => {
+    var swarm
+    var peer = new Peer()
+    peer.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/0'))
+    swarm = new Swarm(peer)
+    swarm.transport.add('tcp', new TCP())
+    swarm.transport.listen('tcp', {}, (conn) => {
+      conn.pipe(conn)
+    }, ready)
+
+    function ready () {
+      expect(peer.multiaddrs.length).to.equal(1)
+      expect(peer.multiaddrs[0]).to.not.deep.equal(multiaddr('/ip4/0.0.0.0/tcp/0'))
+      swarm.close(done)
+    }
+  })
+
+  it('listen in several addrs', (done) => {
+    var swarm
+    var peer = new Peer()
+    peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
+    peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
+    peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))
+    swarm = new Swarm(peer)
+    swarm.transport.add('tcp', new TCP())
+    swarm.transport.listen('tcp', {}, (conn) => {
+      conn.pipe(conn)
+    }, ready)
+
+    function ready () {
+      expect(peer.multiaddrs.length).to.equal(3)
+      swarm.close(done)
+    }
+  })
+})
+
+describe('transport - udt', function () {
+  this.timeout(10000)
+
+  before((done) => { done() })
+
+  it.skip('add', (done) => {})
+  it.skip('listen', (done) => {})
+  it.skip('dial', (done) => {})
+  it.skip('close', (done) => {})
+})
+
+describe('transport - websockets', function () {
+  this.timeout(10000)
+
+  before((done) => { done() })
+
+  it.skip('add', (done) => {})
+  it.skip('listen', (done) => {})
+  it.skip('dial', (done) => {})
+  it.skip('close', (done) => {})
+})
+
+describe('high level API - 1st without stream multiplexing (on TCP)', function () {
+  this.timeout(20000)
+
+  var swarmA
+  var peerA
+  var swarmB
+  var peerB
+
+  before((done) => {
+    peerA = new Peer()
+    peerB = new Peer()
+
+    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
+
+    swarmA = new Swarm(peerA)
+    swarmB = new Swarm(peerB)
+
+    swarmA.transport.add('tcp', new TCP())
+    swarmA.transport.listen('tcp', {}, null, ready)
+
+    swarmB.transport.add('tcp', new TCP())
+    swarmB.transport.listen('tcp', {}, null, ready)
+
+    var counter = 0
+
+    function ready () {
+      if (++counter === 2) {
+        done()
+      }
+    }
+  })
+
+  after((done) => {
+    var counter = 0
+
+    swarmA.close(closed)
+    swarmB.close(closed)
+
+    function closed () {
+      if (++counter === 2) {
+        done()
+      }
+    }
+  })
+
+  it('handle a protocol', (done) => {
+    swarmB.handle('/bananas/1.0.0', (conn) => {
+      conn.pipe(conn)
+    })
+    expect(Object.keys(swarmB.protocols).length).to.equal(1)
+    done()
+  })
+
+  it('dial on protocol', (done) => {
+    swarmB.handle('/pineapple/1.0.0', (conn) => {
+      conn.pipe(conn)
     })
 
-    it('dial two conns (transport reuse)', function (done) {
-      sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
-        // formality so that the conn starts flowing
-        conn.on('data', function (chunk) {})
-
-        conn.end()
-        conn.on('end', function () {
-          expect(Object.keys(sw1.muxedConns).length).to.equal(1)
-          expect(Object.keys(sw2.muxedConns).length).to.equal(0)
-
-          afterEach(done)
-        })
-      })
-
-      sw1.dial(p2, {}, '/sparkles/1.0.0', function (err, conn) {
-        // TODO Improve clarity
-        sw1.dial(p2, {}, '/sparkles/1.0.0', function (err, conn) {
-          conn.on('data', function () {})
-          expect(err).to.equal(null)
-          expect(Object.keys(sw1.conns).length).to.equal(0)
-
-          conn.end()
-        })
-
-        conn.on('data', function () {})
-        expect(err).to.equal(null)
-        expect(Object.keys(sw1.conns).length).to.equal(0)
-
-        conn.end()
-      })
+    swarmA.dial(peerB, '/pineapple/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      conn.end()
+      conn.on('end', done)
     })
   })
 
-  describe('and two identity enabled swarms over tcp', function () {
-    var mh1, p1, sw1, mh2, p2, sw2
-
-    beforeEach(function (done) {
-      mh1 = multiaddr('/ip4/127.0.0.1/tcp/8010')
-      p1 = new Peer(Id.create(), [])
-      sw1 = new Swarm(p1)
-      sw1.addStreamMuxer('spdy', Spdy, {})
-      sw1.enableIdentify()
-
-      mh2 = multiaddr('/ip4/127.0.0.1/tcp/8020')
-      p2 = new Peer(Id.create(), [])
-      sw2 = new Swarm(p2)
-      sw2.addStreamMuxer('spdy', Spdy, {})
-      sw2.enableIdentify()
-
-      async.parallel([
-        function (cb) {
-          sw1.addTransport('tcp', tcp, { multiaddr: mh1 }, {}, {port: 8010}, cb)
-        },
-        function (cb) {
-          sw2.addTransport('tcp', tcp, { multiaddr: mh2 }, {}, {port: 8020}, cb)
-        }
-      ], done)
+  it('dial to warm a conn', (done) => {
+    swarmA.dial(peerB, (err) => {
+      expect(err).to.not.exist
+      done()
     })
+  })
 
-    afterEach(function (done) {
-      var cleaningCounter = 0
-      sw1.closeConns(cleaningUp)
-      sw2.closeConns(cleaningUp)
+  it('dial on protocol, reuse warmed conn', (done) => {
+    swarmA.dial(peerB, '/bananas/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      conn.end()
+      conn.on('end', done)
+    })
+  })
+})
 
-      sw1.closeListener('tcp', cleaningUp)
-      sw2.closeListener('tcp', cleaningUp)
+describe('stream muxing (on TCP)', function () {
+  this.timeout(20000)
 
-      function cleaningUp () {
-        cleaningCounter++
-        // TODO FIX: here should be 4, but because super wrapping of
-        // streams, it makes it so hard to properly close the muxed
-        // streams - https://github.com/indutny/spdy-transport/issues/14
-        if (cleaningCounter < 3) {
-          return
-        }
-        // give time for identify to finish
-        setTimeout(function () {
-          expect(Object.keys(sw2.muxedConns).length).to.equal(1)
+  describe('multiplex', () => {
+    before((done) => { done() })
+    after((done) => { done() })
+
+    it.skip('add', (done) => {})
+    it.skip('handle + dial on protocol', (done) => {})
+    it.skip('dial to warm conn', (done) => {})
+    it.skip('dial on protocol, reuse warmed conn', (done) => {})
+    it.skip('enable identify to reuse incomming muxed conn', (done) => {})
+  })
+  describe('spdy', () => {
+    var swarmA
+    var peerA
+    var swarmB
+    var peerB
+    var swarmC
+    var peerC
+
+    before((done) => {
+      peerA = new Peer()
+      peerB = new Peer()
+      peerC = new Peer()
+
+      // console.log('peer A', peerA.id.toB58String())
+      // console.log('peer B', peerB.id.toB58String())
+      // console.log('peer C', peerC.id.toB58String())
+
+      peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
+      peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
+      peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))
+
+      swarmA = new Swarm(peerA)
+      swarmB = new Swarm(peerB)
+      swarmC = new Swarm(peerC)
+
+      swarmA.transport.add('tcp', new TCP())
+      swarmA.transport.listen('tcp', {}, null, ready)
+
+      swarmB.transport.add('tcp', new TCP())
+      swarmB.transport.listen('tcp', {}, null, ready)
+
+      swarmC.transport.add('tcp', new TCP())
+      swarmC.transport.listen('tcp', {}, null, ready)
+
+      var counter = 0
+
+      function ready () {
+        if (++counter === 3) {
           done()
-        }, 500)
+        }
       }
     })
 
-    it('identify', function (done) {
-      sw2.handleProtocol('/sparkles/1.0.0', function (conn) {
-        // formallity so that the conn starts flowing
-        conn.on('data', function (chunk) {})
+    after((done) => {
+      var counter = 0
 
-        conn.end()
-        conn.on('end', function () {
-          expect(Object.keys(sw1.muxedConns).length).to.equal(1)
+      swarmA.close(closed)
+      swarmB.close(closed)
+      swarmC.close(closed)
+
+      function closed () {
+        if (++counter === 3) {
           done()
-        })
+        }
+      }
+    })
+
+    it('add', (done) => {
+      swarmA.connection.addStreamMuxer(spdy)
+      swarmB.connection.addStreamMuxer(spdy)
+      swarmC.connection.addStreamMuxer(spdy)
+      done()
+    })
+
+    it('handle + dial on protocol', (done) => {
+      swarmB.handle('/abacaxi/1.0.0', (conn) => {
+        conn.pipe(conn)
       })
 
-      sw1.dial(p2, {}, '/sparkles/1.0.0', function (err, conn) {
-        conn.on('data', function () {})
-        expect(err).to.equal(null)
-        expect(Object.keys(sw1.conns).length).to.equal(0)
+      swarmA.dial(peerB, '/abacaxi/1.0.0', (err, conn) => {
+        expect(err).to.not.exist
+        expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
         conn.end()
+        conn.on('end', done)
+      })
+    })
+
+    it('dial to warm conn', (done) => {
+      swarmB.dial(peerA, (err) => {
+        expect(err).to.not.exist
+        expect(Object.keys(swarmB.conns).length).to.equal(0)
+        expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
+        done()
+      })
+    })
+
+    it('dial on protocol, reuse warmed conn', (done) => {
+      swarmA.handle('/papaia/1.0.0', (conn) => {
+        conn.pipe(conn)
+      })
+
+      swarmB.dial(peerA, '/papaia/1.0.0', (err, conn) => {
+        expect(err).to.not.exist
+        expect(Object.keys(swarmB.conns).length).to.equal(0)
+        expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
+        conn.end()
+        conn.on('end', done)
+      })
+    })
+
+    it('enable identify to reuse incomming muxed conn', (done) => {
+      swarmA.connection.reuse()
+      swarmC.connection.reuse()
+
+      swarmC.dial(peerA, (err) => {
+        expect(err).to.not.exist
+        setTimeout(() => {
+          expect(Object.keys(swarmC.muxedConns).length).to.equal(1)
+          expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
+          done()
+        }, 500)
       })
     })
   })
 })
+
+/*
+describe('conn upgrades', function () {
+  this.timeout(20000)
+
+  describe('secio on tcp', () => {
+    // before((done) => { done() })
+    // after((done) => { done() })
+
+    it.skip('add', (done) => {})
+    it.skip('dial', (done) => {})
+    it.skip('tls on a muxed stream (not the full conn)', (done) => {})
+  })
+  describe('tls on tcp', () => {
+    // before((done) => { done() })
+    // after((done) => { done() })
+
+    it.skip('add', (done) => {})
+    it.skip('dial', (done) => {})
+    it.skip('tls on a muxed stream (not the full conn)', (done) => {})
+  })
+})
+
+describe('high level API - with everything mixed all together!', function () {
+  this.timeout(20000)
+
+  // before((done) => { done() })
+  // after((done) => { done() })
+
+  it.skip('add tcp', (done) => {})
+  it.skip('add utp', (done) => {})
+  it.skip('add websockets', (done) => {})
+  it.skip('dial', (done) => {})
+})
+*/
