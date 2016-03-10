@@ -40,6 +40,7 @@
     "tape": "^4.2.0"
   },
   "dependencies": {
+    "ip-address": "^5.8.0",
     "multiaddr": "^1.0.0"
   }
 }
