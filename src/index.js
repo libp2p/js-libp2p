@@ -42,7 +42,7 @@ function Swarm (peerInfo) {
       multiaddrs = [multiaddrs]
     }
 
-    // TODO a) filter the multiaddrs that are actually valid for this transport (use a func from the transport itself)
+    // TODO a) filter the multiaddrs that are actually valid for this transport (use a func from the transport itself) (maybe even make the transport do that)
 
     // b) if multiaddrs.length = 1, return the conn from the
     // transport, otherwise, create a passthrough
@@ -116,7 +116,7 @@ function Swarm (peerInfo) {
   // {
   //   peerIdB58: {
   //     muxer: <muxer>
-  //     rawSocket: socket // to abstract info required for the Identify Protocol
+  //     conn: <transport socket> // to extract info required for the Identify Protocol
   //   }
   // }
   this.muxedConns = {}
@@ -136,12 +136,19 @@ function Swarm (peerInfo) {
     // for listening
     this.handle(muxer.multicodec, (conn) => {
       const muxedConn = muxer(conn, true)
-      muxedConn.on('stream', connHandler)
+      muxedConn.on('stream', (conn) => {
+        connHandler(conn)
+      })
 
+      // if identify is enabled, attempt to do it for muxer reuse
       if (this.identify) {
-        identify.exec(muxedConn, (err, pi) => {
-          if (err) {}
-          // TODO muxedConns[pi.id.toB58String()].muxer = muxedConn
+        identify.exec(conn, muxedConn, peerInfo, (err, pi) => {
+          if (err) {
+            return console.log('Identify exec failed', err)
+          }
+          this.muxedConns[pi.id.toB58String()] = {}
+          this.muxedConns[pi.id.toB58String()].muxer = muxedConn
+          this.muxedConns[pi.id.toB58String()].conn = conn // to be able to extract addrs
         })
       }
     })
@@ -151,18 +158,19 @@ function Swarm (peerInfo) {
   this.identify = false
   this.connection.reuse = () => {
     this.identify = true
-    this.handle(identify.multicodec, identify.handler(peerInfo))
+    this.handle(identify.multicodec, identify.handler(peerInfo, this))
   }
 
-  const self = this // couldn't get rid of this
+  const self = this // prefered this to bind
 
   // incomming connection handler
   function connHandler (conn) {
     var msS = new multistream.Select()
-    msS.handle(conn)
-    Object.keys(self.protocols).forEach(function (protocol) {
+    Object.keys(self.protocols).forEach((protocol) => {
+      if (!protocol) { return }
       msS.addHandler(protocol, self.protocols[protocol])
     })
+    msS.handle(conn)
   }
 
   // higher level (public) API
@@ -258,11 +266,17 @@ function Swarm (peerInfo) {
               } else {
                 nextMuxer(muxers.shift())
               }
+              return
             }
 
             const muxedConn = self.muxers[key](conn, false)
             self.muxedConns[b58Id] = {}
             self.muxedConns[b58Id].muxer = muxedConn
+            self.muxedConns[b58Id].conn = conn
+
+            // in case identify is on
+            muxedConn.on('stream', connHandler)
+
             cb(null, muxedConn)
           })
         })

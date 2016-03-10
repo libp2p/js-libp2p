@@ -303,6 +303,10 @@ describe('stream muxing (on TCP)', function () {
       peerB = new Peer()
       peerC = new Peer()
 
+      // console.log('peer A', peerA.id.toB58String())
+      // console.log('peer B', peerB.id.toB58String())
+      // console.log('peer C', peerC.id.toB58String())
+
       peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
       peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
       peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))
@@ -386,7 +390,7 @@ describe('stream muxing (on TCP)', function () {
       })
     })
 
-    it.skip('enable identify to reuse incomming muxed conn', (done) => {
+    it('enable identify to reuse incomming muxed conn', (done) => {
       swarmA.connection.reuse()
       swarmC.connection.reuse()
 
@@ -395,7 +399,8 @@ describe('stream muxing (on TCP)', function () {
         setTimeout(() => {
           expect(Object.keys(swarmC.muxedConns).length).to.equal(1)
           expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
-        }, 100)
+          done()
+        }, 500)
       })
     })
   })
