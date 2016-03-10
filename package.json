@@ -34,13 +34,12 @@
     "interface-transport": "^0.1.1",
     "istanbul": "^0.4.2",
     "mocha": "^2.4.5",
-    "multiaddr": "^1.1.1",
     "pre-commit": "^1.1.2",
     "standard": "^6.0.7",
     "tape": "^4.2.0"
   },
   "dependencies": {
     "ip-address": "^5.8.0",
-    "multiaddr": "^1.0.0"
+    "multiaddr": "^1.1.1"
   }
 }
