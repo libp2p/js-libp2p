@@ -109,3 +109,44 @@ close all the listeners and muxers.
 
 - `callback`
 
+# Design
+
+## Multitransport
+
+libp2p is designed to support multiple transports at the same time. While peers are identified by their ID (which are generated from their public keys), the addresses of each pair may vary, depending the device where they are being run or the network in which they are accessible through.
+
+In order for a transport to be supported, it has to follow the [interface-transport](https://github.com/diasdavid/interface-transport) spec.
+
+## Connection upgrades
+
+Each connection in libp2p follows the [interface-connection](https://github.com/diasdavid/interface-connection) spec. This design decision enables libp2p to have upgradable transports.
+
+We think of `upgrade` as a very important notion when we are talking about connections, we can see mechanisms like: stream multiplexing, congestion control, encrypted channels, multipath, simulcast, etc, as `upgrades` to a connection. A connection can be a simple and with no guarantees, drop a packet on the network with a destination thing, a transport in the other hand can be a connection and or a set of different upgrades that are mounted on top of each other, giving extra functionality to that connection and therefore `upgrading` it.
+
+Types of upgrades to a connection:
+
+- encrypted channel (with TLS for e.g)
+- congestion flow (some transports don't have it by default)
+- multipath (open several connections and abstract it as a single connection)
+- simulcast (still really thinking this one through, it might be interesting to send a packet through different connections under some hard network circumstances)
+- stream-muxer - this a special case, because once we upgrade a connection to a stream-muxer, we can open more streams (multiplex them) on a single stream, also enabling us to reuse the underlying dialed transport
+
+We also want to enable flexibility when it comes to upgrading a connection, for example, we might that all dialed transports pass through the encrypted channel upgrade, but not the congestion flow, specially when a transport might have already some underlying properties (UDP vs TCP vs WebRTC vs every other transport protocol)
+
+## Identify
+
+Identify is a protocol that Swarms mounts on top of itself, to identify the connections between any two peers. E.g:
+
+- a) peer A dials a conn to peer B
+- b) that conn gets upgraded to a stream multiplexer that both peers agree
+- c) peer B executes de identify protocol
+- d) peer B now can open streams to peer A, knowing which is the identity of peer A
+
+In addition to this, we also share the 'observed addresses' by the other peer, which is extremely useful information for different kinds of network topologies.
+
+## Notes
+
+To avoid the confusion between connection, stream, transport, and other names that represent an abstraction of data flow between two points, we use terms as:
+
+- connection - something that implements the transversal expectations of a stream between two peers, including the benefits of using a stream plus having a way to do half duplex, full duplex
+- transport - something that as a dial/listen interface and return objs that implement a connection interface
