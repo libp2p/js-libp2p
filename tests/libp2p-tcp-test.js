@@ -53,5 +53,29 @@ describe('libp2p-tcp', function () {
     })
   })
 
+  it('get observed addrs', (done) => {
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090')
+    var dialerObsAddrs
+    var listenerObsAddrs
+
+    tcp.createListener(mh, (conn) => {
+      expect(conn).to.exist
+      dialerObsAddrs = conn.getObservedAddrs()
+      conn.end()
+    }, () => {
+      const conn = tcp.dial(mh)
+      conn.on('end', () => {
+        listenerObsAddrs = conn.getObservedAddrs()
+        conn.end()
+
+        tcp.close(() => {
+          expect(listenerObsAddrs[0]).to.deep.equal(mh)
+          expect(dialerObsAddrs.length).to.equal(1)
+          done()
+        })
+      })
+    })
+  })
+
   it.skip('listen on IPv6', (done) => {})
 })

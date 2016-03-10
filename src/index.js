@@ -2,6 +2,7 @@
 // const log = debug('libp2p:tcp')
 const tcp = require('net')
 const multiaddr = require('multiaddr')
+const Address6 = require('ip-address').Address6
 
 exports = module.exports = TCP
 
@@ -17,7 +18,11 @@ function TCP () {
       options = {}
     }
     options.ready = options.ready || function noop () {}
-    return tcp.connect(multiaddr.toOptions(), options.ready)
+    const conn = tcp.connect(multiaddr.toOptions(), options.ready)
+    conn.getObservedAddrs = () => {
+      return [multiaddr]
+    }
+    return conn
   }
 
   this.createListener = (multiaddrs, options, handler, callback) => {
@@ -35,7 +40,12 @@ function TCP () {
     const freshMultiaddrs = []
 
     multiaddrs.forEach((m) => {
-      const listener = tcp.createServer(handler)
+      const listener = tcp.createServer((conn) => {
+        conn.getObservedAddrs = () => {
+          return [getMultiaddr(conn)]
+        }
+        handler(conn)
+      })
       listener.listen(m.toOptions(), () => {
         // Node.js likes to convert addr to IPv6 (when 0.0.0.0 for e.g)
         const address = listener.address()
@@ -71,3 +81,20 @@ function TCP () {
   }
 }
 
+function getMultiaddr (conn) {
+  var mh
+
+  if (conn.remoteFamily === 'IPv6') {
+    var addr = new Address6(conn.remoteAddress)
+    if (addr.v4) {
+      var ip4 = addr.to4().correctForm()
+      mh = multiaddr('/ip4/' + ip4 + '/tcp/' + conn.remotePort)
+    } else {
+      mh = multiaddr('/ip6/' + conn.remoteAddress + '/tcp/' + conn.remotePort)
+    }
+  } else {
+    mh = multiaddr('/ip4/' + conn.remoteAddress + '/tcp/' + conn.remotePort)
+  }
+
+  return mh
+}
