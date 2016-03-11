@@ -257,6 +257,7 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
     swarmA.dial(peerB, '/pineapple/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       conn.end()
+      conn.on('data', () => {}) // let it flow.. let it flooooow
       conn.on('end', done)
     })
   })
@@ -272,6 +273,7 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
     swarmA.dial(peerB, '/bananas/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       conn.end()
+      conn.on('data', () => {}) // let it flow.. let it flooooow
       conn.on('end', done)
     })
   })
@@ -363,6 +365,8 @@ describe('stream muxing (on TCP)', function () {
         expect(err).to.not.exist
         expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
         conn.end()
+
+        conn.on('data', () => {}) // let it flow.. let it flooooow
         conn.on('end', done)
       })
     })
@@ -386,6 +390,8 @@ describe('stream muxing (on TCP)', function () {
         expect(Object.keys(swarmB.conns).length).to.equal(0)
         expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
         conn.end()
+
+        conn.on('data', () => {}) // let it flow.. let it flooooow
         conn.on('end', done)
       })
     })
@@ -406,7 +412,6 @@ describe('stream muxing (on TCP)', function () {
   })
 })
 
-/*
 describe('conn upgrades', function () {
   this.timeout(20000)
 
@@ -439,4 +444,3 @@ describe('high level API - with everything mixed all together!', function () {
   it.skip('add websockets', (done) => {})
   it.skip('dial', (done) => {})
 })
-*/
