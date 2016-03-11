@@ -1,7 +1,6 @@
 const multistream = require('multistream-select')
-// const async = require('async')
 const identify = require('./identify')
-const PassThrough = require('stream').PassThrough
+const DuplexPassThrough = require('duplex-passthrough')
 
 exports = module.exports = Swarm
 
@@ -60,13 +59,13 @@ function Swarm (peerInfo) {
 
     // c) multiaddrs should already be a filtered list
     // specific for the transport we are using
-    const pt = new PassThrough()
+    const pt = new DuplexPassThrough()
 
     next(multiaddrs.shift())
     return pt
     function next (multiaddr) {
       const conn = t.dial(multiaddr, {ready: () => {
-        pt.pipe(conn).pipe(pt)
+        pt.wrapStream(conn)
         const cb = callback
         callback = noop // this is done to avoid connection drops as connect errors
         cb(null, pt)
@@ -180,7 +179,7 @@ function Swarm (peerInfo) {
       callback = protocol
       protocol = null
     } else {
-      pt = new PassThrough()
+      pt = new DuplexPassThrough()
     }
 
     const b58Id = pi.id.toB58String()
@@ -293,7 +292,8 @@ function Swarm (peerInfo) {
           if (err) {
             return callback(err)
           }
-          pt.pipe(conn).pipe(pt)
+
+          pt.wrapStream(conn)
           callback(null, pt)
         })
       })
