@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/diasdavid/js-libp2p-websockets#readme",
   "dependencies": {
+    "mafmt": "^1.0.1",
     "multiaddr": "^1.1.1",
     "simple-websocket": "github:diasdavid/simple-websocket#ec31437"
   },

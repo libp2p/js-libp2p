@@ -1,7 +1,7 @@
 // const debug = require('debug')
 // const log = debug('libp2p:tcp')
-// const multiaddr = require('multiaddr')
 const SWS = require('simple-websocket')
+const mafmt = require('mafmt')
 
 exports = module.exports = WebSockets
 
@@ -73,8 +73,7 @@ function WebSockets () {
 
   this.filter = (multiaddrs) => {
     return multiaddrs.filter((ma) => {
-      // TODO
-      // https://github.com/whyrusleeping/js-mafmt/pull/2
+      return mafmt.WebSockets.matches(ma)
     })
   }
 }
