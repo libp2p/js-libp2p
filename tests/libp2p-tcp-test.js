@@ -77,5 +77,16 @@ describe('libp2p-tcp', function () {
     })
   })
 
+  it('filter valid addrs for this transport', (done) => {
+    const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
+    const mh2 = multiaddr('/ip4/127.0.0.1/udp/9090')
+    const mh3 = multiaddr('/ip4/127.0.0.1/tcp/9090/http')
+
+    const valid = tcp.filter([mh1, mh2, mh3])
+    expect(valid.length).to.equal(1)
+    expect(valid[0]).to.deep.equal(mh1)
+    done()
+  })
+
   it.skip('listen on IPv6', (done) => {})
 })

@@ -3,6 +3,7 @@
 const tcp = require('net')
 const multiaddr = require('multiaddr')
 const Address6 = require('ip-address').Address6
+const mafmt = require('mafmt')
 
 exports = module.exports = TCP
 
@@ -77,6 +78,15 @@ function TCP () {
           callback()
         }
       })
+    })
+  }
+
+  this.filter = (multiaddrs) => {
+    if (!Array.isArray(multiaddrs)) {
+      multiaddrs = [multiaddrs]
+    }
+    return multiaddrs.filter((ma) => {
+      return mafmt.TCP.matches(ma)
     })
   }
 }
