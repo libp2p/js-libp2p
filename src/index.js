@@ -85,11 +85,7 @@ function Swarm (peerInfo) {
     // if no callback is passed, we pass conns to connHandler
     if (!handler) { handler = connHandler }
 
-    const multiaddrs = peerInfo.multiaddrs.filter((m) => {
-      if (m.toString().indexOf('tcp') !== -1) {
-        return m
-      }
-    })
+    const multiaddrs = this.transports[key].filter(peerInfo.multiaddrs)
 
     this.transports[key].createListener(multiaddrs, handler, (err, maUpdate) => {
       if (err) {
