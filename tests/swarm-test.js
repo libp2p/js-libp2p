@@ -477,16 +477,16 @@ describe('conn upgrades', function () {
   this.timeout(20000)
 
   describe('secio on tcp', () => {
-    // before((done) => { done() })
-    // after((done) => { done() })
+    before((done) => { done() })
+    after((done) => { done() })
 
     it.skip('add', (done) => {})
     it.skip('dial', (done) => {})
     it.skip('tls on a muxed stream (not the full conn)', (done) => {})
   })
   describe('tls on tcp', () => {
-    // before((done) => { done() })
-    // after((done) => { done() })
+    before((done) => { done() })
+    after((done) => { done() })
 
     it.skip('add', (done) => {})
     it.skip('dial', (done) => {})
@@ -497,11 +497,126 @@ describe('conn upgrades', function () {
 describe('high level API - with everything mixed all together!', function () {
   this.timeout(20000)
 
-  // before((done) => { done() })
-  // after((done) => { done() })
+  var swarmA // tcp
+  var peerA
+  var swarmB // tcp+ws
+  var peerB
+  var swarmC // tcp+ws
+  var peerC
 
-  it.skip('add tcp', (done) => {})
+  before((done) => {
+    peerA = new Peer()
+    peerB = new Peer()
+    peerC = new Peer()
+
+    // console.log('peer A', peerA.id.toB58String())
+    // console.log('peer B', peerB.id.toB58String())
+    // console.log('peer C', peerC.id.toB58String())
+
+    swarmA = new Swarm(peerA)
+    swarmB = new Swarm(peerB)
+    swarmC = new Swarm(peerC)
+
+    done()
+  })
+
+  after((done) => {
+    var counter = 0
+
+    swarmA.close(closed)
+    swarmB.close(closed)
+    swarmC.close(closed)
+
+    function closed () {
+      if (++counter === 3) {
+        done()
+      }
+    }
+  })
+
+  it('add tcp', (done) => {
+    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9011'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9021'))
+    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9031'))
+
+    swarmA.transport.add('tcp', new TCP())
+    swarmA.transport.listen('tcp', {}, null, ready)
+
+    swarmB.transport.add('tcp', new TCP())
+    swarmB.transport.listen('tcp', {}, null, ready)
+
+    swarmC.transport.add('tcp', new TCP())
+    swarmC.transport.listen('tcp', {}, null, ready)
+
+    var counter = 0
+
+    function ready () {
+      if (++counter === 3) {
+        done()
+      }
+    }
+  })
+
   it.skip('add utp', (done) => {})
-  it.skip('add websockets', (done) => {})
-  it.skip('dial', (done) => {})
+
+  it('add websockets', (done) => {
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9022/websockets'))
+    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9032/websockets'))
+
+    swarmB.transport.add('ws', new WebSockets())
+    swarmB.transport.listen('ws', {}, null, ready)
+
+    swarmC.transport.add('ws', new WebSockets())
+    swarmC.transport.listen('ws', {}, null, ready)
+
+    var counter = 0
+
+    function ready () {
+      if (++counter === 2) {
+        done()
+      }
+    }
+  })
+
+  it('add spdy', (done) => {
+    swarmA.connection.addStreamMuxer(spdy)
+    swarmB.connection.addStreamMuxer(spdy)
+    swarmC.connection.addStreamMuxer(spdy)
+    swarmA.connection.reuse()
+    swarmB.connection.reuse()
+    swarmC.connection.reuse()
+    done()
+  })
+
+  it.skip('add multiplex', (done) => {})
+
+  it('dial from tcp to tcp+ws', (done) => {
+    swarmB.handle('/anona/1.0.0', (conn) => {
+      conn.pipe(conn)
+    })
+
+    swarmA.dial(peerB, '/anona/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+      conn.end()
+
+      conn.on('data', () => {}) // let it flow.. let it flooooow
+      conn.on('end', done)
+    })
+  })
+
+  it('dial from tcp+ws to tcp+ws', (done) => {
+    swarmC.handle('/mamao/1.0.0', (conn) => {
+      conn.pipe(conn)
+    })
+
+    swarmA.dial(peerC, '/mamao/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
+      conn.end()
+
+      conn.on('data', () => {}) // let it flow.. let it flooooow
+      conn.on('end', done)
+    })
+  })
 })
