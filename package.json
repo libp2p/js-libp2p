@@ -7,7 +7,9 @@
     "test:compliance:connection": "node tests/connection.js",
     "test:compliance:transport": "node tests/transport.js",
     "test:specific": "mocha tests/*-test.js",
-    "test": "npm run test:specific",
+    "test:node": "npm run test:specific",
+    "test:browser": "node tests/karma",
+    "test": "npm run test:node && npm run test:browser",
     "test-2": "npm run test:specific && npm run test:compliance:transport && npm run test:compliance:connection",
     "lint": "standard"
   },
@@ -38,9 +40,17 @@
     "interface-connection": "0.0.3",
     "interface-transport": "^0.1.1",
     "istanbul": "^0.4.2",
+    "karma": "^0.13.19",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-cli": "^0.1.2",
+    "karma-firefox-launcher": "^0.1.7",
+    "karma-mocha": "^0.2.1",
+    "karma-spec-reporter": "0.0.23",
+    "karma-webpack": "^1.7.0",
     "mocha": "^2.4.5",
     "pre-commit": "^1.1.2",
     "standard": "^6.0.7",
-    "tape": "^4.2.0"
+    "tape": "^4.2.0",
+    "webpack": "^1.12.14"
   }
 }
