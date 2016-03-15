@@ -63,4 +63,45 @@ describe('libp2p-websockets', function () {
     expect(valid[0]).to.deep.equal(mh3)
     done()
   })
+
+  it('echo', (done) => {
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+    ws.createListener(mh, (conn) => {
+      conn.pipe(conn)
+    }, () => {
+      const conn = ws.dial(mh)
+      const message = 'Hello World!'
+      conn.write(message)
+      conn.on('data', (data) => {
+        expect(data.toString()).to.equal(message)
+        conn.end()
+        ws.close(() => {
+          done()
+        })
+      })
+    })
+  })
+
+  it('echo with connect event and send', (done) => {
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+    ws.createListener(mh, (conn) => {
+      conn.pipe(conn)
+    }, () => {
+      const message = 'Hello World!'
+
+      const conn = ws.dial(mh, {
+        connect: () => {
+          conn.send(message)
+        }
+      })
+
+      conn.on('data', (data) => {
+        expect(data.toString()).to.equal(message)
+        conn.end()
+        ws.close(() => {
+          done()
+        })
+      })
+    })
+  })
 })
