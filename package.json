@@ -40,17 +40,16 @@
     "interface-connection": "0.0.3",
     "interface-transport": "^0.1.1",
     "istanbul": "^0.4.2",
-    "karma": "^0.13.19",
+    "karma": "^0.13.22",
     "karma-chrome-launcher": "^0.2.2",
-    "karma-cli": "^0.1.2",
     "karma-firefox-launcher": "^0.1.7",
-    "karma-mocha": "^0.2.1",
-    "karma-spec-reporter": "0.0.23",
+    "karma-mocha": "^0.2.2",
+    "karma-spec-reporter": "0.0.24",
     "karma-webpack": "^1.7.0",
     "mocha": "^2.4.5",
     "pre-commit": "^1.1.2",
     "standard": "^6.0.7",
     "tape": "^4.2.0",
-    "webpack": "^1.12.14"
+    "webpack": "^2.1.0-beta.4"
   }
 }
