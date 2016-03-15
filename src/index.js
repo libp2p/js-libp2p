@@ -41,7 +41,8 @@ function Swarm (peerInfo) {
       multiaddrs = [multiaddrs]
     }
 
-    // TODO a) filter the multiaddrs that are actually valid for this transport (use a func from the transport itself) (maybe even make the transport do that)
+    // a) filter the multiaddrs that are actually valid for this transport (use a func from the transport itself) (maybe even make the transport do that)
+    multiaddrs = t.filter(multiaddrs)
 
     // b) if multiaddrs.length = 1, return the conn from the
     // transport, otherwise, create a passthrough
