@@ -17,10 +17,10 @@ function WebSockets () {
       options = {}
     }
 
-    options.connect = options.connect || function noop () {}
+    options.ready = options.ready || function noop () {}
     const maOpts = multiaddr.toOptions()
     const conn = new SWS('ws://' + maOpts.host + ':' + maOpts.port)
-    conn.on('connect', options.connect)
+    conn.on('connect', options.ready)
     conn.getObservedAddrs = () => {
       return [multiaddr]
     }
