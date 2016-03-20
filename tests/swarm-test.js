@@ -232,6 +232,19 @@ describe('transport - websockets', function () {
     conn.end()
   })
 
+  it('dial (conn from callback)', (done) => {
+    swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'), (err, conn) => {
+      expect(err).to.not.exist
+
+      conn.pipe(bl((err, data) => {
+        expect(err).to.not.exist
+        done()
+      }))
+      conn.write('hey')
+      conn.end()
+    })
+  })
+
   it('close', (done) => {
     var count = 0
     swarmA.transport.close('ws', closed)
