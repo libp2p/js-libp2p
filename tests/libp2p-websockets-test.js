@@ -90,7 +90,7 @@ describe('libp2p-websockets', function () {
       const message = 'Hello World!'
 
       const conn = ws.dial(mh, {
-        connect: () => {
+        ready: () => {
           conn.send(message)
         }
       })
