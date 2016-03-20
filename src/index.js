@@ -197,6 +197,8 @@ function Swarm (peerInfo) {
       gotMuxer(this.muxedConns[b58Id].muxer)
     }
 
+    return pt
+
     function gotWarmedUpConn (conn) {
       attemptMuxerUpgrade(conn, (err, muxer) => {
         if (!protocol) {

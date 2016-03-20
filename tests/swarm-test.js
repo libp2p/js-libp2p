@@ -336,6 +336,19 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
     })
   })
 
+  it('dial on protocol (returned conn)', (done) => {
+    swarmB.handle('/apples/1.0.0', (conn) => {
+      conn.pipe(conn)
+    })
+
+    const conn = swarmA.dial(peerB, '/apples/1.0.0', (err) => {
+      expect(err).to.not.exist
+    })
+    conn.end()
+    conn.on('data', () => {}) // let it flow.. let it flooooow
+    conn.on('end', done)
+  })
+
   it('dial to warm a conn', (done) => {
     swarmA.dial(peerB, (err) => {
       expect(err).to.not.exist
@@ -616,6 +629,21 @@ describe('high level API - with everything mixed all together!', function () {
       conn.on('data', () => {}) // let it flow.. let it flooooow
       conn.on('end', done)
     })
+  })
+
+  it('dial from tcp to tcp+ws (returned conn)', (done) => {
+    swarmB.handle('/grapes/1.0.0', (conn) => {
+      conn.pipe(conn)
+    })
+
+    const conn = swarmA.dial(peerB, '/grapes/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+    })
+    conn.end()
+
+    conn.on('data', () => {}) // let it flow.. let it flooooow
+    conn.on('end', done)
   })
 
   it('dial from tcp+ws to tcp+ws', (done) => {
