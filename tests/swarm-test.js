@@ -232,6 +232,19 @@ describe('transport - websockets', function () {
     conn.end()
   })
 
+  it('dial (conn from callback)', (done) => {
+    swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'), (err, conn) => {
+      expect(err).to.not.exist
+
+      conn.pipe(bl((err, data) => {
+        expect(err).to.not.exist
+        done()
+      }))
+      conn.write('hey')
+      conn.end()
+    })
+  })
+
   it('close', (done) => {
     var count = 0
     swarmA.transport.close('ws', closed)
@@ -321,6 +334,19 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
       conn.on('data', () => {}) // let it flow.. let it flooooow
       conn.on('end', done)
     })
+  })
+
+  it('dial on protocol (returned conn)', (done) => {
+    swarmB.handle('/apples/1.0.0', (conn) => {
+      conn.pipe(conn)
+    })
+
+    const conn = swarmA.dial(peerB, '/apples/1.0.0', (err) => {
+      expect(err).to.not.exist
+    })
+    conn.end()
+    conn.on('data', () => {}) // let it flow.. let it flooooow
+    conn.on('end', done)
   })
 
   it('dial to warm a conn', (done) => {
@@ -603,6 +629,21 @@ describe('high level API - with everything mixed all together!', function () {
       conn.on('data', () => {}) // let it flow.. let it flooooow
       conn.on('end', done)
     })
+  })
+
+  it('dial from tcp to tcp+ws (returned conn)', (done) => {
+    swarmB.handle('/grapes/1.0.0', (conn) => {
+      conn.pipe(conn)
+    })
+
+    const conn = swarmA.dial(peerB, '/grapes/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+    })
+    conn.end()
+
+    conn.on('data', () => {}) // let it flow.. let it flooooow
+    conn.on('end', done)
   })
 
   it('dial from tcp+ws to tcp+ws', (done) => {
