@@ -1,6 +1,6 @@
 const multiplex = require('multiplex')
 
-module.exports = function (transport, isListener) {
+exports = module.exports = function (transport, isListener) {
   var id = 1
 
   const muxer = multiplex()
@@ -27,8 +27,10 @@ module.exports = function (transport, isListener) {
   // muxer.on('close', () => {})
   // muxer.on('error', (err) => {})
   // muxer.end()
-  muxer.multicodec = '/multiplex/6.7.0'
+  muxer.multicodec = exports.multicodec
   return muxer
 }
+
+exports.multicodec = '/multiplex/6.7.0'
 
 function noop () {}
