@@ -35,4 +35,4 @@ function runTests (done) {
   }, done).start()
 }
 
-createServer(() => runTests(() => stopServer(() => null)))
+createServer(() => runTests((exitCode) => stopServer(() => process.exit(exitCode))))
