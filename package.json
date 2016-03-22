@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "standard",
     "test:node": "mocha tests/*-test.js",
-    "test:browser": "node tests/karma.js",
+    "test:browser": "node tests/browser-nodejs/test.js",
     "test": "npm run test:node && npm run test:browser",
     "compliance": "node tests/compliance.js"
   },

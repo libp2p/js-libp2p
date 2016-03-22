@@ -5,11 +5,12 @@ module.exports = function (config) {
 
     files: [
       'tests/multiplex-test.js',
-      'tests/browser.js'
+      'tests/browser-nodejs/browser.js'
     ],
 
     preprocessors: {
-      'tests/*': ['webpack']
+      'tests/*': ['webpack'],
+      'tests/browser-nodejs/*': ['webpack']
     },
 
     webpack: {
