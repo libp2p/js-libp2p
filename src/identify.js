@@ -42,7 +42,9 @@ exports.exec = (rawConn, muxer, peerInfo, callback) => {
       var pbs = pbStream()
 
       pbs.on('identify', (msg) => {
-        peerInfo.multiaddr.addSafe(msg.observedAddr)
+        if (msg.observedAddr.length > 0) {
+          peerInfo.multiaddr.addSafe(msg.observedAddr)
+        }
 
         const peerId = Id.createFromPubKey(msg.publicKey)
         const otherPeerInfo = new Info(peerId)
@@ -60,7 +62,7 @@ exports.exec = (rawConn, muxer, peerInfo, callback) => {
         agentVersion: 'na',
         publicKey: peerInfo.id.pubKey,
         listenAddrs: peerInfo.multiaddrs.map((mh) => { return mh.buffer }),
-        observedAddr: obsMultiaddr ? obsMultiaddr.buffer : null
+        observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
       })
 
       pbs.pipe(ds).pipe(pbs)
@@ -77,7 +79,9 @@ exports.handler = (peerInfo, swarm) => {
     var pbs = pbStream()
 
     pbs.on('identify', function (msg) {
-      peerInfo.multiaddr.addSafe(msg.observedAddr)
+      if (msg.observedAddr.length > 0) {
+        peerInfo.multiaddr.addSafe(msg.observedAddr)
+      }
 
       const peerId = Id.createFromPubKey(msg.publicKey)
       const conn = swarm.muxedConns[peerId.toB58String()].conn
@@ -90,7 +94,7 @@ exports.handler = (peerInfo, swarm) => {
         listenAddrs: peerInfo.multiaddrs.map(function (ma) {
           return ma.buffer
         }),
-        observedAddr: obsMultiaddr ? obsMultiaddr.buffer : null
+        observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
       })
       pbs.finalize()
     })
