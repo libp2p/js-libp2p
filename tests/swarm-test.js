@@ -529,11 +529,17 @@ describe('high level API - with everything mixed all together!', function () {
   var peerB
   var swarmC // tcp+ws
   var peerC
+  var swarmD // ws
+  var peerD
+  var swarmE // ws
+  var peerE
 
   before((done) => {
     peerA = new Peer()
     peerB = new Peer()
     peerC = new Peer()
+    peerD = new Peer()
+    peerE = new Peer()
 
     // console.log('peer A', peerA.id.toB58String())
     // console.log('peer B', peerB.id.toB58String())
@@ -542,6 +548,8 @@ describe('high level API - with everything mixed all together!', function () {
     swarmA = new Swarm(peerA)
     swarmB = new Swarm(peerB)
     swarmC = new Swarm(peerC)
+    swarmD = new Swarm(peerD)
+    swarmE = new Swarm(peerE)
 
     done()
   })
@@ -552,18 +560,20 @@ describe('high level API - with everything mixed all together!', function () {
     swarmA.close(closed)
     swarmB.close(closed)
     swarmC.close(closed)
+    swarmD.close(closed)
+    swarmE.close(closed)
 
     function closed () {
-      if (++counter === 3) {
+      if (++counter === 4) {
         done()
       }
     }
   })
 
   it('add tcp', (done) => {
-    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9011'))
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9021'))
-    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9031'))
+    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
+    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
 
     swarmA.transport.add('tcp', new TCP())
     swarmA.transport.listen('tcp', {}, null, ready)
@@ -586,8 +596,10 @@ describe('high level API - with everything mixed all together!', function () {
   it.skip('add utp', (done) => {})
 
   it('add websockets', (done) => {
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9022/websockets'))
-    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9032/websockets'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9012/websockets'))
+    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9022/websockets'))
+    peerD.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9032/websockets'))
+    peerE.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9042/websockets'))
 
     swarmB.transport.add('ws', new WebSockets())
     swarmB.transport.listen('ws', {}, null, ready)
@@ -595,10 +607,16 @@ describe('high level API - with everything mixed all together!', function () {
     swarmC.transport.add('ws', new WebSockets())
     swarmC.transport.listen('ws', {}, null, ready)
 
+    swarmD.transport.add('ws', new WebSockets())
+    swarmD.transport.listen('ws', {}, null, ready)
+
+    swarmE.transport.add('ws', new WebSockets())
+    swarmE.transport.listen('ws', {}, null, ready)
+
     var counter = 0
 
     function ready () {
-      if (++counter === 2) {
+      if (++counter === 4) {
         done()
       }
     }
@@ -608,9 +626,15 @@ describe('high level API - with everything mixed all together!', function () {
     swarmA.connection.addStreamMuxer(spdy)
     swarmB.connection.addStreamMuxer(spdy)
     swarmC.connection.addStreamMuxer(spdy)
+    swarmD.connection.addStreamMuxer(spdy)
+    swarmE.connection.addStreamMuxer(spdy)
+
     swarmA.connection.reuse()
     swarmB.connection.reuse()
     swarmC.connection.reuse()
+    swarmD.connection.reuse()
+    swarmE.connection.reuse()
+
     done()
   })
 
@@ -628,6 +652,26 @@ describe('high level API - with everything mixed all together!', function () {
 
       conn.on('data', () => {}) // let it flow.. let it flooooow
       conn.on('end', done)
+    })
+  })
+
+  it('dial from ws to ws', (done) => {
+    swarmE.handle('/abacaxi/1.0.0', (conn) => {
+      conn.pipe(conn)
+    })
+
+    swarmD.dial(peerE, '/abacaxi/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      expect(Object.keys(swarmD.muxedConns).length).to.equal(1)
+
+      conn.end()
+      conn.on('data', () => {}) // let it flow.. let it flooooow
+      conn.on('end', () => {
+        setTimeout(() => {
+          expect(Object.keys(swarmE.muxedConns).length).to.equal(1)
+          done()
+        }, 1000)
+      })
     })
   })
 
