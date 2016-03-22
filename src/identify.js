@@ -8,11 +8,17 @@
 const multistream = require('multistream-select')
 const fs = require('fs')
 const path = require('path')
-const pbStream = require('protocol-buffers-stream')(
-    fs.readFileSync(path.join(__dirname, 'identify.proto')))
 const Info = require('peer-info')
 const Id = require('peer-id')
 const multiaddr = require('multiaddr')
+
+const isNode = !global.window
+
+const identity = isNode
+  ? fs.readFileSync(path.join(__dirname, 'identify.proto'))
+  : require('buffer!./identify.proto')
+
+const pbStream = require('protocol-buffers-stream')(identity)
 
 exports = module.exports
 exports.multicodec = '/ipfs/identify/1.0.0'
