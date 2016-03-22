@@ -4,11 +4,12 @@ module.exports = function (config) {
     frameworks: ['mocha'],
 
     files: [
-      'tests/browser.js'
+      'tests/browser-nodejs/browser.js'
     ],
 
     preprocessors: {
-      'tests/*': ['webpack']
+      'tests/*': ['webpack'],
+      'tests/browser-nodejs/*': ['webpack']
     },
 
     webpack: {
