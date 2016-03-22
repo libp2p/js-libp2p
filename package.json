@@ -8,7 +8,7 @@
     "test:compliance:transport": "node tests/transport.js",
     "test:specific": "mocha tests/*-test.js",
     "test:node": "npm run test:specific",
-    "test:browser": "node tests/karma",
+    "test:browser": "node tests/browser-nodejs/test.js",
     "test": "npm run test:node && npm run test:browser",
     "test-2": "npm run test:specific && npm run test:compliance:transport && npm run test:compliance:connection",
     "lint": "standard"
