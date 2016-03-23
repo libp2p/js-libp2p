@@ -2,16 +2,15 @@
   "name": "libp2p-websockets",
   "version": "0.2.1",
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
-  "main": "src/index.js",
+  "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
-    "test:compliance:connection": "node tests/connection.js",
-    "test:compliance:transport": "node tests/transport.js",
-    "test:specific": "mocha tests/*-test.js",
-    "test:node": "npm run test:specific",
-    "test:browser": "node tests/browser-nodejs/test.js",
-    "test": "npm run test:node && npm run test:browser",
-    "test-2": "npm run test:specific && npm run test:compliance:transport && npm run test:compliance:connection",
-    "lint": "standard"
+    "lint": "dignified-lint",
+    "test": "gulp test",
+    "test:node": "gulp test:node",
+    "test:browser": "gulp test:browser",
+    "build": "dignified-build",
+    "release": "dignified-release"
   },
   "pre-commit": [
     "lint",
@@ -37,19 +36,10 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "dignified.js": "github:dignifiedquire/dignified.js",
+    "gulp": "^3.9.1",
     "interface-connection": "0.0.3",
     "interface-transport": "^0.1.1",
-    "istanbul": "^0.4.2",
-    "karma": "^0.13.22",
-    "karma-chrome-launcher": "^0.2.2",
-    "karma-firefox-launcher": "^0.1.7",
-    "karma-mocha": "^0.2.2",
-    "karma-spec-reporter": "0.0.24",
-    "karma-webpack": "^1.7.0",
-    "mocha": "^2.4.5",
-    "pre-commit": "^1.1.2",
-    "standard": "^6.0.7",
-    "tape": "^4.2.0",
-    "webpack": "^2.1.0-beta.4"
+    "pre-commit": "^1.1.2"
   }
 }
