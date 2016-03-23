@@ -1,3 +1,5 @@
+'use strict'
+
 var Swarm = require('libp2p-swarm')
 var tcp = require('libp2p-tcp')
 var multiaddr = require('multiaddr')
