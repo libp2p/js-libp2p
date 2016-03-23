@@ -4,11 +4,13 @@
   "description": "libp2p swarm implementation in JavaScript",
   "main": "src/index.js",
   "scripts": {
-    "test:node": "mocha tests/*-test.js",
-    "test:browser": "node tests/browser-nodejs/test.js",
-    "test": "npm run test:node && npm run test:browser",
-    "coverage": "istanbul cover --print both -- _mocha tests/*-test.js",
-    "lint": "standard"
+    "lint": "dignified-lint",
+    "build": "dignified-build",
+    "test": "gulp test",
+    "test:node": "gulp test:node",
+    "test:browser": "gulp test:browser",
+    "release": "dignified-release",
+    "coverage": "istanbul cover --print both -- _mocha test/node.js"
   },
   "repository": {
     "type": "git",
@@ -34,31 +36,32 @@
     "bl": "^1.1.2",
     "buffer-loader": "0.0.1",
     "chai": "^3.5.0",
+    "dignified.js": "github:dignifiedquire/dignified.js",
+    "gulp": "^3.9.1",
     "istanbul": "^0.4.2",
-    "json-loader": "^0.5.4",
-    "karma": "^0.13.22",
-    "karma-chrome-launcher": "^0.2.2",
-    "karma-firefox-launcher": "^0.1.7",
-    "karma-mocha": "^0.2.2",
-    "karma-spec-reporter": "0.0.24",
-    "karma-webpack": "^1.7.0",
     "libp2p-multiplex": "^0.2.1",
     "libp2p-spdy": "^0.2.3",
     "libp2p-tcp": "^0.4.0",
     "libp2p-websockets": "^0.2.1",
-    "mocha": "^2.4.5",
     "multiaddr": "^1.3.0",
     "peer-id": "^0.6.0",
     "peer-info": "^0.6.0",
     "pre-commit": "^1.1.2",
-    "standard": "^6.0.7",
-    "stream-pair": "^1.0.3",
-    "webpack": "^2.1.0-beta.4"
+    "stream-pair": "^1.0.3"
   },
   "dependencies": {
     "duplex-passthrough": "github:diasdavid/duplex-passthrough",
     "ip-address": "^5.0.2",
     "multistream-select": "^0.6.1",
     "protocol-buffers-stream": "^1.2.0"
+  },
+  "dignified": {
+    "webpack": {
+      "resolve": {
+        "alias": {
+          "node-forge": "../deps/forge.bundle.js"
+        }
+      }
+    }
   }
 }

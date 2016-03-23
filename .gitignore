@@ -29,5 +29,6 @@ node_modules
 
 
 coverage
-.jshintrc
-.jshintignore
+
+dist
+lib

@@ -1,3 +1,5 @@
+'use strict'
+
 const multistream = require('multistream-select')
 const identify = require('./identify')
 const DuplexPassThrough = require('duplex-passthrough')

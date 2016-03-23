@@ -1,12 +1,14 @@
 /* eslint-env mocha */
+'use strict'
 
 const expect = require('chai').expect
 const multiaddr = require('multiaddr')
 const Id = require('peer-id')
 const Peer = require('peer-info')
-const Swarm = require('./../../src')
 const WebSockets = require('libp2p-websockets')
 const bl = require('bl')
+
+const Swarm = require('../src')
 
 describe('basics', () => {
   it('throws on missing peerInfo', (done) => {

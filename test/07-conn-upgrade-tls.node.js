@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+'use strict'
 
 describe('tls conn upgrade (on TCP)', function () {
   before((done) => { done() })
