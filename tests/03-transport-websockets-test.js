@@ -1,0 +1,92 @@
+/* eslint-env mocha */
+
+const expect = require('chai').expect
+
+const multiaddr = require('multiaddr')
+const Peer = require('peer-info')
+const Swarm = require('../src')
+const WebSockets = require('libp2p-websockets')
+const bl = require('bl')
+
+describe('transport - websockets', function () {
+  this.timeout(10000)
+
+  var swarmA
+  var swarmB
+  var peerA = new Peer()
+  var peerB = new Peer()
+
+  before((done) => {
+    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888/websockets'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'))
+    swarmA = new Swarm(peerA)
+    swarmB = new Swarm(peerB)
+    done()
+  })
+
+  it('add', (done) => {
+    swarmA.transport.add('ws', new WebSockets())
+    expect(Object.keys(swarmA.transports).length).to.equal(1)
+    swarmB.transport.add('ws', new WebSockets(), () => {
+      expect(Object.keys(swarmB.transports).length).to.equal(1)
+      done()
+    })
+  })
+
+  it('listen', (done) => {
+    var count = 0
+    swarmA.transport.listen('ws', {}, (conn) => {
+      conn.pipe(conn)
+    }, ready)
+    swarmB.transport.listen('ws', {}, (conn) => {
+      conn.pipe(conn)
+    }, ready)
+
+    function ready () {
+      if (++count === 2) {
+        expect(peerA.multiaddrs.length).to.equal(1)
+        expect(peerA.multiaddrs[0]).to.deep.equal(multiaddr('/ip4/127.0.0.1/tcp/9888/websockets'))
+        expect(peerB.multiaddrs.length).to.equal(1)
+        expect(peerB.multiaddrs[0]).to.deep.equal(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'))
+        done()
+      }
+    }
+  })
+
+  it('dial', (done) => {
+    const conn = swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'), (err, conn) => {
+      expect(err).to.not.exist
+    })
+    conn.pipe(bl((err, data) => {
+      expect(err).to.not.exist
+      done()
+    }))
+    conn.write('hey')
+    conn.end()
+  })
+
+  it('dial (conn from callback)', (done) => {
+    swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'), (err, conn) => {
+      expect(err).to.not.exist
+
+      conn.pipe(bl((err, data) => {
+        expect(err).to.not.exist
+        done()
+      }))
+      conn.write('hey')
+      conn.end()
+    })
+  })
+
+  it('close', (done) => {
+    var count = 0
+    swarmA.transport.close('ws', closed)
+    swarmB.transport.close('ws', closed)
+
+    function closed () {
+      if (++count === 2) {
+        done()
+      }
+    }
+  })
+})
