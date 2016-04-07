@@ -34,7 +34,7 @@
   "homepage": "https://github.com/diasdavid/js-libp2p",
   "devDependencies": {
     "chai": "^3.5.0",
-    "dignified.js": "github:dignifiedquire/dignified.js",
+    "dignified.js": "^1.0.0",
     "libp2p-spdy": "^0.1.0",
     "libp2p-swarm": "^0.5.5",
     "libp2p-tcp": "^0.1.2",
