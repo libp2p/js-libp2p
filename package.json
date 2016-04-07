@@ -2,7 +2,8 @@
   "name": "libp2p-swarm",
   "version": "0.9.2",
   "description": "libp2p swarm implementation in JavaScript",
-  "main": "src/index.js",
+  "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
     "lint": "dignified-lint",
     "build": "dignified-build",
@@ -36,7 +37,7 @@
     "bl": "^1.1.2",
     "buffer-loader": "0.0.1",
     "chai": "^3.5.0",
-    "dignified.js": "github:dignifiedquire/dignified.js",
+    "dignified.js": "^1.0.0",
     "gulp": "^3.9.1",
     "istanbul": "^0.4.2",
     "libp2p-multiplex": "^0.2.1",
