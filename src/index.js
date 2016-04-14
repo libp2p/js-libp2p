@@ -1,3 +1,5 @@
+'use strict'
+
 // const debug = require('debug')
 // const log = debug('libp2p:tcp')
 const SWS = require('simple-websocket')

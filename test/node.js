@@ -1,8 +1,9 @@
 /* eslint-env mocha */
+'use strict'
 
 const expect = require('chai').expect
-const WSlibp2p = require('../src')
 const multiaddr = require('multiaddr')
+const WSlibp2p = require('../src')
 
 describe('libp2p-websockets', function () {
   this.timeout(10000)
