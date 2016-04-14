@@ -39,7 +39,7 @@
     "bl": "^1.1.2",
     "buffer-loader": "0.0.1",
     "chai": "^3.5.0",
-    "aegir": "^2.0.0",
+    "aegir": "^2.0.3",
     "gulp": "^3.9.1",
     "istanbul": "^0.4.2",
     "libp2p-multiplex": "^0.2.1",
