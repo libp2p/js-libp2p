@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+'use strict'
 
 describe('secio conn upgrade (on TCP)', function () {
   this.timeout(20000)

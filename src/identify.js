@@ -5,6 +5,8 @@
  * established, so a conn can be reused
  */
 
+'use strict'
+
 const multistream = require('multistream-select')
 const fs = require('fs')
 const path = require('path')

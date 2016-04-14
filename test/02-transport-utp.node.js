@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+'use strict'
 
 describe('transport - utp', function () {
   this.timeout(10000)
