@@ -1,11 +1,11 @@
 libp2p-swarm JavaScript implementation
 ======================================
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io) 
-[![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/) 
+[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
+[![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
 [![Build Status](https://img.shields.io/travis/diasdavid/js-libp2p-swarm/master.svg?style=flat-square)](https://travis-ci.org/diasdavid/js-libp2p-swarm)
-![](https://img.shields.io/badge/coverage-%3F-yellow.svg?style=flat-square)
+[![Coverage Status](https://coveralls.io/repos/github/diasdavid/js-libp2p-swarm/badge.svg?branch=master)](https://coveralls.io/github/diasdavid/js-libp2p-swarm?branch=master)
 [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-swarm.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-swarm)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 
@@ -19,7 +19,7 @@ libp2p-swarm is used by libp2p but it can be also used as a standalone module.
 
 # Usage
 
-## Install 
+## Install
 
 libp2p-swarm is available on npm and so, like any other npm module, just:
 
@@ -48,7 +48,7 @@ peerInfo is a [PeerInfo](https://github.com/diasdavid/js-peer-info) object that 
 libp2p-swarm expects transports that implement [interface-transport](https://github.com/diasdavid/abstract-transport). For example [libp2p-tcp](https://github.com/diasdavid/js-libp2p-tcp).
 
 - `key` - the transport identifier
-- `transport` - 
+- `transport` -
 - `options`
 - `callback`
 
