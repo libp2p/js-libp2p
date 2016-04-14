@@ -5,14 +5,14 @@
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
   "scripts": {
-    "lint": "dignified-lint",
+    "lint": "aegir-lint",
     "test": "gulp test",
     "test:node": "gulp test:node",
     "test:browser": "gulp test:browser",
-    "build": "dignified-build",
-    "release": "dignified-release",
-    "release-minor": "dignified-release --minor",
-    "release-major": "dignified-release --major"
+    "build": "gulp build",
+    "release": "gulp release",
+    "release-minor": "gulp release --minor",
+    "release-major": "gulp release --major"
  
   },
   "pre-commit": [
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "dignified.js": "^1.0.0",
+    "aegir": "^2.0.0",
     "gulp": "^3.9.1",
     "interface-connection": "0.0.3",
     "interface-transport": "^0.1.1",

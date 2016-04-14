@@ -18,4 +18,4 @@ gulp.task('test:browser:after', (done) => {
   ws.close(done)
 })
 
-require('dignified.js/gulp')(gulp)
+require('aegir/gulp')(gulp)
