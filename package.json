@@ -5,15 +5,15 @@
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
   "scripts": {
-    "lint": "dignified-lint",
-    "build": "dignified-build",
+    "lint": "gulp lint",
+    "build": "gulp build",
     "test": "gulp test",
     "test:node": "gulp test:node",
     "test:browser": "gulp test:browser",
-    "release": "dignified-release",
-    "release-minor": "dignified-release minor",
-    "release-major": "dignified-release major",
-    "coverage": "dignified-coverage"
+    "release": "gulp release",
+    "release-minor": "gulp release --minor",
+    "release-major": "gulp release --major",
+    "coverage": "gulp coverage"
   },
   "repository": {
     "type": "git",
@@ -39,7 +39,7 @@
     "bl": "^1.1.2",
     "buffer-loader": "0.0.1",
     "chai": "^3.5.0",
-    "dignified.js": "^1.0.0",
+    "aegir": "^2.0.0",
     "gulp": "^3.9.1",
     "istanbul": "^0.4.2",
     "libp2p-multiplex": "^0.2.1",
@@ -59,7 +59,7 @@
     "multistream-select": "^0.6.1",
     "protocol-buffers-stream": "^1.2.0"
   },
-  "dignified": {
+  "aegir": {
     "webpack": {
       "resolve": {
         "alias": {

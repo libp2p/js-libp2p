@@ -55,4 +55,4 @@ gulp.task('test:browser:after', (done) => {
   swarmB.transport.close('ws', ready)
 })
 
-require('dignified.js/gulp')(gulp)
+require('aegir/gulp')(gulp)
