@@ -11,7 +11,9 @@
     "test:node": "gulp test:node",
     "test:browser": "gulp test:browser",
     "release": "dignified-release",
-    "coverage": "istanbul cover --print both -- _mocha test/node.js"
+    "release-minor": "dignified-release minor",
+    "release-major": "dignified-release major",
+    "coverage": "dignified-coverage"
   },
   "repository": {
     "type": "git",
