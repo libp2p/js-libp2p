@@ -11,7 +11,7 @@ const WebSockets = require('libp2p-websockets')
 const spdy = require('libp2p-spdy')
 
 describe('high level API - with everything mixed all together!', function () {
-  this.timeout(20000)
+  this.timeout(100000)
 
   var swarmA // tcp
   var peerA
