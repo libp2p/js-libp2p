@@ -10,7 +10,10 @@
     "test:node": "gulp test:node",
     "test:browser": "gulp test:browser",
     "build": "dignified-build",
-    "release": "dignified-release"
+    "release": "dignified-release",
+    "release-minor": "dignified-release --minor",
+    "release-major": "dignified-release --major"
+ 
   },
   "pre-commit": [
     "lint",
