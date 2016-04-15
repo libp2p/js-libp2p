@@ -4,12 +4,10 @@
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
   "main": "lib/index.js",
   "scripts": {
-    "test": "aegir-test",
+    "test": "aegir-test node",
     "lint": "aegir-lint",
-    "test:node": "aegir-test node",
-    "test:browser": "aegir-test browser",
-    "build": "aegir-build",
-    "release": "aegir-release",
+    "build": "aegir-build node",
+    "release": "aegir-release node",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
