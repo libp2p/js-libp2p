@@ -1,3 +1,5 @@
+'use strict'
+
 var EventEmitter = require('events').EventEmitter
 var util = require('util')
 var read = require('async-buffered-reader')
