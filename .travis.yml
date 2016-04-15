@@ -1,0 +1,17 @@
+sudo: false
+language: node_js
+node_js:
+  - 4
+  - 5
+
+# Make sure we have new NPM.
+before_install:
+  - npm install -g npm
+
+script:
+  - npm run lint
+  - npm test
+  - npm run coverage
+
+after_success:
+  - npm run coverage-publish
