@@ -1,3 +1,5 @@
+'use strict'
+
 var Id = require('peer-id')
 var Peer = require('peer-info')
 var multiaddr = require('multiaddr')
