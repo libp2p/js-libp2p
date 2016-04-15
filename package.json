@@ -2,16 +2,18 @@
   "name": "libp2p-mdns-discovery",
   "version": "0.3.3",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "lint": "./node_modules/.bin/standard",
-    "coverage": "./node_modules/.bin/lab -t 86 tests/*-test.js",
-    "test": "./node_modules/.bin/lab tests/*-test.js"
+    "lint": "aegir-lint",
+    "coverage": "aegir-coverage",
+    "test": "aegir-test node",
+    "build": "aegir-build node",
+    "release": "aegir-release node",
+    "coverage-publish": "aegir-coverage publish"
   },
   "pre-commit": [
     "lint",
-    "test",
-    "coverage"
+    "test"
   ],
   "repository": {
     "type": "git",
@@ -27,12 +29,11 @@
   },
   "homepage": "https://github.com/diasdavid/js-libp2p-mdns-discovery",
   "devDependencies": {
-    "code": "^1.4.1",
-    "lab": "^5.13.0",
+    "aegir": "^2.1.1",
+    "chai": "^3.5.0",
     "libp2p-swarm": "^0.5.0",
     "libp2p-tcp": "^0.1.1",
-    "pre-commit": "^1.1.1",
-    "standard": "^4.5.4"
+    "pre-commit": "^1.1.2"
   },
   "dependencies": {
     "ipfs-logger": "^0.1.0",
@@ -40,5 +41,6 @@
     "peer-id": "^0.3.3",
     "multiaddr": "^1.0.0",
     "multicast-dns": "^3.0.0"
-  }
+  },
+  "jsnext:main": "src/index.js"
 }
