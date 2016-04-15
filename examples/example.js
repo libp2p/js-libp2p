@@ -1,3 +1,5 @@
+'use strict'
+
 var Id = require('peer-id')
 var Peer = require('peer-info')
 var Swarm = require('libp2p-swarm')

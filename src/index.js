@@ -1,3 +1,5 @@
+'use strict'
+
 var multicastDNS = require('multicast-dns')
 var Id = require('peer-id')
 var Peer = require('peer-info')
