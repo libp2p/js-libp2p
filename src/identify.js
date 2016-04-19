@@ -14,11 +14,7 @@ const Info = require('peer-info')
 const Id = require('peer-id')
 const multiaddr = require('multiaddr')
 
-const isNode = !global.window
-
-const identity = isNode
-  ? fs.readFileSync(path.join(__dirname, 'identify.proto'))
-  : require('buffer!./identify.proto')
+const identity = fs.readFileSync(path.join(__dirname, 'identify.proto'))
 
 const pbStream = require('protocol-buffers-stream')(identity)
 
