@@ -21,7 +21,7 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
     peerB = new Peer()
 
     peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
 
     swarmA = new Swarm(peerA)
     swarmB = new Swarm(peerB)
