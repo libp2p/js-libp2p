@@ -3,6 +3,7 @@
 const multistream = require('multistream-select')
 const identify = require('./identify')
 const DuplexPassThrough = require('duplex-passthrough')
+const contains = require('lodash.contains')
 
 exports = module.exports = Swarm
 
@@ -87,7 +88,16 @@ function Swarm (peerInfo) {
     // if no callback is passed, we pass conns to connHandler
     if (!handler) { handler = connHandler }
 
-    const multiaddrs = this.transports[key].filter(peerInfo.multiaddrs)
+    const multiaddrs = this.transports[key].filter(
+      peerInfo.multiaddrs.map((addr) => {
+        // ipfs multiaddrs are not dialable so we drop them here
+        if (contains(addr.protoNames(), 'ipfs')) {
+          return addr.decapsulate('ipfs')
+        }
+
+        return addr
+      })
+    )
 
     this.transports[key].createListener(multiaddrs, handler, (err, maUpdate) => {
       if (err) {
