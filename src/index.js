@@ -68,7 +68,7 @@ function TCP () {
     var count = 0
     listeners.forEach((listener) => {
       listener.close(() => {
-        if (++count === listeners.length) {
+        if (++count === listeners.length && callback) {
           callback()
         }
       })
