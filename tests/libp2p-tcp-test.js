@@ -59,10 +59,29 @@ describe('libp2p-tcp', function () {
   it('listen on several', (done) => {
     const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
     const mh2 = multiaddr('/ip4/127.0.0.1/tcp/9091')
+    const mh3 = multiaddr('/ip6/::/tcp/9092')
     const tcp = new TCPlibp2p()
 
-    tcp.createListener([mh1, mh2], (socket) => {}, () => {
+    tcp.createListener([mh1, mh2, mh3], (socket) => {}, () => {
       tcp.close(done)
+    })
+  })
+
+  it('dial ipv6', (done) => {
+    const mh = multiaddr('/ip6/::1/tcp/9091')
+    var dialerObsAddrs
+
+    tcp.createListener(mh, (conn) => {
+      expect(conn).to.exist
+      dialerObsAddrs = conn.getObservedAddrs()
+      conn.end()
+    }, () => {
+      const conn = tcp.dial(mh)
+      conn.on('end', () => {
+        expect(dialerObsAddrs.length).to.equal(1)
+        tcp.close()
+        done()
+      })
     })
   })
 
@@ -109,6 +128,4 @@ describe('libp2p-tcp', function () {
     expect(valid[0]).to.deep.equal(mh1)
     done()
   })
-
-  it.skip('listen on IPv6', (done) => {})
 })
