@@ -24,11 +24,35 @@ transports.
 ## Example
 
 ```js
+const Tcp = require('libp2p-tcp')
+const multiaddr = require('multiaddr')
+
+const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
+const mh2 = multiaddr('/ip6/::/tcp/9092')
+
+const tcp = new Tcp()
+
+tcp.createListener([mh1, mh2], function handler (socket) {
+  console.log('connection')
+  socket.end('bye')
+}, function ready () {
+  console.log('ready')
+
+  const client = tcp.dial(mh1)
+  client.pipe(process.stdout)
+  client.on('end', () => {
+    tcp.close(function(){})
+  })
+})
+
 ```
 
 outputs
 
 ```
+ready
+connection
+bye
 ```
 
 ## Installation
@@ -47,23 +71,25 @@ const Tcp = require('libp2p-tcp')
 
 ### var tcp = new Tcp()
 
-...
-
-### tcp.dial(multiaddr, options)
-
-...
+Creates a new TCP object. This does nothing on its own but provide access to
+`dial` and `createListener`.
 
 ### tcp.createListener(multiaddrs, handler, callback)
 
-...
+Creates TCP servers that listen on the addresses described in the array
+`multiaddrs`. Each connection will call `handler` with a connection stream.
+`callback` is called once all servers are listening.
+
+### tcp.dial(multiaddr, options={})
+
+Connects to the multiaddress `multiaddr` using TCP, returning the socket stream.
+If `options.ready` is set to a function, it is called when a connection is
+established.
 
 ### tcp.close(callback)
 
-...
-
-### tcp.filter(multiaddrs)
-
-...
+Closes all the listening TCP servers, calling `callback` once all of them have
+been shut down.
 
 ## License
 
