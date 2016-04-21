@@ -11,6 +11,60 @@ js-libp2p-tcp
 ![](https://raw.githubusercontent.com/diasdavid/abstract-connection/master/img/badge.png)
 ![](https://raw.githubusercontent.com/diasdavid/abstract-transport/master/img/badge.png)
 
-> Node.js implementation of the TCP module that libp2p uses, which implements the [interface-connection](https://github.com/diasdavid/interface-connection) interface for dial/listen.
+> Node.js implementation of the TCP module that libp2p uses, which implements
+> the [interface-connection](https://github.com/diasdavid/interface-connection)
+> interface for dial/listen.
 
-note: libp2p-tcp in Node.js is a very thin shim that adds the support to dial to a `multiaddr`. This small shim will enable libp2p to use other different transports.
+## Description
+
+`libp2p-tcp` in Node.js is a very thin shim that adds the support to dial to a
+`multiaddr`. This small shim will enable libp2p to use other different
+transports.
+
+## Example
+
+```js
+```
+
+outputs
+
+```
+```
+
+## Installation
+
+### npm
+
+```sh
+> npm i libp2p-tcp
+```
+
+## API
+
+```js
+const Tcp = require('libp2p-tcp')
+```
+
+### var tcp = new Tcp()
+
+...
+
+### tcp.dial(multiaddr, options)
+
+...
+
+### tcp.createListener(multiaddrs, handler, callback)
+
+...
+
+### tcp.close(callback)
+
+...
+
+### tcp.filter(multiaddrs)
+
+...
+
+## License
+
+MIT
