@@ -68,7 +68,7 @@ describe('libp2p-tcp', function () {
   })
 
   it('dial ipv6', (done) => {
-    const mh = multiaddr('/ip6/::1/tcp/9091')
+    const mh = multiaddr('/ip6/::/tcp/9091')
     var dialerObsAddrs
 
     tcp.createListener(mh, (conn) => {
