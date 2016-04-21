@@ -26,13 +26,7 @@ function TCP () {
     return conn
   }
 
-  this.createListener = (multiaddrs, options, handler, callback) => {
-    if (typeof options === 'function') {
-      callback = handler
-      handler = options
-      options = {}
-    }
-
+  this.createListener = (multiaddrs, handler, callback) => {
     if (!Array.isArray(multiaddrs)) {
       multiaddrs = [multiaddrs]
     }
