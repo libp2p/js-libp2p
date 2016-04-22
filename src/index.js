@@ -26,13 +26,7 @@ function TCP () {
     return conn
   }
 
-  this.createListener = (multiaddrs, options, handler, callback) => {
-    if (typeof options === 'function') {
-      callback = handler
-      handler = options
-      options = {}
-    }
-
+  this.createListener = (multiaddrs, handler, callback) => {
     if (!Array.isArray(multiaddrs)) {
       multiaddrs = [multiaddrs]
     }
@@ -74,7 +68,7 @@ function TCP () {
     var count = 0
     listeners.forEach((listener) => {
       listener.close(() => {
-        if (++count === listeners.length) {
+        if (++count === listeners.length && callback) {
           callback()
         }
       })
