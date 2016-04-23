@@ -17,7 +17,7 @@ js-libp2p-tcp
 
 ## Description
 
-`libp2p-tcp` in Node.js is a very thin shim that adds the support to dial to a
+`libp2p-tcp` in Node.js is a very thin shim that adds support for dialing to a
 `multiaddr`. This small shim will enable libp2p to use other different
 transports.
 
@@ -41,7 +41,7 @@ tcp.createListener([mh1, mh2], function handler (socket) {
   const client = tcp.dial(mh1)
   client.pipe(process.stdout)
   client.on('end', () => {
-    tcp.close(function(){})
+    tcp.close()
   })
 })
 
@@ -71,14 +71,14 @@ const Tcp = require('libp2p-tcp')
 
 ### var tcp = new Tcp()
 
-Creates a new TCP object. This does nothing on its own but provide access to
+Creates a new TCP object. This does nothing on its own, but provides access to
 `dial` and `createListener`.
 
-### tcp.createListener(multiaddrs, handler, callback)
+### tcp.createListener(multiaddrs, handler, ready)
 
 Creates TCP servers that listen on the addresses described in the array
 `multiaddrs`. Each connection will call `handler` with a connection stream.
-`callback` is called once all servers are listening.
+`ready` is called once all servers are listening.
 
 ### tcp.dial(multiaddr, options={})
 
