@@ -1,6 +1,6 @@
 {
   "name": "libp2p-swarm",
-  "version": "0.10.7",
+  "version": "0.11.7",
   "description": "libp2p swarm implementation in JavaScript",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
@@ -40,7 +40,7 @@
     "bl": "^1.1.2",
     "buffer-loader": "0.0.1",
     "chai": "^3.5.0",
-    "aegir": "^2.1.1",
+    "aegir": "^2.1.2",
     "gulp": "^3.9.1",
     "istanbul": "^0.4.3",
     "libp2p-multiplex": "^0.2.1",
