@@ -46,9 +46,17 @@ describe('transport - tcp', function () {
     function ready () {
       if (++count === 2) {
         expect(peerA.multiaddrs.length).to.equal(1)
-        expect(peerA.multiaddrs[0]).to.deep.equal(multiaddr('/ip4/127.0.0.1/tcp/9888'))
+        expect(
+          peerA.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9888'))
+        ).to.be.equal(
+          true
+        )
         expect(peerB.multiaddrs.length).to.equal(1)
-        expect(peerB.multiaddrs[0]).to.deep.equal(multiaddr('/ip4/127.0.0.1/tcp/9999'))
+        expect(
+          peerB.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9999'))
+        ).to.be.equal(
+          true
+        )
         done()
       }
     }
@@ -124,7 +132,11 @@ describe('transport - tcp', function () {
 
     function ready () {
       expect(peer.multiaddrs.length).to.equal(1)
-      expect(peer.multiaddrs[0]).to.deep.equal(multiaddr('/ip4/0.0.0.0/tcp/9050'))
+      expect(
+        peer.multiaddrs[0].equals(multiaddr('/ip4/0.0.0.0/tcp/9050'))
+      ).to.be.equal(
+        true
+      )
       swarm.close(done)
     }
   })

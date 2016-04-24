@@ -46,9 +46,17 @@ describe('transport - websockets', function () {
     function ready () {
       if (++count === 2) {
         expect(peerA.multiaddrs.length).to.equal(1)
-        expect(peerA.multiaddrs[0]).to.deep.equal(multiaddr('/ip4/127.0.0.1/tcp/9888/websockets'))
+        expect(
+          peerA.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9888/websockets'))
+        ).to.be.equal(
+          true
+        )
         expect(peerB.multiaddrs.length).to.equal(1)
-        expect(peerB.multiaddrs[0]).to.deep.equal(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'))
+        expect(
+          peerB.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'))
+        ).to.equal(
+          true
+        )
         done()
       }
     }
