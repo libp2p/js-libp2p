@@ -1,6 +1,6 @@
 {
   "name": "libp2p-websockets",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
