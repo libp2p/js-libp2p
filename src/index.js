@@ -61,7 +61,7 @@ function WebSockets () {
 
   this.close = (callback) => {
     if (listeners.length === 0) {
-      throw new Error('there are no listeners')
+      callback(new Error('there are no listeners'))
     }
     var count = 0
     listeners.forEach((listener) => {
