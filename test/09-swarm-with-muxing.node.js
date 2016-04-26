@@ -135,6 +135,17 @@ describe('high level API - with everything mixed all together!', function () {
       conn.pipe(conn)
     })
 
+    console.log('peerA', peerA.id.toB58String())
+    console.log('peerB', peerB.id.toB58String())
+
+    swarmB.once('peer-mux-established', (peerInfo) => {
+      expect(peerInfo.id.toB58String()).to.equal(peerA.id.toB58String())
+    })
+
+    swarmA.once('peer-mux-established', (peerInfo) => {
+      expect(peerInfo.id.toB58String()).to.equal(peerB.id.toB58String())
+    })
+
     swarmA.dial(peerB, '/anona/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
