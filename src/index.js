@@ -5,11 +5,11 @@ const identify = require('./identify')
 const DuplexPassThrough = require('duplex-passthrough')
 const contains = require('lodash.contains')
 const util = require('util')
-const EE2 = require('eventemitter2')
+const EE = require('events').EventEmitter
 
 exports = module.exports = Swarm
 
-util.inherits(Swarm, EE2)
+util.inherits(Swarm, EE)
 
 function Swarm (peerInfo) {
   if (!(this instanceof Swarm)) {
@@ -163,6 +163,11 @@ function Swarm (peerInfo) {
           this.muxedConns[pi.id.toB58String()].conn = conn // to be able to extract addrs
 
           self.emit('peer-mux-established', pi)
+
+          muxedConn.on('close', () => {
+            delete self.muxedConns[pi.id.toB58String()]
+            self.emit('peer-mux-closed', pi)
+          })
         })
       }
     })
@@ -291,6 +296,11 @@ function Swarm (peerInfo) {
             self.muxedConns[b58Id].conn = conn
 
             self.emit('peer-mux-established', pi)
+
+            muxedConn.on('close', () => {
+              delete self.muxedConns[pi.id.toB58String()]
+              self.emit('peer-mux-closed', pi)
+            })
 
             // in case identify is on
             muxedConn.on('stream', connHandler)

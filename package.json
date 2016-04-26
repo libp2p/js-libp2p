@@ -56,7 +56,6 @@
   "dependencies": {
     "babel-runtime": "^6.6.1",
     "duplex-passthrough": "github:diasdavid/duplex-passthrough",
-    "eventemitter2": "^1.0.3",
     "ip-address": "^5.8.0",
     "lodash.contains": "^2.4.3",
     "multistream-select": "^0.6.5",

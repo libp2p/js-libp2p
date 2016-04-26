@@ -49,7 +49,7 @@ describe('high level API - with everything mixed all together!', function () {
 
     swarmA.close(closed)
     swarmB.close(closed)
-    swarmC.close(closed)
+    // swarmC.close(closed)
     swarmD.close(closed)
     swarmE.close(closed)
 
@@ -135,9 +135,6 @@ describe('high level API - with everything mixed all together!', function () {
       conn.pipe(conn)
     })
 
-    console.log('peerA', peerA.id.toB58String())
-    console.log('peerB', peerB.id.toB58String())
-
     swarmB.once('peer-mux-established', (peerInfo) => {
       expect(peerInfo.id.toB58String()).to.equal(peerA.id.toB58String())
     })
@@ -203,6 +200,13 @@ describe('high level API - with everything mixed all together!', function () {
 
       conn.on('data', () => {}) // let it flow.. let it flooooow
       conn.on('end', done)
+    })
+  })
+
+  it('close a muxer emits event', (done) => {
+    swarmC.close(() => {})
+    swarmA.once('peer-mux-closed', (peerInfo) => {
+      done()
     })
   })
 })
