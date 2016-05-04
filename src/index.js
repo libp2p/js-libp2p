@@ -152,14 +152,25 @@ function Swarm (peerInfo) {
       var peerIdForConn
 
       muxedConn.on('stream', (conn) => {
-        if (peerIdForConn) {
-          conn.peerId = peerIdForConn
+        function gotId () {
+          if (peerIdForConn) {
+            conn.peerId = peerIdForConn
+            connHandler(conn)
+          } else {
+            setTimeout(gotId, 100)
+          }
         }
+
+        if (this.identify) {
+          return gotId()
+        }
+
         connHandler(conn)
       })
 
       // if identify is enabled, attempt to do it for muxer reuse
       if (this.identify) {
+        console.log('exec identify')
         identify.exec(conn, muxedConn, peerInfo, (err, pi) => {
           if (err) {
             return console.log('Identify exec failed', err)
