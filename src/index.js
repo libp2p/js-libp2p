@@ -170,7 +170,6 @@ function Swarm (peerInfo) {
 
       // if identify is enabled, attempt to do it for muxer reuse
       if (this.identify) {
-        console.log('exec identify')
         identify.exec(conn, muxedConn, peerInfo, (err, pi) => {
           if (err) {
             return console.log('Identify exec failed', err)
