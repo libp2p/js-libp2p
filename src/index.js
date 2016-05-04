@@ -148,7 +148,13 @@ function Swarm (peerInfo) {
     // for listening
     this.handle(muxer.multicodec, (conn) => {
       const muxedConn = muxer(conn, true)
+
+      var peerIdForConn
+
       muxedConn.on('stream', (conn) => {
+        if (peerIdForConn) {
+          conn.peerId = peerIdForConn
+        }
         connHandler(conn)
       })
 
@@ -158,6 +164,8 @@ function Swarm (peerInfo) {
           if (err) {
             return console.log('Identify exec failed', err)
           }
+
+          peerIdForConn = pi.id
           this.muxedConns[pi.id.toB58String()] = {}
           this.muxedConns[pi.id.toB58String()].muxer = muxedConn
           this.muxedConns[pi.id.toB58String()].conn = conn // to be able to extract addrs
@@ -194,15 +202,19 @@ function Swarm (peerInfo) {
 
   // higher level (public) API
   this.dial = (pi, protocol, callback) => {
-    var pt = null
     if (typeof protocol === 'function') {
       callback = protocol
       protocol = null
-    } else {
-      pt = new DuplexPassThrough()
     }
 
+    if (!callback) {
+      callback = function noop () {}
+    }
+
+    const pt = new DuplexPassThrough()
+
     const b58Id = pi.id.toB58String()
+
     if (!this.muxedConns[b58Id]) {
       if (!this.conns[b58Id]) {
         attemptDial(pi, (err, conn) => {
@@ -303,13 +315,17 @@ function Swarm (peerInfo) {
             })
 
             // in case identify is on
-            muxedConn.on('stream', connHandler)
+            muxedConn.on('stream', (conn) => {
+              conn.peerId = pi.id
+              connHandler(conn)
+            })
 
             cb(null, muxedConn)
           })
         })
       }
     }
+
     function openConnInMuxedConn (muxer, cb) {
       cb(muxer.newStream())
     }
@@ -323,6 +339,7 @@ function Swarm (peerInfo) {
           }
 
           pt.wrapStream(conn)
+          pt.peerId = pi.id
           callback(null, pt)
         })
       })
