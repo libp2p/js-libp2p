@@ -190,6 +190,7 @@ describe('high level API - with everything mixed all together!', function () {
 
   it('dial from tcp+ws to tcp+ws', (done) => {
     swarmC.handle('/mamao/1.0.0', (conn) => {
+      expect(conn.peerId).to.exist
       conn.pipe(conn)
     })
 
@@ -199,21 +200,6 @@ describe('high level API - with everything mixed all together!', function () {
       expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
       conn.end()
 
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
-    })
-  })
-
-  it('again, so that identify had time', (done) => {
-    swarmC.handle('/mamao/1.0.0', (conn) => {
-      expect(conn.peerId).to.exist
-      conn.pipe(conn)
-    })
-
-    swarmA.dial(peerC, '/mamao/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
-      expect(conn.peerId).to.exist
-      conn.end()
       conn.on('data', () => {}) // let it flow.. let it flooooow
       conn.on('end', done)
     })
