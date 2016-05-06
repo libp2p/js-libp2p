@@ -153,6 +153,14 @@ describe('high level API - with everything mixed all together!', function () {
     })
   })
 
+  it('dial from ws to ws no proto', (done) => {
+    swarmD.dial(peerE, (err) => {
+      expect(err).to.not.exist
+      expect(Object.keys(swarmD.muxedConns).length).to.equal(1)
+      done()
+    })
+  })
+
   it('dial from ws to ws', (done) => {
     swarmE.handle('/abacaxi/1.0.0', (conn) => {
       conn.pipe(conn)
