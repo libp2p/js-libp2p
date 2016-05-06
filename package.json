@@ -54,6 +54,7 @@
     "stream-pair": "^1.0.3"
   },
   "dependencies": {
+    "async": "^2.0.0-rc.4",
     "babel-runtime": "^6.6.1",
     "duplex-passthrough": "github:diasdavid/duplex-passthrough",
     "ip-address": "^5.8.0",
