@@ -103,4 +103,11 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
       conn.on('end', done)
     })
   })
+
+  it('unhandle', (done) => {
+    const proto = '/bananas/1.0.0'
+    swarmA.unhandle(proto)
+    expect(swarmA.protocols[proto]).to.not.exist
+    done()
+  })
 })

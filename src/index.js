@@ -360,6 +360,12 @@ function Swarm (peerInfo) {
     this.protocols[protocol] = handler
   }
 
+  this.unhandle = (protocol, handler) => {
+    if (this.protocols[protocol]) {
+      delete this.protocols[protocol]
+    }
+  }
+
   this.close = (callback) => {
     var count = 0
 
