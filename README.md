@@ -109,6 +109,12 @@ handle a new protocol.
 - `protocol`
 - `handler` - function called when we receive a dial on `protocol. Signature must be `function (conn) {}`
 
+### `swarm.unhandle(protocol)`
+
+unhandle a protocol.
+
+- `protocol`
+
 ### `swarm.close(callback)`
 
 close all the listeners and muxers.
