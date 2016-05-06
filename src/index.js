@@ -1,5 +1,6 @@
 'use strict'
 
+const async = require('async')
 const multistream = require('multistream-select')
 const identify = require('./identify')
 const DuplexPassThrough = require('duplex-passthrough')
@@ -367,19 +368,18 @@ function Swarm (peerInfo) {
   }
 
   this.close = (callback) => {
-    var count = 0
-
     Object.keys(this.muxedConns).forEach((key) => {
       this.muxedConns[key].muxer.end()
     })
 
-    Object.keys(this.transports).forEach((key) => {
-      this.transports[key].close(() => {
-        if (++count === Object.keys(this.transports).length) {
-          callback()
-        }
-      })
-    })
+    async.each(
+      Object.keys(this.transports),
+      (key, cb) => this.transports[key].close(cb),
+      () => {
+        // Ignoring close errors
+        callback()
+      }
+    )
   }
 }
 
