@@ -59,10 +59,10 @@ describe('stream muxing with spdy (on TCP)', function () {
 
     swarmA.close(closed)
     swarmB.close(closed)
-    swarmC.close(closed)
+    // swarmC.close(closed)
 
     function closed () {
-      if (++counter === 3) {
+      if (++counter === 2) {
         done()
       }
     }
@@ -126,6 +126,13 @@ describe('stream muxing with spdy (on TCP)', function () {
         expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
         done()
       }, 500)
+    })
+  })
+
+  it('close one end, make sure the other does not blow', (done) => {
+    swarmC.close(() => {
+      // to make sure it has time to propagate
+      setTimeout(done, 1000)
     })
   })
 })
