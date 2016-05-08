@@ -3,7 +3,7 @@
 
 const expect = require('chai').expect
 
-const async = require('async')
+const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const Swarm = require('../src')
@@ -89,7 +89,7 @@ describe('transport - websockets', function () {
   })
 
   it('close', (done) => {
-    async.parallel([
+    parallel([
       (cb) => swarmA.transport.close('ws', cb),
       (cb) => swarmB.transport.close('ws', cb)
     ], done)

@@ -3,7 +3,7 @@
 
 const expect = require('chai').expect
 
-const async = require('async')
+const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const Swarm = require('../src')
@@ -43,7 +43,7 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
   })
 
   after((done) => {
-    async.parallel([
+    parallel([
       (cb) => swarmA.close(cb),
       (cb) => swarmB.close(cb)
     ], done)

@@ -1,12 +1,12 @@
 'use strict'
 
-const async = require('async')
 const multistream = require('multistream-select')
 const identify = require('./identify')
 const DuplexPassThrough = require('duplex-passthrough')
 const contains = require('lodash.contains')
 const util = require('util')
 const EE = require('events').EventEmitter
+const parallel = require('run-parallel')
 
 exports = module.exports = Swarm
 
@@ -378,17 +378,9 @@ function Swarm (peerInfo) {
       this.muxedConns[key].muxer.end()
     })
 
-    async.each(
-      Object.keys(this.transports),
-      (key, cb) => {
-        // avoid unhandled error messages
-        this.transports[key].once('error', (err) => {
-          console.log('got error', err)
-        })
-        this.transports[key].close(cb)
-      },
-      callback
-    )
+    parallel(Object.keys(this.transports).map((key) => {
+      return (cb) => this.transports[key].close(cb)
+    }), callback)
   }
 }
 

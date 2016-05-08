@@ -3,7 +3,7 @@
 
 const expect = require('chai').expect
 
-const async = require('async')
+const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const Swarm = require('../src')
@@ -46,7 +46,7 @@ describe('high level API - with everything mixed all together!', function () {
   })
 
   after((done) => {
-    async.parallel([
+    parallel([
       (cb) => swarmA.close(cb),
       (cb) => swarmB.close(cb),
       // (cb) => swarmC.close(cb),

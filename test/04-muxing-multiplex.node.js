@@ -3,7 +3,7 @@
 
 const expect = require('chai').expect
 
-const async = require('async')
+const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const Swarm = require('../src')
@@ -41,7 +41,7 @@ describe('stream muxing with multiplex (on TCP)', function () {
     swarmB.transport.add('tcp', new TCP())
     swarmC.transport.add('tcp', new TCP())
 
-    async.parallel([
+    parallel([
       (cb) => swarmA.transport.listen('tcp', {}, null, cb),
       (cb) => swarmB.transport.listen('tcp', {}, null, cb),
       (cb) => swarmC.transport.listen('tcp', {}, null, cb)
@@ -49,7 +49,7 @@ describe('stream muxing with multiplex (on TCP)', function () {
   })
 
   after((done) => {
-    async.parallel([
+    parallel([
       (cb) => swarmA.close(cb),
       (cb) => swarmB.close(cb),
       (cb) => swarmC.close(cb)
