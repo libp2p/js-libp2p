@@ -12,7 +12,9 @@
     "build": "gulp build",
     "release": "gulp release",
     "release-minor": "gulp release --type minor",
-    "release-major": "gulp release --type major"
+    "release-major": "gulp release --type major",
+    "coverage": "gulp coverage",
+    "coverage-publish": "aegir-coverage publish"
   },
   "pre-commit": [
     "lint",
