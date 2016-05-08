@@ -380,7 +380,13 @@ function Swarm (peerInfo) {
 
     async.each(
       Object.keys(this.transports),
-      (key, cb) => this.transports[key].close(cb),
+      (key, cb) => {
+        // avoid unhandled error messages
+        this.transports[key].once('error', (err) => {
+          console.log('got error', err)
+        })
+        this.transports[key].close(cb)
+      },
       callback
     )
   }
