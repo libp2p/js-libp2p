@@ -34,11 +34,12 @@
   "dependencies": {
     "mafmt": "^1.0.1",
     "multiaddr": "^1.1.1",
+    "run-parallel": "^1.1.6",
     "simple-websocket": "github:diasdavid/simple-websocket#ec31437"
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "aegir": "^2.0.0",
+    "aegir": "^3.0.1",
     "gulp": "^3.9.1",
     "interface-connection": "0.0.3",
     "interface-transport": "^0.1.1",
