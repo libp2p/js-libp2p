@@ -11,7 +11,7 @@ const TCP = require('libp2p-tcp')
 const multiplex = require('libp2p-spdy')
 
 describe('stream muxing with multiplex (on TCP)', function () {
-  this.timeout(20000)
+  this.timeout(60 * 1000)
 
   var swarmA
   var peerA
@@ -41,7 +41,7 @@ describe('stream muxing with multiplex (on TCP)', function () {
     swarmB.transport.add('tcp', new TCP())
     swarmC.transport.add('tcp', new TCP())
 
-    async.series([
+    async.parallel([
       (cb) => swarmA.transport.listen('tcp', {}, null, cb),
       (cb) => swarmB.transport.listen('tcp', {}, null, cb),
       (cb) => swarmC.transport.listen('tcp', {}, null, cb)
