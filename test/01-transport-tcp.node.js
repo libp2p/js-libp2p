@@ -3,6 +3,7 @@
 
 const expect = require('chai').expect
 
+const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const Swarm = require('../src')
@@ -92,15 +93,10 @@ describe('transport - tcp', function () {
   })
 
   it('close', (done) => {
-    var count = 0
-    swarmA.transport.close('tcp', closed)
-    swarmB.transport.close('tcp', closed)
-
-    function closed () {
-      if (++count === 2) {
-        done()
-      }
-    }
+    parallel([
+      (cb) => swarmA.transport.close('tcp', cb),
+      (cb) => swarmB.transport.close('tcp', cb)
+    ], done)
   })
 
   it('support port 0', (done) => {

@@ -1,12 +1,12 @@
 'use strict'
 
-const async = require('async')
 const multistream = require('multistream-select')
 const identify = require('./identify')
 const DuplexPassThrough = require('duplex-passthrough')
 const contains = require('lodash.contains')
 const util = require('util')
 const EE = require('events').EventEmitter
+const parallel = require('run-parallel')
 
 exports = module.exports = Swarm
 
@@ -118,7 +118,13 @@ function Swarm (peerInfo) {
   }
 
   this.transport.close = (key, callback) => {
-    this.transports[key].close(callback)
+    const transport = this.transports[key]
+
+    if (!transport) {
+      return callback(new Error(`Trying to close non existing transport: ${key}`))
+    }
+
+    transport.close(callback)
   }
 
   // connections --
@@ -372,14 +378,9 @@ function Swarm (peerInfo) {
       this.muxedConns[key].muxer.end()
     })
 
-    async.each(
-      Object.keys(this.transports),
-      (key, cb) => this.transports[key].close(cb),
-      () => {
-        // Ignoring close errors
-        callback()
-      }
-    )
+    parallel(Object.keys(this.transports).map((key) => {
+      return (cb) => this.transports[key].close(cb)
+    }), callback)
   }
 }
 

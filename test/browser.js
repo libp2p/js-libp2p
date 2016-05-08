@@ -73,8 +73,7 @@ describe('high level API - 1st without stream multiplexing (on websockets)', fun
   })
 
   after((done) => {
-    done()
-    // swarm.close(done)
+    swarm.close(done)
   })
 
   it('add ws', (done) => {

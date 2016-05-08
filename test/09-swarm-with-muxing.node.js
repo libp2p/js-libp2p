@@ -3,6 +3,7 @@
 
 const expect = require('chai').expect
 
+const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const Swarm = require('../src')
@@ -45,19 +46,13 @@ describe('high level API - with everything mixed all together!', function () {
   })
 
   after((done) => {
-    var counter = 0
-
-    swarmA.close(closed)
-    swarmB.close(closed)
-    // swarmC.close(closed)
-    swarmD.close(closed)
-    swarmE.close(closed)
-
-    function closed () {
-      if (++counter === 4) {
-        done()
-      }
-    }
+    parallel([
+      (cb) => swarmA.close(cb),
+      (cb) => swarmB.close(cb),
+      // (cb) => swarmC.close(cb),
+      (cb) => swarmD.close(cb),
+      (cb) => swarmE.close(cb)
+    ], done)
   })
 
   it('add tcp', (done) => {
@@ -214,7 +209,9 @@ describe('high level API - with everything mixed all together!', function () {
   })
 
   it('close a muxer emits event', (done) => {
-    swarmC.close(() => {})
+    swarmC.close((err) => {
+      if (err) throw err
+    })
     swarmA.once('peer-mux-closed', (peerInfo) => {
       done()
     })
