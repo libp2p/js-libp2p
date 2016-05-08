@@ -1,5 +1,5 @@
-// const debug = require('debug')
-// const log = debug('libp2p:tcp')
+const debug = require('debug')
+const log = debug('libp2p:tcp')
 const tcp = require('net')
 const multiaddr = require('multiaddr')
 const Address6 = require('ip-address').Address6
@@ -63,7 +63,8 @@ function TCP () {
 
   this.close = (callback) => {
     if (listeners.length === 0) {
-      callback(new Error('there are no listeners'))
+      log('Called close with no active listeners')
+      return callback()
     }
     var count = 0
     listeners.forEach((listener) => {
