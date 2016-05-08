@@ -118,7 +118,13 @@ function Swarm (peerInfo) {
   }
 
   this.transport.close = (key, callback) => {
-    this.transports[key].close(callback)
+    const transport = this.transports[key]
+
+    if (!transport) {
+      return callback(new Error(`Trying to close non existing transport: ${key}`))
+    }
+
+    transport.close(callback)
   }
 
   // connections --
@@ -375,10 +381,7 @@ function Swarm (peerInfo) {
     async.each(
       Object.keys(this.transports),
       (key, cb) => this.transports[key].close(cb),
-      () => {
-        // Ignoring close errors
-        callback()
-      }
+      callback
     )
   }
 }

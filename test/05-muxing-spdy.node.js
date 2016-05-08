@@ -3,6 +3,7 @@
 
 const expect = require('chai').expect
 
+const async = require('async')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const Swarm = require('../src')
@@ -37,35 +38,22 @@ describe('stream muxing with spdy (on TCP)', function () {
     swarmC = new Swarm(peerC)
 
     swarmA.transport.add('tcp', new TCP())
-    swarmA.transport.listen('tcp', {}, null, ready)
-
     swarmB.transport.add('tcp', new TCP())
-    swarmB.transport.listen('tcp', {}, null, ready)
-
     swarmC.transport.add('tcp', new TCP())
-    swarmC.transport.listen('tcp', {}, null, ready)
 
-    var counter = 0
-
-    function ready () {
-      if (++counter === 3) {
-        done()
-      }
-    }
+    async.parallel([
+      (cb) => swarmA.transport.listen('tcp', {}, null, cb),
+      (cb) => swarmB.transport.listen('tcp', {}, null, cb),
+      (cb) => swarmC.transport.listen('tcp', {}, null, cb)
+    ], done)
   })
 
   after((done) => {
-    var counter = 0
-
-    swarmA.close(closed)
-    swarmB.close(closed)
-    // swarmC.close(closed)
-
-    function closed () {
-      if (++counter === 2) {
-        done()
-      }
-    }
+    async.parallel([
+      (cb) => swarmA.close(cb),
+      (cb) => swarmB.close(cb),
+      (cb) => swarmC.close(cb)
+    ], done)
   })
 
   it('add', (done) => {
@@ -130,7 +118,8 @@ describe('stream muxing with spdy (on TCP)', function () {
   })
 
   it('close one end, make sure the other does not blow', (done) => {
-    swarmC.close(() => {
+    swarmC.close((err) => {
+      if (err) throw err
       // to make sure it has time to propagate
       setTimeout(done, 1000)
     })
