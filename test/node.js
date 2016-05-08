@@ -20,9 +20,7 @@ describe('libp2p-websockets', function () {
     ws.createListener(mh, (socket) => {
       expect(socket).to.exist
       socket.end()
-      ws.close(() => {
-        done()
-      })
+      ws.close(done)
     }, () => {
       const conn = ws.dial(mh)
       conn.end()
@@ -45,9 +43,7 @@ describe('libp2p-websockets', function () {
       expect(socket).to.exist
       socket.end()
       expect(socket.getObservedAddrs()).to.deep.equal([])
-      ws.close(() => {
-        done()
-      })
+      ws.close(done)
     }, () => {
       const conn = ws.dial(mh)
       conn.end()
@@ -76,9 +72,7 @@ describe('libp2p-websockets', function () {
       conn.on('data', (data) => {
         expect(data.toString()).to.equal(message)
         conn.end()
-        ws.close(() => {
-          done()
-        })
+        ws.close(done)
       })
     })
   })
@@ -99,9 +93,7 @@ describe('libp2p-websockets', function () {
       conn.on('data', (data) => {
         expect(data.toString()).to.equal(message)
         conn.end()
-        ws.close(() => {
-          done()
-        })
+        ws.close(done)
       })
     })
   })

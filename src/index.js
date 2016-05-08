@@ -4,6 +4,7 @@ const debug = require('debug')
 const log = debug('libp2p:websockets')
 const SWS = require('simple-websocket')
 const mafmt = require('mafmt')
+const parallel = require('run-parallel')
 
 exports = module.exports = WebSockets
 
@@ -64,14 +65,10 @@ function WebSockets () {
       log('Called close with no active listeners')
       return callback()
     }
-    var count = 0
-    listeners.forEach((listener) => {
-      listener.close(() => {
-        if (++count === listeners.length) {
-          callback()
-        }
-      })
-    })
+
+    parallel(listeners.map((listener) => {
+      return (cb) => listener.close(cb)
+    }), callback)
   }
 
   this.filter = (multiaddrs) => {
