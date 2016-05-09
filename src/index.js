@@ -246,6 +246,9 @@ function Swarm (peerInfo) {
         gotWarmedUpConn(conn)
       }
     } else {
+      if (!protocol) {
+        return callback()
+      }
       gotMuxer(this.muxedConns[b58Id].muxer)
     }
 
