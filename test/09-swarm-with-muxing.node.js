@@ -125,17 +125,33 @@ describe('high level API - with everything mixed all together!', function () {
 
   it.skip('add multiplex', (done) => {})
 
-  it('dial from tcp to tcp+ws', (done) => {
-    swarmB.handle('/anona/1.0.0', (conn) => {
-      conn.pipe(conn)
-    })
-
+  it('warm up from A to B on tcp to tcp+ws', (done) => {
     swarmB.once('peer-mux-established', (peerInfo) => {
       expect(peerInfo.id.toB58String()).to.equal(peerA.id.toB58String())
     })
 
     swarmA.once('peer-mux-established', (peerInfo) => {
       expect(peerInfo.id.toB58String()).to.equal(peerB.id.toB58String())
+    })
+
+    swarmA.dial(peerB, (err) => {
+      expect(err).to.not.exist
+      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+      done()
+    })
+  })
+
+  it('warm up a warmed up, from B to A', (done) => {
+    swarmB.dial(peerA, (err) => {
+      expect(err).to.not.exist
+      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+      done()
+    })
+  })
+
+  it('dial from tcp to tcp+ws, on protocol', (done) => {
+    swarmB.handle('/anona/1.0.0', (conn) => {
+      conn.pipe(conn)
     })
 
     swarmA.dial(peerB, '/anona/1.0.0', (err, conn) => {
