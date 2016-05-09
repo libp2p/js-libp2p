@@ -2,14 +2,17 @@
   "name": "libp2p-tcp",
   "version": "0.5.1",
   "description": "Node.js implementation of the TCP module that libp2p uses, which implements the interface-connection and interface-transport interfaces",
-  "main": "src/index.js",
+  "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
-    "test:compliance:connection": "node tests/connection.js",
-    "test:compliance:transport": "node tests/transport.js",
-    "test:specific": "mocha tests/*-test.js",
-    "test": "npm run test:specific",
-    "test-2": "npm run test:specific && npm run test:compliance:transport && npm run test:compliance:connection",
-    "lint": "standard"
+    "lint": "aegir-lint",
+    "build": "aegir-build --env node",
+    "test": "aegir-test --env node",
+    "release": "aegir-release --env node",
+    "release-minor": "aegir-release --type minor",
+    "release-major": "aegir-release --type major",
+    "coverage": "aegir-coverage",
+    "coverage-publish": "aegir-coverage publish"
   },
   "pre-commit": [
     "lint",
@@ -29,18 +32,17 @@
   },
   "homepage": "https://github.com/diasdavid/js-libp2p-tcp",
   "devDependencies": {
+    "aegir": "^3.0.1",
     "chai": "^3.5.0",
     "interface-connection": "0.0.3",
     "interface-transport": "^0.1.1",
-    "istanbul": "^0.4.2",
-    "mocha": "^2.4.5",
     "pre-commit": "^1.1.2",
-    "standard": "^6.0.7",
-    "tape": "^4.2.0"
+    "tape": "^4.5.1"
   },
   "dependencies": {
     "ip-address": "^5.8.0",
     "mafmt": "^1.0.1",
-    "multiaddr": "^1.1.1"
+    "multiaddr": "^1.1.1",
+    "run-parallel": "^1.1.6"
   }
 }
