@@ -22,14 +22,12 @@ describe('transport - websockets', function () {
 
   var swarm
 
-  before((done) => {
+  before(() => {
     const b58IdSrc = 'QmYzgdesgjdvD3okTPGZT9NPmh1BuH5FfTVNKjsvaAprhb'
     // use a pre generated Id to save time
     const idSrc = Id.createFromB58String(b58IdSrc)
     const peerSrc = new Peer(idSrc)
     swarm = new Swarm(peerSrc)
-
-    done()
   })
 
   it('add', (done) => {
@@ -62,27 +60,24 @@ describe('high level API - 1st without stream multiplexing (on websockets)', fun
   var swarm
   var peerDst
 
-  before((done) => {
+  before(() => {
     const b58IdSrc = 'QmYzgdesgjdvD3okTPGZT9NPmh1BuH5FfTVNKjsvaAprhb'
     // use a pre generated Id to save time
     const idSrc = Id.createFromB58String(b58IdSrc)
     const peerSrc = new Peer(idSrc)
     swarm = new Swarm(peerSrc)
-
-    done()
   })
 
   after((done) => {
     swarm.close(done)
   })
 
-  it('add ws', (done) => {
+  it('add ws', () => {
     swarm.transport.add('ws', new WebSockets())
     expect(Object.keys(swarm.transports).length).to.equal(1)
-    done()
   })
 
-  it('create Dst peer info', (done) => {
+  it('create Dst peer info', () => {
     const b58IdDst = 'QmYzgdesgjdvD3okTPGZT9NPmh1BuH5FfTVNKjsvaAprhb'
     // use a pre generated Id to save time
     const idDst = Id.createFromB58String(b58IdDst)
@@ -90,7 +85,6 @@ describe('high level API - 1st without stream multiplexing (on websockets)', fun
 
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9200/websockets')
     peerDst.multiaddr.add(ma)
-    done()
   })
 
   it('dial on protocol', (done) => {

@@ -18,12 +18,11 @@ describe('transport - websockets', function () {
   var peerA = new Peer()
   var peerB = new Peer()
 
-  before((done) => {
+  before(() => {
     peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888/websockets'))
     peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'))
     swarmA = new Swarm(peerA)
     swarmB = new Swarm(peerB)
-    done()
   })
 
   it('add', (done) => {
@@ -36,31 +35,28 @@ describe('transport - websockets', function () {
   })
 
   it('listen', (done) => {
-    var count = 0
-    swarmA.transport.listen('ws', {}, (conn) => {
-      conn.pipe(conn)
-    }, ready)
-    swarmB.transport.listen('ws', {}, (conn) => {
-      conn.pipe(conn)
-    }, ready)
-
-    function ready () {
-      if (++count === 2) {
-        expect(peerA.multiaddrs.length).to.equal(1)
-        expect(
-          peerA.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9888/websockets'))
-        ).to.be.equal(
-          true
-        )
-        expect(peerB.multiaddrs.length).to.equal(1)
-        expect(
-          peerB.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'))
-        ).to.equal(
-          true
-        )
-        done()
-      }
-    }
+    parallel([
+      (cb) => swarmA.transport.listen('ws', {}, (conn) => {
+        conn.pipe(conn)
+      }, cb),
+      (cb) => swarmB.transport.listen('ws', {}, (conn) => {
+        conn.pipe(conn)
+      }, cb)
+    ], () => {
+      expect(peerA.multiaddrs.length).to.equal(1)
+      expect(
+        peerA.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9888/websockets'))
+      ).to.be.equal(
+        true
+      )
+      expect(peerB.multiaddrs.length).to.equal(1)
+      expect(
+        peerB.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'))
+      ).to.equal(
+        true
+      )
+      done()
+    })
   })
 
   it('dial', (done) => {

@@ -28,18 +28,12 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
     swarmB = new Swarm(peerB)
 
     swarmA.transport.add('tcp', new TCP())
-    swarmA.transport.listen('tcp', {}, null, ready)
-
     swarmB.transport.add('tcp', new TCP())
-    swarmB.transport.listen('tcp', {}, null, ready)
 
-    var counter = 0
-
-    function ready () {
-      if (++counter === 2) {
-        done()
-      }
-    }
+    parallel([
+      (cb) => swarmA.transport.listen('tcp', {}, null, cb),
+      (cb) => swarmB.transport.listen('tcp', {}, null, cb)
+    ], done)
   })
 
   after((done) => {
