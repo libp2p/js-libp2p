@@ -51,16 +51,15 @@ describe('stream muxing with spdy (on TCP)', function () {
   after((done) => {
     parallel([
       (cb) => swarmA.close(cb),
-      (cb) => swarmB.close(cb),
-      (cb) => swarmC.close(cb)
+      (cb) => swarmB.close(cb)
+      // (cb) => swarmC.close(cb)
     ], done)
   })
 
-  it('add', (done) => {
+  it('add', () => {
     swarmA.connection.addStreamMuxer(spdy)
     swarmB.connection.addStreamMuxer(spdy)
     swarmC.connection.addStreamMuxer(spdy)
-    done()
   })
 
   it('handle + dial on protocol', (done) => {

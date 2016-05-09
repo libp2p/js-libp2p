@@ -61,21 +61,14 @@ describe('high level API - with everything mixed all together!', function () {
     peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
 
     swarmA.transport.add('tcp', new TCP())
-    swarmA.transport.listen('tcp', {}, null, ready)
-
     swarmB.transport.add('tcp', new TCP())
-    swarmB.transport.listen('tcp', {}, null, ready)
-
     swarmC.transport.add('tcp', new TCP())
-    swarmC.transport.listen('tcp', {}, null, ready)
 
-    var counter = 0
-
-    function ready () {
-      if (++counter === 3) {
-        done()
-      }
-    }
+    parallel([
+      (cb) => swarmA.transport.listen('tcp', {}, null, cb),
+      (cb) => swarmB.transport.listen('tcp', {}, null, cb),
+      (cb) => swarmC.transport.listen('tcp', {}, null, cb)
+    ], done)
   })
 
   it.skip('add utp', (done) => {})
@@ -87,27 +80,19 @@ describe('high level API - with everything mixed all together!', function () {
     peerE.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9042/websockets'))
 
     swarmB.transport.add('ws', new WebSockets())
-    swarmB.transport.listen('ws', {}, null, ready)
-
     swarmC.transport.add('ws', new WebSockets())
-    swarmC.transport.listen('ws', {}, null, ready)
-
     swarmD.transport.add('ws', new WebSockets())
-    swarmD.transport.listen('ws', {}, null, ready)
-
     swarmE.transport.add('ws', new WebSockets())
-    swarmE.transport.listen('ws', {}, null, ready)
 
-    var counter = 0
-
-    function ready () {
-      if (++counter === 4) {
-        done()
-      }
-    }
+    parallel([
+      (cb) => swarmB.transport.listen('ws', {}, null, cb),
+      (cb) => swarmC.transport.listen('ws', {}, null, cb),
+      (cb) => swarmD.transport.listen('ws', {}, null, cb),
+      (cb) => swarmE.transport.listen('ws', {}, null, cb)
+    ], done)
   })
 
-  it('add spdy', (done) => {
+  it('add spdy', () => {
     swarmA.connection.addStreamMuxer(spdy)
     swarmB.connection.addStreamMuxer(spdy)
     swarmC.connection.addStreamMuxer(spdy)
@@ -119,26 +104,26 @@ describe('high level API - with everything mixed all together!', function () {
     swarmC.connection.reuse()
     swarmD.connection.reuse()
     swarmE.connection.reuse()
-
-    done()
   })
 
-  it.skip('add multiplex', (done) => {})
+  it.skip('add multiplex', () => {})
 
   it('warm up from A to B on tcp to tcp+ws', (done) => {
-    swarmB.once('peer-mux-established', (peerInfo) => {
-      expect(peerInfo.id.toB58String()).to.equal(peerA.id.toB58String())
-    })
-
-    swarmA.once('peer-mux-established', (peerInfo) => {
-      expect(peerInfo.id.toB58String()).to.equal(peerB.id.toB58String())
-    })
-
-    swarmA.dial(peerB, (err) => {
-      expect(err).to.not.exist
-      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
-      done()
-    })
+    parallel([
+      (cb) => swarmB.once('peer-mux-established', (peerInfo) => {
+        expect(peerInfo.id.toB58String()).to.equal(peerA.id.toB58String())
+        cb()
+      }),
+      (cb) => swarmA.once('peer-mux-established', (peerInfo) => {
+        expect(peerInfo.id.toB58String()).to.equal(peerB.id.toB58String())
+        cb()
+      }),
+      (cb) => swarmA.dial(peerB, (err) => {
+        expect(err).to.not.exist
+        expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+        cb()
+      })
+    ], done)
   })
 
   it('warm up a warmed up, from B to A', (done) => {
@@ -225,11 +210,9 @@ describe('high level API - with everything mixed all together!', function () {
   })
 
   it('close a muxer emits event', (done) => {
-    swarmC.close((err) => {
-      if (err) throw err
-    })
-    swarmA.once('peer-mux-closed', (peerInfo) => {
-      done()
-    })
+    parallel([
+      (cb) => swarmC.close(cb),
+      (cb) => swarmA.once('peer-mux-closed', () => cb())
+    ], done)
   })
 })
