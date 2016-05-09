@@ -1,9 +1,12 @@
+'use strict'
+
 const debug = require('debug')
 const log = debug('libp2p:tcp')
 const tcp = require('net')
 const multiaddr = require('multiaddr')
 const Address6 = require('ip-address').Address6
 const mafmt = require('mafmt')
+const parallel = require('run-parallel')
 
 exports = module.exports = TCP
 
@@ -31,10 +34,9 @@ function TCP () {
       multiaddrs = [multiaddrs]
     }
 
-    var count = 0
     const freshMultiaddrs = []
 
-    multiaddrs.forEach((m) => {
+    parallel(multiaddrs.map((m) => (cb) => {
       const listener = tcp.createServer((conn) => {
         conn.getObservedAddrs = () => {
           return [getMultiaddr(conn)]
@@ -49,15 +51,16 @@ function TCP () {
           m = m.encapsulate('/tcp/' + address.port)
           freshMultiaddrs.push(m)
         }
+
         if (address.family === 'IPv6') {
           freshMultiaddrs.push(multiaddr('/ip6/' + address.address + '/tcp/' + address.port))
         }
 
-        if (++count === multiaddrs.length) {
-          callback(null, freshMultiaddrs)
-        }
+        cb()
       })
       listeners.push(listener)
+    }), (err) => {
+      callback(err, freshMultiaddrs)
     })
   }
 
@@ -66,14 +69,10 @@ function TCP () {
       log('Called close with no active listeners')
       return callback()
     }
-    var count = 0
-    listeners.forEach((listener) => {
-      listener.close(() => {
-        if (++count === listeners.length && callback) {
-          callback()
-        }
-      })
-    })
+
+    parallel(listeners.map((listener) => {
+      return (cb) => listener.close(cb)
+    }), callback)
   }
 
   this.filter = (multiaddrs) => {
