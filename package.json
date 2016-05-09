@@ -44,5 +44,12 @@
     "mafmt": "^1.0.1",
     "multiaddr": "^1.1.1",
     "run-parallel": "^1.1.6"
-  }
+  },
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "João Antunes <j.goncalo.antunes@gmail.com>",
+    "Richard Littauer <richard.littauer@gmail.com>",
+    "Stephen Whitmore <stephen.whitmore@gmail.com>"
+  ]
 }
