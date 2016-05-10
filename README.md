@@ -102,6 +102,10 @@ dial uses the best transport (whatever works first, in the future we can have so
 - `protocol`
 - `callback`
 
+### `swarm.listen(callback)`
+
+Start listening on all added transports that are available on the current `peerInfo`.
+
 ### `swarm.handle(protocol, handler)`
 
 handle a new protocol.

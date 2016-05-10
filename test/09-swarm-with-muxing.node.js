@@ -66,8 +66,8 @@ describe('high level API - with everything mixed all together!', function () {
 
     parallel([
       (cb) => swarmA.transport.listen('tcp', {}, null, cb),
-      (cb) => swarmB.transport.listen('tcp', {}, null, cb),
-      (cb) => swarmC.transport.listen('tcp', {}, null, cb)
+      (cb) => swarmB.transport.listen('tcp', {}, null, cb)
+      // (cb) => swarmC.transport.listen('tcp', {}, null, cb)
     ], done)
   })
 
@@ -86,10 +86,14 @@ describe('high level API - with everything mixed all together!', function () {
 
     parallel([
       (cb) => swarmB.transport.listen('ws', {}, null, cb),
-      (cb) => swarmC.transport.listen('ws', {}, null, cb),
+      // (cb) => swarmC.transport.listen('ws', {}, null, cb),
       (cb) => swarmD.transport.listen('ws', {}, null, cb),
       (cb) => swarmE.transport.listen('ws', {}, null, cb)
     ], done)
+  })
+
+  it('listen automatically', (done) => {
+    swarmC.listen(done)
   })
 
   it('add spdy', () => {
