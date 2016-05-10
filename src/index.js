@@ -217,6 +217,14 @@ function Swarm (peerInfo) {
     msS.handle(conn)
   }
 
+  function availableTransports (pi) {
+    const addrs = pi.multiaddrs
+    return Object.keys(self.transports).filter((ts) => {
+      // Only listen on transports we actually have addresses for
+      return self.transports[ts].filter(addrs).length > 0
+    })
+  }
+
   // higher level (public) API
   this.dial = (pi, protocol, callback) => {
     if (typeof protocol === 'function') {
@@ -279,7 +287,7 @@ function Swarm (peerInfo) {
     }
 
     function attemptDial (pi, cb) {
-      const tKeys = Object.keys(self.transports)
+      const tKeys = availableTransports(pi)
       nextTransport(tKeys.shift())
 
       function nextTransport (key) {
@@ -364,6 +372,14 @@ function Swarm (peerInfo) {
         })
       })
     }
+  }
+
+  // Start listening on all available transports
+  this.listen = (callback) => {
+    parallel(availableTransports(peerInfo).map((ts) => (cb) => {
+      // Listen on the given transport
+      this.transport.listen(ts, {}, null, cb)
+    }), callback)
   }
 
   this.handle = (protocol, handler) => {
