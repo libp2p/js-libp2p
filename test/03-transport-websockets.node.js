@@ -20,7 +20,7 @@ describe('transport - websockets', function () {
 
   before(() => {
     peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888/websockets'))
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
     swarmA = new Swarm(peerA)
     swarmB = new Swarm(peerB)
   })
@@ -51,7 +51,7 @@ describe('transport - websockets', function () {
       )
       expect(peerB.multiaddrs.length).to.equal(1)
       expect(
-        peerB.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'))
+        peerB.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
       ).to.equal(
         true
       )
