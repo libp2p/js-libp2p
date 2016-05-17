@@ -8,7 +8,7 @@ let ws
 
 gulp.task('test:browser:before', (done) => {
   ws = new WSlibp2p()
-  const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+  const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
   ws.createListener(mh, (socket) => {
     socket.pipe(socket)
   }, done)

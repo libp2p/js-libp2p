@@ -16,7 +16,7 @@ describe('libp2p-websockets', function () {
   })
 
   it('listen and dial', (done) => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
     ws.createListener(mh, (socket) => {
       expect(socket).to.exist
       socket.end()
@@ -28,8 +28,8 @@ describe('libp2p-websockets', function () {
   })
 
   it('listen on several', (done) => {
-    const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
-    const mh2 = multiaddr('/ip4/127.0.0.1/tcp/9091/websockets')
+    const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+    const mh2 = multiaddr('/ip4/127.0.0.1/tcp/9091/ws')
     const ws = new WSlibp2p()
 
     ws.createListener([mh1, mh2], (socket) => {}, () => {
@@ -38,7 +38,7 @@ describe('libp2p-websockets', function () {
   })
 
   it('get observed addrs', (done) => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
     ws.createListener(mh, (socket) => {
       expect(socket).to.exist
       socket.end()
@@ -53,7 +53,7 @@ describe('libp2p-websockets', function () {
   it('filter', (done) => {
     const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
     const mh2 = multiaddr('/ip4/127.0.0.1/udp/9090')
-    const mh3 = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+    const mh3 = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
 
     const valid = ws.filter([mh1, mh2, mh3])
     expect(valid.length).to.equal(1)
@@ -62,7 +62,7 @@ describe('libp2p-websockets', function () {
   })
 
   it('echo', (done) => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
     ws.createListener(mh, (conn) => {
       conn.pipe(conn)
     }, () => {
@@ -78,7 +78,7 @@ describe('libp2p-websockets', function () {
   })
 
   it('echo with connect event and send', (done) => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
     ws.createListener(mh, (conn) => {
       conn.pipe(conn)
     }, () => {
