@@ -74,10 +74,10 @@ describe('high level API - with everything mixed all together!', function () {
   it.skip('add utp', (done) => {})
 
   it('add websockets', (done) => {
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9012/websockets'))
-    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9022/websockets'))
-    peerD.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9032/websockets'))
-    peerE.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9042/websockets'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9012/ws'))
+    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9022/ws'))
+    peerD.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9032/ws'))
+    peerE.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9042/ws'))
 
     swarmB.transport.add('ws', new WebSockets())
     swarmC.transport.add('ws', new WebSockets())

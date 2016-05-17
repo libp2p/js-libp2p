@@ -77,7 +77,7 @@ describe('transport - tcp', function () {
 
   it('dial to set of multiaddr, only one is available', (done) => {
     const conn = swarmA.transport.dial('tcp', [
-      multiaddr('/ip4/127.0.0.1/tcp/9910/websockets'), // not valid on purpose
+      multiaddr('/ip4/127.0.0.1/tcp/9910/ws'), // not valid on purpose
       multiaddr('/ip4/127.0.0.1/tcp/9910'),
       multiaddr('/ip4/127.0.0.1/tcp/9999'),
       multiaddr('/ip4/127.0.0.1/tcp/9309')
