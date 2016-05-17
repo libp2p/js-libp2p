@@ -16,7 +16,7 @@ describe('libp2p-websockets', function () {
   })
 
   it('echo', (done) => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
     const conn = ws.dial(mh)
     const message = 'Hello World!'
     conn.write(message)
@@ -29,7 +29,7 @@ describe('libp2p-websockets', function () {
 
   describe('stress', () => {
     it('one big write', (done) => {
-      const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+      const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
       const conn = ws.dial(mh)
       const message = new Buffer(1000000).fill('a').toString('hex')
       conn.write(message)
@@ -41,7 +41,7 @@ describe('libp2p-websockets', function () {
     })
 
     it('many writes in 2 batches', (done) => {
-      const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/websockets')
+      const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
       const conn = ws.dial(mh)
       let expected = ''
       let counter = 0
