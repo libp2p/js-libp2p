@@ -30,9 +30,13 @@ exports.exec = (rawConn, muxer, peerInfo, callback) => {
 
   const conn = muxer.newStream()
 
-  var msI = new multistream.Interactive()
-  msI.handle(conn, () => {
-    msI.select(exports.multicodec, (err, ds) => {
+  const ms = new multistream.Dialer()
+  ms.handle(conn, (err) => {
+    if (err) {
+      return callback(err)
+    }
+
+    ms.select(exports.multicodec, (err, ds) => {
       if (err) {
         return callback(err)
       }

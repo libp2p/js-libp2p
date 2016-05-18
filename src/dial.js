@@ -103,9 +103,12 @@ module.exports = function dial (swarm) {
       nextMuxer(muxers.shift())
 
       function nextMuxer (key) {
-        var msI = new multistream.Interactive()
-        msI.handle(conn, function () {
-          msI.select(key, (err, conn) => {
+        const ms = new multistream.Dialer()
+        ms.handle(conn, (err) => {
+          if (err) {
+            return callback(new Error('multistream not supported'))
+          }
+          ms.select(key, (err, conn) => {
             if (err) {
               if (muxers.length === 0) {
                 cb(new Error('could not upgrade to stream muxing'))
@@ -144,9 +147,12 @@ module.exports = function dial (swarm) {
     }
 
     function protocolHandshake (conn, protocol, cb) {
-      var msI = new multistream.Interactive()
-      msI.handle(conn, function () {
-        msI.select(protocol, (err, conn) => {
+      const ms = new multistream.Dialer()
+      ms.handle(conn, (err) => {
+        if (err) {
+          return callback(err)
+        }
+        ms.select(protocol, (err, conn) => {
           if (err) {
             return callback(err)
           }
