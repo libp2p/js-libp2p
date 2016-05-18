@@ -38,7 +38,7 @@ describe('transport - websockets', function () {
   })
 
   it('dial', (done) => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9100/websockets')
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/9100/ws')
 
     const conn = swarm.transport.dial('ws', ma, (err, conn) => {
       expect(err).to.not.exist
@@ -83,7 +83,7 @@ describe('high level API - 1st without stream multiplexing (on websockets)', fun
     const idDst = Id.createFromB58String(b58IdDst)
     peerDst = new Peer(idDst)
 
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9200/websockets')
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/9200/ws')
     peerDst.multiaddr.add(ma)
   })
 

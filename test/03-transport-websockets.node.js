@@ -19,8 +19,8 @@ describe('transport - websockets', function () {
   var peerB = new Peer()
 
   before(() => {
-    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888/websockets'))
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
+    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888/ws'))
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
     swarmA = new Swarm(peerA)
     swarmB = new Swarm(peerB)
   })
@@ -45,13 +45,13 @@ describe('transport - websockets', function () {
     ], () => {
       expect(peerA.multiaddrs.length).to.equal(1)
       expect(
-        peerA.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9888/websockets'))
+        peerA.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9888/ws'))
       ).to.be.equal(
         true
       )
       expect(peerB.multiaddrs.length).to.equal(1)
       expect(
-        peerB.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9999/websockets/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
+        peerB.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9999/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
       ).to.equal(
         true
       )
@@ -60,7 +60,7 @@ describe('transport - websockets', function () {
   })
 
   it('dial', (done) => {
-    const conn = swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'), (err, conn) => {
+    const conn = swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/ws'), (err, conn) => {
       expect(err).to.not.exist
     })
     conn.pipe(bl((err, data) => {
@@ -72,7 +72,7 @@ describe('transport - websockets', function () {
   })
 
   it('dial (conn from callback)', (done) => {
-    swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/websockets'), (err, conn) => {
+    swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/ws'), (err, conn) => {
       expect(err).to.not.exist
 
       conn.pipe(bl((err, data) => {
