@@ -84,7 +84,19 @@ module.exports = function dial (swarm) {
             }
             return nextTransport(tKeys.shift())
           }
-          cb(null, conn)
+
+          cryptoDial()
+
+          function cryptoDial () {
+            // currently, js-libp2p-swarm doesn't implement any crypto
+            const ms = new multistream.Dialer()
+            ms.handle(conn, (err) => {
+              if (err) {
+                return cb(err)
+              }
+              ms.select('/plaintext/1.0.0', cb)
+            })
+          }
         })
       }
     }
