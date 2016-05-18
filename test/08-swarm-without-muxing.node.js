@@ -47,7 +47,7 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
     swarmB.handle('/bananas/1.0.0', (conn) => {
       conn.pipe(conn)
     })
-    expect(Object.keys(swarmB.protocols).length).to.equal(1)
+    expect(Object.keys(swarmB.protocols).length).to.equal(2)
     done()
   })
 

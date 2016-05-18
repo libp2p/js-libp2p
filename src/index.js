@@ -8,6 +8,7 @@ const contains = require('lodash.contains')
 const transport = require('./transport')
 const connection = require('./connection')
 const dial = require('./dial')
+const connHandler = require('./default-handler')
 
 exports = module.exports = Swarm
 
@@ -85,6 +86,11 @@ function Swarm (peerInfo) {
   this.handle = (protocol, handler) => {
     this.protocols[protocol] = handler
   }
+
+  // our crypto handshake :)
+  this.handle('/plaintext/1.0.0', (conn) => {
+    connHandler(this.protocols, conn)
+  })
 
   this.unhandle = (protocol, handler) => {
     if (this.protocols[protocol]) {
