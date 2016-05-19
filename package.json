@@ -1,0 +1,52 @@
+{
+  "name": "js-libp2p-crypto",
+  "version": "0.1.0",
+  "description": "Crypto primitives for libp2p",
+  "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
+  "scripts": {
+    "lint": "aegir-lint",
+    "build": "aegir-build",
+    "test": "aegir-test",
+    "test:node": "aegir-test --env node",
+    "test:browser": "aegir-test --env browser",
+    "release": "aegir-release",
+    "release-minor": "aegir-release --type minor",
+    "release-major": "aegir-release --type major",
+    "coverage": "aegir-coverage",
+    "coverage-publish": "aegir-coverage publish"
+  },
+  "keywords": [
+    "IPFS",
+    "libp2p",
+    "crypto",
+    "rsa"
+  ],
+  "author": "Friedel Ziegelmayer <dignifiedqurie@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "aegir": "^3.0.4",
+    "chai": "^3.5.0",
+    "pre-commit": "^1.1.3"
+  },
+  "pre-commit": [
+    "lint",
+    "test"
+  ],
+  "engines": {
+    "node": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ipfs/js-libp2p-crypto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/js-libp2p-crypto/issues"
+  },
+  "homepage": "https://github.com/ipfs/js-libp2p-crypto",
+  "dependencies": {
+    "multihashing": "^0.2.1",
+    "node-forge": "^0.6.39",
+    "protocol-buffers": "^3.1.6"
+  }
+}
