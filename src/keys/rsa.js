@@ -25,7 +25,7 @@ class RsaPublicKey {
   }
 
   marshal () {
-    return forge.asn1.toDer(pki.publicKeyToAsn1(this._key)).bytes()
+    return new Buffer(forge.asn1.toDer(pki.publicKeyToAsn1(this._key)).bytes(), 'binary')
   }
 
   get bytes () {
@@ -74,7 +74,7 @@ class RsaPrivateKey {
   }
 
   marshal () {
-    return forge.asn1.toDer(pki.privateKeyToAsn1(this._privateKey)).bytes()
+    return new Buffer(forge.asn1.toDer(pki.privateKeyToAsn1(this._privateKey)).bytes(), 'binary')
   }
 
   get bytes () {
@@ -94,12 +94,18 @@ class RsaPrivateKey {
 }
 
 function unmarshalRsaPrivateKey (bytes) {
+  if (Buffer.isBuffer(bytes)) {
+    bytes = forge.util.createBuffer(bytes.toString('binary'))
+  }
   const key = pki.privateKeyFromAsn1(forge.asn1.fromDer(bytes))
 
   return new RsaPrivateKey(key)
 }
 
 function unmarshalRsaPublicKey (bytes) {
+  if (Buffer.isBuffer(bytes)) {
+    bytes = forge.util.createBuffer(bytes.toString('binary'))
+  }
   const key = pki.publicKeyFromAsn1(forge.asn1.fromDer(bytes))
 
   return new RsaPublicKey(key)

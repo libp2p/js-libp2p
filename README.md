@@ -24,3 +24,31 @@ needed for libp2p. This is based on this [go implementation](https://github.com/
 - `type: String`, only `'RSA'` is currently supported
 - `bits: Number`
 - `cb: Function`, with the signature `function (err, privateKey)`
+
+Generates a keypair of the given type and bitsize.
+
+### `marshalPublicKey(key[, type])`
+
+- `key: crypto.rsa.RsaPublicKey`
+- `type: String`, only `'RSA'` is currently supported
+
+Converts a public key object into a protobuf serialized public key.
+
+### `unmarshalPublicKey(buf)`
+
+- `buf: Buffer`
+
+Converts a protobuf serialized public key into its  representative object.
+
+### `marshalPrivateKey(key[, type])`
+
+- `key: crypto.rsa.RsaPrivateKey`
+- `type: String`, only `'RSA'` is currently supported
+
+Converts a private key object into a protobuf serialized private key.
+
+### `unmarshalPrivateKey(buf)`
+
+- `buf: Buffer`
+
+Converts a protobuf serialized private key into its  representative object.
