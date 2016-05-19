@@ -1,17 +1,16 @@
 'use strict'
 
-const keyGenerators = require('./keys')
-
 exports.utils = require('./utils')
+const keys = exports.keys = require('./keys')
 
 // Generates a keypair of the given type and bitsize
-exports.generateKeyPair = (type, bits) => {
-  let generator = keyGenerators[type.toLowerCase()]
-  if (!generator) {
+exports.generateKeyPair = (type, bits, cb) => {
+  let key = keys[type.toLowerCase()]
+  if (!key) {
     throw new Error('invalid or unsupported key type')
   }
 
-  return generator(bits)
+  key.generateKeyPair(bits, cb)
 }
 
 // Generates an ephemeral public key and returns a function that will compute

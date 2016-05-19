@@ -25,13 +25,13 @@ class RsaPublicKey {
   }
 
   marshal () {
-    return forge.asn1.toDer(pki.privateKeyToAsn1(this._key)).bytes()
+    return forge.asn1.toDer(pki.publicKeyToAsn1(this._key)).bytes()
   }
 
   get bytes () {
     return pbm.PublicKey.encode({
       Type: pbm.KeyType.RSA,
-      Data: this.marhal()
+      Data: this.marshal()
     })
   }
 
@@ -40,7 +40,7 @@ class RsaPublicKey {
   }
 
   equals (key) {
-    return this.bytes === key.bytes
+    return this.bytes.equals(key.bytes)
   }
 
   hash () {
@@ -85,7 +85,7 @@ class RsaPrivateKey {
   }
 
   equals (key) {
-    return this.bytes === key.bytes
+    return this.bytes.equals(key.bytes)
   }
 
   hash () {
@@ -105,10 +105,21 @@ function unmarshalRsaPublicKey (bytes) {
   return new RsaPublicKey(key)
 }
 
-module.exports = function generateRSAKey (bits, cb) {
-  rsa.generateKeyPair({bits}, (err, keypair) => {
+function generateKeyPair (bits, cb) {
+  rsa.generateKeyPair({
+    bits,
+    workerScript: utils.workerScript
+  }, (err, p) => {
     if (err) return cb(err)
 
-    cb(null, new RSAKey(keypair.publicKey, keypair.privateKey))
+    cb(null, new RsaPrivateKey(p.privateKey, p.publicKey))
   })
+}
+
+module.exports = {
+  RsaPublicKey,
+  RsaPrivateKey,
+  unmarshalRsaPublicKey,
+  unmarshalRsaPrivateKey,
+  generateKeyPair
 }

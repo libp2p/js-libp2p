@@ -17,3 +17,10 @@ needed for libp2p. This is based on this [go implementation](https://github.com/
 
 
 ## API
+
+
+### `generateKeyPair(type, bits, cb)`
+
+- `type: String`, only `'RSA'` is currently supported
+- `bits: Number`
+- `cb: Function`, with the signature `function (err, privateKey)`
