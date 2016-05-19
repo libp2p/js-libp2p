@@ -18,7 +18,6 @@ needed for libp2p. This is based on this [go implementation](https://github.com/
 
 ## API
 
-
 ### `generateKeyPair(type, bits, cb)`
 
 - `type: String`, only `'RSA'` is currently supported
@@ -26,6 +25,16 @@ needed for libp2p. This is based on this [go implementation](https://github.com/
 - `cb: Function`, with the signature `function (err, privateKey)`
 
 Generates a keypair of the given type and bitsize.
+
+### `generateEphemeralKeyPair(curve)`
+
+- `curve: String`, one of `'P-256'`, `'P-384'`, `'P-521'` is currently supported
+
+Generates an ephemeral public key and returns a function that will compute the shared secret key.
+
+Focuses only on ECDH now, but can be made more general in the future.
+
+Returns a `Buffer`.
 
 ### `marshalPublicKey(key[, type])`
 

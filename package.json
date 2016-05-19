@@ -25,6 +25,7 @@
   "author": "Friedel Ziegelmayer <dignifiedqurie@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "elliptic": "^6.2.3",
     "multihashing": "^0.2.1",
     "node-forge": "^0.6.39",
     "protocol-buffers": "^3.1.6"
