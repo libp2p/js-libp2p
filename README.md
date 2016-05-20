@@ -34,7 +34,13 @@ Generates an ephemeral public key and returns a function that will compute the s
 
 Focuses only on ECDH now, but can be made more general in the future.
 
-Returns a `Buffer`.
+Returns an object of the form
+```js
+{
+  key: Buffer,
+  genSharedKey: Function
+}
+```
 
 ### `marshalPublicKey(key[, type])`
 
