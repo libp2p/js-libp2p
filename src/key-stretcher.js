@@ -81,17 +81,14 @@ module.exports = (cipherType, hashType, secret) => {
   const r1 = createBuffer(result.getBytes(half))
   const r2 = createBuffer(result.getBytes())
 
-  const k1 = {
-    IV: r1.getBytes(ivSize),
-    CipherKey: r1.getBytes(cipherKeySize),
-    MacKey: r1.getBytes()
-  }
+  const createKey = (res) => ({
+    iv: new Buffer(res.getBytes(ivSize), 'binary'),
+    cipherKey: new Buffer(res.getBytes(cipherKeySize), 'binary'),
+    macKey: new Buffer(res.getBytes(), 'binary')
+  })
 
-  const k2 = {
-    IV: r2.getBytes(ivSize),
-    CipherKey: r2.getBytes(cipherKeySize),
-    MacKey: r2.getBytes()
+  return {
+    k1: createKey(r1),
+    k2: createKey(r2)
   }
-
-  return {k1, k2}
 }

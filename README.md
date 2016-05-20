@@ -42,6 +42,29 @@ Returns an object of the form
 }
 ```
 
+### `keyStretcher(cipherType, hashType, secret)`
+
+- `cipherType: String`, one of `'AES-128'`, `'AES-256'`, `'Blowfish'`
+- `hashType: String`, one of `'SHA1'`, `SHA256`, `SHA512`
+- `secret: Buffer`
+
+Generates a set of keys for each party by stretching the shared key.
+
+Returns an object of the form
+```js
+{
+  k1: {
+    iv: Buffer,
+    cipherKey: Buffer,
+    macKey: Buffer
+  },
+  k2: {
+    iv: Buffer,
+    cipherKey: Buffer,
+    macKey: Buffer
+  }
+}
+```
 ### `marshalPublicKey(key[, type])`
 
 - `key: crypto.rsa.RsaPublicKey`
