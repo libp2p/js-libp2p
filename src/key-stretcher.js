@@ -21,7 +21,8 @@ const cipherMap = {
 const hashMap = {
   SHA1: 'sha1',
   SHA256: 'sha256',
-  SHA512: 'sha512'
+  // workaround for https://github.com/digitalbazaar/forge/issues/401
+  SHA512: forge.md.sha512.create()
 }
 
 // Generates a set of keys for each party by stretching the shared key.

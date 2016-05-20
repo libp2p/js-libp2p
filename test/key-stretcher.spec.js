@@ -9,8 +9,7 @@ const fixtures = require('./fixtures/go-stretch-key')
 describe('keyStretcher', () => {
   describe('generate', () => {
     const ciphers = ['AES-128', 'AES-256', 'Blowfish']
-    const hashes = ['SHA1', 'SHA256']
-    // add 'SHA512' when https://github.com/digitalbazaar/forge/issues/401 is resolved
+    const hashes = ['SHA1', 'SHA256', 'SHA512']
     const res = crypto.generateEphemeralKeyPair('P-256')
     const secret = res.genSharedKey(res.key)
 
