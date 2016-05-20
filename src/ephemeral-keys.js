@@ -22,10 +22,11 @@ module.exports = (curveName) => {
 
   const priv = ec.genKeyPair()
 
-  const genSharedKey = (theirPub) => {
+  // forcePrivate is used for testing only
+  const genSharedKey = (theirPub, forcePrivate) => {
     const pub = ec.keyFromPublic(theirPub, 'hex')
-
-    return priv.derive(pub.getPublic()).toBuffer('le')
+    const p = forcePrivate || priv
+    return p.derive(pub.getPublic()).toBuffer('le')
   }
 
   return {

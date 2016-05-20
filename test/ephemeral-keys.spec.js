@@ -2,8 +2,10 @@
 'use strict'
 
 const expect = require('chai').expect
+const EC = require('elliptic').ec
 
 const crypto = require('../src')
+const fixtures = require('./fixtures/go-elliptic-key')
 
 describe('generateEphemeralKeyPair', () => {
   it('returns a function that generates a shared secret', () => {
@@ -17,5 +19,26 @@ describe('generateEphemeralKeyPair', () => {
     expect(
       res.key
     ).to.exist
+  })
+
+  describe('go interop', () => {
+    it('generates a shared secret', () => {
+      const curve = fixtures.curve
+      const ec = new EC(fixtures.curveJs)
+      const bobPrivate = ec.keyFromPrivate(fixtures.bob.private, 'binary')
+
+      const alice = crypto.generateEphemeralKeyPair(curve)
+      const bob = {
+        key: fixtures.bob.public,
+        // this is using bobs private key from go ipfs
+        // instead of alices
+        genSharedKey: (key) => alice.genSharedKey(key, bobPrivate)
+      }
+
+      const s1 = alice.genSharedKey(bob.key)
+      const s2 = bob.genSharedKey(alice.key)
+
+      expect(s1.equals(s2)).to.be.eql(true)
+    })
   })
 })
