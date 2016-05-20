@@ -1,6 +1,6 @@
 {
   "name": "js-libp2p-crypto",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Crypto primitives for libp2p",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
