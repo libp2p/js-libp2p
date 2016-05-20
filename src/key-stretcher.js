@@ -12,16 +12,16 @@ const cipherMap = {
     ivSize: 16,
     keySize: 32
   },
-  'Blowfish': {
+  Blowfish: {
     ivSize: 8,
     cipherKeySize: 32
   }
 }
 
 const hashMap = {
-  'SHA1': 'sha1',
-  'SHA256': 'sha256',
-  'SHA512': 'sha512'
+  SHA1: 'sha1',
+  SHA256: 'sha256',
+  SHA512: 'sha512'
 }
 
 // Generates a set of keys for each party by stretching the shared key.
@@ -43,8 +43,8 @@ module.exports = (cipherType, hashType, secret) => {
   }
 
   const cipherKeySize = cipher.keySize
-	const ivSize = cipher.ivSize
-	const hmacKeySize = 20
+  const ivSize = cipher.ivSize
+  const hmacKeySize = 20
   const seed = 'key expansion'
   const resultLength = 2 * (ivSize + cipherKeySize + hmacKeySize)
 

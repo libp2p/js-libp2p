@@ -49,14 +49,5 @@
   "bugs": {
     "url": "https://github.com/ipfs/js-libp2p-crypto/issues"
   },
-  "homepage": "https://github.com/ipfs/js-libp2p-crypto",
-  "aegir": {
-    "webpack": {
-      "resolve": {
-        "alias": {
-          "node-forge": "../../vendor/forge.bundle.js"
-        }
-      }
-    }
-  }
+  "homepage": "https://github.com/ipfs/js-libp2p-crypto"
 }

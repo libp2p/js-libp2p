@@ -8,7 +8,7 @@ const crypto = require('../src')
 describe('keyStretcher', () => {
   describe('generate', () => {
     const ciphers = ['AES-128', 'AES-256', 'Blowfish']
-    const hashes = ['SHA1', 'SHA256'/*, 'SHA512'*/]
+    const hashes = ['SHA1', 'SHA256']
     const res = crypto.generateEphemeralKeyPair('P-256')
     const secret = res.genSharedKey(res.key)
 

@@ -66,6 +66,10 @@ class RsaPrivateKey {
   }
 
   get public () {
+    if (!this._publicKey) {
+      throw new Error('public key not provided')
+    }
+
     return new RsaPublicKey(this._publicKey)
   }
 
