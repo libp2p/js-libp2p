@@ -44,7 +44,7 @@
     "gulp": "^3.9.1",
     "istanbul": "^0.4.3",
     "libp2p-multiplex": "^0.2.1",
-    "libp2p-spdy": "^0.4.0",
+    "libp2p-spdy": "^0.5.0",
     "libp2p-tcp": "^0.5.1",
     "libp2p-websockets": "^0.5.0",
     "pre-commit": "^1.1.2",
