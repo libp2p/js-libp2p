@@ -19,7 +19,7 @@ const identity = fs.readFileSync(path.join(__dirname, 'identify.proto'))
 const pbStream = require('protocol-buffers-stream')(identity)
 
 exports = module.exports
-exports.multicodec = '/ipfs/identify/1.0.0'
+exports.multicodec = '/ipfs/id/1.0.0'
 
 exports.exec = (rawConn, muxer, peerInfo, callback) => {
   // 1. open a stream
