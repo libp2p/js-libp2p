@@ -6,10 +6,14 @@ const Id = require('peer-id')
 const WebSockets = require('libp2p-websockets')
 
 const Swarm = require('./src')
+// const spdy = require('libp2p-spdy')
 const multiaddr = require('multiaddr')
+
+const sigServer = require('libp2p-webrtc-star/src/signalling-server')
 
 let swarmA
 let swarmB
+let sigS
 
 gulp.task('test:browser:before', (done) => {
   function createListenerA (cb) {
@@ -31,16 +35,21 @@ gulp.task('test:browser:before', (done) => {
     swarmB = new Swarm(peerB)
 
     swarmB.transport.add('ws', new WebSockets())
-    swarmB.transport.listen('ws', {}, null, cb)
+    swarmB.transport.listen('ws', {}, null, () => {
+      // swarmB.connection.addStreamMuxer(spdy)
+      // swarmB.connection.reuse()
+      cb()
+    })
 
     swarmB.handle('/echo/1.0.0', echo)
   }
 
   let count = 0
-  const ready = () => ++count === 2 ? done() : null
+  const ready = () => ++count === 3 ? done() : null
 
   createListenerA(ready)
   createListenerB(ready)
+  sigS = sigServer.start(15555, ready)
 
   function echo (conn) {
     conn.pipe(conn)
@@ -49,10 +58,11 @@ gulp.task('test:browser:before', (done) => {
 
 gulp.task('test:browser:after', (done) => {
   let count = 0
-  const ready = () => ++count === 2 ? done() : null
+  const ready = () => ++count === 3 ? done() : null
 
   swarmA.transport.close('ws', ready)
   swarmB.transport.close('ws', ready)
+  sigS.stop(ready)
 })
 
 require('aegir/gulp')(gulp)
