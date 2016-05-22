@@ -9,7 +9,7 @@
     "build": "aegir-build --env node",
     "test": "aegir-test --env node",
     "release": "aegir-release --env node",
-    "release-minor": "aegir-release --type minot --env node",
+    "release-minor": "aegir-release --type minor --env node",
     "release-major": "aegir-release --type major --env node",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
