@@ -62,6 +62,11 @@ function Swarm (peerInfo) {
     return Object.keys(this.transports).filter((ts) => {
       // ipfs multiaddrs are not dialable so we drop them here
       let dialable = addrs.map((addr) => {
+        // webrtc-star needs the /ipfs/QmHash
+        if (addr.toString().indexOf('webrtc-star') > 0) {
+          return addr
+        }
+
         if (contains(addr.protoNames(), 'ipfs')) {
           return addr.decapsulate('ipfs')
         }

@@ -70,7 +70,7 @@ module.exports = function dial (swarm) {
       const tKeys = swarm.availableTransports(pi)
 
       if (tKeys.length === 0) {
-        return cb(new Error('No available tranport to dial to'))
+        return cb(new Error('No available transport to dial to'))
       }
 
       nextTransport(tKeys.shift())
