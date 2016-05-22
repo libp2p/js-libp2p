@@ -9,8 +9,8 @@
     "build": "aegir-build --env node",
     "test": "aegir-test --env node",
     "release": "aegir-release --env node",
-    "release-minor": "aegir-release --type minor",
-    "release-major": "aegir-release --type major",
+    "release-minor": "aegir-release --type minot --env node",
+    "release-major": "aegir-release --type major --env node",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/diasdavid/js-libp2p-tcp",
   "devDependencies": {
-    "aegir": "^3.0.1",
+    "aegir": "^3.0.4",
     "chai": "^3.5.0",
     "interface-connection": "0.0.3",
     "interface-transport": "^0.1.1",
@@ -41,8 +41,8 @@
   },
   "dependencies": {
     "ip-address": "^5.8.0",
-    "mafmt": "^1.0.1",
-    "multiaddr": "^1.1.1",
+    "mafmt": "^2.1.0",
+    "multiaddr": "^2.0.2",
     "run-parallel": "^1.1.6"
   },
   "contributors": [
