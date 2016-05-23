@@ -8,12 +8,8 @@ const fixtures = require('./fixtures/go-key-rsa')
 
 describe('libp2p-crypto', () => {
   let key
-  before((done) => {
-    crypto.generateKeyPair('RSA', 2048, (err, _key) => {
-      if (err) return done(err)
-      key = _key
-      done()
-    })
+  before(() => {
+    key = crypto.generateKeyPair('RSA', 2048)
   })
 
   it('marshalPublicKey and unmarshalPublicKey', () => {

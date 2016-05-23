@@ -55,7 +55,11 @@ class RsaPublicKey {
 class RsaPrivateKey {
   constructor (privKey, pubKey) {
     this._privateKey = privKey
-    this._publicKey = pubKey
+    if (pubKey) {
+      this._publicKey = pubKey
+    } else {
+      this._publicKey = forge.pki.setRsaPublicKey(privKey.n, privKey.e)
+    }
   }
 
   genSecret () {
@@ -123,15 +127,9 @@ function unmarshalRsaPublicKey (bytes) {
   return new RsaPublicKey(key)
 }
 
-function generateKeyPair (bits, cb) {
-  rsa.generateKeyPair({
-    bits,
-    workerScript: utils.workerScript
-  }, (err, p) => {
-    if (err) return cb(err)
-
-    cb(null, new RsaPrivateKey(p.privateKey, p.publicKey))
-  })
+function generateKeyPair (bits) {
+  const p = rsa.generateKeyPair({bits})
+  return new RsaPrivateKey(p.privateKey, p.publicKey)
 }
 
 module.exports = {
