@@ -6,7 +6,7 @@ const multiaddr = require('multiaddr')
 const Id = require('peer-id')
 const Peer = require('peer-info')
 const WebSockets = require('libp2p-websockets')
-// const spdy = require('libp2p-spdy')
+const spdy = require('libp2p-spdy')
 
 const Swarm = require('../src')
 
@@ -25,8 +25,8 @@ describe('high level API (swarm with spdy + websockets)', function () {
   })
 
   it('add spdy', () => {
-    // swarm.connection.addStreamMuxer(spdy)
-    // swarm.connection.reuse()
+    swarm.connection.addStreamMuxer(spdy)
+    swarm.connection.reuse()
   })
 
   it('add ws', () => {

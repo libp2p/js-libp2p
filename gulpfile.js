@@ -6,7 +6,7 @@ const Id = require('peer-id')
 const WebSockets = require('libp2p-websockets')
 
 const Swarm = require('./src')
-// const spdy = require('libp2p-spdy')
+const spdy = require('libp2p-spdy')
 const multiaddr = require('multiaddr')
 
 const sigServer = require('libp2p-webrtc-star/src/signalling-server')
@@ -36,8 +36,8 @@ gulp.task('test:browser:before', (done) => {
 
     swarmB.transport.add('ws', new WebSockets())
     swarmB.transport.listen('ws', {}, null, () => {
-      // swarmB.connection.addStreamMuxer(spdy)
-      // swarmB.connection.reuse()
+      swarmB.connection.addStreamMuxer(spdy)
+      swarmB.connection.reuse()
       cb()
     })
 

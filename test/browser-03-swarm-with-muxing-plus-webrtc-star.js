@@ -56,9 +56,9 @@ describe('high level API (swarm with spdy + webrtc-star)', function () {
 
   it('add spdy', () => {
     swarm1.connection.addStreamMuxer(spdy)
-    // swarm1.connection.reuse()
+    swarm1.connection.reuse()
     swarm2.connection.addStreamMuxer(spdy)
-    // swarm2.connection.reuse()
+    swarm2.connection.reuse()
   })
 
   it('handle proto', () => {
