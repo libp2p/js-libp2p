@@ -2,8 +2,6 @@
 
 const Connection = require('interface-connection').Connection
 const parallel = require('run-parallel')
-const debug = require('debug')
-const log = debug('libp2p:swarm')
 
 const protocolMuxer = require('./protocol-muxer')
 
@@ -105,7 +103,6 @@ module.exports = function (swarm) {
         return (cb) => {
           const listener = transport.createListener(handler)
           listener.listen(ma, () => {
-            log('Listener started on:', ma.toString())
             listener.getAddrs((err, addrs) => {
               if (err) {
                 return cb(err)

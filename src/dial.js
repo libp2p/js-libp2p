@@ -4,6 +4,8 @@ const multistream = require('multistream-select')
 const Connection = require('interface-connection').Connection
 
 const protocolMuxer = require('./protocol-muxer')
+const secio = require('./secio')
+const tags = require('./tags')
 
 module.exports = function dial (swarm) {
   return (pi, protocol, callback) => {
@@ -97,13 +99,24 @@ module.exports = function dial (swarm) {
           cryptoDial()
 
           function cryptoDial () {
-            // currently, no crypto channel is implemented
             const ms = new multistream.Dialer()
             ms.handle(conn, (err) => {
               if (err) {
                 return cb(err)
               }
-              ms.select('/plaintext/1.0.0', cb)
+
+              const id = swarm._peerInfo.id
+              if (id.privKey == null || swarm.encrypt === false) {
+                return ms.select(tags.plaintex, cb)
+              }
+
+              ms.select(tags.secio, (err, conn) => {
+                if (err) {
+                  return cb(err)
+                }
+
+                cb(null, secio.create(id, conn))
+              })
             })
           }
         })
@@ -148,6 +161,7 @@ module.exports = function dial (swarm) {
 
             muxedConn.once('close', () => {
               delete swarm.muxedConns[pi.id.toB58String()]
+              conn.end()
               swarm.emit('peer-mux-closed', pi)
             })
 
