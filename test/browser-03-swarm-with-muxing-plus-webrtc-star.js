@@ -13,7 +13,7 @@ const parallel = require('run-parallel')
 const Swarm = require('../src')
 
 describe('high level API (swarm with spdy + webrtc-star)', function () {
-  this.timeout(5000)
+  this.timeout(60 * 1000)
 
   let swarm1
   let peer1
@@ -22,14 +22,14 @@ describe('high level API (swarm with spdy + webrtc-star)', function () {
   let peer2
 
   before(() => {
-    const id1 = peerId.createFromB58String('QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooA')
+    const id1 = peerId.create()
     peer1 = new PeerInfo(id1)
-    const mh1 = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooC')
+    const mh1 = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + id1.toB58String())
     peer1.multiaddr.add(mh1)
 
-    const id2 = peerId.createFromB58String('QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooB')
+    const id2 = peerId.create()
     peer2 = new PeerInfo(id2)
-    const mh2 = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooD')
+    const mh2 = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + id2.toB58String())
     peer2.multiaddr.add(mh2)
 
     swarm1 = new Swarm(peer1)

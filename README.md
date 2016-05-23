@@ -9,7 +9,7 @@ libp2p-swarm JavaScript implementation
 [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-swarm.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-swarm)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 
-> libp2p swarm implementation in JavaScript
+> libp2p swarm implementation in JavaScript.
 
 # Description
 

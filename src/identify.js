@@ -79,7 +79,6 @@ exports.handler = (peerInfo, swarm) => {
     // 2. update my own information (on peerInfo)
     // 3. send back what I see from the other (get from swarm.muxedConns[incPeerID].conn.getObservedAddrs()
     var pbs = pbStream()
-
     pbs.on('identify', (msg) => {
       if (msg.observedAddr.length > 0) {
         peerInfo.multiaddr.addSafe(multiaddr(msg.observedAddr))
@@ -98,6 +97,7 @@ exports.handler = (peerInfo, swarm) => {
       })
       pbs.finalize()
     })
+
     pbs.pipe(conn).pipe(pbs)
   }
 }

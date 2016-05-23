@@ -3,24 +3,23 @@
 
 const expect = require('chai').expect
 const multiaddr = require('multiaddr')
-const Id = require('peer-id')
-const Peer = require('peer-info')
+const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
 const WebSockets = require('libp2p-websockets')
 const spdy = require('libp2p-spdy')
+const fs = require('fs')
+const path = require('path')
 
 const Swarm = require('../src')
 
 describe('high level API (swarm with spdy + websockets)', function () {
-  this.timeout(10000)
+  this.timeout(60 * 1000)
 
   var swarm
   var peerDst
 
   before(() => {
-    const b58IdSrc = 'QmYzgdesgjdvD3okTPGZT9NPmh1BuH5FfTVNKjsvaAprhb'
-    // use a pre generated Id to save time
-    const idSrc = Id.createFromB58String(b58IdSrc)
-    const peerSrc = new Peer(idSrc)
+    const peerSrc = new PeerInfo()
     swarm = new Swarm(peerSrc)
   })
 
@@ -35,10 +34,12 @@ describe('high level API (swarm with spdy + websockets)', function () {
   })
 
   it('create Dst peer info', () => {
-    const b58IdDst = 'QmRy1iU6BHmG5Hd8rnPhPL98cy1W1przUSTAMcGDq9yAAV'
-    // use a pre generated Id to save time
-    const idDst = Id.createFromB58String(b58IdDst)
-    peerDst = new Peer(idDst)
+    const id = PeerId.createFromJSON(
+        JSON.parse(
+          fs.readFileSync(
+            path.join(__dirname, './test-data/id-2.json'))))
+
+    peerDst = new PeerInfo(id)
 
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9200/ws')
     peerDst.multiaddr.add(ma)
