@@ -19,7 +19,11 @@ class RsaPublicKey {
 
   verify (data, sig) {
     const md = forge.md.sha256.create()
-    md.update(data, 'utf8')
+    if (Buffer.isBuffer(data)) {
+      md.update(data.toString('binary'), 'binary')
+    } else {
+      md.update(data)
+    }
 
     return this._key.verify(md.digest().bytes(), sig)
   }
@@ -60,9 +64,13 @@ class RsaPrivateKey {
 
   sign (message) {
     const md = forge.md.sha256.create()
-    md.update(message, 'utf8')
-
-    return this._privateKey.sign(md)
+    if (Buffer.isBuffer(message)) {
+      md.update(message.toString('binary'), 'binary')
+    } else {
+      md.update(message)
+    }
+    const raw = this._privateKey.sign(md, 'RSASSA-PKCS1-V1_5')
+    return new Buffer(raw, 'binary')
   }
 
   get public () {

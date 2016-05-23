@@ -112,4 +112,26 @@ describe('RSA', () => {
       })
     })
   })
+
+  it('sign and verify', () => {
+    const data = new Buffer('hello world')
+    const sig = key.sign(data)
+
+    expect(
+      key.public.verify(data, sig)
+    ).to.be.eql(
+      true
+    )
+  })
+
+  it('does fails to verify for different data', () => {
+    const data = new Buffer('hello world')
+    const sig = key.sign(data)
+
+    expect(
+      key.public.verify(new Buffer('hello'), sig)
+    ).to.be.eql(
+      false
+    )
+  })
 })
