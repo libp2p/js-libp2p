@@ -30,7 +30,7 @@ module.exports = (curveName) => {
   }
 
   return {
-    key: priv.getPublic(),
+    key: new Buffer(priv.getPublic('hex'), 'hex'),
     genSharedKey
   }
 }
