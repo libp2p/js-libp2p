@@ -105,6 +105,11 @@ module.exports = function (swarm) {
 // for the given transport `tp`.
 function dialables (tp, multiaddrs) {
   return tp.filter(multiaddrs.map((addr) => {
+    // webrtc-star needs the /ipfs/QmHash
+    if (addr.toString().indexOf('webrtc-star') > 0) {
+      return addr
+    }
+
     // ipfs multiaddrs are not dialable so we drop them here
     if (contains(addr.protoNames(), 'ipfs')) {
       return addr.decapsulate('ipfs')
