@@ -47,10 +47,10 @@ peerInfo is a [PeerInfo](https://github.com/diasdavid/js-peer-info) object that 
 
 libp2p-swarm expects transports that implement [interface-transport](https://github.com/diasdavid/abstract-transport). For example [libp2p-tcp](https://github.com/diasdavid/js-libp2p-tcp).
 
-- `key` - the transport identifier
+- `key` - the transport identifier.
 - `transport` -
-- `options`
-- `callback`
+- `options` -
+- `callback` -
 
 ##### `swarm.transport.dial(key, multiaddrs, callback)`
 
