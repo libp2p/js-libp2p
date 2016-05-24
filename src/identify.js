@@ -62,7 +62,7 @@ exports.exec = (rawConn, muxer, peerInfo, callback) => {
       pbs.identify({
         protocolVersion: 'na',
         agentVersion: 'na',
-        publicKey: peerInfo.id.pubKey,
+        publicKey: peerInfo.id.pubKey || new Buffer(0),
         listenAddrs: peerInfo.multiaddrs.map((mh) => mh.buffer),
         observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
       })
@@ -91,7 +91,7 @@ exports.handler = (peerInfo, swarm) => {
       pbs.identify({
         protocolVersion: 'na',
         agentVersion: 'na',
-        publicKey: peerInfo.id.pubKey,
+        publicKey: peerInfo.id.pubKey || new Buffer(0),
         listenAddrs: peerInfo.multiaddrs.map((ma) => ma.buffer),
         observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
       })

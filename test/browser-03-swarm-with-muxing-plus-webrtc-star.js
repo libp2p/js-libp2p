@@ -17,9 +17,11 @@ describe('high level API (swarm with spdy + webrtc-star)', function () {
 
   let swarm1
   let peer1
+  let wstar1
 
   let swarm2
   let peer2
+  let wstar2
 
   before(() => {
     const id1 = peerId.create()
@@ -37,12 +39,14 @@ describe('high level API (swarm with spdy + webrtc-star)', function () {
   })
 
   it('add WebRTCStar transport to swarm 1', () => {
-    swarm1.transport.add('wstar', new WebRTCStar())
+    wstar1 = new WebRTCStar()
+    swarm1.transport.add('wstar', wstar1)
     expect(Object.keys(swarm1.transports).length).to.equal(1)
   })
 
   it('add WebRTCStar transport to swarm 2', () => {
-    swarm2.transport.add('wstar', new WebRTCStar())
+    wstar2 = new WebRTCStar()
+    swarm2.transport.add('wstar', wstar2)
     expect(Object.keys(swarm2.transports).length).to.equal(1)
   })
 
@@ -76,12 +80,43 @@ describe('high level API (swarm with spdy + webrtc-star)', function () {
       conn.pipe(bl((err, data) => {
         expect(err).to.not.exist
         expect(data.toString()).to.equal(text)
-        // expect(Object.keys(swarm2.muxedConns).length).to.equal(1)
+        expect(Object.keys(swarm2.muxedConns).length).to.equal(1)
         done()
       }))
 
       conn.write(text)
       conn.end()
+    })
+  })
+
+  it('create a third node and check that discovery works', (done) => {
+    wstar1.discovery.on('peer', (peerInfo) => {
+      expect(Object.keys(swarm1.muxedConns).length).to.equal(1)
+      swarm1.dial(peerInfo, () => {
+        expect(Object.keys(swarm1.muxedConns).length).to.equal(2)
+      })
+    })
+    wstar2.discovery.on('peer', (peerInfo) => {
+      swarm2.dial(peerInfo)
+    })
+
+    const id3 = peerId.create()
+    const peer3 = new PeerInfo(id3)
+    const mh3 = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + id3.toB58String())
+    peer3.multiaddr.add(mh3)
+
+    const swarm3 = new Swarm(peer3)
+    const wstar3 = new WebRTCStar()
+    swarm3.transport.add('wstar', wstar3)
+    swarm3.connection.addStreamMuxer(spdy)
+    swarm3.connection.reuse()
+    swarm3.listen(() => {
+      setTimeout(() => {
+        expect(Object.keys(swarm1.muxedConns).length).to.equal(2)
+        expect(Object.keys(swarm2.muxedConns).length).to.equal(2)
+        expect(Object.keys(swarm3.muxedConns).length).to.equal(2)
+        swarm3.close(done)
+      }, 8000)
     })
   })
 
