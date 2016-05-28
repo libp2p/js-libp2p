@@ -102,6 +102,13 @@ dial uses the best transport (whatever works first, in the future we can have so
 - `protocol`
 - `callback`
 
+### `swarm.hangUp(pi, callback)`
+
+hangUp the muxedConn we have with the peer
+
+- `pi` - peer info project
+- `callback`
+
 ### `swarm.listen(callback)`
 
 Start listening on all added transports that are available on the current `peerInfo`.

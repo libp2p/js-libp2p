@@ -213,10 +213,30 @@ describe('high level API - with everything mixed all together!', function () {
     })
   })
 
+  it('hangUp', (done) => {
+    let count = 0
+    const ready = () => ++count === 3 ? done() : null
+
+    swarmB.once('peer-mux-closed', (peerInfo) => {
+      expect(Object.keys(swarmA.muxedConns).length).to.equal(0)
+      ready()
+    })
+
+    swarmA.once('peer-mux-closed', (peerInfo) => {
+      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+      ready()
+    })
+
+    swarmA.hangUp(peerB, (err) => {
+      expect(err).to.not.exist
+      ready()
+    })
+  })
+
   it('close a muxer emits event', (done) => {
     parallel([
       (cb) => swarmC.close(cb),
-      (cb) => swarmA.once('peer-mux-closed', () => cb())
+      (cb) => swarmA.once('peer-mux-closed', (peerInfo) => cb())
     ], done)
   })
 })

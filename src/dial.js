@@ -137,7 +137,7 @@ module.exports = function dial (swarm) {
 
             swarm.emit('peer-mux-established', pi)
 
-            muxedConn.on('close', () => {
+            muxedConn.once('close', () => {
               delete swarm.muxedConns[pi.id.toB58String()]
               swarm.emit('peer-mux-closed', pi)
             })
