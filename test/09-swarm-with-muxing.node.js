@@ -218,7 +218,7 @@ describe('high level API - with everything mixed all together!', function () {
     const ready = () => ++count === 3 ? done() : null
 
     swarmB.once('peer-mux-closed', (peerInfo) => {
-      expect(Object.keys(swarmA.muxedConns).length).to.equal(0)
+      expect(Object.keys(swarmB.muxedConns).length).to.equal(0)
       ready()
     })
 

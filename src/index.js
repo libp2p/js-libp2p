@@ -108,7 +108,7 @@ function Swarm (peerInfo) {
     if (this.muxedConns[key]) {
       const muxer = this.muxedConns[key].muxer
       muxer.end()
-      muxer.on('close', () => {
+      muxer.once('close', () => {
         delete this.muxedConns[key]
         callback()
       })
