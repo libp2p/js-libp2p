@@ -103,6 +103,20 @@ function Swarm (peerInfo) {
     }
   }
 
+  this.hangUp = (peerInfo, callback) => {
+    const key = peerInfo.id.toB58String()
+    if (this.muxedConns[key]) {
+      const muxer = this.muxedConns[key].muxer
+      muxer.end()
+      muxer.on('close', () => {
+        delete this.muxedConns[key]
+        callback()
+      })
+    } else {
+      callback()
+    }
+  }
+
   this.close = (callback) => {
     Object.keys(this.muxedConns).forEach((key) => {
       this.muxedConns[key].muxer.end()
