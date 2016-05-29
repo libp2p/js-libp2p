@@ -5,6 +5,7 @@ const log = debug('libp2p:websockets')
 const SWS = require('simple-websocket')
 const mafmt = require('mafmt')
 const parallel = require('run-parallel')
+const contains = require('lodash.contains')
 
 exports = module.exports = WebSockets
 
@@ -44,6 +45,10 @@ function WebSockets () {
     var count = 0
 
     multiaddrs.forEach((m) => {
+      if (contains(m.protoNames(), 'ipfs')) {
+        m = m.decapsulate('ipfs')
+      }
+
       const listener = SWS.createServer((conn) => {
         conn.getObservedAddrs = () => {
           return [] // TODO think if it makes sense for WebSockets
@@ -72,7 +77,13 @@ function WebSockets () {
   }
 
   this.filter = (multiaddrs) => {
+    if (!Array.isArray(multiaddrs)) {
+      multiaddrs = [multiaddrs]
+    }
     return multiaddrs.filter((ma) => {
+      if (contains(ma.protoNames(), 'ipfs')) {
+        ma = ma.decapsulate('ipfs')
+      }
       return mafmt.WebSockets.matches(ma)
     })
   }
