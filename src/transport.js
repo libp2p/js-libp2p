@@ -54,6 +54,7 @@ module.exports = function (swarm) {
       function next (multiaddr) {
         const conn = t.dial(multiaddr, {ready: () => {
           pt.wrapStream(conn)
+          pt.getObservedAddrs = conn.getObservedAddrs.bind(conn)
           const cb = callback
           callback = noop // this is done to avoid connection drops as connect errors
           cb(null, pt)
