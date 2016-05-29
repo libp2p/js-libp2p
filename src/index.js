@@ -7,8 +7,11 @@ const multiaddr = require('multiaddr')
 const Address6 = require('ip-address').Address6
 const mafmt = require('mafmt')
 const parallel = require('run-parallel')
+const contains = require('lodash.contains')
 
 exports = module.exports = TCP
+
+const IPFS_CODE = 421
 
 function TCP () {
   if (!(this instanceof TCP)) {
@@ -37,6 +40,16 @@ function TCP () {
     const freshMultiaddrs = []
 
     parallel(multiaddrs.map((m) => (cb) => {
+      let ipfsHashId
+      if (contains(m.protoNames(), 'ipfs')) {
+        ipfsHashId = m.stringTuples().filter((tuple) => {
+          if (tuple[0] === IPFS_CODE) {
+            return true
+          }
+        })[0][1]
+        m = m.decapsulate('ipfs')
+      }
+
       const listener = tcp.createServer((conn) => {
         conn.getObservedAddrs = () => {
           return [getMultiaddr(conn)]
@@ -49,11 +62,19 @@ function TCP () {
         if (m.toString().indexOf('ip4')) {
           m = m.decapsulate('tcp')
           m = m.encapsulate('/tcp/' + address.port)
+          if (ipfsHashId) {
+            m = m.encapsulate('/ipfs/' + ipfsHashId)
+          }
           freshMultiaddrs.push(m)
         }
 
         if (address.family === 'IPv6') {
-          freshMultiaddrs.push(multiaddr('/ip6/' + address.address + '/tcp/' + address.port))
+          let mh = multiaddr('/ip6/' + address.address + '/tcp/' + address.port)
+          if (ipfsHashId) {
+            mh = mh.encapsulate('/ipfs/' + ipfsHashId)
+          }
+
+          freshMultiaddrs.push(mh)
         }
 
         cb()
@@ -80,6 +101,9 @@ function TCP () {
       multiaddrs = [multiaddrs]
     }
     return multiaddrs.filter((ma) => {
+      if (contains(ma.protoNames(), 'ipfs')) {
+        ma = ma.decapsulate('ipfs')
+      }
       return mafmt.TCP.matches(ma)
     })
   }

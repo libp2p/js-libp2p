@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "ip-address": "^5.8.0",
+    "lodash.contains": "^2.4.3",
     "mafmt": "^2.1.0",
     "multiaddr": "^2.0.2",
     "run-parallel": "^1.1.6"

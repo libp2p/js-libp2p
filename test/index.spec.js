@@ -37,8 +37,26 @@ describe('libp2p-tcp', function () {
       tcp.close(() => {
         done()
       })
-    }, () => {
+    }, (err, freshMultiaddrs) => {
+      expect(err).to.not.exist
+      expect(mh).to.deep.equal(freshMultiaddrs[0])
       const socket = net.connect({ host: '127.0.0.1', port: 9090 })
+      socket.end()
+    })
+  })
+
+  it('listen on addr with /ipfs/QmHASH', (done) => {
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/14090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    tcp.createListener(mh, (socket) => {
+      expect(socket).to.exist
+      socket.end()
+      tcp.close(() => {
+        done()
+      })
+    }, (err, freshMultiaddrs) => {
+      expect(err).to.not.exist
+      expect(mh).to.deep.equal(freshMultiaddrs[0])
+      const socket = net.connect({ host: '127.0.0.1', port: 14090 })
       socket.end()
     })
   })
@@ -114,9 +132,10 @@ describe('libp2p-tcp', function () {
     const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
     const mh2 = multiaddr('/ip4/127.0.0.1/udp/9090')
     const mh3 = multiaddr('/ip4/127.0.0.1/tcp/9090/http')
+    const mh4 = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-    const valid = tcp.filter([mh1, mh2, mh3])
-    expect(valid.length).to.equal(1)
+    const valid = tcp.filter([mh1, mh2, mh3, mh4])
+    expect(valid.length).to.equal(2)
     expect(valid[0]).to.deep.equal(mh1)
     done()
   })
