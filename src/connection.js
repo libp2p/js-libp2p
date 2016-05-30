@@ -27,6 +27,7 @@ module.exports = function connection (swarm) {
             }
           }
 
+          // If identify happened, when we have the Id of the conn
           if (swarm.identify) {
             return gotId()
           }

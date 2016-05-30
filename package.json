@@ -55,7 +55,7 @@
   "dependencies": {
     "babel-runtime": "^6.6.1",
     "browserify-zlib": "github:ipfs/browserify-zlib",
-    "duplex-passthrough": "github:diasdavid/duplex-passthrough",
+    "duplexify": "^3.4.3",
     "ip-address": "^5.8.0",
     "lodash.contains": "^2.4.3",
     "multiaddr": "^2.0.0",
