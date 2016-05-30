@@ -19,11 +19,14 @@ describe('stream muxing with spdy (on TCP)', function () {
   var peerB
   var swarmC
   var peerC
+  var swarmD
+  var peerD
 
   before((done) => {
     peerA = new Peer()
     peerB = new Peer()
     peerC = new Peer()
+    peerD = new Peer()
 
     // console.log('peer A', peerA.id.toB58String())
     // console.log('peer B', peerB.id.toB58String())
@@ -32,27 +35,32 @@ describe('stream muxing with spdy (on TCP)', function () {
     peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
     peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
     peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))
+    peerD.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9004'))
 
     swarmA = new Swarm(peerA)
     swarmB = new Swarm(peerB)
     swarmC = new Swarm(peerC)
+    swarmD = new Swarm(peerD)
 
     swarmA.transport.add('tcp', new TCP())
     swarmB.transport.add('tcp', new TCP())
     swarmC.transport.add('tcp', new TCP())
+    swarmD.transport.add('tcp', new TCP())
 
     parallel([
       (cb) => swarmA.transport.listen('tcp', {}, null, cb),
       (cb) => swarmB.transport.listen('tcp', {}, null, cb),
-      (cb) => swarmC.transport.listen('tcp', {}, null, cb)
+      (cb) => swarmC.transport.listen('tcp', {}, null, cb),
+      (cb) => swarmD.transport.listen('tcp', {}, null, cb)
     ], done)
   })
 
   after((done) => {
     parallel([
       (cb) => swarmA.close(cb),
-      (cb) => swarmB.close(cb)
+      (cb) => swarmB.close(cb),
       // (cb) => swarmC.close(cb)
+      (cb) => swarmD.close(cb)
     ], done)
   })
 
@@ -60,6 +68,7 @@ describe('stream muxing with spdy (on TCP)', function () {
     swarmA.connection.addStreamMuxer(spdy)
     swarmB.connection.addStreamMuxer(spdy)
     swarmC.connection.addStreamMuxer(spdy)
+    swarmD.connection.addStreamMuxer(spdy)
   })
 
   it('handle + dial on protocol', (done) => {
@@ -113,6 +122,25 @@ describe('stream muxing with spdy (on TCP)', function () {
         expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
         done()
       }, 500)
+    })
+  })
+
+  it('leave a stream open, make sure it does not blow up when the socket is closed', (done) => {
+    swarmD.connection.reuse()
+
+    let count = 0
+    const destroyed = () => ++count === 2 ? done() : null
+
+    swarmD.handle('/banana/1.0.0', (conn) => {
+      conn.on('error', destroyed)
+      conn.pipe(conn)
+    })
+
+    swarmA.dial(peerD, '/banana/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      conn.on('error', destroyed)
+
+      swarmD.muxedConns[peerA.id.toB58String()].conn.destroy()
     })
   })
 

@@ -1,7 +1,7 @@
 'use strict'
 
 const multistream = require('multistream-select')
-const DuplexPassThrough = require('duplex-passthrough')
+const Duplexify = require('duplexify')
 
 const connHandler = require('./default-handler')
 
@@ -16,7 +16,7 @@ module.exports = function dial (swarm) {
       callback = function noop () {}
     }
 
-    const pt = new DuplexPassThrough()
+    const pt = new Duplexify()
 
     const b58Id = pi.id.toB58String()
 
@@ -169,7 +169,8 @@ module.exports = function dial (swarm) {
             return callback(err)
           }
 
-          pt.wrapStream(conn)
+          pt.setReadable(conn)
+          pt.setWritable(conn)
           pt.peerId = pi.id
           callback(null, pt)
         })

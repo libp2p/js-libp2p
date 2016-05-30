@@ -1,7 +1,7 @@
 'use strict'
 
 const contains = require('lodash.contains')
-const DuplexPassThrough = require('duplex-passthrough')
+const Duplexify = require('duplexify')
 
 const connHandler = require('./default-handler')
 
@@ -47,13 +47,14 @@ module.exports = function (swarm) {
 
       // c) multiaddrs should already be a filtered list
       // specific for the transport we are using
-      const pt = new DuplexPassThrough()
+      const pt = new Duplexify()
 
       next(multiaddrs.shift())
       return pt
       function next (multiaddr) {
         const conn = t.dial(multiaddr, {ready: () => {
-          pt.wrapStream(conn)
+          pt.setReadable(conn)
+          pt.setWritable(conn)
           pt.getObservedAddrs = conn.getObservedAddrs.bind(conn)
           const cb = callback
           callback = noop // this is done to avoid connection drops as connect errors
