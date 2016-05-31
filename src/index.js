@@ -56,6 +56,17 @@ function TCP () {
         }
         handler(conn)
       })
+
+      listener.__connections = {}
+      listener.on('connection', (conn) => {
+        const key = `${conn.remoteAddress}:${conn.remotePort}`
+        listener.__connections[key] = conn
+
+        conn.on('close', () => {
+          delete listener.__connections[key]
+        })
+      })
+
       listener.listen(m.toOptions(), () => {
         // Node.js likes to convert addr to IPv6 (when 0.0.0.0 for e.g)
         const address = listener.address()
@@ -86,13 +97,22 @@ function TCP () {
   }
 
   this.close = (callback) => {
+    const closeTimeout = 300
+
     if (listeners.length === 0) {
       log('Called close with no active listeners')
       return callback()
     }
 
-    parallel(listeners.map((listener) => {
-      return (cb) => listener.close(cb)
+    parallel(listeners.map((listener) => (cb) => {
+      setTimeout(() => {
+        Object.keys(listener.__connections).forEach((key) => {
+          log('destroying %s', key)
+          listener.__connections[key].destroy()
+        })
+      }, closeTimeout)
+
+      listener.close(cb)
     }), callback)
   }
 
