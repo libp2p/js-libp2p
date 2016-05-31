@@ -11,13 +11,31 @@ libp2p-swarm JavaScript implementation
 
 > libp2p swarm implementation in JavaScript.
 
-# Description
+libp2p-swarm is a connection abstraction that is able to leverage several transports and connection upgrades, such as congestion control, channel encryption, the multiplexing of several streams in one connection, and more. It does this by bringing protocol multiplexing to the application level (instead of the traditional Port level) using multicodec and multistream.
 
-libp2p-swarm is a connection abstraction that is able to leverage several transports and connection upgrades, such as congestion control, channel encryption, multiplexing several streams in one connection, and more. It does this by bringing protocol multiplexing to the application level (instead of the traditional Port level) using multicodec and multistream.
+libp2p-swarm is used by [libp2p](https://github.com/diasdavid/js-libp2p) but it can be also used as a standalone module.
 
-libp2p-swarm is used by libp2p but it can be also used as a standalone module.
+## Table of Contents
 
-# Usage
+- [Install](#install)
+- [Usage](#usage)
+  - [Create a libp2p Swarm](#create-a-libp2p-swarm)
+- [API](#api)
+  - [Transports](#transports)
+  - [Connection](#connection)
+  - [`swarm.dial(pi, protocol, callback)`](#swarmdialpi-protocol-callback)
+  - [`swarm.hangUp(pi, callback)`](#swarmhanguppi-callback)
+  - [`swarm.listen(callback)`](#swarmlistencallback)
+  - [`swarm.handle(protocol, handler)`](#swarmhandleprotocol-handler)
+  - [`swarm.unhandle(protocol)`](#swarmunhandleprotocol)
+  - [`swarm.close(callback)`](#swarmclosecallback)
+- [Design](#design)
+  - [Multitransport](#multitransport)
+  - [Connection upgrades](#connection-upgrades)
+  - [Identify](#identify)
+  - [Notes](#notes)
+- [Contribute](#contribute)
+- [License](#license)
 
 ## Install
 
@@ -27,9 +45,9 @@ libp2p-swarm is available on npm and so, like any other npm module, just:
 > npm install libp2p-swarm --save
 ```
 
-## API
+## Usage
 
-#### Create a libp2p Swarm
+### Create a libp2p Swarm
 
 And use it in your Node.js code as:
 
@@ -38,6 +56,8 @@ const Swarm = require('libp2p-swarm')
 
 const sw = new Swarm(peerInfo)
 ```
+
+## API
 
 peerInfo is a [PeerInfo](https://github.com/diasdavid/js-peer-info) object that represents the peer creating this swarm instance.
 
@@ -92,11 +112,11 @@ Upgrading a connection to use a stream muxer is still considered an upgrade, but
 
 ##### `swarm.connection.reuse()`
 
-Enable the identify protocol
+Enable the identify protocol.
 
 ### `swarm.dial(pi, protocol, callback)`
 
-dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, than do nothing.
+dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point where we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, then do nothing.
 
 - `pi` - peer info project
 - `protocol`
@@ -104,7 +124,7 @@ dial uses the best transport (whatever works first, in the future we can have so
 
 ### `swarm.hangUp(pi, callback)`
 
-hangUp the muxedConn we have with the peer
+Hang up the muxed connection we have with the peer.
 
 - `pi` - peer info project
 - `callback`
@@ -115,32 +135,32 @@ Start listening on all added transports that are available on the current `peerI
 
 ### `swarm.handle(protocol, handler)`
 
-handle a new protocol.
+Handle a new protocol.
 
 - `protocol`
 - `handler` - function called when we receive a dial on `protocol. Signature must be `function (conn) {}`
 
 ### `swarm.unhandle(protocol)`
 
-unhandle a protocol.
+Unhandle a protocol.
 
 - `protocol`
 
 ### `swarm.close(callback)`
 
-close all the listeners and muxers.
+Close all the listeners and muxers.
 
 - `callback`
 
-# Design
+## Design
 
-## Multitransport
+### Multitransport
 
 libp2p is designed to support multiple transports at the same time. While peers are identified by their ID (which are generated from their public keys), the addresses of each pair may vary, depending the device where they are being run or the network in which they are accessible through.
 
 In order for a transport to be supported, it has to follow the [interface-transport](https://github.com/diasdavid/interface-transport) spec.
 
-## Connection upgrades
+### Connection upgrades
 
 Each connection in libp2p follows the [interface-connection](https://github.com/diasdavid/interface-connection) spec. This design decision enables libp2p to have upgradable transports.
 
@@ -156,7 +176,7 @@ Types of upgrades to a connection:
 
 We also want to enable flexibility when it comes to upgrading a connection, for example, we might that all dialed transports pass through the encrypted channel upgrade, but not the congestion flow, specially when a transport might have already some underlying properties (UDP vs TCP vs WebRTC vs every other transport protocol)
 
-## Identify
+### Identify
 
 Identify is a protocol that Swarms mounts on top of itself, to identify the connections between any two peers. E.g:
 
@@ -167,9 +187,17 @@ Identify is a protocol that Swarms mounts on top of itself, to identify the conn
 
 In addition to this, we also share the 'observed addresses' by the other peer, which is extremely useful information for different kinds of network topologies.
 
-## Notes
+### Notes
 
 To avoid the confusion between connection, stream, transport, and other names that represent an abstraction of data flow between two points, we use terms as:
 
 - connection - something that implements the transversal expectations of a stream between two peers, including the benefits of using a stream plus having a way to do half duplex, full duplex
 - transport - something that as a dial/listen interface and return objs that implement a connection interface
+
+## Contribute
+
+This module is actively under development. Please check out the issues and submit PRs!
+
+## License
+
+MIT © Protocol Labs
