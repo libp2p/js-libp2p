@@ -12,6 +12,7 @@ const contains = require('lodash.contains')
 exports = module.exports = TCP
 
 const IPFS_CODE = 421
+const CLOSE_TIMEOUT = 300
 
 function TCP () {
   if (!(this instanceof TCP)) {
@@ -97,8 +98,7 @@ function TCP () {
   }
 
   this.close = (callback) => {
-    const closeTimeout = 300
-
+    log('closing')
     if (listeners.length === 0) {
       log('Called close with no active listeners')
       return callback()
@@ -110,7 +110,7 @@ function TCP () {
           log('destroying %s', key)
           listener.__connections[key].destroy()
         })
-      }, closeTimeout)
+      }, CLOSE_TIMEOUT)
 
       listener.close(cb)
     }), callback)
