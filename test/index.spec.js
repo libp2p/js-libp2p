@@ -148,4 +148,35 @@ describe('libp2p-tcp', function () {
     expect(valid[0]).to.deep.equal(mh1)
     done()
   })
+
+  it('destroys after timeout', (done) => {
+    const server = new TCPlibp2p()
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090')
+    server.createListener(mh, (conn) => {
+      const i = setInterval(() => {
+        conn.read()
+        conn.write('hi\n')
+      }, 100)
+      i.unref()
+    }, () => {
+      let connected = 0
+      const connectHandler = () => {
+        connected++
+        if (connected === 10) {
+          setTimeout(() => {
+            server.close(done)
+          }, 1)
+        }
+      }
+      const errorHandler = () => {}
+
+      for (let i = 0; i < 10; i++) {
+        const client = net.connect(9090)
+        client.on('connect', connectHandler)
+
+        // just ignore the resets
+        client.on('error', errorHandler)
+      }
+    })
+  })
 })
