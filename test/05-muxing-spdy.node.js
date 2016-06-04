@@ -8,6 +8,8 @@ const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const Swarm = require('../src')
 const TCP = require('libp2p-tcp')
+const WebSockets = require('libp2p-websockets')
+
 const spdy = require('libp2p-spdy')
 
 describe('stream muxing with spdy (on TCP)', function () {
@@ -142,6 +144,58 @@ describe('stream muxing with spdy (on TCP)', function () {
 
       swarmD.muxedConns[peerA.id.toB58String()].conn.destroy()
     })
+  })
+
+  it('blow up a socket, with WebSockets', (done) => {
+    var swarmE
+    var peerE
+    var swarmF
+    var peerF
+
+    peerE = new Peer()
+    peerF = new Peer()
+
+    peerE.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9110/ws'))
+    peerF.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9120/ws'))
+
+    swarmE = new Swarm(peerE)
+    swarmF = new Swarm(peerF)
+
+    swarmE.transport.add('ws', new WebSockets())
+    swarmF.transport.add('ws', new WebSockets())
+
+    swarmE.connection.addStreamMuxer(spdy)
+    swarmF.connection.addStreamMuxer(spdy)
+    swarmE.connection.reuse()
+    swarmF.connection.reuse()
+
+    parallel([
+      (cb) => swarmE.transport.listen('ws', {}, null, cb),
+      (cb) => swarmF.transport.listen('ws', {}, null, cb)
+    ], next)
+
+    function next () {
+      let count = 0
+      const destroyed = () => ++count === 2 ? close() : null
+
+      swarmE.handle('/avocado/1.0.0', (conn) => {
+        conn.on('error', destroyed)
+        conn.pipe(conn)
+      })
+
+      swarmF.dial(peerE, '/avocado/1.0.0', (err, conn) => {
+        expect(err).to.not.exist
+        conn.on('error', destroyed)
+        swarmF.muxedConns[peerE.id.toB58String()].conn.destroy()
+      })
+    }
+
+    function close () {
+      parallel([
+        (cb) => swarmE.close(cb),
+        (cb) => swarmF.close(cb)
+      ], done)
+    }
   })
 
   it('close one end, make sure the other does not blow', (done) => {
