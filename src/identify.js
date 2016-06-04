@@ -10,18 +10,20 @@
 const multistream = require('multistream-select')
 const fs = require('fs')
 const path = require('path')
-const Info = require('peer-info')
-const Id = require('peer-id')
+const PeerInfo = require('peer-info')
+const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
+const bl = require('bl')
 
-const identity = fs.readFileSync(path.join(__dirname, 'identify.proto'))
-
-const pbStream = require('protocol-buffers-stream')(identity)
+const lpstream = require('length-prefixed-stream')
+const protobuf = require('protocol-buffers')
+const schema = fs.readFileSync(path.join(__dirname, 'identify.proto'))
+const idPb = protobuf(schema)
 
 exports = module.exports
 exports.multicodec = '/ipfs/id/1.0.0'
 
-exports.exec = (rawConn, muxer, peerInfo, callback) => {
+exports.exec = (rawConn, muxer, pInfo, callback) => {
   // 1. open a stream
   // 2. multistream into identify
   // 3. send what I see from this other peer (extract fro conn)
@@ -36,78 +38,96 @@ exports.exec = (rawConn, muxer, peerInfo, callback) => {
       return callback(err)
     }
 
-    ms.select(exports.multicodec, (err, ds) => {
+    ms.select(exports.multicodec, (err, conn) => {
       if (err) {
         return callback(err)
       }
 
-      var pbs = pbStream()
+      const encode = lpstream.encode()
+      const decode = lpstream.decode()
 
-      pbs.on('identify', (msg) => {
-        if (msg.observedAddr.length > 0) {
-          peerInfo.multiaddr.addSafe(multiaddr(msg.observedAddr))
-        }
+      encode
+        .pipe(conn)
+        .pipe(decode)
+        .pipe(bl((err, data) => {
+          if (err) {
+            return callback(err)
+          }
+          const msg = idPb.Identify.decode(data)
+          if (msg.observedAddr.length > 0) {
+            pInfo.multiaddr.addSafe(multiaddr(msg.observedAddr))
+          }
 
-        const peerId = Id.createFromPubKey(msg.publicKey)
-        const otherPeerInfo = new Info(peerId)
-        msg.listenAddrs.forEach((ma) => {
-          otherPeerInfo.multiaddr.add(multiaddr(ma))
-        })
-
-        callback(null, otherPeerInfo)
-      })
+          const pId = PeerId.createFromPubKey(msg.publicKey)
+          const otherPInfo = new PeerInfo(pId)
+          msg.listenAddrs.forEach((ma) => {
+            otherPInfo.multiaddr.add(multiaddr(ma))
+          })
+          callback(null, otherPInfo)
+        }))
 
       const obsMultiaddr = rawConn.getObservedAddrs()[0]
 
       let publicKey = new Buffer(0)
-      if (peerInfo.id.pubKey) {
-        publicKey = peerInfo.id.pubKey.bytes
+      if (pInfo.id.pubKey) {
+        publicKey = pInfo.id.pubKey.bytes
       }
 
-      pbs.identify({
+      const msg = idPb.Identify.encode({
         protocolVersion: 'na',
         agentVersion: 'na',
         publicKey: publicKey,
-        listenAddrs: peerInfo.multiaddrs.map((mh) => mh.buffer),
+        listenAddrs: pInfo.multiaddrs.map((mh) => mh.buffer),
         observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
       })
 
-      pbs.pipe(ds).pipe(pbs)
-      pbs.finalize()
+      encode.write(msg)
+      encode.end()
     })
   })
 }
 
-exports.handler = (peerInfo, swarm) => {
+exports.handler = (pInfo, swarm) => {
   return (conn) => {
     // 1. receive incoming observed info about me
     // 2. update my own information (on peerInfo)
     // 3. send back what I see from the other (get from swarm.muxedConns[incPeerID].conn.getObservedAddrs()
-    var pbs = pbStream()
-    pbs.on('identify', (msg) => {
-      if (msg.observedAddr.length > 0) {
-        peerInfo.multiaddr.addSafe(multiaddr(msg.observedAddr))
-      }
 
-      const peerId = Id.createFromPubKey(msg.publicKey)
-      const conn = swarm.muxedConns[peerId.toB58String()].conn
-      const obsMultiaddr = conn.getObservedAddrs()[0]
+    const encode = lpstream.encode()
+    const decode = lpstream.decode()
 
-      let publicKey = new Buffer(0)
-      if (peerInfo.id.pubKey) {
-        publicKey = peerInfo.id.pubKey.bytes
-      }
+    encode
+      .pipe(conn)
+      .pipe(decode)
+      .pipe(bl((err, data) => {
+        if (err) {
+          console.log(new Error('Failed to decode lpm from identify'))
+          return
+        }
+        const msg = idPb.Identify.decode(data)
+        if (msg.observedAddr.length > 0) {
+          pInfo.multiaddr.addSafe(multiaddr(msg.observedAddr))
+        }
 
-      pbs.identify({
-        protocolVersion: 'na',
-        agentVersion: 'na',
-        publicKey: publicKey,
-        listenAddrs: peerInfo.multiaddrs.map((ma) => ma.buffer),
-        observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
-      })
-      pbs.finalize()
-    })
+        const pId = PeerId.createFromPubKey(msg.publicKey)
+        const conn = swarm.muxedConns[pId.toB58String()].conn
+        const obsMultiaddr = conn.getObservedAddrs()[0]
 
-    pbs.pipe(conn).pipe(pbs)
+        let publicKey = new Buffer(0)
+        if (pInfo.id.pubKey) {
+          publicKey = pInfo.id.pubKey.bytes
+        }
+
+        const msgSend = idPb.Identify.encode({
+          protocolVersion: 'na',
+          agentVersion: 'na',
+          publicKey: publicKey,
+          listenAddrs: pInfo.multiaddrs.map((ma) => ma.buffer),
+          observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
+        })
+
+        encode.write(msgSend)
+        encode.end()
+      }))
   }
 }
