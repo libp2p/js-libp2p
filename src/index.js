@@ -6,68 +6,166 @@ const tcp = require('net')
 const multiaddr = require('multiaddr')
 const Address6 = require('ip-address').Address6
 const mafmt = require('mafmt')
-const parallel = require('run-parallel')
+// const parallel = require('run-parallel')
 const contains = require('lodash.contains')
+const os = require('os')
+const Connection = require('interface-connection').Connection
 
 exports = module.exports = TCP
 
 const IPFS_CODE = 421
-const CLOSE_TIMEOUT = 300
+const CLOSE_TIMEOUT = 2000
 
 function TCP () {
   if (!(this instanceof TCP)) {
     return new TCP()
   }
 
-  const listeners = []
-
-  this.dial = function (multiaddr, options) {
-    if (!options) {
+  this.dial = function (ma, options, callback) {
+    if (typeof options === 'function') {
+      callback = options
       options = {}
     }
-    options.ready = options.ready || function noop () {}
-    const conn = tcp.connect(multiaddr.toOptions(), options.ready)
-    conn.getObservedAddrs = () => {
-      return [multiaddr]
+
+    if (!callback) {
+      callback = function noop () {}
     }
+
+    const socket = tcp.connect(ma.toOptions())
+    const conn = new Connection(socket)
+
+    socket.on('timeout', () => {
+      conn.emit('timeout')
+    })
+
+    socket.on('error', (err) => {
+      callback(err)
+      conn.emit('error', err)
+    })
+
+    socket.on('connect', () => {
+      callback(null, conn)
+      conn.emit('connect')
+    })
+
+    conn.getObservedAddrs = (cb) => {
+      return cb(null, [ma])
+    }
+
     return conn
   }
 
-  this.createListener = (multiaddrs, handler, callback) => {
-    if (!Array.isArray(multiaddrs)) {
-      multiaddrs = [multiaddrs]
+  this.createListener = (options, handler) => {
+    if (typeof options === 'function') {
+      handler = options
+      options = {}
     }
 
-    const freshMultiaddrs = []
+    const listener = tcp.createServer((socket) => {
+      const conn = new Connection(socket)
 
-    parallel(multiaddrs.map((m) => (cb) => {
-      let ipfsHashId
-      if (contains(m.protoNames(), 'ipfs')) {
-        ipfsHashId = m.stringTuples().filter((tuple) => {
+      conn.getObservedAddrs = (cb) => {
+        return cb(null, [getMultiaddr(socket)])
+      }
+      handler(conn)
+    })
+
+    let ipfsId
+    let listeningMultiaddr
+
+    listener._listen = listener.listen
+    listener.listen = (ma, callback) => {
+      listeningMultiaddr = ma
+      if (contains(ma.protoNames(), 'ipfs')) {
+        ipfsId = ma.stringTuples().filter((tuple) => {
           if (tuple[0] === IPFS_CODE) {
             return true
           }
         })[0][1]
-        m = m.decapsulate('ipfs')
+        listeningMultiaddr = ma.decapsulate('ipfs')
       }
 
-      const listener = tcp.createServer((conn) => {
-        conn.getObservedAddrs = () => {
-          return [getMultiaddr(conn)]
+      listener._listen(listeningMultiaddr.toOptions(), callback)
+    }
+
+    listener._close = listener.close
+    listener.close = (options, callback) => {
+      if (typeof options === 'function') {
+        callback = options
+        options = {}
+      }
+      if (!callback) { callback = function noop () {} }
+      if (!options) { options = {} }
+
+      let closed = false
+      listener._close(callback)
+      listener.once('close', () => {
+        closed = true
+      })
+      setTimeout(() => {
+        if (closed) {
+          return
         }
-        handler(conn)
-      })
-
-      listener.__connections = {}
-      listener.on('connection', (conn) => {
-        const key = `${conn.remoteAddress}:${conn.remotePort}`
-        listener.__connections[key] = conn
-
-        conn.on('close', () => {
-          delete listener.__connections[key]
+        log('unable to close graciously, destroying conns')
+        Object.keys(listener.__connections).forEach((key) => {
+          log('destroying %s', key)
+          listener.__connections[key].destroy()
         })
-      })
+      }, options.timeout || CLOSE_TIMEOUT)
+    }
 
+    // Keep track of open connections to destroy in case of timeout
+    listener.__connections = {}
+    listener.on('connection', (socket) => {
+      const key = `${socket.remoteAddress}:${socket.remotePort}`
+      listener.__connections[key] = socket
+
+      socket.on('close', () => {
+        delete listener.__connections[key]
+      })
+    })
+
+    listener.getAddrs = (callback) => {
+      const multiaddrs = []
+      const address = listener.address()
+
+      // Because TCP will only return the IPv6 version
+      // we need to capture from the passed multiaddr
+      if (listeningMultiaddr.toString().indexOf('ip4') !== -1) {
+        let m = listeningMultiaddr.decapsulate('tcp')
+        m = m.encapsulate('/tcp/' + address.port)
+        if (ipfsId) {
+          m = m.encapsulate('/ipfs/' + ipfsId)
+        }
+
+        if (m.toString().indexOf('0.0.0.0') !== -1) {
+          const netInterfaces = os.networkInterfaces()
+          Object.keys(netInterfaces).forEach((niKey) => {
+            netInterfaces[niKey].forEach((ni) => {
+              if (ni.family === 'IPv4') {
+                multiaddrs.push(multiaddr(m.toString().replace('0.0.0.0', ni.address)))
+              }
+            })
+          })
+        } else {
+          multiaddrs.push(m)
+        }
+      }
+
+      if (address.family === 'IPv6') {
+        let ma = multiaddr('/ip6/' + address.address + '/tcp/' + address.port)
+        if (ipfsId) {
+          ma = ma.encapsulate('/ipfs/' + ipfsId)
+        }
+
+        multiaddrs.push(ma)
+      }
+
+      callback(null, multiaddrs)
+    }
+
+    return listener
+    /*
       listener.listen(m.toOptions(), () => {
         // Node.js likes to convert addr to IPv6 (when 0.0.0.0 for e.g)
         const address = listener.address()
@@ -92,28 +190,7 @@ function TCP () {
         cb()
       })
       listeners.push(listener)
-    }), (err) => {
-      callback(err, freshMultiaddrs)
-    })
-  }
-
-  this.close = (callback) => {
-    log('closing')
-    if (listeners.length === 0) {
-      log('Called close with no active listeners')
-      return callback()
-    }
-
-    parallel(listeners.map((listener) => (cb) => {
-      setTimeout(() => {
-        Object.keys(listener.__connections).forEach((key) => {
-          log('destroying %s', key)
-          listener.__connections[key].destroy()
-        })
-      }, CLOSE_TIMEOUT)
-
-      listener.close(cb)
-    }), callback)
+    */
   }
 
   this.filter = (multiaddrs) => {
@@ -129,19 +206,19 @@ function TCP () {
   }
 }
 
-function getMultiaddr (conn) {
+function getMultiaddr (socket) {
   var mh
 
-  if (conn.remoteFamily === 'IPv6') {
-    var addr = new Address6(conn.remoteAddress)
+  if (socket.remoteFamily === 'IPv6') {
+    var addr = new Address6(socket.remoteAddress)
     if (addr.v4) {
       var ip4 = addr.to4().correctForm()
-      mh = multiaddr('/ip4/' + ip4 + '/tcp/' + conn.remotePort)
+      mh = multiaddr('/ip4/' + ip4 + '/tcp/' + socket.remotePort)
     } else {
-      mh = multiaddr('/ip6/' + conn.remoteAddress + '/tcp/' + conn.remotePort)
+      mh = multiaddr('/ip6/' + socket.remoteAddress + '/tcp/' + socket.remotePort)
     }
   } else {
-    mh = multiaddr('/ip4/' + conn.remoteAddress + '/tcp/' + conn.remotePort)
+    mh = multiaddr('/ip4/' + socket.remoteAddress + '/tcp/' + socket.remotePort)
   }
 
   return mh
