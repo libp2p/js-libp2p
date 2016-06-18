@@ -1,41 +1,50 @@
 /* eslint-env mocha */
 'use strict'
 
-const Id = require('ipfs-peer-id')
-const Peer = require('ipfs-peer')
-const Swarm = require('ipfs-swarm')
+const Peer = require('peer-info')
+const Swarm = require('libp2p-swarm')
+const TCP = require('libp2p-tcp')
 const multiaddr = require('multiaddr')
+const parallel = require('run-parallel')
 
 const Ping = require('./../src')
 
 let swarmA
 let swarmB
+let peerA
 let peerB
 
 describe('ping', () => {
   beforeEach((done) => {
-    swarmA = new Swarm()
-    swarmB = new Swarm()
+    peerA = new Peer()
+    peerB = new Peer()
 
-    swarmB.listen(8101, () => {
-      peerB = new Peer(Id.create(), [
-        multiaddr('/ip4/127.0.0.1/tcp/' + swarmB.port)
-      ])
-      done()
-    })
+    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/8101'))
+
+    swarmA = new Swarm(peerA)
+    swarmB = new Swarm(peerB)
+
+    swarmA.transport.add('tcp', new TCP())
+    swarmB.transport.add('tcp', new TCP())
+
+    swarmB.transport.listen('tcp', {}, null, done)
   })
 
-  afterEach(() => {
-    swarmB.closeListener()
+  afterEach((done) => {
+    parallel([
+      (cb) => swarmA.close(cb),
+      (cb) => swarmB.close(cb)
+    ], done)
   })
 
   it('ECHO', (done) => {
-    Ping.pingEcho(swarmB)
+    Ping.attach(swarmB)
 
     var p = new Ping(swarmA, peerB)
 
     p.on('ping', (time) => {
       p.stop()
+      Ping.detach(swarmB)
       done()
     })
   })
