@@ -2,10 +2,20 @@
 
 const debug = require('debug')
 const log = debug('libp2p:websockets')
-const SWS = require('simple-websocket')
+const SW = require('simple-websocket')
+const isNode = require('detect-node')
+let SWS
+if (isNode) {
+  SWS = require('simple-websocket-server')
+} else {
+  SWS = {}
+}
 const mafmt = require('mafmt')
-const parallel = require('run-parallel')
 const contains = require('lodash.contains')
+const Connection = require('interface-connection').Connection
+
+const CLOSE_TIMEOUT = 2000
+// const IPFS_CODE = 421
 
 exports = module.exports = WebSockets
 
@@ -14,66 +24,118 @@ function WebSockets () {
     return new WebSockets()
   }
 
-  const listeners = []
-
-  this.dial = function (multiaddr, options) {
-    if (!options) {
+  this.dial = function (ma, options, callback) {
+    if (typeof options === 'function') {
+      callback = options
       options = {}
     }
 
-    options.ready = options.ready || function noop () {}
-    const maOpts = multiaddr.toOptions()
-    const conn = new SWS('ws://' + maOpts.host + ':' + maOpts.port)
-    conn.on('connect', options.ready)
-    conn.getObservedAddrs = () => {
-      return [multiaddr]
+    if (!callback) {
+      callback = function noop () {}
     }
+
+    const maOpts = ma.toOptions()
+
+    const socket = new SW('ws://' + maOpts.host + ':' + maOpts.port)
+
+    const conn = new Connection(socket)
+
+    socket.on('timeout', () => {
+      conn.emit('timeout')
+    })
+
+    socket.on('error', (err) => {
+      callback(err)
+      conn.emit('error', err)
+    })
+
+    socket.on('connect', () => {
+      callback(null, conn)
+      conn.emit('connect')
+    })
+
+    conn.getObservedAddrs = (cb) => {
+      return cb(null, [ma])
+    }
+
     return conn
   }
 
-  this.createListener = (multiaddrs, options, handler, callback) => {
+  this.createListener = (options, handler) => {
     if (typeof options === 'function') {
-      callback = handler
       handler = options
       options = {}
     }
 
-    if (!Array.isArray(multiaddrs)) {
-      multiaddrs = [multiaddrs]
-    }
+    const listener = SWS.createServer((socket) => {
+      const conn = new Connection(socket)
 
-    var count = 0
+      conn.getObservedAddrs = (cb) => {
+        // TODO research if we can reuse the address in anyway
+        return cb(null, [])
+      }
+      handler(conn)
+    })
 
-    multiaddrs.forEach((m) => {
-      if (contains(m.protoNames(), 'ipfs')) {
-        m = m.decapsulate('ipfs')
+    let listeningMultiaddr
+
+    listener._listen = listener.listen
+    listener.listen = (ma, callback) => {
+      if (!callback) {
+        callback = function noop () {}
       }
 
-      const listener = SWS.createServer((conn) => {
-        conn.getObservedAddrs = () => {
-          return [] // TODO think if it makes sense for WebSockets
-        }
-        handler(conn)
-      })
+      listeningMultiaddr = ma
 
-      listener.listen(m.toOptions().port, () => {
-        if (++count === multiaddrs.length) {
-          callback()
-        }
-      })
-      listeners.push(listener)
-    })
-  }
+      if (contains(ma.protoNames(), 'ipfs')) {
+        ma = ma.decapsulate('ipfs')
+      }
 
-  this.close = (callback) => {
-    if (listeners.length === 0) {
-      log('Called close with no active listeners')
-      return callback()
+      listener._listen(ma.toOptions(), callback)
     }
 
-    parallel(listeners.map((listener) => {
-      return (cb) => listener.close(cb)
-    }), callback)
+    listener._close = listener.close
+    listener.close = (options, callback) => {
+      if (typeof options === 'function') {
+        callback = options
+        options = { timeout: CLOSE_TIMEOUT }
+      }
+      if (!callback) { callback = function noop () {} }
+      if (!options) { options = { timeout: CLOSE_TIMEOUT } }
+
+      let closed = false
+      listener.once('close', () => {
+        closed = true
+      })
+      listener._close(callback)
+      setTimeout(() => {
+        if (closed) {
+          return
+        }
+        log('unable to close graciously, destroying conns')
+        Object.keys(listener.__connections).forEach((key) => {
+          log('destroying %s', key)
+          listener.__connections[key].destroy()
+        })
+      }, options.timeout || CLOSE_TIMEOUT)
+    }
+
+    // Keep track of open connections to destroy in case of timeout
+    listener.__connections = {}
+    listener.on('connection', (socket) => {
+      const key = (~~(Math.random() * 1e9)).toString(36) + Date.now()
+      listener.__connections[key] = socket
+
+      socket.on('close', () => {
+        delete listener.__connections[key]
+      })
+    })
+
+    listener.getAddrs = (callback) => {
+      callback(null, [listeningMultiaddr])
+    }
+
+    return listener
   }
 
   this.filter = (multiaddrs) => {

@@ -3,21 +3,20 @@
 
 const expect = require('chai').expect
 const multiaddr = require('multiaddr')
-const WSlibp2p = require('../src')
+const WS = require('../src')
 
-describe('libp2p-websockets', function () {
-  this.timeout(10000)
-  var ws
+describe('libp2p-websockets', () => {
+  let ws
 
   it('create', (done) => {
-    ws = new WSlibp2p()
+    ws = new WS()
     expect(ws).to.exist
     done()
   })
 
   it('echo', (done) => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
-    const conn = ws.dial(mh)
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+    const conn = ws.dial(ma)
     const message = 'Hello World!'
     conn.write(message)
     conn.on('data', (data) => {
