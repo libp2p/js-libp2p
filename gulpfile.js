@@ -2,20 +2,21 @@
 
 const gulp = require('gulp')
 const multiaddr = require('multiaddr')
-const WSlibp2p = require('./src')
+const WS = require('./src')
 
-let ws
+let listener
 
 gulp.task('test:browser:before', (done) => {
-  ws = new WSlibp2p()
-  const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
-  ws.createListener(mh, (socket) => {
-    socket.pipe(socket)
-  }, done)
+  const ws = new WS()
+  const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+  listener = ws.createListener((conn) => {
+    conn.pipe(conn)
+  })
+  listener.listen(ma, done)
 })
 
 gulp.task('test:browser:after', (done) => {
-  ws.close(done)
+  listener.close(done)
 })
 
 require('aegir/gulp')(gulp)
