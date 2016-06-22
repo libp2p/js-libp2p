@@ -34,12 +34,13 @@
   "devDependencies": {
     "aegir": "^3.0.4",
     "chai": "^3.5.0",
-    "interface-connection": "0.0.3",
-    "interface-transport": "^0.1.1",
+    "interface-transport": "^0.2.0",
     "pre-commit": "^1.1.2",
     "tape": "^4.5.1"
   },
   "dependencies": {
+    "duplexify": "^3.4.3",
+    "interface-connection": "0.1.2",
     "ip-address": "^5.8.0",
     "lodash.contains": "^2.4.3",
     "mafmt": "^2.1.0",
