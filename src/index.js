@@ -38,6 +38,10 @@ function TCP () {
       conn.emit('timeout')
     })
 
+    socket.once('error', (err) => {
+      callback(err)
+    })
+
     socket.on('connect', () => {
       callback(null, conn)
       conn.emit('connect')
