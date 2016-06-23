@@ -1,9 +1,9 @@
 'use strict'
 
 const multistream = require('multistream-select')
-const Duplexify = require('duplexify')
+const Connection = require('interface-connection').Connection
 
-const connHandler = require('./default-handler')
+const protocolMuxer = require('./protocol-muxer')
 
 module.exports = function dial (swarm) {
   return (pi, protocol, callback) => {
@@ -16,7 +16,7 @@ module.exports = function dial (swarm) {
       callback = function noop () {}
     }
 
-    const pt = new Duplexify()
+    const proxyConn = new Connection()
 
     const b58Id = pi.id.toB58String()
 
@@ -40,7 +40,7 @@ module.exports = function dial (swarm) {
       gotMuxer(swarm.muxedConns[b58Id].muxer)
     }
 
-    return pt
+    return proxyConn
 
     function gotWarmedUpConn (conn) {
       attemptMuxerUpgrade(conn, (err, muxer) => {
@@ -145,7 +145,7 @@ module.exports = function dial (swarm) {
             // in case identify is on
             muxedConn.on('stream', (conn) => {
               conn.peerId = pi.id
-              connHandler(swarm.protocols, conn)
+              protocolMuxer(swarm.protocols, conn)
             })
 
             cb(null, muxedConn)
@@ -168,11 +168,9 @@ module.exports = function dial (swarm) {
           if (err) {
             return callback(err)
           }
-
-          pt.setReadable(conn)
-          pt.setWritable(conn)
-          pt.peerId = pi.id
-          callback(null, pt)
+          proxyConn.setInnerConn(conn)
+          proxyConn.peerId = pi.id
+          callback(null, proxyConn)
         })
       })
     }

@@ -1,9 +1,11 @@
 'use strict'
 
-const contains = require('lodash.contains')
-const Duplexify = require('duplexify')
+const Connection = require('interface-connection').Connection
+const parallel = require('run-parallel')
+const debug = require('debug')
+const log = debug('libp2p:swarm')
 
-const connHandler = require('./default-handler')
+const protocolMuxer = require('./protocol-muxer')
 
 module.exports = function (swarm) {
   return {
@@ -12,12 +14,17 @@ module.exports = function (swarm) {
         callback = options
         options = {}
       }
+
       if (!callback) { callback = noop }
 
       if (swarm.transports[key]) {
         throw new Error('There is already a transport with this key')
       }
       swarm.transports[key] = transport
+      if (!swarm.transports[key].listeners) {
+        swarm.transports[key].listeners = []
+      }
+
       callback()
     },
 
@@ -34,59 +41,86 @@ module.exports = function (swarm) {
       // b) if multiaddrs.length = 1, return the conn from the
       // transport, otherwise, create a passthrough
       if (multiaddrs.length === 1) {
-        const conn = t.dial(multiaddrs.shift(), {ready: () => {
-          const cb = callback
-          callback = noop // this is done to avoid connection drops as connect errors
-          cb(null, conn)
-        }})
-        conn.once('error', () => {
-          callback(new Error('failed to connect to every multiaddr'))
+        const conn = t.dial(multiaddrs.shift())
+
+        conn.once('error', connectError)
+
+        conn.once('connect', () => {
+          conn.removeListener('error', connectError)
+          callback(null, conn)
         })
+
         return conn
+      }
+      function connectError () {
+        callback(new Error('failed to connect to every multiaddr'))
       }
 
       // c) multiaddrs should already be a filtered list
       // specific for the transport we are using
-      const pt = new Duplexify()
+      const proxyConn = new Connection()
 
       next(multiaddrs.shift())
-      return pt
-      function next (multiaddr) {
-        const conn = t.dial(multiaddr, {ready: () => {
-          pt.setReadable(conn)
-          pt.setWritable(conn)
-          pt.getObservedAddrs = conn.getObservedAddrs.bind(conn)
-          const cb = callback
-          callback = noop // this is done to avoid connection drops as connect errors
-          cb(null, pt)
-        }})
 
-        conn.once('error', () => {
+      return proxyConn
+
+      // TODO improve in the future to make all the dials in paralell
+      function next (multiaddr) {
+        const conn = t.dial(multiaddr)
+
+        conn.once('error', connectError)
+
+        function connectError () {
           if (multiaddrs.length === 0) {
             return callback(new Error('failed to connect to every multiaddr'))
           }
           next(multiaddrs.shift())
+        }
+
+        conn.once('connect', () => {
+          conn.removeListener('error', connectError)
+          proxyConn.setInnerConn(conn)
+          callback(null, proxyConn)
         })
       }
     },
 
     listen (key, options, handler, callback) {
-      // if no callback is passed, we pass conns to connHandler
+      // if no handler is passed, we pass conns to protocolMuxer
       if (!handler) {
-        handler = connHandler.bind(null, swarm.protocols)
+        handler = protocolMuxer.bind(null, swarm.protocols)
       }
 
       const multiaddrs = dialables(swarm.transports[key], swarm._peerInfo.multiaddrs)
 
-      swarm.transports[key].createListener(multiaddrs, handler, (err, maUpdate) => {
-        if (err) {
-          return callback(err)
-        }
-        if (maUpdate) {
-          // because we can listen on port 0...
-          swarm._peerInfo.multiaddr.replace(multiaddrs, maUpdate)
-        }
+      const transport = swarm.transports[key]
 
+      if (!transport.listeners) {
+        transport.listeners = []
+      }
+
+      let freshMultiaddrs = []
+
+      const createListeners = multiaddrs.map((ma) => {
+        return (cb) => {
+          const listener = transport.createListener(handler)
+          listener.listen(ma, () => {
+            log('Listener started on:', ma.toString())
+            listener.getAddrs((err, addrs) => {
+              if (err) {
+                return cb(err)
+              }
+              freshMultiaddrs = freshMultiaddrs.concat(addrs)
+              transport.listeners.push(listener)
+              cb()
+            })
+          })
+        }
+      })
+
+      parallel(createListeners, () => {
+        // cause we can listen on port 0 or 0.0.0.0
+        swarm._peerInfo.multiaddr.replace(multiaddrs, freshMultiaddrs)
         callback()
       })
     },
@@ -98,13 +132,15 @@ module.exports = function (swarm) {
         return callback(new Error(`Trying to close non existing transport: ${key}`))
       }
 
-      transport.close(callback)
+      parallel(transport.listeners.map((listener) => {
+        return (cb) => {
+          listener.close(cb)
+        }
+      }), callback)
     }
   }
 }
 
-// transform given multiaddrs to a list of dialable addresses
-// for the given transport `tp`.
 function dialables (tp, multiaddrs) {
   return tp.filter(multiaddrs.map((addr) => {
     // webrtc-star needs the /ipfs/QmHash
@@ -112,13 +148,7 @@ function dialables (tp, multiaddrs) {
       return addr
     }
 
-    // ipfs multiaddrs are not dialable so we drop them here
-    if (contains(addr.protoNames(), 'ipfs')) {
-      return addr.decapsulate('ipfs')
-    }
-
     return addr
   }))
 }
-
 function noop () {}

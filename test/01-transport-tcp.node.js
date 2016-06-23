@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+
 'use strict'
 
 const expect = require('chai').expect
@@ -127,9 +128,9 @@ describe('transport - tcp', function () {
     }, ready)
 
     function ready () {
-      expect(peer.multiaddrs.length).to.equal(1)
+      expect(peer.multiaddrs.length >= 1).to.equal(true)
       expect(
-        peer.multiaddrs[0].equals(multiaddr('/ip4/0.0.0.0/tcp/9050'))
+        peer.multiaddrs[0].equals(multiaddr('/ip4/127.0.0.1/tcp/9050'))
       ).to.be.equal(
         true
       )
@@ -148,7 +149,7 @@ describe('transport - tcp', function () {
     }, ready)
 
     function ready () {
-      expect(peer.multiaddrs.length).to.equal(1)
+      expect(peer.multiaddrs.length >= 1).to.equal(true)
       expect(peer.multiaddrs[0]).to.not.deep.equal(multiaddr('/ip4/0.0.0.0/tcp/0'))
       swarm.close(done)
     }

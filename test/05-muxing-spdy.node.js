@@ -127,20 +127,22 @@ describe('stream muxing with spdy (on TCP)', function () {
     })
   })
 
-  it('leave a stream open, make sure it does not blow up when the socket is closed', (done) => {
+  it('make sure it does not blow up when the socket is closed', (done) => {
     swarmD.connection.reuse()
 
     let count = 0
     const destroyed = () => ++count === 2 ? done() : null
 
     swarmD.handle('/banana/1.0.0', (conn) => {
-      conn.on('error', destroyed)
-      conn.pipe(conn)
+      conn.on('error', () => {})
+      conn.on('close', destroyed)
     })
 
     swarmA.dial(peerD, '/banana/1.0.0', (err, conn) => {
       expect(err).to.not.exist
-      conn.on('error', destroyed)
+
+      conn.on('error', () => {})
+      conn.on('close', destroyed)
 
       swarmD.muxedConns[peerA.id.toB58String()].conn.destroy()
     })
@@ -179,13 +181,15 @@ describe('stream muxing with spdy (on TCP)', function () {
       const destroyed = () => ++count === 2 ? close() : null
 
       swarmE.handle('/avocado/1.0.0', (conn) => {
-        conn.on('error', destroyed)
-        conn.pipe(conn)
+        conn.on('error', () => {})
+        conn.on('close', destroyed)
       })
 
       swarmF.dial(peerE, '/avocado/1.0.0', (err, conn) => {
         expect(err).to.not.exist
-        conn.on('error', destroyed)
+        conn.on('error', () => {})
+        conn.on('close', destroyed)
+
         swarmF.muxedConns[peerE.id.toB58String()].conn.destroy()
       })
     }

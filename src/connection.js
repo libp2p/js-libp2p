@@ -1,6 +1,6 @@
 'use strict'
 
-const connHandler = require('./default-handler')
+const protocolMuxer = require('./protocol-muxer')
 const identify = require('./identify')
 
 module.exports = function connection (swarm) {
@@ -21,7 +21,7 @@ module.exports = function connection (swarm) {
           function gotId () {
             if (peerIdForConn) {
               conn.peerId = peerIdForConn
-              connHandler(swarm.protocols, conn)
+              protocolMuxer(swarm.protocols, conn)
             } else {
               setTimeout(gotId, 100)
             }
@@ -32,7 +32,7 @@ module.exports = function connection (swarm) {
             return gotId()
           }
 
-          connHandler(swarm.protocols, conn)
+          protocolMuxer(swarm.protocols, conn)
         })
 
         // if identify is enabled, attempt to do it for muxer reuse
