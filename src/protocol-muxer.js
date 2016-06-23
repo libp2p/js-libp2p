@@ -2,9 +2,9 @@
 
 const multistream = require('multistream-select')
 
-// incomming connection handler
-module.exports = function connHandler (protocols, conn) {
+module.exports = function protocolMuxer (protocols, conn) {
   const ms = new multistream.Listener()
+
   Object.keys(protocols).forEach((protocol) => {
     if (!protocol) {
       return

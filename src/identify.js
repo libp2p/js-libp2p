@@ -54,7 +54,7 @@ exports.exec = (rawConn, muxer, pInfo, callback) => {
             return callback(err)
           }
           const msg = idPb.Identify.decode(data)
-          if (msg.observedAddr.length > 0) {
+          if (hasObservedAddr(msg)) {
             pInfo.multiaddr.addSafe(multiaddr(msg.observedAddr))
           }
 
@@ -66,23 +66,28 @@ exports.exec = (rawConn, muxer, pInfo, callback) => {
           callback(null, otherPInfo)
         }))
 
-      const obsMultiaddr = rawConn.getObservedAddrs()[0]
+      rawConn.getObservedAddrs((err, addrs) => {
+        if (err) {
+          return
+        }
+        const obsMultiaddr = addrs[0]
 
-      let publicKey = new Buffer(0)
-      if (pInfo.id.pubKey) {
-        publicKey = pInfo.id.pubKey.bytes
-      }
+        let publicKey = new Buffer(0)
+        if (pInfo.id.pubKey) {
+          publicKey = pInfo.id.pubKey.bytes
+        }
 
-      const msg = idPb.Identify.encode({
-        protocolVersion: 'na',
-        agentVersion: 'na',
-        publicKey: publicKey,
-        listenAddrs: pInfo.multiaddrs.map((mh) => mh.buffer),
-        observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
+        const msg = idPb.Identify.encode({
+          protocolVersion: 'na',
+          agentVersion: 'na',
+          publicKey: publicKey,
+          listenAddrs: pInfo.multiaddrs.map((mh) => mh.buffer),
+          observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
+        })
+
+        encode.write(msg)
+        encode.end()
       })
-
-      encode.write(msg)
-      encode.end()
     })
   })
 }
@@ -105,29 +110,36 @@ exports.handler = (pInfo, swarm) => {
           return
         }
         const msg = idPb.Identify.decode(data)
-        if (msg.observedAddr.length > 0) {
+        if (hasObservedAddr(msg)) {
           pInfo.multiaddr.addSafe(multiaddr(msg.observedAddr))
         }
 
         const pId = PeerId.createFromPubKey(msg.publicKey)
         const conn = swarm.muxedConns[pId.toB58String()].conn
-        const obsMultiaddr = conn.getObservedAddrs()[0]
+        conn.getObservedAddrs((err, addrs) => {
+          if (err) {}
+          const obsMultiaddr = addrs[0]
 
-        let publicKey = new Buffer(0)
-        if (pInfo.id.pubKey) {
-          publicKey = pInfo.id.pubKey.bytes
-        }
+          let publicKey = new Buffer(0)
+          if (pInfo.id.pubKey) {
+            publicKey = pInfo.id.pubKey.bytes
+          }
 
-        const msgSend = idPb.Identify.encode({
-          protocolVersion: 'na',
-          agentVersion: 'na',
-          publicKey: publicKey,
-          listenAddrs: pInfo.multiaddrs.map((ma) => ma.buffer),
-          observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
+          const msgSend = idPb.Identify.encode({
+            protocolVersion: 'na',
+            agentVersion: 'na',
+            publicKey: publicKey,
+            listenAddrs: pInfo.multiaddrs.map((ma) => ma.buffer),
+            observedAddr: obsMultiaddr ? obsMultiaddr.buffer : new Buffer('')
+          })
+
+          encode.write(msgSend)
+          encode.end()
         })
-
-        encode.write(msgSend)
-        encode.end()
       }))
   }
+}
+
+function hasObservedAddr (msg) {
+  return msg.observedAddr && msg.observedAddr.length > 0
 }

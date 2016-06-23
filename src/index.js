@@ -8,7 +8,7 @@ const contains = require('lodash.contains')
 const transport = require('./transport')
 const connection = require('./connection')
 const dial = require('./dial')
-const connHandler = require('./default-handler')
+const protocolMuxer = require('./protocol-muxer')
 
 exports = module.exports = Swarm
 
@@ -26,12 +26,10 @@ function Swarm (peerInfo) {
   this._peerInfo = peerInfo
 
   // transports --
-
   // { key: transport }; e.g { tcp: <tcp> }
   this.transports = {}
 
   // connections --
-
   // { peerIdB58: { conn: <conn> }}
   this.conns = {}
 
@@ -94,7 +92,7 @@ function Swarm (peerInfo) {
 
   // our crypto handshake :)
   this.handle('/plaintext/1.0.0', (conn) => {
-    connHandler(this.protocols, conn)
+    protocolMuxer(this.protocols, conn)
   })
 
   this.unhandle = (protocol, handler) => {
@@ -122,8 +120,16 @@ function Swarm (peerInfo) {
       this.muxedConns[key].muxer.end()
     })
 
-    parallel(Object.keys(this.transports).map((key) => {
-      return (cb) => this.transports[key].close(cb)
+    const transports = this.transports
+
+    parallel(Object.keys(transports).map((key) => {
+      return (cb) => {
+        parallel(transports[key].listeners.map((listener) => {
+          return (cb) => {
+            listener.close(cb)
+          }
+        }), cb)
+      }
     }), callback)
   }
 }

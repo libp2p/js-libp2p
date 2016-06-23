@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/diasdavid/js-libp2p-swarm.git"
+    "url": "https://github.com/libp2p/js-libp2p-swarm.git"
   },
   "keywords": [
     "IPFS"
@@ -26,9 +26,9 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/diasdavid/js-libp2p-swarm/issues"
+    "url": "https://github.com/libp2p/js-libp2p-swarm/issues"
   },
-  "homepage": "https://github.com/diasdavid/js-libp2p-swarm",
+  "homepage": "https://github.com/libp2p/js-libp2p-swarm",
   "pre-commit": [
     "lint",
     "test"
@@ -43,10 +43,10 @@
     "gulp": "^3.9.1",
     "istanbul": "^0.4.3",
     "libp2p-multiplex": "^0.2.1",
-    "libp2p-spdy": "^0.6.1",
-    "libp2p-tcp": "^0.6.1",
-    "libp2p-webrtc-star": "^0.2.0",
-    "libp2p-websockets": "^0.6.1",
+    "libp2p-spdy": "^0.6.3",
+    "libp2p-tcp": "^0.7.1",
+    "libp2p-webrtc-star": "^0.3.1",
+    "libp2p-websockets": "^0.7.0",
     "pre-commit": "^1.1.2",
     "stream-pair": "^1.0.3",
     "webrtcsupport": "^2.2.0"
@@ -56,6 +56,7 @@
     "bl": "^1.1.2",
     "browserify-zlib": "github:ipfs/browserify-zlib",
     "duplexify": "^3.4.3",
+    "interface-connection": "^0.1.3",
     "ip-address": "^5.8.0",
     "length-prefixed-stream": "^1.5.0",
     "lodash.contains": "^2.4.3",

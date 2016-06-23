@@ -11,6 +11,9 @@ module.exports = {
           '../vendor/forge.bundle.js'
         )
       }
+    },
+    externals: {
+      'simple-websocket-server': '{}'
     }
   }
 }
