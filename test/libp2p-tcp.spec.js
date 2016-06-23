@@ -214,6 +214,15 @@ describe('dial', () => {
     conn.on('end', done)
   })
 
+  it('dial to non existent listener', (done) => {
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/8989')
+    const conn = tcp.dial(ma)
+    conn.on('error', (err) => {
+      expect(err).to.exist
+      done()
+    })
+  })
+
   it('dial on IPv6', (done) => {
     const ma = multiaddr('/ip6/::/tcp/9066')
     const listener = tcp.createListener((conn) => {
