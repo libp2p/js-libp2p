@@ -1,67 +1,73 @@
 'use strict'
 
-var EventEmitter = require('events').EventEmitter
-var util = require('util')
-var read = require('async-buffered-reader')
+const EventEmitter = require('events').EventEmitter
+const util = require('util')
+const read = require('async-buffered-reader')
 
 exports = module.exports = Ping
-exports.pingEcho = pingEcho
+exports.attach = attach
+exports.detach = detach
+
+const PROTOCOL = '/ipfs/ping/1.0.0'
 
 util.inherits(Ping, EventEmitter)
 
 function Ping (swarm, peer) {
-  var self = this
-  self.cont = true
+  this.cont = true
 
-  swarm.openStream(peer, '/ipfs/ping/1.0.0', function (err, stream) {
+  swarm.dial(peer, PROTOCOL, (err, conn) => {
     if (err) {
-      return self.emit('error', err)
+      return this.emit('error', err)
     }
 
-    var start = new Date()
-    var buf = new Buffer(32) // buffer creation doesn't memset the buffer to 0
+    let start = new Date()
+    let buf = new Buffer(32) // buffer creation doesn't memset the buffer to 0
 
-    stream.write(buf)
+    conn.write(buf)
 
-    read(stream, 32, gotBack)
-
-    function gotBack (bufBack) {
-      var end = new Date()
+    const gotBack = (bufBack) => {
+      let end = new Date()
 
       if (buf.equals(bufBack)) {
-        self.emit('ping', end - start)
+        this.emit('ping', end - start)
       } else {
-        stream.end()
-        return self.emit('error', new Error('Received wrong ping ack'))
+        conn.end()
+        return this.emit('error', new Error('Received wrong ping ack'))
       }
 
-      if (!self.cont) {
-        return stream.end()
+      if (!this.cont) {
+        return conn.end()
       }
 
       start = new Date()
       buf = new Buffer(32)
-      stream.write(buf)
-      read(stream, 32, gotBack)
+      conn.write(buf)
+      read(conn, 32, gotBack)
     }
+
+    read(conn, 32, gotBack)
   })
 
-  self.stop = function () {
-    self.cont = false
+  this.stop = () => {
+    this.cont = false
   }
 }
 
-function pingEcho (swarm) {
-  swarm.registerHandler('/ipfs/ping/1.0.0', function (stream) {
-    read(stream, 32, echo)
+function attach (swarm) {
+  swarm.handle(PROTOCOL, (conn) => {
+    read(conn, 32, echo)
 
     function echo (buf) {
-      stream.write(buf)
-      read(stream, 32, echo)
+      conn.write(buf)
+      read(conn, 32, echo)
     }
 
-    stream.on('end', function () {
-      stream.end()
+    conn.on('end', () => {
+      conn.end()
     })
   })
+}
+
+function detach (swarm) {
+  swarm.unhandle(PROTOCOL)
 }

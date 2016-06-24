@@ -33,11 +33,13 @@
     "aegir": "^2.1.1",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
-    "ipfs-peer": "^0.3.0",
-    "ipfs-peer-id": "^0.3.0",
-    "ipfs-swarm": "^0.4.0",
+    "libp2p-swarm": "^0.20.0",
+    "libp2p-tcp": "^0.6.2",
     "multiaddr": "^1.0.0",
-    "pre-commit": "^1.1.2"
+    "peer-id": "^0.7.0",
+    "peer-info": "^0.7.0",
+    "pre-commit": "^1.1.2",
+    "run-parallel": "^1.1.6"
   },
   "dependencies": {
     "async-buffered-reader": "^1.2.1"
