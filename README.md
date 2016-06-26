@@ -1,8 +1,9 @@
-# JavaScript libp2p Crytpo
+# js-libp2p-crypto
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
+[![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 [![Coverage Status](https://coveralls.io/repos/github/ipfs/js-libp2p-crypto/badge.svg?branch=master)](https://coveralls.io/github/ipfs/js-libp2p-crypto?branch=master)
 [![Travis CI](https://travis-ci.org/ipfs/js-libp2p-crypto.svg?branch=master)](https://travis-ci.org/ipfs/js-libp2p-crypto)
 [![Circle CI](https://circleci.com/gh/ipfs/js-libp2p-crypto.svg?style=svg)](https://circleci.com/gh/ipfs/js-libp2p-crypto)
@@ -10,11 +11,40 @@
 
 > Crypto primitives for libp2p in JavaScript
 
-## Description
-
 This repo contains the JavaScript implementation of the crypto primitives
 needed for libp2p. This is based on this [go implementation](https://github.com/ipfs/go-libp2p-crypto).
 
+## Table of Contents
+
+- [Install](#install)
+- [Usage](#usage)
+  - [Example](#example)
+- [API](#api)
+  - [`generateKeyPair(type, bits)`](#generatekeypairtype-bits)
+  - [`generateEphemeralKeyPair(curve)`](#generateephemeralkeypaircurve)
+  - [`keyStretcher(cipherType, hashType, secret)`](#keystretcherciphertype-hashtype-secret)
+  - [`marshalPublicKey(key[, type])`](#marshalpublickeykey-type)
+  - [`unmarshalPublicKey(buf)`](#unmarshalpublickeybuf)
+  - [`marshalPrivateKey(key[, type])`](#marshalprivatekeykey-type)
+  - [`unmarshalPrivateKey(buf)`](#unmarshalprivatekeybuf)
+- [Contribute](#contribute)
+- [License](#license)
+
+## Install
+
+```sh
+npm install --save libp2p-crypto
+```
+
+## Usage
+
+### Example
+
+```js
+const crypto = require('libp2p-crypto')
+
+var keyPair = crypto.generateKeyPair('RSA', 2048)
+```
 
 ## API
 
@@ -89,3 +119,15 @@ Converts a private key object into a protobuf serialized private key.
 - `buf: Buffer`
 
 Converts a protobuf serialized private key into its  representative object.
+
+## Contribute
+
+Feel free to join in. All welcome. Open an [issue](https://github.com/ipfs/js-libp2p-crypto/issues)!
+
+This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
+
+[![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/contributing.md)
+
+## License
+
+[MIT](LICENSE)
