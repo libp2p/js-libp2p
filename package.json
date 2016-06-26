@@ -39,8 +39,7 @@
     "tape": "^4.5.1"
   },
   "dependencies": {
-    "duplexify": "^3.4.3",
-    "interface-connection": "0.1.2",
+    "interface-connection": "0.1.6",
     "ip-address": "^5.8.0",
     "lodash.contains": "^2.4.3",
     "mafmt": "^2.1.0",
