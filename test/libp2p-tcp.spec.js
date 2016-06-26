@@ -243,6 +243,61 @@ describe('dial', () => {
     }
   })
 
+  it('dial and destroy on listener', (done) => {
+    let count = 0
+    const closed = () => ++count === 2 ? finish() : null
+
+    const ma = multiaddr('/ip6/::/tcp/9067')
+
+    const listener = tcp.createListener((conn) => {
+      conn.on('close', closed)
+      conn.destroy()
+    })
+
+    listener.listen(ma, dialStep)
+
+    function dialStep () {
+      const conn = tcp.dial(ma)
+      conn.on('close', closed)
+    }
+
+    function finish () {
+      listener.close(done)
+    }
+  })
+
+  it('dial and destroy on dialer', (done) => {
+    let count = 0
+    const destroyed = () => ++count === 2 ? finish() : null
+
+    const ma = multiaddr('/ip6/::/tcp/9068')
+
+    const listener = tcp.createListener((conn) => {
+      conn.on('close', () => {
+        console.log('closed on the listener socket')
+        destroyed()
+      })
+    })
+
+    listener.listen(ma, dialStep)
+
+    function dialStep () {
+      const conn = tcp.dial(ma)
+      conn.on('close', () => {
+        console.log('closed on the dialer socket')
+        destroyed()
+      })
+      conn.resume()
+      setTimeout(() => {
+        conn.destroy()
+      }, 10)
+    }
+
+    function finish () {
+      listener.close(done)
+    }
+  })
+
   it('dial on IPv4 with IPFS Id', (done) => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const conn = tcp.dial(ma)
