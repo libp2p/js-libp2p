@@ -1,6 +1,6 @@
 {
   "name": "libp2p-identify",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "libp2p Identify Protocol",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
