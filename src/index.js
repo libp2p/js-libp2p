@@ -71,7 +71,7 @@ exports.handler = (pInfoSelf) => {
       }
 
       const msgSend = idPb.Identify.encode({
-        protocolVersion: 'na',
+        protocolVersion: 'ipfs/0.1.0',
         agentVersion: 'na',
         publicKey: publicKey,
         listenAddrs: pInfoSelf.multiaddrs.map((ma) => ma.buffer),
