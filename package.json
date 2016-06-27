@@ -48,5 +48,8 @@
     "peer-id": "^0.7.0",
     "peer-info": "^0.7.0",
     "protocol-buffers": "^3.1.6"
-  }
+  },
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>"
+  ]
 }
