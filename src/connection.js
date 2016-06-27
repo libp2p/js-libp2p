@@ -1,7 +1,8 @@
 'use strict'
 
 const protocolMuxer = require('./protocol-muxer')
-const identify = require('./identify')
+const identify = require('libp2p-identify')
+const multistream = require('multistream-select')
 
 module.exports = function connection (swarm) {
   return {
@@ -15,43 +16,50 @@ module.exports = function connection (swarm) {
       swarm.handle(muxer.multicodec, (conn) => {
         const muxedConn = muxer(conn, true)
 
-        var peerIdForConn
-
         muxedConn.on('stream', (conn) => {
-          function gotId () {
-            if (peerIdForConn) {
-              conn.peerId = peerIdForConn
-              protocolMuxer(swarm.protocols, conn)
-            } else {
-              setTimeout(gotId, 100)
-            }
-          }
-
-          // If identify happened, when we have the Id of the conn
-          if (swarm.identify) {
-            return gotId()
-          }
-
           protocolMuxer(swarm.protocols, conn)
         })
 
-        // if identify is enabled, attempt to do it for muxer reuse
+        // If identify is enabled
+        //   1. overload getPeerInfo
+        //   2. call getPeerInfo
+        //   3. add this conn to the pool
         if (swarm.identify) {
-          identify.exec(conn, muxedConn, swarm._peerInfo, (err, pi) => {
+          // overload peerInfo to use Identify instead
+          conn.getPeerInfo = (cb) => {
+            const conn = muxedConn.newStream()
+            const ms = new multistream.Dialer()
+            ms.handle(conn, (err) => {
+              if (err) { return cb(err) }
+
+              ms.select(identify.multicodec, (err, conn) => {
+                if (err) { return cb(err) }
+
+                identify.exec(conn, (err, peerInfo, observedAddrs) => {
+                  if (err) { return cb(err) }
+
+                  observedAddrs.forEach((oa) => {
+                    swarm._peerInfo.multiaddr.addSafe(oa)
+                  })
+
+                  cb(null, peerInfo)
+                })
+              })
+            })
+          }
+
+          conn.getPeerInfo((err, peerInfo) => {
             if (err) {
-              return console.log('Identify exec failed', err)
+              return console.log('Identify not successful')
+            }
+            swarm.muxedConns[peerInfo.id.toB58String()] = {
+              muxer: muxedConn
             }
 
-            peerIdForConn = pi.id
-            swarm.muxedConns[pi.id.toB58String()] = {}
-            swarm.muxedConns[pi.id.toB58String()].muxer = muxedConn
-            swarm.muxedConns[pi.id.toB58String()].conn = conn // to be able to extract addrs
-
-            swarm.emit('peer-mux-established', pi)
-
+            swarm.emit('peer-mux-established', peerInfo)
             muxedConn.on('close', () => {
-              delete swarm.muxedConns[pi.id.toB58String()]
-              swarm.emit('peer-mux-closed', pi)
+              delete swarm.muxedConns[peerInfo.id.toB58String()]
+              swarm.emit('peer-mux-closed', peerInfo)
             })
           })
         }
@@ -60,7 +68,7 @@ module.exports = function connection (swarm) {
 
     reuse () {
       swarm.identify = true
-      swarm.handle(identify.multicodec, identify.handler(swarm._peerInfo, swarm))
+      swarm.handle(identify.multicodec, identify.handler(swarm._peerInfo))
     }
   }
 }

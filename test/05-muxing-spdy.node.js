@@ -127,7 +127,36 @@ describe('stream muxing with spdy (on TCP)', function () {
     })
   })
 
-  it('make sure it does not blow up when the socket is closed', (done) => {
+  it('with Identify, do getPeerInfo', (done) => {
+    swarmA.handle('/banana/1.0.0', (conn) => {
+      conn.getPeerInfo((err, peerInfoC) => {
+        expect(err).to.not.exist
+        expect(peerInfoC.id.toB58String()).to.equal(peerC.id.toB58String())
+      })
+
+      conn.pipe(conn)
+    })
+
+    swarmC.dial(peerA, '/banana/1.0.0', (err, conn) => {
+      expect(err).to.not.exist
+      setTimeout(() => {
+        expect(Object.keys(swarmC.muxedConns).length).to.equal(1)
+        expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
+        conn.getPeerInfo((err, peerInfoA) => {
+          expect(err).to.not.exist
+          expect(peerInfoA.id.toB58String()).to.equal(peerA.id.toB58String())
+          conn.on('end', done)
+          conn.resume()
+          conn.end()
+        })
+      }, 500)
+    })
+  })
+
+  // This test is not possible as the raw conn is not exposed anymore
+  // TODO: create a similar version, but that spawns a swarm in a
+  // different proc
+  it.skip('make sure it does not blow up when the socket is closed', (done) => {
     swarmD.connection.reuse()
 
     let count = 0
@@ -148,7 +177,10 @@ describe('stream muxing with spdy (on TCP)', function () {
     })
   })
 
-  it('blow up a socket, with WebSockets', (done) => {
+  // This test is not possible as the raw conn is not exposed anymore
+  // TODO: create a similar version, but that spawns a swarm in a
+  // different proc
+  it.skip('blow up a socket, with WebSockets', (done) => {
     var swarmE
     var peerE
     var swarmF

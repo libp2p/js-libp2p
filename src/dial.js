@@ -43,6 +43,8 @@ module.exports = function dial (swarm) {
     return proxyConn
 
     function gotWarmedUpConn (conn) {
+      conn.setPeerInfo(pi)
+
       attemptMuxerUpgrade(conn, (err, muxer) => {
         if (!protocol) {
           if (err) {
@@ -61,6 +63,13 @@ module.exports = function dial (swarm) {
     }
 
     function gotMuxer (muxer) {
+      if (swarm.identify) {
+        // TODO: Consider:
+        // 1. overload getPeerInfo
+        // 2. exec identify (through getPeerInfo)
+        // 3. update the peerInfo that is already stored in the conn
+      }
+
       openConnInMuxedConn(muxer, (conn) => {
         protocolHandshake(conn, protocol, callback)
       })
@@ -88,7 +97,7 @@ module.exports = function dial (swarm) {
           cryptoDial()
 
           function cryptoDial () {
-            // currently, js-libp2p-swarm doesn't implement any crypto
+            // currently, no crypto channel is implemented
             const ms = new multistream.Dialer()
             ms.handle(conn, (err) => {
               if (err) {
@@ -133,7 +142,7 @@ module.exports = function dial (swarm) {
             const muxedConn = swarm.muxers[key](conn, false)
             swarm.muxedConns[b58Id] = {}
             swarm.muxedConns[b58Id].muxer = muxedConn
-            swarm.muxedConns[b58Id].conn = conn
+            // should not be needed anymore - swarm.muxedConns[b58Id].conn = conn
 
             swarm.emit('peer-mux-established', pi)
 
@@ -142,9 +151,8 @@ module.exports = function dial (swarm) {
               swarm.emit('peer-mux-closed', pi)
             })
 
-            // in case identify is on
+            // For incoming streams, in case identify is on
             muxedConn.on('stream', (conn) => {
-              conn.peerId = pi.id
               protocolMuxer(swarm.protocols, conn)
             })
 
@@ -169,7 +177,6 @@ module.exports = function dial (swarm) {
             return callback(err)
           }
           proxyConn.setInnerConn(conn)
-          proxyConn.peerId = pi.id
           callback(null, proxyConn)
         })
       })
