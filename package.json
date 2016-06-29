@@ -43,5 +43,10 @@
   },
   "dependencies": {
     "async-buffered-reader": "^1.2.1"
-  }
+  },
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Richard Littauer <richard.littauer@gmail.com>",
+    "dignifiedquire <dignifiedquire@gmail.com>"
+  ]
 }
