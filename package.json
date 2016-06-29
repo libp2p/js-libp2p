@@ -9,10 +9,10 @@
     "test"
   ],
   "scripts": {
-    "test": "aegir-test node",
+    "test": "aegir-test --env node",
     "lint": "aegir-lint",
     "build": "aegir-build node",
-    "release": "aegir-release node",
+    "release": "aegir-release --env node",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
