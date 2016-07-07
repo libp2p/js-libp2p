@@ -3,6 +3,9 @@
 const EventEmitter = require('events').EventEmitter
 const util = require('util')
 const read = require('async-buffered-reader')
+const debug = require('debug')
+const log = {}
+log.error = debug('libp2p-ping:error')
 
 exports = module.exports = Ping
 exports.attach = attach
@@ -61,6 +64,10 @@ function attach (swarm) {
       conn.write(buf)
       read(conn, 32, echo)
     }
+
+    conn.on('error', (err) => {
+      log.error(err)
+    })
 
     conn.on('end', () => {
       conn.end()
