@@ -15,65 +15,30 @@ libp2p is the product of a long, and arduous quest of understanding -- a deep di
 
 We will be writing a set of docs, posts, tutorials, and talks to explain what p2p is, why it is tremendously useful, and how it can help your existing and new projects.
 
-# Contribute
 
-libp2p implementation in JavaScript is a work in progress. As such, there's a few things you can do right now to help out:
-
- - Go through the modules below and **check out existing issues**. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrasture behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
- - **Perform code reviews**. Most of this has been developed by @diasdavid, which means that more eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
- - **Add tests**. There can never be enough tests.
-
-# Usage
-
-`js-libp2p` repo will be a place holder for the list of JavaScript modules that compose js-libp2p, as well as its entry point
-
-# Modules
-
-- [libp2p](https://github.com/diasdavid/js-libp2p) (entry point)
-- **Swarm**
-  - [libp2p-swarm](https://github.com/diasdavid/js-libp2p-swarm) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/22)
-  - [libp2p-identify](https://github.com/diasdavid/js-libp2p-swarm/tree/master/src/identify)
-  - [libp2p-ping](https://github.com/diasdavid/js-libp2p-ping)
-  - Transports
-    - [abstract-transport](https://github.com/diasdavid/abstract-transport)
-    - [abstract-connection](https://github.com/diasdavid/abstract-connection)
-    - [libp2p-tcp](https://github.com/diasdavid/js-libp2p-tcp)
-    - [libp2p-udp](https://github.com/diasdavid/js-libp2p-udp)
-    - [libp2p-udt](https://github.com/diasdavid/js-libp2p-udt)
-    - [libp2p-utp](https://github.com/diasdavid/js-libp2p-utp)
-    - [libp2p-webrtc]()
-    - [libp2p-cjdns]()
-  - Stream Muxing [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](LINK HERE)
-    - [abstract-stream-muxer](https://github.com/diasdavid/abstract-stream-muxer)
-    - [libp2p-spdy](https://github.com/diasdavid/js-libp2p-spdy)
-    - [libp2p-multiplex]()
-  - Crypto Channel
-    - [libp2p-tls]()
-    - [libp2p-secio]()
-- **Peer Routing**
-  - [libp2p-kad-routing](https://github.com/diasdavid/js-libp2p-kad-routing) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/18)
-  - [libp2p-mDNS-routing]()
-- **Discovery**
-  - [libp2p-mdns-discovery](https://github.com/diasdavid/js-libp2p-mdns-discovery)
-  - [libp2p-random-walk](https://github.com/diasdavid/js-libp2p-random-walk) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/20)
-  - [libp2p-railing](https://github.com/diasdavid/js-libp2p-railing) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/21)
-- **Distributed Record Store** [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/25)
-  - [libp2p-record](https://github.com/diasdavid/js-libp2p-record)
-  - [abstract-record-store](https://github.com/diasdavid/abstract-record-store)
-  - [libp2p-distributed-record-store](https://github.com/diasdavid/js-libp2p-distributed-record-store)
-  - [libp2p-kad-record-store](https://github.com/diasdavid/js-libp2p-kad-record-store)
-- **Generic**
-  - [PeerInfo](https://github.com/diasdavid/js-peer-info)
-  - [PeerId](https://github.com/diasdavid/js-peer-id)
-  - [multihash](https://github.com/jbenet/js-multihash) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/26)
-  - [multihashing](https://github.com/jbenet/js-multihashing) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/26)
-  - [multiaddr](https://github.com/jbenet/js-multiaddr)
-  - [multistream](https://github.com/diasdavid/js-multistream)
-  - [ipld](https://github.com/diasdavid/js-ipld)
-  - [repo](https://github.com/ipfs/js-ipfs-repo) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/36)
-  - [webcrypto](https://github.com/diasdavid/webcrypto) [![](https://img.shields.io/badge/discuss--blue.svg?style=flat-square)](https://github.com/ipfs/js-ipfs/issues/27)
-- [**Specs**](https://github.com/ipfs/specs/tree/master/protocol/network)
-- [**Website**](https://github.com/diasdavid/libp2p-website)
+# Packages
+| Package | Version | Dependencies | DevDependencies |
+|--------|-------|------------|----------|
+| [`peer-book`](//github.com/libp2p/js-peer-book) | [![npm](https://img.shields.io/npm/v/peer-book.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-peer-book/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-peer-book.svg?style=flat-square)](https://david-dm.org/libp2p/js-peer-book) | [![devDependency Status](https://david-dm.org/libp2p/js-peer-book/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-peer-book?type=dev) |
+| [`libp2p-ipfs`](//github.com/ipfs/js-libp2p-ipfs) | [![npm](https://img.shields.io/npm/v/libp2p-ipfs.svg?maxAge=86400&style=flat-square)](//github.com/ipfs/js-libp2p-ipfs/releases) | [![Dependency Status](https://david-dm.org/ipfs/js-libp2p-ipfs.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-ipfs) | [![devDependency Status](https://david-dm.org/ipfs/js-libp2p-ipfs/dev-status.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-ipfs?type=dev) |
+| [`libp2p-ipfs-browser`](//github.com/ipfs/js-libp2p-ipfs-browser) | [![npm](https://img.shields.io/npm/v/libp2p-ipfs-browser.svg?maxAge=86400&style=flat-square)](//github.com/ipfs/js-libp2p-ipfs-browser/releases) | [![Dependency Status](https://david-dm.org/ipfs/js-libp2p-ipfs-browser.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-ipfs-browser) | [![devDependency Status](https://david-dm.org/ipfs/js-libp2p-ipfs-browser/dev-status.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-ipfs-browser?type=dev) |
+| [`libp2p-secio`](//github.com/libp2p/js-libp2p-secio) | [![npm](https://img.shields.io/npm/v/libp2p-secio.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-secio/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-secio.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-secio) | [![devDependency Status](https://david-dm.org/libp2p/js-libp2p-secio/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-secio?type=dev) |
+| [`libp2p-swarm`](//github.com/diasdavid/js-libp2p-swarm) | [![npm](https://img.shields.io/npm/v/libp2p-swarm.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-swarm/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-swarm.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-swarm) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-swarm/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-swarm?type=dev) |
+| [`libp2p-ping`](//github.com/diasdavid/js-libp2p-ping) | [![npm](https://img.shields.io/npm/v/libp2p-ping.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-ping/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-ping.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-ping) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-ping/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-ping?type=dev) |
+| [`interface-connection`](//github.com/diasdavid/interface-connection) | [![npm](https://img.shields.io/npm/v/interface-connection.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/interface-connection/releases) | [![Dependency Status](https://david-dm.org/diasdavid/interface-connection.svg?style=flat-square)](https://david-dm.org/diasdavid/interface-connection) | [![devDependency Status](https://david-dm.org/diasdavid/interface-connection/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/interface-connection?type=dev) |
+| [`libp2p-utp`](//github.com/diasdavid/js-libp2p-utp) | [![npm](https://img.shields.io/npm/v/libp2p-utp.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-utp/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-utp.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-utp) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-utp/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-utp?type=dev) |
+| [`interface-stream-muxer`](//github.com/diasdavid/interface-stream-muxer) | [![npm](https://img.shields.io/npm/v/interface-stream-muxer.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/interface-stream-muxer/releases) | [![Dependency Status](https://david-dm.org/diasdavid/interface-stream-muxer.svg?style=flat-square)](https://david-dm.org/diasdavid/interface-stream-muxer) | [![devDependency Status](https://david-dm.org/diasdavid/interface-stream-muxer/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/interface-stream-muxer?type=dev) |
+| [`libp2p-spdy`](//github.com/diasdavid/js-libp2p-spdy) | [![npm](https://img.shields.io/npm/v/libp2p-spdy.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-spdy/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-spdy.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-spdy) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-spdy/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-spdy?type=dev) |
+| [`libp2p-kad-routing`](//github.com/diasdavid/js-libp2p-kad-routing) | [![npm](https://img.shields.io/npm/v/libp2p-kad-routing.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-kad-routing/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-kad-routing.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-kad-routing) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-kad-routing/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-kad-routing?type=dev) |
+| [`libp2p-mdns-discovery`](//github.com/diasdavid/js-libp2p-mdns-discovery) | [![npm](https://img.shields.io/npm/v/libp2p-mdns-discovery.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-mdns-discovery/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-mdns-discovery.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-mdns-discovery) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-mdns-discovery/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-mdns-discovery?type=dev) |
+| [`libp2p-railing`](//github.com/diasdavid/js-libp2p-railing) | [![npm](https://img.shields.io/npm/v/libp2p-railing.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-railing/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-railing.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-railing) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-railing/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-railing?type=dev) |
+| [`libp2p-record`](//github.com/diasdavid/js-libp2p-record) | [![npm](https://img.shields.io/npm/v/libp2p-record.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-record/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-record.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-record) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-record/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-record?type=dev) |
+| [`interface-record-store`](//github.com/diasdavid/interface-record-store) | [![npm](https://img.shields.io/npm/v/interface-record-store.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/interface-record-store/releases) | [![Dependency Status](https://david-dm.org/diasdavid/interface-record-store.svg?style=flat-square)](https://david-dm.org/diasdavid/interface-record-store) | [![devDependency Status](https://david-dm.org/diasdavid/interface-record-store/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/interface-record-store?type=dev) |
+| [`libp2p-distributed-record-store`](//github.com/diasdavid/js-libp2p-distributed-record-store) | [![npm](https://img.shields.io/npm/v/undefined.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-distributed-record-store/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-distributed-record-store.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-distributed-record-store) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-distributed-record-store/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-distributed-record-store?type=dev) |
+| [`libp2p-kad-record-store`](//github.com/diasdavid/js-libp2p-kad-record-store) | [![npm](https://img.shields.io/npm/v/libp2p-kad-record-store.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-kad-record-store/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-kad-record-store.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-kad-record-store) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-kad-record-store/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-kad-record-store?type=dev) |
+| [`libp2p-websockets`](//github.com/diasdavid/js-libp2p-websockets) | [![npm](https://img.shields.io/npm/v/libp2p-websockets.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-libp2p-websockets/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-libp2p-websockets.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-websockets) | [![devDependency Status](https://david-dm.org/diasdavid/js-libp2p-websockets/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p-websockets?type=dev) |
+| [`libp2p-webrtc-star`](//github.com/libp2p/js-libp2p-webrtc-star) | [![npm](https://img.shields.io/npm/v/libp2p-webrtc-star.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-webrtc-star/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-webrtc-star.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-webrtc-star) | [![devDependency Status](https://david-dm.org/libp2p/js-libp2p-webrtc-star/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-webrtc-star?type=dev) |
+| [`multistream-select`](//github.com/diasdavid/js-multistream) | [![npm](https://img.shields.io/npm/v/multistream-select.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-multistream/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-multistream.svg?style=flat-square)](https://david-dm.org/diasdavid/js-multistream) | [![devDependency Status](https://david-dm.org/diasdavid/js-multistream/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-multistream?type=dev) |
 
 # Usage
 
@@ -111,6 +76,13 @@ p2p.record.store(key, record)
 
 ### Stats
 
+# Contribute
+
+libp2p implementation in JavaScript is a work in progress. As such, there's a few things you can do right now to help out:
+
+ - Go through the modules below and **check out existing issues**. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrasture behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
+ - **Perform code reviews**. Most of this has been developed by @diasdavid, which means that more eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
+ - **Add tests**. There can never be enough tests.
 
 
 ## Notes
