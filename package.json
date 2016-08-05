@@ -2,7 +2,7 @@
   "name": "libp2p-tcp",
   "version": "0.7.4",
   "description": "Node.js implementation of the TCP module that libp2p uses, which implements the interface-connection and interface-transport interfaces",
-  "main": "lib/index.js",
+  "main": "src/index.js",
   "jsnext:main": "src/index.js",
   "scripts": {
     "lint": "aegir-lint",
@@ -32,11 +32,10 @@
   },
   "homepage": "https://github.com/diasdavid/js-libp2p-tcp",
   "devDependencies": {
-    "aegir": "^4.0.0",
+    "aegir": "^6.0.0",
     "chai": "^3.5.0",
-    "interface-transport": "^0.2.0",
-    "pre-commit": "^1.1.2",
-    "tape": "^4.5.1"
+    "lodash.isfunction": "^3.0.8",
+    "pre-commit": "^1.1.2"
   },
   "dependencies": {
     "interface-connection": "0.1.8",
@@ -44,7 +43,8 @@
     "lodash.contains": "^2.4.3",
     "mafmt": "^2.1.2",
     "multiaddr": "^2.0.2",
-    "run-parallel": "^1.1.6"
+    "pull": "^2.1.1",
+    "stream-to-pull-stream": "^1.7.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",

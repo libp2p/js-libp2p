@@ -1,5 +1,4 @@
-js-libp2p-tcp
-===============
+# js-libp2p-tcp
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
@@ -21,39 +20,47 @@ js-libp2p-tcp
 `multiaddr`. This small shim will enable libp2p to use other different
 transports.
 
+**Note:** This module uses [pull-streams](https://pull-stream.github.io) for all stream based interfaces.
+
 ## Example
 
 ```js
 const TCP = require('libp2p-tcp')
 const multiaddr = require('multiaddr')
+const pull = require('pull-stream')
 
 const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
 const mh2 = multiaddr('/ip6/::/tcp/9092')
 
 const tcp = new TCP()
 
-var listener = tcp.createListener(mh1, function handler (socket) {
-  console.log('connection')
-  socket.end('bye')
+const listener = tcp.createListener(mh1, (socket) => {
+  console.log('new connection opened')
+  pull(
+    pull.values(['hello']),
+    socket
+  )
 })
 
-listener.listen(mh1, function ready () {
-  console.log('ready')
+listener.listen(() => {
+  console.log('listening')
 
-  const client = tcp.dial(mh1)
-  client.pipe(process.stdout)
-  client.on('end', () => {
-    listener.close()
-  })
+  pull(
+    tcp.dial(mh1),
+    pull.log,
+    pull.onEnd(() => {
+      tcp.close()
+    })
+  )
 })
 ```
 
 outputs
 
 ```
-ready
-connection
-bye
+listening
+new connection opened
+hello
 ```
 
 ## Installation
