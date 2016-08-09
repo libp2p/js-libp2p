@@ -68,6 +68,7 @@
     "peer-id": "^0.7.0",
     "peer-info": "^0.7.0",
     "protocol-buffers": "^3.1.6",
+    "pull-stream": "^3.4.3",
     "run-parallel": "^1.1.6"
   },
   "contributors": [

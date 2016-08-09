@@ -1,8 +1,10 @@
 'use strict'
 
-const protocolMuxer = require('./protocol-muxer')
 const identify = require('libp2p-identify')
 const multistream = require('multistream-select')
+const pull = require('pull-stream')
+
+const protocolMuxer = require('./protocol-muxer')
 
 module.exports = function connection (swarm) {
   return {
@@ -14,7 +16,7 @@ module.exports = function connection (swarm) {
 
       // for listening
       swarm.handle(muxer.multicodec, (conn) => {
-        const muxedConn = muxer(conn, true)
+        const muxedConn = muxer.listen(conn)
 
         muxedConn.on('stream', (conn) => {
           protocolMuxer(swarm.protocols, conn)
@@ -35,7 +37,7 @@ module.exports = function connection (swarm) {
               ms.select(identify.multicodec, (err, conn) => {
                 if (err) { return cb(err) }
 
-                identify.exec(conn, (err, peerInfo, observedAddrs) => {
+                identify.listen(conn, (err, peerInfo, observedAddrs) => {
                   if (err) { return cb(err) }
 
                   observedAddrs.forEach((oa) => {
@@ -57,10 +59,13 @@ module.exports = function connection (swarm) {
             }
 
             swarm.emit('peer-mux-established', peerInfo)
-            muxedConn.on('close', () => {
-              delete swarm.muxedConns[peerInfo.id.toB58String()]
-              swarm.emit('peer-mux-closed', peerInfo)
-            })
+            pull(
+              muxedConn,
+              pull.onEnd(() => {
+                delete swarm.muxedConns[peerInfo.id.toB58String()]
+                swarm.emit('peer-mux-closed', peerInfo)
+              })
+            )
           })
         }
       })
@@ -68,7 +73,9 @@ module.exports = function connection (swarm) {
 
     reuse () {
       swarm.identify = true
-      swarm.handle(identify.multicodec, identify.handler(swarm._peerInfo))
+      swarm.handle(identify.multicodec, (conn) => {
+        identify.dial(conn, swarm._peerInfo)
+      })
     }
   }
 }

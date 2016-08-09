@@ -6,5 +6,5 @@ exports = module.exports
 
 exports.create = (local, insecure) => {
   const session = new SecureSession(local, local.privKey, insecure)
-  return session.secureStream()
+  return session.secure
 }

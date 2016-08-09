@@ -8,10 +8,11 @@ const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const TCP = require('libp2p-tcp')
 const multiplex = require('libp2p-spdy')
+const pull = require('pull-stream')
 
 const Swarm = require('../src')
 
-describe.skip('secio conn upgrade (on TCP)', function () {
+describe.only('secio conn upgrade (on TCP)', function () {
   this.timeout(60 * 1000)
 
   var swarmA
@@ -73,20 +74,17 @@ describe.skip('secio conn upgrade (on TCP)', function () {
 
   it('handle + dial on protocol', (done) => {
     swarmB.handle('/abacaxi/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     swarmA.dial(peerB, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
-      conn.end()
-
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(pull.empty(), conn, pull.onEnd(done))
     })
   })
 
-  it.skip('dial to warm conn', (done) => {
+  it('dial to warm conn', (done) => {
     swarmB.dial(peerA, (err) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmB.conns).length).to.equal(0)
@@ -95,20 +93,16 @@ describe.skip('secio conn upgrade (on TCP)', function () {
     })
   })
 
-  it.skip('dial on protocol, reuse warmed conn', (done) => {
+  it('dial on protocol, reuse warmed conn', (done) => {
     swarmA.handle('/papaia/1.0.0', (conn) => {
-      conn.pipe(conn)
-      conn.on('error', (err) => { throw err })
+      pull(conn, conn)
     })
 
     swarmB.dial(peerA, '/papaia/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
-      conn.end()
-      conn.on('error', (err) => { throw err })
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(pull.empty(), conn, pull.onEnd(done))
     })
   })
 

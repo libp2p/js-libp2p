@@ -2,6 +2,8 @@
 
 const multistream = require('multistream-select')
 const Connection = require('interface-connection').Connection
+const debug = require('debug')
+const log = debug('libp2p:swarm:dial')
 
 const protocolMuxer = require('./protocol-muxer')
 const secio = require('./secio')
@@ -21,6 +23,7 @@ module.exports = function dial (swarm) {
     const proxyConn = new Connection()
 
     const b58Id = pi.id.toB58String()
+    log('dialing %s', b58Id)
 
     if (!swarm.muxedConns[b58Id]) {
       if (!swarm.conns[b58Id]) {
@@ -45,8 +48,10 @@ module.exports = function dial (swarm) {
     return proxyConn
 
     function gotWarmedUpConn (conn) {
+      if (!conn.setPeerInfo) {
+        conn = new Connection(conn)
+      }
       conn.setPeerInfo(pi)
-
       attemptMuxerUpgrade(conn, (err, muxer) => {
         if (!protocol) {
           if (err) {
@@ -142,6 +147,7 @@ module.exports = function dial (swarm) {
           if (err) {
             return callback(new Error('multistream not supported'))
           }
+          log('selecting %s', key)
           ms.select(key, (err, conn) => {
             if (err) {
               if (muxers.length === 0) {
@@ -152,7 +158,7 @@ module.exports = function dial (swarm) {
               return
             }
 
-            const muxedConn = swarm.muxers[key](conn, false)
+            const muxedConn = swarm.muxers[key].dial(conn)
             swarm.muxedConns[b58Id] = {}
             swarm.muxedConns[b58Id].muxer = muxedConn
             // should not be needed anymore - swarm.muxedConns[b58Id].conn = conn
@@ -161,7 +167,6 @@ module.exports = function dial (swarm) {
 
             muxedConn.once('close', () => {
               delete swarm.muxedConns[pi.id.toB58String()]
-              conn.end()
               swarm.emit('peer-mux-closed', pi)
             })
 
