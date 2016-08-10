@@ -2,7 +2,8 @@
 
 const identify = require('libp2p-identify')
 const multistream = require('multistream-select')
-const pull = require('pull-stream')
+const debug = require('debug')
+const log = debug('libp2p:swarm:connection')
 
 const protocolMuxer = require('./protocol-muxer')
 
@@ -52,22 +53,21 @@ module.exports = function connection (swarm) {
 
           conn.getPeerInfo((err, peerInfo) => {
             if (err) {
-              return console.log('Identify not successful')
+              return log('Identify not successful')
             }
             swarm.muxedConns[peerInfo.id.toB58String()] = {
               muxer: muxedConn
             }
 
             swarm.emit('peer-mux-established', peerInfo)
-            pull(
-              muxedConn,
-              pull.onEnd(() => {
-                delete swarm.muxedConns[peerInfo.id.toB58String()]
-                swarm.emit('peer-mux-closed', peerInfo)
-              })
-            )
+            muxedConn.on('close', () => {
+              delete swarm.muxedConns[peerInfo.id.toB58String()]
+              swarm.emit('peer-mux-closed', peerInfo)
+            })
           })
         }
+
+        return conn
       })
     },
 

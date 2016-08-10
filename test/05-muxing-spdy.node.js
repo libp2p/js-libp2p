@@ -9,6 +9,7 @@ const Peer = require('peer-info')
 const Swarm = require('../src')
 const TCP = require('libp2p-tcp')
 const WebSockets = require('libp2p-websockets')
+const pull = require('pull-stream')
 
 const spdy = require('libp2p-spdy')
 
@@ -75,16 +76,13 @@ describe('stream muxing with spdy (on TCP)', function () {
 
   it('handle + dial on protocol', (done) => {
     swarmB.handle('/abacaxi/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     swarmA.dial(peerB, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
-      conn.end()
-
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(pull.empty(), conn, pull.onEnd(done))
     })
   })
 
@@ -99,17 +97,14 @@ describe('stream muxing with spdy (on TCP)', function () {
 
   it('dial on protocol, reuse warmed conn', (done) => {
     swarmA.handle('/papaia/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     swarmB.dial(peerA, '/papaia/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
-      conn.end()
-
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(pull.empty(), conn, pull.onEnd(done))
     })
   })
 
@@ -134,7 +129,7 @@ describe('stream muxing with spdy (on TCP)', function () {
         expect(peerInfoC.id.toB58String()).to.equal(peerC.id.toB58String())
       })
 
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     swarmC.dial(peerA, '/banana/1.0.0', (err, conn) => {
@@ -145,9 +140,7 @@ describe('stream muxing with spdy (on TCP)', function () {
         conn.getPeerInfo((err, peerInfoA) => {
           expect(err).to.not.exist
           expect(peerInfoA.id.toB58String()).to.equal(peerA.id.toB58String())
-          conn.on('end', done)
-          conn.resume()
-          conn.end()
+          pull(pull.empty(), conn, pull.onEnd(done))
         })
       }, 500)
     })
@@ -163,17 +156,17 @@ describe('stream muxing with spdy (on TCP)', function () {
     const destroyed = () => ++count === 2 ? done() : null
 
     swarmD.handle('/banana/1.0.0', (conn) => {
-      conn.on('error', () => {})
-      conn.on('close', destroyed)
+      pull(conn, pull.onEnd(destroyed))
     })
 
     swarmA.dial(peerD, '/banana/1.0.0', (err, conn) => {
       expect(err).to.not.exist
 
-      conn.on('error', () => {})
-      conn.on('close', destroyed)
-
-      swarmD.muxedConns[peerA.id.toB58String()].conn.destroy()
+      pull(
+        pull.empty(),
+        swarmD.muxedConns[peerA.id.toB58String()].conn
+      )
+      pull(conn, pull.onEnd(destroyed))
     })
   })
 
@@ -213,16 +206,16 @@ describe('stream muxing with spdy (on TCP)', function () {
       const destroyed = () => ++count === 2 ? close() : null
 
       swarmE.handle('/avocado/1.0.0', (conn) => {
-        conn.on('error', () => {})
-        conn.on('close', destroyed)
+        pull(conn, pull.onEnd(destroyed))
       })
 
       swarmF.dial(peerE, '/avocado/1.0.0', (err, conn) => {
         expect(err).to.not.exist
-        conn.on('error', () => {})
-        conn.on('close', destroyed)
-
-        swarmF.muxedConns[peerE.id.toB58String()].conn.destroy()
+        pull(conn, pull.onEnd(destroyed))
+        pull(
+          pull.empty(),
+          swarmF.muxedConns[peerE.id.toB58String()].conn
+        )
       })
     }
 

@@ -10,7 +10,7 @@ const Swarm = require('../src')
 const WebSockets = require('libp2p-websockets')
 const bl = require('bl')
 
-describe('transport - websockets', function () {
+describe.skip('transport - websockets', function () {
   this.timeout(10000)
 
   var swarmA

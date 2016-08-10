@@ -48,9 +48,6 @@ module.exports = function dial (swarm) {
     return proxyConn
 
     function gotWarmedUpConn (conn) {
-      if (!conn.setPeerInfo) {
-        conn = new Connection(conn)
-      }
       conn.setPeerInfo(pi)
       attemptMuxerUpgrade(conn, (err, muxer) => {
         if (!protocol) {

@@ -136,14 +136,13 @@ function Swarm (peerInfo) {
 
     const transports = this.transports
 
-    parallel(Object.keys(transports).map((key) => {
-      return (cb) => {
+    parallel(
+      Object.keys(transports).map((key) => (cb) => {
         parallel(transports[key].listeners.map((listener) => {
-          return (cb) => {
-            listener.close(cb)
-          }
+          return (cb) => listener.close(cb)
         }), cb)
-      }
-    }), callback)
+      }),
+      callback
+    )
   }
 }

@@ -3,28 +3,27 @@
 'use strict'
 
 const expect = require('chai').expect
-
 const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
-const Swarm = require('../src')
 const TCP = require('libp2p-tcp')
-const bl = require('bl')
+const pull = require('pull-stream')
+
+const Swarm = require('../src')
 
 describe('transport - tcp', function () {
   this.timeout(10000)
 
-  var swarmA
-  var swarmB
-  var peerA = new Peer()
-  var peerB = new Peer()
+  let swarmA
+  let swarmB
+  let peerA = new Peer()
+  let peerB = new Peer()
 
-  before((done) => {
+  before(() => {
     peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888'))
     peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999'))
     swarmA = new Swarm(peerA)
     swarmB = new Swarm(peerB)
-    done()
   })
 
   it('add', (done) => {
@@ -37,12 +36,12 @@ describe('transport - tcp', function () {
   })
 
   it('listen', (done) => {
-    var count = 0
+    let count = 0
     swarmA.transport.listen('tcp', {}, (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     }, ready)
     swarmB.transport.listen('tcp', {}, (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     }, ready)
 
     function ready () {
@@ -68,12 +67,12 @@ describe('transport - tcp', function () {
     const conn = swarmA.transport.dial('tcp', multiaddr('/ip4/127.0.0.1/tcp/9999'), (err, conn) => {
       expect(err).to.not.exist
     })
-    conn.pipe(bl((err, data) => {
-      expect(err).to.not.exist
-      done()
-    }))
-    conn.write('hey')
-    conn.end()
+
+    pull(
+      pull.values(['hey']),
+      conn,
+      pull.onEnd(done)
+    )
   })
 
   it('dial to set of multiaddr, only one is available', (done) => {
@@ -85,12 +84,12 @@ describe('transport - tcp', function () {
     ], (err, conn) => {
       expect(err).to.not.exist
     })
-    conn.pipe(bl((err, data) => {
-      expect(err).to.not.exist
-      done()
-    }))
-    conn.write('hey')
-    conn.end()
+
+    pull(
+      pull.values(['hey']),
+      conn,
+      pull.onEnd(done)
+    )
   })
 
   it('close', (done) => {
@@ -101,13 +100,13 @@ describe('transport - tcp', function () {
   })
 
   it('support port 0', (done) => {
-    var swarm
-    var peer = new Peer()
+    let swarm
+    let peer = new Peer()
     peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
     swarm = new Swarm(peer)
     swarm.transport.add('tcp', new TCP())
     swarm.transport.listen('tcp', {}, (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     }, ready)
 
     function ready () {
@@ -118,13 +117,13 @@ describe('transport - tcp', function () {
   })
 
   it('support addr /ip4/0.0.0.0/tcp/9050', (done) => {
-    var swarm
-    var peer = new Peer()
+    let swarm
+    let peer = new Peer()
     peer.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/9050'))
     swarm = new Swarm(peer)
     swarm.transport.add('tcp', new TCP())
     swarm.transport.listen('tcp', {}, (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     }, ready)
 
     function ready () {
@@ -139,13 +138,13 @@ describe('transport - tcp', function () {
   })
 
   it('support addr /ip4/0.0.0.0/tcp/0', (done) => {
-    var swarm
-    var peer = new Peer()
+    let swarm
+    let peer = new Peer()
     peer.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/0'))
     swarm = new Swarm(peer)
     swarm.transport.add('tcp', new TCP())
     swarm.transport.listen('tcp', {}, (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     }, ready)
 
     function ready () {
@@ -156,15 +155,15 @@ describe('transport - tcp', function () {
   })
 
   it('listen in several addrs', (done) => {
-    var swarm
-    var peer = new Peer()
+    let swarm
+    let peer = new Peer()
     peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
     peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
     peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))
     swarm = new Swarm(peer)
     swarm.transport.add('tcp', new TCP())
     swarm.transport.listen('tcp', {}, (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     }, ready)
 
     function ready () {

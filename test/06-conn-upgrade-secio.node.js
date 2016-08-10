@@ -12,7 +12,7 @@ const pull = require('pull-stream')
 
 const Swarm = require('../src')
 
-describe.only('secio conn upgrade (on TCP)', function () {
+describe('secio conn upgrade (on TCP)', function () {
   this.timeout(60 * 1000)
 
   var swarmA
@@ -55,15 +55,11 @@ describe.only('secio conn upgrade (on TCP)', function () {
   })
 
   after((done) => {
-    console.log('closing connections')
     parallel([
       (cb) => swarmA.close(cb),
       (cb) => swarmB.close(cb),
       (cb) => swarmC.close(cb)
-    ], (err) => {
-      console.log('after', err)
-      done()
-    })
+    ], done)
   })
 
   it('add', () => {
@@ -106,7 +102,7 @@ describe.only('secio conn upgrade (on TCP)', function () {
     })
   })
 
-  it.skip('enable identify to reuse incomming muxed conn', (done) => {
+  it('enable identify to reuse incomming muxed conn', (done) => {
     swarmA.connection.reuse()
     swarmC.connection.reuse()
 
