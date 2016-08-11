@@ -35,20 +35,20 @@
   "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",
   "dependencies": {
     "detect-node": "^2.0.3",
-    "interface-connection": "^0.1.8",
+    "interface-connection": "^0.2.1",
     "lodash.contains": "^2.4.3",
     "mafmt": "^2.1.1",
-    "run-parallel": "^1.1.6",
-    "simple-websocket": "^4.1.0",
-    "simple-websocket-server": "^0.1.4"
+    "pull-ws": "^3.2.3"
   },
   "devDependencies": {
     "aegir": "^6.0.1",
-    "multiaddr": "^2.0.2",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
-    "interface-transport": "^0.2.0",
-    "pre-commit": "^1.1.3"
+    "interface-transport": "^0.3.1",
+    "multiaddr": "^2.0.2",
+    "pre-commit": "^1.1.3",
+    "pull-goodbye": "0.0.1",
+    "pull-stream": "^3.4.3"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
