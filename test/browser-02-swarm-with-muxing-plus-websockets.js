@@ -9,6 +9,7 @@ const WebSockets = require('libp2p-websockets')
 const spdy = require('libp2p-spdy')
 const fs = require('fs')
 const path = require('path')
+const pull = require('pull-stream')
 
 const Swarm = require('../src')
 
@@ -55,9 +56,11 @@ describe('high level API (swarm with spdy + websockets)', function () {
   it('dial on protocol, use warmed conn', (done) => {
     swarm.dial(peerDst, '/echo/1.0.0', (err, conn) => {
       expect(err).to.not.exist
-      conn.end()
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(
+        pull.values([Buffer('hello')]),
+        conn,
+        pull.onEnd(done)
+      )
     })
   })
 

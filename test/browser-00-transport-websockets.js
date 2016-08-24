@@ -6,14 +6,12 @@ const multiaddr = require('multiaddr')
 const Id = require('peer-id')
 const Peer = require('peer-info')
 const WebSockets = require('libp2p-websockets')
-const bl = require('bl')
+const pull = require('pull-stream')
 
 const Swarm = require('../src')
 
-describe('transport - websockets', function () {
-  this.timeout(10000)
-
-  var swarm
+describe('transport - websockets', () => {
+  let swarm
 
   before(() => {
     const b58IdSrc = 'QmYzgdesgjdvD3okTPGZT9NPmh1BuH5FfTVNKjsvaAprhb'
@@ -37,12 +35,14 @@ describe('transport - websockets', function () {
       expect(err).to.not.exist
     })
 
-    conn.pipe(bl((err, data) => {
-      expect(err).to.not.exist
-      expect(data.toString()).to.equal('hey')
-      done()
-    }))
-    conn.write('hey')
-    conn.end()
+    pull(
+      pull.values([Buffer('hey')]),
+      conn,
+      pull.collect((err, data) => {
+        expect(err).to.not.exist
+        expect(data.toString()).to.equal('hey')
+        done()
+      })
+    )
   })
 })

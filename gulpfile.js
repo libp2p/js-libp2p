@@ -4,6 +4,7 @@ const gulp = require('gulp')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const WebSockets = require('libp2p-websockets')
+const pull = require('pull-stream')
 
 const Swarm = require('./src')
 const spdy = require('libp2p-spdy')
@@ -60,7 +61,7 @@ gulp.task('test:browser:before', (done) => {
   sigS = sigServer.start(15555, ready)
 
   function echo (conn) {
-    conn.pipe(conn)
+    pull(conn, conn)
   }
 })
 

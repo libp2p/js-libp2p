@@ -6,24 +6,24 @@ const expect = require('chai').expect
 const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
-const Swarm = require('../src')
 const TCP = require('libp2p-tcp')
 const WebSockets = require('libp2p-websockets')
 const spdy = require('libp2p-spdy')
+const pull = require('pull-stream')
 
-describe.skip('high level API - with everything mixed all together!', function () {
-  this.timeout(100000)
+const Swarm = require('../src')
 
-  var swarmA // tcp
-  var peerA
-  var swarmB // tcp+ws
-  var peerB
-  var swarmC // tcp+ws
-  var peerC
-  var swarmD // ws
-  var peerD
-  var swarmE // ws
-  var peerE
+describe('high level API - with everything mixed all together!', () => {
+  let swarmA // tcp
+  let peerA
+  let swarmB // tcp+ws
+  let peerB
+  let swarmC // tcp+ws
+  let peerC
+  let swarmD // ws
+  let peerD
+  let swarmE // ws
+  let peerE
 
   before((done) => {
     peerA = new Peer()
@@ -140,16 +140,17 @@ describe.skip('high level API - with everything mixed all together!', function (
 
   it('dial from tcp to tcp+ws, on protocol', (done) => {
     swarmB.handle('/anona/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     swarmA.dial(peerB, '/anona/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
-      conn.end()
-
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd(done)
+      )
     })
   })
 
@@ -163,37 +164,42 @@ describe.skip('high level API - with everything mixed all together!', function (
 
   it('dial from ws to ws', (done) => {
     swarmE.handle('/abacaxi/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     swarmD.dial(peerE, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmD.muxedConns).length).to.equal(1)
 
-      conn.end()
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', () => {
-        setTimeout(() => {
-          expect(Object.keys(swarmE.muxedConns).length).to.equal(1)
-          done()
-        }, 1000)
-      })
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd((err) => {
+          expect(err).to.not.exist
+          setTimeout(() => {
+            expect(Object.keys(swarmE.muxedConns).length).to.equal(1)
+            done()
+          }, 1000)
+        })
+      )
     })
   })
 
   it('dial from tcp to tcp+ws (returned conn)', (done) => {
     swarmB.handle('/grapes/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     const conn = swarmA.dial(peerB, '/grapes/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
     })
-    conn.end()
 
-    conn.on('data', () => {}) // let it flow.. let it flooooow
-    conn.on('end', done)
+    pull(
+      pull.empty(),
+      conn,
+      pull.onEnd(done)
+    )
   })
 
   it('dial from tcp+ws to tcp+ws', (done) => {
@@ -202,7 +208,7 @@ describe.skip('high level API - with everything mixed all together!', function (
         expect(err).to.not.exist
         expect(peerInfo).to.exist
       })
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     swarmA.dial(peerC, '/mamao/1.0.0', (err, conn) => {
@@ -212,10 +218,12 @@ describe.skip('high level API - with everything mixed all together!', function (
         expect(peerInfo).to.exist
       })
       expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
-      conn.end()
 
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd(done)
+      )
     })
   })
 

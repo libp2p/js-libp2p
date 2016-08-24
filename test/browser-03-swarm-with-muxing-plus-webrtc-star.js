@@ -7,14 +7,12 @@ const peerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const WebRTCStar = require('libp2p-webrtc-star')
 const spdy = require('libp2p-spdy')
-const bl = require('bl')
 const parallel = require('run-parallel')
+const pull = require('pull-stream')
 
 const Swarm = require('../src')
 
-describe('high level API (swarm with spdy + webrtc-star)', function () {
-  this.timeout(60 * 1000)
-
+describe('high level API (swarm with spdy + webrtc-star)', () => {
   let swarm1
   let peer1
   let wstar1
@@ -67,7 +65,7 @@ describe('high level API (swarm with spdy + webrtc-star)', function () {
 
   it('handle proto', () => {
     swarm2.handle('/echo/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
   })
 
@@ -77,15 +75,16 @@ describe('high level API (swarm with spdy + webrtc-star)', function () {
       expect(Object.keys(swarm1.muxedConns).length).to.equal(1)
 
       const text = 'Hello World'
-      conn.pipe(bl((err, data) => {
-        expect(err).to.not.exist
-        expect(data.toString()).to.equal(text)
-        expect(Object.keys(swarm2.muxedConns).length).to.equal(1)
-        done()
-      }))
-
-      conn.write(text)
-      conn.end()
+      pull(
+        pull.values([text]),
+        conn,
+        pull.collect((err, data) => {
+          expect(err).to.not.exist
+          expect(data.toString()).to.equal(text)
+          expect(Object.keys(swarm2.muxedConns).length).to.equal(1)
+          done()
+        })
+      )
     })
   })
 

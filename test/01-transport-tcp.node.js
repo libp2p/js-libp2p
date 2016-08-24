@@ -12,8 +12,6 @@ const pull = require('pull-stream')
 const Swarm = require('../src')
 
 describe('transport - tcp', function () {
-  this.timeout(10000)
-
   let swarmA
   let swarmB
   let peerA = new Peer()

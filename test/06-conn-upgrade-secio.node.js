@@ -12,15 +12,13 @@ const pull = require('pull-stream')
 
 const Swarm = require('../src')
 
-describe('secio conn upgrade (on TCP)', function () {
-  this.timeout(60 * 1000)
-
-  var swarmA
-  var peerA
-  var swarmB
-  var peerB
-  var swarmC
-  var peerC
+describe('secio conn upgrade (on TCP)', () => {
+  let swarmA
+  let peerA
+  let swarmB
+  let peerB
+  let swarmC
+  let peerC
 
   before((done) => {
     peerA = new Peer()

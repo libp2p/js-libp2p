@@ -10,13 +10,11 @@ const pull = require('pull-stream')
 
 const Swarm = require('../src')
 
-describe('high level API - 1st without stream multiplexing (on TCP)', function () {
-  this.timeout(20000)
-
-  var swarmA
-  var peerA
-  var swarmB
-  var peerB
+describe('high level API - 1st without stream multiplexing (on TCP)', () => {
+  let swarmA
+  let peerA
+  let swarmB
+  let peerB
 
   before((done) => {
     peerA = new Peer()

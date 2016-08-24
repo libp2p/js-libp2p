@@ -13,17 +13,15 @@ const pull = require('pull-stream')
 
 const spdy = require('libp2p-spdy')
 
-describe('stream muxing with spdy (on TCP)', function () {
-  this.timeout(60 * 1000)
-
-  var swarmA
-  var peerA
-  var swarmB
-  var peerB
-  var swarmC
-  var peerC
-  var swarmD
-  var peerD
+describe('stream muxing with spdy (on TCP)', () => {
+  let swarmA
+  let peerA
+  let swarmB
+  let peerB
+  let swarmC
+  let peerC
+  let swarmD
+  let peerD
 
   before((done) => {
     peerA = new Peer()
@@ -174,10 +172,10 @@ describe('stream muxing with spdy (on TCP)', function () {
   // TODO: create a similar version, but that spawns a swarm in a
   // different proc
   it.skip('blow up a socket, with WebSockets', (done) => {
-    var swarmE
-    var peerE
-    var swarmF
-    var peerF
+    let swarmE
+    let peerE
+    let swarmF
+    let peerF
 
     peerE = new Peer()
     peerF = new Peer()
