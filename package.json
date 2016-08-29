@@ -43,7 +43,7 @@
     "simple-websocket-server": "^0.1.4"
   },
   "devDependencies": {
-    "aegir": "^4.0.0",
+    "aegir": "^6.0.0",
     "multiaddr": "^2.0.2",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
