@@ -210,18 +210,22 @@ describe('valid Connection', () => {
     listener.listen(ma, () => {
       const conn = ws.dial(ma)
 
-      conn.on('end', () => {
+      conn.on('end', onEnd)
+
+      function onEnd () {
         conn.getObservedAddrs((err, addrs) => {
           expect(err).to.not.exist
           listenerObsAddrs = addrs
 
-          listener.close(() => {
+          listener.close(onClose)
+
+          function onClose () {
             expect(listenerObsAddrs[0]).to.deep.equal(ma)
             expect(dialerObsAddrs.length).to.equal(0)
             done()
-          })
+          }
         })
-      })
+      }
       conn.resume()
       conn.end()
     })
@@ -243,12 +247,14 @@ describe('valid Connection', () => {
     listener.listen(ma, () => {
       const conn = ws.dial(ma)
 
-      conn.on('end', () => {
+      conn.on('end', onEnd)
+
+      function onEnd () {
         conn.getPeerInfo((err, peerInfo) => {
           expect(err).to.exit
           listener.close(done)
         })
-      })
+      }
       conn.resume()
       conn.end()
     })
@@ -269,7 +275,8 @@ describe('valid Connection', () => {
       conn.pipe(conn)
     })
 
-    listener.listen(ma, () => {
+    listener.listen(ma, onListen)
+    function onListen () {
       const conn = ws.dial(ma)
       conn.setPeerInfo('b')
 
@@ -282,7 +289,7 @@ describe('valid Connection', () => {
       })
       conn.resume()
       conn.end()
-    })
+    }
   })
 })
 
