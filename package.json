@@ -2,9 +2,15 @@
   "name": "libp2p",
   "version": "0.1.1",
   "description": "Node.js implementation of libp2p",
-  "main": "src/index.js",
+  "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "dignified-lint",
+    "build": "dignified-build",
+    "test": "dignified-test",
+    "test:node": "dignified-test node",
+    "test:browser": "dignified-test browser",
+    "release": "dignified-release"
   },
   "repository": {
     "type": "git",
@@ -16,7 +22,10 @@
   "engines": {
     "node": "^4.0.0"
   },
-  "pre-commit": [],
+  "pre-commit": [
+    "lint",
+    "test"
+  ],
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
@@ -24,15 +33,14 @@
   },
   "homepage": "https://github.com/diasdavid/js-libp2p",
   "devDependencies": {
-    "code": "^1.5.0",
-    "lab": "^5.17.0",
+    "chai": "^3.5.0",
+    "dignified.js": "^1.0.0",
     "libp2p-spdy": "^0.1.0",
     "libp2p-swarm": "^0.5.5",
     "libp2p-tcp": "^0.1.2",
     "multiaddr": "^1.1.1",
     "peer-id": "^0.4.0",
     "peer-info": "^0.4.0",
-    "pre-commit": "^1.1.1",
-    "standard": "^5.3.1"
+    "pre-commit": "^1.1.1"
   }
 }

@@ -1,3 +1,5 @@
+'use strict'
+
 exports = module.exports = Libp2p
 
 function Libp2p (swarm, peerRouting, recordStore) {

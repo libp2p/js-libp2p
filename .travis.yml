@@ -1,6 +1,8 @@
+use_sudo: false
 language: node_js
 node_js:
-  - "iojs"
+  - 4
+  - 5
 
 branches:
   only:
@@ -10,4 +12,5 @@ before_install:
   - npm i -g npm
   # Workaround for a permissions issue with Travis virtual machine images
 script:
+  - npm run lint
   - npm test
