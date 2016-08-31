@@ -7,7 +7,7 @@ const contains = require('lodash.contains')
 const isFunction = require('lodash.isfunction')
 const Connection = require('interface-connection').Connection
 const debug = require('debug')
-const log = debug('libp2p:tcp')
+const log = debug('libp2p:tcp:dial')
 
 const createListener = require('./listener')
 
@@ -24,13 +24,23 @@ module.exports = class TCP {
 
     const cOpts = ma.toOptions()
     log('Connecting to %s %s', cOpts.port, cOpts.host)
-    const socket = toPull.duplex(net.connect(cOpts, cb))
 
-    socket.getObservedAddrs = (cb) => {
+    const rawSocket = net.connect(cOpts, cb)
+
+    rawSocket.once('timeout', () => {
+      log('timeout')
+      rawSocket.emit('error', new Error('Timeout'))
+    })
+
+    const socket = toPull.duplex(rawSocket)
+
+    const conn = new Connection(socket)
+
+    conn.getObservedAddrs = (cb) => {
       return cb(null, [ma])
     }
 
-    return new Connection(socket)
+    return conn
   }
 
   createListener (options, handler) {
@@ -38,6 +48,8 @@ module.exports = class TCP {
       handler = options
       options = {}
     }
+
+    handler = handler || (() => {})
 
     return createListener(handler)
   }

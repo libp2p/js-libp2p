@@ -23,14 +23,14 @@ describe('listen', () => {
   })
 
   it('close listener with connections, through timeout', (done) => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9091/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const listener = tcp.createListener((conn) => {
       pull(conn, conn)
     })
 
     listener.listen(mh, () => {
-      const socket1 = net.connect(9091)
-      const socket2 = net.connect(9091)
+      const socket1 = net.connect(9090)
+      const socket2 = net.connect(9090)
 
       socket1.write('Some data that is never handled')
       socket1.end()
