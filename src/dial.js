@@ -106,7 +106,6 @@ module.exports = function dial (swarm) {
               }
 
               const id = swarm._peerInfo.id
-
               log('selecting crypto: %s', swarm.crypto.tag)
               ms.select(swarm.crypto.tag, (err, conn) => {
                 if (err) {
