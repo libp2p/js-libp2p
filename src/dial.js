@@ -109,7 +109,7 @@ module.exports = function dial (swarm) {
 
               const id = swarm._peerInfo.id
               if (id.privKey == null || swarm.encrypt === false) {
-                return ms.select(tags.plaintex, cb)
+                return ms.select(tags.plaintext, cb)
               }
 
               ms.select(tags.secio, (err, conn) => {
