@@ -5,7 +5,7 @@ const tests = require('interface-transport')
 const multiaddr = require('multiaddr')
 const Tcp = require('../src')
 
-describe('compliance', () => {
+describe('interface-transport compliance', () => {
   tests({
     setup (cb) {
       let tcp = new Tcp()
