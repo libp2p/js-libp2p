@@ -30,23 +30,22 @@ const multiaddr = require('multiaddr')
 const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
 const mh2 = multiaddr('/ip6/::/tcp/9092')
 
-const tcp = new Tcp()
+const tcp = new TCP()
 
 var listener = tcp.createListener(mh1, function handler (socket) {
   console.log('connection')
   socket.end('bye')
 })
 
-var listener.listen(function ready () {
+listener.listen(mh1, function ready () {
   console.log('ready')
 
   const client = tcp.dial(mh1)
   client.pipe(process.stdout)
   client.on('end', () => {
-    tcp.close()
+    listener.close()
   })
 })
-
 ```
 
 outputs
