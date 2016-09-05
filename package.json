@@ -43,7 +43,8 @@
     "run-parallel": "^1.1.6"
   },
   "dependencies": {
-    "async-buffered-reader": "^1.2.1"
+    "pull-reader": "^1.2.8",
+    "pull-stream": "^3.4.5"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",

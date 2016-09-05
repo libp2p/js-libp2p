@@ -1,80 +1,102 @@
 'use strict'
 
 const EventEmitter = require('events').EventEmitter
-const util = require('util')
-const read = require('async-buffered-reader')
+const pull = require('pull-stream')
+const Reader = require('pull-reader')
 const debug = require('debug')
-const log = {}
+const log = debug('libp2p-ping')
 log.error = debug('libp2p-ping:error')
 
-exports = module.exports = Ping
-exports.attach = attach
-exports.detach = detach
-
 const PROTOCOL = '/ipfs/ping/1.0.0'
+const PING_LENGTH = 32
 
-util.inherits(Ping, EventEmitter)
+class Ping extends EventEmitter {
+  constructor (swarm, peer) {
+    super()
+    this.cont = true
 
-function Ping (swarm, peer) {
-  this.cont = true
+    log('dialing %s to %s', PROTOCOL, peer.id.toB58String())
+    swarm.dial(peer, PROTOCOL, (err, conn) => {
+      if (err === true) {
+        return
+      }
 
-  swarm.dial(peer, PROTOCOL, (err, conn) => {
-    if (err) {
-      return this.emit('error', err)
-    }
+      if (err) {
+        log.error(err)
+        this.emit('error', err)
+        return
+      }
 
-    let start = new Date()
-    let buf = new Buffer(32) // buffer creation doesn't memset the buffer to 0
+      let start = new Date()
+      let buf = new Buffer(PING_LENGTH) // buffer creation doesn't memset the buffer to 0
 
-    conn.write(buf)
+      const reader = Reader()
 
-    const gotBack = (bufBack) => {
-      let end = new Date()
+      pull(pull.values([buf]), conn, reader)
 
-      if (buf.equals(bufBack)) {
+      const gotBack = (err, bufBack) => {
+        let end = new Date()
+
+        if (err || !buf.equals(bufBack)) {
+          pull(pull.empty(), conn)
+          this.emit('error', err || new Error('Received wrong ping ack'))
+          return
+        }
+
         this.emit('ping', end - start)
-      } else {
-        conn.end()
-        return this.emit('error', new Error('Received wrong ping ack'))
+
+        if (!this.cont) {
+          pull(pull.empty(), conn)
+        }
+
+        start = new Date()
+        buf = new Buffer(PING_LENGTH)
+
+        pull(
+          pull.values([buf]),
+          reader,
+          conn
+        )
+
+        reader.read(PING_LENGTH, gotBack)
       }
 
-      if (!this.cont) {
-        return conn.end()
-      }
+      reader.read(PING_LENGTH, gotBack)
+    })
+  }
 
-      start = new Date()
-      buf = new Buffer(32)
-      conn.write(buf)
-      read(conn, 32, gotBack)
-    }
-
-    read(conn, 32, gotBack)
-  })
-
-  this.stop = () => {
+  stop () {
     this.cont = false
   }
 }
 
 function attach (swarm) {
   swarm.handle(PROTOCOL, (conn) => {
-    read(conn, 32, echo)
+    const reader = Reader()
+    pull(conn, reader)
 
-    function echo (buf) {
-      conn.write(buf)
-      read(conn, 32, echo)
+    reader.read(PING_LENGTH, echo)
+
+    function echo (err, buf) {
+      if (err === true) {
+        return
+      }
+
+      if (err) {
+        log.error(err)
+      }
+
+      pull(pull.values([buf]), conn)
+      reader.read(PING_LENGTH, echo)
     }
-
-    conn.on('error', (err) => {
-      log.error(err)
-    })
-
-    conn.on('end', () => {
-      conn.end()
-    })
   })
 }
 
 function detach (swarm) {
   swarm.unhandle(PROTOCOL)
 }
+
+Ping.attach = attach
+Ping.detach = detach
+
+module.exports = Ping
