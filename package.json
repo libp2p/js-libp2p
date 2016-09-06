@@ -37,7 +37,7 @@
     "dignified.js": "^1.0.0",
     "libp2p-spdy": "^0.1.0",
     "libp2p-swarm": "^0.5.5",
-    "libp2p-tcp": "^0.1.2",
+    "libp2p-tcp": "^0.8.0",
     "multiaddr": "^1.1.1",
     "peer-id": "^0.4.0",
     "peer-info": "^0.4.0",
