@@ -49,9 +49,11 @@
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
+    "Evan Schwartz <evan.mark.schwartz@gmail.com>",
     "João Antunes <j.goncalo.antunes@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
     "Stephen Whitmore <stephen.whitmore@gmail.com>",
-    "dignifiedquire <dignifiedquire@gmail.com>"
+    "dignifiedquire <dignifiedquire@gmail.com>",
+    "greenkeeperio-bot <support@greenkeeper.io>"
   ]
 }
