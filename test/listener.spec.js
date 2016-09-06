@@ -11,7 +11,7 @@ const multiaddr = require('multiaddr')
 const msg = require('../src/message')
 const identify = require('../src')
 
-describe('identify.dialer', () => {
+describe('identify.listener', () => {
   it('works', (done) => {
     const p = pair()
     const info = new PeerInfo()
@@ -41,6 +41,6 @@ describe('identify.dialer', () => {
       cb(null, [multiaddr('/ip4/127.0.0.1/tcp/5001')])
     }
 
-    identify.dial(conn, info)
+    identify.listener(conn, info)
   })
 })

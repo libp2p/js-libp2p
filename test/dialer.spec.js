@@ -11,7 +11,7 @@ const multiaddr = require('multiaddr')
 const msg = require('../src/message')
 const identify = require('../src')
 
-describe('identify.listener', () => {
+describe('identify.dialer', () => {
   it('works', (done) => {
     const p = pair()
     const original = new PeerInfo()
@@ -30,7 +30,7 @@ describe('identify.listener', () => {
       p[0]
     )
 
-    identify.listen(p[1], (err, info, observedAddrs) => {
+    identify.dialer(p[1], (err, info, observedAddrs) => {
       expect(err).to.not.exist
       expect(
         info.id.pubKey.bytes
