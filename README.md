@@ -32,9 +32,9 @@ TODO
 > npm i libp2p-websockets
 ```
 
-## This module uses `pull-streams`
+### This module uses `pull-streams`
 
-We expose a streaming interface based on `pull-streams`, rather then on the Node.js core streams implementation (aka Node.js streams). `pull-streams` offers us a better mechanism for error handling and flow control guarantees. If you would like to know more about what took us to make this migration, see the discussion at this [issue](https://github.com/ipfs/js-ipfs/issues/362).
+We expose a streaming interface based on `pull-streams`, rather then on the Node.js core streams implementation (aka Node.js streams). `pull-streams` offers us a better mechanism for error handling and flow control guarantees. If you would like to know more about why we did this, see the discussion at this [issue](https://github.com/ipfs/js-ipfs/issues/362).
 
 You can learn more about pull-streams at:
 
@@ -43,18 +43,20 @@ You can learn more about pull-streams at:
 - [pull-streams, the simple streaming primitive](http://dominictarr.com/post/149248845122/pull-streams-pull-streams-are-a-very-simple)
 - [pull-streams documentation](https://pull-stream.github.io/)
 
-### Converting `pull-streams` to Node.js Streams
+#### Converting `pull-streams` to Node.js Streams
 
-If you are a Node.js streams user, you can convert a pull-stream to Node.js Stream using the module `pull-stream-to-stream`, giving you an instance of a Node.js stream that is linked to the pull-stream. Example:
+If you are a Node.js streams user, you can convert a pull-stream to a Node.js stream using the module [`pull-stream-to-stream`](https://github.com/dominictarr/pull-stream-to-stream), giving you an instance of a Node.js stream that is linked to the pull-stream. For example:
 
-```
+```js
 const pullToStream = require('pull-stream-to-stream')
 
 const nodeStreamInstance = pullToStream(pullStreamInstance)
 // nodeStreamInstance is an instance of a Node.js Stream
 ```
 
-To learn more about his utility, visit https://pull-stream.github.io/#pull-stream-to-stream
+To learn more about this utility, visit https://pull-stream.github.io/#pull-stream-to-stream.
+
+
 
 ## API
 
