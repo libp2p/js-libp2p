@@ -12,13 +12,33 @@
 
 > Node.js implementation of the TCP module that libp2p uses, which implements the [interface-connection](https://github.com/libp2p/interface-connection) interface for dial/listen.
 
-## Description
-
 `libp2p-tcp` in Node.js is a very thin shim that adds support for dialing to a `multiaddr`. This small shim will enable libp2p to use other different transports.
 
 **Note:** This module uses [pull-streams](https://pull-stream.github.io) for all stream based interfaces.
 
-## Example
+## Table of Contents
+
+- [Install](#install)
+  - [npm](#npm)
+- [Usage](#usage)
+  - [Example](#example)
+  - [This module uses `pull-streams`](#this-module-uses-pull-streams)
+    - [Converting `pull-streams` to Node.js Streams](#converting-pull-streams-to-nodejs-streams)
+- [API](#api)
+- [Contribute](#contribute)
+- [License](#license)
+
+## Install
+
+### npm
+
+```sh
+> npm i libp2p-tcp
+```
+
+## Usage
+
+### Example
 
 ```js
 const TCP = require('libp2p-tcp')
@@ -51,25 +71,17 @@ listener.listen(() => {
 })
 ```
 
-outputs
+Outputs:
 
-```
+```sh
 listening
 new connection opened
 hello
 ```
 
-## Installation
+### This module uses `pull-streams`
 
-### npm
-
-```sh
-> npm i libp2p-tcp
-```
-
-## This module uses `pull-streams`
-
-We expose a streaming interface based on `pull-streams`, rather then on the Node.js core streams implementation (aka Node.js streams). `pull-streams` offers us a better mechanism for error handling and flow control guarantees. If you would like to know more about what took us to make this migration, see the discussion at this [issue](https://github.com/ipfs/js-ipfs/issues/362).
+We expose a streaming interface based on `pull-streams`, rather then on the Node.js core streams implementation (aka Node.js streams). `pull-streams` offers us a better mechanism for error handling and flow control guarantees. If you would like to know more about why we did this, see the discussion at this [issue](https://github.com/ipfs/js-ipfs/issues/362).
 
 You can learn more about pull-streams at:
 
@@ -78,18 +90,18 @@ You can learn more about pull-streams at:
 - [pull-streams, the simple streaming primitive](http://dominictarr.com/post/149248845122/pull-streams-pull-streams-are-a-very-simple)
 - [pull-streams documentation](https://pull-stream.github.io/)
 
-### Converting `pull-streams` to Node.js Streams
+#### Converting `pull-streams` to Node.js Streams
 
-If you are a Node.js streams user, you can convert a pull-stream to Node.js Stream using the module `pull-stream-to-stream`, giving you an instance of a Node.js stream that is linked to the pull-stream. Example:
+If you are a Node.js streams user, you can convert a pull-stream to a Node.js stream using the module [`pull-stream-to-stream`](https://github.com/dominictarr/pull-stream-to-stream), giving you an instance of a Node.js stream that is linked to the pull-stream. For example:
 
-```
+```js
 const pullToStream = require('pull-stream-to-stream')
 
 const nodeStreamInstance = pullToStream(pullStreamInstance)
 // nodeStreamInstance is an instance of a Node.js Stream
 ```
 
-To learn more about his utility, visit https://pull-stream.github.io/#pull-stream-to-stream
+To learn more about this utility, visit https://pull-stream.github.io/#pull-stream-to-stream.
 
 ## API
 
@@ -102,6 +114,18 @@ To learn more about his utility, visit https://pull-stream.github.io/#pull-strea
 
 Both for dialing and listening.
 
+## Contribute
+
+Contributions are welcome! The libp2p implementation in JavaScript is a work in progress. As such, there's a few things you can do right now to help out:
+
+- [Check out the existing issues](//github.com/libp2p/js-libp2p-tcp/issues).
+- **Perform code reviews**.
+- **Add tests**. There can never be enough tests.
+
+Please be aware that all interactions related to libp2p are subject to the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
+
+Small note: If editing the README, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
+
 ## License
 
-MIT
+[MIT](LICENSE) © 2015-2016 David Dias
