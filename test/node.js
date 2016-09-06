@@ -3,19 +3,17 @@
 
 const expect = require('chai').expect
 const multiaddr = require('multiaddr')
+const pull = require('pull-stream')
+const goodbye = require('pull-goodbye')
+
 const WS = require('../src')
 
+require('./compliance.node')
+
 describe('instantiate the transport', () => {
-  it('create', (done) => {
+  it('create', () => {
     const ws = new WS()
     expect(ws).to.exist
-    done()
-  })
-
-  it('create without new', (done) => {
-    const ws = WS()
-    expect(ws).to.exist
-    done()
   })
 })
 
@@ -122,7 +120,7 @@ describe('dial', () => {
   beforeEach((done) => {
     ws = new WS()
     listener = ws.createListener((conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
     listener.listen(ma, done)
   })
@@ -133,12 +131,18 @@ describe('dial', () => {
 
   it('dial on IPv4', (done) => {
     const conn = ws.dial(ma)
-    conn.write('hey')
-    conn.end()
-    conn.on('data', (chunk) => {
-      expect(chunk.toString()).to.equal('hey')
+
+    const s = goodbye({
+      source: pull.values(['hey']),
+      sink: pull.collect((err, result) => {
+        expect(err).to.not.exist
+
+        expect(result).to.be.eql(['hey'])
+        done()
+      })
     })
-    conn.on('end', done)
+
+    pull(s, conn, s)
   })
 
   it.skip('dial on IPv6', (done) => {
@@ -148,12 +152,18 @@ describe('dial', () => {
   it('dial on IPv4 with IPFS Id', (done) => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const conn = ws.dial(ma)
-    conn.write('hey')
-    conn.end()
-    conn.on('data', (chunk) => {
-      expect(chunk.toString()).to.equal('hey')
+
+    const s = goodbye({
+      source: pull.values(['hey']),
+      sink: pull.collect((err, result) => {
+        expect(err).to.not.exist
+
+        expect(result).to.be.eql(['hey'])
+        done()
+      })
     })
-    conn.on('end', done)
+
+    pull(s, conn, s)
   })
 })
 
@@ -204,13 +214,17 @@ describe('valid Connection', () => {
         dialerObsAddrs = addrs
       })
 
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     listener.listen(ma, () => {
       const conn = ws.dial(ma)
 
-      conn.on('end', onEnd)
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd(onEnd)
+      )
 
       function onEnd () {
         conn.getObservedAddrs((err, addrs) => {
@@ -218,7 +232,6 @@ describe('valid Connection', () => {
           listenerObsAddrs = addrs
 
           listener.close(onClose)
-
           function onClose () {
             expect(listenerObsAddrs[0]).to.deep.equal(ma)
             expect(dialerObsAddrs.length).to.equal(0)
@@ -226,8 +239,6 @@ describe('valid Connection', () => {
           }
         })
       }
-      conn.resume()
-      conn.end()
     })
   })
 
@@ -241,13 +252,17 @@ describe('valid Connection', () => {
         expect(err).to.exist
       })
 
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     listener.listen(ma, () => {
       const conn = ws.dial(ma)
 
-      conn.on('end', onEnd)
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd(onEnd)
+      )
 
       function onEnd () {
         conn.getPeerInfo((err, peerInfo) => {
@@ -255,8 +270,6 @@ describe('valid Connection', () => {
           listener.close(done)
         })
       }
-      conn.resume()
-      conn.end()
     })
   })
 
@@ -272,7 +285,7 @@ describe('valid Connection', () => {
         expect(peerInfo).to.equal('a')
       })
 
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     listener.listen(ma, onListen)
@@ -280,15 +293,19 @@ describe('valid Connection', () => {
       const conn = ws.dial(ma)
       conn.setPeerInfo('b')
 
-      conn.on('end', () => {
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd(onEnd)
+      )
+
+      function onEnd () {
         conn.getPeerInfo((err, peerInfo) => {
           expect(err).to.not.exist
           expect(peerInfo).to.equal('b')
           listener.close(done)
         })
-      })
-      conn.resume()
-      conn.end()
+      }
     }
   })
 })

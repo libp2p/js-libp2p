@@ -22,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/diasdavid/js-libp2p-websockets.git"
+    "url": "git+https://github.com/libp2p/js-libp2p-websockets.git"
   },
   "keywords": [
     "IPFS"
@@ -30,25 +30,25 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/diasdavid/js-libp2p-websockets/issues"
+    "url": "https://github.com/libp2p/js-libp2p-websockets/issues"
   },
-  "homepage": "https://github.com/diasdavid/js-libp2p-websockets#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",
   "dependencies": {
     "detect-node": "^2.0.3",
-    "interface-connection": "^0.1.8",
+    "interface-connection": "^0.2.1",
     "lodash.contains": "^2.4.3",
-    "mafmt": "^2.1.0",
-    "run-parallel": "^1.1.6",
-    "simple-websocket": "^4.1.0",
-    "simple-websocket-server": "^0.1.4"
+    "mafmt": "^2.1.1",
+    "pull-ws": "^3.2.3"
   },
   "devDependencies": {
-    "aegir": "^6.0.0",
-    "multiaddr": "^2.0.2",
+    "aegir": "^6.0.1",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
-    "interface-transport": "^0.2.0",
-    "pre-commit": "^1.1.2"
+    "interface-transport": "^0.3.3",
+    "multiaddr": "^2.0.2",
+    "pre-commit": "^1.1.3",
+    "pull-goodbye": "0.0.1",
+    "pull-stream": "^3.4.3"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",

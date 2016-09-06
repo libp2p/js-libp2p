@@ -3,74 +3,67 @@
 
 const expect = require('chai').expect
 const multiaddr = require('multiaddr')
+const pull = require('pull-stream')
+const goodbye = require('pull-goodbye')
+
 const WS = require('../src')
 
 describe('libp2p-websockets', () => {
+  const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
   let ws
+  let conn
 
-  it('create', (done) => {
+  beforeEach((done) => {
     ws = new WS()
     expect(ws).to.exist
-    done()
+    conn = ws.dial(ma, done)
   })
 
   it('echo', (done) => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
-    const conn = ws.dial(ma)
     const message = 'Hello World!'
-    conn.write(message)
-    conn.on('data', (data) => {
-      expect(data.toString()).to.equal(message)
-      conn.end()
-      done()
+
+    const s = goodbye({
+      source: pull.values([message]),
+      sink: pull.collect((err, results) => {
+        expect(err).to.not.exist
+        expect(results).to.be.eql([message])
+        done()
+      })
     })
+
+    pull(s, conn, s)
   })
 
   describe('stress', () => {
     it('one big write', (done) => {
-      const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
-      const conn = ws.dial(mh)
-      const message = new Buffer(1000000).fill('a').toString('hex')
-      conn.write(message)
-      conn.on('data', (data) => {
-        expect(data.toString()).to.equal(message)
-        conn.end()
-        done()
+      const rawMessage = new Buffer(1000000).fill('a')
+
+      const s = goodbye({
+        source: pull.values([rawMessage]),
+        sink: pull.collect((err, results) => {
+          expect(err).to.not.exist
+          expect(results).to.be.eql([rawMessage])
+          done()
+        })
       })
+      pull(s, conn, s)
     })
 
-    it('many writes in 2 batches', (done) => {
-      const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
-      const conn = ws.dial(mh)
-      let expected = ''
-      let counter = 0
-      while (++counter < 10000) {
-        conn.write(`${counter} `)
-        expected += `${counter} `
-      }
-
-      setTimeout(() => {
-        while (++counter < 20000) {
-          conn.write(`${counter} `)
-          expected += `${counter} `
-        }
-
-        conn.write('STOP')
-      }, 1000)
-
-      let result = ''
-      conn.on('data', (data) => {
-        if (data.toString() === 'STOP') {
-          conn.end()
-          return
-        }
-        result += data.toString()
+    it('many writes', (done) => {
+      const s = goodbye({
+        source: pull(
+          pull.infinite(),
+          pull.take(1000),
+          pull.map((val) => Buffer(val.toString()))
+        ),
+        sink: pull.collect((err, result) => {
+          expect(err).to.not.exist
+          expect(result).to.have.length(1000)
+          done()
+        })
       })
 
-      conn.on('end', () => {
-        expect(result).to.equal(expected)
-        done()
-      })
+      pull(s, conn, s)
     })
   })
 })
