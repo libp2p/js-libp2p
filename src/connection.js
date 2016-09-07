@@ -1,8 +1,13 @@
 'use strict'
 
-const protocolMuxer = require('./protocol-muxer')
 const identify = require('libp2p-identify')
 const multistream = require('multistream-select')
+const waterfall = require('run-waterfall')
+const debug = require('debug')
+const log = debug('libp2p:swarm:connection')
+
+const protocolMuxer = require('./protocol-muxer')
+const plaintext = require('./plaintext')
 
 module.exports = function connection (swarm) {
   return {
@@ -14,7 +19,7 @@ module.exports = function connection (swarm) {
 
       // for listening
       swarm.handle(muxer.multicodec, (conn) => {
-        const muxedConn = muxer(conn, true)
+        const muxedConn = muxer.listener(conn)
 
         muxedConn.on('stream', (conn) => {
           protocolMuxer(swarm.protocols, conn)
@@ -29,28 +34,23 @@ module.exports = function connection (swarm) {
           conn.getPeerInfo = (cb) => {
             const conn = muxedConn.newStream()
             const ms = new multistream.Dialer()
-            ms.handle(conn, (err) => {
-              if (err) { return cb(err) }
 
-              ms.select(identify.multicodec, (err, conn) => {
-                if (err) { return cb(err) }
-
-                identify.exec(conn, (err, peerInfo, observedAddrs) => {
-                  if (err) { return cb(err) }
-
-                  observedAddrs.forEach((oa) => {
-                    swarm._peerInfo.multiaddr.addSafe(oa)
-                  })
-
-                  cb(null, peerInfo)
+            waterfall([
+              (cb) => ms.handle(conn, cb),
+              (cb) => ms.select(identify.multicodec, cb),
+              (conn, cb) => identify.dialer(conn, cb),
+              (peerInfo, observedAddrs, cb) => {
+                observedAddrs.forEach((oa) => {
+                  swarm._peerInfo.multiaddr.addSafe(oa)
                 })
-              })
-            })
+                cb(null, peerInfo)
+              }
+            ], cb)
           }
 
           conn.getPeerInfo((err, peerInfo) => {
             if (err) {
-              return console.log('Identify not successful')
+              return log('Identify not successful')
             }
             swarm.muxedConns[peerInfo.id.toB58String()] = {
               muxer: muxedConn
@@ -63,12 +63,33 @@ module.exports = function connection (swarm) {
             })
           })
         }
+
+        return conn
       })
     },
 
     reuse () {
       swarm.identify = true
-      swarm.handle(identify.multicodec, identify.handler(swarm._peerInfo))
+      swarm.handle(identify.multicodec, (conn) => {
+        identify.listener(conn, swarm._peerInfo)
+      })
+    },
+
+    crypto (tag, encrypt) {
+      if (!tag && !encrypt) {
+        tag = plaintext.tag
+        encrypt = plaintext.encrypt
+      }
+
+      swarm.unhandle(swarm.crypto.tag)
+      swarm.handle(tag, (conn) => {
+        const id = swarm._peerInfo.id
+        const secure = encrypt(id, id.privKey, conn)
+
+        protocolMuxer(swarm.protocols, secure)
+      })
+
+      swarm.crypto = {tag, encrypt}
     }
   }
 }

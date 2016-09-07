@@ -2,6 +2,8 @@
 
 const multistream = require('multistream-select')
 const Connection = require('interface-connection').Connection
+const debug = require('debug')
+const log = debug('libp2p:swarm:dial')
 
 const protocolMuxer = require('./protocol-muxer')
 
@@ -19,6 +21,7 @@ module.exports = function dial (swarm) {
     const proxyConn = new Connection()
 
     const b58Id = pi.id.toB58String()
+    log('dialing %s', b58Id)
 
     if (!swarm.muxedConns[b58Id]) {
       if (!swarm.conns[b58Id]) {
@@ -44,7 +47,6 @@ module.exports = function dial (swarm) {
 
     function gotWarmedUpConn (conn) {
       conn.setPeerInfo(pi)
-
       attemptMuxerUpgrade(conn, (err, muxer) => {
         if (!protocol) {
           if (err) {
@@ -97,13 +99,22 @@ module.exports = function dial (swarm) {
           cryptoDial()
 
           function cryptoDial () {
-            // currently, no crypto channel is implemented
             const ms = new multistream.Dialer()
             ms.handle(conn, (err) => {
               if (err) {
                 return cb(err)
               }
-              ms.select('/plaintext/1.0.0', cb)
+
+              const id = swarm._peerInfo.id
+              log('selecting crypto: %s', swarm.crypto.tag)
+              ms.select(swarm.crypto.tag, (err, conn) => {
+                if (err) {
+                  return cb(err)
+                }
+
+                const wrapped = swarm.crypto.encrypt(id, id.privKey, conn)
+                cb(null, wrapped)
+              })
             })
           }
         })
@@ -129,6 +140,7 @@ module.exports = function dial (swarm) {
           if (err) {
             return callback(new Error('multistream not supported'))
           }
+          log('selecting %s', key)
           ms.select(key, (err, conn) => {
             if (err) {
               if (muxers.length === 0) {
@@ -139,7 +151,7 @@ module.exports = function dial (swarm) {
               return
             }
 
-            const muxedConn = swarm.muxers[key](conn, false)
+            const muxedConn = swarm.muxers[key].dialer(conn)
             swarm.muxedConns[b58Id] = {}
             swarm.muxedConns[b58Id].muxer = muxedConn
             // should not be needed anymore - swarm.muxedConns[b58Id].conn = conn

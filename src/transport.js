@@ -3,7 +3,7 @@
 const Connection = require('interface-connection').Connection
 const parallel = require('run-parallel')
 const debug = require('debug')
-const log = debug('libp2p:swarm')
+const log = debug('libp2p:swarm:transport')
 
 const protocolMuxer = require('./protocol-muxer')
 
@@ -16,7 +16,7 @@ module.exports = function (swarm) {
       }
 
       if (!callback) { callback = noop }
-
+      log('adding %s', key)
       if (swarm.transports[key]) {
         throw new Error('There is already a transport with this key')
       }
@@ -34,7 +34,7 @@ module.exports = function (swarm) {
       if (!Array.isArray(multiaddrs)) {
         multiaddrs = [multiaddrs]
       }
-
+      log('dialing %s', key, multiaddrs.map((m) => m.toString()))
       // a) filter the multiaddrs that are actually valid for this transport (use a func from the transport itself) (maybe even make the transport do that)
       multiaddrs = dialables(t, multiaddrs)
 
@@ -42,18 +42,8 @@ module.exports = function (swarm) {
       // transport, otherwise, create a passthrough
       if (multiaddrs.length === 1) {
         const conn = t.dial(multiaddrs.shift())
-
-        conn.once('error', connectError)
-
-        conn.once('connect', () => {
-          conn.removeListener('error', connectError)
-          callback(null, conn)
-        })
-
-        return conn
-      }
-      function connectError () {
-        callback(new Error('failed to connect to every multiaddr'))
+        callback(null, new Connection(conn))
+        return
       }
 
       // c) multiaddrs should already be a filtered list
@@ -62,23 +52,9 @@ module.exports = function (swarm) {
 
       next(multiaddrs.shift())
 
-      return proxyConn
-
       // TODO improve in the future to make all the dials in paralell
       function next (multiaddr) {
-        const conn = t.dial(multiaddr)
-
-        conn.once('error', connectError)
-
-        function connectError () {
-          if (multiaddrs.length === 0) {
-            return callback(new Error('failed to connect to every multiaddr'))
-          }
-          next(multiaddrs.shift())
-        }
-
-        conn.once('connect', () => {
-          conn.removeListener('error', connectError)
+        const conn = t.dial(multiaddr, () => {
           proxyConn.setInnerConn(conn)
           callback(null, proxyConn)
         })
@@ -105,7 +81,6 @@ module.exports = function (swarm) {
         return (cb) => {
           const listener = transport.createListener(handler)
           listener.listen(ma, () => {
-            log('Listener started on:', ma.toString())
             listener.getAddrs((err, addrs) => {
               if (err) {
                 return cb(err)
@@ -142,13 +117,7 @@ module.exports = function (swarm) {
 }
 
 function dialables (tp, multiaddrs) {
-  return tp.filter(multiaddrs.map((addr) => {
-    // webrtc-star needs the /ipfs/QmHash
-    if (addr.toString().indexOf('webrtc-star') > 0) {
-      return addr
-    }
-
-    return addr
-  }))
+  return tp.filter(multiaddrs)
 }
+
 function noop () {}

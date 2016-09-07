@@ -9,6 +9,7 @@ const transport = require('./transport')
 const connection = require('./connection')
 const dial = require('./dial')
 const protocolMuxer = require('./protocol-muxer')
+const plaintext = require('./plaintext')
 
 exports = module.exports = Swarm
 
@@ -50,6 +51,9 @@ function Swarm (peerInfo) {
   // is the Identify protocol enabled?
   this.identify = false
 
+  // Crypto details
+  this.crypto = plaintext
+
   this.transport = transport(this)
   this.connection = connection(this)
 
@@ -90,12 +94,13 @@ function Swarm (peerInfo) {
     this.protocols[protocol] = handler
   }
 
-  // our crypto handshake :)
-  this.handle('/plaintext/1.0.0', (conn) => {
-    protocolMuxer(this.protocols, conn)
+  this.handle(this.crypto.tag, (conn) => {
+    const id = this._peerInfo.id
+    const wrapped = this.crypto.encrypt(id, id.privKey, conn)
+    return protocolMuxer(this.protocols, wrapped)
   })
 
-  this.unhandle = (protocol, handler) => {
+  this.unhandle = (protocol) => {
     if (this.protocols[protocol]) {
       delete this.protocols[protocol]
     }
@@ -122,14 +127,13 @@ function Swarm (peerInfo) {
 
     const transports = this.transports
 
-    parallel(Object.keys(transports).map((key) => {
-      return (cb) => {
+    parallel(
+      Object.keys(transports).map((key) => (cb) => {
         parallel(transports[key].listeners.map((listener) => {
-          return (cb) => {
-            listener.close(cb)
-          }
+          return (cb) => listener.close(cb)
         }), cb)
-      }
-    }), callback)
+      }),
+      callback
+    )
   }
 }

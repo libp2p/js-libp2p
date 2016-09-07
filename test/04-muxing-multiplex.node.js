@@ -6,20 +6,22 @@ const expect = require('chai').expect
 const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
-const Swarm = require('../src')
 const TCP = require('libp2p-tcp')
 const multiplex = require('libp2p-spdy')
+const pull = require('pull-stream')
 
-// TODO multiplex needs to be upgraded, like spdy, to work again
-describe.skip('stream muxing with multiplex (on TCP)', function () {
-  this.timeout(60 * 1000)
+const Swarm = require('../src')
 
-  var swarmA
-  var peerA
-  var swarmB
-  var peerB
-  var swarmC
-  var peerC
+// Multiplex is not yet ported
+// Reenable when https://github.com/libp2p/js-libp2p-multiplex/issues/14
+// is done
+describe.skip('stream muxing with multiplex (on TCP)', () => {
+  let swarmA
+  let peerA
+  let swarmB
+  let peerB
+  let swarmC
+  let peerC
 
   before((done) => {
     peerA = new Peer()
@@ -66,16 +68,17 @@ describe.skip('stream muxing with multiplex (on TCP)', function () {
 
   it('handle + dial on protocol', (done) => {
     swarmB.handle('/abacaxi/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     swarmA.dial(peerB, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
-      conn.end()
-
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd(done)
+      )
     })
   })
 
@@ -90,17 +93,18 @@ describe.skip('stream muxing with multiplex (on TCP)', function () {
 
   it('dial on protocol, reuse warmed conn', (done) => {
     swarmA.handle('/papaia/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     swarmB.dial(peerA, '/papaia/1.0.0', (err, conn) => {
       expect(err).to.not.exist
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
-      conn.end()
-
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd(done)
+      )
     })
   })
 

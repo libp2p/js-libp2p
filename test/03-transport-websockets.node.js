@@ -6,13 +6,13 @@ const expect = require('chai').expect
 const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
-const Swarm = require('../src')
 const WebSockets = require('libp2p-websockets')
-const bl = require('bl')
+const pull = require('pull-stream')
+const goodbye = require('pull-goodbye')
+
+const Swarm = require('../src')
 
 describe('transport - websockets', function () {
-  this.timeout(10000)
-
   var swarmA
   var swarmB
   var peerA = new Peer()
@@ -37,10 +37,10 @@ describe('transport - websockets', function () {
   it('listen', (done) => {
     parallel([
       (cb) => swarmA.transport.listen('ws', {}, (conn) => {
-        conn.pipe(conn)
+        pull(conn, conn)
       }, cb),
       (cb) => swarmB.transport.listen('ws', {}, (conn) => {
-        conn.pipe(conn)
+        pull(conn, conn)
       }, cb)
     ], () => {
       expect(peerA.multiaddrs.length).to.equal(1)
@@ -63,24 +63,31 @@ describe('transport - websockets', function () {
     const conn = swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/ws'), (err, conn) => {
       expect(err).to.not.exist
     })
-    conn.pipe(bl((err, data) => {
-      expect(err).to.not.exist
-      done()
-    }))
-    conn.write('hey')
-    conn.end()
+
+    const s = goodbye({
+      source: pull.values([Buffer('hey')]),
+      sink: pull.collect((err, data) => {
+        expect(err).to.not.exist
+        expect(data).to.be.eql([Buffer('hey')])
+        done()
+      })
+    })
+    pull(s, conn, s)
   })
 
   it('dial (conn from callback)', (done) => {
     swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/ws'), (err, conn) => {
       expect(err).to.not.exist
 
-      conn.pipe(bl((err, data) => {
-        expect(err).to.not.exist
-        done()
-      }))
-      conn.write('hey')
-      conn.end()
+      const s = goodbye({
+        source: pull.values([Buffer('hey')]),
+        sink: pull.collect((err, data) => {
+          expect(err).to.not.exist
+          expect(data).to.be.eql([Buffer('hey')])
+          done()
+        })
+      })
+      pull(s, conn, s)
     })
   })
 

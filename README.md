@@ -59,13 +59,13 @@ const sw = new Swarm(peerInfo)
 
 ## API
 
-peerInfo is a [PeerInfo](https://github.com/diasdavid/js-peer-info) object that represents the peer creating this swarm instance.
+peerInfo is a [PeerInfo](https://github.com/libp2p/js-peer-info) object that represents the peer creating this swarm instance.
 
 ### Transports
 
 ##### `swarm.transport.add(key, transport, options, callback)`
 
-libp2p-swarm expects transports that implement [interface-transport](https://github.com/diasdavid/abstract-transport). For example [libp2p-tcp](https://github.com/diasdavid/js-libp2p-tcp).
+libp2p-swarm expects transports that implement [interface-transport](https://github.com/libp2p/abstract-transport). For example [libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp).
 
 - `key` - the transport identifier.
 - `transport` -
@@ -100,19 +100,30 @@ Close the listeners of a given transport.
 
 ##### `swarm.connection.addUpgrade()`
 
-A connection upgrade must be able to receive and return something that implements the [interface-connection](https://github.com/diasdavid/interface-connection) specification.
+A connection upgrade must be able to receive and return something that implements the [interface-connection](https://github.com/libp2p/interface-connection) specification.
 
 > **WIP**
 
 ##### `swarm.connection.addStreamMuxer(muxer)`
 
-Upgrading a connection to use a stream muxer is still considered an upgrade, but a special case since once this connection is applied, the returned obj will implement the [interface-stream-muxer](https://github.com/diasdavid/interface-stream-muxer) spec.
+Upgrading a connection to use a stream muxer is still considered an upgrade, but a special case since once this connection is applied, the returned obj will implement the [interface-stream-muxer](https://github.com/libp2p/interface-stream-muxer) spec.
 
 - `muxer`
 
 ##### `swarm.connection.reuse()`
 
 Enable the identify protocol.
+
+##### `swarm.connection.crypto([tag, encrypt])`
+
+Enable a specified crypto protocol. By default no encryption is used, aka `plaintext`. If called with no arguments it resets to use `plaintext`.
+
+You can use for example [libp2p-secio](https://github.com/libp2p/js-libp2p-secio) like this
+
+```js
+const secio = require('libp2p-secio')
+swarm.connection.crypto(secio.tag, secio.encrypt)
+```
 
 ### `swarm.dial(pi, protocol, callback)`
 
@@ -152,17 +163,43 @@ Close all the listeners and muxers.
 
 - `callback`
 
+### This module uses `pull-streams`
+
+We expose a streaming interface based on `pull-streams`, rather then on the Node.js core streams implementation (aka Node.js streams). `pull-streams` offers us a better mechanism for error handling and flow control guarantees. If you would like to know more about why we did this, see the discussion at this [issue](https://github.com/ipfs/js-ipfs/issues/362).
+
+You can learn more about pull-streams at:
+
+- [The history of Node.js streams, nodebp April 2014](https://www.youtube.com/watch?v=g5ewQEuXjsQ)
+- [The history of streams, 2016](http://dominictarr.com/post/145135293917/history-of-streams)
+- [pull-streams, the simple streaming primitive](http://dominictarr.com/post/149248845122/pull-streams-pull-streams-are-a-very-simple)
+- [pull-streams documentation](https://pull-stream.github.io/)
+
+#### Converting `pull-streams` to Node.js Streams
+
+If you are a Node.js streams user, you can convert a pull-stream to a Node.js stream using the module [`pull-stream-to-stream`](https://github.com/dominictarr/pull-stream-to-stream), giving you an instance of a Node.js stream that is linked to the pull-stream. For example:
+
+```js
+const pullToStream = require('pull-stream-to-stream')
+
+const nodeStreamInstance = pullToStream(pullStreamInstance)
+// nodeStreamInstance is an instance of a Node.js Stream
+```
+
+To learn more about this utility, visit https://pull-stream.github.io/#pull-stream-to-stream.
+
+
+
 ## Design
 
 ### Multitransport
 
 libp2p is designed to support multiple transports at the same time. While peers are identified by their ID (which are generated from their public keys), the addresses of each pair may vary, depending the device where they are being run or the network in which they are accessible through.
 
-In order for a transport to be supported, it has to follow the [interface-transport](https://github.com/diasdavid/interface-transport) spec.
+In order for a transport to be supported, it has to follow the [interface-transport](https://github.com/libp2p/interface-transport) spec.
 
 ### Connection upgrades
 
-Each connection in libp2p follows the [interface-connection](https://github.com/diasdavid/interface-connection) spec. This design decision enables libp2p to have upgradable transports.
+Each connection in libp2p follows the [interface-connection](https://github.com/libp2p/interface-connection) spec. This design decision enables libp2p to have upgradable transports.
 
 We think of `upgrade` as a very important notion when we are talking about connections, we can see mechanisms like: stream multiplexing, congestion control, encrypted channels, multipath, simulcast, etc, as `upgrades` to a connection. A connection can be a simple and with no guarantees, drop a packet on the network with a destination thing, a transport in the other hand can be a connection and or a set of different upgrades that are mounted on top of each other, giving extra functionality to that connection and therefore `upgrading` it.
 

@@ -2,20 +2,19 @@
 'use strict'
 
 const expect = require('chai').expect
-
 const parallel = require('run-parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
-const Swarm = require('../src')
 const TCP = require('libp2p-tcp')
+const pull = require('pull-stream')
 
-describe('high level API - 1st without stream multiplexing (on TCP)', function () {
-  this.timeout(20000)
+const Swarm = require('../src')
 
-  var swarmA
-  var peerA
-  var swarmB
-  var peerB
+describe('high level API - 1st without stream multiplexing (on TCP)', () => {
+  let swarmA
+  let peerA
+  let swarmB
+  let peerB
 
   before((done) => {
     peerA = new Peer()
@@ -45,7 +44,7 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
 
   it('handle a protocol', (done) => {
     swarmB.handle('/bananas/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
     expect(Object.keys(swarmB.protocols).length).to.equal(2)
     done()
@@ -53,28 +52,24 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
 
   it('dial on protocol', (done) => {
     swarmB.handle('/pineapple/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     swarmA.dial(peerB, '/pineapple/1.0.0', (err, conn) => {
       expect(err).to.not.exist
-      conn.end()
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(pull.empty(), conn, pull.onEnd(done))
     })
   })
 
   it('dial on protocol (returned conn)', (done) => {
     swarmB.handle('/apples/1.0.0', (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     })
 
     const conn = swarmA.dial(peerB, '/apples/1.0.0', (err) => {
       expect(err).to.not.exist
     })
-    conn.end()
-    conn.on('data', () => {}) // let it flow.. let it flooooow
-    conn.on('end', done)
+    pull(pull.empty(), conn, pull.onEnd(done))
   })
 
   it('dial to warm a conn', (done) => {
@@ -87,16 +82,13 @@ describe('high level API - 1st without stream multiplexing (on TCP)', function (
   it('dial on protocol, reuse warmed conn', (done) => {
     swarmA.dial(peerB, '/bananas/1.0.0', (err, conn) => {
       expect(err).to.not.exist
-      conn.end()
-      conn.on('data', () => {}) // let it flow.. let it flooooow
-      conn.on('end', done)
+      pull(pull.empty(), conn, pull.onEnd(done))
     })
   })
 
-  it('unhandle', (done) => {
+  it('unhandle', () => {
     const proto = '/bananas/1.0.0'
     swarmA.unhandle(proto)
     expect(swarmA.protocols[proto]).to.not.exist
-    done()
   })
 })

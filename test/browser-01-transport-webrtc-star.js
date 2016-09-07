@@ -6,14 +6,12 @@ const multiaddr = require('multiaddr')
 const peerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const WebRTCStar = require('libp2p-webrtc-star')
-const bl = require('bl')
 const parallel = require('run-parallel')
+const pull = require('pull-stream')
 
 const Swarm = require('../src')
 
-describe('transport - webrtc-star', function () {
-  this.timeout(10000)
-
+describe('transport - webrtc-star', () => {
   let swarm1
   let peer1
 
@@ -51,13 +49,13 @@ describe('transport - webrtc-star', function () {
 
   it('listen on swarm 1', (done) => {
     swarm1.transport.listen('wstar', {}, (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     }, done)
   })
 
   it('listen on swarm 2', (done) => {
     swarm2.transport.listen('wstar', {}, (conn) => {
-      conn.pipe(conn)
+      pull(conn, conn)
     }, done)
   })
 
@@ -66,25 +64,22 @@ describe('transport - webrtc-star', function () {
       expect(err).to.not.exist
 
       const text = 'Hello World'
-      conn.pipe(bl((err, data) => {
-        expect(err).to.not.exist
-        expect(data.toString()).to.equal(text)
-        done()
-      }))
-
-      conn.write(text)
-      conn.end()
+      pull(
+        pull.values([text]),
+        conn,
+        pull.collect((err, data) => {
+          expect(err).to.not.exist
+          expect(data.toString()).to.equal(text)
+          done()
+        })
+      )
     })
   })
 
   it('close', (done) => {
     parallel([
-      (cb) => {
-        swarm1.transport.close('wstar', cb)
-      },
-      (cb) => {
-        swarm2.transport.close('wstar', cb)
-      }
+      (cb) => swarm1.transport.close('wstar', cb),
+      (cb) => swarm2.transport.close('wstar', cb)
     ], done)
   })
 })
