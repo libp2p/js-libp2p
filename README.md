@@ -59,13 +59,13 @@ const sw = new Swarm(peerInfo)
 
 ## API
 
-peerInfo is a [PeerInfo](https://github.com/diasdavid/js-peer-info) object that represents the peer creating this swarm instance.
+peerInfo is a [PeerInfo](https://github.com/libp2p/js-peer-info) object that represents the peer creating this swarm instance.
 
 ### Transports
 
 ##### `swarm.transport.add(key, transport, options, callback)`
 
-libp2p-swarm expects transports that implement [interface-transport](https://github.com/diasdavid/abstract-transport). For example [libp2p-tcp](https://github.com/diasdavid/js-libp2p-tcp).
+libp2p-swarm expects transports that implement [interface-transport](https://github.com/libp2p/abstract-transport). For example [libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp).
 
 - `key` - the transport identifier.
 - `transport` -
@@ -100,19 +100,30 @@ Close the listeners of a given transport.
 
 ##### `swarm.connection.addUpgrade()`
 
-A connection upgrade must be able to receive and return something that implements the [interface-connection](https://github.com/diasdavid/interface-connection) specification.
+A connection upgrade must be able to receive and return something that implements the [interface-connection](https://github.com/libp2p/interface-connection) specification.
 
 > **WIP**
 
 ##### `swarm.connection.addStreamMuxer(muxer)`
 
-Upgrading a connection to use a stream muxer is still considered an upgrade, but a special case since once this connection is applied, the returned obj will implement the [interface-stream-muxer](https://github.com/diasdavid/interface-stream-muxer) spec.
+Upgrading a connection to use a stream muxer is still considered an upgrade, but a special case since once this connection is applied, the returned obj will implement the [interface-stream-muxer](https://github.com/libp2p/interface-stream-muxer) spec.
 
 - `muxer`
 
 ##### `swarm.connection.reuse()`
 
 Enable the identify protocol.
+
+##### `swarm.connection.crypto([tag, encrypt])`
+
+Enable a specified crypto protocol. By default no encryption is used, aka `plaintext`. If called with no arguments it resets to use `plaintext`.
+
+You can use for example [libp2p-secio](https://github.com/libp2p/js-libp2p-secio) like this
+
+```js
+const secio = require('libp2p-secio')
+swarm.connection.crypto(secio.tag, secio.encrypt)
+```
 
 ### `swarm.dial(pi, protocol, callback)`
 
@@ -158,11 +169,11 @@ Close all the listeners and muxers.
 
 libp2p is designed to support multiple transports at the same time. While peers are identified by their ID (which are generated from their public keys), the addresses of each pair may vary, depending the device where they are being run or the network in which they are accessible through.
 
-In order for a transport to be supported, it has to follow the [interface-transport](https://github.com/diasdavid/interface-transport) spec.
+In order for a transport to be supported, it has to follow the [interface-transport](https://github.com/libp2p/interface-transport) spec.
 
 ### Connection upgrades
 
-Each connection in libp2p follows the [interface-connection](https://github.com/diasdavid/interface-connection) spec. This design decision enables libp2p to have upgradable transports.
+Each connection in libp2p follows the [interface-connection](https://github.com/libp2p/interface-connection) spec. This design decision enables libp2p to have upgradable transports.
 
 We think of `upgrade` as a very important notion when we are talking about connections, we can see mechanisms like: stream multiplexing, congestion control, encrypted channels, multipath, simulcast, etc, as `upgrades` to a connection. A connection can be a simple and with no guarantees, drop a packet on the network with a destination thing, a transport in the other hand can be a connection and or a set of different upgrades that are mounted on top of each other, giving extra functionality to that connection and therefore `upgrading` it.
 

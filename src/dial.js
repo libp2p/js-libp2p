@@ -6,8 +6,6 @@ const debug = require('debug')
 const log = debug('libp2p:swarm:dial')
 
 const protocolMuxer = require('./protocol-muxer')
-const secio = require('./secio')
-const tags = require('./tags')
 
 module.exports = function dial (swarm) {
   return (pi, protocol, callback) => {
@@ -108,16 +106,15 @@ module.exports = function dial (swarm) {
               }
 
               const id = swarm._peerInfo.id
-              if (id.privKey == null || swarm.encrypt === false) {
-                return ms.select(tags.plaintext, cb)
-              }
 
-              ms.select(tags.secio, (err, conn) => {
+              log('selecting crypto: %s', swarm.crypto.tag)
+              ms.select(swarm.crypto.tag, (err, conn) => {
                 if (err) {
                   return cb(err)
                 }
 
-                cb(null, secio.create(id, conn))
+                const wrapped = swarm.crypto.encrypt(id, id.privKey, conn)
+                cb(null, wrapped)
               })
             })
           }
@@ -155,7 +152,7 @@ module.exports = function dial (swarm) {
               return
             }
 
-            const muxedConn = swarm.muxers[key].dial(conn)
+            const muxedConn = swarm.muxers[key].dialer(conn)
             swarm.muxedConns[b58Id] = {}
             swarm.muxedConns[b58Id].muxer = muxedConn
             // should not be needed anymore - swarm.muxedConns[b58Id].conn = conn

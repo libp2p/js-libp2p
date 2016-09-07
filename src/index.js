@@ -9,8 +9,7 @@ const transport = require('./transport')
 const connection = require('./connection')
 const dial = require('./dial')
 const protocolMuxer = require('./protocol-muxer')
-const secio = require('./secio')
-const tags = require('./tags')
+const plaintext = require('./plaintext')
 
 exports = module.exports = Swarm
 
@@ -52,8 +51,8 @@ function Swarm (peerInfo) {
   // is the Identify protocol enabled?
   this.identify = false
 
-  // is encryption enabled?
-  this.encrypt = true
+  // Crypto details
+  this.crypto = plaintext
 
   this.transport = transport(this)
   this.connection = connection(this)
@@ -95,21 +94,13 @@ function Swarm (peerInfo) {
     this.protocols[protocol] = handler
   }
 
-  let cryptoTag = tags.secio
-  if (this.encrypt === false) {
-    cryptoTag = tags.plaintext
-  }
-
-  this.handle(cryptoTag, (conn) => {
-    if (this.encrypt === false) {
-      return protocolMuxer(this.protocols, conn)
-    }
-
-    const secure = secio.create(this._peerInfo.id, conn)
-    protocolMuxer(this.protocols, secure)
+  this.handle(this.crypto.tag, (conn) => {
+    const id = this._peerInfo.id
+    const wrapped = this.crypto.encrypt(id, id.privKey, conn)
+    return protocolMuxer(this.protocols, wrapped)
   })
 
-  this.unhandle = (protocol, handler) => {
+  this.unhandle = (protocol) => {
     if (this.protocols[protocol]) {
       delete this.protocols[protocol]
     }

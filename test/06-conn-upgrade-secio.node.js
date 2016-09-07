@@ -9,6 +9,7 @@ const Peer = require('peer-info')
 const TCP = require('libp2p-tcp')
 const multiplex = require('libp2p-spdy')
 const pull = require('pull-stream')
+const secio = require('libp2p-secio')
 
 const Swarm = require('../src')
 
@@ -37,9 +38,9 @@ describe('secio conn upgrade (on TCP)', () => {
     swarmB = new Swarm(peerB)
     swarmC = new Swarm(peerC)
 
-    swarmA.encrypt = true
-    swarmB.encrypt = true
-    swarmC.encrypt = true
+    swarmA.connection.crypto(secio.tag, secio.encrypt)
+    swarmB.connection.crypto(secio.tag, secio.encrypt)
+    swarmC.connection.crypto(secio.tag, secio.encrypt)
 
     swarmA.transport.add('tcp', new TCP())
     swarmB.transport.add('tcp', new TCP())
@@ -112,5 +113,10 @@ describe('secio conn upgrade (on TCP)', () => {
         done()
       }, 500)
     })
+  })
+
+  it('switch back to plaintext if no arguments passed in', () => {
+    swarmA.connection.crypto()
+    expect(swarmA.crypto.tag).to.be.eql('/plaintext/1.0.0')
   })
 })
