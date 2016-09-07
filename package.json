@@ -38,7 +38,7 @@
     "ipfs-logger": "^0.1.0",
     "peer-info": "^0.3.0",
     "peer-id": "^0.3.0",
-    "multiaddr": "^1.0.0"
+    "multiaddr": "^2.0.3"
   },
   "jsnext:main": "src/index.js",
   "pre-commit": [
