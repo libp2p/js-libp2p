@@ -31,7 +31,7 @@
     "karma-firefox-launcher": "^0.1.7",
     "karma-mocha": "^0.2.2",
     "karma-spec-reporter": "0.0.24",
-    "karma-webpack": "^1.7.0",
+    "karma-webpack": "^1.8.0",
     "libp2p-websockets": "^0.2.1",
     "mocha": "^3.0.2",
     "pre-commit": "^1.1.2",
