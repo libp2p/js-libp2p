@@ -34,8 +34,8 @@
     "chai": "^3.5.0",
     "debug": "^2.2.0",
     "gulp": "^3.9.1",
-    "libp2p-swarm": "^0.22.2",
-    "libp2p-tcp": "^0.7.4",
+    "libp2p-swarm": "^0.23.0",
+    "libp2p-tcp": "^0.8.1",
     "multiaddr": "^2.0.2",
     "peer-id": "^0.7.0",
     "peer-info": "^0.7.0",
@@ -43,7 +43,8 @@
     "run-parallel": "^1.1.6"
   },
   "dependencies": {
-    "async-buffered-reader": "^1.2.1"
+    "pull-reader": "^1.2.8",
+    "pull-stream": "^3.4.5"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",

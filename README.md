@@ -10,7 +10,6 @@ libp2p-ping JavaScript Implementation
 
 ## Usage
 
-
 ```javascript
 var Ping = require('libp2p-ping')
 

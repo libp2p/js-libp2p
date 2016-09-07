@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
+const expect = require('chai').expect
 const Peer = require('peer-info')
 const Swarm = require('libp2p-swarm')
 const TCP = require('libp2p-tcp')
@@ -42,7 +43,12 @@ describe('ping', () => {
 
     var p = new Ping(swarmA, peerB)
 
+    p.on('error', (err) => {
+      throw err
+    })
+
     p.on('ping', (time) => {
+      expect(time).to.be.a('Number')
       p.stop()
       Ping.detach(swarmB)
       done()
