@@ -39,7 +39,7 @@
     "ipfs-logger": "^0.1.0",
     "peer-info": "^0.3.2",
     "peer-id": "^0.3.3",
-    "multiaddr": "^1.0.0",
+    "multiaddr": "^2.0.3",
     "multicast-dns": "^3.0.0"
   },
   "jsnext:main": "src/index.js"
