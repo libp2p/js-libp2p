@@ -33,7 +33,7 @@
     "karma-spec-reporter": "0.0.24",
     "karma-webpack": "^1.7.0",
     "libp2p-websockets": "^0.2.1",
-    "mocha": "^2.4.5",
+    "mocha": "^3.0.2",
     "pre-commit": "^1.1.2",
     "standard": "^8.0.0",
     "stream-pair": "^1.0.3",
