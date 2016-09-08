@@ -35,7 +35,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "dignified.js": "^1.0.0",
-    "libp2p-spdy": "^0.1.0",
+    "libp2p-spdy": "^0.9.0",
     "libp2p-swarm": "^0.5.5",
     "libp2p-tcp": "^0.8.0",
     "multiaddr": "^2.0.3",
