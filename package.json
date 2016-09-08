@@ -63,7 +63,7 @@
     "multiaddr": "^2.0.2",
     "multistream-select": "^0.11.0",
     "peer-id": "^0.7.0",
-    "peer-info": "^0.7.0",
+    "peer-info": "^0.7.1",
     "protocol-buffers": "^3.1.6",
     "run-parallel": "^1.1.6",
     "run-waterfall": "^1.1.3"
