@@ -1,4 +1,5 @@
-# js-libp2p-pubsub-gossip
+js-libp2p-pubsub-gossip
+=======================
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://libp2p.io/)
@@ -24,20 +25,42 @@
 ## Install
 
 ```
+```sh
+> npm install libp2p-pubsub-gossip
 ```
 
-## Usage
+## Examples
 
-```
+```JavaScript
+const FloodSub = require('libp2p-floodsub')
+
+const fsub = new FloodSub(libp2pNodeInstance)
+
+fsub.on('fruit', (data) => {
+  console.log(data)
+})
+fsub.subscribe('fruit')
+
+fsub.publish('fruit', new Buffer('banana'))
 ```
 
 ## API
 
+### `ps.subscribe(<topic>)`
+
+### `ps.unsubscribe(<topic>)`
+
+### `ps.publish(<topic>, <msg>)`
+
+### `ps.on(<topic>, callback)`
+
+### `ps.getPeerSet()`
+
+### `ps.getSubscriptions()`
+
 ## Contribute
 
-See [the contribute file](contribute.md)!
-
-PRs accepted.
+PRs are welcome!
 
 Small note: If editing the Readme, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
 
