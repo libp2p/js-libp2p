@@ -36,7 +36,8 @@
     "chai": "^3.5.0",
     "interface-transport": "^0.3.3",
     "lodash.isfunction": "^3.0.8",
-    "pre-commit": "^1.1.2"
+    "pre-commit": "^1.1.2",
+    "pull-stream": "^3.4.5"
   },
   "dependencies": {
     "interface-connection": "0.2.1",
@@ -44,7 +45,6 @@
     "lodash.contains": "^2.4.3",
     "mafmt": "^2.1.2",
     "multiaddr": "^2.0.3",
-    "pull": "^2.1.1",
     "stream-to-pull-stream": "^1.7.0"
   },
   "contributors": [
