@@ -51,6 +51,9 @@
   },
   "homepage": "https://github.com/ipfs/js-libp2p-crypto",
   "contributors": [
-    "dignifiedquire <dignifiedquire@gmail.com>"
+    "David Dias <daviddias.p@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Richard Littauer <richard.littauer@gmail.com>",
+    "greenkeeperio-bot <support@greenkeeper.io>"
   ]
 }
