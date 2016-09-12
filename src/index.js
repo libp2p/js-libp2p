@@ -3,7 +3,7 @@
 const util = require('util')
 const EE = require('events').EventEmitter
 const parallel = require('run-parallel')
-const contains = require('lodash.contains')
+const includes = require('lodash.includes')
 
 const transport = require('./transport')
 const connection = require('./connection')
@@ -69,7 +69,7 @@ function Swarm (peerInfo) {
           return addr
         }
 
-        if (contains(addr.protoNames(), 'ipfs')) {
+        if (includes(addr.protoNames(), 'ipfs')) {
           return addr.decapsulate('ipfs')
         }
         return addr
