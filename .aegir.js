@@ -8,6 +8,9 @@ module.exports = {
       alias: {
         'node-forge': path.resolve(__dirname, 'vendor/forge.bundle.js')
       }
+    },
+    externals: {
+      ursa: '{}'
     }
   }
 }

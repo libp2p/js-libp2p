@@ -1,44 +1,95 @@
+/* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 'use strict'
 
 const expect = require('chai').expect
-const EC = require('elliptic').ec
-
 const crypto = require('../src')
 const fixtures = require('./fixtures/go-elliptic-key')
 
+const curves = ['P-256', 'P-384', 'P-521']
+// const lengths = {
+//   'P-256': 32,
+//   'P-384': 48,
+//   'P-521': 65
+// }
+
 describe('generateEphemeralKeyPair', () => {
-  it('returns a function that generates a shared secret', () => {
-    const res = crypto.generateEphemeralKeyPair('P-256')
-    const ourPublic = '044374add0df35706db7dade25f3959fc051d2ef5166f8a6a0aa632d0ab41cdb4d30e1a064e121ac56155235a6b8d4c5d8fe35e019f507f4e2ff1445e229d7af43'
+  curves.forEach((curve) => {
+    it(`generate and shared key ${curve}`, (done) => {
+      crypto.generateEphemeralKeyPair(curve, (err, ours) => {
+        if (err) {
+          return done(err)
+        }
 
-    expect(
-      res.genSharedKey(ourPublic)
-    ).to.have.length(32)
+        crypto.generateEphemeralKeyPair(curve, (err, theirs) => {
+          if (err) {
+            return done(err)
+          }
 
-    expect(
-      res.key
-    ).to.exist
+          ours.genSharedKey(theirs.key, (err, shared) => {
+            if (err) {
+              return done(err)
+            }
+
+            expect(shared).to.exist
+            // expect(shared).to.have.length(lengths[curve])
+            expect(ours.key).to.exist
+            done()
+          })
+        })
+      })
+    })
   })
 
-  describe('go interop', () => {
-    it('generates a shared secret', () => {
+  describe.skip('go interop', () => {
+    it('generates a shared secret', (done) => {
       const curve = fixtures.curve
-      const ec = new EC(fixtures.curveJs)
-      const bobPrivate = ec.keyFromPrivate(fixtures.bob.private, 'binary')
+      console.log('start', curve)
+      // crypto.webcrypto.subtle.importKey(
+      //   'pkcs8',
+      //   Uint8Array.from(fixtures.bob.private),
+      //   {
+      //     name: 'ECDH',
+      //     namedCurve: curve
+      //   },
+      //   false,
+      //   ['deriveBits']
+      // ).then((bobPrivate) => {
+      //   console.log('imported bobs key')
+      //   checkKeys(bobPrivate)
+      // }).catch((err) => {
+      //   done(err)
+      // })
+      checkKeys()
+      function checkKeys (bobPrivate) {
+        crypto.generateEphemeralKeyPair(curve, (err, alice) => {
+          if (err) {
+            return done(err)
+          }
+          console.log('genreated ephem pair')
+          const bob = {
+            key: fixtures.bob.public,
+            // this is using bobs private key from go ipfs
+            // instead of alices
+            genSharedKey: (key, cb) => alice.genSharedKey(key, bobPrivate, cb)
+          }
 
-      const alice = crypto.generateEphemeralKeyPair(curve)
-      const bob = {
-        key: fixtures.bob.public,
-        // this is using bobs private key from go ipfs
-        // instead of alices
-        genSharedKey: (key) => alice.genSharedKey(key, bobPrivate)
+          alice.genSharedKey(bob.key, (err, s1) => {
+            if (err) {
+              return done(err)
+            }
+            console.log('genshared alice')
+            bob.genSharedKey(alice.key, (err, s2) => {
+              if (err) {
+                return done(err)
+              }
+              console.log('genshared bob')
+              expect(s1.equals(s2)).to.be.eql(true)
+              done()
+            })
+          })
+        })
       }
-
-      const s1 = alice.genSharedKey(bob.key)
-      const s2 = bob.genSharedKey(alice.key)
-
-      expect(s1.equals(s2)).to.be.eql(true)
     })
   })
 })

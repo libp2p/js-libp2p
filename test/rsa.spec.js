@@ -8,57 +8,76 @@ const rsa = crypto.keys.rsa
 
 describe('RSA', () => {
   let key
-  before(() => {
-    key = crypto.generateKeyPair('RSA', 2048)
+  before((done) => {
+    crypto.generateKeyPair('RSA', 2048, (err, _key) => {
+      if (err) return done(err)
+      key = _key
+      done()
+    })
   })
 
-  it('generates a valid key', () => {
+  it('generates a valid key', (done) => {
     expect(
       key
     ).to.be.an.instanceof(
       rsa.RsaPrivateKey
     )
 
-    expect(
-      key.hash()
-    ).to.have.length(
-      34
-    )
+    key.hash((err, digest) => {
+      if (err) {
+        return done(err)
+      }
+
+      expect(digest).to.have.length(34)
+      done()
+    })
   })
 
-  it('signs', () => {
-    const pk = key.public
+  it('signs', (done) => {
     const text = key.genSecret()
-    const sig = key.sign(text)
 
-    expect(
-      pk.verify(text, sig)
-    ).to.be.eql(
-      true
-    )
+    key.sign(text, (err, sig) => {
+      if (err) {
+        return done(err)
+      }
+
+      key.public.verify(text, sig, (err, res) => {
+        if (err) {
+          return done(err)
+        }
+
+        expect(res).to.be.eql(true)
+        done()
+      })
+    })
   })
 
-  it('encoding', () => {
+  it('encoding', (done) => {
     const keyMarshal = key.marshal()
-    const key2 = rsa.unmarshalRsaPrivateKey(keyMarshal)
-    const keyMarshal2 = key2.marshal()
+    rsa.unmarshalRsaPrivateKey(keyMarshal, (err, key2) => {
+      if (err) {
+        return done(err)
+      }
+      const keyMarshal2 = key2.marshal()
 
-    expect(
-      keyMarshal
-    ).to.be.eql(
-      keyMarshal2
-    )
+      expect(
+        keyMarshal
+      ).to.be.eql(
+        keyMarshal2
+      )
 
-    const pk = key.public
-    const pkMarshal = pk.marshal()
-    const pk2 = rsa.unmarshalRsaPublicKey(pkMarshal)
-    const pkMarshal2 = pk2.marshal()
+      const pk = key.public
+      const pkMarshal = pk.marshal()
+      const pk2 = rsa.unmarshalRsaPublicKey(pkMarshal)
+      const pkMarshal2 = pk2.marshal()
 
-    expect(
-      pkMarshal
-    ).to.be.eql(
-      pkMarshal2
-    )
+      expect(
+        pkMarshal
+      ).to.be.eql(
+        pkMarshal2
+      )
+      done()
+    })
   })
 
   describe('key equals', () => {
@@ -76,54 +95,69 @@ describe('RSA', () => {
       )
     })
 
-    it('not equals other key', () => {
-      const key2 = crypto.generateKeyPair('RSA', 2048)
+    it('not equals other key', (done) => {
+      crypto.generateKeyPair('RSA', 2048, (err, key2) => {
+        if (err) return done(err)
 
-      expect(
-        key.equals(key2)
-      ).to.be.eql(
-        false
-      )
+        expect(
+          key.equals(key2)
+        ).to.be.eql(
+          false
+        )
 
-      expect(
-        key2.equals(key)
-      ).to.be.eql(
-        false
-      )
+        expect(
+          key2.equals(key)
+        ).to.be.eql(
+          false
+        )
 
-      expect(
-        key.public.equals(key2.public)
-      ).to.be.eql(
-        false
-      )
+        expect(
+          key.public.equals(key2.public)
+        ).to.be.eql(
+          false
+        )
 
-      expect(
-        key2.public.equals(key.public)
-      ).to.be.eql(
-        false
-      )
+        expect(
+          key2.public.equals(key.public)
+        ).to.be.eql(
+          false
+        )
+        done()
+      })
     })
   })
 
-  it('sign and verify', () => {
+  it('sign and verify', (done) => {
     const data = new Buffer('hello world')
-    const sig = key.sign(data)
+    key.sign(data, (err, sig) => {
+      if (err) {
+        return done(err)
+      }
 
-    expect(
-      key.public.verify(data, sig)
-    ).to.be.eql(
-      true
-    )
+      key.public.verify(data, sig, (err, valid) => {
+        if (err) {
+          return done(err)
+        }
+        expect(valid).to.be.eql(true)
+        done()
+      })
+    })
   })
 
-  it('does fails to verify for different data', () => {
+  it('fails to verify for different data', (done) => {
     const data = new Buffer('hello world')
-    const sig = key.sign(data)
+    key.sign(data, (err, sig) => {
+      if (err) {
+        return done(err)
+      }
 
-    expect(
-      key.public.verify(new Buffer('hello'), sig)
-    ).to.be.eql(
-      false
-    )
+      key.public.verify(new Buffer('hello'), sig, (err, valid) => {
+        if (err) {
+          return done(err)
+        }
+        expect(valid).to.be.eql(false)
+        done()
+      })
+    })
   })
 })

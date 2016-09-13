@@ -2,17 +2,26 @@
   "name": "libp2p-crypto",
   "version": "0.6.1",
   "description": "Crypto primitives for libp2p",
-  "main": "lib/index.js",
+  "main": "src/index.js",
   "jsnext:main": "src/index.js",
+  "browser": {
+    "node-webcrypto-ossl": false,
+    "./src/crypto/webcrypto.js": "./src/crypto/webcrypto-browser.js",
+    "./lib/crypto/webcrypto.js": "./lib/crypto/webcrypto-browser.js",
+    "./src/crypto/hmac.js": "./src/crypto/hmac-browser.js",
+    "./lib/crypto/hmac.js": "./lib/crypto/hmac-browser.js",
+    "./src/crypto/aes.js": "./src/crypto/aes-browser.js",
+    "./lib/crypto/aes.js": "./lib/crypto/aes-browser.js"
+  },
   "scripts": {
     "lint": "aegir-lint",
     "build": "aegir-build",
-    "test": "aegir-test",
+    "test": "PHANTOM=off aegir-test",
     "test:node": "aegir-test --env node",
-    "test:browser": "aegir-test --env browser",
-    "release": "aegir-release",
-    "release-minor": "aegir-release --type minor",
-    "release-major": "aegir-release --type major",
+    "test:browser": "PHANTOM=off aegir-test --env browser",
+    "release": "PHANTOM=off aegir-release",
+    "release-minor": "PHANTOM=off aegir-release --type minor",
+    "release-major": "PHANTOM=off aegir-release --type major",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
@@ -25,13 +34,18 @@
   "author": "Friedel Ziegelmayer <dignifiedqurie@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "elliptic": "^6.3.2",
+    "asn1.js": "^4.8.1",
+    "async": "^2.0.1",
+    "bn.js": "^4.11.6",
     "multihashing": "^0.2.1",
-    "node-forge": "^0.6.39",
-    "protocol-buffers": "^3.1.6"
+    "node-webcrypto-ossl": "^1.0.7",
+    "nodeify": "^1.0.0",
+    "protocol-buffers": "^3.1.6",
+    "webcrypto-shim": "^0.1.1"
   },
   "devDependencies": {
     "aegir": "^8.0.0",
+    "benchmark": "^2.1.1",
     "chai": "^3.5.0",
     "pre-commit": "^1.1.3"
   },

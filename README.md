@@ -21,7 +21,7 @@ needed for libp2p. This is based on this [go implementation](https://github.com/
 - [Usage](#usage)
   - [Example](#example)
 - [API](#api)
-  - [`generateKeyPair(type, bits)`](#generatekeypairtype-bits)
+  - [`generateKeyPair(type, bits, cb)`](#generatekeypairtype-bits-cb)
   - [`generateEphemeralKeyPair(curve)`](#generateephemeralkeypaircurve)
   - [`keyStretcher(cipherType, hashType, secret)`](#keystretcherciphertype-hashtype-secret)
   - [`marshalPublicKey(key[, type])`](#marshalpublickeykey-type)
@@ -44,15 +44,17 @@ npm install --save libp2p-crypto
 ```js
 const crypto = require('libp2p-crypto')
 
-var keyPair = crypto.generateKeyPair('RSA', 2048)
+crypto.generateKeyPair('RSA', 2048, (err, key) => {
+})
 ```
 
 ## API
 
-### `generateKeyPair(type, bits)`
+### `generateKeyPair(type, bits, cb)`
 
 - `type: String`, only `'RSA'` is currently supported
 - `bits: Number`
+- `cb: Function`
 
 Generates a keypair of the given type and bitsize.
 

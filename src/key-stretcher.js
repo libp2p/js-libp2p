@@ -1,7 +1,7 @@
 'use strict'
 
-const forge = require('node-forge')
-const createBuffer = forge.util.createBuffer
+const crypto = require('./crypto')
+const whilst = require('async/whilst')
 
 const cipherMap = {
   'AES-128': {
@@ -18,78 +18,91 @@ const cipherMap = {
   }
 }
 
-const hashMap = {
-  SHA1: 'sha1',
-  SHA256: 'sha256',
-  // workaround for https://github.com/digitalbazaar/forge/issues/401
-  SHA512: forge.md.sha512.create()
-}
-
 // Generates a set of keys for each party by stretching the shared key.
 // (myIV, theirIV, myCipherKey, theirCipherKey, myMACKey, theirMACKey)
-module.exports = (cipherType, hashType, secret) => {
+module.exports = (cipherType, hash, secret, callback) => {
   const cipher = cipherMap[cipherType]
-  const hash = hashMap[hashType]
 
   if (!cipher) {
-    throw new Error('unkown cipherType passed')
+    return callback(new Error('unkown cipherType passed'))
   }
 
   if (!hash) {
-    throw new Error('unkown hashType passed')
-  }
-
-  if (Buffer.isBuffer(secret)) {
-    secret = createBuffer(secret.toString('binary'))
+    return callback(new Error('unkown hashType passed'))
   }
 
   const cipherKeySize = cipher.keySize
   const ivSize = cipher.ivSize
   const hmacKeySize = 20
-  const seed = 'key expansion'
+  const seed = Buffer.from('key expansion')
   const resultLength = 2 * (ivSize + cipherKeySize + hmacKeySize)
 
-  const m = forge.hmac.create()
-  m.start(hash, secret)
-  m.update(seed)
-
-  let a = m.digest().bytes()
-  const result = createBuffer()
-
-  let j = 0
-  for (; j < resultLength;) {
-    m.start(hash, secret)
-    m.update(a)
-    m.update(seed)
-
-    const b = createBuffer(m.digest(), 'raw')
-    let todo = b.length()
-
-    if (j + todo > resultLength) {
-      todo = resultLength - j
+  crypto.hmac.create(hash, secret, (err, m) => {
+    if (err) {
+      return callback(err)
     }
 
-    result.putBytes(b.getBytes(todo))
+    m.digest(seed, (err, a) => {
+      if (err) {
+        return callback(err)
+      }
 
-    j += todo
+      let result = []
+      let j = 0
 
-    m.start(hash, secret)
-    m.update(a)
-    a = m.digest().bytes()
-  }
+      whilst(
+        () => j < resultLength,
+        stretch,
+        finish
+      )
 
-  const half = resultLength / 2
-  const r1 = createBuffer(result.getBytes(half))
-  const r2 = createBuffer(result.getBytes())
+      function stretch (cb) {
+        m.digest(Buffer.concat([a, seed]), (err, b) => {
+          if (err) {
+            return cb(err)
+          }
 
-  const createKey = (res) => ({
-    iv: new Buffer(res.getBytes(ivSize), 'binary'),
-    cipherKey: new Buffer(res.getBytes(cipherKeySize), 'binary'),
-    macKey: new Buffer(res.getBytes(), 'binary')
+          let todo = b.length
+
+          if (j + todo > resultLength) {
+            todo = resultLength - j
+          }
+
+          result.push(b)
+
+          j += todo
+
+          m.digest(a, (err, _a) => {
+            if (err) {
+              return cb(err)
+            }
+            a = _a
+            cb()
+          })
+        })
+      }
+
+      function finish (err) {
+        if (err) {
+          return callback(err)
+        }
+
+        const half = resultLength / 2
+        const resultBuffer = Buffer.concat(result)
+        const r1 = resultBuffer.slice(0, half)
+        const r2 = resultBuffer.slice(half, resultLength)
+
+        const createKey = (res) => ({
+          iv: res.slice(0, ivSize),
+          cipherKey: res.slice(ivSize, ivSize + cipherKeySize),
+          macKey: res.slice(ivSize + cipherKeySize)
+        })
+
+        callback(null, {
+          k1: createKey(r1),
+          k2: createKey(r2)
+        })
+      }
+    })
   })
-
-  return {
-    k1: createKey(r1),
-    k2: createKey(r2)
-  }
 }
