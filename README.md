@@ -1,18 +1,11 @@
-js-libp2p
-=========
-
-![](https://raw.githubusercontent.com/diasdavid/specs/libp2p-spec/protocol/network/figs/logo.png)
+![](https://raw.githubusercontent.com/libp2p/specs/libp2p-spec/protocol/network/figs/logo.png)
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
-[![Build Status](https://travis-ci.org/diasdavid/js-libp2p.svg?style=flat-square)](https://travis-ci.org/diasdavid/js-libp2p)
+[![Build Status](https://travis-ci.org/libp2p/js-libp2p.svg?style=flat-square)](https://travis-ci.org/libp2p/js-libp2p)
 ![coverage](https://img.shields.io/badge/coverage-%3F-yellow.svg?style=flat-square)
-[![Dependency Status](https://david-dm.org/diasdavid/js-libp2p.svg?style=flat-square)](https://david-dm.org/diasdavid/js-libp2p)
+[![Dependency Status](https://david-dm.org/libp2p/js-libp2p.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
-
-> JavaScript implementation of libp2p
-
-libp2p is a networking stack and library modularized out of The IPFS Project, and bundled separately for other tools to use.
 
 ## Table of Contents
 
@@ -21,13 +14,19 @@ libp2p is a networking stack and library modularized out of The IPFS Project, an
   - [Notes](#notes)
 - [Install](#install)
 - [Usage](#usage)
-  - [Setting everything up](#setting-everything-up)
-  - [Dialing and listening](#dialing-and-listening)
-  - [Using Peer Routing](#using-peer-routing)
-  - [Using Records](#using-records)
-  - [Stats](#stats)
 - [Contribute](#contribute)
 - [License](#license)
+
+## Description
+
+libp2p is a networking stack and library modularized out of The IPFS Project, and bundled separately for other tools to use.
+
+This repo is only the skeleton to create libp2p builds. If you want 'off the shelf' builds of libp2p, you can check:
+
+- [libp2p-ipfs](https://github.com/ipfs/js-libp2p-ipfs) - The libp2p build used by js-ipfs when run in Node.js
+- [libp2p-ipfs-browser](https://github.com/ipfs/js-libp2p-ipfs-browser) - The libp2p build used by js-ipfs when run in a Browser (that supports WebRTC)
+
+You can find the modules available for libp2p at the [Packages](#packages) section.
 
 ## Background
 
@@ -60,59 +59,17 @@ We will be writing a set of docs, posts, tutorials, and talks to explain what p2
 | [`libp2p-webrtc-star`](//github.com/libp2p/js-libp2p-webrtc-star) | [![npm](https://img.shields.io/npm/v/libp2p-webrtc-star.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-webrtc-star/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-webrtc-star.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-webrtc-star) | [![devDependency Status](https://david-dm.org/libp2p/js-libp2p-webrtc-star/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-webrtc-star?type=dev) |
 | [`multistream-select`](//github.com/diasdavid/js-multistream) | [![npm](https://img.shields.io/npm/v/multistream-select.svg?maxAge=86400&style=flat-square)](//github.com/diasdavid/js-multistream/releases) | [![Dependency Status](https://david-dm.org/diasdavid/js-multistream.svg?style=flat-square)](https://david-dm.org/diasdavid/js-multistream) | [![devDependency Status](https://david-dm.org/diasdavid/js-multistream/dev-status.svg?style=flat-square)](https://david-dm.org/diasdavid/js-multistream?type=dev) |
 
-### Notes
-
-Img for ref (till we get a better graph)
-
-![](https://cloud.githubusercontent.com/assets/1211152/9450620/a02e3a9c-4aa1-11e5-83fd-cd996a0a4b6f.png)
-
 ## Install
 
 ```sh
-npm i --save libp2p
+npm install --save libp2p
 ```
 
 ## Usage
 
 > **This is a work in progress. The interface might change at anytime.**
 
-libp2p expects a [Record Store interface](https://github.com/diasdavid/abstract-record-store), a swarm and one or more Peer Routers that implement the [Peer Routing](https://github.com/diasdavid/abstract-peer-routing), the goal is to keep simplicity and plugability while the remaining modules execute the heavy lifting.
-
 libp2p becomes very simple and basically acts as a glue for every module that compose this library. Since it can be highly customized, it requires some setup. What we recommend is to have a libp2p build for the system you are developing taking into account in your needs (e.g. for a browser working version of libp2p that acts as the network layer of IPFS, we have a built and minified version that browsers can require)
-
-### Setting everything up
-
-```js
-var Libp2p = require('libp2p')
-
-// set up a Swarm, Peer Routing and Record Store instances, the last two are optional
-
-var p2p = new Libp2p(swarm, [peerRouting, recordStore])
-```
-
-### Dialing and listening
-
-```js
-p2p.swarm.dial(peerInfo, options, protocol, function (err, stream) {})
-p2p.swarm.handleProtocol(protocol, options, handlerFunction)
-```
-
-### Using Peer Routing
-
-```js
-p2p.routing.findPeers(key, function (err, peerInfos) {})
-```
-
-### Using Records
-
-```js
-p2p.record.get(key, function (err, records) {})
-p2p.record.store(key, record)
-```
-
-### Stats
-
-TODO
 
 ## Contribute
 
