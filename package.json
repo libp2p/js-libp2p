@@ -1,0 +1,65 @@
+{
+  "name": "libp2p-floodsub",
+  "version": "0.0.0",
+  "description": "libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
+  "main": "lib/core/index.js",
+  "jsnext:main": "src/core/index.js",
+  "scripts": {
+    "lint": "aegir-lint",
+    "coverage": "gulp coverage",
+    "test": "PHANTOM=off gulp test",
+    "test:node": "gulp test:node",
+    "test:node:core": "TEST=core npm run test:node",
+    "test:node:http": "TEST=http npm run test:node",
+    "test:node:cli": "TEST=cli npm run test:node",
+    "test:browser": "PHANTOM=off gulp test:browser",
+    "build": "gulp build",
+    "release": "PHANTOM=off gulp release",
+    "release-minor": "PHANTOM=off gulp release --type minor",
+    "release-major": "PHANTOM=off gulp release --type major",
+    "coverage-publish": "aegir-coverage publish"
+  },
+  "pre-commit": [
+    "lint",
+    "test"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-floodsub.git"
+  },
+  "keywords": [
+    "IPFS",
+    "libp2p",
+    "pubsub",
+    "gossip",
+    "flood",
+    "flooding"
+  ],
+  "author": "David Dias <daviddias@ipfs.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-floodsub/issues"
+  },
+  "homepage": "https://github.com/libp2p/js-libp2p-floodsub#readme",
+  "devDependencies": {
+    "aegir": "^8.0.1",
+    "chai": "^3.5.0",
+    "libp2p-ipfs": "^0.14.1",
+    "lodash.times": "^4.3.2",
+    "multiaddr": "^2.0.3",
+    "peer-id": "^0.7.0",
+    "peer-info": "^0.7.1",
+    "pre-commit": "^1.1.3",
+    "run-parallel": "^1.1.6",
+    "run-series": "^1.1.4"
+  },
+  "dependencies": {
+    "debug": "^2.2.0",
+    "git-sha1": "^0.1.2",
+    "length-prefixed-stream": "^1.5.0",
+    "lodash.intersection": "^4.4.0",
+    "lodash.uniq": "^4.5.0",
+    "lodash.values": "^4.3.0",
+    "time-cache": "^0.2.3"
+  }
+}
