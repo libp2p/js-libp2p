@@ -1,4 +1,4 @@
-![](https://raw.githubusercontent.com/libp2p/specs/libp2p-spec/protocol/network/figs/logo.png)
+![](https://github.com/libp2p/js-libp2p/blob/fe2d097bfa072ef6733f2defb568bdc526052ee4/img/js-libp2p.png?raw=true)
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
@@ -27,6 +27,9 @@ This repo is only the skeleton to create libp2p builds. If you want 'off the she
 - [libp2p-ipfs-browser](https://github.com/ipfs/js-libp2p-ipfs-browser) - The libp2p build used by js-ipfs when run in a Browser (that supports WebRTC)
 
 You can find the modules available for libp2p at the [Packages](#packages) section.
+
+[![](https://github.com/libp2p/js-libp2p/blob/1e3e9db84d1e5fdd5682cc5e0fdaabfcd07ad55a/img/js-libp2p-ipfs.png?raw=true)](https://github.com/ipfs/js-libp2p-ipfs)
+[![](https://github.com/libp2p/js-libp2p/blob/1e3e9db84d1e5fdd5682cc5e0fdaabfcd07ad55a/img/js-libp2p-ipfs-browser.png?raw=true)](https://github.com/ipfs/js-libp2p-ipfs-browser)
 
 ## Background
 
