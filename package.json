@@ -1,7 +1,7 @@
 {
-  "name": "libp2p-pubsub-gossip",
+  "name": "libp2p-floodsub",
   "version": "0.0.0",
-  "description": "libp2p-pubsub-gossip, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
+  "description": "libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
   "main": "lib/core/index.js",
   "jsnext:main": "src/core/index.js",
   "scripts": {
@@ -25,7 +25,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p-pubsub-gossip.git"
+    "url": "git+https://github.com/libp2p/js-libp2p-floodsub.git"
   },
   "keywords": [
     "IPFS",
@@ -38,9 +38,9 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-pubsub-gossip/issues"
+    "url": "https://github.com/libp2p/js-libp2p-floodsub/issues"
   },
-  "homepage": "https://github.com/libp2p/js-libp2p-pubsub-gossip#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p-floodsub#readme",
   "devDependencies": {
     "aegir": "^8.0.1",
     "chai": "^3.5.0",
