@@ -21,7 +21,7 @@
 
 libp2p is a networking stack and library modularized out of The IPFS Project, and bundled separately for other tools to use.
 
-This repo is only the skeleton to create libp2p builds. If you want 'off the shelf' builds of libp2p, you can check:
+**This repo is only the skeleton to create libp2p builds. If you want 'off the shelf' builds of libp2p, you can check:**
 
 - [libp2p-ipfs](https://github.com/ipfs/js-libp2p-ipfs) - The libp2p build used by js-ipfs when run in Node.js
 - [libp2p-ipfs-browser](https://github.com/ipfs/js-libp2p-ipfs-browser) - The libp2p build used by js-ipfs when run in a Browser (that supports WebRTC)
