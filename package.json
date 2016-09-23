@@ -59,7 +59,7 @@
     "interface-connection": "^0.2.1",
     "ip-address": "^5.8.2",
     "libp2p-identify": "^0.2.0",
-    "lodash.contains": "^2.4.3",
+    "lodash.includes": "^4.3.0",
     "multiaddr": "^2.0.2",
     "multistream-select": "^0.11.0",
     "peer-id": "^0.7.0",
