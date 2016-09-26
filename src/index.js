@@ -6,7 +6,6 @@ const c = require('./crypto')
 
 exports.hmac = c.hmac
 exports.aes = c.aes
-exports.rsa = c.rsa
 exports.webcrypto = c.webcrypto
 
 const keys = exports.keys = require('./keys')

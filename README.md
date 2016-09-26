@@ -21,13 +21,6 @@ needed for libp2p. This is based on this [go implementation](https://github.com/
 - [Usage](#usage)
   - [Example](#example)
 - [API](#api)
-  - [`generateKeyPair(type, bits, cb)`](#generatekeypairtype-bits-cb)
-  - [`generateEphemeralKeyPair(curve)`](#generateephemeralkeypaircurve)
-  - [`keyStretcher(cipherType, hashType, secret)`](#keystretcherciphertype-hashtype-secret)
-  - [`marshalPublicKey(key[, type])`](#marshalpublickeykey-type)
-  - [`unmarshalPublicKey(buf)`](#unmarshalpublickeybuf)
-  - [`marshalPrivateKey(key[, type])`](#marshalprivatekeykey-type)
-  - [`unmarshalPrivateKey(buf)`](#unmarshalprivatekeybuf)
 - [Contribute](#contribute)
 - [License](#license)
 
@@ -50,78 +43,7 @@ crypto.generateKeyPair('RSA', 2048, (err, key) => {
 
 ## API
 
-### `generateKeyPair(type, bits, cb)`
-
-- `type: String`, only `'RSA'` is currently supported
-- `bits: Number`
-- `cb: Function`
-
-Generates a keypair of the given type and bitsize.
-
-### `generateEphemeralKeyPair(curve)`
-
-- `curve: String`, one of `'P-256'`, `'P-384'`, `'P-521'` is currently supported
-
-Generates an ephemeral public key and returns a function that will compute the shared secret key.
-
-Focuses only on ECDH now, but can be made more general in the future.
-
-Returns an object of the form
-```js
-{
-  key: Buffer,
-  genSharedKey: Function
-}
-```
-
-### `keyStretcher(cipherType, hashType, secret)`
-
-- `cipherType: String`, one of `'AES-128'`, `'AES-256'`, `'Blowfish'`
-- `hashType: String`, one of `'SHA1'`, `SHA256`, `SHA512`
-- `secret: Buffer`
-
-Generates a set of keys for each party by stretching the shared key.
-
-Returns an object of the form
-```js
-{
-  k1: {
-    iv: Buffer,
-    cipherKey: Buffer,
-    macKey: Buffer
-  },
-  k2: {
-    iv: Buffer,
-    cipherKey: Buffer,
-    macKey: Buffer
-  }
-}
-```
-### `marshalPublicKey(key[, type])`
-
-- `key: crypto.rsa.RsaPublicKey`
-- `type: String`, only `'RSA'` is currently supported
-
-Converts a public key object into a protobuf serialized public key.
-
-### `unmarshalPublicKey(buf)`
-
-- `buf: Buffer`
-
-Converts a protobuf serialized public key into its  representative object.
-
-### `marshalPrivateKey(key[, type])`
-
-- `key: crypto.rsa.RsaPrivateKey`
-- `type: String`, only `'RSA'` is currently supported
-
-Converts a private key object into a protobuf serialized private key.
-
-### `unmarshalPrivateKey(buf)`
-
-- `buf: Buffer`
-
-Converts a protobuf serialized private key into its  representative object.
+See [API.md](API.md)
 
 ## Contribute
 
