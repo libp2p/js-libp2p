@@ -29,7 +29,7 @@
     "karma": "^1.2.0",
     "karma-chrome-launcher": "^2.0.0",
     "karma-firefox-launcher": "^0.1.7",
-    "karma-mocha": "^0.2.2",
+    "karma-mocha": "^1.2.0",
     "karma-spec-reporter": "0.0.24",
     "karma-webpack": "^1.8.0",
     "libp2p-websockets": "^0.2.1",
