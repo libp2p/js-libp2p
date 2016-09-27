@@ -65,7 +65,7 @@ peerInfo is a [PeerInfo](https://github.com/libp2p/js-peer-info) object that rep
 
 ##### `swarm.transport.add(key, transport, options, callback)`
 
-libp2p-swarm expects transports that implement [interface-transport](https://github.com/libp2p/abstract-transport). For example [libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp).
+libp2p-swarm expects transports that implement [interface-transport](https://github.com/libp2p/interface-transport). For example [libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp).
 
 - `key` - the transport identifier.
 - `transport` -
