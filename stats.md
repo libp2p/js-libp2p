@@ -4,8 +4,8 @@
 
 |       | non-minified | minified |
 |-------|--------------|----------|
-|before | `1.7M`       | `949K`   |
-|after  | `461K`       | `291K`   |
+|before | `1.8M`       | `949K`   |
+|after  | `606K`       | `382K`   |
 
 ## Performance
 
@@ -36,10 +36,10 @@ sign and verify x 109 ops/sec ±2.00% (53 runs sampled)
 ##### Node `6.6.0`
 
 ```
-generateKeyPair 1024bits x 44.42 ops/sec ±10.21% (43 runs sampled)
-generateKeyPair 2048bits x 7.46 ops/sec ±22.60% (27 runs sampled)
-generateKeyPair 4096bits x 1.64 ops/sec ±30.16% (13 runs sampled)
-sign and verify x 900 ops/sec ±4.03% (68 runs sampled)
+generateKeyPair 1024bits x 42.45 ops/sec ±9.87% (52 runs sampled)
+generateKeyPair 2048bits x 7.46 ops/sec ±23.80% (16 runs sampled)
+generateKeyPair 4096bits x 1.50 ops/sec ±58.59% (13 runs sampled)
+sign and verify x 1,080 ops/sec ±2.23% (74 runs sampled)
 ```
 
 ##### Browser (Chrome `53.0.2785.116`)

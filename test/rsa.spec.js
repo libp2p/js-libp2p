@@ -5,6 +5,7 @@ const expect = require('chai').expect
 
 const crypto = require('../src')
 const rsa = crypto.keys.rsa
+const fixtures = require('./fixtures/go-key-rsa')
 
 describe('RSA', () => {
   let key
@@ -156,6 +157,19 @@ describe('RSA', () => {
           return done(err)
         }
         expect(valid).to.be.eql(false)
+        done()
+      })
+    })
+  })
+
+  describe('go interop', () => {
+    it('verifies with data from go', (done) => {
+      const key = crypto.unmarshalPublicKey(fixtures.verify.publicKey)
+
+      key.verify(fixtures.verify.data, fixtures.verify.signature, (err, ok) => {
+        if (err) throw err
+        expect(err).to.not.exist
+        expect(ok).to.be.eql(true)
         done()
       })
     })

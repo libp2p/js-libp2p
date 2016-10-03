@@ -11,7 +11,9 @@ describe('libp2p-crypto', () => {
   let key
   before((done) => {
     crypto.generateKeyPair('RSA', 2048, (err, _key) => {
-      if (err) return done(err)
+      if (err) {
+        return done(err)
+      }
       key = _key
       done()
     })

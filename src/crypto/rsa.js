@@ -1,13 +1,12 @@
 'use strict'
 
-const multihashing = require('multihashing')
 const nodeify = require('nodeify')
-const BN = require('bn.js')
 const asn1 = require('asn1.js')
 
+const util = require('./util')
+const toBase64 = util.toBase64
+const toBn = util.toBn
 const crypto = require('./webcrypto')()
-
-const sha2256 = multihashing.createHash('sha2-256')
 
 exports.generateKey = function (bits, callback) {
   nodeify(crypto.subtle.generateKey(
@@ -21,12 +20,10 @@ exports.generateKey = function (bits, callback) {
     ['sign', 'verify']
   )
   .then(exportKey)
-  .then((keys) => {
-    return {
-      privateKey: keys[0],
-      publicKey: Buffer.from(keys[1])
-    }
-  }), callback)
+  .then((keys) => ({
+    privateKey: keys[0],
+    publicKey: keys[1]
+  })), callback)
 }
 
 // Takes a jwk key
@@ -44,18 +41,14 @@ exports.unmarshalPrivateKey = function (key, callback) {
 
   nodeify(Promise.all([
     privateKey,
-    derivePublicFromPrivate(privateKey)
-  ]).then((keys) => {
-    return exportKey({
-      privateKey: keys[0],
-      publicKey: keys[1]
-    })
-  }).then((keys) => {
-    return {
-      privateKey: keys[0],
-      publicKey: Buffer.from(keys[1])
-    }
-  }), callback)
+    derivePublicFromPrivate(key)
+  ]).then((keys) => exportKey({
+    privateKey: keys[0],
+    publicKey: keys[1]
+  })).then((keys) => ({
+    privateKey: keys[0],
+    publicKey: keys[1]
+  })), callback)
 }
 
 exports.getRandomValues = function (arr) {
@@ -63,67 +56,53 @@ exports.getRandomValues = function (arr) {
 }
 
 exports.hashAndSign = function (key, msg, callback) {
-  sha2256(msg, (err, digest) => {
-    if (err) {
-      return callback(err)
-    }
-
-    nodeify(crypto.subtle.importKey(
-      'jwk',
-      key,
-      {
-        name: 'RSASSA-PKCS1-v1_5',
-        hash: {name: 'SHA-256'}
-      },
-      false,
-      ['sign']
-    ).then((privateKey) => {
-      return crypto.subtle.sign(
-        {name: 'RSASSA-PKCS1-v1_5'},
-        privateKey,
-        Uint8Array.from(digest)
-      )
-    }).then((sig) => Buffer.from(sig)), callback)
-  })
+  nodeify(crypto.subtle.importKey(
+    'jwk',
+    key,
+    {
+      name: 'RSASSA-PKCS1-v1_5',
+      hash: {name: 'SHA-256'}
+    },
+    false,
+    ['sign']
+  ).then((privateKey) => {
+    return crypto.subtle.sign(
+      {name: 'RSASSA-PKCS1-v1_5'},
+      privateKey,
+      Uint8Array.from(msg)
+    )
+  }).then((sig) => Buffer.from(sig)), callback)
 }
 
 exports.hashAndVerify = function (key, sig, msg, callback) {
-  sha2256(msg, (err, digest) => {
-    if (err) {
-      return callback(err)
-    }
-
-    nodeify(crypto.subtle.importKey(
-      'spki',
-      Uint8Array.from(key),
-      {
-        name: 'RSASSA-PKCS1-v1_5',
-        hash: {name: 'SHA-256'}
-      },
-      false,
-      ['verify']
-    ).then((publicKey) => {
-      return crypto.subtle.verify(
-        {name: 'RSASSA-PKCS1-v1_5'},
-        publicKey,
-        Uint8Array.from(sig),
-        Uint8Array.from(digest)
-      )
-    }), callback)
-  })
+  nodeify(crypto.subtle.importKey(
+    'jwk',
+    key,
+    {
+      name: 'RSASSA-PKCS1-v1_5',
+      hash: {name: 'SHA-256'}
+    },
+    false,
+    ['verify']
+  ).then((publicKey) => {
+    return crypto.subtle.verify(
+      {name: 'RSASSA-PKCS1-v1_5'},
+      publicKey,
+      sig,
+      msg
+    )
+  }), callback)
 }
 
 function exportKey (pair) {
   return Promise.all([
     crypto.subtle.exportKey('jwk', pair.privateKey),
-    crypto.subtle.exportKey('spki', pair.publicKey)
+    crypto.subtle.exportKey('jwk', pair.publicKey)
   ])
 }
 
-function derivePublicFromPrivate (privatePromise) {
-  return privatePromise.then((privateKey) => {
-    return crypto.subtle.exportKey('jwk', privateKey)
-  }).then((jwKey) => crypto.subtle.importKey(
+function derivePublicFromPrivate (jwKey) {
+  return crypto.subtle.importKey(
     'jwk',
     {
       kty: jwKey.kty,
@@ -138,7 +117,7 @@ function derivePublicFromPrivate (privatePromise) {
     },
     true,
     ['verify']
-  ))
+  )
 }
 
 const RSAPrivateKey = asn1.define('RSAPrivateKey', function () {
@@ -152,6 +131,35 @@ const RSAPrivateKey = asn1.define('RSAPrivateKey', function () {
     this.key('exponent1').int(),
     this.key('exponent2').int(),
     this.key('coefficient').int()
+  )
+})
+
+const AlgorithmIdentifier = asn1.define('AlgorithmIdentifier', function () {
+  this.seq().obj(
+    this.key('algorithm').objid({
+      '1.2.840.113549.1.1.1': 'rsa'
+    }),
+    this.key('none').optional().null_(),
+    this.key('curve').optional().objid(),
+    this.key('params').optional().seq().obj(
+      this.key('p').int(),
+      this.key('q').int(),
+      this.key('g').int()
+    )
+  )
+})
+
+const PublicKey = asn1.define('RSAPublicKey', function () {
+  this.seq().obj(
+    this.key('algorithm').use(AlgorithmIdentifier),
+    this.key('subjectPublicKey').bitstr()
+  )
+})
+
+const RSAPublicKey = asn1.define('RSAPublicKey', function () {
+  this.seq().obj(
+    this.key('modulus').int(),
+    this.key('publicExponent').int()
   )
 })
 
@@ -174,6 +182,7 @@ exports.pkcs1ToJwk = function (bytes) {
   }
 }
 
+// Convert a JWK key into PKCS#1 in ASN1 DER format
 exports.jwkToPkcs1 = function (jwk) {
   return RSAPrivateKey.encode({
     version: 0,
@@ -188,18 +197,32 @@ exports.jwkToPkcs1 = function (jwk) {
   }, 'der')
 }
 
-// Convert a BN.js instance to a base64 encoded string without padding
-// Adapted from https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-41#appendix-C
-function toBase64 (bn) {
-  let s = bn.toBuffer('be').toString('base64')
+// Convert a PKCIX in ASN1 DER format to a JWK key
+exports.pkixToJwk = function (bytes) {
+  const ndata = PublicKey.decode(bytes, 'der')
+  const asn1 = RSAPublicKey.decode(ndata.subjectPublicKey.data, 'der')
 
-  return s
-    .replace(/(=*)$/, '') // Remove any trailing '='s
-    .replace(/\+/g, '-')  // 62nd char of encoding
-    .replace(/\//g, '_')  // 63rd char of encoding
+  return {
+    kty: 'RSA',
+    n: toBase64(asn1.modulus),
+    e: toBase64(asn1.publicExponent),
+    alg: 'RS256',
+    kid: '2011-04-29'
+  }
 }
 
-// Convert a base64 encoded string to a BN.js instance
-function toBn (str) {
-  return new BN(Buffer.from(str, 'base64'))
+// Convert a JWK key to PKCIX in ASN1 DER format
+exports.jwkToPkix = function (jwk) {
+  return PublicKey.encode({
+    algorithm: {
+      algorithm: 'rsa',
+      none: null
+    },
+    subjectPublicKey: {
+      data: RSAPublicKey.encode({
+        modulus: toBn(jwk.n),
+        publicExponent: toBn(jwk.e)
+      }, 'der')
+    }
+  }, 'der')
 }

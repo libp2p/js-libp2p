@@ -1,6 +1,6 @@
 'use strict'
 
-const multihashing = require('multihashing')
+const multihashing = require('multihashing-async')
 const protobuf = require('protocol-buffers')
 
 const crypto = require('../crypto').rsa
@@ -17,7 +17,7 @@ class RsaPublicKey {
   }
 
   marshal () {
-    return this._key
+    return crypto.jwkToPkix(this._key)
   }
 
   get bytes () {
@@ -103,7 +103,9 @@ function unmarshalRsaPrivateKey (bytes, callback) {
 }
 
 function unmarshalRsaPublicKey (bytes) {
-  return new RsaPublicKey(bytes)
+  const jwk = crypto.pkixToJwk(bytes)
+
+  return new RsaPublicKey(jwk)
 }
 
 function generateKeyPair (bits, cb) {
