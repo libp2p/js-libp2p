@@ -13,7 +13,7 @@
 > Crypto primitives for libp2p in JavaScript
 
 This repo contains the JavaScript implementation of the crypto primitives
-needed for libp2p. This is based on this [go implementation](https://github.com/ipfs/go-libp2p-crypto).
+needed for libp2p. This is based on this [go implementation](https://github.com/libp2p/go-libp2p-crypto).
 
 ## Table of Contents
 
@@ -123,7 +123,7 @@ Converts a protobuf serialized private key into its  representative object.
 
 ## Contribute
 
-Feel free to join in. All welcome. Open an [issue](https://github.com/ipfs/js-libp2p-crypto/issues)!
+Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/js-libp2p-crypto/issues)!
 
 This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
 
