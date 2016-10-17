@@ -10,7 +10,7 @@ js-libp2p-multiplex
 
 > multiplex implementation wrapper that is compatible with libp2p Stream Muxer expected interface
 
-[![](https://github.com/diasdavid/interface-stream-muxer/raw/master/img/badge.png)](https://github.com/diasdavid/interface-stream-muxer)
+[![](https://github.com/libp2p/interface-stream-muxer/raw/master/img/badge.png)](https://github.com/diasdavid/interface-stream-muxer)
 
 ## Usage
 
