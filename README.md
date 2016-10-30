@@ -21,7 +21,7 @@ snr.on('peer', function (peerInfo) {
 })
 ```
 
-- peer - The peer that represents itself. Must be of a type [peer-info](https://github.com/diasdavid/js-peer-info)
+- peer - The peer that represents itself. Must be of a type [peer-info](https://github.com/libp2p/js-peer-info)
 - swarm - swarm, needed in order to verify if we are able to establish a connection with the other peer
 - options
   - `broadcast` - (true/false) announce our presence through mDNS
