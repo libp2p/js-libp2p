@@ -35,7 +35,7 @@
     "libp2p-websockets": "^0.2.1",
     "mocha": "^3.0.2",
     "pre-commit": "^1.1.2",
-    "standard": "^8.0.0",
+    "standard": "^8.4.0",
     "stream-pair": "^1.0.3",
     "tape": "^4.2.0",
     "timed-tape": "^0.1.1",
