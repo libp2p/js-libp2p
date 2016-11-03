@@ -1,35 +1,23 @@
 'use strict'
 
-const forge = require('node-forge')
+const multihashing = require('multihashing-async')
 const protobuf = require('protocol-buffers')
-const fs = require('fs')
-const path = require('path')
 
-const utils = require('../utils')
-
-const pki = forge.pki
-const rsa = pki.rsa
-
-const pbm = protobuf(fs.readFileSync(path.join(__dirname, '../crypto.proto')))
+const crypto = require('../crypto').rsa
+const pbm = protobuf(require('../crypto.proto'))
 
 class RsaPublicKey {
-  constructor (k) {
-    this._key = k
+  constructor (key) {
+    this._key = key
   }
 
-  verify (data, sig) {
-    const md = forge.md.sha256.create()
-    if (Buffer.isBuffer(data)) {
-      md.update(data.toString('binary'), 'binary')
-    } else {
-      md.update(data)
-    }
-
-    return this._key.verify(md.digest().bytes(), sig)
+  verify (data, sig, callback) {
+    ensure(callback)
+    crypto.hashAndVerify(this._key, sig, data, callback)
   }
 
   marshal () {
-    return new Buffer(forge.asn1.toDer(pki.publicKeyToAsn1(this._key)).bytes(), 'binary')
+    return crypto.jwkToPkix(this._key)
   }
 
   get bytes () {
@@ -47,34 +35,27 @@ class RsaPublicKey {
     return this.bytes.equals(key.bytes)
   }
 
-  hash () {
-    return utils.keyHash(this.bytes)
+  hash (callback) {
+    ensure(callback)
+    multihashing(this.bytes, 'sha2-256', callback)
   }
 }
 
 class RsaPrivateKey {
-  constructor (privKey, pubKey) {
-    this._privateKey = privKey
-    if (pubKey) {
-      this._publicKey = pubKey
-    } else {
-      this._publicKey = forge.pki.setRsaPublicKey(privKey.n, privKey.e)
-    }
+  // key       - Object of the jwk format
+  // publicKey - Buffer of the spki format
+  constructor (key, publicKey) {
+    this._key = key
+    this._publicKey = publicKey
   }
 
   genSecret () {
-    return forge.random.getBytesSync(16)
+    return crypto.getRandomValues(new Uint8Array(16))
   }
 
-  sign (message) {
-    const md = forge.md.sha256.create()
-    if (Buffer.isBuffer(message)) {
-      md.update(message.toString('binary'), 'binary')
-    } else {
-      md.update(message)
-    }
-    const raw = this._privateKey.sign(md, 'RSASSA-PKCS1-V1_5')
-    return new Buffer(raw, 'binary')
+  sign (message, callback) {
+    ensure(callback)
+    crypto.hashAndSign(this._key, message, callback)
   }
 
   get public () {
@@ -85,12 +66,12 @@ class RsaPrivateKey {
     return new RsaPublicKey(this._publicKey)
   }
 
-  decrypt (bytes) {
-    return this._privateKey.decrypt(bytes, 'RSAES-PKCS1-V1_5')
+  decrypt (msg, callback) {
+    crypto.decrypt(this._key, msg, callback)
   }
 
   marshal () {
-    return new Buffer(forge.asn1.toDer(pki.privateKeyToAsn1(this._privateKey)).bytes(), 'binary')
+    return crypto.jwkToPkcs1(this._key)
   }
 
   get bytes () {
@@ -104,32 +85,43 @@ class RsaPrivateKey {
     return this.bytes.equals(key.bytes)
   }
 
-  hash () {
-    return utils.keyHash(this.bytes)
+  hash (callback) {
+    ensure(callback)
+    multihashing(this.bytes, 'sha2-256', callback)
   }
 }
 
-function unmarshalRsaPrivateKey (bytes) {
-  if (Buffer.isBuffer(bytes)) {
-    bytes = forge.util.createBuffer(bytes.toString('binary'))
-  }
-  const key = pki.privateKeyFromAsn1(forge.asn1.fromDer(bytes))
+function unmarshalRsaPrivateKey (bytes, callback) {
+  const jwk = crypto.pkcs1ToJwk(bytes)
+  crypto.unmarshalPrivateKey(jwk, (err, keys) => {
+    if (err) {
+      return callback(err)
+    }
 
-  return new RsaPrivateKey(key)
+    callback(null, new RsaPrivateKey(keys.privateKey, keys.publicKey))
+  })
 }
 
 function unmarshalRsaPublicKey (bytes) {
-  if (Buffer.isBuffer(bytes)) {
-    bytes = forge.util.createBuffer(bytes.toString('binary'))
-  }
-  const key = pki.publicKeyFromAsn1(forge.asn1.fromDer(bytes))
+  const jwk = crypto.pkixToJwk(bytes)
 
-  return new RsaPublicKey(key)
+  return new RsaPublicKey(jwk)
 }
 
-function generateKeyPair (bits) {
-  const p = rsa.generateKeyPair({bits})
-  return new RsaPrivateKey(p.privateKey, p.publicKey)
+function generateKeyPair (bits, cb) {
+  crypto.generateKey(bits, (err, keys) => {
+    if (err) {
+      return cb(err)
+    }
+
+    cb(null, new RsaPrivateKey(keys.privateKey, keys.publicKey))
+  })
+}
+
+function ensure (cb) {
+  if (typeof cb !== 'function') {
+    throw new Error('callback is required')
+  }
 }
 
 module.exports = {

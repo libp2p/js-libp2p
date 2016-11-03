@@ -1,24 +1,25 @@
 'use strict'
 
 const protobuf = require('protocol-buffers')
-const fs = require('fs')
-const path = require('path')
-const pbm = protobuf(fs.readFileSync(path.join(__dirname, './crypto.proto')))
+const pbm = protobuf(require('./crypto.proto'))
+const c = require('./crypto')
 
-exports.utils = require('./utils')
+exports.hmac = c.hmac
+exports.aes = c.aes
+exports.webcrypto = c.webcrypto
+
 const keys = exports.keys = require('./keys')
-
 exports.keyStretcher = require('./key-stretcher')
 exports.generateEphemeralKeyPair = require('./ephemeral-keys')
 
 // Generates a keypair of the given type and bitsize
-exports.generateKeyPair = (type, bits) => {
+exports.generateKeyPair = (type, bits, cb) => {
   let key = keys[type.toLowerCase()]
   if (!key) {
-    throw new Error('invalid or unsupported key type')
+    return cb(new Error('invalid or unsupported key type'))
   }
 
-  return key.generateKeyPair(bits)
+  key.generateKeyPair(bits, cb)
 }
 
 // Converts a protobuf serialized public key into its
@@ -43,22 +44,19 @@ exports.marshalPublicKey = (key, type) => {
     throw new Error('invalid or unsupported key type')
   }
 
-  return pbm.PublicKey.encode({
-    Type: pbm.KeyType.RSA,
-    Data: key.marshal()
-  })
+  return key.bytes
 }
 
 // Converts a protobuf serialized private key into its
 // representative object
-exports.unmarshalPrivateKey = (buf) => {
+exports.unmarshalPrivateKey = (buf, callback) => {
   const decoded = pbm.PrivateKey.decode(buf)
 
   switch (decoded.Type) {
     case pbm.KeyType.RSA:
-      return keys.rsa.unmarshalRsaPrivateKey(decoded.Data)
+      return keys.rsa.unmarshalRsaPrivateKey(decoded.Data, callback)
     default:
-      throw new Error('invalid or unsupported key type')
+      callback(new Error('invalid or unsupported key type'))
   }
 }
 
@@ -71,8 +69,5 @@ exports.marshalPrivateKey = (key, type) => {
     throw new Error('invalid or unsupported key type')
   }
 
-  return pbm.PrivateKey.encode({
-    Type: pbm.KeyType.RSA,
-    Data: key.marshal()
-  })
+  return key.bytes
 }

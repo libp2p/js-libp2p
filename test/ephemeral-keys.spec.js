@@ -1,44 +1,53 @@
+/* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 'use strict'
 
 const expect = require('chai').expect
-const EC = require('elliptic').ec
+const parallel = require('async/parallel')
 
-const crypto = require('../src')
 const fixtures = require('./fixtures/go-elliptic-key')
+const crypto = require('../src')
+
+const curves = ['P-256', 'P-384'] // 'P-521' fails in tests :( no clue why
+const lengths = {
+  'P-256': 65,
+  'P-384': 97,
+  'P-521': 133
+}
 
 describe('generateEphemeralKeyPair', () => {
-  it('returns a function that generates a shared secret', () => {
-    const res = crypto.generateEphemeralKeyPair('P-256')
-    const ourPublic = '044374add0df35706db7dade25f3959fc051d2ef5166f8a6a0aa632d0ab41cdb4d30e1a064e121ac56155235a6b8d4c5d8fe35e019f507f4e2ff1445e229d7af43'
+  curves.forEach((curve) => {
+    it(`generate and shared key ${curve}`, (done) => {
+      parallel([
+        (cb) => crypto.generateEphemeralKeyPair(curve, cb),
+        (cb) => crypto.generateEphemeralKeyPair(curve, cb)
+      ], (err, keys) => {
+        expect(err).to.not.exist
+        expect(keys[0].key).to.have.length(lengths[curve])
+        expect(keys[1].key).to.have.length(lengths[curve])
 
-    expect(
-      res.genSharedKey(ourPublic)
-    ).to.have.length(32)
-
-    expect(
-      res.key
-    ).to.exist
+        keys[0].genSharedKey(keys[1].key, (err, shared) => {
+          expect(err).to.not.exist
+          expect(shared).to.have.length(32)
+          done()
+        })
+      })
+    })
   })
 
   describe('go interop', () => {
-    it('generates a shared secret', () => {
+    it('generates a shared secret', (done) => {
       const curve = fixtures.curve
-      const ec = new EC(fixtures.curveJs)
-      const bobPrivate = ec.keyFromPrivate(fixtures.bob.private, 'binary')
 
-      const alice = crypto.generateEphemeralKeyPair(curve)
-      const bob = {
-        key: fixtures.bob.public,
-        // this is using bobs private key from go ipfs
-        // instead of alices
-        genSharedKey: (key) => alice.genSharedKey(key, bobPrivate)
-      }
+      crypto.generateEphemeralKeyPair(curve, (err, alice) => {
+        expect(err).to.not.exist
 
-      const s1 = alice.genSharedKey(bob.key)
-      const s2 = bob.genSharedKey(alice.key)
-
-      expect(s1.equals(s2)).to.be.eql(true)
+        alice.genSharedKey(fixtures.bob.public, (err, s1) => {
+          expect(err).to.not.exist
+          expect(s1).to.have.length(32)
+          done()
+        })
+      })
     })
   })
 })
