@@ -2,7 +2,7 @@
 
 const identify = require('libp2p-identify')
 const multistream = require('multistream-select')
-const waterfall = require('run-waterfall')
+const waterfall = require('async/waterfall')
 const debug = require('debug')
 const log = debug('libp2p:swarm:connection')
 

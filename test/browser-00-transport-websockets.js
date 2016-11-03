@@ -17,7 +17,7 @@ describe('transport - websockets', () => {
     const b58IdSrc = 'QmYzgdesgjdvD3okTPGZT9NPmh1BuH5FfTVNKjsvaAprhb'
     // use a pre generated Id to save time
     const idSrc = Id.createFromB58String(b58IdSrc)
-    const peerSrc = new Peer(idSrc)
+    const peerSrc = Peer(idSrc)
     swarm = new Swarm(peerSrc)
   })
 

@@ -7,8 +7,6 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const WebSockets = require('libp2p-websockets')
 const spdy = require('libp2p-spdy')
-const fs = require('fs')
-const path = require('path')
 const pull = require('pull-stream')
 
 const Swarm = require('../src')
@@ -19,9 +17,14 @@ describe('high level API (swarm with spdy + websockets)', function () {
   var swarm
   var peerDst
 
-  before(() => {
-    const peerSrc = new PeerInfo()
-    swarm = new Swarm(peerSrc)
+  before((done) => {
+    PeerInfo.create((err, peerSrc) => {
+      if (err) {
+        return done(err)
+      }
+      swarm = new Swarm(peerSrc)
+      done()
+    })
   })
 
   it('add spdy', () => {
@@ -34,16 +37,15 @@ describe('high level API (swarm with spdy + websockets)', function () {
     expect(Object.keys(swarm.transports).length).to.equal(1)
   })
 
-  it('create Dst peer info', () => {
-    const id = PeerId.createFromJSON(
-        JSON.parse(
-          fs.readFileSync(
-            path.join(__dirname, './test-data/id-2.json'))))
+  it('create Dst peer info', (done) => {
+    PeerId.createFromJSON(require('./test-data/id-2.json'), (err, id) => {
+      expect(err).to.not.exist
 
-    peerDst = new PeerInfo(id)
-
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9200/ws')
-    peerDst.multiaddr.add(ma)
+      peerDst = new PeerInfo(id)
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/9200/ws')
+      peerDst.multiaddr.add(ma)
+      done()
+    })
   })
 
   it('dial to warm a conn', (done) => {

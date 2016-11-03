@@ -1,27 +1,48 @@
 /* eslint-env mocha */
-
 'use strict'
 
 const expect = require('chai').expect
-const parallel = require('run-parallel')
+const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const TCP = require('libp2p-tcp')
 const pull = require('pull-stream')
 
+const utils = require('./utils')
 const Swarm = require('../src')
 
 describe('transport - tcp', function () {
   let swarmA
   let swarmB
-  let peerA = new Peer()
-  let peerB = new Peer()
+  let peerA
+  let peerB
 
-  before(() => {
-    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888'))
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999'))
-    swarmA = new Swarm(peerA)
-    swarmB = new Swarm(peerB)
+  before((done) => {
+    utils.createInfos(2, (err, infos) => {
+      if (err) {
+        return done(err)
+      }
+      peerA = infos[0]
+      peerB = infos[1]
+
+      peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888'))
+      peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999'))
+      swarmA = new Swarm(peerA)
+      swarmB = new Swarm(peerB)
+      done()
+    })
+  })
+
+  let peer
+  beforeEach((done) => {
+    Peer.create((err, info) => {
+      if (err) {
+        return done(err)
+      }
+
+      peer = info
+      done()
+    })
   })
 
   it('add', (done) => {
@@ -99,7 +120,6 @@ describe('transport - tcp', function () {
 
   it('support port 0', (done) => {
     let swarm
-    let peer = new Peer()
     peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
     swarm = new Swarm(peer)
     swarm.transport.add('tcp', new TCP())
@@ -116,7 +136,6 @@ describe('transport - tcp', function () {
 
   it('support addr /ip4/0.0.0.0/tcp/9050', (done) => {
     let swarm
-    let peer = new Peer()
     peer.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/9050'))
     swarm = new Swarm(peer)
     swarm.transport.add('tcp', new TCP())
@@ -137,7 +156,6 @@ describe('transport - tcp', function () {
 
   it('support addr /ip4/0.0.0.0/tcp/0', (done) => {
     let swarm
-    let peer = new Peer()
     peer.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/0'))
     swarm = new Swarm(peer)
     swarm.transport.add('tcp', new TCP())
@@ -154,7 +172,6 @@ describe('transport - tcp', function () {
 
   it('listen in several addrs', (done) => {
     let swarm
-    let peer = new Peer()
     peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
     peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
     peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))

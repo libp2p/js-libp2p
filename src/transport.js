@@ -1,7 +1,7 @@
 'use strict'
 
 const Connection = require('interface-connection').Connection
-const parallel = require('run-parallel')
+const parallel = require('async/parallel')
 const debug = require('debug')
 const log = debug('libp2p:swarm:transport')
 

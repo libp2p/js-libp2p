@@ -20,37 +20,49 @@ let sigS
 
 gulp.task('test:browser:before', (done) => {
   function createListenerA (cb) {
-    const id = PeerId.createFromJSON(
-        JSON.parse(
-          fs.readFileSync(
-            path.join(__dirname, './test/test-data/id-1.json'))))
+    PeerId.createFromJSON(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, './test/test-data/id-1.json'))
+      ),
+      (err, id) => {
+        if (err) {
+          return cb(err)
+        }
 
-    const peerA = new PeerInfo(id)
-    const maA = multiaddr('/ip4/127.0.0.1/tcp/9100/ws')
+        const peerA = new PeerInfo(id)
+        const maA = multiaddr('/ip4/127.0.0.1/tcp/9100/ws')
 
-    peerA.multiaddr.add(maA)
-    swarmA = new Swarm(peerA)
-    swarmA.transport.add('ws', new WebSockets())
-    swarmA.transport.listen('ws', {}, echo, cb)
+        peerA.multiaddr.add(maA)
+        swarmA = new Swarm(peerA)
+        swarmA.transport.add('ws', new WebSockets())
+        swarmA.transport.listen('ws', {}, echo, cb)
+      })
   }
 
   function createListenerB (cb) {
-    const id = PeerId.createFromJSON(
-        JSON.parse(
-          fs.readFileSync(
-            path.join(__dirname, './test/test-data/id-2.json'))))
+    PeerId.createFromJSON(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, './test/test-data/id-2.json'))
+      ),
+      (err, id) => {
+        if (err) {
+          return cb(err)
+        }
 
-    const peerB = new PeerInfo(id)
-    const maB = multiaddr('/ip4/127.0.0.1/tcp/9200/ws')
+        const peerB = new PeerInfo(id)
+        const maB = multiaddr('/ip4/127.0.0.1/tcp/9200/ws')
 
-    peerB.multiaddr.add(maB)
-    swarmB = new Swarm(peerB)
+        peerB.multiaddr.add(maB)
+        swarmB = new Swarm(peerB)
 
-    swarmB.transport.add('ws', new WebSockets())
-    swarmB.connection.addStreamMuxer(spdy)
-    swarmB.connection.reuse()
-    swarmB.listen(cb)
-    swarmB.handle('/echo/1.0.0', echo)
+        swarmB.transport.add('ws', new WebSockets())
+        swarmB.connection.addStreamMuxer(spdy)
+        swarmB.connection.reuse()
+        swarmB.listen(cb)
+        swarmB.handle('/echo/1.0.0', echo)
+      })
   }
 
   let count = 0

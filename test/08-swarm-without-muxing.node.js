@@ -2,12 +2,12 @@
 'use strict'
 
 const expect = require('chai').expect
-const parallel = require('run-parallel')
+const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
-const Peer = require('peer-info')
 const TCP = require('libp2p-tcp')
 const pull = require('pull-stream')
 
+const utils = require('./utils')
 const Swarm = require('../src')
 
 describe('high level API - 1st without stream multiplexing (on TCP)', () => {
@@ -17,22 +17,28 @@ describe('high level API - 1st without stream multiplexing (on TCP)', () => {
   let peerB
 
   before((done) => {
-    peerA = new Peer()
-    peerB = new Peer()
+    utils.createInfos(2, (err, infos) => {
+      if (err) {
+        return done(err)
+      }
 
-    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
+      peerA = infos[0]
+      peerB = infos[1]
 
-    swarmA = new Swarm(peerA)
-    swarmB = new Swarm(peerB)
+      peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
+      peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
 
-    swarmA.transport.add('tcp', new TCP())
-    swarmB.transport.add('tcp', new TCP())
+      swarmA = new Swarm(peerA)
+      swarmB = new Swarm(peerB)
 
-    parallel([
-      (cb) => swarmA.transport.listen('tcp', {}, null, cb),
-      (cb) => swarmB.transport.listen('tcp', {}, null, cb)
-    ], done)
+      swarmA.transport.add('tcp', new TCP())
+      swarmB.transport.add('tcp', new TCP())
+
+      parallel([
+        (cb) => swarmA.transport.listen('tcp', {}, null, cb),
+        (cb) => swarmB.transport.listen('tcp', {}, null, cb)
+      ], done)
+    })
   })
 
   after((done) => {

@@ -3,14 +3,14 @@
 
 const expect = require('chai').expect
 
-const parallel = require('run-parallel')
+const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
-const Peer = require('peer-info')
 const TCP = require('libp2p-tcp')
 const WebSockets = require('libp2p-websockets')
 const spdy = require('libp2p-spdy')
 const pull = require('pull-stream')
 
+const utils = require('./utils')
 const Swarm = require('../src')
 
 describe('high level API - with everything mixed all together!', () => {
@@ -26,23 +26,29 @@ describe('high level API - with everything mixed all together!', () => {
   let peerE
 
   before((done) => {
-    peerA = new Peer()
-    peerB = new Peer()
-    peerC = new Peer()
-    peerD = new Peer()
-    peerE = new Peer()
+    utils.createInfos(5, (err, infos) => {
+      if (err) {
+        return done(err)
+      }
 
-    // console.log('peer A', peerA.id.toB58String())
-    // console.log('peer B', peerB.id.toB58String())
-    // console.log('peer C', peerC.id.toB58String())
+      peerA = infos[0]
+      peerB = infos[1]
+      peerC = infos[2]
+      peerD = infos[3]
+      peerE = infos[4]
 
-    swarmA = new Swarm(peerA)
-    swarmB = new Swarm(peerB)
-    swarmC = new Swarm(peerC)
-    swarmD = new Swarm(peerD)
-    swarmE = new Swarm(peerE)
+      // console.log('peer A', peerA.id.toB58String())
+      // console.log('peer B', peerB.id.toB58String())
+      // console.log('peer C', peerC.id.toB58String())
 
-    done()
+      swarmA = new Swarm(peerA)
+      swarmB = new Swarm(peerB)
+      swarmC = new Swarm(peerC)
+      swarmD = new Swarm(peerD)
+      swarmE = new Swarm(peerE)
+
+      done()
+    })
   })
 
   after((done) => {

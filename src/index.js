@@ -2,7 +2,7 @@
 
 const util = require('util')
 const EE = require('events').EventEmitter
-const parallel = require('run-parallel')
+const parallel = require('async/parallel')
 const includes = require('lodash.includes')
 
 const transport = require('./transport')

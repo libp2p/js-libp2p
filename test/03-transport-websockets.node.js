@@ -3,26 +3,35 @@
 
 const expect = require('chai').expect
 
-const parallel = require('run-parallel')
+const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
-const Peer = require('peer-info')
 const WebSockets = require('libp2p-websockets')
 const pull = require('pull-stream')
 const goodbye = require('pull-goodbye')
 
+const utils = require('./utils')
 const Swarm = require('../src')
 
 describe('transport - websockets', function () {
   var swarmA
   var swarmB
-  var peerA = new Peer()
-  var peerB = new Peer()
+  var peerA
+  var peerB
 
-  before(() => {
-    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888/ws'))
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
-    swarmA = new Swarm(peerA)
-    swarmB = new Swarm(peerB)
+  before((done) => {
+    utils.createInfos(2, (err, infos) => {
+      if (err) {
+        return done(err)
+      }
+      peerA = infos[0]
+      peerB = infos[1]
+
+      peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888/ws'))
+      peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC'))
+      swarmA = new Swarm(peerA)
+      swarmB = new Swarm(peerB)
+      done()
+    })
   })
 
   it('add', (done) => {

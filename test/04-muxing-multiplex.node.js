@@ -3,12 +3,12 @@
 
 const expect = require('chai').expect
 
-const parallel = require('run-parallel')
+const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
-const Peer = require('peer-info')
 const TCP = require('libp2p-tcp')
 const multiplex = require('libp2p-spdy')
 const pull = require('pull-stream')
+const utils = require('./utils')
 
 const Swarm = require('../src')
 
@@ -24,31 +24,37 @@ describe.skip('stream muxing with multiplex (on TCP)', () => {
   let peerC
 
   before((done) => {
-    peerA = new Peer()
-    peerB = new Peer()
-    peerC = new Peer()
+    utils.createInfos(3, (err, infos) => {
+      if (err) {
+        return done(err)
+      }
 
-    // console.log('peer A', peerA.id.toB58String())
-    // console.log('peer B', peerB.id.toB58String())
-    // console.log('peer C', peerC.id.toB58String())
+      peerA = infos[0]
+      peerB = infos[1]
+      peerC = infos[2]
 
-    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
-    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))
+      // console.log('peer A', peerA.id.toB58String())
+      // console.log('peer B', peerB.id.toB58String())
+      // console.log('peer C', peerC.id.toB58String())
 
-    swarmA = new Swarm(peerA)
-    swarmB = new Swarm(peerB)
-    swarmC = new Swarm(peerC)
+      peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
+      peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
+      peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))
 
-    swarmA.transport.add('tcp', new TCP())
-    swarmB.transport.add('tcp', new TCP())
-    swarmC.transport.add('tcp', new TCP())
+      swarmA = new Swarm(peerA)
+      swarmB = new Swarm(peerB)
+      swarmC = new Swarm(peerC)
 
-    parallel([
-      (cb) => swarmA.transport.listen('tcp', {}, null, cb),
-      (cb) => swarmB.transport.listen('tcp', {}, null, cb),
-      (cb) => swarmC.transport.listen('tcp', {}, null, cb)
-    ], done)
+      swarmA.transport.add('tcp', new TCP())
+      swarmB.transport.add('tcp', new TCP())
+      swarmC.transport.add('tcp', new TCP())
+
+      parallel([
+        (cb) => swarmA.transport.listen('tcp', {}, null, cb),
+        (cb) => swarmB.transport.listen('tcp', {}, null, cb),
+        (cb) => swarmC.transport.listen('tcp', {}, null, cb)
+      ], done)
+    })
   })
 
   after((done) => {

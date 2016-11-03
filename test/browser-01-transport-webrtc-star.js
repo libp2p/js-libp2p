@@ -6,7 +6,7 @@ const multiaddr = require('multiaddr')
 const peerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const WebRTCStar = require('libp2p-webrtc-star')
-const parallel = require('run-parallel')
+const parallel = require('async/parallel')
 const pull = require('pull-stream')
 
 const Swarm = require('../src')
