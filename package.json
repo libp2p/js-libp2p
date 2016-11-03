@@ -25,7 +25,7 @@
   "homepage": "https://github.com/diasdavid/js-libp2p-multiplex#readme",
   "devDependencies": {
     "chai": "^3.5.0",
-    "interface-stream-muxer": "^0.3.1",
+    "interface-stream-muxer": "^0.5.0",
     "karma": "^1.2.0",
     "karma-chrome-launcher": "^2.0.0",
     "karma-firefox-launcher": "^0.1.7",
