@@ -60,7 +60,7 @@
     "libp2p-identify": "^0.3.0",
     "lodash.includes": "^4.3.0",
     "multiaddr": "^2.0.3",
-    "multistream-select": "^0.11.1",
+    "multistream-select": "^0.12.0",
     "peer-id": "^0.8.0",
     "peer-info": "^0.8.0",
     "protocol-buffers": "^3.1.6"
