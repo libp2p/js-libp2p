@@ -2,8 +2,7 @@
   "name": "libp2p-identify",
   "version": "0.2.0",
   "description": "libp2p Identify Protocol",
-  "main": "lib/index.js",
-  "jsnext:main": "src/index.js",
+  "main": "src/index.js",
   "scripts": {
     "lint": "aegir-lint",
     "build": "aegir-build",
@@ -21,7 +20,7 @@
     "test"
   ],
   "engines": {
-    "node": "^4.3.0"
+    "node": ">=4.0.0"
   },
   "repository": {
     "type": "git",
@@ -38,18 +37,18 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-identify#readme",
   "devDependencies": {
-    "aegir": "^8.0.0",
+    "aegir": "^9.0.1",
     "chai": "^3.5.0",
     "pre-commit": "^1.1.3",
     "pull-pair": "^1.1.0"
   },
   "dependencies": {
-    "multiaddr": "^2.0.2",
-    "peer-id": "^0.7.0",
-    "peer-info": "^0.7.0",
+    "multiaddr": "^2.0.3",
+    "peer-id": "^0.8.0",
+    "peer-info": "^0.8.0",
     "protocol-buffers": "^3.1.6",
-    "pull-length-prefixed": "^1.0.0",
-    "pull-stream": "^3.4.3"
+    "pull-length-prefixed": "^1.2.0",
+    "pull-stream": "^3.5.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",

@@ -19,13 +19,18 @@ module.exports = (conn, callback) => {
 
       const input = msg.decode(data[0])
 
-      const id = PeerId.createFromPubKey(input.publicKey)
-      const info = new PeerInfo(id)
-      input.listenAddrs
-        .map(multiaddr)
-        .forEach((ma) => info.multiaddr.add(ma))
+      PeerId.createFromPubKey(input.publicKey, (err, id) => {
+        if (err) {
+          return callback(err)
+        }
 
-      callback(null, info, getObservedAddrs(input))
+        const info = new PeerInfo(id)
+        input.listenAddrs
+          .map(multiaddr)
+          .forEach((ma) => info.multiaddr.add(ma))
+
+        callback(null, info, getObservedAddrs(input))
+      })
     })
   )
 }

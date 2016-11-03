@@ -1,5 +1,8 @@
-message Identify {
+'use strict'
 
+const protobuf = require('protocol-buffers')
+const schema = new Buffer(`
+message Identify {
   // protocolVersion determines compatibility between peers
   optional string protocolVersion = 5; // e.g. ipfs/1.0.0
 
@@ -23,3 +26,6 @@ message Identify {
   // (DEPRECATED) protocols are the services this node is running
   // repeated string protocols = 3;
 }
+`)
+
+module.exports = protobuf(schema).Identify

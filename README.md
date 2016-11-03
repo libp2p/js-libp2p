@@ -7,6 +7,10 @@
 [![Travis CI](https://travis-ci.org/libp2p/js-libp2p-identify.svg?branch=master)](https://travis-ci.org/libp2p/js-libp2p-identify)
 [![Circle CI](https://circleci.com/gh/libp2p/js-libp2p-identify.svg?style=svg)](https://circleci.com/gh/libp2p/js-libp2p-identify)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-identify.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-identify) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
+![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
+![](https://img.shields.io/badge/Node.js-%3E%3D4.0.0-orange.svg?style=flat-square)
+
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/libp2p-js-identify.svg)](https://saucelabs.com/u/libp2p-js-identify)
 
 > libp2p Identify Protocol
 

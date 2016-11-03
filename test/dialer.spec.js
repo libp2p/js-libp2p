@@ -12,9 +12,20 @@ const msg = require('../src/message')
 const identify = require('../src')
 
 describe('identify.dialer', () => {
+  let original
+  beforeEach((done) => {
+    PeerInfo.create((err, info) => {
+      if (err) {
+        return done(err)
+      }
+
+      original = info
+      done()
+    })
+  })
+
   it('works', (done) => {
     const p = pair()
-    const original = new PeerInfo()
     original.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/5002'))
     const input = msg.encode({
       protocolVersion: 'ipfs/0.1.0',
