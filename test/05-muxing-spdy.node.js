@@ -80,7 +80,7 @@ describe('stream muxing with spdy (on TCP)', () => {
   })
 
   it('handle + dial on protocol', (done) => {
-    swarmB.handle('/abacaxi/1.0.0', (conn) => {
+    swarmB.handle('/abacaxi/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
 
@@ -101,7 +101,7 @@ describe('stream muxing with spdy (on TCP)', () => {
   })
 
   it('dial on protocol, reuse warmed conn', (done) => {
-    swarmA.handle('/papaia/1.0.0', (conn) => {
+    swarmA.handle('/papaia/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
 
@@ -128,7 +128,7 @@ describe('stream muxing with spdy (on TCP)', () => {
   })
 
   it('with Identify, do getPeerInfo', (done) => {
-    swarmA.handle('/banana/1.0.0', (conn) => {
+    swarmA.handle('/banana/1.0.0', (protocol, conn) => {
       conn.getPeerInfo((err, peerInfoC) => {
         expect(err).to.not.exist
         expect(peerInfoC.id.toB58String()).to.equal(peerC.id.toB58String())
@@ -160,8 +160,11 @@ describe('stream muxing with spdy (on TCP)', () => {
     let count = 0
     const destroyed = () => ++count === 2 ? done() : null
 
-    swarmD.handle('/banana/1.0.0', (conn) => {
-      pull(conn, pull.onEnd(destroyed))
+    swarmD.handle('/banana/1.0.0', (protocol, conn) => {
+      pull(
+        conn,
+        pull.onEnd(destroyed)
+      )
     })
 
     swarmA.dial(peerD, '/banana/1.0.0', (err, conn) => {
@@ -210,8 +213,11 @@ describe('stream muxing with spdy (on TCP)', () => {
       let count = 0
       const destroyed = () => ++count === 2 ? close() : null
 
-      swarmE.handle('/avocado/1.0.0', (conn) => {
-        pull(conn, pull.onEnd(destroyed))
+      swarmE.handle('/avocado/1.0.0', (protocol, conn) => {
+        pull(
+          conn,
+          pull.onEnd(destroyed)
+        )
       })
 
       swarmF.dial(peerE, '/avocado/1.0.0', (err, conn) => {

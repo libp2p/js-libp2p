@@ -148,12 +148,13 @@ Hang up the muxed connection we have with the peer.
 
 Start listening on all added transports that are available on the current `peerInfo`.
 
-### `swarm.handle(protocol, handler)`
+### `swarm.handle(protocol, handlerFunc, matchFunc)`
 
 Handle a new protocol.
 
 - `protocol`
-- `handler` - function called when we receive a dial on `protocol. Signature must be `function (conn) {}`
+- `handlerFunc` - function called when we receive a dial on `protocol. Signature must be `function (protocol, conn) {}`
+- `matchFunc` - matchFunc for multistream-select
 
 ### `swarm.unhandle(protocol)`
 

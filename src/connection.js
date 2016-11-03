@@ -18,7 +18,7 @@ module.exports = function connection (swarm) {
       swarm.muxers[muxer.multicodec] = muxer
 
       // for listening
-      swarm.handle(muxer.multicodec, (conn) => {
+      swarm.handle(muxer.multicodec, (protocol, conn) => {
         const muxedConn = muxer.listener(conn)
 
         muxedConn.on('stream', (conn) => {
@@ -70,7 +70,7 @@ module.exports = function connection (swarm) {
 
     reuse () {
       swarm.identify = true
-      swarm.handle(identify.multicodec, (conn) => {
+      swarm.handle(identify.multicodec, (protocol, conn) => {
         identify.listener(conn, swarm._peerInfo)
       })
     },
@@ -82,7 +82,7 @@ module.exports = function connection (swarm) {
       }
 
       swarm.unhandle(swarm.crypto.tag)
-      swarm.handle(tag, (conn) => {
+      swarm.handle(tag, (protocol, conn) => {
         const id = swarm._peerInfo.id
         const secure = encrypt(id, id.privKey, conn)
 

@@ -72,7 +72,7 @@ gulp.task('test:browser:before', (done) => {
   createListenerB(ready)
   sigS = sigServer.start(15555, ready)
 
-  function echo (conn) {
+  function echo (protocol, conn) {
     pull(conn, conn)
   }
 })

@@ -81,7 +81,7 @@ describe('high level API (swarm with spdy + webrtc-star)', () => {
   })
 
   it('handle proto', () => {
-    swarm2.handle('/echo/1.0.0', (conn) => {
+    swarm2.handle('/echo/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
   })

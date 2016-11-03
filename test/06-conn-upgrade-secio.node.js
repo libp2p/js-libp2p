@@ -74,7 +74,7 @@ describe('secio conn upgrade (on TCP)', () => {
   })
 
   it('handle + dial on protocol', (done) => {
-    swarmB.handle('/abacaxi/1.0.0', (conn) => {
+    swarmB.handle('/abacaxi/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
 
@@ -95,7 +95,7 @@ describe('secio conn upgrade (on TCP)', () => {
   })
 
   it('dial on protocol, reuse warmed conn', (done) => {
-    swarmA.handle('/papaia/1.0.0', (conn) => {
+    swarmA.handle('/papaia/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
 

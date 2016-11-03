@@ -90,11 +90,14 @@ function Swarm (peerInfo) {
     }), callback)
   }
 
-  this.handle = (protocol, handler) => {
-    this.protocols[protocol] = handler
+  this.handle = (protocol, handlerFunc, matchFunc) => {
+    this.protocols[protocol] = {
+      handlerFunc: handlerFunc,
+      matchFunc: matchFunc
+    }
   }
 
-  this.handle(this.crypto.tag, (conn) => {
+  this.handle(this.crypto.tag, (protocol, conn) => {
     const id = this._peerInfo.id
     const wrapped = this.crypto.encrypt(id, id.privKey, conn)
     return protocolMuxer(this.protocols, wrapped)

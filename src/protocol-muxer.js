@@ -10,7 +10,7 @@ module.exports = function protocolMuxer (protocols, conn) {
       return
     }
 
-    ms.addHandler(protocol, protocols[protocol])
+    ms.addHandler(protocol, protocols[protocol].handlerFunc, protocols[protocol].matchFunc)
   })
 
   ms.handle(conn, (err) => {

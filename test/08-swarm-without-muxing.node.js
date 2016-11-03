@@ -49,7 +49,7 @@ describe('high level API - 1st without stream multiplexing (on TCP)', () => {
   })
 
   it('handle a protocol', (done) => {
-    swarmB.handle('/bananas/1.0.0', (conn) => {
+    swarmB.handle('/bananas/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
     expect(Object.keys(swarmB.protocols).length).to.equal(2)
@@ -57,7 +57,7 @@ describe('high level API - 1st without stream multiplexing (on TCP)', () => {
   })
 
   it('dial on protocol', (done) => {
-    swarmB.handle('/pineapple/1.0.0', (conn) => {
+    swarmB.handle('/pineapple/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
 
@@ -68,7 +68,7 @@ describe('high level API - 1st without stream multiplexing (on TCP)', () => {
   })
 
   it('dial on protocol (returned conn)', (done) => {
-    swarmB.handle('/apples/1.0.0', (conn) => {
+    swarmB.handle('/apples/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
 

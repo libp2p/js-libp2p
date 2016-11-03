@@ -145,7 +145,7 @@ describe('high level API - with everything mixed all together!', () => {
   })
 
   it('dial from tcp to tcp+ws, on protocol', (done) => {
-    swarmB.handle('/anona/1.0.0', (conn) => {
+    swarmB.handle('/anona/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
 
@@ -169,7 +169,7 @@ describe('high level API - with everything mixed all together!', () => {
   })
 
   it('dial from ws to ws', (done) => {
-    swarmE.handle('/abacaxi/1.0.0', (conn) => {
+    swarmE.handle('/abacaxi/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
 
@@ -192,7 +192,7 @@ describe('high level API - with everything mixed all together!', () => {
   })
 
   it('dial from tcp to tcp+ws (returned conn)', (done) => {
-    swarmB.handle('/grapes/1.0.0', (conn) => {
+    swarmB.handle('/grapes/1.0.0', (protocol, conn) => {
       pull(conn, conn)
     })
 
@@ -209,7 +209,7 @@ describe('high level API - with everything mixed all together!', () => {
   })
 
   it('dial from tcp+ws to tcp+ws', (done) => {
-    swarmC.handle('/mamao/1.0.0', (conn) => {
+    swarmC.handle('/mamao/1.0.0', (protocol, conn) => {
       conn.getPeerInfo((err, peerInfo) => {
         expect(err).to.not.exist
         expect(peerInfo).to.exist
