@@ -32,7 +32,7 @@
   "dependencies": {
     "asn1.js": "^4.8.1",
     "async": "^2.1.2",
-    "multihashing-async": "^0.1.0",
+    "multihashing-async": "^0.2.0",
     "node-webcrypto-ossl": "^1.0.7",
     "nodeify": "^1.0.0",
     "protocol-buffers": "^3.1.6",
