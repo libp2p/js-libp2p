@@ -1,16 +1,13 @@
 'use strict'
 
-const isNode = require('detect-node')
 const Connection = require('interface-connection').Connection
 const contains = require('lodash.contains')
 
 // const IPFS_CODE = 421
 
-let createServer
+let createServer = require('pull-ws/server')
 
-if (isNode) {
-  createServer = require('pull-ws/server')
-} else {
+if (!createServer) {
   createServer = () => {}
 }
 

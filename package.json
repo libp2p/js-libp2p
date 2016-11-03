@@ -2,8 +2,7 @@
   "name": "libp2p-websockets",
   "version": "0.8.1",
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
-  "main": "lib/index.js",
-  "jsnext:main": "src/index.js",
+  "main": "src/index.js",
   "scripts": {
     "lint": "aegir-lint",
     "test": "gulp test",
@@ -15,6 +14,9 @@
     "release-major": "gulp release --type major",
     "coverage": "gulp coverage",
     "coverage-publish": "aegir-coverage publish"
+  },
+  "browser": {
+    "pull-ws/server": false
   },
   "pre-commit": [
     "lint",
@@ -34,21 +36,20 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",
   "dependencies": {
-    "detect-node": "^2.0.3",
-    "interface-connection": "^0.2.1",
+    "interface-connection": "^0.3.0",
     "lodash.contains": "^2.4.3",
-    "mafmt": "^2.1.1",
-    "pull-ws": "^3.2.3"
+    "mafmt": "^2.1.2",
+    "pull-ws": "^3.2.8"
   },
   "devDependencies": {
-    "aegir": "^8.0.0",
+    "aegir": "^9.0.1",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
     "interface-transport": "^0.3.3",
-    "multiaddr": "^2.0.2",
+    "multiaddr": "^2.0.3",
     "pre-commit": "^1.1.3",
     "pull-goodbye": "0.0.1",
-    "pull-stream": "^3.4.3"
+    "pull-stream": "^3.5.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
