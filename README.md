@@ -6,6 +6,8 @@
 [![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-tcp/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-tcp?branch=master)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-tcp.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-tcp)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
+![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
+![](https://img.shields.io/badge/Node.js-%3E%3D4.0.0-orange.svg?style=flat-square)
 
 ![](https://raw.githubusercontent.com/libp2p/interface-connection/master/img/badge.png)
 ![](https://raw.githubusercontent.com/libp2p/interface-transport/master/img/badge.png)
@@ -105,7 +107,7 @@ To learn more about this utility, visit https://pull-stream.github.io/#pull-stre
 
 ## API
 
-[![](https://raw.githubusercontent.com/diasdavid/interface-transport/master/img/badge.png)](https://github.com/diasdavid/interface-transport)
+[![](https://raw.githubusercontent.com/libp2p/interface-transport/master/img/badge.png)](https://github.com/libp2p/interface-transport)
 
 `libp2p-tcp` accepts TCP addresses both IPFS and non IPFS encapsulated addresses, i.e:
 

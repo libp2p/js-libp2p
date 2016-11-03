@@ -2,15 +2,13 @@
   "name": "libp2p-tcp",
   "version": "0.8.1",
   "description": "Node.js implementation of the TCP module that libp2p uses, which implements the interface-connection and interface-transport interfaces",
-  "main": "lib/index.js",
-  "jsnext:main": "src/index.js",
+  "main": "src/index.js",
   "scripts": {
     "lint": "aegir-lint",
-    "build": "aegir-build --env node",
     "test": "aegir-test --env node",
-    "release": "aegir-release --env node",
-    "release-minor": "aegir-release --type minor --env node",
-    "release-major": "aegir-release --type major --env node",
+    "release": "aegir-release --env no-build",
+    "release-minor": "aegir-release --type minor --env no-build",
+    "release-major": "aegir-release --type major --env no-build",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
@@ -20,7 +18,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/diasdavid/js-libp2p-tcp.git"
+    "url": "https://github.com/libp2p/js-libp2p-tcp.git"
   },
   "keywords": [
     "IPFS"
@@ -28,11 +26,14 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/diasdavid/js-libp2p-tcp/issues"
+    "url": "https://github.com/libp2p/js-libp2p-tcp/issues"
   },
-  "homepage": "https://github.com/diasdavid/js-libp2p-tcp",
+  "homepage": "https://github.com/libp2p/js-libp2p-tcp",
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "devDependencies": {
-    "aegir": "^8.0.1",
+    "aegir": "^9.0.1",
     "chai": "^3.5.0",
     "interface-transport": "^0.3.3",
     "lodash.isfunction": "^3.0.8",
