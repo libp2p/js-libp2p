@@ -36,7 +36,7 @@
     "node": ">=4.0.0"
   },
   "devDependencies": {
-    "aegir": "^9.0.1",
+    "aegir": "^9.1.0",
     "buffer-loader": "0.0.1",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
