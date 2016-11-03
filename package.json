@@ -41,7 +41,7 @@
     "pull-stream": "^3.4.5"
   },
   "dependencies": {
-    "interface-connection": "0.2.1",
+    "interface-connection": "0.3.0",
     "ip-address": "^5.8.0",
     "lodash.contains": "^2.4.3",
     "mafmt": "^2.1.2",
