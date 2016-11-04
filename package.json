@@ -46,7 +46,7 @@
     "multiaddr": "^2.0.3",
     "peer-id": "^0.8.0",
     "peer-info": "^0.8.0",
-    "protocol-buffers": "^3.1.6",
+    "protocol-buffers": "^3.1.8",
     "pull-length-prefixed": "^1.2.0",
     "pull-stream": "^3.5.0"
   },
