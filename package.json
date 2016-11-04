@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/diasdavid/js-ipfs-ping",
   "devDependencies": {
-    "aegir": "^8.0.0",
+    "aegir": "^9.1.1",
     "chai": "^3.5.0",
     "debug": "^2.2.0",
     "gulp": "^3.9.1",
