@@ -36,7 +36,7 @@
     "chai": "^3.5.0",
     "debug": "^2.2.0",
     "gulp": "^3.9.1",
-    "libp2p-swarm": "^0.23.0",
+    "libp2p-swarm": "^0.26.0",
     "libp2p-tcp": "^0.8.1",
     "multiaddr": "^2.0.2",
     "peer-id": "^0.7.0",
