@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "ipfs-logger": "^0.1.0",
-    "peer-info": "^0.7.1",
+    "peer-info": "^0.8.0",
     "peer-id": "^0.3.0",
     "multiaddr": "^2.0.3"
   },
