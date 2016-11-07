@@ -33,5 +33,5 @@ suite
     console.log(String(event.target))
   })
   .run({
-    'async': true
+    async: true
   })
