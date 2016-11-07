@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-identify#readme",
   "devDependencies": {
-    "aegir": "^9.0.1",
+    "aegir": "^9.1.1",
     "chai": "^3.5.0",
     "pre-commit": "^1.1.3",
     "pull-pair": "^1.1.0"
