@@ -33,10 +33,11 @@
     "test"
   ],
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=4.0.0",
+    "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^9.1.0",
+    "aegir": "^9.1.1",
     "buffer-loader": "0.0.1",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
@@ -54,7 +55,7 @@
   "dependencies": {
     "async": "^2.1.2",
     "browserify-zlib": "github:ipfs/browserify-zlib",
-    "debug": "^2.2.0",
+    "debug": "^2.3.0",
     "interface-connection": "^0.3.0",
     "ip-address": "^5.8.2",
     "libp2p-identify": "^0.3.0",
@@ -63,7 +64,7 @@
     "multistream-select": "^0.13.0",
     "peer-id": "^0.8.0",
     "peer-info": "^0.8.0",
-    "protocol-buffers": "^3.1.6"
+    "protocol-buffers": "^3.1.8"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
