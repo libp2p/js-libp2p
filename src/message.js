@@ -23,8 +23,7 @@ message Identify {
   // determine whether its connection to the local peer goes through NAT.
   optional bytes observedAddr = 4;
 
-  // (DEPRECATED) protocols are the services this node is running
-  // repeated string protocols = 3;
+  repeated string protocols = 3;
 }
 `)
 
