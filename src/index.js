@@ -26,7 +26,7 @@ module.exports = class WebSockets {
     log('dialing %s', url)
     const socket = connect(url, {
       binary: true,
-      onConnect: callback
+      onConnect: () => callback
     })
 
     const conn = new Connection(socket)

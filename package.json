@@ -42,7 +42,7 @@
     "pull-ws": "^3.2.8"
   },
   "devDependencies": {
-    "aegir": "^9.0.1",
+    "aegir": "^9.1.1",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
     "interface-transport": "^0.3.3",
