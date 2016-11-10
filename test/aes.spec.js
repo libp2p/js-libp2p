@@ -14,7 +14,7 @@ const bytes = {
   32: 'AES-256'
 }
 
-describe.only('AES-CTR', () => {
+describe('AES-CTR', () => {
   Object.keys(bytes).forEach((byte) => {
     it(`${bytes[byte]} - encrypt and decrypt`, (done) => {
       const key = new Buffer(parseInt(byte, 10))
