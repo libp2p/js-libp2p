@@ -80,7 +80,11 @@ module.exports = function (swarm) {
       const createListeners = multiaddrs.map((ma) => {
         return (cb) => {
           const listener = transport.createListener(handler)
+
+          listener.once('error', cb)
+
           listener.listen(ma, () => {
+            listener.removeListener('error', cb)
             listener.getAddrs((err, addrs) => {
               if (err) {
                 return cb(err)
@@ -93,7 +97,11 @@ module.exports = function (swarm) {
         }
       })
 
-      parallel(createListeners, () => {
+      parallel(createListeners, (err) => {
+        if (err) {
+          return callback(err)
+        }
+
         // cause we can listen on port 0 or 0.0.0.0
         swarm._peerInfo.multiaddr.replace(multiaddrs, freshMultiaddrs)
         callback()

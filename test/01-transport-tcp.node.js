@@ -186,4 +186,27 @@ describe('transport - tcp', function () {
       swarm.close(done)
     }
   })
+
+  it('handles EADDRINUSE error when trying to listen', (done) => {
+    let swarm1, swarm2
+    swarm1 = new Swarm(peerA)
+    swarm1.transport.add('tcp', new TCP())
+    swarm1.transport.listen('tcp', {}, (conn) => {
+      pull(conn, conn)
+    }, () => {
+      // Add in-use (peerA) address to peerB
+      peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888'))
+      swarm2 = new Swarm(peerB)
+      swarm2.transport.add('tcp', new TCP())
+      swarm2.transport.listen('tcp', {}, (conn) => {
+        pull(conn, conn)
+      }, ready)
+    })
+
+    function ready (err) {
+      expect(err).to.exist
+      expect(err.code).to.equal('EADDRINUSE')
+      swarm1.close(() => swarm2.close(done))
+    }
+  })
 })
