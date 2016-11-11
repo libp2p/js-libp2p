@@ -7,7 +7,7 @@
     "node-webcrypto-ossl": false,
     "./src/crypto/webcrypto.js": "./src/crypto/webcrypto-browser.js",
     "./src/crypto/hmac.js": "./src/crypto/hmac-browser.js",
-    "./src/crypto/aes.js": "./src/crypto/aes-browser.js"
+    "./src/crypto/ciphers.js": "./src/crypto/ciphers-browser.js"
   },
   "scripts": {
     "lint": "aegir-lint",
@@ -32,6 +32,7 @@
   "dependencies": {
     "asn1.js": "^4.8.1",
     "async": "^2.1.2",
+    "browserify-aes": "^1.0.6",
     "multihashing-async": "^0.2.0",
     "node-webcrypto-ossl": "^1.0.7",
     "nodeify": "^1.0.0",
