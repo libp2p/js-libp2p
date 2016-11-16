@@ -34,7 +34,7 @@
     "async": "^2.1.2",
     "browserify-aes": "^1.0.6",
     "multihashing-async": "^0.2.0",
-    "node-webcrypto-ossl": "^1.0.7",
+    "node-webcrypto-ossl": "^1.0.10",
     "nodeify": "^1.0.0",
     "protocol-buffers": "^3.1.6",
     "webcrypto-shim": "github:dignifiedquire/webcrypto-shim#master"
