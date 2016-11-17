@@ -1,3 +1,5 @@
+'use strict'
+module.exports = `
 message RPC {
   repeated SubOpts subscriptions = 1;
   repeated Message msgs = 2;
@@ -13,4 +15,4 @@ message RPC {
     optional bytes seqno = 3;
     repeated string topicCIDs = 4; // CID of topic descriptor object
   }
-}
+}`
