@@ -62,6 +62,8 @@
     "time-cache": "^0.2.3"
   },
   "contributors": [
-    "David Dias <daviddias.p@gmail.com>"
+    "David Dias <daviddias.p@gmail.com>",
+    "Gavin McDermott <gavinmcdermott@gmail.com>",
+    "Haad <haadcode@users.noreply.github.com>"
   ]
 }
