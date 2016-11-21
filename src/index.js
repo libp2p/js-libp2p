@@ -104,12 +104,18 @@ function Sonar (peerSelf, options, swarmSelf) {
 
     var peerId = Id.createFromB58String(b58Id)
 
-    verify(new Peer(peerId, multiaddrs))
+    var peerFound = new Peer(peerId)
+
+    multiaddrs.forEach(function (addr) {
+      peerFound.multiaddr.add(addr)
+    })
+
+    verify(peerFound)
   }
 
   function verify (peer) {
     if (self.verify) {
-      swarmSelf.dial(peer, {}, function (err) {
+      swarmSelf.dial(peer, function (err) {
         if (err) {
           return log.warn('Was not able to connect to new found peer', err)
         }

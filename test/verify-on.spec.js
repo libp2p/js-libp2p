@@ -2,10 +2,9 @@
 'use strict'
 
 var multiaddr = require('multiaddr')
-var Id = require('peer-id')
 var Peer = require('peer-info')
 var Swarm = require('libp2p-swarm')
-var tcp = require('libp2p-tcp')
+var Tcp = require('libp2p-tcp')
 var expect = require('chai').expect
 
 var Sonar = require('./../src')
@@ -18,14 +17,35 @@ var swB
 describe('With verify on', function () {
   before(function (done) {
     var mh1 = multiaddr('/ip4/127.0.0.1/tcp/8010')
-    pA = new Peer(Id.create(), [])
-    swA = new Swarm(pA)
-    swA.addTransport('tcp', tcp, { multiaddr: mh1 }, {}, {port: 8010}, ready)
-
     var mh2 = multiaddr('/ip4/127.0.0.1/tcp/8020')
-    pB = new Peer(Id.create(), [])
-    swB = new Swarm(pB)
-    swB.addTransport('tcp', tcp, { multiaddr: mh2 }, {}, {port: 8020}, ready)
+
+    Peer.create(function (err, peer) {
+      if (err) {
+        done(err)
+      }
+
+      pA = peer
+      pA.multiaddr.add(mh1)
+
+      swA = new Swarm(pA)
+      swA.transport.add('tcp', new Tcp(), {}, function () {
+        swA.listen(ready)
+      })
+    })
+
+    Peer.create(function (err, peer) {
+      if (err) {
+        done(err)
+      }
+
+      pB = peer
+      pB.multiaddr.add(mh2)
+
+      swB = new Swarm(pB)
+      swB.transport.add('tcp', new Tcp(), {}, function () {
+        swB.listen(ready)
+      })
+    })
 
     var readyCounter = 0
 
@@ -46,6 +66,7 @@ describe('With verify on', function () {
 
   it('Find the other peer', function (done) {
     this.timeout(1e3 * 10)
+
     var sA = new Sonar(pA, {
       verify: true,
       port: 9090
