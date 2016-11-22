@@ -67,7 +67,7 @@ module.exports = function (swarm) {
         handler = protocolMuxer.bind(null, swarm.protocols)
       }
 
-      const multiaddrs = dialables(swarm.transports[key], swarm._peerInfo.multiaddrs)
+      const multiaddrs = dialables(swarm.transports[key], swarm._peerInfo.distinctMultiaddr())
 
       const transport = swarm.transports[key]
 
