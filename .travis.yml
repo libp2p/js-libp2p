@@ -1,16 +1,36 @@
-use_sudo: false
+sudo: false
 language: node_js
-node_js:
-  - 4
-  - 5
+matrix:
+  include:
+  - node_js: 4
+    env: CXX=g++-4.8
+  - node_js: 6
+    env:
+      - SAUCE=true
+      - CXX=g++-4.8
+  - node_js: stable
+    env: CXX=g++-4.8
 
-branches:
-  only:
-    - master
-
+# Make sure we have new NPM.
 before_install:
-  - npm i -g npm
-  # Workaround for a permissions issue with Travis virtual machine images
+  - npm install -g npm
+
 script:
   - npm run lint
   - npm test
+  - npm run coverage
+
+before_script:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+
+after_success:
+  - npm run coverage-publish
+
+addons:
+  firefox: 'latest'
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
