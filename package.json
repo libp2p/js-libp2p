@@ -36,7 +36,7 @@
     "multihashing-async": "^0.2.0",
     "node-webcrypto-ossl": "^1.0.13",
     "nodeify": "^1.0.0",
-    "protocol-buffers": "^3.1.6",
+    "protocol-buffers": "^3.2.1",
     "webcrypto-shim": "github:dignifiedquire/webcrypto-shim#master"
   },
   "devDependencies": {
