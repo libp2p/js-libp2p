@@ -1,7 +1,7 @@
 ![](https://github.com/libp2p/js-libp2p/blob/fe2d097bfa072ef6733f2defb568bdc526052ee4/img/js-libp2p.png?raw=true)
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
-[[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
+[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
 [![Build Status](https://travis-ci.org/libp2p/js-libp2p.svg?style=flat-square)](https://travis-ci.org/libp2p/js-libp2p)
 ![coverage](https://img.shields.io/badge/coverage-%3F-yellow.svg?style=flat-square)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p)
