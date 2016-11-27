@@ -1,26 +1,27 @@
 {
   "name": "libp2p",
   "version": "0.1.1",
-  "description": "Node.js implementation of libp2p",
-  "main": "lib/index.js",
-  "jsnext:main": "src/index.js",
+  "description": "JavaScript Skeleton for libp2p bundles",
+  "main": "src/index.js",
   "scripts": {
-    "lint": "dignified-lint",
-    "build": "dignified-build",
-    "test": "dignified-test",
-    "test:node": "dignified-test node",
-    "test:browser": "dignified-test browser",
-    "release": "dignified-release"
+    "test": "aegir-test node",
+    "lint": "aegir-lint",
+    "release": "aegir-release node",
+    "release-minor": "aegir-release --type minor",
+    "release-major": "aegir-release --type major",
+    "coverage": "aegir-coverage",
+    "coverage-publish": "aegir-coverage publish"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/diasdavid/js-libp2p.git"
+    "url": "https://github.com/libp2p/js-libp2p.git"
   },
   "keywords": [
     "IPFS"
   ],
   "engines": {
-    "node": "^4.0.0"
+    "node": ">=4.0.0",
+    "npm": ">=3.0.0"
   },
   "pre-commit": [
     "lint",
@@ -29,18 +30,20 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/diasdavid/js-libp2p/issues"
+    "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "homepage": "https://github.com/diasdavid/js-libp2p",
   "devDependencies": {
     "chai": "^3.5.0",
-    "dignified.js": "^1.0.0",
-    "libp2p-spdy": "^0.1.0",
-    "libp2p-swarm": "^0.26.0",
-    "libp2p-tcp": "^0.8.0",
-    "multiaddr": "^2.0.3",
-    "peer-id": "^0.4.0",
-    "peer-info": "^0.7.1",
+    "aegir": "^9.1.2",
     "pre-commit": "^1.1.1"
+  },
+  "dependencies": {
+    "libp2p-swarm": "^0.26.3",
+    "mafmt": "^2.1.2",
+    "multiaddr": "^2.1.1",
+    "peer-book": "^0.3.0",
+    "peer-id": "^0.8.0",
+    "peer-info": "^0.8.1"
   }
 }
