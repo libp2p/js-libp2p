@@ -45,5 +45,11 @@
     "peer-book": "^0.3.0",
     "peer-id": "^0.8.0",
     "peer-info": "^0.8.1"
-  }
+  },
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Richard Littauer <richard.littauer@gmail.com>",
+    "greenkeeperio-bot <support@greenkeeper.io>"
+  ]
 }
