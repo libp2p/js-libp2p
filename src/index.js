@@ -83,19 +83,31 @@ class Node {
     if (!this.modules.transport) {
       return callback(new Error('no transports were present'))
     }
+
+    let ws
     let transports = this.modules.transport
+
     transports = Array.isArray(transports) ? transports : [transports]
     const multiaddrs = this.peerInfo.multiaddrs
+
     transports.forEach((transport) => {
       if (transport.filter(multiaddrs).length > 0) {
         this.swarm.transport.add(
           transport.tag || transport.constructor.name, transport)
+      } else if (transport.constructor &&
+                 transport.constructor.name === 'WebSockets') {
+        // TODO find a cleaner way to signal that a transport is always
+        // used for dialing, even if no listener
+        ws = transport
       }
     })
 
     this.swarm.listen((err) => {
       if (err) {
         return callback(err)
+      }
+      if (ws) {
+        this.swarm.transport.add(ws.tag || ws.constructor.name, ws)
       }
 
       this.isOnline = true
