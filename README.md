@@ -28,12 +28,12 @@ libp2p is the product of a long and arduous quest to understand the evolution of
 
 We are in the process of writting better documentation, blog posts, tutorials and a formal specification. Today you can find:
 
-- libp2p.io - The libp2p Website (WIP)
-- Specification (WIP)
+- [libp2p.io - The libp2p Website (WIP)](https://github.com/libp2p/website)
+- [Specification (WIP)](https://github.com/libp2p/specs)
 - Talks
-  - [`libp2p <3 ethereum` at DEVCON2]() [video]()[slides]()[demo]()
+  - [`libp2p <3 ethereum` at DEVCON2](https://ethereumfoundation.org/devcon/?session=libp2p) [video](https://www.youtube.com/watch?v=HxueJbeMVG4) [slides](https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p-HEART-devp2p-IPFS-PLUS-Ethereum-networking.pdf) [demo-1](https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p_demo1-1.mp4) [demo-2](https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p_demo2-1.mp4)
 - Articles
-  - The overview of libp2p
+  - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
 
 To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
 
