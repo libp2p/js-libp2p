@@ -45,7 +45,7 @@
     "ip-address": "^5.8.0",
     "lodash.contains": "^2.4.3",
     "mafmt": "^2.1.2",
-    "multiaddr": "^2.0.3",
+    "multiaddr": "^2.1.1",
     "stream-to-pull-stream": "^1.7.0"
   },
   "contributors": [
