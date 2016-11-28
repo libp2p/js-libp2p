@@ -41,7 +41,7 @@ To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separ
 
 With its modular nature, libp2p can be found being used in different projects with different sets of features, while perserving the same top level API. `js-libp2p` is only a skelleton and should not be installed directly, if you are looking for a prebundled libp2p stack, please check:
 
-- [libp2p-ipfs](https://github.com/ipfs/js-libp2p-ipfs) - The libp2p build used by js-ipfs when run in Node.js
+- [libp2p-ipfs-nodejs](https://github.com/ipfs/js-libp2p-ipfs-nodejs) - The libp2p build used by js-ipfs when run in Node.js
 - [libp2p-ipfs-browser](https://github.com/ipfs/js-libp2p-ipfs-browser) - The libp2p build used by js-ipfs when run in a Browser (that supports WebRTC)
 
 If you have developed a libp2p bundle, please consider submitting it to this list so that it can be found easily by the users of libp2p.
@@ -81,7 +81,7 @@ Defined by [interface-libp2p](https://github.com/libp2p/interface-libp2p)
 | Package | Version | Dependencies | DevDependencies |
 |---------|---------|--------------|-----------------|
 | **Bundles**                                        |
-| [`libp2p-ipfs`](//github.com/ipfs/js-libp2p-ipfs) | [![npm](https://img.shields.io/npm/v/libp2p-ipfs.svg?maxAge=86400&style=flat-square)](//github.com/ipfs/js-libp2p-ipfs/releases) | [![Dependency Status](https://david-dm.org/ipfs/js-libp2p-ipfs.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-ipfs) | [![devDependency Status](https://david-dm.org/ipfs/js-libp2p-ipfs/dev-status.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-ipfs?type=dev) |
+| [`libp2p-ipfs-nodejs`](//github.com/ipfs/js-libp2p-ipfs-nodejs) | [![npm](https://img.shields.io/npm/v/libp2p-ipfs-nodejs.svg?maxAge=86400&style=flat-square)](//github.com/ipfs/js-libp2p-ipfs-nodejs/releases) | [![Dependency Status](https://david-dm.org/ipfs/js-libp2p-ipfs-nodejs.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-ipfs-nodejs) | [![devDependency Status](https://david-dm.org/ipfs/js-libp2p-ipfs-nodejs/dev-status.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-ipfs-nodejs?type=dev) |
 | [`libp2p-ipfs-browser`](//github.com/ipfs/js-libp2p-ipfs-browser) | [![npm](https://img.shields.io/npm/v/libp2p-ipfs-browser.svg?maxAge=86400&style=flat-square)](//github.com/ipfs/js-libp2p-ipfs-browser/releases) | [![Dependency Status](https://david-dm.org/ipfs/js-libp2p-ipfs-browser.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-ipfs-browser) | [![devDependency Status](https://david-dm.org/ipfs/js-libp2p-ipfs-browser/dev-status.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-ipfs-browser?type=dev) |
 | **Transports**                                     |
 | [`libp2p-utp`](//github.com/libp2p/js-libp2p-utp) | [![npm](https://img.shields.io/npm/v/libp2p-utp.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-utp/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-utp.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-utp) | [![devDependency Status](https://david-dm.org/libp2p/js-libp2p-utp/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-utp?type=dev) |
