@@ -6,8 +6,8 @@ const expect = require('chai').expect
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
-const libp2pIPFS = require('libp2p-ipfs')
-const parallel = require('run-parallel')
+const Node = require('libp2p-ipfs-nodejs')
+const parallel = require('async/parallel')
 const PSG = require('../src')
 const _values = require('lodash.values')
 
@@ -58,9 +58,15 @@ describe('multiple nodes', () => {
         // before swarm does its dials
         setTimeout(() => {
           parallel([
-            a.libp2p.stop,
-            b.libp2p.stop,
-            c.libp2p.stop
+            (cb) => {
+              a.libp2p.stop(cb)
+            },
+            (cb) => {
+              b.libp2p.stop(cb)
+            },
+            (cb) => {
+              c.libp2p.stop(cb)
+            }
           ], done)
         }, 1000)
       })
@@ -69,9 +75,10 @@ describe('multiple nodes', () => {
         parallel([
           (cb) => {
             a.libp2p.dialByPeerInfo(b.libp2p.peerInfo, cb)
-            b.libp2p.dialByPeerInfo(c.libp2p.peerInfo, cb)
           },
-          (cb) => {}
+          (cb) => {
+            b.libp2p.dialByPeerInfo(c.libp2p.peerInfo, cb)
+          }
         ], (err) => {
           expect(err).to.not.exist
           // wait for the pubsub pipes to be established
@@ -239,20 +246,24 @@ describe('multiple nodes', () => {
 })
 
 function spawnPubSubNode (callback) {
-  const id = PeerId.create()
-  const peer = new PeerInfo(id)
-  peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-  const node = new libp2pIPFS.Node(peer)
-  let ps
+  PeerId.create((err, id) => {
+    expect(err).to.not.exist
+    PeerInfo.create(id, (err, peer) => {
+      expect(err).to.not.exist
+      peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
+      const node = new Node(peer)
+      let ps
 
-  node.start((err) => {
-    if (err) {
-      return callback(err)
-    }
-    ps = new PSG(node)
-    callback(null, {
-      libp2p: node,
-      ps: ps
+      node.start((err) => {
+        if (err) {
+          return callback(err)
+        }
+        ps = new PSG(node)
+        callback(null, {
+          libp2p: node,
+          ps: ps
+        })
+      })
     })
   })
 }

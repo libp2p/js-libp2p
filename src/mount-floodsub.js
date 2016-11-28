@@ -16,7 +16,7 @@ function mountFloodSub (libp2pNode, peerSet, tc, subscriptions, ee) {
   // note: we don't use the incomming conn to send, just to receive
   libp2pNode.handle(multicodec, incConn)
 
-  function incConn (conn) {
+  function incConn (protocol, conn) {
     conn.getPeerInfo((err, peerInfo) => {
       if (err) {
         log.err('Failed to identify incomming conn', err)

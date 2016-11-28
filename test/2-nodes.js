@@ -5,8 +5,10 @@ const expect = require('chai').expect
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
-const libp2pIPFS = require('libp2p-ipfs')
-const parallel = require('run-parallel')
+const Node = require('libp2p-ipfs-nodejs')
+const parallel = require('async/parallel')
+const series = require('async/series')
+
 const _times = require('lodash.times')
 const _values = require('lodash.values')
 
@@ -19,26 +21,50 @@ describe('basics', () => {
   let psB
 
   before((done) => {
-    const idA = PeerId.create()
-    const peerA = new PeerInfo(idA)
-    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-    nodeA = new libp2pIPFS.Node(peerA)
-
-    const idB = PeerId.create()
-    const peerB = new PeerInfo(idB)
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-    nodeB = new libp2pIPFS.Node(peerB)
-
-    parallel([
-      nodeA.start,
-      nodeB.start
+    series([
+      (cb) => {
+        PeerId.create((err, idA) => {
+          expect(err).to.not.exist
+          PeerInfo.create(idA, (err, peerA) => {
+            expect(err).to.not.exist
+            peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
+            nodeA = new Node(peerA)
+            cb()
+          })
+        })
+      },
+      (cb) => {
+        PeerId.create((err, idB) => {
+          expect(err).to.not.exist
+          PeerInfo.create(idB, (err, peerB) => {
+            expect(err).to.not.exist
+            peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
+            nodeB = new Node(peerB)
+            cb()
+          })
+        })
+      },
+      (cb) => {
+        parallel([
+          (cb) => {
+            nodeA.start(cb)
+          },
+          (cb) => {
+            nodeB.start(cb)
+          }
+        ], cb)
+      }
     ], done)
   })
 
   after((done) => {
     parallel([
-      nodeA.stop,
-      nodeB.stop
+      (cb) => {
+        nodeA.stop(cb)
+      },
+      (cb) => {
+        nodeB.stop(cb)
+      }
     ], done)
   })
 
