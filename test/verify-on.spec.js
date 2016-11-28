@@ -4,7 +4,7 @@
 var multiaddr = require('multiaddr')
 var Peer = require('peer-info')
 var Swarm = require('libp2p-swarm')
-var Tcp = require('libp2p-tcp')
+var TCP = require('libp2p-tcp')
 var expect = require('chai').expect
 
 var Sonar = require('./../src')
@@ -28,7 +28,7 @@ describe('With verify on', function () {
       pA.multiaddr.add(mh1)
 
       swA = new Swarm(pA)
-      swA.transport.add('tcp', new Tcp(), {}, function () {
+      swA.transport.add('tcp', new TCP(), {}, function () {
         swA.listen(ready)
       })
     })
@@ -42,7 +42,7 @@ describe('With verify on', function () {
       pB.multiaddr.add(mh2)
 
       swB = new Swarm(pB)
-      swB.transport.add('tcp', new Tcp(), {}, function () {
+      swB.transport.add('tcp', new TCP(), {}, function () {
         swB.listen(ready)
       })
     })

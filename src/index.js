@@ -104,13 +104,17 @@ function Sonar (peerSelf, options, swarmSelf) {
 
     var peerId = Id.createFromB58String(b58Id)
 
-    var peerFound = new Peer(peerId)
+    Peer.create(peerId, function (err, peerFound) {
+      if (err) {
+        return log.warn('Error creating PeerInfo from new found peer', err)
+      }
 
-    multiaddrs.forEach(function (addr) {
-      peerFound.multiaddr.add(addr)
+      multiaddrs.forEach(function (addr) {
+        peerFound.multiaddr.add(addr)
+      })
+
+      verify(peerFound)
     })
-
-    verify(peerFound)
   }
 
   function verify (peer) {
