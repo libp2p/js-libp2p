@@ -17,7 +17,7 @@ class RsaPublicKey {
   }
 
   marshal () {
-    return crypto.jwkToPkix(this._key)
+    return crypto.utils.jwkToPkix(this._key)
   }
 
   get bytes () {
@@ -71,7 +71,7 @@ class RsaPrivateKey {
   }
 
   marshal () {
-    return crypto.jwkToPkcs1(this._key)
+    return crypto.utils.jwkToPkcs1(this._key)
   }
 
   get bytes () {
@@ -92,7 +92,7 @@ class RsaPrivateKey {
 }
 
 function unmarshalRsaPrivateKey (bytes, callback) {
-  const jwk = crypto.pkcs1ToJwk(bytes)
+  const jwk = crypto.utils.pkcs1ToJwk(bytes)
   crypto.unmarshalPrivateKey(jwk, (err, keys) => {
     if (err) {
       return callback(err)
@@ -103,7 +103,7 @@ function unmarshalRsaPrivateKey (bytes, callback) {
 }
 
 function unmarshalRsaPublicKey (bytes) {
-  const jwk = crypto.pkixToJwk(bytes)
+  const jwk = crypto.utils.pkixToJwk(bytes)
 
   return new RsaPublicKey(jwk)
 }

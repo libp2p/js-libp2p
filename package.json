@@ -8,13 +8,15 @@
     "./src/crypto/webcrypto.js": "./src/crypto/webcrypto-browser.js",
     "./src/crypto/hmac.js": "./src/crypto/hmac-browser.js",
     "./src/crypto/ecdh.js": "./src/crypto/ecdh-browser.js",
-    "./src/crypto/ciphers.js": "./src/crypto/ciphers-browser.js"
+    "./src/crypto/ciphers.js": "./src/crypto/ciphers-browser.js",
+    "./src/crypto/rsa.js": "./src/crypto/rsa-browser.js"
   },
   "scripts": {
     "lint": "aegir-lint",
     "build": "aegir-build",
-    "test": "aegir-test",
+    "test": "npm run test:node && npm run test:no-webcrypto && npm run test:browser",
     "test:node": "aegir-test --env node",
+    "test:no-webcrypto": "NO_WEBCRYPTO=true aegir-test --env node",
     "test:browser": "aegir-test --env browser",
     "release": "aegir-release",
     "release-minor": "aegir-release --type minor",
@@ -34,10 +36,12 @@
     "asn1.js": "^4.8.1",
     "async": "^2.1.2",
     "browserify-aes": "^1.0.6",
+    "keypair": "^1.0.0",
     "multihashing-async": "^0.2.0",
-    "node-webcrypto-ossl": "^1.0.13",
     "nodeify": "^1.0.0",
+    "pem-jwk": "^1.5.1",
     "protocol-buffers": "^3.2.1",
+    "rsa-pem-to-jwk": "^1.1.3",
     "webcrypto-shim": "github:dignifiedquire/webcrypto-shim#master"
   },
   "devDependencies": {
@@ -45,6 +49,9 @@
     "benchmark": "^2.1.2",
     "chai": "^3.5.0",
     "pre-commit": "^1.1.3"
+  },
+  "optionalDependencies": {
+    "node-webcrypto-ossl": "^1.0.13"
   },
   "pre-commit": [
     "lint",

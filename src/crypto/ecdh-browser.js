@@ -97,7 +97,7 @@ function marshalPublicKey (jwk) {
   const byteLen = curveLengths[jwk.crv]
 
   return Buffer.concat([
-    Buffer([4]), // uncompressed point
+    new Buffer([4]), // uncompressed point
     toBn(jwk.x).toBuffer('be', byteLen),
     toBn(jwk.y).toBuffer('be', byteLen)
   ], 1 + byteLen * 2)
@@ -107,7 +107,7 @@ function marshalPublicKey (jwk) {
 function unmarshalPublicKey (curve, key) {
   const byteLen = curveLengths[curve]
 
-  if (!key.slice(0, 1).equals(Buffer([4]))) {
+  if (!key.slice(0, 1).equals(new Buffer([4]))) {
     throw new Error('Invalid key format')
   }
   const x = new BN(key.slice(1, byteLen + 1))
