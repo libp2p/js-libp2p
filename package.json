@@ -7,6 +7,7 @@
     "node-webcrypto-ossl": false,
     "./src/crypto/webcrypto.js": "./src/crypto/webcrypto-browser.js",
     "./src/crypto/hmac.js": "./src/crypto/hmac-browser.js",
+    "./src/crypto/ecdh.js": "./src/crypto/ecdh-browser.js",
     "./src/crypto/ciphers.js": "./src/crypto/ciphers-browser.js"
   },
   "scripts": {
