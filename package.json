@@ -37,7 +37,7 @@
     "async": "^2.1.2",
     "browserify-aes": "^1.0.6",
     "keypair": "^1.0.0",
-    "multihashing-async": "^0.2.0",
+    "multihashing-async": "^0.3.0",
     "nodeify": "^1.0.0",
     "pem-jwk": "^1.5.1",
     "protocol-buffers": "^3.2.1",
