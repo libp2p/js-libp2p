@@ -2,7 +2,6 @@
 'use strict'
 
 var multiaddr = require('multiaddr')
-var Id = require('peer-id')
 var Peer = require('peer-info')
 var expect = require('chai').expect
 
@@ -13,9 +12,35 @@ var pB
 
 describe('Without verify on', function () {
   before(function (done) {
-    pA = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/4001')])
-    pB = new Peer(Id.create(), [multiaddr('/ip4/127.0.0.1/tcp/4001')])
-    done()
+    Peer.create(function (err, peer) {
+      if (err) {
+        done(err)
+      }
+
+      pA = peer
+      pA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/4001'))
+      ready()
+    })
+
+    Peer.create(function (err, peer) {
+      if (err) {
+        done(err)
+      }
+
+      pB = peer
+      pB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/4002'))
+      ready()
+    })
+
+    var readyCounter = 0
+
+    function ready () {
+      readyCounter++
+      if (readyCounter < 2) {
+        return
+      }
+      done()
+    }
   })
 
   it('Find the other peer', function (done) {
