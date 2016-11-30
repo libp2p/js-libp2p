@@ -14,6 +14,11 @@ const lengths = {
   'P-384': 97,
   'P-521': 133
 }
+const secretLengths = {
+  'P-256': 32,
+  'P-384': 48,
+  'P-521': 66
+}
 
 describe('generateEphemeralKeyPair', () => {
   curves.forEach((curve) => {
@@ -28,7 +33,7 @@ describe('generateEphemeralKeyPair', () => {
 
         keys[0].genSharedKey(keys[1].key, (err, shared) => {
           expect(err).to.not.exist
-          expect(shared).to.have.length(32)
+          expect(shared).to.have.length(secretLengths[curve])
           done()
         })
       })
@@ -39,12 +44,29 @@ describe('generateEphemeralKeyPair', () => {
     it('generates a shared secret', (done) => {
       const curve = fixtures.curve
 
-      crypto.generateEphemeralKeyPair(curve, (err, alice) => {
+      parallel([
+        (cb) => crypto.generateEphemeralKeyPair(curve, cb),
+        (cb) => crypto.generateEphemeralKeyPair(curve, cb)
+      ], (err, res) => {
         expect(err).to.not.exist
+        const alice = res[0]
+        const bob = res[1]
+        bob.key = fixtures.bob.public
 
-        alice.genSharedKey(fixtures.bob.public, (err, s1) => {
+        parallel([
+          (cb) => alice.genSharedKey(bob.key, cb),
+          (cb) => bob.genSharedKey(alice.key, fixtures.bob, cb)
+        ], (err, secrets) => {
           expect(err).to.not.exist
-          expect(s1).to.have.length(32)
+
+          expect(
+            secrets[0]
+          ).to.be.eql(
+            secrets[1]
+          )
+
+          expect(secrets[0]).to.have.length(32)
+
           done()
         })
       })

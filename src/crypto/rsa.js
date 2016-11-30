@@ -1,228 +1,80 @@
 'use strict'
 
-const nodeify = require('nodeify')
-const asn1 = require('asn1.js')
+// Node.js land
+// First we look if node-webrypto-ossl is available
+// otherwise we fall back to using keypair + node core
 
-const util = require('./util')
-const toBase64 = util.toBase64
-const toBn = util.toBn
-const crypto = require('./webcrypto')()
-
-exports.generateKey = function (bits, callback) {
-  nodeify(crypto.subtle.generateKey(
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      modulusLength: bits,
-      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-      hash: {name: 'SHA-256'}
-    },
-    true,
-    ['sign', 'verify']
-  )
-  .then(exportKey)
-  .then((keys) => ({
-    privateKey: keys[0],
-    publicKey: keys[1]
-  })), callback)
+let webcrypto
+try {
+  webcrypto = require('node-webcrypto-ossl')
+} catch (err) {
+  // not available, use the code below
 }
 
-// Takes a jwk key
-exports.unmarshalPrivateKey = function (key, callback) {
-  const privateKey = crypto.subtle.importKey(
-    'jwk',
-    key,
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: {name: 'SHA-256'}
-    },
-    true,
-    ['sign']
-  )
+if (webcrypto && !process.env.NO_WEBCRYPTO) {
+  module.exports = require('./rsa-browser')
+} else {
+  const crypto = require('crypto')
+  const keypair = require('keypair')
+  const setImmediate = require('async/setImmediate')
+  const pemToJwk = require('pem-jwk').pem2jwk
+  const jwkToPem = require('pem-jwk').jwk2pem
 
-  nodeify(Promise.all([
-    privateKey,
-    derivePublicFromPrivate(key)
-  ]).then((keys) => exportKey({
-    privateKey: keys[0],
-    publicKey: keys[1]
-  })).then((keys) => ({
-    privateKey: keys[0],
-    publicKey: keys[1]
-  })), callback)
-}
+  exports.utils = require('./rsa-utils')
 
-exports.getRandomValues = function (arr) {
-  return Buffer.from(crypto.getRandomValues(arr))
-}
+  exports.generateKey = function (bits, callback) {
+    const done = (err, res) => setImmediate(() => {
+      callback(err, res)
+    })
 
-exports.hashAndSign = function (key, msg, callback) {
-  nodeify(crypto.subtle.importKey(
-    'jwk',
-    key,
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: {name: 'SHA-256'}
-    },
-    false,
-    ['sign']
-  ).then((privateKey) => {
-    return crypto.subtle.sign(
-      {name: 'RSASSA-PKCS1-v1_5'},
-      privateKey,
-      Uint8Array.from(msg)
-    )
-  }).then((sig) => Buffer.from(sig)), callback)
-}
-
-exports.hashAndVerify = function (key, sig, msg, callback) {
-  nodeify(crypto.subtle.importKey(
-    'jwk',
-    key,
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: {name: 'SHA-256'}
-    },
-    false,
-    ['verify']
-  ).then((publicKey) => {
-    return crypto.subtle.verify(
-      {name: 'RSASSA-PKCS1-v1_5'},
-      publicKey,
-      sig,
-      msg
-    )
-  }), callback)
-}
-
-function exportKey (pair) {
-  return Promise.all([
-    crypto.subtle.exportKey('jwk', pair.privateKey),
-    crypto.subtle.exportKey('jwk', pair.publicKey)
-  ])
-}
-
-function derivePublicFromPrivate (jwKey) {
-  return crypto.subtle.importKey(
-    'jwk',
-    {
-      kty: jwKey.kty,
-      n: jwKey.n,
-      e: jwKey.e,
-      alg: jwKey.alg,
-      kid: jwKey.kid
-    },
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: {name: 'SHA-256'}
-    },
-    true,
-    ['verify']
-  )
-}
-
-const RSAPrivateKey = asn1.define('RSAPrivateKey', function () {
-  this.seq().obj(
-    this.key('version').int(),
-    this.key('modulus').int(),
-    this.key('publicExponent').int(),
-    this.key('privateExponent').int(),
-    this.key('prime1').int(),
-    this.key('prime2').int(),
-    this.key('exponent1').int(),
-    this.key('exponent2').int(),
-    this.key('coefficient').int()
-  )
-})
-
-const AlgorithmIdentifier = asn1.define('AlgorithmIdentifier', function () {
-  this.seq().obj(
-    this.key('algorithm').objid({
-      '1.2.840.113549.1.1.1': 'rsa'
-    }),
-    this.key('none').optional().null_(),
-    this.key('curve').optional().objid(),
-    this.key('params').optional().seq().obj(
-      this.key('p').int(),
-      this.key('q').int(),
-      this.key('g').int()
-    )
-  )
-})
-
-const PublicKey = asn1.define('RSAPublicKey', function () {
-  this.seq().obj(
-    this.key('algorithm').use(AlgorithmIdentifier),
-    this.key('subjectPublicKey').bitstr()
-  )
-})
-
-const RSAPublicKey = asn1.define('RSAPublicKey', function () {
-  this.seq().obj(
-    this.key('modulus').int(),
-    this.key('publicExponent').int()
-  )
-})
-
-// Convert a PKCS#1 in ASN1 DER format to a JWK key
-exports.pkcs1ToJwk = function (bytes) {
-  const asn1 = RSAPrivateKey.decode(bytes, 'der')
-
-  return {
-    kty: 'RSA',
-    n: toBase64(asn1.modulus),
-    e: toBase64(asn1.publicExponent),
-    d: toBase64(asn1.privateExponent),
-    p: toBase64(asn1.prime1),
-    q: toBase64(asn1.prime2),
-    dp: toBase64(asn1.exponent1),
-    dq: toBase64(asn1.exponent2),
-    qi: toBase64(asn1.coefficient),
-    alg: 'RS256',
-    kid: '2011-04-29'
-  }
-}
-
-// Convert a JWK key into PKCS#1 in ASN1 DER format
-exports.jwkToPkcs1 = function (jwk) {
-  return RSAPrivateKey.encode({
-    version: 0,
-    modulus: toBn(jwk.n),
-    publicExponent: toBn(jwk.e),
-    privateExponent: toBn(jwk.d),
-    prime1: toBn(jwk.p),
-    prime2: toBn(jwk.q),
-    exponent1: toBn(jwk.dp),
-    exponent2: toBn(jwk.dq),
-    coefficient: toBn(jwk.qi)
-  }, 'der')
-}
-
-// Convert a PKCIX in ASN1 DER format to a JWK key
-exports.pkixToJwk = function (bytes) {
-  const ndata = PublicKey.decode(bytes, 'der')
-  const asn1 = RSAPublicKey.decode(ndata.subjectPublicKey.data, 'der')
-
-  return {
-    kty: 'RSA',
-    n: toBase64(asn1.modulus),
-    e: toBase64(asn1.publicExponent),
-    alg: 'RS256',
-    kid: '2011-04-29'
-  }
-}
-
-// Convert a JWK key to PKCIX in ASN1 DER format
-exports.jwkToPkix = function (jwk) {
-  return PublicKey.encode({
-    algorithm: {
-      algorithm: 'rsa',
-      none: null
-    },
-    subjectPublicKey: {
-      data: RSAPublicKey.encode({
-        modulus: toBn(jwk.n),
-        publicExponent: toBn(jwk.e)
-      }, 'der')
+    let key
+    try {
+      key = keypair({
+        bits: bits
+      })
+    } catch (err) {
+      done(err)
+      return
     }
-  }, 'der')
+
+    done(null, {
+      privateKey: pemToJwk(key.private),
+      publicKey: pemToJwk(key.public)
+    })
+  }
+
+  // Takes a jwk key
+  exports.unmarshalPrivateKey = function (key, callback) {
+    callback(null, {
+      privateKey: key,
+      publicKey: {
+        kty: key.kty,
+        n: key.n,
+        e: key.e
+      }
+    })
+  }
+
+  exports.getRandomValues = function (arr) {
+    return crypto.randomBytes(arr.length)
+  }
+
+  exports.hashAndSign = function (key, msg, callback) {
+    const sign = crypto.createSign('RSA-SHA256')
+
+    sign.update(msg)
+    setImmediate(() => {
+      callback(null, sign.sign(jwkToPem(key)))
+    })
+  }
+
+  exports.hashAndVerify = function (key, sig, msg, callback) {
+    const verify = crypto.createVerify('RSA-SHA256')
+
+    verify.update(msg)
+
+    setImmediate(() => {
+      callback(null, verify.verify(jwkToPem(key), sig))
+    })
+  }
 }
