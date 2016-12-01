@@ -185,6 +185,11 @@ Converts a private key object into a protobuf serialized private key.
 
 Converts a protobuf serialized private key into its representative object.
 
+### `randomBytes(number)`
+
+- `number: Number`
+
+Generates a Buffer with length `number` populated by random bytes.
 
 ## Contribute
 

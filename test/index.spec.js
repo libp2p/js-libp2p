@@ -97,5 +97,18 @@ describe('libp2p-crypto', () => {
         true
       )
     })
+
+    it('randomBytes throws with no number passed', () => {
+      expect(() => {
+        crypto.randomBytes()
+      }).to.throw
+    })
+
+    it('randomBytes', () => {
+      const buf1 = crypto.randomBytes(10)
+      expect(buf1.length).to.equal(10)
+      const buf2 = crypto.randomBytes(10)
+      expect(buf1).to.not.eql(buf2)
+    })
   })
 })
