@@ -73,7 +73,37 @@ describe('libp2p ping', () => {
     })
   })
 
-  it.skip('ping 3 times from peerA to peerB', (done) => {})
+  it.skip('ping 5 times from peerB to peerA', (done) => {
+    const p = new Ping(swarmB, peerA)
+
+    p.on('error', (err) => {
+      expect(err).to.not.exist
+    })
+
+    let counter = 0
+
+    p.on('ping', (time) => {
+      expect(time).to.be.a('Number')
+      if (++counter === 5) {
+        p.stop()
+        done()
+      }
+    })
+  })
+
+  it('ping itself', (done) => {
+    const p = new Ping(swarmA, peerA)
+
+    p.on('error', (err) => {
+      expect(err).to.not.exist
+    })
+
+    p.on('ping', (time) => {
+      expect(time).to.be.a('Number')
+      p.stop()
+      done()
+    })
+  })
 
   it('unmount PING protocol', () => {
     Ping.unmount(swarmA)
