@@ -1,26 +1,24 @@
 {
   "name": "libp2p-ping",
   "version": "0.2.0",
-  "description": "Node.js IPFS Ping protocol implementation",
-  "main": "lib/index.js",
-  "jsnext:main": "src/index.js",
+  "description": "libp2p Ping protocol implementation",
+  "main": "src/index.js",
   "pre-commit": [
     "lint",
     "test"
   ],
   "scripts": {
-    "test": "aegir-test --env node",
+    "test": "aegir-test",
     "lint": "aegir-lint",
-    "build": "aegir-build node",
-    "release": "aegir-release --env node",
-    "release-minor": "aegir-release --env node --type minor",
-    "release-major": "aegir-release --env node --type major",
+    "release": "aegir-release",
+    "release-minor": "aegir-release --type minor",
+    "release-major": "aegir-release --type major",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/diasdavid/js-ipfs-ping.git"
+    "url": "https://github.com/libp2p/js-libp2p-ping.git"
   },
   "keywords": [
     "IPFS"
@@ -28,25 +26,27 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/diasdavid/js-ipfs-ping/issues"
+    "url": "https://github.com/libp2p/js-libp2p-ping/issues"
   },
-  "homepage": "https://github.com/diasdavid/js-ipfs-ping",
+  "homepage": "https://github.com/libp2p/js-libp2p-ping",
   "devDependencies": {
-    "aegir": "^9.1.1",
+    "aegir": "^9.1.2",
+    "async": "^2.1.4",
     "chai": "^3.5.0",
-    "debug": "^2.2.0",
+    "debug": "^2.3.3",
     "gulp": "^3.9.1",
-    "libp2p-swarm": "^0.26.0",
-    "libp2p-tcp": "^0.8.1",
-    "multiaddr": "^2.0.2",
-    "peer-id": "^0.7.0",
-    "peer-info": "^0.7.0",
-    "pre-commit": "^1.1.2",
+    "libp2p-swarm": "^0.26.3",
+    "libp2p-tcp": "^0.9.1",
+    "multiaddr": "^2.1.1",
+    "peer-id": "^0.8.0",
+    "peer-info": "^0.8.1",
+    "pre-commit": "^1.1.3",
     "run-parallel": "^1.1.6"
   },
   "dependencies": {
-    "pull-reader": "^1.2.8",
-    "pull-stream": "^3.4.5"
+    "libp2p-crypto": "^0.7.3",
+    "pull-handshake": "^1.1.4",
+    "pull-stream": "^3.5.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
