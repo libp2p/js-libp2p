@@ -10,6 +10,7 @@ const series = require('async/series')
 const parallel = require('async/parallel')
 
 const Ping = require('./../src')
+console.log(Ping)
 
 describe('libp2p ping', () => {
   let swarmA
@@ -73,7 +74,7 @@ describe('libp2p ping', () => {
     })
   })
 
-  it.skip('ping 5 times from peerB to peerA', (done) => {
+  it('ping 5 times from peerB to peerA', (done) => {
     const p = new Ping(swarmB, peerA)
 
     p.on('error', (err) => {

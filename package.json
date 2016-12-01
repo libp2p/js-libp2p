@@ -44,8 +44,9 @@
     "run-parallel": "^1.1.6"
   },
   "dependencies": {
-    "pull-reader": "^1.2.8",
-    "pull-stream": "^3.5.0"
+    "pull-handshake": "^1.1.4",
+    "pull-stream": "^3.5.0",
+    "random-bytes": "^1.0.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
