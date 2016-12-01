@@ -5,7 +5,7 @@ const config = require('./config')
 
 exports = module.exports
 
-exports.genPingValue = (length) => {
+exports.rnd = (length) => {
   if (!length) {
     length = config.PING_LENGTH
   }

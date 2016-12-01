@@ -5,6 +5,8 @@ const pull = require('pull-stream')
 const Reader = require('pull-reader')
 // const pullHandshake = require('pull-handshake')
 const config = require('./config')
+const util = require('./util')
+const rnd = util.rnd
 const debug = require('debug')
 const log = debug('libp2p-ping')
 log.error = debug('libp2p-ping:error')
@@ -27,7 +29,7 @@ class Ping extends EventEmitter {
       let start = new Date()
 
       // buffer creation doesn't memset the buffer to 0
-      let buf = new Buffer(PING_LENGTH)
+      let buf = rnd(PING_LENGTH)
       let reader = Reader()
 
       pull(
@@ -57,7 +59,7 @@ class Ping extends EventEmitter {
         }
 
         start = new Date()
-        buf = new Buffer(PING_LENGTH)
+        buf = rnd(PING_LENGTH)
 
         pull(
           pull.values([buf]),

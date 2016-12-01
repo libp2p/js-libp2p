@@ -10,7 +10,6 @@ const series = require('async/series')
 const parallel = require('async/parallel')
 
 const Ping = require('./../src')
-console.log(Ping)
 
 describe('libp2p ping', () => {
   let swarmA
