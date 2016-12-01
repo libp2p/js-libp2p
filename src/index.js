@@ -16,11 +16,8 @@ class Ping extends EventEmitter {
     this.cont = true
 
     log('dialing %s to %s', PROTOCOL, peer.id.toB58String())
-    swarm.dial(peer, PROTOCOL, (err, conn) => {
-      if (err === true) {
-        return
-      }
 
+    swarm.dial(peer, PROTOCOL, (err, conn) => {
       if (err) {
         log.error(err)
         this.emit('error', err)
@@ -28,17 +25,24 @@ class Ping extends EventEmitter {
       }
 
       let start = new Date()
-      let buf = new Buffer(PING_LENGTH) // buffer creation doesn't memset the buffer to 0
 
-      const reader = Reader()
+      // buffer creation doesn't memset the buffer to 0
+      let buf = new Buffer(PING_LENGTH)
+      let reader = Reader()
 
-      pull(pull.values([buf]), conn, reader)
+      pull(
+        pull.values([buf]),
+        conn,
+        reader)
 
       const gotBack = (err, bufBack) => {
         let end = new Date()
 
         if (err || !buf.equals(bufBack)) {
-          pull(pull.empty(), conn)
+          pull(
+            pull.empty(),
+            conn
+          )
           this.emit('error', err || new Error('Received wrong ping ack'))
           return
         }
@@ -46,7 +50,10 @@ class Ping extends EventEmitter {
         this.emit('ping', end - start)
 
         if (!this.cont) {
-          pull(pull.empty(), conn)
+          pull(
+            pull.empty(),
+            conn
+          )
         }
 
         start = new Date()
@@ -70,33 +77,37 @@ class Ping extends EventEmitter {
   }
 }
 
-function attach (swarm) {
-  swarm.handle(PROTOCOL, (conn) => {
+function mount (swarm) {
+  swarm.handle(PROTOCOL, (protocol, conn) => {
     const reader = Reader()
-    pull(conn, reader)
+
+    pull(
+      conn,
+      reader
+    )
 
     reader.read(PING_LENGTH, echo)
 
     function echo (err, buf) {
-      if (err === true) {
-        return
-      }
-
       if (err) {
-        log.error(err)
+        return log.error(err)
       }
 
-      pull(pull.values([buf]), conn)
+      pull(
+        pull.values([buf]),
+        conn
+      )
+
       reader.read(PING_LENGTH, echo)
     }
   })
 }
 
-function detach (swarm) {
+function unmount (swarm) {
   swarm.unhandle(PROTOCOL)
 }
 
-Ping.attach = attach
-Ping.detach = detach
+Ping.mount = mount
+Ping.unmount = unmount
 
 module.exports = Ping
