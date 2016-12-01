@@ -43,7 +43,12 @@ describe('libp2p ping', () => {
         cb()
       },
       (cb) => swarmA.listen(cb),
-      (cb) => swarmB.listen(cb)
+      (cb) => swarmB.listen(cb),
+      (cb) => {
+        Ping.mount(swarmA)
+        Ping.mount(swarmB)
+        cb()
+      }
     ], done)
   })
 
@@ -52,11 +57,6 @@ describe('libp2p ping', () => {
       (cb) => swarmA.close(cb),
       (cb) => swarmB.close(cb)
     ], done)
-  })
-
-  it('mount ping protocol', () => {
-    Ping.mount(swarmA)
-    Ping.mount(swarmB)
   })
 
   it('ping once from peerA to peerB', (done) => {

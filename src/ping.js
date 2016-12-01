@@ -3,15 +3,15 @@
 const EventEmitter = require('events').EventEmitter
 const pull = require('pull-stream')
 const handshake = require('pull-handshake')
-const config = require('./config')
+const constants = require('./constants')
 const util = require('./util')
 const rnd = util.rnd
 const debug = require('debug')
 const log = debug('libp2p-ping')
 log.error = debug('libp2p-ping:error')
 
-const PROTOCOL = config.PROTOCOL
-const PING_LENGTH = config.PING_LENGTH
+const PROTOCOL = constants.PROTOCOL
+const PING_LENGTH = constants.PING_LENGTH
 
 class Ping extends EventEmitter {
   constructor (swarm, peer) {

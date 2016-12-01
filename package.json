@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/libp2p/js-ipfs-ping.git"
+    "url": "https://github.com/libp2p/js-libp2p-ping.git"
   },
   "keywords": [
     "IPFS"
@@ -26,9 +26,9 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/libp2p/js-ipfs-ping/issues"
+    "url": "https://github.com/libp2p/js-libp2p-ping/issues"
   },
-  "homepage": "https://github.com/libp2p/js-ipfs-ping",
+  "homepage": "https://github.com/libp2p/js-libp2p-ping",
   "devDependencies": {
     "aegir": "^9.1.2",
     "async": "^2.1.4",

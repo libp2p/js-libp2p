@@ -2,9 +2,9 @@
 
 const pull = require('pull-stream')
 const handshake = require('pull-handshake')
-const config = require('./config')
-const PROTOCOL = config.PROTOCOL
-const PING_LENGTH = config.PING_LENGTH
+const constants = require('./constants')
+const PROTOCOL = constants.PROTOCOL
+const PING_LENGTH = constants.PING_LENGTH
 
 const debug = require('debug')
 const log = debug('libp2p-ping')
@@ -18,12 +18,16 @@ function mount (swarm) {
     // receive and echo back
     function next () {
       shake.read(PING_LENGTH, (err, buf) => {
+        if (err === true) {
+          // stream closed
+          return
+        }
         if (err) {
           return log.error(err)
         }
 
         shake.write(buf)
-        next()
+        return next()
       })
     }
 
