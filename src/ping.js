@@ -2,8 +2,7 @@
 
 const EventEmitter = require('events').EventEmitter
 const pull = require('pull-stream')
-const Reader = require('pull-reader')
-// const pullHandshake = require('pull-handshake')
+const handshake = require('pull-handshake')
 const config = require('./config')
 const util = require('./util')
 const rnd = util.rnd
@@ -17,7 +16,10 @@ const PING_LENGTH = config.PING_LENGTH
 class Ping extends EventEmitter {
   constructor (swarm, peer) {
     super()
-    this.continue = false
+
+    let stop = false
+    let shake
+    let self = this
 
     log('dialing %s to %s', PROTOCOL, peer.id.toB58String())
 
@@ -26,56 +28,51 @@ class Ping extends EventEmitter {
         return this.emit('error', err)
       }
 
-      let start = new Date()
-
-      // buffer creation doesn't memset the buffer to 0
-      let buf = rnd(PING_LENGTH)
-      let reader = Reader()
+      const stream = handshake({ timeout: 0 })
+      shake = stream.handshake
 
       pull(
-        pull.values([buf]),
+        stream,
         conn,
-        reader)
+        stream
+      )
 
-      const gotBack = (err, bufBack) => {
-        let end = new Date()
+      // write and wait to see ping back
+      function next () {
+        let start = new Date()
+        let buf = rnd(PING_LENGTH)
+        shake.write(buf)
+        shake.read(PING_LENGTH, (err, bufBack) => {
+          let end = new Date()
+          if (err || !buf.equals(bufBack)) {
+            const err = new Error('Received wrong ping ack')
+            return self.emit('error', err)
+          }
 
-        if (err || !buf.equals(bufBack)) {
-          pull(
-            pull.empty(),
-            conn
-          )
-          err = err || new Error('Received wrong ping ack')
-          return this.emit('error', err)
-        }
+          self.emit('ping', end - start)
 
-        this.emit('ping', end - start)
-
-        if (!this.continue) {
-          return pull(
-            pull.empty(),
-            conn
-          )
-        }
-
-        start = new Date()
-        buf = rnd(PING_LENGTH)
-
-        pull(
-          pull.values([buf]),
-          reader,
-          conn
-        )
-
-        reader.read(PING_LENGTH, gotBack)
+          if (stop) {
+            return
+          }
+          next()
+        })
       }
 
-      reader.read(PING_LENGTH, gotBack)
+      next()
     })
-  }
 
-  stop () {
-    this.continue = false
+    this.stop = () => {
+      if (stop || !shake) {
+        return
+      }
+
+      stop = true
+
+      pull(
+        pull.empty(),
+        shake.rest()
+      )
+    }
   }
 }
 

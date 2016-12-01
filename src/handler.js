@@ -1,8 +1,7 @@
 'use strict'
 
 const pull = require('pull-stream')
-const Reader = require('pull-reader')
-// const pullHandshake = require('pull-handshake')
+const handshake = require('pull-handshake')
 const config = require('./config')
 const PROTOCOL = config.PROTOCOL
 const PING_LENGTH = config.PING_LENGTH
@@ -13,27 +12,28 @@ log.error = debug('libp2p-ping:error')
 
 function mount (swarm) {
   swarm.handle(PROTOCOL, (protocol, conn) => {
-    const reader = Reader()
+    const stream = handshake({ timeout: 0 })
+    const shake = stream.handshake
+
+    // receive and echo back
+    function next () {
+      shake.read(PING_LENGTH, (err, buf) => {
+        if (err) {
+          return log.error(err)
+        }
+
+        shake.write(buf)
+        next()
+      })
+    }
 
     pull(
       conn,
-      reader
+      stream,
+      conn
     )
 
-    reader.read(PING_LENGTH, echo)
-
-    function echo (err, buf) {
-      if (err) {
-        return log.error(err)
-      }
-
-      pull(
-        pull.values([buf]),
-        conn
-      )
-
-      reader.read(PING_LENGTH, echo)
-    }
+    next()
   })
 }
 
