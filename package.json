@@ -39,6 +39,7 @@
     "pre-commit": "^1.1.1"
   },
   "dependencies": {
+    "libp2p-ping": "^0.3.0",
     "libp2p-swarm": "^0.26.3",
     "mafmt": "^2.1.2",
     "multiaddr": "^2.1.1",

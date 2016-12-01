@@ -8,6 +8,7 @@ const multiaddr = require('multiaddr')
 const mafmt = require('mafmt')
 const EE = require('events').EventEmitter
 const assert = require('assert')
+const Ping = require('libp2p-ping')
 
 exports = module.exports
 
@@ -70,6 +71,9 @@ class Node {
       })
     }
 
+    // Mount default protocols
+    Ping.mount(this.swarm)
+
     // Not fully implemented in js-libp2p yet
     this.routing = undefined
     this.records = undefined
@@ -121,6 +125,27 @@ class Node {
   stop (callback) {
     this.isOnline = false
     this.swarm.close(callback)
+  }
+
+  //
+  // Ping
+  //
+
+  // TODO
+  pingById (id, callback) {
+    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
+    callback(new Error('not implemented yet'))
+  }
+
+  // TODO
+  pingByMultiaddr (maddr, callback) {
+    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
+    callback(new Error('not implemented yet'))
+  }
+
+  pingByPeerInfo (peerInfo, callback) {
+    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
+    callback(null, new Ping(this.swarm, peerInfo))
   }
 
   //
