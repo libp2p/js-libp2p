@@ -1,24 +1,24 @@
 /* eslint-env mocha */
 'use strict'
 
-var multiaddr = require('multiaddr')
-var Peer = require('peer-info')
-var Swarm = require('libp2p-swarm')
-var TCP = require('libp2p-tcp')
+const multiaddr = require('multiaddr')
+const Peer = require('peer-info')
+const Swarm = require('libp2p-swarm')
+const TCP = require('libp2p-tcp')
 
-var Broadcast = require('./../src')
+const Broadcast = require('./../src')
 
-var pA
-var pB
-var swA
-var swB
+describe('With verify on', () => {
+  let pA
+  let pB
+  let swA
+  let swB
 
-describe('With verify on', function () {
-  before(function (done) {
-    var mh1 = multiaddr('/ip4/127.0.0.1/tcp/8010')
-    var mh2 = multiaddr('/ip4/127.0.0.1/tcp/8020')
+  before((done) => {
+    const mh1 = multiaddr('/ip4/127.0.0.1/tcp/8010')
+    const mh2 = multiaddr('/ip4/127.0.0.1/tcp/8020')
 
-    Peer.create(function (err, peer) {
+    Peer.create((err, peer) => {
       if (err) {
         done(err)
       }
@@ -27,7 +27,7 @@ describe('With verify on', function () {
       pA.multiaddr.add(mh1)
 
       swA = new Swarm(pA)
-      swA.transport.add('tcp', new TCP(), {}, function () {
+      swA.transport.add('tcp', new TCP(), {}, () => {
         swA.listen(ready)
       })
     })
@@ -41,12 +41,12 @@ describe('With verify on', function () {
       pB.multiaddr.add(mh2)
 
       swB = new Swarm(pB)
-      swB.transport.add('tcp', new TCP(), {}, function () {
+      swB.transport.add('tcp', new TCP(), {}, () => {
         swB.listen(ready)
       })
     })
 
-    var readyCounter = 0
+    let readyCounter = 0
 
     function ready () {
       readyCounter++
@@ -57,22 +57,21 @@ describe('With verify on', function () {
     }
   })
 
-  after(function (done) {
+  after((done) => {
     swA.close()
     swB.close()
     done()
   })
 
-  it('Find the other peer', function (done) {
-    this.timeout(1e3 * 10)
-    var peerList = [
+  it('Find the other peer', (done) => {
+    const peerList = [
       pB.multiaddrs[0].toString() + '/ipfs/' + pB.id.toB58String()
     ]
-    var bA = new Broadcast(peerList, {
+    const bA = new Broadcast(peerList, {
       verify: true
     }, swA)
 
-    bA.once('peer', function (peer) {
+    bA.once('peer', (peer) => {
       done()
     })
   })

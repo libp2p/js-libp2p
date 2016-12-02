@@ -1,21 +1,14 @@
 /* eslint-env mocha */
 'use strict'
 
-var Bootstrap = require('./../src')
+const Bootstrap = require('../src')
+const peerList = require('./default-peers')
 
-describe('Without verify on', function () {
-  before(function (done) {
-    done()
-  })
+describe('without verify on', () => {
+  it('find the other peer', (done) => {
+    const bA = new Bootstrap(peerList, { verify: false })
 
-  it('Find the other peer', function (done) {
-    this.timeout(1e3 * 10)
-
-    var bA = new Bootstrap(Bootstrap.default, {
-      verify: false
-    })
-
-    bA.once('peer', function (peer) {
+    bA.once('peer', (peer) => {
       done()
     })
   })

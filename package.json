@@ -2,18 +2,19 @@
   "name": "libp2p-railing",
   "version": "0.2.1",
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
-  "main": "lib/index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "aegir-test node",
     "lint": "aegir-lint",
-    "build": "aegir-build node",
-    "release": "aegir-release node",
+    "test": "aegir-test --env node",
+    "release": "aegir-release --env no-build",
+    "release-minor": "aegir-release --type minor --env no-build",
+    "release-major": "aegir-release --type major --env no-build",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/diasdavid/js-ipfs-railing.git"
+    "url": "https://github.com/libp2p/js-ipfs-railing.git"
   },
   "keywords": [
     "IPFS"
@@ -21,26 +22,27 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/diasdavid/js-ipfs-railing/issues"
+    "url": "https://github.com/libp2p/js-ipfs-railing/issues"
   },
   "engines": {
-    "node": "^4.0.0"
+    "node": ">=4.0.0",
+    "npm": ">=3.0.0"
+
   },
-  "homepage": "https://github.com/diasdavid/js-ipfs-railing",
+  "homepage": "https://github.com/libp2p/js-ipfs-railing",
   "devDependencies": {
     "aegir": "^9.1.2",
     "chai": "^3.5.0",
-    "libp2p-swarm": "^0.26.2",
+    "libp2p-swarm": "^0.26.3",
     "libp2p-tcp": "^0.9.1",
-    "pre-commit": "^1.1.2"
+    "pre-commit": "^1.1.3"
   },
   "dependencies": {
     "debug": "^2.3.3",
     "multiaddr": "^2.1.1",
     "peer-id": "^0.8.0",
-    "peer-info": "^0.8.0"
+    "peer-info": "^0.8.1"
   },
-  "jsnext:main": "src/index.js",
   "pre-commit": [
     "lint",
     "test"
