@@ -27,7 +27,6 @@
   "engines": {
     "node": ">=4.0.0",
     "npm": ">=3.0.0"
-
   },
   "homepage": "https://github.com/libp2p/js-ipfs-railing",
   "devDependencies": {
@@ -46,5 +45,12 @@
   "pre-commit": [
     "lint",
     "test"
+  ],
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Nuno Nogueira <nunofmn@gmail.com>",
+    "Richard Littauer <richard.littauer@gmail.com>",
+    "dignifiedquire <dignifiedquire@gmail.com>",
+    "greenkeeperio-bot <support@greenkeeper.io>"
   ]
 }
