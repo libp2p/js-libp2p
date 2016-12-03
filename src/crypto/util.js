@@ -5,7 +5,7 @@ const BN = require('asn1.js').bignum
 // Convert a BN.js instance to a base64 encoded string without padding
 // Adapted from https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-41#appendix-C
 exports.toBase64 = function toBase64 (bn) {
-  let s = bn.toBuffer('be').toString('base64')
+  let s = bn.toArrayLike(Buffer, 'be').toString('base64')
 
   return s
     .replace(/(=*)$/, '') // Remove any trailing '='s
