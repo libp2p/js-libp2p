@@ -3,7 +3,7 @@
 const multiaddr = require('multiaddr')
 const Connection = require('interface-connection').Connection
 const os = require('os')
-const contains = require('lodash.contains')
+const includes = require('lodash.includes')
 const net = require('net')
 const toPull = require('stream-to-pull-stream')
 const EventEmitter = require('events').EventEmitter
@@ -78,7 +78,7 @@ module.exports = (handler) => {
 
   listener.listen = (ma, cb) => {
     listeningAddr = ma
-    if (contains(ma.protoNames(), 'ipfs')) {
+    if (includes(ma.protoNames(), 'ipfs')) {
       ipfsId = getIpfsId(ma)
       listeningAddr = ma.decapsulate('ipfs')
     }
