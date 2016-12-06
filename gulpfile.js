@@ -12,11 +12,16 @@ const multiaddr = require('multiaddr')
 const fs = require('fs')
 const path = require('path')
 
-const sigServer = require('libp2p-webrtc-star/src/signalling-server')
+const sigServer = require('libp2p-webrtc-star/src/signalling')
 
 let swarmA
 let swarmB
 let sigS
+
+const options = {
+  port: 15555,
+  host: '127.0.0.1'
+}
 
 gulp.task('test:browser:before', (done) => {
   function createListenerA (cb) {
@@ -70,7 +75,7 @@ gulp.task('test:browser:before', (done) => {
 
   createListenerA(ready)
   createListenerB(ready)
-  sigS = sigServer.start(15555, ready)
+  sigS = sigServer.start(options, ready)
 
   function echo (protocol, conn) {
     pull(conn, conn)

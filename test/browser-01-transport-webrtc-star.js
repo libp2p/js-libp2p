@@ -75,6 +75,14 @@ describe('transport - webrtc-star', () => {
       )
     })
   })
+  it('dial offline / non-existent node', (done) => {
+    const mhOffline = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/ABCD')
+    swarm1.transport.dial('wstar', mhOffline, (err, conn) => {
+      expect(err).to.exist
+      expect(conn).to.not.exist
+      done()
+    })
+  })
 
   it('close', (done) => {
     parallel([

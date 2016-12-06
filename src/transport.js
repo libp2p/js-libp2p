@@ -41,8 +41,10 @@ module.exports = function (swarm) {
       // b) if multiaddrs.length = 1, return the conn from the
       // transport, otherwise, create a passthrough
       if (multiaddrs.length === 1) {
-        const conn = t.dial(multiaddrs.shift())
-        callback(null, new Connection(conn))
+        const conn = t.dial(multiaddrs.shift(), (err) => {
+          if (err) return callback(err)
+          callback(null, new Connection(conn))
+        })
         return
       }
 
