@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/diasdavid/js-libp2p-mdns-discovery",
   "devDependencies": {
-    "aegir": "^9.1.2",
+    "aegir": "^9.2.1",
     "chai": "^3.5.0",
     "libp2p-swarm": "^0.26.2",
     "libp2p-tcp": "^0.9.1",
