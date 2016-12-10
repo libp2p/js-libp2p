@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-ping",
   "devDependencies": {
-    "aegir": "^9.1.2",
+    "aegir": "^9.2.1",
     "async": "^2.1.4",
     "chai": "^3.5.0",
     "debug": "^2.3.3",
