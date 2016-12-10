@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/libp2p/js-ipfs-railing",
   "devDependencies": {
-    "aegir": "^9.1.2",
+    "aegir": "^9.2.1",
     "chai": "^3.5.0",
     "libp2p-swarm": "^0.26.3",
     "libp2p-tcp": "^0.9.1",
