@@ -57,7 +57,7 @@
     "browserify-zlib": "github:ipfs/browserify-zlib",
     "debug": "^2.3.3",
     "interface-connection": "^0.3.0",
-    "ip-address": "^5.8.2",
+    "ip-address": "^5.8.3",
     "libp2p-identify": "^0.3.0",
     "lodash.includes": "^4.3.0",
     "multiaddr": "^2.1.1",
