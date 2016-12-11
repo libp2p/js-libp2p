@@ -6,9 +6,11 @@
   "scripts": {
     "lint": "aegir-lint",
     "coverage": "aegir-coverage",
-    "test": "aegir-test node",
-    "build": "aegir-build node",
-    "release": "aegir-release node",
+    "test": "aegir-test --env node",
+    "release": "aegir-release --env no-build",
+    "release-minor": "aegir-release --type minor --env no-build",
+    "release-major": "aegir-release --type major --env no-build",
+    "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
   "pre-commit": [
