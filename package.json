@@ -36,9 +36,10 @@
     "pre-commit": "^1.2.0"
   },
   "dependencies": {
-    "peer-info": "^0.8.1",
-    "peer-id": "^0.8.0",
+    "libp2p-tcp": "^0.9.1",
     "multiaddr": "^2.1.1",
-    "multicast-dns": "^6.1.0"
+    "multicast-dns": "^6.1.0",
+    "peer-id": "^0.8.0",
+    "peer-info": "^0.8.1"
   }
 }

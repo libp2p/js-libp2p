@@ -8,6 +8,8 @@ const debug = require('debug')
 const log = debug('libp2p:mdns')
 const EventEmitter = require('events').EventEmitter
 const os = require('os')
+const TCP = require('libp2p-tcp')
+const tcp = new TCP()
 
 class MulticastDNS extends EventEmitter {
   constructor (node, options) {
@@ -128,8 +130,9 @@ class MulticastDNS extends EventEmitter {
           data: peerInfo.id.toB58String() + '.' + serviceTag
         })
 
-        // TODO needs to be filtered to only announce the tcp ports
-        const port = peerInfo.multiaddrs[0].toString().split('/')[4]
+        // Only announce TCP multiaddrs for now
+        const multiaddrs = tcp.filter(peerInfo.multiaddrs)
+        const port = multiaddrs[0].toString().split('/')[4]
 
         answers.push({
           name: peerInfo.id.toB58String() + '.' + serviceTag,
@@ -152,7 +155,7 @@ class MulticastDNS extends EventEmitter {
           data: peerInfo.id.toB58String()
         })
 
-        peerInfo.multiaddrs.forEach(function (ma) {
+        multiaddrs.forEach((ma) => {
           if (ma.protoNames()[0] === 'ip4') {
             answers.push({
               name: os.hostname(),
