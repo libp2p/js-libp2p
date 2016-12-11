@@ -16,7 +16,7 @@ libp2p-mdns JavaScript implementation
 ```JavaScript
 var MulticastDNS = require('libp2p-mdns')
 
-var mdns = new MulticastDNS(options, libp2pNodeInstance)
+var mdns = new MulticastDNS(libp2pNodeInstance, options)
 
 mdns.on('peer', (peerInfo) => {
   console.log('Found a peer in the local network', peerInfo.id.toB58String())
@@ -26,5 +26,5 @@ mdns.on('peer', (peerInfo) => {
 - options
   - `broadcast` - (true/false) announce our presence through mDNS
   - `interval` - query interval
-  - `serviceTag` - name of the service announced (default to "discovery.ipfs.io.local")
+  - `serviceTag` - name of the service announced
   - `verify` - Verifies if we can establish a connection with the peer, before emitting a `peer` event

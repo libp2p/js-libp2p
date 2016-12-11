@@ -18,13 +18,16 @@ class MulticastDNS extends EventEmitter {
 
     const broadcast = options.broadcast !== false
     const interval = options.interval || (1e3 * 5) // default: 5 seconds
-    const serviceTag = options.serviceTag || 'discovery.ipfs.io.local'
+    const serviceTag = options.serviceTag || '_ipfs-discovery._udp'
     const verify = options.verify === true
     const port = options.port || 5353
     const peerInfo = node.peerInfo
     const self = this // for event emitter
 
-    const mdns = multicastDNS({ port: port })
+    const mdns = multicastDNS({
+      port: port,
+      loopback: false
+    })
 
     // query the network
 
