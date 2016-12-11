@@ -10,7 +10,6 @@
     "release": "aegir-release --env no-build",
     "release-minor": "aegir-release --type minor --env no-build",
     "release-major": "aegir-release --type major --env no-build",
-    "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
   "pre-commit": [
@@ -43,5 +42,13 @@
     "multicast-dns": "^6.1.0",
     "peer-id": "^0.8.0",
     "peer-info": "^0.8.1"
-  }
+  },
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Nuno Nogueira <nunofmn@gmail.com>",
+    "Richard Littauer <richard.littauer@gmail.com>",
+    "dignifiedquire <dignifiedquire@gmail.com>",
+    "emersion <contact@emersion.fr>",
+    "greenkeeperio-bot <support@greenkeeper.io>"
+  ]
 }
