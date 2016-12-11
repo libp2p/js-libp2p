@@ -30,6 +30,7 @@
   "homepage": "https://github.com/libp2p/js-libp2p-mdns",
   "devDependencies": {
     "aegir": "^9.2.1",
+    "async": "^2.1.4",
     "chai": "^3.5.0",
     "libp2p-ipfs-nodejs": "^0.16.4",
     "pre-commit": "^1.2.0"

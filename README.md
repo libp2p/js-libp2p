@@ -14,9 +14,9 @@ libp2p-mdns JavaScript implementation
 # Usage
 
 ```JavaScript
-var MDNS = require('libp2p-mdns')
+var MulticastDNS = require('libp2p-mdns')
 
-var mdns = new MDNS(options, libp2pNodeInstance)
+var mdns = new MulticastDNS(options, libp2pNodeInstance)
 
 mdns.on('peer', (peerInfo) => {
   console.log('Found a peer in the local network', peerInfo.id.toB58String())

@@ -1,205 +1,187 @@
 'use strict'
 
-var multicastDNS = require('multicast-dns')
-var Id = require('peer-id')
-var Peer = require('peer-info')
-var Multiaddr = require('multiaddr')
-var log = require('ipfs-logger').group('discovery ipfs-mdns')
-var EventEmitter = require('events').EventEmitter
-var util = require('util')
-var os = require('os')
+const multicastDNS = require('multicast-dns')
+const Id = require('peer-id')
+const Peer = require('peer-info')
+const Multiaddr = require('multiaddr')
+const debug = require('debug')
+const log = debug('libp2p:mdns')
+const EventEmitter = require('events').EventEmitter
+const os = require('os')
 
-exports = module.exports = Sonar
+class MulticastDNS extends EventEmitter {
+  constructor (node, options) {
+    super()
+    options = options || {}
 
-util.inherits(Sonar, EventEmitter)
+    const broadcast = options.broadcast !== false
+    const interval = options.interval || (1e3 * 5) // default: 5 seconds
+    const serviceTag = options.serviceTag || 'discovery.ipfs.io.local'
+    const verify = options.verify === true
+    const port = options.port || 5353
+    const peerInfo = node.peerInfo
+    const self = this // for event emitter
 
-function Sonar (peerSelf, options, swarmSelf) {
-  var self = this
+    const mdns = multicastDNS({ port: port })
 
-  if (!(self instanceof Sonar)) {
-    throw new Error('Sonar must be instantiated with new')
-  }
+    // query the network
 
-  // option arguments
+    mdns.on('response', gotResponse)
+    queryLAN()
 
-  self.broadcast = options && options.broadcast ? options.broadcast : true
-  // self.query = options.query || true // TODO implement a switch
-  self.interval = options && options.interval ? options.interval : (1e3 * 5)
-  self.serviceTag = options && options.serviceTag ? options.serviceTag : 'discovery.ipfs.io.local'
-  self.verify = options && options.verify ? options.verify : false
-
-  if (self.verify) {
-    if (!swarmSelf) {
-      throw new Error('If verify is selected, the third argument must be a libp2p-swarm')
-    }
-  }
-
-  self.mdns = multicastDNS({ port: options && options.port ? options.port : 5353 })
-
-  // query the network
-
-  self.mdns.on('response', gotResponse)
-  queryLAN()
-
-  function queryLAN () {
-    setInterval(function () {
-      self.mdns.query({
-        questions: [{
-          name: self.serviceTag,
-          type: 'PTR'
-        }]
-      })
-    }, self.interval)
-  }
-
-  function gotResponse (rsp) {
-    if (!rsp.answers) {
-      return
+    function queryLAN () {
+      setInterval(() => {
+        mdns.query({
+          questions: [{
+            name: serviceTag,
+            type: 'PTR'
+          }]
+        })
+      }, interval)
     }
 
-    var answers = {
-      ptr: {},
-      srv: {},
-      txt: {},
-      a: [],
-      aaaa: []
-    }
+    function gotResponse (rsp) {
+      if (!rsp.answers) { return }
 
-    rsp.answers.forEach(function (answer) {
-      switch (answer.type) {
-        case 'PTR': answers.ptr = answer
-          break
-        case 'SRV': answers.srv = answer
-          break
-        case 'TXT': answers.txt = answer
-          break
-        case 'A': answers.a.push(answer)
-          break
-        case 'AAAA': answers.aaaa.push(answer)
-          break
-        default:
-          break
-      }
-    })
-
-    if (answers.ptr.name !== self.serviceTag) {
-      return
-    }
-
-    var b58Id = answers.txt.data
-    var port = answers.srv.data.port
-    var multiaddrs = []
-
-    answers.a.forEach(function (a) {
-      multiaddrs.push(new Multiaddr('/ip4/' + a.data + '/tcp/' + port))
-    })
-
-    // TODO(daviddias) Create multiaddrs from AAAA records as well
-
-    if (peerSelf.id.toB58String() === b58Id) {
-      return // replied to myself, ignore
-    }
-
-    log.info('peer found -', b58Id)
-
-    var peerId = Id.createFromB58String(b58Id)
-
-    Peer.create(peerId, function (err, peerFound) {
-      if (err) {
-        return log.warn('Error creating PeerInfo from new found peer', err)
+      const answers = {
+        ptr: {},
+        srv: {},
+        txt: {},
+        a: [],
+        aaaa: []
       }
 
-      multiaddrs.forEach(function (addr) {
-        peerFound.multiaddr.add(addr)
+      rsp.answers.forEach((answer) => {
+        switch (answer.type) {
+          case 'PTR': answers.ptr = answer; break
+          case 'SRV': answers.srv = answer; break
+          case 'TXT': answers.txt = answer; break
+          case 'A': answers.a.push(answer); break
+          case 'AAAA': answers.aaaa.push(answer); break
+          default: break
+        }
       })
 
-      verify(peerFound)
-    })
-  }
+      if (answers.ptr.name !== serviceTag) {
+        return
+      }
 
-  function verify (peer) {
-    if (self.verify) {
-      swarmSelf.dial(peer, function (err) {
+      const b58Id = answers.txt.data.toString()
+      const port = answers.srv.data.port
+      const multiaddrs = []
+
+      answers.a.forEach((a) => {
+        multiaddrs.push(new Multiaddr('/ip4/' + a.data + '/tcp/' + port))
+      })
+
+      // TODO Create multiaddrs from AAAA (IPv6) records as well
+
+      if (peerInfo.id.toB58String() === b58Id) {
+        return // replied to myself, ignore
+      }
+
+      log('peer found -', b58Id)
+
+      const peerId = Id.createFromB58String(b58Id)
+
+      Peer.create(peerId, function (err, peerFound) {
         if (err) {
-          return log.warn('Was not able to connect to new found peer', err)
+          return log('Error creating PeerInfo from new found peer', err)
         }
+
+        multiaddrs.forEach(function (addr) {
+          peerFound.multiaddr.add(addr)
+        })
+
+        attemptDial(peerFound)
+      })
+    }
+
+    function attemptDial (peer) {
+      if (verify) {
+        node.dialByPeerInfo(peer, (err) => {
+          if (err) {
+            return log('Was not able to connect to new found peer', err)
+          }
+          self.emit('peer', peer)
+        })
+      } else {
         self.emit('peer', peer)
-      })
-    } else {
-      self.emit('peer', peer)
-    }
-  }
-
-  // answer to queries
-
-  self.mdns.on('query', gotQuery)
-
-  function gotQuery (qry) {
-    if (!self.broadcast) {
-      return
+      }
     }
 
-    if (qry.questions[0] && qry.questions[0].name === self.serviceTag) {
-      var answers = []
+    // answer to queries
 
-      answers.push({
-        name: self.serviceTag,
-        type: 'PTR',
-        class: 1,
-        ttl: 120,
-        data: peerSelf.id.toB58String() + '.' + self.serviceTag
-      })
+    mdns.on('query', gotQuery)
 
-      var port = peerSelf.multiaddrs[0].toString().split('/')[4]
-      // console.log(port)
+    function gotQuery (qry) {
+      if (!broadcast) { return }
 
-      answers.push({
-        name: peerSelf.id.toB58String() + '.' + self.serviceTag,
-        type: 'SRV',
-        class: 1,
-        ttl: 120,
-        data: {
-          priority: 10,
-          weight: 1,
-          port: port,
-          target: os.hostname()
-        }
-      })
+      if (qry.questions[0] && qry.questions[0].name === serviceTag) {
+        const answers = []
 
-      answers.push({
-        name: peerSelf.id.toB58String() + '.' + self.serviceTag,
-        type: 'TXT',
-        class: 1,
-        ttl: 120,
-        data: peerSelf.id.toB58String()
-      })
+        answers.push({
+          name: serviceTag,
+          type: 'PTR',
+          class: 1,
+          ttl: 120,
+          data: peerInfo.id.toB58String() + '.' + serviceTag
+        })
 
-      peerSelf.multiaddrs.forEach(function (mh) {
-        if (mh.protoNames()[0] === 'ip4') {
-          answers.push({
-            name: os.hostname(),
-            type: 'A',
-            class: 1,
-            ttl: 120,
-            data: mh.toString().split('/')[2]
-          })
-          return
-        }
-        if (mh.protoNames()[0] === 'ip6') {
-          answers.push({
-            name: os.hostname(),
-            type: 'AAAA',
-            class: 1,
-            ttl: 120,
-            data: mh.toString().split('/')[2]
-          })
-          return
-        }
-      })
-      self.mdns.respond(answers)
+        // TODO needs to be filtered to only announce the tcp ports
+        const port = peerInfo.multiaddrs[0].toString().split('/')[4]
+
+        answers.push({
+          name: peerInfo.id.toB58String() + '.' + serviceTag,
+          type: 'SRV',
+          class: 1,
+          ttl: 120,
+          data: {
+            priority: 10,
+            weight: 1,
+            port: port,
+            target: os.hostname()
+          }
+        })
+
+        answers.push({
+          name: peerInfo.id.toB58String() + '.' + serviceTag,
+          type: 'TXT',
+          class: 1,
+          ttl: 120,
+          data: peerInfo.id.toB58String()
+        })
+
+        peerInfo.multiaddrs.forEach(function (ma) {
+          if (ma.protoNames()[0] === 'ip4') {
+            answers.push({
+              name: os.hostname(),
+              type: 'A',
+              class: 1,
+              ttl: 120,
+              data: ma.toString().split('/')[2]
+            })
+            return
+          }
+          if (ma.protoNames()[0] === 'ip6') {
+            answers.push({
+              name: os.hostname(),
+              type: 'AAAA',
+              class: 1,
+              ttl: 120,
+              data: ma.toString().split('/')[2]
+            })
+            return
+          }
+        })
+
+        mdns.respond(answers)
+      }
     }
   }
 }
+
+module.exports = MulticastDNS
 
 /* for reference
 
