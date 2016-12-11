@@ -1,6 +1,6 @@
 {
   "name": "libp2p-mdns",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
   "main": "src/index.js",
   "scripts": {
