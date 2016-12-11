@@ -16,7 +16,7 @@ const OFFLINE_ERROR_MESSAGE = 'The libp2p node is not started yet'
 const IPFS_CODE = 421
 
 class Node {
-  constructor (_modules, _peerInfo, _peerBook) {
+  constructor (_modules, _peerInfo, _peerBook, _options) {
     assert(_modules, 'requires modules to equip libp2p with features')
     assert(_peerInfo, 'requires a PeerInfo instance')
 
