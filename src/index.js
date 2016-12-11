@@ -12,22 +12,17 @@ const TCP = require('libp2p-tcp')
 const tcp = new TCP()
 
 class MulticastDNS extends EventEmitter {
-  constructor (node, options) {
+  constructor (peerInfo, options) {
     super()
     options = options || {}
 
     const broadcast = options.broadcast !== false
-    const interval = options.interval || (1e3 * 5) // default: 5 seconds
+    const interval = options.interval || (1e3 * 10) // default: 10 seconds
     const serviceTag = options.serviceTag || '_ipfs-discovery._udp'
-    const verify = options.verify === true
     const port = options.port || 5353
-    const peerInfo = node.peerInfo
     const self = this // for event emitter
 
-    const mdns = multicastDNS({
-      port: port,
-      loopback: false
-    })
+    const mdns = multicastDNS({ port: port })
 
     // query the network
 
@@ -89,30 +84,17 @@ class MulticastDNS extends EventEmitter {
 
       const peerId = Id.createFromB58String(b58Id)
 
-      Peer.create(peerId, function (err, peerFound) {
+      Peer.create(peerId, (err, peerFound) => {
         if (err) {
           return log('Error creating PeerInfo from new found peer', err)
         }
 
-        multiaddrs.forEach(function (addr) {
+        multiaddrs.forEach((addr) => {
           peerFound.multiaddr.add(addr)
         })
 
-        attemptDial(peerFound)
+        self.emit('peer', peerFound)
       })
-    }
-
-    function attemptDial (peer) {
-      if (verify) {
-        node.dialByPeerInfo(peer, (err) => {
-          if (err) {
-            return log('Was not able to connect to new found peer', err)
-          }
-          self.emit('peer', peer)
-        })
-      } else {
-        self.emit('peer', peer)
-      }
     }
 
     // answer to queries
