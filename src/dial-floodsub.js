@@ -1,6 +1,7 @@
 'use strict'
 
 const config = require('./config')
+const pb = require('./message')
 const log = config.log
 const multicodec = config.multicodec
 const stream = require('stream')
@@ -50,8 +51,19 @@ module.exports = (libp2pNode, peerSet, subscriptions) => {
         conn
       )
 
+      // Immediately send my own subscriptions to the newly established conn
       if (subscriptions.length > 0) {
-        // TODO send my subscriptions through the new conn
+        const subopts = subscriptions.map((topic) => {
+          return {
+            subscribe: true,
+            topicCID: topic
+          }
+        })
+        const rpc = pb.rpc.RPC.encode({
+          subscriptions: subopts
+        })
+
+        peerSet[idB58Str].stream.write(rpc)
       }
     }
   }
