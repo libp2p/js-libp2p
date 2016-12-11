@@ -20,7 +20,7 @@ describe('basics', () => {
   let psA
   let psB
 
-  describe('no existing pubsub config', () => {
+  describe('fresh nodes', () => {
     before((done) => {
       series([
         (cb) => {
@@ -194,7 +194,7 @@ describe('basics', () => {
     })
   })
 
-  describe('existing pubsub config', () => {
+  describe('long running nodes (already have state)', () => {
     before((done) => {
       series([
         (cb) => {
