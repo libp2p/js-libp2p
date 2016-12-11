@@ -1,8 +1,8 @@
 {
-  "name": "libp2p-mdns-discovery",
+  "name": "libp2p-mdns",
   "version": "0.3.3",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
-  "main": "lib/index.js",
+  "main": "src/index.js",
   "scripts": {
     "lint": "aegir-lint",
     "coverage": "aegir-coverage",
@@ -17,7 +17,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/diasdavid/js-libp2p-mdns-discovery.git"
+    "url": "https://github.com/libp2p/js-libp2p-mdns.git"
   },
   "keywords": [
     "IPFS"
@@ -25,22 +25,19 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/diasdavid/js-libp2p-mdns-discovery/issues"
+    "url": "https://github.com/libp2p/js-libp2p-mdns/issues"
   },
-  "homepage": "https://github.com/diasdavid/js-libp2p-mdns-discovery",
+  "homepage": "https://github.com/libp2p/js-libp2p-mdns",
   "devDependencies": {
     "aegir": "^9.2.1",
     "chai": "^3.5.0",
-    "libp2p-swarm": "^0.26.4",
-    "libp2p-tcp": "^0.9.1",
+    "libp2p-ipfs-nodejs": "^0.16.4",
     "pre-commit": "^1.2.0"
   },
   "dependencies": {
-    "ipfs-logger": "^0.1.1",
-    "peer-info": "^0.8.0",
+    "peer-info": "^0.8.1",
     "peer-id": "^0.8.0",
     "multiaddr": "^2.1.1",
     "multicast-dns": "^6.1.0"
-  },
-  "jsnext:main": "src/index.js"
+  }
 }
