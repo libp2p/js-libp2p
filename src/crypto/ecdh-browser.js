@@ -98,8 +98,8 @@ function marshalPublicKey (jwk) {
 
   return Buffer.concat([
     new Buffer([4]), // uncompressed point
-    toBn(jwk.x).toBuffer('be', byteLen),
-    toBn(jwk.y).toBuffer('be', byteLen)
+    toBn(jwk.x).toArrayLike(Buffer, 'be', byteLen),
+    toBn(jwk.y).toArrayLike(Buffer, 'be', byteLen)
   ], 1 + byteLen * 2)
 }
 
