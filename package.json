@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
   "browser": {
