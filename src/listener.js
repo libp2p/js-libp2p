@@ -1,7 +1,7 @@
 'use strict'
 
 const Connection = require('interface-connection').Connection
-const contains = require('lodash.contains')
+const includes = require('lodash.includes')
 
 // const IPFS_CODE = 421
 
@@ -28,7 +28,7 @@ module.exports = (options, handler) => {
     cb = cb || (() => {})
     listeningMultiaddr = ma
 
-    if (contains(ma.protoNames(), 'ipfs')) {
+    if (includes(ma.protoNames(), 'ipfs')) {
       ma = ma.decapsulate('ipfs')
     }
 

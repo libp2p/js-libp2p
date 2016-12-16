@@ -2,7 +2,7 @@
 
 const connect = require('pull-ws/client')
 const mafmt = require('mafmt')
-const contains = require('lodash.contains')
+const includes = require('lodash.includes')
 const Connection = require('interface-connection').Connection
 const debug = require('debug')
 const log = debug('libp2p:websockets:dialer')
@@ -51,7 +51,7 @@ module.exports = class WebSockets {
     }
 
     return multiaddrs.filter((ma) => {
-      if (contains(ma.protoNames(), 'ipfs')) {
+      if (includes(ma.protoNames(), 'ipfs')) {
         ma = ma.decapsulate('ipfs')
       }
       return mafmt.WebSockets.matches(ma)
