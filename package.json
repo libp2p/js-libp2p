@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "multiaddr": "^2.0.3",
-    "peer-id": "^0.8.0",
+    "peer-id": "^0.8.1",
     "peer-info": "^0.8.0",
     "protocol-buffers": "^3.1.8",
     "pull-length-prefixed": "^1.2.0",
