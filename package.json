@@ -37,7 +37,7 @@
     "pre-commit": "^1.2.0"
   },
   "dependencies": {
-    "debug": "^2.3.3",
+    "debug": "^2.4.0",
     "multiaddr": "^2.1.1",
     "peer-id": "^0.8.0",
     "peer-info": "^0.8.1"
