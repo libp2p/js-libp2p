@@ -24,7 +24,6 @@ js-libp2p-floodsub
 
 ## Install
 
-```
 ```sh
 > npm install libp2p-floodsub
 ```
@@ -46,17 +45,7 @@ fsub.publish('fruit', new Buffer('banana'))
 
 ## API
 
-### `ps.subscribe(<topic>)`
-
-### `ps.unsubscribe(<topic>)`
-
-### `ps.publish(<topic>, <msg>)`
-
-### `ps.on(<topic>, callback)`
-
-### `ps.getPeerSet()`
-
-### `ps.getSubscriptions()`
+See https://libp2p.github.io/js-libp2p-floodsub
 
 ## Contribute
 

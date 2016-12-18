@@ -1,160 +1,274 @@
 'use strict'
 
-const EE = require('events').EventEmitter
-const util = require('util')
+const EventEmitter = require('events')
 const TimeCache = require('time-cache')
+const values = require('lodash.values')
+const pull = require('pull-stream')
+const lp = require('pull-length-prefixed')
+
+const Peer = require('./peer')
 const utils = require('./utils')
 const pb = require('./message')
 const config = require('./config')
+
 const log = config.log
-const _intersection = require('lodash.intersection')
-const dialOnFloodSub = require('./dial-floodsub.js')
-const mountFloodSub = require('./mount-floodsub.js')
-const _values = require('lodash.values')
+const multicodec = config.multicodec
+const ensureArray = utils.ensureArray
 
-module.exports = PubSubGossip
+/**
+ * PubSubGossip, also known as pubsub-flood or just dumbsub,
+ * this implementation of pubsub focused on delivering an API
+ * for Publish/Subscribe, but with no CastTree Forming
+ * (it just floods the network).
+ */
+class FloodSub extends EventEmitter {
+  /**
+   * @param {Object} libp2p
+   * @returns {PubSubGossip}
+   */
+  constructor (libp2p) {
+    super()
 
-util.inherits(PubSubGossip, EE)
+    this.libp2p = libp2p
 
-function PubSubGossip (libp2pNode, dagService) {
-  if (!(this instanceof PubSubGossip)) {
-    return new PubSubGossip(libp2pNode)
+    /**
+     * Time based cache for sequence numbers.
+     *
+     * @type {TimeCache}
+     */
+    this.cache = new TimeCache()
+
+    /**
+     * Map of peers.
+     *
+     * @type {Map<string, Peer>}
+     */
+    this.peers = new Map()
+
+    /**
+     * List of our subscriptions
+     * @type {Set<string>}
+     */
+    this.subscriptions = new Set()
+
+    const onConnection = this._onConnection.bind(this)
+    this.libp2p.handle(multicodec, onConnection)
+
+    // Speed up any new peer that comes in my way
+    this.libp2p.swarm.on('peer-mux-established', (p) => {
+      this._dialPeer(p)
+    })
+
+    // Dial already connected peers
+    values(this.libp2p.peerBook.getAll()).forEach((p) => {
+      this._dialPeer(p)
+    })
   }
 
-  EE.call(this)
+  _dialPeer (peerInfo) {
+    const idB58Str = peerInfo.id.toB58String()
+    log('dialing %s', idB58Str)
 
-  const tc = new TimeCache()
-
-  // map of peerIdBase58Str: { conn, topics, peerInfo }
-  const peerSet = {}
-
-  // list of our subscriptions
-  const subscriptions = []
-
-  // map of peerId: [] (size 10)
-  //   check if not contained + newer than older
-  //   if passes, shift, push, sort
-  //   (if needed, i.e. not the newest)
-
-  const dial = dialOnFloodSub(libp2pNode, peerSet, subscriptions)
-  mountFloodSub(libp2pNode, peerSet, tc, subscriptions, this)
-
-  this.publish = (topics, messages) => {
-    log('publish', topics, messages)
-    if (!Array.isArray(topics)) {
-      topics = [topics]
-    }
-    if (!Array.isArray(messages)) {
-      messages = [messages]
+    // If already have a PubSub conn, ignore
+    const peer = this.peers.get(idB58Str)
+    if (peer && peer.isConnected) {
+      return
     }
 
-    // emit to self if I'm interested
-    topics.forEach((topic) => {
-      if (subscriptions.indexOf(topic) !== -1) {
-        messages.forEach((message) => {
-          this.emit(topic, message)
-        })
+    this.libp2p.dialByPeerInfo(peerInfo, multicodec, (err, conn) => {
+      if (err) {
+        return log.err(err)
       }
+
+      this._onDial(peerInfo, conn)
     })
+  }
+
+  _onDial (peerInfo, conn) {
+    const idB58Str = peerInfo.id.toB58String()
+
+    // If already had a dial to me, just add the conn
+    if (!this.peers.has(idB58Str)) {
+      this.peers.set(idB58Str, new Peer(peerInfo))
+    }
+
+    const peer = this.peers.get(idB58Str)
+    peer.attachConnection(conn)
+
+    // Immediately send my own subscriptions to the newly established conn
+    peer.sendSubscriptions(this.subscriptions)
+  }
+
+  _onConnection (protocol, conn) {
+    conn.getPeerInfo((err, peerInfo) => {
+      if (err) {
+        log.err('Failed to identify incomming conn', err)
+        return pull(pull.empty(), conn)
+      }
+
+      const idB58Str = peerInfo.id.toB58String()
+
+      if (!this.peers.has(idB58Str)) {
+        log('new peer', idB58Str)
+        this.peers.set(idB58Str, new Peer(peerInfo))
+      }
+
+      this._processConnection(idB58Str, conn)
+    })
+  }
+
+  _processConnection (idB58Str, conn) {
+    pull(
+      conn,
+      lp.decode(),
+      pull.map((data) => pb.rpc.RPC.decode(data)),
+      pull.drain(
+        (rpc) => this._onRpc(idB58Str, rpc),
+        (err) => this._onConnectionEnd(err)
+      )
+    )
+  }
+
+  _onRpc (idB58Str, rpc) {
+    if (!rpc) {
+      return
+    }
+
+    const subs = rpc.subscriptions
+    const msgs = rpc.msgs
+
+    if (subs && subs.length) {
+      const peer = this.peers.get(idB58Str)
+      peer.updateSubscriptions(subs)
+    }
+
+    if (msgs && msgs.length) {
+      this._processRpcMessages(rpc.msgs)
+    }
+  }
+
+  _processRpcMessages (msgs) {
+    msgs.forEach((msg) => {
+      const seqno = utils.msgId(msg.from, msg.seqno.toString())
+      // 1. check if I've seen the message, if yes, ignore
+      if (this.cache.has(seqno)) {
+        return
+      }
+
+      this.cache.put(seqno)
+
+      // 2. emit to self
+      this._emitMessages(msg.topicCIDs, [msg.data])
+
+      // 3. propagate msg to others
+      this._forwardMessages(msg.topicCIDs, [msg])
+    })
+  }
+
+  _onConnectionEnd (idB58Str, err) {
+    // socket hang up, means the one side canceled
+    if (err && err.message !== 'socket hang up') {
+      log.err(err)
+    }
+
+    this.peers.delete(idB58Str)
+  }
+
+  _emitMessages (topics, messages) {
+    topics.forEach((topic) => {
+      if (!this.subscriptions.has(topic)) {
+        return
+      }
+
+      messages.forEach((message) => {
+        this.emit(topic, message)
+      })
+    })
+  }
+
+  _forwardMessages (topics, messages) {
+    this.peers.forEach((peer) => {
+      if (!peer.isWritable ||
+          !utils.anyMatch(peer.topics, topics)) {
+        return
+      }
+
+      peer.sendMessages(messages)
+
+      log('publish msgs on topics', topics, peer.info.id.toB58String())
+    })
+  }
+
+  /**
+   * Publish messages to the given topics.
+   *
+   * @param {Array<string>|string} topics
+   * @param {Array<any>|any} messages
+   * @returns {undefined}
+   *
+   */
+  publish (topics, messages) {
+    log('publish', topics, messages)
+
+    topics = ensureArray(topics)
+    messages = ensureArray(messages)
+
+    // Emit to self if I'm interested
+    this._emitMessages(topics, messages)
+
+    const from = this.libp2p.peerInfo.id.toB58String()
+
+    const buildMessage = (msg) => {
+      const seqno = utils.randomSeqno()
+      this.cache.put(utils.msgId(from, seqno))
+
+      return {
+        from: from,
+        data: msg,
+        seqno: new Buffer(seqno),
+        topicCIDs: topics
+      }
+    }
 
     // send to all the other peers
-    const peers = Object
-                    .keys(peerSet)
-                    .map((idB58Str) => peerSet[idB58Str])
-
-    peers.forEach((peer) => {
-      if (_intersection(peer.topics, topics).length > 0) {
-        const msgs = messages.map((message) => {
-          const msg = {
-            from: libp2pNode.peerInfo.id.toB58String(),
-            data: message,
-            seqno: new Buffer(utils.randomSeqno()),
-            topicCIDs: topics
-          }
-          tc.put(utils.msgId(msg.from, msg.seqno.toString()))
-          return msg
-        })
-        const rpc = pb.rpc.RPC.encode({
-          msgs: msgs
-        })
-
-        peer.stream.write(rpc)
-        log('publish msgs on topics', topics, peer.peerInfo.id.toB58String())
-      }
-    })
+    this._forwardMessages(topics, messages.map(buildMessage))
   }
 
-  this.subscribe = (topics) => {
-    if (!Array.isArray(topics)) {
-      topics = [topics]
-    }
+  /**
+   * Subscribe to the given topic(s).
+   *
+   * @param {Array<string>|string} topics
+   * @returns {undefined}
+   */
+  subscribe (topics) {
+    topics = ensureArray(topics)
 
     topics.forEach((topic) => {
-      if (subscriptions.indexOf(topic) === -1) {
-        subscriptions.push(topic)
-      }
+      this.subscriptions.add(topic)
     })
 
-    const peers = Object
-                    .keys(peerSet)
-                    .map((idB58Str) => peerSet[idB58Str])
-
-    peers.forEach((peer) => {
-      const subopts = topics.map((topic) => {
-        return {
-          subscribe: true,
-          topicCID: topic
-        }
-      })
-      const rpc = pb.rpc.RPC.encode({
-        subscriptions: subopts
-      })
-
-      peer.stream.write(rpc)
+    this.peers.forEach((peer) => {
+      peer.sendSubscriptions(topics)
     })
   }
 
-  this.unsubscribe = (topics) => {
-    if (!Array.isArray(topics)) {
-      topics = [topics]
-    }
+  /**
+   * Unsubscribe from the given topic(s).
+   *
+   * @param {Array<string>|string} topics
+   * @returns {undefined}
+   */
+  unsubscribe (topics) {
+    topics = ensureArray(topics)
 
     topics.forEach((topic) => {
-      const index = subscriptions.indexOf(topic)
-      if (index > -1) {
-        subscriptions.splice(index, 1)
-      }
+      this.subscriptions.delete(topic)
     })
 
-    _values(peerSet).forEach((peer) => {
-      const subopts = topics.map((topic) => {
-        return {
-          subscribe: false,
-          topicCID: topic
-        }
-      })
-      const rpc = pb.rpc.RPC.encode({
-        subscriptions: subopts
-      })
-
-      peer.stream.write(rpc)
+    this.peers.forEach((peer) => {
+      peer.sendUnsubscriptions(topics)
     })
   }
-
-  this.getPeerSet = () => {
-    return peerSet
-  }
-
-  this.getSubscriptions = () => {
-    return subscriptions
-  }
-
-  function onStart () {
-    const connectedPeers = libp2pNode.peerBook.getAll()
-    _values(connectedPeers).forEach(dial)
-  }
-  onStart()
-
-  // speed up any new peer that comes in my way
-  libp2pNode.swarm.on('peer-mux-established', dial)
 }
+
+module.exports = FloodSub

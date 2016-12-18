@@ -3,16 +3,15 @@
 'use strict'
 
 const expect = require('chai').expect
-const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
-const multiaddr = require('multiaddr')
-const Node = require('libp2p-ipfs-nodejs')
 const parallel = require('async/parallel')
 const series = require('async/series')
 const _times = require('lodash.times')
-const _values = require('lodash.values')
 
 const PSG = require('../src')
+const utils = require('./utils')
+const first = utils.first
+const createNode = utils.createNode
+const expectSet = utils.expectSet
 
 describe('basics', () => {
   let nodeA
@@ -23,91 +22,55 @@ describe('basics', () => {
   describe('fresh nodes', () => {
     before((done) => {
       series([
-        (cb) => {
-          PeerId.create((err, idA) => {
-            expect(err).to.not.exist
-            PeerInfo.create(idA, (err, peerA) => {
-              expect(err).to.not.exist
-              peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-              nodeA = new Node(peerA)
-              cb()
-            })
-          })
-        },
-        (cb) => {
-          PeerId.create((err, idB) => {
-            expect(err).to.not.exist
-            PeerInfo.create(idB, (err, peerB) => {
-              expect(err).to.not.exist
-              peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-              nodeB = new Node(peerB)
-              cb()
-            })
-          })
-        },
-        (cb) => {
-          parallel([
-            (cb) => {
-              nodeA.start(cb)
-            },
-            (cb) => {
-              nodeB.start(cb)
-            }
-          ], cb)
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+      ], (err, nodes) => {
+        if (err) {
+          return done(err)
         }
-      ], done)
+        nodeA = nodes[0]
+        nodeB = nodes[1]
+        done()
+      })
     })
 
     after((done) => {
       parallel([
-        (cb) => {
-          nodeA.stop(cb)
-        },
-        (cb) => {
-          nodeB.stop(cb)
-        }
+        (cb) => nodeA.stop(cb),
+        (cb) => nodeB.stop(cb)
       ], done)
     })
 
     it('Mount the pubsub protocol', (done) => {
-      parallel([
-        (cb) => {
-          psA = new PSG(nodeA)
-          setTimeout(() => {
-            expect(psA.getPeerSet()).to.eql({})
-            expect(psA.getSubscriptions()).to.eql([])
-            cb()
-          }, 50)
-        },
-        (cb) => {
-          psB = new PSG(nodeB)
-          setTimeout(() => {
-            expect(psB.getPeerSet()).to.eql({})
-            expect(psB.getSubscriptions()).to.eql([])
-            cb()
-          }, 50)
-        }
-      ], done)
+      psA = new PSG(nodeA)
+      psB = new PSG(nodeB)
+
+      setTimeout(() => {
+        expect(psA.peers.size).to.be.eql(0)
+        expect(psA.subscriptions.size).to.eql(0)
+        expect(psB.peers.size).to.be.eql(0)
+        expect(psB.subscriptions.size).to.eql(0)
+        done()
+      }, 50)
     })
 
     it('Dial from nodeA to nodeB', (done) => {
-      nodeA.dialByPeerInfo(nodeB.peerInfo, (err) => {
-        expect(err).to.not.exist
-        setTimeout(() => {
-          expect(Object.keys(psA.getPeerSet()).length).to.equal(1)
-          expect(Object.keys(psB.getPeerSet()).length).to.equal(1)
-          done()
+      series([
+        (cb) => nodeA.dialByPeerInfo(nodeB.peerInfo, cb),
+        (cb) => setTimeout(() => {
+          expect(psA.peers.size).to.equal(1)
+          expect(psB.peers.size).to.equal(1)
+          cb()
         }, 250)
-      })
+      ], done)
     })
 
     it('Subscribe to a topic:Z in nodeA', (done) => {
       psA.subscribe('Z')
       setTimeout(() => {
-        expect(psA.getSubscriptions()).to.eql(['Z'])
-        const peersB = _values(psB.getPeerSet())
-        expect(peersB.length).to.equal(1)
-        expect(peersB[0].topics).to.eql(['Z'])
+        expectSet(psA.subscriptions, ['Z'])
+        expect(psB.peers.size).to.equal(1)
+        expectSet(first(psB.peers).topics, ['Z'])
         done()
       }, 100)
     })
@@ -169,12 +132,11 @@ describe('basics', () => {
 
     it('Unsubscribe from topic:Z in nodeA', (done) => {
       psA.unsubscribe('Z')
-      expect(psA.getSubscriptions()).to.eql([])
+      expect(psA.subscriptions.size).to.equal(0)
 
       setTimeout(() => {
-        const peersB = _values(psB.getPeerSet())
-        expect(peersB.length).to.equal(1)
-        expect(peersB[0].topics).to.eql([])
+        expect(psB.peers.size).to.equal(1)
+        expectSet(first(psB.peers).topics, [])
         done()
       }, 100)
     })
@@ -197,67 +159,33 @@ describe('basics', () => {
   describe('long running nodes (already have state)', () => {
     before((done) => {
       series([
-        (cb) => {
-          PeerId.create((err, idA) => {
-            expect(err).to.not.exist
-            PeerInfo.create(idA, (err, peerA) => {
-              expect(err).to.not.exist
-              peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-              nodeA = new Node(peerA)
-              cb()
-            })
-          })
-        },
-        (cb) => {
-          PeerId.create((err, idB) => {
-            expect(err).to.not.exist
-            PeerInfo.create(idB, (err, peerB) => {
-              expect(err).to.not.exist
-              peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-              nodeB = new Node(peerB)
-              cb()
-            })
-          })
-        },
-        (cb) => {
-          parallel([
-            (cb) => {
-              nodeA.start(cb)
-            },
-            (cb) => {
-              nodeB.start(cb)
-            }
-          ], cb)
-        },
-        (cb) => {
-          psA = new PSG(nodeA)
-          psA.subscribe('Za')
-          setTimeout(() => {
-            expect(psA.getPeerSet()).to.eql({})
-            expect(psA.getSubscriptions()).to.eql(['Za'])
-            cb()
-          }, 50)
-        },
-        (cb) => {
-          psB = new PSG(nodeB)
-          psB.subscribe('Zb')
-          setTimeout(() => {
-            expect(psB.getPeerSet()).to.eql({})
-            expect(psB.getSubscriptions()).to.eql(['Zb'])
-            cb()
-          }, 50)
-        }
-      ], done)
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+      ], (cb, nodes) => {
+        nodeA = nodes[0]
+        nodeB = nodes[1]
+
+        psA = new PSG(nodeA)
+        psB = new PSG(nodeB)
+
+        psA.subscribe('Za')
+        psB.subscribe('Zb')
+
+        setTimeout(() => {
+          expect(psA.peers.size).to.equal(0)
+          expectSet(psA.subscriptions, ['Za'])
+          expect(psB.peers.size).to.equal(0)
+          expectSet(psB.subscriptions, ['Zb'])
+
+          done()
+        }, 50)
+      })
     })
 
     after((done) => {
       parallel([
-        (cb) => {
-          nodeA.stop(cb)
-        },
-        (cb) => {
-          nodeB.stop(cb)
-        }
+        (cb) => nodeA.stop(cb),
+        (cb) => nodeB.stop(cb)
       ], done)
     })
 
@@ -265,18 +193,16 @@ describe('basics', () => {
       nodeA.dialByPeerInfo(nodeB.peerInfo, (err) => {
         expect(err).to.not.exist
         setTimeout(() => {
-          expect(Object.keys(psA.getPeerSet()).length).to.equal(1)
-          expect(Object.keys(psB.getPeerSet()).length).to.equal(1)
+          expect(psA.peers.size).to.equal(1)
+          expect(psB.peers.size).to.equal(1)
 
-          expect(psA.getSubscriptions()).to.eql(['Za'])
-          const peersB = _values(psB.getPeerSet())
-          expect(peersB.length).to.equal(1)
-          expect(peersB[0].topics).to.eql(['Za'])
+          expectSet(psA.subscriptions, ['Za'])
+          expect(psB.peers.size).to.equal(1)
+          expectSet(first(psB.peers).topics, ['Za'])
 
-          expect(psB.getSubscriptions()).to.eql(['Zb'])
-          const peersA = _values(psA.getPeerSet())
-          expect(peersA.length).to.equal(1)
-          expect(peersA[0].topics).to.eql(['Zb'])
+          expectSet(psB.subscriptions, ['Zb'])
+          expect(psA.peers.size).to.equal(1)
+          expectSet(first(psA.peers).topics, ['Zb'])
 
           done()
         }, 250)
