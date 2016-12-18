@@ -37,7 +37,7 @@
     "chai": "^3.5.0",
     "interface-transport": "^0.3.3",
     "lodash.isfunction": "^3.0.8",
-    "pre-commit": "^1.2.0",
+    "pre-commit": "^1.2.2",
     "pull-stream": "^3.4.5"
   },
   "dependencies": {
