@@ -55,7 +55,7 @@
   "dependencies": {
     "async": "^2.1.2",
     "browserify-zlib": "github:ipfs/browserify-zlib",
-    "debug": "^2.3.3",
+    "debug": "^2.4.0",
     "interface-connection": "^0.3.0",
     "ip-address": "^5.8.3",
     "libp2p-identify": "^0.3.0",
