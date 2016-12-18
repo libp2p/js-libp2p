@@ -2,6 +2,7 @@
 
 const Connection = require('interface-connection').Connection
 const parallel = require('async/parallel')
+const once = require('once')
 const debug = require('debug')
 const log = debug('libp2p:swarm:transport')
 
@@ -81,19 +82,19 @@ module.exports = function (swarm) {
 
       const createListeners = multiaddrs.map((ma) => {
         return (cb) => {
+          const done = once(cb)
           const listener = transport.createListener(handler)
-
-          listener.once('error', cb)
+          listener.once('error', done)
 
           listener.listen(ma, () => {
-            listener.removeListener('error', cb)
+            listener.removeListener('error', done)
             listener.getAddrs((err, addrs) => {
               if (err) {
-                return cb(err)
+                return done(err)
               }
               freshMultiaddrs = freshMultiaddrs.concat(addrs)
               transport.listeners.push(listener)
-              cb()
+              done()
             })
           })
         }

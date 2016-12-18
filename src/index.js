@@ -2,7 +2,8 @@
 
 const util = require('util')
 const EE = require('events').EventEmitter
-const parallel = require('async/parallel')
+const each = require('async/each')
+const series = require('async/series')
 const includes = require('lodash.includes')
 
 const transport = require('./transport')
@@ -84,10 +85,10 @@ function Swarm (peerInfo) {
 
   // Start listening on all available transports
   this.listen = (callback) => {
-    parallel(this.availableTransports(peerInfo).map((ts) => (cb) => {
+    each(this.availableTransports(peerInfo), (ts, cb) => {
       // Listen on the given transport
       this.transport.listen(ts, {}, null, cb)
-    }), callback)
+    }, callback)
   }
 
   this.handle = (protocol, handlerFunc, matchFunc) => {
@@ -124,19 +125,23 @@ function Swarm (peerInfo) {
   }
 
   this.close = (callback) => {
-    Object.keys(this.muxedConns).forEach((key) => {
-      this.muxedConns[key].muxer.end()
-    })
-
-    const transports = this.transports
-
-    parallel(
-      Object.keys(transports).map((key) => (cb) => {
-        parallel(transports[key].listeners.map((listener) => {
-          return (cb) => listener.close(cb)
-        }), cb)
-      }),
-      callback
-    )
+    series([
+      (cb) => each(this.muxedConns, (conn, cb) => {
+        conn.muxer.end((err) => {
+          // If OK things are fine, and someone just shut down
+          if (err && err.message !== 'Fatal error: OK') {
+            return cb(err)
+          }
+          cb()
+        })
+      }, cb),
+      (cb) => {
+        each(this.transports, (transport, cb) => {
+          each(transport.listeners, (listener, cb) => {
+            listener.close(cb)
+          }, cb)
+        }, cb)
+      }
+    ], callback)
   }
 }

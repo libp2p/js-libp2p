@@ -209,10 +209,21 @@ describe('high level API - with everything mixed all together!', () => {
   })
 
   it('dial from tcp+ws to tcp+ws', (done) => {
+    let i = 0
+    const check = (err) => {
+      if (err) {
+        return done(err)
+      }
+
+      if (i++ === 2) {
+        done()
+      }
+    }
     swarmC.handle('/mamao/1.0.0', (protocol, conn) => {
       conn.getPeerInfo((err, peerInfo) => {
         expect(err).to.not.exist
         expect(peerInfo).to.exist
+        check()
       })
       pull(conn, conn)
     })
@@ -222,13 +233,14 @@ describe('high level API - with everything mixed all together!', () => {
       conn.getPeerInfo((err, peerInfo) => {
         expect(err).to.not.exist
         expect(peerInfo).to.exist
+        check()
       })
       expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
 
       pull(
         pull.empty(),
         conn,
-        pull.onEnd(done)
+        pull.onEnd(check)
       )
     })
   })
