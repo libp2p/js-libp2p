@@ -81,7 +81,7 @@ describe('basics', () => {
       function shouldNotHappen (msg) { expect.fail() }
 
       psA.once('Z', (msg) => {
-        expect(msg.toString()).to.equal('hey')
+        expect(msg.data.toString()).to.equal('hey')
         psB.removeListener('Z', shouldNotHappen)
         done()
       })
@@ -96,7 +96,7 @@ describe('basics', () => {
 
       psA.once('Z', (msg) => {
         psA.once('Z', shouldNotHappen)
-        expect(msg.toString()).to.equal('banana')
+        expect(msg.data.toString()).to.equal('banana')
         setTimeout(() => {
           psA.removeListener('Z', shouldNotHappen)
           psB.removeListener('Z', shouldNotHappen)
@@ -117,7 +117,10 @@ describe('basics', () => {
       psA.on('Z', receivedMsg)
 
       function receivedMsg (msg) {
-        expect(msg.toString()).to.equal('banana')
+        expect(msg.data.toString()).to.equal('banana')
+        expect(msg.from).to.be.eql(psB.libp2p.peerInfo.id.toB58String())
+        expect(Buffer.isBuffer(msg.seqno)).to.be.true
+        expect(msg.topicCIDs).to.be.eql(['Z'])
 
         if (++counter === 10) {
           psA.removeListener('Z', receivedMsg)

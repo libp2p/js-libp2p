@@ -158,7 +158,7 @@ class FloodSub extends EventEmitter {
       this.cache.put(seqno)
 
       // 2. emit to self
-      this._emitMessages(msg.topicCIDs, [msg.data])
+      this._emitMessages(msg.topicCIDs, [msg])
 
       // 3. propagate msg to others
       this._forwardMessages(msg.topicCIDs, [msg])
@@ -213,9 +213,6 @@ class FloodSub extends EventEmitter {
     topics = ensureArray(topics)
     messages = ensureArray(messages)
 
-    // Emit to self if I'm interested
-    this._emitMessages(topics, messages)
-
     const from = this.libp2p.peerInfo.id.toB58String()
 
     const buildMessage = (msg) => {
@@ -229,6 +226,11 @@ class FloodSub extends EventEmitter {
         topicCIDs: topics
       }
     }
+
+    const msgObjects = messages.map(buildMessage)
+
+    // Emit to self if I'm interested
+    this._emitMessages(topics, msgObjects)
 
     // send to all the other peers
     this._forwardMessages(topics, messages.map(buildMessage))

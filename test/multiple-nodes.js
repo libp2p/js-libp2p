@@ -123,7 +123,7 @@ describe('multiple nodes', () => {
         a.ps.publish('Z', new Buffer('hey'))
 
         function incMsg (msg) {
-          expect(msg.toString()).to.equal('hey')
+          expect(msg.data.toString()).to.equal('hey')
           check()
         }
 
@@ -156,7 +156,7 @@ describe('multiple nodes', () => {
           b.ps.publish('Z', new Buffer('hey'))
 
           function incMsg (msg) {
-            expect(msg.toString()).to.equal('hey')
+            expect(msg.data.toString()).to.equal('hey')
             check()
           }
 
@@ -268,7 +268,7 @@ describe('multiple nodes', () => {
         c.ps.publish('Z', new Buffer('hey from c'))
 
         function incMsg (msg) {
-          expect(msg.toString()).to.equal('hey from c')
+          expect(msg.data.toString()).to.equal('hey from c')
           check()
         }
 
