@@ -49,6 +49,8 @@ describe('MulticastDNS', () => {
     }
     const mdnsA = new MulticastDNS(pA, options)
     const mdnsB = new MulticastDNS(pB, options)
+    mdnsA.start()
+    mdnsB.start()
 
     mdnsA.once('peer', (peerInfo) => {
       expect(pB.id.toB58String()).to.eql(peerInfo.id.toB58String())
@@ -64,6 +66,9 @@ describe('MulticastDNS', () => {
     }
     const mdnsA = new MulticastDNS(pA, options)
     const mdnsC = new MulticastDNS(pC, options)
+
+    mdnsA.start()
+    mdnsC.start()
 
     mdnsA.once('peer', (peerInfo) => {
       expect(pC.id.toB58String()).to.eql(peerInfo.id.toB58String())

@@ -14,30 +14,34 @@ const tcp = new TCP()
 class MulticastDNS extends EventEmitter {
   constructor (peerInfo, options) {
     super()
-    options = options || {}
 
-    const broadcast = options.broadcast !== false
-    const interval = options.interval || (1e3 * 10) // default: 10 seconds
-    const serviceTag = options.serviceTag || '_ipfs-discovery._udp'
-    const port = options.port || 5353
-    const self = this // for event emitter
+    this.broadcast = options.broadcast !== false
+    this.interval = options.interval || (1e3 * 10)
+    this.serviceTag = options.serviceTag || '_ipfs-discovery._udp'
+    this.port = options.port || 5353
+    this.peerInfo = peerInfo
 
-    const mdns = multicastDNS({ port: port })
+  }
 
-    // query the network
+  start() {
+    const self = this
+    const mdns = multicastDNS({ port: this.port })
+
+    this.mdns = mdns
+
+    queryLAN()
 
     mdns.on('response', gotResponse)
-    queryLAN()
 
     function queryLAN () {
       setInterval(() => {
         mdns.query({
           questions: [{
-            name: serviceTag,
+            name: self.serviceTag,
             type: 'PTR'
           }]
         })
-      }, interval)
+      }, self.interval)
     }
 
     function gotResponse (rsp) {
@@ -62,7 +66,7 @@ class MulticastDNS extends EventEmitter {
         }
       })
 
-      if (answers.ptr.name !== serviceTag) {
+      if (answers.ptr.name !== self.serviceTag) {
         return
       }
 
@@ -71,12 +75,12 @@ class MulticastDNS extends EventEmitter {
       const multiaddrs = []
 
       answers.a.forEach((a) => {
-        multiaddrs.push(new Multiaddr('/ip4/' + a.data + '/tcp/' + port))
+        multiaddrs.push(new Multiaddr('/ip4/' + a.data + '/tcp/' + self.port))
       })
 
       // TODO Create multiaddrs from AAAA (IPv6) records as well
 
-      if (peerInfo.id.toB58String() === b58Id) {
+      if (self.peerInfo.id.toB58String() === b58Id) {
         return // replied to myself, ignore
       }
 
@@ -102,42 +106,42 @@ class MulticastDNS extends EventEmitter {
     mdns.on('query', gotQuery)
 
     function gotQuery (qry) {
-      if (!broadcast) { return }
+      if (!self.broadcast) { return }
 
-      if (qry.questions[0] && qry.questions[0].name === serviceTag) {
+      if (qry.questions[0] && qry.questions[0].name === self.serviceTag) {
         const answers = []
 
         answers.push({
-          name: serviceTag,
+          name: self.serviceTag,
           type: 'PTR',
           class: 1,
           ttl: 120,
-          data: peerInfo.id.toB58String() + '.' + serviceTag
+          data: self.peerInfo.id.toB58String() + '.' + self.serviceTag
         })
 
         // Only announce TCP multiaddrs for now
-        const multiaddrs = tcp.filter(peerInfo.multiaddrs)
+        const multiaddrs = tcp.filter(self.peerInfo.multiaddrs)
         const port = multiaddrs[0].toString().split('/')[4]
 
         answers.push({
-          name: peerInfo.id.toB58String() + '.' + serviceTag,
+          name: self.peerInfo.id.toB58String() + '.' + self.serviceTag,
           type: 'SRV',
           class: 1,
           ttl: 120,
           data: {
             priority: 10,
             weight: 1,
-            port: port,
+            port: self.port,
             target: os.hostname()
           }
         })
 
         answers.push({
-          name: peerInfo.id.toB58String() + '.' + serviceTag,
+          name: self.peerInfo.id.toB58String() + '.' + self.serviceTag,
           type: 'TXT',
           class: 1,
           ttl: 120,
-          data: peerInfo.id.toB58String()
+          data: self.peerInfo.id.toB58String()
         })
 
         multiaddrs.forEach((ma) => {
@@ -166,6 +170,11 @@ class MulticastDNS extends EventEmitter {
         mdns.respond(answers)
       }
     }
+
+  }
+
+  stop() {
+    this.mdns.destroy()
   }
 }
 
