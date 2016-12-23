@@ -1,5 +1,6 @@
 'use strict'
 
 module.exports = {
-  rsa: require('./rsa')
+  rsa: require('./rsa'),
+  ed25519: require('./ed25519')
 }
