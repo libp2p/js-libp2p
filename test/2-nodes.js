@@ -7,19 +7,19 @@ const parallel = require('async/parallel')
 const series = require('async/series')
 const _times = require('lodash.times')
 
-const PSG = require('../src')
+const FloodSub = require('../src')
 const utils = require('./utils')
 const first = utils.first
 const createNode = utils.createNode
 const expectSet = utils.expectSet
 
-describe('basics', () => {
-  let nodeA
-  let nodeB
-  let psA
-  let psB
-
+describe('basics between 2 nodes', () => {
   describe('fresh nodes', () => {
+    let nodeA
+    let nodeB
+    let fsA
+    let fsB
+
     before((done) => {
       series([
         (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
@@ -42,124 +42,143 @@ describe('basics', () => {
     })
 
     it('Mount the pubsub protocol', (done) => {
-      psA = new PSG(nodeA)
-      psB = new PSG(nodeB)
+      fsA = new FloodSub(nodeA)
+      fsB = new FloodSub(nodeB)
 
       setTimeout(() => {
-        expect(psA.peers.size).to.be.eql(0)
-        expect(psA.subscriptions.size).to.eql(0)
-        expect(psB.peers.size).to.be.eql(0)
-        expect(psB.subscriptions.size).to.eql(0)
+        expect(fsA.peers.size).to.be.eql(0)
+        expect(fsA.subscriptions.size).to.eql(0)
+        expect(fsB.peers.size).to.be.eql(0)
+        expect(fsB.subscriptions.size).to.eql(0)
         done()
       }, 50)
+    })
+
+    it('start both FloodSubs', (done) => {
+      parallel([
+        (cb) => fsA.start(cb),
+        (cb) => fsB.start(cb)
+      ], done)
     })
 
     it('Dial from nodeA to nodeB', (done) => {
       series([
         (cb) => nodeA.dialByPeerInfo(nodeB.peerInfo, cb),
         (cb) => setTimeout(() => {
-          expect(psA.peers.size).to.equal(1)
-          expect(psB.peers.size).to.equal(1)
+          expect(fsA.peers.size).to.equal(1)
+          expect(fsB.peers.size).to.equal(1)
           cb()
         }, 250)
       ], done)
     })
 
     it('Subscribe to a topic:Z in nodeA', (done) => {
-      psA.subscribe('Z')
+      fsA.subscribe('Z')
       setTimeout(() => {
-        expectSet(psA.subscriptions, ['Z'])
-        expect(psB.peers.size).to.equal(1)
-        expectSet(first(psB.peers).topics, ['Z'])
+        expectSet(fsA.subscriptions, ['Z'])
+        expect(fsB.peers.size).to.equal(1)
+        expectSet(first(fsB.peers).topics, ['Z'])
         done()
       }, 100)
     })
 
     it('Publish to a topic:Z in nodeA', (done) => {
-      psB.once('Z', shouldNotHappen)
+      fsB.once('Z', shouldNotHappen)
 
       function shouldNotHappen (msg) { expect.fail() }
 
-      psA.once('Z', (msg) => {
+      fsA.once('Z', (msg) => {
         expect(msg.data.toString()).to.equal('hey')
-        psB.removeListener('Z', shouldNotHappen)
+        fsB.removeListener('Z', shouldNotHappen)
         done()
       })
 
-      psB.once('Z', shouldNotHappen)
+      fsB.once('Z', shouldNotHappen)
 
-      psA.publish('Z', new Buffer('hey'))
+      fsA.publish('Z', new Buffer('hey'))
     })
 
     it('Publish to a topic:Z in nodeB', (done) => {
-      psB.once('Z', shouldNotHappen)
+      fsB.once('Z', shouldNotHappen)
 
-      psA.once('Z', (msg) => {
-        psA.once('Z', shouldNotHappen)
+      fsA.once('Z', (msg) => {
+        fsA.once('Z', shouldNotHappen)
         expect(msg.data.toString()).to.equal('banana')
         setTimeout(() => {
-          psA.removeListener('Z', shouldNotHappen)
-          psB.removeListener('Z', shouldNotHappen)
+          fsA.removeListener('Z', shouldNotHappen)
+          fsB.removeListener('Z', shouldNotHappen)
           done()
         }, 100)
       })
 
-      psB.once('Z', shouldNotHappen)
+      fsB.once('Z', shouldNotHappen)
 
-      psB.publish('Z', new Buffer('banana'))
+      fsB.publish('Z', new Buffer('banana'))
     })
 
     it('Publish 10 msg to a topic:Z in nodeB', (done) => {
       let counter = 0
 
-      psB.once('Z', shouldNotHappen)
+      fsB.once('Z', shouldNotHappen)
 
-      psA.on('Z', receivedMsg)
+      fsA.on('Z', receivedMsg)
 
       function receivedMsg (msg) {
         expect(msg.data.toString()).to.equal('banana')
-        expect(msg.from).to.be.eql(psB.libp2p.peerInfo.id.toB58String())
+        expect(msg.from).to.be.eql(fsB.libp2p.peerInfo.id.toB58String())
         expect(Buffer.isBuffer(msg.seqno)).to.be.true
         expect(msg.topicCIDs).to.be.eql(['Z'])
 
         if (++counter === 10) {
-          psA.removeListener('Z', receivedMsg)
+          fsA.removeListener('Z', receivedMsg)
           done()
         }
       }
 
       _times(10, () => {
-        psB.publish('Z', new Buffer('banana'))
+        fsB.publish('Z', new Buffer('banana'))
       })
     })
 
     it('Unsubscribe from topic:Z in nodeA', (done) => {
-      psA.unsubscribe('Z')
-      expect(psA.subscriptions.size).to.equal(0)
+      fsA.unsubscribe('Z')
+      expect(fsA.subscriptions.size).to.equal(0)
 
       setTimeout(() => {
-        expect(psB.peers.size).to.equal(1)
-        expectSet(first(psB.peers).topics, [])
+        expect(fsB.peers.size).to.equal(1)
+        expectSet(first(fsB.peers).topics, [])
         done()
       }, 100)
     })
 
     it('Publish to a topic:Z in nodeA nodeB', (done) => {
-      psA.once('Z', shouldNotHappen)
-      psB.once('Z', shouldNotHappen)
+      fsA.once('Z', shouldNotHappen)
+      fsB.once('Z', shouldNotHappen)
 
       setTimeout(() => {
-        psA.removeListener('Z', shouldNotHappen)
-        psB.removeListener('Z', shouldNotHappen)
+        fsA.removeListener('Z', shouldNotHappen)
+        fsB.removeListener('Z', shouldNotHappen)
         done()
       }, 100)
 
-      psB.publish('Z', new Buffer('banana'))
-      psA.publish('Z', new Buffer('banana'))
+      fsB.publish('Z', new Buffer('banana'))
+      fsA.publish('Z', new Buffer('banana'))
+    })
+
+    it('stop both FloodSubs', (done) => {
+      parallel([
+        (cb) => fsA.stop(cb),
+        (cb) => fsB.stop(cb)
+      ], done)
     })
   })
 
   describe('long running nodes (already have state)', () => {
+    let nodeA
+    let nodeB
+    let fsA
+    let fsB
+
     before((done) => {
       series([
         (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
@@ -168,20 +187,24 @@ describe('basics', () => {
         nodeA = nodes[0]
         nodeB = nodes[1]
 
-        psA = new PSG(nodeA)
-        psB = new PSG(nodeB)
+        fsA = new FloodSub(nodeA)
+        fsB = new FloodSub(nodeB)
 
-        psA.subscribe('Za')
-        psB.subscribe('Zb')
+        parallel([
+          (cb) => fsA.start(cb),
+          (cb) => fsB.start(cb)
+        ], next)
 
-        setTimeout(() => {
-          expect(psA.peers.size).to.equal(0)
-          expectSet(psA.subscriptions, ['Za'])
-          expect(psB.peers.size).to.equal(0)
-          expectSet(psB.subscriptions, ['Zb'])
+        function next () {
+          fsA.subscribe('Za')
+          fsB.subscribe('Zb')
 
+          expect(fsA.peers.size).to.equal(0)
+          expectSet(fsA.subscriptions, ['Za'])
+          expect(fsB.peers.size).to.equal(0)
+          expectSet(fsB.subscriptions, ['Zb'])
           done()
-        }, 50)
+        }
       })
     })
 
@@ -196,20 +219,27 @@ describe('basics', () => {
       nodeA.dialByPeerInfo(nodeB.peerInfo, (err) => {
         expect(err).to.not.exist
         setTimeout(() => {
-          expect(psA.peers.size).to.equal(1)
-          expect(psB.peers.size).to.equal(1)
+          expect(fsA.peers.size).to.equal(1)
+          expect(fsB.peers.size).to.equal(1)
 
-          expectSet(psA.subscriptions, ['Za'])
-          expect(psB.peers.size).to.equal(1)
-          expectSet(first(psB.peers).topics, ['Za'])
+          expectSet(fsA.subscriptions, ['Za'])
+          expect(fsB.peers.size).to.equal(1)
+          expectSet(first(fsB.peers).topics, ['Za'])
 
-          expectSet(psB.subscriptions, ['Zb'])
-          expect(psA.peers.size).to.equal(1)
-          expectSet(first(psA.peers).topics, ['Zb'])
+          expectSet(fsB.subscriptions, ['Zb'])
+          expect(fsA.peers.size).to.equal(1)
+          expectSet(first(fsA.peers).topics, ['Zb'])
 
           done()
         }, 250)
       })
+    })
+
+    it('stop both FloodSubs', (done) => {
+      parallel([
+        (cb) => fsA.stop(cb),
+        (cb) => fsB.stop(cb)
+      ], done)
     })
   })
 })

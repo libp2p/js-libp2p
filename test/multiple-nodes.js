@@ -5,13 +5,13 @@
 const expect = require('chai').expect
 const parallel = require('async/parallel')
 
-const PSG = require('../src')
+const FloodSub = require('../src')
 const utils = require('./utils')
 const first = utils.first
 const createNode = utils.createNode
 const expectSet = utils.expectSet
 
-describe('multiple nodes', () => {
+describe('multiple nodes (more than 2)', () => {
   describe('every peer subscribes to the topic', () => {
     describe('line', () => {
       // line
@@ -330,10 +330,15 @@ function spawnPubSubNode (callback) {
     if (err) {
       return callback(err)
     }
-
-    callback(null, {
-      libp2p: node,
-      ps: new PSG(node)
+    const ps = new FloodSub(node)
+    ps.start((err) => {
+      if (err) {
+        return callback(err)
+      }
+      callback(null, {
+        libp2p: node,
+        ps: ps
+      })
     })
   })
 }
