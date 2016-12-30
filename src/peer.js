@@ -146,6 +146,25 @@ class Peer {
       }
     })
   }
+
+  /**
+   * Closes the open connection to peer
+   *
+   * @param {Function} callback
+   * @returns {undefined}
+   */
+  close (callback) {
+    if (!this.conn || !this.stream) {
+      // no connection to close
+    }
+    // end the pushable pull-stream
+    this.stream.end()
+    setImmediate(() => {
+      this.conn = null
+      this.stream = null
+      callback()
+    })
+  }
 }
 
 module.exports = Peer
