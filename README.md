@@ -35,12 +35,17 @@ const FloodSub = require('libp2p-floodsub')
 
 const fsub = new FloodSub(libp2pNodeInstance)
 
-fsub.on('fruit', (data) => {
-  console.log(data)
-})
-fsub.subscribe('fruit')
+fsub.start((err) => {
+  if (err) {
+    console.log('Upsy', err)
+  }
+  fsub.on('fruit', (data) => {
+    console.log(data)
+  })
+  fsub.subscribe('fruit')
 
-fsub.publish('fruit', new Buffer('banana'))
+  fsub.publish('fruit', new Buffer('banana'))
+})
 ```
 
 ## API
