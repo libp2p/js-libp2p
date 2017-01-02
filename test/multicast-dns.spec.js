@@ -49,15 +49,22 @@ describe('MulticastDNS', () => {
     }
     const mdnsA = new MulticastDNS(pA, options)
     const mdnsB = new MulticastDNS(pB, options)
-    mdnsA.start()
-    mdnsB.start()
 
-    mdnsA.once('peer', (peerInfo) => {
-      expect(pB.id.toB58String()).to.eql(peerInfo.id.toB58String())
-      done()
+    parallel([
+      (cb) => {
+        mdnsA.start(cb)
+      },
+      (cb) => {
+        mdnsB.start(cb)
+      }
+    ], () => {
+      mdnsA.once('peer', (peerInfo) => {
+        expect(pB.id.toB58String()).to.eql(peerInfo.id.toB58String())
+        done()
+      })
+
+      mdnsB.once('peer', (peerInfo) => {})
     })
-
-    mdnsB.once('peer', (peerInfo) => {})
   })
 
   it('only announce TCP multiaddrs', (done) => {
@@ -67,15 +74,21 @@ describe('MulticastDNS', () => {
     const mdnsA = new MulticastDNS(pA, options)
     const mdnsC = new MulticastDNS(pC, options)
 
-    mdnsA.start()
-    mdnsC.start()
+    parallel([
+      (cb) => {
+        mdnsA.start(cb)
+      },
+      (cb) => {
+        mdnsC.start(cb)
+      }
+    ], () => {
+      mdnsA.once('peer', (peerInfo) => {
+        expect(pC.id.toB58String()).to.eql(peerInfo.id.toB58String())
+        expect(peerInfo.multiaddrs.length).to.equal(1)
+        done()
+      })
 
-    mdnsA.once('peer', (peerInfo) => {
-      expect(pC.id.toB58String()).to.eql(peerInfo.id.toB58String())
-      expect(peerInfo.multiaddrs.length).to.equal(1)
-      done()
+      mdnsC.once('peer', (peerInfo) => {})
     })
-
-    mdnsC.once('peer', (peerInfo) => {})
   })
 })

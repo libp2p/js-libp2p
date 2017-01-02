@@ -20,10 +20,9 @@ class MulticastDNS extends EventEmitter {
     this.serviceTag = options.serviceTag || '_ipfs-discovery._udp'
     this.port = options.port || 5353
     this.peerInfo = peerInfo
-
   }
 
-  start() {
+  start (cb) {
     const self = this
     const mdns = multicastDNS({ port: this.port })
 
@@ -32,6 +31,9 @@ class MulticastDNS extends EventEmitter {
     queryLAN()
 
     mdns.on('response', gotResponse)
+    mdns.on('query', gotQuery)
+
+    cb()
 
     function queryLAN () {
       setInterval(() => {
@@ -75,7 +77,7 @@ class MulticastDNS extends EventEmitter {
       const multiaddrs = []
 
       answers.a.forEach((a) => {
-        multiaddrs.push(new Multiaddr('/ip4/' + a.data + '/tcp/' + self.port))
+        multiaddrs.push(new Multiaddr('/ip4/' + a.data + '/tcp/' + port))
       })
 
       // TODO Create multiaddrs from AAAA (IPv6) records as well
@@ -100,10 +102,6 @@ class MulticastDNS extends EventEmitter {
         self.emit('peer', peerFound)
       })
     }
-
-    // answer to queries
-
-    mdns.on('query', gotQuery)
 
     function gotQuery (qry) {
       if (!self.broadcast) { return }
@@ -131,7 +129,7 @@ class MulticastDNS extends EventEmitter {
           data: {
             priority: 10,
             weight: 1,
-            port: self.port,
+            port: port,
             target: os.hostname()
           }
         })
@@ -170,11 +168,10 @@ class MulticastDNS extends EventEmitter {
         mdns.respond(answers)
       }
     }
-
   }
 
-  stop() {
-    this.mdns.destroy()
+  stop (cb) {
+    this.mdns.destroy(cb)
   }
 }
 
