@@ -5,6 +5,8 @@ const TimeCache = require('time-cache')
 const values = require('lodash.values')
 const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
+const assert = require('assert')
+const asyncEach = require('async/each')
 
 const Peer = require('./peer')
 const utils = require('./utils')
@@ -16,20 +18,20 @@ const multicodec = config.multicodec
 const ensureArray = utils.ensureArray
 
 /**
- * PubSubGossip, also known as pubsub-flood or just dumbsub,
- * this implementation of pubsub focused on delivering an API
- * for Publish/Subscribe, but with no CastTree Forming
+ * FloodSub (aka dumbsub is an implementation of pubsub focused on
+ * delivering an API for Publish/Subscribe, but with no CastTree Forming
  * (it just floods the network).
  */
 class FloodSub extends EventEmitter {
   /**
    * @param {Object} libp2p
-   * @returns {PubSubGossip}
+   * @returns {FloodSub}
    */
   constructor (libp2p) {
     super()
 
     this.libp2p = libp2p
+    this.started = false
 
     /**
      * Time based cache for sequence numbers.
@@ -51,18 +53,8 @@ class FloodSub extends EventEmitter {
      */
     this.subscriptions = new Set()
 
-    const onConnection = this._onConnection.bind(this)
-    this.libp2p.handle(multicodec, onConnection)
-
-    // Speed up any new peer that comes in my way
-    this.libp2p.swarm.on('peer-mux-established', (p) => {
-      this._dialPeer(p)
-    })
-
-    // Dial already connected peers
-    values(this.libp2p.peerBook.getAll()).forEach((p) => {
-      this._dialPeer(p)
-    })
+    this._onConnection = this._onConnection.bind(this)
+    this._dialPeer = this._dialPeer.bind(this)
   }
 
   _dialPeer (peerInfo) {
@@ -200,6 +192,62 @@ class FloodSub extends EventEmitter {
   }
 
   /**
+   * Mounts the floodsub protocol onto the libp2p node and sends our
+   * subscriptions to every peer conneceted
+   *
+   * @param {Function} callback
+   * @returns {undefined}
+   *
+   */
+  start (callback) {
+    if (this.started) {
+      return setImmediate(() => callback(new Error('already started')))
+    }
+
+    this.libp2p.handle(multicodec, this._onConnection)
+
+    // Speed up any new peer that comes in my way
+    this.libp2p.swarm.on('peer-mux-established', this._dialPeer)
+
+    // Dial already connected peers
+    const peerInfos = values(this.libp2p.peerBook.getAll())
+
+    peerInfos.forEach((peerInfo) => {
+      this._dialPeer(peerInfo)
+    })
+
+    setImmediate(() => {
+      this.started = true
+      callback()
+    })
+  }
+
+  /**
+   * Unmounts the floodsub protocol and shuts down every connection
+   *
+   * @param {Function} callback
+   * @returns {undefined}
+   *
+   */
+  stop (callback) {
+    if (!this.started) {
+      return setImmediate(() => callback(new Error('not started yet')))
+    }
+
+    this.libp2p.unhandle(multicodec)
+    this.libp2p.swarm.removeListener('peer-mux-established', this._dialPeer)
+
+    asyncEach(this.peers.values(), (peer, cb) => peer.close(cb), (err) => {
+      if (err) {
+        return callback(err)
+      }
+      this.peers = new Map()
+      this.started = false
+      callback()
+    })
+  }
+
+  /**
    * Publish messages to the given topics.
    *
    * @param {Array<string>|string} topics
@@ -208,6 +256,8 @@ class FloodSub extends EventEmitter {
    *
    */
   publish (topics, messages) {
+    assert(this.started, 'FloodSub is not started')
+
     log('publish', topics, messages)
 
     topics = ensureArray(topics)
@@ -243,6 +293,8 @@ class FloodSub extends EventEmitter {
    * @returns {undefined}
    */
   subscribe (topics) {
+    assert(this.started, 'FloodSub is not started')
+
     topics = ensureArray(topics)
 
     topics.forEach((topic) => {
@@ -261,6 +313,7 @@ class FloodSub extends EventEmitter {
    * @returns {undefined}
    */
   unsubscribe (topics) {
+    assert(this.started, 'FloodSub is not started')
     topics = ensureArray(topics)
 
     topics.forEach((topic) => {
