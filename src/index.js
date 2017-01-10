@@ -57,7 +57,8 @@ class FloodSub extends EventEmitter {
     this._dialPeer = this._dialPeer.bind(this)
   }
 
-  _dialPeer (peerInfo) {
+  _dialPeer (peerInfo, callback) {
+    callback = callback || function noop () {}
     const idB58Str = peerInfo.id.toB58String()
     log('dialing %s', idB58Str)
 
@@ -72,11 +73,11 @@ class FloodSub extends EventEmitter {
         return log.err(err)
       }
 
-      this._onDial(peerInfo, conn)
+      this._onDial(peerInfo, conn, callback)
     })
   }
 
-  _onDial (peerInfo, conn) {
+  _onDial (peerInfo, conn, callback) {
     const idB58Str = peerInfo.id.toB58String()
 
     // If already had a dial to me, just add the conn
@@ -89,6 +90,7 @@ class FloodSub extends EventEmitter {
 
     // Immediately send my own subscriptions to the newly established conn
     peer.sendSubscriptions(this.subscriptions)
+    setImmediate(() => callback())
   }
 
   _onConnection (protocol, conn) {
@@ -212,13 +214,13 @@ class FloodSub extends EventEmitter {
     // Dial already connected peers
     const peerInfos = values(this.libp2p.peerBook.getAll())
 
-    peerInfos.forEach((peerInfo) => {
-      this._dialPeer(peerInfo)
-    })
-
-    setImmediate(() => {
-      this.started = true
-      callback()
+    asyncEach(peerInfos, (peerInfo, cb) => {
+      this.dialPeer(peerInfo, cb)
+    }, (err) => {
+      setImmediate(() => {
+        this.started = true
+        callback(err)
+      })
     })
   }
 
