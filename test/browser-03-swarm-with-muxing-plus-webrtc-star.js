@@ -25,27 +25,21 @@ describe('high level API (swarm with spdy + webrtc-star)', () => {
   before((done) => {
     series([
       (cb) => peerId.create((err, id1) => {
-        if (err) {
-          return cb(err)
-        }
+        expect(err).to.not.exist
         peer1 = new PeerInfo(id1)
         const mh1 = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + id1.toB58String())
         peer1.multiaddr.add(mh1)
         cb()
       }),
       (cb) => peerId.create((err, id2) => {
-        if (err) {
-          return cb(err)
-        }
+        expect(err).to.not.exist
         peer2 = new PeerInfo(id2)
         const mh2 = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + id2.toB58String())
         peer2.multiaddr.add(mh2)
         cb()
       })
     ], (err) => {
-      if (err) {
-        return done(err)
-      }
+      expect(err).to.not.exist
 
       swarm1 = new Swarm(peer1)
       swarm2 = new Swarm(peer2)
@@ -106,44 +100,49 @@ describe('high level API (swarm with spdy + webrtc-star)', () => {
   })
 
   it('create a third node and check that discovery works', (done) => {
-    wstar1.discovery.on('peer', (peerInfo) => {
-      expect(Object.keys(swarm1.muxedConns).length).to.equal(1)
-      swarm1.dial(peerInfo, () => {
-        expect(Object.keys(swarm1.muxedConns).length).to.equal(2)
-      })
-    })
-    wstar2.discovery.on('peer', (peerInfo) => {
-      swarm2.dial(peerInfo)
-    })
+    let counter = 0
+
+    let swarm3
+
+    function check () {
+      if (++counter === 4) {
+        const s1n = Object.keys(swarm1.muxedConns).length
+        const s2n = Object.keys(swarm2.muxedConns).length
+        const s3n = Object.keys(swarm3.muxedConns).length
+        console.log('->', s1n, s2n, s3n)
+        expect(s1n).to.equal(2)
+        expect(s2n).to.equal(2)
+        expect(s3n).to.equal(2)
+        swarm3.close(done)
+      }
+      if (counter === 3) {
+        setTimeout(check, 2000)
+      }
+    }
+
+    wstar1.discovery.on('peer', (peerInfo) => swarm1.dial(peerInfo, check))
+    wstar2.discovery.on('peer', (peerInfo) => swarm2.dial(peerInfo, check))
 
     peerId.create((err, id3) => {
-      if (err) {
-        return done(err)
-      }
+      expect(err).to.not.exist
+
       const peer3 = new PeerInfo(id3)
       const mh3 = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + id3.toB58String())
       peer3.multiaddr.add(mh3)
 
-      const swarm3 = new Swarm(peer3)
+      swarm3 = new Swarm(peer3)
       const wstar3 = new WebRTCStar()
       swarm3.transport.add('wstar', wstar3)
       swarm3.connection.addStreamMuxer(spdy)
       swarm3.connection.reuse()
-      swarm3.listen(() => {
-        setTimeout(() => {
-          expect(Object.keys(swarm1.muxedConns).length).to.equal(2)
-          expect(Object.keys(swarm2.muxedConns).length).to.equal(2)
-          expect(Object.keys(swarm3.muxedConns).length).to.equal(2)
-          swarm3.close(done)
-        }, 8000)
-      })
+      swarm3.listen(check)
     })
   })
 
   it('close', (done) => {
     parallel([
-      swarm1.close,
-      swarm2.close
+      (cb) => swarm1.close(cb),
+      (cb) => swarm2.close(cb)
     ], done)
   })
 })
