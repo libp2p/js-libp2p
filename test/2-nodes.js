@@ -173,7 +173,7 @@ describe('basics between 2 nodes', () => {
     })
   })
 
-  describe('long running nodes (already have state)', () => {
+  describe('nodes send state on connection', () => {
     let nodeA
     let nodeB
     let fsA
@@ -215,7 +215,7 @@ describe('basics between 2 nodes', () => {
       ], done)
     })
 
-    it('Existing subscriptions are sent upon peer connection', (done) => {
+    it('existing subscriptions are sent upon peer connection', (done) => {
       nodeA.dialByPeerInfo(nodeB.peerInfo, (err) => {
         expect(err).to.not.exist
         setTimeout(() => {
@@ -233,6 +233,54 @@ describe('basics between 2 nodes', () => {
           done()
         }, 250)
       })
+    })
+
+    it('stop both FloodSubs', (done) => {
+      parallel([
+        (cb) => fsA.stop(cb),
+        (cb) => fsB.stop(cb)
+      ], done)
+    })
+  })
+
+  describe('dial the pubsub protocol on mount', () => {
+    let nodeA
+    let nodeB
+    let fsA
+    let fsB
+
+    before((done) => {
+      series([
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+      ], (cb, nodes) => {
+        nodeA = nodes[0]
+        nodeB = nodes[1]
+        nodeA.dialByPeerInfo(nodeB.peerInfo, () => setTimeout(done, 1000))
+      })
+    })
+
+    after((done) => {
+      parallel([
+        (cb) => nodeA.stop(cb),
+        (cb) => nodeB.stop(cb)
+      ], done)
+    })
+
+    it('dial on floodsub on mount', (done) => {
+      fsA = new FloodSub(nodeA)
+      fsB = new FloodSub(nodeB)
+
+      parallel([
+        (cb) => fsA.start(cb),
+        (cb) => fsB.start(cb)
+      ], next)
+
+      function next () {
+        expect(fsA.peers.size).to.equal(1)
+        expect(fsB.peers.size).to.equal(1)
+        done()
+      }
     })
 
     it('stop both FloodSubs', (done) => {
