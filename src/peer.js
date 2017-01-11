@@ -158,7 +158,9 @@ class Peer {
       // no connection to close
     }
     // end the pushable pull-stream
-    this.stream.end()
+    if (this.stream) {
+      this.stream.end()
+    }
     setImmediate(() => {
       this.conn = null
       this.stream = null
