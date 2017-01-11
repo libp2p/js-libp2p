@@ -41,7 +41,8 @@ describe('identify.listener', () => {
           agentVersion: 'na',
           publicKey: info.id.pubKey.bytes,
           listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/5002').buffer],
-          observedAddr: multiaddr('/ip4/127.0.0.1/tcp/5001').buffer
+          observedAddr: multiaddr('/ip4/127.0.0.1/tcp/5001').buffer,
+          protocols: []
         })
         done()
       })
