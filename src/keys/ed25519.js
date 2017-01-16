@@ -2,6 +2,7 @@
 
 const multihashing = require('multihashing-async')
 const protobuf = require('protocol-buffers')
+const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../crypto').ed25519
 const pbm = protobuf(require('../crypto.proto'))
