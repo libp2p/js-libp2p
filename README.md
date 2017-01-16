@@ -39,7 +39,7 @@ To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separ
 
 ## Bundles
 
-With its modular nature, libp2p can be found being used in different projects with different sets of features, while perserving the same top level API. `js-libp2p` is only a skelleton and should not be installed directly, if you are looking for a prebundled libp2p stack, please check:
+With its modular nature, libp2p can be found being used in different projects with different sets of features, while preserving the same top level API. `js-libp2p` is only a skeleton and should not be installed directly, if you are looking for a prebundled libp2p stack, please check:
 
 - [libp2p-ipfs-nodejs](https://github.com/ipfs/js-libp2p-ipfs-nodejs) - The libp2p build used by js-ipfs when run in Node.js
 - [libp2p-ipfs-browser](https://github.com/ipfs/js-libp2p-ipfs-browser) - The libp2p build used by js-ipfs when run in a Browser (that supports WebRTC)
@@ -48,7 +48,7 @@ If you have developed a libp2p bundle, please consider submitting it to this lis
 
 ## Install
 
-> Again, as noted above, this module is only a skeleton and should not be used directly other than libp2p bundle implementors that want to extend its code.
+Again, as noted above, this module is only a skeleton and should not be used directly other than libp2p bundle implementors that want to extend its code.
 
 ```sh
 npm install --save libp2p
@@ -56,11 +56,11 @@ npm install --save libp2p
 
 ## Usage
 
-> **Disclamer - We haven't solidified [libp2p interface](https://github.com/libp2p/interface-libp2p) yet, it might change at anytime.**
+> **Disclaimer - We haven't solidified [libp2p interface](https://github.com/libp2p/interface-libp2p) yet, it might change at anytime.**
 
 ### Extending libp2p skeleton
 
-libp2p becomes very simple and basically acts as a glue for every module that compose this library. Since it can be highly customized, it requires some setup. What we recommend is to have a libp2p build for the system you are developing taking into account in your needs (e.g. for a browser working version of libp2p that acts as the network layer of IPFS, we have a built and minified version that browsers can require)
+libp2p becomes very simple and basically acts as a glue for every module that compose this library. Since it can be highly customized, it requires some setup. What we recommend is to have a libp2p build for the system you are developing taking into account in your needs (e.g. for a browser working version of libp2p that acts as the network layer of IPFS, we have a built and minified version that browsers can require).
 
 ### libp2p API
 
@@ -76,7 +76,7 @@ Defined by [interface-libp2p](https://github.com/libp2p/interface-libp2p)
 
 ### Packages
 
-> List of packages currently in existance for libp2p
+List of packages currently in existence for libp2p
 
 | Package | Version | Dependencies | DevDependencies |
 |---------|---------|--------------|-----------------|
@@ -115,7 +115,7 @@ Defined by [interface-libp2p](https://github.com/libp2p/interface-libp2p)
 
 ## Contribute
 
-THe libp2p implementation in JavaScript is a work in progress. As such, there's a few things you can do right now to help out:
+The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
 
  - Go through the modules and **check out existing issues**. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrasture behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
  - **Perform code reviews**. Most of this has been developed by @diasdavid, which means that more eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
