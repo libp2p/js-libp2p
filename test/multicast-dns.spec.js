@@ -75,12 +75,8 @@ describe('MulticastDNS', () => {
     const mdnsC = new MulticastDNS(pC, options)
 
     parallel([
-      (cb) => {
-        mdnsA.start(cb)
-      },
-      (cb) => {
-        mdnsC.start(cb)
-      }
+      (cb) => mdnsA.start(cb),
+      (cb) => mdnsC.start(cb)
     ], () => {
       mdnsA.once('peer', (peerInfo) => {
         expect(pC.id.toB58String()).to.eql(peerInfo.id.toB58String())
@@ -89,6 +85,31 @@ describe('MulticastDNS', () => {
       })
 
       mdnsC.once('peer', (peerInfo) => {})
+    })
+  })
+
+  it('doesn\'t emit peers after stop', (done) => {
+    const options = {
+      port: 50004   // port must be the same
+    }
+    const mdnsA = new MulticastDNS(pA, options)
+    const mdnsC = new MulticastDNS(pC, options)
+
+    setTimeout(done, 15000)
+
+    parallel([
+      (cb) => mdnsA.start(cb),
+      (cb) => mdnsC.start(cb)
+    ], () => {
+      mdnsA.stop((err) => {
+        if (err) {
+          return done(err)
+        }
+      })
+
+      mdnsC.once('peer', (peerInfo) => {
+        done(new Error('Should not receive new peer.'))
+      })
     })
   })
 })
