@@ -18,7 +18,7 @@ class MulticastDNS extends EventEmitter {
 
     const broadcast = options.broadcast !== false
     const interval = options.interval || (1e3 * 10) // default: 10 seconds
-    const serviceTag = options.serviceTag || '_ipfs-discovery._udp'
+    const serviceTag = options.serviceTag || 'libp2p-mdns-default.local'
     const port = options.port || 5353
     const self = this // for event emitter
 
