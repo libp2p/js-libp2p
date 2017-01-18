@@ -12,7 +12,7 @@ const multiaddr = require('multiaddr')
 const fs = require('fs')
 const path = require('path')
 
-const sigServer = require('libp2p-webrtc-star/src/signalling')
+const sigServer = require('libp2p-webrtc-star/src/sig-server')
 
 let swarmA
 let swarmB
