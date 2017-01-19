@@ -104,6 +104,11 @@ class MulticastDNS extends EventEmitter {
     function gotQuery (qry) {
       if (!broadcast) { return }
 
+      // Only announce TCP multiaddrs for now
+      const multiaddrs = tcp.filter(peerInfo.multiaddrs)
+
+      if (multiaddrs.length === 0) { return }
+
       if (qry.questions[0] && qry.questions[0].name === serviceTag) {
         const answers = []
 
@@ -115,8 +120,7 @@ class MulticastDNS extends EventEmitter {
           data: peerInfo.id.toB58String() + '.' + serviceTag
         })
 
-        // Only announce TCP multiaddrs for now
-        const multiaddrs = tcp.filter(peerInfo.multiaddrs)
+        // TODO announce all the TCP multiaddrs
         const port = multiaddrs[0].toString().split('/')[4]
 
         answers.push({
