@@ -14,71 +14,89 @@ js-libp2p-multiplex
 
 ## Usage
 
-Let's define `server.js`, which runs two services over a single TCP socket
-running port 9000:
+Let's define a `listener.js`, which starts a TCP server on port 9999
+and waits for a connection. Once we get a connection, we wait for
+a stream. And finally, once we have the stream, we pull the data
+from that stream, and printing it to the console.
 
 ```JavaScript
-var multiplex = require('libp2p-multiplex')
-var net = require('net')
+const multiplex = require('libp2p-multiplex')
+const tcp = require('net')
+const pull = require('pull-stream')
+const toPull = require('stream-to-pull-stream')
 
-var server = net.createServer(function (conn) {
-  var multi = multiplex(conn, false)
+const listener = tcp.createServer((socket) => {
+  console.log('[listener] Got connection!')
 
-  multi.newStream(echoService)
-  multi.newStream(lengthService)
-}).listen(9000)
+  const muxer = multiplex.listener(toPull(socket))
 
-
-// Repeat back messages verbatim.
-function echoService (err, conn) {
-  if (err) throw err
-  conn.on('data', function (data) {
-    conn.write(data)
+  muxer.on('stream', (stream) => {
+    console.log('[listener] Got stream!')
+    pull(
+      stream,
+      pull.drain((data) => {
+        console.log('[listener] Received:')
+        console.log(data.toString())
+      })
+    )
   })
-}
+})
 
-// Respond with the length of each message.
-function lengthService (err, conn) {
-  if (err) throw err
-  conn.on('data', function (data) {
-    conn.write(data.length+'\n')
-  })
-}
-```
-
-Let's also define `client.js`, multiplexed over a TCP socket that writes to both
-services:
-
-```JavaScript
-var multiplex = require('libp2p-multiplex')
-var net = require('net')
-
-var client = net.connect(9000, 'localhost', function () {
-  var multi = multiplex(client, true)
-
-  multi.on('stream', function (conn) {
-    console.log('got a new stream')
-
-    conn.on('data', function (data) {
-      console.log('message', data.toString())
-    })
-  })
+listener.listen(9999, () => {
+  console.log('[listener] listening on 9999')
 })
 ```
 
-Run both and see the output on the client:
+Now, let's define `dialer.js` who will connect to our `listener` over a TCP socket. Once we have that, we'll put a message in the stream for our `listener`.
+
+```JavaScript
+const multiplex = require('libp2p-multiplex')
+const tcp = require('net')
+const pull = require('pull-stream')
+const toPull = require('stream-to-pull-stream')
+
+const socket = tcp.connect(9999)
+
+const muxer = multiplex.dialer(toPull(socket))
+
+console.log('[dialer] opening stream')
+const stream = muxer.newStream((err) => {
+  console.log('[dialer] opened stream')
+  if (err) throw err
+})
+
+pull(
+  pull.values(['hey, how is it going. I am the dialer']),
+  stream
+)
+```
+
+Now we can first run `listener.js` and then `dialer.js` to see the
+following output:
+
+*listener.js*
 
 ```
-got a new stream
-got a new stream
-message hello there!
-message 12
+$ node listener.js
+[listener] listening on 9999
+[listener] Got connection!
+[listener] Got stream!
+[listener] Received:
+hey, how is it going. I am the dialer
+```
+
+*dialer.js*
+
+```
+$ node dialer.js
+[dialer] opening stream
+[dialer] opened stream
 ```
 
 ## API
 
 ```js
-var multiplex = require('libp2p-multiplex')
+const multiplex = require('libp2p-multiplex')
 ```
 
 #### var multi = multiplex(transport, isListener)
@@ -111,5 +129,5 @@ Emitted when the stream produces an error.
 ## Install
 
 ```sh
-> npm i libp2p-multiplex
+> npm install libp2p-multiplex
 ```
