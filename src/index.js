@@ -1,36 +1,33 @@
+'use strict'
+
 const multiplex = require('multiplex')
+const toStream = require('pull-stream-to-stream')
 
-exports = module.exports = function (transport, isListener) {
-  var id = 1
+const MULTIPLEX_CODEC = require('./multiplex-codec')
+const Muxer = require('./muxer')
 
-  const muxer = multiplex()
+const pump = require('pump')
 
-  transport.pipe(muxer).pipe(transport)
+function create (rawConn, isListener) {
+  const stream = toStream(rawConn)
+  // Let it flow, let it flooow
+  stream.resume()
 
-  muxer.newStream = (callback) => {
-    if (!callback) {
-      callback = noop
-    }
-    id = id + (isListener ? 2 : 1)
+  stream.on('end', () => {
+    // Cleanup and destroy the connection when it ends
+    // as the converted stream doesn't emit 'close'
+    // but .destroy will trigger a 'close' event.
+    stream.destroy()
+  })
 
-    const stream = muxer.createStream(id)
+  const mpx = multiplex()
+  pump(mpx, stream)
+  pump(stream, mpx)
 
-    setTimeout(() => {
-      callback(null, stream)
-    })
-
-    return stream
-  }
-
-  // The rest of the API comes by default with SPDY
-  // muxer.on('stream', (stream) => {})
-  // muxer.on('close', () => {})
-  // muxer.on('error', (err) => {})
-  // muxer.end()
-  muxer.multicodec = exports.multicodec
-  return muxer
+  return new Muxer(rawConn, mpx, isListener)
 }
 
-exports.multicodec = '/multiplex/6.7.0'
-
-function noop () {}
+exports = module.exports = create
+exports.multicodec = MULTIPLEX_CODEC
+exports.dialer = (conn) => create(conn, false)
+exports.listener = (conn) => create(conn, true)
