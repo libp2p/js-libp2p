@@ -6,16 +6,13 @@ const expect = require('chai').expect
 const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
 const TCP = require('libp2p-tcp')
-const multiplex = require('libp2p-spdy')
+const multiplex = require('libp2p-multiplex')
 const pull = require('pull-stream')
 const utils = require('./utils')
 
 const Swarm = require('../src')
 
-// Multiplex is not yet ported
-// Reenable when https://github.com/libp2p/js-libp2p-multiplex/issues/14
-// is done
-describe.skip('stream muxing with multiplex (on TCP)', () => {
+describe('stream muxing with multiplex (on TCP)', () => {
   let swarmA
   let peerA
   let swarmB
@@ -32,10 +29,6 @@ describe.skip('stream muxing with multiplex (on TCP)', () => {
       peerA = infos[0]
       peerB = infos[1]
       peerC = infos[2]
-
-      // console.log('peer A', peerA.id.toB58String())
-      // console.log('peer B', peerB.id.toB58String())
-      // console.log('peer C', peerC.id.toB58String())
 
       peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
       peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
