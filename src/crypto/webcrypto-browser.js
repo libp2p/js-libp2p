@@ -1,3 +1,5 @@
+/* global self */
+
 'use strict'
 
 module.exports = function getWebCrypto () {
