@@ -15,6 +15,9 @@
     "coverage": "gulp coverage",
     "coverage-publish": "aegir-coverage publish"
   },
+  "browser": {
+    "zlib": "browserify-zlib-next"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/libp2p/js-libp2p-swarm.git"
@@ -54,7 +57,7 @@
   },
   "dependencies": {
     "async": "^2.1.4",
-    "browserify-zlib": "github:ipfs/browserify-zlib",
+    "browserify-zlib-next": "^1.0.0",
     "debug": "^2.6.0",
     "interface-connection": "^0.3.0",
     "ip-address": "^5.8.6",
