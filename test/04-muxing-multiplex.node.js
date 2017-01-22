@@ -107,7 +107,7 @@ describe('stream muxing with multiplex (on TCP)', () => {
     })
   })
 
-  it('enable identify to reuse incomming muxed conn', (done) => {
+  it.skip('enable identify to reuse incomming muxed conn', (done) => {
     swarmA.connection.reuse()
     swarmC.connection.reuse()
 

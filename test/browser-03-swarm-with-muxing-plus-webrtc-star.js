@@ -109,7 +109,6 @@ describe('high level API (swarm with spdy + webrtc-star)', () => {
         const s1n = Object.keys(swarm1.muxedConns).length
         const s2n = Object.keys(swarm2.muxedConns).length
         const s3n = Object.keys(swarm3.muxedConns).length
-        console.log('->', s1n, s2n, s3n)
         expect(s1n).to.equal(2)
         expect(s2n).to.equal(2)
         expect(s3n).to.equal(2)
