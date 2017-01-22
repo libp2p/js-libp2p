@@ -48,7 +48,7 @@
     "libp2p-secio": "^0.6.5",
     "libp2p-spdy": "^0.10.3",
     "libp2p-tcp": "^0.9.1",
-    "libp2p-webrtc-star": "^0.7.5",
+    "libp2p-webrtc-star": "^0.8.0",
     "libp2p-websockets": "^0.9.1",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.1",
