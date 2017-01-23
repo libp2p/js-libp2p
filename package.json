@@ -14,10 +14,11 @@
   "scripts": {
     "lint": "aegir-lint",
     "build": "aegir-build",
-    "test": "npm run test:node && npm run test:no-webcrypto && npm run test:browser",
+    "test": "npm run test:node && npm run test:no-webcrypto && npm run test:browser && npm run test:webworker",
     "test:node": "aegir-test --env node",
     "test:no-webcrypto": "NO_WEBCRYPTO=true aegir-test --env node",
     "test:browser": "aegir-test --env browser",
+    "test:webworker": "aegir-test --env webworker",
     "release": "aegir-release",
     "release-minor": "aegir-release --type minor",
     "release-major": "aegir-release --type major",
