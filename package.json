@@ -48,7 +48,7 @@
     "libp2p-secio": "^0.6.5",
     "libp2p-spdy": "^0.10.3",
     "libp2p-tcp": "^0.9.1",
-    "libp2p-webrtc-star": "^0.8.0",
+    "libp2p-webrtc-star": "^0.8.1",
     "libp2p-websockets": "^0.9.1",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.1",
@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "async": "^2.1.4",
-    "browserify-zlib-next": "^1.0.0",
+    "browserify-zlib-next": "^1.0.1",
     "debug": "^2.6.0",
     "interface-connection": "^0.3.0",
     "ip-address": "^5.8.6",
