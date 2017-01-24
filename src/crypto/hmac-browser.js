@@ -1,6 +1,7 @@
 'use strict'
 
 const nodeify = require('nodeify')
+const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('./webcrypto')()
 const lengths = require('./hmac-lengths')

@@ -2,6 +2,7 @@
 
 const crypto = require('./crypto')
 const whilst = require('async/whilst')
+const Buffer = require('safe-buffer').Buffer
 
 const cipherMap = {
   'AES-128': {

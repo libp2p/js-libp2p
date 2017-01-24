@@ -2,6 +2,7 @@
 'use strict'
 
 const expect = require('chai').expect
+const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../src')
 const rsa = crypto.keys.rsa
@@ -129,7 +130,7 @@ describe('RSA', () => {
   })
 
   it('sign and verify', (done) => {
-    const data = new Buffer('hello world')
+    const data = Buffer.from('hello world')
     key.sign(data, (err, sig) => {
       if (err) {
         return done(err)
@@ -146,13 +147,13 @@ describe('RSA', () => {
   })
 
   it('fails to verify for different data', (done) => {
-    const data = new Buffer('hello world')
+    const data = Buffer.from('hello world')
     key.sign(data, (err, sig) => {
       if (err) {
         return done(err)
       }
 
-      key.public.verify(new Buffer('hello'), sig, (err, valid) => {
+      key.public.verify(Buffer.from('hello'), sig, (err, valid) => {
         if (err) {
           return done(err)
         }

@@ -4,6 +4,7 @@
 
 const expect = require('chai').expect
 const series = require('async/series')
+const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../src')
 const fixtures = require('./fixtures/aes')
@@ -17,10 +18,10 @@ const bytes = {
 describe('AES-CTR', () => {
   Object.keys(bytes).forEach((byte) => {
     it(`${bytes[byte]} - encrypt and decrypt`, (done) => {
-      const key = new Buffer(parseInt(byte, 10))
+      const key = Buffer.alloc(parseInt(byte, 10))
       key.fill(5)
 
-      const iv = new Buffer(16)
+      const iv = Buffer.alloc(16)
       iv.fill(1)
 
       crypto.aes.create(key, iv, (err, cipher) => {
@@ -38,18 +39,18 @@ describe('AES-CTR', () => {
   })
   Object.keys(bytes).forEach((byte) => {
     it(`${bytes[byte]} - fixed - encrypt and decrypt`, (done) => {
-      const key = new Buffer(parseInt(byte, 10))
+      const key = Buffer.alloc(parseInt(byte, 10))
       key.fill(5)
 
-      const iv = new Buffer(16)
+      const iv = Buffer.alloc(16)
       iv.fill(1)
 
       crypto.aes.create(key, iv, (err, cipher) => {
         expect(err).to.not.exist
 
         series(fixtures[byte].inputs.map((rawIn, i) => (cb) => {
-          const input = new Buffer(rawIn)
-          const output = new Buffer(fixtures[byte].outputs[i])
+          const input = Buffer.from(rawIn)
+          const output = Buffer.from(fixtures[byte].outputs[i])
           cipher.encrypt(input, (err, res) => {
             expect(err).to.not.exist
             expect(res).to.have.length(output.length)
@@ -71,18 +72,18 @@ describe('AES-CTR', () => {
     }
 
     it(`${bytes[byte]} - go interop - encrypt and decrypt`, (done) => {
-      const key = new Buffer(parseInt(byte, 10))
+      const key = Buffer.alloc(parseInt(byte, 10))
       key.fill(5)
 
-      const iv = new Buffer(16)
+      const iv = Buffer.alloc(16)
       iv.fill(1)
 
       crypto.aes.create(key, iv, (err, cipher) => {
         expect(err).to.not.exist
 
         series(goFixtures[byte].inputs.map((rawIn, i) => (cb) => {
-          const input = new Buffer(rawIn)
-          const output = new Buffer(goFixtures[byte].outputs[i])
+          const input = Buffer.from(rawIn)
+          const output = Buffer.from(goFixtures[byte].outputs[i])
           cipher.encrypt(input, (err, res) => {
             expect(err).to.not.exist
             expect(res).to.have.length(output.length)
@@ -100,7 +101,7 @@ describe('AES-CTR', () => {
 })
 
 function encryptAndDecrypt (cipher) {
-  const data = new Buffer(100)
+  const data = Buffer.alloc(100)
   data.fill(Math.ceil(Math.random() * 100))
   return (cb) => {
     cipher.encrypt(data, (err, res) => {

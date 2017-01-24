@@ -2,6 +2,7 @@
 
 const nacl = require('tweetnacl')
 const setImmediate = require('async/setImmediate')
+const Buffer = require('safe-buffer').Buffer
 
 exports.publicKeyLength = nacl.sign.publicKeyLength
 exports.privateKeyLength = nacl.sign.secretKeyLength
