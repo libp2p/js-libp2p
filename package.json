@@ -29,9 +29,9 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-multiplex#readme",
   "devDependencies": {
-    "aegir": "^9.3.2",
+    "aegir": "^9.3.3",
     "chai": "^3.5.0",
-    "interface-stream-muxer": "^0.5.4",
+    "interface-stream-muxer": "^0.5.5",
     "libp2p-websockets": "^0.9.1",
     "pre-commit": "^1.2.2",
     "pull-pair": "^1.1.0"

@@ -10,8 +10,6 @@ const pump = require('pump')
 
 function create (rawConn, isListener) {
   const stream = toStream(rawConn)
-  // Let it flow, let it flooow
-  stream.resume()
 
   stream.on('end', () => {
     // Cleanup and destroy the connection when it ends
@@ -21,8 +19,7 @@ function create (rawConn, isListener) {
   })
 
   const mpx = multiplex()
-  pump(mpx, stream)
-  pump(stream, mpx)
+  pump(stream, mpx, stream)
 
   return new Muxer(rawConn, mpx, isListener)
 }
