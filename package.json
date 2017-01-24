@@ -1,6 +1,6 @@
 {
   "name": "libp2p-multiplex",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "multiplex implementation wrapper that is compatible with libp2p Stream Muxer expected interface",
   "main": "src/index.js",
   "scripts": {
