@@ -11,12 +11,10 @@ const pump = require('pump')
 function create (rawConn, isListener) {
   const stream = toStream(rawConn)
 
-  stream.on('end', () => {
-    // Cleanup and destroy the connection when it ends
-    // as the converted stream doesn't emit 'close'
-    // but .destroy will trigger a 'close' event.
-    stream.destroy()
-  })
+  // Cleanup and destroy the connection when it ends
+  // as the converted stream doesn't emit 'close'
+  // but .destroy will trigger a 'close' event.
+  stream.on('end', () => stream.destroy())
 
   const mpx = multiplex()
   pump(stream, mpx, stream)

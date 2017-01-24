@@ -19,13 +19,8 @@ module.exports = class MultiplexMuxer extends EventEmitter {
     this.multicodec = MULTIPLEX_CODEC
     this.isListener = isListener
 
-    multiplex.on('close', () => {
-      this.emit('close')
-    })
-
-    multiplex.on('error', (err) => {
-      this.emit('error', err)
-    })
+    multiplex.on('close', () => this.emit('close'))
+    multiplex.on('error', (err) => this.emit('error', err))
 
     multiplex.on('stream', (stream, id) => {
       const muxedConn = new Connection(
@@ -53,8 +48,9 @@ module.exports = class MultiplexMuxer extends EventEmitter {
     return conn
   }
 
-  end (cb) {
-    this.multiplex.once('close', cb)
+  end (callback) {
+    callback = callback || noop
+    this.multiplex.once('close', callback)
     this.multiplex.destroy()
   }
 }
