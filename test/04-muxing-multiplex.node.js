@@ -53,8 +53,8 @@ describe('stream muxing with multiplex (on TCP)', () => {
   after((done) => {
     parallel([
       (cb) => swarmA.close(cb),
-      (cb) => swarmB.close(cb),
-      (cb) => swarmC.close(cb)
+      (cb) => swarmB.close(cb)
+      // (cb) => swarmC.close(cb)
     ], done)
   })
 
@@ -116,6 +116,16 @@ describe('stream muxing with multiplex (on TCP)', () => {
       setTimeout(() => {
         expect(Object.keys(swarmC.muxedConns).length).to.equal(1)
         expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
+        done()
+      }, 500)
+    })
+  })
+
+  it('closing one side cleans out in the other', (done) => {
+    swarmC.close((err) => {
+      expect(err).to.not.exist
+      setTimeout(() => {
+        expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
         done()
       }, 500)
     })

@@ -44,7 +44,7 @@
     "buffer-loader": "0.0.1",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
-    "libp2p-multiplex": "^0.3.2",
+    "libp2p-multiplex": "^0.3.3",
     "libp2p-secio": "^0.6.5",
     "libp2p-spdy": "^0.10.3",
     "libp2p-tcp": "^0.9.1",
