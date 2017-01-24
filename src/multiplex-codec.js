@@ -1,3 +1,3 @@
 'use strict'
 
-module.exports = '/multiplex/6.7.0'
+module.exports = '/mplex/6.7.0'
