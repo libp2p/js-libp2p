@@ -25,14 +25,14 @@ describe('browser-server', () => {
         conn,
         pull.collect((err, chunks) => {
           expect(err).to.not.exist
-          expect(chunks).to.be.eql([Buffer('hey')])
+          expect(chunks).to.be.eql([new Buffer('hey')])
           pull(pull.empty(), conn)
         })
       )
     })
 
     pull(
-      pull.values([Buffer('hey')]),
+      pull.values([new Buffer('hey')]),
       muxedConn.newStream(),
       pull.onEnd(done)
     )

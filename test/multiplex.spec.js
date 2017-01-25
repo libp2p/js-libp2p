@@ -37,7 +37,7 @@ describe('multiplex-generic', () => {
 
     const conn = dialer.newStream()
     pull(
-      pull.values(['hello']),
+      pull.values([new Buffer('hello')]),
       conn,
       pull.collect((err, res) => {
         expect(err).to.not.exist
@@ -54,7 +54,7 @@ describe('multiplex-generic', () => {
 
     const conn = listener.newStream()
     pull(
-      pull.values(['hello']),
+      pull.values([new Buffer('hello')]),
       conn,
       pull.collect((err, res) => {
         expect(err).to.not.exist
