@@ -114,11 +114,11 @@ function Swarm (peerInfo) {
     const key = peerInfo.id.toB58String()
     if (this.muxedConns[key]) {
       const muxer = this.muxedConns[key].muxer
-      muxer.end()
       muxer.once('close', () => {
         delete this.muxedConns[key]
         callback()
       })
+      muxer.end()
     } else {
       callback()
     }
