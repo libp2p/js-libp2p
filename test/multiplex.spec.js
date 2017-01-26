@@ -37,11 +37,12 @@ describe('multiplex-generic', () => {
 
     const conn = dialer.newStream()
     pull(
-      pull.values([new Buffer('hello')]),
+      // Strings should be converted to Buffers
+      pull.values(['hello']),
       conn,
       pull.collect((err, res) => {
         expect(err).to.not.exist
-        expect(res).to.be.eql([new Buffer('hello')])
+        expect(res).to.eql([new Buffer('hello')])
         done()
       })
     )
@@ -58,7 +59,7 @@ describe('multiplex-generic', () => {
       conn,
       pull.collect((err, res) => {
         expect(err).to.not.exist
-        expect(res).to.be.eql([new Buffer('hello')])
+        expect(res).to.eql([new Buffer('hello')])
         done()
       })
     )
