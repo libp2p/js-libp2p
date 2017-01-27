@@ -1,3 +1,5 @@
+/* global self */
+
 'use strict'
 
 module.exports = function getWebCrypto () {
@@ -7,6 +9,14 @@ module.exports = function getWebCrypto () {
 
     if (window.crypto) {
       return window.crypto
+    }
+  }
+
+  if (typeof self !== 'undefined') {
+    require('webcrypto-shim')(self)
+
+    if (self.crypto) {
+      return self.crypto
     }
   }
 
