@@ -83,7 +83,9 @@ describe('MulticastDNS', () => {
 
     parallel([
       (cb) => mdnsA.start(cb),
-      (cb) => mdnsC.start(cb)
+      (cb) => mdnsC.start(cb),
+      (cb) => mdnsD.start(cb)
+
     ], () => {
       mdnsA.once('peer', (peerInfo) => {
         expect(pC.id.toB58String()).to.eql(peerInfo.id.toB58String())

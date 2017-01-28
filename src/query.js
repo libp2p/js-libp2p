@@ -82,6 +82,10 @@ module.exports = {
   gotQuery: function (qry, mdns, peerInfo, serviceTag, broadcast) {
     if (!broadcast) { return }
 
+    const multiaddrs = tcp.filter(peerInfo.multiaddrs)
+    // Only announce TCP for now
+    if (multiaddrs.length === 0) { return }
+
     if (qry.questions[0] && qry.questions[0].name === serviceTag) {
       const answers = []
 
@@ -94,7 +98,6 @@ module.exports = {
       })
 
       // Only announce TCP multiaddrs for now
-      const multiaddrs = tcp.filter(peerInfo.multiaddrs)
       const port = multiaddrs[0].toString().split('/')[4]
 
       answers.push({

@@ -39,11 +39,16 @@ class MulticastDNS extends EventEmitter {
       query.gotQuery(event, this.mdns, this.peerInfo, this.serviceTag, this.broadcast)
     })
 
-    callback()
+    setImmediate(() => callback())
   }
 
   stop (callback) {
-    this.mdns.destroy(callback)
+    if (!this.mdns) {
+      callback(new Error('MulticastDNS service had not started yet'))
+    } else {
+      this.mdns.destroy(callback)
+      this.mdns = undefined
+    }
   }
 }
 
