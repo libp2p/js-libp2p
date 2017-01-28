@@ -61,7 +61,7 @@ class Node {
     }
 
     // Attach discovery mechanisms
-    if (this.discovery) {
+    if (this.modules.discovery) {
       let discoveries = this.modules.discovery
       discoveries = Array.isArray(discoveries) ? discoveries : [discoveries]
       discoveries.forEach((discovery) => {
@@ -115,6 +115,13 @@ class Node {
       }
 
       this.isOnline = true
+
+      if (this.modules.discovery) {
+        this.modules.discovery.forEach((discovery) => {
+          setImmediate(() => discovery.start(() => {}))
+        })
+      }
+
       callback()
     })
   }
@@ -124,6 +131,14 @@ class Node {
    */
   stop (callback) {
     this.isOnline = false
+
+    if (this.modules.discovery) {
+      this.modules.discovery.forEach((discovery) => {
+        console.log(discovery)
+        setImmediate(() => discovery.stop(() => {}))
+      })
+    }
+
     this.swarm.close(callback)
   }
 
