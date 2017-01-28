@@ -134,7 +134,6 @@ class Node {
 
     if (this.modules.discovery) {
       this.modules.discovery.forEach((discovery) => {
-        console.log(discovery)
         setImmediate(() => discovery.stop(() => {}))
       })
     }
