@@ -30,17 +30,17 @@
   },
   "homepage": "https://github.com/libp2p/js-ipfs-railing",
   "devDependencies": {
-    "aegir": "^9.2.1",
+    "aegir": "^9.4.0",
     "chai": "^3.5.0",
-    "libp2p-swarm": "^0.26.3",
+    "libp2p-swarm": "^0.26.13",
     "libp2p-tcp": "^0.9.1",
-    "pre-commit": "^1.2.0"
+    "pre-commit": "^1.2.2"
   },
   "dependencies": {
-    "debug": "^2.4.0",
-    "multiaddr": "^2.1.1",
-    "peer-id": "^0.8.0",
-    "peer-info": "^0.8.1"
+    "debug": "^2.6.0",
+    "multiaddr": "^2.2.0",
+    "peer-id": "^0.8.1",
+    "peer-info": "^0.8.2"
   },
   "pre-commit": [
     "lint",
