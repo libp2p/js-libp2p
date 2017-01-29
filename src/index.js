@@ -1,52 +1,49 @@
 'use strict'
 
-const Id = require('peer-id')
-const Peer = require('peer-info')
+const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
 const EventEmitter = require('events').EventEmitter
-const util = require('util')
 const debug = require('debug')
 
 const log = debug('libp2p:railing')
 log.error = debug('libp2p:railing:error')
 
-exports = module.exports = Bootstrap
-
-util.inherits(Bootstrap, EventEmitter)
-
-function Bootstrap (peerList, options, swarm) {
-  const self = this
-
-  if (!(self instanceof Bootstrap)) {
-    throw new Error('Must be instantiated with new')
+class Railing extends EventEmitter {
+  constructor (bootstrapers) {
+    super()
+    this.bootstrapers = bootstrapers
   }
 
-// to enable that the outside function to set the listeners on verify: false mode
-  setImmediate(() => {
-    peerList.forEach((peerCandidate) => {
-      const mh = multiaddr(peerCandidate.split('/').splice(0, 5).join('/'))
-      const peerId = Id.createFromB58String(peerCandidate.split('/').splice(6)[0])
+  start (callback) {
+    setImmediate(callback)
+    setImmediate(() => {
+      this.bootstrapers.forEach((candidate) => {
+        // TODO: It would be awesome to get better tools at extracting things
+        // from multiaddr
+        const split = candidate.split('/')
 
-      Peer.create(peerId, (err, peer) => {
-        if (err) {
-          return log.error('Error creating PeerInfo from bootstrap peer', err)
-        }
+        const ma = multiaddr(split.splice(0, 5).join('/'))
 
-        peer.multiaddr.add(mh)
+        const peerIdB58Str = split[1]
+        const peerId = PeerId.createFromB58String(peerIdB58Str)
 
-        if (options && options.verify) {
-          swarm.dial(peer, function (err) {
-            if (err) {
-              return
-            }
-            self.emit('peer', peer)
-          })
-        } else {
-          self.emit('peer', peer)
-        }
+        PeerInfo.create(peerId, (err, peerInfo) => {
+          if (err) {
+            return log.error('Error creating PeerInfo from bootstrap peer', err)
+          }
+
+          peerInfo.multiaddr.add(ma)
+
+          this.emit('peer', peerInfo)
+        })
       })
     })
-  })
+  }
+
+  stop (callback) {
+    setImmediate(callback)
+  }
 }
 
-module.exports = Bootstrap
+module.exports = Railing

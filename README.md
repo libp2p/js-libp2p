@@ -15,17 +15,13 @@ js-libp2p-railing
 ## Usage
 
 ```JavaScript
-const Bootstrap = require('ipfs-libp2p')
+const Railing = require('libp2p-railing')
 
-const options = {
-  verify: true // to verify that we can indeed open a connection to that peer, before declaring it as peer found
-}
-
-const peerList = <your custom peerList> || Bootstrap.default
-
-const b = new Bootstrap(Bootstrap.default, options, swarm)
+const b = new Railing(<peer-list>)
 
 b.on('peer', function (peerInfo) {
   // found a new peer
 })
+
+b.start()
 ```
