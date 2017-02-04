@@ -107,9 +107,21 @@ Depending on the environment this is either an instance of [node-webcrypto-ossl]
 
 ### `keys`
 
+#### Supported Key Types
+
+The [`generateKeyPair`](#generatekeypairtype-bits-callback), [`marshalPublicKey`](#marshalpublickeykey-type-callback), and
+[`marshalPrivateKey`](#marshalprivatekeykey-type) functions accept a string `type` argument.
+
+Currently the `'RSA'` and `'ed25519'` types are supported, although ed25519 keys support only signing and
+verification of messages.  For encryption / decryption support, RSA keys should be used.
+
+Installing the [libp2p-crypto-secp256k1](https://github.com/libp2p/js-libp2p-crypto-secp256k1) module adds support for the
+`'secp256k1'` type, which supports ECDSA signatures using the secp256k1 elliptic curve popularized by Bitcoin.  This module
+is not installed by default, and should be explicitly depended on if your project requires secp256k1 support.
+
 ### `generateKeyPair(type, bits, callback)`
 
-- `type: String`, only `'RSA'` is currently supported
+- `type: String`, see [Supported Key Types](#supported-key-types) above.
 - `bits: Number` Minimum of 1024
 - `callback: Function`
 
@@ -160,8 +172,8 @@ Calls back with an object of the form
 
 ### `marshalPublicKey(key[, type], callback)`
 
-- `key: crypto.rsa.RsaPublicKey`
-- `type: String`, only `'RSA'` is currently supported
+- `key: keys.rsa.RsaPublicKey | keys.ed25519.Ed25519PublicKey | require('libp2p-crypto-secp256k1').Secp256k1PublicKey`
+- `type: String`, see [Supported Key Types](#supported-key-types) above.
 
 Converts a public key object into a protobuf serialized public key.
 
@@ -173,8 +185,8 @@ Converts a protobuf serialized public key into its  representative object.
 
 ### `marshalPrivateKey(key[, type])`
 
-- `key: crypto.rsa.RsaPrivateKey`
-- `type: String`, only `'RSA'` is currently supported
+- `key: keys.rsa.RsaPrivateKey | keys.ed25519.Ed25519PrivateKey | require('libp2p-crypto-secp256k1').Secp256k1PrivateKey`
+- `type: String`, see [Supported Key Types](#supported-key-types) above.
 
 Converts a private key object into a protobuf serialized private key.
 

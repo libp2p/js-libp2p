@@ -3,6 +3,7 @@
 module.exports = `enum KeyType {
   RSA = 0;
   Ed25519 = 1;
+  Secp256k1 = 2;
 }
 
 message PublicKey {

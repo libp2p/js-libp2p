@@ -23,9 +23,17 @@ describe('libp2p-crypto', () => {
     const key2 = crypto.unmarshalPublicKey(crypto.marshalPublicKey(key.public))
 
     expect(key2.equals(key.public)).to.be.eql(true)
+
+    expect(() => {
+      crypto.marshalPublicKey(key.public, 'invalid-key-type')
+    }).to.throw()
   })
 
   it('marshalPrivateKey and unmarshalPrivateKey', (done) => {
+    expect(() => {
+      crypto.marshalPrivateKey(key, 'invalid-key-type')
+    }).to.throw()
+
     crypto.unmarshalPrivateKey(crypto.marshalPrivateKey(key), (err, key2) => {
       if (err) {
         return done(err)
@@ -103,7 +111,7 @@ describe('libp2p-crypto', () => {
     it('throws with no number passed', () => {
       expect(() => {
         crypto.randomBytes()
-      }).to.throw
+      }).to.throw()
     })
 
     it('generates different random things', () => {

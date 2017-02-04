@@ -10,7 +10,10 @@ exports.aes = c.aes
 exports.webcrypto = c.webcrypto
 
 const keys = exports.keys = require('./keys')
-const KEY_TYPES = ['rsa', 'ed25519']
+function isValidKeyType (keyType) {
+  const key = keys[keyType.toLowerCase()]
+  return key !== undefined
+}
 
 exports.keyStretcher = require('./key-stretcher')
 exports.generateEphemeralKeyPair = require('./ephemeral-keys')
@@ -35,6 +38,12 @@ exports.unmarshalPublicKey = (buf) => {
       return keys.rsa.unmarshalRsaPublicKey(decoded.Data)
     case pbm.KeyType.Ed25519:
       return keys.ed25519.unmarshalEd25519PublicKey(decoded.Data)
+    case pbm.KeyType.Secp256k1:
+      if (keys.secp256k1) {
+        return keys.secp256k1.unmarshalSecp256k1PublicKey(decoded.Data)
+      } else {
+        throw new Error('secp256k1 support requires libp2p-crypto-secp256k1 package')
+      }
     default:
       throw new Error('invalid or unsupported key type')
   }
@@ -43,7 +52,7 @@ exports.unmarshalPublicKey = (buf) => {
 // Converts a public key object into a protobuf serialized public key
 exports.marshalPublicKey = (key, type) => {
   type = (type || 'rsa').toLowerCase()
-  if (KEY_TYPES.indexOf(type) < 0) {
+  if (!isValidKeyType(type)) {
     throw new Error('invalid or unsupported key type')
   }
 
@@ -60,6 +69,12 @@ exports.unmarshalPrivateKey = (buf, callback) => {
       return keys.rsa.unmarshalRsaPrivateKey(decoded.Data, callback)
     case pbm.KeyType.Ed25519:
       return keys.ed25519.unmarshalEd25519PrivateKey(decoded.Data, callback)
+    case pbm.KeyType.Secp256k1:
+      if (keys.secp256k1) {
+        return keys.secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data, callback)
+      } else {
+        return callback(new Error('secp256k1 support requires libp2p-crypto-secp256k1 package'))
+      }
     default:
       callback(new Error('invalid or unsupported key type'))
   }
@@ -68,7 +83,7 @@ exports.unmarshalPrivateKey = (buf, callback) => {
 // Converts a private key object into a protobuf serialized private key
 exports.marshalPrivateKey = (key, type) => {
   type = (type || 'rsa').toLowerCase()
-  if (KEY_TYPES.indexOf(type) < 0) {
+  if (!isValidKeyType(type)) {
     throw new Error('invalid or unsupported key type')
   }
 
