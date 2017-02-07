@@ -35,7 +35,7 @@
   "homepage": "https://github.com/diasdavid/js-libp2p",
   "devDependencies": {
     "chai": "^3.5.0",
-    "aegir": "^9.4.0",
+    "aegir": "^10.0.0",
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
