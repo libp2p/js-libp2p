@@ -5,6 +5,8 @@ const protobuf = require('protocol-buffers')
 const pbm = protobuf(require('./crypto.proto'))
 const c = require('./crypto')
 
+exports.protobuf = pbm
+
 exports.hmac = c.hmac
 exports.aes = c.aes
 exports.webcrypto = c.webcrypto
