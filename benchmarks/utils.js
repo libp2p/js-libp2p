@@ -2,8 +2,8 @@
 
 const Benchmark = require('benchmark')
 
-if (typeof window !== 'undefined') {
-  window.Benchmark = Benchmark
+if (typeof self !== 'undefined') {
+  self.Benchmark = Benchmark
 }
 
 const utils = require('../src/utils')
