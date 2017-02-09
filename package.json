@@ -55,11 +55,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-crypto-secp256k1",
   "contributors": [
-    "David Dias <daviddias.p@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "Greenkeeper <support@greenkeeper.io>",
-    "Richard Littauer <richard.littauer@gmail.com>",
-    "Yusef Napora <yusef@napora.org>",
-    "nikuda <nikuda@gmail.com>"
+    "Yusef Napora <yusef@napora.org>"
   ]
 }
