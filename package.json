@@ -1,0 +1,65 @@
+{
+  "name": "libp2p-crypto-secp256k1",
+  "version": "0.0.1",
+  "description": "Support for secp256k1 keys in libp2p-crypto",
+  "main": "src/index.js",
+  "browser": {
+    "secp256k1": "secp256k1/js"
+  },
+  "scripts": {
+    "lint": "aegir-lint",
+    "build": "aegir-build",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "aegir-test --env node",
+    "test:browser": "aegir-test --env browser",
+    "release": "aegir-release",
+    "release-minor": "aegir-release --type minor",
+    "release-major": "aegir-release --type major",
+    "coverage": "aegir-coverage",
+    "coverage-publish": "aegir-coverage publish"
+  },
+  "keywords": [
+    "IPFS",
+    "libp2p",
+    "crypto",
+    "secp256k1"
+  ],
+  "author": "Yusef Napora <yusef@napora.org>",
+  "license": "MIT",
+  "dependencies": {
+    "libp2p-crypto": "^0.8.0",
+    "multihashing-async": "^0.3.0",
+    "nodeify": "^1.0.0",
+    "safe-buffer": "^5.0.1",
+    "secp256k1": "^3.2.5"
+  },
+  "devDependencies": {
+    "aegir": "^9.2.1",
+    "benchmark": "^2.1.2",
+    "chai": "^3.5.0",
+    "pre-commit": "^1.1.3"
+  },
+  "pre-commit": [
+    "lint",
+    "test"
+  ],
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/libp2p/js-libp2p-crypto-secp256k1.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-crypto-secp256k1/issues"
+  },
+  "homepage": "https://github.com/libp2p/js-libp2p-crypto-secp256k1",
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Greenkeeper <support@greenkeeper.io>",
+    "Richard Littauer <richard.littauer@gmail.com>",
+    "Yusef Napora <yusef@napora.org>",
+    "nikuda <nikuda@gmail.com>"
+  ]
+}
