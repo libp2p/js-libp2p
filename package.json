@@ -42,10 +42,11 @@
   },
   "dependencies": {
     "interface-connection": "~0.3.0",
-    "mafmt": "^2.1.6",
-    "multiaddr": "^2.2.1",
     "ip-address": "^5.8.6",
     "lodash.includes": "^4.3.0",
+    "lodash.isfunction": "^3.0.8",
+    "mafmt": "^2.1.6",
+    "multiaddr": "^2.2.1",
     "stream-to-pull-stream": "^1.7.2"
   },
   "contributors": [
