@@ -52,10 +52,11 @@
     "pull-stream": "^3.5.0"
   },
   "contributors": [
+    "Chris Campbell <christopher.d.campbell@gmail.com>",
     "David Dias <daviddias.p@gmail.com>",
     "Francisco Baio Dias <xicombd@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "Richard Littauer <richard.littauer@gmail.com>",
-    "greenkeeperio-bot <support@greenkeeper.io>"
+    "Greenkeeper <support@greenkeeper.io>",
+    "Richard Littauer <richard.littauer@gmail.com>"
   ]
 }
