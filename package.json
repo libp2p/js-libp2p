@@ -32,20 +32,20 @@
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
   },
-  "homepage": "https://github.com/diasdavid/js-libp2p",
+  "homepage": "https://github.com/libp2p/js-libp2p",
   "devDependencies": {
     "chai": "^3.5.0",
-    "aegir": "^9.4.0",
+    "aegir": "^10.0.0",
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
-    "libp2p-ping": "^0.3.0",
-    "libp2p-swarm": "^0.26.13",
+    "libp2p-ping": "~0.3.0",
+    "libp2p-swarm": "~0.26.14",
     "mafmt": "^2.1.6",
-    "multiaddr": "^2.2.0",
-    "peer-book": "^0.3.0",
-    "peer-id": "^0.8.1",
-    "peer-info": "^0.8.2"
+    "multiaddr": "^2.2.1",
+    "peer-book": "~0.3.1",
+    "peer-id": "~0.8.2",
+    "peer-info": "~0.8.3"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
