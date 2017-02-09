@@ -18,7 +18,7 @@
     "test:node": "aegir-test --env node",
     "test:no-webcrypto": "NO_WEBCRYPTO=true aegir-test --env node",
     "test:browser": "aegir-test --env browser",
-    "release": "aegir-release --webworker",
+    "release": "aegir-release",
     "release-minor": "aegir-release --type minor",
     "release-major": "aegir-release --type major",
     "coverage": "aegir-coverage",
@@ -73,6 +73,7 @@
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Greenkeeper <support@greenkeeper.io>",
     "Richard Littauer <richard.littauer@gmail.com>",
     "Tom Swindell <t.swindell@rubyx.co.uk>",
     "Yusef Napora <yusef@napora.org>",
