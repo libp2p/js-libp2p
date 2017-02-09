@@ -33,11 +33,11 @@
   "author": "Friedel Ziegelmayer <dignifiedqurie@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "multihashing-async": "~0.4.2",
     "asn1.js": "^4.9.1",
     "async": "^2.1.4",
     "browserify-aes": "^1.0.6",
     "keypair": "^1.0.1",
-    "multihashing-async": "^0.4.0",
     "nodeify": "^1.0.0",
     "pem-jwk": "^1.5.1",
     "protocol-buffers": "^3.2.1",
@@ -53,23 +53,24 @@
     "pre-commit": "^1.2.2"
   },
   "optionalDependencies": {
-    "node-webcrypto-ossl": "^1.0.16"
+    "node-webcrypto-ossl": "^1.0.17"
   },
   "pre-commit": [
     "lint",
     "test"
   ],
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=4.0.0",
+    "npm": ">=3.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ipfs/js-libp2p-crypto.git"
+    "url": "https://github.com/libp2p/js-libp2p-crypto.git"
   },
   "bugs": {
-    "url": "https://github.com/ipfs/js-libp2p-crypto/issues"
+    "url": "https://github.com/libp2p/js-libp2p-crypto/issues"
   },
-  "homepage": "https://github.com/ipfs/js-libp2p-crypto",
+  "homepage": "https://github.com/libp2p/js-libp2p-crypto",
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
