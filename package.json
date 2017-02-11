@@ -33,11 +33,12 @@
   "author": "Friedel Ziegelmayer <dignifiedqurie@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "multihashing-async": "~0.4.2",
     "asn1.js": "^4.9.1",
     "async": "^2.1.4",
     "browserify-aes": "^1.0.6",
     "keypair": "^1.0.1",
+    "libp2p-crypto-secp256k1": "^0.1.3",
+    "multihashing-async": "~0.4.2",
     "nodeify": "^1.0.0",
     "pem-jwk": "^1.5.1",
     "protocol-buffers": "^3.2.1",
