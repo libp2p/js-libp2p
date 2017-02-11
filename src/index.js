@@ -9,6 +9,7 @@ const mafmt = require('mafmt')
 const EE = require('events').EventEmitter
 const assert = require('assert')
 const Ping = require('libp2p-ping')
+const setImmediate = require('async/setImmediate')
 
 exports = module.exports
 

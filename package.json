@@ -39,8 +39,8 @@
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
-    "libp2p-ping": "~0.3.0",
-    "libp2p-swarm": "~0.26.14",
+    "libp2p-ping": "~0.3.1",
+    "libp2p-swarm": "~0.26.16",
     "mafmt": "^2.1.6",
     "multiaddr": "^2.2.1",
     "peer-book": "~0.3.1",
