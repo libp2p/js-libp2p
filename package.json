@@ -27,6 +27,7 @@
   "author": "Yusef Napora <yusef@napora.org>",
   "license": "MIT",
   "dependencies": {
+    "async": "^2.1.4",
     "libp2p-crypto": "~0.8.4",
     "multihashing-async": "~0.4.2",
     "nodeify": "^1.0.0",
