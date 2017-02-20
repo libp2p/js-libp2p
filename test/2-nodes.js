@@ -243,6 +243,66 @@ describe('basics between 2 nodes', () => {
     })
   })
 
+  describe('nodes handle connection errors', () => {
+    let nodeA
+    let nodeB
+    let fsA
+    let fsB
+
+    before((done) => {
+      series([
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+      ], (cb, nodes) => {
+        nodeA = nodes[0]
+        nodeB = nodes[1]
+
+        fsA = new FloodSub(nodeA)
+        fsB = new FloodSub(nodeB)
+
+        parallel([
+          (cb) => fsA.start(cb),
+          (cb) => fsB.start(cb)
+        ], next)
+
+        function next () {
+          fsA.subscribe('Za')
+          fsB.subscribe('Zb')
+
+          expect(fsA.peers.size).to.equal(0)
+          expectSet(fsA.subscriptions, ['Za'])
+          expect(fsB.peers.size).to.equal(0)
+          expectSet(fsB.subscriptions, ['Zb'])
+          done()
+        }
+      })
+    })
+
+    after((done) => {
+      parallel([
+        (cb) => nodeA.stop(cb),
+        (cb) => nodeB.stop(cb)
+      ], done)
+    })
+
+    it('peer is removed from the state when connection ends', (done) => {
+      nodeA.dialByPeerInfo(nodeB.peerInfo, (err) => {
+        expect(err).to.not.exist
+        setTimeout(() => {
+          expect(fsA.peers.size).to.equal(1)
+          expect(fsB.peers.size).to.equal(1)
+
+          fsA.stop(() => {
+            setTimeout(() => {
+              expect(fsB.peers.size).to.equal(0)
+              done()
+            }, 250)
+          })
+        }, 250)
+      })
+    })
+  })
+
   describe('dial the pubsub protocol on mount', () => {
     let nodeA
     let nodeB

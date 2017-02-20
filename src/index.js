@@ -118,7 +118,7 @@ class FloodSub extends EventEmitter {
       pull.map((data) => pb.rpc.RPC.decode(data)),
       pull.drain(
         (rpc) => this._onRpc(idB58Str, rpc),
-        (err) => this._onConnectionEnd(err)
+        (err) => this._onConnectionEnd(idB58Str, err)
       )
     )
   }
