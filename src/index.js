@@ -1,6 +1,6 @@
 'use strict'
 
-const multiplex = require('multiplex')
+const Multiplex = require('multiplex')
 const toStream = require('pull-stream-to-stream')
 
 const MULTIPLEX_CODEC = require('./multiplex-codec')
@@ -16,10 +16,13 @@ function create (rawConn, isListener) {
   // but .destroy will trigger a 'close' event.
   stream.on('end', () => stream.destroy())
 
-  const mpx = multiplex()
+  const mpx = new Multiplex({
+    halfOpen: true,
+    initiator: !isListener
+  })
   pump(stream, mpx, stream)
 
-  return new Muxer(rawConn, mpx, isListener)
+  return new Muxer(rawConn, mpx)
 }
 
 exports = module.exports = create

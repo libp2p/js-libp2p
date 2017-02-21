@@ -9,15 +9,11 @@ const pullCatch = require('pull-catch')
 const MULTIPLEX_CODEC = require('./multiplex-codec')
 
 module.exports = class MultiplexMuxer extends EventEmitter {
-  constructor (conn, multiplex, isListener) {
+  constructor (conn, multiplex) {
     super()
-
-    this._id = (isListener ? 0 : -1)
-
     this.multiplex = multiplex
     this.conn = conn
     this.multicodec = MULTIPLEX_CODEC
-    this.isListener = isListener
 
     multiplex.on('close', () => this.emit('close'))
     multiplex.on('error', (err) => this.emit('error', err))
@@ -34,9 +30,7 @@ module.exports = class MultiplexMuxer extends EventEmitter {
   // method added to enable pure stream muxer feeling
   newStream (callback) {
     callback = callback || noop
-    this._id = this._id + 2
-
-    const stream = this.multiplex.createStream(this._id)
+    let stream = this.multiplex.createStream()
 
     const conn = new Connection(
       catchError(toPull.duplex(stream)),
