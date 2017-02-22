@@ -44,7 +44,7 @@
     "protocol-buffers": "^3.2.1",
     "rsa-pem-to-jwk": "^1.1.3",
     "safe-buffer": "^5.0.1",
-    "tweetnacl": "^0.14.5",
+    "tweetnacl": "^1.0.0-rc.1",
     "webcrypto-shim": "github:dignifiedquire/webcrypto-shim#master"
   },
   "devDependencies": {
