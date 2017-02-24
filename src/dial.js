@@ -132,44 +132,45 @@ module.exports = function dial (swarm) {
       //  - add the muxedConn to the list of muxedConns
       //  - add incomming new streams to connHandler
 
-      nextMuxer(muxers.shift())
+      const ms = new multistream.Dialer()
+      ms.handle(conn, (err) => {
+        if (err) {
+          return callback(new Error('multistream not supported'))
+        }
+
+        nextMuxer(muxers.shift())
+      })
 
       function nextMuxer (key) {
-        const ms = new multistream.Dialer()
-        ms.handle(conn, (err) => {
+        log('selecting %s', key)
+        ms.select(key, (err, conn) => {
           if (err) {
-            return callback(new Error('multistream not supported'))
-          }
-          log('selecting %s', key)
-          ms.select(key, (err, conn) => {
-            if (err) {
-              if (muxers.length === 0) {
-                cb(new Error('could not upgrade to stream muxing'))
-              } else {
-                nextMuxer(muxers.shift())
-              }
-              return
+            if (muxers.length === 0) {
+              cb(new Error('could not upgrade to stream muxing'))
+            } else {
+              nextMuxer(muxers.shift())
             }
+            return
+          }
 
-            const muxedConn = swarm.muxers[key].dialer(conn)
-            swarm.muxedConns[b58Id] = {}
-            swarm.muxedConns[b58Id].muxer = muxedConn
-            // should not be needed anymore - swarm.muxedConns[b58Id].conn = conn
+          const muxedConn = swarm.muxers[key].dialer(conn)
+          swarm.muxedConns[b58Id] = {}
+          swarm.muxedConns[b58Id].muxer = muxedConn
+          // should not be needed anymore - swarm.muxedConns[b58Id].conn = conn
 
-            swarm.emit('peer-mux-established', pi)
+          swarm.emit('peer-mux-established', pi)
 
-            muxedConn.once('close', () => {
-              delete swarm.muxedConns[pi.id.toB58String()]
-              swarm.emit('peer-mux-closed', pi)
-            })
-
-            // For incoming streams, in case identify is on
-            muxedConn.on('stream', (conn) => {
-              protocolMuxer(swarm.protocols, conn)
-            })
-
-            cb(null, muxedConn)
+          muxedConn.once('close', () => {
+            delete swarm.muxedConns[pi.id.toB58String()]
+            swarm.emit('peer-mux-closed', pi)
           })
+
+          // For incoming streams, in case identify is on
+          muxedConn.on('stream', (conn) => {
+            protocolMuxer(swarm.protocols, conn)
+          })
+
+          cb(null, muxedConn)
         })
       }
     }
