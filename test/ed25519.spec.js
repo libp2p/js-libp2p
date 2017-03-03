@@ -35,6 +35,70 @@ describe('ed25519', () => {
     })
   })
 
+  it('generates a valid key from seed', (done) => {
+    var seed = crypto.randomBytes(32)
+    crypto.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey) => {
+      if (err) return done(err)
+      expect(
+        seededkey
+      ).to.be.an.instanceof(
+        ed25519.Ed25519PrivateKey
+      )
+
+      seededkey.hash((err, digest) => {
+        if (err) {
+          return done(err)
+        }
+
+        expect(digest).to.have.length(34)
+        done()
+      })
+    })
+  })
+
+  it('generates the same key from the same seed', (done) => {
+    var seed = crypto.randomBytes(32)
+    crypto.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey1) => {
+      if (err) return done(err)
+      crypto.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey2) => {
+        if (err) return done(err)
+        expect(
+          seededkey1.equals(seededkey2)
+        ).to.be.eql(
+          true
+        )
+        expect(
+          seededkey1.public.equals(seededkey2.public)
+        ).to.be.eql(
+          true
+        )
+        done()
+      })
+    })
+  })
+
+  it('generates different keys for different seeds', (done) => {
+    var seed1 = crypto.randomBytes(32)
+    crypto.generateKeyPairFromSeed('Ed25519', seed1, 512, (err, seededkey1) => {
+      if (err) return done(err)
+      var seed2 = crypto.randomBytes(32)
+      crypto.generateKeyPairFromSeed('Ed25519', seed2, 512, (err, seededkey2) => {
+        if (err) return done(err)
+        expect(
+          seededkey1.equals(seededkey2)
+        ).to.be.eql(
+          false
+        )
+        expect(
+          seededkey1.public.equals(seededkey2.public)
+        ).to.be.eql(
+          false
+        )
+        done()
+      })
+    })
+  })
+
   it('signs', (done) => {
     const text = crypto.randomBytes(512)
 

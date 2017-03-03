@@ -117,6 +117,27 @@ function generateKeyPair (_bits, cb) {
   })
 }
 
+function generateKeyPairFromSeed (seed, _bits, cb) {
+  if (cb === undefined && typeof _bits === 'function') {
+    cb = _bits
+  }
+
+  crypto.generateKeyFromSeed(seed, (err, keys) => {
+    if (err) {
+      return cb(err)
+    }
+    let privkey
+    try {
+      privkey = new Ed25519PrivateKey(keys.secretKey, keys.publicKey)
+    } catch (err) {
+      cb(err)
+      return
+    }
+
+    cb(null, privkey)
+  })
+}
+
 function ensure (cb) {
   if (typeof cb !== 'function') {
     throw new Error('callback is required')
@@ -138,5 +159,6 @@ module.exports = {
   Ed25519PrivateKey,
   unmarshalEd25519PrivateKey,
   unmarshalEd25519PublicKey,
-  generateKeyPair
+  generateKeyPair,
+  generateKeyPairFromSeed
 }

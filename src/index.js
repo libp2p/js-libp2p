@@ -30,6 +30,19 @@ exports.generateKeyPair = (type, bits, cb) => {
   key.generateKeyPair(bits, cb)
 }
 
+// Generates a keypair of the given type and bitsize
+// seed is a 32 byte uint8array
+exports.generateKeyPairFromSeed = (type, seed, bits, cb) => {
+  let key = keys[type.toLowerCase()]
+  if (!key) {
+    return cb(new Error('invalid or unsupported key type'))
+  }
+  if (type.toLowerCase() !== 'ed25519') {
+    return cb(new Error('Seed key derivation is unimplemented for RSA or secp256k1'))
+  }
+  key.generateKeyPairFromSeed(seed, bits, cb)
+}
+
 // Converts a protobuf serialized public key into its
 // representative object
 exports.unmarshalPublicKey = (buf) => {
