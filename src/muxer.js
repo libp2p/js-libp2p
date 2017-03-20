@@ -5,6 +5,7 @@ const Connection = require('interface-connection').Connection
 const toPull = require('stream-to-pull-stream')
 const pull = require('pull-stream')
 const pullCatch = require('pull-catch')
+const setImmediate = require('async/setImmediate')
 
 const MULTIPLEX_CODEC = require('./multiplex-codec')
 
