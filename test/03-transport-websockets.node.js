@@ -1,8 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
-
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
 const WebSockets = require('libp2p-websockets')
@@ -70,13 +72,13 @@ describe('transport - websockets', function () {
 
   it('dial', (done) => {
     const conn = swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/ws'), (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
     })
 
     const s = goodbye({
       source: pull.values([Buffer('hey')]),
       sink: pull.collect((err, data) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(data).to.be.eql([Buffer('hey')])
         done()
       })
@@ -86,12 +88,12 @@ describe('transport - websockets', function () {
 
   it('dial (conn from callback)', (done) => {
     swarmA.transport.dial('ws', multiaddr('/ip4/127.0.0.1/tcp/9999/ws'), (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
 
       const s = goodbye({
         source: pull.values([Buffer('hey')]),
         sink: pull.collect((err, data) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           expect(data).to.be.eql([Buffer('hey')])
           done()
         })

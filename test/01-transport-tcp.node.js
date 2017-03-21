@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
@@ -84,7 +87,7 @@ describe('transport - tcp', function () {
 
   it('dial to a multiaddr', (done) => {
     const conn = swarmA.transport.dial('tcp', multiaddr('/ip4/127.0.0.1/tcp/9999'), (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
     })
 
     pull(
@@ -101,7 +104,7 @@ describe('transport - tcp', function () {
       multiaddr('/ip4/127.0.0.1/tcp/9999'),
       multiaddr('/ip4/127.0.0.1/tcp/9309')
     ], (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
     })
 
     pull(
@@ -204,7 +207,7 @@ describe('transport - tcp', function () {
     })
 
     function ready (err) {
-      expect(err).to.exist
+      expect(err).to.exist()
       expect(err.code).to.equal('EADDRINUSE')
       swarm1.close(() => swarm2.close(done))
     }

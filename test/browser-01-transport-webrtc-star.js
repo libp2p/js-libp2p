@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const multiaddr = require('multiaddr')
 const peerId = require('peer-id')
 const PeerInfo = require('peer-info')
@@ -61,25 +64,25 @@ describe('transport - webrtc-star', () => {
 
   it('dial', (done) => {
     swarm1.transport.dial('wstar', peer2.multiaddrs[0], (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
 
       const text = 'Hello World'
       pull(
         pull.values([text]),
         conn,
         pull.collect((err, data) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           expect(data.toString()).to.equal(text)
           done()
         })
       )
     })
   })
-  it('dial offline / non-existent node', (done) => {
+  it('dial offline / non-exist()ent node', (done) => {
     const mhOffline = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/ABCD')
     swarm1.transport.dial('wstar', mhOffline, (err, conn) => {
-      expect(err).to.exist
-      expect(conn).to.not.exist
+      expect(err).to.exist()
+      expect(conn).to.not.exist()
       done()
     })
   })

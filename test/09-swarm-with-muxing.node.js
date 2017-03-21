@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 
 const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
@@ -129,7 +132,7 @@ describe('high level API - with everything mixed all together!', () => {
         cb()
       }),
       (cb) => swarmA.dial(peerB, (err) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
         cb()
       })
@@ -138,7 +141,7 @@ describe('high level API - with everything mixed all together!', () => {
 
   it('warm up a warmed up, from B to A', (done) => {
     swarmB.dial(peerA, (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
       done()
     })
@@ -150,7 +153,7 @@ describe('high level API - with everything mixed all together!', () => {
     })
 
     swarmA.dial(peerB, '/anona/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
       pull(
         pull.empty(),
@@ -162,7 +165,7 @@ describe('high level API - with everything mixed all together!', () => {
 
   it('dial from ws to ws no proto', (done) => {
     swarmD.dial(peerE, (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmD.muxedConns).length).to.equal(1)
       done()
     })
@@ -174,14 +177,14 @@ describe('high level API - with everything mixed all together!', () => {
     })
 
     swarmD.dial(peerE, '/abacaxi/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmD.muxedConns).length).to.equal(1)
 
       pull(
         pull.empty(),
         conn,
         pull.onEnd((err) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           setTimeout(() => {
             expect(Object.keys(swarmE.muxedConns).length).to.equal(1)
             done()
@@ -197,7 +200,7 @@ describe('high level API - with everything mixed all together!', () => {
     })
 
     const conn = swarmA.dial(peerB, '/grapes/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
     })
 
@@ -221,18 +224,18 @@ describe('high level API - with everything mixed all together!', () => {
     }
     swarmC.handle('/mamao/1.0.0', (protocol, conn) => {
       conn.getPeerInfo((err, peerInfo) => {
-        expect(err).to.not.exist
-        expect(peerInfo).to.exist
+        expect(err).to.not.exist()
+        expect(peerInfo).to.exist()
         check()
       })
       pull(conn, conn)
     })
 
     swarmA.dial(peerC, '/mamao/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       conn.getPeerInfo((err, peerInfo) => {
-        expect(err).to.not.exist
-        expect(peerInfo).to.exist
+        expect(err).to.not.exist()
+        expect(peerInfo).to.exist()
         check()
       })
       expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
@@ -260,7 +263,7 @@ describe('high level API - with everything mixed all together!', () => {
     })
 
     swarmA.hangUp(peerB, (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       ready()
     })
   })

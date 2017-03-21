@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 
 const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
@@ -71,7 +74,7 @@ describe('stream muxing with multiplex (on TCP)', () => {
     })
 
     swarmA.dial(peerB, '/abacaxi/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
       pull(
         pull.empty(),
@@ -83,7 +86,7 @@ describe('stream muxing with multiplex (on TCP)', () => {
 
   it('dial to warm conn', (done) => {
     swarmB.dial(peerA, (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
       done()
@@ -96,7 +99,7 @@ describe('stream muxing with multiplex (on TCP)', () => {
     })
 
     swarmB.dial(peerA, '/papaia/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
       pull(
@@ -112,7 +115,7 @@ describe('stream muxing with multiplex (on TCP)', () => {
     swarmC.connection.reuse()
 
     swarmC.dial(peerA, (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       setTimeout(() => {
         expect(Object.keys(swarmC.muxedConns).length).to.equal(1)
         expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
@@ -123,7 +126,7 @@ describe('stream muxing with multiplex (on TCP)', () => {
 
   it('closing one side cleans out in the other', (done) => {
     swarmC.close((err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       setTimeout(() => {
         expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
         done()

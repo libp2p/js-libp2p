@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 
 const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
@@ -79,7 +82,7 @@ describe('secio conn upgrade (on TCP)', () => {
     })
 
     swarmA.dial(peerB, '/abacaxi/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
       pull(pull.empty(), conn, pull.onEnd(done))
     })
@@ -87,7 +90,7 @@ describe('secio conn upgrade (on TCP)', () => {
 
   it('dial to warm conn', (done) => {
     swarmB.dial(peerA, (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
       done()
@@ -100,7 +103,7 @@ describe('secio conn upgrade (on TCP)', () => {
     })
 
     swarmB.dial(peerA, '/papaia/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
       pull(pull.empty(), conn, pull.onEnd(done))
@@ -112,7 +115,7 @@ describe('secio conn upgrade (on TCP)', () => {
     swarmC.connection.reuse()
 
     swarmC.dial(peerA, (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       setTimeout(() => {
         expect(Object.keys(swarmC.muxedConns).length).to.equal(1)
         expect(Object.keys(swarmA.muxedConns).length).to.equal(2)

@@ -1,7 +1,11 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
+
 const multiaddr = require('multiaddr')
 const Id = require('peer-id')
 const Peer = require('peer-info')
@@ -32,14 +36,14 @@ describe('transport - websockets', () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9100/ws')
 
     const conn = swarm.transport.dial('ws', ma, (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
     })
 
     pull(
       pull.values([Buffer('hey')]),
       conn,
       pull.collect((err, data) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(data.toString()).to.equal('hey')
         done()
       })

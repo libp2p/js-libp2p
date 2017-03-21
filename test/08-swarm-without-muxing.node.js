@@ -1,7 +1,11 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
+
 const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
 const TCP = require('libp2p-tcp')
@@ -62,7 +66,7 @@ describe('high level API - 1st without stream multiplexing (on TCP)', () => {
     })
 
     swarmA.dial(peerB, '/pineapple/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       pull(pull.empty(), conn, pull.onEnd(done))
     })
   })
@@ -73,21 +77,21 @@ describe('high level API - 1st without stream multiplexing (on TCP)', () => {
     })
 
     const conn = swarmA.dial(peerB, '/apples/1.0.0', (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
     })
     pull(pull.empty(), conn, pull.onEnd(done))
   })
 
   it('dial to warm a conn', (done) => {
     swarmA.dial(peerB, (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       done()
     })
   })
 
   it('dial on protocol, reuse warmed conn', (done) => {
     swarmA.dial(peerB, '/bananas/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       pull(pull.empty(), conn, pull.onEnd(done))
     })
   })
@@ -95,6 +99,6 @@ describe('high level API - 1st without stream multiplexing (on TCP)', () => {
   it('unhandle', () => {
     const proto = '/bananas/1.0.0'
     swarmA.unhandle(proto)
-    expect(swarmA.protocols[proto]).to.not.exist
+    expect(swarmA.protocols[proto]).to.not.exist()
   })
 })

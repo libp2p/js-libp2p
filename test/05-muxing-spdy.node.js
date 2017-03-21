@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 
 const parallel = require('async/parallel')
 const multiaddr = require('multiaddr')
@@ -85,7 +88,7 @@ describe('stream muxing with spdy (on TCP)', () => {
     })
 
     swarmA.dial(peerB, '/abacaxi/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
       pull(pull.empty(), conn, pull.onEnd(done))
     })
@@ -93,7 +96,7 @@ describe('stream muxing with spdy (on TCP)', () => {
 
   it('dial to warm conn', (done) => {
     swarmB.dial(peerA, (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
       done()
@@ -106,7 +109,7 @@ describe('stream muxing with spdy (on TCP)', () => {
     })
 
     swarmB.dial(peerA, '/papaia/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
       pull(pull.empty(), conn, pull.onEnd(done))
@@ -118,7 +121,7 @@ describe('stream muxing with spdy (on TCP)', () => {
     swarmC.connection.reuse()
 
     swarmC.dial(peerA, (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       setTimeout(() => {
         expect(Object.keys(swarmC.muxedConns).length).to.equal(1)
         expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
@@ -130,7 +133,7 @@ describe('stream muxing with spdy (on TCP)', () => {
   it('with Identify, do getPeerInfo', (done) => {
     swarmA.handle('/banana/1.0.0', (protocol, conn) => {
       conn.getPeerInfo((err, peerInfoC) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(peerInfoC.id.toB58String()).to.equal(peerC.id.toB58String())
       })
 
@@ -138,12 +141,12 @@ describe('stream muxing with spdy (on TCP)', () => {
     })
 
     swarmC.dial(peerA, '/banana/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       setTimeout(() => {
         expect(Object.keys(swarmC.muxedConns).length).to.equal(1)
         expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
         conn.getPeerInfo((err, peerInfoA) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           expect(peerInfoA.id.toB58String()).to.equal(peerA.id.toB58String())
           pull(pull.empty(), conn, pull.onEnd(done))
         })
@@ -168,7 +171,7 @@ describe('stream muxing with spdy (on TCP)', () => {
     })
 
     swarmA.dial(peerD, '/banana/1.0.0', (err, conn) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
 
       pull(
         pull.empty(),
@@ -221,7 +224,7 @@ describe('stream muxing with spdy (on TCP)', () => {
       })
 
       swarmF.dial(peerE, '/avocado/1.0.0', (err, conn) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         pull(conn, pull.onEnd(destroyed))
         pull(
           pull.empty(),
