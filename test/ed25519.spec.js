@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../src')
@@ -231,7 +234,7 @@ describe('ed25519', () => {
     let privateKey
     before((done) => {
       crypto.unmarshalPrivateKey(fixtures.verify.privateKey, (err, key) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         privateKey = key
         done()
       })
@@ -242,7 +245,7 @@ describe('ed25519', () => {
 
       key.verify(fixtures.verify.data, fixtures.verify.signature, (err, ok) => {
         if (err) throw err
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(ok).to.be.eql(true)
         done()
       })
@@ -250,7 +253,7 @@ describe('ed25519', () => {
 
     it('generates the same signature as go', (done) => {
       privateKey.sign(fixtures.verify.data, (err, sig) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(sig).to.deep.equal(fixtures.verify.signature)
         done()
       })

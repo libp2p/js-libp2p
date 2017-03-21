@@ -2,7 +2,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const parallel = require('async/parallel')
 
 const fixtures = require('./fixtures/go-elliptic-key')
@@ -27,12 +30,12 @@ describe('generateEphemeralKeyPair', () => {
         (cb) => crypto.generateEphemeralKeyPair(curve, cb),
         (cb) => crypto.generateEphemeralKeyPair(curve, cb)
       ], (err, keys) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(keys[0].key).to.have.length(lengths[curve])
         expect(keys[1].key).to.have.length(lengths[curve])
 
         keys[0].genSharedKey(keys[1].key, (err, shared) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           expect(shared).to.have.length(secretLengths[curve])
           done()
         })
@@ -48,7 +51,7 @@ describe('generateEphemeralKeyPair', () => {
         (cb) => crypto.generateEphemeralKeyPair(curve, cb),
         (cb) => crypto.generateEphemeralKeyPair(curve, cb)
       ], (err, res) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         const alice = res[0]
         const bob = res[1]
         bob.key = fixtures.bob.public
@@ -57,7 +60,7 @@ describe('generateEphemeralKeyPair', () => {
           (cb) => alice.genSharedKey(bob.key, cb),
           (cb) => bob.genSharedKey(alice.key, fixtures.bob, cb)
         ], (err, secrets) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
 
           expect(
             secrets[0]

@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../src')
@@ -169,8 +172,8 @@ describe('RSA', () => {
 
       key.verify(fixtures.verify.data, fixtures.verify.signature, (err, ok) => {
         if (err) throw err
-        expect(err).to.not.exist
-        expect(ok).to.be.eql(true)
+        expect(err).to.not.exist()
+        expect(ok).to.equal(true)
         done()
       })
     })

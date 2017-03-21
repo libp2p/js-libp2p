@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const fixtures = require('./fixtures/secp256k1')
 const crypto = require('../src')
 
@@ -48,7 +51,7 @@ describe('with libp2p-crypto-secp256k1 module present', () => {
   it('generates a valid key', (done) => {
     expect(
       key
-    ).to.exist
+    ).to.exist()
     done()
   })
 
@@ -82,16 +85,16 @@ describe('with libp2p-crypto-secp256k1 module present', () => {
 describe('without libp2p-crypto-secp256k1 module present', () => {
   it('fails to generate a secp256k1 key', (done) => {
     crypto.generateKeyPair('secp256k1', 256, (err, key) => {
-      expect(err).to.exist
-      expect(key).to.not.exist
+      expect(err).to.exist()
+      expect(key).to.not.exist()
       done()
     })
   })
 
   it('fails to unmarshal a secp256k1 private key', (done) => {
     crypto.unmarshalPrivateKey(fixtures.pbmPrivateKey, (err, key) => {
-      expect(err).to.exist
-      expect(key).to.not.exist
+      expect(err).to.exist()
+      expect(key).to.not.exist()
       done()
     })
   })

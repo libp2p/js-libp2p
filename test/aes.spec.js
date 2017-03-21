@@ -2,7 +2,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const series = require('async/series')
 const Buffer = require('safe-buffer').Buffer
 
@@ -25,7 +28,7 @@ describe('AES-CTR', () => {
       iv.fill(1)
 
       crypto.aes.create(key, iv, (err, cipher) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
 
         series([
           encryptAndDecrypt(cipher),
@@ -46,17 +49,17 @@ describe('AES-CTR', () => {
       iv.fill(1)
 
       crypto.aes.create(key, iv, (err, cipher) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
 
         series(fixtures[byte].inputs.map((rawIn, i) => (cb) => {
           const input = Buffer.from(rawIn)
           const output = Buffer.from(fixtures[byte].outputs[i])
           cipher.encrypt(input, (err, res) => {
-            expect(err).to.not.exist
+            expect(err).to.not.exist()
             expect(res).to.have.length(output.length)
             expect(res).to.be.eql(output)
             cipher.decrypt(res, (err, res) => {
-              expect(err).to.not.exist
+              expect(err).to.not.exist()
               expect(res).to.be.eql(input)
               cb()
             })
@@ -79,17 +82,17 @@ describe('AES-CTR', () => {
       iv.fill(1)
 
       crypto.aes.create(key, iv, (err, cipher) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
 
         series(goFixtures[byte].inputs.map((rawIn, i) => (cb) => {
           const input = Buffer.from(rawIn)
           const output = Buffer.from(goFixtures[byte].outputs[i])
           cipher.encrypt(input, (err, res) => {
-            expect(err).to.not.exist
+            expect(err).to.not.exist()
             expect(res).to.have.length(output.length)
             expect(res).to.be.eql(output)
             cipher.decrypt(res, (err, res) => {
-              expect(err).to.not.exist
+              expect(err).to.not.exist()
               expect(res).to.be.eql(input)
               cb()
             })
@@ -105,9 +108,9 @@ function encryptAndDecrypt (cipher) {
   data.fill(Math.ceil(Math.random() * 100))
   return (cb) => {
     cipher.encrypt(data, (err, res) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       cipher.decrypt(res, (err, res) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(res).to.be.eql(data)
         cb()
       })
