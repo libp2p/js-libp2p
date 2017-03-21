@@ -140,7 +140,6 @@ module.exports = {
             ttl: 120,
             data: ma.toString().split('/')[2]
           })
-          return
         }
       })
 
