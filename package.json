@@ -36,17 +36,18 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",
   "dependencies": {
-    "interface-connection": "~0.3.0",
+    "interface-connection": "~0.3.2",
     "lodash.includes": "^4.3.0",
     "mafmt": "^2.1.6",
     "pull-ws": "^3.2.8"
   },
   "devDependencies": {
-    "aegir": "^10.0.0",
+    "aegir": "^11.0.0",
     "chai": "^3.5.0",
+    "dirty-chai": "^1.2.2",
     "gulp": "^3.9.1",
-    "interface-transport": "~0.3.3",
-    "multiaddr": "^2.2.1",
+    "interface-transport": "~0.3.5",
+    "multiaddr": "^2.2.2",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.1",
     "pull-stream": "^3.5.0"

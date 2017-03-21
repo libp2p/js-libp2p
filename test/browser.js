@@ -1,7 +1,11 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
+
 const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
 const goodbye = require('pull-goodbye')
@@ -15,7 +19,7 @@ describe('libp2p-websockets', () => {
 
   beforeEach((done) => {
     ws = new WS()
-    expect(ws).to.exist
+    expect(ws).to.exist()
     conn = ws.dial(ma, done)
   })
 
@@ -25,7 +29,7 @@ describe('libp2p-websockets', () => {
     const s = goodbye({
       source: pull.values([message]),
       sink: pull.collect((err, results) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(results).to.be.eql([message])
         done()
       })
@@ -41,7 +45,7 @@ describe('libp2p-websockets', () => {
       const s = goodbye({
         source: pull.values([rawMessage]),
         sink: pull.collect((err, results) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           expect(results).to.be.eql([rawMessage])
           done()
         })
@@ -57,7 +61,7 @@ describe('libp2p-websockets', () => {
           pull.map((val) => Buffer(val.toString()))
         ),
         sink: pull.collect((err, result) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           expect(result).to.have.length(1000)
           done()
         })
