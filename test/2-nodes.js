@@ -2,7 +2,9 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+chai.use(require('dirty-chai'))
+const expect = chai.expect
 const parallel = require('async/parallel')
 const series = require('async/series')
 const _times = require('lodash.times')
@@ -126,7 +128,7 @@ describe('basics between 2 nodes', () => {
       function receivedMsg (msg) {
         expect(msg.data.toString()).to.equal('banana')
         expect(msg.from).to.be.eql(fsB.libp2p.peerInfo.id.toB58String())
-        expect(Buffer.isBuffer(msg.seqno)).to.be.true
+        expect(Buffer.isBuffer(msg.seqno)).to.be.true()
         expect(msg.topicCIDs).to.be.eql(['Z'])
 
         if (++counter === 10) {
@@ -217,7 +219,7 @@ describe('basics between 2 nodes', () => {
 
     it('existing subscriptions are sent upon peer connection', (done) => {
       nodeA.dialByPeerInfo(nodeB.peerInfo, (err) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         setTimeout(() => {
           expect(fsA.peers.size).to.equal(1)
           expect(fsB.peers.size).to.equal(1)
@@ -287,7 +289,7 @@ describe('basics between 2 nodes', () => {
 
     it('peer is removed from the state when connection ends', (done) => {
       nodeA.dialByPeerInfo(nodeB.peerInfo, (err) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         setTimeout(() => {
           expect(fsA.peers.size).to.equal(1)
           expect(fsB.peers.size).to.equal(1)

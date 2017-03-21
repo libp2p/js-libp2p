@@ -2,7 +2,9 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+chai.use(require('dirty-chai'))
+const expect = chai.expect
 const parallel = require('async/parallel')
 
 const FloodSub = require('../src')
@@ -59,7 +61,7 @@ describe('multiple nodes (more than 2)', () => {
             b.libp2p.dialByPeerInfo(c.libp2p.peerInfo, cb)
           }
         ], (err) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           // wait for the pubsub pipes to be established
           setTimeout(done, 200)
         })
@@ -237,7 +239,7 @@ describe('multiple nodes (more than 2)', () => {
             d.libp2p.dialByPeerInfo(e.libp2p.peerInfo, cb)
           }
         ], (err) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           // wait for the pubsub pipes to be established
           setTimeout(done, 2000)
         })

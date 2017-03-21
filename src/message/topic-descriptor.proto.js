@@ -20,7 +20,7 @@ message TopicDescriptor {
   message EncOpts {
     optional EncMode mode = 1;
     repeated bytes keyHashes = 2; // the hashes of the shared keys used (salted)
-  
+
     enum EncMode {
       NONE = 0; // no encryption, anyone can read
       SHAREDKEY = 1; // messages are encrypted with shared key
@@ -28,4 +28,3 @@ message TopicDescriptor {
     }
   }
 }`
-
