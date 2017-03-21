@@ -2,7 +2,10 @@
 'use strict'
 
 const pull = require('pull-stream')
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const pair = require('pull-pair/duplex')
 const PeerInfo = require('peer-info')
 const lp = require('pull-length-prefixed')
@@ -42,12 +45,9 @@ describe('identify.dialer', () => {
     )
 
     identify.dialer(p[1], (err, info, observedAddrs) => {
-      expect(err).to.not.exist
-      expect(
-        info.id.pubKey.bytes
-      ).to.be.eql(
-        original.id.pubKey.bytes
-      )
+      expect(err).to.not.exist()
+      expect(info.id.pubKey.bytes)
+        .to.eql(original.id.pubKey.bytes)
 
       expect(
         info.multiaddrs

@@ -2,7 +2,10 @@
 'use strict'
 
 const pull = require('pull-stream')
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const pair = require('pull-pair/duplex')
 const PeerInfo = require('peer-info')
 const lp = require('pull-length-prefixed')
@@ -31,7 +34,7 @@ describe('identify.listener', () => {
       p[1],
       lp.decode(),
       pull.collect((err, result) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
 
         const input = msg.decode(result[0])
         expect(
