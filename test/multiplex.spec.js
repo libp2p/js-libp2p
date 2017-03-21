@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const pair = require('pull-pair/duplex')
 const pull = require('pull-stream')
 
@@ -22,12 +25,12 @@ describe('multiplex-generic', () => {
 
   it('attach to a duplex stream, as listener', () => {
     listener = multiplex.listener(listenerSocket)
-    expect(listener).to.exist
+    expect(listener).to.exist()
   })
 
   it('attach to a duplex stream, as dialer', () => {
     dialer = multiplex.dialer(dialerSocket)
-    expect(dialer).to.exist
+    expect(dialer).to.exist()
   })
 
   it('open a multiplex stream from client', (done) => {
@@ -41,7 +44,7 @@ describe('multiplex-generic', () => {
       pull.values(['hello']),
       conn,
       pull.collect((err, res) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(res).to.eql([new Buffer('hello')])
         done()
       })
@@ -58,7 +61,7 @@ describe('multiplex-generic', () => {
       pull.values([new Buffer('hello')]),
       conn,
       pull.collect((err, res) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(res).to.eql([new Buffer('hello')])
         done()
       })

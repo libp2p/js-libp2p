@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const WSlibp2p = require('libp2p-websockets')
 const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
@@ -24,7 +27,7 @@ describe('browser-server', () => {
       pull(
         conn,
         pull.collect((err, chunks) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           expect(chunks).to.be.eql([new Buffer('hey')])
           pull(pull.empty(), conn)
         })
