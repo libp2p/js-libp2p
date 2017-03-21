@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const PeerInfo = require('peer-info')
 const Swarm = require('libp2p-swarm')
 const TCP = require('libp2p-tcp')
@@ -21,7 +24,7 @@ describe('libp2p ping', () => {
     series([
       (cb) => {
         PeerInfo.create((err, peerInfo) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           peerA = peerInfo
           peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
           cb()
@@ -29,7 +32,7 @@ describe('libp2p ping', () => {
       },
       (cb) => {
         PeerInfo.create((err, peerInfo) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           peerB = peerInfo
           peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
           cb()
@@ -63,7 +66,7 @@ describe('libp2p ping', () => {
     const p = new Ping(swarmA, peerB)
 
     p.on('error', (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
     })
 
     p.on('ping', (time) => {
@@ -77,7 +80,7 @@ describe('libp2p ping', () => {
     const p = new Ping(swarmB, peerA)
 
     p.on('error', (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
     })
 
     let counter = 0
@@ -95,7 +98,7 @@ describe('libp2p ping', () => {
     const p = new Ping(swarmA, peerA)
 
     p.on('error', (err) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
     })
 
     p.on('ping', (time) => {

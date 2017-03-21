@@ -8,11 +8,11 @@
     "test"
   ],
   "scripts": {
-    "test": "aegir-test",
+    "test": "aegir-test --env node",
     "lint": "aegir-lint",
-    "release": "aegir-release",
-    "release-minor": "aegir-release --type minor",
-    "release-major": "aegir-release --type major",
+    "release": "aegir-release --env node",
+    "release-minor": "aegir-release --type minor --env node",
+    "release-major": "aegir-release --type major --env node",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
@@ -30,21 +30,22 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-ping",
   "devDependencies": {
-    "aegir": "^10.0.0",
-    "async": "^2.1.4",
+    "aegir": "^11.0.0",
+    "async": "^2.1.5",
     "chai": "^3.5.0",
-    "debug": "^2.6.0",
+    "debug": "^2.6.3",
+    "dirty-chai": "^1.2.2",
     "gulp": "^3.9.1",
-    "libp2p-swarm": "~0.26.14",
-    "libp2p-tcp": "~0.9.3",
-    "multiaddr": "^2.2.1",
-    "peer-id": "~0.8.2",
-    "peer-info": "~0.8.3",
+    "libp2p-swarm": "~0.26.19",
+    "libp2p-tcp": "~0.9.4",
+    "multiaddr": "^2.2.2",
+    "peer-id": "~0.8.4",
+    "peer-info": "~0.8.4",
     "pre-commit": "^1.2.2",
     "run-parallel": "^1.1.6"
   },
   "dependencies": {
-    "libp2p-crypto": "~0.8.1",
+    "libp2p-crypto": "~0.8.7",
     "pull-handshake": "^1.1.4",
     "pull-stream": "^3.5.0"
   },
