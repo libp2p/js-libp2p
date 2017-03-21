@@ -6,9 +6,9 @@
   "scripts": {
     "lint": "aegir-lint",
     "test": "aegir-test --env node",
-    "release": "aegir-release --env no-build",
-    "release-minor": "aegir-release --type minor --env no-build",
-    "release-major": "aegir-release --type major --env no-build",
+    "release": "aegir-release --env node",
+    "release-minor": "aegir-release --type minor --env node",
+    "release-major": "aegir-release --type major --env node",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },
@@ -30,17 +30,17 @@
   },
   "homepage": "https://github.com/libp2p/js-ipfs-railing",
   "devDependencies": {
-    "aegir": "^10.0.0",
+    "aegir": "^11.0.0",
     "chai": "^3.5.0",
-    "libp2p-swarm": "~0.26.14",
-    "libp2p-tcp": "~0.9.3",
+    "libp2p-swarm": "~0.26.19",
+    "libp2p-tcp": "~0.9.4",
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
-    "debug": "^2.6.0",
-    "multiaddr": "^2.2.1",
-    "peer-id": "~0.8.2",
-    "peer-info": "~0.8.3"
+    "debug": "^2.6.3",
+    "multiaddr": "^2.2.2",
+    "peer-id": "~0.8.4",
+    "peer-info": "~0.8.4"
   },
   "pre-commit": [
     "lint",
