@@ -6,12 +6,12 @@
   "scripts": {
     "lint": "gulp lint",
     "build": "gulp build",
-    "test": "gulp test",
+    "test": "gulp test --dom",
     "test:node": "gulp test:node",
-    "test:browser": "gulp test:browser",
+    "test:browser": "gulp test:browser --dom",
     "release": "gulp release --dom",
-    "release-minor": "gulp release --type minor",
-    "release-major": "gulp release --type major",
+    "release-minor": "gulp release --type minor --dom",
+    "release-major": "gulp release --type major --dom",
     "coverage": "gulp coverage",
     "coverage-publish": "aegir-coverage publish"
   },

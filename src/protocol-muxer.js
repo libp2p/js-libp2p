@@ -15,7 +15,7 @@ module.exports = function protocolMuxer (protocols, conn) {
 
   ms.handle(conn, (err) => {
     if (err) {
-      return // the multistream handshake failed
+      // the multistream handshake failed
     }
   })
 }
