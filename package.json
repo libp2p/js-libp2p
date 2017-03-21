@@ -33,20 +33,21 @@
     "node": ">=4.0.0"
   },
   "devDependencies": {
-    "interface-transport": "~0.3.3",
-    "aegir": "^10.0.0",
+    "aegir": "^11.0.0",
     "chai": "^3.5.0",
+    "dirty-chai": "^1.2.2",
+    "interface-transport": "~0.3.5",
     "lodash.isfunction": "^3.0.8",
     "pre-commit": "^1.2.2",
     "pull-stream": "^3.5.0"
   },
   "dependencies": {
-    "interface-connection": "~0.3.0",
+    "interface-connection": "~0.3.2",
     "ip-address": "^5.8.6",
     "lodash.includes": "^4.3.0",
     "lodash.isfunction": "^3.0.8",
     "mafmt": "^2.1.6",
-    "multiaddr": "^2.2.1",
+    "multiaddr": "^2.2.2",
     "stream-to-pull-stream": "^1.7.2"
   },
   "contributors": [

@@ -2,7 +2,10 @@
 'use strict'
 
 const pull = require('pull-stream')
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const TCP = require('../src')
 const net = require('net')
 const multiaddr = require('multiaddr')
@@ -11,7 +14,7 @@ const Connection = require('interface-connection').Connection
 describe('instantiate the transport', () => {
   it('create', () => {
     const tcp = new TCP()
-    expect(tcp).to.exist
+    expect(tcp).to.exist()
   })
 })
 
@@ -71,7 +74,7 @@ describe('listen', () => {
     const listener = tcp.createListener((conn) => {})
     listener.listen(mh, () => {
       listener.getAddrs((err, multiaddrs) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(multiaddrs.length).to.equal(1)
         expect(multiaddrs[0]).to.deep.equal(mh)
         listener.close(done)
@@ -84,7 +87,7 @@ describe('listen', () => {
     const listener = tcp.createListener((conn) => {})
     listener.listen(mh, () => {
       listener.getAddrs((err, multiaddrs) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(multiaddrs.length).to.equal(1)
         listener.close(done)
       })
@@ -96,7 +99,7 @@ describe('listen', () => {
     const listener = tcp.createListener((conn) => {})
     listener.listen(mh, () => {
       listener.getAddrs((err, multiaddrs) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(multiaddrs.length > 0).to.equal(true)
         expect(multiaddrs[0].toString().indexOf('0.0.0.0')).to.equal(-1)
         listener.close(done)
@@ -109,7 +112,7 @@ describe('listen', () => {
     const listener = tcp.createListener((conn) => {})
     listener.listen(mh, () => {
       listener.getAddrs((err, multiaddrs) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(multiaddrs.length > 0).to.equal(true)
         expect(multiaddrs[0].toString().indexOf('0.0.0.0')).to.equal(-1)
         listener.close(done)
@@ -122,7 +125,7 @@ describe('listen', () => {
     const listener = tcp.createListener((conn) => {})
     listener.listen(mh, () => {
       listener.getAddrs((err, multiaddrs) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(multiaddrs.length).to.equal(1)
         expect(multiaddrs[0]).to.deep.equal(mh)
         listener.close(done)
@@ -157,12 +160,8 @@ describe('dial', () => {
       pull.values(['hey']),
       tcp.dial(ma),
       pull.collect((err, values) => {
-        expect(err).to.not.exist
-        expect(
-          values
-        ).to.be.eql(
-          [new Buffer('hey!')]
-        )
+        expect(err).to.not.exist()
+        expect(values).to.eql([new Buffer('hey!')])
         done()
       })
     )
@@ -173,7 +172,7 @@ describe('dial', () => {
     pull(
       tcp.dial(ma),
       pull.onEnd((err) => {
-        expect(err).to.exist
+        expect(err).to.exist()
         done()
       })
     )
@@ -189,13 +188,9 @@ describe('dial', () => {
         pull.values(['hey']),
         tcp.dial(ma),
         pull.collect((err, values) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
 
-          expect(
-            values
-          ).to.be.eql([
-            new Buffer('hey')
-          ])
+          expect(values).to.be.eql([new Buffer('hey')])
 
           listener.close(done)
         })
@@ -258,7 +253,7 @@ describe('dial', () => {
       pull.values(['hey']),
       conn,
       pull.collect((err, res) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(res).to.be.eql([new Buffer('hey!')])
         done()
       })
@@ -307,9 +302,9 @@ describe('valid Connection', () => {
     let dialerObsAddrs
 
     const listener = tcp.createListener((conn) => {
-      expect(conn).to.exist
+      expect(conn).to.exist()
       conn.getObservedAddrs((err, addrs) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         dialerObsAddrs = addrs
         pull(pull.empty(), conn)
       })
@@ -324,7 +319,7 @@ describe('valid Connection', () => {
 
       function endHandler () {
         conn.getObservedAddrs((err, addrs) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           pull(pull.empty(), conn)
           closeAndAssert(listener, addrs)
         })
@@ -342,10 +337,10 @@ describe('valid Connection', () => {
 
   it('get Peer Info', (done) => {
     const listener = tcp.createListener((conn) => {
-      expect(conn).to.exist
+      expect(conn).to.exist()
       conn.getPeerInfo((err, peerInfo) => {
-        expect(err).to.exist
-        expect(peerInfo).to.not.exist
+        expect(err).to.exist()
+        expect(peerInfo).to.not.exist()
         pull(pull.empty(), conn)
       })
     })
@@ -356,8 +351,8 @@ describe('valid Connection', () => {
       pull(conn, pull.onEnd(endHandler))
       function endHandler () {
         conn.getPeerInfo((err, peerInfo) => {
-          expect(err).to.exist
-          expect(peerInfo).to.not.exist
+          expect(err).to.exist()
+          expect(peerInfo).to.not.exist()
 
           listener.close(done)
         })
@@ -367,10 +362,10 @@ describe('valid Connection', () => {
 
   it('set Peer Info', (done) => {
     const listener = tcp.createListener((conn) => {
-      expect(conn).to.exist
+      expect(conn).to.exist()
       conn.setPeerInfo('batatas')
       conn.getPeerInfo((err, peerInfo) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(peerInfo).to.equal('batatas')
         pull(pull.empty(), conn)
       })
@@ -383,7 +378,7 @@ describe('valid Connection', () => {
       function endHandler () {
         conn.setPeerInfo('arroz')
         conn.getPeerInfo((err, peerInfo) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           expect(peerInfo).to.equal('arroz')
 
           listener.close(done)
@@ -424,11 +419,11 @@ describe('Connection wrap', () => {
       pull.values(['hey']),
       connWrap,
       pull.collect((err, chunks) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(chunks).to.be.eql([new Buffer('hey')])
 
         connWrap.getPeerInfo((err, peerInfo) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           expect(peerInfo).to.equal('peerInfo')
           done()
         })
@@ -443,7 +438,7 @@ describe('Connection wrap', () => {
       pull.values(['hey']),
       connWrap,
       pull.collect((err, chunks) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(chunks).to.be.eql([new Buffer('hey')])
         done()
       })
@@ -459,17 +454,17 @@ describe('Connection wrap', () => {
       callback(null, 'none')
     }
     conn.getPeerInfo((err, peerInfo) => {
-      expect(err).to.exist
+      expect(err).to.exist()
     })
     connWrap.getPeerInfo((err, peerInfo) => {
-      expect(err).to.not.exist
+      expect(err).to.not.exist()
       expect(peerInfo).to.equal('none')
     })
     pull(
       pull.values(['hey']),
       connWrap,
       pull.collect((err, chunks) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(chunks).to.be.eql([new Buffer('hey')])
         done()
       })
@@ -489,10 +484,10 @@ describe('Connection wrap', () => {
       pull.values(['hey']),
       connWrap3,
       pull.collect((err, chunks) => {
-        expect(err).to.not.exist
+        expect(err).to.not.exist()
         expect(chunks).to.be.eql([new Buffer('hey')])
         connWrap3.getPeerInfo((err, peerInfo) => {
-          expect(err).to.not.exist
+          expect(err).to.not.exist()
           expect(peerInfo).to.equal('inner doll')
           done()
         })
