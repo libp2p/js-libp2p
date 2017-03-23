@@ -2,20 +2,14 @@
 
 const Connection = require('interface-connection').Connection
 const includes = require('lodash.includes')
-
-// const IPFS_CODE = 421
-
-let createServer = require('pull-ws/server')
-
-if (!createServer) {
-  createServer = () => {}
-}
+function noop () {}
+const createServer = require('pull-ws/server') || noop
 
 module.exports = (options, handler) => {
   const listener = createServer((socket) => {
-    socket.getObservedAddrs = (cb) => {
+    socket.getObservedAddrs = (callback) => {
       // TODO research if we can reuse the address in anyway
-      return cb(null, [])
+      return callback(null, [])
     }
 
     handler(new Connection(socket))
@@ -24,19 +18,19 @@ module.exports = (options, handler) => {
   let listeningMultiaddr
 
   listener._listen = listener.listen
-  listener.listen = (ma, cb) => {
-    cb = cb || (() => {})
+  listener.listen = (ma, callback) => {
+    callback = callback || noop
     listeningMultiaddr = ma
 
     if (includes(ma.protoNames(), 'ipfs')) {
       ma = ma.decapsulate('ipfs')
     }
 
-    listener._listen(ma.toOptions(), cb)
+    listener._listen(ma.toOptions(), callback)
   }
 
-  listener.getAddrs = (cb) => {
-    cb(null, [listeningMultiaddr])
+  listener.getAddrs = (callback) => {
+    callback(null, [listeningMultiaddr])
   }
 
   return listener

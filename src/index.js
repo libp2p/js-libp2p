@@ -4,25 +4,22 @@ const connect = require('pull-ws/client')
 const mafmt = require('mafmt')
 const includes = require('lodash.includes')
 const Connection = require('interface-connection').Connection
+const maToUrl = require('./ma-to-url')
 const debug = require('debug')
 const log = debug('libp2p:websockets:dialer')
 
 const createListener = require('./listener')
 
-module.exports = class WebSockets {
+class WebSockets {
   dial (ma, options, callback) {
     if (typeof options === 'function') {
       callback = options
       options = {}
     }
 
-    if (!callback) {
-      callback = () => {}
-    }
+    callback = callback || function () {}
 
-    const maOpts = ma.toOptions()
-
-    const url = `ws://${maOpts.host}:${maOpts.port}`
+    const url = maToUrl(ma)
     log('dialing %s', url)
     const socket = connect(url, {
       binary: true,
@@ -30,8 +27,8 @@ module.exports = class WebSockets {
     })
 
     const conn = new Connection(socket)
-    conn.getObservedAddrs = (cb) => cb(null, [ma])
-    conn.close = (cb) => socket.close(cb)
+    conn.getObservedAddrs = (callback) => callback(null, [ma])
+    conn.close = (callback) => socket.close(callback)
 
     return conn
   }
@@ -54,7 +51,9 @@ module.exports = class WebSockets {
       if (includes(ma.protoNames(), 'ipfs')) {
         ma = ma.decapsulate('ipfs')
       }
-      return mafmt.WebSockets.matches(ma)
+      return mafmt.WebSockets.matches(ma) || mafmt.WebSocketsSecure.matches(ma)
     })
   }
 }
+
+module.exports = WebSockets
