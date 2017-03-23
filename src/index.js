@@ -4,6 +4,7 @@ const connect = require('pull-ws/client')
 const mafmt = require('mafmt')
 const includes = require('lodash.includes')
 const Connection = require('interface-connection').Connection
+
 const maToUrl = require('./ma-to-url')
 const debug = require('debug')
 const log = debug('libp2p:websockets:dialer')

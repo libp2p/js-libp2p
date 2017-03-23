@@ -11,9 +11,9 @@ describe('compliance', () => {
       let ws = new WS()
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
-        multiaddr('/ip4/127.0.0.1/tcp/9092/wss')
-        // multiaddr('/dns4/awesome-dns-server.com/tcp/9092/ws'),
-        // multiaddr('/dns4/awesome-dns-server.com/tcp/9092/wss')
+        multiaddr('/ip4/127.0.0.1/tcp/9092/wss'),
+        multiaddr('/dns4/ipfs.io/tcp/9092/ws'),
+        multiaddr('/dns4/ipfs.io/tcp/9092/wss')
       ]
       callback(null, ws, addrs)
     },

@@ -1,20 +1,35 @@
 'use strict'
 
-const multiaddr = require('multiaddr')
+const debug = require('debug')
+const log = debug('libp2p:websockets:dialer')
 
 function maToUrl (ma) {
   const maStrSplit = ma.toString().split('/')
-  const proto = ma.protos()[2].name
 
-  if (!(proto === 'ws' || proto === 'wss')) {
-    throw new Error('invalid multiaddr' + ma.toString())
+  let proto
+  try {
+    proto = ma.protoNames().filter((proto) => {
+      return proto === 'ws' || proto === 'wss'
+    })[0]
+  } catch (e) {
+    log(e)
+    throw new Error('Not a valid websocket address', e)
   }
 
-  let url = ma.protos()[2].name + '://' + maStrSplit[2]
-
-  if (!multiaddr.isName(ma)) {
-    url += ':' + maStrSplit[4]
+  let port
+  try {
+    port = ma.stringTuples().filter((tuple) => {
+      if (tuple[0] === ma.protos().filter((proto) => {
+        return proto.name === 'tcp'
+      })[0].code) {
+        return true
+      }
+    })[0][1]
+  } catch (e) {
+    log('No port, skipping')
   }
+
+  let url = `${proto}://${maStrSplit[2]}${(port && (port !== 80 || port !== 443) ? `:${port}` : '')}`
 
   return url
 }
