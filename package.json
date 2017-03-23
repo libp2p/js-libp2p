@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/libp2p/js-ipfs-railing.git"
+    "url": "https://github.com/libp2p/js-libp2p-railing.git"
   },
   "keywords": [
     "IPFS"
@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "debug": "^2.6.3",
+    "lodash": "^4.17.4",
     "multiaddr": "^2.2.2",
     "peer-id": "~0.8.4",
     "peer-info": "~0.8.4"
