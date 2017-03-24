@@ -127,6 +127,17 @@ class Node extends libp2p {
 
 #### `libp2p.peers`
 
+---------------------
+
+`FUTURE™`
+
+#### `libp2p.findPeers`
+
+#### `libp2p.findProviders`
+
+#### `libp2p.record.put`
+
+#### `libp2p.record.get`
 
 ### Packages
 
