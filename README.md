@@ -107,29 +107,78 @@ class Node extends libp2p {
 
 ### API
 
-#### Create a Node - `new libp2p.Node()`
+#### Create a Node - `new libp2p.Node([peerInfo, peerBook, options])`
+
+> Creates an instance of the libp2p.Node.
+
+- `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node. Optional.
+- `peerBook`: instance of [PeerBook][] that contains the [PeerInfo][] of known peers. Optional.
+- `options`: Object containing custom options for the bundle.
 
 #### `libp2p.start(callback)`
 
+> Start the libp2p Node.
+
+`callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case starting the node fails.
+
 #### `libp2p.stop(callback)`
+
+> Stop the libp2p Node.
+
+`callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case stopping the node fails.
 
 #### `libp2p.dial(peer [, protocol, callback])`
 
+> Dials to another peer in the network.
+
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+- `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
+
+`callback` is a function with the following `function (err, conn) {}` signature, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
+
 #### `libp2p.hangUp(peer, callback)
+
+> Closes an open connection with a peer, graciously.
+
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+
+`callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case stopping the node fails.
 
 #### `libp2p.handle(protocol, handlerFunc [, matchFunc])`
 
+> Handle new protocol
+
+- `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
+- `handlerFunc`: Function with signature `function (protocol, conn) {}`
+- `matchFunc`: Function for matching on protocol (exact matching, semver, etc). Default to exact match.
+
 #### `libp2p.unhandle(protocol)
+
+> Stop handling protocol
+
+- `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
 
 #### `libp2p.on('peer', (peer) => {})`
 
+> Peer has been discovered.
+
+- `peer`: instance of [PeerInfo][]
+
 #### `libp2p.isOn()`
 
-#### `libp2p.peers`
+> Check if libp2p is started
+
+#### `libp2p.peerBook`
+
+> PeerBook instance of the node
+
+#### `libp2p.peerInfo`
+
+> PeerInfo instance of the node
 
 ---------------------
 
-`FUTURE™`
+`SOON™`
 
 #### `libp2p.findPeers`
 
@@ -138,6 +187,13 @@ class Node extends libp2p {
 #### `libp2p.record.put`
 
 #### `libp2p.record.get`
+
+[PeerInfo]: https://github.com/libp2p/js-peer-info
+[PeerId]: https://github.com/libp2p/js-peer-id
+[PeerBook]: https://github.com/libp2p/js-peer-book
+[multiaddr]: https://github.com/multiformats/js-multiaddr
+[Connection]: https://github.com/libp2p/interface-connection
+
 
 ### Packages
 
