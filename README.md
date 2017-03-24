@@ -56,23 +56,77 @@ npm install --save libp2p
 
 ## Usage
 
-> **Disclaimer - We haven't solidified [libp2p interface](https://github.com/libp2p/interface-libp2p) yet, it might change at anytime.**
-
 ### Extending libp2p skeleton
 
 libp2p becomes very simple and basically acts as a glue for every module that compose this library. Since it can be highly customized, it requires some setup. What we recommend is to have a libp2p build for the system you are developing taking into account in your needs (e.g. for a browser working version of libp2p that acts as the network layer of IPFS, we have a built and minified version that browsers can require).
 
-### libp2p API
+**Example:**
 
-Defined by [interface-libp2p](https://github.com/libp2p/interface-libp2p)
+```JavaScript
+// Creating a bundle that adds:
+//   transport: websockets + tcp
+//   stream-muxing: SPDY
+//   crypto-channel: secio
+//   discovery: multicast-dns
 
-## Development
+const libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const WS = require('libp2p-websockets')
+const spdy = require('libp2p-spdy')
+const secio = require('libp2p-secio')
+const MulticastDNS = require('libp2p-mdns')
 
-## Linting
+class Node extends libp2p {
+  constructor (peerInfo, peerBook, options) {
+    options = options || {}
 
-```sh
-> npm run lint
+    const modules = {
+      transport: [
+        new TCP(),
+        new WS()
+      ],
+      connection: {
+        muxer: [
+          spdy
+        ],
+        crypto: [
+          secio
+        ]
+      },
+      discovery: [
+        new MulticastDNS(peerInfo, 'your-identifier')
+      ]
+    }
+
+    super(modules, peerInfo, peerBook, options)
+  }
+}
+
+// Now all the nodes you create, will have TCP, WebSockets, SPDY, SECIO and MulticastDNS support.
 ```
+
+### API
+
+#### Create a Node - `new libp2p.Node()`
+
+#### `libp2p.start(callback)`
+
+#### `libp2p.stop(callback)`
+
+#### `libp2p.dial(peer [, protocol, callback])`
+
+#### `libp2p.hangUp(peer, callback)
+
+#### `libp2p.handle(protocol, handlerFunc [, matchFunc])`
+
+#### `libp2p.unhandle(protocol)
+
+#### `libp2p.on('peer', (peer) => {})`
+
+#### `libp2p.isOn()`
+
+#### `libp2p.peers`
+
 
 ### Packages
 
