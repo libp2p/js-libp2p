@@ -167,11 +167,17 @@ class Node {
   // Dialing methods
   //
 
-  // TODO
+  /**
+   * Dial a given node by peer id.
+   * It will try to find a multiaddr in the peerbook and fail
+   * if none is found.
+   *
+   * @param {PeerId} id
+   * @param {string} [protocol]
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
   dialById (id, protocol, callback) {
-    // NOTE: dialById only works if a previous dial was made. This will
-    // change once we have PeerRouting
-
     assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
 
     if (typeof protocol === 'function') {
@@ -179,7 +185,14 @@ class Node {
       protocol = undefined
     }
 
-    callback(new Error('not implemented yet'))
+    let peer
+    try {
+      peer = this.peerBook.getByB58String(id.toB58String())
+    } catch (err) {
+      return callback(new Error('No multiaddr found for this id'))
+    }
+
+    this.dialByPeerInfo(peer, protocol, callback)
   }
 
   dialByMultiaddr (maddr, protocol, callback) {
