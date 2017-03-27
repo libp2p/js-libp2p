@@ -160,7 +160,7 @@ class Node extends EventEmitter {
       if (err) {
         return callback(err)
       }
-      this.peerBook.put(peer)
+      this.peerBook.put(peerInfo)
       callback(null, conn)
     })
   }
@@ -170,7 +170,7 @@ class Node extends EventEmitter {
     const peerInfo = this._getPeerInfo(peer)
 
     this.peerBook.removeByB58String(peerInfo.id.toB58String())
-    this.swarm.hangUp(peer, callback)
+    this.swarm.hangUp(peerInfo, callback)
   }
 
   handle (protocol, handlerFunc, matchFunc) {
@@ -186,27 +186,26 @@ class Node extends EventEmitter {
    */
   _getPeerInfo (peer) {
     let p
-    switch (peer) {
-      case PeerInfo.isPeerInfo(peer): p = peer; break
-      case multiaddr.isMultiaddr(peer): {
-        const peerIdB58Str = multiaddr.getPeerId(peer)
-        try {
-          p = this.peerBook.getByB58String(peerIdB58Str)
-        } catch (err) {
-          p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
-        }
-        p.multiaddr.add(peer)
-      } break
-      case PeerId.isPeerId(peer): {
-        const peerIdB58Str = peer.toB58String()
-        try {
-          p = this.peerBook.getByB58String(peerIdB58Str)
-        } catch (err) {
-          // TODO this is where PeerRouting comes into place
-          throw new Error('No knowledge about: ' + peerIdB58Str)
-        }
-      } break
-      default: throw new Error('Peer type not recognized')
+    if (PeerInfo.isPeerInfo(peer)) {
+      p = peer
+    } else if (multiaddr.isMultiaddr(peer)) {
+      const peerIdB58Str = peer.getPeerId()
+      try {
+        p = this.peerBook.getByB58String(peerIdB58Str)
+      } catch (err) {
+        p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
+      }
+      p.multiaddr.add(peer)
+    } else if (PeerId.isPeerId(peer)) {
+      const peerIdB58Str = peer.toB58String()
+      try {
+        p = this.peerBook.getByB58String(peerIdB58Str)
+      } catch (err) {
+        // TODO this is where PeerRouting comes into place
+        throw new Error('No knowledge about: ' + peerIdB58Str)
+      }
+    } else {
+      throw new Error('peer type not recognized')
     }
 
     return p

@@ -44,8 +44,8 @@
     "libp2p-swarm": "~0.26.19",
     "multiaddr": "^2.2.3",
     "peer-book": "~0.3.1",
-    "peer-id": "~0.8.4",
-    "peer-info": "~0.8.4"
+    "peer-id": "~0.8.5",
+    "peer-info": "~0.8.5"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
