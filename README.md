@@ -56,23 +56,148 @@ npm install --save libp2p
 
 ## Usage
 
-> **Disclaimer - We haven't solidified [libp2p interface](https://github.com/libp2p/interface-libp2p) yet, it might change at anytime.**
-
 ### Extending libp2p skeleton
 
 libp2p becomes very simple and basically acts as a glue for every module that compose this library. Since it can be highly customized, it requires some setup. What we recommend is to have a libp2p build for the system you are developing taking into account in your needs (e.g. for a browser working version of libp2p that acts as the network layer of IPFS, we have a built and minified version that browsers can require).
 
-### libp2p API
+**Example:**
 
-Defined by [interface-libp2p](https://github.com/libp2p/interface-libp2p)
+```JavaScript
+// Creating a bundle that adds:
+//   transport: websockets + tcp
+//   stream-muxing: SPDY
+//   crypto-channel: secio
+//   discovery: multicast-dns
 
-## Development
+const libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const WS = require('libp2p-websockets')
+const spdy = require('libp2p-spdy')
+const secio = require('libp2p-secio')
+const MulticastDNS = require('libp2p-mdns')
 
-## Linting
+class Node extends libp2p {
+  constructor (peerInfo, peerBook, options) {
+    options = options || {}
 
-```sh
-> npm run lint
+    const modules = {
+      transport: [
+        new TCP(),
+        new WS()
+      ],
+      connection: {
+        muxer: [
+          spdy
+        ],
+        crypto: [
+          secio
+        ]
+      },
+      discovery: [
+        new MulticastDNS(peerInfo, 'your-identifier')
+      ]
+    }
+
+    super(modules, peerInfo, peerBook, options)
+  }
+}
+
+// Now all the nodes you create, will have TCP, WebSockets, SPDY, SECIO and MulticastDNS support.
 ```
+
+### API
+
+#### Create a Node - `new libp2p.Node([peerInfo, peerBook, options])`
+
+> Creates an instance of the libp2p.Node.
+
+- `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node. Optional.
+- `peerBook`: instance of [PeerBook][] that contains the [PeerInfo][] of known peers. Optional.
+- `options`: Object containing custom options for the bundle.
+
+#### `libp2p.start(callback)`
+
+> Start the libp2p Node.
+
+`callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case starting the node fails.
+
+#### `libp2p.stop(callback)`
+
+> Stop the libp2p Node.
+
+`callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case stopping the node fails.
+
+#### `libp2p.dial(peer [, protocol, callback])`
+
+> Dials to another peer in the network.
+
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+- `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
+
+`callback` is a function with the following `function (err, conn) {}` signature, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
+
+#### `libp2p.hangUp(peer, callback)
+
+> Closes an open connection with a peer, graciously.
+
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+
+`callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case stopping the node fails.
+
+#### `libp2p.handle(protocol, handlerFunc [, matchFunc])`
+
+> Handle new protocol
+
+- `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
+- `handlerFunc`: Function with signature `function (protocol, conn) {}`
+- `matchFunc`: Function for matching on protocol (exact matching, semver, etc). Default to exact match.
+
+#### `libp2p.unhandle(protocol)
+
+> Stop handling protocol
+
+- `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
+
+#### `libp2p.on('peer', (peer) => {})`
+
+> Peer has been discovered.
+
+- `peer`: instance of [PeerInfo][]
+
+#### `libp2p.isOn()`
+
+> Check if libp2p is started
+
+#### `libp2p.ping(peer [, options], callback)`
+
+> Ping a node in the network
+
+#### `libp2p.peerBook`
+
+> PeerBook instance of the node
+
+#### `libp2p.peerInfo`
+
+> PeerInfo instance of the node
+
+---------------------
+
+`SOON™`
+
+#### `libp2p.findPeers`
+
+#### `libp2p.findProviders`
+
+#### `libp2p.record.put`
+
+#### `libp2p.record.get`
+
+[PeerInfo]: https://github.com/libp2p/js-peer-info
+[PeerId]: https://github.com/libp2p/js-peer-id
+[PeerBook]: https://github.com/libp2p/js-peer-book
+[multiaddr]: https://github.com/multiformats/js-multiaddr
+[Connection]: https://github.com/libp2p/interface-connection
+
 
 ### Packages
 

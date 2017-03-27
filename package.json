@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p",
   "devDependencies": {
-    "aegir": "^11.0.0",
+    "aegir": "^11.0.1",
     "chai": "^3.5.0",
     "dirty-chai": "^1.2.2",
     "pre-commit": "^1.2.2"
@@ -42,11 +42,10 @@
   "dependencies": {
     "libp2p-ping": "~0.3.2",
     "libp2p-swarm": "~0.26.19",
-    "mafmt": "^2.1.6",
-    "multiaddr": "^2.2.2",
+    "multiaddr": "^2.2.3",
     "peer-book": "~0.3.1",
-    "peer-id": "~0.8.4",
-    "peer-info": "~0.8.4"
+    "peer-id": "~0.8.5",
+    "peer-info": "~0.8.5"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
