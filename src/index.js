@@ -11,7 +11,6 @@ const assert = require('assert')
 const Ping = require('libp2p-ping')
 const setImmediate = require('async/setImmediate')
 const series = require('async/series')
-const Relay = require('libp2p-circuit')
 
 exports = module.exports
 
@@ -27,7 +26,6 @@ class Node {
     this.peerInfo = _peerInfo
     this.peerBook = _peerBook || new PeerBook()
     this.isOnline = false
-    this.relay = _options.relay ? new Relay(this) : null
 
     this.discovery = new EE()
 
@@ -44,10 +42,8 @@ class Node {
       // If muxer exists, we can use Identify
       this.swarm.connection.reuse()
 
-      if (!this.relay) {
-        // If muxer exists, we can use Relay
-        this.swarm.connection.relay()
-      }
+      // If muxer exists, we can use Relay
+      this.swarm.connection.relay()
 
       // Received incommind dial and muxer upgrade happened, reuse this
       // muxed connection
@@ -132,11 +128,6 @@ class Node {
         })
       }
 
-      // are we a relay
-      if (this.relay) {
-        return this.relay.start(callback)
-      }
-
       callback()
     })
   }
@@ -155,7 +146,6 @@ class Node {
     }
 
     series([
-      (cb) => (this.relay ? this.relay.stop(cb) : cb()),
       (cb) => this.swarm.close(cb)
     ], callback)
   }
