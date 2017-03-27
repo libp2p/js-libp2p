@@ -269,6 +269,7 @@ class Node extends EventEmitter {
 
   dial (peer, protocol, callback) {
     assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
+    const peerInfo = this._getPeerInfo(peer)
 
     if (typeof protocol === 'function') {
       callback = protocol
