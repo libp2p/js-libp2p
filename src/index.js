@@ -40,7 +40,6 @@ module.exports = class TCP {
       cb()
     })
 
-
     const socket = toPull.duplex(rawSocket)
 
     const conn = new Connection(socket)
