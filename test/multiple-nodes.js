@@ -55,10 +55,10 @@ describe('multiple nodes (more than 2)', () => {
       it('establish the connections', (done) => {
         parallel([
           (cb) => {
-            a.libp2p.dialByPeerInfo(b.libp2p.peerInfo, cb)
+            a.libp2p.dial(b.libp2p.peerInfo, cb)
           },
           (cb) => {
-            b.libp2p.dialByPeerInfo(c.libp2p.peerInfo, cb)
+            b.libp2p.dial(c.libp2p.peerInfo, cb)
           }
         ], (err) => {
           expect(err).to.not.exist()
@@ -226,18 +226,10 @@ describe('multiple nodes (more than 2)', () => {
 
       it('establish the connections', (done) => {
         parallel([
-          (cb) => {
-            a.libp2p.dialByPeerInfo(b.libp2p.peerInfo, cb)
-          },
-          (cb) => {
-            b.libp2p.dialByPeerInfo(c.libp2p.peerInfo, cb)
-          },
-          (cb) => {
-            c.libp2p.dialByPeerInfo(d.libp2p.peerInfo, cb)
-          },
-          (cb) => {
-            d.libp2p.dialByPeerInfo(e.libp2p.peerInfo, cb)
-          }
+          (cb) => a.libp2p.dial(b.libp2p.peerInfo, cb),
+          (cb) => b.libp2p.dial(c.libp2p.peerInfo, cb),
+          (cb) => c.libp2p.dial(d.libp2p.peerInfo, cb),
+          (cb) => d.libp2p.dial(e.libp2p.peerInfo, cb)
         ], (err) => {
           expect(err).to.not.exist()
           // wait for the pubsub pipes to be established

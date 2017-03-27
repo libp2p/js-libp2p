@@ -65,7 +65,7 @@ describe('basics between 2 nodes', () => {
 
     it('Dial from nodeA to nodeB', (done) => {
       series([
-        (cb) => nodeA.dialByPeerInfo(nodeB.peerInfo, cb),
+        (cb) => nodeA.dial(nodeB.peerInfo, cb),
         (cb) => setTimeout(() => {
           expect(fsA.peers.size).to.equal(1)
           expect(fsB.peers.size).to.equal(1)
@@ -218,7 +218,7 @@ describe('basics between 2 nodes', () => {
     })
 
     it('existing subscriptions are sent upon peer connection', (done) => {
-      nodeA.dialByPeerInfo(nodeB.peerInfo, (err) => {
+      nodeA.dial(nodeB.peerInfo, (err) => {
         expect(err).to.not.exist()
         setTimeout(() => {
           expect(fsA.peers.size).to.equal(1)
@@ -288,7 +288,7 @@ describe('basics between 2 nodes', () => {
     })
 
     it('peer is removed from the state when connection ends', (done) => {
-      nodeA.dialByPeerInfo(nodeB.peerInfo, (err) => {
+      nodeA.dial(nodeB.peerInfo, (err) => {
         expect(err).to.not.exist()
         setTimeout(() => {
           expect(fsA.peers.size).to.equal(1)
@@ -318,7 +318,7 @@ describe('basics between 2 nodes', () => {
       ], (cb, nodes) => {
         nodeA = nodes[0]
         nodeB = nodes[1]
-        nodeA.dialByPeerInfo(nodeB.peerInfo, () => setTimeout(done, 1000))
+        nodeA.dial(nodeB.peerInfo, () => setTimeout(done, 1000))
       })
     })
 
