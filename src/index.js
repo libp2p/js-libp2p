@@ -6,6 +6,7 @@ const mafmt = require('mafmt')
 const includes = require('lodash.includes')
 const isFunction = require('lodash.isfunction')
 const Connection = require('interface-connection').Connection
+const once = require('once')
 const debug = require('debug')
 const log = debug('libp2p:tcp:dial')
 
@@ -22,15 +23,23 @@ module.exports = class TCP {
       cb = () => {}
     }
 
+    cb = once(cb)
     const cOpts = ma.toOptions()
     log('Connecting to %s %s', cOpts.port, cOpts.host)
 
-    const rawSocket = net.connect(cOpts, cb)
-
+    const rawSocket = net.connect(cOpts)
     rawSocket.once('timeout', () => {
       log('timeout')
       rawSocket.emit('error', new Error('Timeout'))
     })
+
+    rawSocket.once('error', cb)
+
+    rawSocket.once('connect', () => {
+      rawSocket.removeListener('error', cb)
+      cb()
+    })
+
 
     const socket = toPull.duplex(rawSocket)
 

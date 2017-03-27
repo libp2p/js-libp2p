@@ -471,6 +471,13 @@ describe('Connection wrap', () => {
     )
   })
 
+  it('dial error', (done) => {
+    tcp.dial(multiaddr('/ip4/999.0.0.1/tcp/1234'), (err) => {
+      expect(err).to.exist()
+      done()
+    })
+  })
+
   it('matryoshka wrap', (done) => {
     const conn = tcp.dial(ma)
     const connWrap1 = new Connection(conn)

@@ -48,6 +48,7 @@
     "lodash.isfunction": "^3.0.8",
     "mafmt": "^2.1.6",
     "multiaddr": "^2.2.2",
+    "once": "^1.4.0",
     "stream-to-pull-stream": "^1.7.2"
   },
   "contributors": [
