@@ -142,13 +142,13 @@ class Node extends EventEmitter {
   }
 
   ping (peer, callback) {
-    assert(this.isOn, OFFLINE_ERROR_MESSAGE)
+    assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
     const peerInfo = this._getPeerInfo(peer)
     callback(null, new Ping(this.swarm, peerInfo))
   }
 
   dial (peer, protocol, callback) {
-    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
+    assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
     const peerInfo = this._getPeerInfo(peer)
 
     if (typeof protocol === 'function') {
@@ -166,7 +166,7 @@ class Node extends EventEmitter {
   }
 
   hangUp (peer, callback) {
-    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
+    assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
     const peerInfo = this._getPeerInfo(peer)
 
     this.peerBook.removeByB58String(peerInfo.id.toB58String())
