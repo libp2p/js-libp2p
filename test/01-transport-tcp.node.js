@@ -100,6 +100,8 @@ describe('transport - tcp', function () {
   it('dial to set of multiaddr, only one is available', (done) => {
     const conn = swarmA.transport.dial('tcp', [
       multiaddr('/ip4/127.0.0.1/tcp/9910/ws'), // not valid on purpose
+      multiaddr('/ip4/127.0.0.1/tcp/9359'),
+      multiaddr('/ip4/127.0.0.1/tcp/9329'),
       multiaddr('/ip4/127.0.0.1/tcp/9910'),
       multiaddr('/ip4/127.0.0.1/tcp/9999'),
       multiaddr('/ip4/127.0.0.1/tcp/9309')
@@ -112,6 +114,19 @@ describe('transport - tcp', function () {
       conn,
       pull.onEnd(done)
     )
+  })
+
+  it('dial to set of multiaddr, none is available', (done) => {
+    swarmA.transport.dial('tcp', [
+      multiaddr('/ip4/127.0.0.1/tcp/9910/ws'), // not valid on purpose
+      multiaddr('/ip4/127.0.0.1/tcp/9359'),
+      multiaddr('/ip4/127.0.0.1/tcp/9329')
+    ], (err, conn) => {
+      expect(err).to.exist()
+      expect(err.errors).to.have.length(2)
+      expect(conn).to.not.exist()
+      done()
+    })
   })
 
   it('close', (done) => {

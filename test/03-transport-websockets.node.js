@@ -102,6 +102,18 @@ describe('transport - websockets', function () {
     })
   })
 
+  it('dial to set of multiaddr, none is available', (done) => {
+    swarmA.transport.dial('ws', [
+      multiaddr('/ip4/127.0.0.1/tcp/9320/ws'),
+      multiaddr('/ip4/127.0.0.1/tcp/9359/ws')
+    ], (err, conn) => {
+      expect(err).to.exist()
+      expect(err.errors).to.have.length(2)
+      expect(conn).to.not.exist()
+      done()
+    })
+  })
+
   it('close', (done) => {
     parallel([
       (cb) => swarmA.transport.close('ws', cb),
