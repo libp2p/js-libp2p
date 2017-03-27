@@ -33,7 +33,7 @@
     "node": ">=4.0.0"
   },
   "devDependencies": {
-    "aegir": "^11.0.0",
+    "aegir": "^11.0.1",
     "chai": "^3.5.0",
     "dirty-chai": "^1.2.2",
     "interface-transport": "~0.3.5",
@@ -46,8 +46,8 @@
     "ip-address": "^5.8.6",
     "lodash.includes": "^4.3.0",
     "lodash.isfunction": "^3.0.8",
-    "mafmt": "^2.1.6",
-    "multiaddr": "^2.2.2",
+    "mafmt": "^2.1.7",
+    "multiaddr": "^2.2.3",
     "once": "^1.4.0",
     "stream-to-pull-stream": "^1.7.2"
   },
