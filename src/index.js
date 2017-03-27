@@ -5,8 +5,7 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
 const multiaddr = require('multiaddr')
-const mafmt = require('mafmt')
-const EE = require('events').EventEmitter
+const EventEmitter = require('events').EventEmitter
 const assert = require('assert')
 const Ping = require('libp2p-ping')
 const setImmediate = require('async/setImmediate')
@@ -14,10 +13,10 @@ const setImmediate = require('async/setImmediate')
 exports = module.exports
 
 const OFFLINE_ERROR_MESSAGE = 'The libp2p node is not started yet'
-const IPFS_CODE = 421
 
-class Node {
+class Node extends EventEmitter {
   constructor (_modules, _peerInfo, _peerBook, _options) {
+    super()
     assert(_modules, 'requires modules to equip libp2p with features')
     assert(_peerInfo, 'requires a PeerInfo instance')
 
@@ -25,8 +24,6 @@ class Node {
     this.peerInfo = _peerInfo
     this.peerBook = _peerBook || new PeerBook()
     this.isOnline = false
-
-    this.discovery = new EE()
 
     this.swarm = new Swarm(this.peerInfo)
 
@@ -66,9 +63,7 @@ class Node {
       let discoveries = this.modules.discovery
       discoveries = Array.isArray(discoveries) ? discoveries : [discoveries]
       discoveries.forEach((discovery) => {
-        discovery.on('peer', (peerInfo) => {
-          this.discovery.emit('peer', peerInfo)
-        })
+        discovery.on('peer', (peerInfo) => this.emit('peer', peerInfo))
       })
     }
 
@@ -142,88 +137,26 @@ class Node {
     this.swarm.close(callback)
   }
 
-  //
-  // Ping
-  //
-
-  // TODO
-  pingById (id, callback) {
-    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
-    callback(new Error('not implemented yet'))
+  isOn () {
+    return this.isOnline
   }
 
-  // TODO
-  pingByMultiaddr (maddr, callback) {
-    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
-    callback(new Error('not implemented yet'))
-  }
-
-  pingByPeerInfo (peerInfo, callback) {
-    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
+  ping (peer, callback) {
+    assert(this.isOn, OFFLINE_ERROR_MESSAGE)
+    const peerInfo = this._getPeerInfo(peer)
     callback(null, new Ping(this.swarm, peerInfo))
   }
 
-  //
-  // Dialing methods
-  //
-
-  // TODO
-  dialById (id, protocol, callback) {
-    // NOTE: dialById only works if a previous dial was made. This will
-    // change once we have PeerRouting
-
+  dial (peer, protocol, callback) {
     assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
+    const peerInfo = this._getPeerInfo(peer)
 
     if (typeof protocol === 'function') {
       callback = protocol
       protocol = undefined
     }
 
-    callback(new Error('not implemented yet'))
-  }
-
-  dialByMultiaddr (maddr, protocol, callback) {
-    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
-
-    if (typeof protocol === 'function') {
-      callback = protocol
-      protocol = undefined
-    }
-
-    if (typeof maddr === 'string') {
-      maddr = multiaddr(maddr)
-    }
-
-    if (!mafmt.IPFS.matches(maddr.toString())) {
-      return callback(new Error('multiaddr not valid'))
-    }
-
-    const ipfsIdB58String = maddr.stringTuples().filter((tuple) => {
-      if (tuple[0] === IPFS_CODE) {
-        return true
-      }
-    })[0][1]
-
-    let peer
-    try {
-      peer = this.peerBook.getByB58String(ipfsIdB58String)
-    } catch (err) {
-      peer = new PeerInfo(PeerId.createFromB58String(ipfsIdB58String))
-    }
-
-    peer.multiaddr.add(maddr)
-    this.dialByPeerInfo(peer, protocol, callback)
-  }
-
-  dialByPeerInfo (peer, protocol, callback) {
-    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
-
-    if (typeof protocol === 'function') {
-      callback = protocol
-      protocol = undefined
-    }
-
-    this.swarm.dial(peer, protocol, (err, conn) => {
+    this.swarm.dial(peerInfo, protocol, (err, conn) => {
       if (err) {
         return callback(err)
       }
@@ -232,51 +165,13 @@ class Node {
     })
   }
 
-  //
-  // Disconnecting (hangUp) methods
-  //
-
-  hangUpById (id, callback) {
-    // TODO
-    callback(new Error('not implemented yet'))
-  }
-
-  hangUpByMultiaddr (maddr, callback) {
+  hangUp (peer, callback) {
     assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
+    const peerInfo = this._getPeerInfo(peer)
 
-    if (typeof maddr === 'string') {
-      maddr = multiaddr(maddr)
-    }
-
-    if (!mafmt.IPFS.matches(maddr.toString())) {
-      return callback(new Error('multiaddr not valid'))
-    }
-
-    const ipfsIdB58String = maddr.stringTuples().filter((tuple) => {
-      if (tuple[0] === IPFS_CODE) {
-        return true
-      }
-    })[0][1]
-
-    try {
-      const pi = this.peerBook.getByB58String(ipfsIdB58String)
-      this.hangUpByPeerInfo(pi, callback)
-    } catch (err) {
-      // already disconnected
-      callback()
-    }
-  }
-
-  hangUpByPeerInfo (peer, callback) {
-    assert(this.isOnline, OFFLINE_ERROR_MESSAGE)
-
-    this.peerBook.removeByB58String(peer.id.toB58String())
+    this.peerBook.removeByB58String(peerInfo.id.toB58String())
     this.swarm.hangUp(peer, callback)
   }
-
-  //
-  // Protocol multiplexing handling
-  //
 
   handle (protocol, handlerFunc, matchFunc) {
     this.swarm.handle(protocol, handlerFunc, matchFunc)
@@ -284,6 +179,37 @@ class Node {
 
   unhandle (protocol) {
     this.swarm.unhandle(protocol)
+  }
+
+  /*
+   * Helper method to check the data type of peer and convert it to PeerInfo
+   */
+  _getPeerInfo (peer) {
+    let p
+    switch (peer) {
+      case PeerInfo.isPeerInfo(peer): p = peer; break
+      case multiaddr.isMultiaddr(peer): {
+        const peerIdB58Str = multiaddr.getPeerId(peer)
+        try {
+          p = this.peerBook.getByB58String(peerIdB58Str)
+        } catch (err) {
+          p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
+        }
+        p.multiaddr.add(peer)
+      } break
+      case PeerId.isPeerId(peer): {
+        const peerIdB58Str = peer.toB58String()
+        try {
+          p = this.peerBook.getByB58String(peerIdB58Str)
+        } catch (err) {
+          // TODO this is where PeerRouting comes into place
+          throw new Error('No knowledge about: ' + peerIdB58Str)
+        }
+      } break
+      default: throw new Error('Peer type not recognized')
+    }
+
+    return p
   }
 }
 

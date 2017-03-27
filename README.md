@@ -168,6 +168,10 @@ class Node extends libp2p {
 
 > Check if libp2p is started
 
+#### `libp2p.ping(peer [, options], callback)`
+
+> Ping a node in the network
+
 #### `libp2p.peerBook`
 
 > PeerBook instance of the node
