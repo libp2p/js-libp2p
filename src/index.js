@@ -189,7 +189,7 @@ class Node {
     try {
       peer = this.peerBook.getByB58String(id.toB58String())
     } catch (err) {
-      throw new Error('No multiaddr found for this id')
+      return callback(new Error('No multiaddr found for this id'))
     }
 
     this.dialByPeerInfo(peer, protocol, callback)
