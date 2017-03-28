@@ -41,8 +41,8 @@
   },
   "dependencies": {
     "libp2p-ping": "~0.3.2",
-    "libp2p-swarm": "~0.27.0",
-    "multiaddr": "^2.2.3",
+    "libp2p-swarm": "~0.28.0",
+    "multiaddr": "^2.3.0",
     "peer-book": "~0.3.2",
     "peer-id": "~0.8.5",
     "peer-info": "~0.8.5"
