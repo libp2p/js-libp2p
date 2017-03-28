@@ -19,14 +19,16 @@ describe('transport - tcp', function () {
   let swarmB
   let peerA
   let peerB
+  let dialPeers
 
   before((done) => {
-    utils.createInfos(2, (err, infos) => {
+    utils.createInfos(5, (err, infos) => {
       if (err) {
         return done(err)
       }
       peerA = infos[0]
       peerB = infos[1]
+      dialPeers = infos.slice(2)
 
       peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9888'))
       peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999'))
@@ -86,7 +88,8 @@ describe('transport - tcp', function () {
   })
 
   it('dial to a multiaddr', (done) => {
-    const conn = swarmA.transport.dial('tcp', multiaddr('/ip4/127.0.0.1/tcp/9999'), (err, conn) => {
+    dialPeers[0].multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999'))
+    const conn = swarmA.transport.dial('tcp', dialPeers[0], (err, conn) => {
       expect(err).to.not.exist()
     })
 
@@ -98,14 +101,14 @@ describe('transport - tcp', function () {
   })
 
   it('dial to set of multiaddr, only one is available', (done) => {
-    const conn = swarmA.transport.dial('tcp', [
-      multiaddr('/ip4/127.0.0.1/tcp/9910/ws'), // not valid on purpose
-      multiaddr('/ip4/127.0.0.1/tcp/9359'),
-      multiaddr('/ip4/127.0.0.1/tcp/9329'),
-      multiaddr('/ip4/127.0.0.1/tcp/9910'),
-      multiaddr('/ip4/127.0.0.1/tcp/9999'),
-      multiaddr('/ip4/127.0.0.1/tcp/9309')
-    ], (err, conn) => {
+    dialPeers[1].multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9910/ws')) // not valid on purpose
+    dialPeers[1].multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9359'))
+    dialPeers[1].multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9329'))
+    dialPeers[1].multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9910'))
+    dialPeers[1].multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9999'))
+    dialPeers[1].multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9309'))
+
+    const conn = swarmA.transport.dial('tcp', dialPeers[1], (err, conn) => {
       expect(err).to.not.exist()
     })
 
@@ -117,11 +120,11 @@ describe('transport - tcp', function () {
   })
 
   it('dial to set of multiaddr, none is available', (done) => {
-    swarmA.transport.dial('tcp', [
-      multiaddr('/ip4/127.0.0.1/tcp/9910/ws'), // not valid on purpose
-      multiaddr('/ip4/127.0.0.1/tcp/9359'),
-      multiaddr('/ip4/127.0.0.1/tcp/9329')
-    ], (err, conn) => {
+    dialPeers[2].multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9910/ws')) // not valid on purpose
+    dialPeers[2].multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9359'))
+    dialPeers[2].multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9329'))
+
+    swarmA.transport.dial('tcp', dialPeers[2], (err, conn) => {
       expect(err).to.exist()
       expect(err.errors).to.have.length(2)
       expect(conn).to.not.exist()

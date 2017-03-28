@@ -87,8 +87,7 @@ module.exports = function dial (swarm) {
       nextTransport(tKeys.shift())
 
       function nextTransport (key) {
-        const multiaddrs = pi.multiaddrs.slice()
-        swarm.transport.dial(key, multiaddrs, (err, conn) => {
+        swarm.transport.dial(key, pi, (err, conn) => {
           if (err) {
             if (tKeys.length === 0) {
               return cb(new Error('Could not dial in any of the transports'))

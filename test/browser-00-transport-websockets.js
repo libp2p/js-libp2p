@@ -16,13 +16,22 @@ const Swarm = require('../src')
 
 describe('transport - websockets', () => {
   let swarm
+  let peer
 
-  before(() => {
+  before((done) => {
     const b58IdSrc = 'QmYzgdesgjdvD3okTPGZT9NPmh1BuH5FfTVNKjsvaAprhb'
     // use a pre generated Id to save time
     const idSrc = Id.createFromB58String(b58IdSrc)
     const peerSrc = Peer(idSrc)
     swarm = new Swarm(peerSrc)
+
+    Peer.create((err, p) => {
+      if (err) {
+        return done(err)
+      }
+      peer = p
+      done()
+    })
   })
 
   it('add', (done) => {
@@ -33,9 +42,10 @@ describe('transport - websockets', () => {
   })
 
   it('dial', (done) => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9100/ws')
+    peer.multiaddrs = []
+    peer.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9100/ws'))
 
-    const conn = swarm.transport.dial('ws', ma, (err, conn) => {
+    const conn = swarm.transport.dial('ws', peer, (err, conn) => {
       expect(err).to.not.exist()
     })
 

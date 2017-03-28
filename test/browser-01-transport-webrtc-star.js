@@ -63,7 +63,7 @@ describe('transport - webrtc-star', () => {
   })
 
   it('dial', (done) => {
-    swarm1.transport.dial('wstar', peer2.multiaddrs[0], (err, conn) => {
+    swarm1.transport.dial('wstar', peer2, (err, conn) => {
       expect(err).to.not.exist()
 
       const text = 'Hello World'
@@ -78,9 +78,10 @@ describe('transport - webrtc-star', () => {
       )
     })
   })
-  it('dial offline / non-exist()ent node', (done) => {
-    const mhOffline = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/ABCD')
-    swarm1.transport.dial('wstar', mhOffline, (err, conn) => {
+  it('dial offline / non-existent node', (done) => {
+    peer2.multiaddrs = []
+    peer2.multiaddr.add(multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/ABCD'))
+    swarm1.transport.dial('wstar', peer2, (err, conn) => {
       expect(err).to.exist()
       expect(conn).to.not.exist()
       done()
