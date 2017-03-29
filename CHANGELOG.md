@@ -1,3 +1,13 @@
+<a name="0.7.0"></a>
+# [0.7.0](https://github.com/libp2p/js-libp2p/compare/v0.6.2...v0.7.0) (2017-03-29)
+
+
+### Features
+
+* update events to conform with [#74](https://github.com/libp2p/js-libp2p/issues/74) ([f73c045](https://github.com/libp2p/js-libp2p/commit/f73c045))
+
+
+
 <a name="0.6.2"></a>
 ## [0.6.2](https://github.com/libp2p/js-libp2p/compare/v0.6.1...v0.6.2) (2017-03-28)
 
