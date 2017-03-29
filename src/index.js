@@ -3,6 +3,7 @@
 const Swarm = require('libp2p-swarm')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
+const mafmt = require('mafmt')
 const PeerBook = require('peer-book')
 const multiaddr = require('multiaddr')
 const EventEmitter = require('events').EventEmitter
@@ -47,6 +48,8 @@ class Node extends EventEmitter {
 
       this.swarm.on('peer-mux-closed', (peerInfo) => {
         this.emit('peer:disconnect', peerInfo)
+        // TODO remove this line
+        this.peerBook.removeByB58String(peerInfo.id.toB58String())
       })
     }
 
@@ -101,6 +104,13 @@ class Node extends EventEmitter {
         // TODO find a cleaner way to signal that a transport is always
         // used for dialing, even if no listener
         ws = transport
+      }
+    })
+
+    // so that we can have webrtc-star addrs without adding manually the id
+    this.peerInfo.multiaddrs = this.peerInfo.multiaddrs.map((ma) => {
+      if (!mafmt.IPFS.matches(ma)) {
+        ma = ma.encapsulate('/ipfs/' + this.peerInfo.id.toB58String())
       }
     })
 
