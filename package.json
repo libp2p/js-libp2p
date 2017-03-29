@@ -52,5 +52,9 @@
     "peer-id": "^0.8.5",
     "protocol-buffers": "^3.2.1",
     "safe-buffer": "^5.0.1"
-  }
+  },
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>"
+  ]
 }
