@@ -38,8 +38,8 @@ class Node extends EventEmitter {
       // If muxer exists, we can use Identify
       this.swarm.connection.reuse()
 
-      // Received incommind dial and muxer upgrade happened, reuse this
-      // muxed connection
+      // Received incommind dial and muxer upgrade happened,
+      // reuse this muxed connection
       this.swarm.on('peer-mux-established', (peerInfo) => {
         this.emit('peer:connect', peerInfo)
         this.peerBook.put(peerInfo)
@@ -47,7 +47,6 @@ class Node extends EventEmitter {
 
       this.swarm.on('peer-mux-closed', (peerInfo) => {
         this.emit('peer:disconnect', peerInfo)
-        this.peerBook.removeByB58String(peerInfo.id.toB58String())
       })
     }
 
