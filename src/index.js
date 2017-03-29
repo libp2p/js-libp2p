@@ -11,6 +11,7 @@ const Ping = require('libp2p-ping')
 const Swarm = require('libp2p-swarm')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
+const mafmt = require('mafmt')
 const PeerBook = require('peer-book')
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
@@ -72,6 +73,8 @@ class Node extends EventEmitter {
 
       this.swarm.on('peer-mux-closed', (peerInfo) => {
         this.emit('peer:disconnect', peerInfo)
+        // TODO remove this line
+        this.peerBook.removeByB58String(peerInfo.id.toB58String())
       })
     }
 
