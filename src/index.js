@@ -93,6 +93,15 @@ class Node extends EventEmitter {
     let transports = this.modules.transport
 
     transports = Array.isArray(transports) ? transports : [transports]
+
+    // so that we can have webrtc-star addrs without adding manually the id
+    this.peerInfo.multiaddrs = this.peerInfo.multiaddrs.map((ma) => {
+      if (!mafmt.IPFS.matches(ma)) {
+        ma = ma.encapsulate('/ipfs/' + this.peerInfo.id.toB58String())
+      }
+      return ma
+    })
+
     const multiaddrs = this.peerInfo.multiaddrs
 
     transports.forEach((transport) => {
@@ -104,13 +113,6 @@ class Node extends EventEmitter {
         // TODO find a cleaner way to signal that a transport is always
         // used for dialing, even if no listener
         ws = transport
-      }
-    })
-
-    // so that we can have webrtc-star addrs without adding manually the id
-    this.peerInfo.multiaddrs = this.peerInfo.multiaddrs.map((ma) => {
-      if (!mafmt.IPFS.matches(ma)) {
-        ma = ma.encapsulate('/ipfs/' + this.peerInfo.id.toB58String())
       }
     })
 
