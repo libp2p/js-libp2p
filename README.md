@@ -158,9 +158,21 @@ class Node extends libp2p {
 
 - `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
 
-#### `libp2p.on('peer', (peer) => {})`
+#### `libp2p.on('peer:discovery', (peer) => {})`
 
 > Peer has been discovered.
+
+- `peer`: instance of [PeerInfo][]
+
+#### `libp2p.on('peer:connect', (peer) => {})`
+
+> We connected to a new peer
+
+- `peer`: instance of [PeerInfo][]
+
+#### `libp2p.on('peer:disconnect', (peer) => {})`
+
+> We disconnected from Peer
 
 - `peer`: instance of [PeerInfo][]
 
