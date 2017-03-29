@@ -1,0 +1,8 @@
+'use strict'
+
+module.exports = {
+  publicKey: new Buffer(
+    'CAASXjBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQDjXAQQMal4SB2tSnX6NJIPmC69/BT8A8jc7/gDUZNkEhdhYHvc7k7S4vntV/c92nJGxNdop9fKJyevuNMuXhhHAgMBAAE=',
+    'base64'
+  )
+}
