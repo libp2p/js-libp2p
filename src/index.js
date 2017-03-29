@@ -41,10 +41,12 @@ class Node extends EventEmitter {
       // Received incommind dial and muxer upgrade happened, reuse this
       // muxed connection
       this.swarm.on('peer-mux-established', (peerInfo) => {
+        this.emit('peer:connect', peerInfo)
         this.peerBook.put(peerInfo)
       })
 
       this.swarm.on('peer-mux-closed', (peerInfo) => {
+        this.emit('peer:disconnect', peerInfo)
         this.peerBook.removeByB58String(peerInfo.id.toB58String())
       })
     }
@@ -62,8 +64,9 @@ class Node extends EventEmitter {
     if (this.modules.discovery) {
       let discoveries = this.modules.discovery
       discoveries = Array.isArray(discoveries) ? discoveries : [discoveries]
+
       discoveries.forEach((discovery) => {
-        discovery.on('peer', (peerInfo) => this.emit('peer', peerInfo))
+        discovery.on('peer', (peerInfo) => this.emit('peer:discovery', peerInfo))
       })
     }
 
