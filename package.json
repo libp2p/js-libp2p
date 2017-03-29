@@ -64,7 +64,7 @@
     "ip-address": "^5.8.6",
     "libp2p-identify": "~0.3.3",
     "lodash.includes": "^4.3.0",
-    "multiaddr": "^2.2.3",
+    "multiaddr": "^2.3.0",
     "multistream-select": "~0.13.5",
     "once": "^1.4.0",
     "peer-id": "~0.8.5",
