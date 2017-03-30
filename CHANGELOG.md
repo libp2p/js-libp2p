@@ -1,3 +1,13 @@
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/libp2p/js-libp2p-railing/compare/v0.4.3...v0.5.0) (2017-03-30)
+
+
+### Features
+
+* update to new peer-info ([a6254d8](https://github.com/libp2p/js-libp2p-railing/commit/a6254d8))
+
+
+
 <a name="0.4.3"></a>
 ## [0.4.3](https://github.com/libp2p/js-libp2p-railing/compare/v0.4.2...v0.4.3) (2017-03-23)
 
