@@ -47,7 +47,7 @@ class Railing extends EventEmitter {
             return log.error('Error creating PeerInfo from bootstrap peer', err)
           }
 
-          peerInfo.multiaddr.add(ma)
+          peerInfo.multiaddrs.add(ma)
 
           this.emit('peer', peerInfo)
         })
