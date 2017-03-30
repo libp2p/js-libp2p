@@ -71,9 +71,7 @@ module.exports = {
         return log('Error creating PeerInfo from new found peer', err)
       }
 
-      multiaddrs.forEach((addr) => {
-        peerFound.multiaddr.add(addr)
-      })
+      multiaddrs.forEach((addr) => peerFound.multiaddrs.add(addr))
 
       callback(null, peerFound)
     })
@@ -82,7 +80,7 @@ module.exports = {
   gotQuery: function (qry, mdns, peerInfo, serviceTag, broadcast) {
     if (!broadcast) { return }
 
-    const multiaddrs = tcp.filter(peerInfo.multiaddrs)
+    const multiaddrs = tcp.filter(peerInfo.multiaddrs.toArray())
     // Only announce TCP for now
     if (multiaddrs.length === 0) { return }
 
@@ -140,7 +138,6 @@ module.exports = {
             ttl: 120,
             data: ma.toString().split('/')[2]
           })
-          return
         }
       })
 
