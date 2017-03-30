@@ -48,8 +48,6 @@ class Node extends EventEmitter {
 
       this.swarm.on('peer-mux-closed', (peerInfo) => {
         this.emit('peer:disconnect', peerInfo)
-        // TODO remove this line
-        this.peerBook.removeByB58String(peerInfo.id.toB58String())
       })
     }
 
@@ -163,11 +161,17 @@ class Node extends EventEmitter {
 
   dial (peer, protocol, callback) {
     assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
-    const peerInfo = this._getPeerInfo(peer)
 
     if (typeof protocol === 'function') {
       callback = protocol
       protocol = undefined
+    }
+
+    let peerInfo
+    try {
+      peerInfo = this._getPeerInfo(peer)
+    } catch (err) {
+      return callback(err)
     }
 
     this.swarm.dial(peerInfo, protocol, (err, conn) => {
@@ -183,7 +187,6 @@ class Node extends EventEmitter {
     assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
     const peerInfo = this._getPeerInfo(peer)
 
-    this.peerBook.removeByB58String(peerInfo.id.toB58String())
     this.swarm.hangUp(peerInfo, callback)
   }
 
