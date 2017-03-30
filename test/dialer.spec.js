@@ -29,7 +29,7 @@ describe('identify.dialer', () => {
 
   it('works', (done) => {
     const p = pair()
-    original.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/5002'))
+    original.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/5002'))
     const input = msg.encode({
       protocolVersion: 'ipfs/0.1.0',
       agentVersion: 'na',
@@ -49,17 +49,11 @@ describe('identify.dialer', () => {
       expect(info.id.pubKey.bytes)
         .to.eql(original.id.pubKey.bytes)
 
-      expect(
-        info.multiaddrs
-      ).to.be.eql(
-        original.multiaddrs
-      )
+      expect(info.multiaddrs.toArray())
+        .to.eql(original.multiaddrs.toArray())
 
-      expect(
-        observedAddrs
-      ).to.be.eql(
-        [multiaddr('/ip4/127.0.0.1/tcp/5001')]
-      )
+      expect(observedAddrs)
+        .to.eql([multiaddr('/ip4/127.0.0.1/tcp/5001')])
 
       done()
     })

@@ -20,7 +20,7 @@ module.exports = (conn, pInfoSelf) => {
       protocolVersion: 'ipfs/0.1.0',
       agentVersion: 'na',
       publicKey: publicKey,
-      listenAddrs: pInfoSelf.multiaddrs.map((ma) => ma.buffer),
+      listenAddrs: pInfoSelf.multiaddrs.toArray().map((ma) => ma.buffer),
       observedAddr: observedAddrs ? observedAddrs.buffer : new Buffer('')
     })
 

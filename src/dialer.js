@@ -24,12 +24,12 @@ module.exports = (conn, callback) => {
           return callback(err)
         }
 
-        const info = new PeerInfo(id)
+        const peerInfo = new PeerInfo(id)
         input.listenAddrs
           .map(multiaddr)
-          .forEach((ma) => info.multiaddr.add(ma))
+          .forEach((ma) => peerInfo.multiaddrs.add(ma))
 
-        callback(null, info, getObservedAddrs(input))
+        callback(null, peerInfo, getObservedAddrs(input))
       })
     })
   )

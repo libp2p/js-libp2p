@@ -16,6 +16,7 @@ const identify = require('../src')
 
 describe('identify.listener', () => {
   let info
+
   beforeEach((done) => {
     PeerInfo.create((err, _info) => {
       if (err) {
@@ -29,7 +30,7 @@ describe('identify.listener', () => {
 
   it('works', (done) => {
     const p = pair()
-    info.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/5002'))
+    info.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/5002'))
     pull(
       p[1],
       lp.decode(),
