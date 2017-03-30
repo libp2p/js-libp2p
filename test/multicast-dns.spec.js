@@ -1,7 +1,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
+const expect = chai.expect
+chai.use(dirtyChai)
 const multiaddr = require('multiaddr')
 const PeerInfo = require('peer-info')
 const parallel = require('async/parallel')
@@ -18,26 +21,28 @@ describe('MulticastDNS', () => {
     parallel([
       (cb) => {
         PeerInfo.create((err, peer) => {
-          if (err) { cb(err) }
+          expect(err).to.not.exist()
+
           pA = peer
-          pA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/20001'))
+          pA.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/20001'))
           cb()
         })
       },
       (cb) => {
         PeerInfo.create((err, peer) => {
-          if (err) { cb(err) }
+          expect(err).to.not.exist()
+
           pB = peer
-          pB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/20002'))
+          pB.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/20002'))
           cb()
         })
       },
       (cb) => {
         PeerInfo.create((err, peer) => {
-          if (err) { cb(err) }
+          expect(err).to.not.exist()
           pC = peer
-          pC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/20003'))
-          pC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/30003/ws'))
+          pC.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/20003'))
+          pC.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/30003/ws'))
           cb()
         })
       },
@@ -45,7 +50,7 @@ describe('MulticastDNS', () => {
         PeerInfo.create((err, peer) => {
           if (err) { cb(err) }
           pD = peer
-          pD.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/30003/ws'))
+          pD.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/30003/ws'))
           cb()
         })
       }
@@ -89,7 +94,7 @@ describe('MulticastDNS', () => {
     ], () => {
       mdnsA.once('peer', (peerInfo) => {
         expect(pC.id.toB58String()).to.eql(peerInfo.id.toB58String())
-        expect(peerInfo.multiaddrs.length).to.equal(1)
+        expect(peerInfo.multiaddrs.size).to.equal(1)
         done()
       })
 
