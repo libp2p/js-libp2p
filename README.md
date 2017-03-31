@@ -58,7 +58,7 @@ And use it in your Node.js code as:
 ```JavaScript
 const Swarm = require('libp2p-swarm')
 
-const sw = new Swarm(peerInfo)
+const sw = new Swarm(peerInfo [, peerBook])
 ```
 
 ## API

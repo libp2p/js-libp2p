@@ -7,12 +7,12 @@ const expect = chai.expect
 chai.use(dirtyChai)
 
 const parallel = require('async/parallel')
-const multiaddr = require('multiaddr')
 const Peer = require('peer-info')
 const TCP = require('libp2p-tcp')
 const WebSockets = require('libp2p-websockets')
 const pull = require('pull-stream')
 const spdy = require('libp2p-spdy')
+const PeerBook = require('peer-book')
 
 const utils = require('./utils')
 const Swarm = require('../src')
@@ -38,19 +38,15 @@ describe('stream muxing with spdy (on TCP)', () => {
       peerC = infos[2]
       peerD = infos[3]
 
-      // console.log('peer A', peerA.id.toB58String())
-      // console.log('peer B', peerB.id.toB58String())
-      // console.log('peer C', peerC.id.toB58String())
+      peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/9001')
+      peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9002')
+      peerC.multiaddrs.add('/ip4/127.0.0.1/tcp/9003')
+      peerD.multiaddrs.add('/ip4/127.0.0.1/tcp/9004')
 
-      peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
-      peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
-      peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))
-      peerD.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9004'))
-
-      swarmA = new Swarm(peerA)
-      swarmB = new Swarm(peerB)
-      swarmC = new Swarm(peerC)
-      swarmD = new Swarm(peerD)
+      swarmA = new Swarm(peerA, new PeerBook())
+      swarmB = new Swarm(peerB, new PeerBook())
+      swarmC = new Swarm(peerC, new PeerBook())
+      swarmD = new Swarm(peerD, new PeerBook())
 
       swarmA.transport.add('tcp', new TCP())
       swarmB.transport.add('tcp', new TCP())
@@ -70,7 +66,6 @@ describe('stream muxing with spdy (on TCP)', () => {
     parallel([
       (cb) => swarmA.close(cb),
       (cb) => swarmB.close(cb),
-      // (cb) => swarmC.close(cb)
       (cb) => swarmD.close(cb)
     ], done)
   })
@@ -112,7 +107,11 @@ describe('stream muxing with spdy (on TCP)', () => {
       expect(err).to.not.exist()
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
-      pull(pull.empty(), conn, pull.onEnd(done))
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd(done)
+      )
     })
   })
 
@@ -193,11 +192,11 @@ describe('stream muxing with spdy (on TCP)', () => {
     peerE = new Peer()
     peerF = new Peer()
 
-    peerE.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9110/ws'))
-    peerF.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9120/ws'))
+    peerE.multiaddrs.add('/ip4/127.0.0.1/tcp/9110/ws')
+    peerF.multiaddrs.add('/ip4/127.0.0.1/tcp/9120/ws')
 
-    swarmE = new Swarm(peerE)
-    swarmF = new Swarm(peerF)
+    swarmE = new Swarm(peerE, new PeerBook())
+    swarmF = new Swarm(peerF, new PeerBook())
 
     swarmE.transport.add('ws', new WebSockets())
     swarmF.transport.add('ws', new WebSockets())
@@ -225,7 +224,11 @@ describe('stream muxing with spdy (on TCP)', () => {
 
       swarmF.dial(peerE, '/avocado/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
-        pull(conn, pull.onEnd(destroyed))
+        pull(
+          conn,
+          pull.onEnd(destroyed)
+        )
+
         pull(
           pull.empty(),
           swarmF.muxedConns[peerE.id.toB58String()].conn
@@ -243,7 +246,9 @@ describe('stream muxing with spdy (on TCP)', () => {
 
   it('close one end, make sure the other does not blow', (done) => {
     swarmC.close((err) => {
-      if (err) throw err
+      if (err) {
+        throw err
+      }
       // to make sure it has time to propagate
       setTimeout(done, 1000)
     })

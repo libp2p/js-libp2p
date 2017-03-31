@@ -38,34 +38,30 @@ class DialQueue {
    */
   _doWork (transport, addr, token, callback) {
     log('work')
-    this._dialWithTimeout(
-      transport,
-      addr,
-      (err, conn) => {
-        if (err) {
-          log('work:error')
-          return callback(null, {error: err})
-        }
-
-        if (token.cancel) {
-          log('work:cancel')
-          // clean up already done dials
-          pull(pull.empty(), conn)
-          // TODO: proper cleanup once the connection interface supports it
-          // return conn.close(() => callback(new Error('Manual cancel'))
-          return callback(null, {cancel: true})
-        }
-
-        // one is enough
-        token.cancel = true
-
-        log('work:success')
-
-        const proxyConn = new Connection()
-        proxyConn.setInnerConn(conn)
-        callback(null, {conn})
+    this._dialWithTimeout(transport, addr, (err, conn) => {
+      if (err) {
+        log('work:error')
+        return callback(null, {error: err})
       }
-    )
+
+      if (token.cancel) {
+        log('work:cancel')
+        // clean up already done dials
+        pull(pull.empty(), conn)
+        // TODO: proper cleanup once the connection interface supports it
+        // return conn.close(() => callback(new Error('Manual cancel'))
+        return callback(null, {cancel: true})
+      }
+
+      // one is enough
+      token.cancel = true
+
+      log('work:success')
+
+      const proxyConn = new Connection()
+      proxyConn.setInnerConn(conn)
+      callback(null, { multiaddr: addr, conn: conn })
+    })
   }
 
   /**

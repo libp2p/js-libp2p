@@ -36,7 +36,8 @@ class LimitDialer {
   dialMany (peer, transport, addrs, callback) {
     log('dialMany:start')
     // we use a token to track if we want to cancel following dials
-    const token = {cancel: false}
+    const token = { cancel: false }
+
     map(addrs, (m, cb) => {
       this.dialSingle(peer, transport, m, token, cb)
     }, (err, results) => {
@@ -47,7 +48,7 @@ class LimitDialer {
       const success = results.filter((res) => res.conn)
       if (success.length > 0) {
         log('dialMany:success')
-        return callback(null, success[0].conn)
+        return callback(null, success[0])
       }
 
       log('dialMany:error')

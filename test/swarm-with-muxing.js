@@ -7,11 +7,11 @@ const expect = chai.expect
 chai.use(dirtyChai)
 
 const parallel = require('async/parallel')
-const multiaddr = require('multiaddr')
 const TCP = require('libp2p-tcp')
 const WebSockets = require('libp2p-websockets')
 const spdy = require('libp2p-spdy')
 const pull = require('pull-stream')
+const PeerBook = require('peer-book')
 
 const utils = require('./utils')
 const Swarm = require('../src')
@@ -40,15 +40,11 @@ describe('high level API - with everything mixed all together!', () => {
       peerD = infos[3]
       peerE = infos[4]
 
-      // console.log('peer A', peerA.id.toB58String())
-      // console.log('peer B', peerB.id.toB58String())
-      // console.log('peer C', peerC.id.toB58String())
-
-      swarmA = new Swarm(peerA)
-      swarmB = new Swarm(peerB)
-      swarmC = new Swarm(peerC)
-      swarmD = new Swarm(peerD)
-      swarmE = new Swarm(peerE)
+      swarmA = new Swarm(peerA, new PeerBook())
+      swarmB = new Swarm(peerB, new PeerBook())
+      swarmC = new Swarm(peerC, new PeerBook())
+      swarmD = new Swarm(peerD, new PeerBook())
+      swarmE = new Swarm(peerE, new PeerBook())
 
       done()
     })
@@ -58,16 +54,15 @@ describe('high level API - with everything mixed all together!', () => {
     parallel([
       (cb) => swarmA.close(cb),
       (cb) => swarmB.close(cb),
-      // (cb) => swarmC.close(cb),
       (cb) => swarmD.close(cb),
       (cb) => swarmE.close(cb)
     ], done)
   })
 
   it('add tcp', (done) => {
-    peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
+    peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
+    peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
+    peerC.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
 
     swarmA.transport.add('tcp', new TCP())
     swarmB.transport.add('tcp', new TCP())
@@ -76,17 +71,16 @@ describe('high level API - with everything mixed all together!', () => {
     parallel([
       (cb) => swarmA.transport.listen('tcp', {}, null, cb),
       (cb) => swarmB.transport.listen('tcp', {}, null, cb)
-      // (cb) => swarmC.transport.listen('tcp', {}, null, cb)
     ], done)
   })
 
   it.skip('add utp', (done) => {})
 
   it('add websockets', (done) => {
-    peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9012/ws'))
-    peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9022/ws'))
-    peerD.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9032/ws'))
-    peerE.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9042/ws'))
+    peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9012/ws')
+    peerC.multiaddrs.add('/ip4/127.0.0.1/tcp/9022/ws')
+    peerD.multiaddrs.add('/ip4/127.0.0.1/tcp/9032/ws')
+    peerE.multiaddrs.add('/ip4/127.0.0.1/tcp/9042/ws')
 
     swarmB.transport.add('ws', new WebSockets())
     swarmC.transport.add('ws', new WebSockets())
@@ -95,7 +89,6 @@ describe('high level API - with everything mixed all together!', () => {
 
     parallel([
       (cb) => swarmB.transport.listen('ws', {}, null, cb),
-      // (cb) => swarmC.transport.listen('ws', {}, null, cb),
       (cb) => swarmD.transport.listen('ws', {}, null, cb),
       (cb) => swarmE.transport.listen('ws', {}, null, cb)
     ], done)
@@ -148,9 +141,7 @@ describe('high level API - with everything mixed all together!', () => {
   })
 
   it('dial from tcp to tcp+ws, on protocol', (done) => {
-    swarmB.handle('/anona/1.0.0', (protocol, conn) => {
-      pull(conn, conn)
-    })
+    swarmB.handle('/anona/1.0.0', (protocol, conn) => pull(conn, conn))
 
     swarmA.dial(peerB, '/anona/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
@@ -172,9 +163,7 @@ describe('high level API - with everything mixed all together!', () => {
   })
 
   it('dial from ws to ws', (done) => {
-    swarmE.handle('/abacaxi/1.0.0', (protocol, conn) => {
-      pull(conn, conn)
-    })
+    swarmE.handle('/abacaxi/1.0.0', (protocol, conn) => pull(conn, conn))
 
     swarmD.dial(peerE, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
@@ -195,9 +184,7 @@ describe('high level API - with everything mixed all together!', () => {
   })
 
   it('dial from tcp to tcp+ws (returned conn)', (done) => {
-    swarmB.handle('/grapes/1.0.0', (protocol, conn) => {
-      pull(conn, conn)
-    })
+    swarmB.handle('/grapes/1.0.0', (protocol, conn) => pull(conn, conn))
 
     const conn = swarmA.dial(peerB, '/grapes/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
@@ -213,7 +200,8 @@ describe('high level API - with everything mixed all together!', () => {
 
   it('dial from tcp+ws to tcp+ws', (done) => {
     let i = 0
-    const check = (err) => {
+
+    function check (err) {
       if (err) {
         return done(err)
       }
@@ -228,17 +216,22 @@ describe('high level API - with everything mixed all together!', () => {
         expect(peerInfo).to.exist()
         check()
       })
+
       pull(conn, conn)
     })
 
     swarmA.dial(peerC, '/mamao/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
+
       conn.getPeerInfo((err, peerInfo) => {
         expect(err).to.not.exist()
         expect(peerInfo).to.exist()
         check()
       })
       expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
+
+      expect(peerC.isConnected).to.exist()
+      expect(peerA.isConnected).to.exist()
 
       pull(
         pull.empty(),
@@ -254,11 +247,13 @@ describe('high level API - with everything mixed all together!', () => {
 
     swarmB.once('peer-mux-closed', (peerInfo) => {
       expect(Object.keys(swarmB.muxedConns).length).to.equal(0)
+      expect(peerB.isConnected()).to.not.exist()
       ready()
     })
 
     swarmA.once('peer-mux-closed', (peerInfo) => {
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+      expect(peerA.isConnected()).to.not.exist()
       ready()
     })
 
@@ -273,5 +268,5 @@ describe('high level API - with everything mixed all together!', () => {
       (cb) => swarmC.close(cb),
       (cb) => swarmA.once('peer-mux-closed', (peerInfo) => cb())
     ], done)
-  })
+  }).timeout(2500)
 })

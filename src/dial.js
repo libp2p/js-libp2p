@@ -14,9 +14,7 @@ module.exports = function dial (swarm) {
       protocol = null
     }
 
-    if (!callback) {
-      callback = function noop () {}
-    }
+    callback = callback || function noop () {}
 
     const proxyConn = new Connection()
 
@@ -160,7 +158,10 @@ module.exports = function dial (swarm) {
           swarm.emit('peer-mux-established', pi)
 
           muxedConn.once('close', () => {
-            delete swarm.muxedConns[pi.id.toB58String()]
+            const b58Str = pi.id.toB58String()
+            delete swarm.muxedConns[b58Str]
+            pi.disconnect()
+            swarm._peerBook.get(b58Str).disconnect()
             swarm.emit('peer-mux-closed', pi)
           })
 

@@ -24,7 +24,8 @@ module.exports = function (swarm) {
         options = {}
       }
 
-      if (!callback) { callback = noop }
+      callback = callback || noop
+
       log('adding %s', key)
       if (swarm.transports[key]) {
         throw new Error('There is already a transport with this key')
@@ -39,7 +40,7 @@ module.exports = function (swarm) {
 
     dial (key, pi, callback) {
       const t = swarm.transports[key]
-      let multiaddrs = pi.multiaddrs.slice()
+      let multiaddrs = pi.multiaddrs.toArray()
 
       if (!Array.isArray(multiaddrs)) {
         multiaddrs = [multiaddrs]
@@ -48,7 +49,15 @@ module.exports = function (swarm) {
       // filter the multiaddrs that are actually valid for this transport (use a func from the transport itself) (maybe even make the transport do that)
       multiaddrs = dialables(t, multiaddrs)
 
-      dialer.dialMany(pi.id, t, multiaddrs, callback)
+      dialer.dialMany(pi.id, t, multiaddrs, (err, success) => {
+        if (err) {
+          return callback(err)
+        }
+
+        pi.connect(success.multiaddr)
+        swarm._peerBook.put(pi)
+        callback(null, success.conn)
+      })
     },
 
     listen (key, options, handler, callback) {
@@ -57,7 +66,7 @@ module.exports = function (swarm) {
         handler = protocolMuxer.bind(null, swarm.protocols)
       }
 
-      const multiaddrs = dialables(swarm.transports[key], swarm._peerInfo.distinctMultiaddr())
+      const multiaddrs = dialables(swarm.transports[key], swarm._peerInfo.multiaddrs.distinct())
 
       const transport = swarm.transports[key]
 
@@ -96,7 +105,7 @@ module.exports = function (swarm) {
         }
 
         // cause we can listen on port 0 or 0.0.0.0
-        swarm._peerInfo.multiaddr.replace(multiaddrs, freshMultiaddrs)
+        swarm._peerInfo.multiaddrs.replace(multiaddrs, freshMultiaddrs)
         callback()
       })
     },

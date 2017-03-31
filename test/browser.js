@@ -16,15 +16,10 @@ describe('basics', () => {
   })
 })
 
-require('./browser-00-transport-websockets.js')
+require('./browser-transport-websockets.js')
+require('./browser-swarm-with-muxing-plus-websockets.js')
 
 if (w.support) {
-  require('./browser-01-transport-webrtc-star.js')
-}
-
-require('./browser-02-swarm-with-muxing-plus-websockets.js')
-
-if (w.support) {
-  require('./browser-03-swarm-with-muxing-plus-webrtc-star.js')
-  require('./browser-04-swarm-with-muxing-plus-websockets-and-webrtc-star.js')
+  require('./browser-transport-webrtc-star.js')
+  require('./browser-swarm-with-muxing-plus-webrtc-star.js')
 }

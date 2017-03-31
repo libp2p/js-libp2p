@@ -7,15 +7,16 @@ const expect = chai.expect
 chai.use(dirtyChai)
 
 const parallel = require('async/parallel')
-const multiaddr = require('multiaddr')
 const TCP = require('libp2p-tcp')
-const multiplex = require('libp2p-multiplex')
+const multiplex = require('libp2p-spdy')
 const pull = require('pull-stream')
-const utils = require('./utils')
+const secio = require('libp2p-secio')
+const PeerBook = require('peer-book')
 
+const utils = require('./utils')
 const Swarm = require('../src')
 
-describe('stream muxing with multiplex (on TCP)', () => {
+describe('secio conn upgrade (on TCP)', () => {
   let swarmA
   let peerA
   let swarmB
@@ -33,13 +34,17 @@ describe('stream muxing with multiplex (on TCP)', () => {
       peerB = infos[1]
       peerC = infos[2]
 
-      peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
-      peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
-      peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))
+      peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/9001')
+      peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9002')
+      peerC.multiaddrs.add('/ip4/127.0.0.1/tcp/9003')
 
-      swarmA = new Swarm(peerA)
-      swarmB = new Swarm(peerB)
-      swarmC = new Swarm(peerC)
+      swarmA = new Swarm(peerA, new PeerBook())
+      swarmB = new Swarm(peerB, new PeerBook())
+      swarmC = new Swarm(peerC, new PeerBook())
+
+      swarmA.connection.crypto(secio.tag, secio.encrypt)
+      swarmB.connection.crypto(secio.tag, secio.encrypt)
+      swarmC.connection.crypto(secio.tag, secio.encrypt)
 
       swarmA.transport.add('tcp', new TCP())
       swarmB.transport.add('tcp', new TCP())
@@ -56,22 +61,19 @@ describe('stream muxing with multiplex (on TCP)', () => {
   after((done) => {
     parallel([
       (cb) => swarmA.close(cb),
-      (cb) => swarmB.close(cb)
-      // (cb) => swarmC.close(cb)
+      (cb) => swarmB.close(cb),
+      (cb) => swarmC.close(cb)
     ], done)
   })
 
-  it('add', (done) => {
+  it('add', () => {
     swarmA.connection.addStreamMuxer(multiplex)
     swarmB.connection.addStreamMuxer(multiplex)
     swarmC.connection.addStreamMuxer(multiplex)
-    done()
   })
 
   it('handle + dial on protocol', (done) => {
-    swarmB.handle('/abacaxi/1.0.0', (protocol, conn) => {
-      pull(conn, conn)
-    })
+    swarmB.handle('/abacaxi/1.0.0', (protocol, conn) => pull(conn, conn))
 
     swarmA.dial(peerB, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
@@ -94,9 +96,7 @@ describe('stream muxing with multiplex (on TCP)', () => {
   })
 
   it('dial on protocol, reuse warmed conn', (done) => {
-    swarmA.handle('/papaia/1.0.0', (protocol, conn) => {
-      pull(conn, conn)
-    })
+    swarmA.handle('/papaia/1.0.0', (protocol, conn) => pull(conn, conn))
 
     swarmB.dial(peerA, '/papaia/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
@@ -124,13 +124,8 @@ describe('stream muxing with multiplex (on TCP)', () => {
     })
   })
 
-  it('closing one side cleans out in the other', (done) => {
-    swarmC.close((err) => {
-      expect(err).to.not.exist()
-      setTimeout(() => {
-        expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
-        done()
-      }, 500)
-    })
+  it('switch back to plaintext if no arguments passed in', () => {
+    swarmA.connection.crypto()
+    expect(swarmA.crypto.tag).to.eql('/plaintext/1.0.0')
   })
 })

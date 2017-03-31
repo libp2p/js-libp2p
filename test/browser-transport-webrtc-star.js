@@ -5,12 +5,12 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
-const multiaddr = require('multiaddr')
 const peerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const WebRTCStar = require('libp2p-webrtc-star')
 const parallel = require('async/parallel')
 const pull = require('pull-stream')
+const PeerBook = require('peer-book')
 
 const Swarm = require('../src')
 
@@ -24,16 +24,16 @@ describe('transport - webrtc-star', () => {
   before(() => {
     const id1 = peerId.createFromB58String('QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooA')
     peer1 = new PeerInfo(id1)
-    const mh1 = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooA')
-    peer1.multiaddr.add(mh1)
+    const mh1 = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooA'
+    peer1.multiaddrs.add(mh1)
 
     const id2 = peerId.createFromB58String('QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooB')
     peer2 = new PeerInfo(id2)
-    const mh2 = multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooB')
-    peer2.multiaddr.add(mh2)
+    const mh2 = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooB'
+    peer2.multiaddrs.add(mh2)
 
-    swarm1 = new Swarm(peer1)
-    swarm2 = new Swarm(peer2)
+    swarm1 = new Swarm(peer1, new PeerBook())
+    swarm2 = new Swarm(peer2, new PeerBook())
   })
 
   it('add WebRTCStar transport to swarm 1', (done) => {
@@ -51,15 +51,11 @@ describe('transport - webrtc-star', () => {
   })
 
   it('listen on swarm 1', (done) => {
-    swarm1.transport.listen('wstar', {}, (conn) => {
-      pull(conn, conn)
-    }, done)
+    swarm1.transport.listen('wstar', {}, (conn) => pull(conn, conn), done)
   })
 
   it('listen on swarm 2', (done) => {
-    swarm2.transport.listen('wstar', {}, (conn) => {
-      pull(conn, conn)
-    }, done)
+    swarm2.transport.listen('wstar', {}, (conn) => pull(conn, conn), done)
   })
 
   it('dial', (done) => {
@@ -79,8 +75,8 @@ describe('transport - webrtc-star', () => {
     })
   })
   it('dial offline / non-existent node', (done) => {
-    peer2.multiaddrs = []
-    peer2.multiaddr.add(multiaddr('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/ABCD'))
+    peer2.multiaddrs.clear()
+    peer2.multiaddrs.add('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/ABCD')
     swarm1.transport.dial('wstar', peer2, (err, conn) => {
       expect(err).to.exist()
       expect(conn).to.not.exist()

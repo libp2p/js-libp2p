@@ -5,10 +5,10 @@ const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const WebSockets = require('libp2p-websockets')
 const pull = require('pull-stream')
+const PeerBook = require('peer-book')
 
 const Swarm = require('./src')
 const spdy = require('libp2p-spdy')
-const multiaddr = require('multiaddr')
 const fs = require('fs')
 const path = require('path')
 
@@ -27,8 +27,7 @@ gulp.task('test:browser:before', (done) => {
   function createListenerA (cb) {
     PeerId.createFromJSON(
       JSON.parse(
-        fs.readFileSync(
-          path.join(__dirname, './test/test-data/id-1.json'))
+        fs.readFileSync(path.join(__dirname, './test/test-data/id-1.json'))
       ),
       (err, id) => {
         if (err) {
@@ -36,10 +35,11 @@ gulp.task('test:browser:before', (done) => {
         }
 
         const peerA = new PeerInfo(id)
-        const maA = multiaddr('/ip4/127.0.0.1/tcp/9100/ws')
+        const maA = '/ip4/127.0.0.1/tcp/9100/ws'
 
-        peerA.multiaddr.add(maA)
-        swarmA = new Swarm(peerA)
+        peerA.multiaddrs.add(maA)
+        swarmA = new Swarm(peerA, new PeerBook())
+
         swarmA.transport.add('ws', new WebSockets())
         swarmA.transport.listen('ws', {}, echo, cb)
       })
@@ -48,8 +48,7 @@ gulp.task('test:browser:before', (done) => {
   function createListenerB (cb) {
     PeerId.createFromJSON(
       JSON.parse(
-        fs.readFileSync(
-          path.join(__dirname, './test/test-data/id-2.json'))
+        fs.readFileSync(path.join(__dirname, './test/test-data/id-2.json'))
       ),
       (err, id) => {
         if (err) {
@@ -57,10 +56,10 @@ gulp.task('test:browser:before', (done) => {
         }
 
         const peerB = new PeerInfo(id)
-        const maB = multiaddr('/ip4/127.0.0.1/tcp/9200/ws')
+        const maB = '/ip4/127.0.0.1/tcp/9200/ws'
 
-        peerB.multiaddr.add(maB)
-        swarmB = new Swarm(peerB)
+        peerB.multiaddrs.add(maB)
+        swarmB = new Swarm(peerB, new PeerBook())
 
         swarmB.transport.add('ws', new WebSockets())
         swarmB.connection.addStreamMuxer(spdy)

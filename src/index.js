@@ -4,28 +4,27 @@ const util = require('util')
 const EE = require('events').EventEmitter
 const each = require('async/each')
 const series = require('async/series')
-const includes = require('lodash.includes')
-
 const transport = require('./transport')
 const connection = require('./connection')
 const dial = require('./dial')
 const protocolMuxer = require('./protocol-muxer')
 const plaintext = require('./plaintext')
+const assert = require('assert')
 
 exports = module.exports = Swarm
 
 util.inherits(Swarm, EE)
 
-function Swarm (peerInfo) {
+function Swarm (peerInfo, peerBook) {
   if (!(this instanceof Swarm)) {
     return new Swarm(peerInfo)
   }
 
-  if (!peerInfo) {
-    throw new Error('You must provide a value for `peerInfo`')
-  }
+  assert(peerInfo, 'You must provide a `peerInfo`')
+  assert(peerBook, 'You must provide a `peerBook`')
 
   this._peerInfo = peerInfo
+  this._peerBook = peerBook
 
   // transports --
   // { key: transport }; e.g { tcp: <tcp> }
@@ -59,25 +58,11 @@ function Swarm (peerInfo) {
   this.connection = connection(this)
 
   this.availableTransports = (pi) => {
-    const addrs = pi.multiaddrs
+    const myAddrs = pi.multiaddrs.toArray()
+    const myTransports = Object.keys(this.transports)
 
     // Only listen on transports we actually have addresses for
-    return Object.keys(this.transports).filter((ts) => {
-      // ipfs multiaddrs are not dialable so we drop them here
-      let dialable = addrs.map((addr) => {
-        // webrtc-star needs the /ipfs/QmHash
-        if (addr.toString().indexOf('webrtc-star') > 0) {
-          return addr
-        }
-
-        if (includes(addr.protoNames(), 'ipfs')) {
-          return addr.decapsulate('ipfs')
-        }
-        return addr
-      })
-
-      return this.transports[ts].filter(dialable).length > 0
-    })
+    return myTransports.filter((ts) => this.transports[ts].filter(myAddrs).length > 0)
   }
 
   // higher level (public) API

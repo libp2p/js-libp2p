@@ -7,16 +7,15 @@ const expect = chai.expect
 chai.use(dirtyChai)
 
 const parallel = require('async/parallel')
-const multiaddr = require('multiaddr')
 const TCP = require('libp2p-tcp')
-const multiplex = require('libp2p-spdy')
+const multiplex = require('libp2p-multiplex')
 const pull = require('pull-stream')
-const secio = require('libp2p-secio')
-
 const utils = require('./utils')
+const PeerBook = require('peer-book')
+
 const Swarm = require('../src')
 
-describe('secio conn upgrade (on TCP)', () => {
+describe('stream muxing with multiplex (on TCP)', () => {
   let swarmA
   let peerA
   let swarmB
@@ -34,21 +33,13 @@ describe('secio conn upgrade (on TCP)', () => {
       peerB = infos[1]
       peerC = infos[2]
 
-      // console.log('peer A', peerA.id.toB58String())
-      // console.log('peer B', peerB.id.toB58String())
-      // console.log('peer C', peerC.id.toB58String())
+      peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/9001')
+      peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9002')
+      peerC.multiaddrs.add('/ip4/127.0.0.1/tcp/9003')
 
-      peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9001'))
-      peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9002'))
-      peerC.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/9003'))
-
-      swarmA = new Swarm(peerA)
-      swarmB = new Swarm(peerB)
-      swarmC = new Swarm(peerC)
-
-      swarmA.connection.crypto(secio.tag, secio.encrypt)
-      swarmB.connection.crypto(secio.tag, secio.encrypt)
-      swarmC.connection.crypto(secio.tag, secio.encrypt)
+      swarmA = new Swarm(peerA, new PeerBook())
+      swarmB = new Swarm(peerB, new PeerBook())
+      swarmC = new Swarm(peerC, new PeerBook())
 
       swarmA.transport.add('tcp', new TCP())
       swarmB.transport.add('tcp', new TCP())
@@ -65,15 +56,15 @@ describe('secio conn upgrade (on TCP)', () => {
   after((done) => {
     parallel([
       (cb) => swarmA.close(cb),
-      (cb) => swarmB.close(cb),
-      (cb) => swarmC.close(cb)
+      (cb) => swarmB.close(cb)
     ], done)
   })
 
-  it('add', () => {
+  it('add', (done) => {
     swarmA.connection.addStreamMuxer(multiplex)
     swarmB.connection.addStreamMuxer(multiplex)
     swarmC.connection.addStreamMuxer(multiplex)
+    done()
   })
 
   it('handle + dial on protocol', (done) => {
@@ -84,7 +75,11 @@ describe('secio conn upgrade (on TCP)', () => {
     swarmA.dial(peerB, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
       expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
-      pull(pull.empty(), conn, pull.onEnd(done))
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd(done)
+      )
     })
   })
 
@@ -106,7 +101,11 @@ describe('secio conn upgrade (on TCP)', () => {
       expect(err).to.not.exist()
       expect(Object.keys(swarmB.conns).length).to.equal(0)
       expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
-      pull(pull.empty(), conn, pull.onEnd(done))
+      pull(
+        pull.empty(),
+        conn,
+        pull.onEnd(done)
+      )
     })
   })
 
@@ -124,8 +123,13 @@ describe('secio conn upgrade (on TCP)', () => {
     })
   })
 
-  it('switch back to plaintext if no arguments passed in', () => {
-    swarmA.connection.crypto()
-    expect(swarmA.crypto.tag).to.be.eql('/plaintext/1.0.0')
+  it('closing one side cleans out in the other', (done) => {
+    swarmC.close((err) => {
+      expect(err).to.not.exist()
+      setTimeout(() => {
+        expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+        done()
+      }, 500)
+    })
   })
 })
