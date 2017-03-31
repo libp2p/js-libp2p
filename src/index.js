@@ -3,6 +3,7 @@
 const Swarm = require('libp2p-swarm')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
+const mafmt = require('mafmt')
 const PeerBook = require('peer-book')
 const multiaddr = require('multiaddr')
 const EventEmitter = require('events').EventEmitter
@@ -25,7 +26,7 @@ class Node extends EventEmitter {
     this.peerBook = _peerBook || new PeerBook()
     this.isOnline = false
 
-    this.swarm = new Swarm(this.peerInfo)
+    this.swarm = new Swarm(this.peerInfo, this.peerBook)
 
     // Attach stream multiplexers
     if (this.modules.connection.muxer) {
@@ -38,8 +39,8 @@ class Node extends EventEmitter {
       // If muxer exists, we can use Identify
       this.swarm.connection.reuse()
 
-      // Received incommind dial and muxer upgrade happened, reuse this
-      // muxed connection
+      // Received incommind dial and muxer upgrade happened,
+      // reuse this muxed connection
       this.swarm.on('peer-mux-established', (peerInfo) => {
         this.emit('peer:connect', peerInfo)
         this.peerBook.put(peerInfo)
@@ -47,7 +48,6 @@ class Node extends EventEmitter {
 
       this.swarm.on('peer-mux-closed', (peerInfo) => {
         this.emit('peer:disconnect', peerInfo)
-        this.peerBook.removeByB58String(peerInfo.id.toB58String())
       })
     }
 
@@ -91,7 +91,19 @@ class Node extends EventEmitter {
     let transports = this.modules.transport
 
     transports = Array.isArray(transports) ? transports : [transports]
-    const multiaddrs = this.peerInfo.multiaddrs
+
+    // so that we can have webrtc-star addrs without adding manually the id
+    const maOld = []
+    const maNew = []
+    this.peerInfo.multiaddrs.forEach((ma) => {
+      if (!mafmt.IPFS.matches(ma)) {
+        maOld.push(ma)
+        maNew.push(ma.encapsulate('/ipfs/' + this.peerInfo.id.toB58String()))
+      }
+    })
+    this.peerInfo.multiaddrs.replace(maOld, maNew)
+
+    const multiaddrs = this.peerInfo.multiaddrs.toArray()
 
     transports.forEach((transport) => {
       if (transport.filter(multiaddrs).length > 0) {
@@ -152,11 +164,17 @@ class Node extends EventEmitter {
 
   dial (peer, protocol, callback) {
     assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
-    const peerInfo = this._getPeerInfo(peer)
 
     if (typeof protocol === 'function') {
       callback = protocol
       protocol = undefined
+    }
+
+    let peerInfo
+    try {
+      peerInfo = this._getPeerInfo(peer)
+    } catch (err) {
+      return callback(err)
     }
 
     this.swarm.dial(peerInfo, protocol, (err, conn) => {
@@ -172,7 +190,6 @@ class Node extends EventEmitter {
     assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
     const peerInfo = this._getPeerInfo(peer)
 
-    this.peerBook.removeByB58String(peerInfo.id.toB58String())
     this.swarm.hangUp(peerInfo, callback)
   }
 
@@ -198,7 +215,7 @@ class Node extends EventEmitter {
       } catch (err) {
         p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
       }
-      p.multiaddr.add(peer)
+      p.multiaddrs.add(peer)
     } else if (PeerId.isPeerId(peer)) {
       const peerIdB58Str = peer.toB58String()
       try {
