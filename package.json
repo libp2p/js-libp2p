@@ -45,7 +45,7 @@
     "multiaddr": "^2.3.0",
     "peer-book": "~0.3.2",
     "peer-id": "~0.8.5",
-    "peer-info": "~0.8.5"
+    "peer-info": "~0.9.1"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
