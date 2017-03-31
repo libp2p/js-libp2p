@@ -26,7 +26,7 @@ class Node extends EventEmitter {
     this.peerBook = _peerBook || new PeerBook()
     this.isOnline = false
 
-    this.swarm = new Swarm(this.peerInfo)
+    this.swarm = new Swarm(this.peerInfo, this.peerBook)
 
     // Attach stream multiplexers
     if (this.modules.connection.muxer) {
@@ -93,14 +93,17 @@ class Node extends EventEmitter {
     transports = Array.isArray(transports) ? transports : [transports]
 
     // so that we can have webrtc-star addrs without adding manually the id
-    this.peerInfo.multiaddrs = this.peerInfo.multiaddrs.map((ma) => {
+    const maOld = []
+    const maNew = []
+    this.peerInfo.multiaddrs.forEach((ma) => {
       if (!mafmt.IPFS.matches(ma)) {
-        ma = ma.encapsulate('/ipfs/' + this.peerInfo.id.toB58String())
+        maOld.push(ma)
+        maNew.push(ma.encapsulate('/ipfs/' + this.peerInfo.id.toB58String()))
       }
-      return ma
     })
+    this.peerInfo.multiaddrs.replace(maOld, maNew)
 
-    const multiaddrs = this.peerInfo.multiaddrs
+    const multiaddrs = this.peerInfo.multiaddrs.toArray()
 
     transports.forEach((transport) => {
       if (transport.filter(multiaddrs).length > 0) {
@@ -212,7 +215,7 @@ class Node extends EventEmitter {
       } catch (err) {
         p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
       }
-      p.multiaddr.add(peer)
+      p.multiaddrs.add(peer)
     } else if (PeerId.isPeerId(peer)) {
       const peerIdB58Str = peer.toB58String()
       try {
