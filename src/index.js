@@ -211,7 +211,7 @@ class Node extends EventEmitter {
     } else if (multiaddr.isMultiaddr(peer)) {
       const peerIdB58Str = peer.getPeerId()
       try {
-        p = this.peerBook.getByB58String(peerIdB58Str)
+        p = this.peerBook.get(peerIdB58Str)
       } catch (err) {
         p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
       }
@@ -219,7 +219,7 @@ class Node extends EventEmitter {
     } else if (PeerId.isPeerId(peer)) {
       const peerIdB58Str = peer.toB58String()
       try {
-        p = this.peerBook.getByB58String(peerIdB58Str)
+        p = this.peerBook.get(peerIdB58Str)
       } catch (err) {
         // TODO this is where PeerRouting comes into place
         throw new Error('No knowledge about: ' + peerIdB58Str)
