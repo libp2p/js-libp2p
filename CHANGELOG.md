@@ -1,3 +1,21 @@
+<a name="0.8.0"></a>
+# [0.8.0](https://github.com/libp2p/js-libp2p/compare/v0.7.0...v0.8.0) (2017-03-31)
+
+
+### Bug Fixes
+
+* addition of ipfs id appendix must come before transport filtering ([291e79f](https://github.com/libp2p/js-libp2p/commit/291e79f))
+* avoid deleting nodes from peerBook ([300936f](https://github.com/libp2p/js-libp2p/commit/300936f))
+* correct method on peer-book ([031ecb3](https://github.com/libp2p/js-libp2p/commit/031ecb3))
+
+
+### Features
+
+* append peer id to multiaddr if not there ([59ea9c3](https://github.com/libp2p/js-libp2p/commit/59ea9c3))
+* not remove peer from peerBook on disconnect ([a4b41b0](https://github.com/libp2p/js-libp2p/commit/a4b41b0))
+
+
+
 <a name="0.7.0"></a>
 # [0.7.0](https://github.com/libp2p/js-libp2p/compare/v0.6.2...v0.7.0) (2017-03-29)
 
