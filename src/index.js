@@ -1,15 +1,20 @@
 'use strict'
 
+const EventEmitter = require('events').EventEmitter
+const assert = require('assert')
+
+const setImmediate = require('async/setImmediate')
+const each = require('async/each')
+const series = require('async/series')
+
+const Ping = require('libp2p-ping')
+const DHT = require('libp2p-dht')
 const Swarm = require('libp2p-swarm')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const mafmt = require('mafmt')
 const PeerBook = require('peer-book')
+const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
-const EventEmitter = require('events').EventEmitter
-const assert = require('assert')
-const Ping = require('libp2p-ping')
-const setImmediate = require('async/setImmediate')
 
 exports = module.exports
 
@@ -73,9 +78,10 @@ class Node extends EventEmitter {
     // Mount default protocols
     Ping.mount(this.swarm)
 
+    this.dht = new DHT(this)
+
     // Not fully implemented in js-libp2p yet
     this.routing = undefined
-    this.records = undefined
   }
 
   /*
@@ -117,22 +123,29 @@ class Node extends EventEmitter {
       }
     })
 
-    this.swarm.listen((err) => {
+    series([
+      (cb) => this.swarm.listen(cb),
+      (cb) => {
+        if (this.modules.discovery) {
+          each(this.modules.discovery, (d, cb) => {
+            d.start(cb)
+          }, cb)
+        }
+        cb()
+      },
+      (cb) => this.dht.start(cb)
+    ], (err) => {
       if (err) {
         return callback(err)
       }
+
       if (ws) {
-        this.swarm.transport.add(ws.tag || ws.constructor.name, ws)
+        this.swarm.transport.add(
+          ws.tag || ws.constructor.name, ws
+        )
       }
 
       this.isOnline = true
-
-      if (this.modules.discovery) {
-        this.modules.discovery.forEach((discovery) => {
-          setImmediate(() => discovery.start(() => {}))
-        })
-      }
-
       callback()
     })
   }
