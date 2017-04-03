@@ -54,12 +54,8 @@ describe('multiple nodes (more than 2)', () => {
 
       it('establish the connections', (done) => {
         parallel([
-          (cb) => {
-            a.libp2p.dial(b.libp2p.peerInfo, cb)
-          },
-          (cb) => {
-            b.libp2p.dial(c.libp2p.peerInfo, cb)
-          }
+          (cb) => a.libp2p.dial(b.libp2p.peerInfo, cb),
+          (cb) => b.libp2p.dial(c.libp2p.peerInfo, cb)
         ], (err) => {
           expect(err).to.not.exist()
           // wait for the pubsub pipes to be established
@@ -286,11 +282,8 @@ describe('multiple nodes (more than 2)', () => {
       // ◉────◎────◉
       // a    b    c
 
-      before((done) => {
-      })
-
-      after((done) => {
-      })
+      before((done) => {})
+      after((done) => {})
     })
 
     describe('1 level tree', () => {

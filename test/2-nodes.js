@@ -106,6 +106,7 @@ describe('basics between 2 nodes', () => {
       fsA.once('Z', (msg) => {
         fsA.once('Z', shouldNotHappen)
         expect(msg.data.toString()).to.equal('banana')
+
         setTimeout(() => {
           fsA.removeListener('Z', shouldNotHappen)
           fsB.removeListener('Z', shouldNotHappen)
@@ -137,9 +138,7 @@ describe('basics between 2 nodes', () => {
         }
       }
 
-      _times(10, () => {
-        fsB.publish('Z', new Buffer('banana'))
-      })
+      _times(10, () => fsB.publish('Z', new Buffer('banana')))
     })
 
     it('Unsubscribe from topic:Z in nodeA', (done) => {

@@ -10,19 +10,15 @@ const expect = require('chai').expect
 exports.first = (map) => map.values().next().value
 
 exports.expectSet = (set, subs) => {
-  expect(
-    Array.from(set.values())
-  ).to.be.eql(
-    subs
-  )
+  expect(Array.from(set.values())).to.eql(subs)
 }
 
 exports.createNode = (maddr, callback) => {
   waterfall([
-    (cb) => PeerId.create(cb),
+    (cb) => PeerId.create({ bits: 1024 }, cb),
     (id, cb) => PeerInfo.create(id, cb),
     (peer, cb) => {
-      peer.multiaddr.add(multiaddr(maddr))
+      peer.multiaddrs.add(multiaddr(maddr))
       cb(null, new Node(peer))
     },
     (node, cb) => {

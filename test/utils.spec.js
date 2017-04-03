@@ -12,7 +12,7 @@ describe('utils', () => {
 
     expect(first).to.have.length(40)
     expect(second).to.have.length(40)
-    expect(first).to.not.be.eql(second)
+    expect(first).to.not.eql(second)
   })
 
   it('msgId', () => {
@@ -28,17 +28,11 @@ describe('utils', () => {
       [[], [], false],
       [[1], [2], false]
     ].forEach((test) => {
-      expect(
-        utils.anyMatch(new Set(test[0]), new Set(test[1]))
-      ).to.be.eql(
-        test[2]
-      )
+      expect(utils.anyMatch(new Set(test[0]), new Set(test[1])))
+        .to.eql(test[2])
 
-      expect(
-        utils.anyMatch(new Set(test[0]), test[1])
-      ).to.be.eql(
-        test[2]
-      )
+      expect(utils.anyMatch(new Set(test[0]), test[1]))
+        .to.eql(test[2])
     })
   })
 
