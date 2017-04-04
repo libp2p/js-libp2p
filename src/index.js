@@ -78,10 +78,60 @@ class Node extends EventEmitter {
     // Mount default protocols
     Ping.mount(this.swarm)
 
-    this.dht = new DHT(this)
+    if (this.options.dht) {
+      this._dht = new DHT(this)
+    }
 
-    // Not fully implemented in js-libp2p yet
-    this.routing = undefined
+    this.peerRouting = {
+      findPeer: (id, callback) => {
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
+
+        this._dht.findPeer(id, callback)
+      }
+    }
+
+    this.contentRouting = {
+      findProviders: (key, timeout, callback) => {
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
+
+        this._dht.findProviders(key, timeout, callback)
+      },
+      provide: (key, callback) => {
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
+
+        this._dht.provide(key, callback)
+      }
+    }
+
+    this.dht = {
+      put: (key, value, callback) => {
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
+
+        this._dht.put(key, value, callback)
+      },
+      get: (key, callback) => {
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
+
+        this._dht.get(key, callback)
+      },
+      getMany (key, nvals, callback) {
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
+
+        this._dht.getMany(key, nvals, callback)
+      }
+    }
   }
 
   /*
@@ -126,6 +176,14 @@ class Node extends EventEmitter {
     series([
       (cb) => this.swarm.listen(cb),
       (cb) => {
+        if (ws) {
+          // always add dialing on websockets
+          this.swarm.transport.add(
+            ws.tag || ws.constructor.name, ws
+          )
+        }
+
+        // all transports need to be setup before discover starts
         if (this.modules.discovery) {
           each(this.modules.discovery, (d, cb) => {
             d.start(cb)
@@ -133,16 +191,15 @@ class Node extends EventEmitter {
         }
         cb()
       },
-      (cb) => this.dht.start(cb)
+      (cb) => {
+        if (this._dht) {
+          return this.dht.start(cb)
+        }
+        cb()
+      }
     ], (err) => {
       if (err) {
         return callback(err)
-      }
-
-      if (ws) {
-        this.swarm.transport.add(
-          ws.tag || ws.constructor.name, ws
-        )
       }
 
       this.isOnline = true
@@ -162,7 +219,15 @@ class Node extends EventEmitter {
       })
     }
 
-    this.swarm.close(callback)
+    series([
+      (cb) => {
+        if (this._dht) {
+          return this._dht.stop(cb)
+        }
+        cb()
+      },
+      (cb) => this.swarm.close(cb)
+    ], callback)
   }
 
   isOn () {
@@ -217,7 +282,7 @@ class Node extends EventEmitter {
   /*
    * Helper method to check the data type of peer and convert it to PeerInfo
    */
-  _getPeerInfo (peer) {
+  _getPeerInfo (peer, callback) {
     let p
     if (PeerInfo.isPeerInfo(peer)) {
       p = peer
@@ -234,14 +299,17 @@ class Node extends EventEmitter {
       try {
         p = this.peerBook.get(peerIdB58Str)
       } catch (err) {
-        // TODO this is where PeerRouting comes into place
-        throw new Error('No knowledge about: ' + peerIdB58Str)
+        this.peerRouting.findPeer(peer, callback)
       }
     } else {
-      throw new Error('peer type not recognized')
+      setImmediate(() => {
+        callback(new Error('peer type not recognized'))
+      })
     }
 
-    return p
+    setImmediate(() => {
+      callback(null, p)
+    })
   }
 }
 
