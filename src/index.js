@@ -79,7 +79,7 @@ class Node extends EventEmitter {
 
     // dht provided components (peerRouting, contentRouting, dht)
     if (this.modules.dht) {
-      this._dht = this.modules.dht
+      this._dht = new this.modules.DHT(this, 20, this.options.dht && this.options.dht.datastore)
     }
 
     this.peerRouting = {
