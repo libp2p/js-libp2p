@@ -8,7 +8,6 @@ const each = require('async/each')
 const series = require('async/series')
 
 const Ping = require('libp2p-ping')
-const DHT = require('libp2p-dht')
 const Swarm = require('libp2p-swarm')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
@@ -31,27 +30,27 @@ class Node extends EventEmitter {
     this.peerBook = _peerBook || new PeerBook()
     this.isOnline = false
 
-    this.swarm = new Swarm(this.peerInfo, this.peerBook)
+    this._swarm = new Swarm(this.peerInfo, this.peerBook)
 
     // Attach stream multiplexers
     if (this.modules.connection.muxer) {
       let muxers = this.modules.connection.muxer
       muxers = Array.isArray(muxers) ? muxers : [muxers]
       muxers.forEach((muxer) => {
-        this.swarm.connection.addStreamMuxer(muxer)
+        this._swarm.connection.addStreamMuxer(muxer)
       })
 
       // If muxer exists, we can use Identify
-      this.swarm.connection.reuse()
+      this._swarm.connection.reuse()
 
       // Received incommind dial and muxer upgrade happened,
       // reuse this muxed connection
-      this.swarm.on('peer-mux-established', (peerInfo) => {
+      this._swarm.on('peer-mux-established', (peerInfo) => {
         this.emit('peer:connect', peerInfo)
         this.peerBook.put(peerInfo)
       })
 
-      this.swarm.on('peer-mux-closed', (peerInfo) => {
+      this._swarm.on('peer-mux-closed', (peerInfo) => {
         this.emit('peer:disconnect', peerInfo)
       })
     }
@@ -61,7 +60,7 @@ class Node extends EventEmitter {
       let cryptos = this.modules.connection.crypto
       cryptos = Array.isArray(cryptos) ? cryptos : [cryptos]
       cryptos.forEach((crypto) => {
-        this.swarm.connection.crypto(crypto.tag, crypto.encrypt)
+        this._swarm.connection.crypto(crypto.tag, crypto.encrypt)
       })
     }
 
@@ -76,17 +75,16 @@ class Node extends EventEmitter {
     }
 
     // Mount default protocols
-    Ping.mount(this.swarm)
+    Ping.mount(this._swarm)
 
-    if (this.options.dht) {
-      this._dht = new DHT(this)
+    // dht provided components (peerRouting, contentRouting, dht)
+    if (this.modules.dht) {
+      this._dht = this.modules.dht
     }
 
     this.peerRouting = {
       findPeer: (id, callback) => {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
+        assert(this._dht, 'DHT is not available')
 
         this._dht.findPeer(id, callback)
       }
@@ -94,16 +92,12 @@ class Node extends EventEmitter {
 
     this.contentRouting = {
       findProviders: (key, timeout, callback) => {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
+        assert(this._dht, 'DHT is not available')
 
         this._dht.findProviders(key, timeout, callback)
       },
       provide: (key, callback) => {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
+        assert(this._dht, 'DHT is not available')
 
         this._dht.provide(key, callback)
       }
@@ -111,25 +105,19 @@ class Node extends EventEmitter {
 
     this.dht = {
       put: (key, value, callback) => {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
+        assert(this._dht, 'DHT is not available')
 
         this._dht.put(key, value, callback)
       },
       get: (key, callback) => {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
+        assert(this._dht, 'DHT is not available')
 
         this._dht.get(key, callback)
       },
-      getMany (key, nvals, callback) {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
+      getMany (key, nVals, callback) {
+        assert(this._dht, 'DHT is not available')
 
-        this._dht.getMany(key, nvals, callback)
+        this._dht.getMany(key, nVals, callback)
       }
     }
   }
@@ -163,7 +151,7 @@ class Node extends EventEmitter {
 
     transports.forEach((transport) => {
       if (transport.filter(multiaddrs).length > 0) {
-        this.swarm.transport.add(
+        this._swarm.transport.add(
           transport.tag || transport.constructor.name, transport)
       } else if (transport.constructor &&
                  transport.constructor.name === 'WebSockets') {
@@ -174,11 +162,11 @@ class Node extends EventEmitter {
     })
 
     series([
-      (cb) => this.swarm.listen(cb),
+      (cb) => this._swarm.listen(cb),
       (cb) => {
         if (ws) {
           // always add dialing on websockets
-          this.swarm.transport.add(
+          this._swarm.transport.add(
             ws.tag || ws.constructor.name, ws
           )
         }
@@ -226,7 +214,7 @@ class Node extends EventEmitter {
         }
         cb()
       },
-      (cb) => this.swarm.close(cb)
+      (cb) => this._swarm.close(cb)
     ], callback)
   }
 
@@ -237,7 +225,7 @@ class Node extends EventEmitter {
   ping (peer, callback) {
     assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
     const peerInfo = this._getPeerInfo(peer)
-    callback(null, new Ping(this.swarm, peerInfo))
+    callback(null, new Ping(this._swarm, peerInfo))
   }
 
   dial (peer, protocol, callback) {
@@ -255,7 +243,7 @@ class Node extends EventEmitter {
       return callback(err)
     }
 
-    this.swarm.dial(peerInfo, protocol, (err, conn) => {
+    this._swarm.dial(peerInfo, protocol, (err, conn) => {
       if (err) {
         return callback(err)
       }
@@ -268,15 +256,15 @@ class Node extends EventEmitter {
     assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
     const peerInfo = this._getPeerInfo(peer)
 
-    this.swarm.hangUp(peerInfo, callback)
+    this._swarm.hangUp(peerInfo, callback)
   }
 
   handle (protocol, handlerFunc, matchFunc) {
-    this.swarm.handle(protocol, handlerFunc, matchFunc)
+    this._swarm.handle(protocol, handlerFunc, matchFunc)
   }
 
   unhandle (protocol) {
-    this.swarm.unhandle(protocol)
+    this._swarm.unhandle(protocol)
   }
 
   /*
@@ -284,8 +272,10 @@ class Node extends EventEmitter {
    */
   _getPeerInfo (peer, callback) {
     let p
+    // PeerInfo
     if (PeerInfo.isPeerInfo(peer)) {
       p = peer
+    // Multiaddr instance (not string)
     } else if (multiaddr.isMultiaddr(peer)) {
       const peerIdB58Str = peer.getPeerId()
       try {
@@ -294,6 +284,7 @@ class Node extends EventEmitter {
         p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
       }
       p.multiaddrs.add(peer)
+    // PeerId
     } else if (PeerId.isPeerId(peer)) {
       const peerIdB58Str = peer.toB58String()
       try {
@@ -302,14 +293,10 @@ class Node extends EventEmitter {
         this.peerRouting.findPeer(peer, callback)
       }
     } else {
-      setImmediate(() => {
-        callback(new Error('peer type not recognized'))
-      })
+      setImmediate(() => callback(new Error('peer type not recognized')))
     }
 
-    setImmediate(() => {
-      callback(null, p)
-    })
+    setImmediate(() => callback(null, p))
   }
 }
 
