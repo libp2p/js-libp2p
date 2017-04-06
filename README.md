@@ -75,7 +75,7 @@ const WS = require('libp2p-websockets')
 const spdy = require('libp2p-spdy')
 const secio = require('libp2p-secio')
 const MulticastDNS = require('libp2p-mdns')
-const DHT = require('libp2p-dht')
+const DHT = require('libp2p-kad-dht')
 
 class Node extends libp2p {
   constructor (peerInfo, peerBook, options) {
@@ -98,7 +98,7 @@ class Node extends libp2p {
         new MulticastDNS(peerInfo, 'your-identifier')
       ],
       // DHT is passed as its own enabling PeerRouting, ContentRouting and DHT itself components
-      dht: new DHT()
+      dht: DHT
     }
 
     super(modules, peerInfo, peerBook, options)
