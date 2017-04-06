@@ -36,9 +36,7 @@ class Node extends EventEmitter {
     if (this.modules.connection.muxer) {
       let muxers = this.modules.connection.muxer
       muxers = Array.isArray(muxers) ? muxers : [muxers]
-      muxers.forEach((muxer) => {
-        this.swarm.connection.addStreamMuxer(muxer)
-      })
+      muxers.forEach((muxer) => this.swarm.connection.addStreamMuxer(muxer))
 
       // If muxer exists, we can use Identify
       this.swarm.connection.reuse()

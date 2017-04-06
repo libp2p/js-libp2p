@@ -155,26 +155,26 @@ class Node extends libp2p {
 
 #### `libp2p.contentRouting.findProviders(key, timeout, callback)`
 
-- `key`: 
+- `key`: Buffer
 - `timeout`: Number miliseconds
 
 #### `libp2p.contentRouting.provide(key, timeout, callback)`
 
-- `key`: 
+- `key`: Buffer
 - `timeout`: Number miliseconds
 
 #### `libp2p.dht.put(key, value, callback)`
 
-- `key`: 
-- `value`: 
+- `key`: Buffer
+- `value`: Buffer
 
 #### `libp2p.dht.get(key, callback)`
 
-- `key`: 
+- `key`: Buffer
 
 #### `libp2p.dht.getMany(key, nVals, callback)`
 
-- `key`: 
+- `key`: Buffer
 - `nVals`: Number
 
 #### `libp2p.handle(protocol, handlerFunc [, matchFunc])`
