@@ -11,7 +11,6 @@ const Ping = require('libp2p-ping')
 const Swarm = require('libp2p-swarm')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const mafmt = require('mafmt')
 const PeerBook = require('peer-book')
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
@@ -46,23 +45,13 @@ class Node extends EventEmitter {
       // If muxer exists, we can use Identify
       this.swarm.connection.reuse()
 
-      // enable circuit relaying
-      // TODO: move defaults elsewhere
-      _options.Relay = Object.assign({
-        Circuit: {
-          Enabled: false,
-          Active: false
-        },
-        DialMode: 'onion'
-      }, _options.Relay)
-
-      if (_options.Relay.Circuit.Enabled) {
-        this.relayCircuit = new Circuit.Relay(_options.Relay.Circuit)
+      if (_options.relay && _options.relay.circuit) {
+        this.relayCircuit = new Circuit.Hop(_options.relay.circuit)
         this.relayCircuit.mount(this.swarm)
       }
 
       // If muxer exists, we can use Relay for listening/dialing
-      this.swarm.connection.relay(_options.Relay)
+      this.swarm.connection.enableRelayDialing(_options.relay)
 
       // Received incommind dial and muxer upgrade happened,
       // reuse this muxed connection
@@ -73,8 +62,6 @@ class Node extends EventEmitter {
 
       this.swarm.on('peer-mux-closed', (peerInfo) => {
         this.emit('peer:disconnect', peerInfo)
-        // TODO remove this line
-        this.peerBook.removeByB58String(peerInfo.id.toB58String())
       })
     }
 
@@ -272,7 +259,6 @@ class Node extends EventEmitter {
 
   dial (peer, protocol, callback) {
     assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
-    const peerInfo = this._getPeerInfo(peer)
 
     if (typeof protocol === 'function') {
       callback = protocol
@@ -322,16 +308,24 @@ class Node extends EventEmitter {
     // PeerInfo
     if (PeerInfo.isPeerInfo(peer)) {
       p = peer
-    // Multiaddr instance (not string)
+      // Multiaddr instance (not string)
     } else if (multiaddr.isMultiaddr(peer)) {
-      const peerIdB58Str = peer.getPeerId()
+      let peerId
+      if (peer.toString().includes('p2p-circuit')) {
+        // last segment is always the peer ipfs segment
+        peerId = multiaddr(peer.toString().split('p2p-circuit').pop())
+      } else {
+        peerId = peer
+      }
+
+      const peerIdB58Str = peerId.getPeerId()
       try {
         p = this.peerBook.get(peerIdB58Str)
       } catch (err) {
         p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
       }
       p.multiaddrs.add(peer)
-    // PeerId
+      // PeerId
     } else if (PeerId.isPeerId(peer)) {
       const peerIdB58Str = peer.toB58String()
       try {
