@@ -17,6 +17,11 @@ module.exports = (conn, callback) => {
         return callback(err)
       }
 
+      // connection got closed graciously
+      if (data.length === 0) {
+        return callback(new Error('conn was closed, did not receive data'))
+      }
+
       const input = msg.decode(data[0])
 
       PeerId.createFromPubKey(input.publicKey, (err, id) => {
