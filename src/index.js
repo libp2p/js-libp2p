@@ -291,10 +291,10 @@ class Node extends EventEmitter {
       try {
         p = this.peerBook.get(peerIdB58Str)
       } catch (err) {
-        this.peerRouting.findPeer(peer, callback)
+        return this.peerRouting.findPeer(peer, callback)
       }
     } else {
-      setImmediate(() => callback(new Error('peer type not recognized')))
+      return setImmediate(() => callback(new Error('peer type not recognized')))
     }
 
     setImmediate(() => callback(null, p))
