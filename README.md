@@ -75,6 +75,7 @@ const WS = require('libp2p-websockets')
 const spdy = require('libp2p-spdy')
 const secio = require('libp2p-secio')
 const MulticastDNS = require('libp2p-mdns')
+const DHT = require('libp2p-kad-dht')
 
 class Node extends libp2p {
   constructor (peerInfo, peerBook, options) {
@@ -95,7 +96,9 @@ class Node extends libp2p {
       },
       discovery: [
         new MulticastDNS(peerInfo, 'your-identifier')
-      ]
+      ],
+      // DHT is passed as its own enabling PeerRouting, ContentRouting and DHT itself components
+      dht: DHT
     }
 
     super(modules, peerInfo, peerBook, options)
@@ -143,6 +146,36 @@ class Node extends libp2p {
 - `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
 
 `callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case stopping the node fails.
+
+#### `libp2p.peerRouting.findPeer(id, callback)`
+
+> Looks up for multiaddrs of a peer in the DHT
+
+- `id`: instance of [PeerId][]
+
+#### `libp2p.contentRouting.findProviders(key, timeout, callback)`
+
+- `key`: Buffer
+- `timeout`: Number miliseconds
+
+#### `libp2p.contentRouting.provide(key, timeout, callback)`
+
+- `key`: Buffer
+- `timeout`: Number miliseconds
+
+#### `libp2p.dht.put(key, value, callback)`
+
+- `key`: Buffer
+- `value`: Buffer
+
+#### `libp2p.dht.get(key, callback)`
+
+- `key`: Buffer
+
+#### `libp2p.dht.getMany(key, nVals, callback)`
+
+- `key`: Buffer
+- `nVals`: Number
 
 #### `libp2p.handle(protocol, handlerFunc [, matchFunc])`
 
