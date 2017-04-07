@@ -75,5 +75,8 @@
     "lodash.range": "^3.2.0",
     "peer-book": "~0.4.0",
     "pre-commit": "^1.2.2"
-  }
+  },
+  "contributors": [
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>"
+  ]
 }
