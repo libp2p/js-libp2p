@@ -14,17 +14,22 @@ const getMultiaddr = require('./get-multiaddr')
 
 const IPFS_CODE = 421
 const CLOSE_TIMEOUT = 2000
+function noop () {}
 
 module.exports = (handler) => {
   const listener = new EventEmitter()
 
   const server = net.createServer((socket) => {
+    // Avoid uncaught errors cause by unstable connections
+    socket.on('error', noop)
+
     const addr = getMultiaddr(socket)
     log('new connection', addr.toString())
 
     const s = toPull.duplex(socket)
+
     s.getObservedAddrs = (cb) => {
-      return cb(null, [addr])
+      cb(null, [addr])
     }
 
     trackSocket(server, socket)
@@ -34,36 +39,31 @@ module.exports = (handler) => {
     listener.emit('connection', conn)
   })
 
-  server.on('listening', () => {
-    listener.emit('listening')
-  })
-
-  server.on('error', (err) => {
-    listener.emit('error', err)
-  })
-
-  server.on('close', () => {
-    listener.emit('close')
-  })
+  server.on('listening', () => listener.emit('listening'))
+  server.on('error', (err) => listener.emit('error', err))
+  server.on('close', () => listener.emit('close'))
 
   // Keep track of open connections to destroy in case of timeout
   server.__connections = {}
 
-  listener.close = (options, cb) => {
+  listener.close = (options, callback) => {
     if (typeof options === 'function') {
-      cb = options
+      callback = options
       options = {}
     }
-    cb = cb || (() => {})
+    callback = callback || noop
     options = options || {}
 
     let closed = false
-    server.close(cb)
+    server.close(callback)
+
     server.once('close', () => {
       closed = true
     })
     setTimeout(() => {
-      if (closed) return
+      if (closed) {
+        return
+      }
 
       log('unable to close graciously, destroying conns')
       Object.keys(server.__connections).forEach((key) => {
@@ -76,7 +76,7 @@ module.exports = (handler) => {
   let ipfsId
   let listeningAddr
 
-  listener.listen = (ma, cb) => {
+  listener.listen = (ma, callback) => {
     listeningAddr = ma
     if (includes(ma.protoNames(), 'ipfs')) {
       ipfsId = getIpfsId(ma)
@@ -85,15 +85,15 @@ module.exports = (handler) => {
 
     const lOpts = listeningAddr.toOptions()
     log('Listening on %s %s', lOpts.port, lOpts.host)
-    return server.listen(lOpts.port, lOpts.host, cb)
+    return server.listen(lOpts.port, lOpts.host, callback)
   }
 
-  listener.getAddrs = (cb) => {
+  listener.getAddrs = (callback) => {
     const multiaddrs = []
     const address = server.address()
 
     if (!address) {
-      return cb(new Error('Listener is not ready yet'))
+      return callback(new Error('Listener is not ready yet'))
     }
 
     // Because TCP will only return the IPv6 version
@@ -128,7 +128,7 @@ module.exports = (handler) => {
       multiaddrs.push(ma)
     }
 
-    cb(null, multiaddrs)
+    callback(null, multiaddrs)
   }
 
   return listener
