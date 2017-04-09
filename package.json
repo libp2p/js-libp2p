@@ -73,6 +73,17 @@
     "sinon": "^2.3.6",
     "wrtc": "0.0.62"
   },
+  "dependencies": {
+    "async": "^2.5.0",
+    "libp2p-ping": "~0.4.0",
+    "libp2p-swarm": "~0.29.1",
+    "libp2p-circuit": "~0.0.1",
+    "mafmt": "^2.1.8",
+    "multiaddr": "^2.3.0",
+    "peer-book": "~0.4.0",
+    "peer-id": "~0.8.7",
+    "peer-info": "~0.9.2"
+  },
   "contributors": [
     "Chris Bratlien <chrisbratlien@gmail.com>",
     "David Dias <daviddias.p@gmail.com>",
