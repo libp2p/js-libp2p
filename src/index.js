@@ -14,6 +14,7 @@ const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
+const Circuit = require('libp2p-circuit')
 
 exports = module.exports
 
@@ -31,6 +32,7 @@ class Node extends EventEmitter {
     _options = _options || {}
 
     this._isStarted = false
+    this.relayCircuit = null
 
     this.swarm = new Swarm(this.peerInfo, this.peerBook)
 
@@ -42,6 +44,24 @@ class Node extends EventEmitter {
 
       // If muxer exists, we can use Identify
       this.swarm.connection.reuse()
+
+      // enable circuit relaying
+      // TODO: move defaults elsewhere
+      _options.Relay = Object.assign({
+        Circuit: {
+          Enabled: false,
+          Active: false
+        },
+        DialMode: 'onion'
+      }, _options.Relay)
+
+      if (_options.Relay.Circuit.Enabled) {
+        this.relayCircuit = new Circuit.Relay(_options.Relay.Circuit)
+        this.relayCircuit.mount(this.swarm)
+      }
+
+      // If muxer exists, we can use Relay for listening/dialing
+      this.swarm.connection.relay(_options.Relay)
 
       // Received incommind dial and muxer upgrade happened,
       // reuse this muxed connection
