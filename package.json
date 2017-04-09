@@ -59,12 +59,14 @@
     "pull-serializer": "^0.3.2",
     "pull-stream": "^3.6.0",
     "safe-buffer": "^5.1.1",
+    "sinon": "^2.3.6",
     "wrtc": "0.0.62"
   },
   "dependencies": {
     "async": "^2.5.0",
     "libp2p-ping": "~0.4.0",
     "libp2p-swarm": "~0.29.1",
+    "libp2p-circuit": "~0.0.1",
     "mafmt": "^2.1.8",
     "multiaddr": "^2.3.0",
     "peer-book": "~0.4.0",
