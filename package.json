@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "interface-connection": "~0.3.2",
-    "ip-address": "^5.8.6",
+    "ip-address": "^5.8.8",
     "lodash.includes": "^4.3.0",
     "lodash.isfunction": "^3.0.8",
     "mafmt": "^2.1.8",
