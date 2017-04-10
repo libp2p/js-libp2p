@@ -46,8 +46,8 @@
     "ip-address": "^5.8.6",
     "lodash.includes": "^4.3.0",
     "lodash.isfunction": "^3.0.8",
-    "mafmt": "^2.1.7",
-    "multiaddr": "^2.2.3",
+    "mafmt": "^2.1.8",
+    "multiaddr": "^2.3.0",
     "once": "^1.4.0",
     "stream-to-pull-stream": "^1.7.2"
   },

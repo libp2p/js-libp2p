@@ -12,40 +12,41 @@ const log = debug('libp2p:tcp:dial')
 
 const createListener = require('./listener')
 
-module.exports = class TCP {
-  dial (ma, options, cb) {
+function noop () {}
+
+class TCP {
+  dial (ma, options, callback) {
     if (isFunction(options)) {
-      cb = options
+      callback = options
       options = {}
     }
 
-    if (!cb) {
-      cb = () => {}
-    }
+    callback = callback || noop
 
-    cb = once(cb)
+    callback = once(callback)
     const cOpts = ma.toOptions()
     log('Connecting to %s %s', cOpts.port, cOpts.host)
 
     const rawSocket = net.connect(cOpts)
+
     rawSocket.once('timeout', () => {
       log('timeout')
       rawSocket.emit('error', new Error('Timeout'))
     })
 
-    rawSocket.once('error', cb)
+    rawSocket.once('error', callback)
 
     rawSocket.once('connect', () => {
-      rawSocket.removeListener('error', cb)
-      cb()
+      rawSocket.removeListener('error', callback)
+      callback()
     })
 
     const socket = toPull.duplex(rawSocket)
 
     const conn = new Connection(socket)
 
-    conn.getObservedAddrs = (cb) => {
-      return cb(null, [ma])
+    conn.getObservedAddrs = (callback) => {
+      return callback(null, [ma])
     }
 
     return conn
@@ -74,3 +75,5 @@ module.exports = class TCP {
     })
   }
 }
+
+module.exports = TCP
