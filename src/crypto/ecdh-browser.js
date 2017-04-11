@@ -117,8 +117,8 @@ function unmarshalPublicKey (curve, key) {
   return {
     kty: 'EC',
     crv: curve,
-    x: toBase64(x),
-    y: toBase64(y),
+    x: toBase64(x, byteLen),
+    y: toBase64(y, byteLen),
     ext: true
   }
 }

@@ -22,4 +22,10 @@ describe('Util', () => {
     expect(util.toBase64(bn)).to.be.eql('3q0')
     done()
   })
+
+  it('toBase64 zero padding', (done) => {
+    let bnpad = new BN('ff', 16)
+    expect(util.toBase64(bnpad, 2)).to.be.eql('AP8')
+    done()
+  })
 })
