@@ -158,10 +158,9 @@ class Node extends libp2p {
 - `key`: Buffer
 - `timeout`: Number miliseconds
 
-#### `libp2p.contentRouting.provide(key, timeout, callback)`
+#### `libp2p.contentRouting.provide(key, callback)`
 
 - `key`: Buffer
-- `timeout`: Number miliseconds
 
 #### `libp2p.dht.put(key, value, callback)`
 
