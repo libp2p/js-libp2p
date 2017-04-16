@@ -1,3 +1,13 @@
+<a name="0.9.1"></a>
+## [0.9.1](https://github.com/libp2p/js-libp2p/compare/v0.9.0...v0.9.1) (2017-04-16)
+
+
+### Bug Fixes
+
+* do not use assert in async funcs ([#88](https://github.com/libp2p/js-libp2p/issues/88)) ([2e326e1](https://github.com/libp2p/js-libp2p/commit/2e326e1))
+
+
+
 <a name="0.9.0"></a>
 # [0.9.0](https://github.com/libp2p/js-libp2p/compare/v0.8.0...v0.9.0) (2017-04-06)
 
