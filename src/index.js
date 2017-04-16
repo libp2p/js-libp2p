@@ -82,7 +82,9 @@ class Node extends EventEmitter {
 
     this.peerRouting = {
       findPeer: (id, callback) => {
-        assert(this._dht, 'DHT is not available')
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
 
         this._dht.findPeer(id, callback)
       }
@@ -90,12 +92,16 @@ class Node extends EventEmitter {
 
     this.contentRouting = {
       findProviders: (key, timeout, callback) => {
-        assert(this._dht, 'DHT is not available')
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
 
         this._dht.findProviders(key, timeout, callback)
       },
       provide: (key, callback) => {
-        assert(this._dht, 'DHT is not available')
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
 
         this._dht.provide(key, callback)
       }
@@ -103,17 +109,23 @@ class Node extends EventEmitter {
 
     this.dht = {
       put: (key, value, callback) => {
-        assert(this._dht, 'DHT is not available')
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
 
         this._dht.put(key, value, callback)
       },
       get: (key, callback) => {
-        assert(this._dht, 'DHT is not available')
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
 
         this._dht.get(key, callback)
       },
       getMany (key, nVals, callback) {
-        assert(this._dht, 'DHT is not available')
+        if (!this._dht) {
+          return callback(new Error('DHT is not available'))
+        }
 
         this._dht.getMany(key, nVals, callback)
       }
