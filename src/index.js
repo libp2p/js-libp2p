@@ -16,6 +16,7 @@ const config = require('./config')
 const log = config.log
 const multicodec = config.multicodec
 const ensureArray = utils.ensureArray
+const setImmediate = require('async/setImmediate')
 
 /**
  * FloodSub (aka dumbsub is an implementation of pubsub focused on
