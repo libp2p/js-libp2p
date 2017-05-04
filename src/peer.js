@@ -3,6 +3,7 @@
 const lp = require('pull-length-prefixed')
 const Pushable = require('pull-pushable')
 const pull = require('pull-stream')
+const setImmediate = require('async/setImmediate')
 
 const rpc = require('./message').rpc.RPC
 
