@@ -133,13 +133,15 @@ class FloodSub extends EventEmitter {
     const subs = rpc.subscriptions
     const msgs = rpc.msgs
 
-    if (subs && subs.length) {
-      const peer = this.peers.get(idB58Str)
-      peer.updateSubscriptions(subs)
-    }
-
     if (msgs && msgs.length) {
       this._processRpcMessages(rpc.msgs)
+    }
+
+    if (subs && subs.length) {
+      const peer = this.peers.get(idB58Str)
+      if (peer) {
+        peer.updateSubscriptions(subs)
+      }
     }
   }
 
@@ -311,7 +313,7 @@ class FloodSub extends EventEmitter {
       if (peer.isWritable) {
         peer.sendSubscriptions(topics)
       } else {
-        setTimeout(checkIfReady.bind(peer), 100)
+        setImmediate(checkIfReady.bind(peer))
       }
     }
   }

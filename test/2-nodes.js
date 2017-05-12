@@ -14,6 +14,7 @@ const utils = require('./utils')
 const first = utils.first
 const createNode = utils.createNode
 const expectSet = utils.expectSet
+const Buffer = require('safe-buffer').Buffer
 
 describe('basics between 2 nodes', () => {
   describe('fresh nodes', () => {
@@ -70,7 +71,7 @@ describe('basics between 2 nodes', () => {
           expect(fsA.peers.size).to.equal(1)
           expect(fsB.peers.size).to.equal(1)
           cb()
-        }, 250)
+        }, 1000)
       ], done)
     })
 
@@ -232,7 +233,7 @@ describe('basics between 2 nodes', () => {
           expectSet(first(fsA.peers).topics, ['Zb'])
 
           done()
-        }, 250)
+        }, 1000)
       })
     })
 
@@ -293,13 +294,11 @@ describe('basics between 2 nodes', () => {
           expect(fsA.peers.size).to.equal(1)
           expect(fsB.peers.size).to.equal(1)
 
-          fsA.stop(() => {
-            setTimeout(() => {
-              expect(fsB.peers.size).to.equal(0)
-              done()
-            }, 250)
-          })
-        }, 250)
+          fsA.stop(() => setTimeout(() => {
+            expect(fsB.peers.size).to.equal(0)
+            done()
+          }, 250))
+        }, 1000)
       })
     })
   })
