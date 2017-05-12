@@ -12,6 +12,7 @@ const Peer = require('./peer')
 const utils = require('./utils')
 const pb = require('./message')
 const config = require('./config')
+const Buffer = require('safe-buffer').Buffer
 
 const log = config.log
 const multicodec = config.multicodec
@@ -304,9 +305,15 @@ class FloodSub extends EventEmitter {
       this.subscriptions.add(topic)
     })
 
-    this.peers.forEach((peer) => {
-      peer.sendSubscriptions(topics)
-    })
+    this.peers.forEach((peer) => checkIfReady(peer))
+    // make sure that FloodSub is already mounted
+    function checkIfReady (peer) {
+      if (peer.isWritable) {
+        peer.sendSubscriptions(topics)
+      } else {
+        setTimeout(checkIfReady.bind(peer), 100)
+      }
+    }
   }
 
   /**
