@@ -310,7 +310,7 @@ class FloodSub extends EventEmitter {
     this.peers.forEach((peer) => checkIfReady(peer))
     // make sure that FloodSub is already mounted
     function checkIfReady (peer) {
-      if (peer.isWritable) {
+      if (peer && peer.isWritable) {
         peer.sendSubscriptions(topics)
       } else {
         setImmediate(checkIfReady.bind(peer))
