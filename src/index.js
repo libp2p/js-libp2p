@@ -6,6 +6,7 @@ const multiaddr = require('multiaddr')
 const EventEmitter = require('events').EventEmitter
 const debug = require('debug')
 const includes = require('lodash/includes')
+const setImmediate = require('async/setImmediate')
 
 const log = debug('libp2p:railing')
 log.error = debug('libp2p:railing:error')
