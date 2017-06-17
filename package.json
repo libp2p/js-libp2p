@@ -40,6 +40,7 @@
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
+    "async": "^2.4.1",
     "libp2p-ping": "~0.3.2",
     "libp2p-swarm": "~0.29.1",
     "mafmt": "^2.1.8",
