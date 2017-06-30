@@ -187,6 +187,8 @@ class Node extends EventEmitter {
           return each(this.modules.discovery, (d, cb) => d.start(cb), cb)
         }
         cb()
+
+        this.emit('online')
       },
       (cb) => {
         if (this._dht) {
