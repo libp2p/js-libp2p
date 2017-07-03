@@ -10,8 +10,9 @@ const PeerId = require('peer-id')
 const pull = require('pull-stream')
 const goodbye = require('pull-goodbye')
 const serializer = require('pull-serializer')
+const Buffer = require('safe-buffer').Buffer
 
-const Node = require('../src')
+const Node = require('./browser-bundle')
 const rawPeer = require('./peer.json')
 
 describe('libp2p-ipfs-browser (websockets only)', () => {
@@ -82,11 +83,11 @@ describe('libp2p-ipfs-browser (websockets only)', () => {
       expect(Object.keys(peers)).to.have.length(1)
 
       pull(
-        pull.values([Buffer('hey')]),
+        pull.values([Buffer.from('hey')]),
         conn,
         pull.collect((err, data) => {
           expect(err).to.not.exist()
-          expect(data).to.eql([Buffer('hey')])
+          expect(data).to.eql([Buffer.from('hey')])
           done()
         })
       )
@@ -130,11 +131,11 @@ describe('libp2p-ipfs-browser (websockets only)', () => {
       expect(Object.keys(peers)).to.have.length(1)
 
       pull(
-        pull.values([Buffer('hey')]),
+        pull.values([Buffer.from('hey')]),
         conn,
         pull.collect((err, data) => {
           expect(err).to.not.exist()
-          expect(data).to.eql([Buffer('hey')])
+          expect(data).to.eql([Buffer.from('hey')])
           done()
         })
       )
@@ -160,7 +161,7 @@ describe('libp2p-ipfs-browser (websockets only)', () => {
     it('one big write', (done) => {
       nodeA.dial(peerB, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
-        const rawMessage = new Buffer(100000)
+        const rawMessage = Buffer.alloc(100000)
         rawMessage.fill('a')
 
         const s = serializer(goodbye({
@@ -168,7 +169,7 @@ describe('libp2p-ipfs-browser (websockets only)', () => {
           sink: pull.collect((err, results) => {
             expect(err).to.not.exist()
             expect(results).to.have.length(1)
-            expect(Buffer(results[0])).to.have.length(rawMessage.length)
+            expect(Buffer.from(results[0])).to.have.length(rawMessage.length)
             done()
           })
         }))
@@ -184,7 +185,7 @@ describe('libp2p-ipfs-browser (websockets only)', () => {
           source: pull(
             pull.infinite(),
             pull.take(1000),
-            pull.map((val) => Buffer(val.toString()))
+            pull.map((val) => Buffer.from(val.toString()))
           ),
           sink: pull.collect((err, result) => {
             expect(err).to.not.exist()

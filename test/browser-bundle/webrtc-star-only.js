@@ -9,7 +9,7 @@ const PeerId = require('peer-id')
 const parallel = require('async/parallel')
 const pull = require('pull-stream')
 
-const Node = require('../src')
+const Node = require('./browser-bundle')
 
 describe('libp2p-ipfs-browser (webrtc only)', () => {
   let peer1

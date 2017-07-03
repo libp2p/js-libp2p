@@ -55,7 +55,10 @@
     "lodash.times": "^4.3.2",
     "mafmt": "^2.1.8",
     "pre-commit": "^1.2.2",
+    "pull-goodbye": "0.0.2",
+    "pull-serializer": "^0.3.2",
     "pull-stream": "^3.6.0",
+    "safe-buffer": "^5.1.1",
     "wrtc": "0.0.62"
   },
   "dependencies": {
