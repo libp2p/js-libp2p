@@ -6,7 +6,7 @@ const spdy = require('libp2p-spdy')
 const multiplex = require('libp2p-multiplex')
 const secio = require('libp2p-secio')
 const Railing = require('libp2p-railing')
-const libp2p = require('libp2p')
+const libp2p = require('../..')
 
 function mapMuxers (list) {
   return list.map((pref) => {

@@ -3,11 +3,10 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
-const Node = require('../src')
+const Node = require('./nodejs-bundle')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const waterfall = require('async/waterfall')
-// const map = require('async/map')
 const pull = require('pull-stream')
 
 function createNode (multiaddrs, options, callback) {

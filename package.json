@@ -4,11 +4,14 @@
   "description": "JavaScript Skeleton for libp2p bundles",
   "main": "src/index.js",
   "scripts": {
-    "test": "aegir-test node",
+    "test": "gulp test",
+    "test:node": "gulp test:node",
+    "test:browser": "gulp test:browser --dom",
+    "release": "gulp release --dom",
+    "release-minor": "gulp release --type minor --dom",
+    "release-major": "gulp release --type major --dom",
+    "build": "gulp build",
     "lint": "aegir-lint",
-    "release": "aegir-release node",
-    "release-minor": "aegir-release --type minor",
-    "release-major": "aegir-release --type major",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish"
   },

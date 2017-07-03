@@ -12,7 +12,7 @@ const utils = require('./utils')
 const createNode = utils.createNode
 const echo = utils.echo
 
-describe.only('TCP + WebSockets + WebRTCStar', () => {
+describe('TCP + WebSockets + WebRTCStar', () => {
   let nodeAll
   let nodeTCP
   let nodeWS
@@ -31,8 +31,6 @@ describe.only('TCP + WebSockets + WebRTCStar', () => {
       },
       (cb) => {
         const wstar = new WStar({wrtc: wrtc})
-        console.log('===>', wstar)
-
         createNode([
           '/ip4/0.0.0.0/tcp/0',
           '/ip4/127.0.0.1/tcp/25011/ws',
