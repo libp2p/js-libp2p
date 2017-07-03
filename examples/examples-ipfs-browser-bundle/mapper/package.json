@@ -1,0 +1,23 @@
+{
+  "name": "mapper",
+  "version": "0.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "bundle": "browserify src/index.js --require browserify-zlib-next:zlib > public/bundle.js",
+    "serve": "static public -p 9090 -H '{\"Cache-Control\": \"no-cache, must-revalidate\"}'",
+    "mon": "nodemon --exec \"npm run start\" --ignore public/bundle.js",
+    "start": "npm run bundle && npm run serve"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "browserify": "^14.0.0",
+    "browserify-optional": "^1.0.0",
+    "browserify-zlib-next": "^1.0.1",
+    "concat-stream": "^1.6.0",
+    "detect-dom-ready": "^1.0.2",
+    "node-static": "^0.7.9",
+    "nodemon": "^1.11.0"
+  },
+  "dependencies": {}
+}
