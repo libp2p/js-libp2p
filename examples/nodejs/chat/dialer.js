@@ -3,10 +3,9 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const Node = require('../../src')
+const Node = require('../../../../test/nodejs-bundle/nodejs-bundle.js')
 const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
-// const toPull = require('stream-to-pull-stream')
 const async = require('async')
 const Pushable = require('pull-pushable')
 const p = Pushable()

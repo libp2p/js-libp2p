@@ -3,7 +3,7 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const Node = require('../../src')
+const Node = require('../../../../test/nodejs-bundle/nodejs-bundle.js')
 const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
 const Pushable = require('pull-pushable')

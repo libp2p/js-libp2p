@@ -1,7 +1,7 @@
 'use strict'
 
 const PeerInfo = require('peer-info')
-const Node = require('../../../src')
+const Node = require('../../../../test/browser-bundle/browser-bundle.js')
 
 function createNode (callback) {
   PeerInfo.create((err, peerInfo) => {
