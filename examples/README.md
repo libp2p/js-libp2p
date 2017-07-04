@@ -1,6 +1,13 @@
-### Examples list
+# `js-libp2p` Examples and Tutorials
 
-Here are some examples built with libp2p bundles.
+In this folder, you can find a variety of examples to help you get started in using js-libp2p, in Node.js and in the Browser. Every example as a specific purpose and some of each incorporate a full tutorial that you can follow through, helping you expand your knowledge about libp2p and p2p networks in general.
 
-- https://github.com/ipfs/js-libp2p-ipfs/tree/master/examples/echo
-- https://github.com/ipfs/js-libp2p-ipfs/tree/master/examples/chat
+Let us know if you find any issue or if you want to contribute and add a new tutorial, feel welcome to submit a PR, thank you!
+
+## Examples
+
+- [In Node.js](./nodejs)
+  - [echo](./nodejs/echo)
+  - [chat](./nodejs/chat)
+- [In the browser](./browser)
+  - [mapper](./browser/mapper)

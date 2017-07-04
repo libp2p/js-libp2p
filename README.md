@@ -28,7 +28,7 @@ libp2p is the product of a long and arduous quest to understand the evolution of
 
 We are in the process of writting better documentation, blog posts, tutorials and a formal specification. Today you can find:
 
-- [libp2p.io - The libp2p Website (WIP)](https://github.com/libp2p/website)
+- [libp2p.io](https://libp2p.io)
 - [Specification (WIP)](https://github.com/libp2p/specs)
 - Talks
   - [`libp2p <3 ethereum` at DEVCON2](https://ethereumfoundation.org/devcon/?session=libp2p) [video](https://www.youtube.com/watch?v=HxueJbeMVG4) [slides](https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p-HEART-devp2p-IPFS-PLUS-Ethereum-networking.pdf) [demo-1](https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p_demo1-1.mp4) [demo-2](https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p_demo2-1.mp4)
@@ -41,8 +41,8 @@ To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separ
 
 With its modular nature, libp2p can be found being used in different projects with different sets of features, while preserving the same top level API. `js-libp2p` is only a skeleton and should not be installed directly, if you are looking for a prebundled libp2p stack, please check:
 
-- [libp2p-ipfs-nodejs](https://github.com/ipfs/js-libp2p-ipfs-nodejs) - The libp2p build used by js-ipfs when run in Node.js
-- [libp2p-ipfs-browser](https://github.com/ipfs/js-libp2p-ipfs-browser) - The libp2p build used by js-ipfs when run in a Browser (that supports WebRTC)
+- [libp2p-ipfs-nodejs](https://github.com/ipfs/js-ipfs/tree/master/src/core/runtime/libp2p-nodejs.js) - The libp2p build used by js-ipfs when run in Node.js
+- [libp2p-ipfs-browser](https://github.com/ipfs/js-ipfs/tree/master/src/core/runtime/libp2p-browser.js) - The libp2p build used by js-ipfs when run in a Browser (that supports WebRTC)
 
 If you have developed a libp2p bundle, please consider submitting it to this list so that it can be found easily by the users of libp2p.
 
