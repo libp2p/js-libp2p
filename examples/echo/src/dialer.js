@@ -7,8 +7,7 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const Node = require('../../../../test/nodejs-bundle/nodejs-bundle.js')
-const multiaddr = require('multiaddr')
+const Node = require('./libp2p-bundle')
 const pull = require('pull-stream')
 const async = require('async')
 
@@ -21,14 +20,14 @@ async.parallel([
   // Dialer
   const dialerId = ids[0]
   const dialerPeerInfo = new PeerInfo(dialerId)
-  dialerPeerInfo.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/0'))
+  dialerPeerInfo.multiaddr.add('/ip4/0.0.0.0/tcp/0')
   const dialerNode = new Node(dialerPeerInfo)
 
   // Peer to Dial
   const listenerPeerInfo = new PeerInfo(ids[1])
   const listenerId = ids[1]
-  const listenerMultiaddr = multiaddr('/ip4/127.0.0.1/tcp/10333/ipfs/' +
-      listenerId.toB58String())
+  const listenerMultiaddr = '/ip4/127.0.0.1/tcp/10333/ipfs/' +
+      listenerId.toB58String()
   listenerPeerInfo.multiaddr.add(listenerMultiaddr)
 
   dialerNode.start((err) => {

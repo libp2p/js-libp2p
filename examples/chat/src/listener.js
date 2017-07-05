@@ -3,8 +3,7 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const Node = require('../../../../test/nodejs-bundle/nodejs-bundle.js')
-const multiaddr = require('multiaddr')
+const Node = require('./libp2p-bundle.js')
 const pull = require('pull-stream')
 const Pushable = require('pull-pushable')
 const p = Pushable()
@@ -14,7 +13,7 @@ PeerId.createFromJSON(require('./peer-id-listener'), (err, idListener) => {
     throw err
   }
   const peerListener = new PeerInfo(idListener)
-  peerListener.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/10333'))
+  peerListener.multiaddr.add('/ip4/0.0.0.0/tcp/10333')
   const nodeListener = new Node(peerListener)
 
   nodeListener.start((err) => {
