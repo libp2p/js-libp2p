@@ -1,13 +1,28 @@
-![](https://github.com/libp2p/js-libp2p/blob/fe2d097bfa072ef6733f2defb568bdc526052ee4/img/js-libp2p.png?raw=true)
+<h1 align="center">
+  <a href="libp2p.io"><img width="250" src="https://github.com/libp2p/libp2p/blob/master/logo/alternates/libp2p-logo-alt-2.png?raw=true" alt="libp2p hex logo" /></a>
+</h1>
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
-[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
-[![Build Status](https://travis-ci.org/libp2p/js-libp2p.svg?style=flat-square)](https://travis-ci.org/libp2p/js-libp2p)
-![coverage](https://img.shields.io/badge/coverage-%3F-yellow.svg?style=flat-square)
-[![Dependency Status](https://david-dm.org/libp2p/js-libp2p.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p)
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
+<h3 align="center">The JavaScript implementation of the libp2p Networking Stack.</h3>
 
-> libp2p is the networking stack of IPFS, a modular networking library to solve P2P application needs.
+<p align="center">
+  <a href="http://ipn.io"><img src="https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square" /></a>
+  <a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-blue.svg?style=flat-square" /></a>
+  <a href="http://webchat.freenode.net/?channels=%23ipfs"><img src="https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square" /></a>
+  <a href="https://waffle.io/libp2p/libp2p"><img src="https://img.shields.io/badge/pm-waffle-blue.svg?style=flat-square" /></a>
+</p>
+
+<p align="center">
+  <a href="https://travis-ci.org/libp2p/js-libp2p"><img src="https://travis-ci.org/libp2p/js-libp2p.svg?branch=master" /></a>
+  <a href="https://circleci.com/gh/libp2p/js-libp2p"><img src="https://circleci.com/gh/libp2p/js-libp2p.svg?style=svg" /></a>
+  <a href="https://coveralls.io/github/libp2p/js-libp2p?branch=master"><img src="https://coveralls.io/repos/github/libp2p/js-libp2p/badge.svg?branch=master"></a>
+  <br>
+  <a href="https://david-dm.org/libp2p/js-libp2p"><img src="https://david-dm.org/libp2p/js-libp2p.svg?style=flat-square" /></a>
+  <a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
+  <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square" /></a>
+  <a href=""><img src="https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square" /></a>
+  <a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D4.0.0-orange.svg?style=flat-square" /></a>
+  <br>
+</p>
 
 ## Table of Contents
 
