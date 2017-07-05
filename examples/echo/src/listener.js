@@ -7,8 +7,7 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const Node = require('../../../../test/nodejs-bundle/nodejs-bundle.js')
-const multiaddr = require('multiaddr')
+const Node = require('./libp2p-bundle')
 const pull = require('pull-stream')
 const series = require('async/series')
 
@@ -25,7 +24,7 @@ series([
   },
   (cb) => {
     const listenerPeerInfo = new PeerInfo(listenerId)
-    listenerPeerInfo.multiaddr.add(multiaddr('/ip4/0.0.0.0/tcp/10333'))
+    listenerPeerInfo.multiaddr.add('/ip4/0.0.0.0/tcp/10333')
     listenerNode = new Node(listenerPeerInfo)
 
     listenerNode.swarm.on('peer-mux-established', (peerInfo) => {
@@ -33,7 +32,6 @@ series([
     })
 
     listenerNode.handle('/echo/1.0.0', (protocol, conn) => pull(conn, conn))
-
     listenerNode.start(cb)
   }
 ], (err) => {
