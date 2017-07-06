@@ -17,7 +17,7 @@ const multiaddr = require('multiaddr')
 
 exports = module.exports
 
-const OFFLINE_ERROR_MESSAGE = 'The libp2p node is not started yet'
+const NOT_STARTED_ERROR_MESSAGE = 'The libp2p node is not started yet'
 
 class Node extends EventEmitter {
   constructor (_modules, _peerInfo, _peerBook, _options) {
@@ -28,7 +28,7 @@ class Node extends EventEmitter {
     this.modules = _modules
     this.peerInfo = _peerInfo
     this.peerBook = _peerBook || new PeerBook()
-    this.isOnline = false
+    this.isStarted = false
 
     this.swarm = new Swarm(this.peerInfo, this.peerBook)
 
@@ -174,9 +174,6 @@ class Node extends EventEmitter {
     series([
       (cb) => this.swarm.listen(cb),
       (cb) => {
-        // listeners on, libp2p is on
-        this.isOnline = true
-
         if (ws) {
           // always add dialing on websockets
           this.swarm.transport.add(ws.tag || ws.constructor.name, ws)
@@ -187,13 +184,15 @@ class Node extends EventEmitter {
           return each(this.modules.discovery, (d, cb) => d.start(cb), cb)
         }
         cb()
-
-        this.emit('online')
       },
       (cb) => {
         if (this._dht) {
           return this._dht.start(cb)
         }
+        cb()
+      },
+      (cb) => {
+        this.emit('start')
         cb()
       }
     ], callback)
@@ -203,7 +202,7 @@ class Node extends EventEmitter {
    * Stop the libp2p node by closing its listeners and open connections
    */
   stop (callback) {
-    this.isOnline = false
+    this.isStarted = false
 
     if (this.modules.discovery) {
       this.modules.discovery.forEach((discovery) => {
@@ -218,16 +217,20 @@ class Node extends EventEmitter {
         }
         cb()
       },
-      (cb) => this.swarm.close(cb)
+      (cb) => this.swarm.close(cb),
+      (cb) => {
+        this.emit('stop')
+        cb()
+      }
     ], callback)
   }
 
-  isOn () {
-    return this.isOnline
+  isStarted () {
+    return this.isStarted
   }
 
   ping (peer, callback) {
-    assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
+    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
     this._getPeerInfo(peer, (err, peerInfo) => {
       if (err) {
         return callback(err)
@@ -238,7 +241,7 @@ class Node extends EventEmitter {
   }
 
   dial (peer, protocol, callback) {
-    assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
+    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
 
     if (typeof protocol === 'function') {
       callback = protocol
@@ -261,7 +264,7 @@ class Node extends EventEmitter {
   }
 
   hangUp (peer, callback) {
-    assert(this.isOn(), OFFLINE_ERROR_MESSAGE)
+    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
 
     this._getPeerInfo(peer, (err, peerInfo) => {
       if (err) {
