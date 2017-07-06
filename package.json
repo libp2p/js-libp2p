@@ -1,7 +1,7 @@
 {
   "name": "libp2p",
   "version": "0.10.0",
-  "description": "JavaScript Skeleton for libp2p bundles",
+  "description": "JavaScript base class for libp2p bundles",
   "main": "src/index.js",
   "scripts": {
     "test": "gulp test",
