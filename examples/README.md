@@ -4,8 +4,23 @@ In this folder, you can find a variety of examples to help you get started in us
 
 Let us know if you find any issue or if you want to contribute and add a new tutorial, feel welcome to submit a PR, thank you!
 
-## Examples
+## Understanding how libp2p works
 
+- [Transports]()
+- [Stream and Protocol Muxing]()
+- [Encrypted Communications]()
+- [Discovery Mechanisms]()
+- [Peer Routing]()
+- [Content Routing]()
+- [PubSub]()
+- [NAT Traversal]()
+- Circuit Relay (future)
+- Naming (future)
+
+## Other examples
+
+- [Running libp2p in the Browser]()
+- Running libp2p in the Electron (future)
 - [The standard echo net example with libp2p](./echo)
 - [A simple chat app with](./chat)
 - [See other nodes in the network using WebRTC Star discovery mechanism](./see-nodes)
