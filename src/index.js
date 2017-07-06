@@ -28,7 +28,7 @@ class Node extends EventEmitter {
     this.modules = _modules
     this.peerInfo = _peerInfo
     this.peerBook = _peerBook || new PeerBook()
-    this.isStarted = false
+    this._isStarted = false
 
     this.swarm = new Swarm(this.peerInfo, this.peerBook)
 
@@ -156,7 +156,6 @@ class Node extends EventEmitter {
       }
     })
     this.peerInfo.multiaddrs.replace(maOld, maNew)
-
     const multiaddrs = this.peerInfo.multiaddrs.toArray()
 
     transports.forEach((transport) => {
@@ -186,6 +185,9 @@ class Node extends EventEmitter {
         cb()
       },
       (cb) => {
+        // TODO: chicken-and-egg problem:
+        // have to set started here because DHT requires libp2p is already started
+        this._isStarted = true
         if (this._dht) {
           return this._dht.start(cb)
         }
@@ -202,7 +204,7 @@ class Node extends EventEmitter {
    * Stop the libp2p node by closing its listeners and open connections
    */
   stop (callback) {
-    this.isStarted = false
+    this._isStarted = false
 
     if (this.modules.discovery) {
       this.modules.discovery.forEach((discovery) => {
@@ -226,7 +228,7 @@ class Node extends EventEmitter {
   }
 
   isStarted () {
-    return this.isStarted
+    return this._isStarted
   }
 
   ping (peer, callback) {
