@@ -85,6 +85,8 @@
     "safe-buffer": "^5.1.1"
   },
   "contributors": [
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>"
+    "David Dias <daviddias.p@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Pedro Teixeira <i@pgte.me>"
   ]
 }
