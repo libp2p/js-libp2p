@@ -220,6 +220,8 @@ Let's update our flow to create nodes and see how they behave when dialing to ea
 ```JavaScript
 parallel([
   (cb) => createNode('/ip4/0.0.0.0/tcp/0', cb),
+  // Here we add an extra multiaddr that has a /ws at the end, this means that we want
+  // to create a TCP socket, but mount it as WebSockets instead.
   (cb) => createNode(['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws'], cb),
   (cb) => createNode('/ip4/127.0.0.1/tcp/20000/ws', cb)
 ], (err, nodes) => {
@@ -237,18 +239,21 @@ parallel([
   node2.handle('/print', print)
   node3.handle('/print', print)
 
+  // node 1 (TCP) dials to node 2 (TCP+WebSockets)
   node1.dial(node2.peerInfo, '/print', (err, conn) => {
     if (err) { throw err }
 
     pull(pull.values(['node 1 dialed to node 2 successfully']), conn)
   })
 
+  // node 2 (TCP+WebSockets) dials to node 2 (WebSockets)
   node2.dial(node3.peerInfo, '/print', (err, conn) => {
     if (err) { throw err }
 
     pull(pull.values(['node 2 dialed to node 3 successfully']), conn)
   })
 
+  // node 3 (WebSockets) attempts to dial to node 1 (TCP)
   node3.dial(node1.peerInfo, '/print', (err, conn) => {
     if (err) {
       console.log('node 3 failed to dial to node 1 with:', err.message)
@@ -291,7 +296,10 @@ As expected, we created 3 nodes, node 1 with TCP, node 2 with TCP+WebSockets and
 
 ## 4. How to create a new libp2p transport
 
-- interface-transport
-- follow the interface
-- show other examples (webrtc, utp, udt (wip), etc)
-- 
+Today there are already 3 transports available, one in the works and plenty to come, you can find these at [interface-transport implementations](https://github.com/libp2p/interface-transport#modules-that-implement-the-interface) list.
+
+Adding more transports is done through the same way as you added TCP and WebSockets. Some transports might offer extra functionalities but for what is libp2p concern, as long as it follows the interface defined at the [spec](https://github.com/libp2p/interface-transport#api), it will be able to use it.
+
+If you decide to implement a transport yourself, please consider adding to the list so that others can use it as well.
+
+Hope this tutorial was useful. We are always looking to improve it, contributions are welcome!
