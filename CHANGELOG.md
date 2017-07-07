@@ -1,3 +1,18 @@
+<a name="0.10.0"></a>
+# [0.10.0](https://github.com/libp2p/js-libp2p/compare/v0.9.1...v0.10.0) (2017-07-07)
+
+
+### Bug Fixes
+
+* added missing dep async ([45b0f61](https://github.com/libp2p/js-libp2p/commit/45b0f61))
+
+
+### Features
+
+* state events and query changes ([#100](https://github.com/libp2p/js-libp2p/issues/100)) ([73f2f6d](https://github.com/libp2p/js-libp2p/commit/73f2f6d))
+
+
+
 <a name="0.9.1"></a>
 ## [0.9.1](https://github.com/libp2p/js-libp2p/compare/v0.9.0...v0.9.1) (2017-04-16)
 
