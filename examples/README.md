@@ -7,7 +7,7 @@ Let us know if you find any issue or if you want to contribute and add a new tut
 ## Understanding how libp2p works
 
 - [Transports](./transports)
-- [Stream and Protocol Muxing](./protocol-and-stream-muxing)
+- [Protocol and Stream Muxing](./protocol-and-stream-muxing)
 - [Encrypted Communications](./encrypted-communications)
 - [Discovery Mechanisms](./discovery-mechanisms)
 - [Peer Routing](./peer-routing)
