@@ -54,7 +54,6 @@
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.1",
     "peer-book": "~0.4.0",
-    "pull-stream": "^3.5.0",
     "webrtcsupport": "^2.2.0"
   },
   "dependencies": {
@@ -70,7 +69,8 @@
     "once": "^1.4.0",
     "peer-id": "~0.8.7",
     "peer-info": "~0.9.2",
-    "protocol-buffers": "^3.2.1"
+    "protocol-buffers": "^3.2.1",
+    "pull-stream": "^3.5.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
