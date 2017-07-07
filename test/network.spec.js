@@ -4,11 +4,12 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const Libp2p = require('libp2p-ipfs-nodejs')
+const Libp2p = require('./nodejs-bundle')
 const Connection = require('interface-connection').Connection
 const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
 const series = require('async/series')
+const Buffer = require('safe-buffer').Buffer
 
 const DHT = require('../src')
 const Message = require('../src/message')
@@ -52,12 +53,12 @@ describe('Network', () => {
         }
       }
 
-      const msg = new Message(Message.TYPES.PING, new Buffer('hello'), 0)
+      const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
 
       // mock it
       libp2p.dial = (peer, protocol, callback) => {
         expect(protocol).to.eql('/ipfs/kad/1.0.0')
-        const msg = new Message(Message.TYPES.FIND_NODE, new Buffer('world'), 0)
+        const msg = new Message(Message.TYPES.FIND_NODE, Buffer.from('world'), 0)
 
         const rawConn = {
           source: pull(
@@ -93,7 +94,7 @@ describe('Network', () => {
         }
       }
 
-      const msg = new Message(Message.TYPES.PING, new Buffer('hello'), 0)
+      const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
 
       // mock it
       libp2p.dial = (peer, protocol, callback) => {

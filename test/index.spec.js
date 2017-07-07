@@ -12,8 +12,9 @@ const retry = require('async/retry')
 const each = require('async/each')
 const waterfall = require('async/waterfall')
 const Record = require('libp2p-record').Record
-const Libp2p = require('libp2p-ipfs-nodejs')
+const Libp2p = require('./nodejs-bundle')
 const random = require('lodash.random')
+const Buffer = require('safe-buffer').Buffer
 const _ = require('lodash')
 
 const KadDHT = require('../src')
@@ -41,10 +42,8 @@ describe('DHT', () => {
     })
   })
 
-  afterEach((done) => {
-    // Give the nodes some time to finish request
-    setTimeout(() => util.teardown(done), 100)
-  })
+  // Give the nodes some time to finish request
+  afterEach((done) => setTimeout(() => util.teardown(done), 100))
 
   it('create', () => {
     const libp2p = new Libp2p(infos[0])
@@ -64,14 +63,10 @@ describe('DHT', () => {
 
       waterfall([
         (cb) => connect(dhtA, dhtB, cb),
-        (cb) => {
-          dhtA.put(new Buffer('/v/hello'), new Buffer('world'), cb)
-        },
-        (cb) => {
-          dhtB.get(new Buffer('/v/hello'), 1000, cb)
-        },
+        (cb) => dhtA.put(Buffer.from('/v/hello'), Buffer.from('world'), cb),
+        (cb) => dhtB.get(Buffer.from('/v/hello'), 1000, cb),
         (res, cb) => {
-          expect(res).to.be.eql(new Buffer('world'))
+          expect(res).to.eql(Buffer.from('world'))
           cb()
         }
       ], done)

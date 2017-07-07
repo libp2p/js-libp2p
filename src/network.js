@@ -43,7 +43,7 @@ class Network {
       return cb(new Error('Network is already running'))
     }
 
-    if (!this.dht.isRunning || !this.dht.libp2p.isOnline) {
+    if (!this.dht.isRunning || !this.dht.libp2p.isStarted()) {
       return cb(new Error('Can not start network'))
     }
 
@@ -92,7 +92,7 @@ class Network {
    * @type {bool}
    */
   get isConnected () {
-    return this.dht.libp2p.isOnline && this.dht.isRunning && this.isOnline
+    return this.dht.libp2p.isStarted() && this.dht.isRunning && this.isOnline
   }
 
   /**

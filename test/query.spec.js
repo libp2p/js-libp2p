@@ -4,7 +4,8 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const Libp2p = require('libp2p-ipfs-nodejs')
+const Libp2p = require('./nodejs-bundle')
+const Buffer = require('safe-buffer').Buffer
 
 const DHT = require('../src')
 const Query = require('../src/query')
@@ -44,7 +45,7 @@ describe('Query', () => {
         expect(p.id).to.eql(infos[2].id.id)
 
         return cb(null, {
-          value: new Buffer('cool'),
+          value: Buffer.from('cool'),
           success: true
         })
       }
@@ -57,7 +58,7 @@ describe('Query', () => {
     const q = new Query(dht, peer.id.id, query)
     q.run([infos[1].id], (err, res) => {
       expect(err).to.not.exist()
-      expect(res.value).to.eql(new Buffer('cool'))
+      expect(res.value).to.eql(Buffer.from('cool'))
       expect(res.success).to.eql(true)
       expect(res.finalSet.size).to.eql(2)
       done()

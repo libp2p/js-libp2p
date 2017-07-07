@@ -7,7 +7,7 @@ const expect = chai.expect
 const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
 const Connection = require('interface-connection').Connection
-const Libp2p = require('libp2p-ipfs-nodejs')
+const Libp2p = require('./../nodejs-bundle')
 
 const Message = require('../../src/message')
 const Dht = require('../../src')
@@ -35,13 +35,13 @@ describe('rpc', () => {
       const dht = new Dht(libp2p)
       dht.peerBook.put(infos[1])
 
-      const msg = new Message(Message.TYPES.GET_VALUE, new Buffer('hello'), 5)
+      const msg = new Message(Message.TYPES.GET_VALUE, Buffer.from('hello'), 5)
 
       const conn = makeConnection(msg, infos[1], (err, res) => {
         expect(err).to.not.exist()
         expect(res).to.have.length(1)
         const msg = Message.deserialize(res[0])
-        expect(msg).to.have.property('key').eql(new Buffer('hello'))
+        expect(msg).to.have.property('key').eql(Buffer.from('hello'))
         expect(msg).to.have.property('closerPeers').eql([])
 
         done()
