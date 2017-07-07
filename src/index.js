@@ -33,7 +33,7 @@ class Node extends EventEmitter {
     this.swarm = new Swarm(this.peerInfo, this.peerBook)
 
     // Attach stream multiplexers
-    if (this.modules.connection.muxer) {
+    if (this.modules.connection && this.modules.connection.muxer) {
       let muxers = this.modules.connection.muxer
       muxers = Array.isArray(muxers) ? muxers : [muxers]
       muxers.forEach((muxer) => this.swarm.connection.addStreamMuxer(muxer))
@@ -54,7 +54,7 @@ class Node extends EventEmitter {
     }
 
     // Attach crypto channels
-    if (this.modules.connection.crypto) {
+    if (this.modules.connection && this.modules.connection.crypto) {
       let cryptos = this.modules.connection.crypto
       cryptos = Array.isArray(cryptos) ? cryptos : [cryptos]
       cryptos.forEach((crypto) => {
