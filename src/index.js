@@ -67,12 +67,13 @@ class FloodSub extends EventEmitter {
     // If already have a PubSub conn, ignore
     const peer = this.peers.get(idB58Str)
     if (peer && peer.isConnected) {
-      return
+      return callback()
     }
 
     this.libp2p.dial(peerInfo, multicodec, (err, conn) => {
       if (err) {
-        return log.err(err)
+        log.err(err)
+        return callback()
       }
 
       this._onDial(peerInfo, conn, callback)
