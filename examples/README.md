@@ -6,20 +6,20 @@ Let us know if you find any issue or if you want to contribute and add a new tut
 
 ## Understanding how libp2p works
 
-- [Transports]()
-- [Stream and Protocol Muxing]()
-- [Encrypted Communications]()
-- [Discovery Mechanisms]()
-- [Peer Routing]()
-- [Content Routing]()
-- [PubSub]()
-- [NAT Traversal]()
+- [Transports](./transports)
+- [Stream and Protocol Muxing](./protocol-and-stream-muxing)
+- [Encrypted Communications](./encrypted-communications)
+- [Discovery Mechanisms](./discovery-mechanisms)
+- [Peer Routing](./peer-routing)
+- [Content Routing](./content-routing)
+- [PubSub](./pubsub)
+- [NAT Traversal](./nat-traversal)
 - Circuit Relay (future)
 - Naming (future)
 
 ## Other examples
 
-- [Running libp2p in the Browser]()
+- [Running libp2p in the Browser](./libp2p-in-the-browser)
 - Running libp2p in the Electron (future)
 - [The standard echo net example with libp2p](./echo)
 - [A simple chat app with](./chat)
