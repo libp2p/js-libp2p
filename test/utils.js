@@ -2,8 +2,7 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const multiaddr = require('multiaddr')
-const Node = require('libp2p-ipfs-nodejs')
+const Node = require('./nodejs-bundle')
 const waterfall = require('async/waterfall')
 const expect = require('chai').expect
 
@@ -18,16 +17,9 @@ exports.createNode = (maddr, callback) => {
     (cb) => PeerId.create({ bits: 1024 }, cb),
     (id, cb) => PeerInfo.create(id, cb),
     (peer, cb) => {
-      peer.multiaddrs.add(multiaddr(maddr))
+      peer.multiaddrs.add(maddr)
       cb(null, new Node(peer))
     },
-    (node, cb) => {
-      node.start((err) => {
-        if (err) {
-          return cb(err)
-        }
-        cb(null, node)
-      })
-    }
+    (node, cb) => node.start((err) => cb(err, node))
   ], callback)
 }
