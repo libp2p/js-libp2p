@@ -92,11 +92,87 @@ That `QmW2cKTakTYqbQkUzBTEGXgWYFj1YEPeUndE1YWs6CBzDQ` is the PeerId that was cre
 
 Now that we have our bundle, let's create two nodes and make them dial to each other! You can find the complete solution at [2.js](/2.js).
 
+For this step, we will need one more dependency.
 
+```bash
+> npm install pull-stream
+```
+
+We are going to reuse the MyBundle class from step 1, but this time to make things simpler, we will create two functions, one to create nodes and another to print the addrs to avoid duplicating code.
+
+```JavaScript
+function createNode (callback) {
+  let node
+
+  waterfall([
+    (cb) => PeerInfo.create(cb),
+    (peerInfo, cb) => {
+      peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
+      node = new MyBundle(peerInfo)
+      node.start(cb)
+    }
+  ], (err) => callback(err, node))
+}
+
+function printAddrs (node, number) {
+  console.log('node %s is listening on:', number)
+  node.peerInfo.multiaddrs.forEach((ma) => console.log(ma.toString()))
+}
+```
+
+Now we are going to use `async/parallel` to create two nodes, print their addresses and dial from one node to the other.
+
+```
+parallel([
+  (cb) => createNode(cb),
+  (cb) => createNode(cb)
+], (err, nodes) => {
+  if (err) { throw err }
+
+  const node1 = nodes[0]
+  const node2 = nodes[1]
+
+  printAddrs(node1, '1')
+  printAddrs(node2, '2')
+
+  node2.handle('/print', (protocol, conn) => {
+    pull(
+      conn,
+      pull.map((v) => v.toString()),
+      pull.log()
+    )
+  })
+
+  node1.dial(node2.peerInfo, '/print', (err, conn) => {
+    if (err) { throw err }
+
+    pull(pull.values(['Hello', ' ', 'p2p', ' ', 'world', '!']), conn)
+  })
+})
+```
+
+The result should be look like:
+
+```bash
+> node 2.js
+node 1 is listening on:
+/ip4/127.0.0.1/tcp/62279/ipfs/QmeM4wNWv1uci7UJjUXZYfvcy9uqAbw7G9icuxdqy88Mj9
+/ip4/192.168.2.156/tcp/62279/ipfs/QmeM4wNWv1uci7UJjUXZYfvcy9uqAbw7G9icuxdqy88Mj9
+node 2 is listening on:
+/ip4/127.0.0.1/tcp/62278/ipfs/QmWp58xJgzbouNJcyiNNTpZuqQCJU8jf6ixc7TZT9xEZhV
+/ip4/192.168.2.156/tcp/62278/ipfs/QmWp58xJgzbouNJcyiNNTpZuqQCJU8jf6ixc7TZT9xEZhV
+Hello p2p world!
+```
 
 ## 3. Using multiple transports
 
-- show TCP + websockets
+Next, we want to be available in multiple transports to increase our chances of having common transports in the network. A simple scenario, a node running in the browser only has access to HTTP, WebSockets and WebRTC since the browser doesn't let you open any other kind of transport, for this node to dial to some other node, that other node needs to share a common transport.
+
+What we are going to do in this step is to create 3 nodes, one with TCP, another with TCP+WebSockets and another one with just WebSockets. The full solution can be found on [3.js](3.js)
+
+AKLSDJAKLSDJAKLSDJAKLSJ
+
+
 
 ## 4. How to create a new libp2p transport
 
