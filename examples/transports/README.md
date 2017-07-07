@@ -168,11 +168,126 @@ Hello p2p world!
 
 Next, we want to be available in multiple transports to increase our chances of having common transports in the network. A simple scenario, a node running in the browser only has access to HTTP, WebSockets and WebRTC since the browser doesn't let you open any other kind of transport, for this node to dial to some other node, that other node needs to share a common transport.
 
-What we are going to do in this step is to create 3 nodes, one with TCP, another with TCP+WebSockets and another one with just WebSockets. The full solution can be found on [3.js](3.js)
+What we are going to do in this step is to create 3 nodes, one with TCP, another with TCP+WebSockets and another one with just WebSockets. The full solution can be found on [3.js](3.js).
 
-AKLSDJAKLSDJAKLSDJAKLSJ
+In this example, we will need to also install `libp2p-websockets`, go ahead and install:
 
+```sh
+> npm install libp2p-websockets
+```
 
+We want to create 3 nodes, one with TCP, one with TCP+WebSockets and one with just WebSockets. We need to update our `MyBundle` class to contemplate WebSockets as well:
+
+```JavaScript
+const WebSockets = require('libp2p-websockets')
+// ...
+
+class MyBundle extends libp2p {
+  constructor (peerInfo) {
+    const modules = {
+      transport: [new TCP(), new WebSockets()]
+    }
+    super(modules, peerInfo)
+  }
+}
+```
+
+Now that we have our bundle ready, let's upgrade our createNode function to enable us to pick the addrs in which a node will start a listener.
+
+```JavaScript
+function createNode (addrs, callback) {
+  if (!Array.isArray(addrs)) {
+    addrs = [addrs]
+  }
+
+  let node
+
+  waterfall([
+    (cb) => PeerInfo.create(cb),
+    (peerInfo, cb) => {
+      addrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
+      node = new MyBundle(peerInfo)
+      node.start(cb)
+    }
+  ], (err) => callback(err, node))
+}
+```
+
+As a rule, a libp2p node will only be capable of using a transport if: a) it has the module for it and b) it was given a multiaddr to listen on. The only exception to this rule is WebSockets in the browser, where a node can dial out, but unfortunately cannot open a socket.
+
+Let's update our flow to create nodes and see how they behave when dialing to each other:
+
+```JavaScript
+parallel([
+  (cb) => createNode('/ip4/0.0.0.0/tcp/0', cb),
+  (cb) => createNode(['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws'], cb),
+  (cb) => createNode('/ip4/127.0.0.1/tcp/20000/ws', cb)
+], (err, nodes) => {
+  if (err) { throw err }
+
+  const node1 = nodes[0]
+  const node2 = nodes[1]
+  const node3 = nodes[2]
+
+  printAddrs(node1, '1')
+  printAddrs(node2, '2')
+  printAddrs(node3, '3')
+
+  node1.handle('/print', print)
+  node2.handle('/print', print)
+  node3.handle('/print', print)
+
+  node1.dial(node2.peerInfo, '/print', (err, conn) => {
+    if (err) { throw err }
+
+    pull(pull.values(['node 1 dialed to node 2 successfully']), conn)
+  })
+
+  node2.dial(node3.peerInfo, '/print', (err, conn) => {
+    if (err) { throw err }
+
+    pull(pull.values(['node 2 dialed to node 3 successfully']), conn)
+  })
+
+  node3.dial(node1.peerInfo, '/print', (err, conn) => {
+    if (err) {
+      console.log('node 3 failed to dial to node 1 with:', err.message)
+    }
+  })
+})
+```
+
+`print` is a function created using the code from 2.js, but factored into its own function to save lines, here it is:
+
+```JavaScript
+function print (protocol, conn) {
+  pull(
+    conn,
+    pull.map((v) => v.toString()),
+    pull.log()
+  )
+}
+```
+
+If everything was set correctly, you now should see the following after you run the script:
+
+```Bash
+> node 3.js
+node 1 is listening on:
+/ip4/127.0.0.1/tcp/62620/ipfs/QmWpWmcVJkF6EpmAaVDauku8g1uFGuxPsGP35XZp9GYEqs
+/ip4/192.168.2.156/tcp/62620/ipfs/QmWpWmcVJkF6EpmAaVDauku8g1uFGuxPsGP35XZp9GYEqs
+node 2 is listening on:
+/ip4/127.0.0.1/tcp/10000/ws/ipfs/QmWAQtWdzWXibgfyc7WRHhhv6MdqVKzXvyfSTnN2aAvixX
+/ip4/127.0.0.1/tcp/62619/ipfs/QmWAQtWdzWXibgfyc7WRHhhv6MdqVKzXvyfSTnN2aAvixX
+/ip4/192.168.2.156/tcp/62619/ipfs/QmWAQtWdzWXibgfyc7WRHhhv6MdqVKzXvyfSTnN2aAvixX
+node 3 is listening on:
+/ip4/127.0.0.1/tcp/20000/ws/ipfs/QmVq1PWh3VSDYdFqYMtqp4YQyXcrH27N7968tGdM1VQPj1
+node 3 failed to dial to node 1 with: No available transport to dial to
+node 1 dialed to node 2 successfully
+node 2 dialed to node 3 successfully
+```
+
+As expected, we created 3 nodes, node 1 with TCP, node 2 with TCP+WebSockets and node 3 with just WebSockets. node 1 -> node 2 and node 2 -> node 3 managed to dial correctly because they shared a common transport, however, node 3 -> node 1 failed because they didn't share any.
 
 ## 4. How to create a new libp2p transport
 
