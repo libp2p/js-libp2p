@@ -6,9 +6,10 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 const PeerInfo = require('peer-info')
+const PeerBook = require('peer-book')
+
 const Swarm = require('libp2p-swarm')
 const TCP = require('libp2p-tcp')
-const multiaddr = require('multiaddr')
 const series = require('async/series')
 const parallel = require('async/parallel')
 
@@ -22,25 +23,21 @@ describe('libp2p ping', () => {
 
   before((done) => {
     series([
+      (cb) => PeerInfo.create((err, peerInfo) => {
+        expect(err).to.not.exist()
+        peerA = peerInfo
+        peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
+        cb()
+      }),
+      (cb) => PeerInfo.create((err, peerInfo) => {
+        expect(err).to.not.exist()
+        peerB = peerInfo
+        peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
+        cb()
+      }),
       (cb) => {
-        PeerInfo.create((err, peerInfo) => {
-          expect(err).to.not.exist()
-          peerA = peerInfo
-          peerA.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-          cb()
-        })
-      },
-      (cb) => {
-        PeerInfo.create((err, peerInfo) => {
-          expect(err).to.not.exist()
-          peerB = peerInfo
-          peerB.multiaddr.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-          cb()
-        })
-      },
-      (cb) => {
-        swarmA = new Swarm(peerA)
-        swarmB = new Swarm(peerB)
+        swarmA = new Swarm(peerA, new PeerBook())
+        swarmB = new Swarm(peerB, new PeerBook())
         swarmA.transport.add('tcp', new TCP())
         swarmB.transport.add('tcp', new TCP())
         cb()

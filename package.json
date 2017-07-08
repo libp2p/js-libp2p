@@ -30,24 +30,25 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-ping",
   "devDependencies": {
-    "aegir": "^11.0.0",
-    "async": "^2.1.5",
-    "chai": "^3.5.0",
-    "debug": "^2.6.3",
-    "dirty-chai": "^1.2.2",
+    "aegir": "^11.0.2",
+    "async": "^2.5.0",
+    "chai": "^4.0.2",
+    "debug": "^2.6.8",
+    "dirty-chai": "^2.0.0",
     "gulp": "^3.9.1",
-    "libp2p-swarm": "~0.26.19",
-    "libp2p-tcp": "~0.9.4",
-    "multiaddr": "^2.2.2",
-    "peer-id": "~0.8.4",
-    "peer-info": "~0.8.4",
+    "libp2p-swarm": "~0.29.1",
+    "libp2p-tcp": "~0.10.1",
+    "multiaddr": "^2.3.0",
+    "peer-book": "^0.4.0",
+    "peer-id": "~0.8.7",
+    "peer-info": "~0.9.2",
     "pre-commit": "^1.2.2",
     "run-parallel": "^1.1.6"
   },
   "dependencies": {
-    "libp2p-crypto": "~0.8.7",
+    "libp2p-crypto": "~0.8.8",
     "pull-handshake": "^1.1.4",
-    "pull-stream": "^3.5.0"
+    "pull-stream": "^3.6.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
