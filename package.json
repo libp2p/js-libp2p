@@ -73,6 +73,7 @@
     "pull-stream": "^3.6.0"
   },
   "contributors": [
+    "Arnaud <arnaud.valensi@gmail.com>",
     "David Dias <daviddias.p@gmail.com>",
     "David Dias <mail@daviddias.me>",
     "Francisco Baio Dias <xicombd@gmail.com>",
