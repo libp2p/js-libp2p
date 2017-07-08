@@ -18,7 +18,7 @@ class Railing extends EventEmitter {
   }
 
   start (callback) {
-    setImmediate(callback)
+    setImmediate(() => callback())
     setImmediate(() => {
       this.bootstrapers.forEach((candidate) => {
         candidate = multiaddr(candidate)

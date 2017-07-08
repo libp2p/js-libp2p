@@ -31,13 +31,13 @@
   "homepage": "https://github.com/libp2p/js-ipfs-railing",
   "devDependencies": {
     "aegir": "^11.0.2",
-    "chai": "^3.5.0",
+    "chai": "^4.0.2",
     "libp2p-swarm": "~0.29.1",
     "libp2p-tcp": "~0.10.1",
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
-    "async": "^2.4.0",
+    "async": "^2.5.0",
     "debug": "^2.6.8",
     "lodash": "^4.17.4",
     "multiaddr": "^2.3.0",
