@@ -1,6 +1,6 @@
 {
   "name": "libp2p-ping",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "libp2p Ping protocol implementation",
   "main": "src/index.js",
   "pre-commit": [
