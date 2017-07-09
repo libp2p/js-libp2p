@@ -115,7 +115,7 @@ class Node extends libp2p {
         ]
       },
       discovery: [
-        new MulticastDNS(peerInfo, 'your-identifier')
+        new MulticastDNS(peerInfo)
       ],
       // DHT is passed as its own enabling PeerRouting, ContentRouting and DHT itself components
       dht: DHT
@@ -182,19 +182,6 @@ class Node extends libp2p {
 
 - `key`: Buffer
 
-#### `libp2p.dht.put(key, value, callback)`
-
-- `key`: Buffer
-- `value`: Buffer
-
-#### `libp2p.dht.get(key, callback)`
-
-- `key`: Buffer
-
-#### `libp2p.dht.getMany(key, nVals, callback)`
-
-- `key`: Buffer
-- `nVals`: Number
 
 #### `libp2p.handle(protocol, handlerFunc [, matchFunc])`
 
@@ -228,7 +215,7 @@ class Node extends libp2p {
 
 - `peer`: instance of [PeerInfo][]
 
-#### `libp2p.isOn()`
+#### `libp2p.isStarted()`
 
 > Check if libp2p is started
 
@@ -243,6 +230,24 @@ class Node extends libp2p {
 #### `libp2p.peerInfo`
 
 > PeerInfo instance of the node
+
+---------------------
+
+`DHT methods exposed`
+
+#### `libp2p.dht.put(key, value, callback)`
+
+- `key`: Buffer
+- `value`: Buffer
+
+#### `libp2p.dht.get(key, callback)`
+
+- `key`: Buffer
+
+#### `libp2p.dht.getMany(key, nVals, callback)`
+
+- `key`: Buffer
+- `nVals`: Number
 
 ---------------------
 
