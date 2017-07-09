@@ -1,7 +1,7 @@
 'use strict'
 
 const PeerInfo = require('peer-info')
-const Node = require('./libp2p-bundle')
+const Node = require('./browser-bundle')
 
 function createNode (callback) {
   PeerInfo.create((err, peerInfo) => {
@@ -14,7 +14,7 @@ function createNode (callback) {
 
     peerInfo.multiaddrs.add(ma)
 
-    const node = new Node(peerInfo, undefined, { webRTCStar: true })
+    const node = new Node(peerInfo)
 
     node.idStr = peerIdStr
     callback(null, node)

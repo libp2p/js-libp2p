@@ -1,2 +1,14 @@
-# WIP - This example is still in the works
-![](http://1.bp.blogspot.com/-tNvSnCW0KlQ/U-KOKGVoJkI/AAAAAAAAA3Q/aiSLMeSJFtw/s1600/WIP-sign.jpg)
+# libp2p running in the Browser
+
+One of the primary goals with libp2p P2P was to get it fully working in the browser and interopable with the versions running in Go and in Node.js.
+
+# 1. Setting up a simple app that lists connections to other nodes
+
+Simple go into the folder [1](./1) and execute the following
+
+```bash
+> cd 1
+> npm install
+> npm start
+# open your browser in port :9090
+```
