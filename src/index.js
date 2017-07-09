@@ -9,6 +9,7 @@ const query = require('./query')
 class MulticastDNS extends EventEmitter {
   constructor (peerInfo, options) {
     super()
+    options = options || {}
 
     this.broadcast = options.broadcast !== false
     this.interval = options.interval || (1e3 * 10)
