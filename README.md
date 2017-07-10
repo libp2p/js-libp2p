@@ -249,18 +249,6 @@ class Node extends libp2p {
 - `key`: Buffer
 - `nVals`: Number
 
----------------------
-
-`SOON™`
-
-#### `libp2p.findPeers`
-
-#### `libp2p.findProviders`
-
-#### `libp2p.record.put`
-
-#### `libp2p.record.get`
-
 [PeerInfo]: https://github.com/libp2p/js-peer-info
 [PeerId]: https://github.com/libp2p/js-peer-id
 [PeerBook]: https://github.com/libp2p/js-peer-book
