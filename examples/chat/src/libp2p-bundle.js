@@ -8,7 +8,7 @@ const spdy = require('libp2p-spdy')
 const KadDHT = require('libp2p-kad-dht')
 const multiplex = require('libp2p-multiplex')
 const secio = require('libp2p-secio')
-const libp2p = require('../..')
+const libp2p = require('../../..')
 
 function mapMuxers (list) {
   return list.map((pref) => {

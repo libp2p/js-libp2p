@@ -20,7 +20,7 @@ async.parallel([
   // Dialer
   const dialerId = ids[0]
   const dialerPeerInfo = new PeerInfo(dialerId)
-  dialerPeerInfo.multiaddr.add('/ip4/0.0.0.0/tcp/0')
+  dialerPeerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
   const dialerNode = new Node(dialerPeerInfo)
 
   // Peer to Dial
@@ -28,7 +28,7 @@ async.parallel([
   const listenerId = ids[1]
   const listenerMultiaddr = '/ip4/127.0.0.1/tcp/10333/ipfs/' +
       listenerId.toB58String()
-  listenerPeerInfo.multiaddr.add(listenerMultiaddr)
+  listenerPeerInfo.multiaddrs.add(listenerMultiaddr)
 
   dialerNode.start((err) => {
     if (err) { throw err }
@@ -38,7 +38,7 @@ async.parallel([
           '/ipfs/' + dialerId.toB58String()))
 
     console.log('Dialing to peer:', listenerMultiaddr.toString())
-    dialerNode.dialByPeerInfo(listenerPeerInfo, '/echo/1.0.0', (err, conn) => {
+    dialerNode.dial(listenerPeerInfo, '/echo/1.0.0', (err, conn) => {
       if (err) { throw err }
 
       console.log('nodeA dialed to nodeB on protocol: /echo/1.0.0')
