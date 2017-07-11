@@ -30,12 +30,12 @@ async.parallel([
 ], (err, ids) => {
   if (err) throw err
   const peerDialer = new PeerInfo(ids[0])
-  peerDialer.multiaddr.add('/ip4/0.0.0.0/tcp/0')
+  peerDialer.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
   const nodeDialer = new Node(peerDialer)
 
   const peerListener = new PeerInfo(ids[1])
   idListener = ids[1]
-  peerListener.multiaddr.add('/ip4/127.0.0.1/tcp/10333')
+  peerListener.multiaddrs.add('/ip4/127.0.0.1/tcp/10333')
   nodeDialer.start((err) => {
     if (err) {
       throw err
@@ -47,7 +47,7 @@ async.parallel([
       console.log(ma.toString() + '/ipfs/' + idListener.toB58String())
     })
 
-    nodeDialer.dialByPeerInfo(peerListener, '/chat/1.0.0', (err, conn) => {
+    nodeDialer.dial(peerListener, '/chat/1.0.0', (err, conn) => {
       if (err) {
         throw err
       }

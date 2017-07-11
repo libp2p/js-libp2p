@@ -24,7 +24,7 @@ series([
   },
   (cb) => {
     const listenerPeerInfo = new PeerInfo(listenerId)
-    listenerPeerInfo.multiaddr.add('/ip4/0.0.0.0/tcp/10333')
+    listenerPeerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/10333')
     listenerNode = new Node(listenerPeerInfo)
 
     listenerNode.swarm.on('peer-mux-established', (peerInfo) => {

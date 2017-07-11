@@ -13,7 +13,7 @@ PeerId.createFromJSON(require('./peer-id-listener'), (err, idListener) => {
     throw err
   }
   const peerListener = new PeerInfo(idListener)
-  peerListener.multiaddr.add('/ip4/0.0.0.0/tcp/10333')
+  peerListener.multiaddrs.add('/ip4/0.0.0.0/tcp/10333')
   const nodeListener = new Node(peerListener)
 
   nodeListener.start((err) => {
