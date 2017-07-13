@@ -3,9 +3,9 @@
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
-[![Build Status](https://travis-ci.org/ipfs/js-libp2p-kad-dht.svg?style=flat-square)](https://travis-ci.org/ipfs/js-libp2p-kad-dht)
-[![Coverage Status](https://coveralls.io/repos/github/ipfs/js-libp2p-kad-dht/badge.svg?branch=master)](https://coveralls.io/github/ipfs/js-libp2p-kad-dht?branch=master)
-[![Dependency Status](https://david-dm.org/ipfs/js-libp2p-kad-dht.svg?style=flat-square)](https://david-dm.org/ipfs/js-libp2p-kad-dht)
+[![Build Status](https://travis-ci.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square)](https://travis-ci.org/libp2p/js-libp2p-kad-dht)
+[![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-kad-dht/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-kad-dht?branch=master)
+[![Dependency Status](https://david-dm.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-kad-dht)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 ![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
@@ -42,7 +42,7 @@ See https://libp2p.github.io/js-libp2p-kad-dht
 
 ## Contribute
 
-Feel free to join in. All welcome. Open an [issue](https://github.com/ipfs/js-libp2p-ipfs/issues)!
+Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/js-libp2p-ipfs/issues)!
 
 This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
 
