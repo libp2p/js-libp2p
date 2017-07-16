@@ -14,6 +14,7 @@ const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
+const Circuit = require('libp2p-circuit')
 
 exports = module.exports
 
@@ -29,6 +30,7 @@ class Node extends EventEmitter {
     this.peerInfo = _peerInfo
     this.peerBook = _peerBook || new PeerBook()
     this._isStarted = false
+    this.relayCircuit = null
 
     this.swarm = new Swarm(this.peerInfo, this.peerBook)
 
@@ -40,6 +42,14 @@ class Node extends EventEmitter {
 
       // If muxer exists, we can use Identify
       this.swarm.connection.reuse()
+
+      if (_options.relay && _options.relay.circuit) {
+        this.relayCircuit = new Circuit.Hop(_options.relay.circuit)
+        this.relayCircuit.mount(this.swarm)
+      }
+
+      // If muxer exists, we can use Relay for listening/dialing
+      this.swarm.connection.enableRelayDialing(_options.relay)
 
       // Received incommind dial and muxer upgrade happened,
       // reuse this muxed connection
@@ -293,16 +303,24 @@ class Node extends EventEmitter {
     // PeerInfo
     if (PeerInfo.isPeerInfo(peer)) {
       p = peer
-    // Multiaddr instance (not string)
+      // Multiaddr instance (not string)
     } else if (multiaddr.isMultiaddr(peer)) {
-      const peerIdB58Str = peer.getPeerId()
+      let peerId
+      if (peer.toString().includes('p2p-circuit')) {
+        // last segment is always the peer ipfs segment
+        peerId = multiaddr(peer.toString().split('p2p-circuit').pop())
+      } else {
+        peerId = peer
+      }
+
+      const peerIdB58Str = peerId.getPeerId()
       try {
         p = this.peerBook.get(peerIdB58Str)
       } catch (err) {
         p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
       }
       p.multiaddrs.add(peer)
-    // PeerId
+      // PeerId
     } else if (PeerId.isPeerId(peer)) {
       const peerIdB58Str = peer.toB58String()
       try {
