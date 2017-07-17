@@ -4,9 +4,10 @@ const waterfall = require('async/waterfall')
 
 const Message = require('../../message')
 const utils = require('../../utils')
+const Buffer = require('safe-buffer').Buffer
 
 module.exports = (dht) => {
-  const log = utils.logger(dht.self.id, 'rpc:find-node')
+  const log = utils.logger(dht.peerInfo.id, 'rpc:find-node')
 
   /**
    * Process `FindNode` DHT messages.
@@ -21,14 +22,14 @@ module.exports = (dht) => {
 
     waterfall([
       (cb) => {
-        if (msg.key.equals(dht.self.id.id)) {
-          return cb(null, [dht.self])
+        if (msg.key.equals(dht.peerInfo.id.id)) {
+          return cb(null, [dht.peerInfo])
         }
 
         dht._betterPeersToQuery(msg, peer, cb)
       },
       (closer, cb) => {
-        const response = new Message(msg.type, new Buffer(0), msg.clusterLevel)
+        const response = new Message(msg.type, Buffer.alloc(0), msg.clusterLevel)
 
         if (closer.length > 0) {
           response.closerPeers = closer

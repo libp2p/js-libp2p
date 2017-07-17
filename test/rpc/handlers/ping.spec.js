@@ -4,11 +4,11 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-
+const Buffer = require('safe-buffer').Buffer
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/ping')
 
-const util = require('../../util')
+const util = require('../../utils')
 
 const T = Message.TYPES.PING
 
@@ -35,7 +35,7 @@ describe('rpc - handlers - Ping', () => {
   })
 
   it('replies with the same message', (done) => {
-    const msg = new Message(T, new Buffer('hello'), 5)
+    const msg = new Message(T, Buffer.from('hello'), 5)
 
     handler(dht)(peers[0], msg, (err, response) => {
       expect(err).to.not.exist()

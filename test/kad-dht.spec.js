@@ -11,23 +11,26 @@ const timeout = require('async/timeout')
 const retry = require('async/retry')
 const each = require('async/each')
 const waterfall = require('async/waterfall')
-const Record = require('libp2p-record').Record
-const Libp2p = require('./nodejs-bundle')
 const random = require('lodash.random')
 const Buffer = require('safe-buffer').Buffer
 const _ = require('lodash')
+const Record = require('libp2p-record').Record
+const PeerBook = require('peer-book')
+const Swarm = require('libp2p-swarm')
+const TCP = require('libp2p-tcp')
+const Multiplex = require('libp2p-multiplex')
 
 const KadDHT = require('../src')
-const utils = require('../src/utils')
+const kadUtils = require('../src/utils')
 const c = require('../src/constants')
 
-const util = require('./util')
-const makePeers = util.makePeers
-const setupDHT = util.setupDHT
-const makeValues = util.makeValues
+const utils = require('./utils')
+const makePeers = utils.makePeers
+const setupDHT = utils.setupDHT
+const makeValues = utils.makeValues
 
-describe('DHT', () => {
-  let infos
+describe('KadDHT', () => {
+  let peerInfos
   let values
 
   before((done) => {
@@ -36,21 +39,24 @@ describe('DHT', () => {
       (cb) => makeValues(20, cb)
     ], (err, res) => {
       expect(err).to.not.exist()
-      infos = res[0]
+      peerInfos = res[0]
       values = res[1]
       done()
     })
   })
 
   // Give the nodes some time to finish request
-  afterEach((done) => setTimeout(() => util.teardown(done), 100))
+  afterEach((done) => setTimeout(() => utils.teardown(done), 100))
 
   it('create', () => {
-    const libp2p = new Libp2p(infos[0])
-    const dht = new KadDHT(libp2p, 5)
+    const swarm = new Swarm(peerInfos[0], new PeerBook())
+    swarm.transport.add('tcp', new TCP())
+    swarm.connection.addStreamMuxer(Multiplex)
+    swarm.connection.reuse()
+    const dht = new KadDHT(swarm, { kBucketSize: 5 })
 
-    expect(dht).to.have.property('self').eql(infos[0])
-    expect(dht).to.have.property('libp2p').eql(libp2p)
+    expect(dht).to.have.property('peerInfo').eql(peerInfos[0])
+    expect(dht).to.have.property('swarm').eql(swarm)
     expect(dht).to.have.property('kBucketSize', 5)
     expect(dht).to.have.property('routingTable')
   })
@@ -171,14 +177,14 @@ describe('DHT', () => {
       const dhtA = dhts[0]
       const dhtB = dhts[1]
 
-      const peerA = dhtA.self
-      const peerB = dhtB.self
+      const peerA = dhtA.peerInfo
+      const peerB = dhtB.peerInfo
       dhtA.peerBook.put(peerB)
       dhtB.peerBook.put(peerA)
 
       parallel([
-        (cb) => dhtA.libp2p.dial(peerB.id, cb),
-        (cb) => dhtB.libp2p.dial(peerA.id, cb)
+        (cb) => dhtA.swarm.dial(peerB.id, cb),
+        (cb) => dhtB.swarm.dial(peerA.id, cb)
       ], done)
     })
   })
@@ -190,7 +196,7 @@ describe('DHT', () => {
 
       const guy = dhts[0]
       const others = dhts.slice(1)
-      const val = new Buffer('foobar')
+      const val = Buffer.from('foobar')
 
       series([
         (cb) => times(20, (i, cb) => {
@@ -202,7 +208,7 @@ describe('DHT', () => {
         (cb) => times(20, (i, cb) => {
           connect(guy, others[i], cb)
         }, cb),
-        (cb) => utils.convertBuffer(val, (err, rtval) => {
+        (cb) => kadUtils.convertBuffer(val, (err, rtval) => {
           expect(err).to.not.exist()
           const rtablePeers = guy.routingTable.closestPeers(rtval, c.ALPHA)
           expect(rtablePeers).to.have.length(3)
@@ -217,20 +223,19 @@ describe('DHT', () => {
 
           series([
             (cb) => guy.getClosestPeers(val, cb),
-            (cb) => utils.sortClosestPeers(ids.slice(1), rtval, cb)
+            (cb) => kadUtils.sortClosestPeers(ids.slice(1), rtval, cb)
           ], (err, res) => {
             expect(err).to.not.exist()
             const out = res[0]
             const actualClosest = res[1]
 
-            expect(
-              out.filter((p) => !rtableSet[p.toB58String()])
-            ).to.not.be.empty()
+            expect(out.filter((p) => !rtableSet[p.toB58String()]))
+              .to.not.be.empty()
 
             expect(out).to.have.length(20)
             const exp = actualClosest.slice(0, 20)
 
-            utils.sortClosestPeers(out, rtval, (err, got) => {
+            kadUtils.sortClosestPeers(out, rtval, (err, got) => {
               expect(err).to.not.exist()
               expect(countDiffPeers(exp, got)).to.eql(0)
 
@@ -264,10 +269,10 @@ describe('DHT', () => {
     it('already known', (done) => {
       setupDHTs(2, (err, dhts, addrs, ids) => {
         expect(err).to.not.exist()
-        dhts[0].peerBook.put(dhts[1].self)
+        dhts[0].peerBook.put(dhts[1].peerInfo)
         dhts[0].getPublicKey(ids[1], (err, key) => {
           expect(err).to.not.exist()
-          expect(key).to.be.eql(dhts[1].self.id.pubKey)
+          expect(key).to.be.eql(dhts[1].peerInfo.id.pubKey)
           done()
         })
       })
@@ -288,7 +293,7 @@ describe('DHT', () => {
           },
           (key, cb) => {
             expect(
-              key.equals(dhts[1].self.id.pubKey)
+              key.equals(dhts[1].peerInfo.id.pubKey)
             ).to.eql(
               true
             )
@@ -300,50 +305,63 @@ describe('DHT', () => {
   })
 
   it('_nearestPeersToQuery', (done) => {
-    const libp2p = new Libp2p(infos[0])
-    const dht = new KadDHT(libp2p)
+    const swarm = new Swarm(peerInfos[0], new PeerBook())
+    swarm.transport.add('tcp', new TCP())
+    swarm.connection.addStreamMuxer(Multiplex)
+    swarm.connection.reuse()
+    const dht = new KadDHT(swarm)
 
-    dht.peerBook.put(infos[1])
+    dht.peerBook.put(peerInfos[1])
     series([
-      (cb) => dht._add(infos[1], cb),
+      (cb) => dht._add(peerInfos[1], cb),
       (cb) => dht._nearestPeersToQuery({key: 'hello'}, cb)
     ], (err, res) => {
       expect(err).to.not.exist()
-      expect(res[1]).to.be.eql([infos[1]])
+      expect(res[1]).to.be.eql([peerInfos[1]])
       done()
     })
   })
 
   it('_betterPeersToQuery', (done) => {
-    const libp2p = new Libp2p(infos[0])
-    const dht = new KadDHT(libp2p)
+    const swarm = new Swarm(peerInfos[0], new PeerBook())
+    swarm.transport.add('tcp', new TCP())
+    swarm.connection.addStreamMuxer(Multiplex)
+    swarm.connection.reuse()
+    const dht = new KadDHT(swarm)
 
-    dht.peerBook.put(infos[1])
-    dht.peerBook.put(infos[2])
+    dht.peerBook.put(peerInfos[1])
+    dht.peerBook.put(peerInfos[2])
 
     series([
-      (cb) => dht._add(infos[1], cb),
-      (cb) => dht._add(infos[2], cb),
-      (cb) => dht._betterPeersToQuery({key: 'hello'}, infos[1], cb)
+      (cb) => dht._add(peerInfos[1], cb),
+      (cb) => dht._add(peerInfos[2], cb),
+      (cb) => dht._betterPeersToQuery({key: 'hello'}, peerInfos[1], cb)
     ], (err, res) => {
       expect(err).to.not.exist()
-      expect(res[2]).to.be.eql([infos[2]])
+      expect(res[2]).to.be.eql([peerInfos[2]])
       done()
     })
   })
 
   describe('_verifyRecordLocally', () => {
     it('invalid record (missing public key)', (done) => {
-      const libp2p = new Libp2p(infos[0])
-      const dht = new KadDHT(libp2p)
+      const swarm = new Swarm(peerInfos[0], new PeerBook())
+      swarm.transport.add('tcp', new TCP())
+      swarm.connection.addStreamMuxer(Multiplex)
+      swarm.connection.reuse()
+      const dht = new KadDHT(swarm)
 
       // Not putting the peer info into the peerbook
-      // dht.peerBook.put(infos[1])
+      // dht.peerBook.put(peerInfos[1])
 
-      const record = new Record(new Buffer('hello'), new Buffer('world'), infos[1].id)
+      const record = new Record(
+        Buffer.from('hello'),
+        Buffer.from('world'),
+        peerInfos[1].id
+      )
 
       waterfall([
-        (cb) => record.serializeSigned(infos[1].id.privKey, cb),
+        (cb) => record.serializeSigned(peerInfos[1].id.privKey, cb),
         (enc, cb) => dht._verifyRecordLocally(Record.deserialize(enc), (err) => {
           expect(err).to.match(/Missing public key/)
           cb()
@@ -352,26 +370,40 @@ describe('DHT', () => {
     })
 
     it('valid record - signed', (done) => {
-      const libp2p = new Libp2p(infos[0])
-      const dht = new KadDHT(libp2p)
+      const swarm = new Swarm(peerInfos[0], new PeerBook())
+      swarm.transport.add('tcp', new TCP())
+      swarm.connection.addStreamMuxer(Multiplex)
+      swarm.connection.reuse()
+      const dht = new KadDHT(swarm)
 
-      dht.peerBook.put(infos[1])
+      dht.peerBook.put(peerInfos[1])
 
-      const record = new Record(new Buffer('hello'), new Buffer('world'), infos[1].id)
+      const record = new Record(
+        Buffer.from('hello'),
+        Buffer.from('world'),
+        peerInfos[1].id
+      )
 
       waterfall([
-        (cb) => record.serializeSigned(infos[1].id.privKey, cb),
+        (cb) => record.serializeSigned(peerInfos[1].id.privKey, cb),
         (enc, cb) => dht._verifyRecordLocally(Record.deserialize(enc), cb)
       ], done)
     })
 
     it('valid record - not signed', (done) => {
-      const libp2p = new Libp2p(infos[0])
-      const dht = new KadDHT(libp2p)
+      const swarm = new Swarm(peerInfos[0], new PeerBook())
+      swarm.transport.add('tcp', new TCP())
+      swarm.connection.addStreamMuxer(Multiplex)
+      swarm.connection.reuse()
+      const dht = new KadDHT(swarm)
 
-      dht.peerBook.put(infos[1])
+      dht.peerBook.put(peerInfos[1])
 
-      const record = new Record(new Buffer('hello'), new Buffer('world'), infos[1].id)
+      const record = new Record(
+        Buffer.from('hello'),
+        Buffer.from('world'),
+        peerInfos[1].id
+      )
 
       waterfall([
         (cb) => cb(null, record.serialize()),
@@ -386,21 +418,21 @@ function setupDHTs (n, callback) {
     if (err) {
       return callback(err)
     }
-    callback(null, dhts, dhts.map((d) => d.self.multiaddrs.toArray()[0]), dhts.map((d) => d.self.id))
+    callback(null, dhts, dhts.map((d) => d.peerInfo.multiaddrs.toArray()[0]), dhts.map((d) => d.peerInfo.id))
   })
 }
 
 // connect two dhts
 function connectNoSync (a, b, callback) {
-  const target = _.cloneDeep(b.self)
+  const target = _.cloneDeep(b.peerInfo)
   target.id._pubKey = target.id.pubKey
   target.id._privKey = null
-  a.libp2p.dial(target, callback)
+  a.swarm.dial(target, callback)
 }
 
 function find (a, b, cb) {
   retry({ times: 50, interval: 100 }, (cb) => {
-    a.routingTable.find(b.self.id, (err, match) => {
+    a.routingTable.find(b.peerInfo.id, (err, match) => {
       if (err) {
         return cb(err)
       }
@@ -409,11 +441,8 @@ function find (a, b, cb) {
       }
 
       try {
-        expect(
-          a.peerBook.get(b.self).multiaddrs.toArray()[0].toString()
-        ).to.eql(
-          b.self.multiaddrs.toArray()[0].toString()
-        )
+        expect(a.peerBook.get(b.peerInfo).multiaddrs.toArray()[0].toString())
+          .to.eql(b.peerInfo.multiaddrs.toArray()[0].toString())
       } catch (err) {
         return cb(err)
       }
@@ -441,10 +470,7 @@ function bootstrap (dhts) {
 
 function waitForWellFormedTables (dhts, minPeers, avgPeers, maxTimeout, callback) {
   timeout((cb) => {
-    retry({
-      times: 50,
-      interval: 200
-    }, (cb) => {
+    retry({ times: 50, interval: 200 }, (cb) => {
       let totalPeers = 0
 
       const ready = dhts.map((dht) => {

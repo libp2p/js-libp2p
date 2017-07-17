@@ -17,17 +17,15 @@ class Network {
   /**
    * Create a new network.
    *
-   * @param {DHT} dht
-   * @param {Libp2p} libp2p
+   * @param {KadDHT} self
    */
-  constructor (dht, libp2p) {
-    this.dht = dht
-    this.libp2p = libp2p
+  constructor (self) {
+    this.dht = self
     this.readMessageTimeout = c.READ_MESSAGE_TIMEOUT
-    this._log = utils.logger(this.dht.self.id, 'net')
+    this._log = utils.logger(this.dht.peerInfo.id, 'net')
     this._rpc = rpc(this.dht)
     this._onPeerConnected = this._onPeerConnected.bind(this)
-    this._online = false
+    this._running = false
   }
 
   /**
@@ -43,17 +41,18 @@ class Network {
       return cb(new Error('Network is already running'))
     }
 
-    if (!this.dht.isRunning || !this.dht.libp2p.isStarted()) {
+    // TODO add a way to check if swarm has started or not
+    if (!this.dht.isStarted) {
       return cb(new Error('Can not start network'))
     }
 
-    this._online = true
+    this._running = true
 
     // handle incoming connections
-    this.libp2p.swarm.handle(c.PROTOCOL_DHT, this._rpc)
+    this.dht.swarm.handle(c.PROTOCOL_DHT, this._rpc)
 
     // handle new connections
-    this.libp2p.on('peer:connect', this._onPeerConnected)
+    this.dht.swarm.on('peer-mux-established', this._onPeerConnected)
 
     cb()
   }
@@ -67,13 +66,13 @@ class Network {
   stop (callback) {
     const cb = (err) => setImmediate(() => callback(err))
 
-    if (!this.isOnline) {
+    if (!this.dht.isStarted && !this.isStarted) {
       return cb(new Error('Network is already stopped'))
     }
-    this._online = false
-    this.libp2p.removeListener('peer:connect', this._onPeerConnected)
+    this._running = false
+    this.dht.swarm.removeListener('peer-mux-established', this._onPeerConnected)
 
-    this.libp2p.swarm.unhandle(c.PROTOCOL_DHT)
+    this.dht.swarm.unhandle(c.PROTOCOL_DHT)
     cb()
   }
 
@@ -82,8 +81,8 @@ class Network {
    *
    * @type {bool}
    */
-  get isOnline () {
-    return this._online
+  get isStarted () {
+    return this._running
   }
 
   /**
@@ -92,7 +91,8 @@ class Network {
    * @type {bool}
    */
   get isConnected () {
-    return this.dht.libp2p.isStarted() && this.dht.isRunning && this.isOnline
+    // TODO add a way to check if swarm has started or not
+    return this.dht.isStarted && this.isStarted
   }
 
   /**
@@ -107,7 +107,7 @@ class Network {
       return this._log.error('Network is offline')
     }
 
-    this.libp2p.dial(peer, c.PROTOCOL_DHT, (err, conn) => {
+    this.dht.swarm.dial(peer, c.PROTOCOL_DHT, (err, conn) => {
       if (err) {
         return this._log('%s does not support protocol: %s', peer.id.toB58String(), c.PROTOCOL_DHT)
       }
@@ -140,7 +140,7 @@ class Network {
     }
 
     this._log('sending to: %s', to.toB58String())
-    this.dht.libp2p.dial(to, c.PROTOCOL_DHT, (err, conn) => {
+    this.dht.swarm.dial(to, c.PROTOCOL_DHT, (err, conn) => {
       if (err) {
         return callback(err)
       }
@@ -159,12 +159,12 @@ class Network {
    */
   sendMessage (to, msg, callback) {
     if (!this.isConnected) {
-      return callback(new Error('Network is offline'))
+      return setImmediate(() => callback(new Error('Network is offline')))
     }
 
     this._log('sending to: %s', to.toB58String())
 
-    this.dht.libp2p.dial(to, c.PROTOCOL_DHT, (err, conn) => {
+    this.dht.swarm.dial(to, c.PROTOCOL_DHT, (err, conn) => {
       if (err) {
         return callback(err)
       }

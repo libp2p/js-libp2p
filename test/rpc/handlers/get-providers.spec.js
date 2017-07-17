@@ -6,11 +6,12 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 const waterfall = require('async/waterfall')
+const Buffer = require('safe-buffer').Buffer
 
 const Message = require('../../../src/message')
 const utils = require('../../../src/utils')
 const handler = require('../../../src/rpc/handlers/get-providers')
-const util = require('../../util')
+const util = require('../../utils')
 
 const T = Message.TYPES.GET_PROVIDERS
 
@@ -42,7 +43,7 @@ describe('rpc - handlers - GetProviders', () => {
   })
 
   it('errors with an invalid key ', (done) => {
-    const msg = new Message(T, new Buffer('hello'), 0)
+    const msg = new Message(T, Buffer.from('hello'), 0)
 
     handler(dht)(peers[0], msg, (err, response) => {
       expect(err).to.match(/Invalid CID/)
@@ -65,9 +66,8 @@ describe('rpc - handlers - GetProviders', () => {
 
       expect(response.key).to.be.eql(v.cid.buffer)
       expect(response.providerPeers).to.have.length(1)
-      expect(
-        response.providerPeers[0].id.toB58String()
-      ).to.be.eql(dht.self.id.toB58String())
+      expect(response.providerPeers[0].id.toB58String())
+        .to.eql(dht.peerInfo.id.toB58String())
 
       done()
     })
@@ -89,14 +89,12 @@ describe('rpc - handlers - GetProviders', () => {
 
       expect(response.key).to.be.eql(v.cid.buffer)
       expect(response.providerPeers).to.have.length(1)
-      expect(
-        response.providerPeers[0].id.toB58String()
-      ).to.be.eql(prov.toB58String())
+      expect(response.providerPeers[0].id.toB58String())
+        .to.eql(prov.toB58String())
 
       expect(response.closerPeers).to.have.length(1)
-      expect(
-        response.closerPeers[0].id.toB58String()
-      ).to.be.eql(closer.id.toB58String())
+      expect(response.closerPeers[0].id.toB58String())
+        .to.eql(closer.id.toB58String())
       done()
     })
   })

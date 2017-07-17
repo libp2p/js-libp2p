@@ -3,7 +3,7 @@
 const utils = require('../../utils')
 
 module.exports = (dht) => {
-  const log = utils.logger(dht.self.id, 'rpc:ping')
+  const log = utils.logger(dht.peerInfo.id, 'rpc:ping')
 
   /**
    * Process `Ping` DHT messages.

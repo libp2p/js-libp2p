@@ -17,10 +17,11 @@ const range = require('lodash.range')
 const LevelStore = require('datastore-level')
 const path = require('path')
 const os = require('os')
+const Buffer = require('safe-buffer').Buffer
 
 const Providers = require('../src/providers')
 
-const util = require('./util')
+const util = require('./utils')
 
 describe('Providers', () => {
   let infos
@@ -61,9 +62,7 @@ describe('Providers', () => {
     waterfall([
       (cb) => map(
         range(100),
-        (i, cb) => {
-          multihashing(new Buffer(`hello ${i}`), 'sha2-256', cb)
-        },
+        (i, cb) => multihashing(Buffer.from(`hello ${i}`), 'sha2-256', cb),
         cb
       ),
       (hashes, cb) => {

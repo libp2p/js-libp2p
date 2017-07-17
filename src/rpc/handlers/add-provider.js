@@ -5,7 +5,7 @@ const CID = require('cids')
 const utils = require('../../utils')
 
 module.exports = (dht) => {
-  const log = utils.logger(dht.self.id, 'rpc:add-provider')
+  const log = utils.logger(dht.peerInfo.id, 'rpc:add-provider')
   /**
    * Process `AddProvider` DHT messages.
    *

@@ -9,7 +9,7 @@ const utils = require('../utils')
 const c = require('../constants')
 
 module.exports = (dht) => {
-  const log = utils.logger(dht.self.id, 'rpc')
+  const log = utils.logger(dht.peerInfo.id, 'rpc')
 
   const getMessageHandler = handlers(dht)
   /**

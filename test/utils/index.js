@@ -3,23 +3,23 @@
 const times = require('async/times')
 const each = require('async/each')
 const series = require('async/series')
+const setImmediate = require('async/setImmediate')
+const multihashing = require('multihashing-async')
+const waterfall = require('async/waterfall')
+const CID = require('cids')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const leftPad = require('left-pad')
-const setImmediate = require('async/setImmediate')
-const MemoryDatastore = require('interface-datastore').MemoryDatastore
-const Libp2p = require('./nodejs-bundle')
-const multihashing = require('multihashing-async')
+const PeerBook = require('peer-book')
 const crypto = require('libp2p-crypto')
-const CID = require('cids')
-const waterfall = require('async/waterfall')
+const Swarm = require('libp2p-swarm')
+const TCP = require('libp2p-tcp')
+const Multiplex = require('libp2p-multiplex')
 
-const KadDHT = require('../src')
+const KadDHT = require('../../src')
 
+// Creates multiple PeerInfos
 exports.makePeers = (n, callback) => {
-  times(n, (i, cb) => {
-    PeerId.create({bits: 1024}, cb)
-  }, (err, ids) => {
+  times(n, (i, cb) => PeerId.create({bits: 1024}, cb), (err, ids) => {
     if (err) {
       return callback(err)
     }
@@ -27,8 +27,8 @@ exports.makePeers = (n, callback) => {
   })
 }
 
+// TODO break this setupDHT to be a self contained thing.
 let nodes = []
-let i = 0
 
 exports.setupDHT = (callback) => {
   exports.makePeers(1, (err, peers) => {
@@ -37,10 +37,14 @@ exports.setupDHT = (callback) => {
     }
 
     const p = peers[0]
-    p.multiaddrs.add(`ip4/127.0.0.1/tcp/9${leftPad(i++, 3, 0)}`)
+    p.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
 
-    const libp2p = new Libp2p(p, undefined, { mdns: false })
-    const dht = new KadDHT(libp2p, 20, new MemoryDatastore())
+    const swarm = new Swarm(p, new PeerBook())
+    swarm.transport.add('tcp', new TCP())
+    swarm.connection.addStreamMuxer(Multiplex)
+    swarm.connection.reuse()
+
+    const dht = new KadDHT(swarm)
 
     dht.validators.v = {
       func (key, publicKey, callback) {
@@ -52,7 +56,7 @@ exports.setupDHT = (callback) => {
     dht.selectors.v = (k, records) => 0
 
     series([
-      (cb) => libp2p.start(cb),
+      (cb) => swarm.listen(cb),
       (cb) => dht.start(cb)
     ], (err) => {
       if (err) {
@@ -68,12 +72,10 @@ exports.teardown = (callback) => {
   each(nodes, (n, cb) => {
     series([
       (cb) => n.stop(cb),
-      (cb) => n.libp2p.stop(cb)
+      (cb) => n.swarm.close(cb)
     ], cb)
   }, (err) => {
-    // ignoring error, just shut it down
     nodes = []
-    i = 0
     callback(err)
   })
 }

@@ -8,7 +8,7 @@ const Message = require('../../message')
 const utils = require('../../utils')
 
 module.exports = (dht) => {
-  const log = utils.logger(dht.self.id, 'rpc:get-providers')
+  const log = utils.logger(dht.peerInfo.id, 'rpc:get-providers')
 
   /**
    * Process `GetProviders` DHT messages.
@@ -56,7 +56,7 @@ module.exports = (dht) => {
       })
 
       if (has) {
-        providers.push(dht.self)
+        providers.push(dht.peerInfo)
       }
 
       const response = new Message(msg.type, msg.key, msg.clusterLevel)

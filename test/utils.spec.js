@@ -10,12 +10,12 @@ const distance = require('xor-distance')
 const waterfall = require('async/waterfall')
 
 const utils = require('../src/utils')
-const makePeers = require('./util').makePeers
+const makePeers = require('./utils').makePeers
 
 describe('utils', () => {
   describe('bufferToKey', () => {
     it('returns the base32 encoded key of the buffer', () => {
-      const buf = new Buffer('hello world')
+      const buf = Buffer.from('hello world')
 
       const key = utils.bufferToKey(buf)
 
@@ -30,16 +30,13 @@ describe('utils', () => {
 
   describe('convertBuffer', () => {
     it('returns the sha2-256 hash of the buffer', (done) => {
-      const buf = new Buffer('hello world')
+      const buf = Buffer.from('hello world')
 
       utils.convertBuffer(buf, (err, digest) => {
         expect(err).to.not.exist()
 
-        expect(
-          digest
-        ).to.be.eql(
-          new Buffer('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9', 'hex')
-        )
+        expect(digest)
+          .to.eql(Buffer.from('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9', 'hex'))
         done()
       })
     })
@@ -55,7 +52,7 @@ describe('utils', () => {
       ]
 
       const ids = rawIds.map((raw) => {
-        return new PeerId(new Buffer(raw))
+        return new PeerId(Buffer.from(raw))
       })
 
       const input = [
@@ -85,12 +82,12 @@ describe('utils', () => {
 
   describe('xorCompare', () => {
     it('sorts two distances', () => {
-      const target = new Buffer('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a90')
+      const target = Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a90')
       const a = {
-        distance: distance(new Buffer('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a95'), target)
+        distance: distance(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a95'), target)
       }
       const b = {
-        distance: distance(new Buffer('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a96'), target)
+        distance: distance(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a96'), target)
       }
 
       expect(utils.xorCompare(a, b)).to.eql(-1)
@@ -104,12 +101,8 @@ describe('utils', () => {
       makePeers(1, (err, peers) => {
         expect(err).to.not.exist()
 
-        expect(
-          utils.keyForPublicKey(peers[0].id)
-        ).to.be.eql(Buffer.concat([
-          new Buffer('/pk/'),
-          peers[0].id.id
-        ]))
+        expect(utils.keyForPublicKey(peers[0].id))
+          .to.eql(Buffer.concat([Buffer.from('/pk/'), peers[0].id.id]))
         done()
       })
     })
@@ -122,14 +115,9 @@ describe('utils', () => {
 
         peers.forEach((p, i) => {
           const id = p.id
-          expect(
-            utils.isPublicKeyKey(utils.keyForPublicKey(id))
-          ).to.eql(true)
-          expect(
-            utils.fromPublicKeyKey(utils.keyForPublicKey(id)).id
-          ).to.eql(
-            id.id
-          )
+          expect(utils.isPublicKeyKey(utils.keyForPublicKey(id))).to.eql(true)
+          expect(utils.fromPublicKeyKey(utils.keyForPublicKey(id)).id)
+            .to.eql(id.id)
         })
         done()
       })

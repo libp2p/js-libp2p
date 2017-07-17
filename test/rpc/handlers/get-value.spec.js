@@ -5,11 +5,11 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const waterfall = require('async/waterfall')
-
+const Buffer = require('safe-buffer').Buffer
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/get-value')
 const utils = require('../../../src/utils')
-const util = require('../../util')
+const util = require('../../utils')
 
 const T = Message.TYPES.GET_VALUE
 
@@ -36,7 +36,7 @@ describe('rpc - handlers - GetValue', () => {
   })
 
   it('errors when missing key', (done) => {
-    const msg = new Message(T, new Buffer(0), 0)
+    const msg = new Message(T, Buffer.alloc(0), 0)
 
     handler(dht)(peers[0], msg, (err, response) => {
       expect(err).to.match(/Invalid key/)
@@ -46,8 +46,8 @@ describe('rpc - handlers - GetValue', () => {
   })
 
   it('responds with a local value', (done) => {
-    const key = new Buffer('hello')
-    const value = new Buffer('world')
+    const key = Buffer.from('hello')
+    const value = Buffer.from('world')
     const msg = new Message(T, key, 0)
 
     waterfall([
@@ -63,7 +63,7 @@ describe('rpc - handlers - GetValue', () => {
   })
 
   it('responds with closerPeers returned from the dht', (done) => {
-    const key = new Buffer('hello')
+    const key = Buffer.from('hello')
     const msg = new Message(T, key, 0)
     const other = peers[1]
 
@@ -82,7 +82,7 @@ describe('rpc - handlers - GetValue', () => {
 
   describe('public key', () => {
     it('self', (done) => {
-      const key = utils.keyForPublicKey(dht.self.id)
+      const key = utils.keyForPublicKey(dht.peerInfo.id)
 
       const msg = new Message(T, key, 0)
 
@@ -92,7 +92,7 @@ describe('rpc - handlers - GetValue', () => {
         expect(err).to.not.exist()
         expect(response.record).to.exist()
         expect(response.record.value).to.eql(
-          dht.self.id.pubKey.bytes
+          dht.peerInfo.id.pubKey.bytes
         )
         done()
       })

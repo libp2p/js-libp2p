@@ -8,12 +8,13 @@ const expect = chai.expect
 const parallel = require('async/parallel')
 const waterfall = require('async/waterfall')
 const _ = require('lodash')
+const Buffer = require('safe-buffer').Buffer
 
 const Message = require('../../../src/message')
 
 const handler = require('../../../src/rpc/handlers/add-provider')
 
-const util = require('../../util')
+const util = require('../../utils')
 
 describe('rpc - handlers - AddProvider', () => {
   let peers
@@ -46,13 +47,13 @@ describe('rpc - handlers - AddProvider', () => {
 
   describe('invalid messages', () => {
     const tests = [{
-      message: new Message(Message.TYPES.ADD_PROVIDER, new Buffer(0), 0),
+      message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.alloc(0), 0),
       error: /Missing key/
     }, {
-      message: new Message(Message.TYPES.ADD_PROVIDER, new Buffer(0), 0),
+      message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.alloc(0), 0),
       error: /Missing key/
     }, {
-      message: new Message(Message.TYPES.ADD_PROVIDER, new Buffer('hello world'), 0),
+      message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.from('hello world'), 0),
       error: /Invalid CID/
     }]
 

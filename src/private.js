@@ -128,7 +128,7 @@ module.exports = (dht) => ({
         // 5. check validity
 
         // 5. if: we are the author, all good
-        if (record.author.isEqual(dht.self.id)) {
+        if (record.author.isEqual(dht.peerInfo.id)) {
           return callback(null, record)
         }
 
@@ -226,7 +226,7 @@ module.exports = (dht) => ({
    * @private
    */
   _isSelf (other) {
-    return other && dht.self.id.id.equals(other.id)
+    return other && dht.peerInfo.id.id.equals(other.id)
   },
   /**
    * Ask peer `peer` if they know where the peer with id `target` is.
@@ -308,7 +308,7 @@ module.exports = (dht) => ({
 
         // Send out correction record
         waterfall([
-          (cb) => utils.createPutRecord(key, best, dht.self.id, true, cb),
+          (cb) => utils.createPutRecord(key, best, dht.peerInfo.id, true, cb),
           (fixupRec, cb) => each(vals, (v, cb) => {
             // no need to do anything
             if (v.val.equals(best)) {
@@ -523,7 +523,7 @@ module.exports = (dht) => ({
           (cb) => dht._findProvidersSingle(peer, key, cb),
           (msg, cb) => {
             const provs = msg.providerPeers
-            dht._log('(%s) found %s provider entries', dht.self.id.toB58String(), provs.length)
+            dht._log('(%s) found %s provider entries', dht.peerInfo.id.toB58String(), provs.length)
 
             provs.forEach((prov) => {
               out.push(dht.peerBook.put(prov))

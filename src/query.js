@@ -25,7 +25,7 @@ class Query {
     this.key = key
     this.query = query
     this.concurrency = c.ALPHA
-    this._log = utils.logger(this.dht.self.id, 'query:' + key.toString())
+    this._log = utils.logger(this.dht.peerInfo.id, 'query:' + key.toString())
   }
 
   /**

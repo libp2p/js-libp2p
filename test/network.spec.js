@@ -4,36 +4,40 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const Libp2p = require('./nodejs-bundle')
 const Connection = require('interface-connection').Connection
 const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
 const series = require('async/series')
 const Buffer = require('safe-buffer').Buffer
+const PeerBook = require('peer-book')
+const Swarm = require('libp2p-swarm')
+const TCP = require('libp2p-tcp')
+const Multiplex = require('libp2p-multiplex')
 
-const DHT = require('../src')
+const KadDHT = require('../src')
 const Message = require('../src/message')
 
-const makePeers = require('./util').makePeers
+const makePeers = require('./utils').makePeers
 
 describe('Network', () => {
-  let libp2p
-  let network
   let dht
-  let infos
+  let peerInfos
 
   before((done) => {
-    makePeers(3, (err, peers) => {
+    makePeers(3, (err, result) => {
       if (err) {
         return done(err)
       }
 
-      infos = peers
-      libp2p = new Libp2p(infos[0])
-      dht = new DHT(libp2p)
-      network = dht.network
+      peerInfos = result
+      const swarm = new Swarm(peerInfos[0], new PeerBook())
+      swarm.transport.add('tcp', new TCP())
+      swarm.connection.addStreamMuxer(Multiplex)
+      swarm.connection.reuse()
+      dht = new KadDHT(swarm)
+
       series([
-        (cb) => libp2p.start(cb),
+        (cb) => swarm.listen(cb),
         (cb) => dht.start(cb)
       ], done)
     })
@@ -41,7 +45,7 @@ describe('Network', () => {
 
   after((done) => series([
     (cb) => dht.stop(cb),
-    (cb) => libp2p.stop(cb)
+    (cb) => dht.swarm.close(cb)
   ], done))
 
   describe('sendRequest', () => {
@@ -56,7 +60,7 @@ describe('Network', () => {
       const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
 
       // mock it
-      libp2p.dial = (peer, protocol, callback) => {
+      dht.swarm.dial = (peer, protocol, callback) => {
         expect(protocol).to.eql('/ipfs/kad/1.0.0')
         const msg = new Message(Message.TYPES.FIND_NODE, Buffer.from('world'), 0)
 
@@ -78,7 +82,7 @@ describe('Network', () => {
         callback(null, conn)
       }
 
-      network.sendRequest(infos[0].id, msg, (err, response) => {
+      dht.network.sendRequest(peerInfos[0].id, msg, (err, response) => {
         expect(err).to.not.exist()
         expect(response.type).to.eql(Message.TYPES.FIND_NODE)
 
@@ -97,7 +101,7 @@ describe('Network', () => {
       const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
 
       // mock it
-      libp2p.dial = (peer, protocol, callback) => {
+      dht.swarm.dial = (peer, protocol, callback) => {
         expect(protocol).to.eql('/ipfs/kad/1.0.0')
         const rawConn = {
           // hanging
@@ -115,9 +119,9 @@ describe('Network', () => {
         callback(null, conn)
       }
 
-      network.readMessageTimeout = 100
+      dht.network.readMessageTimeout = 100
 
-      network.sendRequest(infos[0].id, msg, (err, response) => {
+      dht.network.sendRequest(peerInfos[0].id, msg, (err, response) => {
         expect(err).to.exist()
         expect(err.message).to.match(/timed out/)
 

@@ -7,16 +7,19 @@ const expect = chai.expect
 const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
 const Connection = require('interface-connection').Connection
-const Libp2p = require('./../nodejs-bundle')
+const PeerBook = require('peer-book')
+const Swarm = require('libp2p-swarm')
+const TCP = require('libp2p-tcp')
+const Multiplex = require('libp2p-multiplex')
 
 const Message = require('../../src/message')
-const Dht = require('../../src')
+const KadDHT = require('../../src')
 const rpc = require('../../src/rpc')
 
-const makePeers = require('../util').makePeers
+const makePeers = require('../utils').makePeers
 
 describe('rpc', () => {
-  let infos
+  let peerInfos
 
   before((done) => {
     makePeers(2, (err, peers) => {
@@ -24,20 +27,24 @@ describe('rpc', () => {
         return done(err)
       }
 
-      infos = peers
+      peerInfos = peers
       done()
     })
   })
 
   describe('protocolHandler', () => {
     it('calls back with the response', (done) => {
-      const libp2p = new Libp2p(infos[0])
-      const dht = new Dht(libp2p)
-      dht.peerBook.put(infos[1])
+      const swarm = new Swarm(peerInfos[0], new PeerBook())
+      swarm.transport.add('tcp', new TCP())
+      swarm.connection.addStreamMuxer(Multiplex)
+      swarm.connection.reuse()
+      const dht = new KadDHT(swarm, { kBucketSize: 5 })
+
+      dht.peerBook.put(peerInfos[1])
 
       const msg = new Message(Message.TYPES.GET_VALUE, Buffer.from('hello'), 5)
 
-      const conn = makeConnection(msg, infos[1], (err, res) => {
+      const conn = makeConnection(msg, peerInfos[1], (err, res) => {
         expect(err).to.not.exist()
         expect(res).to.have.length(1)
         const msg = Message.deserialize(res[0])
