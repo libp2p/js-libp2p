@@ -2,20 +2,22 @@
 
 const multistream = require('multistream-select')
 const Connection = require('interface-connection').Connection
+const setImmediate = require('async/setImmediate')
+const getPeerInfo = require('./get-peer-info')
 const debug = require('debug')
 const log = debug('libp2p:swarm:dial')
-const setImmediate = require('async/setImmediate')
 
 const protocolMuxer = require('./protocol-muxer')
 
-module.exports = function dial (swarm) {
-  return (pi, protocol, callback) => {
+function dial (swarm) {
+  return (peer, protocol, callback) => {
     if (typeof protocol === 'function') {
       callback = protocol
       protocol = null
     }
 
     callback = callback || function noop () {}
+    const pi = getPeerInfo(peer, swarm._peerBook)
 
     const proxyConn = new Connection()
 
@@ -197,3 +199,5 @@ module.exports = function dial (swarm) {
     }
   }
 }
+
+module.exports = dial

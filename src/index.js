@@ -6,6 +6,7 @@ const each = require('async/each')
 const series = require('async/series')
 const transport = require('./transport')
 const connection = require('./connection')
+const getPeerInfo = require('./get-peer-info')
 const dial = require('./dial')
 const protocolMuxer = require('./protocol-muxer')
 const plaintext = require('./plaintext')
@@ -95,7 +96,8 @@ function Swarm (peerInfo, peerBook) {
     }
   }
 
-  this.hangUp = (peerInfo, callback) => {
+  this.hangUp = (peer, callback) => {
+    const peerInfo = getPeerInfo(peer, this.peerBook)
     const key = peerInfo.id.toB58String()
     if (this.muxedConns[key]) {
       const muxer = this.muxedConns[key].muxer

@@ -27,8 +27,8 @@ libp2p-swarm is used by [libp2p](https://github.com/libp2p/js-libp2p) but it can
 - [API](#api)
   - [Transports](#transports)
   - [Connection](#connection)
-  - [`swarm.dial(pi, protocol, callback)`](#swarmdialpi-protocol-callback)
-  - [`swarm.hangUp(pi, callback)`](#swarmhanguppi-callback)
+  - [`swarm.dial(peer, protocol, callback)`](#swarmdialpi-protocol-callback)
+  - [`swarm.hangUp(peer, callback)`](#swarmhanguppi-callback)
   - [`swarm.listen(callback)`](#swarmlistencallback)
   - [`swarm.handle(protocol, handler)`](#swarmhandleprotocol-handler)
   - [`swarm.unhandle(protocol)`](#swarmunhandleprotocol)
@@ -129,19 +129,19 @@ const secio = require('libp2p-secio')
 swarm.connection.crypto(secio.tag, secio.encrypt)
 ```
 
-### `swarm.dial(pi, protocol, callback)`
+### `swarm.dial(peer, protocol, callback)`
 
 dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point where we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, then do nothing.
 
-- `pi` - peer info project
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
 - `protocol`
 - `callback`
 
-### `swarm.hangUp(pi, callback)`
+### `swarm.hangUp(peer, callback)`
 
 Hang up the muxed connection we have with the peer.
 
-- `pi` - peer info project
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
 - `callback`
 
 ### `swarm.listen(callback)`

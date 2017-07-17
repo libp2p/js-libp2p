@@ -42,8 +42,8 @@
   "devDependencies": {
     "aegir": "^11.0.2",
     "buffer-loader": "0.0.1",
-    "chai": "^4.0.2",
-    "dirty-chai": "^2.0.0",
+    "chai": "^4.1.0",
+    "dirty-chai": "^2.0.1",
     "gulp": "^3.9.1",
     "libp2p-multiplex": "~0.4.4",
     "libp2p-secio": "~0.6.8",
@@ -68,7 +68,7 @@
     "multistream-select": "~0.13.5",
     "once": "^1.4.0",
     "peer-id": "~0.8.7",
-    "peer-info": "~0.9.2",
+    "peer-info": "~0.9.3",
     "protocol-buffers": "^3.2.1",
     "pull-stream": "^3.6.0"
   },
