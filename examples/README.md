@@ -23,4 +23,3 @@ Let us know if you find any issue or if you want to contribute and add a new tut
 - Running libp2p in the Electron (future)
 - [The standard echo net example with libp2p](./echo)
 - [A simple chat app with](./chat)
-- [See other nodes in the network using WebRTC Star discovery mechanism](./see-nodes)

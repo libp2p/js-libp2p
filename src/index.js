@@ -28,6 +28,8 @@ class Node extends EventEmitter {
     this.modules = _modules
     this.peerInfo = _peerInfo
     this.peerBook = _peerBook || new PeerBook()
+    _options = _options || {}
+
     this._isStarted = false
 
     this.swarm = new Swarm(this.peerInfo, this.peerBook)
