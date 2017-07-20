@@ -77,7 +77,10 @@ class Node extends EventEmitter {
 
     // dht provided components (peerRouting, contentRouting, dht)
     if (_modules.DHT) {
-      this._dht = new this.modules.DHT(this, 20, _options.DHT && _options.DHT.datastore)
+      this._dht = new this.modules.DHT(this.swarm, {
+        kBucketSize: 20,
+        datastoer: _options.DHT && _options.DHT.datastore
+      })
     }
 
     this.peerRouting = {
