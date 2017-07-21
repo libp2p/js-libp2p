@@ -33,7 +33,7 @@ js-libp2p-floodsub
 ```JavaScript
 const FloodSub = require('libp2p-floodsub')
 
-const fsub = new FloodSub(libp2pNodeInstance)
+const fsub = new FloodSub(node)
 
 fsub.start((err) => {
   if (err) {

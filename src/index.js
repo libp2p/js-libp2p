@@ -67,7 +67,7 @@ class FloodSub extends EventEmitter {
     // If already have a PubSub conn, ignore
     const peer = this.peers.get(idB58Str)
     if (peer && peer.isConnected) {
-      return callback()
+      return setImmediate(() => callback())
     }
 
     this.libp2p.dial(peerInfo, multicodec, (err, conn) => {
@@ -187,8 +187,7 @@ class FloodSub extends EventEmitter {
 
   _forwardMessages (topics, messages) {
     this.peers.forEach((peer) => {
-      if (!peer.isWritable ||
-          !utils.anyMatch(peer.topics, topics)) {
+      if (!peer.isWritable || !utils.anyMatch(peer.topics, topics)) {
         return
       }
 
@@ -214,14 +213,12 @@ class FloodSub extends EventEmitter {
     this.libp2p.handle(multicodec, this._onConnection)
 
     // Speed up any new peer that comes in my way
-    this.libp2p.swarm.on('peer-mux-established', this._dialPeer)
+    this.libp2p.on('peer:connect', this._dialPeer)
 
     // Dial already connected peers
     const peerInfos = values(this.libp2p.peerBook.getAll())
 
-    asyncEach(peerInfos, (peerInfo, cb) => {
-      this._dialPeer(peerInfo, cb)
-    }, (err) => {
+    asyncEach(peerInfos, (peer, cb) => this._dialPeer(peer, cb), (err) => {
       setImmediate(() => {
         this.started = true
         callback(err)
@@ -242,7 +239,7 @@ class FloodSub extends EventEmitter {
     }
 
     this.libp2p.unhandle(multicodec)
-    this.libp2p.swarm.removeListener('peer-mux-established', this._dialPeer)
+    this.libp2p.removeListener('peer:connect', this._dialPeer)
 
     asyncEach(this.peers.values(), (peer, cb) => peer.close(cb), (err) => {
       if (err) {
@@ -304,9 +301,7 @@ class FloodSub extends EventEmitter {
 
     topics = ensureArray(topics)
 
-    topics.forEach((topic) => {
-      this.subscriptions.add(topic)
-    })
+    topics.forEach((topic) => this.subscriptions.add(topic))
 
     this.peers.forEach((peer) => checkIfReady(peer))
     // make sure that FloodSub is already mounted
@@ -329,9 +324,7 @@ class FloodSub extends EventEmitter {
     assert(this.started, 'FloodSub is not started')
     topics = ensureArray(topics)
 
-    topics.forEach((topic) => {
-      this.subscriptions.delete(topic)
-    })
+    topics.forEach((topic) => this.subscriptions.delete(topic))
 
     this.peers.forEach((peer) => checkIfReady(peer))
     // make sure that FloodSub is already mounted
