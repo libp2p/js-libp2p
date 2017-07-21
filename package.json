@@ -43,8 +43,8 @@
     "mafmt": "^2.1.8",
     "multiaddr": "^2.3.0",
     "peer-book": "~0.4.0",
-    "peer-id": "~0.8.7",
-    "peer-info": "~0.9.3"
+    "peer-id": "~0.8.8",
+    "peer-info": "~0.9.4"
   },
   "devDependencies": {
     "aegir": "^11.0.2",
