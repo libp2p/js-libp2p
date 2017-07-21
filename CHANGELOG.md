@@ -1,3 +1,13 @@
+<a name="0.10.2"></a>
+## [0.10.2](https://github.com/libp2p/js-libp2p/compare/v0.10.1...v0.10.2) (2017-07-21)
+
+
+### Bug Fixes
+
+* circle ci, thanks victor! ([4224c1f](https://github.com/libp2p/js-libp2p/commit/4224c1f))
+
+
+
 <a name="0.10.1"></a>
 ## [0.10.1](https://github.com/libp2p/js-libp2p/compare/v0.10.0...v0.10.1) (2017-07-10)
 
