@@ -8,14 +8,15 @@ chai.use(dirtyChai)
 
 const Buffer = require('safe-buffer').Buffer
 
-const secp256k1 = require('../src')
-const crypto = require('../src/crypto')
 const libp2pCrypto = require('libp2p-crypto')
-const pbm = libp2pCrypto.keys.pbm
+const keysPBM = libp2pCrypto.keys.keysPBM
 const randomBytes = libp2pCrypto.randomBytes
+const crypto = require('../src/crypto')(randomBytes)
 
 describe('secp256k1 keys', () => {
   let key
+  const secp256k1 = require('../src')(keysPBM, randomBytes)
+
   before((done) => {
     secp256k1.generateKeyPair((err, _key) => {
       expect(err).to.not.exist()
@@ -133,10 +134,13 @@ describe('secp256k1 keys', () => {
 
 describe('key generation error', () => {
   let generateKey
+  let secp256k1
 
   before((done) => {
     generateKey = crypto.generateKey
-    crypto.generateKey = (callback) => { callback(new Error('Error generating key')) }
+    crypto.generateKey = (callback) => callback(new Error('Error generating key'))
+    secp256k1 = require('../src')(keysPBM, randomBytes, crypto)
+
     done()
   })
 
@@ -156,10 +160,13 @@ describe('key generation error', () => {
 
 describe('handles generation of invalid key', () => {
   let generateKey
+  let secp256k1
 
   before((done) => {
     generateKey = crypto.generateKey
     crypto.generateKey = (callback) => { callback(null, Buffer.from('not a real key')) }
+    secp256k1 = require('../src')(keysPBM, randomBytes, crypto)
+
     done()
   })
 
@@ -280,13 +287,14 @@ describe('crypto functions', () => {
 })
 
 describe('go interop', () => {
+  const secp256k1 = require('../src')(keysPBM, randomBytes)
   const fixtures = require('./fixtures/go-interop')
 
   it('loads a private key marshaled by go-libp2p-crypto', (done) => {
     // we need to first extract the key data from the protobuf, which is
     // normally handled by js-libp2p-crypto
-    const decoded = pbm.PrivateKey.decode(fixtures.privateKey)
-    expect(decoded.Type).to.eql(pbm.KeyType.Secp256k1)
+    const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
+    expect(decoded.Type).to.eql(keysPBM.KeyType.Secp256k1)
 
     secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data, (err, key) => {
       expect(err).to.not.exist()
@@ -298,8 +306,8 @@ describe('go interop', () => {
   })
 
   it('loads a public key marshaled by go-libp2p-crypto', (done) => {
-    const decoded = pbm.PublicKey.decode(fixtures.publicKey)
-    expect(decoded.Type).to.be.eql(pbm.KeyType.Secp256k1)
+    const decoded = keysPBM.PublicKey.decode(fixtures.publicKey)
+    expect(decoded.Type).to.be.eql(keysPBM.KeyType.Secp256k1)
 
     const key = secp256k1.unmarshalSecp256k1PublicKey(decoded.Data)
     expect(key).to.be.an.instanceof(secp256k1.Secp256k1PublicKey)
@@ -308,8 +316,8 @@ describe('go interop', () => {
   })
 
   it('generates the same signature as go-libp2p-crypto', (done) => {
-    const decoded = pbm.PrivateKey.decode(fixtures.privateKey)
-    expect(decoded.Type).to.eql(pbm.KeyType.Secp256k1)
+    const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
+    expect(decoded.Type).to.eql(keysPBM.KeyType.Secp256k1)
 
     secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data, (err, key) => {
       expect(err).to.not.exist()

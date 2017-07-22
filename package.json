@@ -28,7 +28,6 @@
   "license": "MIT",
   "dependencies": {
     "async": "^2.5.0",
-    "libp2p-crypto": "~0.9.2",
     "multihashing-async": "~0.4.6",
     "nodeify": "^1.0.1",
     "safe-buffer": "^5.1.1",
@@ -37,6 +36,7 @@
   "devDependencies": {
     "aegir": "^11.0.2",
     "benchmark": "^2.1.4",
+    "libp2p-crypto": "~0.9.4",
     "chai": "^4.1.0",
     "dirty-chai": "^2.0.1",
     "pre-commit": "^1.2.2"
