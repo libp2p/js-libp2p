@@ -1,3 +1,13 @@
+<a name="0.9.4"></a>
+## [0.9.4](https://github.com/libp2p/js-libp2p-crypto/compare/v0.9.3...v0.9.4) (2017-07-22)
+
+
+### Bug Fixes
+
+* circular circular dep -> DI ([bc554d1](https://github.com/libp2p/js-libp2p-crypto/commit/bc554d1))
+
+
+
 <a name="0.9.3"></a>
 ## [0.9.3](https://github.com/libp2p/js-libp2p-crypto/compare/v0.9.2...v0.9.3) (2017-07-22)
 
