@@ -7,14 +7,14 @@ const expect = chai.expect
 chai.use(dirtyChai)
 const Buffer = require('safe-buffer').Buffer
 
-const crypto = require('../src')
-const ed25519 = crypto.keys.ed25519
-const fixtures = require('./fixtures/go-key-ed25519')
+const crypto = require('../../src')
+const ed25519 = crypto.keys.keys.ed25519
+const fixtures = require('../fixtures/go-key-ed25519')
 
 describe('ed25519', () => {
   let key
   before((done) => {
-    crypto.generateKeyPair('Ed25519', 512, (err, _key) => {
+    crypto.keys.generateKeyPair('Ed25519', 512, (err, _key) => {
       if (err) return done(err)
       key = _key
       done()
@@ -22,11 +22,7 @@ describe('ed25519', () => {
   })
 
   it('generates a valid key', (done) => {
-    expect(
-      key
-    ).to.be.an.instanceof(
-      ed25519.Ed25519PrivateKey
-    )
+    expect(key).to.be.an.instanceof(ed25519.Ed25519PrivateKey)
 
     key.hash((err, digest) => {
       if (err) {
@@ -40,13 +36,9 @@ describe('ed25519', () => {
 
   it('generates a valid key from seed', (done) => {
     var seed = crypto.randomBytes(32)
-    crypto.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey) => {
+    crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey) => {
       if (err) return done(err)
-      expect(
-        seededkey
-      ).to.be.an.instanceof(
-        ed25519.Ed25519PrivateKey
-      )
+      expect(seededkey).to.be.an.instanceof(ed25519.Ed25519PrivateKey)
 
       seededkey.hash((err, digest) => {
         if (err) {
@@ -61,42 +53,29 @@ describe('ed25519', () => {
 
   it('generates the same key from the same seed', (done) => {
     var seed = crypto.randomBytes(32)
-    crypto.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey1) => {
+    crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey1) => {
       if (err) return done(err)
-      crypto.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey2) => {
+      crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey2) => {
         if (err) return done(err)
-        expect(
-          seededkey1.equals(seededkey2)
-        ).to.be.eql(
-          true
-        )
-        expect(
-          seededkey1.public.equals(seededkey2.public)
-        ).to.be.eql(
-          true
-        )
+        expect(seededkey1.equals(seededkey2)).to.eql(true)
+        expect(seededkey1.public.equals(seededkey2.public)).to.eql(true)
         done()
       })
     })
   })
 
   it('generates different keys for different seeds', (done) => {
-    var seed1 = crypto.randomBytes(32)
-    crypto.generateKeyPairFromSeed('Ed25519', seed1, 512, (err, seededkey1) => {
-      if (err) return done(err)
-      var seed2 = crypto.randomBytes(32)
-      crypto.generateKeyPairFromSeed('Ed25519', seed2, 512, (err, seededkey2) => {
-        if (err) return done(err)
-        expect(
-          seededkey1.equals(seededkey2)
-        ).to.be.eql(
-          false
-        )
-        expect(
-          seededkey1.public.equals(seededkey2.public)
-        ).to.be.eql(
-          false
-        )
+    const seed1 = crypto.randomBytes(32)
+    crypto.keys.generateKeyPairFromSeed('Ed25519', seed1, 512, (err, seededkey1) => {
+      expect(err).to.not.exist()
+
+      const seed2 = crypto.randomBytes(32)
+      crypto.keys.generateKeyPairFromSeed('Ed25519', seed2, 512, (err, seededkey2) => {
+        expect(err).to.not.exist()
+
+        expect(seededkey1.equals(seededkey2)).to.eql(false)
+        expect(seededkey1.public.equals(seededkey2.public))
+          .to.eql(false)
         done()
       })
     })
@@ -106,15 +85,10 @@ describe('ed25519', () => {
     const text = crypto.randomBytes(512)
 
     key.sign(text, (err, sig) => {
-      if (err) {
-        return done(err)
-      }
+      expect(err).to.not.exist()
 
       key.public.verify(text, sig, (err, res) => {
-        if (err) {
-          return done(err)
-        }
-
+        expect(err).to.not.exist()
         expect(res).to.be.eql(true)
         done()
       })
@@ -129,22 +103,14 @@ describe('ed25519', () => {
       }
       const keyMarshal2 = key2.marshal()
 
-      expect(
-        keyMarshal
-      ).to.be.eql(
-        keyMarshal2
-      )
+      expect(keyMarshal).to.eql(keyMarshal2)
 
       const pk = key.public
       const pkMarshal = pk.marshal()
       const pk2 = ed25519.unmarshalEd25519PublicKey(pkMarshal)
       const pkMarshal2 = pk2.marshal()
 
-      expect(
-        pkMarshal
-      ).to.be.eql(
-        pkMarshal2
-      )
+      expect(pkMarshal).to.eql(pkMarshal2)
       done()
     })
   })
@@ -153,44 +119,25 @@ describe('ed25519', () => {
     it('equals itself', () => {
       expect(
         key.equals(key)
-      ).to.be.eql(
+      ).to.eql(
         true
       )
 
       expect(
         key.public.equals(key.public)
-      ).to.be.eql(
+      ).to.eql(
         true
       )
     })
 
     it('not equals other key', (done) => {
-      crypto.generateKeyPair('Ed25519', 512, (err, key2) => {
+      crypto.keys.generateKeyPair('Ed25519', 512, (err, key2) => {
         if (err) return done(err)
 
-        expect(
-          key.equals(key2)
-        ).to.be.eql(
-          false
-        )
-
-        expect(
-          key2.equals(key)
-        ).to.be.eql(
-          false
-        )
-
-        expect(
-          key.public.equals(key2.public)
-        ).to.be.eql(
-          false
-        )
-
-        expect(
-          key2.public.equals(key.public)
-        ).to.be.eql(
-          false
-        )
+        expect(key.equals(key2)).to.eql(false)
+        expect(key2.equals(key)).to.eql(false)
+        expect(key.public.equals(key2.public)).to.eql(false)
+        expect(key2.public.equals(key.public)).to.eql(false)
         done()
       })
     })
@@ -207,7 +154,7 @@ describe('ed25519', () => {
         if (err) {
           return done(err)
         }
-        expect(valid).to.be.eql(true)
+        expect(valid).to.eql(true)
         done()
       })
     })
@@ -232,8 +179,9 @@ describe('ed25519', () => {
 
   describe('go interop', () => {
     let privateKey
+
     before((done) => {
-      crypto.unmarshalPrivateKey(fixtures.verify.privateKey, (err, key) => {
+      crypto.keys.unmarshalPrivateKey(fixtures.verify.privateKey, (err, key) => {
         expect(err).to.not.exist()
         privateKey = key
         done()
@@ -241,12 +189,11 @@ describe('ed25519', () => {
     })
 
     it('verifies with data from go', (done) => {
-      const key = crypto.unmarshalPublicKey(fixtures.verify.publicKey)
+      const key = crypto.keys.unmarshalPublicKey(fixtures.verify.publicKey)
 
       key.verify(fixtures.verify.data, fixtures.verify.signature, (err, ok) => {
-        if (err) throw err
         expect(err).to.not.exist()
-        expect(ok).to.be.eql(true)
+        expect(ok).to.eql(true)
         done()
       })
     })
@@ -254,7 +201,7 @@ describe('ed25519', () => {
     it('generates the same signature as go', (done) => {
       privateKey.sign(fixtures.verify.data, (err, sig) => {
         expect(err).to.not.exist()
-        expect(sig).to.deep.equal(fixtures.verify.signature)
+        expect(sig).to.eql(fixtures.verify.signature)
         done()
       })
     })

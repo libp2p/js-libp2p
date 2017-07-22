@@ -6,8 +6,8 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
-const crypto = require('../src')
-const fixtures = require('./fixtures/go-stretch-key')
+const crypto = require('../../src')
+const fixtures = require('../fixtures/go-stretch-key')
 
 describe('keyStretcher', () => {
   describe('generate', () => {
@@ -17,7 +17,7 @@ describe('keyStretcher', () => {
     let secret
 
     before((done) => {
-      crypto.generateEphemeralKeyPair('P-256', (err, _res) => {
+      crypto.keys.generateEphemeralKeyPair('P-256', (err, _res) => {
         if (err) {
           return done(err)
         }
@@ -36,7 +36,7 @@ describe('keyStretcher', () => {
     ciphers.forEach((cipher) => {
       hashes.forEach((hash) => {
         it(`${cipher} - ${hash}`, (done) => {
-          crypto.keyStretcher(cipher, hash, secret, (err, keys) => {
+          crypto.keys.keyStretcher(cipher, hash, secret, (err, keys) => {
             if (err) {
               return done(err)
             }
@@ -56,7 +56,7 @@ describe('keyStretcher', () => {
         const cipher = test.cipher
         const hash = test.hash
         const secret = test.secret
-        crypto.keyStretcher(cipher, hash, secret, (err, keys) => {
+        crypto.keys.keyStretcher(cipher, hash, secret, (err, keys) => {
           if (err) {
             return done(err)
           }

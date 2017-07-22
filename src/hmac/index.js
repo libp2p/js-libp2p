@@ -1,13 +1,13 @@
 'use strict'
 
 const crypto = require('crypto')
-
-const lengths = require('./hmac-lengths')
+const lengths = require('./lengths')
 
 exports.create = function (hash, secret, callback) {
   const res = {
     digest (data, cb) {
-      const hmac = genFresh()
+      const hmac = crypto.createHmac(hash.toLowerCase(), secret)
+
       hmac.update(data)
 
       setImmediate(() => {
@@ -17,8 +17,5 @@ exports.create = function (hash, secret, callback) {
     length: lengths[hash]
   }
 
-  function genFresh () {
-    return crypto.createHmac(hash.toLowerCase(), secret)
-  }
   callback(null, res)
 }

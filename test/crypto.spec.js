@@ -12,7 +12,7 @@ const fixtures = require('./fixtures/go-key-rsa')
 describe('libp2p-crypto', () => {
   let key
   before((done) => {
-    crypto.generateKeyPair('RSA', 2048, (err, _key) => {
+    crypto.keys.generateKeyPair('RSA', 2048, (err, _key) => {
       if (err) {
         return done(err)
       }
@@ -22,21 +22,22 @@ describe('libp2p-crypto', () => {
   })
 
   it('marshalPublicKey and unmarshalPublicKey', () => {
-    const key2 = crypto.unmarshalPublicKey(crypto.marshalPublicKey(key.public))
+    const key2 = crypto.keys.unmarshalPublicKey(
+      crypto.keys.marshalPublicKey(key.public))
 
     expect(key2.equals(key.public)).to.be.eql(true)
 
     expect(() => {
-      crypto.marshalPublicKey(key.public, 'invalid-key-type')
+      crypto.keys.marshalPublicKey(key.public, 'invalid-key-type')
     }).to.throw()
   })
 
   it('marshalPrivateKey and unmarshalPrivateKey', (done) => {
     expect(() => {
-      crypto.marshalPrivateKey(key, 'invalid-key-type')
+      crypto.keys.marshalPrivateKey(key, 'invalid-key-type')
     }).to.throw()
 
-    crypto.unmarshalPrivateKey(crypto.marshalPrivateKey(key), (err, key2) => {
+    crypto.keys.unmarshalPrivateKey(crypto.keys.marshalPrivateKey(key), (err, key2) => {
       if (err) {
         return done(err)
       }
@@ -52,60 +53,56 @@ describe('libp2p-crypto', () => {
   // or a bug
   describe('go interop', () => {
     it('unmarshals private key', (done) => {
-      crypto.unmarshalPrivateKey(fixtures.private.key, (err, key) => {
+      crypto.keys.unmarshalPrivateKey(fixtures.private.key, (err, key) => {
         if (err) {
           return done(err)
         }
         const hash = fixtures.private.hash
-        expect(fixtures.private.key).to.be.eql(key.bytes)
+        expect(fixtures.private.key).to.eql(key.bytes)
 
         key.hash((err, digest) => {
           if (err) {
             return done(err)
           }
 
-          expect(digest).to.be.eql(hash)
+          expect(digest).to.eql(hash)
           done()
         })
       })
     })
 
     it('unmarshals public key', (done) => {
-      const key = crypto.unmarshalPublicKey(fixtures.public.key)
+      const key = crypto.keys.unmarshalPublicKey(fixtures.public.key)
       const hash = fixtures.public.hash
 
-      expect(crypto.marshalPublicKey(key)).to.be.eql(fixtures.public.key)
+      expect(crypto.keys.marshalPublicKey(key)).to.eql(fixtures.public.key)
 
       key.hash((err, digest) => {
         if (err) {
           return done(err)
         }
 
-        expect(digest).to.be.eql(hash)
+        expect(digest).to.eql(hash)
         done()
       })
     })
 
     it('unmarshal -> marshal, private key', (done) => {
-      crypto.unmarshalPrivateKey(fixtures.private.key, (err, key) => {
+      crypto.keys.unmarshalPrivateKey(fixtures.private.key, (err, key) => {
         if (err) {
           return done(err)
         }
 
-        const marshalled = crypto.marshalPrivateKey(key)
-        expect(marshalled).to.be.eql(fixtures.private.key)
+        const marshalled = crypto.keys.marshalPrivateKey(key)
+        expect(marshalled).to.eql(fixtures.private.key)
         done()
       })
     })
 
     it('unmarshal -> marshal, public key', () => {
-      const key = crypto.unmarshalPublicKey(fixtures.public.key)
-      const marshalled = crypto.marshalPublicKey(key)
-      expect(
-        fixtures.public.key.equals(marshalled)
-      ).to.be.eql(
-        true
-      )
+      const key = crypto.keys.unmarshalPublicKey(fixtures.public.key)
+      const marshalled = crypto.keys.marshalPublicKey(key)
+      expect(fixtures.public.key.equals(marshalled)).to.eql(true)
     })
   })
 

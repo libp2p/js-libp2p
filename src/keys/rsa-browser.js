@@ -3,12 +3,12 @@
 const nodeify = require('nodeify')
 const Buffer = require('safe-buffer').Buffer
 
-const crypto = require('./webcrypto')()
+const webcrypto = require('../webcrypto.js')()
 
 exports.utils = require('./rsa-utils')
 
 exports.generateKey = function (bits, callback) {
-  nodeify(crypto.subtle.generateKey(
+  nodeify(webcrypto.subtle.generateKey(
     {
       name: 'RSASSA-PKCS1-v1_5',
       modulusLength: bits,
@@ -27,7 +27,7 @@ exports.generateKey = function (bits, callback) {
 
 // Takes a jwk key
 exports.unmarshalPrivateKey = function (key, callback) {
-  const privateKey = crypto.subtle.importKey(
+  const privateKey = webcrypto.subtle.importKey(
     'jwk',
     key,
     {
@@ -51,11 +51,11 @@ exports.unmarshalPrivateKey = function (key, callback) {
 }
 
 exports.getRandomValues = function (arr) {
-  return Buffer.from(crypto.getRandomValues(arr))
+  return Buffer.from(webcrypto.getRandomValues(arr))
 }
 
 exports.hashAndSign = function (key, msg, callback) {
-  nodeify(crypto.subtle.importKey(
+  nodeify(webcrypto.subtle.importKey(
     'jwk',
     key,
     {
@@ -65,7 +65,7 @@ exports.hashAndSign = function (key, msg, callback) {
     false,
     ['sign']
   ).then((privateKey) => {
-    return crypto.subtle.sign(
+    return webcrypto.subtle.sign(
       {name: 'RSASSA-PKCS1-v1_5'},
       privateKey,
       Uint8Array.from(msg)
@@ -74,7 +74,7 @@ exports.hashAndSign = function (key, msg, callback) {
 }
 
 exports.hashAndVerify = function (key, sig, msg, callback) {
-  nodeify(crypto.subtle.importKey(
+  nodeify(webcrypto.subtle.importKey(
     'jwk',
     key,
     {
@@ -84,7 +84,7 @@ exports.hashAndVerify = function (key, sig, msg, callback) {
     false,
     ['verify']
   ).then((publicKey) => {
-    return crypto.subtle.verify(
+    return webcrypto.subtle.verify(
       {name: 'RSASSA-PKCS1-v1_5'},
       publicKey,
       sig,
@@ -95,13 +95,13 @@ exports.hashAndVerify = function (key, sig, msg, callback) {
 
 function exportKey (pair) {
   return Promise.all([
-    crypto.subtle.exportKey('jwk', pair.privateKey),
-    crypto.subtle.exportKey('jwk', pair.publicKey)
+    webcrypto.subtle.exportKey('jwk', pair.privateKey),
+    webcrypto.subtle.exportKey('jwk', pair.publicKey)
   ])
 }
 
 function derivePublicFromPrivate (jwKey) {
-  return crypto.subtle.importKey(
+  return webcrypto.subtle.importKey(
     'jwk',
     {
       kty: jwKey.kty,

@@ -9,9 +9,9 @@ chai.use(dirtyChai)
 const series = require('async/series')
 const Buffer = require('safe-buffer').Buffer
 
-const crypto = require('../src')
-const fixtures = require('./fixtures/aes')
-const goFixtures = require('./fixtures/go-aes')
+const crypto = require('../../src')
+const fixtures = require('./../fixtures/aes')
+const goFixtures = require('./../fixtures/go-aes')
 
 const bytes = {
   16: 'AES-128',
@@ -40,6 +40,7 @@ describe('AES-CTR', () => {
       })
     })
   })
+
   Object.keys(bytes).forEach((byte) => {
     it(`${bytes[byte]} - fixed - encrypt and decrypt`, (done) => {
       const key = Buffer.alloc(parseInt(byte, 10))
@@ -57,10 +58,10 @@ describe('AES-CTR', () => {
           cipher.encrypt(input, (err, res) => {
             expect(err).to.not.exist()
             expect(res).to.have.length(output.length)
-            expect(res).to.be.eql(output)
+            expect(res).to.eql(output)
             cipher.decrypt(res, (err, res) => {
               expect(err).to.not.exist()
-              expect(res).to.be.eql(input)
+              expect(res).to.eql(input)
               cb()
             })
           })

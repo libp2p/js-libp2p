@@ -3,8 +3,8 @@
 const nodeify = require('nodeify')
 const Buffer = require('safe-buffer').Buffer
 
-const crypto = require('./webcrypto')()
-const lengths = require('./hmac-lengths')
+const crypto = require('../webcrypto.js')()
+const lengths = require('./lengths')
 
 const hashTypes = {
   SHA1: 'SHA-1',
@@ -27,11 +27,8 @@ exports.create = function (hashType, secret, callback) {
   ).then((key) => {
     return {
       digest (data, cb) {
-        nodeify(crypto.subtle.sign(
-          {name: 'HMAC'},
-          key,
-          data
-        ).then((raw) => Buffer.from(raw)), cb)
+        nodeify(crypto.subtle.sign({name: 'HMAC'}, key, data)
+          .then((raw) => Buffer.from(raw)), cb)
       },
       length: lengths[hashType]
     }

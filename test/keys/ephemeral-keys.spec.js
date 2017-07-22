@@ -8,8 +8,8 @@ const expect = chai.expect
 chai.use(dirtyChai)
 const parallel = require('async/parallel')
 
-const fixtures = require('./fixtures/go-elliptic-key')
-const crypto = require('../src')
+const fixtures = require('../fixtures/go-elliptic-key')
+const crypto = require('../../src')
 
 const curves = ['P-256', 'P-384'] // 'P-521' fails in tests :( no clue why
 const lengths = {
@@ -27,8 +27,8 @@ describe('generateEphemeralKeyPair', () => {
   curves.forEach((curve) => {
     it(`generate and shared key ${curve}`, (done) => {
       parallel([
-        (cb) => crypto.generateEphemeralKeyPair(curve, cb),
-        (cb) => crypto.generateEphemeralKeyPair(curve, cb)
+        (cb) => crypto.keys.generateEphemeralKeyPair(curve, cb),
+        (cb) => crypto.keys.generateEphemeralKeyPair(curve, cb)
       ], (err, keys) => {
         expect(err).to.not.exist()
         expect(keys[0].key).to.have.length(lengths[curve])
@@ -48,8 +48,8 @@ describe('generateEphemeralKeyPair', () => {
       const curve = fixtures.curve
 
       parallel([
-        (cb) => crypto.generateEphemeralKeyPair(curve, cb),
-        (cb) => crypto.generateEphemeralKeyPair(curve, cb)
+        (cb) => crypto.keys.generateEphemeralKeyPair(curve, cb),
+        (cb) => crypto.keys.generateEphemeralKeyPair(curve, cb)
       ], (err, res) => {
         expect(err).to.not.exist()
         const alice = res[0]
@@ -62,12 +62,7 @@ describe('generateEphemeralKeyPair', () => {
         ], (err, secrets) => {
           expect(err).to.not.exist()
 
-          expect(
-            secrets[0]
-          ).to.be.eql(
-            secrets[1]
-          )
-
+          expect(secrets[0]).to.eql(secrets[1])
           expect(secrets[0]).to.have.length(32)
 
           done()

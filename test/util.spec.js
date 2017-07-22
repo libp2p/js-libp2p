@@ -7,7 +7,7 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 
-const util = require('../src/crypto/util')
+const util = require('../src/util')
 const BN = require('bn.js')
 
 describe('Util', () => {
@@ -19,13 +19,13 @@ describe('Util', () => {
   })
 
   it('toBase64', (done) => {
-    expect(util.toBase64(bn)).to.be.eql('3q0')
+    expect(util.toBase64(bn)).to.eql('3q0')
     done()
   })
 
   it('toBase64 zero padding', (done) => {
     let bnpad = new BN('ff', 16)
-    expect(util.toBase64(bnpad, 2)).to.be.eql('AP8')
+    expect(util.toBase64(bnpad, 2)).to.eql('AP8')
     done()
   })
 })

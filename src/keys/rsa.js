@@ -1,133 +1,56 @@
 'use strict'
 
-const multihashing = require('multihashing-async')
-const protobuf = require('protocol-buffers')
+const crypto = require('crypto')
+const keypair = require('keypair')
+const setImmediate = require('async/setImmediate')
+const pemToJwk = require('pem-jwk').pem2jwk
+const jwkToPem = require('pem-jwk').jwk2pem
 
-const crypto = require('../crypto').rsa
-const pbm = protobuf(require('../crypto.proto'))
+exports.utils = require('./rsa-utils')
 
-class RsaPublicKey {
-  constructor (key) {
-    this._key = key
+exports.generateKey = function (bits, callback) {
+  const done = (err, res) => setImmediate(() => callback(err, res))
+
+  let key
+  try {
+    key = keypair({ bits: bits })
+  } catch (err) {
+    return done(err)
   }
 
-  verify (data, sig, callback) {
-    ensure(callback)
-    crypto.hashAndVerify(this._key, sig, data, callback)
-  }
-
-  marshal () {
-    return crypto.utils.jwkToPkix(this._key)
-  }
-
-  get bytes () {
-    return pbm.PublicKey.encode({
-      Type: pbm.KeyType.RSA,
-      Data: this.marshal()
-    })
-  }
-
-  encrypt (bytes) {
-    return this._key.encrypt(bytes, 'RSAES-PKCS1-V1_5')
-  }
-
-  equals (key) {
-    return this.bytes.equals(key.bytes)
-  }
-
-  hash (callback) {
-    ensure(callback)
-    multihashing(this.bytes, 'sha2-256', callback)
-  }
-}
-
-class RsaPrivateKey {
-  // key       - Object of the jwk format
-  // publicKey - Buffer of the spki format
-  constructor (key, publicKey) {
-    this._key = key
-    this._publicKey = publicKey
-  }
-
-  genSecret () {
-    return crypto.getRandomValues(new Uint8Array(16))
-  }
-
-  sign (message, callback) {
-    ensure(callback)
-    crypto.hashAndSign(this._key, message, callback)
-  }
-
-  get public () {
-    if (!this._publicKey) {
-      throw new Error('public key not provided')
-    }
-
-    return new RsaPublicKey(this._publicKey)
-  }
-
-  decrypt (msg, callback) {
-    crypto.decrypt(this._key, msg, callback)
-  }
-
-  marshal () {
-    return crypto.utils.jwkToPkcs1(this._key)
-  }
-
-  get bytes () {
-    return pbm.PrivateKey.encode({
-      Type: pbm.KeyType.RSA,
-      Data: this.marshal()
-    })
-  }
-
-  equals (key) {
-    return this.bytes.equals(key.bytes)
-  }
-
-  hash (callback) {
-    ensure(callback)
-    multihashing(this.bytes, 'sha2-256', callback)
-  }
-}
-
-function unmarshalRsaPrivateKey (bytes, callback) {
-  const jwk = crypto.utils.pkcs1ToJwk(bytes)
-  crypto.unmarshalPrivateKey(jwk, (err, keys) => {
-    if (err) {
-      return callback(err)
-    }
-
-    callback(null, new RsaPrivateKey(keys.privateKey, keys.publicKey))
+  done(null, {
+    privateKey: pemToJwk(key.private),
+    publicKey: pemToJwk(key.public)
   })
 }
 
-function unmarshalRsaPublicKey (bytes) {
-  const jwk = crypto.utils.pkixToJwk(bytes)
-
-  return new RsaPublicKey(jwk)
-}
-
-function generateKeyPair (bits, cb) {
-  crypto.generateKey(bits, (err, keys) => {
-    if (err) {
-      return cb(err)
+// Takes a jwk key
+exports.unmarshalPrivateKey = function (key, callback) {
+  callback(null, {
+    privateKey: key,
+    publicKey: {
+      kty: key.kty,
+      n: key.n,
+      e: key.e
     }
-
-    cb(null, new RsaPrivateKey(keys.privateKey, keys.publicKey))
   })
 }
 
-function ensure (cb) {
-  if (typeof cb !== 'function') {
-    throw new Error('callback is required')
-  }
+exports.getRandomValues = function (arr) {
+  return crypto.randomBytes(arr.length)
 }
 
-module.exports = {
-  RsaPublicKey,
-  RsaPrivateKey,
-  unmarshalRsaPublicKey,
-  unmarshalRsaPrivateKey,
-  generateKeyPair
+exports.hashAndSign = function (key, msg, callback) {
+  const sign = crypto.createSign('RSA-SHA256')
+
+  sign.update(msg)
+  setImmediate(() => callback(null, sign.sign(jwkToPem(key))))
+}
+
+exports.hashAndVerify = function (key, sig, msg, callback) {
+  const verify = crypto.createVerify('RSA-SHA256')
+
+  verify.update(msg)
+
+  setImmediate(() => callback(null, verify.verify(jwkToPem(key), sig)))
 }

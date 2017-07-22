@@ -13,37 +13,26 @@ const ciphers = ['AES-128', 'AES-256', 'Blowfish']
 const hashes = ['SHA1', 'SHA256', 'SHA512']
 
 async.waterfall([
-  (cb) => crypto.generateEphemeralKeyPair('P-256', cb),
+  (cb) => crypto.keys.generateEphemeralKeyPair('P-256', cb),
   (res, cb) => res.genSharedKey(res.key, cb)
 ], (err, secret) => {
-  if (err) {
-    throw err
-  }
+  if (err) { throw err }
 
   ciphers.forEach((cipher) => hashes.forEach((hash) => {
     setup(cipher, hash, secret)
   }))
 
-  suite
-    .on('cycle', (event) => {
-      console.log(String(event.target))
-    })
-    .run({
-      async: true
-    })
+  suite.on('cycle', (event) => console.log(String(event.target)))
+       .run({async: true})
 })
 
 function setup (cipher, hash, secret) {
   suite.add(`keyStretcher ${cipher} ${hash}`, (d) => {
-    crypto.keyStretcher(cipher, hash, secret, (err, k) => {
-      if (err) {
-        throw err
-      }
+    crypto.keys.keyStretcher(cipher, hash, secret, (err, k) => {
+      if (err) { throw err }
 
       keys.push(k)
       d.resolve()
     })
-  }, {
-    defer: true
-  })
+  }, { defer: true })
 }

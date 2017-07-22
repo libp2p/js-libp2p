@@ -4,19 +4,16 @@
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
   "browser": {
-    "node-webcrypto-ossl": false,
-    "./src/crypto/webcrypto.js": "./src/crypto/webcrypto-browser.js",
-    "./src/crypto/hmac.js": "./src/crypto/hmac-browser.js",
-    "./src/crypto/ecdh.js": "./src/crypto/ecdh-browser.js",
-    "./src/crypto/ciphers.js": "./src/crypto/ciphers-browser.js",
-    "./src/crypto/rsa.js": "./src/crypto/rsa-browser.js"
+    "./src/hmac/index.js": "./src/hmac/index-browser.js",
+    "./src/keys/ecdh.js": "./src/keys/ecdh-browser.js",
+    "./src/aes/ciphers.js": "./src/aes/ciphers-browser.js",
+    "./src/keys/rsa.js": "./src/keys/rsa-browser.js"
   },
   "scripts": {
     "lint": "aegir-lint",
     "build": "aegir-build",
-    "test": "npm run test:node && npm run test:no-webcrypto && npm run test:browser",
+    "test": "aegir-test",
     "test:node": "aegir-test --env node",
-    "test:no-webcrypto": "NO_WEBCRYPTO=true aegir-test --env node",
     "test:browser": "aegir-test --env browser",
     "release": "aegir-release",
     "release-minor": "aegir-release --type minor",
@@ -30,7 +27,7 @@
     "crypto",
     "rsa"
   ],
-  "author": "Friedel Ziegelmayer <dignifiedqurie@gmail.com>",
+  "author": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "asn1.js": "^4.9.1",
@@ -38,14 +35,14 @@
     "browserify-aes": "^1.0.6",
     "keypair": "^1.0.1",
     "libp2p-crypto-secp256k1": "^0.1.4",
-    "multihashing-async": "~0.4.5",
     "nodeify": "^1.0.1",
     "pem-jwk": "^1.5.1",
     "protocol-buffers": "^3.2.1",
     "rsa-pem-to-jwk": "^1.1.3",
     "safe-buffer": "^5.1.1",
     "tweetnacl": "^1.0.0",
-    "webcrypto-shim": "github:dignifiedquire/webcrypto-shim#master"
+    "webcrypto-shim": "github:dignifiedquire/webcrypto-shim#master",
+    "multihashing-async": "~0.4.5"
   },
   "devDependencies": {
     "aegir": "^11.0.2",
@@ -53,9 +50,6 @@
     "chai": "^4.1.0",
     "dirty-chai": "^2.0.1",
     "pre-commit": "^1.2.2"
-  },
-  "optionalDependencies": {
-    "node-webcrypto-ossl": "^1.0.30"
   },
   "pre-commit": [
     "lint",

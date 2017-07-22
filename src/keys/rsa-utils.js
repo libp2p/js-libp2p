@@ -2,7 +2,7 @@
 
 const asn1 = require('asn1.js')
 
-const util = require('./util')
+const util = require('./../util')
 const toBase64 = util.toBase64
 const toBn = util.toBn
 

@@ -8,7 +8,7 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 
-const crypto = require('../src')
+const crypto = require('../../src')
 
 const hashes = ['SHA1', 'SHA256', 'SHA512']
 

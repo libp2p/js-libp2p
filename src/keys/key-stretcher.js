@@ -1,8 +1,8 @@
 'use strict'
 
-const crypto = require('./crypto')
 const whilst = require('async/whilst')
 const Buffer = require('safe-buffer').Buffer
+const hmac = require('../hmac')
 
 const cipherMap = {
   'AES-128': {
@@ -38,7 +38,7 @@ module.exports = (cipherType, hash, secret, callback) => {
   const seed = Buffer.from('key expansion')
   const resultLength = 2 * (ivSize + cipherKeySize + hmacKeySize)
 
-  crypto.hmac.create(hash, secret, (err, m) => {
+  hmac.create(hash, secret, (err, m) => {
     if (err) {
       return callback(err)
     }

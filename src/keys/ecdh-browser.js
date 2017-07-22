@@ -1,11 +1,11 @@
 'use strict'
 
-const crypto = require('./webcrypto')()
+const webcrypto = require('../webcrypto.js')()
 const nodeify = require('nodeify')
 const BN = require('asn1.js').bignum
 const Buffer = require('safe-buffer').Buffer
 
-const util = require('./util')
+const util = require('../util')
 const toBase64 = util.toBase64
 const toBn = util.toBn
 
@@ -16,7 +16,7 @@ const bits = {
 }
 
 exports.generateEphmeralKeyPair = function (curve, callback) {
-  nodeify(crypto.subtle.generateKey(
+  nodeify(webcrypto.subtle.generateKey(
     {
       name: 'ECDH',
       namedCurve: curve
@@ -34,7 +34,7 @@ exports.generateEphmeralKeyPair = function (curve, callback) {
       let privateKey
 
       if (forcePrivate) {
-        privateKey = crypto.subtle.importKey(
+        privateKey = webcrypto.subtle.importKey(
           'jwk',
           unmarshalPrivateKey(curve, forcePrivate),
           {
@@ -49,7 +49,7 @@ exports.generateEphmeralKeyPair = function (curve, callback) {
       }
 
       const keys = Promise.all([
-        crypto.subtle.importKey(
+        webcrypto.subtle.importKey(
           'jwk',
           unmarshalPublicKey(curve, theirPub),
           {
@@ -62,7 +62,7 @@ exports.generateEphmeralKeyPair = function (curve, callback) {
         privateKey
       ])
 
-      nodeify(keys.then((keys) => crypto.subtle.deriveBits(
+      nodeify(keys.then((keys) => webcrypto.subtle.deriveBits(
         {
           name: 'ECDH',
           namedCurve: curve,
@@ -73,15 +73,13 @@ exports.generateEphmeralKeyPair = function (curve, callback) {
       )).then((bits) => Buffer.from(bits)), cb)
     }
 
-    return crypto.subtle.exportKey(
-      'jwk',
-      pair.publicKey
-    ).then((publicKey) => {
-      return {
-        key: marshalPublicKey(publicKey),
-        genSharedKey
-      }
-    })
+    return webcrypto.subtle.exportKey('jwk', pair.publicKey)
+      .then((publicKey) => {
+        return {
+          key: marshalPublicKey(publicKey),
+          genSharedKey
+        }
+      })
   }), callback)
 }
 
