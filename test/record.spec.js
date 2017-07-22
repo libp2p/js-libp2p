@@ -24,8 +24,8 @@ describe('record', () => {
   before((done) => {
     waterfall([
       (cb) => parallel([
-        (cb) => crypto.generateKeyPair('rsa', 1024, cb),
-        (cb) => crypto.generateKeyPair('rsa', 1024, cb)
+        (cb) => crypto.keys.generateKeyPair('rsa', 1024, cb),
+        (cb) => crypto.keys.generateKeyPair('rsa', 1024, cb)
       ], cb),
       (keys, cb) => {
         otherKey = keys[0]
@@ -43,35 +43,35 @@ describe('record', () => {
 
   it('new', () => {
     const rec = new Record(
-      new Buffer('hello'),
-      new Buffer('world'),
+      Buffer.from('hello'),
+      Buffer.from('world'),
       id
     )
 
-    expect(rec).to.have.property('key').eql(new Buffer('hello'))
-    expect(rec).to.have.property('value').eql(new Buffer('world'))
+    expect(rec).to.have.property('key').eql(Buffer.from('hello'))
+    expect(rec).to.have.property('value').eql(Buffer.from('world'))
     expect(rec).to.have.property('author').eql(id)
   })
 
   it('serialize & deserialize', () => {
-    const rec = new Record(new Buffer('hello'), new Buffer('world'), id, date)
+    const rec = new Record(Buffer.from('hello'), Buffer.from('world'), id, date)
     const dec = Record.deserialize(rec.serialize())
 
-    expect(dec).to.have.property('key').eql(new Buffer('hello'))
-    expect(dec).to.have.property('value').eql(new Buffer('world'))
+    expect(dec).to.have.property('key').eql(Buffer.from('hello'))
+    expect(dec).to.have.property('value').eql(Buffer.from('world'))
     expect(dec).to.have.property('author')
     expect(dec.author.id.equals(id.id)).to.be.eql(true)
     expect(dec.timeReceived).to.be.eql(date)
   })
 
   it('serializeSigned', (done) => {
-    const rec = new Record(new Buffer('hello2'), new Buffer('world2'), id, date)
+    const rec = new Record(Buffer.from('hello2'), Buffer.from('world2'), id, date)
     rec.serializeSigned(key, (err, enc) => {
       expect(err).to.not.exist()
 
       const dec = Record.deserialize(enc)
-      expect(dec).to.have.property('key').eql(new Buffer('hello2'))
-      expect(dec).to.have.property('value').eql(new Buffer('world2'))
+      expect(dec).to.have.property('key').eql(Buffer.from('hello2'))
+      expect(dec).to.have.property('value').eql(Buffer.from('world2'))
       expect(dec).to.have.property('author')
       expect(dec.author.id.equals(id.id)).to.be.eql(true)
       expect(dec.timeReceived).to.be.eql(date)
@@ -89,7 +89,7 @@ describe('record', () => {
 
   describe('verifySignature', () => {
     it('valid', (done) => {
-      const rec = new Record(new Buffer('hello'), new Buffer('world'), id)
+      const rec = new Record(Buffer.from('hello'), Buffer.from('world'), id)
 
       rec.serializeSigned(key, (err, enc) => {
         expect(err).to.not.exist()
@@ -99,7 +99,7 @@ describe('record', () => {
     })
 
     it('invalid', (done) => {
-      const rec = new Record(new Buffer('hello'), new Buffer('world'), id)
+      const rec = new Record(Buffer.from('hello'), Buffer.from('world'), id)
       rec.serializeSigned(key, (err, enc) => {
         expect(err).to.not.exist()
 
@@ -114,15 +114,15 @@ describe('record', () => {
   describe('go interop', () => {
     it('no signature', () => {
       const dec = Record.deserialize(fixture.serialized)
-      expect(dec).to.have.property('key').eql(new Buffer('hello'))
-      expect(dec).to.have.property('value').eql(new Buffer('world'))
+      expect(dec).to.have.property('key').eql(Buffer.from('hello'))
+      expect(dec).to.have.property('value').eql(Buffer.from('world'))
       expect(dec).to.have.property('author')
     })
 
     it('with signature', () => {
       const dec = Record.deserialize(fixture.serializedSigned)
-      expect(dec).to.have.property('key').eql(new Buffer('hello'))
-      expect(dec).to.have.property('value').eql(new Buffer('world'))
+      expect(dec).to.have.property('key').eql(Buffer.from('hello'))
+      expect(dec).to.have.property('value').eql(Buffer.from('world'))
       expect(dec).to.have.property('author')
       expect(dec).to.have.property('signature')
     })

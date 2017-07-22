@@ -9,6 +9,7 @@ const waterfall = require('async/waterfall')
 const each = require('async/each')
 const crypto = require('libp2p-crypto')
 const PeerId = require('peer-id')
+const Buffer = require('safe-buffer').Buffer
 
 const libp2pRecord = require('../src')
 const validator = libp2pRecord.validator
@@ -21,7 +22,7 @@ const generateCases = (hash) => {
     valid: {
       publicKey: [
         Buffer.concat([
-          new Buffer('/pk/'),
+          Buffer.from('/pk/'),
           hash
         ])
       ]
@@ -29,11 +30,11 @@ const generateCases = (hash) => {
     invalid: {
       publicKey: [
         // missing hashkey
-        new Buffer('/pk/'),
+        Buffer.from('/pk/'),
         // not the hash of a key
         Buffer.concat([
-          new Buffer('/pk/'),
-          new Buffer('random')
+          Buffer.from('/pk/'),
+          Buffer.from('random')
         ]),
         // missing prefix
         hash
@@ -49,7 +50,7 @@ describe('validator', () => {
 
   before((done) => {
     waterfall([
-      (cb) => crypto.generateKeyPair('rsa', 1024, cb),
+      (cb) => crypto.keys.generateKeyPair('rsa', 1024, cb),
       (pair, cb) => {
         key = pair
         pair.public.hash(cb)
@@ -64,14 +65,14 @@ describe('validator', () => {
 
   describe('verifyRecord', () => {
     it('calls matching validator', (done) => {
-      const k = new Buffer('/hello/you')
-      const rec = new Record(k, new Buffer('world'), new PeerId(hash))
+      const k = Buffer.from('/hello/you')
+      const rec = new Record(k, Buffer.from('world'), new PeerId(hash))
 
       const validators = {
         hello: {
           func (key, value, cb) {
-            expect(key).to.be.eql(k)
-            expect(value).to.be.eql(new Buffer('world'))
+            expect(key).to.eql(k)
+            expect(value).to.eql(Buffer.from('world'))
             cb()
           },
           sign: false
@@ -85,21 +86,15 @@ describe('validator', () => {
     it('returns false for missing validator', () => {
       const validators = {}
 
-      expect(
-        validator.isSigned(validators, new Buffer('/hello'))
-      ).to.be.eql(
-        false
-      )
+      expect(validator.isSigned(validators, Buffer.from('/hello')))
+        .to.eql(false)
     })
 
     it('throws on unkown validator', () => {
       const validators = {}
 
-      expect(
-        () => validator.isSigned(validators, new Buffer('/hello/world'))
-      ).to.throw(
-          /Invalid record keytype/
-      )
+      expect(() => validator.isSigned(validators, Buffer.from('/hello/world')))
+        .to.throw(/Invalid record keytype/)
     })
 
     it('returns the value from the matching validator', () => {
@@ -108,17 +103,10 @@ describe('validator', () => {
         world: {sign: false}
       }
 
-      expect(
-        validator.isSigned(validators, new Buffer('/hello/world'))
-      ).to.be.eql(
-        true
-      )
+      expect(validator.isSigned(validators, Buffer.from('/hello/world')))
+        .to.eql(true)
 
-      expect(
-        validator.isSigned(validators, '/world/hello')
-      ).to.be.eql(
-        false
-      )
+      expect(validator.isSigned(validators, '/world/hello')).to.eql(false)
     })
   })
 
@@ -154,14 +142,11 @@ describe('validator', () => {
 
   describe('go interop', () => {
     it('record with key from from go', (done) => {
-      const pubKey = crypto.unmarshalPublicKey(fixture.publicKey)
+      const pubKey = crypto.keys.unmarshalPublicKey(fixture.publicKey)
 
       pubKey.hash((err, hash) => {
         expect(err).to.not.exist()
-        const k = Buffer.concat([
-          new Buffer('/pk/'),
-          hash
-        ])
+        const k = Buffer.concat([Buffer.from('/pk/'), hash])
 
         validator.validators.pk.func(k, pubKey.bytes, done)
       })

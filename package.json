@@ -41,7 +41,8 @@
     "chai": "^4.1.0",
     "dirty-chai": "^2.0.1",
     "libp2p-crypto": "^0.9.4",
-    "pre-commit": "^1.2.2"
+    "pre-commit": "^1.2.2",
+    "safe-buffer": "^5.1.1"
   },
   "dependencies": {
     "async": "^2.5.0",
