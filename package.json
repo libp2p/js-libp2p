@@ -34,7 +34,7 @@
     "async": "^2.5.0",
     "browserify-aes": "^1.0.6",
     "keypair": "^1.0.1",
-    "libp2p-crypto-secp256k1": "^0.1.4",
+    "libp2p-crypto-secp256k1": "^0.2.0",
     "nodeify": "^1.0.1",
     "pem-jwk": "^1.5.1",
     "protocol-buffers": "^3.2.1",
@@ -42,7 +42,7 @@
     "safe-buffer": "^5.1.1",
     "tweetnacl": "^1.0.0",
     "webcrypto-shim": "github:dignifiedquire/webcrypto-shim#master",
-    "multihashing-async": "~0.4.5"
+    "multihashing-async": "~0.4.6"
   },
   "devDependencies": {
     "aegir": "^11.0.2",
