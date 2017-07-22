@@ -34,7 +34,7 @@
     "async": "^2.5.0",
     "browserify-aes": "^1.0.6",
     "keypair": "^1.0.1",
-    "libp2p-crypto-secp256k1": "^0.2.1",
+    "libp2p-crypto-secp256k1": "~0.2.1",
     "nodeify": "^1.0.1",
     "pem-jwk": "^1.5.1",
     "protocol-buffers": "^3.2.1",
