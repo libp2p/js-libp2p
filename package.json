@@ -1,6 +1,6 @@
 {
   "name": "libp2p-kad-dht",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "main": "src/index.js",
   "scripts": {
