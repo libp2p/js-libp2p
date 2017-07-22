@@ -32,7 +32,7 @@ const mockSecp256k1Module = {
 }
 
 describe('without libp2p-crypto-secp256k1 module present', () => {
-  crypto.keys.keys['secp256k1'] = undefined
+  crypto.keys.supportedKeys['secp256k1'] = undefined
 
   it('fails to generate a secp256k1 key', (done) => {
     crypto.keys.generateKeyPair('secp256k1', 256, (err, key) => {
@@ -61,7 +61,7 @@ describe('with libp2p-crypto-secp256k1 module present', () => {
   let key
 
   before((done) => {
-    crypto.keys.keys['secp256k1'] = mockSecp256k1Module
+    crypto.keys.supportedKeys['secp256k1'] = mockSecp256k1Module
     crypto.keys.generateKeyPair('secp256k1', 256, (err, _key) => {
       if (err) return done(err)
       key = _key

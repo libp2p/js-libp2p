@@ -8,7 +8,7 @@ chai.use(dirtyChai)
 const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../../src')
-const ed25519 = crypto.keys.keys.ed25519
+const ed25519 = crypto.keys.supportedKeys.ed25519
 const fixtures = require('../fixtures/go-key-ed25519')
 
 describe('ed25519', () => {

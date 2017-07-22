@@ -1,16 +1,21 @@
 'use strict'
 
 const protobuf = require('protocol-buffers')
-const pbm = protobuf(require('./keys.proto'))
-
-const keys = exports.keys = require('./keys')
+const keysPBM = protobuf(require('./keys.proto'))
 
 exports = module.exports
 
-exports.pbm = pbm
+const supportedKeys = {
+  rsa: require('./rsa-class'),
+  ed25519: require('./ed25519-class'),
+  secp256k1: require('libp2p-crypto-secp256k1')(keysPBM, require('../random-bytes'))
+}
+
+exports.supportedKeys = supportedKeys
+exports.keysPBM = keysPBM
 
 function isValidKeyType (keyType) {
-  const key = keys[keyType.toLowerCase()]
+  const key = supportedKeys[keyType.toLowerCase()]
   return key !== undefined
 }
 
@@ -19,7 +24,7 @@ exports.generateEphemeralKeyPair = require('./ephemeral-keys')
 
 // Generates a keypair of the given type and bitsize
 exports.generateKeyPair = (type, bits, cb) => {
-  let key = keys[type.toLowerCase()]
+  let key = supportedKeys[type.toLowerCase()]
 
   if (!key) {
     return cb(new Error('invalid or unsupported key type'))
@@ -31,7 +36,7 @@ exports.generateKeyPair = (type, bits, cb) => {
 // Generates a keypair of the given type and bitsize
 // seed is a 32 byte uint8array
 exports.generateKeyPairFromSeed = (type, seed, bits, cb) => {
-  let key = keys[type.toLowerCase()]
+  let key = supportedKeys[type.toLowerCase()]
   if (!key) {
     return cb(new Error('invalid or unsupported key type'))
   }
@@ -44,16 +49,16 @@ exports.generateKeyPairFromSeed = (type, seed, bits, cb) => {
 // Converts a protobuf serialized public key into its
 // representative object
 exports.unmarshalPublicKey = (buf) => {
-  const decoded = pbm.PublicKey.decode(buf)
+  const decoded = keysPBM.PublicKey.decode(buf)
 
   switch (decoded.Type) {
-    case pbm.KeyType.RSA:
-      return keys.rsa.unmarshalRsaPublicKey(decoded.Data)
-    case pbm.KeyType.Ed25519:
-      return keys.ed25519.unmarshalEd25519PublicKey(decoded.Data)
-    case pbm.KeyType.Secp256k1:
-      if (keys.secp256k1) {
-        return keys.secp256k1.unmarshalSecp256k1PublicKey(decoded.Data)
+    case keysPBM.KeyType.RSA:
+      return supportedKeys.rsa.unmarshalRsaPublicKey(decoded.Data)
+    case keysPBM.KeyType.Ed25519:
+      return supportedKeys.ed25519.unmarshalEd25519PublicKey(decoded.Data)
+    case keysPBM.KeyType.Secp256k1:
+      if (supportedKeys.secp256k1) {
+        return supportedKeys.secp256k1.unmarshalSecp256k1PublicKey(decoded.Data)
       } else {
         throw new Error('secp256k1 support requires libp2p-crypto-secp256k1 package')
       }
@@ -75,16 +80,16 @@ exports.marshalPublicKey = (key, type) => {
 // Converts a protobuf serialized private key into its
 // representative object
 exports.unmarshalPrivateKey = (buf, callback) => {
-  const decoded = pbm.PrivateKey.decode(buf)
+  const decoded = keysPBM.PrivateKey.decode(buf)
 
   switch (decoded.Type) {
-    case pbm.KeyType.RSA:
-      return keys.rsa.unmarshalRsaPrivateKey(decoded.Data, callback)
-    case pbm.KeyType.Ed25519:
-      return keys.ed25519.unmarshalEd25519PrivateKey(decoded.Data, callback)
-    case pbm.KeyType.Secp256k1:
-      if (keys.secp256k1) {
-        return keys.secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data, callback)
+    case keysPBM.KeyType.RSA:
+      return supportedKeys.rsa.unmarshalRsaPrivateKey(decoded.Data, callback)
+    case keysPBM.KeyType.Ed25519:
+      return supportedKeys.ed25519.unmarshalEd25519PrivateKey(decoded.Data, callback)
+    case keysPBM.KeyType.Secp256k1:
+      if (supportedKeys.secp256k1) {
+        return supportedKeys.secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data, callback)
       } else {
         return callback(new Error('secp256k1 support requires libp2p-crypto-secp256k1 package'))
       }

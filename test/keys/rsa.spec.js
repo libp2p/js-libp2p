@@ -8,7 +8,7 @@ chai.use(dirtyChai)
 const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../../src')
-const rsa = crypto.keys.keys.rsa
+const rsa = crypto.keys.supportedKeys.rsa
 const fixtures = require('../fixtures/go-key-rsa')
 
 describe('RSA', () => {
