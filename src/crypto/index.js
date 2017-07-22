@@ -28,7 +28,7 @@ exports.hashAndSign = function (key, msg, callback) {
   })
 
   multihashing.digest(msg, HASH_ALGORITHM, (err, digest) => {
-    if (err) return done(err)
+    if (err) { return done(err) }
     try {
       const sig = secp256k1.sign(digest, key)
       const sigDER = secp256k1.signatureExport(sig.signature)
@@ -45,7 +45,7 @@ exports.hashAndVerify = function (key, sig, msg, callback) {
   })
 
   multihashing.digest(msg, HASH_ALGORITHM, (err, digest) => {
-    if (err) return done(err)
+    if (err) { return done(err) }
     try {
       sig = secp256k1.signatureImport(sig)
       const valid = secp256k1.verify(digest, sig, key)

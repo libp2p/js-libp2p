@@ -2,7 +2,7 @@
 
 const multihashing = require('multihashing-async')
 const crypto = require('./crypto')
-const pbm = require('libp2p-crypto').protobuf
+const pbm = require('libp2p-crypto').keys.pbm
 
 class Secp256k1PublicKey {
   constructor (key) {
