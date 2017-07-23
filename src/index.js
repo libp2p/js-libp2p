@@ -5,7 +5,6 @@ const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
 const EventEmitter = require('events').EventEmitter
 const debug = require('debug')
-const includes = require('lodash/includes')
 const setImmediate = require('async/setImmediate')
 
 const log = debug('libp2p:railing')
@@ -15,49 +14,36 @@ class Railing extends EventEmitter {
   constructor (bootstrapers) {
     super()
     this.bootstrapers = bootstrapers
+    this.interval = null
   }
 
   start (callback) {
     setImmediate(() => callback())
-    setImmediate(() => {
+    if (this.interval) { return }
+
+    this.interval = setInterval(() => {
       this.bootstrapers.forEach((candidate) => {
-        candidate = multiaddr(candidate)
+        const ma = multiaddr(candidate)
 
-        let ma
-        if (includes(candidate.protoNames(), 'ipfs')) {
-          ma = candidate.decapsulate('ipfs')
-        }
+        const peerId = PeerId.createFromB58String(ma.getPeerId())
 
-        // TODO: switch for multiaddr.getPeerId once merged
-        let peerIdB58Str
-        try {
-          peerIdB58Str = candidate.stringTuples().filter((tuple) => {
-            if (tuple[0] === candidate.protos().filter((proto) => {
-              return proto.name === 'ipfs'
-            })[0].code) {
-              return true
-            }
-          })[0][1]
-        } catch (e) {
-          throw new Error('Error extracting IPFS id from multiaddr', e)
-        }
-
-        const peerId = PeerId.createFromB58String(peerIdB58Str)
         PeerInfo.create(peerId, (err, peerInfo) => {
-          if (err) {
-            return log.error('Error creating PeerInfo from bootstrap peer', err)
-          }
+          if (err) { return log.error('Invalid bootstrap peer id', err) }
 
           peerInfo.multiaddrs.add(ma)
 
           this.emit('peer', peerInfo)
         })
       })
-    })
+    }, 10000)
   }
 
   stop (callback) {
     setImmediate(callback)
+    if (this.interval) {
+      clearInterval(this.interval)
+      this.interval = null
+    }
   }
 }
 

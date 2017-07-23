@@ -33,7 +33,7 @@
     "aegir": "^11.0.2",
     "chai": "^4.1.0",
     "libp2p-swarm": "~0.31.0",
-    "libp2p-tcp": "~0.10.1",
+    "libp2p-tcp": "~0.10.2",
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
