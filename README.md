@@ -24,6 +24,14 @@
   <br>
 </p>
 
+### Project status
+
+We've come a long way, but this project is still in Alpha, lots of development is happening, API might change, beware of the Dragons 🐉..
+
+**Want to get started?** Check our [examples folder](/examples). You can check the development status at the [Waffle Board](https://waffle.io/libp2p/js-libp2p).
+
+[![Throughput Graph](https://graphs.waffle.io/libp2p/js-libp2p/throughput.svg)](https://waffle.io/libp2p/js-libp2p/metrics/throughput)
+
 ## Table of Contents
 
 - [Background](#background)
