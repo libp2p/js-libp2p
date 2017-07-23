@@ -1,3 +1,13 @@
+<a name="0.6.1"></a>
+## [0.6.1](https://github.com/libp2p/js-libp2p-railing/compare/v0.6.0...v0.6.1) (2017-07-23)
+
+
+### Features
+
+* emit peers every 10 secs ([598fd94](https://github.com/libp2p/js-libp2p-railing/commit/598fd94))
+
+
+
 <a name="0.6.0"></a>
 # [0.6.0](https://github.com/libp2p/js-libp2p-railing/compare/v0.5.2...v0.6.0) (2017-07-22)
 
