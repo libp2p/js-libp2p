@@ -3,7 +3,6 @@
 
 const TCP = require('libp2p-tcp')
 const WS = require('libp2p-websockets')
-const spdy = require('libp2p-spdy')
 const multiplex = require('libp2p-multiplex')
 
 const waterfall = require('async/waterfall')
@@ -71,7 +70,7 @@ describe('test relay', function () {
     }
 
     beforeEach(function (done) {
-      setUpNodes(spdy, () => {
+      setUpNodes(multiplex, () => {
         let nodeA = testNodes['nodeA']
         let nodeB = testNodes['nodeB']
         let relayNode = testNodes['relayNode']
@@ -184,8 +183,8 @@ describe('test relay', function () {
             }
 
             testNodes = nodes
-            relaySpy1 = sinon.spy(testNodes['relayNode1'].relayCircuit, '_circuit')
-            relaySpy2 = sinon.spy(testNodes['relayNode2'].relayCircuit, '_circuit')
+            relaySpy1 = sinon.spy(testNodes['relayNode1'].swarm.transports['Circuit'].listeners[0].hopHandler, 'handle')
+            relaySpy2 = sinon.spy(testNodes['relayNode2'].swarm.transports['Circuit'].listeners[0].hopHandler, 'handle')
 
             done()
           })
@@ -219,12 +218,10 @@ describe('test relay', function () {
         it('dial over the correct relay', function (done) {
           utils.dialAndReverse(testNodes['nodeA'], testNodes['nodeB'], ['hello'], (err, result) => {
             expect(err).to.be.null()
-            expect(relaySpy2.called).to.be.not.ok()
-            expect(relaySpy1.called).to.be.ok()
 
-            expect(relaySpy1.args[0][1].toString())
-              .to
-              .equal((`/ipfs/${testNodes['nodeB'].peerInfo.id.toB58String()}`))
+            expect(relaySpy1.args.some((a) => {
+              return a[0].dstPeer && a[0].dstPeer.addrs[0].toString() === `/ipfs/${testNodes['nodeB'].peerInfo.id.toB58String()}`
+            })).to.be.ok()
 
             expect(result[0]).to.equal('hello'.split('').reverse('').join(''))
 
@@ -235,12 +232,10 @@ describe('test relay', function () {
         it('dial over the correct relay and transport', function (done) {
           utils.dialAndReverse(testNodes['nodeB'], testNodes['nodeA'], ['hello'], (err, result) => {
             expect(err).to.be.null()
-            expect(relaySpy1.called).to.be.not.ok()
-            expect(relaySpy2.called).to.be.ok()
 
-            expect(relaySpy2.args[0][1].toString())
-              .to
-              .equal((`/ipfs/${testNodes['nodeA'].peerInfo.id.toB58String()}`))
+            expect(relaySpy2.args.some((a) => {
+              return a[0].dstPeer && a[0].dstPeer.addrs[0].toString() === `/ipfs/${testNodes['nodeA'].peerInfo.id.toB58String()}`
+            })).to.be.ok()
 
             expect(result[0]).to.equal('hello'.split('').reverse('').join(''))
 
@@ -249,52 +244,52 @@ describe('test relay', function () {
         })
       })
 
-      describe.skip(`active`, function () {
-        beforeEach(function (done) {
-          active = true
-          setUpNodes(multiplex, () => {
-            setTimeout(done, 1000) // give the nodes time to startup
-          })
-        })
-
-        afterEach(function circuitTests (done) {
-          relaySpy1.reset()
-          relaySpy2.reset()
-          utils.stopNodes(testNodes, done)
-        })
-
-        it('dial over the correct relay', function (done) {
-          utils.dialAndReverse(testNodes['nodeA'], testNodes['nodeB'], ['hello'], (err, result) => {
-            expect(err).to.be.null()
-            expect(relaySpy2.called).to.be.not.ok()
-            expect(relaySpy1.called).to.be.ok()
-
-            expect(relaySpy1.args[0][1].toString())
-              .to
-              .equal((`/ipfs/${testNodes['nodeB'].peerInfo.id.toB58String()}`))
-
-            expect(result[0]).to.equal('hello'.split('').reverse('').join(''))
-
-            done(err)
-          })
-        })
-
-        it('dial over the correct relay and transport', function (done) {
-          utils.dialAndReverse(testNodes['nodeB'], testNodes['nodeA'], ['hello'], (err, result) => {
-            expect(err).to.be.null()
-            expect(relaySpy1.called).to.be.not.ok()
-            expect(relaySpy2.called).to.be.ok()
-
-            expect(relaySpy2.args[0][1].toString())
-              .to
-              .equal((`/ipfs/${testNodes['nodeA'].peerInfo.id.toB58String()}`))
-
-            expect(result[0]).to.equal('hello'.split('').reverse('').join(''))
-
-            done(err)
-          })
-        })
-      })
+      // describe.skip(`active`, function () {
+      //   beforeEach(function (done) {
+      //     active = true
+      //     setUpNodes(multiplex, () => {
+      //       setTimeout(done, 1000) // give the nodes time to startup
+      //     })
+      //   })
+      //
+      //   afterEach(function circuitTests (done) {
+      //     relaySpy1.reset()
+      //     relaySpy2.reset()
+      //     utils.stopNodes(testNodes, done)
+      //   })
+      //
+      //   it('dial over the correct relay', function (done) {
+      //     utils.dialAndReverse(testNodes['nodeA'], testNodes['nodeB'], ['hello'], (err, result) => {
+      //       expect(err).to.be.null()
+      //       expect(relaySpy2.called).to.be.not.ok()
+      //       expect(relaySpy1.called).to.be.ok()
+      //
+      //       expect(relaySpy1.args[0][1].toString())
+      //         .to
+      //         .equal((`/ipfs/${testNodes['nodeB'].peerInfo.id.toB58String()}`))
+      //
+      //       expect(result[0]).to.equal('hello'.split('').reverse('').join(''))
+      //
+      //       done(err)
+      //     })
+      //   })
+      //
+      //   it('dial over the correct relay and transport', function (done) {
+      //     utils.dialAndReverse(testNodes['nodeB'], testNodes['nodeA'], ['hello'], (err, result) => {
+      //       expect(err).to.be.null()
+      //       expect(relaySpy1.called).to.be.not.ok()
+      //       expect(relaySpy2.called).to.be.ok()
+      //
+      //       expect(relaySpy2.args[0][1].toString())
+      //         .to
+      //         .equal((`/ipfs/${testNodes['nodeA'].peerInfo.id.toB58String()}`))
+      //
+      //       expect(result[0]).to.equal('hello'.split('').reverse('').join(''))
+      //
+      //       done(err)
+      //     })
+      //   })
+      // })
     })
 
     describe(`listen on an explicit chained relay addr`, function () {
@@ -371,8 +366,8 @@ describe('test relay', function () {
             }
 
             testNodes = nodes
-            relaySpy1 = sinon.spy(testNodes['relayNode1'].relayCircuit, '_circuit')
-            relaySpy2 = sinon.spy(testNodes['relayNode2'].relayCircuit, '_circuit')
+            relaySpy1 = sinon.spy(testNodes['relayNode1'].swarm.transports['Circuit'].listeners[0].hopHandler, 'handle')
+            relaySpy2 = sinon.spy(testNodes['relayNode2'].swarm.transports['Circuit'].listeners[0].hopHandler, 'handle')
 
             done()
           })
@@ -408,13 +403,13 @@ describe('test relay', function () {
           expect(relaySpy1.called).to.be.ok()
           expect(relaySpy2.called).to.be.ok()
 
-          expect(relaySpy1.args[0][1].toString())
-            .to
-            .equal((`/ipfs/${testNodes['relayNode2'].peerInfo.id.toB58String()}`))
+          expect(relaySpy1.args.some((a) => {
+            return a[0].dstPeer && a[0].dstPeer.addrs[0].toString() === `/ipfs/${testNodes['relayNode2'].peerInfo.id.toB58String()}`
+          })).to.be.ok()
 
-          expect(relaySpy2.args[0][1].toString())
-            .to
-            .equal((`/ipfs/${testNodes['nodeB'].peerInfo.id.toB58String()}`))
+          expect(relaySpy2.args.some((a) => {
+            return a[0].dstPeer && a[0].dstPeer.addrs[0].toString() === `/ipfs/${testNodes['nodeB'].peerInfo.id.toB58String()}`
+          })).to.be.ok()
 
           expect(result[0]).to.equal('hello'.split('').reverse('').join(''))
           done(err)
@@ -427,13 +422,13 @@ describe('test relay', function () {
           expect(relaySpy1.called).to.be.ok()
           expect(relaySpy2.called).to.be.ok()
 
-          expect(relaySpy1.args[0][1].toString())
-            .to
-            .equal((`/ipfs/${testNodes['nodeA'].peerInfo.id.toB58String()}`))
+          expect(relaySpy1.args.some((a) => {
+            return a[0].dstPeer && a[0].dstPeer.addrs[0].toString() === `/ipfs/${testNodes['nodeA'].peerInfo.id.toB58String()}`
+          })).to.be.ok()
 
-          expect(relaySpy2.args[0][1].toString())
-            .to
-            .equal((`/ip4/0.0.0.0/tcp/9031/ipfs/${testNodes['relayNode1'].peerInfo.id.toB58String()}`))
+          expect(relaySpy2.args.some((a) => {
+            return a[0].dstPeer && a[0].dstPeer.addrs[0].toString() === `/ip4/0.0.0.0/tcp/9031/ipfs/${testNodes['relayNode1'].peerInfo.id.toB58String()}`
+          })).to.be.ok()
 
           expect(result[0]).to.equal('hello'.split('').reverse('').join(''))
           done(err)

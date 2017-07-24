@@ -6,7 +6,6 @@ const secio = require('libp2p-secio')
 class TestNode extends Libp2p {
   constructor (peerInfo, transports, muxer, options) {
     options = options || {}
-
     const modules = {
       transport: transports,
       connection: {
