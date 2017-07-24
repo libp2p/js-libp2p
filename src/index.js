@@ -14,7 +14,6 @@ const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
-const Circuit = require('libp2p-circuit')
 
 exports = module.exports
 
@@ -30,7 +29,6 @@ class Node extends EventEmitter {
     this.peerInfo = _peerInfo
     this.peerBook = _peerBook || new PeerBook()
     this._isStarted = false
-    this.relayCircuit = null
 
     this.swarm = new Swarm(this.peerInfo, this.peerBook)
 
@@ -42,11 +40,6 @@ class Node extends EventEmitter {
 
       // If muxer exists, we can use Identify
       this.swarm.connection.reuse()
-
-      if (_options.relay && _options.relay.circuit) {
-        this.relayCircuit = new Circuit.Hop(_options.relay.circuit)
-        this.relayCircuit.mount(this.swarm)
-      }
 
       // If muxer exists, we can use Relay for listening/dialing
       this.swarm.connection.enableRelayDialing(_options.relay)
