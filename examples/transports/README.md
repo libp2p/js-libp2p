@@ -8,7 +8,7 @@ A more complete definition of what is a transport can be found on the [interface
 
 ## 1. Creating a libp2p Bundle with TCP
 
-When using libp2p, you always want to create your own libp2p Bundle, that is, pick your set of modules and create your network stack with the properties you need. In this example, we will create a bundle with TCP. You can find the complete solution on the file [1.js](/1.js).
+When using libp2p, you always want to create your own libp2p Bundle, that is, pick your set of modules and create your network stack with the properties you need. In this example, we will create a bundle with TCP. You can find the complete solution on the file [1.js](https://github.com/libp2p/js-libp2p/blob/master/examples/transports/1.js).
 
 You will need 4 deps total, so go ahead and install all of them with: 
 
