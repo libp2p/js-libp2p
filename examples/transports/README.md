@@ -8,7 +8,7 @@ A more complete definition of what is a transport can be found on the [interface
 
 ## 1. Creating a libp2p Bundle with TCP
 
-When using libp2p, you always want to create your own libp2p Bundle, that is, pick your set of modules and create your network stack with the properties you need. In this example, we will create a bundle with TCP. You can find the complete solution on the file [1.js](/1.js).
+When using libp2p, you always want to create your own libp2p Bundle, that is, pick your set of modules and create your network stack with the properties you need. In this example, we will create a bundle with TCP. You can find the complete solution on the file [1.js](./1.js).
 
 You will need 4 deps total, so go ahead and install all of them with: 
 
@@ -90,7 +90,7 @@ That `QmW2cKTakTYqbQkUzBTEGXgWYFj1YEPeUndE1YWs6CBzDQ` is the PeerId that was cre
 
 ## 2. Dialing from one node to another node
 
-Now that we have our bundle, let's create two nodes and make them dial to each other! You can find the complete solution at [2.js](/2.js).
+Now that we have our bundle, let's create two nodes and make them dial to each other! You can find the complete solution at [2.js](./2.js).
 
 For this step, we will need one more dependency.
 
@@ -168,7 +168,7 @@ Hello p2p world!
 
 Next, we want to be available in multiple transports to increase our chances of having common transports in the network. A simple scenario, a node running in the browser only has access to HTTP, WebSockets and WebRTC since the browser doesn't let you open any other kind of transport, for this node to dial to some other node, that other node needs to share a common transport.
 
-What we are going to do in this step is to create 3 nodes, one with TCP, another with TCP+WebSockets and another one with just WebSockets. The full solution can be found on [3.js](3.js).
+What we are going to do in this step is to create 3 nodes, one with TCP, another with TCP+WebSockets and another one with just WebSockets. The full solution can be found on [3.js](./3.js).
 
 In this example, we will need to also install `libp2p-websockets`, go ahead and install:
 
