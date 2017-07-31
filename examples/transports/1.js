@@ -26,7 +26,7 @@ waterfall([
 ], (err) => {
   if (err) { throw err }
 
-  console.log('node has started (true/false):', node.isOn())
+  console.log('node has started (true/false):', node.isStarted())
   console.log('listening on:')
   node.peerInfo.multiaddrs.forEach((ma) => console.log(ma.toString()))
 })

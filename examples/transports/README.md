@@ -65,7 +65,7 @@ waterfall([
   if (err) { throw err }
 
   // At this point the node has started
-  console.log('node has started (true/false):', node.isOn())
+  console.log('node has started (true/false):', node.isStarted())
   // And we can print the now listening addresses.
   // If you are familiar with TCP, you might have noticed
   // that we specified the node to listen in 0.0.0.0 and port
