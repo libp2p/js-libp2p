@@ -171,7 +171,7 @@ class Node extends EventEmitter {
         this.swarm.transport.add(
           transport.tag || transport.constructor.name, transport)
       } else if (transport.constructor &&
-                 transport.constructor.name === 'WebSockets') {
+        transport.constructor.name === 'WebSockets') {
         // TODO find a cleaner way to signal that a transport is always
         // used for dialing, even if no listener
         ws = transport
@@ -303,15 +303,7 @@ class Node extends EventEmitter {
       p = peer
       // Multiaddr instance (not string)
     } else if (multiaddr.isMultiaddr(peer)) {
-      let peerId
-      if (peer.toString().includes('p2p-circuit')) {
-        // last segment is always the peer ipfs segment
-        peerId = multiaddr(peer.toString().split('p2p-circuit').pop())
-      } else {
-        peerId = peer
-      }
-
-      const peerIdB58Str = peerId.getPeerId()
+      const peerIdB58Str = peer.getPeerId()
       try {
         p = this.peerBook.get(peerIdB58Str)
       } catch (err) {
