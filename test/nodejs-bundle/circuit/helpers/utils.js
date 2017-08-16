@@ -8,7 +8,7 @@ const pull = require('pull-stream')
 
 exports.createNodes = function createNodes (configNodes, callback) {
   const nodes = {}
-  eachAsync(Object.keys(configNodes), (key, cb1) => {
+  eachAsync(Object.keys(configNodes), (key, cb) => {
     let config = configNodes[key]
 
     const setup = (err, peer) => {
@@ -16,17 +16,12 @@ exports.createNodes = function createNodes (configNodes, callback) {
         callback(err)
       }
 
-      eachAsync(config.addrs, (addr, cb2) => {
+      config.addrs.forEach((addr) => {
         peer.multiaddrs.add(addr)
-        cb2()
-      }, (err) => {
-        if (err) {
-          return callback(err)
-        }
-
-        nodes[key] = new TestNode(peer, config.transports, config.muxer, config.config)
-        cb1()
       })
+
+      nodes[key] = new TestNode(peer, config.transports, config.muxer, config.config)
+      cb()
     }
 
     if (config.id) {
@@ -53,29 +48,11 @@ exports.createNodes = function createNodes (configNodes, callback) {
 }
 
 function startNodes (nodes, callback) {
-  eachAsync(Object.keys(nodes),
-    (key, cb) => {
-      nodes[key].start(cb)
-    },
-    (err) => {
-      if (err) {
-        return callback(err)
-      }
-      callback(null)
-    })
+  eachAsync(Object.keys(nodes), (key, cb) => nodes[key].start(cb), callback)
 }
 
 exports.stopNodes = function stopNodes (nodes, callback) {
-  eachAsync(Object.keys(nodes),
-    (key, cb) => {
-      nodes[key].stop(cb)
-    },
-    (err) => {
-      if (err) {
-        return callback(err)
-      }
-      callback()
-    })
+  eachAsync(Object.keys(nodes), (key, cb) => nodes[key].stop(cb), callback)
 }
 
 function reverse (protocol, conn) {

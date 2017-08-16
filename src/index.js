@@ -44,7 +44,7 @@ class Node extends EventEmitter {
       this.swarm.connection.reuse()
 
       // If muxer exists, we can use Relay for listening/dialing
-      this.swarm.connection.enableRelayDialing(_options.relay)
+      this.swarm.connection.enableCircuitRelay(_options.relay)
 
       // Received incommind dial and muxer upgrade happened,
       // reuse this muxed connection
