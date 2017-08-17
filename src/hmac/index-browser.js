@@ -1,6 +1,6 @@
 'use strict'
 
-const nodeify = require('nodeify')
+const nodeify = require('../nodeify')
 const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../webcrypto.js')()
@@ -10,6 +10,11 @@ const hashTypes = {
   SHA1: 'SHA-1',
   SHA256: 'SHA-256',
   SHA512: 'SHA-512'
+}
+
+const sign = (key, data, cb) => {
+  nodeify(crypto.subtle.sign({name: 'HMAC'}, key, data)
+    .then((raw) => Buffer.from(raw)), cb)
 }
 
 exports.create = function (hashType, secret, callback) {
@@ -27,8 +32,7 @@ exports.create = function (hashType, secret, callback) {
   ).then((key) => {
     return {
       digest (data, cb) {
-        nodeify(crypto.subtle.sign({name: 'HMAC'}, key, data)
-          .then((raw) => Buffer.from(raw)), cb)
+        sign(key, data, cb)
       },
       length: lengths[hashType]
     }
