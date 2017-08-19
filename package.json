@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "aegir": "^11.0.2",
-    "chai": "^4.1.0",
+    "chai": "^4.1.1",
     "dirty-chai": "^2.0.1",
     "gulp": "^3.9.1",
     "interface-transport": "~0.3.5",
