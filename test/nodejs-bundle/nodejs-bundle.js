@@ -16,10 +16,8 @@ function mapMuxers (list) {
       return pref
     }
     switch (pref.trim().toLowerCase()) {
-      case 'spdy':
-        return spdy
-      case 'multiplex':
-        return multiplex
+      case 'spdy': return spdy
+      case 'multiplex': return multiplex
       default:
         throw new Error(pref + ' muxer not available')
     }
@@ -42,13 +40,13 @@ class Node extends libp2p {
     options = options || {}
 
     const modules = {
-      transport: options.transports || [
+      transport: [
         new TCP(),
         new WS()
       ],
       connection: {
         muxer: getMuxers(options.muxer),
-        crypto: [secio]
+        crypto: [ secio ]
       },
       discovery: []
     }

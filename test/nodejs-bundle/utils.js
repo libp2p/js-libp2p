@@ -10,6 +10,7 @@ const waterfall = require('async/waterfall')
 const pull = require('pull-stream')
 
 function createNode (multiaddrs, options, callback) {
+  options = options || {}
   if (typeof options === 'function') {
     callback = options
     options = {}
@@ -20,7 +21,7 @@ function createNode (multiaddrs, options, callback) {
   }
 
   waterfall([
-    (cb) => options.id ? PeerId.createFromB58String(options.id) : PeerId.create({bits: 1024}, cb),
+    (cb) => options.id ? PeerId.createFromB58String(options.id) : PeerId.create({ bits: 1024 }, cb),
     (peerId, cb) => PeerInfo.create(peerId, cb),
     (peerInfo, cb) => {
       multiaddrs.map((ma) => peerInfo.multiaddrs.add(ma))

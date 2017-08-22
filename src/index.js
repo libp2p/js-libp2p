@@ -171,7 +171,7 @@ class Node extends EventEmitter {
         this.swarm.transport.add(
           transport.tag || transport.constructor.name, transport)
       } else if (transport.constructor &&
-        transport.constructor.name === 'WebSockets') {
+                 transport.constructor.name === 'WebSockets') {
         // TODO find a cleaner way to signal that a transport is always
         // used for dialing, even if no listener
         ws = transport
