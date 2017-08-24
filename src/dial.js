@@ -186,14 +186,14 @@ function dial (swarm) {
       const ms = new multistream.Dialer()
       ms.handle(conn, (err) => {
         if (err) {
-          return callback(err)
+          return cb(err)
         }
         ms.select(protocol, (err, conn) => {
           if (err) {
-            return callback(err)
+            return cb(err)
           }
           proxyConn.setInnerConn(conn)
-          callback(null, proxyConn)
+          cb(null, proxyConn)
         })
       })
     }
