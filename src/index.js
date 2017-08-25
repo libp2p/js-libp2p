@@ -27,6 +27,7 @@ function Swarm (peerInfo, peerBook) {
   this._peerInfo = peerInfo
   this._peerBook = peerBook
 
+  this.setMaxListeners(Infinity)
   // transports --
   // { key: transport }; e.g { tcp: <tcp> }
   this.transports = {}
