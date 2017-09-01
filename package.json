@@ -49,6 +49,7 @@
   "devDependencies": {
     "aegir": "^12.1.0",
     "chai": "^4.1.2",
+    "dirty-chai": "^2.0.1",
     "cids": "~0.5.1",
     "dirty-chai": "^2.0.1",
     "electron-webrtc": "^0.3.0",
