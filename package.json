@@ -1,6 +1,6 @@
 {
   "name": "libp2p-identify",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "libp2p Identify Protocol",
   "main": "src/index.js",
   "scripts": {
