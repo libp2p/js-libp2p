@@ -12,7 +12,6 @@ const Swarm = require('libp2p-swarm')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
-const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
 
 exports = module.exports
@@ -158,7 +157,7 @@ class Node extends EventEmitter {
     const maOld = []
     const maNew = []
     this.peerInfo.multiaddrs.forEach((ma) => {
-      if (!mafmt.IPFS.matches(ma)) {
+      if (!ma.getPeerId()) {
         maOld.push(ma)
         maNew.push(ma.encapsulate('/ipfs/' + this.peerInfo.id.toB58String()))
       }
