@@ -4,7 +4,7 @@ const multiaddr = require('multiaddr')
 const Address6 = require('ip-address').Address6
 
 module.exports = (socket) => {
-  var mh
+  let mh
 
   if (socket.remoteFamily === 'IPv6') {
     var addr = new Address6(socket.remoteAddress)

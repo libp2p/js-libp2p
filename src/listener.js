@@ -14,6 +14,7 @@ const getMultiaddr = require('./get-multiaddr')
 
 const IPFS_CODE = 421
 const CLOSE_TIMEOUT = 2000
+
 function noop () {}
 
 module.exports = (handler) => {
