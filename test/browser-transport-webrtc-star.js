@@ -24,12 +24,12 @@ describe('transport - webrtc-star', () => {
   before(() => {
     const id1 = peerId.createFromB58String('QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooA')
     peer1 = new PeerInfo(id1)
-    const mh1 = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooA'
+    const mh1 = 'ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooA'
     peer1.multiaddrs.add(mh1)
 
     const id2 = peerId.createFromB58String('QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooB')
     peer2 = new PeerInfo(id2)
-    const mh2 = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooB'
+    const mh2 = 'ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooooB'
     peer2.multiaddrs.add(mh2)
 
     swarm1 = new Swarm(peer1, new PeerBook())
@@ -76,7 +76,8 @@ describe('transport - webrtc-star', () => {
   })
   it('dial offline / non-existent node', (done) => {
     peer2.multiaddrs.clear()
-    peer2.multiaddrs.add('/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/ABCD')
+    peer2.multiaddrs.add('/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/ABCD')
+
     swarm1.transport.dial('wstar', peer2, (err, conn) => {
       expect(err).to.exist()
       expect(conn).to.not.exist()

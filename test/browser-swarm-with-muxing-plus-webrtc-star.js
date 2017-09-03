@@ -31,7 +31,7 @@ describe('high level API (swarm with spdy + webrtc-star)', () => {
       (cb) => peerId.create((err, id1) => {
         expect(err).to.not.exist()
         peer1 = new PeerInfo(id1)
-        const mh1 = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' +
+        const mh1 = 'ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' +
           id1.toB58String()
         peer1.multiaddrs.add(mh1)
         cb()
@@ -39,7 +39,7 @@ describe('high level API (swarm with spdy + webrtc-star)', () => {
       (cb) => peerId.create((err, id2) => {
         expect(err).to.not.exist()
         peer2 = new PeerInfo(id2)
-        const mh2 = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' +
+        const mh2 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' +
           id2.toB58String()
         peer2.multiaddrs.add(mh2)
         cb()
@@ -132,7 +132,7 @@ describe('high level API (swarm with spdy + webrtc-star)', () => {
       expect(err).to.not.exist()
 
       const peer3 = new PeerInfo(id3)
-      const mh3 = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + id3.toB58String()
+      const mh3 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + id3.toB58String()
       peer3.multiaddrs.add(mh3)
 
       swarm3 = new Swarm(peer3, new PeerBook())
