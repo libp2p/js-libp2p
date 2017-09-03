@@ -9,9 +9,7 @@
 [![Circle CI](https://circleci.com/gh/libp2p/js-libp2p-record.svg?style=svg)](https://circleci.com/gh/libp2p/js-libp2p-record)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-record.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-record) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 ![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
-![](https://img.shields.io/badge/Node.js-%3E%3D4.0.0-orange.svg?style=flat-square)
-
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/js-libp2p-record.svg)](https://saucelabs.com/u/js-libp2p-record)
+![](https://img.shields.io/badge/Node.js-%3E%3D6.0.0-orange.svg?style=flat-square)
 
 > JavaScript implementation of libp2p record.
 

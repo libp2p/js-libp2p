@@ -24,7 +24,8 @@
     "IPFS"
   ],
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=6.0.0",
+    "npm": ">=3.0.0"
   },
   "pre-commit": [
     "lint",
@@ -38,9 +39,9 @@
   "homepage": "https://github.com/libp2p/js-libp2p-record",
   "devDependencies": {
     "aegir": "^11.0.2",
-    "chai": "^4.1.0",
+    "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
-    "libp2p-crypto": "^0.9.4",
+    "libp2p-crypto": "~0.10.0",
     "pre-commit": "^1.2.2",
     "safe-buffer": "^5.1.1"
   },
@@ -48,9 +49,9 @@
     "async": "^2.5.0",
     "buffer-split": "^1.0.0",
     "left-pad": "^1.1.3",
-    "multihashes": "^0.4.5",
-    "multihashing-async": "^0.4.6",
-    "peer-id": "^0.9.0",
+    "multihashes": "~0.4.9",
+    "multihashing-async": "~0.4.6",
+    "peer-id": "~0.10.0",
     "protocol-buffers": "^3.2.1",
     "safe-buffer": "^5.1.1"
   },
