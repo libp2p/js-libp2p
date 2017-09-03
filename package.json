@@ -25,24 +25,24 @@
     "url": "https://github.com/libp2p/js-ipfs-railing/issues"
   },
   "engines": {
-    "node": ">=4.0.0",
+    "node": ">=6.0.0",
     "npm": ">=3.0.0"
   },
   "homepage": "https://github.com/libp2p/js-ipfs-railing",
   "devDependencies": {
     "aegir": "^11.0.2",
-    "chai": "^4.1.0",
-    "libp2p-swarm": "~0.31.0",
-    "libp2p-tcp": "~0.10.2",
+    "chai": "^4.1.2",
+    "libp2p-swarm": "~0.32.0",
+    "libp2p-tcp": "~0.11.0",
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
     "async": "^2.5.0",
-    "debug": "^2.6.8",
+    "debug": "^3.0.1",
     "lodash": "^4.17.4",
-    "multiaddr": "^2.3.0",
-    "peer-id": "~0.9.0",
-    "peer-info": "~0.10.0"
+    "multiaddr": "^3.0.0",
+    "peer-id": "~0.10.0",
+    "peer-info": "~0.11.0"
   },
   "pre-commit": [
     "lint",
