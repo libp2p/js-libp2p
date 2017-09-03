@@ -1,3 +1,14 @@
+<a name="0.10.0"></a>
+# [0.10.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.9.4...v0.10.0) (2017-09-03)
+
+
+### Features
+
+* p2p addrs situation ([#106](https://github.com/libp2p/js-libp2p-crypto/issues/106)) ([9e977c7](https://github.com/libp2p/js-libp2p-crypto/commit/9e977c7))
+* skip nextTick in nodeify ([#103](https://github.com/libp2p/js-libp2p-crypto/issues/103)) ([f20267b](https://github.com/libp2p/js-libp2p-crypto/commit/f20267b))
+
+
+
 <a name="0.9.4"></a>
 ## [0.9.4](https://github.com/libp2p/js-libp2p-crypto/compare/v0.9.3...v0.9.4) (2017-07-22)
 
