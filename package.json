@@ -34,7 +34,7 @@
     "async": "^2.5.0",
     "browserify-aes": "^1.0.6",
     "keypair": "^1.0.1",
-    "libp2p-crypto-secp256k1": "~0.2.1",
+    "libp2p-crypto-secp256k1": "~0.2.2",
     "multihashing-async": "~0.4.6",
     "pem-jwk": "^1.5.1",
     "protocol-buffers": "^3.2.1",
@@ -46,7 +46,7 @@
   "devDependencies": {
     "aegir": "^11.0.2",
     "benchmark": "^2.1.4",
-    "chai": "^4.1.0",
+    "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "pre-commit": "^1.2.2"
   },
@@ -55,7 +55,7 @@
     "test"
   ],
   "engines": {
-    "node": ">=4.0.0",
+    "node": ">=6.0.0",
     "npm": ">=3.0.0"
   },
   "repository": {
