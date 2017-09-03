@@ -25,11 +25,11 @@ describe('libp2p-ipfs-browser (webrtc only)', () => {
       expect(err).to.not.exist()
 
       peer1 = new PeerInfo(ids[0])
-      const ma1 = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + ids[0].toB58String()
+      const ma1 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + ids[0].toB58String()
       peer1.multiaddrs.add(ma1)
 
       peer2 = new PeerInfo(ids[1])
-      const ma2 = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + ids[1].toB58String()
+      const ma2 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + ids[1].toB58String()
       peer2.multiaddrs.add(ma2)
 
       done()
@@ -67,7 +67,7 @@ describe('libp2p-ipfs-browser (webrtc only)', () => {
         expect(Object.keys(peers2)).to.have.length(1)
 
         pull(
-          pull.values([Buffer(text)]),
+          pull.values([Buffer.from(text)]),
           conn,
           pull.collect((err, data) => {
             expect(err).to.not.exist()
@@ -108,7 +108,7 @@ describe('libp2p-ipfs-browser (webrtc only)', () => {
       expect(err).to.not.exist()
 
       const peer3 = new PeerInfo(id3)
-      const ma3 = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + id3.toB58String()
+      const ma3 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + id3.toB58String()
       peer3.multiaddrs.add(ma3)
 
       node1.on('peer:discovery', (peerInfo) => node1.dial(peerInfo, check))
