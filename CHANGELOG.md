@@ -1,3 +1,13 @@
+<a name="0.12.0"></a>
+# [0.12.0](https://github.com/libp2p/js-libp2p/compare/v0.11.0...v0.12.0) (2017-09-03)
+
+
+### Features
+
+* p2p addrs situation ([#119](https://github.com/libp2p/js-libp2p/issues/119)) ([cad173e](https://github.com/libp2p/js-libp2p/commit/cad173e))
+
+
+
 <a name="0.11.0"></a>
 # [0.11.0](https://github.com/libp2p/js-libp2p/compare/v0.10.2...v0.11.0) (2017-07-22)
 
