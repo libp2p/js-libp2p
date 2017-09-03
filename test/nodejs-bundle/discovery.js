@@ -29,7 +29,7 @@ describe('discovery', () => {
         },
         (cb) => createNode([
           '/ip4/0.0.0.0/tcp/0',
-          `/libp2p-webrtc-star/ip4/127.0.0.1/tcp/${port}/ws`
+          `/ip4/127.0.0.1/tcp/${port}/ws/p2p-webrtc-star`
         ], options, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
@@ -38,7 +38,7 @@ describe('discovery', () => {
         }),
         (cb) => createNode([
           '/ip4/0.0.0.0/tcp/0',
-          `/libp2p-webrtc-star/ip4/127.0.0.1/tcp/${port}/ws`
+          `/ip4/127.0.0.1/tcp/${port}/ws/p2p-webrtc-star`
         ], options, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node

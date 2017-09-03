@@ -34,7 +34,7 @@ describe('TCP + WebSockets + WebRTCStar', () => {
         createNode([
           '/ip4/0.0.0.0/tcp/0',
           '/ip4/127.0.0.1/tcp/25011/ws',
-          '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/24642/ws'
+          '/ip4/127.0.0.1/tcp/24642/ws/p2p-webrtc-star'
         ], {
           modules: {
             transport: [wstar],
@@ -68,7 +68,7 @@ describe('TCP + WebSockets + WebRTCStar', () => {
         const wstar = new WStar({wrtc: wrtc})
 
         createNode([
-          '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/24642/ws'
+          '/ip4/127.0.0.1/tcp/24642/ws/p2p-webrtc-star'
         ], {
           modules: {
             transport: [wstar],
