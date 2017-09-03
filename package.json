@@ -20,7 +20,8 @@
     "test"
   ],
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=6.0.0",
+    "npm": ">=3.0.0"
   },
   "repository": {
     "type": "git",
@@ -38,15 +39,15 @@
   "homepage": "https://github.com/libp2p/js-libp2p-identify#readme",
   "devDependencies": {
     "aegir": "^11.0.2",
-    "chai": "^4.1.0",
+    "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "pre-commit": "^1.2.2",
     "pull-pair": "^1.1.0"
   },
   "dependencies": {
-    "multiaddr": "^2.3.0",
-    "peer-id": "~0.9.0",
-    "peer-info": "~0.10.0",
+    "multiaddr": "^3.0.0",
+    "peer-id": "~0.10.0",
+    "peer-info": "~0.11.0",
     "protocol-buffers": "^3.2.1",
     "pull-length-prefixed": "^1.3.0",
     "pull-stream": "^3.6.0"
