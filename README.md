@@ -50,7 +50,7 @@ We've come a long way, but this project is still in Alpha, lots of development i
 
 libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, dev have long had to made custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.
 
-We are in the process of writting better documentation, blog posts, tutorials and a formal specification. Today you can find:
+We are in the process of writing better documentation, blog posts, tutorials and a formal specification. Today you can find:
 
 - [libp2p.io](https://libp2p.io)
 - [Specification (WIP)](https://github.com/libp2p/specs)
@@ -82,7 +82,7 @@ npm install --save libp2p
 
 ### [Tutorials and Examples](/examples)
 
-You can find multiple examples on the [examples folder](/examples) that will guide you through using libp2p for several scenarions.
+You can find multiple examples on the [examples folder](/examples) that will guide you through using libp2p for several scenarios.
 
 ### Extending libp2p skeleton
 
@@ -199,7 +199,7 @@ class Node extends libp2p {
 - `handlerFunc`: Function with signature `function (protocol, conn) {}`
 - `matchFunc`: Function for matching on protocol (exact matching, semver, etc). Default to exact match.
 
-#### `libp2p.unhandle(protocol)
+#### `libp2p.unhandle(protocol)`
 
 > Stop handling protocol
 
@@ -304,7 +304,7 @@ List of packages currently in existence for libp2p
 
 The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
 
- - Go through the modules and **check out existing issues**. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrasture behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
+ - Go through the modules and **check out existing issues**. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
  - **Perform code reviews**. Most of this has been developed by @diasdavid, which means that more eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
  - **Add tests**. There can never be enough tests.
 
