@@ -1,3 +1,13 @@
+<a name="0.10.1"></a>
+## [0.10.1](https://github.com/libp2p/js-libp2p-crypto/compare/v0.10.0...v0.10.1) (2017-09-05)
+
+
+### Bug Fixes
+
+* switch to protobufjs ([#107](https://github.com/libp2p/js-libp2p-crypto/issues/107)) ([dc2793f](https://github.com/libp2p/js-libp2p-crypto/commit/dc2793f))
+
+
+
 <a name="0.10.0"></a>
 # [0.10.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.9.4...v0.10.0) (2017-09-03)
 
