@@ -1,7 +1,6 @@
 'use strict'
 
-const protobuf = require('protocol-buffers')
-const keysPBM = protobuf(require('./keys.proto'))
+const keysPBM = require('./keys.proto.js')
 
 exports = module.exports
 
@@ -50,15 +49,16 @@ exports.generateKeyPairFromSeed = (type, seed, bits, cb) => {
 // representative object
 exports.unmarshalPublicKey = (buf) => {
   const decoded = keysPBM.PublicKey.decode(buf)
+  const data = Buffer.from(decoded.Data)
 
   switch (decoded.Type) {
     case keysPBM.KeyType.RSA:
-      return supportedKeys.rsa.unmarshalRsaPublicKey(decoded.Data)
+      return supportedKeys.rsa.unmarshalRsaPublicKey(data)
     case keysPBM.KeyType.Ed25519:
-      return supportedKeys.ed25519.unmarshalEd25519PublicKey(decoded.Data)
+      return supportedKeys.ed25519.unmarshalEd25519PublicKey(data)
     case keysPBM.KeyType.Secp256k1:
       if (supportedKeys.secp256k1) {
-        return supportedKeys.secp256k1.unmarshalSecp256k1PublicKey(decoded.Data)
+        return supportedKeys.secp256k1.unmarshalSecp256k1PublicKey(data)
       } else {
         throw new Error('secp256k1 support requires libp2p-crypto-secp256k1 package')
       }
@@ -81,15 +81,16 @@ exports.marshalPublicKey = (key, type) => {
 // representative object
 exports.unmarshalPrivateKey = (buf, callback) => {
   const decoded = keysPBM.PrivateKey.decode(buf)
+  const data = Buffer.from(decoded.Data)
 
   switch (decoded.Type) {
     case keysPBM.KeyType.RSA:
-      return supportedKeys.rsa.unmarshalRsaPrivateKey(decoded.Data, callback)
+      return supportedKeys.rsa.unmarshalRsaPrivateKey(data, callback)
     case keysPBM.KeyType.Ed25519:
-      return supportedKeys.ed25519.unmarshalEd25519PrivateKey(decoded.Data, callback)
+      return supportedKeys.ed25519.unmarshalEd25519PrivateKey(data, callback)
     case keysPBM.KeyType.Secp256k1:
       if (supportedKeys.secp256k1) {
-        return supportedKeys.secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data, callback)
+        return supportedKeys.secp256k1.unmarshalSecp256k1PrivateKey(data, callback)
       } else {
         return callback(new Error('secp256k1 support requires libp2p-crypto-secp256k1 package'))
       }

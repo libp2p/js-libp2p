@@ -1,11 +1,10 @@
 'use strict'
 
 const multihashing = require('multihashing-async')
-const protobuf = require('protocol-buffers')
 const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('./ed25519')
-const pbm = protobuf(require('./keys.proto'))
+const pbm = require('./keys.proto.js')
 
 class Ed25519PublicKey {
   constructor (key) {
@@ -22,10 +21,11 @@ class Ed25519PublicKey {
   }
 
   get bytes () {
-    return pbm.PublicKey.encode({
+    const msg = pbm.PublicKey.create({
       Type: pbm.KeyType.Ed25519,
       Data: this.marshal()
     })
+    return Buffer.from(pbm.PublicKey.encode(msg).finish())
   }
 
   equals (key) {
@@ -64,10 +64,12 @@ class Ed25519PrivateKey {
   }
 
   get bytes () {
-    return pbm.PrivateKey.encode({
+    const msg = pbm.PrivateKey.create({
       Type: pbm.KeyType.Ed25519,
       Data: this.marshal()
     })
+
+    return Buffer.from(pbm.PrivateKey.encode(msg).finish())
   }
 
   equals (key) {
