@@ -2,6 +2,10 @@ machine:
   node:
     version: stable
 
+post:
+  test:
+    - npm run coverage -- --upload
+
 dependencies:
   pre:
     - google-chrome --version

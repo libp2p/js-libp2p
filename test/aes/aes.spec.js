@@ -7,7 +7,6 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 const series = require('async/series')
-const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../../src')
 const fixtures = require('./../fixtures/aes')

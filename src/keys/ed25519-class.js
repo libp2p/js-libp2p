@@ -1,7 +1,6 @@
 'use strict'
 
 const multihashing = require('multihashing-async')
-const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('./ed25519')
 const pbm = require('./keys.proto.js')

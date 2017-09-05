@@ -1,9 +1,6 @@
 'use strict'
 
-const Buffer = require('safe-buffer').Buffer
-
 module.exports = {
-
   // protobuf marshaled key pair generated with libp2p-crypto-secp256k1
   // and marshaled with libp2p-crypto.marshalPublicKey / marshalPrivateKey
   pbmPrivateKey: Buffer.from('08021220e0600103010000000100000000000000be1dc82c2e000000e8d6030301000000', 'hex'),

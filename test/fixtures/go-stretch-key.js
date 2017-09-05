@@ -1,7 +1,5 @@
 'use strict'
 
-const Buffer = require('safe-buffer').Buffer
-
 module.exports = [{
   cipher: 'AES-256',
   hash: 'SHA256',

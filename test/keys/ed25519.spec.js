@@ -5,7 +5,6 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
-const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../../src')
 const ed25519 = crypto.keys.supportedKeys.ed25519

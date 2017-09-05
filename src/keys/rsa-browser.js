@@ -1,7 +1,6 @@
 'use strict'
 
 const nodeify = require('../nodeify')
-const Buffer = require('safe-buffer').Buffer
 
 const webcrypto = require('../webcrypto.js')()
 
@@ -18,11 +17,11 @@ exports.generateKey = function (bits, callback) {
     true,
     ['sign', 'verify']
   )
-  .then(exportKey)
-  .then((keys) => ({
-    privateKey: keys[0],
-    publicKey: keys[1]
-  })), callback)
+    .then(exportKey)
+    .then((keys) => ({
+      privateKey: keys[0],
+      publicKey: keys[1]
+    })), callback)
 }
 
 // Takes a jwk key

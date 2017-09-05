@@ -22,5 +22,6 @@ curves.forEach((curve) => {
   }, { defer: true })
 })
 
-suite.on('cycle', (event) => console.log(String(event.target)))
-     .run({async: true})
+suite
+  .on('cycle', (event) => console.log(String(event.target)))
+  .run({async: true})

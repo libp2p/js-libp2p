@@ -1,7 +1,5 @@
 'use strict'
 
-const Buffer = require('safe-buffer').Buffer
-
 module.exports = {
   // These were generated in a gore (https://github.com/motemen/gore) repl session:
   //

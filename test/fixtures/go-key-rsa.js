@@ -1,7 +1,5 @@
 'use strict'
 
-const Buffer = require('safe-buffer').Buffer
-
 module.exports = {
   private: {
     hash: Buffer.from([

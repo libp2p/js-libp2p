@@ -1,7 +1,6 @@
 'use strict'
 
 const nodeify = require('../nodeify')
-const Buffer = require('safe-buffer').Buffer
 
 const crypto = require('../webcrypto.js')()
 const lengths = require('./lengths')

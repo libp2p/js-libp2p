@@ -1,7 +1,6 @@
 'use strict'
 
 const whilst = require('async/whilst')
-const Buffer = require('safe-buffer').Buffer
 const hmac = require('../hmac')
 
 const cipherMap = {

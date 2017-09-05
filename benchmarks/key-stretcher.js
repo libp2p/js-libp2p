@@ -22,8 +22,9 @@ async.waterfall([
     setup(cipher, hash, secret)
   }))
 
-  suite.on('cycle', (event) => console.log(String(event.target)))
-       .run({async: true})
+  suite
+    .on('cycle', (event) => console.log(String(event.target)))
+    .run({async: true})
 })
 
 function setup (cipher, hash, secret) {
