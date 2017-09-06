@@ -6,7 +6,9 @@ const PeerId = require('peer-id')
 const pull = require('pull-stream')
 
 const sigServer = require('libp2p-webrtc-star/src/sig-server')
+const WSsigServer = require('libp2p-websocket-star-rendezvous')
 let server
+let server2
 
 let node
 const rawPeer = require('./test/browser-bundle/peer.json')
@@ -15,11 +17,25 @@ const before = (done) => {
   let count = 0
   const ready = () => ++count === 2 ? done() : null
 
-  sigServer.start({ port: 15555 }, (err, _server) => {
+  sigServer.start({
+    port: 15555
+  }, (err, _server) => {
     if (err) {
       throw err
     }
     server = _server
+    ready()
+  })
+
+  WSsigServer.start({
+    port: 14444,
+    refreshPeerListIntervalMS: 1000,
+    strictMultiaddr: false
+  }, (err, _server) => {
+    if (err) {
+      throw err
+    }
+    server2 = _server
     ready()
   })
 
@@ -38,12 +54,7 @@ const before = (done) => {
 }
 
 const after = (done) => {
-  setTimeout(() => node.stop((err) => {
-    if (err) {
-      return done(err)
-    }
-    server.stop(done)
-  }), 2000)
+  setTimeout(() => require('async/each')([node, server, server2], (s, n) => s.stop(n), done), 2000)
 }
 
 module.exports = {
@@ -52,4 +63,3 @@ module.exports = {
     post: after
   }
 }
-
