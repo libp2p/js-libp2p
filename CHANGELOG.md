@@ -1,3 +1,18 @@
+<a name="0.10.2"></a>
+## [0.10.2](https://github.com/libp2p/js-libp2p-crypto/compare/v0.10.1...v0.10.2) (2017-09-06)
+
+
+### Bug Fixes
+
+* use regular protocol-buffers until protobufjs is fixed ([#109](https://github.com/libp2p/js-libp2p-crypto/issues/109)) ([957fdd3](https://github.com/libp2p/js-libp2p-crypto/commit/957fdd3))
+
+
+### Features
+
+* **deps:** upgrade to aegir@12 and browserify-aes@1.0.8 ([83257bc](https://github.com/libp2p/js-libp2p-crypto/commit/83257bc))
+
+
+
 <a name="0.10.1"></a>
 ## [0.10.1](https://github.com/libp2p/js-libp2p-crypto/compare/v0.10.0...v0.10.1) (2017-09-05)
 
