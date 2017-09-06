@@ -1,6 +1,7 @@
 'use strict'
 
-const keysPBM = require('./keys.proto.js')
+const protobuf = require('protocol-buffers')
+const keysPBM = protobuf(require('./keys.proto'))
 
 exports = module.exports
 
@@ -49,7 +50,7 @@ exports.generateKeyPairFromSeed = (type, seed, bits, cb) => {
 // representative object
 exports.unmarshalPublicKey = (buf) => {
   const decoded = keysPBM.PublicKey.decode(buf)
-  const data = Buffer.from(decoded.Data)
+  const data = decoded.Data
 
   switch (decoded.Type) {
     case keysPBM.KeyType.RSA:
@@ -81,7 +82,7 @@ exports.marshalPublicKey = (key, type) => {
 // representative object
 exports.unmarshalPrivateKey = (buf, callback) => {
   const decoded = keysPBM.PrivateKey.decode(buf)
-  const data = Buffer.from(decoded.Data)
+  const data = decoded.Data
 
   switch (decoded.Type) {
     case keysPBM.KeyType.RSA:

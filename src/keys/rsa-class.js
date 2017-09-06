@@ -1,9 +1,10 @@
 'use strict'
 
 const multihashing = require('multihashing-async')
+const protobuf = require('protocol-buffers')
 
 const crypto = require('./rsa')
-const pbm = require('./keys.proto.js')
+const pbm = protobuf(require('./keys.proto'))
 
 class RsaPublicKey {
   constructor (key) {
@@ -20,11 +21,10 @@ class RsaPublicKey {
   }
 
   get bytes () {
-    const msg = pbm.PublicKey.create({
+    return pbm.PublicKey.encode({
       Type: pbm.KeyType.RSA,
       Data: this.marshal()
     })
-    return Buffer.from(pbm.PublicKey.encode(msg).finish())
   }
 
   encrypt (bytes) {
@@ -75,11 +75,10 @@ class RsaPrivateKey {
   }
 
   get bytes () {
-    const msg = pbm.PrivateKey.create({
+    return pbm.PrivateKey.encode({
       Type: pbm.KeyType.RSA,
       Data: this.marshal()
     })
-    return Buffer.from(pbm.PrivateKey.encode(msg).finish())
   }
 
   equals (key) {
