@@ -69,7 +69,6 @@
     "once": "^1.4.0",
     "peer-id": "~0.10.0",
     "peer-info": "~0.11.0",
-    "protocol-buffers": "^3.2.1",
     "pull-stream": "^3.6.0"
   },
   "contributors": [
