@@ -11,7 +11,7 @@ module.exports = (conn, pInfoSelf) => {
     if (err) { return }
     observedAddrs = observedAddrs[0]
 
-    let publicKey = new Buffer(0)
+    let publicKey = Buffer.alloc(0)
     if (pInfoSelf.id.pubKey) {
       publicKey = pInfoSelf.id.pubKey.bytes
     }
@@ -21,7 +21,7 @@ module.exports = (conn, pInfoSelf) => {
       agentVersion: 'na',
       publicKey: publicKey,
       listenAddrs: pInfoSelf.multiaddrs.toArray().map((ma) => ma.buffer),
-      observedAddr: observedAddrs ? observedAddrs.buffer : new Buffer('')
+      observedAddr: observedAddrs ? observedAddrs.buffer : Buffer.from('')
     })
 
     pull(

@@ -1,7 +1,7 @@
 'use strict'
 
-const protobuf = require('protocol-buffers')
-const schema = new Buffer(`
+const protons = require('protons')
+const schema = `
 message Identify {
   // protocolVersion determines compatibility between peers
   optional string protocolVersion = 5; // e.g. ipfs/1.0.0
@@ -25,6 +25,6 @@ message Identify {
 
   repeated string protocols = 3;
 }
-`)
+`
 
-module.exports = protobuf(schema).Identify
+module.exports = protons(schema).Identify
