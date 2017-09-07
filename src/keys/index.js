@@ -1,6 +1,6 @@
 'use strict'
 
-const protobuf = require('protocol-buffers')
+const protobuf = require('protons')
 const keysPBM = protobuf(require('./keys.proto'))
 
 exports = module.exports

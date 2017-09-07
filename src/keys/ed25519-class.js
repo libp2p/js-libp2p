@@ -1,7 +1,7 @@
 'use strict'
 
 const multihashing = require('multihashing-async')
-const protobuf = require('protocol-buffers')
+const protobuf = require('protons')
 
 const crypto = require('./ed25519')
 const pbm = protobuf(require('./keys.proto'))
