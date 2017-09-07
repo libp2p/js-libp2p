@@ -1,9 +1,9 @@
 'use strict'
 
-const protobuf = require('protocol-buffers')
+const protons = require('protons')
 
-const rpcProto = protobuf(require('./rpc.proto.js'))
-const topicDescriptorProto = protobuf(require('./topic-descriptor.proto.js'))
+const rpcProto = protons(require('./rpc.proto.js'))
+const topicDescriptorProto = protons(require('./topic-descriptor.proto.js'))
 
 exports = module.exports
 exports.rpc = rpcProto
