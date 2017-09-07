@@ -1,11 +1,10 @@
 'use strict'
 
-const protobuf = require('protocol-buffers')
-const Buffer = require('safe-buffer').Buffer
+const protons = require('protons')
 const assert = require('assert')
 const PeerId = require('peer-id')
 
-const pb = protobuf(require('./record.proto')).Record
+const pb = protons(require('./record.proto')).Record
 const utils = require('./utils')
 
 class Record {

@@ -15,7 +15,7 @@ const bestRecord = (selectors, k, records) => {
     throw new Error('No records given')
   }
 
-  const parts = bsplit(k, new Buffer('/'))
+  const parts = bsplit(k, Buffer.from('/'))
 
   if (parts.length < 3) {
     throw new Error('Record key does not have a selector function')

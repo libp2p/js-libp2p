@@ -13,7 +13,7 @@ const bsplit = require('buffer-split')
  */
 const verifyRecord = (validators, record, callback) => {
   const key = record.key
-  const parts = bsplit(key, new Buffer('/'))
+  const parts = bsplit(key, Buffer.from('/'))
 
   if (parts.length < 3) {
     // No validator available
@@ -37,7 +37,7 @@ const verifyRecord = (validators, record, callback) => {
  * @returns {boolean}
  */
 const isSigned = (validators, key) => {
-  const parts = bsplit(key, new Buffer('/'))
+  const parts = bsplit(key, Buffer.from('/'))
 
   if (parts.length < 3) {
     // No validator available

@@ -9,7 +9,6 @@ const waterfall = require('async/waterfall')
 const each = require('async/each')
 const crypto = require('libp2p-crypto')
 const PeerId = require('peer-id')
-const Buffer = require('safe-buffer').Buffer
 
 const libp2pRecord = require('../src')
 const validator = libp2pRecord.validator

@@ -7,13 +7,13 @@ var expect = require('chai').expect
 const libp2pRecord = require('../src')
 const selection = libp2pRecord.selection
 
-const records = [new Buffer(0), new Buffer('hello')]
+const records = [Buffer.alloc(0), Buffer.from('hello')]
 
 describe('selection', () => {
   describe('bestRecord', () => {
     it('throws on missing selector in the record key', () => {
       expect(
-        () => selection.bestRecord({}, new Buffer('/'), records)
+        () => selection.bestRecord({}, Buffer.from('/'), records)
       ).to.throw(
         /Record key does not have a selector function/
       )
@@ -21,7 +21,7 @@ describe('selection', () => {
 
     it('throws on unknown key prefix', () => {
       expect(
-        () => selection.bestRecord({world () {}}, new Buffer('/hello/'), records)
+        () => selection.bestRecord({world () {}}, Buffer.from('/hello/'), records)
       ).to.throw(
         /Unrecognized key prefix: hello/
       )
@@ -30,7 +30,7 @@ describe('selection', () => {
     it('returns the index from the matching selector', () => {
       const selectors = {
         hello (k, recs) {
-          expect(k).to.be.eql(new Buffer('/hello/world'))
+          expect(k).to.be.eql(Buffer.from('/hello/world'))
           expect(recs).to.be.eql(records)
 
           return 1
@@ -38,7 +38,7 @@ describe('selection', () => {
       }
 
       expect(
-        selection.bestRecord(selectors, new Buffer('/hello/world'), records)
+        selection.bestRecord(selectors, Buffer.from('/hello/world'), records)
       ).to.equal(
         1
       )
@@ -48,7 +48,7 @@ describe('selection', () => {
   describe('selectors', () => {
     it('public key', () => {
       expect(
-        selection.selectors.pk(new Buffer('/hello/world'), records)
+        selection.selectors.pk(Buffer.from('/hello/world'), records)
       ).to.equal(
         0
       )

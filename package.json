@@ -4,17 +4,16 @@
   "description": "libp2p record implementation",
   "main": "src/index.js",
   "scripts": {
-    "test": "aegir-test",
-    "lint": "aegir-lint",
-    "test:node": "aegir-test node",
-    "test:browser": "aegir-test browser",
-    "build": "aegir-build",
-    "docs": "aegir-docs",
-    "release": "aegir-release --docs",
-    "release-minor": "aegir-release --type minor --docs",
-    "release-major": "aegir-release --type major --docs",
-    "coverage": "aegir-coverage",
-    "coverage-publish": "aegir-coverage publish"
+    "test": "aegir test",
+    "lint": "aegir lint",
+    "test:node": "aegir test -t node",
+    "test:browser": "aegir test -t browser -t webworker",
+    "build": "aegir build",
+    "docs": "aegir docs",
+    "release": "aegir release",
+    "release-minor": "aegir release --type minor",
+    "release-major": "aegir release --type major",
+    "coverage": "aegir coverage"
   },
   "repository": {
     "type": "git",
@@ -38,12 +37,11 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-record",
   "devDependencies": {
-    "aegir": "^11.0.2",
+    "aegir": "^12.0.6",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
-    "libp2p-crypto": "~0.10.0",
-    "pre-commit": "^1.2.2",
-    "safe-buffer": "^5.1.1"
+    "libp2p-crypto": "~0.10.2",
+    "pre-commit": "^1.2.2"
   },
   "dependencies": {
     "async": "^2.5.0",
@@ -52,8 +50,7 @@
     "multihashes": "~0.4.9",
     "multihashing-async": "~0.4.6",
     "peer-id": "~0.10.0",
-    "protocol-buffers": "^3.2.1",
-    "safe-buffer": "^5.1.1"
+    "protons": "^1.0.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
