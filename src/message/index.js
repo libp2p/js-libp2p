@@ -3,10 +3,10 @@
 const assert = require('assert')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
-const protobuf = require('protocol-buffers')
+const protons = require('protons')
 const Record = require('libp2p-record').Record
 
-const pbm = protobuf(require('./dht.proto'))
+const pbm = protons(require('./dht.proto'))
 
 const MESSAGE_TYPE = pbm.Message.MessageType
 const CONNECTION_TYPE = pbm.Message.ConnectionType
