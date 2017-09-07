@@ -1,6 +1,6 @@
 {
   "name": "libp2p-record",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "libp2p record implementation",
   "main": "src/index.js",
   "scripts": {
