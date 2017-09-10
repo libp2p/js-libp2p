@@ -39,7 +39,7 @@
   "dependencies": {
     "async": "^2.5.0",
     "libp2p-ping": "~0.6.0",
-    "libp2p-swarm": "~0.32.3",
+    "libp2p-swarm": "~0.32.4",
     "mafmt": "^3.0.1",
     "multiaddr": "^3.0.1",
     "peer-book": "~0.5.1",
