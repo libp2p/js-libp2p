@@ -12,7 +12,8 @@ const LimitDialer = require('./limit-dialer')
 const defaultPerPeerRateLimit = 8
 
 // the amount of time a single dial has to succeed
-const dialTimeout = 10 * 1000
+// TODO this should be exposed as a option
+const dialTimeout = 30 * 1000
 
 module.exports = function (swarm) {
   const dialer = new LimitDialer(defaultPerPeerRateLimit, dialTimeout)
