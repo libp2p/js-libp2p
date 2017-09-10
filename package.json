@@ -49,11 +49,11 @@
     "libp2p-secio": "~0.8.1",
     "libp2p-spdy": "~0.11.0",
     "libp2p-tcp": "~0.11.0",
-    "libp2p-webrtc-star": "~0.13.1",
+    "libp2p-webrtc-star": "~0.13.2",
     "libp2p-websockets": "~0.10.1",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
-    "peer-book": "~0.5.0",
+    "peer-book": "~0.5.1",
     "webrtcsupport": "^2.2.0"
   },
   "dependencies": {
@@ -69,7 +69,7 @@
     "once": "^1.4.0",
     "peer-id": "~0.10.1",
     "peer-info": "~0.11.0",
-    "pull-stream": "^3.6.0"
+    "pull-stream": "^3.6.1"
   },
   "contributors": [
     "Arnaud <arnaud.valensi@gmail.com>",
