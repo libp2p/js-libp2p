@@ -40,9 +40,9 @@ We've come a long way, but this project is still in Alpha, lots of development i
   - [Install](#install)
   - [Usage](#usage)
   - [API](#api)
-- [Development](#development)
-  - [Tests](#tests)
   - [Packages](#packages)
+- Development (WIP)
+  - Tests
 - [Contribute](#contribute)
 - [License](#license)
 
