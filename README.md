@@ -27,7 +27,7 @@
 ### npm
 
 ```sh
-> npm i libp2p-dht
+> npm i libp2p-kad-dht
 ```
 
 ### Use in Node.js
