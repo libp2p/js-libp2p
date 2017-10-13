@@ -144,7 +144,7 @@ describe('dial', () => {
     listener = tcp.createListener((conn) => {
       pull(
         conn,
-        pull.map((x) => new Buffer(x.toString() + '!')),
+        pull.map((x) => Buffer.from(x.toString() + '!')),
         conn
       )
     })
@@ -161,7 +161,7 @@ describe('dial', () => {
       tcp.dial(ma),
       pull.collect((err, values) => {
         expect(err).to.not.exist()
-        expect(values).to.eql([new Buffer('hey!')])
+        expect(values).to.eql([Buffer.from('hey!')])
         done()
       })
     )
@@ -190,7 +190,7 @@ describe('dial', () => {
         pull.collect((err, values) => {
           expect(err).to.not.exist()
 
-          expect(values).to.be.eql([new Buffer('hey')])
+          expect(values).to.be.eql([Buffer.from('hey')])
 
           listener.close(done)
         })
@@ -254,7 +254,7 @@ describe('dial', () => {
       conn,
       pull.collect((err, res) => {
         expect(err).to.not.exist()
-        expect(res).to.be.eql([new Buffer('hey!')])
+        expect(res).to.be.eql([Buffer.from('hey!')])
         done()
       })
     )
@@ -425,7 +425,7 @@ describe('Connection wrap', () => {
       connWrap,
       pull.collect((err, chunks) => {
         expect(err).to.not.exist()
-        expect(chunks).to.be.eql([new Buffer('hey')])
+        expect(chunks).to.be.eql([Buffer.from('hey')])
 
         connWrap.getPeerInfo((err, peerInfo) => {
           expect(err).to.not.exist()
@@ -444,7 +444,7 @@ describe('Connection wrap', () => {
       connWrap,
       pull.collect((err, chunks) => {
         expect(err).to.not.exist()
-        expect(chunks).to.be.eql([new Buffer('hey')])
+        expect(chunks).to.be.eql([Buffer.from('hey')])
         done()
       })
     )
@@ -470,7 +470,7 @@ describe('Connection wrap', () => {
       connWrap,
       pull.collect((err, chunks) => {
         expect(err).to.not.exist()
-        expect(chunks).to.be.eql([new Buffer('hey')])
+        expect(chunks).to.be.eql([Buffer.from('hey')])
         done()
       })
     )
@@ -497,7 +497,7 @@ describe('Connection wrap', () => {
       connWrap3,
       pull.collect((err, chunks) => {
         expect(err).to.not.exist()
-        expect(chunks).to.be.eql([new Buffer('hey')])
+        expect(chunks).to.be.eql([Buffer.from('hey')])
         connWrap3.getPeerInfo((err, peerInfo) => {
           expect(err).to.not.exist()
           expect(peerInfo).to.equal('inner doll')
