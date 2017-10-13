@@ -67,10 +67,16 @@ class TCP {
     if (!Array.isArray(multiaddrs)) {
       multiaddrs = [multiaddrs]
     }
+
     return multiaddrs.filter((ma) => {
+      if (includes(ma.protoNames(), 'p2p-circuit')) {
+        return false
+      }
+
       if (includes(ma.protoNames(), 'ipfs')) {
         ma = ma.decapsulate('ipfs')
       }
+
       return mafmt.TCP.matches(ma)
     })
   }
