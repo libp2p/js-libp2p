@@ -4,13 +4,13 @@
   "description": "Node.js implementation of the TCP module that libp2p uses, which implements the interface-connection and interface-transport interfaces",
   "main": "src/index.js",
   "scripts": {
-    "lint": "aegir-lint",
-    "test": "aegir-test --env node",
-    "release": "aegir-release --env no-build",
-    "release-minor": "aegir-release --type minor --env no-build",
-    "release-major": "aegir-release --type major --env no-build",
-    "coverage": "aegir-coverage",
-    "coverage-publish": "aegir-coverage publish"
+    "lint": "aegir lint",
+    "test": "aegir test --target node",
+    "release": "aegir release --no-build",
+    "release-minor": "aegir release --type minor --no-build",
+    "release-major": "aegir-release --type major --no-build",
+    "coverage": "aegir coverage",
+    "coverage-publish": "aegir coverage --provider coveralls"
   },
   "pre-commit": [
     "lint",
@@ -34,21 +34,21 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^11.0.2",
+    "aegir": "^12.0.8",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "interface-transport": "~0.3.5",
     "lodash.isfunction": "^3.0.8",
     "pre-commit": "^1.2.2",
-    "pull-stream": "^3.6.0"
+    "pull-stream": "^3.6.1"
   },
   "dependencies": {
     "interface-connection": "~0.3.2",
     "ip-address": "^5.8.8",
     "lodash.includes": "^4.3.0",
     "lodash.isfunction": "^3.0.8",
-    "mafmt": "^3.0.0",
-    "multiaddr": "^3.0.0",
+    "mafmt": "^3.0.1",
+    "multiaddr": "^3.0.1",
     "once": "^1.4.0",
     "stream-to-pull-stream": "^1.7.2"
   },
