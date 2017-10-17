@@ -60,7 +60,8 @@ describe('discovery', () => {
   describe('MulticastDNS', () => {
     setup({ mdns: true })
 
-    it('find a peer', (done) => {
+    it('find a peer', function (done) {
+      this.timeout(20000)
       nodeA.once('peer:discovery', (peerInfo) => {
         expect(nodeB.peerInfo.id.toB58String())
           .to.eql(peerInfo.id.toB58String())
@@ -73,7 +74,8 @@ describe('discovery', () => {
   describe.skip('WebRTCStar', () => {
     setup({ webRTCStar: true })
 
-    it('find a peer', (done) => {
+    it('find a peer', function (done) {
+      this.timeout(20000)
       nodeA.once('peer:discovery', (peerInfo) => {
         expect(nodeB.peerInfo.id.toB58String())
           .to.eql(peerInfo.id.toB58String())
@@ -88,7 +90,8 @@ describe('discovery', () => {
       mdns: true
     })
 
-    it('find a peer', (done) => {
+    it('find a peer', function (done) {
+      this.timeout(20000)
       nodeA.once('peer:discovery', (peerInfo) => {
         expect(nodeB.peerInfo.id.toB58String())
           .to.eql(peerInfo.id.toB58String())

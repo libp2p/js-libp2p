@@ -70,11 +70,11 @@ describe('TCP only', () => {
       expect(err).to.not.exist()
 
       pull(
-        pull.values([new Buffer('hey')]),
+        pull.values([Buffer.from('hey')]),
         conn,
         pull.collect((err, data) => {
           expect(err).to.not.exist()
-          expect(data).to.be.eql([new Buffer('hey')])
+          expect(data).to.be.eql([Buffer.from('hey')])
           done()
         })
       )
@@ -130,11 +130,11 @@ describe('TCP only', () => {
           }
         ], () => {
           pull(
-            pull.values([new Buffer('hey')]),
+            pull.values([Buffer.from('hey')]),
             conn,
             pull.collect((err, data) => {
               expect(err).to.not.exist()
-              expect(data).to.be.eql([new Buffer('hey')])
+              expect(data).to.be.eql([Buffer.from('hey')])
               done()
             })
           )
@@ -193,11 +193,11 @@ describe('TCP only', () => {
           }
         ], () => {
           pull(
-            pull.values([new Buffer('hey')]),
+            pull.values([Buffer.from('hey')]),
             conn,
             pull.collect((err, data) => {
               expect(err).to.not.exist()
-              expect(data).to.be.eql([new Buffer('hey')])
+              expect(data).to.be.eql([Buffer.from('hey')])
               done()
             })
           )

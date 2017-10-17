@@ -74,10 +74,10 @@ parallel([
     if (err) { throw err }
     console.log('Addresses by which both peers are connected')
     node1.peerBook
-         .getAllArray()
-         .forEach((peer) => console.log('node 1 to node 2:', peer.isConnected().toString()))
+      .getAllArray()
+      .forEach((peer) => console.log('node 1 to node 2:', peer.isConnected().toString()))
     node2.peerBook
-         .getAllArray()
-         .forEach((peer) => console.log('node 2 to node 1:', peer.isConnected().toString()))
+      .getAllArray()
+      .forEach((peer) => console.log('node 2 to node 1:', peer.isConnected().toString()))
   })
 })

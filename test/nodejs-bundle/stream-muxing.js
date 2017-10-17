@@ -16,11 +16,11 @@ function test (nodeA, nodeB, callback) {
     expect(err).to.not.exist()
 
     pull(
-      pull.values([new Buffer('hey')]),
+      pull.values([Buffer.from('hey')]),
       conn,
       pull.collect((err, data) => {
         expect(err).to.not.exist()
-        expect(data).to.be.eql([new Buffer('hey')])
+        expect(data).to.be.eql([Buffer.from('hey')])
         callback()
       })
     )
@@ -34,7 +34,7 @@ function teardown (nodeA, nodeB, callback) {
   ], callback)
 }
 
-describe('stream muxing', (done) => {
+describe('stream muxing', () => {
   it('spdy only', (done) => {
     let nodeA
     let nodeB

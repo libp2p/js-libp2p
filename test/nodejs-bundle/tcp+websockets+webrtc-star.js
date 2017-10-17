@@ -30,7 +30,7 @@ describe('TCP + WebSockets + WebRTCStar', () => {
         })
       },
       (cb) => {
-        const wstar = new WStar({wrtc: wrtc})
+        const wstar = new WStar({ wrtc: wrtc })
         createNode([
           '/ip4/0.0.0.0/tcp/0',
           '/ip4/127.0.0.1/tcp/25011/ws',
@@ -65,7 +65,7 @@ describe('TCP + WebSockets + WebRTCStar', () => {
       }),
 
       (cb) => {
-        const wstar = new WStar({wrtc: wrtc})
+        const wstar = new WStar({ wrtc: wrtc })
 
         createNode([
           '/ip4/127.0.0.1/tcp/24642/ws/p2p-webrtc-star'
@@ -194,7 +194,8 @@ describe('TCP + WebSockets + WebRTCStar', () => {
     })
   })
 
-  it('nodeAll.dial nodeWStar using PeerInfo', (done) => {
+  it('nodeAll.dial nodeWStar using PeerInfo', function (done) {
+    this.timeout(10000)
     nodeAll.dial(nodeWStar.peerInfo, (err) => {
       expect(err).to.not.exist()
 
