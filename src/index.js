@@ -24,12 +24,14 @@ class WebSockets {
     log('dialing %s', url)
     const socket = connect(url, {
       binary: true,
-      onConnect: (err) => callback(err)
+      onConnect: (err) => {
+        callback(err)
+      }
     })
 
     const conn = new Connection(socket)
-    conn.getObservedAddrs = (callback) => callback(null, [ma])
-    conn.close = (callback) => socket.close(callback)
+    conn.getObservedAddrs = (cb) => cb(null, [ma])
+    conn.close = (cb) => socket.close(cb)
 
     return conn
   }

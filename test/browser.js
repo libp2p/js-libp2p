@@ -20,7 +20,10 @@ describe('libp2p-websockets', () => {
   beforeEach((done) => {
     ws = new WS()
     expect(ws).to.exist()
-    conn = ws.dial(ma, done)
+    conn = ws.dial(ma, (err, res) => {
+      expect(err).to.not.exist()
+      done()
+    })
   })
 
   it('echo', (done) => {
@@ -30,7 +33,7 @@ describe('libp2p-websockets', () => {
       source: pull.values([message]),
       sink: pull.collect((err, results) => {
         expect(err).to.not.exist()
-        expect(results).to.be.eql([message])
+        expect(results).to.eql([message])
         done()
       })
     })
@@ -40,13 +43,13 @@ describe('libp2p-websockets', () => {
 
   describe('stress', () => {
     it('one big write', (done) => {
-      const rawMessage = new Buffer(1000000).fill('a')
+      const rawMessage = Buffer.allocUnsafe(1000000).fill('a')
 
       const s = goodbye({
         source: pull.values([rawMessage]),
         sink: pull.collect((err, results) => {
           expect(err).to.not.exist()
-          expect(results).to.be.eql([rawMessage])
+          expect(results).to.eql([rawMessage])
           done()
         })
       })
@@ -58,7 +61,7 @@ describe('libp2p-websockets', () => {
         source: pull(
           pull.infinite(),
           pull.take(1000),
-          pull.map((val) => Buffer(val.toString()))
+          pull.map((val) => Buffer.from(val.toString()))
         ),
         sink: pull.collect((err, result) => {
           expect(err).to.not.exist()

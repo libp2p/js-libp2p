@@ -4,16 +4,16 @@
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
   "main": "src/index.js",
   "scripts": {
-    "lint": "aegir-lint",
-    "test": "gulp test",
-    "test:node": "gulp test:node",
-    "test:browser": "gulp test:browser",
-    "build": "gulp build",
-    "release": "gulp release",
-    "release-minor": "gulp release --type minor",
-    "release-major": "gulp release --type major",
-    "coverage": "gulp coverage",
-    "coverage-publish": "aegir-coverage publish"
+    "lint": "aegir lint",
+    "test": "aegir test",
+    "test:node": "aegir test --target=node",
+    "test:browser": "aegir test --target=browser",
+    "build": "aegir build",
+    "release": "aegir release",
+    "release-minor": "aegir release --type minor",
+    "release-major": "aegir release --type major",
+    "coverage": "aegir coverage",
+    "coverage-publish": "aegir coverage --upload"
   },
   "browser": {
     "pull-ws/server": false
@@ -42,7 +42,7 @@
     "pull-ws": "^3.2.9"
   },
   "devDependencies": {
-    "aegir": "^11.0.2",
+    "aegir": "github:ipfs/aegir",
     "chai": "^4.1.1",
     "dirty-chai": "^2.0.1",
     "gulp": "^3.9.1",
@@ -50,7 +50,8 @@
     "multiaddr": "^3.0.1",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
-    "pull-stream": "^3.6.0"
+    "pull-stream": "^3.6.0",
+    "safe-buffer": "^5.1.1"
   },
   "contributors": [
     "Chris Campbell <christopher.d.campbell@gmail.com>",
