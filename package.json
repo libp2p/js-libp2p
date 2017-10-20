@@ -5,15 +5,15 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
-    "test": "aegir test",
-    "test:node": "aegir test --target=node",
-    "test:browser": "aegir test --target=browser",
     "build": "aegir build",
-    "release": "aegir release",
-    "release-minor": "aegir release --type minor",
-    "release-major": "aegir release --type major",
+    "test": "aegir test --target node --target browser --no-parallel",
+    "test:node": "aegir test --target node",
+    "test:browser": "aegir test --target browser --no-parallel",
+    "release": "aegir test release --target node --target browser --no-parallel",
+    "release-minor": "aegir release --type minor --target node --target browser",
+    "release-major": "aegir release --type major --target node --target browser",
     "coverage": "aegir coverage",
-    "coverage-publish": "aegir coverage --upload"
+    "coverage-publish": "aegir coverage --provider coveralls"
   },
   "browser": {
     "pull-ws/server": false
@@ -39,10 +39,10 @@
     "interface-connection": "~0.3.2",
     "lodash.includes": "^4.3.0",
     "mafmt": "^3.0.1",
-    "pull-ws": "^3.2.9"
+    "pull-ws": "^3.3.0"
   },
   "devDependencies": {
-    "aegir": "github:ipfs/aegir",
+    "aegir": "^12.0.8",
     "chai": "^4.1.1",
     "dirty-chai": "^2.0.1",
     "gulp": "^3.9.1",
@@ -50,8 +50,7 @@
     "multiaddr": "^3.0.1",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
-    "pull-stream": "^3.6.0",
-    "safe-buffer": "^5.1.1"
+    "pull-stream": "^3.6.1"
   },
   "contributors": [
     "Chris Campbell <christopher.d.campbell@gmail.com>",

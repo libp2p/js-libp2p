@@ -2,7 +2,11 @@
 
 const Connection = require('interface-connection').Connection
 const includes = require('lodash.includes')
+const multiaddr = require('multiaddr')
+const os = require('os')
+
 function noop () {}
+
 const createServer = require('pull-ws/server') || noop
 
 module.exports = (options, handler) => {
@@ -30,7 +34,39 @@ module.exports = (options, handler) => {
   }
 
   listener.getAddrs = (callback) => {
-    callback(null, [listeningMultiaddr])
+    const multiaddrs = []
+    const address = listener.address()
+
+    if (!address) {
+      return callback(new Error('Listener is not ready yet'))
+    }
+
+    let ipfsId = listeningMultiaddr.getPeerId()
+
+    // Because TCP will only return the IPv6 version
+    // we need to capture from the passed multiaddr
+    if (listeningMultiaddr.toString().indexOf('ip4') !== -1) {
+      let m = listeningMultiaddr.decapsulate('tcp')
+      m = m.encapsulate('/tcp/' + address.port + '/ws')
+      if (listeningMultiaddr.getPeerId()) {
+        m = m.encapsulate('/ipfs/' + ipfsId)
+      }
+
+      if (m.toString().indexOf('0.0.0.0') !== -1) {
+        const netInterfaces = os.networkInterfaces()
+        Object.keys(netInterfaces).forEach((niKey) => {
+          netInterfaces[niKey].forEach((ni) => {
+            if (ni.family === 'IPv4') {
+              multiaddrs.push(multiaddr(m.toString().replace('0.0.0.0', ni.address)))
+            }
+          })
+        })
+      } else {
+        multiaddrs.push(m)
+      }
+    }
+
+    callback(null, multiaddrs)
   }
 
   return listener

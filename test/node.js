@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+/* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
 const chai = require('chai')
@@ -97,16 +98,45 @@ describe('listen', () => {
     })
   })
 
-  it.skip('getAddrs on port 0 listen', (done) => {
-    // TODO port 0 not supported yet
+  it('getAddrs on port 0 listen', (done) => {
+    const addr = multiaddr(`/ip4/127.0.0.1/tcp/0/ws`)
+    const listener = ws.createListener((conn) => {
+    })
+    listener.listen(addr, () => {
+      listener.getAddrs((err, addrs) => {
+        expect(err).to.not.exist()
+        expect(addrs.length).to.equal(1)
+        expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
+        listener.close(done)
+      })
+    })
   })
 
-  it.skip('getAddrs from listening on 0.0.0.0', (done) => {
-    // TODO 0.0.0.0 not supported yet
+  it('getAddrs from listening on 0.0.0.0', (done) => {
+    const addr = multiaddr(`/ip4/0.0.0.0/tcp/9003/ws`)
+    const listener = ws.createListener((conn) => {
+    })
+    listener.listen(addr, () => {
+      listener.getAddrs((err, addrs) => {
+        expect(err).to.not.exist()
+        expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
+        listener.close(done)
+      })
+    })
   })
 
-  it.skip('getAddrs from listening on 0.0.0.0 and port 0', (done) => {
-    // TODO 0.0.0.0 or port 0 not supported yet
+  it('getAddrs from listening on 0.0.0.0 and port 0', (done) => {
+    const addr = multiaddr(`/ip4/0.0.0.0/tcp/0/ws`)
+    const listener = ws.createListener((conn) => {
+    })
+    listener.listen(addr, () => {
+      listener.getAddrs((err, addrs) => {
+        expect(err).to.not.exist()
+        expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
+        expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
+        listener.close(done)
+      })
+    })
   })
 
   it('getAddrs preserves IPFS Id', (done) => {
@@ -128,7 +158,7 @@ describe('listen', () => {
 describe('dial', () => {
   let ws
   let listener
-  const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+  const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws')
 
   beforeEach((done) => {
     ws = new WS()
@@ -163,7 +193,7 @@ describe('dial', () => {
   })
 
   it('dial on IPv4 with IPFS Id', (done) => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const conn = ws.dial(ma)
 
     const s = goodbye({
@@ -295,8 +325,10 @@ describe('filter addrs', () => {
       const ma2 = multiaddr('/ip4/127.0.0.1/tcp/9090')
       const ma3 = multiaddr('/ip4/127.0.0.1/udp/9090')
       const ma4 = multiaddr('/dns6/ipfs.io/ws')
+      const mh5 = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw' +
+        '/p2p-circuit/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-      const valid = ws.filter([ma1, ma2, ma3, ma4])
+      const valid = ws.filter([ma1, ma2, ma3, ma4, mh5])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma4)
@@ -314,7 +346,7 @@ describe('filter addrs', () => {
 })
 
 describe('valid Connection', () => {
-  const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+  const ma = multiaddr('/ip4/127.0.0.1/tcp/9092/ws')
 
   it('get observed addrs', (done) => {
     let dialerObsAddrs
@@ -348,6 +380,7 @@ describe('valid Connection', () => {
           listenerObsAddrs = addrs
 
           listener.close(onClose)
+
           function onClose () {
             expect(listenerObsAddrs[0]).to.deep.equal(ma)
             expect(dialerObsAddrs.length).to.equal(0)
@@ -405,6 +438,7 @@ describe('valid Connection', () => {
     })
 
     listener.listen(ma, onListen)
+
     function onListen () {
       const conn = ws.dial(ma)
       conn.setPeerInfo('b')
