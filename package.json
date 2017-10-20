@@ -38,7 +38,7 @@
   "dependencies": {
     "interface-connection": "~0.3.2",
     "lodash.includes": "^4.3.0",
-    "mafmt": "^2.1.8",
+    "mafmt": "^3.0.1",
     "pull-ws": "^3.2.9"
   },
   "devDependencies": {
@@ -47,7 +47,7 @@
     "dirty-chai": "^2.0.1",
     "gulp": "^3.9.1",
     "interface-transport": "~0.3.5",
-    "multiaddr": "^2.3.0",
+    "multiaddr": "^3.0.1",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
     "pull-stream": "^3.6.0"
