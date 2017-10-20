@@ -54,7 +54,7 @@ parallel([
     (cb) => node1.dial(node2.peerInfo, cb),
     (cb) => node2.dial(node3.peerInfo, cb),
     // Set up of the cons might take time
-    (cb) => setTimeout(cb, 100)
+    (cb) => setTimeout(cb, 300)
   ], (err) => {
     if (err) { throw err }
 
