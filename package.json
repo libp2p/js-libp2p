@@ -1,0 +1,61 @@
+{
+  "name": "libp2p-circuit",
+  "version": "0.0.3",
+  "description": "JavaScript implementation of circuit/switch relaying",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "aegir lint",
+    "build": "aegir build",
+    "test": "aegir test --target node --target browser",
+    "test:node": "aegir test --target node",
+    "test:browser": "aegir test --target browser",
+    "release": "aegir test release --target node --target browser",
+    "release-minor": "aegir release --type minor --target node --target browser",
+    "release-major": "aegir release --type major --target node --target browser",
+    "coverage": "aegir coverage",
+    "coverage-publish": "aegir coverage --provider coveralls"
+  },
+  "pre-commit": [
+    "lint",
+    "test"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-circuit.git"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "author": "Dmitriy Ryajov <dryajov@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-circuit/issues"
+  },
+  "homepage": "https://github.com/libp2p/js-libp2p-circuit#readme",
+  "devDependencies": {
+    "aegir": "^12.0.8",
+    "chai": "^3.5.0",
+    "pre-commit": "^1.2.2",
+    "sinon": "^2.1.0",
+    "dirty-chai": "^2.0.1"
+  },
+  "contributors": [],
+  "dependencies": {
+    "assert": "^1.4.1",
+    "async": "^2.1.5",
+    "debug": "^2.6.1",
+    "interface-connection": "^0.3.1",
+    "lodash": "^4.17.4",
+    "mafmt": "^2.1.8",
+    "multiaddr": "^2.2.1",
+    "multistream-select": "^0.13.4",
+    "peer-id": "^0.10.1",
+    "peer-info": "^0.11.0",
+    "protocol-buffers": "^3.2.1",
+    "pull-abortable": "^4.1.0",
+    "pull-handshake": "^1.1.4",
+    "pull-stream": "^3.5.1",
+    "safe-buffer": "^5.0.1",
+    "setimmediate": "^1.0.5"
+  }
+}
