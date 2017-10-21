@@ -39,7 +39,11 @@
     "sinon": "^4.0.1",
     "dirty-chai": "^2.0.1"
   },
-  "contributors": [],
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Dmitriy Ryajov <dryajov@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>"
+  ],
   "dependencies": {
     "assert": "^1.4.1",
     "async": "^2.5.0",
