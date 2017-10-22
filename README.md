@@ -263,6 +263,42 @@ class Node extends libp2p {
 [multiaddr]: https://github.com/multiformats/js-multiaddr
 [Connection]: https://github.com/libp2p/interface-connection
 
+## Development
+
+**Clone and install dependencies:**
+
+```sh
+> git clone https://github.com/ipfs/js-ipfs.git
+> cd js-ipfs
+> npm install
+```
+
+### Tests
+
+#### Run unit tests
+
+```sh
+# run all the unit tsts
+> npm test
+
+# run just Node.js tests
+> npm run test:node
+
+# run just Browser tests (Chrome)
+> npm run test:browser
+```
+
+#### Run interop tests
+
+```sh
+N/A
+```
+
+#### Run benchmark tests
+
+```sh
+N/A
+```
 
 ### Packages
 
