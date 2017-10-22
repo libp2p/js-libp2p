@@ -32,7 +32,7 @@ class MyBundle extends libp2p {
 }
 ```
 
-And that's it, from now on, all your libp2p communications are encrypted. Try running the exampme [1.js](./1.js) to see it working.
+And that's it, from now on, all your libp2p communications are encrypted. Try running the example [1.js](./1.js) to see it working.
 
 If you want to want to learn more about how SECIO works, you can read the [great write up done by Dominic Tarr](https://github.com/auditdrivencrypto/secure-channel/blob/master/prior-art.md#ipfss-secure-channel).
 
