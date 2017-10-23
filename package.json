@@ -51,7 +51,6 @@
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "cids": "~0.5.1",
-    "dirty-chai": "^2.0.1",
     "electron-webrtc": "^0.3.0",
     "libp2p-circuit": "^0.1.0",
     "libp2p-kad-dht": "~0.5.0",
