@@ -2,6 +2,7 @@
 
 const map = require('async/map')
 const debug = require('debug')
+const once = require('once')
 
 const log = debug('libp2p:swarm:dialer')
 
@@ -37,6 +38,7 @@ class LimitDialer {
     log('dialMany:start')
     // we use a token to track if we want to cancel following dials
     const token = { cancel: false }
+    callback = once(callback) // only call callback once
 
     map(addrs, (m, cb) => {
       this.dialSingle(peer, transport, m, token, cb)

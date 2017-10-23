@@ -127,6 +127,16 @@ const secio = require('libp2p-secio')
 swarm.connection.crypto(secio.tag, secio.encrypt)
 ```
 
+##### `swarm.connection.enableCircuitRelay(options)`
+
+Enable circuit relaying.
+
+- `options`
+    - enabled - activates relay dialing and listening functionality
+    - hop - an object with two properties
+        - enabled - enables circuit relaying
+        - active - is it an active or passive relay (default false)
+
 ### `swarm.dial(peer, protocol, callback)`
 
 dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point where we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, then do nothing.

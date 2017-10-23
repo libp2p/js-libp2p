@@ -17,7 +17,9 @@ const PeerBook = require('peer-book')
 const utils = require('./utils')
 const Swarm = require('../src')
 
-describe('stream muxing with spdy (on TCP)', () => {
+describe('stream muxing with spdy (on TCP)', function () {
+  this.timeout(5000)
+
   let swarmA
   let peerA
   let swarmB

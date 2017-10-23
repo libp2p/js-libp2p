@@ -7,6 +7,8 @@ const debug = require('debug')
 const log = debug('libp2p:swarm:connection')
 const setImmediate = require('async/setImmediate')
 
+const Circuit = require('libp2p-circuit')
+
 const protocolMuxer = require('./protocol-muxer')
 const plaintext = require('./plaintext')
 
@@ -90,6 +92,19 @@ module.exports = function connection (swarm) {
       swarm.handle(identify.multicodec, (protocol, conn) => {
         identify.listener(conn, swarm._peerInfo)
       })
+    },
+
+    enableCircuitRelay (config) {
+      config = config || {}
+
+      if (config.enabled) {
+        if (!config.hop) {
+          Object.assign(config, { hop: { enabled: false, active: false } })
+        }
+
+        // TODO: should we enable circuit listener and dialer by default?
+        swarm.transport.add(Circuit.tag, new Circuit(swarm, config))
+      }
     },
 
     crypto (tag, encrypt) {

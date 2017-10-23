@@ -15,7 +15,7 @@ const PeerBook = require('peer-book')
 
 const Swarm = require('../src')
 
-describe('high level API (swarm with spdy + websockets)', () => {
+describe.skip('high level API (swarm with spdy + websockets)', () => {
   let swarm
   let peerDst
 
@@ -58,7 +58,7 @@ describe('high level API (swarm with spdy + websockets)', () => {
     swarm.dial(peerDst, '/echo/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
       pull(
-        pull.values([Buffer('hello')]),
+        pull.values([Buffer.from('hello')]),
         conn,
         pull.onEnd(done)
       )

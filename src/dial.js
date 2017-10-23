@@ -4,6 +4,8 @@ const multistream = require('multistream-select')
 const Connection = require('interface-connection').Connection
 const setImmediate = require('async/setImmediate')
 const getPeerInfo = require('./get-peer-info')
+const Circuit = require('libp2p-circuit')
+
 const debug = require('debug')
 const log = debug('libp2p:swarm:dial')
 
@@ -81,18 +83,22 @@ function dial (swarm) {
     function attemptDial (pi, cb) {
       const tKeys = swarm.availableTransports(pi)
 
-      if (tKeys.length === 0) {
-        return cb(new Error('No available transport to dial to'))
-      }
-
       nextTransport(tKeys.shift())
 
       function nextTransport (key) {
+        if (!key) {
+          return dialCircuit((err, circuit) => {
+            if (err) {
+              return cb(new Error('Could not dial in any of the transports or relays'))
+            }
+
+            cb(null, circuit)
+          })
+        }
+
+        log(`dialing transport ${key}`)
         swarm.transport.dial(key, pi, (err, conn) => {
           if (err) {
-            if (tKeys.length === 0) {
-              return cb(new Error('Could not dial in any of the transports'))
-            }
             return nextTransport(tKeys.shift())
           }
 
@@ -119,6 +125,19 @@ function dial (swarm) {
           }
         })
       }
+    }
+
+    function dialCircuit (cb) {
+      log(`Falling back to dialing over circuit`)
+      pi.multiaddrs.add(`/p2p-circuit/ipfs/${pi.id.toB58String()}`)
+      swarm.transport.dial(Circuit.tag, pi, (err, conn) => {
+        if (err) {
+          log(err)
+          return cb(err)
+        }
+
+        cb(null, conn)
+      })
     }
 
     function attemptMuxerUpgrade (conn, cb) {

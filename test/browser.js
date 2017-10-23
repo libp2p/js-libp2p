@@ -11,7 +11,7 @@ const Swarm = require('../src')
 
 describe('basics', () => {
   it('throws on missing peerInfo', (done) => {
-    expect(Swarm).to.throw(Error)
+    expect(Swarm).to.throw(/You must provide a `peerInfo`/)
     done()
   })
 })

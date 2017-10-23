@@ -46,9 +46,9 @@ module.exports = function (swarm) {
       if (!Array.isArray(multiaddrs)) {
         multiaddrs = [multiaddrs]
       }
-      log('dialing %s', key, multiaddrs.map((m) => m.toString()))
       // filter the multiaddrs that are actually valid for this transport (use a func from the transport itself) (maybe even make the transport do that)
       multiaddrs = dialables(t, multiaddrs)
+      log('dialing %s', key, multiaddrs.map((m) => m.toString()))
 
       dialer.dialMany(pi.id, t, multiaddrs, (err, success) => {
         if (err) {

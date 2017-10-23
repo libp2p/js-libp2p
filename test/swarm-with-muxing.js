@@ -50,7 +50,8 @@ describe('high level API - with everything mixed all together!', () => {
     })
   })
 
-  after((done) => {
+  after(function (done) {
+    this.timeout(3000)
     parallel([
       (cb) => swarmA.close(cb),
       (cb) => swarmB.close(cb),
@@ -210,6 +211,7 @@ describe('high level API - with everything mixed all together!', () => {
         done()
       }
     }
+
     swarmC.handle('/mamao/1.0.0', (protocol, conn) => {
       conn.getPeerInfo((err, peerInfo) => {
         expect(err).to.not.exist()
@@ -263,10 +265,11 @@ describe('high level API - with everything mixed all together!', () => {
     })
   })
 
-  it('close a muxer emits event', (done) => {
+  it('close a muxer emits event', function (done) {
+    this.timeout(2500)
     parallel([
       (cb) => swarmC.close(cb),
       (cb) => swarmA.once('peer-mux-closed', (peerInfo) => cb())
     ], done)
-  }).timeout(2500)
+  })
 })

@@ -50,7 +50,7 @@ describe('transport - websockets', () => {
     })
 
     pull(
-      pull.values([Buffer('hey')]),
+      pull.values([Buffer.from('hey')]),
       conn,
       pull.collect((err, data) => {
         expect(err).to.not.exist()

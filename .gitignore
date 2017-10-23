@@ -1,3 +1,4 @@
+
 **/node_modules/
 **/*.log
 test/repo-tests*
@@ -38,5 +39,7 @@ test/test-data/go-ipfs-repo/LOCK
 test/test-data/go-ipfs-repo/LOG
 test/test-data/go-ipfs-repo/LOG.old
 
+docs
 # while testing npm5
 package-lock.json
+yarn.lock

@@ -1,6 +1,5 @@
 'use strict'
 
-const gulp = require('gulp')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const WebSockets = require('libp2p-websockets')
@@ -23,7 +22,7 @@ const options = {
   host: '127.0.0.1'
 }
 
-gulp.task('test:browser:before', (done) => {
+function before (done) {
   function createListenerA (cb) {
     PeerId.createFromJSON(
       JSON.parse(
@@ -79,15 +78,22 @@ gulp.task('test:browser:before', (done) => {
   function echo (protocol, conn) {
     pull(conn, conn)
   }
-})
+}
 
-gulp.task('test:browser:after', (done) => {
+function after (done) {
   let count = 0
   const ready = () => ++count === 3 ? done() : null
 
   swarmA.transport.close('ws', ready)
   swarmB.close(ready)
   sigS.stop(ready)
-})
+}
 
-require('aegir/gulp')(gulp)
+module.exports = {
+  hooks: {
+    browser: {
+      pre: before,
+      post: after
+    }
+  }
+}

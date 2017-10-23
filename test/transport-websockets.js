@@ -70,10 +70,10 @@ describe('transport - websockets', function () {
     })
 
     const s = goodbye({
-      source: pull.values([Buffer('hey')]),
+      source: pull.values([Buffer.from('hey')]),
       sink: pull.collect((err, data) => {
         expect(err).to.not.exist()
-        expect(data).to.be.eql([Buffer('hey')])
+        expect(data).to.be.eql([Buffer.from('hey')])
         done()
       })
     })
@@ -87,10 +87,10 @@ describe('transport - websockets', function () {
       expect(err).to.not.exist()
 
       const s = goodbye({
-        source: pull.values([Buffer('hey')]),
+        source: pull.values([Buffer.from('hey')]),
         sink: pull.collect((err, data) => {
           expect(err).to.not.exist()
-          expect(data).to.be.eql([Buffer('hey')])
+          expect(data).to.be.eql([Buffer.from('hey')])
           done()
         })
       })

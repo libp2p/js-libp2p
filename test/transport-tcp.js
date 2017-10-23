@@ -39,7 +39,8 @@ describe('transport - tcp', () => {
   })
 
   let peer
-  beforeEach((done) => {
+  beforeEach(function (done) {
+    this.timeout(20000) // hook fails with timeout for a number of tests
     Peer.create((err, info) => {
       if (err) {
         return done(err)
@@ -122,12 +123,13 @@ describe('transport - tcp', () => {
     })
   })
 
-  it('.close', (done) => {
+  it('.close', function (done) {
+    this.timeout(2500)
     parallel([
       (cb) => swarmA.transport.close('tcp', cb),
       (cb) => swarmB.transport.close('tcp', cb)
     ], done)
-  }).timeout(2500)
+  })
 
   it('support port 0', (done) => {
     const ma = '/ip4/127.0.0.1/tcp/0'
@@ -178,7 +180,9 @@ describe('transport - tcp', () => {
     }
   })
 
-  it('listen in several addrs', (done) => {
+  it('listen in several addrs', function (done) {
+    this.timeout(12000)
+
     let swarm
     peer.multiaddrs.add('/ip4/127.0.0.1/tcp/9001')
     peer.multiaddrs.add('/ip4/127.0.0.1/tcp/9002')

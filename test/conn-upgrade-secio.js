@@ -58,7 +58,8 @@ describe('secio conn upgrade (on TCP)', () => {
     })
   })
 
-  after((done) => {
+  after(function (done) {
+    this.timeout(3000)
     parallel([
       (cb) => swarmA.close(cb),
       (cb) => swarmB.close(cb),
