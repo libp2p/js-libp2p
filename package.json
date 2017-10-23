@@ -39,7 +39,7 @@
   "dependencies": {
     "async": "^2.5.0",
     "libp2p-ping": "~0.6.0",
-    "libp2p-swarm": "~0.32.0",
+    "libp2p-swarm": "~0.33.0",
     "mafmt": "^3.0.0",
     "multiaddr": "^3.0.0",
     "peer-book": "~0.5.0",
@@ -59,7 +59,6 @@
     "libp2p-railing": "~0.7.0",
     "libp2p-secio": "~0.8.0",
     "libp2p-spdy": "~0.11.0",
-    "libp2p-swarm": "^0.33.0",
     "libp2p-tcp": "^0.11.0",
     "libp2p-webrtc-star": "^0.13.2",
     "libp2p-websockets": "^0.10.4",

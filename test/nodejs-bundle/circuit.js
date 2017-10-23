@@ -49,8 +49,8 @@ describe(`circuit`, function () {
     waterfall([
       // set up passive relay
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/9010/ws`,
-        `/ip4/0.0.0.0/tcp/9011`
+        `/ip4/0.0.0.0/tcp/0/ws`,
+        `/ip4/0.0.0.0/tcp/0`
       ], {
         relay: {
           enabled: true,
@@ -65,8 +65,8 @@ describe(`circuit`, function () {
       }),
       // setup active relay
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/9110/ws`,
-        `/ip4/0.0.0.0/tcp/9111`
+        `/ip4/0.0.0.0/tcp/0/ws`,
+        `/ip4/0.0.0.0/tcp/0`
       ], {
         relay: {
           enabled: true,
@@ -81,7 +81,7 @@ describe(`circuit`, function () {
       }),
       // setup node with WS
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/9210/ws`
+        `/ip4/0.0.0.0/tcp/0/ws`
       ], {
         relay: {
           enabled: true
@@ -92,7 +92,7 @@ describe(`circuit`, function () {
       }),
       // setup node with WS
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/9410/ws`
+        `/ip4/0.0.0.0/tcp/0/ws`
       ], {
         relay: {
           enabled: true
@@ -103,7 +103,7 @@ describe(`circuit`, function () {
       }),
       // set up node with TCP and listening on relay1
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/9211`,
+        `/ip4/0.0.0.0/tcp/0`,
         `/ipfs/${relayNode1.peerInfo.id.toB58String()}/p2p-circuit`
       ], {
         relay: {
@@ -115,8 +115,8 @@ describe(`circuit`, function () {
       }),
       // set up node with TCP and listening on relay2 over TCP transport
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/9311`,
-        `/ip4/0.0.0.0/tcp/9111/ipfs/${relayNode2.peerInfo.id.toB58String()}/p2p-circuit`
+        `/ip4/0.0.0.0/tcp/0`,
+        `/ip4/0.0.0.0/tcp/0/ipfs/${relayNode2.peerInfo.id.toB58String()}/p2p-circuit`
       ], {
         relay: {
           enabled: true
