@@ -38,12 +38,15 @@ describe(`circuit`, function () {
       node.start((err) => {
         expect(err).to.not.exist()
 
-        handlerSpies.push(sinon.spy(node
-            .swarm
-            .transports[Circuit.tag]
-            .listeners[0]
-            .hopHandler,
-          'handle'))
+        if (node.swarm.transports[Circuit.tag]) {
+          handlerSpies.push(sinon.spy(node
+              .swarm
+              .transports[Circuit.tag]
+              .listeners[0]
+              .hopHandler,
+            'handle'))
+        }
+
         cb(node)
       })
     })
@@ -56,7 +59,8 @@ describe(`circuit`, function () {
         `/ip4/0.0.0.0/tcp/9011`
       ], {
         relay: {
-          circuit: {
+          enabled: true,
+          hop: {
             enabled: true,
             active: false // passive relay
           }
@@ -70,7 +74,8 @@ describe(`circuit`, function () {
         `/ip4/0.0.0.0/tcp/9111`
       ], {
         relay: {
-          circuit: {
+          enabled: true,
+          hop: {
             enabled: true,
             active: true // active relay
           }
@@ -79,42 +84,57 @@ describe(`circuit`, function () {
         relayNode2 = node
         cb()
       }),
-      (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/9210/ws`
-      ], (node) => {
-        nodeWS1 = node
-        cb()
-      }),
-      (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/9410/ws`
-      ], (node) => {
-        nodeWS2 = node
-        cb()
-      }),
+      (cb) => setupNode([`/ip4/0.0.0.0/tcp/9210/ws`],
+        {
+          relay: {
+            enabled: true
+          }
+        },
+        (node) => {
+          nodeWS1 = node
+          cb()
+        }),
+      (cb) => setupNode([`/ip4/0.0.0.0/tcp/9410/ws`],
+        {
+          relay: {
+            enabled: true
+          }
+        },
+        (node) => {
+          nodeWS2 = node
+          cb()
+        }),
       (cb) => setupNode([
         `/ip4/0.0.0.0/tcp/9211`,
-        `/ipfs/${relayNode1.peerInfo.id.toB58String()}/p2p-circuit`
-      ], (node) => {
-        nodeTCP1 = node
-        cb()
-      }),
+        `/ipfs/${relayNode1.peerInfo.id.toB58String()}/p2p-circuit`],
+        {
+          relay: {
+            enabled: true
+          }
+        },
+        (node) => {
+          nodeTCP1 = node
+          cb()
+        }),
       (cb) => setupNode([
         `/ip4/0.0.0.0/tcp/9311`,
         `/ip4/0.0.0.0/tcp/9111/ipfs/${relayNode2.peerInfo.id.toB58String()}/p2p-circuit`
-      ], (node) => {
-        nodeTCP2 = node
-        cb()
-      })
-    ], (err) => {
-      expect(err).to.not.exist()
+      ],
+        (node) => {
+          nodeTCP2 = node
+          cb()
+        })],
+      (err) => {
+        expect(err).to.not.exist()
 
-      waterfall([
-        (cb) => nodeWS1.dial(relayNode1.peerInfo, cb),
-        (conn, cb) => nodeWS1.dial(relayNode2.peerInfo, cb),
-        (conn, cb) => nodeTCP1.dial(relayNode1.peerInfo, cb),
-        (conn, cb) => nodeTCP2.dial(relayNode2.peerInfo, cb)
-      ], done)
-    })
+        waterfall([
+          (cb) => nodeWS1.dial(relayNode1.peerInfo, cb),
+          (conn, cb) => nodeWS1.dial(relayNode2.peerInfo, cb),
+          (conn, cb) => nodeTCP1.dial(relayNode1.peerInfo, cb),
+          (conn, cb) => nodeTCP2.dial(relayNode2.peerInfo, cb)
+        ], done)
+      }
+    )
   })
 
   after((done) => {
