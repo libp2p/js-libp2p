@@ -10,11 +10,12 @@ const waterfall = require('async/waterfall')
 const pull = require('pull-stream')
 
 function createNode (multiaddrs, options, callback) {
-  options = options || {}
   if (typeof options === 'function') {
     callback = options
     options = {}
   }
+
+  options = options || {}
 
   if (!Array.isArray(multiaddrs)) {
     multiaddrs = [multiaddrs]
