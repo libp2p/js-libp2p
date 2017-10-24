@@ -300,7 +300,7 @@ class Node extends EventEmitter {
     // PeerInfo
     if (PeerInfo.isPeerInfo(peer)) {
       p = peer
-      // Multiaddr instance (not string)
+    // Multiaddr instance (not string)
     } else if (multiaddr.isMultiaddr(peer)) {
       const peerIdB58Str = peer.getPeerId()
       try {
@@ -309,7 +309,7 @@ class Node extends EventEmitter {
         p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
       }
       p.multiaddrs.add(peer)
-      // PeerId
+    // PeerId
     } else if (PeerId.isPeerId(peer)) {
       const peerIdB58Str = peer.toB58String()
       try {

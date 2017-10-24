@@ -61,7 +61,7 @@ describe('discovery', () => {
     setup({ mdns: true })
 
     it('find a peer', function (done) {
-      this.timeout(20000)
+      this.timeout(15000)
       nodeA.once('peer:discovery', (peerInfo) => {
         expect(nodeB.peerInfo.id.toB58String())
           .to.eql(peerInfo.id.toB58String())
@@ -75,7 +75,7 @@ describe('discovery', () => {
     setup({ webRTCStar: true })
 
     it('find a peer', function (done) {
-      this.timeout(20000)
+      this.timeout(15000)
       nodeA.once('peer:discovery', (peerInfo) => {
         expect(nodeB.peerInfo.id.toB58String())
           .to.eql(peerInfo.id.toB58String())
@@ -91,7 +91,7 @@ describe('discovery', () => {
     })
 
     it('find a peer', function (done) {
-      this.timeout(20000)
+      this.timeout(15000)
       nodeA.once('peer:discovery', (peerInfo) => {
         expect(nodeB.peerInfo.id.toB58String())
           .to.eql(peerInfo.id.toB58String())
