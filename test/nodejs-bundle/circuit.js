@@ -45,7 +45,9 @@ describe(`circuit`, function () {
     })
   }
 
-  before((done) => {
+  before(function (done) {
+    this.timeout(20000)
+
     waterfall([
       // set up passive relay
       (cb) => setupNode([
@@ -131,8 +133,9 @@ describe(`circuit`, function () {
       series([
         (cb) => nodeWS1.dial(relayNode1.peerInfo, cb),
         (cb) => nodeWS1.dial(relayNode2.peerInfo, cb),
-        (cb) => nodeTCP1.dial(relayNode1.peerInfo, cb)
-      ], done)
+        (cb) => nodeTCP1.dial(relayNode1.peerInfo, cb),
+        (cb) => nodeTCP2.dial(relayNode2.peerInfo, cb)
+      ], () => setTimeout(done, 10000))
     })
   })
 

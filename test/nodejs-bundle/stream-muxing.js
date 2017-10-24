@@ -35,7 +35,9 @@ function teardown (nodeA, nodeB, callback) {
 }
 
 describe('stream muxing', () => {
-  it('spdy only', (done) => {
+  it('spdy only', function (done) {
+    this.timeout(3000)
+
     let nodeA
     let nodeB
 
@@ -99,7 +101,9 @@ describe('stream muxing', () => {
     ], done)
   })
 
-  it('spdy + multiplex', (done) => {
+  it('spdy + multiplex', function (done) {
+    this.timeout(3000)
+
     let nodeA
     let nodeB
 
@@ -131,7 +135,9 @@ describe('stream muxing', () => {
     ], done)
   })
 
-  it('spdy + multiplex switched order', (done) => {
+  it('spdy + multiplex switched order', function (done) {
+    this.timeout(3000)
+
     let nodeA
     let nodeB
 
@@ -163,7 +169,9 @@ describe('stream muxing', () => {
     ], done)
   })
 
-  it('one without the other fails to establish a muxedConn', (done) => {
+  it('one without the other fails to establish a muxedConn', function (done) {
+    this.timeout(5000)
+
     let nodeA
     let nodeB
 
