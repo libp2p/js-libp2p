@@ -58,8 +58,7 @@ describe('stop', function () {
           id: `QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`,
           addrs: [`/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`]
         }
-      }, new StreamHandler(conn), (err, conn) => {
-        expect(err).to.not.exist()
+      }, new StreamHandler(conn), (conn) => { // multistream handler doesn't expect errors...
         expect(conn).to.be.instanceOf(Connection)
         done()
       })
@@ -76,8 +75,7 @@ describe('stop', function () {
           id: `QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`,
           addrs: [`sdflksdfndsklfnlkdf`]
         }
-      }, new StreamHandler(conn), (err, conn) => {
-        expect(err).to.be.not.null()
+      }, new StreamHandler(conn), (conn) => {
         expect(conn).to.not.exist()
         done()
       })

@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "aegir lint",
     "build": "aegir build",
-    "test": "aegir test --target node --target browser",
+    "test": "aegir test --target node --target browser --no-parallel",
     "test:node": "aegir test --target node",
     "test:browser": "aegir test --target browser",
     "release": "aegir test release --target node --target browser",
@@ -33,11 +33,11 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-circuit#readme",
   "devDependencies": {
-    "aegir": "^12.0.8",
+    "aegir": "^12.1.0",
     "chai": "^4.1.2",
+    "dirty-chai": "^2.0.1",
     "pre-commit": "^1.2.2",
-    "sinon": "^4.0.1",
-    "dirty-chai": "^2.0.1"
+    "sinon": "^4.0.1"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",

@@ -1,4 +1,4 @@
-
+EDIT: This document is outdated and here only for historical purposes
 
 NOTE: This document is structured in an `if-then/else[if]-then` manner, each line is a precondition for following lines with a higher number of indentation
 

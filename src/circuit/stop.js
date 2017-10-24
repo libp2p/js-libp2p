@@ -29,7 +29,7 @@ class Stop extends EE {
       (cb) => this.utils.writeResponse(streamHandler, proto.CircuitRelay.Status.Success, cb)
     ], (err) => {
       if (err) {
-        callback(err)
+        callback() // we don't return the error here, since multistream select don't expect one
         return log(err)
       }
 
@@ -38,7 +38,7 @@ class Stop extends EE {
       const newConn = new Connection(streamHandler.rest())
       newConn.setPeerInfo(peerInfo)
       setImmediate(() => this.emit('connection', newConn))
-      callback(null, newConn)
+      callback(newConn)
     })
   }
 }

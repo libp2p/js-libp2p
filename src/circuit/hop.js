@@ -59,10 +59,12 @@ class Hop extends EE {
       return this.utils.writeResponse(streamHandler, proto.CircuitRelay.Status.HOP_CANT_SPEAK_RELAY)
     }
 
+    // check if message is `CAN_HOP`
     if (message.type === proto.CircuitRelay.Type.CAN_HOP) {
       return this.utils.writeResponse(streamHandler, proto.CircuitRelay.Status.SUCCESS)
     }
 
+    // This is a relay request - validate and create a circuit
     const srcPeerId = PeerId.createFromBytes(message.dstPeer.id)
     if (srcPeerId.toB58String() === this.peerInfo.id.toB58String()) {
       return this.utils.writeResponse(streamHandler, proto.CircuitRelay.Status.HOP_CANT_RELAY_TO_SELF)
@@ -149,8 +151,9 @@ class Hop extends EE {
               return cb(err)
             }
 
+            const message = proto.CircuitRelay.decode(msg)
             const srcConn = srcStreamHandler.rest()
-            if (msg.status === proto.CircuitRelay.Status.Success) {
+            if (message.code === proto.CircuitRelay.Status.SUCCESS) {
               // circuit the src and dst streams
               pull(
                 srcConn,
