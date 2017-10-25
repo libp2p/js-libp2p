@@ -135,7 +135,7 @@ describe(`circuit`, function () {
         (cb) => nodeWS1.dial(relayNode2.peerInfo, cb),
         (cb) => nodeTCP1.dial(relayNode1.peerInfo, cb),
         (cb) => nodeTCP2.dial(relayNode2.peerInfo, cb)
-      ], () => setTimeout(done, 10000))
+      ], done)
     })
   })
 
@@ -151,6 +151,7 @@ describe(`circuit`, function () {
   })
 
   describe(`any relay`, function () {
+    this.timeout(20000)
     it('should dial from WS1 to TCP1 over any R', function (done) {
       nodeWS1.dial(nodeTCP1.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
@@ -178,6 +179,7 @@ describe(`circuit`, function () {
   })
 
   describe(`explicit relay`, function () {
+    this.timeout(20000)
     it('should dial from WS1 to TCP1 over R1', function (done) {
       nodeWS1.dial(nodeTCP1.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
