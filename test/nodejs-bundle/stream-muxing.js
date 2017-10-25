@@ -102,7 +102,7 @@ describe('stream muxing', () => {
   })
 
   it('spdy + multiplex', function (done) {
-    this.timeout(3000)
+    this.timeout(5000)
 
     let nodeA
     let nodeB
@@ -136,7 +136,7 @@ describe('stream muxing', () => {
   })
 
   it('spdy + multiplex switched order', function (done) {
-    this.timeout(3000)
+    this.timeout(5000)
 
     let nodeA
     let nodeB

@@ -18,7 +18,8 @@ describe('.peerRouting', () => {
   let nodeD
   let nodeE
 
-  before((done) => {
+  before(function (done) {
+    this.timeout(5000)
     const tasks = _times(5, () => (cb) => {
       createNode('/ip4/0.0.0.0/tcp/0', {
         mdns: false,

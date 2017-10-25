@@ -20,7 +20,8 @@ describe('TCP + WebSockets + WebRTCStar', () => {
 
   let ss
 
-  before((done) => {
+  before(function (done) {
+    this.timeout(5000)
     parallel([
       (cb) => {
         signalling.start({ port: 24642 }, (err, server) => {
