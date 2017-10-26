@@ -1,3 +1,13 @@
+<a name="0.13.0"></a>
+# [0.13.0](https://github.com/libp2p/js-libp2p/compare/v0.12.4...v0.13.0) (2017-10-26)
+
+
+### Features
+
+* enable and test Circuit Relay ([29cc0af](https://github.com/libp2p/js-libp2p/commit/29cc0af))
+
+
+
 <a name="0.12.4"></a>
 ## [0.12.4](https://github.com/libp2p/js-libp2p/compare/v0.12.3...v0.12.4) (2017-09-07)
 
