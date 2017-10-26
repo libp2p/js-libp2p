@@ -15,6 +15,8 @@ function createNode (multiaddrs, options, callback) {
     options = {}
   }
 
+  options = options || {}
+
   if (!Array.isArray(multiaddrs)) {
     multiaddrs = [multiaddrs]
   }

@@ -57,11 +57,11 @@ describe('Turbolence tests', () => {
       expect(Object.keys(peers)).to.have.length(1)
 
       pull(
-        pull.values([new Buffer('hey')]),
+        pull.values([Buffer.from('hey')]),
         conn,
         pull.collect((err, data) => {
           expect(err).to.not.exist()
-          expect(data).to.eql([new Buffer('hey')])
+          expect(data).to.eql([Buffer.from('hey')])
           done()
         })
       )

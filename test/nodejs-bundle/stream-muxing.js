@@ -16,11 +16,11 @@ function test (nodeA, nodeB, callback) {
     expect(err).to.not.exist()
 
     pull(
-      pull.values([new Buffer('hey')]),
+      pull.values([Buffer.from('hey')]),
       conn,
       pull.collect((err, data) => {
         expect(err).to.not.exist()
-        expect(data).to.be.eql([new Buffer('hey')])
+        expect(data).to.be.eql([Buffer.from('hey')])
         callback()
       })
     )
@@ -34,8 +34,10 @@ function teardown (nodeA, nodeB, callback) {
   ], callback)
 }
 
-describe('stream muxing', (done) => {
-  it('spdy only', (done) => {
+describe('stream muxing', () => {
+  it('spdy only', function (done) {
+    this.timeout(5000)
+
     let nodeA
     let nodeB
 
@@ -99,7 +101,9 @@ describe('stream muxing', (done) => {
     ], done)
   })
 
-  it('spdy + multiplex', (done) => {
+  it('spdy + multiplex', function (done) {
+    this.timeout(5000)
+
     let nodeA
     let nodeB
 
@@ -131,7 +135,9 @@ describe('stream muxing', (done) => {
     ], done)
   })
 
-  it('spdy + multiplex switched order', (done) => {
+  it('spdy + multiplex switched order', function (done) {
+    this.timeout(5000)
+
     let nodeA
     let nodeB
 
@@ -163,7 +169,9 @@ describe('stream muxing', (done) => {
     ], done)
   })
 
-  it('one without the other fails to establish a muxedConn', (done) => {
+  it('one without the other fails to establish a muxedConn', function (done) {
+    this.timeout(5000)
+
     let nodeA
     let nodeB
 

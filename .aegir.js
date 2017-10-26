@@ -1,6 +1,5 @@
 'use strict'
 
-const gulp = require('gulp')
 const Node = require('./test/nodejs-bundle/nodejs-bundle.js')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
@@ -12,7 +11,7 @@ let server
 let node
 const rawPeer = require('./test/browser-bundle/peer.json')
 
-gulp.task('libnode:start', (done) => {
+const before = (done) => {
   let count = 0
   const ready = () => ++count === 2 ? done() : null
 
@@ -36,20 +35,21 @@ gulp.task('libnode:start', (done) => {
     node.handle('/echo/1.0.0', (protocol, conn) => pull(conn, conn))
     node.start(() => ready())
   })
-})
+}
 
-gulp.task('libnode:stop', (done) => {
+const after = (done) => {
   setTimeout(() => node.stop((err) => {
     if (err) {
       return done(err)
     }
     server.stop(done)
   }), 2000)
-})
+}
 
-gulp.task('test:browser:before', ['libnode:start'])
-gulp.task('test:node:before', ['libnode:start'])
-gulp.task('test:browser:after', ['libnode:stop'])
-gulp.task('test:node:after', ['libnode:stop'])
+module.exports = {
+  hooks: {
+    pre: before,
+    post: after
+  }
+}
 
-require('aegir/gulp')(gulp)
