@@ -9,7 +9,7 @@
     "test": "aegir test --target node --target browser --no-parallel",
     "test:node": "aegir test --target node --no-parallel",
     "test:browser": "aegir test --target browser --no-parallel",
-    "release": "aegir test release --target node --target browser --no-parallel",
+    "release": "aegir release --target node --target browser --no-parallel",
     "release-minor": "aegir release --type minor --target node --target browser --no-parallel",
     "release-major": "aegir release --type major --target node --target browser --no-parallel",
     "coverage": "aegir coverage",
