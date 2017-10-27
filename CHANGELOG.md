@@ -1,3 +1,13 @@
+<a name="0.33.1"></a>
+## [0.33.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.33.0...v0.33.1) (2017-10-27)
+
+
+### Bug Fixes
+
+* don't dial on relay if not enabled ([#234](https://github.com/libp2p/js-libp2p-swarm/issues/234)) ([94b00dd](https://github.com/libp2p/js-libp2p-swarm/commit/94b00dd))
+
+
+
 <a name="0.33.0"></a>
 # [0.33.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.32.4...v0.33.0) (2017-10-23)
 
