@@ -21,6 +21,7 @@ describe(`circuit`, function () {
   let peerA
   let swarmB // WS
   let peerB
+  let swarmC // no transports
   let peerC // just a peer
   let dialSpyA
 
@@ -39,6 +40,7 @@ describe(`circuit`, function () {
 
       swarmA = new Swarm(peerA, new PeerBook())
       swarmB = new Swarm(peerB, new PeerBook())
+      swarmC = new Swarm(peerC, new PeerBook())
 
       swarmA.transport.add('tcp', new TCP())
       swarmA.transport.add('WebSockets', new WS())
@@ -96,6 +98,16 @@ describe(`circuit`, function () {
       expect(err).to.exist()
       expect(conn).to.not.exist()
       expect(dialSpyA.lastCall.args[0]).to.be.eql('Circuit')
+      done()
+    })
+  })
+
+  it(`should not try circuit if not enabled`, function (done) {
+    swarmC.dial(peerA, (err, conn) => {
+      expect(err).to.exist()
+      expect(conn).to.not.exist()
+
+      expect(err).to.match(/Could not dial in any of the transports or relays/)
       done()
     })
   })

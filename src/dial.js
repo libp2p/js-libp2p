@@ -130,6 +130,10 @@ function dial (swarm) {
     function dialCircuit (cb) {
       log(`Falling back to dialing over circuit`)
       pi.multiaddrs.add(`/p2p-circuit/ipfs/${pi.id.toB58String()}`)
+      if (!swarm.transports[Circuit.tag]) {
+        return cb(new Error(`Circuit not enabled!`))
+      }
+
       swarm.transport.dial(Circuit.tag, pi, (err, conn) => {
         if (err) {
           log(err)
