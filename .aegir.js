@@ -6,7 +6,7 @@ const PeerId = require('peer-id')
 const pull = require('pull-stream')
 
 const sigServer = require('libp2p-webrtc-star/src/sig-server')
-const WSsigServer = require('libp2p-websocket-star-rendezvous')
+const wsRendezvous = require('libp2p-websocket-star-rendezvous')
 let server
 let server2
 
@@ -27,7 +27,7 @@ const before = (done) => {
     ready()
   })
 
-  WSsigServer.start({
+  wsRendezvous.start({
     port: 14444,
     refreshPeerListIntervalMS: 1000,
     strictMultiaddr: false

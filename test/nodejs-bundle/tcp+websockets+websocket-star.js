@@ -5,7 +5,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const parallel = require('async/parallel')
-const signalling = require('libp2p-websocket-star-signal')
+const rendezvous = require('libp2p-websocket-star-rendezvous')
 const WStar = require('libp2p-websocket-star')
 const utils = require('./utils')
 const createNode = utils.createNode
@@ -22,7 +22,7 @@ describe('TCP + WebSockets + WebSocketStar', () => {
   before((done) => {
     parallel([
       (cb) => {
-        signalling.start({ port: 24642 }, (err, server) => {
+        rendezvous.start({ port: 24642 }, (err, server) => {
           expect(err).to.not.exist()
           ss = server
           cb()
