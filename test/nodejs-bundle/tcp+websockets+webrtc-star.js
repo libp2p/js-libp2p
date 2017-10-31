@@ -91,57 +91,32 @@ describe('TCP + WebSockets + WebRTCStar', () => {
       (cb) => nodeTCP.stop(cb),
       (cb) => nodeWS.stop(cb),
       (cb) => nodeWStar.stop(cb),
-      (cb) => ss.stop(done)
+      (cb) => ss.stop(cb)
     ], done)
   })
+
+  function check (otherNode, done, muxed, peers) {
+    let i = 1;
+    [nodeAll, otherNode].forEach((node) => {
+      expect(Object.keys(node.peerBook.getAll())).to.have.length(i-- ? peers : 1)
+      expect(Object.keys(node.swarm.muxedConns)).to.have.length(muxed)
+    })
+    done()
+  }
 
   it('nodeAll.dial nodeTCP using PeerInfo', (done) => {
     nodeAll.dial(nodeTCP.peerInfo, (err) => {
       expect(err).to.not.exist()
 
       // Some time for Identify to finish
-      setTimeout(check, 500)
-
-      function check () {
-        parallel([
-          (cb) => {
-            const peers = nodeAll.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(1)
-            expect(Object.keys(nodeAll.swarm.muxedConns)).to.have.length(1)
-            cb()
-          },
-          (cb) => {
-            const peers = nodeTCP.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(1)
-            expect(Object.keys(nodeTCP.swarm.muxedConns)).to.have.length(1)
-            cb()
-          }
-        ], done)
-      }
+      setTimeout(check, 500, nodeTCP, done, 1, 1)
     })
   })
 
   it('nodeAll.hangUp nodeTCP using PeerInfo', (done) => {
     nodeAll.hangUp(nodeTCP.peerInfo, (err) => {
       expect(err).to.not.exist()
-      setTimeout(check, 500)
-
-      function check () {
-        parallel([
-          (cb) => {
-            const peers = nodeAll.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(1)
-            expect(Object.keys(nodeAll.swarm.muxedConns)).to.have.length(0)
-            cb()
-          },
-          (cb) => {
-            const peers = nodeTCP.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(1)
-            expect(Object.keys(nodeTCP.swarm.muxedConns)).to.have.length(0)
-            cb()
-          }
-        ], done)
-      }
+      setTimeout(check, 500, nodeTCP, done, 0, 1)
     })
   })
 
@@ -150,48 +125,14 @@ describe('TCP + WebSockets + WebRTCStar', () => {
       expect(err).to.not.exist()
 
       // Some time for Identify to finish
-      setTimeout(check, 500)
-
-      function check () {
-        parallel([
-          (cb) => {
-            const peers = nodeAll.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(2)
-            expect(Object.keys(nodeAll.swarm.muxedConns)).to.have.length(1)
-            cb()
-          },
-          (cb) => {
-            const peers = nodeWS.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(1)
-            expect(Object.keys(nodeWS.swarm.muxedConns)).to.have.length(1)
-            cb()
-          }
-        ], done)
-      }
+      setTimeout(check, 500, nodeWS, done, 1, 2)
     })
   })
 
   it('nodeAll.hangUp nodeWS using PeerInfo', (done) => {
     nodeAll.hangUp(nodeWS.peerInfo, (err) => {
       expect(err).to.not.exist()
-      setTimeout(check, 500)
-
-      function check () {
-        parallel([
-          (cb) => {
-            const peers = nodeAll.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(2)
-            expect(Object.keys(nodeAll.swarm.muxedConns)).to.have.length(0)
-            cb()
-          },
-          (cb) => {
-            const peers = nodeWS.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(1)
-            expect(Object.keys(nodeWS.swarm.muxedConns)).to.have.length(0)
-            cb()
-          }
-        ], done)
-      }
+      setTimeout(check, 500, nodeWS, done, 0, 2)
     })
   })
 
@@ -201,48 +142,14 @@ describe('TCP + WebSockets + WebRTCStar', () => {
       expect(err).to.not.exist()
 
       // Some time for Identify to finish
-      setTimeout(check, 500)
-
-      function check () {
-        parallel([
-          (cb) => {
-            const peers = nodeAll.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(3)
-            expect(Object.keys(nodeAll.swarm.muxedConns)).to.have.length(1)
-            cb()
-          },
-          (cb) => {
-            const peers = nodeWStar.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(1)
-            expect(Object.keys(nodeAll.swarm.muxedConns)).to.have.length(1)
-            cb()
-          }
-        ], done)
-      }
+      setTimeout(check, 500, nodeWStar, done, 1, 3)
     })
   })
 
   it('nodeAll.hangUp nodeWStar using PeerInfo', (done) => {
     nodeAll.hangUp(nodeWStar.peerInfo, (err) => {
       expect(err).to.not.exist()
-      setTimeout(check, 500)
-
-      function check () {
-        parallel([
-          (cb) => {
-            const peers = nodeAll.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(3)
-            expect(Object.keys(nodeAll.swarm.muxedConns)).to.have.length(0)
-            cb()
-          },
-          (cb) => {
-            const peers = nodeWStar.peerBook.getAll()
-            expect(Object.keys(peers)).to.have.length(1)
-            expect(Object.keys(nodeWStar.swarm.muxedConns)).to.have.length(0)
-            cb()
-          }
-        ], done)
-      }
+      setTimeout(check, 500, nodeWStar, done, 0, 3)
     })
   })
 })

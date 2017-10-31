@@ -4,6 +4,7 @@ const Node = require('./test/nodejs-bundle/nodejs-bundle.js')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const pull = require('pull-stream')
+const {parallel} = require('async')
 
 const sigServer = require('libp2p-webrtc-star/src/sig-server')
 const wsRendezvous = require('libp2p-websocket-star-rendezvous')
@@ -54,7 +55,7 @@ const before = (done) => {
 }
 
 const after = (done) => {
-  setTimeout(() => require('async/each')([node, server, server2], (s, n) => s.stop(n), done), 2000)
+  setTimeout(() => parallel([node, server, server2].map(s => cb => s.stop(cb)), done), 2000)
 }
 
 module.exports = {
