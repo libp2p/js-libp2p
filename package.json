@@ -55,7 +55,7 @@
     "multistream-select": "^0.14.0",
     "peer-id": "^0.10.2",
     "peer-info": "^0.11.0",
-    "protocol-buffers": "^3.2.1",
+    "protons": "^1.0.0",
     "pull-abortable": "^4.1.1",
     "pull-handshake": "^1.1.4",
     "pull-stream": "^3.6.1",

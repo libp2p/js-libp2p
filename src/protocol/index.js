@@ -1,4 +1,4 @@
 'use strict'
 
-const protobuf = require('protocol-buffers')
+const protobuf = require('protons')
 module.exports = protobuf(require('./proto.js'))

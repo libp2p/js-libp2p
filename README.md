@@ -27,7 +27,7 @@ The applicability of circuit-relaying is not limited to routing traffic between 
  - circumventing NAT layers
  - route mangling for better privacy (matreshka/shallot dialing).
 
- It's also possible to use it for clients that implement exotic transports such as  devices that only have bluetooth radios to be reachable over bluethoot enabled relays and become full p2p nodes.
+ It's also possible to use it for clients that implement exotic transports such as  devices that only have bluetooth radios to be reachable over bluetooth enabled relays and become full p2p nodes.
 
 ### libp2p-circuit and IPFS
 
