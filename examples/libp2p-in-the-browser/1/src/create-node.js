@@ -10,7 +10,7 @@ function createNode (callback) {
     }
 
     const peerIdStr = peerInfo.id.toB58String()
-    const ma = `/libp2p-webrtc-star/dns4/star-signal.cloud.ipfs.team/wss/ipfs/${peerIdStr}`
+    const ma = `/dns4/star-signal.cloud.ipfs.team/wss/p2p-webrtc-star/ipfs/${peerIdStr}`
 
     peerInfo.multiaddrs.add(ma)
 
