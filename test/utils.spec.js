@@ -109,7 +109,9 @@ describe('utils', () => {
   })
 
   describe('fromPublicKeyKey', () => {
-    it('round trips', (done) => {
+    it('round trips', function (done) {
+      this.timeout(40 * 1000)
+
       makePeers(50, (err, peers) => {
         expect(err).to.not.exist()
 

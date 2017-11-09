@@ -19,7 +19,8 @@ describe('Query', () => {
   let peerInfos
   let dht
 
-  before((done) => {
+  before(function (done) {
+    this.timeout(5 * 1000)
     makePeers(3, (err, result) => {
       if (err) {
         return done(err)

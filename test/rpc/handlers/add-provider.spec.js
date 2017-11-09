@@ -11,9 +11,7 @@ const _ = require('lodash')
 const Buffer = require('safe-buffer').Buffer
 
 const Message = require('../../../src/message')
-
 const handler = require('../../../src/rpc/handlers/add-provider')
-
 const util = require('../../utils')
 
 describe('rpc - handlers - AddProvider', () => {
@@ -26,9 +24,7 @@ describe('rpc - handlers - AddProvider', () => {
       (cb) => util.makePeers(3, cb),
       (cb) => util.makeValues(2, cb)
     ], (err, res) => {
-      if (err) {
-        return done(err)
-      }
+      expect(err).to.not.exist()
       peers = res[0]
       values = res[1]
       done()
@@ -86,9 +82,7 @@ describe('rpc - handlers - AddProvider', () => {
         expect(provs).to.have.length(1)
         expect(provs[0].id).to.eql(sender.id.id)
         const bookEntry = dht.peerBook.get(sender.id)
-        expect(
-          bookEntry.multiaddrs.toArray()
-        ).to.eql(
+        expect(bookEntry.multiaddrs.toArray()).to.eql(
           sender.multiaddrs.toArray()
         )
         cb()

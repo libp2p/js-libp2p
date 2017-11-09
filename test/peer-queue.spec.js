@@ -11,13 +11,13 @@ const PeerQueue = require('../src/peer-queue')
 
 describe('PeerQueue', () => {
   it('basics', (done) => {
-    const p1 = new PeerId(new Buffer('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))
-    const p2 = new PeerId(new Buffer('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a32'))
-    const p3 = new PeerId(new Buffer('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'))
-    const p4 = new PeerId(new Buffer('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a34'))
-    const p5 = new PeerId(new Buffer('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))
+    const p1 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))
+    const p2 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a32'))
+    const p3 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'))
+    const p4 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a34'))
+    const p5 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))
 
-    const peer = new PeerId(new Buffer('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))
+    const peer = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))
 
     PeerQueue.fromPeerId(peer, (err, pq) => {
       expect(err).to.not.exist()

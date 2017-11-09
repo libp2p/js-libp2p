@@ -23,7 +23,8 @@ describe('Network', () => {
   let dht
   let peerInfos
 
-  before((done) => {
+  before(function (done) {
+    this.timeout(10 * 1000)
     makePeers(3, (err, result) => {
       if (err) {
         return done(err)
@@ -43,10 +44,13 @@ describe('Network', () => {
     })
   })
 
-  after((done) => series([
-    (cb) => dht.stop(cb),
-    (cb) => dht.swarm.close(cb)
-  ], done))
+  after(function (done) {
+    this.timeout(10 * 1000)
+    series([
+      (cb) => dht.stop(cb),
+      (cb) => dht.swarm.close(cb)
+    ], done)
+  })
 
   describe('sendRequest', () => {
     it('send and response', (done) => {

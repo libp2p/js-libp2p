@@ -50,7 +50,7 @@ exports.bufferToKey = (buf) => {
  */
 exports.keyForPublicKey = (peer) => {
   return Buffer.concat([
-    new Buffer('/pk/'),
+    Buffer.from('/pk/'),
     peer.id
   ])
 }
@@ -89,7 +89,7 @@ exports.encodeBase32 = (buf) => {
  */
 exports.decodeBase32 = (raw) => {
   const dec = new base32.Decoder()
-  return new Buffer(dec.write(raw).finalize())
+  return Buffer.from(dec.write(raw).finalize())
 }
 
 /**

@@ -26,7 +26,8 @@ const util = require('./utils')
 describe('Providers', () => {
   let infos
 
-  before((done) => {
+  before(function (done) {
+    this.timeout(10 * 1000)
     util.makePeers(3, (err, peers) => {
       if (err) {
         return done(err)

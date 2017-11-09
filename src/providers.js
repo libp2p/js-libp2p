@@ -289,7 +289,7 @@ function writeProviderEntry (store, cid, peer, time, callback) {
     utils.encodeBase32(peer.id)
   ].join('')
 
-  store.put(new Key(dsKey), new Buffer(varint.encode(time)), callback)
+  store.put(new Key(dsKey), Buffer.from(varint.encode(time)), callback)
 }
 
 /**
