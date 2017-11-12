@@ -158,7 +158,7 @@ function dial (swarm) {
       const ms = new multistream.Dialer()
       ms.handle(conn, (err) => {
         if (err) {
-          return callback(new Error('multistream not supported'))
+          return cb(new Error('multistream not supported'))
         }
 
         nextMuxer(muxers.shift())

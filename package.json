@@ -6,17 +6,14 @@
   "scripts": {
     "lint": "aegir lint",
     "build": "aegir build",
-    "test": "aegir test --target node --target browser --no-parallel",
-    "test:node": "aegir test --target node --no-parallel",
-    "test:browser": "aegir test --target browser --no-parallel",
-    "release": "aegir release --target node --target browser --no-parallel",
-    "release-minor": "aegir release --type minor --target node --target browser --no-parallel",
-    "release-major": "aegir release --type major --target node --target browser --no-parallel",
+    "test": "aegir test -t node -t browser",
+    "test:node": "aegir test -t node",
+    "test:browser": "aegir test -t browser",
+    "release": "aegir release -t node -t browser",
+    "release-minor": "aegir release --type minor -t node -t browser",
+    "release-major": "aegir release --type major -t node -t browser",
     "coverage": "aegir coverage",
     "coverage-publish": "aegir coverage --provider coveralls"
-  },
-  "browser": {
-    "zlib": "browserify-zlib"
   },
   "repository": {
     "type": "git",
@@ -40,7 +37,7 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^12.1.1",
+    "aegir": "^12.1.3",
     "buffer-loader": "0.0.1",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
@@ -54,23 +51,22 @@
     "peer-book": "~0.5.1",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
-    "sinon": "^4.0.2",
+    "sinon": "^4.1.2",
     "webrtcsupport": "^2.2.0"
   },
   "dependencies": {
-    "async": "^2.5.0",
-    "browserify-zlib": "^0.2.0",
+    "async": "^2.6.0",
     "debug": "^3.1.0",
     "interface-connection": "~0.3.2",
     "ip-address": "^5.8.8",
-    "libp2p-circuit": "~0.1.3",
+    "libp2p-circuit": "~0.1.4",
     "libp2p-identify": "~0.6.1",
     "lodash.includes": "^4.3.0",
     "multiaddr": "^3.0.1",
-    "multistream-select": "~0.14.0",
+    "multistream-select": "~0.14.1",
     "once": "^1.4.0",
-    "peer-id": "^0.10.2",
-    "peer-info": "^0.11.0",
+    "peer-id": "~0.10.2",
+    "peer-info": "~0.11.1",
     "pull-stream": "^3.6.1"
   },
   "contributors": [
