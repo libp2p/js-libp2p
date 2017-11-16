@@ -1,17 +1,15 @@
 sudo: false
 language: node_js
-node_js:
-  - 4
-  - 5
-  - stable
-
-# Make sure we have new NPM.
-before_install:
-  - npm install -g npm
+matrix:
+  include:
+  - node_js: 6
+    env: CXX=g++-4.8
+  - node_js: 8
+    env: CXX=g++-4.8
 
 script:
   - npm run lint
-  - npm test
+  - npm run test
   - npm run coverage
 
 
@@ -21,9 +19,6 @@ before_script:
 
 after_success:
   - npm run coverage-publish
-
-env:
-  - CXX=g++-4.8
 
 addons:
   firefox: 'latest'
