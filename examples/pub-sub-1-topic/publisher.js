@@ -44,7 +44,7 @@ function publishMsg (err) {
 
   setInterval(() => {
     process.stdout.write('.')
-    psPublisher.publish('interop', new Buffer('hey, how is it going?'))
+    psPublisher.publish('interop', Buffer.from('hey, how is it going?'))
   }, 300)
 }
 

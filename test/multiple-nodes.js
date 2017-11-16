@@ -118,7 +118,7 @@ describe('multiple nodes (more than 2)', () => {
         b.ps.on('Z', incMsg)
         c.ps.on('Z', incMsg)
 
-        a.ps.publish('Z', new Buffer('hey'))
+        a.ps.publish('Z', Buffer.from('hey'))
 
         function incMsg (msg) {
           expect(msg.data.toString()).to.equal('hey')
@@ -151,7 +151,7 @@ describe('multiple nodes (more than 2)', () => {
           b.ps.on('Z', incMsg)
           c.ps.on('Z', incMsg)
 
-          b.ps.publish('Z', new Buffer('hey'))
+          b.ps.publish('Z', Buffer.from('hey'))
 
           function incMsg (msg) {
             expect(msg.data.toString()).to.equal('hey')
@@ -255,7 +255,7 @@ describe('multiple nodes (more than 2)', () => {
         d.ps.on('Z', incMsg)
         e.ps.on('Z', incMsg)
 
-        c.ps.publish('Z', new Buffer('hey from c'))
+        c.ps.publish('Z', Buffer.from('hey from c'))
 
         function incMsg (msg) {
           expect(msg.data.toString()).to.equal('hey from c')

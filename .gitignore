@@ -1,3 +1,4 @@
+docs
 **/node_modules/
 **/*.log
 test/repo-tests*

@@ -1,3 +1,4 @@
+/* global self */
 'use strict'
 
 const Benchmark = require('benchmark')
