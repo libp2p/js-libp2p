@@ -83,6 +83,10 @@ function dial (swarm) {
     function attemptDial (pi, cb) {
       const tKeys = swarm.availableTransports(pi)
 
+      if (tKeys.length === 0) {
+        return cb(new Error('No transports registered, dial not possible'))
+      }
+
       nextTransport(tKeys.shift())
 
       function nextTransport (key) {

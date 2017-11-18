@@ -102,12 +102,12 @@ describe(`circuit`, function () {
     })
   })
 
-  it(`should not try circuit if not enabled`, function (done) {
+  it(`should not try circuit if no transports enabled`, function (done) {
     swarmC.dial(peerA, (err, conn) => {
       expect(err).to.exist()
       expect(conn).to.not.exist()
 
-      expect(err).to.match(/Could not dial in any of the transports or relays/)
+      expect(err).to.match(/No transports registered, dial not possible/)
       done()
     })
   })
