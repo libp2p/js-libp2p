@@ -1,3 +1,13 @@
+<a name="0.33.2"></a>
+## [0.33.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.33.1...v0.33.2) (2017-11-18)
+
+
+### Bug Fixes
+
+* don't dial circuit if no transports available ([#236](https://github.com/libp2p/js-libp2p-swarm/issues/236)) ([f22ee2a](https://github.com/libp2p/js-libp2p-swarm/commit/f22ee2a))
+
+
+
 <a name="0.33.1"></a>
 ## [0.33.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.33.0...v0.33.1) (2017-10-27)
 
