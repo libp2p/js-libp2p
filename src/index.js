@@ -177,6 +177,13 @@ class Node extends EventEmitter {
       }
     })
 
+    // detect which multiaddrs we don't have a transport for and remove them
+    multiaddrs.forEach((multiaddr) => {
+      if (!transports.find((transport) => transport.filter(multiaddr).length > 0)) {
+        this.peerInfo.multiaddrs.delete(multiaddr)
+      }
+    })
+
     series([
       (cb) => this.swarm.listen(cb),
       (cb) => {
