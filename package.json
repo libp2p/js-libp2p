@@ -69,7 +69,7 @@
     "pull-stream": "^3.6.1",
     "safe-buffer": "^5.1.1",
     "sinon": "^4.1.2",
-    "wrtc": "0.0.62"
+    "wrtc": "0.0.63"
   },
   "contributors": [
     "Chris Bratlien <chrisbratlien@gmail.com>",
