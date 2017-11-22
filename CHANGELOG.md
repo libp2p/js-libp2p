@@ -1,3 +1,13 @@
+<a name="0.13.0"></a>
+# [0.13.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.12.1...v0.13.0) (2017-11-22)
+
+
+### Bug Fixes
+
+* various floodsub issues ([#51](https://github.com/libp2p/js-libp2p-floodsub/issues/51)) ([45c9b11](https://github.com/libp2p/js-libp2p-floodsub/commit/45c9b11))
+
+
+
 <a name="0.12.1"></a>
 ## [0.12.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.12.0...v0.12.1) (2017-11-20)
 
