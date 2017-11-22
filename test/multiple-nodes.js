@@ -135,6 +135,30 @@ describe('multiple nodes (more than 2)', () => {
         }
       })
 
+      it('publish array on node a', (done) => {
+        let counter = 0
+
+        a.ps.on('Z', incMsg)
+        b.ps.on('Z', incMsg)
+        c.ps.on('Z', incMsg)
+
+        a.ps.publish('Z', [Buffer.from('hey'), Buffer.from('hey')])
+
+        function incMsg (msg) {
+          expect(msg.data.toString()).to.equal('hey')
+          check()
+        }
+
+        function check () {
+          if (++counter === 6) {
+            a.ps.removeListener('Z', incMsg)
+            b.ps.removeListener('Z', incMsg)
+            c.ps.removeListener('Z', incMsg)
+            done()
+          }
+        }
+      })
+
       // since the topology is the same, just the publish
       // gets sent by other peer, we reused the same peers
       describe('1 level tree', () => {

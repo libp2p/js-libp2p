@@ -40,4 +40,32 @@ describe('utils', () => {
     expect(utils.ensureArray('hello')).to.be.eql(['hello'])
     expect(utils.ensureArray([1, 2])).to.be.eql([1, 2])
   })
+
+  it('converts an IN msg.from to b58', () => {
+    let binaryId = Buffer.from('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'hex')
+    let stringId = 'QmdZEWgtaWAxBh93fELFT298La1rsZfhiC2pqwMVwy3jZM'
+    const m = [
+      { from: binaryId },
+      { from: stringId }
+    ]
+    const expected = [
+      { from: stringId },
+      { from: stringId }
+    ]
+    expect(utils.normalizeInRpcMessages(m)).to.deep.eql(expected)
+  })
+
+  it('converts an OUT msg.from to binary', () => {
+    let binaryId = Buffer.from('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'hex')
+    let stringId = 'QmdZEWgtaWAxBh93fELFT298La1rsZfhiC2pqwMVwy3jZM'
+    const m = [
+      { from: binaryId },
+      { from: stringId }
+    ]
+    const expected = [
+      { from: binaryId },
+      { from: binaryId }
+    ]
+    expect(utils.normalizeOutRpcMessages(m)).to.deep.eql(expected)
+  })
 })

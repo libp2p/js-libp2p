@@ -4,17 +4,20 @@ const lp = require('pull-length-prefixed')
 const Pushable = require('pull-pushable')
 const pull = require('pull-stream')
 const setImmediate = require('async/setImmediate')
+const EventEmitter = require('events')
 
 const rpc = require('./message').rpc.RPC
 
 /**
  * The known state of a connected peer.
  */
-class Peer {
+class Peer extends EventEmitter {
   /**
    * @param {PeerInfo} info
    */
   constructor (info) {
+    super()
+
     /**
      * @type {PeerInfo}
      */
@@ -31,6 +34,8 @@ class Peer {
      * @type {Pushable}
      */
     this.stream = null
+
+    this._references = 1
   }
 
   /**
@@ -80,8 +85,15 @@ class Peer {
     pull(
       this.stream,
       lp.encode(),
-      conn
+      conn,
+      pull.onEnd(() => {
+        this.conn = null
+        this.stream = null
+        this.emit('close')
+      })
     )
+
+    this.emit('connection')
   }
 
   _sendRawSubscriptions (topics, subscribe) {
@@ -155,16 +167,18 @@ class Peer {
    * @returns {undefined}
    */
   close (callback) {
-    if (!this.conn || !this.stream) {
-      // no connection to close
-    }
-    // end the pushable pull-stream
+    // Force removal of peer
+    this._references = 1
+
+    // End the pushable
     if (this.stream) {
       this.stream.end()
     }
+
     setImmediate(() => {
       this.conn = null
       this.stream = null
+      this.emit('close')
       callback()
     })
   }
