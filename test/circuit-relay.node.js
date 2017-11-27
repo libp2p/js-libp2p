@@ -5,7 +5,7 @@ const pull = require('pull-stream')
 const waterfall = require('async/waterfall')
 const series = require('async/series')
 const parallel = require('async/parallel')
-const utils = require('./utils')
+const utils = require('./utils/node')
 const Circuit = require('libp2p-circuit')
 const multiaddr = require('multiaddr')
 
@@ -15,7 +15,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const sinon = require('sinon')
 
-describe(`circuit`, function () {
+describe('circuit relay', function () {
   let handlerSpies = []
   let relayNode1
   let relayNode2
@@ -51,8 +51,8 @@ describe(`circuit`, function () {
     waterfall([
       // set up passive relay
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/0/ws`,
-        `/ip4/0.0.0.0/tcp/0`
+        '/ip4/0.0.0.0/tcp/0/ws',
+        '/ip4/0.0.0.0/tcp/0'
       ], {
         relay: {
           enabled: true,
@@ -67,8 +67,8 @@ describe(`circuit`, function () {
       }),
       // setup active relay
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/0/ws`,
-        `/ip4/0.0.0.0/tcp/0`
+        '/ip4/0.0.0.0/tcp/0/ws',
+        '/ip4/0.0.0.0/tcp/0'
       ], {
         relay: {
           enabled: true,
@@ -83,7 +83,7 @@ describe(`circuit`, function () {
       }),
       // setup node with WS
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/0/ws`
+        '/ip4/0.0.0.0/tcp/0/ws'
       ], {
         relay: {
           enabled: true
@@ -94,7 +94,7 @@ describe(`circuit`, function () {
       }),
       // setup node with WS
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/0/ws`
+        '/ip4/0.0.0.0/tcp/0/ws'
       ], {
         relay: {
           enabled: true
@@ -105,7 +105,7 @@ describe(`circuit`, function () {
       }),
       // set up node with TCP and listening on relay1
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/0`,
+        '/ip4/0.0.0.0/tcp/0',
         `/ipfs/${relayNode1.peerInfo.id.toB58String()}/p2p-circuit`
       ], {
         relay: {
@@ -117,7 +117,7 @@ describe(`circuit`, function () {
       }),
       // set up node with TCP and listening on relay2 over TCP transport
       (cb) => setupNode([
-        `/ip4/0.0.0.0/tcp/0`,
+        '/ip4/0.0.0.0/tcp/0',
         `/ip4/0.0.0.0/tcp/0/ipfs/${relayNode2.peerInfo.id.toB58String()}/p2p-circuit`
       ], {
         relay: {
@@ -150,9 +150,10 @@ describe(`circuit`, function () {
     ], done)
   })
 
-  describe(`any relay`, function () {
-    this.timeout(20000)
-    it('should dial from WS1 to TCP1 over any R', function (done) {
+  describe('any relay', function () {
+    this.timeout(20 * 1000)
+
+    it('should dial from WS1 to TCP1 over any R', (done) => {
       nodeWS1.dial(nodeTCP1.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
         expect(conn).to.exist()
@@ -160,8 +161,8 @@ describe(`circuit`, function () {
         pull(
           pull.values(['hello']),
           conn,
-          pull.collect((e, result) => {
-            expect(e).to.not.exist()
+          pull.collect((err, result) => {
+            expect(err).to.not.exist()
             expect(result[0].toString()).to.equal('hello')
             done()
           })
@@ -169,7 +170,7 @@ describe(`circuit`, function () {
       })
     })
 
-    it(`should not dial - no R from WS2 to TCP1`, function (done) {
+    it('should not dial - no R from WS2 to TCP1', (done) => {
       nodeWS2.dial(nodeTCP2.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.exist()
         expect(conn).to.not.exist()
@@ -178,9 +179,10 @@ describe(`circuit`, function () {
     })
   })
 
-  describe(`explicit relay`, function () {
-    this.timeout(20000)
-    it('should dial from WS1 to TCP1 over R1', function (done) {
+  describe('explicit relay', function () {
+    this.timeout(20 * 1000)
+
+    it('should dial from WS1 to TCP1 over R1', (done) => {
       nodeWS1.dial(nodeTCP1.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
         expect(conn).to.exist()
@@ -188,8 +190,8 @@ describe(`circuit`, function () {
         pull(
           pull.values(['hello']),
           conn,
-          pull.collect((e, result) => {
-            expect(e).to.not.exist()
+          pull.collect((err, result) => {
+            expect(err).to.not.exist()
             expect(result[0].toString()).to.equal('hello')
 
             const addr = multiaddr(handlerSpies[0].args[2][0].dstPeer.addrs[0]).toString()
@@ -200,7 +202,7 @@ describe(`circuit`, function () {
       })
     })
 
-    it(`should dial from WS1 to TCP2 over R2`, function (done) {
+    it('should dial from WS1 to TCP2 over R2', (done) => {
       nodeWS1.dial(nodeTCP2.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
         expect(conn).to.exist()
@@ -208,8 +210,8 @@ describe(`circuit`, function () {
         pull(
           pull.values(['hello']),
           conn,
-          pull.collect((e, result) => {
-            expect(e).to.not.exist()
+          pull.collect((err, result) => {
+            expect(err).to.not.exist()
             expect(result[0].toString()).to.equal('hello')
 
             const addr = multiaddr(handlerSpies[1].args[2][0].dstPeer.addrs[0]).toString()

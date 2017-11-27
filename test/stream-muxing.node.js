@@ -7,7 +7,7 @@ const expect = chai.expect
 const parallel = require('async/parallel')
 const series = require('async/series')
 const pull = require('pull-stream')
-const utils = require('./utils')
+const utils = require('./utils/node')
 const createNode = utils.createNode
 const echo = utils.echo
 
@@ -36,7 +36,7 @@ function teardown (nodeA, nodeB, callback) {
 
 describe('stream muxing', () => {
   it('spdy only', function (done) {
-    this.timeout(5000)
+    this.timeout(5 * 1000)
 
     let nodeA
     let nodeB

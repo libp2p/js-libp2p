@@ -6,11 +6,11 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const signalling = require('libp2p-webrtc-star/src/sig-server')
 const parallel = require('async/parallel')
-const utils = require('./utils')
+const utils = require('./utils/node')
 const createNode = utils.createNode
 const echo = utils.echo
 
-describe('discovery', () => {
+describe('peer discovery', () => {
   let nodeA
   let nodeB
   let port = 24642
@@ -61,7 +61,8 @@ describe('discovery', () => {
     setup({ mdns: true })
 
     it('find a peer', function (done) {
-      this.timeout(15000)
+      this.timeout(15 * 1000)
+
       nodeA.once('peer:discovery', (peerInfo) => {
         expect(nodeB.peerInfo.id.toB58String())
           .to.eql(peerInfo.id.toB58String())
@@ -75,7 +76,7 @@ describe('discovery', () => {
     setup({ webRTCStar: true })
 
     it('find a peer', function (done) {
-      this.timeout(15000)
+      this.timeout(15 * 1000)
       nodeA.once('peer:discovery', (peerInfo) => {
         expect(nodeB.peerInfo.id.toB58String())
           .to.eql(peerInfo.id.toB58String())
@@ -91,7 +92,7 @@ describe('discovery', () => {
     })
 
     it('find a peer', function (done) {
-      this.timeout(15000)
+      this.timeout(15 * 1000)
       nodeA.once('peer:discovery', (peerInfo) => {
         expect(nodeB.peerInfo.id.toB58String())
           .to.eql(peerInfo.id.toB58String())

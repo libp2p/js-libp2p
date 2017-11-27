@@ -7,10 +7,10 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const parallel = require('async/parallel')
-const utils = require('./utils')
-const createNode = utils.createNode
 const _times = require('lodash.times')
 const CID = require('cids')
+const utils = require('./utils/node')
+const createNode = utils.createNode
 
 describe('.contentRouting', () => {
   let nodeA
@@ -20,7 +20,7 @@ describe('.contentRouting', () => {
   let nodeE
 
   before(function (done) {
-    this.timeout(5000)
+    this.timeout(5 * 1000)
     const tasks = _times(5, () => (cb) => {
       createNode('/ip4/0.0.0.0/tcp/0', {
         mdns: false,

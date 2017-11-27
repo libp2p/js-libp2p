@@ -2,6 +2,7 @@
 
 const WS = require('libp2p-websockets')
 const WebRTCStar = require('libp2p-webrtc-star')
+const WebSocketStar = require('libp2p-websocket-star')
 const spdy = require('libp2p-spdy')
 const multiplex = require('libp2p-multiplex')
 const secio = require('libp2p-secio')
@@ -36,11 +37,13 @@ class Node extends libp2p {
   constructor (peerInfo, peerBook, options) {
     options = options || {}
     const webRTCStar = new WebRTCStar()
+    const wsStar = new WebSocketStar()
 
     const modules = {
       transport: [
         new WS(),
-        webRTCStar
+        webRTCStar,
+        wsStar
       ],
       connection: {
         muxer: getMuxers(options.muxer),
@@ -53,6 +56,10 @@ class Node extends libp2p {
 
     if (options.webRTCStar) {
       modules.discovery.push(webRTCStar.discovery)
+    }
+
+    if (options.wsStar) {
+      modules.discovery.push(wsStar.discovery)
     }
 
     if (options.bootstrap) {
