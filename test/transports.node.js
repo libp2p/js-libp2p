@@ -202,7 +202,7 @@ describe('transports', () => {
               conn,
               pull.collect((err, data) => {
                 expect(err).to.not.exist()
-                expect(data).to.be.eql([Buffer.from('hey')])
+                expect(data).to.eql([Buffer.from('hey')])
                 done()
               })
             )
@@ -401,6 +401,7 @@ describe('transports', () => {
 
     before(function (done) {
       this.timeout(5 * 1000)
+
       parallel([
         (cb) => {
           signalling.start({ port: 24642 }, (err, server) => {
@@ -474,61 +475,61 @@ describe('transports', () => {
       ], done)
     })
 
-    function check (otherNode, done, muxed, peers) {
+    function check (otherNode, muxed, peers, callback) {
       let i = 1;
       [nodeAll, otherNode].forEach((node) => {
         expect(Object.keys(node.peerBook.getAll())).to.have.length(i-- ? peers : 1)
         expect(Object.keys(node.swarm.muxedConns)).to.have.length(muxed)
       })
-      done()
+      callback()
     }
 
     it('nodeAll.dial nodeTCP using PeerInfo', (done) => {
       nodeAll.dial(nodeTCP.peerInfo, (err) => {
         expect(err).to.not.exist()
-
         // Some time for Identify to finish
-        setTimeout(check, 500, nodeTCP, done, 1, 1)
+        setTimeout(() => check(nodeTCP, 1, 1, done), 500)
       })
     })
 
     it('nodeAll.hangUp nodeTCP using PeerInfo', (done) => {
       nodeAll.hangUp(nodeTCP.peerInfo, (err) => {
         expect(err).to.not.exist()
-        setTimeout(check, 500, nodeTCP, done, 0, 1)
+        // Some time for Identify to finish
+        setTimeout(() => check(nodeTCP, 0, 1, done), 500)
       })
     })
 
     it('nodeAll.dial nodeWS using PeerInfo', (done) => {
       nodeAll.dial(nodeWS.peerInfo, (err) => {
         expect(err).to.not.exist()
-
         // Some time for Identify to finish
-        setTimeout(check, 500, nodeWS, done, 1, 2)
+        setTimeout(() => check(nodeWS, 1, 2, done), 500)
       })
     })
 
     it('nodeAll.hangUp nodeWS using PeerInfo', (done) => {
       nodeAll.hangUp(nodeWS.peerInfo, (err) => {
         expect(err).to.not.exist()
-        setTimeout(check, 500, nodeWS, done, 0, 2)
+        // Some time for Identify to finish
+        setTimeout(() => check(nodeWS, 0, 2, done), 500)
       })
     })
 
     it('nodeAll.dial nodeWStar using PeerInfo', function (done) {
-      this.timeout(10000)
+      this.timeout(10 * 1000)
+
       nodeAll.dial(nodeWStar.peerInfo, (err) => {
         expect(err).to.not.exist()
-
         // Some time for Identify to finish
-        setTimeout(check, 500, nodeWStar, done, 1, 3)
+        setTimeout(() => check(nodeWStar, 1, 3, done), 500)
       })
     })
 
     it('nodeAll.hangUp nodeWStar using PeerInfo', (done) => {
       nodeAll.hangUp(nodeWStar.peerInfo, (err) => {
         expect(err).to.not.exist()
-        setTimeout(check, 500, nodeWStar, done, 0, 3)
+        setTimeout(() => check(nodeWStar, 0, 3, done), 500)
       })
     })
   })
@@ -617,7 +618,7 @@ describe('transports', () => {
       ], done)
     })
 
-    function check (otherNode, done, muxed, peers) {
+    function check (otherNode, muxed, peers, done) {
       let i = 1;
       [nodeAll, otherNode].forEach((node) => {
         expect(Object.keys(node.peerBook.getAll())).to.have.length(i-- ? peers : 1)
@@ -629,48 +630,48 @@ describe('transports', () => {
     it('nodeAll.dial nodeTCP using PeerInfo', (done) => {
       nodeAll.dial(nodeTCP.peerInfo, (err) => {
         expect(err).to.not.exist()
-
         // Some time for Identify to finish
-        setTimeout(check, 500, nodeTCP, done, 1, 1)
+        setTimeout(() => check(nodeTCP, 1, 1, done), 500)
       })
     })
 
     it('nodeAll.hangUp nodeTCP using PeerInfo', (done) => {
       nodeAll.hangUp(nodeTCP.peerInfo, (err) => {
         expect(err).to.not.exist()
-        setTimeout(check, 500, nodeTCP, done, 0, 1)
+        // Some time for Identify to finish
+        setTimeout(() => check(nodeTCP, 0, 1, done), 500)
       })
     })
 
     it('nodeAll.dial nodeWS using PeerInfo', (done) => {
       nodeAll.dial(nodeWS.peerInfo, (err) => {
         expect(err).to.not.exist()
-
         // Some time for Identify to finish
-        setTimeout(check, 500, nodeWS, done, 1, 2)
+        setTimeout(() => check(nodeWS, 1, 2, done), 500)
       })
     })
 
     it('nodeAll.hangUp nodeWS using PeerInfo', (done) => {
       nodeAll.hangUp(nodeWS.peerInfo, (err) => {
         expect(err).to.not.exist()
-        setTimeout(check, 500, nodeWS, done, 0, 2)
+        // Some time for Identify to finish
+        setTimeout(() => check(nodeWS, 0, 2, done), 500)
       })
     })
 
     it('nodeAll.dial nodeWStar using PeerInfo', (done) => {
       nodeAll.dial(nodeWStar.peerInfo, (err) => {
         expect(err).to.not.exist()
-
         // Some time for Identify to finish
-        setTimeout(check, 500, nodeWStar, done, 1, 3)
+        setTimeout(() => check(nodeWStar, 1, 3, done), 500)
       })
     })
 
     it('nodeAll.hangUp nodeWStar using PeerInfo', (done) => {
       nodeAll.hangUp(nodeWStar.peerInfo, (err) => {
         expect(err).to.not.exist()
-        setTimeout(check, 500, nodeWStar, done, 0, 3)
+        // Some time for Identify to finish
+        setTimeout(() => check(nodeWStar, 0, 3, done), 500)
       })
     })
   })
