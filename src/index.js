@@ -207,7 +207,7 @@ class Node extends EventEmitter {
           multiaddrs.forEach((multiaddr) => {
             if (!multiaddr.toString().match(/\/p2p-circuit($|\/)/) &&
                 !transports.find((transport) => transport.filter(multiaddr).length > 0)) {
-                this.peerInfo.multiaddrs.delete(multiaddr)
+              this.peerInfo.multiaddrs.delete(multiaddr)
             }
           })
         })
