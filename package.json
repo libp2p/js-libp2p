@@ -6,12 +6,12 @@
   "scripts": {
     "lint": "aegir lint",
     "build": "aegir build",
-    "test": "aegir test --target node --target browser --no-parallel",
-    "test:node": "aegir test --target node --no-parallel",
-    "test:browser": "aegir test --target browser --no-parallel",
-    "release": "aegir test release --target node --target browser --no-parallel",
-    "release-minor": "aegir release --type minor --target node --target browser --no-parallel",
-    "release-major": "aegir release --type major --target node --target browser --no-parallel",
+    "test": "aegir test -t node -t browser",
+    "test:node": "aegir test -t node",
+    "test:browser": "aegir test -t browser",
+    "release": "aegir release -t node -t browser",
+    "release-minor": "aegir release --type minor -t node -t browser",
+    "release-major": "aegir release --type major -t node -t browser",
     "coverage": "aegir coverage",
     "coverage-publish": "aegir coverage --provider coveralls"
   },

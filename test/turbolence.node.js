@@ -7,9 +7,8 @@ const expect = chai.expect
 const multiaddr = require('multiaddr')
 const spawn = require('child_process').spawn
 const path = require('path')
-// const map = require('async/map')
 const pull = require('pull-stream')
-const utils = require('./utils')
+const utils = require('./utils/node')
 const createNode = utils.createNode
 const echo = utils.echo
 

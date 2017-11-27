@@ -37,7 +37,7 @@ class Node extends libp2p {
   constructor (peerInfo, peerBook, options) {
     options = options || {}
     const webRTCStar = new WebRTCStar()
-    const wsStar = new WebSocketStar({ id: peerInfo.id })
+    const wsStar = new WebSocketStar()
 
     const modules = {
       transport: [
