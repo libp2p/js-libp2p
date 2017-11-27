@@ -6,7 +6,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const createNode = require('./utils').createNode
 
-describe.only('multiaddr trim', () => {
+describe('multiaddr trim', () => {
   let node
   it('can create a test node with an irrelevant multiaddr', (done) => {
     createNode(
