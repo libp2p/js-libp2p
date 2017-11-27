@@ -28,11 +28,9 @@ const before = (done) => {
         port: 14444,
         refreshPeerListIntervalMS: 1000,
         strictMultiaddr: false,
-        disableCryptoChallenge: true
+        cryptoChallenge: false
       }, (err, _server) => {
-        if (err) {
-          return cb(err)
-        }
+        if (err) { return cb(err) }
         wsRendezvous = _server
         cb()
       })
