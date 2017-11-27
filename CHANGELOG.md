@@ -1,3 +1,13 @@
+<a name="0.13.2"></a>
+## [0.13.2](https://github.com/libp2p/js-libp2p/compare/v0.13.1...v0.13.2) (2017-11-27)
+
+
+### Features
+
+* Bring libp2p-websocket-star to the Transports family! 🌟 ([#122](https://github.com/libp2p/js-libp2p/issues/122)) ([95f029e](https://github.com/libp2p/js-libp2p/commit/95f029e))
+
+
+
 <a name="0.13.1"></a>
 ## [0.13.1](https://github.com/libp2p/js-libp2p/compare/v0.13.0...v0.13.1) (2017-11-12)
 
