@@ -1,3 +1,13 @@
+<a name="0.10.4"></a>
+## [0.10.4](https://github.com/libp2p/js-libp2p-crypto/compare/v0.10.3...v0.10.4) (2017-12-01)
+
+
+### Bug Fixes
+
+* catch error when unmarshaling instead of crashing ([#113](https://github.com/libp2p/js-libp2p-crypto/issues/113)) ([7608fdd](https://github.com/libp2p/js-libp2p-crypto/commit/7608fdd))
+
+
+
 <a name="0.10.3"></a>
 ## [0.10.3](https://github.com/libp2p/js-libp2p-crypto/compare/v0.10.2...v0.10.3) (2017-09-07)
 
