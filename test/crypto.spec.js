@@ -9,7 +9,8 @@ chai.use(dirtyChai)
 const crypto = require('../src')
 const fixtures = require('./fixtures/go-key-rsa')
 
-describe('libp2p-crypto', () => {
+describe('libp2p-crypto', function () {
+  this.timeout(20 * 1000)
   let key
   before((done) => {
     crypto.keys.generateKeyPair('RSA', 2048, (err, _key) => {

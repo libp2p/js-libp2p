@@ -81,7 +81,13 @@ exports.marshalPublicKey = (key, type) => {
 // Converts a protobuf serialized private key into its
 // representative object
 exports.unmarshalPrivateKey = (buf, callback) => {
-  const decoded = keysPBM.PrivateKey.decode(buf)
+  let decoded
+  try {
+    decoded = keysPBM.PrivateKey.decode(buf)
+  } catch (err) {
+    return callback(err)
+  }
+
   const data = decoded.Data
 
   switch (decoded.Type) {

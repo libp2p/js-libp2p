@@ -10,7 +10,10 @@ const crypto = require('../../src')
 const rsa = crypto.keys.supportedKeys.rsa
 const fixtures = require('../fixtures/go-key-rsa')
 
-describe('RSA', () => {
+const testGarbage = require('../helpers/test-garbage-error-handling')
+
+describe('RSA', function () {
+  this.timeout(20 * 1000)
   let key
 
   before((done) => {
@@ -129,6 +132,12 @@ describe('RSA', () => {
         done()
       })
     })
+  })
+
+  describe('returns error via cb instead of crashing', () => {
+    const key = crypto.keys.unmarshalPublicKey(fixtures.verify.publicKey)
+    testGarbage.doTests('key.verify', key.verify.bind(key), 2, true)
+    testGarbage.doTests('crypto.keys.unmarshalPrivateKey', crypto.keys.unmarshalPrivateKey.bind(crypto.keys))
   })
 
   describe('go interop', () => {

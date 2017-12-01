@@ -7,30 +7,28 @@ exports.publicKeyLength = nacl.sign.publicKeyLength
 exports.privateKeyLength = nacl.sign.secretKeyLength
 
 exports.generateKey = function (callback) {
-  const done = (err, res) => setImmediate(() => {
-    callback(err, res)
+  setImmediate(() => {
+    let result
+    try {
+      result = nacl.sign.keyPair()
+    } catch (err) {
+      return callback(err)
+    }
+    callback(null, result)
   })
-
-  let keys
-  try {
-    keys = nacl.sign.keyPair()
-  } catch (err) {
-    return done(err)
-  }
-  done(null, keys)
 }
 
 // seed should be a 32 byte uint8array
 exports.generateKeyFromSeed = function (seed, callback) {
-  const done = (err, res) => setImmediate(() => callback(err, res))
-
-  let keys
-  try {
-    keys = nacl.sign.keyPair.fromSeed(seed)
-  } catch (err) {
-    return done(err)
-  }
-  done(null, keys)
+  setImmediate(() => {
+    let result
+    try {
+      result = nacl.sign.keyPair.fromSeed(seed)
+    } catch (err) {
+      return callback(err)
+    }
+    callback(null, result)
+  })
 }
 
 exports.hashAndSign = function (key, msg, callback) {
@@ -41,6 +39,13 @@ exports.hashAndSign = function (key, msg, callback) {
 
 exports.hashAndVerify = function (key, sig, msg, callback) {
   setImmediate(() => {
-    callback(null, nacl.sign.detached.verify(msg, sig, key))
+    let result
+    try {
+      result = nacl.sign.detached.verify(msg, sig, key)
+    } catch (err) {
+      return callback(err)
+    }
+
+    callback(null, result)
   })
 }

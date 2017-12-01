@@ -9,30 +9,36 @@ const jwkToPem = require('pem-jwk').jwk2pem
 exports.utils = require('./rsa-utils')
 
 exports.generateKey = function (bits, callback) {
-  const done = (err, res) => setImmediate(() => callback(err, res))
+  setImmediate(() => {
+    let result
+    try {
+      const key = keypair({ bits: bits })
+      result = {
+        privateKey: pemToJwk(key.private),
+        publicKey: pemToJwk(key.public)
+      }
+    } catch (err) {
+      return callback(err)
+    }
 
-  let key
-  try {
-    key = keypair({ bits: bits })
-  } catch (err) {
-    return done(err)
-  }
-
-  done(null, {
-    privateKey: pemToJwk(key.private),
-    publicKey: pemToJwk(key.public)
+    callback(null, result)
   })
 }
 
 // Takes a jwk key
 exports.unmarshalPrivateKey = function (key, callback) {
-  callback(null, {
-    privateKey: key,
-    publicKey: {
-      kty: key.kty,
-      n: key.n,
-      e: key.e
+  setImmediate(() => {
+    if (!key) {
+      return callback(new Error('Key is invalid'))
     }
+    callback(null, {
+      privateKey: key,
+      publicKey: {
+        kty: key.kty,
+        n: key.n,
+        e: key.e
+      }
+    })
   })
 }
 
@@ -41,16 +47,33 @@ exports.getRandomValues = function (arr) {
 }
 
 exports.hashAndSign = function (key, msg, callback) {
-  const sign = crypto.createSign('RSA-SHA256')
+  setImmediate(() => {
+    let result
+    try {
+      const sign = crypto.createSign('RSA-SHA256')
+      sign.update(msg)
+      const pem = jwkToPem(key)
+      result = sign.sign(pem)
+    } catch (err) {
+      return callback(new Error('Key or message is invalid!: ' + err.message))
+    }
 
-  sign.update(msg)
-  setImmediate(() => callback(null, sign.sign(jwkToPem(key))))
+    callback(null, result)
+  })
 }
 
 exports.hashAndVerify = function (key, sig, msg, callback) {
-  const verify = crypto.createVerify('RSA-SHA256')
+  setImmediate(() => {
+    let result
+    try {
+      const verify = crypto.createVerify('RSA-SHA256')
+      verify.update(msg)
+      const pem = jwkToPem(key)
+      result = verify.verify(pem, sig)
+    } catch (err) {
+      return callback(new Error('Key or message is invalid!:' + err.message))
+    }
 
-  verify.update(msg)
-
-  setImmediate(() => callback(null, verify.verify(jwkToPem(key), sig)))
+    callback(null, result)
+  })
 }
