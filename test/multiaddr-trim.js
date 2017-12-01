@@ -20,8 +20,8 @@ describe('multiaddr trim', () => {
   it('can create a test node with an irrelevant multiaddr', (done) => {
     createNode(
       [
-        '/ip4/0.0.0.0/tcp/0/wss/p2p-webrtc-direct',
-        '/ip4/0.0.0.0/tcp/0'
+        '/ip4/0.0.0.0/tcp/999/wss/p2p-webrtc-direct',
+        '/ip4/127.0.0.1/tcp/0'
       ],
       (err, _node) => {
         expect(err).to.not.exist()
@@ -37,7 +37,7 @@ describe('multiaddr trim', () => {
 
   it('irrelevant multiaddr got trimmed', (done) => {
     expect(node.peerInfo.multiaddrs.toArray()).to.have.length(1)
-    expect(node.peerInfo.multiaddrs.toArray()[0].toString()).to.match(/^\/ip4\/0\.0\.0\.0\/tcp\/0\/ipfs\/\w+/)
+    expect(node.peerInfo.multiaddrs.toArray()[0].toString()).to.match(/^\/ip4\/127\.0\.0\.1\/tcp\/[0-9]+\/ipfs\/\w+$/)
     done()
   })
 })
