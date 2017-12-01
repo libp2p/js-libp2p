@@ -36,13 +36,13 @@ function getMuxers (options) {
 class Node extends libp2p {
   constructor (peerInfo, peerBook, options) {
     options = options || {}
-    const webRTCStar = new WebRTCStar()
-    const wsStar = new WebSocketStar()
+    const wrtcStar = new WebRTCStar({ id: peerInfo.id })
+    const wsStar = new WebSocketStar({ id: peerInfo.id })
 
     const modules = {
       transport: [
         new WS(),
-        webRTCStar,
+        wrtcStar,
         wsStar
       ],
       connection: {
@@ -55,7 +55,7 @@ class Node extends libp2p {
     }
 
     if (options.webRTCStar) {
-      modules.discovery.push(webRTCStar.discovery)
+      modules.discovery.push(wrtcStar.discovery)
     }
 
     if (options.wsStar) {

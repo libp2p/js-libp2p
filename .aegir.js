@@ -17,7 +17,10 @@ let node
 const before = (done) => {
   parallel([
     (cb) => {
-      sigServer.start({ port: 15555 }, (err, server) => {
+      sigServer.start({
+        port: 15555
+        // cryptoChallenge: true TODO: needs https://github.com/libp2p/js-libp2p-webrtc-star/issues/128
+      }, (err, server) => {
         if (err) { return cb(err) }
         wrtcRendezvous = server
         cb()
@@ -28,7 +31,7 @@ const before = (done) => {
         port: 14444,
         refreshPeerListIntervalMS: 1000,
         strictMultiaddr: false,
-        cryptoChallenge: false
+        cryptoChallenge: true
       }, (err, _server) => {
         if (err) { return cb(err) }
         wsRendezvous = _server
