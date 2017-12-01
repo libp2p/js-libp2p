@@ -37,7 +37,7 @@ describe('multiaddr trim', () => {
 
   it('irrelevant multiaddr got trimmed', (done) => {
     expect(node.peerInfo.multiaddrs.toArray()).to.have.length(1)
-    expect(node.peerInfo.multiaddrs.toArray()[0].toString()).to.match(/^\/ip4\/0.0.0.0\/tcp\/0\/ipfs\/\w+/)
+    expect(node.peerInfo.multiaddrs.toArray()[0].toString()).to.match(/^\/ip4\/0\.0\.0\.0\/tcp\/0\/ipfs\/\w+/)
     done()
   })
 })
