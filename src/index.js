@@ -70,14 +70,14 @@ class FloodSub extends EventEmitter {
       Connection specifically between me and that Peer"
      */
     let existing = this.peers.get(id)
-    if (existing) {
-      log('already existing peer', id)
-      ++existing._references
-    } else {
+    if (!existing) {
       log('new peer', id)
       this.peers.set(id, peer)
       existing = peer
+
+      peer.once('close', () => this._removePeer(peer))
     }
+    ++existing._references
 
     return existing
   }

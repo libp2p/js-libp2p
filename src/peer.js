@@ -35,7 +35,7 @@ class Peer extends EventEmitter {
      */
     this.stream = null
 
-    this._references = 1
+    this._references = 0
   }
 
   /**

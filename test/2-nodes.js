@@ -304,13 +304,6 @@ describe('basics between 2 nodes', () => {
       })
     })
 
-    after((done) => {
-      parallel([
-        (cb) => nodeA.stop(cb),
-        (cb) => nodeB.stop(cb)
-      ], done)
-    })
-
     it('peer is removed from the state when connection ends', (done) => {
       nodeA.dial(nodeB.peerInfo, (err) => {
         expect(err).to.not.exist()
@@ -321,9 +314,24 @@ describe('basics between 2 nodes', () => {
           fsA.stop(() => setTimeout(() => {
             expect(first(fsB.peers)._references).to.equal(1)
             done()
-          }, 250))
+          }, 1000))
         }, 1000)
       })
+    })
+
+    it('stop one node', (done) => {
+      parallel([
+        (cb) => nodeA.stop(cb),
+        (cb) => nodeB.stop(cb)
+      ], done)
+    })
+
+    it('nodes don\'t have peers in it', (done) => {
+      setTimeout(() => {
+        expect(fsA.peers.size).to.equal(0)
+        expect(fsB.peers.size).to.equal(0)
+        done()
+      }, 1000)
     })
   })
 
