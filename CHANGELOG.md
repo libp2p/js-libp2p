@@ -1,3 +1,13 @@
+<a name="0.13.1"></a>
+## [0.13.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.13.0...v0.13.1) (2017-12-05)
+
+
+### Bug Fixes
+
+* remove peer once the peer closes. should fix peer leak ([#52](https://github.com/libp2p/js-libp2p-floodsub/issues/52)) ([6e6c507](https://github.com/libp2p/js-libp2p-floodsub/commit/6e6c507))
+
+
+
 <a name="0.13.0"></a>
 # [0.13.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.12.1...v0.13.0) (2017-11-22)
 
