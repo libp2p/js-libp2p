@@ -8,7 +8,7 @@
     "build": "aegir build",
     "test": "aegir test",
     "test:node": "aegir test -t node",
-    "test:browser": "aegir test -t browser -t webworker",
+    "test:browser": "aegir test -t browser",
     "release": "aegir release",
     "release-minor": "aegir release --type minor",
     "release-major": "aegir release --type major"
