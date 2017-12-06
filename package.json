@@ -1,7 +1,7 @@
 {
   "name": "libp2p-keychain",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "Key management and cryptographically protected messages",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
@@ -29,16 +29,37 @@
     "IPFS",
     "libp2p",
     "keys",
+    "encryption",
+    "secure",
     "crypto"
   ],
-  "author": "David Dias <daviddias@ipfs.io>",
+  "author": "Richard Schneider <makaretu@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p-keychain/issues"
   },
   "homepage": "https://github.com/libp2p/js-libp2p-keychain#readme",
+  "dependencies": {
+    "async": "^2.6.0",
+    "deepmerge": "^1.5.2",
+    "interface-datastore": "~0.4.1",
+    "libp2p-crypto": "~0.10.3",
+    "multihashes": "~0.4.12",
+    "node-forge": "~0.7.1",
+    "pull-stream": "^3.6.1",
+    "sanitize-filename": "^1.6.1"
+  },
   "devDependencies": {
     "aegir": "^12.2.0",
-    "pre-commit": "^1.2.2"
+    "chai": "^4.1.2",
+    "chai-string": "^1.4.0",
+    "datastore-fs": "^0.4.1",
+    "datastore-level": "^0.7.0",
+    "dirty-chai": "^2.0.1",
+    "level-js": "^2.2.4",
+    "mocha": "^4.0.1",
+    "peer-id": "^0.10.2",
+    "pre-commit": "^1.2.2",
+    "rimraf": "^2.6.2"
   }
 }
