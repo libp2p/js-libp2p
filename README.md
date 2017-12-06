@@ -29,18 +29,22 @@
 
 ## Install
 
-    npm install --save libp2p-keychain
+```sh
+npm install --save libp2p-keychain
+```
 
 ### Usage
 
-    const Keychain = require('libp2p-keychain')
-    const FsStore = require('datastore-fs')
+```js
+const Keychain = require('libp2p-keychain')
+const FsStore = require('datastore-fs')
 
-    const datastore = new FsStore('./a-keystore')
-    const opts = {
-      passPhrase: 'some long easily remembered phrase'
-    }
-    const keychain = new Keychain(datastore, opts)
+const datastore = new FsStore('./a-keystore')
+const opts = {
+  passPhrase: 'some long easily remembered phrase'
+}
+const keychain = new Keychain(datastore, opts)
+```
 
 ## API
 
@@ -68,7 +72,7 @@ Cryptographically protected messages
 
 The key management and naming service API all return a `KeyInfo` object.  The `id` is a universally unique identifier for the key.  The `name` is local to the key chain.
 
-```
+```js
 {
   name: 'rsa-key',
   id: 'QmYWYSUZ4PV6MRFYpdtEDJBiGs4UrmE6g8wmAWSePekXVW'
@@ -82,7 +86,7 @@ The **key id** is the SHA-256 [multihash](https://github.com/multiformats/multih
 A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *passPhrase* using **PBKDF2**.  Its file extension is `.p8`. 
 
 The default options for generating the derived encryption key are in the `dek` object
-```
+```js
 const defaultOptions = {
   createIfNeeded: true,
 
