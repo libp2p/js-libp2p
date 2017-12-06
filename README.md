@@ -29,7 +29,12 @@
 
 ## Install
 
+    npm install --save libp2p-keychain
+
 ### Usage
+
+    const Keychain = require('libp2p-keychain')
+    const FsStore = require('datastore-fs')
 
     const datastore = new FsStore('./a-keystore')
     const opts = {
@@ -91,7 +96,7 @@ const defaultOptions = {
 }
 ```
 
-![key storage](../doc/private-key.png?raw=true)
+![key storage](./doc/private-key.png?raw=true)
 
 ### Physical storage
 
