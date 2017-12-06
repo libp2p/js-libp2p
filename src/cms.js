@@ -10,7 +10,7 @@ class CMS {
       throw new Error('keystore is required')
     }
 
-    this.keystore = keystore;
+    this.keystore = keystore
   }
 
   createAnonymousEncryptedData (name, plain, callback) {
@@ -53,7 +53,7 @@ class CMS {
     const self = this
     let cms
     try {
-      const buf = forge.util.createBuffer(cmsData.toString('binary'));
+      const buf = forge.util.createBuffer(cmsData.toString('binary'))
       const obj = forge.asn1.fromDer(buf)
       cms = forge.pkcs7.messageFromAsn1(obj)
     } catch (err) {
@@ -82,7 +82,7 @@ class CMS {
           (cb) => self.keystore.findKeyById(r.keyId, cb),
           (key, cb) => self.keystore._getPrivateKey(key.name, cb)
         ], (err, pem) => {
-          if (err) return callback(err);
+          if (err) return callback(err)
 
           const privateKey = forge.pki.decryptRsaPrivateKey(pem, self.keystore._())
           cms.decrypt(r.recipient, privateKey)
@@ -91,7 +91,6 @@ class CMS {
       }
     )
   }
-
 }
 
 module.exports = CMS
