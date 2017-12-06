@@ -68,7 +68,7 @@ module.exports = (datastore1, datastore2) => {
 
     describe('key', () => {
       it('can be an RSA key', function (done) {
-        this.timeout(20 * 1000)
+        this.timeout(50 * 1000)
         ks.createKey(rsaKeyName, 'rsa', 2048, (err, info) => {
           expect(err).to.not.exist()
           expect(info).exist()
