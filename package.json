@@ -1,0 +1,44 @@
+{
+  "name": "libp2p-keychain",
+  "version": "0.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "aegir lint",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:node": "aegir test -t node",
+    "test:browser": "aegir test -t browser -t webworker",
+    "release": "aegir release",
+    "release-minor": "aegir release --type minor",
+    "release-major": "aegir release --type major"
+  },
+  "pre-commit": [
+    "lint",
+    "test"
+  ],
+  "engines": {
+    "node": ">=6.0.0",
+    "npm": ">=3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-keychain.git"
+  },
+  "keywords": [
+    "IPFS",
+    "libp2p",
+    "keys",
+    "crypto"
+  ],
+  "author": "David Dias <daviddias@ipfs.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-keychain/issues"
+  },
+  "homepage": "https://github.com/libp2p/js-libp2p-keychain#readme",
+  "devDependencies": {
+    "aegir": "^12.2.0",
+    "pre-commit": "^1.2.2"
+  }
+}
