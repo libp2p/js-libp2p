@@ -24,6 +24,7 @@ describe('peer ID', () => {
   before(function (done) {
     const encoded = Buffer.from(sample.privKey, 'base64')
     PeerId.createFromPrivKey(encoded, (err, id) => {
+      expect(err).to.not.exist()
       peer = id
       done()
     })
@@ -44,6 +45,7 @@ describe('peer ID', () => {
     // get protobuf version of the private key
     const privateKeyProtobuf = peer.marshalPrivKey()
     crypto.keys.unmarshalPrivateKey(privateKeyProtobuf, (err, key) => {
+      expect(err).to.not.exist()
       // console.log('private key', key)
       // console.log('\nprivate key der', key.marshal().toString('base64'))
       done()
@@ -56,6 +58,7 @@ describe('peer ID', () => {
     const rsa = new rsaClass.RsaPublicKey(jwk)
     // console.log('rsa', rsa)
     rsa.hash((err, keyId) => {
+      expect(err).to.not.exist()
       // console.log('err', err)
       // console.log('keyId', keyId)
       // console.log('id decoded', multihash.decode(keyId))
@@ -78,6 +81,7 @@ describe('peer ID', () => {
     const rsa = new rsaClass.RsaPublicKey(jwk)
     // console.log('rsa', rsa)
     rsa.hash((err, keyId) => {
+      expect(err).to.not.exist()
       // console.log('err', err)
       // console.log('keyId', keyId)
       // console.log('id decoded', multihash.decode(keyId))
@@ -96,10 +100,10 @@ describe('peer ID', () => {
     // get protobuf version of the private key
     const privateKeyProtobuf = peer.marshalPrivKey()
     crypto.keys.unmarshalPrivateKey(privateKeyProtobuf, (err, key) => {
+      expect(err).to.not.exist()
       // console.log('private key', key)
-      //console.log('\nprivate key der', key.marshal().toString('base64'))
+      // console.log('\nprivate key der', key.marshal().toString('base64'))
       done()
     })
   })
-
 })

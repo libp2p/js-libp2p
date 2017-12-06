@@ -1,11 +1,10 @@
 'use strict'
 
 const async = require('async')
-const sanitize = require("sanitize-filename")
+const sanitize = require('sanitize-filename')
 const forge = require('node-forge')
 const deepmerge = require('deepmerge')
-const crypto = require('crypto')
-const libp2pCrypto = require('libp2p-crypto')
+const crypto = require('libp2p-crypto')
 const util = require('./util')
 const CMS = require('./cms')
 const DS = require('interface-datastore')
@@ -32,7 +31,6 @@ const defaultOptions = {
 
 function validateKeyName (name) {
   if (!name) return false
-  
   return name === sanitize(name.trim())
 }
 
@@ -44,8 +42,9 @@ function validateKeyName (name) {
  *
  * @param {function(Error)} callback - The caller
  * @param {string | Error} err - The error
+ * @returns {undefined}
  */
-function _error(callback, err) {
+function _error (callback, err) {
   const min = 200
   const max = 1000
   const delay = Math.random() * (max - min) + min
@@ -55,6 +54,9 @@ function _error(callback, err) {
 
 /**
  * Converts a key name into a datastore name.
+ *
+ * @param {string} name
+ * @returns {DS.Key}
  */
 function DsName (name) {
   return new DS.Key('/' + name)
@@ -62,8 +64,11 @@ function DsName (name) {
 
 /**
  * Converts a datastore name into a key name.
+ *
+ * @param {DS.Key} name - A datastore name
+ * @returns {string}
  */
-function KsName(name) {
+function KsName (name) {
   return name.toString().slice(1)
 }
 
@@ -111,7 +116,7 @@ class Keychain {
     this.cms = new CMS(this)
   }
 
-  static get options() {
+  static get options () {
     return defaultOptions
   }
 
@@ -123,6 +128,7 @@ class Keychain {
     }
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
+      if (err) return _error(callback, err)
       if (exists) return _error(callback, `Key '${name}' already exists'`)
 
       switch (type.toLowerCase()) {
@@ -133,14 +139,14 @@ class Keychain {
           forge.pki.rsa.generateKeyPair({bits: size, workers: -1}, (err, keypair) => {
             if (err) return _error(callback, err)
 
-            const pem = forge.pki.encryptRsaPrivateKey(keypair.privateKey, this._());
+            const pem = forge.pki.encryptRsaPrivateKey(keypair.privateKey, this._())
             return self.store.put(dsname, pem, (err) => {
               if (err) return _error(callback, err)
 
               self._getKeyInfo(name, callback)
             })
           })
-          break;
+          break
 
         default:
           return _error(callback, `Invalid key type '${type}'`)
@@ -181,13 +187,14 @@ class Keychain {
     }
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
+      if (err) return _error(callback, err)
       if (!exists) return _error(callback, `Key '${name}' does not exist'`)
 
       self.store.delete(dsname, callback)
     })
   }
 
-  renameKey(oldName, newName, callback) {
+  renameKey (oldName, newName, callback) {
     const self = this
     if (!validateKeyName(oldName) || oldName === 'self') {
       return _error(callback, `Invalid old key name '${oldName}'`)
@@ -203,6 +210,7 @@ class Keychain {
       }
       const pem = res.toString()
       self.store.has(newDsname, (err, exists) => {
+        if (err) return _error(callback, err)
         if (exists) return _error(callback, `Key '${newName}' already exists'`)
 
         const batch = self.store.batch()
@@ -246,7 +254,7 @@ class Keychain {
     })
   }
 
-  importKey(name, pem, password, callback) {
+  importKey (name, pem, password, callback) {
     const self = this
     if (!validateKeyName(name) || name === 'self') {
       return _error(callback, `Invalid key name '${name}'`)
@@ -256,15 +264,16 @@ class Keychain {
     }
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
+      if (err) return _error(callback, err)
       if (exists) return _error(callback, `Key '${name}' already exists'`)
       try {
         const privateKey = forge.pki.decryptRsaPrivateKey(pem, password)
         if (privateKey === null) {
           return _error(callback, 'Cannot read the key, most likely the password is wrong')
         }
-        const newpem = forge.pki.encryptRsaPrivateKey(privateKey, this._());
+        const newpem = forge.pki.encryptRsaPrivateKey(privateKey, this._())
         return self.store.put(dsname, newpem, (err) => {
-        if (err) return _error(callback, err)
+          if (err) return _error(callback, err)
 
           this._getKeyInfo(name, callback)
         })
@@ -280,23 +289,25 @@ class Keychain {
       return _error(callback, `Invalid key name '${name}'`)
     }
     if (!peer || !peer.privKey) {
-      return _error(callback, 'Peer.privKey \is required')
+      return _error(callback, 'Peer.privKey is required')
     }
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
+      if (err) return _error(callback, err)
       if (exists) return _error(callback, `Key '${name}' already exists'`)
 
       const privateKeyProtobuf = peer.marshalPrivKey()
-      libp2pCrypto.keys.unmarshalPrivateKey(privateKeyProtobuf, (err, key) => {
+      crypto.keys.unmarshalPrivateKey(privateKeyProtobuf, (err, key) => {
+        if (err) return _error(callback, err)
         try {
           const der = key.marshal()
-          const buf = forge.util.createBuffer(der.toString('binary'));
+          const buf = forge.util.createBuffer(der.toString('binary'))
           const obj = forge.asn1.fromDer(buf)
           const privateKey = forge.pki.privateKeyFromAsn1(obj)
           if (privateKey === null) {
             return _error(callback, 'Cannot read the peer private key')
           }
-          const pem = forge.pki.encryptRsaPrivateKey(privateKey, this._());
+          const pem = forge.pki.encryptRsaPrivateKey(privateKey, this._())
           return self.store.put(dsname, pem, (err) => {
             if (err) return _error(callback, err)
 
@@ -314,9 +325,9 @@ class Keychain {
    *
    * @param {string} name
    * @param {function(Error, string)} callback
+   * @returns {undefined}
    */
   _getPrivateKey (name, callback) {
-    const self = this
     if (!validateKeyName(name)) {
       return _error(callback, `Invalid key name '${name}'`)
     }
@@ -329,7 +340,6 @@ class Keychain {
   }
 
   _getKeyInfo (name, callback) {
-    const self = this
     if (!validateKeyName(name)) {
       return _error(callback, `Invalid key name '${name}'`)
     }
@@ -356,7 +366,6 @@ class Keychain {
       }
     })
   }
-
 }
 
 module.exports = Keychain

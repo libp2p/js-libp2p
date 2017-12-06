@@ -14,7 +14,7 @@ exports.keyId = (privateKey, callback) => {
   try {
     const publicKey = pki.setRsaPublicKey(privateKey.n, privateKey.e)
     const spki = pki.publicKeyToSubjectPublicKeyInfo(publicKey)
-    const der = new Buffer(forge.asn1.toDer(spki).getBytes(), 'binary')
+    const der = Buffer.from(forge.asn1.toDer(spki).getBytes(), 'binary')
     const jwk = rsaUtils.pkixToJwk(der)
     const rsa = new rsaClass.RsaPublicKey(jwk)
     rsa.hash((err, kid) => {
@@ -33,12 +33,12 @@ exports.certificateForKey = (privateKey, callback) => {
     if (err) return callback(err)
 
     const publicKey = pki.setRsaPublicKey(privateKey.n, privateKey.e)
-    const cert = pki.createCertificate();
-    cert.publicKey = publicKey;
-    cert.serialNumber = '01';
-    cert.validity.notBefore = new Date();
-    cert.validity.notAfter = new Date();
-    cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10);
+    const cert = pki.createCertificate()
+    cert.publicKey = publicKey
+    cert.serialNumber = '01'
+    cert.validity.notBefore = new Date()
+    cert.validity.notAfter = new Date()
+    cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10)
     var attrs = [{
       name: 'organizationName',
       value: 'ipfs'
@@ -48,9 +48,9 @@ exports.certificateForKey = (privateKey, callback) => {
     }, {
       name: 'commonName',
       value: kid
-    }];
-    cert.setSubject(attrs);
-    cert.setIssuer(attrs);
+    }]
+    cert.setSubject(attrs)
+    cert.setIssuer(attrs)
     cert.setExtensions([{
       name: 'basicConstraints',
       cA: true
@@ -77,7 +77,7 @@ exports.certificateForKey = (privateKey, callback) => {
       sslCA: true,
       emailCA: true,
       objCA: true
-    }]);
+    }])
     // self-sign certificate
     cert.sign(privateKey)
 
