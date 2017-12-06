@@ -13,7 +13,7 @@
     "release-minor": "aegir release --type minor",
     "release-major": "aegir release --type major",
     "coverage": "aegir coverage",
-    "coverage-publish": "aegir-coverage publish"
+    "coverage-publish": "aegir coverage publish"
   },
   "pre-commit": [
     "lint",
