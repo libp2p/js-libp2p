@@ -345,8 +345,11 @@ module.exports = (datastore1, datastore2) => {
       })
 
       it('can remove a known key', (done) => {
-        ks.removeKey(renamedRsaKeyName, (err) => {
+        ks.removeKey(renamedRsaKeyName, (err, key) => {
           expect(err).to.not.exist()
+          expect(key).to.exist()
+          expect(key).to.have.property('name', renamedRsaKeyName)
+          expect(key).to.have.property('id', rsaKeyInfo.id)
           done()
         })
       })

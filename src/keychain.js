@@ -186,11 +186,12 @@ class Keychain {
       return _error(callback, `Invalid key name '${name}'`)
     }
     const dsname = DsName(name)
-    self.store.has(dsname, (err, exists) => {
+    self._getKeyInfo(name, (err, keyinfo) => {
       if (err) return _error(callback, err)
-      if (!exists) return _error(callback, `Key '${name}' does not exist'`)
-
-      self.store.delete(dsname, callback)
+      self.store.delete(dsname, (err) => {
+        if (err) return _error(callback, err)
+        callback(null, keyinfo)
+      })
     })
   }
 
