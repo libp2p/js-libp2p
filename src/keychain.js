@@ -129,7 +129,7 @@ class Keychain {
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
       if (err) return _error(callback, err)
-      if (exists) return _error(callback, `Key '${name}' already exists'`)
+      if (exists) return _error(callback, `Key '${name}' already exists`)
 
       switch (type.toLowerCase()) {
         case 'rsa':
@@ -212,7 +212,7 @@ class Keychain {
       const pem = res.toString()
       self.store.has(newDsname, (err, exists) => {
         if (err) return _error(callback, err)
-        if (exists) return _error(callback, `Key '${newName}' already exists'`)
+        if (exists) return _error(callback, `Key '${newName}' already exists`)
 
         const batch = self.store.batch()
         batch.put(newDsname, pem)
@@ -266,7 +266,7 @@ class Keychain {
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
       if (err) return _error(callback, err)
-      if (exists) return _error(callback, `Key '${name}' already exists'`)
+      if (exists) return _error(callback, `Key '${name}' already exists`)
       try {
         const privateKey = forge.pki.decryptRsaPrivateKey(pem, password)
         if (privateKey === null) {
@@ -295,7 +295,7 @@ class Keychain {
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
       if (err) return _error(callback, err)
-      if (exists) return _error(callback, `Key '${name}' already exists'`)
+      if (exists) return _error(callback, `Key '${name}' already exists`)
 
       const privateKeyProtobuf = peer.marshalPrivKey()
       crypto.keys.unmarshalPrivateKey(privateKeyProtobuf, (err, key) => {
