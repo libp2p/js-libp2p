@@ -43,6 +43,7 @@ function validateKeyName (name) {
  * @param {function(Error)} callback - The caller
  * @param {string | Error} err - The error
  * @returns {undefined}
+ * @private
  */
 function _error (callback, err) {
   const min = 200
@@ -57,6 +58,7 @@ function _error (callback, err) {
  *
  * @param {string} name
  * @returns {DS.Key}
+ * @private
  */
 function DsName (name) {
   return new DS.Key('/' + name)
@@ -67,12 +69,31 @@ function DsName (name) {
  *
  * @param {DS.Key} name - A datastore name
  * @returns {string}
+ * @private
  */
 function KsName (name) {
   return name.toString().slice(1)
 }
 
+/**
+ * Information about a key.
+ *
+ * @typedef {Object} KeyInfo
+ *
+ * @property {string} id - The universally unique key id.
+ * @property {string} name - The local key name.
+ */
+
+/**
+ * Key management
+ */
 class Keychain {
+  /**
+   * Creates a new instance of a key chain.
+   *
+   * @param {DS} store - where the key are.
+   * @param {object} options - ???
+   */
   constructor (store, options) {
     if (!store) {
       throw new Error('store is required')
@@ -116,10 +137,24 @@ class Keychain {
     this.cms = new CMS(this)
   }
 
+  /**
+   * The default options for a keychain.
+   *
+   * @returns {object}
+   */
   static get options () {
     return defaultOptions
   }
 
+  /**
+   * Create a new key.
+   *
+   * @param {string} name - The local key name; cannot already exist.
+   * @param {string} type - One of the key types; 'rsa'.
+   * @param {int} size - The key size in bits.
+   * @param {function(Error, KeyInfo)} callback
+   * @returns {undefined}
+   */
   createKey (name, type, size, callback) {
     const self = this
 
@@ -154,6 +189,12 @@ class Keychain {
     })
   }
 
+  /**
+   * List all the keys.
+   *
+   * @param {function(Error, KeyInfo[])} callback
+   * @returns {undefined}
+   */
   listKeys (callback) {
     const self = this
     const query = {
@@ -170,8 +211,15 @@ class Keychain {
     )
   }
 
-  // TODO: not very efficent.
+  /**
+   * Find a key by it's name.
+   *
+   * @param {string} id - The universally unique key identifier.
+   * @param {function(Error, KeyInfo)} callback
+   * @returns {undefined}
+   */
   findKeyById (id, callback) {
+    // TODO: not very efficent.
     this.listKeys((err, keys) => {
       if (err) return _error(callback, err)
 
@@ -180,6 +228,13 @@ class Keychain {
     })
   }
 
+  /**
+   * Remove an existing key.
+   *
+   * @param {string} name - The local key name; must already exist.
+   * @param {function(Error, KeyInfo)} callback
+   * @returns {undefined}
+   */
   removeKey (name, callback) {
     const self = this
     if (!validateKeyName(name) || name === 'self') {
@@ -195,6 +250,14 @@ class Keychain {
     })
   }
 
+  /**
+   * Rename a key
+   *
+   * @param {string} oldName - The old local key name; must already exist.
+   * @param {string} newName - The new local key name; must not already exist.
+   * @param {function(Error, KeyInfo)} callback
+   * @returns {undefined}
+   */
   renameKey (oldName, newName, callback) {
     const self = this
     if (!validateKeyName(oldName) || oldName === 'self') {
@@ -225,6 +288,14 @@ class Keychain {
     })
   }
 
+  /**
+   * Export an existing key as a PEM encrypted PKCS #8 string
+   *
+   * @param {string} name - The local key name; must already exist.
+   * @param {string} password - The password
+   * @param {function(Error, string)} callback
+   * @returns {undefined}
+   */
   exportKey (name, password, callback) {
     if (!validateKeyName(name)) {
       return _error(callback, `Invalid key name '${name}'`)
@@ -255,6 +326,15 @@ class Keychain {
     })
   }
 
+  /**
+   * Import a new key from a PEM encoded PKCS #8 string
+   *
+   * @param {string} name - The local key name; must not already exist.
+   * @param {string} pem - The PEM encoded PKCS #8 string
+   * @param {string} password - The password.
+   * @param {function(Error, KeyInfo)} callback
+   * @returns {undefined}
+   */
   importKey (name, pem, password, callback) {
     const self = this
     if (!validateKeyName(name) || name === 'self') {
@@ -322,7 +402,7 @@ class Keychain {
   }
 
   /**
-   * Gets the private key as PEM encoded PKCS #8
+   * Gets the private key as PEM encoded PKCS #8 string.
    *
    * @param {string} name
    * @param {function(Error, string)} callback
