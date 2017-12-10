@@ -29,9 +29,9 @@ const NIST = {
 const hashName2Forge = {
   'sha1': 'sha1',
   'sha2-256': 'sha256',
-  'sha2-512': 'sha512',
-  
+  'sha2-512': 'sha512'
 }
+
 const defaultOptions = {
   // See https://cryptosense.com/parametesr-choice-for-pbkdf2/
   dek: {
