@@ -19,13 +19,26 @@ const NIST = {
   minIterationCount: 1000
 }
 
+/**
+ * Maps an IPFS hash name to its forge equivalent.
+ *
+ * See https://github.com/multiformats/multihash/blob/master/hashtable.csv
+ *
+ * @private
+ */
+const hashName2Forge = {
+  'sha1': 'sha1',
+  'sha2-256': 'sha256',
+  'sha2-512': 'sha512',
+  
+}
 const defaultOptions = {
   // See https://cryptosense.com/parametesr-choice-for-pbkdf2/
   dek: {
     keyLength: 512 / 8,
     iterationCount: 10000,
     salt: 'you should override this value with a crypto secure random number',
-    hash: 'sha512'
+    hash: 'sha2-512'
   }
 }
 
@@ -120,13 +133,18 @@ class Keychain {
     }
     this.dek = opts.dek
 
+    // Get the hashing alogorithm
+    const hashAlgorithm = hashName2Forge[opts.dek.hash]
+    if (!hashAlgorithm)
+      throw new Error(`dek.hash '${opts.dek.hash}' is unknown or not supported`)
+
     // Create the derived encrypting key
     let dek = forge.pkcs5.pbkdf2(
       opts.passPhrase,
       opts.dek.salt,
       opts.dek.iterationCount,
       opts.dek.keyLength,
-      opts.dek.hash)
+      hashAlgorithm)
     dek = forge.util.bytesToHex(dek)
     Object.defineProperty(this, '_', { value: () => dek })
 

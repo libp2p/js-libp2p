@@ -41,6 +41,12 @@ module.exports = (datastore1, datastore2) => {
       expect(Keychain.options).to.exist()
     })
 
+    it('needs a supported hashing alorithm', () => {
+      const ok = new Keychain(datastore2, { passPhrase: passPhrase, dek: { hash: 'sha2-256' } })
+      expect(ok).to.exist()
+      expect(() => new Keychain(datastore2, { passPhrase: passPhrase, dek: { hash: 'my-hash' } })).to.throw()
+    })
+
     describe('key name', () => {
       it('is a valid filename and non-ASCII', () => {
         ks.removeKey('../../nasty', (err) => {
