@@ -27,7 +27,7 @@ const NIST = {
  * @private
  */
 const hashName2Forge = {
-  'sha1': 'sha1',
+  sha1: 'sha1',
   'sha2-256': 'sha256',
   'sha2-512': 'sha512'
 }
@@ -135,8 +135,9 @@ class Keychain {
 
     // Get the hashing alogorithm
     const hashAlgorithm = hashName2Forge[opts.dek.hash]
-    if (!hashAlgorithm)
+    if (!hashAlgorithm) {
       throw new Error(`dek.hash '${opts.dek.hash}' is unknown or not supported`)
+    }
 
     // Create the derived encrypting key
     let dek = forge.pkcs5.pbkdf2(
