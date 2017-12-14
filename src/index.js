@@ -156,15 +156,15 @@ class Node extends EventEmitter {
     // so that we can have webrtc-star addrs without adding manually the id
     const maOld = []
     const maNew = []
-    this.peerInfo.multiaddrs.forEach((ma) => {
+    this.peerInfo.multiaddrs.toArray().forEach((ma) => {
       if (!ma.getPeerId()) {
         maOld.push(ma)
         maNew.push(ma.encapsulate('/ipfs/' + this.peerInfo.id.toB58String()))
       }
     })
     this.peerInfo.multiaddrs.replace(maOld, maNew)
-    const multiaddrs = this.peerInfo.multiaddrs.toArray()
 
+    const multiaddrs = this.peerInfo.multiaddrs.toArray()
     transports.forEach((transport) => {
       if (transport.filter(multiaddrs).length > 0) {
         this.swarm.transport.add(
@@ -198,6 +198,19 @@ class Node extends EventEmitter {
         if (this._dht) {
           return this._dht.start(cb)
         }
+        cb()
+      },
+      (cb) => {
+        // detect which multiaddrs we don't have a transport for and remove them
+        const multiaddrs = this.peerInfo.multiaddrs.toArray()
+        transports.forEach((transport) => {
+          multiaddrs.forEach((multiaddr) => {
+            if (!multiaddr.toString().match(/\/p2p-circuit($|\/)/) &&
+                !transports.find((transport) => transport.filter(multiaddr).length > 0)) {
+              this.peerInfo.multiaddrs.delete(multiaddr)
+            }
+          })
+        })
         cb()
       },
       (cb) => {
