@@ -81,28 +81,36 @@ function dial (swarm) {
     }
 
     function attemptDial (pi, cb) {
-      const tKeys = swarm.availableTransports(pi)
-
-      if (tKeys.length === 0) {
+      if (!swarm.hasTransports()) {
         return cb(new Error('No transports registered, dial not possible'))
       }
 
+      const tKeys = swarm.availableTransports(pi)
+
+      let circuitTried = false
       nextTransport(tKeys.shift())
 
       function nextTransport (key) {
-        if (!key) {
-          return dialCircuit((err, circuit) => {
-            if (err) {
-              return cb(new Error('Could not dial in any of the transports or relays'))
-            }
+        let transport = key
+        if (!transport) {
+          if (circuitTried) {
+            return cb(new Error(`Circuit already tried!`))
+          }
 
-            cb(null, circuit)
-          })
+          if (!swarm.transports[Circuit.tag]) {
+            return cb(new Error(`Circuit not enabled!`))
+          }
+
+          log(`Falling back to dialing over circuit`)
+          pi.multiaddrs.add(`/p2p-circuit/ipfs/${pi.id.toB58String()}`)
+          circuitTried = true
+          transport = Circuit.tag
         }
 
-        log(`dialing transport ${key}`)
-        swarm.transport.dial(key, pi, (err, conn) => {
+        log(`dialing transport ${transport}`)
+        swarm.transport.dial(transport, pi, (err, conn) => {
           if (err) {
+            log(err)
             return nextTransport(tKeys.shift())
           }
 
@@ -129,23 +137,6 @@ function dial (swarm) {
           }
         })
       }
-    }
-
-    function dialCircuit (cb) {
-      log(`Falling back to dialing over circuit`)
-      pi.multiaddrs.add(`/p2p-circuit/ipfs/${pi.id.toB58String()}`)
-      if (!swarm.transports[Circuit.tag]) {
-        return cb(new Error(`Circuit not enabled!`))
-      }
-
-      swarm.transport.dial(Circuit.tag, pi, (err, conn) => {
-        if (err) {
-          log(err)
-          return cb(err)
-        }
-
-        cb(null, conn)
-      })
     }
 
     function attemptMuxerUpgrade (conn, cb) {

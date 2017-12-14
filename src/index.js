@@ -59,6 +59,11 @@ function Swarm (peerInfo, peerBook) {
   this.transport = transport(this)
   this.connection = connection(this)
 
+  this.hasTransports = () => {
+    const transports = Object.keys(this.transports).filter((t) => t !== 'Circuit')
+    return transports && transports.length > 0
+  }
+
   this.availableTransports = (pi) => {
     const myAddrs = pi.multiaddrs.toArray()
     const myTransports = Object.keys(this.transports)
@@ -67,7 +72,7 @@ function Swarm (peerInfo, peerBook) {
     return myTransports.filter((ts) => this.transports[ts].filter(myAddrs).length > 0)
       // push Circuit to be the last proto to be dialed
       .sort((a) => {
-        return a === 'Circuit' ? -1 : 0
+        return a === 'Circuit' ? 1 : 0
       })
   }
 

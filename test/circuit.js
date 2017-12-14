@@ -89,6 +89,18 @@ describe(`circuit`, function () {
     })
   })
 
+  it(`should dial circuit ony once`, function (done) {
+    peerA.multiaddrs.clear()
+    peerA.multiaddrs.add(`/dns4/wrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star`)
+    swarmA.dial(peerC, (err, conn) => {
+      expect(err).to.exist()
+      expect(err).to.match(/Circuit already tried!/)
+      expect(conn).to.not.exist()
+      expect(dialSpyA.callCount).to.be.eql(1)
+      done()
+    })
+  })
+
   it(`should dial circuit last`, function (done) {
     peerC.multiaddrs.clear()
     peerC.multiaddrs.add(`/p2p-circuit/ipfs/ABCD`)
