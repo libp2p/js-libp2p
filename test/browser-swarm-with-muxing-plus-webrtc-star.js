@@ -105,7 +105,9 @@ describe('high level API (swarm with spdy + webrtc-star)', () => {
     })
   })
 
-  it('create a third node and check that discovery works', (done) => {
+  it('create a third node and check that discovery works', function (done) {
+    this.timeout(20 * 1000)
+
     let counter = 0
 
     let swarm3
