@@ -1,3 +1,13 @@
+<a name="0.34.0"></a>
+# [0.34.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.33.2...v0.34.0) (2017-12-14)
+
+
+### Bug Fixes
+
+* circuit dialing ([77a4f61](https://github.com/libp2p/js-libp2p-swarm/commit/77a4f61))
+
+
+
 <a name="0.33.2"></a>
 ## [0.33.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.33.1...v0.33.2) (2017-11-18)
 
