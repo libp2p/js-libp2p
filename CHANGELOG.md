@@ -1,3 +1,13 @@
+<a name="0.14.0"></a>
+# [0.14.0](https://github.com/libp2p/js-libp2p/compare/v0.13.3...v0.14.0) (2017-12-14)
+
+
+### Bug Fixes
+
+* remove innactive multiaddrs ([#131](https://github.com/libp2p/js-libp2p/issues/131)) ([1b7360f](https://github.com/libp2p/js-libp2p/commit/1b7360f))
+
+
+
 <a name="0.13.3"></a>
 ## [0.13.3](https://github.com/libp2p/js-libp2p/compare/v0.13.2...v0.13.3) (2017-12-01)
 
