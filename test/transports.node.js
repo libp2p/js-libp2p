@@ -517,7 +517,7 @@ describe('transports', () => {
     })
 
     it('nodeAll.dial nodeWStar using PeerInfo', function (done) {
-      this.timeout(10 * 1000)
+      this.timeout(40 * 1000)
 
       nodeAll.dial(nodeWStar.peerInfo, (err) => {
         expect(err).to.not.exist()
