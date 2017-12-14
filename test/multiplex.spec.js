@@ -45,7 +45,7 @@ describe('multiplex-generic', () => {
       conn,
       pull.collect((err, res) => {
         expect(err).to.not.exist()
-        expect(res).to.eql([new Buffer('hello')])
+        expect(res).to.eql([Buffer.from('hello')])
         done()
       })
     )
@@ -58,11 +58,11 @@ describe('multiplex-generic', () => {
 
     const conn = listener.newStream()
     pull(
-      pull.values([new Buffer('hello')]),
+      pull.values([Buffer.from('hello')]),
       conn,
       pull.collect((err, res) => {
         expect(err).to.not.exist()
-        expect(res).to.eql([new Buffer('hello')])
+        expect(res).to.eql([Buffer.from('hello')])
         done()
       })
     )
