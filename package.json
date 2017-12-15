@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "description": "JavaScript base class for libp2p bundles",
   "main": "src/index.js",
   "scripts": {
