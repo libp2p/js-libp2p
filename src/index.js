@@ -224,8 +224,6 @@ class Node extends EventEmitter {
    * Stop the libp2p node by closing its listeners and open connections
    */
   stop (callback) {
-    this._isStarted = false
-
     if (this.modules.discovery) {
       this.modules.discovery.forEach((discovery) => {
         setImmediate(() => discovery.stop(() => {}))
@@ -244,7 +242,10 @@ class Node extends EventEmitter {
         this.emit('stop')
         cb()
       }
-    ], callback)
+    ], (err) => {
+      this._isStarted = false
+      callback(err)
+    })
   }
 
   isStarted () {
