@@ -1,4 +1,4 @@
-nsport--story-1--peer-a.js
+'use strict'
 
 const test = require('tape')
 const libp2p = require('libp2p')
