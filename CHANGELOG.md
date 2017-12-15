@@ -1,3 +1,13 @@
+<a name="0.14.1"></a>
+## [0.14.1](https://github.com/libp2p/js-libp2p/compare/v0.14.0...v0.14.1) (2017-12-15)
+
+
+### Bug Fixes
+
+* prevent "The libp2p node is not started yet" when stopping ([#138](https://github.com/libp2p/js-libp2p/issues/138)) ([c88eaf4](https://github.com/libp2p/js-libp2p/commit/c88eaf4))
+
+
+
 <a name="0.14.0"></a>
 # [0.14.0](https://github.com/libp2p/js-libp2p/compare/v0.13.3...v0.14.0) (2017-12-14)
 
