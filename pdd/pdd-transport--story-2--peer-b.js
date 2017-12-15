@@ -17,7 +17,7 @@ class MyBundle extends libp2p {
   }
 }
 
-test('story 1 - peerB', (t) => {
+test('story 2 - peerB', (t) => {
   t.plan(5)
   let node
 
