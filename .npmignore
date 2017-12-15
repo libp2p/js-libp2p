@@ -1,6 +1,12 @@
+**/node_modules/
+**/*.log
+test/repo-tests*
+
 # Logs
 logs
 *.log
+
+coverage
 
 # Runtime data
 pids
@@ -16,13 +22,13 @@ coverage
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
 
-# Compiled binary addons (http://nodejs.org/api/addons.html)
-build/Release
+# node-waf configuration
+.lock-wscript
 
-# Optional npm cache directory
-.npm
+build
 
-# Optional REPL history
-.node_repl_history
+# Dependency directory
+# https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
+node_modules
 
 test
