@@ -271,6 +271,16 @@ module.exports = (datastore1, datastore2) => {
           done()
         })
       })
+
+      it('key exists', (done) => {
+        ks.findKeyByName('alice', (err, key) => {
+          expect(err).to.not.exist()
+          expect(key).to.exist()
+          expect(key).to.have.property('name', 'alice')
+          expect(key).to.have.property('id', alice.toB58String())
+          done()
+        })
+      })
     })
 
     describe('rename', () => {

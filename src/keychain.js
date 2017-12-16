@@ -1,6 +1,5 @@
 'use strict'
 
-const async = require('async')
 const sanitize = require('sanitize-filename')
 const forge = require('node-forge')
 const deepmerge = require('deepmerge')
@@ -10,7 +9,8 @@ const CMS = require('./cms')
 const DS = require('interface-datastore')
 const pull = require('pull-stream')
 
-const keyExtension = '.p8'
+const keyPrefix = '/pkcs8/'
+const infoPrefix = '/info/'
 
 // NIST SP 800-132
 const NIST = {
@@ -74,18 +74,18 @@ function _error (callback, err) {
  * @private
  */
 function DsName (name) {
-  return new DS.Key('/' + name)
+  return new DS.Key(keyPrefix + name)
 }
 
 /**
- * Converts a datastore name into a key name.
+ * Converts a key name into a datastore info name.
  *
- * @param {DS.Key} name - A datastore name
- * @returns {string}
+ * @param {string} name
+ * @returns {DS.Key}
  * @private
  */
-function KsName (name) {
-  return name.toString().slice(1)
+function DsInfoName (name) {
+  return new DS.Key(infoPrefix + name)
 }
 
 /**
@@ -98,7 +98,12 @@ function KsName (name) {
  */
 
 /**
- * Key management
+ * Manages the lifecycle of a key. Keys are encrypted at rest using PKCS #8.
+ *
+ * A key in the store has two entries
+ * - '/info/key-name', contains the KeyInfo for the key
+ * - '/pkcs8/key-name', contains the PKCS #8 for the key
+ *
  */
 class Keychain {
   /**
@@ -112,9 +117,6 @@ class Keychain {
       throw new Error('store is required')
     }
     this.store = store
-    if (this.store.opts) {
-      this.store.opts.extension = keyExtension
-    }
 
     const opts = deepmerge(defaultOptions, options)
 
@@ -148,9 +150,6 @@ class Keychain {
       hashAlgorithm)
     dek = forge.util.bytesToHex(dek)
     Object.defineProperty(this, '_', { value: () => dek })
-
-    // JS magick
-    this._getKeyInfo = this.findKeyByName = this._getKeyInfo.bind(this)
 
     // Provide access to protected messages
     this.cms = new CMS(this)
@@ -192,12 +191,22 @@ class Keychain {
           }
           forge.pki.rsa.generateKeyPair({bits: size, workers: -1}, (err, keypair) => {
             if (err) return _error(callback, err)
-
-            const pem = forge.pki.encryptRsaPrivateKey(keypair.privateKey, this._())
-            return self.store.put(dsname, pem, (err) => {
+            util.keyId(keypair.privateKey, (err, kid) => {
               if (err) return _error(callback, err)
 
-              self._getKeyInfo(name, callback)
+              const pem = forge.pki.encryptRsaPrivateKey(keypair.privateKey, this._())
+              const keyInfo = {
+                name: name,
+                id: kid
+              }
+              const batch = self.store.batch()
+              batch.put(dsname, pem)
+              batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+              batch.commit((err) => {
+                if (err) return _error(callback, err)
+
+                callback(null, keyInfo)
+              })
             })
           })
           break
@@ -217,33 +226,54 @@ class Keychain {
   listKeys (callback) {
     const self = this
     const query = {
-      keysOnly: true
+      prefix: infoPrefix
     }
     pull(
       self.store.query(query),
       pull.collect((err, res) => {
         if (err) return _error(callback, err)
 
-        const names = res.map(r => KsName(r.key))
-        async.map(names, self._getKeyInfo, callback)
+        const info = res.map(r => JSON.parse(r.value))
+        callback(null, info)
       })
     )
   }
 
   /**
-   * Find a key by it's name.
+   * Find a key by it's id.
    *
    * @param {string} id - The universally unique key identifier.
    * @param {function(Error, KeyInfo)} callback
    * @returns {undefined}
    */
   findKeyById (id, callback) {
-    // TODO: not very efficent.
     this.listKeys((err, keys) => {
       if (err) return _error(callback, err)
 
       const key = keys.find((k) => k.id === id)
       callback(null, key)
+    })
+  }
+
+  /**
+   * Find a key by it's name.
+   *
+   * @param {string} name - The local key name.
+   * @param {function(Error, KeyInfo)} callback
+   * @returns {undefined}
+   */
+  findKeyByName (name, callback) {
+    if (!validateKeyName(name)) {
+      return _error(callback, `Invalid key name '${name}'`)
+    }
+
+    const dsname = DsInfoName(name)
+    this.store.get(dsname, (err, res) => {
+      if (err) {
+        return _error(callback, `Key '${name}' does not exist. ${err.message}`)
+      }
+
+      callback(null, JSON.parse(res.toString()))
     })
   }
 
@@ -260,9 +290,12 @@ class Keychain {
       return _error(callback, `Invalid key name '${name}'`)
     }
     const dsname = DsName(name)
-    self._getKeyInfo(name, (err, keyinfo) => {
+    self.findKeyByName(name, (err, keyinfo) => {
       if (err) return _error(callback, err)
-      self.store.delete(dsname, (err) => {
+      const batch = self.store.batch()
+      batch.delete(dsname)
+      batch.delete(DsInfoName(name))
+      batch.commit((err) => {
         if (err) return _error(callback, err)
         callback(null, keyinfo)
       })
@@ -287,6 +320,8 @@ class Keychain {
     }
     const oldDsname = DsName(oldName)
     const newDsname = DsName(newName)
+    const oldInfoName = DsInfoName(oldName)
+    const newInfoName = DsInfoName(newName)
     this.store.get(oldDsname, (err, res) => {
       if (err) {
         return _error(callback, `Key '${oldName}' does not exist. ${err.message}`)
@@ -296,12 +331,20 @@ class Keychain {
         if (err) return _error(callback, err)
         if (exists) return _error(callback, `Key '${newName}' already exists`)
 
-        const batch = self.store.batch()
-        batch.put(newDsname, pem)
-        batch.delete(oldDsname)
-        batch.commit((err) => {
+        self.store.get(oldInfoName, (err, res) => {
           if (err) return _error(callback, err)
-          self._getKeyInfo(newName, callback)
+
+          const keyInfo = JSON.parse(res.toString())
+          keyInfo.name = newName
+          const batch = self.store.batch()
+          batch.put(newDsname, pem)
+          batch.put(newInfoName, JSON.stringify(keyInfo))
+          batch.delete(oldDsname)
+          batch.delete(oldInfoName)
+          batch.commit((err) => {
+            if (err) return _error(callback, err)
+            callback(null, keyInfo)
+          })
         })
       })
     })
@@ -372,10 +415,21 @@ class Keychain {
           return _error(callback, 'Cannot read the key, most likely the password is wrong')
         }
         const newpem = forge.pki.encryptRsaPrivateKey(privateKey, this._())
-        return self.store.put(dsname, newpem, (err) => {
+        util.keyId(privateKey, (err, kid) => {
           if (err) return _error(callback, err)
 
-          this._getKeyInfo(name, callback)
+          const keyInfo = {
+            name: name,
+            id: kid
+          }
+          const batch = self.store.batch()
+          batch.put(dsname, newpem)
+          batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+          batch.commit((err) => {
+            if (err) return _error(callback, err)
+
+            callback(null, keyInfo)
+          })
         })
       } catch (err) {
         _error(callback, err)
@@ -408,10 +462,21 @@ class Keychain {
             return _error(callback, 'Cannot read the peer private key')
           }
           const pem = forge.pki.encryptRsaPrivateKey(privateKey, this._())
-          return self.store.put(dsname, pem, (err) => {
+          util.keyId(privateKey, (err, kid) => {
             if (err) return _error(callback, err)
 
-            this._getKeyInfo(name, callback)
+            const keyInfo = {
+              name: name,
+              id: kid
+            }
+            const batch = self.store.batch()
+            batch.put(dsname, pem)
+            batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+            batch.commit((err) => {
+              if (err) return _error(callback, err)
+
+              callback(null, keyInfo)
+            })
           })
         } catch (err) {
           _error(callback, err)
@@ -426,6 +491,7 @@ class Keychain {
    * @param {string} name
    * @param {function(Error, string)} callback
    * @returns {undefined}
+   * @private
    */
   _getPrivateKey (name, callback) {
     if (!validateKeyName(name)) {
@@ -436,34 +502,6 @@ class Keychain {
         return _error(callback, `Key '${name}' does not exist. ${err.message}`)
       }
       callback(null, res.toString())
-    })
-  }
-
-  _getKeyInfo (name, callback) {
-    if (!validateKeyName(name)) {
-      return _error(callback, `Invalid key name '${name}'`)
-    }
-
-    const dsname = DsName(name)
-    this.store.get(dsname, (err, res) => {
-      if (err) {
-        return _error(callback, `Key '${name}' does not exist. ${err.message}`)
-      }
-      const pem = res.toString()
-      try {
-        const privateKey = forge.pki.decryptRsaPrivateKey(pem, this._())
-        util.keyId(privateKey, (err, kid) => {
-          if (err) return _error(callback, err)
-
-          const info = {
-            name: name,
-            id: kid
-          }
-          return callback(null, info)
-        })
-      } catch (e) {
-        _error(callback, e)
-      }
     })
   }
 }
