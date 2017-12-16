@@ -83,7 +83,7 @@ The **key id** is the SHA-256 [multihash](https://github.com/multiformats/multih
 
 ### Private key storage
 
-A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *passPhrase* using **PBKDF2**.  Its file extension is `.p8`. 
+A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *passPhrase* using **PBKDF2**.
 
 The default options for generating the derived encryption key are in the `dek` object
 ```js
@@ -94,8 +94,8 @@ const defaultOptions = {
   dek: {
     keyLength: 512 / 8,
     iterationCount: 10000,
-    salt: 'you should override this value with a crypto secure random number',
-    hash: 'sha512'
+    salt: 'at least 16 characters long',
+    hash: 'sha2-512'
   }
 }
 ```
