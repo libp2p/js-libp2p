@@ -146,7 +146,7 @@ DQd8
         expect(err).to.not.exist()
         expect(key).to.exist()
         expect(key).to.have.property('name', keyName)
-        expect(key).to.have.property('id')
+        expect(key).to.have.property('id', 'QmeMWBbuyw8KycYhZVxMzVHK3zLH1mp2DT84X2NApqiXgn')
         ks.removeKey(keyName, done)
       })
     })
