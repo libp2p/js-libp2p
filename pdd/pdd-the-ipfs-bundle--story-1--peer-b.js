@@ -45,60 +45,54 @@ class IPFSBundle extends libp2p {
 }
 
 test('story 1 - peerA', (t) => {
-  t.plan(10)
+  t.plan(8)
   let node
 
   waterfall([
-    (cb) => PeerInfo.create(PeerA, cb),
+    (cb) => PeerInfo.create(PeerB, cb),
     (peerInfo, cb) => {
-      peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/10000')
+      peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/10001')
       node = new IPFSBundle(peerInfo)
       node.start(cb)
     }
   ], (err) => {
     t.ifErr(err, 'created Node successfully')
-    t.ok(node.isStarted(), 'PeerA is Running')
+    t.ok(node.isStarted(), 'PeerB is Running')
 
-    const peerBAddr = `/ip4/127.0.0.1/tcp/10001/ipfs/${PeerB.id}`
+    const peerAAddr = `/ip4/127.0.0.1/tcp/10000/ipfs/${PeerA.id}`
 
-    node.handle('/time/1.0.0', (protocol, conn) => {
+    node.handle('/echo/1.0.0', (protocol, conn) => {
       pull(
-        pull.values([Date.now().toString()]),
         conn,
-        pull.onEnd((err) => {
-          t.ifErr(err)
-          t.pass('Sent time successfully')
-        })
+        conn,
+        pull.onEnd((err) => t.ifErr(err, 'echo was successful'))
       )
     })
 
     series([
       (cb) => setTimeout(cb, 5 * 1000), // time to run both scripts
-      (cb) => node.ping(peerBAddr, (err, p) => {
-        t.ifErr(err, 'initiated Ping to PeerB')
+      (cb) => node.ping(peerAAddr, (err, p) => {
+        t.ifErr(err, 'initiated Ping to PeerA')
         p.once('error', (err) => t.ifErr(err, 'Ping should not fail'))
         p.once('ping', (time) => {
-          t.pass('ping PeerB successfully')
+          t.pass('ping PeerA successfully')
           p.stop()
           cb()
         })
       }),
-      (cb) => node.dial(peerBAddr, '/echo/1.0.0', (err, conn) => {
+      (cb) => node.dial(peerAAddr, '/time/1.0.0', (err, conn) => {
         t.ifErr(err, 'dial successful')
 
-        const data = Buffer.from('Hey')
-
         pull(
-          pull.values([data]),
+          pull.values([]),
           conn,
           pull.collect((err, values) => {
-            t.ifErr(err, 'Received echo back')
-            t.deepEqual(values[0], data)
+            t.ifErr(err, 'Received time')
             cb()
           })
         )
       }),
       (cb) => setTimeout(cb, 2 * 1000) // time to both finish
-    ], () => node.stop((err) => t.ifErr(err, 'PeerA has stopped')))
+    ], () => node.stop((err) => t.ifErr(err, 'PeerB has stopped')))
   })
 })
