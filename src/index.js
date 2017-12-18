@@ -314,8 +314,11 @@ class Node extends EventEmitter {
     // PeerInfo
     if (PeerInfo.isPeerInfo(peer)) {
       p = peer
-    // Multiaddr instance (not string)
-    } else if (multiaddr.isMultiaddr(peer)) {
+    // Multiaddr instance or Multiaddr String
+    } else if (multiaddr.isMultiaddr(peer) || typeof peer === 'string') {
+      if (typeof peer === 'string') {
+        peer = multiaddr(peer)
+      }
       const peerIdB58Str = peer.getPeerId()
       try {
         p = this.peerBook.get(peerIdB58Str)
@@ -323,7 +326,8 @@ class Node extends EventEmitter {
         p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
       }
       p.multiaddrs.add(peer)
-    // PeerId
+
+      // PeerId
     } else if (PeerId.isPeerId(peer)) {
       const peerIdB58Str = peer.toB58String()
       try {
