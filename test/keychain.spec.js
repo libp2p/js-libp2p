@@ -126,7 +126,7 @@ module.exports = (datastore1, datastore2) => {
         ks.listKeys((err, keys) => {
           expect(err).to.not.exist()
           expect(keys).to.exist()
-          const mykey = keys.find((k) => k.name === rsaKeyName)
+          const mykey = keys.find((k) => k.name.normalize() === rsaKeyName.normalize())
           expect(mykey).to.exist()
           done()
         })
