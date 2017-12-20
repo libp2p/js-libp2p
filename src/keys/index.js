@@ -2,6 +2,8 @@
 
 const protobuf = require('protons')
 const keysPBM = protobuf(require('./keys.proto'))
+const jsrsasign = require('jsrsasign')
+const KEYUTIL = jsrsasign.KEYUTIL
 
 exports = module.exports
 
@@ -114,4 +116,18 @@ exports.marshalPrivateKey = (key, type) => {
   }
 
   return key.bytes
+}
+
+exports.import = (pem, password, callback) => {
+  try {
+    const key = KEYUTIL.getKey(pem, password)
+    if (key instanceof jsrsasign.RSAKey) {
+      const jwk = KEYUTIL.getJWKFromKey(key)
+      return supportedKeys.rsa.fromJwk(jwk, callback)
+    } else {
+      throw new Error(`Unknown key type '${key.prototype.toString()}'`)
+    }
+  } catch (err) {
+    callback(err)
+  }
 }

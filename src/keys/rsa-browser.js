@@ -105,9 +105,7 @@ function derivePublicFromPrivate (jwKey) {
     {
       kty: jwKey.kty,
       n: jwKey.n,
-      e: jwKey.e,
-      alg: jwKey.alg,
-      kid: jwKey.kid
+      e: jwKey.e
     },
     {
       name: 'RSASSA-PKCS1-v1_5',

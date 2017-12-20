@@ -107,6 +107,32 @@ describe('libp2p-crypto', function () {
     })
   })
 
+  describe('pbkdf2', () => {
+    it('generates a derived password using sha1', () => {
+      const p1 = crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'sha1')
+      expect(p1).to.exist()
+      expect(p1).to.be.a('string')
+    })
+
+    it('generates a derived password using sha2-512', () => {
+      const p1 = crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'sha2-512')
+      expect(p1).to.exist()
+      expect(p1).to.be.a('string')
+    })
+
+    it('generates the same derived password with the same options', () => {
+      const p1 = crypto.pbkdf2('password', 'at least 16 character salt', 10, 512 / 8, 'sha1')
+      const p2 = crypto.pbkdf2('password', 'at least 16 character salt', 10, 512 / 8, 'sha1')
+      const p3 = crypto.pbkdf2('password', 'at least 16 character salt', 11, 512 / 8, 'sha1')
+      expect(p2).to.equal(p1)
+      expect(p3).to.not.equal(p2)
+    })
+
+    it('throws on invalid hash name', () => {
+      expect(() => crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'shaX-xxx')).to.throw()
+    })
+  })
+
   describe('randomBytes', () => {
     it('throws with no number passed', () => {
       expect(() => {

@@ -117,6 +117,15 @@ describe('ed25519', function () {
     })
   })
 
+  it('key id', (done) => {
+    key.id((err, id) => {
+      expect(err).to.not.exist()
+      expect(id).to.exist()
+      expect(id).to.be.a('string')
+      done()
+    })
+  })
+
   describe('key equals', () => {
     it('equals itself', () => {
       expect(

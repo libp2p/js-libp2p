@@ -35,6 +35,7 @@ This repo contains the JavaScript implementation of the crypto primitives needed
     - [`unmarshalPublicKey(buf)`](#unmarshalpublickeybuf)
     - [`marshalPrivateKey(key[, type])`](#marshalprivatekeykey-type)
     - [`unmarshalPrivateKey(buf, callback)`](#unmarshalprivatekeybuf-callback)
+    - [`import(pem, password, callback)`](#importpem-password-callback)
   - [`webcrypto`](#webcrypto)
 - [Contribute](#contribute)
 - [License](#license)
@@ -183,11 +184,29 @@ Converts a private key object into a protobuf serialized private key.
 
 Converts a protobuf serialized private key into its representative object.
 
+### `crypto.keys.import(pem, password, callback)`
+
+- `pem: string`
+- `password: string`
+- `callback: Function`
+
+Converts a PEM password protected private key into its representative object.
+
 ### `crypto.randomBytes(number)`
 
 - `number: Number`
 
 Generates a Buffer with length `number` populated by random bytes.
+
+### `crypto.pbkdf2(password, salt, iterations, keySize, hash)`
+
+- `password: String`
+- `salt: String`
+- `iterations: Number`
+- `keySize: Number` in bytes
+- `hash: String` the hashing algorithm ('sha1', 'sha2-512', ...)
+
+Computes the Password Based Key Derivation Function 2; returning a new password.
 
 ## Contribute
 
@@ -199,4 +218,4 @@ This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/c
 
 ## License
 
-[MIT](LICENSE)
+[MIT](./LICENSE)
