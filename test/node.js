@@ -30,6 +30,5 @@ describe('node', () => {
   })
 
   require('./keychain.spec')(datastore1, datastore2)
-  require('./openssl')(datastore1)
   require('./peerid')
 })

@@ -85,15 +85,14 @@ The **key id** is the SHA-256 [multihash](https://github.com/multiformats/multih
 
 A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *passPhrase* using **PBKDF2**.
 
-The default options for generating the derived encryption key are in the `dek` object
+The default options for generating the derived encryption key are in the `dek` object.  This, along with the passPhrase, is the input to a `PBKDF2` function.
+
 ```js
 const defaultOptions = {
-  createIfNeeded: true,
-
   //See https://cryptosense.com/parameter-choice-for-pbkdf2/
   dek: {
     keyLength: 512 / 8,
-    iterationCount: 10000,
+    iterationCount: 1000,
     salt: 'at least 16 characters long',
     hash: 'sha2-512'
   }

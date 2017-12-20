@@ -1,11 +1,9 @@
+/* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
 const sanitize = require('sanitize-filename')
-const forge = require('node-forge')
 const deepmerge = require('deepmerge')
 const crypto = require('libp2p-crypto')
-const util = require('./util')
-const CMS = require('./cms')
 const DS = require('interface-datastore')
 const pull = require('pull-stream')
 
@@ -19,24 +17,11 @@ const NIST = {
   minIterationCount: 1000
 }
 
-/**
- * Maps an IPFS hash name to its forge equivalent.
- *
- * See https://github.com/multiformats/multihash/blob/master/hashtable.csv
- *
- * @private
- */
-const hashName2Forge = {
-  sha1: 'sha1',
-  'sha2-256': 'sha256',
-  'sha2-512': 'sha512'
-}
-
 const defaultOptions = {
   // See https://cryptosense.com/parametesr-choice-for-pbkdf2/
   dek: {
     keyLength: 512 / 8,
-    iterationCount: 10000,
+    iterationCount: 1000,
     salt: 'you should override this value with a crypto secure random number',
     hash: 'sha2-512'
   }
@@ -133,26 +118,15 @@ class Keychain {
     if (opts.dek.iterationCount < NIST.minIterationCount) {
       throw new Error(`dek.iterationCount must be least ${NIST.minIterationCount}`)
     }
-    this.dek = opts.dek
-
-    // Get the hashing alogorithm
-    const hashAlgorithm = hashName2Forge[opts.dek.hash]
-    if (!hashAlgorithm) {
-      throw new Error(`dek.hash '${opts.dek.hash}' is unknown or not supported`)
-    }
 
     // Create the derived encrypting key
-    let dek = forge.pkcs5.pbkdf2(
+    const dek = crypto.pbkdf2(
       opts.passPhrase,
       opts.dek.salt,
       opts.dek.iterationCount,
       opts.dek.keyLength,
-      hashAlgorithm)
-    dek = forge.util.bytesToHex(dek)
+      opts.dek.hash)
     Object.defineProperty(this, '_', { value: () => dek })
-
-    // Provide access to protected messages
-    this.cms = new CMS(this)
   }
 
   /**
@@ -189,31 +163,32 @@ class Keychain {
           if (size < 2048) {
             return _error(callback, `Invalid RSA key size ${size}`)
           }
-          forge.pki.rsa.generateKeyPair({bits: size, workers: -1}, (err, keypair) => {
+          break
+        default:
+          break
+      }
+
+      crypto.keys.generateKeyPair(type, size, (err, keypair) => {
+        if (err) return _error(callback, err)
+        keypair.id((err, kid) => {
+          if (err) return _error(callback, err)
+          keypair.export(this._(), (err, pem) => {
             if (err) return _error(callback, err)
-            util.keyId(keypair.privateKey, (err, kid) => {
+            const keyInfo = {
+              name: name,
+              id: kid
+            }
+            const batch = self.store.batch()
+            batch.put(dsname, pem)
+            batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+            batch.commit((err) => {
               if (err) return _error(callback, err)
 
-              const pem = forge.pki.encryptRsaPrivateKey(keypair.privateKey, this._())
-              const keyInfo = {
-                name: name,
-                id: kid
-              }
-              const batch = self.store.batch()
-              batch.put(dsname, pem)
-              batch.put(DsInfoName(name), JSON.stringify(keyInfo))
-              batch.commit((err) => {
-                if (err) return _error(callback, err)
-
-                callback(null, keyInfo)
-              })
+              callback(null, keyInfo)
             })
           })
-          break
-
-        default:
-          return _error(callback, `Invalid key type '${type}'`)
-      }
+        })
+      })
     })
   }
 
@@ -372,19 +347,10 @@ class Keychain {
         return _error(callback, `Key '${name}' does not exist. ${err.message}`)
       }
       const pem = res.toString()
-      try {
-        const options = {
-          algorithm: 'aes256',
-          count: this.dek.iterationCount,
-          saltSize: NIST.minSaltLength,
-          prfAlgorithm: 'sha512'
-        }
-        const privateKey = forge.pki.decryptRsaPrivateKey(pem, this._())
-        const res = forge.pki.encryptRsaPrivateKey(privateKey, password, options)
-        return callback(null, res)
-      } catch (e) {
-        _error(callback, e)
-      }
+      crypto.keys.import(pem, this._(), (err, privateKey) => {
+        if (err) return _error(callback, err)
+        privateKey.export(password, callback)
+      })
     })
   }
 
@@ -409,62 +375,12 @@ class Keychain {
     self.store.has(dsname, (err, exists) => {
       if (err) return _error(callback, err)
       if (exists) return _error(callback, `Key '${name}' already exists`)
-      try {
-        const privateKey = forge.pki.decryptRsaPrivateKey(pem, password)
-        if (privateKey === null) {
-          return _error(callback, 'Cannot read the key, most likely the password is wrong')
-        }
-        const newpem = forge.pki.encryptRsaPrivateKey(privateKey, this._())
-        util.keyId(privateKey, (err, kid) => {
+      crypto.keys.import(pem, password, (err, privateKey) => {
+        if (err) return _error(callback, 'Cannot read the key, most likely the password is wrong')
+        privateKey.id((err, kid) => {
           if (err) return _error(callback, err)
-
-          const keyInfo = {
-            name: name,
-            id: kid
-          }
-          const batch = self.store.batch()
-          batch.put(dsname, newpem)
-          batch.put(DsInfoName(name), JSON.stringify(keyInfo))
-          batch.commit((err) => {
+          privateKey.export(this._(), (err, pem) => {
             if (err) return _error(callback, err)
-
-            callback(null, keyInfo)
-          })
-        })
-      } catch (err) {
-        _error(callback, err)
-      }
-    })
-  }
-
-  importPeer (name, peer, callback) {
-    const self = this
-    if (!validateKeyName(name)) {
-      return _error(callback, `Invalid key name '${name}'`)
-    }
-    if (!peer || !peer.privKey) {
-      return _error(callback, 'Peer.privKey is required')
-    }
-    const dsname = DsName(name)
-    self.store.has(dsname, (err, exists) => {
-      if (err) return _error(callback, err)
-      if (exists) return _error(callback, `Key '${name}' already exists`)
-
-      const privateKeyProtobuf = peer.marshalPrivKey()
-      crypto.keys.unmarshalPrivateKey(privateKeyProtobuf, (err, key) => {
-        if (err) return _error(callback, err)
-        try {
-          const der = key.marshal()
-          const buf = forge.util.createBuffer(der.toString('binary'))
-          const obj = forge.asn1.fromDer(buf)
-          const privateKey = forge.pki.privateKeyFromAsn1(obj)
-          if (privateKey === null) {
-            return _error(callback, 'Cannot read the peer private key')
-          }
-          const pem = forge.pki.encryptRsaPrivateKey(privateKey, this._())
-          util.keyId(privateKey, (err, kid) => {
-            if (err) return _error(callback, err)
-
             const keyInfo = {
               name: name,
               id: kid
@@ -478,9 +394,43 @@ class Keychain {
               callback(null, keyInfo)
             })
           })
-        } catch (err) {
-          _error(callback, err)
-        }
+        })
+      })
+    })
+  }
+
+  importPeer (name, peer, callback) {
+    const self = this
+    if (!validateKeyName(name)) {
+      return _error(callback, `Invalid key name '${name}'`)
+    }
+    if (!peer || !peer.privKey) {
+      return _error(callback, 'Peer.privKey is required')
+    }
+
+    const privateKey = peer.privKey
+    const dsname = DsName(name)
+    self.store.has(dsname, (err, exists) => {
+      if (err) return _error(callback, err)
+      if (exists) return _error(callback, `Key '${name}' already exists`)
+
+      privateKey.id((err, kid) => {
+        if (err) return _error(callback, err)
+        privateKey.export(this._(), (err, pem) => {
+          if (err) return _error(callback, err)
+          const keyInfo = {
+            name: name,
+            id: kid
+          }
+          const batch = self.store.batch()
+          batch.put(dsname, pem)
+          batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+          batch.commit((err) => {
+            if (err) return _error(callback, err)
+
+            callback(null, keyInfo)
+          })
+        })
       })
     })
   }

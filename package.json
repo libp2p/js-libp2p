@@ -45,22 +45,20 @@
     "async": "^2.6.0",
     "deepmerge": "^1.5.2",
     "interface-datastore": "~0.4.1",
-    "libp2p-crypto": "~0.10.3",
-    "multihashes": "~0.4.12",
-    "node-forge": "~0.7.1",
+    "libp2p-crypto": "~0.11.0",
     "pull-stream": "^3.6.1",
     "sanitize-filename": "^1.6.1"
   },
   "devDependencies": {
-    "aegir": "^12.2.0",
+    "aegir": "^12.3.0",
     "chai": "^4.1.2",
     "chai-string": "^1.4.0",
-    "datastore-fs": "^0.4.1",
-    "datastore-level": "^0.7.0",
+    "datastore-fs": "~0.4.1",
+    "datastore-level": "~0.7.0",
     "dirty-chai": "^2.0.1",
     "level-js": "^2.2.4",
     "mocha": "^4.0.1",
-    "peer-id": "^0.10.2",
+    "peer-id": "~0.10.4",
     "pre-commit": "^1.2.2",
     "rimraf": "^2.6.2"
   }
