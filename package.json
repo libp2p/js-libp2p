@@ -61,5 +61,11 @@
     "peer-id": "~0.10.4",
     "pre-commit": "^1.2.2",
     "rimraf": "^2.6.2"
-  }
+  },
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Maciej Krüger <mkg20001@gmail.com>",
+    "Richard Schneider <makaretu@gmail.com>",
+    "Victor Bjelkholm <victorbjelkholm@gmail.com>"
+  ]
 }
