@@ -1,3 +1,13 @@
+<a name="0.11.0"></a>
+# [0.11.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.10.4...v0.11.0) (2017-12-20)
+
+
+### Features
+
+* key exchange with jsrsasign ([#115](https://github.com/libp2p/js-libp2p-crypto/issues/115)) ([b342128](https://github.com/libp2p/js-libp2p-crypto/commit/b342128))
+
+
+
 <a name="0.10.4"></a>
 ## [0.10.4](https://github.com/libp2p/js-libp2p-crypto/compare/v0.10.3...v0.10.4) (2017-12-01)
 
