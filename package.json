@@ -44,7 +44,7 @@
   "dependencies": {
     "async": "^2.6.0",
     "deepmerge": "^1.5.2",
-    "interface-datastore": "~0.4.1",
+    "interface-datastore": "~0.4.2",
     "libp2p-crypto": "~0.11.0",
     "pull-stream": "^3.6.1",
     "sanitize-filename": "^1.6.1"
@@ -53,7 +53,7 @@
     "aegir": "^12.3.0",
     "chai": "^4.1.2",
     "chai-string": "^1.4.0",
-    "datastore-fs": "~0.4.1",
+    "datastore-fs": "~0.4.2",
     "datastore-level": "~0.7.0",
     "dirty-chai": "^2.0.1",
     "level-js": "^2.2.4",
