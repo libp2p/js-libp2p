@@ -139,6 +139,18 @@ class Keychain {
   }
 
   /**
+   * Generates the options for a keychain.  A random salt is produced.
+   *
+   * @returns {object}
+   */
+  static generateOptions () {
+    const options = Object.assign({}, defaultOptions)
+    const saltLength = Math.ceil(NIST.minSaltLength / 3) * 3 // no base64 padding
+    options.dek.salt = crypto.randomBytes(saltLength).toString('base64')
+    return options
+  }
+
+  /**
    * Create a new key.
    *
    * @param {string} name - The local key name; cannot already exist.

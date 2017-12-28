@@ -46,6 +46,13 @@ module.exports = (datastore1, datastore2) => {
       expect(() => new Keychain(datastore2, { passPhrase: passPhrase, dek: { hash: 'my-hash' } })).to.throw()
     })
 
+    it('can generate options', () => {
+      const options = Keychain.generateOptions()
+      options.passPhrase = passPhrase
+      const chain = new Keychain(datastore2, options)
+      expect(chain).to.exist()
+    })
+
     describe('key name', () => {
       it('is a valid filename and non-ASCII', () => {
         ks.removeKey('../../nasty', (err) => {
