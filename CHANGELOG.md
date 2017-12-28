@@ -1,3 +1,13 @@
+<a name="0.2.1"></a>
+## [0.2.1](https://github.com/libp2p/js-libp2p-keychain/compare/v0.2.0...v0.2.1) (2017-12-28)
+
+
+### Features
+
+* generate unique options for a key chain ([#20](https://github.com/libp2p/js-libp2p-keychain/issues/20)) ([89a451c](https://github.com/libp2p/js-libp2p-keychain/commit/89a451c))
+
+
+
 <a name="0.2.0"></a>
 # 0.2.0 (2017-12-20)
 
