@@ -167,7 +167,7 @@ class Node extends libp2p {
 
 `callback` is a function with the following `function (err, conn) {}` signature, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
 
-#### `libp2p.hangUp(peer, callback)
+#### `libp2p.hangUp(peer, callback)`
 
 > Closes an open connection with a peer, graciously.
 
