@@ -17,7 +17,8 @@ describe('MulticastDNS', () => {
   let pC
   let pD
 
-  before((done) => {
+  before(function (done) {
+    this.timeout(40 * 1000)
     parallel([
       (cb) => {
         PeerInfo.create((err, peer) => {
@@ -57,9 +58,11 @@ describe('MulticastDNS', () => {
     ], done)
   })
 
-  it('find another peer', (done) => {
+  it('find another peer', function (done) {
+    this.timeout(40 * 1000)
+
     const options = {
-      port: 50001   // port must be the same
+      port: 50001 // port must be the same
     }
     const mdnsA = new MulticastDNS(pA, options)
     const mdnsB = new MulticastDNS(pB, options)
@@ -77,9 +80,11 @@ describe('MulticastDNS', () => {
     })
   })
 
-  it('only announce TCP multiaddrs', (done) => {
+  it('only announce TCP multiaddrs', function (done) {
+    this.timeout(40 * 1000)
+
     const options = {
-      port: 50003   // port must be the same
+      port: 50003 // port must be the same
     }
 
     const mdnsA = new MulticastDNS(pA, options)
@@ -102,9 +107,11 @@ describe('MulticastDNS', () => {
     })
   })
 
-  it('doesn\'t emit peers after stop', (done) => {
+  it('doesn\'t emit peers after stop', function (done) {
+    this.timeout(40 * 1000)
+
     const options = {
-      port: 50004   // port must be the same
+      port: 50004 // port must be the same
     }
     const mdnsA = new MulticastDNS(pA, options)
     const mdnsC = new MulticastDNS(pC, options)
