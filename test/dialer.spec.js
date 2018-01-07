@@ -16,7 +16,9 @@ const identify = require('../src')
 
 describe('identify.dialer', () => {
   let original
-  beforeEach((done) => {
+  beforeEach(function (done) {
+    this.timeout(20 * 1000)
+
     PeerInfo.create((err, info) => {
       if (err) {
         return done(err)

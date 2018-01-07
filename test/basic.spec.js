@@ -8,7 +8,7 @@ chai.use(dirtyChai)
 
 const identify = require('../src')
 
-describe('identify', () => {
+describe('basic', () => {
   it('multicodec', () => {
     expect(identify.multicodec).to.eql('/ipfs/id/1.0.0')
   })
