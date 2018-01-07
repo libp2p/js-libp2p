@@ -1,6 +1,6 @@
 {
   "name": "libp2p-swarm",
-  "version": "0.34.0",
+  "version": "0.35.0",
   "description": "libp2p swarm implementation in JavaScript",
   "main": "src/index.js",
   "scripts": {
