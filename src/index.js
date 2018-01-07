@@ -96,7 +96,7 @@ function Swarm (peerInfo, peerBook) {
 
   this.handle(this.crypto.tag, (protocol, conn) => {
     const peerId = this._peerInfo.id
-    const wrapped = this.crypto.encrypt(peerId, peerId.privKey, conn)
+    const wrapped = this.crypto.encrypt(peerId, conn, undefined, () => {})
     return protocolMuxer(this.protocols, wrapped)
   })
 

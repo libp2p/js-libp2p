@@ -50,6 +50,7 @@ function dial (swarm) {
 
     function gotWarmedUpConn (conn) {
       conn.setPeerInfo(pi)
+
       attemptMuxerUpgrade(conn, (err, muxer) => {
         if (!protocol) {
           if (err) {
@@ -123,15 +124,17 @@ function dial (swarm) {
                 return cb(err)
               }
 
-              const id = swarm._peerInfo.id
+              const myId = swarm._peerInfo.id
               log('selecting crypto: %s', swarm.crypto.tag)
               ms.select(swarm.crypto.tag, (err, conn) => {
-                if (err) {
-                  return cb(err)
-                }
+                if (err) { return cb(err) }
 
-                const wrapped = swarm.crypto.encrypt(id, id.privKey, conn)
-                cb(null, wrapped)
+                const wrapped = swarm.crypto.encrypt(myId, conn, pi.id, (err) => {
+                  if (err) {
+                    return cb(err)
+                  }
+                  cb(null, wrapped)
+                })
               })
             })
           }
