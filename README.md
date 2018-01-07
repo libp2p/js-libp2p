@@ -164,6 +164,7 @@ class Node extends libp2p {
 
 - `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
 - `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
+- `callback`: Function with signature `function (err, conn) {}` where `conn` is a [Connection](https://github.com/libp2p/interface-connection) object
 
 `callback` is a function with the following `function (err, conn) {}` signature, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
 
@@ -196,7 +197,7 @@ class Node extends libp2p {
 > Handle new protocol
 
 - `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
-- `handlerFunc`: Function with signature `function (protocol, conn) {}`
+- `handlerFunc`: Function with signature `function (protocol, conn) {}` where `conn` is a [Connection](https://github.com/libp2p/interface-connection) object
 - `matchFunc`: Function for matching on protocol (exact matching, semver, etc). Default to exact match.
 
 #### `libp2p.unhandle(protocol)`
