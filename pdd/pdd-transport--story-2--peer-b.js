@@ -35,14 +35,14 @@ test('story 2 - peerB', (t) => {
     node.handle('/echo/1.0.0', (protocol, conn) => {
       pull(
         conn,
-        conn,
-        pull.onEnd((err) => {
+        pull.through(v => v, err => {
           t.ifErr(err)
           t.pass('Received End of Connection')
           node.stop((err) => {
             t.ifErr(err, 'PeerB has stopped')
           })
-        })
+        }),
+        conn
       )
     })
   })
