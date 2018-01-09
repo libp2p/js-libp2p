@@ -14,7 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "libp2p": "file:./..",
-    "libp2p-interop": "github:libp2p/interop#pdd",
+    "libp2p-interop": "github:libp2p/interop#master",
     "tape": "^4.8.0"
   }
 }
