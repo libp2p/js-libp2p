@@ -6,7 +6,7 @@ const WebSockets = require('libp2p-websockets')
 const PeerInfo = require('peer-info')
 const waterfall = require('async/waterfall')
 const pull = require('pull-stream')
-const PeerB = require('libp2p-interop/peer-B.json')
+const PeerB = require('libp2p-interop/peer-b.json')
 
 class MyBundle extends libp2p {
   constructor (peerInfo) {
