@@ -7,7 +7,7 @@ const PeerInfo = require('peer-info')
 const waterfall = require('async/waterfall')
 const pull = require('pull-stream')
 const PeerA = require('libp2p-interop/peer-a.json')
-const PeerB = require('libp2p-interop/peer-B.json')
+const PeerB = require('libp2p-interop/peer-b.json')
 
 class MyBundle extends libp2p {
   constructor (peerInfo) {

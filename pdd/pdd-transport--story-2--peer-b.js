@@ -6,7 +6,7 @@ const WebSockets = require('libp2p-websockets')
 const PeerInfo = require('peer-info')
 const waterfall = require('async/waterfall')
 const pull = require('pull-stream')
-const PeerB = require('libp2p-interop/peer-B.json')
+const PeerB = require('libp2p-interop/peer-b.json')
 
 class MyBundle extends libp2p {
   constructor (peerInfo) {
@@ -35,14 +35,14 @@ test('story 2 - peerB', (t) => {
     node.handle('/echo/1.0.0', (protocol, conn) => {
       pull(
         conn,
-        conn,
-        pull.onEnd((err) => {
+        pull.through(v => v, err => {
           t.ifErr(err)
           t.pass('Received End of Connection')
           node.stop((err) => {
             t.ifErr(err, 'PeerB has stopped')
           })
-        })
+        }),
+        conn
       )
     })
   })
