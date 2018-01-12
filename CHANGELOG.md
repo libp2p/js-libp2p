@@ -1,3 +1,13 @@
+<a name="0.11.2"></a>
+## [0.11.2](https://github.com/libp2p/js-libp2p-tcp/compare/v0.11.1...v0.11.2) (2018-01-12)
+
+
+### Bug Fixes
+
+* missing dependency debug, fixes [#84](https://github.com/libp2p/js-libp2p-tcp/issues/84) ([74a88f6](https://github.com/libp2p/js-libp2p-tcp/commit/74a88f6))
+
+
+
 <a name="0.11.1"></a>
 ## [0.11.1](https://github.com/libp2p/js-libp2p-tcp/compare/v0.11.0...v0.11.1) (2017-10-13)
 
