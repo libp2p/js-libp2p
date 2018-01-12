@@ -54,6 +54,7 @@
     "stream-to-pull-stream": "^1.7.2"
   },
   "contributors": [
+    "Alan Shaw <alan@tableflip.io>",
     "David Dias <daviddias.p@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "Evan Schwartz <evan.mark.schwartz@gmail.com>",
