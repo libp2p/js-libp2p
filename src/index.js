@@ -83,7 +83,7 @@ class Node extends EventEmitter {
     if (_modules.DHT) {
       this._dht = new this.modules.DHT(this.swarm, {
         kBucketSize: 20,
-        datastoer: _options.DHT && _options.DHT.datastore
+        datastore: _options.DHT && _options.DHT.datastore
       })
     }
 
