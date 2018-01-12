@@ -5,10 +5,10 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
-    "test": "aegir test --target node",
-    "release": "aegir release --no-build",
-    "release-minor": "aegir release --type minor --no-build",
-    "release-major": "aegir-release --type major --no-build",
+    "test": "aegir test --t node",
+    "release": "aegir release -t node --no-build",
+    "release-minor": "aegir release -t node --type minor --no-build",
+    "release-major": "aegir-release -t node --type major --no-build",
     "coverage": "aegir coverage",
     "coverage-publish": "aegir coverage --provider coveralls"
   },
