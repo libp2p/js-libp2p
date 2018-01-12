@@ -43,6 +43,7 @@
     "pull-stream": "^3.6.1"
   },
   "dependencies": {
+    "debug": "^3.1.0",
     "interface-connection": "~0.3.2",
     "ip-address": "^5.8.8",
     "lodash.includes": "^4.3.0",
