@@ -59,7 +59,7 @@
     "libp2p-railing": "~0.7.1",
     "libp2p-secio": "~0.9.0",
     "libp2p-spdy": "~0.11.0",
-    "libp2p-tcp": "~0.11.1",
+    "libp2p-tcp": "~0.11.2",
     "libp2p-webrtc-star": "~0.13.3",
     "libp2p-websockets": "~0.10.4",
     "libp2p-websocket-star": "~0.7.2",
@@ -70,7 +70,7 @@
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.1",
     "safe-buffer": "^5.1.1",
-    "sinon": "^4.1.3",
+    "sinon": "^4.1.5",
     "wrtc": "0.0.65"
   },
   "contributors": [
