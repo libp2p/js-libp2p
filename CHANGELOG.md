@@ -1,3 +1,13 @@
+<a name="0.15.1"></a>
+## [0.15.1](https://github.com/libp2p/js-libp2p/compare/v0.15.0...v0.15.1) (2018-01-16)
+
+
+### Bug Fixes
+
+* typo in DHT setup ([#151](https://github.com/libp2p/js-libp2p/issues/151)) ([61bebd1](https://github.com/libp2p/js-libp2p/commit/61bebd1))
+
+
+
 <a name="0.15.0"></a>
 # [0.15.0](https://github.com/libp2p/js-libp2p/compare/v0.14.3...v0.15.0) (2018-01-07)
 
