@@ -6,7 +6,7 @@ const bs58 = require('bs58')
 
 const crypto = require('./rsa')
 const pbm = protobuf(require('./keys.proto'))
-const KEYUTIL = require('jsrsasign').KEYUTIL
+const forge = require('node-forge')
 const setImmediate = require('async/setImmediate')
 
 class RsaPublicKey {
@@ -127,20 +127,29 @@ class RsaPrivateKey {
       format = 'pkcs-8'
     }
 
-    setImmediate(() => {
-      ensure(callback)
+    ensure(callback)
 
+    setImmediate(() => {
       let err = null
       let pem = null
       try {
-        const key = KEYUTIL.getKey(this._key) // _key is a JWK (JSON Web Key)
+        const buffer = new forge.util.ByteBuffer(this.marshal())
+        const asn1 = forge.asn1.fromDer(buffer)
+        const privateKey = forge.pki.privateKeyFromAsn1(asn1)
+
         if (format === 'pkcs-8') {
-          pem = KEYUTIL.getPEM(key, 'PKCS8PRV', password)
+          const options = {
+            algorithm: 'aes256',
+            count: 10000,
+            saltSize: 128 / 8,
+            prfAlgorithm: 'sha512'
+          }
+          pem = forge.pki.encryptRsaPrivateKey(privateKey, password, options)
         } else {
           err = new Error(`Unknown export format '${format}'`)
         }
-      } catch (e) {
-        err = e
+      } catch (_err) {
+        err = _err
       }
 
       callback(err, pem)
@@ -150,6 +159,7 @@ class RsaPrivateKey {
 
 function unmarshalRsaPrivateKey (bytes, callback) {
   const jwk = crypto.utils.pkcs1ToJwk(bytes)
+
   crypto.unmarshalPrivateKey(jwk, (err, keys) => {
     if (err) {
       return callback(err)
@@ -175,18 +185,18 @@ function fromJwk (jwk, callback) {
   })
 }
 
-function generateKeyPair (bits, cb) {
+function generateKeyPair (bits, callback) {
   crypto.generateKey(bits, (err, keys) => {
     if (err) {
-      return cb(err)
+      return callback(err)
     }
 
-    cb(null, new RsaPrivateKey(keys.privateKey, keys.publicKey))
+    callback(null, new RsaPrivateKey(keys.privateKey, keys.publicKey))
   })
 }
 
-function ensure (cb) {
-  if (typeof cb !== 'function') {
+function ensure (callback) {
+  if (typeof callback !== 'function') {
     throw new Error('callback is required')
   }
 }

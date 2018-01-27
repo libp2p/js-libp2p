@@ -2,8 +2,7 @@
 
 const protobuf = require('protons')
 const keysPBM = protobuf(require('./keys.proto'))
-const jsrsasign = require('jsrsasign')
-const KEYUTIL = jsrsasign.KEYUTIL
+const forge = require('node-forge')
 
 exports = module.exports
 
@@ -120,13 +119,13 @@ exports.marshalPrivateKey = (key, type) => {
 
 exports.import = (pem, password, callback) => {
   try {
-    const key = KEYUTIL.getKey(pem, password)
-    if (key instanceof jsrsasign.RSAKey) {
-      const jwk = KEYUTIL.getJWKFromKey(key)
-      return supportedKeys.rsa.fromJwk(jwk, callback)
-    } else {
-      throw new Error(`Unknown key type '${key.prototype.toString()}'`)
+    const key = forge.pki.decryptRsaPrivateKey(pem, password)
+    if (key === null) {
+      throw new Error('Cannot read the key, most likely the password is wrong or not a RSA key')
     }
+    let der = forge.asn1.toDer(forge.pki.privateKeyToAsn1(key))
+    der = Buffer.from(der.getBytes(), 'binary')
+    return supportedKeys.rsa.unmarshalRsaPrivateKey(der, callback)
   } catch (err) {
     callback(err)
   }

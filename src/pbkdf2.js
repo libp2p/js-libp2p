@@ -1,18 +1,18 @@
 'use strict'
 
-const crypto = require('jsrsasign').CryptoJS
+const forge = require('node-forge')
 
 /**
- * Maps an IPFS hash name to its jsrsasign equivalent.
+ * Maps an IPFS hash name to its node-forge equivalent.
  *
  * See https://github.com/multiformats/multihash/blob/master/hashtable.csv
  *
  * @private
  */
 const hashName = {
-  sha1: crypto.algo.SHA1,
-  'sha2-256': crypto.algo.SHA256,
-  'sha2-512': crypto.algo.SHA512
+  sha1: 'sha1',
+  'sha2-256': 'sha256',
+  'sha2-512': 'sha512'
 }
 
 /**
@@ -26,16 +26,17 @@ const hashName = {
  * @returns {string} - A new password
  */
 function pbkdf2 (password, salt, iterations, keySize, hash) {
-  const opts = {
-    iterations: iterations,
-    keySize: keySize / 4, // convert bytes to words (32 bits)
-    hasher: hashName[hash]
-  }
-  if (!opts.hasher) {
+  const hasher = hashName[hash]
+  if (!hasher) {
     throw new Error(`Hash '${hash}' is unknown or not supported`)
   }
-  const words = crypto.PBKDF2(password, salt, opts)
-  return crypto.enc.Base64.stringify(words)
+  const dek = forge.pkcs5.pbkdf2(
+    password,
+    salt,
+    iterations,
+    keySize,
+    hasher)
+  return forge.util.encode64(dek)
 }
 
 module.exports = pbkdf2

@@ -13,7 +13,7 @@ describe('libp2p-crypto', function () {
   this.timeout(20 * 1000)
   let key
   before((done) => {
-    crypto.keys.generateKeyPair('RSA', 2048, (err, _key) => {
+    crypto.keys.generateKeyPair('RSA', 512, (err, _key) => {
       if (err) {
         return done(err)
       }

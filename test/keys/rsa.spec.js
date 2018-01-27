@@ -19,7 +19,7 @@ describe('RSA', function () {
   let key
 
   before((done) => {
-    crypto.keys.generateKeyPair('RSA', 2048, (err, _key) => {
+    crypto.keys.generateKeyPair('RSA', 512, (err, _key) => {
       if (err) {
         return done(err)
       }
@@ -97,7 +97,7 @@ describe('RSA', function () {
     })
 
     it('not equals other key', (done) => {
-      crypto.keys.generateKeyPair('RSA', 2048, (err, key2) => {
+      crypto.keys.generateKeyPair('RSA', 512, (err, key2) => {
         if (err) {
           return done(err)
         }
@@ -297,8 +297,42 @@ mBdkD5r+ixWF174naw53L8U9wF8kiK7pIE1N9TR4USEeovLwX6Ni/2MMDZedOfof
       })
     })
 
-    // AssertionError: expected 'this only supports TripleDES' to not exist
-    it.skip('can read a private encrypted key (v2 aes-256-cbc)', (done) => {
+    it('can read a private encrypted key (v2 aes-128-cbc)', (done) => {
+      /*
+       * Generated with
+       * openssl genpkey -algorithm RSA
+       *   -pkeyopt rsa_keygen_bits:1024
+       *   -pkeyopt rsa_keygen_pubexp:65537
+       *   -out foo.pem
+       * openssl pkcs8 -in foo.pem -topk8 -v2 aes-128-cbc -passout pass:mypassword
+       */
+      const pem = `-----BEGIN ENCRYPTED PRIVATE KEY-----
+MIICzzBJBgkqhkiG9w0BBQ0wPDAbBgkqhkiG9w0BBQwwDgQIP5QK2RfqUl4CAggA
+MB0GCWCGSAFlAwQBAgQQj3OyM9gnW2dd/eRHkxjGrgSCAoCpM5GZB0v27cxzZsGc
+O4/xqgwB0c/bSJ6QogtYU2KVoc7ZNQ5q9jtzn3I4ONvneOkpm9arzYz0FWnJi2C3
+BPiF0D1NkfvjvMLv56bwiG2A1oBECacyAb2pXYeJY7SdtYKvcbgs3jx65uCm6TF2
+BylteH+n1ewTQN9DLfASp1n81Ajq9lQGaK03SN2MUtcAPp7N9gnxJrlmDGeqlPRs
+KpQYRcot+kE6Ew8a5jAr7mAxwpqvr3SM4dMvADZmRQsM4Uc/9+YMUdI52DG87EWc
+0OUB+fnQ8jw4DZgOE9KKM5/QTWc3aEw/dzXr/YJsrv01oLazhqVHnEMG0Nfr0+DP
+q+qac1AsCsOb71VxaRlRZcVEkEfAq3gidSPD93qmlDrCnmLYTilcLanXUepda7ez
+qhjkHtpwBLN5xRZxOn3oUuLGjk8VRwfmFX+RIMYCyihjdmbEDYpNUVkQVYFGi/F/
+1hxOyl9yhGdL0hb9pKHH10GGIgoqo4jSTLlb4ennihGMHCjehAjLdx/GKJkOWShy
+V9hj8rAuYnRNb+tUW7ChXm1nLq14x9x1tX0ciVVn3ap/NoMkbFTr8M3pJ4bQlpAn
+wCT2erYqwQtgSpOJcrFeph9TjIrNRVE7Zlmr7vayJrB/8/oPssVdhf82TXkna4fB
+PcmO0YWLa117rfdeNM/Duy0ThSdTl39Qd+4FxqRZiHjbt+l0iSa/nOjTv1TZ/QqF
+wqrO6EtcM45fbFJ1Y79o2ptC2D6MB4HKJq9WCt064/8zQCVx3XPbb3X8Z5o/6koy
+ePGbz+UtSb9xczvqpRCOiFLh2MG1dUgWuHazjOtUcVWvilKnkjCMzZ9s1qG0sUDj
+nPyn
+-----END ENCRYPTED PRIVATE KEY-----
+`
+      crypto.keys.import(pem, 'mypassword', (err, key) => {
+        expect(err).to.not.exist()
+        expect(key).to.exist()
+        done()
+      })
+    })
+
+    it('can read a private encrypted key (v2 aes-256-cbc)', (done) => {
       /*
        * Generated with
        * openssl genpkey -algorithm RSA
@@ -324,6 +358,40 @@ BXtDv3h75l5PhvdWfVIzpMWRYFvPR+vJi066FjAz2sjYc0NMLSYtZWyWoIInjhoX
 Dp5CQujCtw/ZSSlwde1DKEWAW4SeDZAOQNvuz0rU3eosNUJxEmh3aSrcrRtDpw+Y
 mBUuWAZMpz7njBi7h+JDfmSW/GAaMwrVFC2gef5375R0TejAh+COAjItyoeYEvv8
 DQd8
+-----END ENCRYPTED PRIVATE KEY-----
+`
+      crypto.keys.import(pem, 'mypassword', (err, key) => {
+        expect(err).to.not.exist()
+        expect(key).to.exist()
+        done()
+      })
+    })
+
+    it('can read a private encrypted key (v2 des)', (done) => {
+      /*
+       * Generated with
+       * openssl genpkey -algorithm RSA
+       *   -pkeyopt rsa_keygen_bits:1024
+       *   -pkeyopt rsa_keygen_pubexp:65537
+       *   -out foo.pem
+       * openssl pkcs8 -in foo.pem -topk8 -v2 des -passout pass:mypassword
+       */
+      const pem = `-----BEGIN ENCRYPTED PRIVATE KEY-----
+MIICwzA9BgkqhkiG9w0BBQ0wMDAbBgkqhkiG9w0BBQwwDgQI0lXp62ozXvwCAggA
+MBEGBSsOAwIHBAiR3Id5vH0u4wSCAoDQQYOrrkPFPIa0S5fQGXnJw1F/66g92Gs1
+TkGydn4ouabWb++Vbi2chee1oyZsN2l8YNzDi0Gb2PfjsGpg2aJk0a3/efgA0u6T
+leEH1dA/7Hr9NVspgHkaXpHt3X6wdbznLYJeAelfj7sDXpOkULGWCkCst0Txb6bi
+Oxv4c0yYykiuUrp+2xvHbF9c2PrcDb58u/OBZcCg3QB1gTugQKM+ZIBRhcTEFLrm
+8gWbzBfwYiUm6aJce4zoafP0NSlEOBbpbr73A08Q1IK6pISwltOUhhTvspSZnK41
+y2CHt5Drnpl1pfOw9Q0svO3VrUP+omxP1SFP17ZfaRGw2uHd08HJZs438x5dIQoH
+QgjlZ8A5rcT3FjnytSh3fln2ZxAGuObghuzmOEL/+8fkGER9QVjmQlsL6OMfB4j4
+ZAkLf74uaTdegF3SqDQaGUwWgk7LyualmUXWTBoeP9kRIsRQLGzAEmd6duBPypED
+HhKXP/ZFA1kVp3x1fzJ2llMFB3m1JBwy4PiohqrIJoR+YvKUvzVQtbOjxtCEAj87
+JFnlQj0wjTd6lfNn+okewMNjKINZx+08ui7XANNU/l18lHIIz3ssXJSmqMW+hRZ9
+9oB2tntLrnRMhkVZDVHadq7eMFOPu0rkekuaZm9CO2vu4V7Qa2h+gOoeczYza0H7
+A+qCKbprxyL8SKI5vug2hE+mfC1leXVRtUYm1DnE+oet99bFd0fN20NwTw0rOeRg
+0Z+/ZpQNizrXxfd3sU7zaJypWCxZ6TD/U/AKBtcb2gqmUjObZhbfbWq6jU2Ye//w
+EBqQkwAUXR1tNekF8CWLOrfC/wbLRxVRkayb8bQUfdgukLpz0bgw
 -----END ENCRYPTED PRIVATE KEY-----
 `
       crypto.keys.import(pem, 'mypassword', (err, key) => {
