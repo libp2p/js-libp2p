@@ -1,3 +1,8 @@
+<a name="0.35.1"></a>
+## [0.35.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.35.0...v0.35.1) (2018-01-28)
+
+
+
 <a name="0.35.0"></a>
 # [0.35.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.34.0...v0.35.0) (2018-01-07)
 
