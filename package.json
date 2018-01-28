@@ -39,15 +39,15 @@
   "dependencies": {
     "async": "^2.6.0",
     "libp2p-ping": "~0.6.0",
-    "libp2p-swarm": "~0.35.0",
+    "libp2p-swarm": "~0.35.1",
     "mafmt": "^3.0.2",
     "multiaddr": "^3.0.2",
-    "peer-book": "~0.5.2",
-    "peer-id": "~0.10.4",
-    "peer-info": "~0.11.4"
+    "peer-book": "~0.5.4",
+    "peer-id": "~0.10.5",
+    "peer-info": "~0.11.6"
   },
   "devDependencies": {
-    "aegir": "^12.3.0",
+    "aegir": "^12.4.0",
     "chai": "^4.1.2",
     "cids": "~0.5.2",
     "dirty-chai": "^2.0.1",
@@ -57,7 +57,7 @@
     "libp2p-mdns": "~0.9.1",
     "libp2p-multiplex": "~0.5.1",
     "libp2p-railing": "~0.7.1",
-    "libp2p-secio": "~0.9.0",
+    "libp2p-secio": "~0.9.1",
     "libp2p-spdy": "~0.11.0",
     "libp2p-tcp": "~0.11.2",
     "libp2p-webrtc-star": "~0.13.3",
@@ -70,7 +70,7 @@
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.1",
     "safe-buffer": "^5.1.1",
-    "sinon": "^4.1.5",
+    "sinon": "^4.2.2",
     "wrtc": "0.0.65"
   },
   "contributors": [
