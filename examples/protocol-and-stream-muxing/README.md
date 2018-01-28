@@ -158,7 +158,7 @@ another protocol (b)
 
 # 3. Bidirectional connections
 
-There is one last trick on _protocol and stream multiplexing_ that libp2p uses to make everyone's life easier and that is _biderectional connection_.
+There is one last trick on _protocol and stream multiplexing_ that libp2p uses to make everyone's life easier and that is _bidirectional connection_.
 
 With the aid of both mechanisms, we can reuse an incomming connection to dial streams out too, this is specially useful when you are behind tricky NAT, firewalls or if you are running in a browser, where you can have listening addrs, but you can dial out. By dialing out, you enable other peers to talk with you in Protocols that they want, simply by opening a new multiplexed stream.
 
