@@ -298,8 +298,8 @@ As expected, we created 3 nodes, node 1 with TCP, node 2 with TCP+WebSockets and
 
 Today there are already 3 transports available, one in the works and plenty to come, you can find these at [interface-transport implementations](https://github.com/libp2p/interface-transport#modules-that-implement-the-interface) list.
 
-Adding more transports is done through the same way as you added TCP and WebSockets. Some transports might offer extra functionalities but for what is libp2p concern, as long as it follows the interface defined at the [spec](https://github.com/libp2p/interface-transport#api), it will be able to use it.
+Adding more transports is done through the same way as you added TCP and WebSockets. Some transports might offer extra functionalities, but as far as libp2p is concerned, if it follows the interface defined at the [spec](https://github.com/libp2p/interface-transport#api) it will be able to use it.
 
 If you decide to implement a transport yourself, please consider adding to the list so that others can use it as well.
 
-Hope this tutorial was useful. We are always looking to improve it, contributions are welcome!
+Hope this tutorial was useful. We are always looking to improve it, so contributions are welcome!
