@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-identify#readme",
   "devDependencies": {
-    "aegir": "^12.3.0",
+    "aegir": "^12.4.0",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "pre-commit": "^1.2.2",
@@ -45,8 +45,8 @@
   },
   "dependencies": {
     "multiaddr": "^3.0.2",
-    "peer-id": "~0.10.4",
-    "peer-info": "~0.11.4",
+    "peer-id": "~0.10.5",
+    "peer-info": "~0.11.6",
     "protons": "^1.0.1",
     "pull-length-prefixed": "^1.3.0",
     "pull-stream": "^3.6.1"
