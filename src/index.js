@@ -319,7 +319,12 @@ class Node extends EventEmitter {
       if (typeof peer === 'string') {
         peer = multiaddr(peer)
       }
+
       const peerIdB58Str = peer.getPeerId()
+      if (!peerIdB58Str) {
+        throw new Error(`peer multiaddr instance or string must include peerId`)
+      }
+
       try {
         p = this.peerBook.get(peerIdB58Str)
       } catch (err) {
