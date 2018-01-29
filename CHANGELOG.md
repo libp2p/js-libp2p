@@ -1,3 +1,13 @@
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/libp2p/js-libp2p-keychain/compare/v0.2.1...v0.3.0) (2018-01-29)
+
+
+### Bug Fixes
+
+* deepmerge 2.0.1 fails in browser, stay with 1.5.2 ([2ce4444](https://github.com/libp2p/js-libp2p-keychain/commit/2ce4444))
+
+
+
 <a name="0.2.1"></a>
 ## [0.2.1](https://github.com/libp2p/js-libp2p-keychain/compare/v0.2.0...v0.2.1) (2017-12-28)
 
