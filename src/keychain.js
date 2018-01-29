@@ -6,6 +6,7 @@ const deepmerge = require('deepmerge')
 const crypto = require('libp2p-crypto')
 const DS = require('interface-datastore')
 const pull = require('pull-stream')
+const CMS = require('./cms')
 
 const keyPrefix = '/pkcs8/'
 const infoPrefix = '/info/'
@@ -21,7 +22,7 @@ const defaultOptions = {
   // See https://cryptosense.com/parametesr-choice-for-pbkdf2/
   dek: {
     keyLength: 512 / 8,
-    iterationCount: 1000,
+    iterationCount: 10000,
     salt: 'you should override this value with a crypto secure random number',
     hash: 'sha2-512'
   }
@@ -86,8 +87,8 @@ function DsInfoName (name) {
  * Manages the lifecycle of a key. Keys are encrypted at rest using PKCS #8.
  *
  * A key in the store has two entries
- * - '/info/key-name', contains the KeyInfo for the key
- * - '/pkcs8/key-name', contains the PKCS #8 for the key
+ * - '/info/*key-name*', contains the KeyInfo for the key
+ * - '/pkcs8/*key-name*', contains the PKCS #8 for the key
  *
  */
 class Keychain {
@@ -130,12 +131,17 @@ class Keychain {
   }
 
   /**
-   * The default options for a keychain.
+   * Gets an object that can encrypt/decrypt protected data
+   * using the Cryptographic Message Syntax (CMS).
    *
-   * @returns {object}
+   * CMS describes an encapsulation syntax for data protection. It
+   * is used to digitally sign, digest, authenticate, or encrypt
+   * arbitrary message content.
+   *
+   * @returns {CMS}
    */
-  static get options () {
-    return defaultOptions
+  get cms () {
+    return new CMS(this)
   }
 
   /**
@@ -148,6 +154,16 @@ class Keychain {
     const saltLength = Math.ceil(NIST.minSaltLength / 3) * 3 // no base64 padding
     options.dek.salt = crypto.randomBytes(saltLength).toString('base64')
     return options
+  }
+
+  /**
+   * Gets an object that can encrypt/decrypt protected data.
+   * The default options for a keychain.
+   *
+   * @returns {object}
+   */
+  static get options () {
+    return defaultOptions
   }
 
   /**

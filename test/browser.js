@@ -23,5 +23,6 @@ describe('browser', () => {
   })
 
   require('./keychain.spec')(datastore1, datastore2)
+  require('./cms-interop')(datastore2)
   require('./peerid')
 })

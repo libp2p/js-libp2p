@@ -65,8 +65,8 @@ A naming service for a key
 
 Cryptographically protected messages
 
-- `cms.createAnonymousEncryptedData (name, plain, callback)`
-- `cms.readData (cmsData, callback)`
+- `cms.encrypt (name, plain, callback)`
+- `cms.decrypt (cmsData, callback)`
 
 ### KeyInfo
 
@@ -104,6 +104,10 @@ const defaultOptions = {
 ### Physical storage
 
 The actual physical storage of an encrypted key is left to implementations of [interface-datastore](https://github.com/ipfs/interface-datastore/).  A key benifit is that now the key chain can be used in browser with the [js-datastore-level](https://github.com/ipfs/js-datastore-level) implementation.
+
+### Cryptographic Message Syntax (CMS)
+
+CMS, aka [PKCS #7](https://en.wikipedia.org/wiki/PKCS) and [RFC 5652](https://tools.ietf.org/html/rfc5652), describes an encapsulation syntax for data protection. It is used to digitally sign, digest, authenticate, or encrypt arbitrary message content. Basically, `cms.encrypt` creates a DER message that can be only be read by someone holding the private key.
 
 ## Contribute
 
