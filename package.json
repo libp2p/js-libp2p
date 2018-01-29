@@ -43,22 +43,22 @@
   "homepage": "https://github.com/libp2p/js-libp2p-keychain#readme",
   "dependencies": {
     "async": "^2.6.0",
-    "deepmerge": "^1.5.2",
+    "deepmerge": "^2.0.1",
     "interface-datastore": "~0.4.2",
-    "libp2p-crypto": "~0.11.0",
+    "libp2p-crypto": "~0.12.0",
     "pull-stream": "^3.6.1",
     "sanitize-filename": "^1.6.1"
   },
   "devDependencies": {
-    "aegir": "^12.3.0",
+    "aegir": "^12.4.0",
     "chai": "^4.1.2",
     "chai-string": "^1.4.0",
     "datastore-fs": "~0.4.2",
     "datastore-level": "~0.7.0",
     "dirty-chai": "^2.0.1",
     "level-js": "^2.2.4",
-    "mocha": "^4.0.1",
-    "peer-id": "~0.10.4",
+    "mocha": "^5.0.0",
+    "peer-id": "~0.10.5",
     "pre-commit": "^1.2.2",
     "rimraf": "^2.6.2"
   },
