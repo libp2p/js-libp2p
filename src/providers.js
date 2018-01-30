@@ -59,6 +59,18 @@ class Providers {
   }
 
   /**
+   * Release any resources.
+   *
+   * @returns {undefined}
+   */
+  stop () {
+    if (this._cleaner) {
+      clearInterval(this._cleaner)
+      this._cleaner = null
+    }
+  }
+
+  /**
    * Check all providers if they are still valid, and if not
    * delete them.
    *

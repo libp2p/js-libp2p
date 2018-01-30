@@ -120,6 +120,7 @@ class KadDHT {
   stop (callback) {
     this._running = false
     this.bootstrapStop()
+    this.providers.stop()
     this.network.stop(callback)
   }
 

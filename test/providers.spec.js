@@ -51,6 +51,7 @@ describe('Providers', () => {
       providers.getProviders(cid, (err, provs) => {
         expect(err).to.not.exist()
         expect(provs).to.be.eql([infos[0].id, infos[1].id])
+        providers.stop()
 
         done()
       })
@@ -82,6 +83,7 @@ describe('Providers', () => {
           provs.forEach((p) => {
             expect(p[0].id).to.be.eql(infos[0].id.id)
           })
+          providers.stop()
           cb()
         })
       }
@@ -111,6 +113,7 @@ describe('Providers', () => {
         providers.getProviders(cid, (err, provs) => {
           expect(err).to.not.exist()
           expect(provs).to.have.length(0)
+          providers.stop()
           done()
         })
       }, 300)
