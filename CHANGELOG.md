@@ -1,3 +1,14 @@
+<a name="0.9.2"></a>
+## [0.9.2](https://github.com/libp2p/js-libp2p-mdns/compare/v0.9.1...v0.9.2) (2018-01-30)
+
+
+### Bug Fixes
+
+* Clear interval when stopping ([#63](https://github.com/libp2p/js-libp2p-mdns/issues/63)) ([1d586c3](https://github.com/libp2p/js-libp2p-mdns/commit/1d586c3))
+* update deps for [#64](https://github.com/libp2p/js-libp2p-mdns/issues/64) ([#66](https://github.com/libp2p/js-libp2p-mdns/issues/66)) ([d4ed3b3](https://github.com/libp2p/js-libp2p-mdns/commit/d4ed3b3))
+
+
+
 <a name="0.9.1"></a>
 ## [0.9.1](https://github.com/libp2p/js-libp2p-mdns/compare/v0.9.0...v0.9.1) (2017-09-08)
 
