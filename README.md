@@ -28,6 +28,6 @@ mdns.start(() => setTimeout(() => mdns.stop(() => {}), 20 * 1000))
 ```
 
 - options
-  - `broadcast` - (true/false) announce our presence through mDNS
-  - `interval` - query interval
-  - `serviceTag` - name of the service announced
+  - `broadcast` - (true/false) announce our presence through mDNS, default false
+  - `interval` - query interval, default 10 * 1000 (10 seconds)
+  - `serviceTag` - name of the service announcedm, default 'ipfs.local`

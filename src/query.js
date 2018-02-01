@@ -12,14 +12,19 @@ const tcp = new TCP()
 module.exports = {
 
   queryLAN: function (mdns, serviceTag, interval) {
-    return setInterval(() => {
+    const query = () => {
+      log('query', serviceTag)
       mdns.query({
         questions: [{
           name: serviceTag,
           type: 'PTR'
         }]
       })
-    }, interval)
+    }
+
+    // Immediately start a query, then do it every interval.
+    query()
+    return setInterval(query, interval)
   },
 
   gotResponse: function (rsp, peerInfo, serviceTag, callback) {
@@ -55,8 +60,9 @@ module.exports = {
     answers.a.forEach((a) => {
       multiaddrs.push(new Multiaddr('/ip4/' + a.data + '/tcp/' + port))
     })
-
-    // TODO Create multiaddrs from AAAA (IPv6) records as well
+    answers.aaaa.forEach((a) => {
+      multiaddrs.push(new Multiaddr('/ip6/' + a.data + '/tcp/' + port))
+    })
 
     if (peerInfo.id.toB58String() === b58Id) {
       return // replied to myself, ignore
@@ -141,6 +147,7 @@ module.exports = {
         }
       })
 
+      log('responding to query')
       mdns.respond(answers)
     }
   }
