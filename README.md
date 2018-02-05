@@ -162,7 +162,7 @@ class Node extends libp2p {
 
 > Dials to another peer in the network.
 
-- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+- `peer`: can be an instance of [PeerInfo][], [PeerId][], [multiaddr][], or a multiaddr string
 - `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
 - `callback`: Function with signature `function (err, conn) {}` where `conn` is a [Connection](https://github.com/libp2p/interface-connection) object
 
