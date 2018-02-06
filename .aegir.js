@@ -17,10 +17,7 @@ let swarmA
 let swarmB
 let sigS
 
-const options = {
-  port: 15555,
-  host: '127.0.0.1'
-}
+const options = { port: 15555, host: '127.0.0.1' }
 
 function before (done) {
   function createListenerA (cb) {
@@ -63,7 +60,7 @@ function before (done) {
         swarmB.transport.add('ws', new WebSockets())
         swarmB.connection.addStreamMuxer(spdy)
         swarmB.connection.reuse()
-        swarmB.listen(cb)
+        swarmB.start(cb)
         swarmB.handle('/echo/1.0.0', echo)
       })
   }
@@ -85,7 +82,7 @@ function after (done) {
   const ready = () => ++count === 3 ? done() : null
 
   swarmA.transport.close('ws', ready)
-  swarmB.close(ready)
+  swarmB.stop(ready)
   sigS.stop(ready)
 }
 
