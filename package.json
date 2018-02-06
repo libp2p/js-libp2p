@@ -1,7 +1,7 @@
 {
-  "name": "libp2p-swarm",
+  "name": "libp2p-switch",
   "version": "0.35.1",
-  "description": "libp2p swarm implementation in JavaScript",
+  "description": "libp2p switch implementation in JavaScript",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/libp2p/js-libp2p-swarm.git"
+    "url": "https://github.com/libp2p/js-libp2p-switch.git"
   },
   "keywords": [
     "IPFS"
@@ -25,9 +25,9 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-swarm/issues"
+    "url": "https://github.com/libp2p/js-libp2p-switch/issues"
   },
-  "homepage": "https://github.com/libp2p/js-libp2p-swarm",
+  "homepage": "https://github.com/libp2p/js-libp2p-switch",
   "pre-commit": [
     "lint",
     "test"
