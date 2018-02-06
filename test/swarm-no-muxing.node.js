@@ -21,9 +21,7 @@ describe('Switch (no Stream Multiplexing)', () => {
   let switchB
 
   before((done) => createInfos(2, (err, infos) => {
-    if (err) {
-      return done(err)
-    }
+    expect(err).to.not.exist()
 
     const peerA = infos[0]
     const peerB = infos[1]

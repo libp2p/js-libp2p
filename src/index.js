@@ -81,7 +81,7 @@ class Switch extends EE {
 
   // Start listening on all available transports
   start (callback) {
-    each(this.availableTransports(this.peerInfo), (ts, cb) => {
+    each(this.availableTransports(this._peerInfo), (ts, cb) => {
       // Listen on the given transport
       this.transport.listen(ts, {}, null, cb)
     }, callback)

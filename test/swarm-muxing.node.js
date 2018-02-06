@@ -14,190 +14,164 @@ const pull = require('pull-stream')
 const PeerBook = require('peer-book')
 
 const utils = require('./utils')
-const Swarm = require('../src')
+const createInfos = utils.createInfos
+const tryEcho = utils.tryEcho
+const Switch = require('../src')
 
-describe('high level API - with everything mixed all together!', () => {
-  let swarmA // tcp
-  let peerA
-  let swarmB // tcp+ws
-  let peerB
-  let swarmC // tcp+ws
-  let peerC
-  let swarmD // ws
-  let peerD
-  let swarmE // ws
-  let peerE
+describe('Switch (everything all together)', () => {
+  let switchA // tcp
+  let switchB // tcp+ws
+  let switchC // tcp+ws
+  let switchD // ws
+  let switchE // ws
 
-  before((done) => {
-    utils.createInfos(5, (err, infos) => {
-      if (err) {
-        return done(err)
-      }
+  before((done) => createInfos(5, (err, infos) => {
+    expect(err).to.not.exist()
 
-      peerA = infos[0]
-      peerB = infos[1]
-      peerC = infos[2]
-      peerD = infos[3]
-      peerE = infos[4]
+    const peerA = infos[0]
+    const peerB = infos[1]
+    const peerC = infos[2]
+    const peerD = infos[3]
+    const peerE = infos[4]
 
-      swarmA = new Swarm(peerA, new PeerBook())
-      swarmB = new Swarm(peerB, new PeerBook())
-      swarmC = new Swarm(peerC, new PeerBook())
-      swarmD = new Swarm(peerD, new PeerBook())
-      swarmE = new Swarm(peerE, new PeerBook())
+    switchA = new Switch(peerA, new PeerBook())
+    switchB = new Switch(peerB, new PeerBook())
+    switchC = new Switch(peerC, new PeerBook())
+    switchD = new Switch(peerD, new PeerBook())
+    switchE = new Switch(peerE, new PeerBook())
 
-      done()
-    })
-  })
+    done()
+  }))
 
   after(function (done) {
     this.timeout(3 * 1000)
 
     parallel([
-      (cb) => swarmA.close(cb),
-      (cb) => swarmB.close(cb),
-      (cb) => swarmD.close(cb),
-      (cb) => swarmE.close(cb)
+      (cb) => switchA.stop(cb),
+      (cb) => switchB.stop(cb),
+      (cb) => switchD.stop(cb),
+      (cb) => switchE.stop(cb)
     ], done)
   })
 
   it('add tcp', (done) => {
-    peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
-    peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
-    peerC.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
+    switchA._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
+    switchB._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
+    switchC._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
 
-    swarmA.transport.add('tcp', new TCP())
-    swarmB.transport.add('tcp', new TCP())
-    swarmC.transport.add('tcp', new TCP())
+    switchA.transport.add('tcp', new TCP())
+    switchB.transport.add('tcp', new TCP())
+    switchC.transport.add('tcp', new TCP())
 
     parallel([
-      (cb) => swarmA.transport.listen('tcp', {}, null, cb),
-      (cb) => swarmB.transport.listen('tcp', {}, null, cb)
+      (cb) => switchA.transport.listen('tcp', {}, null, cb),
+      (cb) => switchB.transport.listen('tcp', {}, null, cb)
     ], done)
   })
 
-  it.skip('add utp', (done) => {})
-
   it('add websockets', (done) => {
-    peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9012/ws')
-    peerC.multiaddrs.add('/ip4/127.0.0.1/tcp/9022/ws')
-    peerD.multiaddrs.add('/ip4/127.0.0.1/tcp/9032/ws')
-    peerE.multiaddrs.add('/ip4/127.0.0.1/tcp/9042/ws')
+    switchB._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/9012/ws')
+    switchC._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/9022/ws')
+    switchD._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/9032/ws')
+    switchE._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/9042/ws')
 
-    swarmB.transport.add('ws', new WebSockets())
-    swarmC.transport.add('ws', new WebSockets())
-    swarmD.transport.add('ws', new WebSockets())
-    swarmE.transport.add('ws', new WebSockets())
+    switchB.transport.add('ws', new WebSockets())
+    switchC.transport.add('ws', new WebSockets())
+    switchD.transport.add('ws', new WebSockets())
+    switchE.transport.add('ws', new WebSockets())
 
     parallel([
-      (cb) => swarmB.transport.listen('ws', {}, null, cb),
-      (cb) => swarmD.transport.listen('ws', {}, null, cb),
-      (cb) => swarmE.transport.listen('ws', {}, null, cb)
+      (cb) => switchB.transport.listen('ws', {}, null, cb),
+      (cb) => switchD.transport.listen('ws', {}, null, cb),
+      (cb) => switchE.transport.listen('ws', {}, null, cb)
     ], done)
   })
 
   it('listen automatically', (done) => {
-    swarmC.listen(done)
+    switchC.start(done)
   })
 
-  it('add spdy', () => {
-    swarmA.connection.addStreamMuxer(spdy)
-    swarmB.connection.addStreamMuxer(spdy)
-    swarmC.connection.addStreamMuxer(spdy)
-    swarmD.connection.addStreamMuxer(spdy)
-    swarmE.connection.addStreamMuxer(spdy)
+  it('add spdy and enable identify', () => {
+    switchA.connection.addStreamMuxer(spdy)
+    switchB.connection.addStreamMuxer(spdy)
+    switchC.connection.addStreamMuxer(spdy)
+    switchD.connection.addStreamMuxer(spdy)
+    switchE.connection.addStreamMuxer(spdy)
 
-    swarmA.connection.reuse()
-    swarmB.connection.reuse()
-    swarmC.connection.reuse()
-    swarmD.connection.reuse()
-    swarmE.connection.reuse()
+    switchA.connection.reuse()
+    switchB.connection.reuse()
+    switchC.connection.reuse()
+    switchD.connection.reuse()
+    switchE.connection.reuse()
   })
-
-  it.skip('add multiplex', () => {})
 
   it('warm up from A to B on tcp to tcp+ws', (done) => {
     parallel([
-      (cb) => swarmB.once('peer-mux-established', (peerInfo) => {
-        expect(peerInfo.id.toB58String()).to.equal(peerA.id.toB58String())
+      (cb) => switchB.once('peer-mux-established', (pi) => {
+        expect(pi.id.toB58String()).to.equal(switchA._peerInfo.id.toB58String())
         cb()
       }),
-      (cb) => swarmA.once('peer-mux-established', (peerInfo) => {
-        expect(peerInfo.id.toB58String()).to.equal(peerB.id.toB58String())
+      (cb) => switchA.once('peer-mux-established', (pi) => {
+        expect(pi.id.toB58String()).to.equal(switchB._peerInfo.id.toB58String())
         cb()
       }),
-      (cb) => swarmA.dial(peerB, (err) => {
+      (cb) => switchA.dial(switchB._peerInfo, (err) => {
         expect(err).to.not.exist()
-        expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+        expect(Object.keys(switchA.muxedConns).length).to.equal(1)
         cb()
       })
     ], done)
   })
 
   it('warm up a warmed up, from B to A', (done) => {
-    swarmB.dial(peerA, (err) => {
+    switchB.dial(switchA._peerInfo, (err) => {
       expect(err).to.not.exist()
-      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+      expect(Object.keys(switchA.muxedConns).length).to.equal(1)
       done()
     })
   })
 
   it('dial from tcp to tcp+ws, on protocol', (done) => {
-    swarmB.handle('/anona/1.0.0', (protocol, conn) => pull(conn, conn))
+    switchB.handle('/anona/1.0.0', (protocol, conn) => pull(conn, conn))
 
-    swarmA.dial(peerB, '/anona/1.0.0', (err, conn) => {
+    switchA.dial(switchB._peerInfo, '/anona/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
-      pull(
-        pull.empty(),
-        conn,
-        pull.onEnd(done)
-      )
+      expect(Object.keys(switchA.muxedConns).length).to.equal(1)
+      tryEcho(conn, done)
     })
   })
 
   it('dial from ws to ws no proto', (done) => {
-    swarmD.dial(peerE, (err) => {
+    switchD.dial(switchE._peerInfo, (err) => {
       expect(err).to.not.exist()
-      expect(Object.keys(swarmD.muxedConns).length).to.equal(1)
+      expect(Object.keys(switchD.muxedConns).length).to.equal(1)
       done()
     })
   })
 
   it('dial from ws to ws', (done) => {
-    swarmE.handle('/abacaxi/1.0.0', (protocol, conn) => pull(conn, conn))
+    switchE.handle('/abacaxi/1.0.0', (protocol, conn) => pull(conn, conn))
 
-    swarmD.dial(peerE, '/abacaxi/1.0.0', (err, conn) => {
+    switchD.dial(switchE._peerInfo, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      expect(Object.keys(swarmD.muxedConns).length).to.equal(1)
+      expect(Object.keys(switchD.muxedConns).length).to.equal(1)
 
-      pull(
-        pull.empty(),
-        conn,
-        pull.onEnd((err) => {
-          expect(err).to.not.exist()
-          setTimeout(() => {
-            expect(Object.keys(swarmE.muxedConns).length).to.equal(1)
-            done()
-          }, 1000)
-        })
-      )
+      tryEcho(conn, () => setTimeout(() => {
+        expect(Object.keys(switchE.muxedConns).length).to.equal(1)
+        done()
+      }, 1000))
     })
   })
 
   it('dial from tcp to tcp+ws (returned conn)', (done) => {
-    swarmB.handle('/grapes/1.0.0', (protocol, conn) => pull(conn, conn))
+    switchB.handle('/grapes/1.0.0', (protocol, conn) => pull(conn, conn))
 
-    const conn = swarmA.dial(peerB, '/grapes/1.0.0', (err, conn) => {
+    const conn = switchA.dial(switchB._peerInfo, '/grapes/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
+      expect(Object.keys(switchA.muxedConns).length).to.equal(1)
     })
 
-    pull(
-      pull.empty(),
-      conn,
-      pull.onEnd(done)
-    )
+    tryEcho(conn, done)
   })
 
   it('dial from tcp+ws to tcp+ws', (done) => {
@@ -213,7 +187,7 @@ describe('high level API - with everything mixed all together!', () => {
       }
     }
 
-    swarmC.handle('/mamao/1.0.0', (protocol, conn) => {
+    switchC.handle('/mamao/1.0.0', (protocol, conn) => {
       conn.getPeerInfo((err, peerInfo) => {
         expect(err).to.not.exist()
         expect(peerInfo).to.exist()
@@ -223,7 +197,7 @@ describe('high level API - with everything mixed all together!', () => {
       pull(conn, conn)
     })
 
-    swarmA.dial(peerC, '/mamao/1.0.0', (err, conn) => {
+    switchA.dial(switchC._peerInfo, '/mamao/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
 
       conn.getPeerInfo((err, peerInfo) => {
@@ -231,16 +205,12 @@ describe('high level API - with everything mixed all together!', () => {
         expect(peerInfo).to.exist()
         check()
       })
-      expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
+      expect(Object.keys(switchA.muxedConns).length).to.equal(2)
 
-      expect(peerC.isConnected).to.exist()
-      expect(peerA.isConnected).to.exist()
+      expect(switchC._peerInfo.isConnected).to.exist()
+      expect(switchA._peerInfo.isConnected).to.exist()
 
-      pull(
-        pull.empty(),
-        conn,
-        pull.onEnd(check)
-      )
+      tryEcho(conn, done)
     })
   })
 
@@ -248,29 +218,29 @@ describe('high level API - with everything mixed all together!', () => {
     let count = 0
     const ready = () => ++count === 3 ? done() : null
 
-    swarmB.once('peer-mux-closed', (peerInfo) => {
-      expect(Object.keys(swarmB.muxedConns).length).to.equal(0)
-      expect(peerB.isConnected()).to.not.exist()
+    switchB.once('peer-mux-closed', (peerInfo) => {
+      expect(Object.keys(switchB.muxedConns).length).to.equal(0)
+      expect(switchB._peerInfo.isConnected()).to.not.exist()
       ready()
     })
 
-    swarmA.once('peer-mux-closed', (peerInfo) => {
-      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
-      expect(peerA.isConnected()).to.not.exist()
+    switchA.once('peer-mux-closed', (peerInfo) => {
+      expect(Object.keys(switchA.muxedConns).length).to.equal(1)
+      expect(switchA._peerInfo.isConnected()).to.not.exist()
       ready()
     })
 
-    swarmA.hangUp(peerB, (err) => {
+    switchA.hangUp(switchB._peerInfo, (err) => {
       expect(err).to.not.exist()
       ready()
     })
   })
 
   it('close a muxer emits event', function (done) {
-    this.timeout(2500)
+    this.timeout(3 * 1000)
     parallel([
-      (cb) => swarmC.close(cb),
-      (cb) => swarmA.once('peer-mux-closed', (peerInfo) => cb())
+      (cb) => switchC.stop(cb),
+      (cb) => switchA.once('peer-mux-closed', (peerInfo) => cb())
     ], done)
   })
 })

@@ -14,85 +14,79 @@ const WS = require('libp2p-websockets')
 const PeerBook = require('peer-book')
 
 const utils = require('./utils')
+const createInfos = utils.createInfos
+const tryEcho = utils.tryEcho
 const Swarm = require('../src')
 
 describe(`circuit`, function () {
   let swarmA // TCP
-  let peerA
   let swarmB // WS
-  let peerB
   let swarmC // no transports
-  let peerC // just a peer
   let dialSpyA
 
-  before((done) => {
-    utils.createInfos(3, (err, infos) => {
-      if (err) {
-        return done(err)
-      }
+  before((done) => createInfos(3, (err, infos) => {
+    expect(err).to.not.exist()
 
-      peerA = infos[0]
-      peerB = infos[1]
-      peerC = infos[2]
+    const peerA = infos[0]
+    const peerB = infos[1]
+    const peerC = infos[2]
 
-      peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/9001')
-      peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9002/ws')
+    peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/9001')
+    peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9002/ws')
 
-      swarmA = new Swarm(peerA, new PeerBook())
-      swarmB = new Swarm(peerB, new PeerBook())
-      swarmC = new Swarm(peerC, new PeerBook())
+    swarmA = new Swarm(peerA, new PeerBook())
+    swarmB = new Swarm(peerB, new PeerBook())
+    swarmC = new Swarm(peerC, new PeerBook())
 
-      swarmA.transport.add('tcp', new TCP())
-      swarmA.transport.add('WebSockets', new WS())
+    swarmA.transport.add('tcp', new TCP())
+    swarmA.transport.add('ws', new WS())
+    swarmB.transport.add('ws', new WS())
 
-      swarmB.transport.add('WebSockets', new WS())
+    dialSpyA = sinon.spy(swarmA.transport, 'dial')
 
-      dialSpyA = sinon.spy(swarmA.transport, 'dial')
-
-      done()
-    })
-  })
+    done()
+  }))
 
   after((done) => {
     parallel([
-      (cb) => swarmA.close(cb),
-      (cb) => swarmB.close(cb)
+      (cb) => swarmA.stop(cb),
+      (cb) => swarmB.stop(cb)
     ], done)
   })
 
-  it(`.enableCircuitRelay - should enable circuit transport`, function () {
-    swarmA.connection.enableCircuitRelay({
-      enabled: true
-    })
+  it('.enableCircuitRelay', () => {
+    swarmA.connection.enableCircuitRelay({ enabled: true })
     expect(Object.keys(swarmA.transports).length).to.equal(3)
 
-    swarmB.connection.enableCircuitRelay({
-      enabled: true
-    })
+    swarmB.connection.enableCircuitRelay({ enabled: true })
     expect(Object.keys(swarmB.transports).length).to.equal(2)
   })
 
-  it(`should add to transport array`, function () {
+  it('add circuit to the transports lists', () => {
     expect(swarmA.transports['Circuit']).to.exist()
     expect(swarmB.transports['Circuit']).to.exist()
   })
 
-  it(`should add /p2p-curcuit addrs on listen`, function (done) {
+  it('add /p2p-curcuit addrs on start', (done) => {
     parallel([
-      (cb) => swarmA.listen(cb),
-      (cb) => swarmB.listen(cb)
+      (cb) => swarmA.start(cb),
+      (cb) => swarmB.start(cb)
     ], (err) => {
       expect(err).to.not.exist()
-      expect(peerA.multiaddrs.toArray().filter((a) => a.toString().includes(`/p2p-circuit`)).length).to.be.eql(2)
-      expect(peerB.multiaddrs.toArray().filter((a) => a.toString().includes(`/p2p-circuit`)).length).to.be.eql(2)
+      expect(swarmA._peerInfo.multiaddrs.toArray().filter((a) => a.toString()
+        .includes(`/p2p-circuit`)).length).to.equal(2)
+      expect(swarmB._peerInfo.multiaddrs.toArray().filter((a) => a.toString()
+        .includes(`/p2p-circuit`)).length).to.equal(2)
       done()
     })
   })
 
-  it(`should dial circuit ony once`, function (done) {
-    peerA.multiaddrs.clear()
-    peerA.multiaddrs.add(`/dns4/wrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star`)
-    swarmA.dial(peerC, (err, conn) => {
+  it('dial circuit only once', (done) => {
+    swarmA._peerInfo.multiaddrs.clear()
+    swarmA._peerInfo.multiaddrs
+      .add(`/dns4/wrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star`)
+
+    swarmA.dial(swarmC._peerInfo, (err, conn) => {
       expect(err).to.exist()
       expect(err).to.match(/Circuit already tried!/)
       expect(conn).to.not.exist()
@@ -101,11 +95,13 @@ describe(`circuit`, function () {
     })
   })
 
-  it(`should dial circuit last`, function (done) {
+  it('dial circuit last', (done) => {
+    const peerC = swarmC._peerInfo
     peerC.multiaddrs.clear()
     peerC.multiaddrs.add(`/p2p-circuit/ipfs/ABCD`)
     peerC.multiaddrs.add(`/ip4/127.0.0.1/tcp/9998/ipfs/ABCD`)
     peerC.multiaddrs.add(`/ip4/127.0.0.1/tcp/9999/ws/ipfs/ABCD`)
+
     swarmA.dial(peerC, (err, conn) => {
       expect(err).to.exist()
       expect(conn).to.not.exist()
@@ -114,8 +110,8 @@ describe(`circuit`, function () {
     })
   })
 
-  it(`should not try circuit if no transports enabled`, function (done) {
-    swarmC.dial(peerA, (err, conn) => {
+  it('should not try circuit if no transports enabled', (done) => {
+    swarmC.dial(swarmA._peerInfo, (err, conn) => {
       expect(err).to.exist()
       expect(conn).to.not.exist()
 
@@ -124,8 +120,8 @@ describe(`circuit`, function () {
     })
   })
 
-  it(`should not dial circuit if other transport succeed`, function (done) {
-    swarmA.dial(peerB, (err) => {
+  it('should not dial circuit if other transport succeed', (done) => {
+    swarmA.dial(swarmB._peerInfo, (err) => {
       expect(err).not.to.exist()
       expect(dialSpyA.lastCall.args[0]).to.not.be.eql('Circuit')
       done()
