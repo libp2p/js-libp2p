@@ -179,7 +179,7 @@ describe('Switch (everything all together)', () => {
 
     function check (err) {
       expect(err).to.not.exist()
-      if (i++ === 2) { done() }
+      if (++i === 3) { done() }
     }
 
     switchC.handle('/mamao/1.0.0', (protocol, conn) => {
@@ -205,7 +205,7 @@ describe('Switch (everything all together)', () => {
       expect(switchC._peerInfo.isConnected).to.exist()
       expect(switchA._peerInfo.isConnected).to.exist()
 
-      tryEcho(conn, done)
+      tryEcho(conn, check)
     })
   })
 
@@ -233,9 +233,10 @@ describe('Switch (everything all together)', () => {
 
   it('close a muxer emits event', function (done) {
     this.timeout(3 * 1000)
+
     parallel([
-      (cb) => switchC.stop(cb),
-      (cb) => switchA.once('peer-mux-closed', (peerInfo) => cb())
+      (cb) => switchA.once('peer-mux-closed', (peerInfo) => cb()),
+      (cb) => switchC.stop(cb)
     ], done)
   })
 })

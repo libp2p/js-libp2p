@@ -5,6 +5,7 @@ const multistream = require('multistream-select')
 const waterfall = require('async/waterfall')
 const debug = require('debug')
 const log = debug('libp2p:swarm:connection')
+const once = require('once')
 const setImmediate = require('async/setImmediate')
 
 const Circuit = require('libp2p-circuit')
@@ -37,6 +38,7 @@ module.exports = function connection (swarm) {
           conn.getPeerInfo = (cb) => {
             const conn = muxedConn.newStream()
             const ms = new multistream.Dialer()
+            cb = once(cb)
 
             waterfall([
               (cb) => ms.handle(conn, cb),
