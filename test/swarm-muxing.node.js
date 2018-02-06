@@ -178,13 +178,8 @@ describe('Switch (everything all together)', () => {
     let i = 0
 
     function check (err) {
-      if (err) {
-        return done(err)
-      }
-
-      if (i++ === 2) {
-        done()
-      }
+      expect(err).to.not.exist()
+      if (i++ === 2) { done() }
     }
 
     switchC.handle('/mamao/1.0.0', (protocol, conn) => {
@@ -205,8 +200,8 @@ describe('Switch (everything all together)', () => {
         expect(peerInfo).to.exist()
         check()
       })
-      expect(Object.keys(switchA.muxedConns).length).to.equal(2)
 
+      expect(Object.keys(switchA.muxedConns).length).to.equal(2)
       expect(switchC._peerInfo.isConnected).to.exist()
       expect(switchA._peerInfo.isConnected).to.exist()
 

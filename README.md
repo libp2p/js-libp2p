@@ -135,7 +135,7 @@ const secio = require('libp2p-secio')
 switch.connection.crypto(secio.tag, secio.encrypt)
 ```
 
-##### `switch.connection.enableCircuitRelay(options)`
+##### `switch.connection.enableCircuitRelay(options, callback)`
 
 Enable circuit relaying.
 
@@ -144,6 +144,7 @@ Enable circuit relaying.
     - hop - an object with two properties
         - enabled - enables circuit relaying
         - active - is it an active or passive relay (default false)
+- `callback`
 
 ### Internal Transports API
 
