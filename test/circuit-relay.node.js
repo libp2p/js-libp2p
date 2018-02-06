@@ -15,7 +15,7 @@ const PeerBook = require('peer-book')
 
 const utils = require('./utils')
 const createInfos = utils.createInfos
-const tryEcho = utils.tryEcho
+// const tryEcho = utils.tryEcho
 const Swarm = require('../src')
 
 describe(`circuit`, function () {
