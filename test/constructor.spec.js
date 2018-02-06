@@ -6,10 +6,10 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 
-const Swarm = require('../src')
+const Switch = require('../src')
 
-describe('create Swarm instance', () => {
+describe('create Switch instance', () => {
   it('throws on missing peerInfo', () => {
-    expect(() => Swarm()).to.throw(/You must provide a `peerInfo`/)
+    expect(() => new Switch()).to.throw(/You must provide a `peerInfo`/)
   })
 })

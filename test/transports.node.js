@@ -12,21 +12,9 @@ const pull = require('pull-stream')
 const PeerBook = require('peer-book')
 
 const utils = require('./utils')
+const createInfos = utils.createInfos
+const tryEcho = utils.tryEcho
 const Switch = require('../src')
-
-function tryEcho (conn, callback) {
-  const values = ['echo']
-
-  pull(
-    pull.values(values),
-    conn,
-    pull.collect((err, _values) => {
-      expect(err).to.not.exist()
-      expect(_values).to.eql(values)
-      callback()
-    })
-  )
-}
 
 describe('transports', () => {
   [
@@ -38,7 +26,7 @@ describe('transports', () => {
     let switchB
     let morePeerInfo
 
-    before((done) => utils.createInfos(10, (err, peerInfos) => {
+    before((done) => createInfos(9, (err, peerInfos) => {
       expect(err).to.not.exist()
 
       const peerA = peerInfos[0]
