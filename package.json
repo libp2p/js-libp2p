@@ -28,7 +28,7 @@
     "url": "https://github.com/libp2p/js-libp2p-switch/issues"
   },
   "homepage": "https://github.com/libp2p/js-libp2p-switch",
-  "pre-commit": [
+  "pre-push": [
     "lint",
     "test"
   ],
