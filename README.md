@@ -1,4 +1,4 @@
-libp2p-swarm JavaScript implementation
+libp2p-switch JavaScript implementation
 ======================================
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
@@ -11,27 +11,25 @@ libp2p-swarm JavaScript implementation
 ![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
 ![](https://img.shields.io/badge/Node.js-%3E%3D6.0.0-orange.svg?style=flat-square)
 
-> libp2p swarm implementation in JavaScript.
+> libp2p-switch is a dialar machine, it leverages the multiple libp2p transports, stream muxers, crypto channels and other connection upgrades to dial to peers in the libp2p network. It also supports Protocol Multiplexing through a multicodec and multistream-select handshake.
 
-libp2p-swarm is a connection abstraction that is able to leverage several transports and connection upgrades, such as congestion control, channel encryption, the multiplexing of several streams in one connection, and more. It does this by bringing protocol multiplexing to the application level (instead of the traditional Port level) using multicodec and multistream.
-
-libp2p-swarm is used by [libp2p](https://github.com/libp2p/js-libp2p) but it can be also used as a standalone module.
+libp2p-switch is used by [libp2p](https://github.com/libp2p/js-libp2p) but it can be also used as a standalone module.
 
 ## Table of Contents
 
 - [Install](#install)
 - [Usage](#usage)
-  - [Create a libp2p Swarm](#create-a-libp2p-swarm)
+  - [Create a libp2p switch](#create-a-libp2p-switch)
 - [API](#api)
-  - [Transports](#transports)
-  - [Connection](#connection)
-  - [`swarm.dial(peer, protocol, callback)`](#swarmdialpi-protocol-callback)
-  - [`swarm.hangUp(peer, callback)`](#swarmhanguppi-callback)
-  - [`swarm.listen(callback)`](#swarmlistencallback)
-  - [`swarm.handle(protocol, handler)`](#swarmhandleprotocol-handler)
-  - [`swarm.unhandle(protocol)`](#swarmunhandleprotocol)
-  - [`swarm.close(callback)`](#swarmclosecallback)
-- [Design](#design)
+  - [`switch.dial(peer, protocol, callback)`](#swarmdialpi-protocol-callback)
+  - [`switch.hangUp(peer, callback)`](#swarmhanguppi-callback)
+  - [`switch.handle(protocol, handler)`](#swarmhandleprotocol-handler)
+  - [`switch.unhandle(protocol)`](#swarmunhandleprotocol)
+  - [`switch.start(callback)`](#swarmlistencallback)
+  - [`switch.stop(callback)`](#swarmclosecallback)
+  - [`switch.connection`](#connection)
+  - [Internal Transports API](#transports)
+- [Design Notes](#designnotes)
   - [Multitransport](#multitransport)
   - [Connection upgrades](#connection-upgrades)
   - [Identify](#identify)
@@ -41,82 +39,92 @@ libp2p-swarm is used by [libp2p](https://github.com/libp2p/js-libp2p) but it can
 
 ## Install
 
-libp2p-swarm is available on npm and so, like any other npm module, just:
-
 ```bash
-> npm install libp2p-swarm --save
+> npm install libp2p-switch --save
 ```
 
 ## Usage
 
-### Create a libp2p Swarm
-
-And use it in your Node.js code as:
+### Create a libp2p Switch
 
 ```JavaScript
-const Swarm = require('libp2p-swarm')
+const switch = require('libp2p-switch')
 
-const sw = new Swarm(peerInfo [, peerBook])
+const sw = new switch(peerInfo [, peerBook])
 ```
 
 ## API
 
-peerInfo is a [PeerInfo](https://github.com/libp2p/js-peer-info) object that represents the peer creating this swarm instance.
+- peerInfo is a [PeerInfo](https://github.com/libp2p/js-peer-info) object that has the peer information.
+- peerBook is a [PeerBook](https://github.com/libp2p/js-peer-book) object that stores all the known peers.
 
-### Transports
+### `switch.dial(peer, protocol, callback)`
 
-##### `swarm.transport.add(key, transport, options, callback)`
+dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point where we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, then do nothing.
 
-libp2p-swarm expects transports that implement [interface-transport](https://github.com/libp2p/interface-transport). For example [libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp).
-
-- `key` - the transport identifier.
-- `transport` -
-- `options` -
-- `callback` -
-
-##### `swarm.transport.dial(key, multiaddrs, callback)`
-
-Dial to a peer on a specific transport.
-
-- `key`
-- `multiaddrs`
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+- `protocol`
 - `callback`
 
-##### `swarm.transport.listen(key, options, handler, callback)`
+### `switch.hangUp(peer, callback)`
 
-Set a transport to start listening mode.
+Hang up the muxed connection we have with the peer.
 
-- `key`
-- `options`
-- `handler`
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
 - `callback`
 
-##### `swarm.transport.close(key, callback)`
 
-Close the listeners of a given transport.
+### `switch.handle(protocol, handlerFunc, matchFunc)`
 
-- `key`
+Handle a new protocol.
+
+- `protocol`
+- `handlerFunc` - function called when we receive a dial on `protocol. Signature must be `function (protocol, conn) {}`
+- `matchFunc` - matchFunc for multistream-select
+
+### `switch.unhandle(protocol)`
+
+Unhandle a protocol.
+
+- `protocol`
+
+### `switch.on('peer-mux-established', (peer) => {})`
+
+- `peer`: is instance of [PeerInfo][] that has info of the peer we have just established a muxed connection with.
+
+### `switch.on('peer-mux-closed', (peer) => {})`
+
+- `peer`: is instance of [PeerInfo][] that has info of the peer we have just closed a muxed connection.
+
+### `switch.start(callback)`
+
+Start listening on all added transports that are available on the current `peerInfo`.
+
+### `switch.stop(callback)`
+
+Close all the listeners and muxers.
+
 - `callback`
 
-### Connection
+### `switch.connection`
 
-##### `swarm.connection.addUpgrade()`
+##### `switch.connection.addUpgrade()`
 
 A connection upgrade must be able to receive and return something that implements the [interface-connection](https://github.com/libp2p/interface-connection) specification.
 
 > **WIP**
 
-##### `swarm.connection.addStreamMuxer(muxer)`
+##### `switch.connection.addStreamMuxer(muxer)`
 
 Upgrading a connection to use a stream muxer is still considered an upgrade, but a special case since once this connection is applied, the returned obj will implement the [interface-stream-muxer](https://github.com/libp2p/interface-stream-muxer) spec.
 
 - `muxer`
 
-##### `swarm.connection.reuse()`
+##### `switch.connection.reuse()`
 
 Enable the identify protocol.
 
-##### `swarm.connection.crypto([tag, encrypt])`
+##### `switch.connection.crypto([tag, encrypt])`
 
 Enable a specified crypto protocol. By default no encryption is used, aka `plaintext`. If called with no arguments it resets to use `plaintext`.
 
@@ -124,10 +132,10 @@ You can use for example [libp2p-secio](https://github.com/libp2p/js-libp2p-secio
 
 ```js
 const secio = require('libp2p-secio')
-swarm.connection.crypto(secio.tag, secio.encrypt)
+switch.connection.crypto(secio.tag, secio.encrypt)
 ```
 
-##### `swarm.connection.enableCircuitRelay(options)`
+##### `switch.connection.enableCircuitRelay(options)`
 
 Enable circuit relaying.
 
@@ -137,74 +145,42 @@ Enable circuit relaying.
         - enabled - enables circuit relaying
         - active - is it an active or passive relay (default false)
 
-### `swarm.dial(peer, protocol, callback)`
+### Internal Transports API
 
-dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point where we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, then do nothing.
+##### `switch.transport.add(key, transport, options, callback)`
 
-- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
-- `protocol`
+libp2p-switch expects transports that implement [interface-transport](https://github.com/libp2p/interface-transport). For example [libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp).
+
+- `key` - the transport identifier.
+- `transport` -
+- `options` -
+- `callback` -
+
+##### `switch.transport.dial(key, multiaddrs, callback)`
+
+Dial to a peer on a specific transport.
+
+- `key`
+- `multiaddrs`
 - `callback`
 
-### `swarm.hangUp(peer, callback)`
+##### `switch.transport.listen(key, options, handler, callback)`
 
-Hang up the muxed connection we have with the peer.
+Set a transport to start listening mode.
 
-- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+- `key`
+- `options`
+- `handler`
 - `callback`
 
-### `swarm.listen(callback)`
+##### `switch.transport.close(key, callback)`
 
-Start listening on all added transports that are available on the current `peerInfo`.
+Close the listeners of a given transport.
 
-### `swarm.handle(protocol, handlerFunc, matchFunc)`
-
-Handle a new protocol.
-
-- `protocol`
-- `handlerFunc` - function called when we receive a dial on `protocol. Signature must be `function (protocol, conn) {}`
-- `matchFunc` - matchFunc for multistream-select
-
-### `swarm.unhandle(protocol)`
-
-Unhandle a protocol.
-
-- `protocol`
-
-### `swarm.close(callback)`
-
-Close all the listeners and muxers.
-
+- `key`
 - `callback`
 
-### This module uses `pull-streams`
-
-We expose a streaming interface based on `pull-streams`, rather then on the Node.js core streams implementation (aka Node.js streams). `pull-streams` offers us a better mechanism for error handling and flow control guarantees. If you would like to know more about why we did this, see the discussion at this [issue](https://github.com/ipfs/js-ipfs/issues/362).
-
-You can learn more about pull-streams at:
-
-- [The history of Node.js streams, nodebp April 2014](https://www.youtube.com/watch?v=g5ewQEuXjsQ)
-- [The history of streams, 2016](http://dominictarr.com/post/145135293917/history-of-streams)
-- [pull-streams, the simple streaming primitive](http://dominictarr.com/post/149248845122/pull-streams-pull-streams-are-a-very-simple)
-- [pull-streams documentation](https://pull-stream.github.io/)
-
-#### Converting `pull-streams` to Node.js Streams
-
-If you are a Node.js streams user, you can convert a pull-stream to a Node.js stream using the module [`pull-stream-to-stream`](https://github.com/pull-stream/pull-stream-to-stream), giving you an instance of a Node.js stream that is linked to the pull-stream. For example:
-
-
-
-```js
-const pullToStream = require('pull-stream-to-stream')
-
-const nodeStreamInstance = pullToStream(pullStreamInstance)
-// nodeStreamInstance is an instance of a Node.js Stream
-```
-
-To learn more about this utility, visit https://pull-stream.github.io/#pull-stream-to-stream.
-
-
-
-## Design
+## Design Notes
 
 ### Multitransport
 
@@ -230,7 +206,7 @@ We also want to enable flexibility when it comes to upgrading a connection, for 
 
 ### Identify
 
-Identify is a protocol that Swarms mounts on top of itself, to identify the connections between any two peers. E.g:
+Identify is a protocol that switchs mounts on top of itself, to identify the connections between any two peers. E.g:
 
 - a) peer A dials a conn to peer B
 - b) that conn gets upgraded to a stream multiplexer that both peers agree
@@ -245,6 +221,31 @@ To avoid the confusion between connection, stream, transport, and other names th
 
 - connection - something that implements the transversal expectations of a stream between two peers, including the benefits of using a stream plus having a way to do half duplex, full duplex
 - transport - something that as a dial/listen interface and return objs that implement a connection interface
+
+### This module uses `pull-streams`
+
+We expose a streaming interface based on `pull-streams`, rather then on the Node.js core streams implementation (aka Node.js streams). `pull-streams` offers us a better mechanism for error handling and flow control guarantees. If you would like to know more about why we did this, see the discussion at this [issue](https://github.com/ipfs/js-ipfs/issues/362).
+
+You can learn more about pull-streams at:
+
+- [The history of Node.js streams, nodebp April 2014](https://www.youtube.com/watch?v=g5ewQEuXjsQ)
+- [The history of streams, 2016](http://dominictarr.com/post/145135293917/history-of-streams)
+- [pull-streams, the simple streaming primitive](http://dominictarr.com/post/149248845122/pull-streams-pull-streams-are-a-very-simple)
+- [pull-streams documentation](https://pull-stream.github.io/)
+
+#### Converting `pull-streams` to Node.js Streams
+
+If you are a Node.js streams user, you can convert a pull-stream to a Node.js stream using the module [`pull-stream-to-stream`](https://github.com/pull-stream/pull-stream-to-stream), giving you an instance of a Node.js stream that is linked to the pull-stream. For example:
+
+```js
+const pullToStream = require('pull-stream-to-stream')
+
+const nodeStreamInstance = pullToStream(pullStreamInstance)
+// nodeStreamInstance is an instance of a Node.js Stream
+```
+
+To learn more about this utility, visit https://pull-stream.github.io/#pull-stream-to-stream.
+
 
 ## Contribute
 
