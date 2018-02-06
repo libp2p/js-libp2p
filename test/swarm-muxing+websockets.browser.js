@@ -10,33 +10,31 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const WebSockets = require('libp2p-websockets')
 const spdy = require('libp2p-spdy')
-const pull = require('pull-stream')
 const PeerBook = require('peer-book')
+const tryEcho = require('./utils').tryEcho
 
-const Swarm = require('../src')
+const Switch = require('../src')
 
-describe.skip('high level API (swarm with spdy + websockets)', () => {
-  let swarm
+describe('Switch (WebSockets)', () => {
+  let sw
   let peerDst
 
   before((done) => {
     PeerInfo.create((err, peerSrc) => {
-      if (err) {
-        return done(err)
-      }
-      swarm = new Swarm(peerSrc, new PeerBook())
+      expect(err).to.not.exist()
+      sw = new Switch(peerSrc, new PeerBook())
       done()
     })
   })
 
   it('add spdy', () => {
-    swarm.connection.addStreamMuxer(spdy)
-    swarm.connection.reuse()
+    sw.connection.addStreamMuxer(spdy)
+    sw.connection.reuse()
   })
 
   it('add ws', () => {
-    swarm.transport.add('ws', new WebSockets())
-    expect(Object.keys(swarm.transports).length).to.equal(1)
+    sw.transport.add('ws', new WebSockets())
+    expect(Object.keys(sw.transports).length).to.equal(1)
   })
 
   it('create Dst peer info', (done) => {
@@ -51,22 +49,18 @@ describe.skip('high level API (swarm with spdy + websockets)', () => {
   })
 
   it('dial to warm a conn', (done) => {
-    swarm.dial(peerDst, done)
+    sw.dial(peerDst, done)
   })
 
   it('dial on protocol, use warmed conn', (done) => {
-    swarm.dial(peerDst, '/echo/1.0.0', (err, conn) => {
+    sw.dial(peerDst, '/echo/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      pull(
-        pull.values([Buffer.from('hello')]),
-        conn,
-        pull.onEnd(done)
-      )
+      tryEcho(conn, done)
     })
   })
 
   it('close', (done) => {
     // cause CI is slow
-    setTimeout(() => swarm.close(done), 1000)
+    setTimeout(() => sw.stop(done), 1000)
   })
 })
