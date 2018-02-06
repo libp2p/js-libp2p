@@ -124,5 +124,3 @@ module.exports = function (swarm) {
 function dialables (tp, multiaddrs) {
   return tp.filter(multiaddrs)
 }
-
-function noop () {}

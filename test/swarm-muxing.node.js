@@ -55,9 +55,9 @@ describe('Switch (everything all together)', () => {
   })
 
   it('add tcp', (done) => {
-    switchA._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
-    switchB._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
-    switchC._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/0')
+    switchA._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/10100')
+    switchB._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/10200')
+    switchC._peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/10300')
 
     switchA.transport.add('tcp', new TCP())
     switchB.transport.add('tcp', new TCP())
