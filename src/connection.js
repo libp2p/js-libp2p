@@ -102,7 +102,8 @@ module.exports = function connection (swarm) {
           Object.assign(config, { hop: { enabled: false, active: false } })
         }
 
-        // TODO: should we enable circuit listener and dialer by default?
+        // TODO: (dryajov) should we enable circuit listener and
+        // dialer by default?
         swarm.transport.add(Circuit.tag, new Circuit(swarm, config))
       }
     },

@@ -55,14 +55,11 @@ describe(`circuit`, function () {
   })
 
   it('.enableCircuitRelay', () => {
-    parallel([
-      (cb) => swarmA.connection.enableCircuitRelay({ enabled: true }, cb),
-      (cb) => swarmB.connection.enableCircuitRelay({ enabled: true }, cb)
-    ], (err) => {
-      expect(err).to.not.exist()
-      expect(Object.keys(swarmA.transports).length).to.equal(3)
-      expect(Object.keys(swarmB.transports).length).to.equal(2)
-    })
+    swarmA.connection.enableCircuitRelay({ enabled: true })
+    expect(Object.keys(swarmA.transports).length).to.equal(3)
+
+    swarmB.connection.enableCircuitRelay({ enabled: true })
+    expect(Object.keys(swarmB.transports).length).to.equal(2)
   })
 
   it('listed on the transports map', () => {

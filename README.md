@@ -148,14 +148,13 @@ Enable circuit relaying.
 
 ### Internal Transports API
 
-##### `switch.transport.add(key, transport, options, callback)`
+##### `switch.transport.add(key, transport, options)`
 
 libp2p-switch expects transports that implement [interface-transport](https://github.com/libp2p/interface-transport). For example [libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp).
 
 - `key` - the transport identifier.
 - `transport` -
 - `options` -
-- `callback` -
 
 ##### `switch.transport.dial(key, multiaddrs, callback)`
 

@@ -40,14 +40,12 @@ describe('transports', () => {
       done()
     }))
 
-    it('.transport.add', (done) => {
+    it('.transport.add', () => {
       switchA.transport.add(t.n, new t.C())
       expect(Object.keys(switchA.transports).length).to.equal(1)
 
-      switchB.transport.add(t.n, new t.C(), () => {
-        expect(Object.keys(switchB.transports).length).to.equal(1)
-        done()
-      })
+      switchB.transport.add(t.n, new t.C())
+      expect(Object.keys(switchB.transports).length).to.equal(1)
     })
 
     it('.transport.listen', (done) => {

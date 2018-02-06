@@ -37,18 +37,14 @@ describe('transport - webrtc-star', () => {
     switch2 = new Switch(peer2, new PeerBook())
   })
 
-  it('add WebRTCStar transport to switch 1', (done) => {
-    switch1.transport.add('wstar', new WebRTCStar(), () => {
-      expect(Object.keys(switch1.transports).length).to.equal(1)
-      done()
-    })
+  it('add WebRTCStar transport to switch 1', () => {
+    switch1.transport.add('wstar', new WebRTCStar())
+    expect(Object.keys(switch1.transports).length).to.equal(1)
   })
 
-  it('add WebRTCStar transport to switch 2', (done) => {
-    switch2.transport.add('wstar', new WebRTCStar(), () => {
-      expect(Object.keys(switch2.transports).length).to.equal(1)
-      done()
-    })
+  it('add WebRTCStar transport to switch 2', () => {
+    switch2.transport.add('wstar', new WebRTCStar())
+    expect(Object.keys(switch2.transports).length).to.equal(1)
   })
 
   it('listen on switch 1', (done) => {

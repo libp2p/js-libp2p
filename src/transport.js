@@ -19,24 +19,18 @@ module.exports = function (swarm) {
   const dialer = new LimitDialer(defaultPerPeerRateLimit, dialTimeout)
 
   return {
-    add (key, transport, options, callback) {
-      if (typeof options === 'function') {
-        callback = options
-        options = {}
-      }
-
-      callback = callback || noop
+    add (key, transport, options) {
+      options = options || {}
 
       log('adding %s', key)
       if (swarm.transports[key]) {
         throw new Error('There is already a transport with this key')
       }
+
       swarm.transports[key] = transport
       if (!swarm.transports[key].listeners) {
         swarm.transports[key].listeners = []
       }
-
-      callback()
     },
 
     dial (key, pi, callback) {
