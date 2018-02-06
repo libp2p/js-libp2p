@@ -5,128 +5,112 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
-
 const parallel = require('async/parallel')
 const TCP = require('libp2p-tcp')
-const multiplex = require('libp2p-spdy')
+const multiplex = require('libp2p-multiplex')
 const pull = require('pull-stream')
 const secio = require('libp2p-secio')
 const PeerBook = require('peer-book')
 
 const utils = require('./utils')
-const Swarm = require('../src')
+const createInfos = utils.createInfos
+const tryEcho = utils.tryEcho
+const Switch = require('../src')
 
-describe('secio conn upgrade (on TCP)', () => {
-  let swarmA
-  let peerA
-  let swarmB
-  let peerB
-  let swarmC
-  let peerC
+describe('SECIO', () => {
+  let switchA
+  let switchB
+  let switchC
 
-  before((done) => {
-    utils.createInfos(3, (err, infos) => {
-      if (err) {
-        return done(err)
-      }
+  before((done) => createInfos(3, (err, infos) => {
+    expect(err).to.not.exist()
 
-      peerA = infos[0]
-      peerB = infos[1]
-      peerC = infos[2]
+    const peerA = infos[0]
+    const peerB = infos[1]
+    const peerC = infos[2]
 
-      peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/9001')
-      peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9002')
-      peerC.multiaddrs.add('/ip4/127.0.0.1/tcp/9003')
+    peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/9001')
+    peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9002')
+    peerC.multiaddrs.add('/ip4/127.0.0.1/tcp/9003')
 
-      swarmA = new Swarm(peerA, new PeerBook())
-      swarmB = new Swarm(peerB, new PeerBook())
-      swarmC = new Swarm(peerC, new PeerBook())
+    switchA = new Switch(peerA, new PeerBook())
+    switchB = new Switch(peerB, new PeerBook())
+    switchC = new Switch(peerC, new PeerBook())
 
-      swarmA.connection.crypto(secio.tag, secio.encrypt)
-      swarmB.connection.crypto(secio.tag, secio.encrypt)
-      swarmC.connection.crypto(secio.tag, secio.encrypt)
+    switchA.transport.add('tcp', new TCP())
+    switchB.transport.add('tcp', new TCP())
+    switchC.transport.add('tcp', new TCP())
 
-      swarmA.transport.add('tcp', new TCP())
-      swarmB.transport.add('tcp', new TCP())
-      swarmC.transport.add('tcp', new TCP())
+    switchA.connection.crypto(secio.tag, secio.encrypt)
+    switchB.connection.crypto(secio.tag, secio.encrypt)
+    switchC.connection.crypto(secio.tag, secio.encrypt)
 
-      parallel([
-        (cb) => swarmA.transport.listen('tcp', {}, null, cb),
-        (cb) => swarmB.transport.listen('tcp', {}, null, cb),
-        (cb) => swarmC.transport.listen('tcp', {}, null, cb)
-      ], done)
-    })
-  })
+    switchA.connection.addStreamMuxer(multiplex)
+    switchB.connection.addStreamMuxer(multiplex)
+    switchC.connection.addStreamMuxer(multiplex)
+
+    parallel([
+      (cb) => switchA.transport.listen('tcp', {}, null, cb),
+      (cb) => switchB.transport.listen('tcp', {}, null, cb),
+      (cb) => switchC.transport.listen('tcp', {}, null, cb)
+    ], done)
+  }))
 
   after(function (done) {
-    this.timeout(3000)
+    this.timeout(3 * 1000)
     parallel([
-      (cb) => swarmA.close(cb),
-      (cb) => swarmB.close(cb),
-      (cb) => swarmC.close(cb)
+      (cb) => switchA.stop(cb),
+      (cb) => switchB.stop(cb),
+      (cb) => switchC.stop(cb)
     ], done)
   })
 
-  it('add', () => {
-    swarmA.connection.addStreamMuxer(multiplex)
-    swarmB.connection.addStreamMuxer(multiplex)
-    swarmC.connection.addStreamMuxer(multiplex)
-  })
-
   it('handle + dial on protocol', (done) => {
-    swarmB.handle('/abacaxi/1.0.0', (protocol, conn) => pull(conn, conn))
+    switchB.handle('/abacaxi/1.0.0', (protocol, conn) => pull(conn, conn))
 
-    swarmA.dial(peerB, '/abacaxi/1.0.0', (err, conn) => {
+    switchA.dial(switchB._peerInfo, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      expect(Object.keys(swarmA.muxedConns).length).to.equal(1)
-      pull(
-        pull.empty(),
-        conn,
-        pull.onEnd(done)
-      )
+      expect(Object.keys(switchA.muxedConns).length).to.equal(1)
+      tryEcho(conn, done)
     })
   })
 
   it('dial to warm conn', (done) => {
-    swarmB.dial(peerA, (err) => {
+    switchB.dial(switchA._peerInfo, (err) => {
       expect(err).to.not.exist()
-      expect(Object.keys(swarmB.conns).length).to.equal(0)
-      expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
+      expect(Object.keys(switchB.conns).length).to.equal(0)
+      expect(Object.keys(switchB.muxedConns).length).to.equal(1)
       done()
     })
   })
 
   it('dial on protocol, reuse warmed conn', (done) => {
-    swarmA.handle('/papaia/1.0.0', (protocol, conn) => pull(conn, conn))
+    switchA.handle('/papaia/1.0.0', (protocol, conn) => pull(conn, conn))
 
-    swarmB.dial(peerA, '/papaia/1.0.0', (err, conn) => {
+    switchB.dial(switchA._peerInfo, '/papaia/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      expect(Object.keys(swarmB.conns).length).to.equal(0)
-      expect(Object.keys(swarmB.muxedConns).length).to.equal(1)
-      pull(
-        pull.empty(),
-        conn,
-        pull.onEnd(done)
-      )
+      expect(Object.keys(switchB.conns).length).to.equal(0)
+      expect(Object.keys(switchB.muxedConns).length).to.equal(1)
+      tryEcho(conn, done)
     })
   })
 
   it('enable identify to reuse incomming muxed conn', (done) => {
-    swarmA.connection.reuse()
-    swarmC.connection.reuse()
+    switchA.connection.reuse()
+    switchC.connection.reuse()
 
-    swarmC.dial(peerA, (err) => {
+    switchC.dial(switchA._peerInfo, (err) => {
       expect(err).to.not.exist()
       setTimeout(() => {
-        expect(Object.keys(swarmC.muxedConns).length).to.equal(1)
-        expect(Object.keys(swarmA.muxedConns).length).to.equal(2)
+        expect(Object.keys(switchC.muxedConns).length).to.equal(1)
+        expect(Object.keys(switchA.muxedConns).length).to.equal(2)
         done()
       }, 500)
     })
   })
 
   it('switch back to plaintext if no arguments passed in', () => {
-    swarmA.connection.crypto()
-    expect(swarmA.crypto.tag).to.eql('/plaintext/1.0.0')
+    switchA.connection.crypto()
+    expect(switchA.crypto.tag).to.eql('/plaintext/1.0.0')
   })
 })
