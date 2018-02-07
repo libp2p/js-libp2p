@@ -12,6 +12,7 @@ const parallel = require('async/parallel')
 const goodbye = require('pull-goodbye')
 const serializer = require('pull-serializer')
 const w = require('webrtcsupport')
+const tryEcho = require('./utils/try-echo')
 
 const Node = require('./utils/bundle.browser')
 const rawPeer = require('./fixtures/test-peer.json')
@@ -63,7 +64,7 @@ describe('transports', () => {
 
     // General connectivity tests
 
-    it('libp2p.dial using Multiaddr nodeA to nodeB', (done) => {
+    it('.dial using Multiaddr', (done) => {
       nodeA.dial(peerB.multiaddrs.toArray()[0], (err) => {
         expect(err).to.not.exist()
 
@@ -77,26 +78,18 @@ describe('transports', () => {
       })
     })
 
-    it('libp2p.dial using Multiaddr on Protocol nodeA to nodeB', (done) => {
-      nodeA.dial(peerB.multiaddrs.toArray()[0], '/echo/1.0.0', (err, conn) => {
+    it('.dialProtocol using Multiaddr', (done) => {
+      nodeA.dialProtocol(peerB.multiaddrs.toArray()[0], '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
 
         const peers = nodeA.peerBook.getAll()
         expect(Object.keys(peers)).to.have.length(1)
 
-        pull(
-          pull.values([Buffer.from('hey')]),
-          conn,
-          pull.collect((err, data) => {
-            expect(err).to.not.exist()
-            expect(data).to.eql([Buffer.from('hey')])
-            done()
-          })
-        )
+        tryEcho(conn, done)
       })
     })
 
-    it('libp2p.hangUp using Multiaddr nodeA to nodeB', (done) => {
+    it('.hangUp using Multiaddr', (done) => {
       nodeA.hangUp(peerB.multiaddrs.toArray()[0], (err) => {
         expect(err).to.not.exist()
 
@@ -111,7 +104,7 @@ describe('transports', () => {
       })
     })
 
-    it('libp2p.dial using PeerInfo nodeA to nodeB', (done) => {
+    it('.dial using PeerInfo', (done) => {
       nodeA.dial(peerB, (err) => {
         expect(err).to.not.exist()
 
@@ -125,26 +118,18 @@ describe('transports', () => {
       })
     })
 
-    it('libp2p.dial using PeerInfo on Protocol nodeA to nodeB', (done) => {
-      nodeA.dial(peerB, '/echo/1.0.0', (err, conn) => {
+    it('.dialProtocol using PeerInfo', (done) => {
+      nodeA.dialProtocol(peerB, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
         const peers = nodeA.peerBook.getAll()
         expect(err).to.not.exist()
         expect(Object.keys(peers)).to.have.length(1)
 
-        pull(
-          pull.values([Buffer.from('hey')]),
-          conn,
-          pull.collect((err, data) => {
-            expect(err).to.not.exist()
-            expect(data).to.eql([Buffer.from('hey')])
-            done()
-          })
-        )
+        tryEcho(conn, done)
       })
     })
 
-    it('libp2p.hangUp using PeerInfo nodeA to nodeB', (done) => {
+    it('.hangUp using PeerInfo', (done) => {
       nodeA.hangUp(peerB, (err) => {
         expect(err).to.not.exist()
         setTimeout(check, 500)
@@ -161,7 +146,7 @@ describe('transports', () => {
 
     describe('stress', () => {
       it('one big write', (done) => {
-        nodeA.dial(peerB, '/echo/1.0.0', (err, conn) => {
+        nodeA.dialProtocol(peerB, '/echo/1.0.0', (err, conn) => {
           expect(err).to.not.exist()
           const rawMessage = Buffer.alloc(100000)
           rawMessage.fill('a')
@@ -180,7 +165,7 @@ describe('transports', () => {
       })
 
       it('many writes', (done) => {
-        nodeA.dial(peerB, '/echo/1.0.0', (err, conn) => {
+        nodeA.dialProtocol(peerB, '/echo/1.0.0', (err, conn) => {
           expect(err).to.not.exist()
 
           const s = serializer(goodbye({
@@ -235,39 +220,30 @@ describe('transports', () => {
       done()
     })
 
-    it('listen on the two libp2p nodes', (done) => {
+    it('start two libp2p nodes', (done) => {
       parallel([
         (cb) => node1.start(cb),
         (cb) => node2.start(cb)
       ], done)
     })
 
-    it('handle a protocol on the first node', () => {
+    it('.handle echo on first node', () => {
       node2.handle('/echo/1.0.0', (protocol, conn) => pull(conn, conn))
     })
 
-    it('dial from the second node to the first node', (done) => {
-      node1.dial(peer2, '/echo/1.0.0', (err, conn) => {
+    it('.dialProtocol from the second node to the first node', (done) => {
+      node1.dialProtocol(peer2, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
         setTimeout(check, 500)
 
         function check () {
-          const text = 'hello'
           const peers1 = node1.peerBook.getAll()
           expect(Object.keys(peers1)).to.have.length(1)
 
           const peers2 = node2.peerBook.getAll()
           expect(Object.keys(peers2)).to.have.length(1)
 
-          pull(
-            pull.values([Buffer.from(text)]),
-            conn,
-            pull.collect((err, data) => {
-              expect(err).to.not.exist()
-              expect(data[0].toString()).to.equal(text)
-              done()
-            })
-          )
+          tryEcho(conn, done)
         }
       })
     })
@@ -355,28 +331,19 @@ describe('transports', () => {
       node2.handle('/echo/1.0.0', (protocol, conn) => pull(conn, conn))
     })
 
-    it('dial from the second node to the first node', (done) => {
-      node1.dial(peer2, '/echo/1.0.0', (err, conn) => {
+    it('.dialProtocol from the second node to the first node', (done) => {
+      node1.dialProtocol(peer2, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
         setTimeout(check, 500)
 
         function check () {
-          const text = 'hello'
           const peers1 = node1.peerBook.getAll()
           expect(Object.keys(peers1)).to.have.length(1)
 
           const peers2 = node2.peerBook.getAll()
           expect(Object.keys(peers2)).to.have.length(1)
 
-          pull(
-            pull.values([Buffer.from(text)]),
-            conn,
-            pull.collect((err, data) => {
-              expect(err).to.not.exist()
-              expect(data[0].toString()).to.equal(text)
-              done()
-            })
-          )
+          tryEcho(conn, done)
         }
       })
     })

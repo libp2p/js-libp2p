@@ -13,6 +13,7 @@ const rendezvous = require('libp2p-websocket-star-rendezvous')
 const WSStar = require('libp2p-websocket-star')
 const WRTCStar = require('libp2p-webrtc-star')
 const wrtc = require('wrtc')
+const tryEcho = require('./utils/try-echo')
 
 const createNode = utils.createNode
 const echo = utils.echo
@@ -73,18 +74,10 @@ describe('transports', () => {
     })
 
     it('nodeA.dial nodeB using PeerInfo', (done) => {
-      nodeA.dial(nodeB.peerInfo, '/echo/1.0.0', (err, conn) => {
+      nodeA.dialProtocol(nodeB.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
 
-        pull(
-          pull.values([Buffer.from('hey')]),
-          conn,
-          pull.collect((err, data) => {
-            expect(err).to.not.exist()
-            expect(data).to.be.eql([Buffer.from('hey')])
-            done()
-          })
-        )
+        tryEcho(conn, done)
       })
     })
 
@@ -113,8 +106,8 @@ describe('transports', () => {
       })
     })
 
-    it('nodeA.dial nodeB using multiaddr', (done) => {
-      nodeA.dial(nodeB.peerInfo.multiaddrs.toArray()[0], '/echo/1.0.0', (err, conn) => {
+    it('nodeA.dialProtocol nodeB using multiaddr', (done) => {
+      nodeA.dialProtocol(nodeB.peerInfo.multiaddrs.toArray()[0], '/echo/1.0.0', (err, conn) => {
         // Some time for Identify to finish
         setTimeout(check, 500)
 
@@ -135,17 +128,7 @@ describe('transports', () => {
               expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(1)
               cb()
             }
-          ], () => {
-            pull(
-              pull.values([Buffer.from('hey')]),
-              conn,
-              pull.collect((err, data) => {
-                expect(err).to.not.exist()
-                expect(data).to.be.eql([Buffer.from('hey')])
-                done()
-              })
-            )
-          })
+          ], () => tryEcho(conn, done))
         }
       })
     })
@@ -176,8 +159,8 @@ describe('transports', () => {
       })
     })
 
-    it('nodeA.dial nodeB using PeerId', (done) => {
-      nodeA.dial(nodeB.peerInfo.id, '/echo/1.0.0', (err, conn) => {
+    it('nodeA.dialProtocol nodeB using PeerId', (done) => {
+      nodeA.dialProtocol(nodeB.peerInfo.id, '/echo/1.0.0', (err, conn) => {
         // Some time for Identify to finish
         setTimeout(check, 500)
 
@@ -196,17 +179,7 @@ describe('transports', () => {
               expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(1)
               cb()
             }
-          ], () => {
-            pull(
-              pull.values([Buffer.from('hey')]),
-              conn,
-              pull.collect((err, data) => {
-                expect(err).to.not.exist()
-                expect(data).to.eql([Buffer.from('hey')])
-                done()
-              })
-            )
-          })
+          ], () => tryEcho(conn, done))
         }
       })
     })
