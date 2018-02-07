@@ -6,7 +6,6 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 const series = require('async/series')
-const pull = require('pull-stream')
 const utils = require('./utils/node.js')
 const signalling = require('libp2p-webrtc-star/src/sig-server')
 const rendezvous = require('libp2p-websocket-star-rendezvous')
