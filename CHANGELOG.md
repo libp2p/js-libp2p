@@ -1,3 +1,14 @@
+<a name="0.36.0"></a>
+# [0.36.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.35.1...v0.36.0) (2018-02-07)
+
+
+### Bug Fixes
+
+* enableCircuitRelay is async and therefore needs a callback ([69ea434](https://github.com/libp2p/js-libp2p-switch/commit/69ea434))
+* transports.add does not need to be async at all ([ca610a5](https://github.com/libp2p/js-libp2p-switch/commit/ca610a5))
+
+
+
 <a name="0.35.1"></a>
 ## [0.35.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.35.0...v0.35.1) (2018-01-28)
 
