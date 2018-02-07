@@ -11,13 +11,6 @@ const net = require('net')
 const multiaddr = require('multiaddr')
 const isCI = process.env.CI
 
-describe('instantiate the transport', () => {
-  it('create', () => {
-    const tcp = new TCP()
-    expect(tcp).to.exist()
-  })
-})
-
 describe('listen', () => {
   let tcp
 
@@ -264,9 +257,4 @@ describe('dial', () => {
       })
     )
   })
-})
-
-describe.skip('turbolence', () => {
-  it('dialer - emits error on the other end is terminated abruptly', (done) => {})
-  it('listener - emits error on the other end is terminated abruptly', (done) => {})
 })
