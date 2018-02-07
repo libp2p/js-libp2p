@@ -1,3 +1,15 @@
+<a name="0.16.0"></a>
+# [0.16.0](https://github.com/libp2p/js-libp2p/compare/v0.15.2...v0.16.0) (2018-02-07)
+
+
+### Features
+
+* add explicit error for case peer id not included in multiaddr ([#155](https://github.com/libp2p/js-libp2p/issues/155)) ([bd8a35a](https://github.com/libp2p/js-libp2p/commit/bd8a35a))
+* dialProtocol and small refactor ([6651401](https://github.com/libp2p/js-libp2p/commit/6651401))
+* use libp2p-switch ([23e8293](https://github.com/libp2p/js-libp2p/commit/23e8293))
+
+
+
 <a name="0.15.2"></a>
 ## [0.15.2](https://github.com/libp2p/js-libp2p/compare/v0.15.1...v0.15.2) (2018-01-28)
 
