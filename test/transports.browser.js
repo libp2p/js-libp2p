@@ -105,7 +105,7 @@ describe('transports', () => {
         function check () {
           const peers = nodeA.peerBook.getAll()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(nodeA.swarm.muxedConns)).to.have.length(0)
+          expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(0)
           done()
         }
       })
@@ -153,7 +153,7 @@ describe('transports', () => {
           const peers = nodeA.peerBook.getAll()
           expect(err).to.not.exist()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(nodeA.swarm.muxedConns)).to.have.length(0)
+          expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(0)
           done()
         }
       })
@@ -280,7 +280,7 @@ describe('transports', () => {
         function check () {
           const peers = node1.peerBook.getAll()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(node1.swarm.muxedConns)).to.have.length(0)
+          expect(Object.keys(node1.switch.muxedConns)).to.have.length(0)
           done()
         }
       })
@@ -291,8 +291,8 @@ describe('transports', () => {
 
       function check () {
         if (++counter === 3) {
-          expect(Object.keys(node1.swarm.muxedConns).length).to.equal(1)
-          expect(Object.keys(node2.swarm.muxedConns).length).to.equal(1)
+          expect(Object.keys(node1.switch.muxedConns).length).to.equal(1)
+          expect(Object.keys(node2.switch.muxedConns).length).to.equal(1)
           done()
         }
       }
@@ -389,7 +389,7 @@ describe('transports', () => {
         function check () {
           const peers = node1.peerBook.getAll()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(node1.swarm.muxedConns)).to.have.length(0)
+          expect(Object.keys(node1.switch.muxedConns)).to.have.length(0)
           done()
         }
       })
@@ -400,8 +400,8 @@ describe('transports', () => {
 
       function check () {
         if (++counter === 3) {
-          expect(Object.keys(node1.swarm.muxedConns).length).to.equal(1)
-          expect(Object.keys(node2.swarm.muxedConns).length).to.equal(1)
+          expect(Object.keys(node1.switch.muxedConns).length).to.equal(1)
+          expect(Object.keys(node2.switch.muxedConns).length).to.equal(1)
           done()
         }
       }
