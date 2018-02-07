@@ -4,19 +4,25 @@ const multiaddr = require('multiaddr')
 const Address6 = require('ip-address').Address6
 
 module.exports = (socket) => {
-  let mh
+  let ma
 
   if (socket.remoteFamily === 'IPv6') {
-    var addr = new Address6(socket.remoteAddress)
+    const addr = new Address6(socket.remoteAddress)
+
     if (addr.v4) {
-      var ip4 = addr.to4().correctForm()
-      mh = multiaddr('/ip4/' + ip4 + '/tcp/' + socket.remotePort)
+      const ip4 = addr.to4().correctForm()
+      ma = multiaddr('/ip4/' + ip4 +
+        '/tcp/' + socket.remotePort
+      )
     } else {
-      mh = multiaddr('/ip6/' + socket.remoteAddress + '/tcp/' + socket.remotePort)
+      ma = multiaddr('/ip6/' + socket.remoteAddress +
+        '/tcp/' + socket.remotePort
+      )
     }
   } else {
-    mh = multiaddr('/ip4/' + socket.remoteAddress + '/tcp/' + socket.remotePort)
+    ma = multiaddr('/ip4/' + socket.remoteAddress +
+      '/tcp/' + socket.remotePort)
   }
 
-  return mh
+  return ma
 }

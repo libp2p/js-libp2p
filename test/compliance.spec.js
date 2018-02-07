@@ -3,12 +3,12 @@
 
 const tests = require('interface-transport')
 const multiaddr = require('multiaddr')
-const Tcp = require('../src')
+const TCP = require('../src')
 
 describe('interface-transport compliance', () => {
   tests({
     setup (cb) {
-      let tcp = new Tcp()
+      let tcp = new TCP()
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091'),
         multiaddr('/ip4/127.0.0.1/tcp/9092'),

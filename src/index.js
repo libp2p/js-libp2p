@@ -57,7 +57,7 @@ class TCP {
       options = {}
     }
 
-    handler = handler || (() => {})
+    handler = handler || noop
 
     return createListener(handler)
   }
