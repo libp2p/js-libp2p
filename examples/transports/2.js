@@ -54,7 +54,7 @@ parallel([
     )
   })
 
-  node1.dial(node2.peerInfo, '/print', (err, conn) => {
+  node1.dialProtocol(node2.peerInfo, '/print', (err, conn) => {
     if (err) { throw err }
 
     pull(pull.values(['Hello', ' ', 'p2p', ' ', 'world', '!']), conn)

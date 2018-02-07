@@ -52,7 +52,7 @@ parallel([
     )
   })
 
-  node1.dial(node2.peerInfo, '/a-protocol', (err, conn) => {
+  node1.dialProtocol(node2.peerInfo, '/a-protocol', (err, conn) => {
     if (err) { throw err }
     pull(pull.values(['This information is sent out encrypted to the other peer']), conn)
   })

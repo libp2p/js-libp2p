@@ -75,20 +75,20 @@ parallel([
   })
   */
 
-  node1.dial(node2.peerInfo, '/your-protocol', (err, conn) => {
+  node1.dialProtocol(node2.peerInfo, '/your-protocol', (err, conn) => {
     if (err) { throw err }
     pull(pull.values(['my own protocol, wow!']), conn)
   })
 
   /*
-  node1.dial(node2.peerInfo, '/another-protocol/1.0.0', (err, conn) => {
+  node1.dialProtocol(node2.peerInfo, '/another-protocol/1.0.0', (err, conn) => {
     if (err) { throw err }
     pull(pull.values(['semver me please']), conn)
   })
   */
 
   /*
-  node1.dial(node2.peerInfo, '/custom-match-func/some-query', (err, conn) => {
+  node1.dialProtocol(node2.peerInfo, '/custom-match-func/some-query', (err, conn) => {
     if (err) { throw err }
     pull(pull.values(['do I fall into your criteria?']), conn)
   })

@@ -47,7 +47,7 @@ async.parallel([
       console.log(ma.toString() + '/ipfs/' + idListener.toB58String())
     })
 
-    nodeDialer.dial(peerListener, '/chat/1.0.0', (err, conn) => {
+    nodeDialer.dialProtocol(peerListener, '/chat/1.0.0', (err, conn) => {
       if (err) {
         throw err
       }

@@ -30,7 +30,7 @@ node2.handle('/your-protocol', (protocol, conn) => {
 After the protocol is _handled_, now we can dial to it.
 
 ```JavaScript
-node1.dial(node2.peerInfo, '/your-protocol', (err, conn) => {
+node1.dialProtocol(node2.peerInfo, '/your-protocol', (err, conn) => {
   if (err) { throw err }
   pull(pull.values(['my own protocol, wow!']), conn)
 })
@@ -47,7 +47,7 @@ node2.handle('/another-protocol/1.0.1', (protocol, conn) => {
   )
 })
 // ...
-node1.dial(node2.peerInfo, '/another-protocol/1.0.0', (err, conn) => {
+node1.dialProtocol(node2.peerInfo, '/another-protocol/1.0.0', (err, conn) => {
   if (err) { throw err }
   pull(pull.values(['semver me please']), conn)
 })
@@ -74,7 +74,7 @@ node2.handle('/custom-match-func', (protocol, conn) => {
   }
 })
 // ...
-node1.dial(node2.peerInfo, '/custom-match-func/some-query', (err, conn) => {
+node1.dialProtocol(node2.peerInfo, '/custom-match-func/some-query', (err, conn) => {
   if (err) { throw err }
   pull(pull.values(['do I fall into your criteria?']), conn)
 })
@@ -129,17 +129,17 @@ node2.handle('/b', (protocol, conn) => {
 })
 
 series([
-  (cb) => node1.dial(node2.peerInfo, '/a', (err, conn) => {
+  (cb) => node1.dialProtocol(node2.peerInfo, '/a', (err, conn) => {
     if (err) { throw err }
     pull(pull.values(['protocol (a)']), conn)
     cb()
   }),
-  (cb) => node1.dial(node2.peerInfo, '/b', (err, conn) => {
+  (cb) => node1.dialProtocol(node2.peerInfo, '/b', (err, conn) => {
     if (err) { throw err }
     pull(pull.values(['protocol (b)']), conn)
     cb()
   }),
-  (cb) => node1.dial(node2.peerInfo, '/b', (err, conn) => {
+  (cb) => node1.dialProtocol(node2.peerInfo, '/b', (err, conn) => {
     if (err) { throw err }
     pull(pull.values(['another conn on protocol (b)']), conn)
     cb()
