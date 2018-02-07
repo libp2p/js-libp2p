@@ -1,3 +1,8 @@
+<a name="0.11.4"></a>
+## [0.11.4](https://github.com/libp2p/js-libp2p-tcp/compare/v0.11.3...v0.11.4) (2018-02-07)
+
+
+
 <a name="0.11.3"></a>
 ## [0.11.3](https://github.com/libp2p/js-libp2p-tcp/compare/v0.11.2...v0.11.3) (2018-02-07)
 
