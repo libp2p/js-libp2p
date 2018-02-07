@@ -41,7 +41,7 @@ class Network {
       return cb(new Error('Network is already running'))
     }
 
-    // TODO add a way to check if swarm has started or not
+    // TODO add a way to check if switch has started or not
     if (!this.dht.isStarted) {
       return cb(new Error('Can not start network'))
     }
@@ -49,10 +49,10 @@ class Network {
     this._running = true
 
     // handle incoming connections
-    this.dht.swarm.handle(c.PROTOCOL_DHT, this._rpc)
+    this.dht.switch.handle(c.PROTOCOL_DHT, this._rpc)
 
     // handle new connections
-    this.dht.swarm.on('peer-mux-established', this._onPeerConnected)
+    this.dht.switch.on('peer-mux-established', this._onPeerConnected)
 
     cb()
   }
@@ -70,9 +70,9 @@ class Network {
       return cb(new Error('Network is already stopped'))
     }
     this._running = false
-    this.dht.swarm.removeListener('peer-mux-established', this._onPeerConnected)
+    this.dht.switch.removeListener('peer-mux-established', this._onPeerConnected)
 
-    this.dht.swarm.unhandle(c.PROTOCOL_DHT)
+    this.dht.switch.unhandle(c.PROTOCOL_DHT)
     cb()
   }
 
@@ -91,12 +91,12 @@ class Network {
    * @type {bool}
    */
   get isConnected () {
-    // TODO add a way to check if swarm has started or not
+    // TODO add a way to check if switch has started or not
     return this.dht.isStarted && this.isStarted
   }
 
   /**
-   * Handle new connections in the swarm.
+   * Handle new connections in the switch.
    *
    * @param {PeerInfo} peer
    * @returns {void}
@@ -107,7 +107,7 @@ class Network {
       return this._log.error('Network is offline')
     }
 
-    this.dht.swarm.dial(peer, c.PROTOCOL_DHT, (err, conn) => {
+    this.dht.switch.dial(peer, c.PROTOCOL_DHT, (err, conn) => {
       if (err) {
         return this._log('%s does not support protocol: %s', peer.id.toB58String(), c.PROTOCOL_DHT)
       }
@@ -140,7 +140,7 @@ class Network {
     }
 
     this._log('sending to: %s', to.toB58String())
-    this.dht.swarm.dial(to, c.PROTOCOL_DHT, (err, conn) => {
+    this.dht.switch.dial(to, c.PROTOCOL_DHT, (err, conn) => {
       if (err) {
         return callback(err)
       }
@@ -164,7 +164,7 @@ class Network {
 
     this._log('sending to: %s', to.toB58String())
 
-    this.dht.swarm.dial(to, c.PROTOCOL_DHT, (err, conn) => {
+    this.dht.switch.dial(to, c.PROTOCOL_DHT, (err, conn) => {
       if (err) {
         return callback(err)
       }

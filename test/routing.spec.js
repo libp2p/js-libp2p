@@ -14,7 +14,11 @@ const random = require('lodash.random')
 const RoutingTable = require('../src/routing')
 const utils = require('../src/utils')
 
-describe('RoutingTable', () => {
+function createPeers (n, callback) {
+  map(range(n), (i, cb) => PeerId.create({bits: 1024}, cb), callback)
+}
+
+describe('Routing Table', () => {
   let table
 
   beforeEach(function (done) {
@@ -29,19 +33,21 @@ describe('RoutingTable', () => {
 
   it('add', function (done) {
     this.timeout(20 * 1000)
+
     createPeers(20, (err, peers) => {
       expect(err).to.not.exist()
+
       waterfall([
         (cb) => each(range(1000), (n, cb) => {
           table.add(peers[random(peers.length - 1)], cb)
         }, cb),
         (cb) => each(range(20), (n, cb) => {
           const id = peers[random(peers.length - 1)]
+
           utils.convertPeerId(id, (err, key) => {
             expect(err).to.not.exist()
-            expect(
-              table.closestPeers(key, 5).length
-            ).to.be.above(0)
+            expect(table.closestPeers(key, 5).length)
+              .to.be.above(0)
             cb()
           })
         }, cb)
@@ -117,7 +123,3 @@ describe('RoutingTable', () => {
     })
   })
 })
-
-function createPeers (n, callback) {
-  map(range(n), (i, cb) => PeerId.create({bits: 1024}, cb), callback)
-}

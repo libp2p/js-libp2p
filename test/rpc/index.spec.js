@@ -8,7 +8,7 @@ const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
 const Connection = require('interface-connection').Connection
 const PeerBook = require('peer-book')
-const Swarm = require('libp2p-swarm')
+const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
 const Multiplex = require('libp2p-multiplex')
 
@@ -34,11 +34,11 @@ describe('rpc', () => {
 
   describe('protocolHandler', () => {
     it('calls back with the response', (done) => {
-      const swarm = new Swarm(peerInfos[0], new PeerBook())
-      swarm.transport.add('tcp', new TCP())
-      swarm.connection.addStreamMuxer(Multiplex)
-      swarm.connection.reuse()
-      const dht = new KadDHT(swarm, { kBucketSize: 5 })
+      const sw = new Switch(peerInfos[0], new PeerBook())
+      sw.transport.add('tcp', new TCP())
+      sw.connection.addStreamMuxer(Multiplex)
+      sw.connection.reuse()
+      const dht = new KadDHT(sw, { kBucketSize: 5 })
 
       dht.peerBook.put(peerInfos[1])
 

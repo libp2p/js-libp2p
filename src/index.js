@@ -29,22 +29,22 @@ class KadDHT {
   /**
    * Create a new KadDHT.
    *
-   * @param {Swarm} swarm
+   * @param {Switch} sw
    * @param {object} options // {kBucketSize=20, datastore=MemoryDatastore}
    */
-  constructor (swarm, options) {
-    assert(swarm, 'libp2p-kad-dht requires a instance of swarmt a')
+  constructor (sw, options) {
+    assert(sw, 'libp2p-kad-dht requires a instance of Switch')
     options = options || {}
 
     /**
-     * Local reference to libp2p-swarm.
+     * Local reference to the libp2p-switch instance
      *
-     * @type {Swarm}
+     * @type {Switch}
      */
-    this.swarm = swarm
+    this.switch = sw
 
     /**
-     * k-bucket size, defaults to 20.
+     * k-bucket size, defaults to 20
      *
      * @type {number}
      */
@@ -130,11 +130,11 @@ class KadDHT {
    * @type {PeerInfo}
    */
   get peerInfo () {
-    return this.swarm._peerInfo
+    return this.switch._peerInfo
   }
 
   get peerBook () {
-    return this.swarm._peerBook
+    return this.switch._peerBook
   }
 
   /**

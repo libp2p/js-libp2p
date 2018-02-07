@@ -10,7 +10,7 @@ const lp = require('pull-length-prefixed')
 const series = require('async/series')
 const Buffer = require('safe-buffer').Buffer
 const PeerBook = require('peer-book')
-const Swarm = require('libp2p-swarm')
+const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
 const Multiplex = require('libp2p-multiplex')
 
@@ -31,14 +31,14 @@ describe('Network', () => {
       }
 
       peerInfos = result
-      const swarm = new Swarm(peerInfos[0], new PeerBook())
-      swarm.transport.add('tcp', new TCP())
-      swarm.connection.addStreamMuxer(Multiplex)
-      swarm.connection.reuse()
-      dht = new KadDHT(swarm)
+      const sw = new Switch(peerInfos[0], new PeerBook())
+      sw.transport.add('tcp', new TCP())
+      sw.connection.addStreamMuxer(Multiplex)
+      sw.connection.reuse()
+      dht = new KadDHT(sw)
 
       series([
-        (cb) => swarm.listen(cb),
+        (cb) => sw.start(cb),
         (cb) => dht.start(cb)
       ], done)
     })
@@ -48,7 +48,7 @@ describe('Network', () => {
     this.timeout(10 * 1000)
     series([
       (cb) => dht.stop(cb),
-      (cb) => dht.swarm.close(cb)
+      (cb) => dht.switch.stop(cb)
     ], done)
   })
 
@@ -64,7 +64,7 @@ describe('Network', () => {
       const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
 
       // mock it
-      dht.swarm.dial = (peer, protocol, callback) => {
+      dht.switch.dial = (peer, protocol, callback) => {
         expect(protocol).to.eql('/ipfs/kad/1.0.0')
         const msg = new Message(Message.TYPES.FIND_NODE, Buffer.from('world'), 0)
 
@@ -105,7 +105,7 @@ describe('Network', () => {
       const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
 
       // mock it
-      dht.swarm.dial = (peer, protocol, callback) => {
+      dht.switch.dial = (peer, protocol, callback) => {
         expect(protocol).to.eql('/ipfs/kad/1.0.0')
         const rawConn = {
           // hanging

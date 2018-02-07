@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
-    "test": "aegir test --target node",
+    "test": "aegir test -t node",
     "build": "aegir build",
     "docs": "aegir docs",
     "release": "aegir release --docs",
@@ -17,7 +17,7 @@
   "browser": {
     "./test/nodejs-bundle": "./test/browser-bundle"
   },
-  "pre-commit": [
+  "pre-push": [
     "lint",
     "test"
   ],
@@ -67,9 +67,9 @@
     "dirty-chai": "^2.0.1",
     "interface-connection": "~0.3.2",
     "libp2p-multiplex": "~0.5.1",
-    "libp2p-swarm": "~0.35.1",
-    "libp2p-tcp": "~0.11.2",
-    "lodash": "^4.17.4",
+    "libp2p-switch": "~0.36.0",
+    "libp2p-tcp": "~0.11.5",
+    "lodash": "^4.17.5",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "peer-book": "~0.5.4",

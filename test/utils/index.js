@@ -11,7 +11,7 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
 const crypto = require('libp2p-crypto')
-const Swarm = require('libp2p-swarm')
+const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
 const Multiplex = require('libp2p-multiplex')
 
@@ -39,12 +39,12 @@ exports.setupDHT = (callback) => {
     const p = peers[0]
     p.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
 
-    const swarm = new Swarm(p, new PeerBook())
-    swarm.transport.add('tcp', new TCP())
-    swarm.connection.addStreamMuxer(Multiplex)
-    swarm.connection.reuse()
+    const sw = new Switch(p, new PeerBook())
+    sw.transport.add('tcp', new TCP())
+    sw.connection.addStreamMuxer(Multiplex)
+    sw.connection.reuse()
 
-    const dht = new KadDHT(swarm)
+    const dht = new KadDHT(sw)
 
     dht.validators.v = {
       func (key, publicKey, callback) {
@@ -56,7 +56,7 @@ exports.setupDHT = (callback) => {
     dht.selectors.v = (k, records) => 0
 
     series([
-      (cb) => swarm.listen(cb),
+      (cb) => sw.start(cb),
       (cb) => dht.start(cb)
     ], (err) => {
       if (err) {
@@ -72,7 +72,7 @@ exports.teardown = (callback) => {
   each(nodes, (n, cb) => {
     series([
       (cb) => n.stop(cb),
-      (cb) => n.swarm.close(cb)
+      (cb) => n.switch.stop(cb)
     ], cb)
   }, (err) => {
     nodes = []

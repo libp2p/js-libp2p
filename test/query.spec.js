@@ -6,7 +6,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const Buffer = require('safe-buffer').Buffer
 const PeerBook = require('peer-book')
-const Swarm = require('libp2p-swarm')
+const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
 const Multiplex = require('libp2p-multiplex')
 
@@ -27,11 +27,11 @@ describe('Query', () => {
       }
 
       peerInfos = result
-      const swarm = new Swarm(peerInfos[0], new PeerBook())
-      swarm.transport.add('tcp', new TCP())
-      swarm.connection.addStreamMuxer(Multiplex)
-      swarm.connection.reuse()
-      dht = new DHT(swarm)
+      const sw = new Switch(peerInfos[0], new PeerBook())
+      sw.transport.add('tcp', new TCP())
+      sw.connection.addStreamMuxer(Multiplex)
+      sw.connection.reuse()
+      dht = new DHT(sw)
 
       done()
     })
@@ -41,7 +41,7 @@ describe('Query', () => {
     const peer = peerInfos[0]
 
     // mock this so we can dial non existing peers
-    dht.swarm.dial = (peer, callback) => callback()
+    dht.switch.dial = (peer, callback) => callback()
 
     let i = 0
     const query = (p, cb) => {
@@ -73,7 +73,7 @@ describe('Query', () => {
     const peer = peerInfos[0]
 
     // mock this so we can dial non existing peers
-    dht.swarm.dial = (peer, callback) => callback()
+    dht.switch.dial = (peer, callback) => callback()
 
     const query = (p, cb) => cb(new Error('fail'))
 
@@ -89,7 +89,7 @@ describe('Query', () => {
     const peer = peerInfos[0]
 
     // mock this so we can dial non existing peers
-    dht.swarm.dial = (peer, callback) => callback()
+    dht.switch.dial = (peer, callback) => callback()
 
     const query = (p, cb) => {
       cb(null, {
