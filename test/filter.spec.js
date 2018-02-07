@@ -9,6 +9,9 @@ const TCP = require('../src')
 const multiaddr = require('multiaddr')
 
 describe('filter addrs', () => {
+  const base = '/ip4/127.0.0.1'
+  const ipfs = '/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw'
+
   let tcp
 
   before(() => {
@@ -16,25 +19,24 @@ describe('filter addrs', () => {
   })
 
   it('filter valid addrs for this transport', () => {
-    const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
-    const mh2 = multiaddr('/ip4/127.0.0.1/udp/9090')
-    const mh3 = multiaddr('/ip4/127.0.0.1/tcp/9090/http')
-    const mh4 = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-    const mh5 = multiaddr('/ip4/127.0.0.1/tcp/9090/http/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-    const mh6 = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw' +
-      '/p2p-circuit/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const ma1 = multiaddr(base + '/tcp/9090')
+    const ma2 = multiaddr(base + '/udp/9090')
+    const ma3 = multiaddr(base + '/tcp/9090/http')
+    const ma4 = multiaddr(base + '/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const ma5 = multiaddr(base + '/tcp/9090/http' + ipfs)
+    const ma6 = multiaddr('/ip4/127.0.0.1/tcp/9090/p2p-circuit' + ipfs)
 
-    const valid = tcp.filter([mh1, mh2, mh3, mh4, mh5, mh6])
+    const valid = tcp.filter([ma1, ma2, ma3, ma4, ma5, ma6])
     expect(valid.length).to.equal(2)
-    expect(valid[0]).to.deep.equal(mh1)
-    expect(valid[1]).to.deep.equal(mh4)
+    expect(valid[0]).to.deep.equal(ma1)
+    expect(valid[1]).to.deep.equal(ma4)
   })
 
   it('filter a single addr for this transport', () => {
-    const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
+    const ma1 = multiaddr(base + '/tcp/9090')
 
-    const valid = tcp.filter(mh1)
+    const valid = tcp.filter(ma1)
     expect(valid.length).to.equal(1)
-    expect(valid[0]).to.deep.equal(mh1)
+    expect(valid[0]).to.eql(ma1)
   })
 })
