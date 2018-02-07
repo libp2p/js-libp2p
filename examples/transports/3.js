@@ -66,19 +66,19 @@ parallel([
   node2.handle('/print', print)
   node3.handle('/print', print)
 
-  node1.dial(node2.peerInfo, '/print', (err, conn) => {
+  node1.dialProtocol(node2.peerInfo, '/print', (err, conn) => {
     if (err) { throw err }
 
     pull(pull.values(['node 1 dialed to node 2 successfully']), conn)
   })
 
-  node2.dial(node3.peerInfo, '/print', (err, conn) => {
+  node2.dialProtocol(node3.peerInfo, '/print', (err, conn) => {
     if (err) { throw err }
 
     pull(pull.values(['node 2 dialed to node 3 successfully']), conn)
   })
 
-  node3.dial(node1.peerInfo, '/print', (err, conn) => {
+  node3.dialProtocol(node1.peerInfo, '/print', (err, conn) => {
     if (err) {
       console.log('node 3 failed to dial to node 1 with:', err.message)
     }

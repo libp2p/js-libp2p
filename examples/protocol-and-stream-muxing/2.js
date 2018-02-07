@@ -60,17 +60,17 @@ parallel([
   })
 
   series([
-    (cb) => node1.dial(node2.peerInfo, '/a', (err, conn) => {
+    (cb) => node1.dialProtocol(node2.peerInfo, '/a', (err, conn) => {
       if (err) { throw err }
       pull(pull.values(['protocol (a)']), conn)
       cb()
     }),
-    (cb) => node1.dial(node2.peerInfo, '/b', (err, conn) => {
+    (cb) => node1.dialProtocol(node2.peerInfo, '/b', (err, conn) => {
       if (err) { throw err }
       pull(pull.values(['protocol (b)']), conn)
       cb()
     }),
-    (cb) => node1.dial(node2.peerInfo, '/b', (err, conn) => {
+    (cb) => node1.dialProtocol(node2.peerInfo, '/b', (err, conn) => {
       if (err) { throw err }
       pull(pull.values(['another conn on protocol (b)']), conn)
       cb()

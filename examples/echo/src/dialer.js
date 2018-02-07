@@ -38,7 +38,7 @@ async.parallel([
           '/ipfs/' + dialerId.toB58String()))
 
     console.log('Dialing to peer:', listenerMultiaddr.toString())
-    dialerNode.dial(listenerPeerInfo, '/echo/1.0.0', (err, conn) => {
+    dialerNode.dialProtocol(listenerPeerInfo, '/echo/1.0.0', (err, conn) => {
       if (err) { throw err }
 
       console.log('nodeA dialed to nodeB on protocol: /echo/1.0.0')
