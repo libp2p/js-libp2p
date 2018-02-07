@@ -21,9 +21,8 @@ class TCP {
       options = {}
     }
 
-    callback = callback || noop
+    callback = once(callback || noop)
 
-    callback = once(callback)
     const cOpts = ma.toOptions()
     log('Connecting to %s %s', cOpts.port, cOpts.host)
 
