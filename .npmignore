@@ -1,6 +1,9 @@
 **/node_modules/
 **/*.log
 test/repo-tests*
+img
+docs
+examples
 
 # Logs
 logs
