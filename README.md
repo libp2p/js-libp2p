@@ -158,9 +158,18 @@ class Node extends libp2p {
 
 `callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case stopping the node fails.
 
-#### `libp2p.dial(peer [, protocol, callback])`
+#### `libp2p.dial(peer, callback)`
 
-> Dials to another peer in the network.
+> Dials to another peer in the network, establishes the connection.
+
+- `peer`: can be an instance of [PeerInfo][], [PeerId][], [multiaddr][], or a multiaddr string
+- `callback`: Function with signature `function (err, conn) {}` where `conn` is a [Connection](https://github.com/libp2p/interface-connection) object
+
+`callback` is a function with the following `function (err, conn) {}` signature, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
+
+#### `libp2p.dialProtocol(peer, protocol, callback)`
+
+> Dials to another peer in the network and selects a protocol to talk with that peer.
 
 - `peer`: can be an instance of [PeerInfo][], [PeerId][], [multiaddr][], or a multiaddr string
 - `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
