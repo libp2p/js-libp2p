@@ -39,17 +39,17 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-floodsub#readme",
   "devDependencies": {
-    "aegir": "^12.2.0",
+    "aegir": "^12.4.0",
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
-    "libp2p": "~0.13.3",
-    "libp2p-secio": "~0.8.1",
+    "libp2p": "~0.15.2",
+    "libp2p-secio": "~0.9.1",
     "libp2p-spdy": "~0.11.0",
-    "libp2p-tcp": "~0.11.1",
+    "libp2p-tcp": "~0.11.5",
     "lodash.times": "^4.3.2",
-    "peer-id": "~0.10.3",
-    "peer-info": "~0.11.3",
+    "peer-id": "~0.10.5",
+    "peer-info": "~0.11.6",
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
@@ -57,10 +57,10 @@
     "bs58": "^4.0.1",
     "debug": "^3.1.0",
     "length-prefixed-stream": "^1.5.1",
-    "libp2p-crypto": "~0.10.4",
+    "libp2p-crypto": "~0.12.0",
     "lodash.values": "^4.3.0",
-    "protons": "^1.0.0",
-    "pull-pushable": "^2.1.1",
+    "protons": "^1.0.1",
+    "pull-pushable": "^2.1.2",
     "time-cache": "~0.3.0"
   },
   "contributors": [
