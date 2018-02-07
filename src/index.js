@@ -7,12 +7,14 @@ const setImmediate = require('async/setImmediate')
 const each = require('async/each')
 const series = require('async/series')
 
-const Ping = require('libp2p-ping')
-const Switch = require('libp2p-switch')
-const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
-const multiaddr = require('multiaddr')
+const Switch = require('libp2p-switch')
+const Ping = require('libp2p-ping')
+
+const peerRouting = require('./peer-routing')
+const contentRouting = require('./content-routing')
+const dht = require('./dht')
+const getPeerInfo = require('./get-peer-info')
 
 exports = module.exports
 
@@ -76,9 +78,6 @@ class Node extends EventEmitter {
       })
     }
 
-    // Mount default protocols
-    Ping.mount(this.switch)
-
     // dht provided components (peerRouting, contentRouting, dht)
     if (_modules.DHT) {
       this._dht = new this.modules.DHT(this.switch, {
@@ -87,56 +86,14 @@ class Node extends EventEmitter {
       })
     }
 
-    this.peerRouting = {
-      findPeer: (id, callback) => {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
+    this.peerRouting = peerRouting(this)
+    this.contentRouting = contentRouting(this)
+    this.dht = dht(this)
 
-        this._dht.findPeer(id, callback)
-      }
-    }
+    this._getPeerInfo = getPeerInfo(this)
 
-    this.contentRouting = {
-      findProviders: (key, timeout, callback) => {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
-
-        this._dht.findProviders(key, timeout, callback)
-      },
-      provide: (key, callback) => {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
-
-        this._dht.provide(key, callback)
-      }
-    }
-
-    this.dht = {
-      put: (key, value, callback) => {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
-
-        this._dht.put(key, value, callback)
-      },
-      get: (key, callback) => {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
-
-        this._dht.get(key, callback)
-      },
-      getMany (key, nVals, callback) {
-        if (!this._dht) {
-          return callback(new Error('DHT is not available'))
-        }
-
-        this._dht.getMany(key, nVals, callback)
-      }
-    }
+    // Mount default protocols
+    Ping.mount(this.switch)
   }
 
   /*
@@ -252,18 +209,22 @@ class Node extends EventEmitter {
     return this._isStarted
   }
 
-  ping (peer, callback) {
+  dial (peer, callback) {
     assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) {
-        return callback(err)
-      }
 
-      callback(null, new Ping(this.switch, peerInfo))
+    this._getPeerInfo(peer, (err, peerInfo) => {
+      if (err) { return callback(err) }
+
+      this.switch.dial(peerInfo, (err, conn) => {
+        if (err) { return callback(err) }
+
+        this.peerBook.put(peerInfo)
+        callback(null, conn)
+      })
     })
   }
 
-  dial (peer, protocol, callback) {
+  dialProtocol (peer, protocol, callback) {
     assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
 
     if (typeof protocol === 'function') {
@@ -272,14 +233,10 @@ class Node extends EventEmitter {
     }
 
     this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) {
-        return callback(err)
-      }
+      if (err) { return callback(err) }
 
       this.switch.dial(peerInfo, protocol, (err, conn) => {
-        if (err) {
-          return callback(err)
-        }
+        if (err) { return callback(err) }
         this.peerBook.put(peerInfo)
         callback(null, conn)
       })
@@ -290,11 +247,18 @@ class Node extends EventEmitter {
     assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
 
     this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) {
-        return callback(err)
-      }
+      if (err) { return callback(err) }
 
       this.switch.hangUp(peerInfo, callback)
+    })
+  }
+
+  ping (peer, callback) {
+    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
+    this._getPeerInfo(peer, (err, peerInfo) => {
+      if (err) { return callback(err) }
+
+      callback(null, new Ping(this.switch, peerInfo))
     })
   }
 
@@ -304,47 +268,6 @@ class Node extends EventEmitter {
 
   unhandle (protocol) {
     this.switch.unhandle(protocol)
-  }
-
-  /*
-   * Helper method to check the data type of peer and convert it to PeerInfo
-   */
-  _getPeerInfo (peer, callback) {
-    let p
-    // PeerInfo
-    if (PeerInfo.isPeerInfo(peer)) {
-      p = peer
-    // Multiaddr instance or Multiaddr String
-    } else if (multiaddr.isMultiaddr(peer) || typeof peer === 'string') {
-      if (typeof peer === 'string') {
-        peer = multiaddr(peer)
-      }
-
-      const peerIdB58Str = peer.getPeerId()
-      if (!peerIdB58Str) {
-        throw new Error(`peer multiaddr instance or string must include peerId`)
-      }
-
-      try {
-        p = this.peerBook.get(peerIdB58Str)
-      } catch (err) {
-        p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
-      }
-      p.multiaddrs.add(peer)
-
-      // PeerId
-    } else if (PeerId.isPeerId(peer)) {
-      const peerIdB58Str = peer.toB58String()
-      try {
-        p = this.peerBook.get(peerIdB58Str)
-      } catch (err) {
-        return this.peerRouting.findPeer(peer, callback)
-      }
-    } else {
-      return setImmediate(() => callback(new Error('peer type not recognized')))
-    }
-
-    setImmediate(() => callback(null, p))
   }
 }
 
