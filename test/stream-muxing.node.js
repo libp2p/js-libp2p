@@ -6,24 +6,15 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 const series = require('async/series')
-const pull = require('pull-stream')
 const utils = require('./utils/node')
+const tryEcho = require('./utils/try-echo')
 const createNode = utils.createNode
 const echo = utils.echo
 
 function test (nodeA, nodeB, callback) {
-  nodeA.dial(nodeB.peerInfo, '/echo/1.0.0', (err, conn) => {
+  nodeA.dialProtocol(nodeB.peerInfo, '/echo/1.0.0', (err, conn) => {
     expect(err).to.not.exist()
-
-    pull(
-      pull.values([Buffer.from('hey')]),
-      conn,
-      pull.collect((err, data) => {
-        expect(err).to.not.exist()
-        expect(data).to.be.eql([Buffer.from('hey')])
-        callback()
-      })
-    )
+    tryEcho(conn, callback)
   })
 }
 
@@ -136,7 +127,7 @@ describe('stream muxing', () => {
   })
 
   it('spdy + multiplex switched order', function (done) {
-    this.timeout(5000)
+    this.timeout(5 * 1000)
 
     let nodeA
     let nodeB
@@ -170,7 +161,7 @@ describe('stream muxing', () => {
   })
 
   it('one without the other fails to establish a muxedConn', function (done) {
-    this.timeout(5000)
+    this.timeout(5 * 1000)
 
     let nodeA
     let nodeB

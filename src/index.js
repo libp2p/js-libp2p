@@ -215,11 +215,11 @@ class Node extends EventEmitter {
     this._getPeerInfo(peer, (err, peerInfo) => {
       if (err) { return callback(err) }
 
-      this.switch.dial(peerInfo, (err, conn) => {
+      this.switch.dial(peerInfo, (err) => {
         if (err) { return callback(err) }
 
         this.peerBook.put(peerInfo)
-        callback(null, conn)
+        callback()
       })
     })
   }

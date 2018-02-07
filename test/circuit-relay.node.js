@@ -1,17 +1,16 @@
 /* eslint-env mocha */
 'use strict'
 
-const pull = require('pull-stream')
 const waterfall = require('async/waterfall')
 const series = require('async/series')
 const parallel = require('async/parallel')
 const utils = require('./utils/node')
 const Circuit = require('libp2p-circuit')
 const multiaddr = require('multiaddr')
+const tryEcho = require('./utils/try-echo')
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
-
 const expect = chai.expect
 const sinon = require('sinon')
 
@@ -153,25 +152,16 @@ describe('circuit relay', function () {
   describe('any relay', function () {
     this.timeout(20 * 1000)
 
-    it('should dial from WS1 to TCP1 over any R', (done) => {
-      nodeWS1.dial(nodeTCP1.peerInfo, '/echo/1.0.0', (err, conn) => {
+    it('dial from WS1 to TCP1 over any R', (done) => {
+      nodeWS1.dialProtocol(nodeTCP1.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
         expect(conn).to.exist()
-
-        pull(
-          pull.values(['hello']),
-          conn,
-          pull.collect((err, result) => {
-            expect(err).to.not.exist()
-            expect(result[0].toString()).to.equal('hello')
-            done()
-          })
-        )
+        tryEcho(conn, done)
       })
     })
 
-    it('should not dial - no R from WS2 to TCP1', (done) => {
-      nodeWS2.dial(nodeTCP2.peerInfo, '/echo/1.0.0', (err, conn) => {
+    it('fail to dial - no R from WS2 to TCP1', (done) => {
+      nodeWS2.dialProtocol(nodeTCP2.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.exist()
         expect(conn).to.not.exist()
         done()
@@ -182,43 +172,29 @@ describe('circuit relay', function () {
   describe('explicit relay', function () {
     this.timeout(20 * 1000)
 
-    it('should dial from WS1 to TCP1 over R1', (done) => {
-      nodeWS1.dial(nodeTCP1.peerInfo, '/echo/1.0.0', (err, conn) => {
+    it('dial from WS1 to TCP1 over R1', (done) => {
+      nodeWS1.dialProtocol(nodeTCP1.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
         expect(conn).to.exist()
 
-        pull(
-          pull.values(['hello']),
-          conn,
-          pull.collect((err, result) => {
-            expect(err).to.not.exist()
-            expect(result[0].toString()).to.equal('hello')
-
-            const addr = multiaddr(handlerSpies[0].args[2][0].dstPeer.addrs[0]).toString()
-            expect(addr).to.equal(`/ipfs/${nodeTCP1.peerInfo.id.toB58String()}`)
-            done()
-          })
-        )
+        tryEcho(conn, () => {
+          const addr = multiaddr(handlerSpies[0].args[2][0].dstPeer.addrs[0]).toString()
+          expect(addr).to.equal(`/ipfs/${nodeTCP1.peerInfo.id.toB58String()}`)
+          done()
+        })
       })
     })
 
-    it('should dial from WS1 to TCP2 over R2', (done) => {
-      nodeWS1.dial(nodeTCP2.peerInfo, '/echo/1.0.0', (err, conn) => {
+    it('dial from WS1 to TCP2 over R2', (done) => {
+      nodeWS1.dialProtocol(nodeTCP2.peerInfo, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
         expect(conn).to.exist()
 
-        pull(
-          pull.values(['hello']),
-          conn,
-          pull.collect((err, result) => {
-            expect(err).to.not.exist()
-            expect(result[0].toString()).to.equal('hello')
-
-            const addr = multiaddr(handlerSpies[1].args[2][0].dstPeer.addrs[0]).toString()
-            expect(addr).to.equal(`/ipfs/${nodeTCP2.peerInfo.id.toB58String()}`)
-            done()
-          })
-        )
+        tryEcho(conn, () => {
+          const addr = multiaddr(handlerSpies[1].args[2][0].dstPeer.addrs[0]).toString()
+          expect(addr).to.equal(`/ipfs/${nodeTCP2.peerInfo.id.toB58String()}`)
+          done()
+        })
       })
     })
   })
