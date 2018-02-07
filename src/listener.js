@@ -55,23 +55,19 @@ module.exports = (handler) => {
     callback = callback || noop
     options = options || {}
 
-    let closed = false
-    server.close(callback)
-
-    server.once('close', () => {
-      closed = true
-    })
-    setTimeout(() => {
-      if (closed) {
-        return
-      }
-
+    const timeout = setTimeout(() => {
       log('unable to close graciously, destroying conns')
       Object.keys(server.__connections).forEach((key) => {
         log('destroying %s', key)
         server.__connections[key].destroy()
       })
     }, options.timeout || CLOSE_TIMEOUT)
+
+    server.close(callback)
+
+    server.once('close', () => {
+      clearTimeout(timeout)
+    })
   }
 
   let ipfsId
