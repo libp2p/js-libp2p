@@ -76,7 +76,7 @@ describe('Turbolence tests', () => {
     function check () {
       const peers = nodeA.peerBook.getAll()
       expect(Object.keys(peers)).to.have.length(1)
-      expect(Object.keys(nodeA.swarm.muxedConns)).to.have.length(0)
+      expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(0)
       done()
     }
   })

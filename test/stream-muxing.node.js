@@ -200,12 +200,12 @@ describe('stream muxing', () => {
       (cb) => setup(cb),
       (cb) => {
         // it will just 'warm up a conn'
-        expect(Object.keys(nodeA.swarm.muxers)).to.have.length(1)
-        expect(Object.keys(nodeB.swarm.muxers)).to.have.length(1)
+        expect(Object.keys(nodeA.switch.muxers)).to.have.length(1)
+        expect(Object.keys(nodeB.switch.muxers)).to.have.length(1)
 
         nodeA.dial(nodeB.peerInfo, (err) => {
           expect(err).to.not.exist()
-          expect(Object.keys(nodeA.swarm.muxedConns)).to.have.length(0)
+          expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(0)
           cb()
         })
       },

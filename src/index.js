@@ -8,7 +8,7 @@ const each = require('async/each')
 const series = require('async/series')
 
 const Ping = require('libp2p-ping')
-const Swarm = require('libp2p-swarm')
+const Switch = require('libp2p-switch')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
@@ -31,28 +31,28 @@ class Node extends EventEmitter {
 
     this._isStarted = false
 
-    this.swarm = new Swarm(this.peerInfo, this.peerBook)
+    this.switch = new Switch(this.peerInfo, this.peerBook)
 
     // Attach stream multiplexers
     if (this.modules.connection && this.modules.connection.muxer) {
       let muxers = this.modules.connection.muxer
       muxers = Array.isArray(muxers) ? muxers : [muxers]
-      muxers.forEach((muxer) => this.swarm.connection.addStreamMuxer(muxer))
+      muxers.forEach((muxer) => this.switch.connection.addStreamMuxer(muxer))
 
       // If muxer exists, we can use Identify
-      this.swarm.connection.reuse()
+      this.switch.connection.reuse()
 
       // If muxer exists, we can use Relay for listening/dialing
-      this.swarm.connection.enableCircuitRelay(_options.relay)
+      this.switch.connection.enableCircuitRelay(_options.relay)
 
       // Received incommind dial and muxer upgrade happened,
       // reuse this muxed connection
-      this.swarm.on('peer-mux-established', (peerInfo) => {
+      this.switch.on('peer-mux-established', (peerInfo) => {
         this.emit('peer:connect', peerInfo)
         this.peerBook.put(peerInfo)
       })
 
-      this.swarm.on('peer-mux-closed', (peerInfo) => {
+      this.switch.on('peer-mux-closed', (peerInfo) => {
         this.emit('peer:disconnect', peerInfo)
       })
     }
@@ -62,7 +62,7 @@ class Node extends EventEmitter {
       let cryptos = this.modules.connection.crypto
       cryptos = Array.isArray(cryptos) ? cryptos : [cryptos]
       cryptos.forEach((crypto) => {
-        this.swarm.connection.crypto(crypto.tag, crypto.encrypt)
+        this.switch.connection.crypto(crypto.tag, crypto.encrypt)
       })
     }
 
@@ -77,11 +77,11 @@ class Node extends EventEmitter {
     }
 
     // Mount default protocols
-    Ping.mount(this.swarm)
+    Ping.mount(this.switch)
 
     // dht provided components (peerRouting, contentRouting, dht)
     if (_modules.DHT) {
-      this._dht = new this.modules.DHT(this.swarm, {
+      this._dht = new this.modules.DHT(this.switch, {
         kBucketSize: 20,
         datastore: _options.DHT && _options.DHT.datastore
       })
@@ -167,7 +167,7 @@ class Node extends EventEmitter {
     const multiaddrs = this.peerInfo.multiaddrs.toArray()
     transports.forEach((transport) => {
       if (transport.filter(multiaddrs).length > 0) {
-        this.swarm.transport.add(
+        this.switch.transport.add(
           transport.tag || transport.constructor.name, transport)
       } else if (transport.constructor &&
                  transport.constructor.name === 'WebSockets') {
@@ -178,11 +178,11 @@ class Node extends EventEmitter {
     })
 
     series([
-      (cb) => this.swarm.listen(cb),
+      (cb) => this.switch.start(cb),
       (cb) => {
         if (ws) {
           // always add dialing on websockets
-          this.swarm.transport.add(ws.tag || ws.constructor.name, ws)
+          this.switch.transport.add(ws.tag || ws.constructor.name, ws)
         }
 
         // all transports need to be setup before discover starts
@@ -237,7 +237,7 @@ class Node extends EventEmitter {
         }
         cb()
       },
-      (cb) => this.swarm.close(cb),
+      (cb) => this.switch.stop(cb),
       (cb) => {
         this.emit('stop')
         cb()
@@ -259,7 +259,7 @@ class Node extends EventEmitter {
         return callback(err)
       }
 
-      callback(null, new Ping(this.swarm, peerInfo))
+      callback(null, new Ping(this.switch, peerInfo))
     })
   }
 
@@ -276,7 +276,7 @@ class Node extends EventEmitter {
         return callback(err)
       }
 
-      this.swarm.dial(peerInfo, protocol, (err, conn) => {
+      this.switch.dial(peerInfo, protocol, (err, conn) => {
         if (err) {
           return callback(err)
         }
@@ -294,16 +294,16 @@ class Node extends EventEmitter {
         return callback(err)
       }
 
-      this.swarm.hangUp(peerInfo, callback)
+      this.switch.hangUp(peerInfo, callback)
     })
   }
 
   handle (protocol, handlerFunc, matchFunc) {
-    this.swarm.handle(protocol, handlerFunc, matchFunc)
+    this.switch.handle(protocol, handlerFunc, matchFunc)
   }
 
   unhandle (protocol) {
-    this.swarm.unhandle(protocol)
+    this.switch.unhandle(protocol)
   }
 
   /*
