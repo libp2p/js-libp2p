@@ -106,7 +106,7 @@ class FloodSub extends EventEmitter {
     }
 
     log('dialing %s', idB58Str)
-    this.libp2p.dial(peerInfo, multicodec, (err, conn) => {
+    this.libp2p.dialProtocol(peerInfo, multicodec, (err, conn) => {
       if (err) {
         log.err(err)
         return callback()
