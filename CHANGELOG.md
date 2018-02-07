@@ -1,3 +1,13 @@
+<a name="0.11.3"></a>
+## [0.11.3](https://github.com/libp2p/js-libp2p-tcp/compare/v0.11.2...v0.11.3) (2018-02-07)
+
+
+### Bug Fixes
+
+* clearing timeout when closes ([#87](https://github.com/libp2p/js-libp2p-tcp/issues/87)) ([f8f5266](https://github.com/libp2p/js-libp2p-tcp/commit/f8f5266))
+
+
+
 <a name="0.11.2"></a>
 ## [0.11.2](https://github.com/libp2p/js-libp2p-tcp/compare/v0.11.1...v0.11.2) (2018-01-12)
 
