@@ -1,3 +1,18 @@
+<a name="0.7.0"></a>
+# [0.7.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.6.0...v0.7.0) (2018-02-07)
+
+
+### Bug Fixes
+
+* release providers resources ([#23](https://github.com/libp2p/js-libp2p-kad-dht/issues/23)) ([ff87f4b](https://github.com/libp2p/js-libp2p-kad-dht/commit/ff87f4b))
+
+
+### Features
+
+* use libp2p-switch ([054e5e5](https://github.com/libp2p/js-libp2p-kad-dht/commit/054e5e5))
+
+
+
 <a name="0.6.3"></a>
 ## [0.6.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.6.2...v0.6.3) (2018-01-30)
 
