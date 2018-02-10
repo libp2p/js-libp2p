@@ -1,3 +1,13 @@
+<a name="0.14.0"></a>
+# [0.14.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.13.1...v0.14.0) (2018-02-10)
+
+
+### Features
+
+* use latest libp2p ([22af5cc](https://github.com/libp2p/js-libp2p-floodsub/commit/22af5cc))
+
+
+
 <a name="0.13.1"></a>
 ## [0.13.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.13.0...v0.13.1) (2017-12-05)
 
