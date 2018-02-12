@@ -8,13 +8,13 @@
     "test"
   ],
   "scripts": {
-    "test": "aegir-test --env node",
-    "lint": "aegir-lint",
-    "release": "aegir-release --env node",
-    "release-minor": "aegir-release --type minor --env node",
-    "release-major": "aegir-release --type major --env node",
-    "coverage": "aegir-coverage",
-    "coverage-publish": "aegir-coverage publish"
+    "test": "aegir test -t node",
+    "lint": "aegir lint",
+    "release": "aegir release -t node",
+    "release-minor": "aegir release --type minor -t node",
+    "release-major": "aegir release --type major -t node",
+    "coverage": "aegir coverage",
+    "coverage-publish": "aegir coverage publish"
   },
   "repository": {
     "type": "git",
