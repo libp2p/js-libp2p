@@ -21,7 +21,8 @@ describe('libp2p ping', () => {
   let peerA
   let peerB
 
-  before((done) => {
+  before(function (done) {
+    this.timeout(20 * 1000)
     series([
       (cb) => PeerInfo.create((err, peerInfo) => {
         expect(err).to.not.exist()
