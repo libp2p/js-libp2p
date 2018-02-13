@@ -53,7 +53,7 @@ module.exports = {
       return
     }
 
-    const b58Id = answers.txt.data.toString()
+    const b58Id = answers.txt.data[0].toString()
     const port = answers.srv.data.port
     const multiaddrs = []
 
@@ -96,7 +96,7 @@ module.exports = {
       answers.push({
         name: serviceTag,
         type: 'PTR',
-        class: 1,
+        class: 'IN',
         ttl: 120,
         data: peerInfo.id.toB58String() + '.' + serviceTag
       })
@@ -107,7 +107,7 @@ module.exports = {
       answers.push({
         name: peerInfo.id.toB58String() + '.' + serviceTag,
         type: 'SRV',
-        class: 1,
+        class: 'IN',
         ttl: 120,
         data: {
           priority: 10,
@@ -120,7 +120,7 @@ module.exports = {
       answers.push({
         name: peerInfo.id.toB58String() + '.' + serviceTag,
         type: 'TXT',
-        class: 1,
+        class: 'IN',
         ttl: 120,
         data: peerInfo.id.toB58String()
       })
@@ -130,7 +130,7 @@ module.exports = {
           answers.push({
             name: os.hostname(),
             type: 'A',
-            class: 1,
+            class: 'IN',
             ttl: 120,
             data: ma.toString().split('/')[2]
           })
@@ -140,7 +140,7 @@ module.exports = {
           answers.push({
             name: os.hostname(),
             type: 'AAAA',
-            class: 1,
+            class: 'IN',
             ttl: 120,
             data: ma.toString().split('/')[2]
           })

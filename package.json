@@ -39,7 +39,7 @@
   "dependencies": {
     "libp2p-tcp": "~0.11.2",
     "multiaddr": "^3.0.2",
-    "multicast-dns": "^6.2.3",
+    "multicast-dns": "^7.0.0",
     "peer-id": "~0.10.5",
     "peer-info": "~0.11.6"
   },
