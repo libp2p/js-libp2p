@@ -14,6 +14,7 @@ const Ping = require('libp2p-ping')
 const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
 const dht = require('./dht')
+const pubsub = require('./pubsub')
 const getPeerInfo = require('./get-peer-info')
 
 exports = module.exports
@@ -89,6 +90,7 @@ class Node extends EventEmitter {
     this.peerRouting = peerRouting(this)
     this.contentRouting = contentRouting(this)
     this.dht = dht(this)
+    this.pubsub = pubsub(this)
 
     this._getPeerInfo = getPeerInfo(this)
 
@@ -149,17 +151,29 @@ class Node extends EventEmitter {
         cb()
       },
       (cb) => {
-        // TODO: chicken-and-egg problem:
+        // TODO: chicken-and-egg problem #1:
         // have to set started here because DHT requires libp2p is already started
         this._isStarted = true
         if (this._dht) {
-          return this._dht.start(cb)
+          this._dht.start(cb)
+        } else {
+          cb()
         }
-        cb()
       },
+      (cb) => {
+        // TODO: chicken-and-egg problem #2:
+        // have to set started here because FloodSub requires libp2p is already started
+        if (this._options !== false) {
+          this._floodSub.start(cb)
+        } else {
+          cb()
+        }
+      },
+
       (cb) => {
         // detect which multiaddrs we don't have a transport for and remove them
         const multiaddrs = this.peerInfo.multiaddrs.toArray()
+
         transports.forEach((transport) => {
           multiaddrs.forEach((multiaddr) => {
             if (!multiaddr.toString().match(/\/p2p-circuit($|\/)/) &&
@@ -188,6 +202,11 @@ class Node extends EventEmitter {
     }
 
     series([
+      (cb) => {
+        if (this._floodSub.started) {
+          this._floodSub.stop(cb)
+        }
+      },
       (cb) => {
         if (this._dht) {
           return this._dht.stop(cb)
