@@ -54,11 +54,13 @@ parallel([
   ], (err) => {
     if (err) { throw err }
 
-    node1.pubsub.on('news', (msg) => console.log(msg.from, msg.data.toString()))
-    node1.pubsub.subscribe('news')
-
-    setInterval(() => {
-      node2.pubsub.publish('news', Buffer.from('Bird bird bird, bird is the word!'))
-    }, 1000)
+    node1.pubsub.subscribe('news',
+      (msg) => console.log(msg.from, msg.data.toString(),
+      () => {
+        setInterval(() => {
+          node2.pubsub.publish('news', Buffer.from('Bird bird bird, bird is the word!'))
+        }, 1000)
+      })
+    )
   })
 })
