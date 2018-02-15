@@ -249,9 +249,13 @@ class Node extends libp2p {
 
 > PeerInfo instance of the node
 
+#### `libp2p.pubsub`
+
+> Same API as IPFS PubSub, defined in the [CORE API Spec](https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/PUBSUB.md). Just replace `ipfs` by `libp2p` and you are golden.
+
 ---------------------
 
-`DHT methods exposed`
+`DHT methods also exposed for the time being`
 
 #### `libp2p.dht.put(key, value, callback)`
 
