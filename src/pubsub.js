@@ -11,14 +11,14 @@ module.exports = (node) => {
 
   return {
     subscribe: (topic, options, handler, callback) => {
-      if (!node.isStarted() && !floodSub.started) {
-        return setImmediate(() => callback(new Error(NOT_STARTED_YET)))
-      }
-
       if (typeof options === 'function') {
         callback = handler
         handler = options
         options = {}
+      }
+
+      if (!node.isStarted() && !floodSub.started) {
+        return setImmediate(() => callback(new Error(NOT_STARTED_YET)))
       }
 
       function subscribe (cb) {
