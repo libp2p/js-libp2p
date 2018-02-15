@@ -11,7 +11,7 @@ module.exports = (node) => {
 
   return {
     subscribe: (topic, options, handler, callback) => {
-      if (!node.isStarted()) {
+      if (!node.isStarted() && !floodSub.started) {
         return setImmediate(() => callback(new Error(NOT_STARTED_YET)))
       }
 
@@ -34,6 +34,10 @@ module.exports = (node) => {
     },
 
     unsubscribe: (topic, handler) => {
+      if (!node.isStarted() && !floodSub.started) {
+        throw new Error(NOT_STARTED_YET)
+      }
+
       floodSub.removeListener(topic, handler)
 
       if (floodSub.listenerCount(topic) === 0) {
@@ -42,7 +46,7 @@ module.exports = (node) => {
     },
 
     publish: (topic, data, callback) => {
-      if (!node.isStarted()) {
+      if (!node.isStarted() && !floodSub.started) {
         return setImmediate(() => callback(new Error(NOT_STARTED_YET)))
       }
 
@@ -56,7 +60,7 @@ module.exports = (node) => {
     },
 
     ls: (callback) => {
-      if (!node.isStarted()) {
+      if (!node.isStarted() && !floodSub.started) {
         return setImmediate(() => callback(new Error(NOT_STARTED_YET)))
       }
 
@@ -66,7 +70,7 @@ module.exports = (node) => {
     },
 
     peers: (topic, callback) => {
-      if (!node.isStarted()) {
+      if (!node.isStarted() && !floodSub.started) {
         return setImmediate(() => callback(new Error(NOT_STARTED_YET)))
       }
 
