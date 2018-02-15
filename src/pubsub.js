@@ -26,7 +26,7 @@ module.exports = (node) => {
           floodSub.subscribe(topic)
         }
 
-        floodSub.pubsub.on(topic, handler)
+        floodSub.on(topic, handler)
         setImmediate(cb)
       }
 
