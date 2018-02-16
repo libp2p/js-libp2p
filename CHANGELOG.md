@@ -1,3 +1,18 @@
+<a name="0.17.0"></a>
+# [0.17.0](https://github.com/libp2p/js-libp2p/compare/v0.16.5...v0.17.0) (2018-02-16)
+
+
+### Bug Fixes
+
+* use correct reference to floodSub ([947eaf1](https://github.com/libp2p/js-libp2p/commit/947eaf1))
+
+
+### Features
+
+* add pubsub to libp2p ([0c543b7](https://github.com/libp2p/js-libp2p/commit/0c543b7))
+
+
+
 <a name="0.16.5"></a>
 ## [0.16.5](https://github.com/libp2p/js-libp2p/compare/v0.16.4...v0.16.5) (2018-02-14)
 
