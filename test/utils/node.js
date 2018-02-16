@@ -22,7 +22,7 @@ function createNode (multiaddrs, options, callback) {
   }
 
   waterfall([
-    (cb) => PeerId.create({ bits: 1024 }, cb),
+    (cb) => PeerId.create({ bits: 512 }, cb),
     (peerId, cb) => PeerInfo.create(peerId, cb),
     (peerInfo, cb) => {
       multiaddrs.map((ma) => peerInfo.multiaddrs.add(ma))
