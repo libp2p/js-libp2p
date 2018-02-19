@@ -1,7 +1,7 @@
 {
-  "name": "libp2p-multiplex",
+  "name": "libp2p-mplex",
   "version": "0.5.1",
-  "description": "multiplex implementation wrapper that is compatible with libp2p Stream Muxer expected interface",
+  "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p-multiplex.git"
+    "url": "git+https://github.com/libp2p/js-libp2p-mplex.git"
   },
   "keywords": [
     "IPFS"
@@ -25,9 +25,9 @@
   "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-multiplex/issues"
+    "url": "https://github.com/libp2p/js-libp2p-mplex/issues"
   },
-  "homepage": "https://github.com/libp2p/js-libp2p-multiplex#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p-mplex#readme",
   "devDependencies": {
     "aegir": "^13.0.1",
     "chai": "^4.1.2",
