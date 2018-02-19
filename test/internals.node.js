@@ -320,8 +320,7 @@ describe('Internals - MplexCore', () => {
     const plex1 = new MplexCore()
     const plex2 = new MplexCore()
 
-    plex1.pipe(plex2)
-         .pipe(plex1)
+    plex1.pipe(plex2).pipe(plex1)
 
     plex2.on('stream', function (stream, id) {
       expect(stream).to.exist()
@@ -365,8 +364,7 @@ describe('Internals - MplexCore', () => {
     plex1.nameTag = 'plex1:'
     plex2.nameTag = 'plex2:'
 
-    plex1.pipe(plex2)
-         .pipe(plex1)
+    plex1.pipe(plex2).pipe(plex1)
 
     plex2.on('stream', function (stream, id) {
       expect(stream).to.exist()

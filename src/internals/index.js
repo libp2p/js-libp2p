@@ -201,7 +201,7 @@ class Multiplex extends stream.Duplex {
                 this._list[this._channel] &&
                 this._list[this._channel].chunked
 
-          this._chunked = !!(this._type === 1 || this._type === 2) && chunked
+          this._chunked = Boolean(this._type === 1 || this._type === 2) && chunked
         } else {
           this._missing = varint.decode(this._buf)
 
@@ -299,15 +299,17 @@ class Multiplex extends stream.Duplex {
 
     switch (this._type) {
       case 5: // local error
-      case 6: // remote error
+      case 6: { // remote error
         const error = new Error(data.toString() || 'Channel destroyed')
         stream._destroy(error, false)
         return
+      }
 
       case 3: // local end
-      case 4: // remote end
+      case 4: { // remote end
         stream.push(null)
         return
+      }
 
       case 1: // local packet
       case 2: // remote packet
@@ -315,6 +317,8 @@ class Multiplex extends stream.Duplex {
           this._awaitChannelDrains++
           stream._awaitDrain++
         }
+        break
+      default: {}
     }
   }
 

@@ -1,7 +1,6 @@
 'use strict'
 /* @flow */
 
-const EventEmitter = require('events').EventEmitter
 const stream = require('readable-stream')
 const debug = require('debug')
 
