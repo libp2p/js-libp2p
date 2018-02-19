@@ -4,7 +4,7 @@ const WS = require('libp2p-websockets')
 const WebRTCStar = require('libp2p-webrtc-star')
 const WebSocketStar = require('libp2p-websocket-star')
 const spdy = require('libp2p-spdy')
-const multiplex = require('libp2p-multiplex')
+const mplex = require('libp2p-mplex')
 const secio = require('libp2p-secio')
 const Railing = require('libp2p-railing')
 const libp2p = require('../..')
@@ -17,8 +17,8 @@ function mapMuxers (list) {
     switch (pref.trim().toLowerCase()) {
       case 'spdy':
         return spdy
-      case 'multiplex':
-        return multiplex
+      case 'mplex':
+        return mplex
       default:
         throw new Error(pref + ' muxer not available')
     }
@@ -29,7 +29,7 @@ function getMuxers (options) {
   if (options) {
     return mapMuxers(options)
   } else {
-    return [multiplex, spdy]
+    return [mplex, spdy]
   }
 }
 
