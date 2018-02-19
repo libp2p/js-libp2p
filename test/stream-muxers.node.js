@@ -9,7 +9,7 @@ chai.use(dirtyChai)
 
 const parallel = require('async/parallel')
 const TCP = require('libp2p-tcp')
-const multiplex = require('libp2p-multiplex')
+const multiplex = require('libp2p-mplex')
 const spdy = require('libp2p-spdy')
 const pull = require('pull-stream')
 const PeerBook = require('peer-book')
