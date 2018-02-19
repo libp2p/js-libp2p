@@ -7,9 +7,29 @@ const pull = require('pull-stream')
 const pullCatch = require('pull-catch')
 const setImmediate = require('async/setImmediate')
 
-const MULTIPLEX_CODEC = require('./multiplex-codec')
+const MULTIPLEX_CODEC = require('./codec')
 
-module.exports = class MultiplexMuxer extends EventEmitter {
+function noop () {}
+
+// Catch error makes sure that even though we get the "Channel destroyed" error
+// from when closing streams, that it's not leaking through since it's not
+// really an error for us, channels shoul close cleanly.
+function catchError (stream) {
+  return {
+    source: pull(
+      stream.source,
+      pullCatch((err) => {
+        if (err.message === 'Channel destroyed') {
+          return
+        }
+        return false
+      })
+    ),
+    sink: stream.sink
+  }
+}
+
+class MultiplexMuxer extends EventEmitter {
   constructor (conn, multiplex) {
     super()
     this.multiplex = multiplex
@@ -50,20 +70,4 @@ module.exports = class MultiplexMuxer extends EventEmitter {
   }
 }
 
-function noop () {}
-
-// Catch error makes sure that even though we get the "Channel destroyed" error from when closing streams, that it's not leaking through since it's not really an error for us, channels shoul close cleanly.
-function catchError (stream) {
-  return {
-    source: pull(
-      stream.source,
-      pullCatch((err) => {
-        if (err.message === 'Channel destroyed') {
-          return
-        }
-        return false
-      })
-    ),
-    sink: stream.sink
-  }
-}
+module.exports = MultiplexMuxer

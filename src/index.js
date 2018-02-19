@@ -1,9 +1,8 @@
 'use strict'
 
-const Multiplex = require('multiplex')
 const toStream = require('pull-stream-to-stream')
-
-const MULTIPLEX_CODEC = require('./multiplex-codec')
+const MplexCore = require('./internals')
+const MULTIPLEX_CODEC = require('./codec')
 const Muxer = require('./muxer')
 
 const pump = require('pump')
@@ -11,12 +10,11 @@ const pump = require('pump')
 function create (rawConn, isListener) {
   const stream = toStream(rawConn)
 
-  // Cleanup and destroy the connection when it ends
-  // as the converted stream doesn't emit 'close'
-  // but .destroy will trigger a 'close' event.
+  // Cleanup and destroy the connection when it ends as the converted stream
+  // doesn't emit 'close' but .destroy will trigger a 'close' event.
   stream.on('end', () => stream.destroy())
 
-  const mpx = new Multiplex({
+  const mpx = new MplexCore({
     halfOpen: true,
     initiator: !isListener
   })
