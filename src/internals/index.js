@@ -9,10 +9,10 @@ const debug = require('debug')
 const Channel = require('./channel')
 /* :: import type {ChannelOpts} from './channel' */
 
-const SIGNAL_FLUSH = new Buffer([0])
+const SIGNAL_FLUSH = Buffer.from([0])
 
-const empty = new Buffer(0)
-let pool = new Buffer(10 * 1024)
+const empty = Buffer.alloc(0)
+let pool = Buffer.alloc(10 * 1024)
 let used = 0
 
 /* ::
@@ -70,7 +70,7 @@ class Multiplex extends stream.Duplex {
     if (this.limit) {
       bufSize = varint.encodingLength(this.limit)
     }
-    this._buf = new Buffer(bufSize)
+    this._buf = Buffer.alloc(bufSize)
     this._ptr = 0
     this._awaitChannelDrains = 0
     this._onwritedrain = null
@@ -142,7 +142,7 @@ class Multiplex extends stream.Duplex {
     if (!this._binaryName) {
       return name.toString()
     }
-    return Buffer.isBuffer(name) ? name : new Buffer(name)
+    return Buffer.isBuffer(name) ? name : Buffer.from(name)
   }
 
   _send (header/* : number */, data /* :: ?: Buffer */)/* : bool */ {
@@ -160,7 +160,7 @@ class Multiplex extends stream.Duplex {
     drained = this.push(pool.slice(oldUsed, used))
 
     if (pool.length - used < 100) {
-      pool = new Buffer(10 * 1024)
+      pool = Buffer.alloc(10 * 1024)
       used = 0
     }
 
@@ -239,7 +239,7 @@ class Multiplex extends stream.Duplex {
         this._push(data.slice(offset, data.length))
         return data.length
       }
-      this._message = new Buffer(missing)
+      this._message = Buffer.alloc(missing)
     }
 
     data.copy(this._message, this._ptr, offset, offset + missing)
@@ -315,7 +315,6 @@ class Multiplex extends stream.Duplex {
           this._awaitChannelDrains++
           stream._awaitDrain++
         }
-        return
     }
   }
 

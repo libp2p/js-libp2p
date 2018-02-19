@@ -95,7 +95,7 @@ class Channel extends stream.Duplex {
 
     this.destroyed = true
 
-    const hasErrorListeners = EventEmitter.listenerCount(this, 'error') > 0
+    const hasErrorListeners = this.listenerCount('error') > 0
 
     if (err && (!local || hasErrorListeners)) {
       this.emit('error', err)
@@ -108,7 +108,7 @@ class Channel extends stream.Duplex {
         this._open()
       }
 
-      const msg = err ? new Buffer(err.message) : null
+      const msg = err ? Buffer.from(err.message) : null
       try {
         this._multiplex._send(
           this.channel << 3 | (this.initiator ? 6 : 5),
@@ -173,7 +173,7 @@ class Channel extends stream.Duplex {
     if (Buffer.isBuffer(this.name)) {
       buf = this.name
     } else if (this.name !== this.channel.toString()) {
-      buf = new Buffer(this.name)
+      buf = Buffer.from(this.name)
     }
 
     this._lazy = false
