@@ -60,14 +60,14 @@ describe('stream muxing', () => {
     ], done)
   })
 
-  it('multiplex only', (done) => {
+  it('mplex only', (done) => {
     let nodeA
     let nodeB
 
     function setup (callback) {
       parallel([
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['multiplex']
+          muxer: ['mplex']
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
@@ -75,7 +75,7 @@ describe('stream muxing', () => {
           node.start(cb)
         }),
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['multiplex']
+          muxer: ['mplex']
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node
@@ -92,7 +92,7 @@ describe('stream muxing', () => {
     ], done)
   })
 
-  it('spdy + multiplex', function (done) {
+  it('spdy + mplex', function (done) {
     this.timeout(5000)
 
     let nodeA
@@ -101,7 +101,7 @@ describe('stream muxing', () => {
     function setup (callback) {
       parallel([
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['spdy', 'multiplex']
+          muxer: ['spdy', 'mplex']
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
@@ -109,7 +109,7 @@ describe('stream muxing', () => {
           node.start(cb)
         }),
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['spdy', 'multiplex']
+          muxer: ['spdy', 'mplex']
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node
@@ -126,7 +126,7 @@ describe('stream muxing', () => {
     ], done)
   })
 
-  it('spdy + multiplex switched order', function (done) {
+  it('spdy + mplex switched order', function (done) {
     this.timeout(5 * 1000)
 
     let nodeA
@@ -135,7 +135,7 @@ describe('stream muxing', () => {
     function setup (callback) {
       parallel([
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['spdy', 'multiplex']
+          muxer: ['spdy', 'mplex']
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
@@ -143,7 +143,7 @@ describe('stream muxing', () => {
           node.start(cb)
         }),
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['multiplex', 'spdy']
+          muxer: ['mplex', 'spdy']
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node
@@ -177,7 +177,7 @@ describe('stream muxing', () => {
           node.start(cb)
         }),
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['multiplex']
+          muxer: ['mplex']
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node

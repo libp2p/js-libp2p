@@ -48,12 +48,12 @@ describe('transports', () => {
       })
     })
 
-    it('create libp2pNode with multiplex only', (done) => {
+    it('create libp2pNode with mplex only', (done) => {
       PeerInfo.create((err, peerInfo) => {
         expect(err).to.not.exist()
 
-        const b = new Node(peerInfo, null, { muxer: ['multiplex'] })
-        expect(b.modules.connection.muxer).to.eql([require('libp2p-multiplex')])
+        const b = new Node(peerInfo, null, { muxer: ['mplex'] })
+        expect(b.modules.connection.muxer).to.eql([require('libp2p-mplex')])
         done()
       })
     })
