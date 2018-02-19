@@ -88,7 +88,7 @@ The example above would require a node to create a whole new connection for ever
 
 Stream multiplexing is a old concept, in fact it happens in many of the layers of the [OSI System](https://en.wikipedia.org/wiki/OSI_model), in libp2p we make this feature to our avail by letting the user pick which module for stream multiplexing to use.
 
-Currently, we have two available [libp2p-spdy](https://github.com/libp2p/js-libp2p-spdy) and [libp2p-multiplex](https://github.com/libp2p/js-libp2p-multiplex) and pluging them in is as easy as adding another transport. Let's revisit our libp2p bundle.
+Currently, we have two available [libp2p-spdy](https://github.com/libp2p/js-libp2p-spdy) and [libp2p-mplex](https://github.com/libp2p/js-libp2p-mplex) and pluging them in is as easy as adding another transport. Let's revisit our libp2p bundle.
 
 ```JavaScript
 const SPDY = require('libp2p-spdy')

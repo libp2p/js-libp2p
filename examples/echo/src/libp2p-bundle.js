@@ -6,7 +6,7 @@ const WS = require('libp2p-websockets')
 const Railing = require('libp2p-railing')
 const spdy = require('libp2p-spdy')
 const KadDHT = require('libp2p-kad-dht')
-const multiplex = require('libp2p-multiplex')
+const mplex = require('libp2p-mplex')
 const secio = require('libp2p-secio')
 const libp2p = require('../../..')
 
@@ -17,7 +17,7 @@ function mapMuxers (list) {
     }
     switch (pref.trim().toLowerCase()) {
       case 'spdy': return spdy
-      case 'multiplex': return multiplex
+      case 'mplex': return mplex
       default:
         throw new Error(pref + ' muxer not available')
     }
@@ -31,7 +31,7 @@ function getMuxers (muxers) {
   } else if (muxers) {
     return mapMuxers(muxers)
   } else {
-    return [multiplex, spdy]
+    return [mplex, spdy]
   }
 }
 

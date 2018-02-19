@@ -18,7 +18,7 @@ class MyBundle extends libp2p {
     const modules = {
       transport: [new TCP()],
       connection: {
-        muxer: [Multiplex],
+        muxer: [Mplex],
         crypto: [SECIO]
       },
       // we add the DHT module that will enable Peer and Content Routing
