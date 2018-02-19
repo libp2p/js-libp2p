@@ -2,7 +2,7 @@
 
 const libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
-const Multiplex = require('libp2p-multiplex')
+const Mplex = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const PeerInfo = require('peer-info')
 const MulticastDNS = require('libp2p-mdns')
@@ -14,7 +14,7 @@ class MyBundle extends libp2p {
     const modules = {
       transport: [new TCP()],
       connection: {
-        muxer: [Multiplex],
+        muxer: [Mplex],
         crypto: [SECIO]
       },
       discovery: [new MulticastDNS(peerInfo, { interval: 1000 })]
