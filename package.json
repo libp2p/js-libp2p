@@ -38,19 +38,19 @@
   "dependencies": {
     "interface-connection": "~0.3.2",
     "lodash.includes": "^4.3.0",
-    "mafmt": "^3.0.1",
+    "mafmt": "^4.0.0",
     "pull-ws": "^3.3.0"
   },
   "devDependencies": {
-    "aegir": "^12.1.0",
+    "aegir": "^13.0.5",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "gulp": "^3.9.1",
     "interface-transport": "~0.3.5",
-    "multiaddr": "^3.0.1",
+    "multiaddr": "^3.0.2",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
-    "pull-stream": "^3.6.1"
+    "pull-stream": "^3.6.2"
   },
   "contributors": [
     "Chris Campbell <christopher.d.campbell@gmail.com>",
