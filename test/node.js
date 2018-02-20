@@ -222,7 +222,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
       const ma2 = multiaddr('/ip4/127.0.0.1/udp/9090')
       const ma3 = multiaddr('/ip6/::1/tcp/80')
-      const ma4 = multiaddr('/dns/ipfs.io/tcp/80')
+      const ma4 = multiaddr('/dnsaddr/ipfs.io/tcp/80')
 
       const valid = ws.filter([ma1, ma2, ma3, ma4])
       expect(valid.length).to.equal(0)
@@ -269,9 +269,9 @@ describe('filter addrs', () => {
     })
 
     it('should filter correct dns address', function () {
-      const ma1 = multiaddr('/dns/ipfs.io/ws')
-      const ma2 = multiaddr('/dns/ipfs.io/tcp/80/ws')
-      const ma3 = multiaddr('/dns/ipfs.io/tcp/80/wss')
+      const ma1 = multiaddr('/dnsaddr/ipfs.io/ws')
+      const ma2 = multiaddr('/dnsaddr/ipfs.io/tcp/80/ws')
+      const ma3 = multiaddr('/dnsaddr/ipfs.io/tcp/80/wss')
 
       const valid = ws.filter([ma1, ma2, ma3])
       expect(valid.length).to.equal(3)
@@ -281,8 +281,8 @@ describe('filter addrs', () => {
     })
 
     it('should filter correct dns address with ipfs id', function () {
-      const ma1 = multiaddr('/dns/ipfs.io/tcp/80/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-      const ma2 = multiaddr('/dns/ipfs.io/tcp/443/wss/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const ma1 = multiaddr('/dnsaddr/ipfs.io/tcp/80/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const ma2 = multiaddr('/dnsaddr/ipfs.io/tcp/443/wss/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
       const valid = ws.filter([ma1, ma2])
       expect(valid.length).to.equal(2)
