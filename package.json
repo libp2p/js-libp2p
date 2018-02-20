@@ -34,13 +34,13 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^12.4.0",
+    "aegir": "^13.0.5",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "interface-transport": "~0.3.5",
     "lodash.isfunction": "^3.0.9",
     "pre-commit": "^1.2.2",
-    "pull-stream": "^3.6.1"
+    "pull-stream": "^3.6.2"
   },
   "dependencies": {
     "debug": "^3.1.0",
@@ -48,7 +48,7 @@
     "ip-address": "^5.8.9",
     "lodash.includes": "^4.3.0",
     "lodash.isfunction": "^3.0.9",
-    "mafmt": "^3.0.2",
+    "mafmt": "^4.0.0",
     "multiaddr": "^3.0.2",
     "once": "^1.4.0",
     "stream-to-pull-stream": "^1.7.2"
