@@ -38,7 +38,21 @@ const KadDHT = require('libp2p-kad-dht')
 
 ## API
 
-See https://libp2p.github.io/js-libp2p-kad-dht
+See https://libp2p.github.io/js-libp2p-kad-dht for the auto generated docs.
+
+The libp2p-kad-dht module offers 3 APIs: Peer Routing, Content Routing and Peer Discovery.
+
+### Peer Routing
+
+[![](https://raw.githubusercontent.com/diasdavid/interface-peer-routing/master/img/badge.png)](https://github.com/libp2p/interface-peer-routing)
+
+### Content Routing
+
+![]()
+
+### Peer Discovery
+
+[![](https://github.com/libp2p/interface-peer-discovery/raw/master/img/badge.png)](https://github.com/libp2p/interface-peer-discovery)
 
 ## Contribute
 
