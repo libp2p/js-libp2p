@@ -5,7 +5,8 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const series = require('async/series')
-const createNode = require('./utils/node').createNode
+
+const createNode = require('./utils/create-node')
 
 describe('multiaddr trim', () => {
   it('non used multiaddrs get trimmed', (done) => {
@@ -20,7 +21,6 @@ describe('multiaddr trim', () => {
         expect(err).to.not.exist()
         node = _node
         const multiaddrs = node.peerInfo.multiaddrs.toArray()
-        // multiaddrs.forEach((ma) => console.log(ma.toString()))
         expect(multiaddrs).to.have.length(3)
         cb()
       }),
@@ -29,11 +29,10 @@ describe('multiaddr trim', () => {
       expect(err).to.not.exist()
 
       const multiaddrs = node.peerInfo.multiaddrs.toArray()
-      // console.log('--')
-      // multiaddrs.forEach((ma) => console.log(ma.toString()))
 
       expect(multiaddrs.length).to.at.least(2)
-      expect(multiaddrs[0].toString()).to.match(/^\/ip4\/127\.0\.0\.1\/tcp\/[0-9]+\/ws\/ipfs\/\w+$/)
+      expect(multiaddrs[0].toString())
+        .to.match(/^\/ip4\/127\.0\.0\.1\/tcp\/[0-9]+\/ws\/ipfs\/\w+$/)
       node.stop(done)
     })
   })

@@ -5,15 +5,23 @@ const TCP = require('libp2p-tcp')
 const WebSockets = require('libp2p-websockets')
 const PeerInfo = require('peer-info')
 const waterfall = require('async/waterfall')
+const defaultsDeep = require('lodash.defaultsdeep')
 const parallel = require('async/parallel')
 const pull = require('pull-stream')
 
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP(), new WebSockets()]
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [
+          TCP,
+          WebSockets
+        ]
+      }
     }
-    super(modules, peerInfo)
+
+    defaultsDeep(_options, defaults)
+    super(_options)
   }
 }
 
@@ -28,7 +36,7 @@ function createNode (addrs, callback) {
     (cb) => PeerInfo.create(cb),
     (peerInfo, cb) => {
       addrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
-      node = new MyBundle(peerInfo)
+      node = new MyBundle({ peerInfo: peerInfo })
       node.start(cb)
     }
   ], (err) => callback(err, node))

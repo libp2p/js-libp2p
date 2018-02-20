@@ -5,7 +5,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 
-const createNode = require('./utils/node').createNode
+const createNode = require('./utils/create-node')
 
 describe('libp2p', (done) => {
   it('has stats', () => {
