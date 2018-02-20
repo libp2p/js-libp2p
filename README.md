@@ -31,3 +31,47 @@ mdns.start(() => setTimeout(() => mdns.stop(() => {}), 20 * 1000))
   - `broadcast` - (true/false) announce our presence through mDNS, default false
   - `interval` - query interval, default 10 * 1000 (10 seconds)
   - `serviceTag` - name of the service announcedm, default 'ipfs.local`
+
+# MDNS messages
+
+A query is sent to discover the IPFS nodes on the local network
+
+```
+{ type: 'query',
+  questions: [ { name: 'ipfs.local', type: 'PTR' } ]
+}
+```
+
+When a query is detected, each IPFS node sends an answer about itself
+
+```
+[ { name: 'ipfs.local',
+    type: 'PTR',
+    class: 'IN',
+    ttl: 120,
+    data: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK.ipfs.local' },
+  { name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK.ipfs.local',
+    type: 'SRV',
+    class: 'IN',
+    ttl: 120,
+    data:
+     { priority: 10,
+       weight: 1,
+       port: '20002',
+       target: 'LAPTOP-G5LJ7VN9' } },
+  { name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK.ipfs.local',
+    type: 'TXT',
+    class: 'IN',
+    ttl: 120,
+    data: ['QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK'] },
+  { name: 'LAPTOP-G5LJ7VN9',
+    type: 'A',
+    class: 'IN',
+    ttl: 120,
+    data: '127.0.0.1' },
+  { name: 'LAPTOP-G5LJ7VN9',
+    type: 'AAAA',
+    class: 'IN',
+    ttl: 120,
+    data: '::1' } ]
+```
