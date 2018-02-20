@@ -27,16 +27,23 @@ const libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const PeerInfo = require('peer-info')
 const waterfall = require('async/waterfall')
+const defaultsDeep = require('lodash.defaultsdeep')
 
 // This MyBundle class is your libp2p bundle packed with TCP
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    // modules is a JS object that will describe the components
-    // we want for our libp2p bundle
-    const modules = {
-      transport: [new TCP()]
+  constructor (_options) {
+    const defaults = {
+      // modules is a JS object that will describe the components
+      // we want for our libp2p bundle
+      modules: {
+        transport: [
+          TCP
+        ]
+      }
     }
-    super(modules, peerInfo)
+
+    defaultsDeep(_options, defaults)
+    super(_options)
   }
 }
 ```
@@ -57,7 +64,7 @@ waterfall([
     // the multiaddr format, a self describable address
     peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
     // Now we can create a node with that PeerInfo object
-    node = new MyBundle(peerInfo)
+    node = new MyBundle({ peerInfo: peerInfo })
     // Last, we start the node!
     node.start(cb)
   }
@@ -114,7 +121,7 @@ function createNode (callback) {
     (cb) => PeerInfo.create(cb),
     (peerInfo, cb) => {
       peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-      node = new MyBundle(peerInfo)
+      node = new MyBundle({ peerInfo: peerInfo })
       node.start(cb)
     }
   ], (err) => callback(err, node))
@@ -196,11 +203,18 @@ const WebSockets = require('libp2p-websockets')
 // ...
 
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP(), new WebSockets()]
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [
+          TCP,
+          WebSockets
+        ]
+      }
     }
-    super(modules, peerInfo)
+
+    defaultsDeep(_options, defaults)
+    super(_options)
   }
 }
 ```
@@ -219,7 +233,7 @@ function createNode (addrs, callback) {
     (cb) => PeerInfo.create(cb),
     (peerInfo, cb) => {
       addrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
-      node = new MyBundle(peerInfo)
+      node = new MyBundle({ peerInfo: peerInfo })
       node.start(cb)
     }
   ], (err) => callback(err, node))

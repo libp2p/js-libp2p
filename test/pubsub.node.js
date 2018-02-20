@@ -9,8 +9,8 @@ const expect = chai.expect
 const parallel = require('async/parallel')
 const waterfall = require('async/waterfall')
 const _times = require('lodash.times')
-const utils = require('./utils/node')
-const createNode = utils.createNode
+
+const createNode = require('./utils/create-node')
 
 function startTwo (callback) {
   const tasks = _times(2, () => (cb) => {

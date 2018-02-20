@@ -5,10 +5,11 @@ const PeerId = require('peer-id')
 const pull = require('pull-stream')
 const parallel = require('async/parallel')
 
-const rawPeer = require('./test/fixtures/test-peer.json')
-const Node = require('./test/utils/bundle.node.js')
-const sigServer = require('libp2p-webrtc-star/src/sig-server')
 const WebSocketStarRendezvous = require('libp2p-websocket-star-rendezvous')
+const sigServer = require('libp2p-webrtc-star/src/sig-server')
+
+const rawPeer = require('./test/fixtures/test-peer.json')
+const Node = require('./test/utils/bundle-nodejs.js')
 
 let wrtcRendezvous
 let wsRendezvous
@@ -21,7 +22,9 @@ const before = (done) => {
         port: 15555
         // cryptoChallenge: true TODO: needs https://github.com/libp2p/js-libp2p-webrtc-star/issues/128
       }, (err, server) => {
-        if (err) { return cb(err) }
+        if (err) {
+          return cb(err)
+        }
         wrtcRendezvous = server
         cb()
       })
@@ -33,7 +36,9 @@ const before = (done) => {
         strictMultiaddr: false,
         cryptoChallenge: true
       }, (err, _server) => {
-        if (err) { return cb(err) }
+        if (err) {
+          return cb(err)
+        }
         wsRendezvous = _server
         cb()
       })
@@ -47,7 +52,9 @@ const before = (done) => {
 
         peer.multiaddrs.add('/ip4/127.0.0.1/tcp/9200/ws')
 
-        node = new Node(peer)
+        node = new Node({
+          peerInfo: peer
+        })
         node.handle('/echo/1.0.0', (protocol, conn) => pull(conn, conn))
         node.start(cb)
       })
@@ -56,11 +63,11 @@ const before = (done) => {
 }
 
 const after = (done) => {
-  setTimeout(() => parallel(
-    [node, wrtcRendezvous, wsRendezvous].map((s) => {
-      return (cb) => s.stop(cb)
-    })
-   , done), 2000)
+  setTimeout(() =>
+    parallel(
+      [node, wrtcRendezvous, wsRendezvous].map((s) => (cb) => s.stop(cb)),
+      done),
+  2000)
 }
 
 module.exports = {

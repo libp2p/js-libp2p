@@ -3,11 +3,10 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
-const Node = require('./bundle.node')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const waterfall = require('async/waterfall')
-const pull = require('pull-stream')
+const Node = require('./bundle-nodejs')
 
 function createNode (multiaddrs, options, callback) {
   if (typeof options === 'function') {
@@ -26,20 +25,10 @@ function createNode (multiaddrs, options, callback) {
     (peerId, cb) => PeerInfo.create(peerId, cb),
     (peerInfo, cb) => {
       multiaddrs.map((ma) => peerInfo.multiaddrs.add(ma))
-      cb(null, peerInfo)
-    },
-    (peerInfo, cb) => {
-      const node = new Node(peerInfo, undefined, options)
-      cb(null, node)
+      options.peerInfo = peerInfo
+      cb(null, new Node(options))
     }
   ], callback)
 }
 
-function echo (protocol, conn) {
-  pull(conn, conn)
-}
-
-module.exports = {
-  createNode: createNode,
-  echo: echo
-}
+module.exports = createNode

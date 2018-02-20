@@ -6,9 +6,9 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const signalling = require('libp2p-webrtc-star/src/sig-server')
 const parallel = require('async/parallel')
-const utils = require('./utils/node')
-const createNode = utils.createNode
-const echo = utils.echo
+
+const createNode = require('./utils/create-node')
+const echo = require('./utils/echo')
 
 describe('peer discovery', () => {
   let nodeA
@@ -58,7 +58,15 @@ describe('peer discovery', () => {
   }
 
   describe('MulticastDNS', () => {
-    setup({ mdns: true })
+    setup({
+      config: {
+        peerDiscovery: {
+          mdns: {
+            enabled: true
+          }
+        }
+      }
+    })
 
     it('find a peer', function (done) {
       this.timeout(15 * 1000)
@@ -87,8 +95,16 @@ describe('peer discovery', () => {
 
   describe('MulticastDNS + WebRTCStar', () => {
     setup({
-      webRTCStar: true,
-      mdns: true
+      config: {
+        peerDiscovery: {
+          mdns: {
+            enabled: true
+          },
+          webRTCStar: {
+            enabled: true
+          }
+        }
+      }
     })
 
     it('find a peer', function (done) {
