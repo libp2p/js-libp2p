@@ -21,12 +21,20 @@ series([
 ], (err) => {
   if (err) { throw err }
 
-  node1.pubsub.on('news', (msg) => console.log(msg.from, msg.data.toString()))
-  node1.pubsub.subscribe('news')
-
-  setInterval(() => {
-    node2.pubsub.publish('news', Buffer.from('Bird bird bird, bird is the word!'))
-  }, 1000)
+  // Subscribe to the topic 'news'
+  node1.pubsub.subscribe('news',
+    (msg) => console.log(msg.from, msg.data.toString()),
+    () => {
+      setInterval(() => {
+        // Publish the message on topic 'news'
+        node2.pubsub.publish(
+          'news',
+          Buffer.from('Bird bird bird, bird is the word!'),
+          () => {}
+        )
+      }, 1000)
+    }
+  )
 })
 ```
 
