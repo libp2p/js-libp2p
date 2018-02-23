@@ -34,7 +34,8 @@ class Node extends EventEmitter {
 
     this._isStarted = false
 
-    this.switch = new Switch(this.peerInfo, this.peerBook)
+    this.switch = new Switch(this.peerInfo, this.peerBook, _options.switch)
+    this.stats = this.switch.stats
 
     // Attach stream multiplexers
     if (this.modules.connection && this.modules.connection.muxer) {
