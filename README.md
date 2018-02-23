@@ -277,6 +277,113 @@ class Node extends libp2p {
 [multiaddr]: https://github.com/multiformats/js-multiaddr
 [Connection]: https://github.com/libp2p/interface-connection
 
+-------
+
+### Switch Stats API
+
+##### `libp2p.stats.emit('update')`
+
+Every time any stat value changes, this object emits an `update` event.
+
+#### Global stats
+
+##### `libp2p.stats.global.snapshot`
+
+Should return a stats snapshot, which is an object containing the following keys and respective values:
+
+- dataSent: amount of bytes sent, [Big](https://github.com/MikeMcl/big.js#readme) number
+- dataReceived: amount of bytes received, [Big](https://github.com/MikeMcl/big.js#readme) number
+
+##### `libp2p.stats.global.movingAverages`
+
+Returns an object containing the following keys:
+
+- dataSent
+- dataReceived
+
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+
+Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
+
+#### Per-transport stats
+
+##### `libp2p.stats.transports()`
+
+Returns an array containing the tags (string) for each observed transport.
+
+##### `libp2p.stats.forTransport(transportTag).snapshot`
+
+Should return a stats snapshot, which is an object containing the following keys and respective values:
+
+- dataSent: amount of bytes sent, [Big](https://github.com/MikeMcl/big.js#readme) number
+- dataReceived: amount of bytes received, [Big](https://github.com/MikeMcl/big.js#readme) number
+
+##### `libp2p.stats.forTransport(transportTag).movingAverages`
+
+Returns an object containing the following keys:
+
+ dataSent
+ dataReceived
+
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+
+Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
+
+#### Per-protocol stats
+
+##### `libp2p.stats.protocols()`
+
+Returns an array containing the tags (string) for each observed protocol.
+
+##### `libp2p.stats.forProtocol(protocolTag).snapshot`
+
+Should return a stats snapshot, which is an object containing the following keys and respective values:
+
+- dataSent: amount of bytes sent, [Big](https://github.com/MikeMcl/big.js#readme) number
+- dataReceived: amount of bytes received, [Big](https://github.com/MikeMcl/big.js#readme) number
+
+
+##### `libp2p.stats.forProtocol(protocolTag).movingAverages`
+
+Returns an object containing the following keys:
+
+- dataSent
+- dataReceived
+
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+
+Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
+
+#### Per-peer stats
+
+##### `libp2p.stats.peers()`
+
+Returns an array containing the peerIDs (B58-encoded string) for each observed peer.
+
+##### `libp2p.stats.forPeer(peerId:String).snapshot`
+
+Should return a stats snapshot, which is an object containing the following keys and respective values:
+
+- dataSent: amount of bytes sent, [Big](https://github.com/MikeMcl/big.js#readme) number
+- dataReceived: amount of bytes received, [Big](https://github.com/MikeMcl/big.js#readme) number
+
+
+##### `libp2p.stats.forPeer(peerId:String).movingAverages`
+
+Returns an object containing the following keys:
+
+- dataSent
+- dataReceived
+
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+
+Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
+
+#### Stats update interval
+
+Stats are not updated in real-time. Instead, measurements are buffered and stats are updated at an interval. The maximum interval can be defined through the `Switch` constructor option `stats.computeThrottleTimeout`, defined in miliseconds.
+
+
 ## Development
 
 **Clone and install dependencies:**
