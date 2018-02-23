@@ -9,7 +9,7 @@ const createNode = require('./utils/node').createNode
 
 describe('libp2p', (done) => {
   it('has stats', () => {
-    createNode('/ip4/0.0.0.0/tcp/0', {
+    createNode('/ip4/127.0.0.1/tcp/0', {
       mdns: false,
       dht: true
     }, (err, node) => {
