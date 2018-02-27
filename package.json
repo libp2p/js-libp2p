@@ -56,18 +56,21 @@
   },
   "dependencies": {
     "async": "^2.6.0",
+    "big.js": "^5.0.3",
     "debug": "^3.1.0",
     "interface-connection": "~0.3.2",
     "ip-address": "^5.8.9",
     "libp2p-circuit": "~0.1.4",
     "libp2p-identify": "~0.6.3",
     "lodash.includes": "^4.3.0",
+    "moving-average": "^1.0.0",
     "multiaddr": "^3.0.2",
     "multistream-select": "~0.14.1",
     "once": "^1.4.0",
     "peer-id": "~0.10.6",
     "peer-info": "~0.11.6",
-    "pull-stream": "^3.6.1"
+    "pull-stream": "^3.6.1",
+    "quick-lru": "^1.1.0"
   },
   "contributors": [
     "Arnaud <arnaud.valensi@gmail.com>",

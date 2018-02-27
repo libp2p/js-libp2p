@@ -7,18 +7,21 @@ const transport = require('./transport')
 const connection = require('./connection')
 const getPeerInfo = require('./get-peer-info')
 const dial = require('./dial')
-const protocolMuxer = require('./protocol-muxer')
+const ProtocolMuxer = require('./protocol-muxer')
 const plaintext = require('./plaintext')
+const Observer = require('./observer')
+const Stats = require('./stats')
 const assert = require('assert')
 
 class Switch extends EE {
-  constructor (peerInfo, peerBook) {
+  constructor (peerInfo, peerBook, options) {
     super()
     assert(peerInfo, 'You must provide a `peerInfo`')
     assert(peerBook, 'You must provide a `peerBook`')
 
     this._peerInfo = peerInfo
     this._peerBook = peerBook
+    this._options = options || {}
 
     this.setMaxListeners(Infinity)
     // transports --
@@ -69,10 +72,14 @@ class Switch extends EE {
         })
     }
 
+    this.observer = Observer(this)
+    this.stats = Stats(this.observer, this._options.stats)
+    this.protocolMuxer = ProtocolMuxer(this.protocols, this.observer)
+
     this.handle(this.crypto.tag, (protocol, conn) => {
       const peerId = this._peerInfo.id
       const wrapped = this.crypto.encrypt(peerId, conn, undefined, () => {})
-      return protocolMuxer(this.protocols, wrapped)
+      return this.protocolMuxer(null)(wrapped)
     })
 
     // higher level (public) API
@@ -88,6 +95,7 @@ class Switch extends EE {
   }
 
   stop (callback) {
+    this.stats.stop()
     series([
       (cb) => each(this.muxedConns, (conn, cb) => {
         conn.muxer.end((err) => {

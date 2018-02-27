@@ -29,6 +29,7 @@ libp2p-switch is used by [libp2p](https://github.com/libp2p/js-libp2p) but it ca
   - [`switch.start(callback)`](#swarmlistencallback)
   - [`switch.stop(callback)`](#swarmclosecallback)
   - [`switch.connection`](#connection)
+  - [`switch.stats`](#stats-api)
   - [Internal Transports API](#transports)
 - [Design Notes](#designnotes)
   - [Multitransport](#multitransport)
@@ -51,8 +52,25 @@ libp2p-switch is used by [libp2p](https://github.com/libp2p/js-libp2p) but it ca
 ```JavaScript
 const switch = require('libp2p-switch')
 
-const sw = new switch(peerInfo [, peerBook])
+const sw = new switch(peerInfo , peerBook [, options])
 ```
+
+If defined, `options` should be an object with the following keys and respective values:
+
+- `stats`: an object with the following keys and respective values:
+  - `maxOldPeersRetention`: maximum old peers retention. For when peers disconnect and keeping the stats around in case they reconnect. Defaults to `100`.
+  - `computeThrottleMaxQueueSize`: maximum queue size to perform stats computation throttling. Defaults to `1000`.
+  - `computeThrottleTimeout`: Throttle timeout, in miliseconds. Defaults to `2000`,
+  - `movingAverageIntervals`: Array containin the intervals, in miliseconds, for which moving averages are calculated. Defaults to:
+
+  ```js
+  [
+    60 * 1000, // 1 minute
+    5 * 60 * 1000, // 5 minutes
+    15 * 60 * 1000 // 15 minutes
+  ]
+  ```
+
 
 ## API
 
@@ -147,6 +165,111 @@ Enable circuit relaying.
         - active - is it an active or passive relay (default false)
 - `callback`
 
+### Stats API
+
+##### `switch.stats.emit('update')`
+
+Every time any stat value changes, this object emits an `update` event.
+
+#### Global stats
+
+##### `switch.stats.global.snapshot`
+
+Should return a stats snapshot, which is an object containing the following keys and respective values:
+
+- dataSent: amount of bytes sent, [Big](https://github.com/MikeMcl/big.js#readme) number
+- dataReceived: amount of bytes received, [Big](https://github.com/MikeMcl/big.js#readme) number
+
+##### `switch.stats.global.movingAverages`
+
+Returns an object containing the following keys:
+
+- dataSent
+- dataReceived
+
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+
+Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
+
+#### Per-transport stats
+
+##### `switch.stats.transports()`
+
+Returns an array containing the tags (string) for each observed transport.
+
+##### `switch.stats.forTransport(transportTag).snapshot`
+
+Should return a stats snapshot, which is an object containing the following keys and respective values:
+
+- dataSent: amount of bytes sent, [Big](https://github.com/MikeMcl/big.js#readme) number
+- dataReceived: amount of bytes received, [Big](https://github.com/MikeMcl/big.js#readme) number
+
+##### `switch.stats.forTransport(transportTag).movingAverages`
+
+Returns an object containing the following keys:
+
+ dataSent
+ dataReceived
+
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+
+Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
+
+#### Per-protocol stats
+
+##### `switch.stats.protocols()`
+
+Returns an array containing the tags (string) for each observed protocol.
+
+##### `switch.stats.forProtocol(protocolTag).snapshot`
+
+Should return a stats snapshot, which is an object containing the following keys and respective values:
+
+- dataSent: amount of bytes sent, [Big](https://github.com/MikeMcl/big.js#readme) number
+- dataReceived: amount of bytes received, [Big](https://github.com/MikeMcl/big.js#readme) number
+
+
+##### `switch.stats.forProtocol(protocolTag).movingAverages`
+
+Returns an object containing the following keys:
+
+- dataSent
+- dataReceived
+
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+
+Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
+
+#### Per-peer stats
+
+##### `switch.stats.peers()`
+
+Returns an array containing the peerIDs (B58-encoded string) for each observed peer.
+
+##### `switch.stats.forPeer(peerId:String).snapshot`
+
+Should return a stats snapshot, which is an object containing the following keys and respective values:
+
+- dataSent: amount of bytes sent, [Big](https://github.com/MikeMcl/big.js#readme) number
+- dataReceived: amount of bytes received, [Big](https://github.com/MikeMcl/big.js#readme) number
+
+
+##### `switch.stats.forPeer(peerId:String).movingAverages`
+
+Returns an object containing the following keys:
+
+- dataSent
+- dataReceived
+
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+
+Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
+
+#### Stats update interval
+
+Stats are not updated in real-time. Instead, measurements are buffered and stats are updated at an interval. The maximum interval can be defined through the `Switch` constructor option `stats.computeThrottleTimeout`, defined in miliseconds.
+
+
 ### Internal Transports API
 
 ##### `switch.transport.add(key, transport, options)`
@@ -212,9 +335,10 @@ Identify is a protocol that switchs mounts on top of itself, to identify the con
 - a) peer A dials a conn to peer B
 - b) that conn gets upgraded to a stream multiplexer that both peers agree
 - c) peer B executes de identify protocol
-- d) peer B now can open streams to peer A, knowing which is the identity of peer A
+- d) peer B now can open streams to peer A, knowing which is the
+identity of peer A
 
-In addition to this, we also share the 'observed addresses' by the other peer, which is extremely useful information for different kinds of network topologies.
+In addition to this, we also share the "observed addresses" by the other peer, which is extremely useful information for different kinds of network topologies.
 
 ### Notes
 

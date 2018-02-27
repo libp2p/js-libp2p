@@ -3,19 +3,18 @@
 const parallel = require('async/parallel')
 const once = require('once')
 const debug = require('debug')
-const log = debug('libp2p:swarm:transport')
+const log = debug('libp2p:switch:transport')
 
-const protocolMuxer = require('./protocol-muxer')
 const LimitDialer = require('./limit-dialer')
 
-// number of concurrent outbound dials to make per peer, same as go-libp2p-swarm
+// number of concurrent outbound dials to make per peer, same as go-libp2p-swtch
 const defaultPerPeerRateLimit = 8
 
 // the amount of time a single dial has to succeed
 // TODO this should be exposed as a option
 const dialTimeout = 30 * 1000
 
-module.exports = function (swarm) {
+module.exports = function (swtch) {
   const dialer = new LimitDialer(defaultPerPeerRateLimit, dialTimeout)
 
   return {
@@ -23,18 +22,18 @@ module.exports = function (swarm) {
       options = options || {}
 
       log('adding %s', key)
-      if (swarm.transports[key]) {
+      if (swtch.transports[key]) {
         throw new Error('There is already a transport with this key')
       }
 
-      swarm.transports[key] = transport
-      if (!swarm.transports[key].listeners) {
-        swarm.transports[key].listeners = []
+      swtch.transports[key] = transport
+      if (!swtch.transports[key].listeners) {
+        swtch.transports[key].listeners = []
       }
     },
 
     dial (key, pi, callback) {
-      const t = swarm.transports[key]
+      const t = swtch.transports[key]
       let multiaddrs = pi.multiaddrs.toArray()
 
       if (!Array.isArray(multiaddrs)) {
@@ -50,7 +49,7 @@ module.exports = function (swarm) {
         }
 
         pi.connect(success.multiaddr)
-        swarm._peerBook.put(pi)
+        swtch._peerBook.put(pi)
         callback(null, success.conn)
       })
     },
@@ -58,12 +57,12 @@ module.exports = function (swarm) {
     listen (key, options, handler, callback) {
       // if no handler is passed, we pass conns to protocolMuxer
       if (!handler) {
-        handler = protocolMuxer.bind(null, swarm.protocols)
+        handler = swtch.protocolMuxer(key)
       }
 
-      const multiaddrs = dialables(swarm.transports[key], swarm._peerInfo.multiaddrs.distinct())
+      const multiaddrs = dialables(swtch.transports[key], swtch._peerInfo.multiaddrs.distinct())
 
-      const transport = swarm.transports[key]
+      const transport = swtch.transports[key]
 
       if (!transport.listeners) {
         transport.listeners = []
@@ -100,13 +99,13 @@ module.exports = function (swarm) {
         }
 
         // cause we can listen on port 0 or 0.0.0.0
-        swarm._peerInfo.multiaddrs.replace(multiaddrs, freshMultiaddrs)
+        swtch._peerInfo.multiaddrs.replace(multiaddrs, freshMultiaddrs)
         callback()
       })
     },
 
     close (key, callback) {
-      const transport = swarm.transports[key]
+      const transport = swtch.transports[key]
 
       if (!transport) {
         return callback(new Error(`Trying to close non existing transport: ${key}`))
