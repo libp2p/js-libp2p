@@ -1,3 +1,14 @@
+<a name="0.37.0"></a>
+# [0.37.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.36.1...v0.37.0) (2018-02-27)
+
+
+### Features
+
+* observe traffic and expose statistics ([#243](https://github.com/libp2p/js-libp2p-switch/issues/243)) ([a4521dd](https://github.com/libp2p/js-libp2p-switch/commit/a4521dd))
+* use mplex, update CI ([0f0f314](https://github.com/libp2p/js-libp2p-switch/commit/0f0f314))
+
+
+
 <a name="0.36.1"></a>
 ## [0.36.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.36.0...v0.36.1) (2018-02-12)
 
