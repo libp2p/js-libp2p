@@ -391,7 +391,7 @@ describe('KadDHT', () => {
         (cb) => times(dhts.length, (i, cb) => {
           connect(dhts[i], dhts[(i + 1) % dhts.length], cb)
         }, cb),
-        (cb) => dhts[1].getClosestPeers(new Buffer('foo'), cb)
+        (cb) => dhts[1].getClosestPeers(Buffer.from('foo'), cb)
       ], (err, res) => {
         expect(err).to.not.exist()
         expect(res[1]).to.have.length(c.K)
