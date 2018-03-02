@@ -7,13 +7,13 @@ const expect = chai.expect
 
 const PeerList = require('../src/peer-list')
 
-const makePeers = require('./utils').makePeers
+const createPeerInfo = require('./utils/create-peer-info')
 
 describe('PeerList', () => {
   let peers
 
   before((done) => {
-    makePeers(3, (err, p) => {
+    createPeerInfo(3, (err, p) => {
       if (err) {
         return done(err)
       }

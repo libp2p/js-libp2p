@@ -4,16 +4,15 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const Buffer = require('safe-buffer').Buffer
 const PeerBook = require('peer-book')
 const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
-const Multiplex = require('libp2p-multiplex')
+const Mplex = require('libp2p-mplex')
 
 const DHT = require('../src')
 const Query = require('../src/query')
 
-const makePeers = require('./utils').makePeers
+const createPeerInfo = require('./utils/create-peer-info')
 
 describe('Query', () => {
   let peerInfos
@@ -21,7 +20,7 @@ describe('Query', () => {
 
   before(function (done) {
     this.timeout(5 * 1000)
-    makePeers(3, (err, result) => {
+    createPeerInfo(3, (err, result) => {
       if (err) {
         return done(err)
       }
@@ -29,7 +28,7 @@ describe('Query', () => {
       peerInfos = result
       const sw = new Switch(peerInfos[0], new PeerBook())
       sw.transport.add('tcp', new TCP())
-      sw.connection.addStreamMuxer(Multiplex)
+      sw.connection.addStreamMuxer(Mplex)
       sw.connection.reuse()
       dht = new DHT(sw)
 

@@ -10,9 +10,9 @@ const distance = require('xor-distance')
 const waterfall = require('async/waterfall')
 
 const utils = require('../src/utils')
-const makePeers = require('./utils').makePeers
+const createPeerInfo = require('./utils/create-peer-info')
 
-describe('utils', () => {
+describe('kad utils', () => {
   describe('bufferToKey', () => {
     it('returns the base32 encoded key of the buffer', () => {
       const buf = Buffer.from('hello world')
@@ -20,11 +20,8 @@ describe('utils', () => {
       const key = utils.bufferToKey(buf)
 
       const enc = new base32.Encoder()
-      expect(
-        key.toString()
-      ).to.be.eql(
-        '/' + enc.write(buf).finalize()
-      )
+      expect(key.toString())
+        .to.equal('/' + enc.write(buf).finalize())
     })
   })
 
@@ -68,7 +65,7 @@ describe('utils', () => {
         (out, cb) => {
           expect(
             out.map((m) => m.toB58String())
-          ).to.be.eql([
+          ).to.eql([
             ids[0],
             ids[3],
             ids[2],
@@ -98,7 +95,7 @@ describe('utils', () => {
 
   describe('keyForPublicKey', () => {
     it('works', (done) => {
-      makePeers(1, (err, peers) => {
+      createPeerInfo(1, (err, peers) => {
         expect(err).to.not.exist()
 
         expect(utils.keyForPublicKey(peers[0].id))
@@ -112,7 +109,7 @@ describe('utils', () => {
     it('round trips', function (done) {
       this.timeout(40 * 1000)
 
-      makePeers(50, (err, peers) => {
+      createPeerInfo(50, (err, peers) => {
         expect(err).to.not.exist()
 
         peers.forEach((p, i) => {

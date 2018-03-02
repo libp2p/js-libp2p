@@ -5,34 +5,41 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const waterfall = require('async/waterfall')
-const Buffer = require('safe-buffer').Buffer
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/get-value')
 const utils = require('../../../src/utils')
-const util = require('../../utils')
 
 const T = Message.TYPES.GET_VALUE
 
+const createPeerInfo = require('../../utils/create-peer-info')
+// const createValues = require('../../utils/create-values')
+const TestDHT = require('../../utils/test-dht')
+
 describe('rpc - handlers - GetValue', () => {
   let peers
+  let tdht
   let dht
 
   before((done) => {
-    util.makePeers(2, (err, res) => {
+    createPeerInfo(2, (err, res) => {
       expect(err).to.not.exist()
       peers = res
       done()
     })
   })
 
-  afterEach((done) => util.teardown(done))
-
   beforeEach((done) => {
-    util.setupDHT((err, res) => {
+    tdht = new TestDHT()
+
+    tdht.spawn(1, (err, dhts) => {
       expect(err).to.not.exist()
-      dht = res
+      dht = dhts[0]
       done()
     })
+  })
+
+  afterEach((done) => {
+    tdht.teardown(done)
   })
 
   it('errors when missing key', (done) => {

@@ -7,15 +7,15 @@ const expect = chai.expect
 const PeerId = require('peer-id')
 const map = require('async/map')
 const each = require('async/each')
-const waterfall = require('async/waterfall')
+const series = require('async/series')
 const range = require('lodash.range')
 const random = require('lodash.random')
 
 const RoutingTable = require('../src/routing')
-const utils = require('../src/utils')
+const kadUtils = require('../src/utils')
 
-function createPeers (n, callback) {
-  map(range(n), (i, cb) => PeerId.create({bits: 1024}, cb), callback)
+function createPeerId (n, callback) {
+  map(range(n), (i, cb) => PeerId.create({bits: 512}, cb), callback)
 }
 
 describe('Routing Table', () => {
@@ -24,7 +24,7 @@ describe('Routing Table', () => {
   beforeEach(function (done) {
     this.timeout(20 * 1000)
 
-    PeerId.create((err, id) => {
+    PeerId.create({ bits: 512 }, (err, id) => {
       expect(err).to.not.exist()
       table = new RoutingTable(id, 20)
       done()
@@ -34,17 +34,17 @@ describe('Routing Table', () => {
   it('add', function (done) {
     this.timeout(20 * 1000)
 
-    createPeers(20, (err, peers) => {
+    createPeerId(20, (err, ids) => {
       expect(err).to.not.exist()
 
-      waterfall([
+      series([
         (cb) => each(range(1000), (n, cb) => {
-          table.add(peers[random(peers.length - 1)], cb)
+          table.add(ids[random(ids.length - 1)], cb)
         }, cb),
         (cb) => each(range(20), (n, cb) => {
-          const id = peers[random(peers.length - 1)]
+          const id = ids[random(ids.length - 1)]
 
-          utils.convertPeerId(id, (err, key) => {
+          kadUtils.convertPeerId(id, (err, key) => {
             expect(err).to.not.exist()
             expect(table.closestPeers(key, 5).length)
               .to.be.above(0)
@@ -55,19 +55,18 @@ describe('Routing Table', () => {
     })
   })
 
-  // TODO fix a callback that is being called twice, making this test fail
-  it.skip('remove', function (done) {
+  it('remove', function (done) {
     this.timeout(20 * 1000)
 
-    createPeers(10, (err, peers) => {
+    createPeerId(10, (err, peers) => {
       expect(err).to.not.exist()
 
       let k
-      waterfall([
+      series([
         (cb) => each(peers, (peer, cbEach) => table.add(peer, cbEach), cb),
         (cb) => {
           const id = peers[2]
-          utils.convertPeerId(id, (err, key) => {
+          kadUtils.convertPeerId(id, (err, key) => {
             expect(err).to.not.exist()
             k = key
             expect(table.closestPeers(key, 10)).to.have.length(10)
@@ -87,13 +86,13 @@ describe('Routing Table', () => {
   it('closestPeer', function (done) {
     this.timeout(10 * 1000)
 
-    createPeers(4, (err, peers) => {
+    createPeerId(4, (err, peers) => {
       expect(err).to.not.exist()
-      waterfall([
+      series([
         (cb) => each(peers, (peer, cb) => table.add(peer, cb), cb),
         (cb) => {
           const id = peers[2]
-          utils.convertPeerId(id, (err, key) => {
+          kadUtils.convertPeerId(id, (err, key) => {
             expect(err).to.not.exist()
             expect(table.closestPeer(key)).to.eql(id)
             cb()
@@ -103,17 +102,16 @@ describe('Routing Table', () => {
     })
   })
 
-  // TODO fix a callback that is being called twice, making this test fail
-  it.skip('closestPeers', function (done) {
+  it('closestPeers', function (done) {
     this.timeout(20 * 1000)
 
-    createPeers(18, (err, peers) => {
+    createPeerId(18, (err, peers) => {
       expect(err).to.not.exist()
-      waterfall([
+      series([
         (cb) => each(peers, (peer, cb) => table.add(peer, cb), cb),
         (cb) => {
           const id = peers[2]
-          utils.convertPeerId(id, (err, key) => {
+          kadUtils.convertPeerId(id, (err, key) => {
             expect(err).to.not.exist()
             expect(table.closestPeers(key, 15)).to.have.length(15)
             cb()

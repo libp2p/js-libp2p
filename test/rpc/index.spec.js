@@ -10,19 +10,19 @@ const Connection = require('interface-connection').Connection
 const PeerBook = require('peer-book')
 const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
-const Multiplex = require('libp2p-multiplex')
+const Mplex = require('libp2p-mplex')
 
 const Message = require('../../src/message')
 const KadDHT = require('../../src')
 const rpc = require('../../src/rpc')
 
-const makePeers = require('../utils').makePeers
+const createPeerInfo = require('../utils/create-peer-info')
 
 describe('rpc', () => {
   let peerInfos
 
   before((done) => {
-    makePeers(2, (err, peers) => {
+    createPeerInfo(2, (err, peers) => {
       if (err) {
         return done(err)
       }
@@ -36,7 +36,7 @@ describe('rpc', () => {
     it('calls back with the response', (done) => {
       const sw = new Switch(peerInfos[0], new PeerBook())
       sw.transport.add('tcp', new TCP())
-      sw.connection.addStreamMuxer(Multiplex)
+      sw.connection.addStreamMuxer(Mplex)
       sw.connection.reuse()
       const dht = new KadDHT(sw, { kBucketSize: 5 })
 

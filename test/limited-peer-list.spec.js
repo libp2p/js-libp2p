@@ -7,7 +7,7 @@ const expect = chai.expect
 
 const LimitedPeerList = require('../src/limited-peer-list')
 
-const makePeers = require('./utils').makePeers
+const createPeerInfo = require('./utils/create-peer-info')
 
 describe('LimitedPeerList', () => {
   let peers
@@ -15,7 +15,7 @@ describe('LimitedPeerList', () => {
   before(function (done) {
     this.timeout(10 * 1000)
 
-    makePeers(5, (err, p) => {
+    createPeerInfo(5, (err, p) => {
       if (err) {
         return done(err)
       }

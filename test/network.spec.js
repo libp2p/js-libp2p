@@ -12,12 +12,12 @@ const Buffer = require('safe-buffer').Buffer
 const PeerBook = require('peer-book')
 const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
-const Multiplex = require('libp2p-multiplex')
+const Mplex = require('libp2p-mplex')
 
 const KadDHT = require('../src')
 const Message = require('../src/message')
 
-const makePeers = require('./utils').makePeers
+const createPeerInfo = require('./utils/create-peer-info')
 
 describe('Network', () => {
   let dht
@@ -25,7 +25,7 @@ describe('Network', () => {
 
   before(function (done) {
     this.timeout(10 * 1000)
-    makePeers(3, (err, result) => {
+    createPeerInfo(3, (err, result) => {
       if (err) {
         return done(err)
       }
@@ -33,7 +33,7 @@ describe('Network', () => {
       peerInfos = result
       const sw = new Switch(peerInfos[0], new PeerBook())
       sw.transport.add('tcp', new TCP())
-      sw.connection.addStreamMuxer(Multiplex)
+      sw.connection.addStreamMuxer(Mplex)
       sw.connection.reuse()
       dht = new KadDHT(sw)
 

@@ -17,18 +17,18 @@ const range = require('lodash.range')
 const LevelStore = require('datastore-level')
 const path = require('path')
 const os = require('os')
-const Buffer = require('safe-buffer').Buffer
 
 const Providers = require('../src/providers')
 
-const util = require('./utils')
+const createPeerInfo = require('./utils/create-peer-info')
+const createValues = require('./utils/create-values')
 
 describe('Providers', () => {
   let infos
 
   before(function (done) {
     this.timeout(10 * 1000)
-    util.makePeers(3, (err, peers) => {
+    createPeerInfo(3, (err, peers) => {
       if (err) {
         return done(err)
       }
@@ -131,8 +131,8 @@ describe('Providers', () => {
     console.log('starting')
     waterfall([
       (cb) => parallel([
-        (cb) => util.makeValues(100, cb),
-        (cb) => util.makePeers(600, cb)
+        (cb) => createValues(100, cb),
+        (cb) => createPeerInfo(600, cb)
       ], cb),
       (res, cb) => {
         console.log('got values and peers')

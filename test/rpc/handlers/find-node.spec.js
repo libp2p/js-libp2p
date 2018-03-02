@@ -5,34 +5,41 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const waterfall = require('async/waterfall')
-const Buffer = require('safe-buffer').Buffer
 
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/find-node')
-const util = require('../../utils')
 
 const T = Message.TYPES.FIND_NODE
 
+const createPeerInfo = require('../../utils/create-peer-info')
+// const createValues = require('../../utils/create-values')
+const TestDHT = require('../../utils/test-dht')
+
 describe('rpc - handlers - FindNode', () => {
   let peers
+  let tdht
   let dht
 
   before((done) => {
-    util.makePeers(3, (err, res) => {
+    createPeerInfo(3, (err, res) => {
       expect(err).to.not.exist()
       peers = res
       done()
     })
   })
 
-  afterEach((done) => util.teardown(done))
-
   beforeEach((done) => {
-    util.setupDHT((err, res) => {
+    tdht = new TestDHT()
+
+    tdht.spawn(1, (err, dhts) => {
       expect(err).to.not.exist()
-      dht = res
+      dht = dhts[0]
       done()
     })
+  })
+
+  afterEach((done) => {
+    tdht.teardown(done)
   })
 
   it('returns self, if asked for self', (done) => {

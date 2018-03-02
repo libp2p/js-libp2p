@@ -4,7 +4,6 @@ const waterfall = require('async/waterfall')
 
 const Message = require('../../message')
 const utils = require('../../utils')
-const Buffer = require('safe-buffer').Buffer
 
 module.exports = (dht) => {
   const log = utils.logger(dht.peerInfo.id, 'rpc:find-node')

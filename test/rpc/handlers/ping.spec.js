@@ -4,34 +4,39 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const Buffer = require('safe-buffer').Buffer
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/ping')
 
-const util = require('../../utils')
-
 const T = Message.TYPES.PING
+
+const createPeerInfo = require('../../utils/create-peer-info')
+const TestDHT = require('../../utils/test-dht')
 
 describe('rpc - handlers - Ping', () => {
   let peers
+  let tdht
   let dht
 
   before((done) => {
-    util.makePeers(2, (err, res) => {
+    createPeerInfo(2, (err, res) => {
       expect(err).to.not.exist()
       peers = res
       done()
     })
   })
 
-  afterEach((done) => util.teardown(done))
-
   beforeEach((done) => {
-    util.setupDHT((err, res) => {
+    tdht = new TestDHT()
+
+    tdht.spawn(1, (err, dhts) => {
       expect(err).to.not.exist()
-      dht = res
+      dht = dhts[0]
       done()
     })
+  })
+
+  afterEach((done) => {
+    tdht.teardown(done)
   })
 
   it('replies with the same message', (done) => {

@@ -6,36 +6,42 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const Record = require('libp2p-record').Record
-const Buffer = require('safe-buffer').Buffer
 
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/put-value')
 const utils = require('../../../src/utils')
 
-const util = require('../../utils')
+const createPeerInfo = require('../../utils/create-peer-info')
+// const createValues = require('../../utils/create-values')
+const TestDHT = require('../../utils/test-dht')
 
 const T = Message.TYPES.PUT_VALUE
 
 describe('rpc - handlers - PutValue', () => {
   let peers
+  let tdht
   let dht
 
   before((done) => {
-    util.makePeers(2, (err, res) => {
+    createPeerInfo(2, (err, res) => {
       expect(err).to.not.exist()
       peers = res
       done()
     })
   })
 
-  afterEach((done) => util.teardown(done))
-
   beforeEach((done) => {
-    util.setupDHT((err, res) => {
+    tdht = new TestDHT()
+
+    tdht.spawn(1, (err, dhts) => {
       expect(err).to.not.exist()
-      dht = res
+      dht = dhts[0]
       done()
     })
+  })
+
+  afterEach((done) => {
+    tdht.teardown(done)
   })
 
   it('errors on missing record', (done) => {

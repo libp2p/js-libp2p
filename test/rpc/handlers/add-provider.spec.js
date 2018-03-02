@@ -8,21 +8,24 @@ const expect = chai.expect
 const parallel = require('async/parallel')
 const waterfall = require('async/waterfall')
 const _ = require('lodash')
-const Buffer = require('safe-buffer').Buffer
 
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/add-provider')
-const util = require('../../utils')
+
+const createPeerInfo = require('../../utils/create-peer-info')
+const createValues = require('../../utils/create-values')
+const TestDHT = require('../../utils/test-dht')
 
 describe('rpc - handlers - AddProvider', () => {
   let peers
   let values
+  let tdht
   let dht
 
   before((done) => {
     parallel([
-      (cb) => util.makePeers(3, cb),
-      (cb) => util.makeValues(2, cb)
+      (cb) => createPeerInfo(3, cb),
+      (cb) => createValues(2, cb)
     ], (err, res) => {
       expect(err).to.not.exist()
       peers = res[0]
@@ -31,14 +34,18 @@ describe('rpc - handlers - AddProvider', () => {
     })
   })
 
-  afterEach((done) => util.teardown(done))
-
   beforeEach((done) => {
-    util.setupDHT((err, res) => {
+    tdht = new TestDHT()
+
+    tdht.spawn(1, (err, dhts) => {
       expect(err).to.not.exist()
-      dht = res
+      dht = dhts[0]
       done()
     })
+  })
+
+  afterEach((done) => {
+    tdht.teardown(done)
   })
 
   describe('invalid messages', () => {
@@ -103,9 +110,7 @@ describe('rpc - handlers - AddProvider', () => {
       (provs, cb) => {
         expect(provs).to.have.length(1)
         expect(provs[0].id).to.eql(sender.id.id)
-        expect(
-          dht.peerBook.has(sender.id)
-        ).to.be.eql(false)
+        expect(dht.peerBook.has(sender.id)).to.equal(false)
         cb()
       }
     ], done)

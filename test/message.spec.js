@@ -64,7 +64,7 @@ describe('Message', () => {
       expect(dec.key).to.be.eql(msg.key)
       expect(dec.clusterLevel).to.be.eql(msg.clusterLevel)
       expect(dec.record.serialize()).to.be.eql(record.serialize())
-      expect(dec.record.key).to.be.eql(Buffer.from('hello'))
+      expect(dec.record.key).to.eql(Buffer.from('hello'))
 
       expect(dec.closerPeers).to.have.length(5)
       dec.closerPeers.forEach((peer, i) => {

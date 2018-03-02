@@ -6,24 +6,27 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 const waterfall = require('async/waterfall')
-const Buffer = require('safe-buffer').Buffer
 
 const Message = require('../../../src/message')
 const utils = require('../../../src/utils')
 const handler = require('../../../src/rpc/handlers/get-providers')
-const util = require('../../utils')
 
 const T = Message.TYPES.GET_PROVIDERS
+
+const createPeerInfo = require('../../utils/create-peer-info')
+const createValues = require('../../utils/create-values')
+const TestDHT = require('../../utils/test-dht')
 
 describe('rpc - handlers - GetProviders', () => {
   let peers
   let values
+  let tdht
   let dht
 
   before((done) => {
     parallel([
-      (cb) => util.makePeers(3, cb),
-      (cb) => util.makeValues(2, cb)
+      (cb) => createPeerInfo(3, cb),
+      (cb) => createValues(2, cb)
     ], (err, res) => {
       expect(err).to.not.exist()
       peers = res[0]
@@ -32,14 +35,18 @@ describe('rpc - handlers - GetProviders', () => {
     })
   })
 
-  afterEach((done) => util.teardown(done))
-
   beforeEach((done) => {
-    util.setupDHT((err, res) => {
+    tdht = new TestDHT()
+
+    tdht.spawn(1, (err, dhts) => {
       expect(err).to.not.exist()
-      dht = res
+      dht = dhts[0]
       done()
     })
+  })
+
+  afterEach((done) => {
+    tdht.teardown(done)
   })
 
   it('errors with an invalid key ', (done) => {
