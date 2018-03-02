@@ -44,11 +44,11 @@ The libp2p-kad-dht module offers 3 APIs: Peer Routing, Content Routing and Peer 
 
 ### Peer Routing
 
-[![](https://raw.githubusercontent.com/diasdavid/interface-peer-routing/master/img/badge.png)](https://github.com/libp2p/interface-peer-routing)
+[![](https://raw.githubusercontent.com/libp2p/interface-peer-routing/master/img/badge.png)](https://github.com/libp2p/interface-peer-routing)
 
 ### Content Routing
 
-![]()
+[![](https://raw.githubusercontent.com/libp2p/interface-content-routing/master/img/badge.png)](https://github.com/libp2p/interface-content-routing)
 
 ### Peer Discovery
 
