@@ -415,14 +415,14 @@ describe('KadDHT', () => {
         dhts[0].peerBook.put(dhts[1].peerInfo)
         dhts[0].getPublicKey(ids[1], (err, key) => {
           expect(err).to.not.exist()
-          expect(key).to.be.eql(dhts[1].peerInfo.id.pubKey)
+          expect(key).to.eql(dhts[1].peerInfo.id.pubKey)
           tdht.teardown(done)
         })
       })
     })
 
     it('connected node', function (done) {
-      this.timeout(40 * 1000)
+      this.timeout(30 * 1000)
 
       const nDHTs = 2
       const tdht = new TestDHT()
