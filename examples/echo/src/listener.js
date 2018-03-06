@@ -27,7 +27,7 @@ series([
     listenerPeerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/10333')
     listenerNode = new Node(listenerPeerInfo)
 
-    listenerNode.swarm.on('peer-mux-established', (peerInfo) => {
+    listenerNode.switch.on('peer-mux-established', (peerInfo) => {
       console.log('received dial to me from:', peerInfo.id.toB58String())
     })
 

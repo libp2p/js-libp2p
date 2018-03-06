@@ -21,7 +21,7 @@ PeerId.createFromJSON(require('./peer-id-listener'), (err, idListener) => {
       throw err
     }
 
-    nodeListener.swarm.on('peer-mux-established', (peerInfo) => {
+    nodeListener.switch.on('peer-mux-established', (peerInfo) => {
       console.log(peerInfo.id.toB58String())
     })
 
