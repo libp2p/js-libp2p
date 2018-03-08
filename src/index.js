@@ -16,6 +16,7 @@ const contentRouting = require('./content-routing')
 const dht = require('./dht')
 const pubsub = require('./pubsub')
 const getPeerInfo = require('./get-peer-info')
+const WebSockets = require('libp2p-websockets')
 
 exports = module.exports
 
@@ -129,7 +130,7 @@ class Node extends EventEmitter {
         this.switch.transport.add(
           transport.tag || transport.constructor.name, transport)
       } else if (transport.constructor &&
-                 transport.constructor.name === 'WebSockets') {
+                 transport instanceof WebSockets) {
         // TODO find a cleaner way to signal that a transport is always
         // used for dialing, even if no listener
         ws = transport
