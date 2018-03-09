@@ -14,8 +14,11 @@ module.exports = function protocolMuxer (protocols, observer) {
       }
 
       const handler = (protocol, _conn) => {
-        const conn = observeConn(null, protocol, _conn, observer)
-        protocols[protocol].handlerFunc.call(null, protocol, conn)
+        const handlerFunc = protocols[protocol].handlerFunc
+        if (handlerFunc) {
+          const conn = observeConn(null, protocol, _conn, observer)
+          handlerFunc(protocol, conn)
+        }
       }
 
       ms.addHandler(protocol, handler, protocols[protocol].matchFunc)
