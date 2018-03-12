@@ -6,6 +6,7 @@ const EE = require('events').EventEmitter
 const Connection = require('interface-connection').Connection
 const utilsFactory = require('./utils')
 const PeerInfo = require('peer-info')
+const PeerId = require('peer-id')
 const proto = require('../protocol')
 const series = require('async/series')
 
@@ -33,7 +34,7 @@ class Stop extends EE {
         return log(err)
       }
 
-      const peerInfo = new PeerInfo(message.srcPeer.id)
+      const peerInfo = new PeerInfo(peerIdFromId(message.srcPeer.id))
       message.srcPeer.addrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
       const newConn = new Connection(streamHandler.rest())
       newConn.setPeerInfo(peerInfo)
@@ -44,3 +45,11 @@ class Stop extends EE {
 }
 
 module.exports = Stop
+
+function peerIdFromId (id) {
+  if (typeof id === 'string') {
+    return PeerId.createFromB58String(id)
+  }
+
+  return PeerId.createFromBytes(id)
+}
