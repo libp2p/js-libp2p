@@ -1,6 +1,6 @@
 {
   "name": "libp2p-switch",
-  "version": "0.37.0",
+  "version": "0.37.1",
   "description": "libp2p switch implementation in JavaScript",
   "main": "src/index.js",
   "scripts": {

@@ -1,3 +1,14 @@
+<a name="0.37.1"></a>
+## [0.37.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.37.0...v0.37.1) (2018-03-12)
+
+
+### Bug Fixes
+
+* for when handler func is not defined ([ae6b52e](https://github.com/libp2p/js-libp2p-switch/commit/ae6b52e))
+* for when peerinfo resolves to undefined ([6f98b0c](https://github.com/libp2p/js-libp2p-switch/commit/6f98b0c))
+
+
+
 <a name="0.37.0"></a>
 # [0.37.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.36.1...v0.37.0) (2018-02-27)
 
