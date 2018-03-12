@@ -30,8 +30,10 @@ module.exports = (swtch) => {
 
   function willObserve (peerInfo, transport, protocol, direction, bufferLength) {
     peerInfo.then((pi) => {
-      const peerId = pi.id.toB58String()
-      setImmediate(() => observer.emit('message', peerId, transport, protocol, direction, bufferLength))
+      if (pi) {
+        const peerId = pi.id.toB58String()
+        setImmediate(() => observer.emit('message', peerId, transport, protocol, direction, bufferLength))
+      }
     })
   }
 }
