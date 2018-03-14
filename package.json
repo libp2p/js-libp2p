@@ -42,7 +42,9 @@
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>"
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Pedro Teixeira <i@pgte.me>",
+    "Victor Bjelkholm <victorbjelkholm@gmail.com>"
   ],
   "dependencies": {
     "assert": "^1.4.1",
