@@ -1,6 +1,6 @@
 {
   "name": "libp2p-circuit",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "JavaScript implementation of circuit/switch relaying",
   "main": "src/index.js",
   "scripts": {
