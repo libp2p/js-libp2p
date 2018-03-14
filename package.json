@@ -33,11 +33,11 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-circuit#readme",
   "devDependencies": {
-    "aegir": "^13.0.5",
+    "aegir": "^13.0.6",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "pre-commit": "^1.2.2",
-    "sinon": "^4.1.1"
+    "sinon": "^4.4.5"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
@@ -46,19 +46,19 @@
   ],
   "dependencies": {
     "assert": "^1.4.1",
-    "async": "^2.5.0",
+    "async": "^2.6.0",
     "debug": "^3.1.0",
     "interface-connection": "^0.3.2",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.5",
     "mafmt": "^4.0.0",
-    "multiaddr": "^3.0.1",
-    "multistream-select": "^0.14.0",
-    "peer-id": "^0.10.2",
-    "peer-info": "^0.11.0",
-    "protons": "^1.0.0",
+    "multiaddr": "^3.0.2",
+    "multistream-select": "^0.14.1",
+    "peer-id": "^0.10.6",
+    "peer-info": "^0.11.6",
+    "protons": "^1.0.1",
     "pull-abortable": "^4.1.1",
     "pull-handshake": "^1.1.4",
-    "pull-stream": "^3.6.1",
+    "pull-stream": "^3.6.2",
     "safe-buffer": "^5.1.1",
     "setimmediate": "^1.0.5"
   }
