@@ -37,7 +37,7 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^13.0.5",
+    "aegir": "^13.0.6",
     "buffer-loader": "0.0.1",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
@@ -51,7 +51,7 @@
     "peer-book": "~0.5.4",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
-    "sinon": "^4.4.2",
+    "sinon": "^4.4.5",
     "webrtcsupport": "^2.2.0"
   },
   "dependencies": {
@@ -60,7 +60,7 @@
     "debug": "^3.1.0",
     "interface-connection": "~0.3.2",
     "ip-address": "^5.8.9",
-    "libp2p-circuit": "~0.1.4",
+    "libp2p-circuit": "~0.1.5",
     "libp2p-identify": "~0.6.3",
     "lodash.includes": "^4.3.0",
     "moving-average": "^1.0.0",
