@@ -1,3 +1,13 @@
+<a name="0.9.0"></a>
+# [0.9.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.8.0...v0.9.0) (2018-03-15)
+
+
+### Features
+
+* upgrade the discovery service to random-walk ([b8e0f72](https://github.com/libp2p/js-libp2p-kad-dht/commit/b8e0f72))
+
+
+
 <a name="0.8.0"></a>
 # [0.8.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.7.0...v0.8.0) (2018-02-07)
 
