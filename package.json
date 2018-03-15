@@ -40,7 +40,7 @@
     "async": "^2.6.0",
     "libp2p-floodsub": "^0.14.1",
     "libp2p-ping": "~0.6.1",
-    "libp2p-switch": "~0.37.2",
+    "libp2p-switch": "~0.37.3",
     "mafmt": "^4.0.0",
     "multiaddr": "^3.0.2",
     "peer-book": "~0.5.4",
@@ -54,7 +54,7 @@
     "dirty-chai": "^2.0.1",
     "electron-webrtc": "~0.3.0",
     "libp2p-circuit": "~0.1.5",
-    "libp2p-kad-dht": "~0.8.0",
+    "libp2p-kad-dht": "~0.9.0",
     "libp2p-mdns": "~0.9.2",
     "libp2p-mplex": "~0.6.0",
     "libp2p-railing": "~0.7.1",
@@ -71,7 +71,7 @@
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.2",
     "safe-buffer": "^5.1.1",
-    "sinon": "^4.4.5",
+    "sinon": "^4.4.6",
     "wrtc": "0.0.67"
   },
   "contributors": [
