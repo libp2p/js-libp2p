@@ -8,14 +8,11 @@
     "test": "aegir test -t node",
     "build": "aegir build",
     "docs": "aegir docs",
-    "release": "aegir release --docs",
-    "release-minor": "aegir release --type minor --docs",
-    "release-major": "aegir release --type major --docs",
+    "release": "aegir release --docs -t node",
+    "release-minor": "aegir release --type minor --docs -t node",
+    "release-major": "aegir release --type major --docs -t node",
     "coverage": "aegir coverage",
     "coverage-publish": "aegir-coverage publish"
-  },
-  "browser": {
-    "./test/nodejs-bundle": "./test/browser-bundle"
   },
   "pre-push": [
     "lint",
