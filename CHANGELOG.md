@@ -1,3 +1,13 @@
+<a name="0.37.3"></a>
+## [0.37.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.37.2...v0.37.3) (2018-03-15)
+
+
+### Bug Fixes
+
+* one more observer edge case ([6265ec6](https://github.com/libp2p/js-libp2p-switch/commit/6265ec6))
+
+
+
 <a name="0.37.2"></a>
 ## [0.37.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.37.1...v0.37.2) (2018-03-14)
 
