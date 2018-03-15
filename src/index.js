@@ -146,50 +146,6 @@ class KadDHT {
   }
 
   /**
-   * Kademlia 'node lookup' operation.
-   *
-   * @param {Buffer} key
-   * @param {function(Error, Array<PeerId>)} callback
-   * @returns {void}
-   */
-  getClosestPeers (key, callback) {
-    this._log('getClosestPeers to %s', key.toString())
-    utils.convertBuffer(key, (err, id) => {
-      if (err) {
-        return callback(err)
-      }
-
-      const tablePeers = this.routingTable.closestPeers(id, c.ALPHA)
-
-      const q = new Query(this, key, (peer, callback) => {
-        waterfall([
-          (cb) => this._closerPeersSingle(key, peer, cb),
-          (closer, cb) => {
-            cb(null, {
-              closerPeers: closer
-            })
-          }
-        ], callback)
-      })
-
-      q.run(tablePeers, (err, res) => {
-        if (err) {
-          return callback(err)
-        }
-
-        if (!res || !res.finalSet) {
-          return callback(null, [])
-        }
-
-        waterfall([
-          (cb) => utils.sortClosestPeers(Array.from(res.finalSet), id, cb),
-          (sorted, cb) => cb(null, sorted.slice(0, c.K))
-        ], callback)
-      })
-    })
-  }
-
-  /**
    * Store the given key/value  pair in the DHT.
    *
    * @param {Buffer} key
@@ -265,6 +221,7 @@ class KadDHT {
       if (err && nvals === 0) {
         return callback(err)
       }
+
       if (err == null) {
         vals.push({
           val: localRec.value,
@@ -280,6 +237,7 @@ class KadDHT {
         (cb) => utils.convertBuffer(key, cb),
         (id, cb) => {
           const rtp = this.routingTable.closestPeers(id, c.ALPHA)
+
           this._log('peers in rt: %d', rtp.length)
           if (rtp.length === 0) {
             this._log.error('No peers from routing table!')
@@ -296,9 +254,7 @@ class KadDHT {
                 }
               }
 
-              const res = {
-                closerPeers: peers
-              }
+              const res = { closerPeers: peers }
 
               if ((rec && rec.value) ||
                   err instanceof errors.InvalidRecordError) {
@@ -318,9 +274,7 @@ class KadDHT {
           })
 
           // run our query
-          timeout((cb) => {
-            query.run(rtp, cb)
-          }, maxTimeout)(cb)
+          timeout((cb) => query.run(rtp, cb), maxTimeout)(cb)
         }
       ], (err) => {
         if (err && vals.length === 0) {
@@ -328,6 +282,50 @@ class KadDHT {
         }
 
         callback(null, vals)
+      })
+    })
+  }
+
+  /**
+   * Kademlia 'node lookup' operation.
+   *
+   * @param {Buffer} key
+   * @param {function(Error, Array<PeerId>)} callback
+   * @returns {void}
+   */
+  getClosestPeers (key, callback) {
+    this._log('getClosestPeers to %s', key.toString())
+    utils.convertBuffer(key, (err, id) => {
+      if (err) {
+        return callback(err)
+      }
+
+      const tablePeers = this.routingTable.closestPeers(id, c.ALPHA)
+
+      const q = new Query(this, key, (peer, callback) => {
+        waterfall([
+          (cb) => this._closerPeersSingle(key, peer, cb),
+          (closer, cb) => {
+            cb(null, {
+              closerPeers: closer
+            })
+          }
+        ], callback)
+      })
+
+      q.run(tablePeers, (err, res) => {
+        if (err) {
+          return callback(err)
+        }
+
+        if (!res || !res.finalSet) {
+          return callback(null, [])
+        }
+
+        waterfall([
+          (cb) => utils.sortClosestPeers(Array.from(res.finalSet), id, cb),
+          (sorted, cb) => cb(null, sorted.slice(0, c.K))
+        ], callback)
       })
     })
   }
@@ -379,6 +377,29 @@ class KadDHT {
   }
 
   /**
+   * Look if we are connected to a peer with the given id.
+   * Returns the `PeerInfo` for it, if found, otherwise `undefined`.
+   *
+   * @param {PeerId} peer
+   * @param {function(Error, PeerInfo)} callback
+   * @returns {void}
+   */
+  findPeerLocal (peer, callback) {
+    this._log('findPeerLocal %s', peer.toB58String())
+    this.routingTable.find(peer, (err, p) => {
+      if (err) {
+        return callback(err)
+      }
+      if (!p || !this.peerBook.has(p)) {
+        return callback()
+      }
+      callback(null, this.peerBook.get(p))
+    })
+  }
+
+  // ----------- Content Routing
+
+  /**
    * Announce to the network that a node can provide the given key.
    * This is what Coral and MainlineDHT do to store large values
    * in a DHT.
@@ -417,6 +438,8 @@ class KadDHT {
     this._log('findProviders %s', key.toBaseEncodedString())
     this._findNProviders(key, timeout, c.K, callback)
   }
+
+  // ----------- Peer Routing
 
   /**
    * Search for a peer with the given ID.
@@ -499,27 +522,6 @@ class KadDHT {
           cb(null, result.peer)
         }
       ], callback)
-    })
-  }
-
-  /**
-   * Look if we are connected to a peer with the given id.
-   * Returns the `PeerInfo` for it, if found, otherwise `undefined`.
-   *
-   * @param {PeerId} peer
-   * @param {function(Error, PeerInfo)} callback
-   * @returns {void}
-   */
-  findPeerLocal (peer, callback) {
-    this._log('findPeerLocal %s', peer.toB58String())
-    this.routingTable.find(peer, (err, p) => {
-      if (err) {
-        return callback(err)
-      }
-      if (!p || !this.peerBook.has(p)) {
-        return callback()
-      }
-      callback(null, this.peerBook.get(p))
     })
   }
 }
