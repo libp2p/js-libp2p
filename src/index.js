@@ -18,6 +18,7 @@ const errors = require('./errors')
 const privateApi = require('./private')
 const Providers = require('./providers')
 const Message = require('./message')
+const RandomWalk = require('./random-walk')
 const assert = require('assert')
 
 /**
@@ -88,6 +89,13 @@ class KadDHT {
     // Inject private apis so we don't clutter up this file
     const pa = privateApi(this)
     Object.keys(pa).forEach((name) => { this[name] = pa[name] })
+
+    /**
+     * Provider management
+     *
+     * @type {RandomWalk}
+     */
+    this.randomWalk = new RandomWalk(this)
   }
 
   /**
@@ -119,7 +127,7 @@ class KadDHT {
    */
   stop (callback) {
     this._running = false
-    this.bootstrapStop()
+    this.randomWalk.stop()
     this.providers.stop()
     this.network.stop(callback)
   }
@@ -513,48 +521,6 @@ class KadDHT {
       }
       callback(null, this.peerBook.get(p))
     })
-  }
-
-  /**
-   * Start the bootstrap process. This means running a number of queries every interval requesting random data.
-   * This is done to keep the dht healthy over time.
-   *
-   * @param {number} [queries=1] - how many queries to run per period
-   * @param {number} [period=300000] - how often to run the the bootstrap process, in milliseconds (5min)
-   * @param {number} [maxTimeout=10000] - how long to wait for the the bootstrap query to run, in milliseconds (10s)
-   * @returns {void}
-   */
-  bootstrapStart (queries, period, maxTimeout) {
-    if (queries == null) {
-      queries = 1
-    }
-    if (period == null) {
-      period = 5 * c.minute
-    }
-    if (maxTimeout == null) {
-      maxTimeout = 10 * c.second
-    }
-
-    // Don't run twice
-    if (this._bootstrapRunning) {
-      return
-    }
-
-    this._bootstrapRunning = setInterval(
-      () => this._bootstrap(queries, maxTimeout),
-      period
-    )
-  }
-
-  /**
-   * Stop the bootstrap process.
-   *
-   * @returns {void}
-   */
-  bootstrapStop () {
-    if (this._bootstrapRunning) {
-      clearInterval(this._bootstrapRunning)
-    }
   }
 }
 

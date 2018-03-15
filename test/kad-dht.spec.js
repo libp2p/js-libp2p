@@ -69,7 +69,7 @@ function connect (a, b, callback) {
 
 function bootstrap (dhts) {
   dhts.forEach((dht) => {
-    dht._bootstrap(3, 10000)
+    dht.randomWalk._walk(3, 10000)
   })
 }
 

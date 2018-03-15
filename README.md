@@ -54,6 +54,8 @@ The libp2p-kad-dht module offers 3 APIs: Peer Routing, Content Routing and Peer 
 
 [![](https://github.com/libp2p/interface-peer-discovery/raw/master/img/badge.png)](https://github.com/libp2p/interface-peer-discovery)
 
+`libp2p-kad-dht` provides a discovery service called `Random Walk` (random walks on the DHT to discover more nodes). It is accessible through `dht.randomWalk` and exposes the [Peer Discovery interface](https://github.com/libp2p/interface-peer-discovery).
+
 ## Contribute
 
 Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/js-libp2p-ipfs/issues)!
