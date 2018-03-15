@@ -13,11 +13,14 @@ module.exports = function protocolMuxer (protocols, observer) {
         return
       }
 
-      const handler = (protocol, _conn) => {
-        const handlerFunc = protocols[protocol].handlerFunc
-        if (handlerFunc) {
-          const conn = observeConn(null, protocol, _conn, observer)
-          handlerFunc(protocol, conn)
+      const handler = (protocolName, _conn) => {
+        const protocol = protocols[protocolName]
+        if (protocol) {
+          const handlerFunc =  protocol && protocol.handlerFunc
+          if (handlerFunc) {
+            const conn = observeConn(null, protocol, _conn, observer)
+            handlerFunc(protocol, conn)
+          }
         }
       }
 
