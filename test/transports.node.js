@@ -26,19 +26,23 @@ describe('transports', () => {
     let switchB
     let morePeerInfo
 
-    before((done) => createInfos(9, (err, peerInfos) => {
-      expect(err).to.not.exist()
+    before(function (done) {
+      this.timeout(10 * 1000)
 
-      const peerA = peerInfos[0]
-      const peerB = peerInfos[1]
-      morePeerInfo = peerInfos.slice(2)
+      createInfos(9, (err, peerInfos) => {
+        expect(err).to.not.exist()
 
-      peerA.multiaddrs.add(t.maGen(9888))
-      peerB.multiaddrs.add(t.maGen(9999))
-      switchA = new Switch(peerA, new PeerBook())
-      switchB = new Switch(peerB, new PeerBook())
-      done()
-    }))
+        const peerA = peerInfos[0]
+        const peerB = peerInfos[1]
+        morePeerInfo = peerInfos.slice(2)
+
+        peerA.multiaddrs.add(t.maGen(9888))
+        peerB.multiaddrs.add(t.maGen(9999))
+        switchA = new Switch(peerA, new PeerBook())
+        switchB = new Switch(peerB, new PeerBook())
+        done()
+      })
+    })
 
     it('.transport.add', () => {
       switchA.transport.add(t.n, new t.C())
