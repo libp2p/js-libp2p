@@ -2,20 +2,21 @@
 
 const multicastDNS = require('multicast-dns')
 const EventEmitter = require('events').EventEmitter
+const assert = require('assert')
 const debug = require('debug')
 const log = debug('libp2p:mdns')
 const query = require('./query')
 
 class MulticastDNS extends EventEmitter {
-  constructor (peerInfo, options) {
+  constructor (options) {
     super()
-    options = options || {}
+    assert(options.peerInfo, 'needs a PeerInfo to work')
 
     this.broadcast = options.broadcast !== false
     this.interval = options.interval || (1e3 * 10)
     this.serviceTag = options.serviceTag || 'ipfs.local'
     this.port = options.port || 5353
-    this.peerInfo = peerInfo
+    this.peerInfo = options.peerInfo
     this._queryInterval = null
   }
 
@@ -56,7 +57,8 @@ class MulticastDNS extends EventEmitter {
   }
 }
 
-module.exports = MulticastDNS
+exports = module.exports = MulticastDNS
+exports.tag = 'mdns'
 
 /* for reference
 

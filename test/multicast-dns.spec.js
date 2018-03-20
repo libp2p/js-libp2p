@@ -20,6 +20,7 @@ describe('MulticastDNS', () => {
 
   before(function (done) {
     this.timeout(80 * 1000)
+
     parallel([
       (cb) => {
         PeerInfo.create((err, peer) => {
@@ -63,14 +64,16 @@ describe('MulticastDNS', () => {
   it('find another peer', function (done) {
     this.timeout(40 * 1000)
 
-    const options = {
-      port: 50001 // port must be the same
-    }
-    const mdnsA = new MulticastDNS(pA, {
+    const mdnsA = new MulticastDNS({
+      peerInfo: pA,
       broadcast: false, // do not talk to ourself
       port: 50001
     })
-    const mdnsB = new MulticastDNS(pB, options)
+
+    const mdnsB = new MulticastDNS({
+      peerInfo: pB,
+      port: 50001 // port must be the same
+    })
 
     parallel([
       (cb) => mdnsA.start(cb),
@@ -91,16 +94,19 @@ describe('MulticastDNS', () => {
   it('only announce TCP multiaddrs', function (done) {
     this.timeout(40 * 1000)
 
-    const options = {
-      port: 50003 // port must be the same
-    }
-
-    const mdnsA = new MulticastDNS(pA, {
+    const mdnsA = new MulticastDNS({
+      peerInfo: pA,
       broadcast: false, // do not talk to ourself
       port: 50003
     })
-    const mdnsC = new MulticastDNS(pC, options)
-    const mdnsD = new MulticastDNS(pD, options)
+    const mdnsC = new MulticastDNS({
+      peerInfo: pC,
+      port: 50003 // port must be the same
+    })
+    const mdnsD = new MulticastDNS({
+      peerInfo: pD,
+      port: 50003 // port must be the same
+    })
 
     parallel([
       (cb) => mdnsA.start(cb),
@@ -125,14 +131,16 @@ describe('MulticastDNS', () => {
   it('announces IP6 addresses', function (done) {
     this.timeout(40 * 1000)
 
-    const options = {
-      port: 50001 // port must be the same
-    }
-    const mdnsA = new MulticastDNS(pA, {
+    const mdnsA = new MulticastDNS({
+      peerInfo: pA,
       broadcast: false, // do not talk to ourself
       port: 50001
     })
-    const mdnsB = new MulticastDNS(pB, options)
+
+    const mdnsB = new MulticastDNS({
+      peerInfo: pB,
+      port: 50001
+    })
 
     series([
       (cb) => mdnsB.start(cb),
@@ -154,11 +162,15 @@ describe('MulticastDNS', () => {
   it('doesn\'t emit peers after stop', function (done) {
     this.timeout(40 * 1000)
 
-    const options = {
+    const mdnsA = new MulticastDNS({
+      peerInfo: pA,
       port: 50004 // port must be the same
-    }
-    const mdnsA = new MulticastDNS(pA, options)
-    const mdnsC = new MulticastDNS(pC, options)
+    })
+
+    const mdnsC = new MulticastDNS({
+      peerInfo: pC,
+      port: 50004
+    })
 
     series([
       (cb) => mdnsA.start(cb),
