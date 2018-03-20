@@ -11,21 +11,31 @@ const setImmediate = require('async/setImmediate')
 const log = debug('libp2p:railing')
 log.error = debug('libp2p:railing:error')
 
+function isIPFS (addr) {
+  try {
+    return mafmt.IPFS.matches(addr)
+  } catch (e) {
+    return false
+  }
+}
+
 class Railing extends EventEmitter {
-  constructor (bootstrapers) {
+  constructor (options) {
     super()
-    this.bootstrapers = bootstrapers
-    this.interval = null
+    this._list = options.list
+    this._interval = options.interval || 10000
+    this._timer = null
   }
 
   start (callback) {
     setImmediate(() => callback())
 
-    if (this.interval) { return }
+    if (this._timer) { return }
 
-    this.interval = setInterval(() => {
-      this.bootstrapers.forEach((candidate) => {
+    this._timer = setInterval(() => {
+      this._list.forEach((candidate) => {
         if (!isIPFS(candidate)) { return log.error('Invalid multiaddr') }
+
         const ma = multiaddr(candidate)
 
         const peerId = PeerId.createFromB58String(ma.getPeerId())
@@ -36,24 +46,18 @@ class Railing extends EventEmitter {
           this.emit('peer', peerInfo)
         })
       })
-    }, 10000)
+    }, this._interval)
   }
 
   stop (callback) {
     setImmediate(callback)
-    if (this.interval) {
-      clearInterval(this.interval)
-      this.interval = null
+
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = null
     }
   }
 }
 
-function isIPFS (addr) {
-  try {
-    return mafmt.IPFS.matches(addr)
-  } catch (e) {
-    return false
-  }
-}
-
-module.exports = Railing
+exports = module.exports = Railing
+exports.tag = 'bootstrap'

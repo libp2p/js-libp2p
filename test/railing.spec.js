@@ -7,17 +7,25 @@ const partialValidPeerList = require('./some-invalid-peers')
 const {expect} = require('chai')
 const mafmt = require('mafmt')
 
-describe('without verify on', () => {
+describe('railing', () => {
   it('find the other peer', function (done) {
-    this.timeout(20 * 1000)
-    const r = new Railing(peerList)
+    this.timeout(5 * 1000)
+    const r = new Railing({
+      list: peerList,
+      interval: 2000
+    })
+
     r.once('peer', (peer) => done())
     r.start(() => {})
   })
 
   it('not fail on malformed peers in peer list', function (done) {
-    this.timeout(20 * 1000)
-    const r = new Railing(partialValidPeerList)
+    this.timeout(5 * 1000)
+
+    const r = new Railing({
+      list: partialValidPeerList,
+      interval: 2000
+    })
 
     r.start(() => { })
 
