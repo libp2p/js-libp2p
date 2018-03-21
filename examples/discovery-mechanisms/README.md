@@ -46,7 +46,7 @@ const bootstrapers = [
 
 Now, once we create and start the node, we can listen for events such as `peer:discovery` and `peer:connect`, these events tell us when we found a peer, independently of the discovery mechanism used and when we actually dialed to that peer.
 
-```
+```JavaScript
 let node
 
 waterfall([
