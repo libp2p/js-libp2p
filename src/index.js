@@ -22,7 +22,7 @@ const RandomWalk = require('./random-walk')
 const assert = require('assert')
 
 /**
- * A DHT implementation modeled after Kademlia with Coral and S/Kademlia modifications.
+ * A DHT implementation modeled after Kademlia with S/Kademlia modifications.
  *
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
@@ -400,9 +400,7 @@ class KadDHT {
   // ----------- Content Routing
 
   /**
-   * Announce to the network that a node can provide the given key.
-   * This is what Coral and MainlineDHT do to store large values
-   * in a DHT.
+   * Announce to the network that we can provide given key's value.
    *
    * @param {CID} key
    * @param {function(Error)} callback
