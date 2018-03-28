@@ -42,7 +42,7 @@
     "libp2p-ping": "~0.6.1",
     "libp2p-switch": "~0.37.3",
     "mafmt": "^4.0.0",
-    "multiaddr": "^3.0.2",
+    "multiaddr": "^3.1.0",
     "peer-book": "~0.5.4",
     "peer-id": "~0.10.6",
     "peer-info": "~0.11.6"
@@ -58,7 +58,7 @@
     "libp2p-mdns": "~0.9.2",
     "libp2p-mplex": "~0.6.0",
     "libp2p-railing": "~0.7.1",
-    "libp2p-secio": "~0.9.3",
+    "libp2p-secio": "~0.9.4",
     "libp2p-spdy": "~0.11.0",
     "libp2p-tcp": "~0.11.6",
     "libp2p-webrtc-star": "~0.13.4",
@@ -69,9 +69,9 @@
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
     "pull-serializer": "~0.3.2",
-    "pull-stream": "^3.6.2",
+    "pull-stream": "^3.6.7",
     "safe-buffer": "^5.1.1",
-    "sinon": "^4.4.6",
+    "sinon": "^4.4.10",
     "wrtc": "0.0.67"
   },
   "contributors": [
