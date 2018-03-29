@@ -129,6 +129,11 @@ class Node extends EventEmitter {
       if (transport.filter(multiaddrs).length > 0) {
         this.switch.transport.add(
           transport.tag || transport.constructor.name, transport)
+        if (typeof transport._setSwarm === 'function') transport._setSwarm(this)
+        if (typeof transport.discovery === 'object' && typeof transport.discovery.start === 'function') {
+          if (!this.modules.discovery) this.modules.discovery = []
+          this.modules.discovery.push(transport.discovery)
+        }
       } else if (transport.constructor &&
                  transport.constructor.name === 'WebSockets') {
         // TODO find a cleaner way to signal that a transport is always
