@@ -43,6 +43,7 @@
     "pull-stream": "^3.6.2"
   },
   "dependencies": {
+    "class-is": "^1.0.0",
     "debug": "^3.1.0",
     "interface-connection": "~0.3.2",
     "ip-address": "^5.8.9",

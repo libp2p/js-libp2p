@@ -3,6 +3,7 @@
 const net = require('net')
 const toPull = require('stream-to-pull-stream')
 const mafmt = require('mafmt')
+const withIs = require('class-is')
 const includes = require('lodash.includes')
 const isFunction = require('lodash.isfunction')
 const Connection = require('interface-connection').Connection
@@ -81,4 +82,4 @@ class TCP {
   }
 }
 
-module.exports = TCP
+module.exports = withIs(TCP, { className: 'TCP', symbolName: '@libp2p/js-libp2p-tcp/tcp' })
