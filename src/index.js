@@ -10,6 +10,7 @@ const series = require('async/series')
 const PeerBook = require('peer-book')
 const Switch = require('libp2p-switch')
 const Ping = require('libp2p-ping')
+const WebSockets = require('libp2p-websockets')
 
 const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
@@ -129,8 +130,7 @@ class Node extends EventEmitter {
       if (transport.filter(multiaddrs).length > 0) {
         this.switch.transport.add(
           transport.tag || transport.constructor.name, transport)
-      } else if (transport.constructor &&
-                 transport.constructor.name === 'WebSockets') {
+      } else if (WebSockets.isWebSockets(transport)) {
         // TODO find a cleaner way to signal that a transport is always
         // used for dialing, even if no listener
         ws = transport
