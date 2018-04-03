@@ -30,11 +30,23 @@ module.exports = (conn, callback) => {
         }
 
         const peerInfo = new PeerInfo(id)
-        input.listenAddrs
-          .map(multiaddr)
-          .forEach((ma) => peerInfo.multiaddrs.add(ma))
+        try {
+          input.listenAddrs
+            .map(multiaddr)
+            .forEach((ma) => peerInfo.multiaddrs.add(ma))
+        } catch (err) {
+          return callback(err)
+        }
 
-        callback(null, peerInfo, getObservedAddrs(input))
+        let observedAddr
+
+        try {
+          observedAddr = getObservedAddrs(input)
+        } catch (err) {
+          return callback(err)
+        }
+
+        callback(null, peerInfo, observedAddr)
       })
     })
   )
