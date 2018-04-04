@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
-    "test": "aegir test -t node -t browser"
+    "test": "aegir test -t node"
   },
   "keywords": [
     "ipfs",

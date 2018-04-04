@@ -1,9 +1,9 @@
 'use strict'
 
 const EventEmitter = require('events')
-const LatencyMonitor = require('latency-monitor')
+const LatencyMonitor = require('latency-monitor').default
 
-const defaultOptions {
+const defaultOptions = {
   maxPeers: Infinity,
   minPeers: 0,
   maxData: Infinity,
@@ -19,11 +19,19 @@ class ConnectionManager extends EventEmitter {
     this._libp2p = libp2p
     this._options = Object.assign({}, defaultOptions, options)
 
+    this._stats = libp2p.stats
+    if (options && !this._stats) {
+      throw new Error('No libp2p.stats')
+    }
+
+    this._peerValues = new Map()
+    this._onStatsUpdate = this._onStatsUpdate.bind(this)
     this._onPeerConnect = this._onPeerConnect.bind(this)
     this._onPeerDisconnect = this._onPeerDisconnect.bind(this)
   }
 
   start () {
+    this._stats.on('update', this._onStatsUpdate)
     this._libp2p.on('peer:connect', this._onPeerConnect)
     this._libp2p.on('peer:disconnect', this._onPeerDisconnect)
     // latency monitor
@@ -35,6 +43,7 @@ class ConnectionManager extends EventEmitter {
   }
 
   stop () {
+    this._stats.removeListener('update', this._onStatsUpdate)
     this._libp2p.removeListener('peer:connect', this._onPeerConnect)
     this._libp2p.removeListener('peer:disconnect', this._onPeerDisconnect)
     this._latencyMonitor.removeListener('data', this._onLatencyMeasure)
@@ -47,12 +56,16 @@ class ConnectionManager extends EventEmitter {
     if (peerId.toB58String) {
       peerId = peerId.toB58String()
     }
-    this._peerValues.put(peerId, value)
+    this._peerValues.set(peerId, value)
+  }
+
+  _onStatsUpdate (stats) {
+    console.log('stats update:', stats)
   }
 
   _onPeerConnect (peerInfo) {
     const peerId = peerInfo.id.toB58String()
-    this._peerValues.put(peerId, 1)
+    this._peerValues.set(peerId, 1)
     this.emit('connected', peerId)
     this._checkLimit('maxPeers', this._peerValues.size)
   }
