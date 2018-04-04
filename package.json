@@ -1,0 +1,45 @@
+{
+  "name": "libp2p-connection-manager",
+  "version": "0.0.1",
+  "description": "JS Libp2p Connection Manager",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "aegir lint",
+    "test": "aegir test -t node -t browser"
+  },
+  "keywords": [
+    "ipfs",
+    "connection",
+    "resource"
+  ],
+  "author": "Pedro Teixeira <i@pgte.me>",
+  "license": "MIT",
+  "pre-commit": [
+    "lint",
+    "test"
+  ],
+  "devDependencies": {
+    "aegir": "^12.4.0",
+    "async": "^2.6.0",
+    "chai": "^4.1.2",
+    "dirty-chai": "^2.0.1",
+    "ipfs-repo": "^0.18.7",
+    "libp2p": "^0.15.2",
+    "libp2p-multiplex": "^0.5.1",
+    "libp2p-secio": "^0.9.1",
+    "libp2p-tcp": "^0.11.5",
+    "lodash.without": "^4.4.0",
+    "multihashing-async": "^0.4.7",
+    "ncp": "^2.0.0",
+    "os": "^0.1.1",
+    "peer-id": "^0.10.5",
+    "peer-info": "^0.11.6",
+    "pre-commit": "^1.2.2",
+    "rimraf": "^2.6.2",
+    "safe-buffer": "^5.1.1",
+    "uuid": "^3.2.1"
+  },
+  "dependencies": {
+    "latency-monitor": "^0.2.1"
+  }
+}
