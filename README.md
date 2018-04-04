@@ -45,9 +45,9 @@ A connection manager manages the peers you're connected to. The application prov
 * maximum bandwidth (sent / received or both)
 * maximum event loop delay
 
-The connection manager will disconnect peers (starting from the lower valued peers) until all the measures are withing the stated limits.
+The connection manager will disconnect peers (starting from the less important peers) until all the measures are withing the stated limits.
 
-A connection manager first disconnects the peers with the leasy value. By default all peers have the same value (1), but the application can define otherwise. Once a peer disconnects the connection manager discards the peer value. If necessary, the application should redefine the peer state.
+A connection manager first disconnects the peers with the least value. By default all peers have the same importance (1), but the application can define otherwise. Once a peer disconnects the connection manager discards the peer importance. (If necessary, the application should redefine the peer state if the peer is again connected).
 
 
 ### Create a ConnectionManager
@@ -58,7 +58,7 @@ const options = {…}
 const connManager = new ConnManager(libp2p, options)
 ```
 
-Options is an optional object with the following key : value pairs:
+Options is an optional object with the following key-value pairs:
 
 * `maxPeers`: number identifying the maximum number of peers the current peer is willing to be connected to before is starts disconnecting. Defaults to `Infinity`
 * `minPeers`: number identifying the number of peers below which this node will not activate preemptive disconnections. Defaults to `0`.
@@ -66,8 +66,16 @@ Options is an optional object with the following key : value pairs:
 * `maxSentData`: sets the maximum sent data — in bytes per second -  this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
 * `maxReceivedData`: sets the maximum received data — in bytes per second -  this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
 * `maxEventLoopDelay`: sets the maximum event loop delay (measured in miliseconds) this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
-* `pollInterval`: sets the poll interval (in miliseconds) for assessing the current state and determining if this peer needs to force a disconnect. Defaults to `1000` (1 seconds).
+* `pollInterval`: sets the poll interval (in miliseconds) for assessing the current state and determining if this peer needs to force a disconnect. Defaults to `2000` (2 seconds).
 
+
+### `connManager.start()`
+
+Starts the connection manager.
+
+### `connManager.stop()`
+
+Stops the connection manager.
 
 ### `connManager.setMaxPeers(numberOfPeers)`
 
@@ -98,12 +106,23 @@ Arguments:
 * peerId: B58-encoded string or [`peer-id`](https://github.com/libp2p/js-peer-id) instance.
 * value: a number between 0 and 1, which represents a scale of how valuable this given peer id is to the application.
 
+### `connManager.emit('limit:reached', limitName, measured)`
+
+Emitted when a limit is reached. Limit names can be:
+
+* `maxPeers`
+* `minPeers`
+* `maxData`
+* `maxSentData`
+* `maxReceivedData`
+* `maxEventLoopDelay`
+
 
 ### `connManager.emit('disconnect:preemptive', peerId)`
 
-Emitted when a peer is preemptively disconnected.
+Emitted when a peer is about to be preemptively disconnected.
 
-### `connManager.emit('disconnect', peerId)`
+### `connManager.emit('disconnected', peerId)`
 
 Emitted when a peer is disconnected (preemptively or note). If this peer reconnects, you will need to reset it's value, since the connection manager does not remember it.
 
