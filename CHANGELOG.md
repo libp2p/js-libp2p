@@ -1,3 +1,14 @@
+<a name="0.11.0"></a>
+# [0.11.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.10.5...v0.11.0) (2018-04-05)
+
+
+### Features
+
+* add class-is module ([#72](https://github.com/libp2p/js-libp2p-websockets/issues/72)) ([f59cf88](https://github.com/libp2p/js-libp2p-websockets/commit/f59cf88))
+* Pass options to websocket server ([#66](https://github.com/libp2p/js-libp2p-websockets/issues/66)) ([709989a](https://github.com/libp2p/js-libp2p-websockets/commit/709989a))
+
+
+
 <a name="0.10.5"></a>
 ## [0.10.5](https://github.com/libp2p/js-libp2p-websockets/compare/v0.10.4...v0.10.5) (2018-02-20)
 
