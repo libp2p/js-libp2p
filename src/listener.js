@@ -10,7 +10,7 @@ function noop () {}
 const createServer = require('pull-ws/server') || noop
 
 module.exports = (options, handler) => {
-  const listener = createServer((socket) => {
+  const listener = createServer(options, (socket) => {
     socket.getObservedAddrs = (callback) => {
       // TODO research if we can reuse the address in anyway
       return callback(null, [])
