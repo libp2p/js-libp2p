@@ -7,9 +7,9 @@
     "lint": "aegir lint",
     "coverage": "aegir coverage",
     "test": "aegir test -t node",
-    "release": "aegir release --env no-build",
-    "release-minor": "aegir release --type minor --env no-build",
-    "release-major": "aegir release --type major --env no-build",
+    "release": "aegir release -t node --no-build",
+    "release-minor": "aegir release --type minor -t node --no-build",
+    "release-major": "aegir release --type major -t node --no-build",
     "coverage-publish": "aegir coverage publish"
   },
   "pre-commit": [
