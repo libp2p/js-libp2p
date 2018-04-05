@@ -1,3 +1,14 @@
+<a name="0.11.0"></a>
+# [0.11.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.9.2...v0.11.0) (2018-04-05)
+
+
+### Features
+
+* service names ([#68](https://github.com/libp2p/js-libp2p-mdns/issues/68)) ([fa8fe22](https://github.com/libp2p/js-libp2p-mdns/commit/fa8fe22))
+* Use latest multicast-dns and dns-packet ([#69](https://github.com/libp2p/js-libp2p-mdns/issues/69)) ([cb69f2f](https://github.com/libp2p/js-libp2p-mdns/commit/cb69f2f))
+
+
+
 <a name="0.10.0"></a>
 # [0.10.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.9.2...v0.10.0) (2018-04-05)
 
