@@ -1,3 +1,13 @@
+<a name="0.38.0"></a>
+# [0.38.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.37.3...v0.38.0) (2018-04-05)
+
+
+### Bug Fixes
+
+* revert version back to the current release ([132d5df](https://github.com/libp2p/js-libp2p-switch/commit/132d5df)), closes [/github.com/libp2p/js-libp2p-switch/pull/249/files#r178832198](https://github.com//github.com/libp2p/js-libp2p-switch/pull/249/files/issues/r178832198)
+
+
+
 <a name="0.37.3"></a>
 ## [0.37.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.37.2...v0.37.3) (2018-03-15)
 

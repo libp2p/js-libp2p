@@ -1,6 +1,6 @@
 {
   "name": "libp2p-switch",
-  "version": "0.37.3",
+  "version": "0.38.0",
   "description": "libp2p switch implementation in JavaScript",
   "main": "src/index.js",
   "scripts": {
@@ -44,7 +44,7 @@
     "gulp": "^3.9.1",
     "libp2p-mplex": "~0.7.0",
     "libp2p-secio": "~0.10.0",
-    "libp2p-spdy": "~0.12.0",
+    "libp2p-spdy": "~0.12.1",
     "libp2p-tcp": "~0.12.0",
     "libp2p-webrtc-star": "~0.13.4",
     "libp2p-websockets": "~0.11.0",
