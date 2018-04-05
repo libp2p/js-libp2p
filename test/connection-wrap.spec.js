@@ -89,7 +89,7 @@ describe('Connection Wrap', () => {
   })
 
   it('dial error', (done) => {
-    tcp.dial(multiaddr('/ip4/999.0.0.1/tcp/1234'), (err) => {
+    tcp.dial(multiaddr('/ip4/127.0.0.1/tcp/22234'), (err) => {
       expect(err).to.exist()
       done()
     })
