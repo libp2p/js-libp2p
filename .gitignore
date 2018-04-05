@@ -4,6 +4,9 @@ docs
 test/repo-tests*
 **/bundle.js
 
+# yarn
+yarn.lock
+
 # Logs
 logs
 *.log

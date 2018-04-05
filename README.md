@@ -39,12 +39,11 @@ const TCP = require('libp2p-tcp')
 const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
 
-const mh1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
-const mh2 = multiaddr('/ip6/::/tcp/9092')
+const mh = multiaddr('/ip4/127.0.0.1/tcp/9090')
 
 const tcp = new TCP()
 
-const listener = tcp.createListener(mh1, (socket) => {
+const listener = tcp.createListener((socket) => {
   console.log('new connection opened')
   pull(
     pull.values(['hello']),
@@ -52,15 +51,21 @@ const listener = tcp.createListener(mh1, (socket) => {
   )
 })
 
-listener.listen(() => {
+listener.listen(mh, () => {
   console.log('listening')
 
   pull(
-    tcp.dial(mh1),
-    pull.log,
-    pull.onEnd(() => {
-      tcp.close()
-    })
+    tcp.dial(mh),
+    pull.collect((err, values) => {
+      if (!err) {
+        console.log(`Value: ${values.toString()}`)
+      } else {
+        console.log(`Error: ${err}`)
+      }
+
+      // Close connection after reading
+      listener.close()
+    }),
   )
 })
 ```
@@ -70,7 +75,7 @@ Outputs:
 ```sh
 listening
 new connection opened
-hello
+Value: hello
 ```
 
 ## API
