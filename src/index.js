@@ -11,7 +11,8 @@ const defaultOptions = {
   maxSentData: Infinity,
   maxReceivedData: Infinity,
   maxEventLoopDelay: Infinity,
-  pollInterval: 2000
+  pollInterval: 2000,
+  movingAverageInterval: 60000
 }
 
 class ConnectionManager extends EventEmitter {
@@ -61,8 +62,13 @@ class ConnectionManager extends EventEmitter {
     this._peerValues.set(peerId, value)
   }
 
-  _onStatsUpdate (stats) {
-    debug('stats update', stats)
+  _onStatsUpdate () {
+    const movingAvgs = this._stats.global.movingAverages
+    const received = movingAvgs.dataReceived[this._options.movingAverageInterval].movingAverage()
+    const sent = movingAvgs.dataSent[this._options.movingAverageInterval].movingAverage()
+    const total = received + sent
+    this._checkLimit('maxData', total)
+    debug('stats update', total)
   }
 
   _onPeerConnect (peerInfo) {
