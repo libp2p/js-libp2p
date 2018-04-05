@@ -11,7 +11,8 @@ const PEER_COUNT = 3
 
 describe('connection manager', function () {
   const prepare = Prepare(PEER_COUNT, {
-    maxData: 100
+    maxData: 100,
+    minPeers: 1
   })
   before(prepare.create)
   after(prepare.after)
