@@ -10,7 +10,7 @@ describe('connection manager', function () {
   before(prepare.before)
   after(prepare.after)
 
-  it('works', (done) => {
+  it('does not kick out any peer', (done) => {
     prepare.connManagers().forEach((connManager) => {
       connManager.on('disconnected', () => {
         throw new Error('should not have disconnected')
