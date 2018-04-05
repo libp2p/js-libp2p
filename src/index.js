@@ -26,6 +26,7 @@ class ConnectionManager extends EventEmitter {
     }
 
     this._peerValues = new Map()
+    this._peers = new Map()
     this._onStatsUpdate = this._onStatsUpdate.bind(this)
     this._onPeerConnect = this._onPeerConnect.bind(this)
     this._onPeerDisconnect = this._onPeerDisconnect.bind(this)
@@ -68,14 +69,16 @@ class ConnectionManager extends EventEmitter {
     const peerId = peerInfo.id.toB58String()
     debug('connected to %s', peerId)
     this._peerValues.set(peerId, 1)
+    this._peers.set(peerId, peerInfo)
     this.emit('connected', peerId)
     this._checkLimit('maxPeers', this._peerValues.size)
   }
 
   _onPeerDisconnect (peerInfo) {
     const peerId = peerInfo.id.toB58String()
-    debug('connected from %s', peerId)
+    debug('disconnected from %s', peerId)
     this._peerValues.delete(peerId)
+    this._peers.delete(peerId)
     this.emit('disconnected', peerId)
   }
 
@@ -84,6 +87,7 @@ class ConnectionManager extends EventEmitter {
   }
 
   _checkLimit (name, value) {
+    debug('checking limit. current value of %s is %d', name, value)
     const limit = this._options[name]
     if (value > limit) {
       debug('limit reached: %s, %d', name, value)
@@ -97,15 +101,17 @@ class ConnectionManager extends EventEmitter {
       const peerValues = Array.from(this._peerValues).sort(byPeerValue)
       const disconnectPeer = peerValues[0]
       if (disconnectPeer) {
-        debug('forcing disconnection from %j', disconnectPeer)
-        this._disconnectPeer(disconnectPeer)
+        const peer = disconnectPeer[0]
+        debug('forcing disconnection from %j', peer)
+        this._disconnectPeer(peer)
       }
     }
   }
 
-  _disconnectPeer (peer) {
-    this.emit('disconnect:preemptive', peer)
-    this._peerValues.delete(peer)
+  _disconnectPeer (peerId) {
+    debug('preemptively disconnecting peer', peerId)
+    this.emit('disconnect:preemptive', peerId)
+    const peer = this._peers.get(peerId)
     this._libp2p.hangUp(peer, (err) => {
       if (err) {
         this.emit('error', err)

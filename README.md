@@ -105,6 +105,12 @@ Arguments:
 * peerId: B58-encoded string or [`peer-id`](https://github.com/libp2p/js-peer-id) instance.
 * value: a number between 0 and 1, which represents a scale of how valuable this given peer id is to the application.
 
+### `connManager.peers()`
+
+Returns the peers this connection manager is connected to.
+
+Returns an array of [PeerInfo](https://github.com/libp2p/js-peer-info).
+
 ### `connManager.emit('limit:reached', limitName, measured)`
 
 Emitted when a limit is reached. Limit names can be:

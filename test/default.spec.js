@@ -4,7 +4,7 @@
 const Prepare = require('./utils/prepare')
 
 describe('connection manager', function () {
-  const prepare = Prepare(3)
+  const prepare = Prepare(3, { pollInterval: 1000 })
   before(prepare.before)
   after(prepare.after)
 
