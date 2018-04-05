@@ -12,7 +12,6 @@ const createThing = require('./create-thing')
 const connectAll = require('./connect-all')
 
 module.exports = (count) => {
-
   let nodes
 
   const before = (done) => {
@@ -34,6 +33,8 @@ module.exports = (count) => {
   }
 
   const after = (done) => {
+    if (!nodes) { return done() }
+
     each(nodes, (node, cb) => {
       node.connManager.stop()
       series([
@@ -43,5 +44,9 @@ module.exports = (count) => {
     }, done)
   }
 
-  return { before, after }
+  return {
+    before,
+    after,
+    connManagers: () => nodes.map((node) => node.connManager)
+  }
 }

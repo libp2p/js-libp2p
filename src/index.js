@@ -2,6 +2,7 @@
 
 const EventEmitter = require('events')
 const LatencyMonitor = require('latency-monitor').default
+const debug = require('debug')('libp2p:connection-manager')
 
 const defaultOptions = {
   maxPeers: Infinity,
@@ -60,11 +61,12 @@ class ConnectionManager extends EventEmitter {
   }
 
   _onStatsUpdate (stats) {
-    console.log('stats update:', stats)
+    debug('stats update', stats)
   }
 
   _onPeerConnect (peerInfo) {
     const peerId = peerInfo.id.toB58String()
+    debug('connected to %s', peerId)
     this._peerValues.set(peerId, 1)
     this.emit('connected', peerId)
     this._checkLimit('maxPeers', this._peerValues.size)
@@ -72,6 +74,7 @@ class ConnectionManager extends EventEmitter {
 
   _onPeerDisconnect (peerInfo) {
     const peerId = peerInfo.id.toB58String()
+    debug('connected from %s', peerId)
     this._peerValues.delete(peerId)
     this.emit('disconnected', peerId)
   }
@@ -83,6 +86,7 @@ class ConnectionManager extends EventEmitter {
   _checkLimit (name, value) {
     const limit = this._options[name]
     if (value > limit) {
+      debug('limit reached: %s, %d', name, value)
       this.emit('limit:reached', name, value)
       this._maybeDisconnectOne()
     }
@@ -93,6 +97,7 @@ class ConnectionManager extends EventEmitter {
       const peerValues = Array.from(this._peerValues).sort(byPeerValue)
       const disconnectPeer = peerValues[0]
       if (disconnectPeer) {
+        debug('forcing disconnection from %j', disconnectPeer)
         this._disconnectPeer(disconnectPeer)
       }
     }
