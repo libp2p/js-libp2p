@@ -65,7 +65,9 @@ class ConnectionManager extends EventEmitter {
   _onStatsUpdate () {
     const movingAvgs = this._stats.global.movingAverages
     const received = movingAvgs.dataReceived[this._options.movingAverageInterval].movingAverage()
+    this._checkLimit('maxReceivedData', received)
     const sent = movingAvgs.dataSent[this._options.movingAverageInterval].movingAverage()
+    this._checkLimit('maxSentData', sent)
     const total = received + sent
     this._checkLimit('maxData', total)
     debug('stats update', total)
