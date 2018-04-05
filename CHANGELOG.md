@@ -1,3 +1,13 @@
+<a name="0.12.0"></a>
+# [0.12.0](https://github.com/libp2p/js-libp2p-tcp/compare/v0.11.6...v0.12.0) (2018-04-05)
+
+
+### Features
+
+* add class-is module ([ded1f68](https://github.com/libp2p/js-libp2p-tcp/commit/ded1f68))
+
+
+
 <a name="0.11.6"></a>
 ## [0.11.6](https://github.com/libp2p/js-libp2p-tcp/compare/v0.11.5...v0.11.6) (2018-02-20)
 
