@@ -36,6 +36,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",
   "dependencies": {
+    "class-is": "^1.0.0",
     "interface-connection": "~0.3.2",
     "lodash.includes": "^4.3.0",
     "mafmt": "^4.0.0",

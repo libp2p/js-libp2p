@@ -2,6 +2,7 @@
 
 const connect = require('pull-ws/client')
 const mafmt = require('mafmt')
+const withIs = require('class-is')
 const includes = require('lodash.includes')
 const Connection = require('interface-connection').Connection
 
@@ -65,4 +66,4 @@ class WebSockets {
   }
 }
 
-module.exports = WebSockets
+module.exports = withIs(WebSockets, { className: 'WebSockets', symbolName: '@libp2p/js-libp2p-websockets/websockets' })
