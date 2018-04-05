@@ -1,8 +1,6 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
 const Prepare = require('./utils/prepare')
 
 describe('connection manager', function () {
