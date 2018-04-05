@@ -4,13 +4,13 @@
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
   "main": "src/index.js",
   "scripts": {
-    "lint": "aegir-lint",
-    "test": "aegir-test --env node",
-    "release": "aegir-release --env node",
-    "release-minor": "aegir-release --type minor --env node",
-    "release-major": "aegir-release --type major --env node",
-    "coverage": "aegir-coverage",
-    "coverage-publish": "aegir-coverage publish"
+    "lint": "aegir lint",
+    "test": "aegir test -t node",
+    "release": "aegir release -t node",
+    "release-minor": "aegir release --type minor -t node",
+    "release-major": "aegir release --type major -t node",
+    "coverage": "aegir coverage",
+    "coverage-publish": "aegir coverage publish"
   },
   "repository": {
     "type": "git",
@@ -30,19 +30,18 @@
   },
   "homepage": "https://github.com/libp2p/js-ipfs-railing",
   "devDependencies": {
-    "aegir": "^11.0.2",
+    "aegir": "^13.0.6",
     "chai": "^4.1.2",
-    "libp2p-swarm": "~0.32.3",
-    "libp2p-tcp": "~0.11.0",
+    "libp2p-tcp": "~0.12.0",
     "pre-commit": "^1.2.2"
   },
   "dependencies": {
-    "async": "^2.5.0",
-    "debug": "^3.0.1",
-    "lodash": "^4.17.4",
-    "multiaddr": "^3.0.1",
-    "peer-id": "~0.10.1",
-    "peer-info": "~0.11.0"
+    "async": "^2.6.0",
+    "debug": "^3.1.0",
+    "lodash": "^4.17.5",
+    "multiaddr": "^4.0.0",
+    "peer-id": "~0.10.7",
+    "peer-info": "~0.14.0"
   },
   "pre-commit": [
     "lint",
