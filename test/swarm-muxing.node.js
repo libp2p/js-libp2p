@@ -105,7 +105,8 @@ describe('Switch (everything all together)', () => {
     switchE.connection.reuse()
   })
 
-  it('warm up from A to B on tcp to tcp+ws', (done) => {
+  it('warm up from A to B on tcp to tcp+ws', function (done) {
+    this.timeout(10 * 1000)
     parallel([
       (cb) => switchB.once('peer-mux-established', (pi) => {
         expect(pi.id.toB58String()).to.equal(switchA._peerInfo.id.toB58String())
