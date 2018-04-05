@@ -37,7 +37,7 @@
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "pre-commit": "^1.2.2",
-    "sinon": "^4.4.5"
+    "sinon": "^4.5.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
@@ -52,15 +52,15 @@
     "debug": "^3.1.0",
     "interface-connection": "^0.3.2",
     "lodash": "^4.17.5",
-    "mafmt": "^4.0.0",
-    "multiaddr": "^3.0.2",
+    "mafmt": "^6.0.0",
+    "multiaddr": "^4.0.0",
     "multistream-select": "^0.14.1",
-    "peer-id": "^0.10.6",
-    "peer-info": "^0.11.6",
+    "peer-id": "^0.10.7",
+    "peer-info": "^0.14.0",
     "protons": "^1.0.1",
     "pull-abortable": "^4.1.1",
     "pull-handshake": "^1.1.4",
-    "pull-stream": "^3.6.2",
+    "pull-stream": "^3.6.7",
     "safe-buffer": "^5.1.1",
     "setimmediate": "^1.0.5"
   }
