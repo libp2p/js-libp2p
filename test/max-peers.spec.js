@@ -9,7 +9,7 @@ const Prepare = require('./utils/prepare')
 
 const PEER_COUNT = 3
 
-describe('connection manager', function () {
+describe('maxPeers', function () {
   const prepare = Prepare(PEER_COUNT, {
     maxPeers: 1
   })

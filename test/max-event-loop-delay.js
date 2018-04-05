@@ -9,7 +9,7 @@ const Prepare = require('./utils/prepare')
 
 const PEER_COUNT = 3
 
-describe('connection manager', function () {
+describe('maxEventLoopDelay', function () {
   const prepare = Prepare(PEER_COUNT, {
     pollInterval: 1000,
     maxEventLoopDelay: 10,

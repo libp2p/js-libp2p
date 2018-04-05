@@ -29,20 +29,31 @@ module.exports = (count, options) => {
     })
   }
 
-  const connect = (done) => {
+  const connect = function (done) {
+    if (this && this.timeout) {
+      this.timeout(10000)
+    }
     connectAll(nodes, done)
   }
 
-  const tryConnect = (done) => {
+  const tryConnect = function (done) {
+    if (this && this.timeout) {
+      this.timeout(10000)
+    }
     tryConnectAll(nodes, done)
   }
 
   const before = (done) => {
+    if (this && this.timeout) {
+      this.timeout(10000)
+    }
     series([ create, connect ], done)
   }
 
   const after = function (done) {
-    this.timeout(10000)
+    if (this && this.timeout) {
+      this.timeout(10000)
+    }
     if (!nodes) { return done() }
 
     each(nodes, (node, cb) => {
