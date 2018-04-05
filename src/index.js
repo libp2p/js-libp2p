@@ -19,6 +19,7 @@ class Railing extends EventEmitter {
 
   start (callback) {
     setImmediate(() => callback())
+
     if (this.interval) { return }
 
     this.interval = setInterval(() => {
