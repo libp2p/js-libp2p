@@ -36,22 +36,22 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",
   "dependencies": {
-    "class-is": "^1.0.0",
+    "class-is": "^1.1.0",
     "interface-connection": "~0.3.2",
     "lodash.includes": "^4.3.0",
-    "mafmt": "^4.0.0",
+    "mafmt": "^6.0.0",
     "pull-ws": "^3.3.0"
   },
   "devDependencies": {
-    "aegir": "^13.0.5",
+    "aegir": "^13.0.6",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "gulp": "^3.9.1",
-    "interface-transport": "~0.3.5",
-    "multiaddr": "^3.0.2",
+    "interface-transport": "~0.3.6",
+    "multiaddr": "^4.0.0",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
-    "pull-stream": "^3.6.2"
+    "pull-stream": "^3.6.7"
   },
   "contributors": [
     "Chris Campbell <christopher.d.campbell@gmail.com>",
