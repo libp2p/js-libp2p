@@ -34,23 +34,23 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^13.0.5",
+    "aegir": "^13.0.6",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
-    "interface-transport": "~0.3.5",
+    "interface-transport": "~0.3.6",
     "lodash.isfunction": "^3.0.9",
     "pre-commit": "^1.2.2",
-    "pull-stream": "^3.6.2"
+    "pull-stream": "^3.6.7"
   },
   "dependencies": {
-    "class-is": "^1.0.0",
+    "class-is": "^1.1.0",
     "debug": "^3.1.0",
     "interface-connection": "~0.3.2",
     "ip-address": "^5.8.9",
     "lodash.includes": "^4.3.0",
     "lodash.isfunction": "^3.0.9",
-    "mafmt": "^4.0.0",
-    "multiaddr": "^3.0.2",
+    "mafmt": "^6.0.0",
+    "multiaddr": "^4.0.0",
     "once": "^1.4.0",
     "stream-to-pull-stream": "^1.7.2"
   },
