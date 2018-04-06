@@ -20,6 +20,7 @@ class ConnectionManager extends EventEmitter {
     super()
     this._libp2p = libp2p
     this._options = Object.assign({}, defaultOptions, options)
+    this._options.maxPeersPerProtocol = fixMaxPeersPerProtocol(this._options.maxPeersPerProtocol)
 
     this._stats = libp2p.stats
     if (options && !this._stats) {
@@ -28,6 +29,8 @@ class ConnectionManager extends EventEmitter {
 
     this._peerValues = new Map()
     this._peers = new Map()
+    this._peerProtocols = new Map()
+    this._peerCountPerProtocol = new Map()
     this._onStatsUpdate = this._onStatsUpdate.bind(this)
     this._onPeerConnect = this._onPeerConnect.bind(this)
     this._onPeerDisconnect = this._onPeerDisconnect.bind(this)
@@ -79,7 +82,22 @@ class ConnectionManager extends EventEmitter {
     this._peerValues.set(peerId, 1)
     this._peers.set(peerId, peerInfo)
     this.emit('connected', peerId)
-    this._checkLimit('maxPeers', this._peerValues.size)
+    this._checkLimit('maxPeers', this._peers.size)
+
+    protocolsFromPeerInfo(peerInfo).forEach((protocolTag) => {
+      const protocol = this._peerCountPerProtocol[protocolTag]
+      if (!protocol) {
+        this._peerCountPerProtocol[protocolTag] = 0
+      }
+      this._peerCountPerProtocol[protocolTag]++
+
+      let peerProtocols = this._peerProtocols[peerId]
+      if (!peerProtocols) {
+        peerProtocols = this._peerProtocols[peerId] = new Set()
+      }
+      peerProtocols.add(protocolTag)
+      this._checkProtocolMaxPeersLimit(protocolTag, this._peerCountPerProtocol[protocolTag])
+    })
   }
 
   _onPeerDisconnect (peerInfo) {
@@ -87,6 +105,17 @@ class ConnectionManager extends EventEmitter {
     debug('disconnected from %s', peerId)
     this._peerValues.delete(peerId)
     this._peers.delete(peerId)
+
+    const peerProtocols = this._peerProtocols[peerId]
+    if (peerProtocols) {
+      Array.from(peerProtocols).forEach((protocolTag) => {
+        const peerCountForProtocol = this._peerCountPerProtocol[protocolTag]
+        if (peerCountForProtocol) {
+          this._peerCountPerProtocol[protocolTag]--
+        }
+      })
+    }
+
     this.emit('disconnected', peerId)
   }
 
@@ -98,8 +127,18 @@ class ConnectionManager extends EventEmitter {
     debug('checking limit. current value of %s is %d', name, value)
     const limit = this._options[name]
     if (value > limit) {
-      debug('limit reached: %s, %d', name, value)
-      this.emit('limit:reached', name, value)
+      debug('limit exceeded: %s, %d', name, value)
+      this.emit('limit:exceeded', name, value)
+      this._maybeDisconnectOne()
+    }
+  }
+
+  _checkProtocolMaxPeersLimit (protocolTag, value) {
+    debug('checking protocol limit. current value of %s is %d', protocolTag, value)
+    const limit = this._options.maxPeersPerProtocol[protocolTag]
+    if (value > limit) {
+      debug('protocol max peers limit exceeded: %s, %d', protocolTag, value)
+      this.emit('limit:exceeded', protocolTag, value)
       this._maybeDisconnectOne()
     }
   }
@@ -132,4 +171,33 @@ module.exports = ConnectionManager
 
 function byPeerValue (peerValueEntryA, peerValueEntryB) {
   return peerValueEntryA[1] - peerValueEntryB[1]
+}
+
+function fixMaxPeersPerProtocol (maxPeersPerProtocol) {
+  if (!maxPeersPerProtocol) {
+    maxPeersPerProtocol = {}
+  }
+
+  Object.keys(maxPeersPerProtocol).forEach((transportTag) => {
+    const max = maxPeersPerProtocol[transportTag]
+    delete maxPeersPerProtocol[transportTag]
+    maxPeersPerProtocol[transportTag.toLowerCase()] = max
+  })
+
+  return maxPeersPerProtocol
+}
+
+function protocolsFromPeerInfo (peerInfo) {
+  const protocolTags = new Set()
+  peerInfo.multiaddrs.forEach((multiaddr) => {
+    multiaddr.protos().map(protocolToProtocolTag).forEach((protocolTag) => {
+      protocolTags.add(protocolTag)
+    })
+  })
+
+  return Array.from(protocolTags)
+}
+
+function protocolToProtocolTag (protocol) {
+  return protocol.name.toLowerCase()
 }

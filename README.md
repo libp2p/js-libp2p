@@ -59,14 +59,15 @@ const connManager = new ConnManager(libp2p, options)
 
 Options is an optional object with the following key-value pairs:
 
-* `maxPeers`: number identifying the maximum number of peers the current peer is willing to be connected to before is starts disconnecting. Defaults to `Infinity`
-* `minPeers`: number identifying the number of peers below which this node will not activate preemptive disconnections. Defaults to `0`.
-* `maxData`: sets the maximum data — in bytes per second -  (sent and received) this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
-* `maxSentData`: sets the maximum sent data — in bytes per second -  this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
-* `maxReceivedData`: sets the maximum received data — in bytes per second -  this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
-* `maxEventLoopDelay`: sets the maximum event loop delay (measured in miliseconds) this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
-* `pollInterval`: sets the poll interval (in miliseconds) for assessing the current state and determining if this peer needs to force a disconnect. Defaults to `2000` (2 seconds).
-* `movingAverageInterval`: the interval used to calculate moving averages (in miliseconds). Defaults to `60000` (1 minute).
+* **`maxPeers`**: number identifying the maximum number of peers the current peer is willing to be connected to before is starts disconnecting. Defaults to `Infinity`
+* **`maxPeersPerProtocol`**: Object with key-value pairs, where a key is the protocol tag (case-insensitive) and the value is a number, representing the maximum number of peers allowing to connect for each protocol. Defaults to `{}`.
+* **`minPeers`**: number identifying the number of peers below which this node will not activate preemptive disconnections. Defaults to `0`.
+* **`maxData`**: sets the maximum data — in bytes per second -  (sent and received) this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
+* **`maxSentData`**: sets the maximum sent data — in bytes per second -  this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
+* **`maxReceivedData`**: sets the maximum received data — in bytes per second -  this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
+* **`maxEventLoopDelay`**: sets the maximum event loop delay (measured in miliseconds) this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
+* **`pollInterval`**: sets the poll interval (in miliseconds) for assessing the current state and determining if this peer needs to force a disconnect. Defaults to `2000` (2 seconds).
+* **`movingAverageInterval`**: the interval used to calculate moving averages (in miliseconds). Defaults to `60000` (1 minute).
 
 
 ### `connManager.start()`
@@ -112,9 +113,9 @@ Returns the peers this connection manager is connected to.
 
 Returns an array of [PeerInfo](https://github.com/libp2p/js-peer-info).
 
-### `connManager.emit('limit:reached', limitName, measured)`
+### `connManager.emit('limit:exceeded', limitName, measured)`
 
-Emitted when a limit is reached. Limit names can be:
+Emitted when a limit is exceeded. Limit names can be:
 
 * `maxPeers`
 * `minPeers`
@@ -122,6 +123,7 @@ Emitted when a limit is reached. Limit names can be:
 * `maxSentData`
 * `maxReceivedData`
 * `maxEventLoopDelay`
+* a protocol tag string (lower-cased)
 
 
 ### `connManager.emit('disconnect:preemptive', peerId)`
