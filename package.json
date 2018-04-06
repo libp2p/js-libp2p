@@ -61,7 +61,7 @@
     "libp2p-secio": "~0.10.0",
     "libp2p-spdy": "~0.12.1",
     "libp2p-tcp": "~0.12.0",
-    "libp2p-webrtc-star": "~0.13.4",
+    "libp2p-webrtc-star": "~0.14.0",
     "libp2p-websockets": "~0.11.0",
     "libp2p-websocket-star": "~0.8.0",
     "libp2p-websocket-star-rendezvous": "~0.2.3",
