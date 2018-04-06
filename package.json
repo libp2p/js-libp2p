@@ -38,6 +38,7 @@
   "homepage": "https://github.com/libp2p/js-libp2p",
   "dependencies": {
     "async": "^2.6.0",
+    "libp2p-connection-manager": "^0.1.0",
     "libp2p-floodsub": "^0.15.0",
     "libp2p-ping": "~0.8.0",
     "libp2p-switch": "~0.39.2",
