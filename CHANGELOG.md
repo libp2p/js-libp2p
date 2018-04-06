@@ -1,3 +1,13 @@
+<a name="0.20.0"></a>
+# [0.20.0](https://github.com/libp2p/js-libp2p/compare/v0.19.2...v0.20.0) (2018-04-06)
+
+
+### Features
+
+* use class-is for type checks ([bb0c990](https://github.com/libp2p/js-libp2p/commit/bb0c990))
+
+
+
 <a name="0.19.2"></a>
 ## [0.19.2](https://github.com/libp2p/js-libp2p/compare/v0.19.0...v0.19.2) (2018-03-28)
 
