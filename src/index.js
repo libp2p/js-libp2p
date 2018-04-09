@@ -22,6 +22,8 @@ class ConnectionManager extends EventEmitter {
     this._options = Object.assign({}, defaultOptions, options)
     this._options.maxPeersPerProtocol = fixMaxPeersPerProtocol(this._options.maxPeersPerProtocol)
 
+    debug('options: %j', this._options)
+
     this._stats = libp2p.stats
     if (options && !this._stats) {
       throw new Error('No libp2p.stats')
@@ -34,6 +36,12 @@ class ConnectionManager extends EventEmitter {
     this._onStatsUpdate = this._onStatsUpdate.bind(this)
     this._onPeerConnect = this._onPeerConnect.bind(this)
     this._onPeerDisconnect = this._onPeerDisconnect.bind(this)
+
+    if (this._libp2p.isStarted()) {
+      this._onceStarted()
+    } else {
+      this._libp2p.once('start', this._onceStarted.bind(this))
+    }
   }
 
   start () {
@@ -65,6 +73,10 @@ class ConnectionManager extends EventEmitter {
     this._peerValues.set(peerId, value)
   }
 
+  _onceStarted () {
+    this._peerId = this._libp2p.peerInfo.id.toB58String()
+  }
+
   _onStatsUpdate () {
     const movingAvgs = this._stats.global.movingAverages
     const received = movingAvgs.dataReceived[this._options.movingAverageInterval].movingAverage()
@@ -78,7 +90,7 @@ class ConnectionManager extends EventEmitter {
 
   _onPeerConnect (peerInfo) {
     const peerId = peerInfo.id.toB58String()
-    debug('connected to %s', peerId)
+    debug('%s: connected to %s', this._peerId, peerId)
     this._peerValues.set(peerId, 1)
     this._peers.set(peerId, peerInfo)
     this.emit('connected', peerId)
@@ -102,7 +114,7 @@ class ConnectionManager extends EventEmitter {
 
   _onPeerDisconnect (peerInfo) {
     const peerId = peerInfo.id.toB58String()
-    debug('disconnected from %s', peerId)
+    debug('%s: disconnected from %s', this._peerId, peerId)
     this._peerValues.delete(peerId)
     this._peers.delete(peerId)
 
@@ -127,7 +139,7 @@ class ConnectionManager extends EventEmitter {
     debug('checking limit. current value of %s is %d', name, value)
     const limit = this._options[name]
     if (value > limit) {
-      debug('limit exceeded: %s, %d', name, value)
+      debug('%s: limit exceeded: %s, %d', this._peerId, name, value)
       this.emit('limit:exceeded', name, value)
       this._maybeDisconnectOne()
     }
@@ -137,7 +149,7 @@ class ConnectionManager extends EventEmitter {
     debug('checking protocol limit. current value of %s is %d', protocolTag, value)
     const limit = this._options.maxPeersPerProtocol[protocolTag]
     if (value > limit) {
-      debug('protocol max peers limit exceeded: %s, %d', protocolTag, value)
+      debug('%s: protocol max peers limit exceeded: %s, %d', this._peerId, protocolTag, value)
       this.emit('limit:exceeded', protocolTag, value)
       this._maybeDisconnectOne()
     }
@@ -146,10 +158,10 @@ class ConnectionManager extends EventEmitter {
   _maybeDisconnectOne () {
     if (this._options.minPeers < this._peerValues.size) {
       const peerValues = Array.from(this._peerValues).sort(byPeerValue)
-      const disconnectPeer = peerValues[0]
+      const disconnectPeer = peerValues[peerValues.length - 1]
       if (disconnectPeer) {
         const peer = disconnectPeer[0]
-        debug('forcing disconnection from %j', peer)
+        debug('%s: forcing disconnection from %j', this._peerId, peer)
         this._disconnectPeer(peer)
       }
     }
@@ -157,7 +169,7 @@ class ConnectionManager extends EventEmitter {
 
   _disconnectPeer (peerId) {
     debug('preemptively disconnecting peer', peerId)
-    this.emit('disconnect:preemptive', peerId)
+    this.emit('%s: disconnect:preemptive', this._peerId, peerId)
     const peer = this._peers.get(peerId)
     this._libp2p.hangUp(peer, (err) => {
       if (err) {
