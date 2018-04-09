@@ -11,7 +11,8 @@ const PEER_COUNT = 3
 
 describe('setPeerValue', function () {
   const prepare = Prepare(PEER_COUNT, [{
-    maxPeers: 1
+    maxPeers: 1,
+    defaultPeerValue: 0
   }])
   before(prepare.create)
   after(prepare.after)
@@ -27,8 +28,6 @@ describe('setPeerValue', function () {
       if (!firstConnectedPeer) {
         firstConnectedPeer = peerId
         manager.setPeerValue(peerId, 1)
-      } else {
-        manager.setPeerValue(peerId, 0)
       }
     })
 

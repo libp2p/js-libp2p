@@ -12,7 +12,8 @@ const defaultOptions = {
   maxReceivedData: Infinity,
   maxEventLoopDelay: Infinity,
   pollInterval: 2000,
-  movingAverageInterval: 60000
+  movingAverageInterval: 60000,
+  defaultPeerValue: 1
 }
 
 class ConnectionManager extends EventEmitter {
@@ -91,7 +92,7 @@ class ConnectionManager extends EventEmitter {
   _onPeerConnect (peerInfo) {
     const peerId = peerInfo.id.toB58String()
     debug('%s: connected to %s', this._peerId, peerId)
-    this._peerValues.set(peerId, 1)
+    this._peerValues.set(peerId, this._options.defaultPeerValue)
     this._peers.set(peerId, peerInfo)
     this.emit('connected', peerId)
     this._checkLimit('maxPeers', this._peers.size)
@@ -158,11 +159,13 @@ class ConnectionManager extends EventEmitter {
   _maybeDisconnectOne () {
     if (this._options.minPeers < this._peerValues.size) {
       const peerValues = Array.from(this._peerValues).sort(byPeerValue)
-      const disconnectPeer = peerValues[peerValues.length - 1]
+      debug('%s: sorted peer values: %j', this._peerId, peerValues)
+      const disconnectPeer = peerValues[0]
       if (disconnectPeer) {
-        const peer = disconnectPeer[0]
-        debug('%s: forcing disconnection from %j', this._peerId, peer)
-        this._disconnectPeer(peer)
+        const peerId = disconnectPeer[0]
+        debug('%s: lowest value peer is %s', this._peerId, peerId)
+        debug('%s: forcing disconnection from %j', this._peerId, peerId)
+        this._disconnectPeer(peerId)
       }
     }
   }
