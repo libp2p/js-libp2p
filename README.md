@@ -78,25 +78,6 @@ Starts the connection manager.
 
 Stops the connection manager.
 
-### `connManager.setMaxPeers(numberOfPeers)`
-
-Sets the maximum number of peers this node is willing to endure before it starts disconnecting peers.
-
-### `connManager.setMaxData(bytesPerSec)`
-
-Sets the maximum data — in bytes per second -  (sent and received) this node is willing to endure before it starts disconnecting peers.
-
-### `connManager.setMaxSentData(bytesPerSec)`
-
-Sets the maximum sent data — in bytes per second -  this node is willing to endure before it starts disconnecting peers.
-
-### `connManager.setMaxReceivedData(bytesPerSec)`
-
-Sets the maximum received data — in bytes per second - this node is willing to endure before it starts disconnecting peers.
-
-### `connManager.setMaxEventLoopDelay(timeInMiliseconds)`
-
-Sets the maximum event loop delay (measured in miliseconds) this node is willing to endure before it starts disconnecting peers.
 
 ### `connManager.setPeerValue(peerId, value)`
 
