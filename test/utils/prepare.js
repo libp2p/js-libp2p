@@ -14,10 +14,18 @@ const tryConnectAll = require('./try-connect-all')
 module.exports = (count, options) => {
   let nodes
 
+  if (!Array.isArray(options)) {
+    const opts = options
+    options = []
+    for (let n = 0 ; n < count; n++) {
+      options[n] = opts
+    }
+  }
+
   const create = (done) => {
     const tasks = []
     for (let i = 0; i < count; i++) {
-      tasks.push((cb) => createThing(options, cb))
+      tasks.push((cb) => createThing(options.shift() || {}, cb))
     }
 
     series(tasks, (err, things) => {
