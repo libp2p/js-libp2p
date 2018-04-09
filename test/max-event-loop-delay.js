@@ -10,11 +10,11 @@ const Prepare = require('./utils/prepare')
 const PEER_COUNT = 3
 
 describe('maxEventLoopDelay', function () {
-  const prepare = Prepare(PEER_COUNT, {
+  const prepare = Prepare(PEER_COUNT, [{
     pollInterval: 1000,
-    maxEventLoopDelay: 10,
+    maxEventLoopDelay: 5,
     minPeers: 1
-  })
+  }])
   before(prepare.create)
   after(prepare.after)
 
@@ -22,16 +22,13 @@ describe('maxEventLoopDelay', function () {
     this.timeout(10000)
     let stopped = false
 
-    let totalDisconnects = 0
-    prepare.connManagers().forEach((connManager) => {
-      connManager.on('disconnected', () => {
-        totalDisconnects++
-        expect(totalDisconnects).to.be.most((PEER_COUNT - 2) * PEER_COUNT)
-        if (totalDisconnects === PEER_COUNT) {
-          stopped = true
-          done()
-        }
-      })
+    let disconnects = 0
+    const manager = prepare.connManagers()[0]
+    manager.on('disconnected', () => {
+      disconnects++
+      expect(disconnects).to.be.most(PEER_COUNT - 2)
+      stopped = true
+      done()
     })
 
     prepare.tryConnectAll((err) => {

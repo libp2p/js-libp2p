@@ -17,7 +17,7 @@ module.exports = (count, options) => {
   if (!Array.isArray(options)) {
     const opts = options
     options = []
-    for (let n = 0 ; n < count; n++) {
+    for (let n = 0; n < count; n++) {
       options[n] = opts
     }
   }
