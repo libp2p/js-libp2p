@@ -36,7 +36,7 @@ module.exports = (count, options) => {
     connectAll(nodes, done)
   }
 
-  const tryConnect = function (done) {
+  const tryConnectAllFn = function (done) {
     if (this && this.timeout) {
       this.timeout(10000)
     }
@@ -68,7 +68,7 @@ module.exports = (count, options) => {
   return {
     create,
     connect,
-    tryConnect,
+    tryConnectAll: tryConnectAllFn,
     before,
     after,
     things: () => nodes,

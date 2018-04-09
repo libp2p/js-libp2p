@@ -34,7 +34,7 @@ describe('maxEventLoopDelay', function () {
       })
     })
 
-    prepare.tryConnect((err) => {
+    prepare.tryConnectAll((err) => {
       expect(err).to.not.exist()
       makeDelay()
     })

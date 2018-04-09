@@ -36,7 +36,7 @@ describe('maxReceivedData', function () {
       })
     })
 
-    prepare.tryConnect((err, eachNodeConnections) => {
+    prepare.tryConnectAll((err, eachNodeConnections) => {
       expect(err).to.not.exist()
       expect(eachNodeConnections.length).to.be.equal(PEER_COUNT)
       eachNodeConnections.forEach((nodeConnections) => {
