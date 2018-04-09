@@ -115,9 +115,9 @@ Emitted when a peer is about to be preemptively disconnected.
 
 Emitted when a peer is disconnected (preemptively or note). If this peer reconnects, you will need to reset it's value, since the connection manager does not remember it.
 
-### `connManager.emit('connected', peerId)`
+### `connManager.emit('connected', peerId: String)`
 
-Emitted when a peer connects.
+Emitted when a peer connects. This is a good event to set the peer value, so you can get some control over who gets banned once a maximum number of peers is reached.
 
 
 ## Contribute
