@@ -3,6 +3,7 @@
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
+const mafmt = require('mafmt')
 const EventEmitter = require('events').EventEmitter
 const debug = require('debug')
 const setImmediate = require('async/setImmediate')
@@ -24,15 +25,14 @@ class Railing extends EventEmitter {
 
     this.interval = setInterval(() => {
       this.bootstrapers.forEach((candidate) => {
+        if (!isIPFS(candidate)) { return log.error('Invalid multiaddr') }
         const ma = multiaddr(candidate)
 
         const peerId = PeerId.createFromB58String(ma.getPeerId())
 
         PeerInfo.create(peerId, (err, peerInfo) => {
           if (err) { return log.error('Invalid bootstrap peer id', err) }
-
           peerInfo.multiaddrs.add(ma)
-
           this.emit('peer', peerInfo)
         })
       })
@@ -45,6 +45,14 @@ class Railing extends EventEmitter {
       clearInterval(this.interval)
       this.interval = null
     }
+  }
+}
+
+function isIPFS (addr) {
+  try {
+    return mafmt.IPFS.matches(addr)
+  } catch (e) {
+    return false
   }
 }
 
