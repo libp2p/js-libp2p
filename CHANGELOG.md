@@ -1,3 +1,13 @@
+<a name="0.8.1"></a>
+## [0.8.1](https://github.com/libp2p/js-libp2p-railing/compare/v0.8.0...v0.8.1) (2018-04-12)
+
+
+### Bug Fixes
+
+* add more error handling for malformed bootstrap multiaddr ([#74](https://github.com/libp2p/js-libp2p-railing/issues/74)) ([f65e1ba](https://github.com/libp2p/js-libp2p-railing/commit/f65e1ba))
+
+
+
 <a name="0.8.0"></a>
 # [0.8.0](https://github.com/libp2p/js-libp2p-railing/compare/v0.7.1...v0.8.0) (2018-04-05)
 
