@@ -22,4 +22,4 @@ Let us know if you find any issue or if you want to contribute and add a new tut
 - [Running libp2p in the Browser](./libp2p-in-the-browser)
 - Running libp2p in the Electron (future)
 - [The standard echo net example with libp2p](./echo)
-- [A simple chat app with](./chat)
+- [A simple chat app with libp2p](./chat)
