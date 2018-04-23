@@ -1,6 +1,6 @@
 {
   "name": "libp2p-connection-manager",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JS Libp2p Connection Manager",
   "main": "src/index.js",
   "scripts": {
