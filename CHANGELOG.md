@@ -1,3 +1,13 @@
+<a name="0.8.0"></a>
+# [0.8.0](https://github.com/libp2p/js-libp2p-ping/compare/v0.7.0...v0.8.0) (2018-04-23)
+
+
+### Features
+
+* add start/stop method ([#69](https://github.com/libp2p/js-libp2p-ping/issues/69)) ([c0a6a46](https://github.com/libp2p/js-libp2p-ping/commit/c0a6a46))
+
+
+
 <a name="0.7.0"></a>
 # [0.7.0](https://github.com/libp2p/js-libp2p-ping/compare/v0.6.1...v0.7.0) (2018-04-05)
 
