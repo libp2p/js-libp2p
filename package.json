@@ -8,9 +8,9 @@
     "test": "aegir test -t node",
     "test:node": "aegir test -t node",
     "test:browser": "aegir test -t browser",
-    "release": "aegir release -t node -t browser",
-    "release-minor": "aegir release --type minor -t node -t browser",
-    "release-major": "aegir release --type major -t node -t browser",
+    "release": "aegir release -t node -t node",
+    "release-minor": "aegir release --type minor -t node -t node",
+    "release-major": "aegir release --type major -t node -t node",
     "coverage": "aegir coverage",
     "coverage-publish": "aegir coverage --provider coveralls"
   },
