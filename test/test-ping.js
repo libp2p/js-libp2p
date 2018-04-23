@@ -72,6 +72,8 @@ describe('libp2p ping', () => {
       p.stop()
       done()
     })
+
+    p.start()
   })
 
   it('ping 5 times from peerB to peerA', (done) => {
@@ -90,6 +92,8 @@ describe('libp2p ping', () => {
         done()
       }
     })
+
+    p.start()
   })
 
   it('ping itself', (done) => {
@@ -104,6 +108,8 @@ describe('libp2p ping', () => {
       p.stop()
       done()
     })
+
+    p.start()
   })
 
   it('unmount PING protocol', () => {

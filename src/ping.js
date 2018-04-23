@@ -17,19 +17,21 @@ class Ping extends EventEmitter {
   constructor (swarm, peer) {
     super()
 
-    let stop = false
-    let shake
-    let self = this
+    this._stopped = false
+    this.peer = peer
+    this.swarm = swarm
+  }
 
-    log('dialing %s to %s', PROTOCOL, peer.id.toB58String())
+  start () {
+    log('dialing %s to %s', PROTOCOL, this.peer.id.toB58String())
 
-    swarm.dial(peer, PROTOCOL, (err, conn) => {
+    this.swarm.dial(this.peer, PROTOCOL, (err, conn) => {
       if (err) {
         return this.emit('error', err)
       }
 
       const stream = handshake({ timeout: 0 })
-      shake = stream.handshake
+      this.shake = stream.handshake
 
       pull(
         stream,
@@ -38,11 +40,12 @@ class Ping extends EventEmitter {
       )
 
       // write and wait to see ping back
+      const self = this
       function next () {
         let start = new Date()
         let buf = rnd(PING_LENGTH)
-        shake.write(buf)
-        shake.read(PING_LENGTH, (err, bufBack) => {
+        self.shake.write(buf)
+        self.shake.read(PING_LENGTH, (err, bufBack) => {
           let end = new Date()
           if (err || !buf.equals(bufBack)) {
             const err = new Error('Received wrong ping ack')
@@ -51,7 +54,7 @@ class Ping extends EventEmitter {
 
           self.emit('ping', end - start)
 
-          if (stop) {
+          if (self._stopped) {
             return
           }
           next()
@@ -60,19 +63,19 @@ class Ping extends EventEmitter {
 
       next()
     })
+  }
 
-    this.stop = () => {
-      if (stop || !shake) {
-        return
-      }
-
-      stop = true
-
-      pull(
-        pull.empty(),
-        shake.rest()
-      )
+  stop () {
+    if (this._stopped || !this.shake) {
+      return
     }
+
+    this._stopped = true
+
+    pull(
+      pull.empty(),
+      this.shake.rest()
+    )
   }
 }
 

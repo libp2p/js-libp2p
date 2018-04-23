@@ -23,4 +23,6 @@ p.on('ping', function (time) {
   console.log(time + 'ms')
   p.stop() // stop sending pings
 })
+
+p.start()
 ```
