@@ -72,8 +72,8 @@ describe(`circuit`, function () {
   })
 
   it('listed on the transports map', () => {
-    expect(swarmA.transports['Circuit']).to.exist()
-    expect(swarmB.transports['Circuit']).to.exist()
+    expect(swarmA.transports.Circuit).to.exist()
+    expect(swarmB.transports.Circuit).to.exist()
   })
 
   it('add /p2p-curcuit addrs on start', (done) => {

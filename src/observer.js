@@ -3,6 +3,15 @@
 const pull = require('pull-stream')
 const EventEmitter = require('events')
 
+/**
+ * Takes a Switch and returns an Observer that can be used in conjunction with
+ * observe-connection.js. The returned Observer comes with `incoming` and
+ * `outgoing` properties that can be used in pull streams to emit all metadata
+ * for messages that pass through a Connection.
+ *
+ * @param {Switch} swtch
+ * @returns {EventEmitter}
+ */
 module.exports = (swtch) => {
   const observer = Object.assign(new EventEmitter(), {
     incoming: observe('in'),
@@ -29,9 +38,9 @@ module.exports = (swtch) => {
   }
 
   function willObserve (peerInfo, transport, protocol, direction, bufferLength) {
-    peerInfo.then((pi) => {
-      if (pi) {
-        const peerId = pi.id.toB58String()
+    peerInfo.then((_peerInfo) => {
+      if (_peerInfo) {
+        const peerId = _peerInfo.id.toB58String()
         setImmediate(() => observer.emit('message', peerId, transport, protocol, direction, bufferLength))
       }
     })

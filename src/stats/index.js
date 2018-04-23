@@ -26,6 +26,15 @@ const directionToEvent = {
   out: 'dataSent'
 }
 
+/**
+ * Binds to message events on the given `observer` to generate stats
+ * based on the Peer, Protocol and Transport used for the message. Stat
+ * events will be emitted via the `update` event.
+ *
+ * @param {Observer} observer
+ * @param {any} _options
+ * @returns {Stats}
+ */
 module.exports = (observer, _options) => {
   const options = Object.assign({}, defaultOptions, _options)
   const globalStats = new Stat(initialCounters, options)

@@ -4,6 +4,7 @@ const multistream = require('multistream-select')
 const Connection = require('interface-connection').Connection
 const setImmediate = require('async/setImmediate')
 const Circuit = require('libp2p-circuit')
+const waterfall = require('async/waterfall')
 
 const debug = require('debug')
 const log = debug('libp2p:switch:dial')
@@ -11,7 +12,362 @@ const log = debug('libp2p:switch:dial')
 const getPeerInfo = require('./get-peer-info')
 const observeConnection = require('./observe-connection')
 
-function dial (swtch) {
+/**
+ * Manages dialing to another peer, including muxer upgrades
+ * and crypto management. The main entry point for dialing is
+ * Dialer.dial
+ *
+ * @param {Switch} _switch
+ * @param {PeerInfo} peerInfo
+ * @param {string} protocol
+ * @param {function(Error, Connection)} callback
+ */
+class Dialer {
+  constructor (_switch, peerInfo, protocol, callback) {
+    this.switch = _switch
+    this.peerInfo = peerInfo
+    this.protocol = protocol
+    this.callback = callback
+  }
+
+  /**
+   * Initializes a proxy connection and returns it. The connection is also immediately
+   * dialed. This will include establishing the base connection, crypto, muxing and the
+   * protocol handshake if all needed components have already been set.
+   *
+   * @returns {Connection}
+   */
+  dial () {
+    const proxyConnection = new Connection()
+    proxyConnection.setPeerInfo(this.peerInfo)
+
+    waterfall([
+      (cb) => {
+        this._establishConnection(cb)
+      },
+      (connection, cb) => {
+        if (connection) {
+          proxyConnection.setPeerInfo(this.peerInfo)
+          proxyConnection.setInnerConn(connection)
+          return cb(null, proxyConnection)
+        }
+        cb(null)
+      }
+    ], (err, connection) => {
+      this.callback(err, connection)
+    })
+
+    return proxyConnection
+  }
+
+  /**
+   * Establishes a base connection and then continues to upgrade that connection
+   * including: crypto, muxing and the protocol handshake. If any upgrade is not
+   * yet available, or already exists, the upgrade will continue where it left off.
+   *
+   * @private
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
+  _establishConnection (callback) {
+    const b58Id = this.peerInfo.id.toB58String()
+    log('dialing %s', b58Id)
+
+    waterfall([
+      (cb) => {
+        // Start with a base connection, which includes encryption
+        this._createBaseConnection(b58Id, cb)
+      },
+      (baseConnection, cb) => {
+        // Upgrade the connection with a muxer
+        this._createMuxedConnection(baseConnection, b58Id, cb)
+      },
+      (muxer, cb) => {
+        // If we have no protocol, dont continue with the handshake
+        if (!this.protocol) {
+          return cb()
+        }
+        // If we have a muxer, create a new stream, otherwise it's a standard connection
+        const connection = muxer.newStream ? muxer.newStream() : muxer
+        this._performProtocolHandshake(connection, cb)
+      }
+    ], (err, connection) => {
+      callback(err, connection)
+    })
+  }
+
+  /**
+   * If the base connection already exists to the PeerId key, `b58Id`,
+   * it will be returned in the callback. If no connection exists, one will
+   * be attempted via Dialer.attemptDial.
+   *
+   * @private
+   * @param {string} b58Id
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
+  _createBaseConnection (b58Id, callback) {
+    const baseConnection = this.switch.conns[b58Id]
+    if (baseConnection) {
+      this.switch.conns[b58Id] = undefined
+      return callback(null, baseConnection)
+    }
+
+    waterfall([
+      (cb) => {
+        this._attemptDial(cb)
+      },
+      (baseConnection, cb) => {
+        // Add the Switch's crypt encryption to the connection
+        this._encryptConnection(baseConnection, cb)
+      }
+    ], (err, encryptedConnection) => {
+      if (err) {
+        return callback(err)
+      }
+
+      callback(null, encryptedConnection)
+    })
+  }
+
+  /**
+   * If the given PeerId key, `b58Id`, has an existing muxed connection
+   * it will be returned via the callback, otherwise the connection
+   * upgrade will be initiated via Dialer.attemptMuxerUpgrade.
+   *
+   * @private
+   * @param {Connection} connection
+   * @param {string} b58Id
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
+  _createMuxedConnection (connection, b58Id, callback) {
+    const muxedConnection = this.switch.muxedConns[b58Id]
+    if (muxedConnection) {
+      return callback(null, muxedConnection.muxer)
+    }
+
+    connection.setPeerInfo(this.peerInfo)
+
+    waterfall([
+      (cb) => {
+        this._attemptMuxerUpgrade(connection, b58Id, cb)
+      }
+    ], (err, muxer) => {
+      if (err && !this.protocol) {
+        this.switch.conns[b58Id] = connection
+        return callback(null, null)
+      }
+
+      if (err) {
+        // couldn't upgrade to Muxer, it is ok, use the existing connection
+        return callback(null, connection)
+      }
+
+      callback(null, muxer)
+    })
+  }
+
+  /**
+   * Iterates over each Muxer on the Switch and attempts to upgrade
+   * the given `connection`. Successful muxed connections will be stored
+   * on the Switch.muxedConns with `b58Id` as their key for future reference.
+   *
+   * @private
+   * @param {Connection} connection
+   * @param {string} b58Id
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
+  _attemptMuxerUpgrade (connection, b58Id, callback) {
+    const muxers = Object.keys(this.switch.muxers)
+    if (muxers.length === 0) {
+      return callback(new Error('no muxers available'))
+    }
+
+    // 1. try to handshake in one of the muxers available
+    // 2. if succeeds
+    //  - add the muxedConn to the list of muxedConns
+    //  - add incomming new streams to connHandler
+    const nextMuxer = (key) => {
+      log('selecting %s', key)
+      msDialer.select(key, (err, conn) => {
+        if (err) {
+          if (muxers.length === 0) {
+            return callback(new Error('could not upgrade to stream muxing'))
+          }
+
+          nextMuxer(muxers.shift())
+        }
+
+        const muxedConn = this.switch.muxers[key].dialer(conn)
+        this.switch.muxedConns[b58Id] = {}
+        this.switch.muxedConns[b58Id].muxer = muxedConn
+
+        muxedConn.once('close', () => {
+          delete this.switch.muxedConns[b58Id]
+          this.peerInfo.disconnect()
+          this.switch._peerInfo.disconnect()
+          setImmediate(() => this.switch.emit('peer-mux-closed', this.peerInfo))
+        })
+
+        // For incoming streams, in case identify is on
+        muxedConn.on('stream', (conn) => {
+          conn.setPeerInfo(this.peerInfo)
+          this.switch.protocolMuxer(null)(conn)
+        })
+
+        setImmediate(() => this.switch.emit('peer-mux-established', this.peerInfo))
+
+        callback(null, muxedConn)
+      })
+    }
+
+    const msDialer = new multistream.Dialer()
+    msDialer.handle(connection, (err) => {
+      if (err) {
+        return callback(new Error('multistream not supported'))
+      }
+
+      nextMuxer(muxers.shift())
+    })
+  }
+
+  /**
+   * Iterates over each Transport on the Switch and attempts to connect
+   * to the peer. Once a Transport succeeds, no additional Transports will
+   * be dialed.
+   *
+   * @private
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
+  _attemptDial (callback) {
+    if (!this.switch.hasTransports()) {
+      return callback(new Error('No transports registered, dial not possible'))
+    }
+
+    const tKeys = this.switch.availableTransports(this.peerInfo)
+
+    const circuitEnabled = Boolean(swtch.transports[Circuit.tag])
+    let circuitTried = false
+
+    const nextTransport = (key) => {
+      let transport = key
+      if (!transport) {
+        if (!circuitEnabled) {
+          const msg = `Circuit not enabled and all transports failed to dial peer ${pi.id.toB58String()}!`
+          return cb(new Error(msg))
+        }
+
+        if (circuitTried) {
+          return cb(new Error(`No available transports to dial peer ${pi.id.toB58String()}!`))
+        }
+
+        log(`Falling back to dialing over circuit`)
+        this.peerInfo.multiaddrs.add(`/p2p-circuit/ipfs/${this.peerInfo.id.toB58String()}`)
+        circuitTried = true
+        transport = Circuit.tag
+      }
+
+      log(`dialing transport ${transport}`)
+      this.switch.transport.dial(transport, this.peerInfo, (err, _conn) => {
+        if (err) {
+          log(err)
+          return nextTransport(tKeys.shift())
+        }
+
+        const conn = observeConnection(transport, null, _conn, this.switch.observer)
+        callback(null, conn)
+      })
+    }
+
+    nextTransport(tKeys.shift())
+  }
+
+  /**
+   * Attempts to encrypt the given `connection` with the Switch's crypto.
+   *
+   * @private
+   * @param {Connection} connection
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
+  _encryptConnection (connection, callback) {
+    const msDialer = new multistream.Dialer()
+
+    msDialer.handle(connection, (err) => {
+      if (err) {
+        return callback(err)
+      }
+
+      const myId = this.switch._peerInfo.id
+      log('selecting crypto: %s', this.switch.crypto.tag)
+
+      msDialer.select(this.switch.crypto.tag, (err, _conn) => {
+        if (err) {
+          return callback(err)
+        }
+
+        const conn = observeConnection(null, this.switch.crypto.tag, _conn, this.switch.observer)
+
+        const encryptedConnection = this.switch.crypto.encrypt(myId, conn, this.peerInfo.id, (err) => {
+          if (err) {
+            return callback(err)
+          }
+
+          encryptedConnection.setPeerInfo(this.peerInfo)
+          callback(null, encryptedConnection)
+        })
+      })
+    })
+  }
+
+  /**
+   * Initiates a handshake for the Dialer's set protocol
+   *
+   * @private
+   * @param {Connection} connection
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
+  _performProtocolHandshake (connection, callback) {
+    // If there is no protocol set yet, don't perform the handshake
+    if (!this.protocol) {
+      callback()
+    }
+
+    const msDialer = new multistream.Dialer()
+    msDialer.handle(connection, (err) => {
+      if (err) {
+        return callback(err)
+      }
+      msDialer.select(this.protocol, (err, conn) => {
+        if (err) {
+          return callback(err)
+        }
+        callback(null, conn)
+      })
+    })
+  }
+}
+
+/**
+ * Returns a Dialer generator that when called, will immediately begin dialing
+ * fo the given `peer`.
+ *
+ * @param {Switch} _switch
+ * @returns {function(PeerInfo, string, function(Error, Connection))}
+ */
+function dial (_switch) {
+  /**
+   * Creates a new dialer and immediately begins dialing to the given `peer`
+   *
+   * @param {PeerInfo} peer
+   * @param {string} protocol
+   * @param {function(Error, Connection)} callback
+   * @returns {Connection}
+   */
   return (peer, protocol, callback) => {
     if (typeof protocol === 'function') {
       callback = protocol
@@ -19,216 +375,11 @@ function dial (swtch) {
     }
 
     callback = callback || function noop () {}
-    const pi = getPeerInfo(peer, swtch._peerBook)
 
-    const proxyConn = new Connection()
-    proxyConn.setPeerInfo(pi)
+    const peerInfo = getPeerInfo(peer, _switch._peerBook)
+    const dialer = new Dialer(_switch, peerInfo, protocol, callback)
 
-    const b58Id = pi.id.toB58String()
-    log('dialing %s', b58Id)
-
-    if (!swtch.muxedConns[b58Id]) {
-      if (!swtch.conns[b58Id]) {
-        attemptDial(pi, (err, conn) => {
-          if (err) {
-            return callback(err)
-          }
-          gotWarmedUpConn(conn)
-        })
-      } else {
-        const conn = swtch.conns[b58Id]
-        swtch.conns[b58Id] = undefined
-        gotWarmedUpConn(conn)
-      }
-    } else {
-      if (!protocol) {
-        return callback()
-      }
-      gotMuxer(swtch.muxedConns[b58Id].muxer)
-    }
-
-    return proxyConn
-
-    function gotWarmedUpConn (conn) {
-      conn.setPeerInfo(pi)
-
-      attemptMuxerUpgrade(conn, (err, muxer) => {
-        if (!protocol) {
-          if (err) {
-            swtch.conns[b58Id] = conn
-          }
-          return callback()
-        }
-
-        if (err) {
-          // couldn't upgrade to Muxer, it is ok
-          protocolHandshake(conn, protocol, callback)
-        } else {
-          gotMuxer(muxer)
-        }
-      })
-    }
-
-    function gotMuxer (muxer) {
-      if (swtch.identify) {
-        // TODO: Consider:
-        // 1. overload getPeerInfo
-        // 2. exec identify (through getPeerInfo)
-        // 3. update the peerInfo that is already stored in the conn
-      }
-
-      openConnInMuxedConn(muxer, (conn) => {
-        protocolHandshake(conn, protocol, callback)
-      })
-    }
-
-    function attemptDial (pi, cb) {
-      if (!swtch.hasTransports()) {
-        return cb(new Error('No transports registered, dial not possible'))
-      }
-
-      const tKeys = swtch.availableTransports(pi)
-
-      const circuitEnabled = Boolean(swtch.transports[Circuit.tag])
-      let circuitTried = false
-      nextTransport(tKeys.shift())
-
-      function nextTransport (key) {
-        let transport = key
-        if (!transport) {
-          if (!circuitEnabled) {
-            const msg = `Circuit not enabled and all transports failed to dial peer ${pi.id.toB58String()}!`
-            return cb(new Error(msg))
-          }
-
-          if (circuitTried) {
-            return cb(new Error(`No available transports to dial peer ${pi.id.toB58String()}!`))
-          }
-
-          log(`Falling back to dialing over circuit`)
-          pi.multiaddrs.add(`/p2p-circuit/ipfs/${pi.id.toB58String()}`)
-          circuitTried = true
-          transport = Circuit.tag
-        }
-
-        log(`dialing transport ${transport}`)
-        swtch.transport.dial(transport, pi, (err, _conn) => {
-          if (err) {
-            log(err)
-            return nextTransport(tKeys.shift())
-          }
-
-          const conn = observeConnection(transport, null, _conn, swtch.observer)
-
-          cryptoDial()
-
-          function cryptoDial () {
-            const ms = new multistream.Dialer()
-            ms.handle(conn, (err) => {
-              if (err) {
-                return cb(err)
-              }
-
-              const myId = swtch._peerInfo.id
-              log('selecting crypto: %s', swtch.crypto.tag)
-              ms.select(swtch.crypto.tag, (err, _conn) => {
-                if (err) { return cb(err) }
-
-                const conn = observeConnection(null, swtch.crypto.tag, _conn, swtch.observer)
-
-                const wrapped = swtch.crypto.encrypt(myId, conn, pi.id, (err) => {
-                  if (err) {
-                    return cb(err)
-                  }
-
-                  wrapped.setPeerInfo(pi)
-                  cb(null, wrapped)
-                })
-              })
-            })
-          }
-        })
-      }
-    }
-
-    function attemptMuxerUpgrade (conn, cb) {
-      const muxers = Object.keys(swtch.muxers)
-      if (muxers.length === 0) {
-        return cb(new Error('no muxers available'))
-      }
-
-      // 1. try to handshake in one of the muxers available
-      // 2. if succeeds
-      //  - add the muxedConn to the list of muxedConns
-      //  - add incomming new streams to connHandler
-
-      const ms = new multistream.Dialer()
-      ms.handle(conn, (err) => {
-        if (err) {
-          return cb(new Error('multistream not supported'))
-        }
-
-        nextMuxer(muxers.shift())
-      })
-
-      function nextMuxer (key) {
-        log('selecting %s', key)
-        ms.select(key, (err, conn) => {
-          if (err) {
-            if (muxers.length === 0) {
-              cb(new Error('could not upgrade to stream muxing'))
-            } else {
-              nextMuxer(muxers.shift())
-            }
-            return
-          }
-
-          const muxedConn = swtch.muxers[key].dialer(conn)
-          swtch.muxedConns[b58Id] = {}
-          swtch.muxedConns[b58Id].muxer = muxedConn
-          // should not be needed anymore - swtch.muxedConns[b58Id].conn = conn
-
-          muxedConn.once('close', () => {
-            const b58Str = pi.id.toB58String()
-            delete swtch.muxedConns[b58Str]
-            pi.disconnect()
-            swtch._peerBook.get(b58Str).disconnect()
-            setImmediate(() => swtch.emit('peer-mux-closed', pi))
-          })
-
-          // For incoming streams, in case identify is on
-          muxedConn.on('stream', (conn) => {
-            conn.setPeerInfo(pi)
-            swtch.protocolMuxer(null)(conn)
-          })
-
-          setImmediate(() => swtch.emit('peer-mux-established', pi))
-
-          cb(null, muxedConn)
-        })
-      }
-    }
-
-    function openConnInMuxedConn (muxer, cb) {
-      cb(muxer.newStream())
-    }
-
-    function protocolHandshake (conn, protocol, cb) {
-      const ms = new multistream.Dialer()
-      ms.handle(conn, (err) => {
-        if (err) {
-          return cb(err)
-        }
-        ms.select(protocol, (err, conn) => {
-          if (err) {
-            return cb(err)
-          }
-          proxyConn.setPeerInfo(pi)
-          proxyConn.setInnerConn(conn)
-          cb(null, proxyConn)
-        })
-      })
-    }
+    return dialer.dial()
   }
 }
 

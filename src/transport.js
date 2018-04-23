@@ -14,112 +14,160 @@ const defaultPerPeerRateLimit = 8
 // TODO this should be exposed as a option
 const dialTimeout = 30 * 1000
 
-module.exports = function (swtch) {
-  const dialer = new LimitDialer(defaultPerPeerRateLimit, dialTimeout)
+/**
+ * Manages the transports for the switch. This simplifies dialing and listening across
+ * multiple transports.
+ */
+class TransportManager {
+  constructor (_switch) {
+    this.switch = _switch
+    this.dialer = new LimitDialer(defaultPerPeerRateLimit, dialTimeout)
+  }
 
-  return {
-    add (key, transport, options) {
-      options = options || {}
+  /**
+   * Adds a `Transport` to the list of transports on the switch, and assigns it to the given key
+   *
+   * @param {String} key
+   * @param {Transport} transport
+   * @returns {void}
+   */
+  add (key, transport) {
+    log('adding %s', key)
+    if (this.switch.transports[key]) {
+      throw new Error('There is already a transport with this key')
+    }
 
-      log('adding %s', key)
-      if (swtch.transports[key]) {
-        throw new Error('There is already a transport with this key')
+    this.switch.transports[key] = transport
+    if (!this.switch.transports[key].listeners) {
+      this.switch.transports[key].listeners = []
+    }
+  }
+
+  /**
+   * For a given transport `key`, dial to all that transport multiaddrs
+   *
+   * @param {String} key Key of the `Transport` to dial
+   * @param {PeerInfo} peerInfo
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
+  dial (key, peerInfo, callback) {
+    const transport = this.switch.transports[key]
+    let multiaddrs = peerInfo.multiaddrs.toArray()
+
+    if (!Array.isArray(multiaddrs)) {
+      multiaddrs = [multiaddrs]
+    }
+
+    // filter the multiaddrs that are actually valid for this transport
+    multiaddrs = TransportManager.dialables(transport, multiaddrs)
+    log('dialing %s', key, multiaddrs.map((m) => m.toString()))
+
+    // dial each of the multiaddrs with the given transport
+    this.dialer.dialMany(peerInfo.id, transport, multiaddrs, (err, success) => {
+      if (err) {
+        return callback(err)
       }
 
-      swtch.transports[key] = transport
-      if (!swtch.transports[key].listeners) {
-        swtch.transports[key].listeners = []
-      }
-    },
+      peerInfo.connect(success.multiaddr)
+      this.switch._peerBook.put(peerInfo)
+      callback(null, success.conn)
+    })
+  }
 
-    dial (key, pi, callback) {
-      const t = swtch.transports[key]
-      let multiaddrs = pi.multiaddrs.toArray()
+  /**
+   * For a given Transport `key`, listen on all multiaddrs in the switch's `_peerInfo`.
+   * If a `handler` is not provided, the Switch's `protocolMuxer` will be used.
+   *
+   * @param {String} key
+   * @param {*} options
+   * @param {function(Connection)} handler
+   * @param {function(Error)} callback
+   * @returns {void}
+   */
+  listen (key, options, handler, callback) {
+    // if no handler is passed, we pass conns to protocolMuxer
+    if (!handler) {
+      handler = this.switch.protocolMuxer(key)
+    }
 
-      if (!Array.isArray(multiaddrs)) {
-        multiaddrs = [multiaddrs]
-      }
-      // filter the multiaddrs that are actually valid for this transport (use a func from the transport itself) (maybe even make the transport do that)
-      multiaddrs = dialables(t, multiaddrs)
-      log('dialing %s', key, multiaddrs.map((m) => m.toString()))
+    const transport = this.switch.transports[key]
+    const multiaddrs = TransportManager.dialables(
+      transport,
+      this.switch._peerInfo.multiaddrs.distinct()
+    )
 
-      dialer.dialMany(pi.id, t, multiaddrs, (err, success) => {
-        if (err) {
-          return callback(err)
-        }
+    if (!transport.listeners) {
+      transport.listeners = []
+    }
 
-        pi.connect(success.multiaddr)
-        swtch._peerBook.put(pi)
-        callback(null, success.conn)
-      })
-    },
+    let freshMultiaddrs = []
 
-    listen (key, options, handler, callback) {
-      // if no handler is passed, we pass conns to protocolMuxer
-      if (!handler) {
-        handler = swtch.protocolMuxer(key)
-      }
+    const createListeners = multiaddrs.map((ma) => {
+      return (cb) => {
+        const done = once(cb)
+        const listener = transport.createListener(handler)
+        listener.once('error', done)
 
-      const multiaddrs = dialables(swtch.transports[key], swtch._peerInfo.multiaddrs.distinct())
-
-      const transport = swtch.transports[key]
-
-      if (!transport.listeners) {
-        transport.listeners = []
-      }
-
-      let freshMultiaddrs = []
-
-      const createListeners = multiaddrs.map((ma) => {
-        return (cb) => {
-          const done = once(cb)
-          const listener = transport.createListener(handler)
-          listener.once('error', done)
-
-          listener.listen(ma, (err) => {
+        listener.listen(ma, (err) => {
+          if (err) {
+            return done(err)
+          }
+          listener.removeListener('error', done)
+          listener.getAddrs((err, addrs) => {
             if (err) {
               return done(err)
             }
-            listener.removeListener('error', done)
-            listener.getAddrs((err, addrs) => {
-              if (err) {
-                return done(err)
-              }
-              freshMultiaddrs = freshMultiaddrs.concat(addrs)
-              transport.listeners.push(listener)
-              done()
-            })
+            freshMultiaddrs = freshMultiaddrs.concat(addrs)
+            transport.listeners.push(listener)
+            done()
           })
-        }
-      })
+        })
+      }
+    })
 
-      parallel(createListeners, (err) => {
-        if (err) {
-          return callback(err)
-        }
-
-        // cause we can listen on port 0 or 0.0.0.0
-        swtch._peerInfo.multiaddrs.replace(multiaddrs, freshMultiaddrs)
-        callback()
-      })
-    },
-
-    close (key, callback) {
-      const transport = swtch.transports[key]
-
-      if (!transport) {
-        return callback(new Error(`Trying to close non existing transport: ${key}`))
+    parallel(createListeners, (err) => {
+      if (err) {
+        return callback(err)
       }
 
-      parallel(transport.listeners.map((listener) => {
-        return (cb) => {
-          listener.close(cb)
-        }
-      }), callback)
+      // cause we can listen on port 0 or 0.0.0.0
+      this.switch._peerInfo.multiaddrs.replace(multiaddrs, freshMultiaddrs)
+      callback()
+    })
+  }
+
+  /**
+   * Closes the transport with the given key, by closing all of its listeners
+   *
+   * @param {String} key
+   * @param {function(Error)} callback
+   * @returns {void}
+   */
+  close (key, callback) {
+    const transport = this.switch.transports[key]
+
+    if (!transport) {
+      return callback(new Error(`Trying to close non existing transport: ${key}`))
     }
+
+    parallel(transport.listeners.map((listener) => {
+      return (cb) => {
+        listener.close(cb)
+      }
+    }), callback)
+  }
+
+  /**
+   * For a given transport, return its multiaddrs that match the given multiaddrs
+   *
+   * @param {Transport} transport
+   * @param {Array<Multiaddr>} multiaddrs
+   * @returns {Array<Multiaddr>}
+   */
+  static dialables (transport, multiaddrs) {
+    return transport.filter(multiaddrs)
   }
 }
 
-function dialables (tp, multiaddrs) {
-  return tp.filter(multiaddrs)
-}
+module.exports = TransportManager
