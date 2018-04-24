@@ -16,7 +16,7 @@
     "coverage-publish": "aegir coverage --provider coveralls"
   },
   "browser": {
-    "pull-ws/server": false
+    "src/listener": "./src/listener.browser.js"
   },
   "pre-push": [
     "lint",
