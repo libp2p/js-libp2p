@@ -40,7 +40,7 @@
     "async": "^2.6.0",
     "libp2p-floodsub": "^0.15.0",
     "libp2p-ping": "~0.8.0",
-    "libp2p-switch": "~0.39.0",
+    "libp2p-switch": "~0.39.2",
     "mafmt": "^6.0.0",
     "multiaddr": "^5.0.0",
     "peer-book": "~0.7.0",
@@ -70,7 +70,6 @@
     "pull-goodbye": "0.0.2",
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.7",
-    "safe-buffer": "^5.1.2",
     "sinon": "^5.0.1",
     "wrtc": "0.1.4"
   },
