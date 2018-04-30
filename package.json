@@ -37,7 +37,7 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^13.0.6",
+    "aegir": "^13.1.0",
     "buffer-loader": "0.0.1",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
@@ -46,12 +46,12 @@
     "libp2p-secio": "~0.10.0",
     "libp2p-spdy": "~0.12.1",
     "libp2p-tcp": "~0.12.0",
-    "libp2p-webrtc-star": "~0.13.4",
-    "libp2p-websockets": "~0.11.0",
+    "libp2p-webrtc-star": "~0.14.0",
+    "libp2p-websockets": "~0.12.0",
     "peer-book": "~0.7.0",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
-    "sinon": "^4.5.0",
+    "sinon": "^5.0.1",
     "webrtcsupport": "^2.2.0"
   },
   "dependencies": {
@@ -61,14 +61,14 @@
     "interface-connection": "~0.3.2",
     "ip-address": "^5.8.9",
     "libp2p-circuit": "~0.2.0",
-    "libp2p-identify": "~0.7.0",
+    "libp2p-identify": "~0.7.1",
     "lodash.includes": "^4.3.0",
     "moving-average": "^1.0.0",
-    "multiaddr": "^4.0.0",
+    "multiaddr": "^5.0.0",
     "multistream-select": "~0.14.1",
     "once": "^1.4.0",
     "peer-id": "~0.10.7",
-    "peer-info": "~0.14.0",
+    "peer-info": "~0.14.1",
     "pull-stream": "^3.6.7",
     "quick-lru": "^1.1.0"
   },
