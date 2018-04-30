@@ -143,8 +143,6 @@ class ConnectionManager {
         Object.assign(config, { hop: { enabled: false, active: false } })
       }
 
-      // TODO: (dryajov) should we enable circuit listener and
-      // dialer by default?
       this.switch.transport.add(Circuit.tag, new Circuit(this.switch, config))
     }
   }
