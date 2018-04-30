@@ -108,6 +108,13 @@ class Dialer {
    */
   _createBaseConnection (b58Id, callback) {
     const baseConnection = this.switch.conns[b58Id]
+    const muxedConnection = this.switch.muxedConns[b58Id]
+
+    // if the muxed connection exists, dont return a connection,
+    // _createMuxedConnection will get the connection
+    if (muxedConnection) {
+      return callback(null, null)
+    }
     if (baseConnection) {
       this.switch.conns[b58Id] = undefined
       return callback(null, baseConnection)
