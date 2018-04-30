@@ -40,15 +40,15 @@
     "interface-connection": "~0.3.2",
     "lodash.includes": "^4.3.0",
     "mafmt": "^6.0.0",
-    "pull-ws": "^3.3.0"
+    "pull-ws": "^3.3.1"
   },
   "devDependencies": {
-    "aegir": "^13.0.6",
+    "aegir": "^13.1.0",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "gulp": "^3.9.1",
     "interface-transport": "~0.3.6",
-    "multiaddr": "^4.0.0",
+    "multiaddr": "^5.0.0",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
     "pull-stream": "^3.6.7"
