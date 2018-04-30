@@ -1,6 +1,6 @@
 {
   "name": "libp2p-switch",
-  "version": "0.39.0",
+  "version": "0.39.1",
   "description": "libp2p switch implementation in JavaScript",
   "main": "src/index.js",
   "scripts": {
@@ -65,7 +65,7 @@
     "lodash.includes": "^4.3.0",
     "moving-average": "^1.0.0",
     "multiaddr": "^5.0.0",
-    "multistream-select": "~0.14.1",
+    "multistream-select": "~0.14.2",
     "once": "^1.4.0",
     "peer-id": "~0.10.7",
     "peer-info": "~0.14.1",
