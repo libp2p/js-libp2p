@@ -39,17 +39,17 @@
   "dependencies": {
     "async": "^2.6.0",
     "libp2p-floodsub": "^0.15.0",
-    "libp2p-ping": "~0.7.0",
+    "libp2p-ping": "~0.8.0",
     "libp2p-switch": "~0.39.0",
     "mafmt": "^6.0.0",
-    "multiaddr": "^4.0.0",
+    "multiaddr": "^5.0.0",
     "peer-book": "~0.7.0",
     "peer-id": "~0.10.7",
-    "libp2p-websockets": "^0.11.0",
+    "libp2p-websockets": "^0.12.0",
     "peer-info": "~0.14.1"
   },
   "devDependencies": {
-    "aegir": "^13.0.6",
+    "aegir": "^13.1.0",
     "chai": "^4.1.2",
     "cids": "~0.5.3",
     "dirty-chai": "^2.0.1",
@@ -58,7 +58,7 @@
     "libp2p-kad-dht": "~0.10.0",
     "libp2p-mdns": "~0.11.0",
     "libp2p-mplex": "~0.7.0",
-    "libp2p-railing": "~0.8.0",
+    "libp2p-railing": "~0.8.1",
     "libp2p-secio": "~0.10.0",
     "libp2p-spdy": "~0.12.1",
     "libp2p-tcp": "~0.12.0",
@@ -70,9 +70,9 @@
     "pull-goodbye": "0.0.2",
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.7",
-    "safe-buffer": "^5.1.1",
-    "sinon": "^4.5.0",
-    "wrtc": "0.1.1"
+    "safe-buffer": "^5.1.2",
+    "sinon": "^5.0.1",
+    "wrtc": "0.1.4"
   },
   "contributors": [
     "Chris Bratlien <chrisbratlien@gmail.com>",
