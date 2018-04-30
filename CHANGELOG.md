@@ -1,3 +1,8 @@
+<a name="0.39.2"></a>
+## [0.39.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.39.0...v0.39.2) (2018-04-30)
+
+
+
 <a name="0.39.1"></a>
 ## [0.39.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.39.0...v0.39.1) (2018-04-30)
 
