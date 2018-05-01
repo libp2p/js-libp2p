@@ -27,17 +27,17 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "async": "^2.5.0",
-    "multihashing-async": "~0.4.6",
+    "async": "^2.6.0",
+    "multihashing-async": "~0.4.8",
     "nodeify": "^1.0.1",
-    "safe-buffer": "^5.1.1",
-    "secp256k1": "^3.3.0"
+    "safe-buffer": "^5.1.2",
+    "secp256k1": "^3.5.0"
   },
   "devDependencies": {
-    "aegir": "^11.0.2",
+    "aegir": "^13.1.0",
     "benchmark": "^2.1.4",
-    "libp2p-crypto": "~0.9.4",
-    "chai": "^4.1.0",
+    "libp2p-crypto": "~0.13.0",
+    "chai": "^4.1.2",
     "dirty-chai": "^2.0.1"
   },
   "engines": {
