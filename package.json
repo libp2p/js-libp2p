@@ -2,6 +2,7 @@
   "name": "libp2p",
   "version": "0.20.4",
   "description": "JavaScript base class for libp2p bundles",
+  "lead-maintainer": "David Dias <daviddias@ipfs.io>",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
