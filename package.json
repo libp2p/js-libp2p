@@ -31,7 +31,6 @@
     "lint",
     "test"
   ],
-  "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
@@ -67,7 +66,6 @@
     "libp2p-websocket-star": "~0.8.0",
     "libp2p-websocket-star-rendezvous": "~0.2.3",
     "lodash.times": "^4.3.2",
-    "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.7",
