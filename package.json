@@ -51,7 +51,7 @@
     "peer-book": "~0.7.0",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
-    "sinon": "^5.0.1",
+    "sinon": "^5.0.2",
     "webrtcsupport": "^2.2.0"
   },
   "dependencies": {
