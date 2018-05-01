@@ -2,6 +2,7 @@
   "name": "libp2p-crypto-secp256k1",
   "version": "0.2.2",
   "description": "Support for secp256k1 keys in libp2p-crypto",
+  "leadMaintainer": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "main": "src/index.js",
   "browser": {
     "secp256k1": "secp256k1/js"
@@ -24,7 +25,6 @@
     "crypto",
     "secp256k1"
   ],
-  "author": "Yusef Napora <yusef@napora.org>",
   "license": "MIT",
   "dependencies": {
     "async": "^2.5.0",
@@ -38,15 +38,10 @@
     "benchmark": "^2.1.4",
     "libp2p-crypto": "~0.9.4",
     "chai": "^4.1.0",
-    "dirty-chai": "^2.0.1",
-    "pre-commit": "^1.2.2"
+    "dirty-chai": "^2.0.1"
   },
-  "pre-commit": [
-    "lint",
-    "test"
-  ],
   "engines": {
-    "node": ">=4.0.0",
+    "node": ">=6.0.0",
     "npm": ">=3.0.0"
   },
   "repository": {

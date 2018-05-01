@@ -1,4 +1,4 @@
-# js-libp2p-crypto
+# js-libp2p-crypto-secp256k1
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
@@ -14,6 +14,10 @@ This repo contains a [js-libp2p-crypto](https://github.com/libp2p/js-libp2p-cryp
 implementation of cryptographic signature generation and verification using the 
 [secp256k1 elliptic curve](https://en.bitcoin.it/wiki/Secp256k1) popularized by Bitcoin and other 
 crypto currencies.  
+
+## Lead Captain
+
+[Friedel Ziegelmayer](https://github.com/dignifiedquire/)
 
 ## Table of Contents
 
