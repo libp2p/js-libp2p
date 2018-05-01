@@ -256,23 +256,24 @@ class Dialer {
 
     const tKeys = this.switch.availableTransports(this.peerInfo)
 
-    const circuitEnabled = Boolean(swtch.transports[Circuit.tag])
+    const circuitEnabled = Boolean(this.switch.transports[Circuit.tag])
     let circuitTried = false
 
     const nextTransport = (key) => {
       let transport = key
+      const b58Id = this.peerInfo.id.toB58String()
       if (!transport) {
         if (!circuitEnabled) {
-          const msg = `Circuit not enabled and all transports failed to dial peer ${pi.id.toB58String()}!`
-          return cb(new Error(msg))
+          const msg = `Circuit not enabled and all transports failed to dial peer ${b58Id}!`
+          return callback(new Error(msg))
         }
 
         if (circuitTried) {
-          return cb(new Error(`No available transports to dial peer ${pi.id.toB58String()}!`))
+          return callback(new Error(`No available transports to dial peer ${b58Id}!`))
         }
 
         log(`Falling back to dialing over circuit`)
-        this.peerInfo.multiaddrs.add(`/p2p-circuit/ipfs/${this.peerInfo.id.toB58String()}`)
+        this.peerInfo.multiaddrs.add(`/p2p-circuit/ipfs/${b58Id}`)
         circuitTried = true
         transport = Circuit.tag
       }
