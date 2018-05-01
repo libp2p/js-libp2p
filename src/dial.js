@@ -89,18 +89,20 @@ function dial (swtch) {
 
       const tKeys = swtch.availableTransports(pi)
 
+      const circuitEnabled = Boolean(swtch.transports[Circuit.tag])
       let circuitTried = false
       nextTransport(tKeys.shift())
 
       function nextTransport (key) {
         let transport = key
         if (!transport) {
-          if (circuitTried) {
-            return cb(new Error(`Circuit already tried!`))
+          if (!circuitEnabled) {
+            const msg = `Circuit not enabled and all transports failed to dial peer ${pi.id.toB58String()}!`
+            return cb(new Error(msg))
           }
 
-          if (!swtch.transports[Circuit.tag]) {
-            return cb(new Error(`Circuit not enabled!`))
+          if (circuitTried) {
+            return cb(new Error(`No available transports to dial peer ${pi.id.toB58String()}!`))
           }
 
           log(`Falling back to dialing over circuit`)
