@@ -71,7 +71,7 @@
     "pull-goodbye": "0.0.2",
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.7",
-    "sinon": "^5.0.1",
+    "sinon": "^5.0.4",
     "wrtc": "0.1.4"
   },
   "contributors": [
