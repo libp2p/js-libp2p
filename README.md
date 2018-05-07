@@ -16,6 +16,10 @@ libp2p-switch JavaScript implementation
 
 libp2p-switch is used by [libp2p](https://github.com/libp2p/js-libp2p) but it can be also used as a standalone module.
 
+## Lead Maintainer
+
+[Jacob Heun](https://github.com/jacobheun)
+
 ## Table of Contents
 
 - [Install](#install)
