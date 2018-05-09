@@ -38,7 +38,11 @@ describe('circuit relay', function () {
       node.start((err) => {
         expect(err).to.not.exist()
 
-        handlerSpies.push(sinon.spy(node.switch.transports[Circuit.tag].listeners[0].hopHandler, 'handle'))
+        handlerSpies.push(sinon.spy(node
+          .switch
+          .transports[Circuit.tag]
+          .listeners[0]
+          .hopHandler, 'handle'))
         cb(node)
       })
     })
