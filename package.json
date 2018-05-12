@@ -70,7 +70,7 @@
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.8",
     "sinon": "^5.0.7",
-    "wrtc": "0.1.4"
+    "wrtc": "0.1.1"
   },
   "contributors": [
     "Chris Bratlien <chrisbratlien@gmail.com>",
