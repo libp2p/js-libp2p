@@ -17,7 +17,7 @@ js-libp2p-mplex
 Let's define a `listener.js`, which starts a TCP server on port 9999 and waits for a connection. Once we get a connection, we wait for a stream. And finally, once we have the stream, we pull the data from that stream, and printing it to the console.
 
 ```JavaScript
-const multiplex = require('libp2p-multiplex')
+const mplex = require('libp2p-mplex)
 const tcp = require('net')
 const pull = require('pull-stream')
 const toPull = require('stream-to-pull-stream')
@@ -25,7 +25,7 @@ const toPull = require('stream-to-pull-stream')
 const listener = tcp.createServer((socket) => {
   console.log('[listener] Got connection!')
 
-  const muxer = multiplex.listener(toPull(socket))
+  const muxer = mplex.listener(toPull(socket))
 
   muxer.on('stream', (stream) => {
     console.log('[listener] Got stream!')
@@ -47,14 +47,14 @@ listener.listen(9999, () => {
 Now, let's define `dialer.js` who will connect to our `listener` over a TCP socket. Once we have that, we'll put a message in the stream for our `listener`.
 
 ```JavaScript
-const multiplex = require('libp2p-multiplex')
+const mplex = require('libp2p-mplex)
 const tcp = require('net')
 const pull = require('pull-stream')
 const toPull = require('stream-to-pull-stream')
 
 const socket = tcp.connect(9999)
 
-const muxer = multiplex.dialer(toPull(socket))
+const muxer = mplex.dialer(toPull(socket))
 
 console.log('[dialer] opening stream')
 const stream = muxer.newStream((err) => {
