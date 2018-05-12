@@ -1,10 +1,8 @@
 machine:
   node:
-    version: stable
+    version: 8.11.1
 
 test:
-  pre:
-    - npm run lint
   post:
     - npm run coverage -- --upload --providers coveralls
 
