@@ -23,9 +23,10 @@ const observeConnection = require('./observe-connection')
  * @param {function(Error, Connection)} callback
  */
 class Dialer {
-  constructor (_switch, peerInfo, protocol, callback) {
+  constructor (_switch, peerInfo, ourPeerInfo, protocol, callback) {
     this.switch = _switch
     this.peerInfo = peerInfo
+    this.ourPeerInfo = ourPeerInfo
     this.protocol = protocol
     this.callback = callback
   }
@@ -72,6 +73,9 @@ class Dialer {
   _establishConnection (callback) {
     const b58Id = this.peerInfo.id.toB58String()
     log('dialing %s', b58Id)
+    if (b58Id === this.ourPeerInfo.id.toB58String()) {
+      return callback(new Error('A node cannot dial itself'))
+    }
 
     waterfall([
       (cb) => {
@@ -385,7 +389,7 @@ function dial (_switch) {
     callback = callback || function noop () {}
 
     const peerInfo = getPeerInfo(peer, _switch._peerBook)
-    const dialer = new Dialer(_switch, peerInfo, protocol, callback)
+    const dialer = new Dialer(_switch, peerInfo, _switch._peerInfo, protocol, callback)
 
     return dialer.dial()
   }
