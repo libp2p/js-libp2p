@@ -1,3 +1,13 @@
+<a name="0.40.1"></a>
+## [0.40.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.0...v0.40.1) (2018-05-23)
+
+
+### Bug Fixes
+
+* libp2p/js-libp2p[#189](https://github.com/libp2p/js-libp2p-switch/issues/189) Prevent self-dial ([5cdec34](https://github.com/libp2p/js-libp2p-switch/commit/5cdec34))
+
+
+
 <a name="0.40.0"></a>
 # [0.40.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.39.2...v0.40.0) (2018-05-01)
 
