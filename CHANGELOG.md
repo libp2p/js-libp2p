@@ -1,3 +1,19 @@
+<a name="0.40.0"></a>
+# [0.40.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.39.2...v0.40.0) (2018-05-01)
+
+
+### Bug Fixes
+
+* dont create base conn when muxed exists ([71b6316](https://github.com/libp2p/js-libp2p-switch/commit/71b6316))
+* tests and conflicts ([350695c](https://github.com/libp2p/js-libp2p-switch/commit/350695c))
+
+
+### Features
+
+* improve circuit err messages ([#250](https://github.com/libp2p/js-libp2p-switch/issues/250)) ([63ad87a](https://github.com/libp2p/js-libp2p-switch/commit/63ad87a))
+
+
+
 <a name="0.39.2"></a>
 ## [0.39.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.39.0...v0.39.2) (2018-04-30)
 

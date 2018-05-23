@@ -1,6 +1,6 @@
 {
   "name": "libp2p-switch",
-  "version": "0.39.2",
+  "version": "0.40.0",
   "description": "libp2p switch implementation in JavaScript",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -50,7 +50,7 @@
     "libp2p-websockets": "~0.12.0",
     "peer-book": "~0.7.0",
     "pull-goodbye": "0.0.2",
-    "sinon": "^5.0.1",
+    "sinon": "^5.0.2",
     "webrtcsupport": "^2.2.0"
   },
   "dependencies": {
@@ -80,6 +80,7 @@
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Greenkeeper <support@greenkeeper.io>",
     "Haad <haadcode@users.noreply.github.com>",
+    "Jacob Heun <jacobheun@gmail.com>",
     "Kobi Gurkan <kobigurk@gmail.com>",
     "Maciej Krüger <mkg20001@gmail.com>",
     "Michael Fakhry <fakhrimichael@live.com>",
