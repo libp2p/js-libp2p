@@ -74,8 +74,51 @@ This uses `CTR` mode.
 - `data: Buffer`
 - `callback: Function`
 
-```
-TODO: Example of using aes
+```js
+var crypto = require('libp2p-crypto')
+
+// Setting up Key and IV
+
+// A 16 bytes array, 128 Bits, AES-128 is chosen
+var key128 = Buffer.from([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+
+// A 16 bytes array, 128 Bits,
+var IV = Buffer.from([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+
+async function main () {
+  let decryptedMessage = 'Hello, world!'
+  let encryptedMessage
+
+  // Encrypting
+  await crypto.aes.create(key128, IV, (err, cipher) => {
+    if (!err) {
+      cipher.encrypt(Buffer.from(decryptedMessage), (err, encryptedBuffer) => {
+        if (!err) {
+          console.log(encryptedBuffer)
+          // prints: <Buffer 42 f1 67 d9 2e 42 d0 32 9e b1 f8 3c>
+          encryptedMessage = encryptedBuffer
+        }
+      })
+    }
+  })
+
+  // Decrypting
+  await crypto.aes.create(key128, IV, (err, cipher) => {
+    if (!err) {
+      cipher.decrypt(encryptedMessage, (err, decryptedBuffer) => {
+        if (!err) {
+          console.log(decryptedBuffer)
+          // prints: <Buffer 42 f1 67 d9 2e 42 d0 32 9e b1 f8 3c>
+          
+          console.log(decryptedBuffer.toString('utf-8'))
+          // prints: Hello, world!
+        }
+      })
+    }
+  })
+}
+main()
+
 ```
 
 ### `crypto.hmac`
@@ -95,8 +138,20 @@ Exposes an interface to the Keyed-Hash Message Authentication Code (HMAC) as def
 
 Example:
 
-```
-TODO: Example of using hmac
+```js
+var crypto = require('libp2p-crypto')
+
+let hash = 'SHA1' // 'SHA256' || 'SHA512'
+
+crypto.hmac.create(hash, Buffer.from('secret'), (err, hmac) => {
+  if (!err) {
+    hmac.digest(Buffer.from('hello world'), (err, sig) => {
+      if (!err) {
+        console.log(sig)
+      }
+    })
+  }
+})
 ```
 
 ### `crypto.keys`
