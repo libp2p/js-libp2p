@@ -267,8 +267,9 @@ class Dialer {
           }
 
           const muxedConn = this.switch.muxers[key].dialer(conn)
-          this.switch.muxedConns[b58Id] = {}
-          this.switch.muxedConns[b58Id].muxer = muxedConn
+          this.switch.muxedConns[b58Id] = {
+            muxer: muxedConn
+          }
 
           muxedConn.once('close', () => {
             delete this.switch.muxedConns[b58Id]

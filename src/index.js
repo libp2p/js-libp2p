@@ -110,6 +110,11 @@ class Switch extends EE {
     this.stats.stop()
     series([
       (cb) => each(this.muxedConns, (conn, cb) => {
+        // If the connection was destroyed while we are hanging up, continue
+        if (!conn) {
+          return cb()
+        }
+
         conn.muxer.end((err) => {
           // If OK things are fine, and someone just shut down
           if (err && err.message !== 'Fatal error: OK') {
