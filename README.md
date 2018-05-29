@@ -16,6 +16,10 @@
 
 This repo contains the JavaScript implementation of the crypto primitives needed for libp2p. This is based on this [go implementation](https://github.com/libp2p/go-libp2p-crypto).
 
+## Lead Maintainer
+
+[Friedel Ziegelmayer](https://github.com/dignifiedquire/)
+
 ## Table of Contents
 
 - [Install](#install)

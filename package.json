@@ -3,6 +3,7 @@
   "version": "0.13.0",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
+  "leadMaintainer": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "browser": {
     "./src/hmac/index.js": "./src/hmac/index-browser.js",
     "./src/keys/ecdh.js": "./src/keys/ecdh-browser.js",
@@ -27,7 +28,6 @@
     "crypto",
     "rsa"
   ],
-  "author": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "asn1.js": "^5.0.0",
@@ -45,17 +45,12 @@
     "webcrypto-shim": "github:dignifiedquire/webcrypto-shim#master"
   },
   "devDependencies": {
-    "aegir": "^13.0.6",
+    "aegir": "^13.1.0",
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
     "chai-string": "^1.4.0",
-    "dirty-chai": "^2.0.1",
-    "pre-commit": "^1.2.2"
+    "dirty-chai": "^2.0.1"
   },
-  "pre-commit": [
-    "lint",
-    "test"
-  ],
   "engines": {
     "node": ">=6.0.0",
     "npm": ">=3.0.0"
