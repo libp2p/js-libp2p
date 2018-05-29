@@ -166,7 +166,7 @@ libp2p                                                                          
 ||           |      |    |      |                ||                                     |   |  |             | |   |                      
 ||libp2p-tcp |libp2p-ws  | .... |libp2p-circuit  ||  listener handles STOP messages from|   |  | listener    | |   |                      
 ||           |      +-------------------------------------------------------------------------->             | |   |                      
-||           |           |      |pluggs in just  ||  circuit-relay nodes                |   |  +-------------+ |   |                      
+||           |           |      |plugs in just   ||  circuit-relay nodes                |   |  +-------------+ |   |                      
 ||           |           |      |as any other    ||                                     |   |                  |   |                      
 ||           |           |      |transport       ||                                     |   +------------------+   |                      
 |+-----------------------------------------------+|                                     |                          |                      
