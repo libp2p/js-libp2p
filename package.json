@@ -57,6 +57,7 @@
     "async": "^2.6.0",
     "big.js": "^5.0.3",
     "debug": "^3.1.0",
+    "hashlru": "^2.2.1",
     "interface-connection": "~0.3.2",
     "ip-address": "^5.8.9",
     "libp2p-circuit": "~0.2.0",
@@ -68,8 +69,7 @@
     "once": "^1.4.0",
     "peer-id": "~0.10.7",
     "peer-info": "~0.14.1",
-    "pull-stream": "^3.6.7",
-    "quick-lru": "^1.1.0"
+    "pull-stream": "^3.6.7"
   },
   "contributors": [
     "Alan Shaw <alan@tableflip.io>",
