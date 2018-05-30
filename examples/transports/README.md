@@ -12,7 +12,7 @@ When using libp2p, you always want to create your own libp2p Bundle, that is, pi
 
 You will need 4 deps total, so go ahead and install all of them with: 
 
-```
+```bash
 > npm install libp2p libp2p-tcp peer-info async
 ```
 
