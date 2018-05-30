@@ -159,12 +159,14 @@ class Dialer {
     }
 
     connection.setPeerInfo(this.peerInfo)
-
-    waterfall([
-      (cb) => {
-        this._attemptMuxerUpgrade(connection, b58Id, cb)
+    this._attemptMuxerUpgrade(connection, b58Id, (err, muxer) => {
+      // The underlying stream closed unexpectedly, so drop the connection.
+      // Fixes https://github.com/libp2p/js-libp2p-switch/issues/235
+      if (err && err.message === 'Unexpected end of input from reader.') {
+        log('Connection dropped for %s', b58Id)
+        return callback(null, null)
       }
-    ], (err, muxer) => {
+
       if (err && !this.protocol) {
         this.switch.conns[b58Id] = connection
         return callback(null, null)
@@ -237,6 +239,11 @@ class Dialer {
     const msDialer = new multistream.Dialer()
     msDialer.handle(connection, (err) => {
       if (err) {
+        // Repackage errors from pull-streams ending unexpectedly.
+        // Needed until https://github.com/dignifiedquire/pull-length-prefixed/pull/8 is merged.
+        if (err === true) {
+          return callback(new Error('Unexpected end of input from reader.'))
+        }
         return callback(new Error('multistream not supported'))
       }
 
