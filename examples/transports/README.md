@@ -76,7 +76,7 @@ waterfall([
 })
 ```
 
-Running this should result in somehting like:
+Running this should result in something like:
 
 ```bash
 > node 1.js
@@ -96,6 +96,12 @@ For this step, we will need one more dependency.
 
 ```bash
 > npm install pull-stream
+```
+
+And we also need to import the module on our .js file:
+
+```js
+const pull = require('pull-stream')
 ```
 
 We are going to reuse the MyBundle class from step 1, but this time to make things simpler, we will create two functions, one to create nodes and another to print the addrs to avoid duplicating code.
@@ -118,11 +124,18 @@ function printAddrs (node, number) {
   console.log('node %s is listening on:', number)
   node.peerInfo.multiaddrs.forEach((ma) => console.log(ma.toString()))
 }
-```
-
-Now we are going to use `async/parallel` to create two nodes, print their addresses and dial from one node to the other.
 
 ```
+
+Now we are going to use `async/parallel` to create two nodes, print their addresses and dial from one node to the other. We already added `async` as a dependency, but still need to import `async/parallel`:
+
+```js
+const parallel = require('async/parallel')
+```
+
+Then, 
+
+```js
 parallel([
   (cb) => createNode(cb),
   (cb) => createNode(cb)
@@ -172,7 +185,7 @@ What we are going to do in this step is to create 3 nodes, one with TCP, another
 
 In this example, we will need to also install `libp2p-websockets`, go ahead and install:
 
-```sh
+```bash
 > npm install libp2p-websockets
 ```
 
