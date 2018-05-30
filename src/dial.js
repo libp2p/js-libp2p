@@ -208,7 +208,7 @@ class Dialer {
             return callback(new Error('could not upgrade to stream muxing'))
           }
 
-          nextMuxer(muxers.shift())
+          return nextMuxer(muxers.shift())
         }
 
         const muxedConn = this.switch.muxers[key].dialer(conn)
