@@ -1,3 +1,15 @@
+<a name="0.40.2"></a>
+## [0.40.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.1...v0.40.2) (2018-05-31)
+
+
+### Bug Fixes
+
+* add utility methods to prevent already piped error ([1eb28ca](https://github.com/libp2p/js-libp2p-switch/commit/1eb28ca))
+* drop connection when stream ends unexpectedly ([cb5245a](https://github.com/libp2p/js-libp2p-switch/commit/cb5245a)), closes [/github.com/multiformats/js-multistream-select/blob/5b19358b91850b528b3f93babd60d63ddcf56a99/src/select.js#L18-L21](https://github.com//github.com/multiformats/js-multistream-select/blob/5b19358b91850b528b3f93babd60d63ddcf56a99/src/select.js/issues/L18-L21) [/github.com/libp2p/js-libp2p-switch/blob/fef2d11850379a4720bb9c736236a81a067dc901/src/dial.js#L238-L241](https://github.com//github.com/libp2p/js-libp2p-switch/blob/fef2d11850379a4720bb9c736236a81a067dc901/src/dial.js/issues/L238-L241) [#235](https://github.com/libp2p/js-libp2p-switch/issues/235)
+* return on call to nextMuxer ([fef2d11](https://github.com/libp2p/js-libp2p-switch/commit/fef2d11))
+
+
+
 <a name="0.40.1"></a>
 ## [0.40.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.0...v0.40.1) (2018-05-23)
 
