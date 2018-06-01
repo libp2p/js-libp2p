@@ -1,3 +1,13 @@
+<a name="0.40.3"></a>
+## [0.40.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.2...v0.40.3) (2018-06-01)
+
+
+### Bug Fixes
+
+* prevent undefined error during a mutual hangup ([81d4394](https://github.com/libp2p/js-libp2p-switch/commit/81d4394))
+
+
+
 <a name="0.40.2"></a>
 ## [0.40.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.1...v0.40.2) (2018-05-31)
 
