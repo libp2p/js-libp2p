@@ -47,7 +47,7 @@ listener.listen(9999, () => {
 Now, let's define `dialer.js` who will connect to our `listener` over a TCP socket. Once we have that, we'll put a message in the stream for our `listener`.
 
 ```JavaScript
-const mplex = require('libp2p-mplex)
+const mplex = require('libp2p-mplex')
 const tcp = require('net')
 const pull = require('pull-stream')
 const toPull = require('stream-to-pull-stream')
