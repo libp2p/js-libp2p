@@ -99,7 +99,7 @@ hello
 #### Create `relay`
 
 ```js
-const Relay = require('libp2p-circuit').Realy
+const Relay = require('libp2p-circuit').Relay
 
 const relay = new Relay(options)
 
