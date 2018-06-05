@@ -17,7 +17,12 @@ js-libp2p-railing
 ```JavaScript
 const Railing = require('libp2p-railing')
 
-const b = new Railing(<peer-list>)
+const options = {
+  list: <List of Multiaddrs>
+  interval: 5000 // ms, default is 10s
+}
+
+const b = new Railing(options)
 
 b.on('peer', function (peerInfo) {
   // found a new peer
