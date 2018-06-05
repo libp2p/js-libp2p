@@ -1,3 +1,13 @@
+<a name="0.12.0"></a>
+# [0.12.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.11.0...v0.12.0) (2018-06-05)
+
+
+### Features
+
+* (BREAKING CHANGE) update constructor. add tag ([d3eeb6e](https://github.com/libp2p/js-libp2p-mdns/commit/d3eeb6e))
+
+
+
 <a name="0.11.0"></a>
 # [0.11.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.9.2...v0.11.0) (2018-04-05)
 
