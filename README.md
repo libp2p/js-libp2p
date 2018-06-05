@@ -17,7 +17,7 @@ libp2p-mdns JavaScript implementation
 ```JavaScript
 const MDNS = require('libp2p-mdns')
 
-const mdns = new MDNS(peerInfo, options)
+const mdns = new MDNS(options)
 
 mdns.on('peer', (peerInfo) => {
   console.log('Found a peer in the local network', peerInfo.id.toB58String())
@@ -28,9 +28,10 @@ mdns.start(() => setTimeout(() => mdns.stop(() => {}), 20 * 1000))
 ```
 
 - options
+  - `peerInfo` - PeerInfo to announce
   - `broadcast` - (true/false) announce our presence through mDNS, default false
   - `interval` - query interval, default 10 * 1000 (10 seconds)
-  - `serviceTag` - name of the service announcedm, default 'ipfs.local`
+  - `serviceTag` - name of the service announce , default 'ipfs.local`
 
 # MDNS messages
 
