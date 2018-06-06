@@ -1,3 +1,13 @@
+<a name="0.40.4"></a>
+## [0.40.4](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.3...v0.40.4) (2018-06-06)
+
+
+### Features
+
+* swap quick-lru by hashlru ([888e973](https://github.com/libp2p/js-libp2p-switch/commit/888e973))
+
+
+
 <a name="0.40.3"></a>
 ## [0.40.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.2...v0.40.3) (2018-06-01)
 
