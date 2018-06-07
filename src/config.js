@@ -13,6 +13,9 @@ const OptionsSchema = Joi.object({
     transport: Joi.array().items(ModuleSchema).min(1).required(),
     streamMuxer: Joi.array().items(ModuleSchema).allow(null),
     connEncryption: Joi.array().items(ModuleSchema).allow(null),
+    connProtector: Joi.object().keys({
+      protect: Joi.func().required()
+    }).unknown(),
     peerDiscovery: Joi.array().items(ModuleSchema).allow(null),
     dht: ModuleSchema.allow(null)
   }).required(),

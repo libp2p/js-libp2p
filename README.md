@@ -115,6 +115,7 @@ const SECIO = require('libp2p-secio')
 const MulticastDNS = require('libp2p-mdns')
 const DHT = require('libp2p-kad-dht')
 const defaultsDeep = require('@nodeutils/defaults-deep')
+const Protector = require('libp2p-pnet')
 
 class Node extends libp2p {
   constructor (_peerInfo, _peerBook, _options) {
@@ -135,6 +136,7 @@ class Node extends libp2p {
         connEncryption: [
           SECIO
         ],
+        connProtector: new Protector(/*protector specific opts*/),
         peerDiscovery: [
           MulticastDNS
         ],
@@ -428,6 +430,16 @@ Each one of these values is [an exponential moving-average instance](https://git
 
 Stats are not updated in real-time. Instead, measurements are buffered and stats are updated at an interval. The maximum interval can be defined through the `Switch` constructor option `stats.computeThrottleTimeout`, defined in miliseconds.
 
+### Private Networks
+
+#### Enforcement
+
+Libp2p provides support for connection protection, such as for private networks. You can enforce network protection by setting the environment variable `LIBP2P_FORCE_PNET=1`. When this variable is on, if no protector is set via `options.connProtector`, Libp2p will throw an error upon creation.
+
+#### Protectors
+
+Some available network protectors:
+* [libp2p-pnet](https://github.com/libp2p/js-libp2p-pnet)
 
 ## Development
 
