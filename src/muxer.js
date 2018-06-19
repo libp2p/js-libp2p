@@ -55,7 +55,7 @@ class MultiplexMuxer extends EventEmitter {
     try {
       stream = this.multiplex.createStream()
     } catch (err) {
-      return callback(err)
+      return setImmediate(() => callback(err))
     }
 
     const conn = new Connection(
