@@ -1,3 +1,16 @@
+<a name="0.8.0"></a>
+# [0.8.0](https://github.com/libp2p/js-libp2p-mplex/compare/v0.7.0...v0.8.0) (2018-06-19)
+
+
+### Bug Fixes
+
+* add setImmediatte to the call of callback ([8cdcd0d](https://github.com/libp2p/js-libp2p-mplex/commit/8cdcd0d))
+* catch Multiplexer is destroyed error into callback ([#79](https://github.com/libp2p/js-libp2p-mplex/issues/79)) ([b60205f](https://github.com/libp2p/js-libp2p-mplex/commit/b60205f))
+* missing dep and readme example ([#77](https://github.com/libp2p/js-libp2p-mplex/issues/77)) ([904cd7c](https://github.com/libp2p/js-libp2p-mplex/commit/904cd7c))
+* package.json deps semver ([126b966](https://github.com/libp2p/js-libp2p-mplex/commit/126b966))
+
+
+
 <a name="0.7.0"></a>
 # [0.7.0](https://github.com/libp2p/js-libp2p-mplex/compare/v0.6.0...v0.7.0) (2018-04-05)
 
