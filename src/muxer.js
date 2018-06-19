@@ -51,7 +51,12 @@ class MultiplexMuxer extends EventEmitter {
   // method added to enable pure stream muxer feeling
   newStream (callback) {
     callback = callback || noop
-    let stream = this.multiplex.createStream()
+    let stream
+    try {
+      stream = this.multiplex.createStream()
+    } catch (err) {
+      return callback(err)
+    }
 
     const conn = new Connection(
       catchError(toPull.duplex(stream)),
