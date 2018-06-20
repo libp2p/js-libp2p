@@ -2,6 +2,7 @@
   "name": "libp2p",
   "version": "0.20.4",
   "description": "JavaScript base class for libp2p bundles",
+  "leadMaintainer": "David Dias <daviddias@ipfs.io>",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
@@ -30,7 +31,6 @@
     "lint",
     "test"
   ],
-  "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
@@ -45,7 +45,7 @@
     "libp2p-websockets": "^0.12.0",
     "mafmt": "^6.0.0",
     "multiaddr": "^5.0.0",
-    "peer-book": "~0.7.0",
+    "peer-book": "~0.8.0",
     "peer-id": "~0.10.7",
     "peer-info": "~0.14.1"
   },
@@ -63,16 +63,15 @@
     "libp2p-secio": "~0.10.0",
     "libp2p-spdy": "~0.12.1",
     "libp2p-tcp": "~0.12.0",
-    "libp2p-webrtc-star": "~0.14.0",
+    "libp2p-webrtc-star": "~0.15.0",
     "libp2p-websocket-star": "~0.8.0",
     "libp2p-websocket-star-rendezvous": "~0.2.3",
     "lodash.times": "^4.3.2",
-    "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
     "pull-serializer": "~0.3.2",
-    "pull-stream": "^3.6.7",
-    "sinon": "^5.0.4",
-    "wrtc": "0.1.4"
+    "pull-stream": "^3.6.8",
+    "sinon": "^5.0.7",
+    "wrtc": "~0.1.4"
   },
   "contributors": [
     "Chris Bratlien <chrisbratlien@gmail.com>",

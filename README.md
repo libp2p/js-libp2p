@@ -6,9 +6,9 @@
 
 <p align="center">
   <a href="http://ipn.io"><img src="https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square" /></a>
-  <a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-blue.svg?style=flat-square" /></a>
-  <a href="http://webchat.freenode.net/?channels=%23ipfs"><img src="https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square" /></a>
-  <a href="https://waffle.io/libp2p/libp2p"><img src="https://img.shields.io/badge/pm-waffle-blue.svg?style=flat-square" /></a>
+  <a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" /></a>
+  <a href="http://webchat.freenode.net/?channels=%23libp2p"><img src="https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square" /></a>
+  <a href="https://waffle.io/libp2p/libp2p"><img src="https://img.shields.io/badge/pm-waffle-yellow.svg?style=flat-square" /></a>
 </p>
 
 <p align="center">
@@ -31,6 +31,14 @@ We've come a long way, but this project is still in Alpha, lots of development i
 **Want to get started?** Check our [examples folder](/examples). You can check the development status at the [Waffle Board](https://waffle.io/libp2p/js-libp2p).
 
 [![Throughput Graph](https://graphs.waffle.io/libp2p/js-libp2p/throughput.svg)](https://waffle.io/libp2p/js-libp2p/metrics/throughput)
+
+## Tech Lead
+
+[David Dias](https://github.com/diasdavid/)
+
+## Lead Maintainer
+
+[David Dias](https://github.com/diasdavid/)
 
 ## Table of Contents
 
@@ -452,7 +460,7 @@ List of packages currently in existence for libp2p
 | [`libp2p-distributed-record-store`](//github.com/libp2p/js-libp2p-distributed-record-store) | [![npm](https://img.shields.io/npm/v/undefined.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-distributed-record-store/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-distributed-record-store.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-distributed-record-store) | [![devDependency Status](https://david-dm.org/libp2p/js-libp2p-distributed-record-store/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-distributed-record-store?type=dev) |
 | [`libp2p-kad-record-store`](//github.com/libp2p/js-libp2p-kad-record-store) | [![npm](https://img.shields.io/npm/v/libp2p-kad-record-store.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-kad-record-store/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-kad-record-store.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-kad-record-store) | [![devDependency Status](https://david-dm.org/libp2p/js-libp2p-kad-record-store/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-kad-record-store?type=dev) |
 | **Generics**                                        |
-| [`libp2p-swarm`](//github.com/libp2p/js-libp2p-swarm) | [![npm](https://img.shields.io/npm/v/libp2p-swarm.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-swarm/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-swarm.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-swarm) | [![devDependency Status](https://david-dm.org/libp2p/js-libp2p-swarm/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-swarm?type=dev) |
+| [`libp2p-switch`](//github.com/libp2p/js-libp2p-switch) | [![npm](https://img.shields.io/npm/v/libp2p-switch.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-switch/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-switch.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-switch) | [![devDependency Status](https://david-dm.org/libp2p/js-libp2p-switch/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-switch?type=dev) |
 | [`libp2p-ping`](//github.com/libp2p/js-libp2p-ping) | [![npm](https://img.shields.io/npm/v/libp2p-ping.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-ping/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-ping.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-ping) | [![devDependency Status](https://david-dm.org/libp2p/js-libp2p-ping/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-ping?type=dev) |
 | [`multistream-select`](//github.com/libp2p/js-multistream) | [![npm](https://img.shields.io/npm/v/multistream-select.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-multistream/releases) | [![Dependency Status](https://david-dm.org/libp2p/js-multistream.svg?style=flat-square)](https://david-dm.org/libp2p/js-multistream) | [![devDependency Status](https://david-dm.org/libp2p/js-multistream/dev-status.svg?style=flat-square)](https://david-dm.org/libp2p/js-multistream?type=dev) |
 | **Data Types**                                      |
