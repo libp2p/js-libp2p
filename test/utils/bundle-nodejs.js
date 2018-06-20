@@ -8,7 +8,7 @@ const SPDY = require('libp2p-spdy')
 const KadDHT = require('libp2p-kad-dht')
 const MPLEX = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
-const defaultsDeep = require('lodash.defaultsdeep')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 const libp2p = require('../..')
 
 function mapMuxers (list) {
@@ -85,12 +85,7 @@ class Node extends libp2p {
       }
     }
 
-    defaultsDeep(_options, defaults)
-
-    // NOTE: defaultsDeep clones instances and screws things up
-    // _options.modules.transport.push(new TCP()) // Test with transport instance
-
-    super(_options)
+    super(defaultsDeep(_options, defaults))
   }
 }
 

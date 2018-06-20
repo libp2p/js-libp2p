@@ -113,7 +113,7 @@ const MPLEX = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const MulticastDNS = require('libp2p-mdns')
 const DHT = require('libp2p-kad-dht')
-const defaultsDeep = require('lodash.defaultsdeep')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 
 class Node extends libp2p {
   constructor (_peerInfo, _peerBook, _options) {
@@ -172,10 +172,8 @@ class Node extends libp2p {
       },
     }
 
-    // overload any defaults of your bundle using https://lodash.com/docs/4.17.5#defaultsDeep
-    defaultsDeep(_options, defaults)
-
-    super(options)
+    // overload any defaults of your bundle using https://github.com/nodeutils/defaults-deep
+    super(defaultsDeep(_options, defaults))
   }
 }
 

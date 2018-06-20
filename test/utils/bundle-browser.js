@@ -8,7 +8,7 @@ const SPDY = require('libp2p-spdy')
 const MPLEX = require('libp2p-mplex')
 const KadDHT = require('libp2p-kad-dht')
 const SECIO = require('libp2p-secio')
-const defaultsDeep = require('lodash.defaultsdeep')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 const libp2p = require('../..')
 
 function mapMuxers (list) {
@@ -43,18 +43,16 @@ class Node extends libp2p {
       modules: {
         transport: [
           wrtcStar,
-          wsStar
+          wsStar,
+          new WS()
         ],
         streamMuxer: getMuxers(_options.muxer),
         connEncryption: [
           SECIO
         ],
         peerDiscovery: [
-          // NOTE: defaultsDeep clones these references making the listeners be
-          // attached to a clone and not the original. See the below how
-          // to attach instances.
-          // wrtcStar.discovery,
-          // wsStar.discovery,
+          wrtcStar.discovery,
+          wsStar.discovery,
           Bootstrap
         ],
         peerRouting: [],
@@ -89,14 +87,7 @@ class Node extends libp2p {
       }
     }
 
-    defaultsDeep(_options, defaults)
-
-    // NOTE: defaultsDeep clones instances and screws things up
-    _options.modules.transport.push(new WS()) // Test with transport instance
-    _options.modules.peerDiscovery.push(wrtcStar.discovery)
-    _options.modules.peerDiscovery.push(wsStar.discovery)
-
-    super(_options)
+    super(defaultsDeep(_options, defaults))
   }
 }
 

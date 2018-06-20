@@ -157,7 +157,7 @@ class Node extends EventEmitter {
 
         // all transports need to be setup before discover starts
         if (this._modules.peerDiscovery && this._config.peerDiscovery) {
-          each(this._modules.peerDiscovery, (D, cb) => {
+          each(this._modules.peerDiscovery, (D, _cb) => {
             // If enabled then start it
             if (this._config.peerDiscovery[D.tag].enabled) {
               let d
@@ -171,9 +171,9 @@ class Node extends EventEmitter {
 
               d.on('peer', (peerInfo) => this.emit('peer:discovery', peerInfo))
               this._discovery.push(d)
-              d.start(cb)
+              d.start(_cb)
             } else {
-              cb()
+              _cb()
             }
           }, cb)
         } else {
@@ -204,13 +204,11 @@ class Node extends EventEmitter {
         // detect which multiaddrs we don't have a transport for and remove them
         const multiaddrs = this.peerInfo.multiaddrs.toArray()
 
-        this._transport.forEach((transport) => {
-          multiaddrs.forEach((multiaddr) => {
-            if (!multiaddr.toString().match(/\/p2p-circuit($|\/)/) &&
-                !this._transport.find((transport) => transport.filter(multiaddr).length > 0)) {
-              this.peerInfo.multiaddrs.delete(multiaddr)
-            }
-          })
+        multiaddrs.forEach((multiaddr) => {
+          if (!multiaddr.toString().match(/\/p2p-circuit($|\/)/) &&
+              !this._transport.find((transport) => transport.filter(multiaddr).length > 0)) {
+            this.peerInfo.multiaddrs.delete(multiaddr)
+          }
         })
         cb()
       },
