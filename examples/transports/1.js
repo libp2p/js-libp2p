@@ -4,7 +4,7 @@ const libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const PeerInfo = require('peer-info')
 const waterfall = require('async/waterfall')
-const defaultsDeep = require('lodash.defaultsdeep')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 
 class MyBundle extends libp2p {
   constructor (_options) {
@@ -16,8 +16,7 @@ class MyBundle extends libp2p {
       }
     }
 
-    defaultsDeep(_options, defaults)
-    super(_options)
+    super(defaultsDeep(_options, defaults))
   }
 }
 

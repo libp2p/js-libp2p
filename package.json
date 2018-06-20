@@ -50,6 +50,7 @@
     "peer-info": "~0.14.1"
   },
   "devDependencies": {
+    "@nodeutils/defaults-deep": "^1.1.0",
     "aegir": "^14.0.0",
     "chai": "^4.1.2",
     "cids": "~0.5.3",
@@ -66,7 +67,6 @@
     "libp2p-webrtc-star": "~0.15.3",
     "libp2p-websocket-star": "~0.8.1",
     "libp2p-websocket-star-rendezvous": "~0.2.3",
-    "lodash.defaultsdeep": "^4.6.0",
     "lodash.times": "^4.3.2",
     "pull-goodbye": "0.0.2",
     "pull-serializer": "~0.3.2",
