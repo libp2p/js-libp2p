@@ -14,6 +14,10 @@
 
 > A secure key chain for libp2p in JavaScript
 
+## Lead Maintainer
+
+[Vasco Santos](https://github.com/vasco-santos).
+
 ## Features
 
 - Manages the lifecycle of a key
