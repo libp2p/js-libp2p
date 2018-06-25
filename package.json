@@ -2,6 +2,7 @@
   "name": "libp2p-mplex",
   "version": "0.8.0",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
+  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
@@ -22,7 +23,6 @@
   "keywords": [
     "IPFS"
   ],
-  "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p-mplex/issues"
@@ -35,7 +35,6 @@
     "interface-stream-muxer": "~0.5.9",
     "libp2p-tcp": "~0.12.0",
     "libp2p-websockets": "~0.12.0",
-    "pre-commit": "^1.2.2",
     "pull-pair": "^1.1.0"
   },
   "dependencies": {
