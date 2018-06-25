@@ -2,6 +2,7 @@
   "name": "libp2p-kad-dht",
   "version": "0.10.0",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
+  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
@@ -25,7 +26,6 @@
   "keywords": [
     "IPFS"
   ],
-  "author": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p-kad-dht/issues"
@@ -69,7 +69,6 @@
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "peer-book": "~0.7.0",
-    "pre-commit": "^1.2.2",
     "safe-buffer": "^5.1.1"
   },
   "contributors": [
