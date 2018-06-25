@@ -2,6 +2,7 @@
   "name": "libp2p-railing",
   "version": "0.9.1",
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
+  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
@@ -19,7 +20,6 @@
   "keywords": [
     "IPFS"
   ],
-  "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-ipfs-railing/issues"
@@ -32,8 +32,7 @@
   "devDependencies": {
     "aegir": "^14.0.0",
     "chai": "^4.1.2",
-    "libp2p-tcp": "~0.12.0",
-    "pre-commit": "^1.2.2"
+    "libp2p-tcp": "~0.12.0"
   },
   "dependencies": {
     "async": "^2.6.1",
@@ -44,7 +43,7 @@
     "peer-id": "~0.10.7",
     "peer-info": "~0.14.1"
   },
-  "pre-commit": [
+  "pre-push": [
     "lint",
     "test"
   ],

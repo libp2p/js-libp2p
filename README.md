@@ -12,6 +12,10 @@ js-libp2p-railing
 
 > JavaScript libp2p Implementation of the railing process of a Node through a bootstrap peer list
 
+## Lead Maintainer
+
+[Vasco Santos](https://github.com/vasco-santos).
+
 ## Usage
 
 ```JavaScript
