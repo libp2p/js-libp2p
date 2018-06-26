@@ -10,6 +10,10 @@ libp2p-ping JavaScript Implementation
 
 > IPFS ping protocol JavaScript implementation
 
+## Lead Maintainer
+
+[Vasco Santos](https://github.com/vasco-santos).
+
 ## Usage
 
 ```javascript
