@@ -2,6 +2,7 @@
   "name": "libp2p-tcp",
   "version": "0.12.0",
   "description": "Node.js implementation of the TCP module that libp2p uses, which implements the interface-connection and interface-transport interfaces",
+  "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
@@ -23,7 +24,6 @@
   "keywords": [
     "IPFS"
   ],
-  "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p-tcp/issues"
@@ -39,7 +39,6 @@
     "dirty-chai": "^2.0.1",
     "interface-transport": "~0.3.6",
     "lodash.isfunction": "^3.0.9",
-    "pre-commit": "^1.2.2",
     "pull-stream": "^3.6.7"
   },
   "dependencies": {

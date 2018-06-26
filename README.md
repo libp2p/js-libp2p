@@ -15,6 +15,10 @@
 
 > JavaScript implementation of the TCP module for libp2p. It exposes the [interface-transport](https://github.com/libp2p/interface-connection) for dial/listen. `libp2p-tcp` is a very thin shim that adds support for dialing to a `multiaddr`. This small shim will enable libp2p to use other different transports.
 
+## Lead Maintainer
+
+[Jacob Heun](https://github.com/jacobheun)
+
 ## Table of Contents
 
 - [Install](#install)
