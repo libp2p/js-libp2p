@@ -2,6 +2,7 @@
   "name": "libp2p-mdns",
   "version": "0.12.0",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
+  "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
@@ -12,7 +13,7 @@
     "release-major": "aegir release --type major -t node --no-build",
     "coverage-publish": "aegir coverage publish"
   },
-  "pre-commit": [
+  "pre-push": [
     "lint",
     "test"
   ],
@@ -23,7 +24,6 @@
   "keywords": [
     "IPFS"
   ],
-  "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p-mdns/issues"
@@ -33,8 +33,7 @@
     "aegir": "^14.0.0",
     "async": "^2.6.1",
     "chai": "^4.1.2",
-    "dirty-chai": "^2.0.1",
-    "pre-commit": "^1.2.2"
+    "dirty-chai": "^2.0.1"
   },
   "dependencies": {
     "libp2p-tcp": "~0.12.0",

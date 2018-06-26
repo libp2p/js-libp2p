@@ -12,7 +12,11 @@ libp2p-mdns JavaScript implementation
 
 > JavaScript libp2p MulticastDNS discovery implementation
 
-# Usage
+## Lead Maintainer
+
+[Jacob Heun](https://github.com/jacobheun)
+
+## Usage
 
 ```JavaScript
 const MDNS = require('libp2p-mdns')
@@ -33,7 +37,7 @@ mdns.start(() => setTimeout(() => mdns.stop(() => {}), 20 * 1000))
   - `interval` - query interval, default 10 * 1000 (10 seconds)
   - `serviceTag` - name of the service announce , default 'ipfs.local`
 
-# MDNS messages
+## MDNS messages
 
 A query is sent to discover the IPFS nodes on the local network
 
