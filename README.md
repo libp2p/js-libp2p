@@ -13,6 +13,9 @@ js-libp2p-floodsub
 
 > libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).
 
+## Lead Maintainer
+
+[Vasco Santos](https://github.com/vasco-santos).
 
 ## Table of Contents
 
