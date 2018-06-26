@@ -16,6 +16,10 @@
 
 > JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport interface
 
+## Lead Maintainer
+
+[Jacob Heun](https://github.com/jacobheun)
+
 ## Description
 
 `libp2p-websockets` is the WebSockets implementation compatible with libp2p.

@@ -2,6 +2,7 @@
   "name": "libp2p-websockets",
   "version": "0.12.0",
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
+  "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
@@ -29,7 +30,6 @@
   "keywords": [
     "IPFS"
   ],
-  "author": "David Dias <daviddias@ipfs.io>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p-websockets/issues"
@@ -49,7 +49,6 @@
     "gulp": "^3.9.1",
     "interface-transport": "~0.3.6",
     "multiaddr": "^5.0.0",
-    "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.2",
     "pull-stream": "^3.6.7"
   },
