@@ -13,6 +13,10 @@
 
 > libp2p Identify Protocol
 
+## Lead Maintainer
+
+[Jacob Heun](https://github.com/jacobheun)
+
 ## Description
 
 Identify is a STUN protocol, used by libp2p-swarmin order to broadcast and learn about the `ip:port` pairs a specific peer is available through and to know when a new stream muxer is established, so a conn can be reused.
