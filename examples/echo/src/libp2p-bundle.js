@@ -3,11 +3,12 @@
 const TCP = require('libp2p-tcp')
 const MulticastDNS = require('libp2p-mdns')
 const WS = require('libp2p-websockets')
-const Railing = require('libp2p-railing')
+const Bootstrap = require('libp2p-railing')
 const spdy = require('libp2p-spdy')
 const KadDHT = require('libp2p-kad-dht')
 const mplex = require('libp2p-mplex')
 const secio = require('libp2p-secio')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 const libp2p = require('../../..')
 
 function mapMuxers (list) {
@@ -36,44 +37,40 @@ function getMuxers (muxers) {
 }
 
 class Node extends libp2p {
-  constructor (peerInfo, peerBook, options) {
-    options = options || {}
-
-    const modules = {
-      transport: [
-        new TCP(),
-        new WS()
-      ],
-      connection: {
-        muxer: getMuxers(options.muxer),
-        crypto: [ secio ]
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [
+          TCP,
+          WS
+        ],
+        streamMuxer: getMuxers(_options.muxer),
+        connEncryption: [ secio ],
+        peerDiscovery: [
+          MulticastDNS,
+          Bootstrap
+        ],
+        dht: KadDHT
       },
-      discovery: []
+      config: {
+        peerDiscovery: {
+          mdns: {
+            interval: 10000,
+            enabled: false
+          },
+          bootstrap: {
+            interval: 10000,
+            enabled: false,
+            list: _options.bootstrapList
+          }
+        },
+        dht: {
+          kBucketSize: 20
+        }
+      }
     }
 
-    if (options.dht) {
-      modules.DHT = KadDHT
-    }
-
-    if (options.mdns) {
-      const mdns = new MulticastDNS(peerInfo, 'ipfs.local')
-      modules.discovery.push(mdns)
-    }
-
-    if (options.bootstrap) {
-      const r = new Railing(options.bootstrap)
-      modules.discovery.push(r)
-    }
-
-    if (options.modules && options.modules.transport) {
-      options.modules.transport.forEach((t) => modules.transport.push(t))
-    }
-
-    if (options.modules && options.modules.discovery) {
-      options.modules.discovery.forEach((d) => modules.discovery.push(d))
-    }
-
-    super(modules, peerInfo, peerBook, options)
+    super(defaultsDeep(_options, defaults))
   }
 }
 

@@ -8,7 +8,7 @@ The feature of agreeing on a protocol over an established connection is what we 
 
 Let's see _protocol multiplexing_ in action! You will need the following modules for this example: `libp2p`, `libp2p-tcp`, `peer-info`, `async` and `pull-stream`. This example reuses the base left by the [Transports](../transports) example. You can see the complete solution at [1.js](./1.js).
 
-After creating the nodes, we need to tell libp2p which protocols to handle. 
+After creating the nodes, we need to tell libp2p which protocols to handle.
 
 ```JavaScript
 // ...
@@ -55,7 +55,7 @@ node1.dialProtocol(node2.peerInfo, '/another-protocol/1.0.0', (err, conn) => {
 
 This feature is super power for network protocols. It works in the same way as versioning your RPC/REST API, but for anything that goes in the wire. We had to use this feature to upgrade protocols within the IPFS Stack (i.e Bitswap) and we successfully managed to do so without any network splits.
 
-There is still one last feature, you can create your custom match functions. 
+There is still one last feature, you can create your custom match functions.
 
 ```JavaScript
 node2.handle('/custom-match-func', (protocol, conn) => {
@@ -94,17 +94,18 @@ Currently, we have two available [libp2p-spdy](https://github.com/libp2p/js-libp
 const SPDY = require('libp2p-spdy')
 //...
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP()],
-      // Here we are adding the SPDY muxer to our libp2p bundle.
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [ TCP ],
+        // Here we are adding the SPDY muxer to our libp2p bundle.
       // Thanks to protocol muxing, a libp2p bundle can support multiple Stream Muxers at the same
       // time and pick the right one when dialing to a node
-      connection: {
-        muxer: [SPDY]
+        streamMuxer: [ SPDY ]
       }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 ```

@@ -31,7 +31,9 @@ async.parallel([
   if (err) throw err
   const peerDialer = new PeerInfo(ids[0])
   peerDialer.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-  const nodeDialer = new Node(peerDialer)
+  const nodeDialer = new Node({
+    peerInfo: peerDialer
+  })
 
   const peerListener = new PeerInfo(ids[1])
   idListener = ids[1]

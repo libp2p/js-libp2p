@@ -13,17 +13,28 @@ For this demo, we will connect to IPFS default bootstrapper nodes and so, we wil
 First, we create our libp2p bundle.
 
 ```JavaScript
+const Bootstrap = require('libp2p-railing')
 class MyBundle extends libp2p {
   constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP()],
-      connection: {
-        muxer: [Mplex],
-        crypto: [SECIO]
+    const defaults = {
+      modules: {
+        transport: [ TCP ],
+        streamMuxer: [ Mplex ],
+        connEncryption: [ SECIO ],
+        peerDiscovery: [ Bootstrap ]
       },
-      discovery: [new Railing(bootstrapers)]
+      config: {
+        peerDiscovery: {
+          bootstrap: {
+            interval: 2000,
+            enabled: true,
+            list: bootstrapers
+          }
+        }
+      }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 ```
@@ -53,7 +64,9 @@ waterfall([
   (cb) => PeerInfo.create(cb),
   (peerInfo, cb) => {
     peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-    node = new MyBundle(peerInfo)
+    node = new MyBundle({
+      peerInfo
+    })
     node.start(cb)
   }
 ], (err) => {
@@ -108,17 +121,25 @@ Update your libp2p bundle to include MulticastDNS.
 ```JavaScript
 class MyBundle extends libp2p {
   constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP()],
-      connection: {
-        muxer: [Mplex],
-        crypto: [SECIO]
+    const defaults = {
+      modules: {
+        transport: [ TCP ],
+        streamMuxer: [ Mplex ],
+        connEncryption: [ SECIO ],
+        peerDiscovery: [ MulticastDNS ]
       },
-      // We set the interval here to 1 second so that is faster to observe. The
-      // default is 10 seconds.
-      discovery: [new MulticastDNS(peerInfo, { interval: 1000 })]
+      config: {
+        peerDiscovery: {
+          mdns: {
+            // Run at 1s so we can observe more quickly, default is 10s
+            interval: 1000,
+            enabled: true
+          }
+        }
+      }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 ```

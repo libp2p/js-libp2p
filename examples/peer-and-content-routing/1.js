@@ -1,27 +1,36 @@
 'use strict'
 
-const libp2p = require('libp2p')
+const libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const PeerInfo = require('peer-info')
 const KadDHT = require('libp2p-kad-dht')
-
+const defaultsDeep = require('@nodeutils/defaults-deep')
 const waterfall = require('async/waterfall')
 const parallel = require('async/parallel')
 
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP()],
-      connection: {
-        muxer: [Mplex],
-        crypto: [SECIO]
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [ TCP ],
+        streamMuxer: [ Mplex ],
+        connEncryption: [ SECIO ],
+        // we add the DHT module that will enable Peer and Content Routing
+        dht: KadDHT
       },
-      // we add the DHT module that will enable Peer and Content Routing
-      DHT: KadDHT
+      config: {
+        dht: {
+          kBucketSize: 20
+        },
+        EXPERIMENTAL: {
+          dht: true
+        }
+      }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 
@@ -32,7 +41,9 @@ function createNode (callback) {
     (cb) => PeerInfo.create(cb),
     (peerInfo, cb) => {
       peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-      node = new MyBundle(peerInfo)
+      node = new MyBundle({
+        peerInfo
+      })
       node.start(cb)
     }
   ], (err) => callback(err, node))

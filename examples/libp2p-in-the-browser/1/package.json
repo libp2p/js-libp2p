@@ -13,17 +13,16 @@
     "browserify": "^14.5.0",
     "concat-stream": "^1.6.0",
     "detect-dom-ready": "^1.0.2",
-    "node-static": "^0.7.10"
+    "node-static": "~0.7.10"
   },
   "dependencies": {
     "detect-dom-ready": "^1.0.2",
-    "libp2p": "^0.13.0",
-    "libp2p-mplex": "^0.6.0",
-    "libp2p-railing": "^0.7.1",
-    "libp2p-secio": "^0.8.1",
-    "libp2p-spdy": "^0.11.0",
-    "libp2p-webrtc-star": "^0.13.2",
-    "libp2p-websockets": "^0.10.4",
-    "peer-info": "^0.11.0"
+    "libp2p-mplex": "~0.8.0",
+    "libp2p-railing": "~0.9.1",
+    "libp2p-secio": "~0.10.0",
+    "libp2p-spdy": "~0.12.1",
+    "libp2p-webrtc-star": "~0.15.3",
+    "libp2p-websockets": "~0.12.0",
+    "peer-info": "~0.14.1"
   }
 }

@@ -14,17 +14,27 @@ First, let's update our bundle to support Peer Routing and Content Routing.
 
 ```JavaScript
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP()],
-      connection: {
-        muxer: [Mplex],
-        crypto: [SECIO]
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [ TCP ],
+        streamMuxer: [ Mplex ],
+        connEncryption: [ SECIO ],
+        // we add the DHT module that will enable Peer and Content Routing
+        dht: KadDHT
       },
-      // we add the DHT module that will enable Peer and Content Routing
-      DHT: KadDHT
+      config: {
+        dht: {
+          kBucketSize: 20
+        },
+        EXPERIMENTAL: {
+          // dht must be enabled
+          dht: true
+        }
+      }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 ```
@@ -44,7 +54,7 @@ parallel([
 ], (err) => {
   if (err) { throw err }
 
-  // 
+  //
   node1.peerRouting.findPeer(node3.peerInfo.id, (err, peer) => {
     if (err) { throw err }
 

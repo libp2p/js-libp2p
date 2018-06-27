@@ -21,7 +21,9 @@ async.parallel([
   const dialerId = ids[0]
   const dialerPeerInfo = new PeerInfo(dialerId)
   dialerPeerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-  const dialerNode = new Node(dialerPeerInfo)
+  const dialerNode = new Node({
+    peerInfo: dialerPeerInfo
+  })
 
   // Peer to Dial
   const listenerPeerInfo = new PeerInfo(ids[1])

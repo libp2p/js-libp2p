@@ -25,9 +25,11 @@ series([
   (cb) => {
     const listenerPeerInfo = new PeerInfo(listenerId)
     listenerPeerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/10333')
-    listenerNode = new Node(listenerPeerInfo)
+    listenerNode = new Node({
+      peerInfo: listenerPeerInfo
+    })
 
-    listenerNode.switch.on('peer-mux-established', (peerInfo) => {
+    listenerNode.on('peer:connect', (peerInfo) => {
       console.log('received dial to me from:', peerInfo.id.toB58String())
     })
 

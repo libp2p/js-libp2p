@@ -19,15 +19,16 @@ const SECIO = require('libp2p-secio')
 
 class MyBundle extends libp2p {
   constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP()],
-      connection: {
-        muxer: [SPDY],
+    const defaults = {
+      modules: {
+        transport: [ TCP ],
+        streamMuxer: [ SPDY ],
         // Attach secio as the crypto channel to use
-        crypto: [SECIO]
+        connEncryption: [ SECIO ]
       }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 ```

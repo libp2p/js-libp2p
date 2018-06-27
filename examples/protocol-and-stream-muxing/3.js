@@ -1,6 +1,6 @@
 'use strict'
 
-const libp2p = require('libp2p')
+const libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const SPDY = require('libp2p-spdy')
 const PeerInfo = require('peer-info')
@@ -8,16 +8,18 @@ const waterfall = require('async/waterfall')
 const parallel = require('async/parallel')
 const series = require('async/series')
 const pull = require('pull-stream')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP()],
-      connection: {
-        muxer: [SPDY]
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [ TCP ],
+        streamMuxer: [ SPDY ]
       }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 
@@ -28,7 +30,9 @@ function createNode (callback) {
     (cb) => PeerInfo.create(cb),
     (peerInfo, cb) => {
       peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-      node = new MyBundle(peerInfo)
+      node = new MyBundle({
+        peerInfo
+      })
       node.start(cb)
     }
   ], (err) => callback(err, node))
@@ -60,12 +64,12 @@ parallel([
   })
 
   series([
-    (cb) => node1.dial(node2.peerInfo, '/node-2', (err, conn) => {
+    (cb) => node1.dialProtocol(node2.peerInfo, '/node-2', (err, conn) => {
       if (err) { throw err }
       pull(pull.values(['from 1 to 2']), conn)
       cb()
     }),
-    (cb) => node2.dial(node1.peerInfo, '/node-1', (err, conn) => {
+    (cb) => node2.dialProtocol(node1.peerInfo, '/node-1', (err, conn) => {
       if (err) { throw err }
       pull(pull.values(['from 2 to 1']), conn)
       cb()
