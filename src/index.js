@@ -3,9 +3,9 @@
 const EventEmitter = require('events').EventEmitter
 const assert = require('assert')
 
-const setImmediate = require('async/setImmediate')
 const each = require('async/each')
 const series = require('async/series')
+const parallel = require('async/parallel')
 
 const PeerBook = require('peer-book')
 const Switch = require('libp2p-switch')
@@ -18,6 +18,7 @@ const contentRouting = require('./content-routing')
 const dht = require('./dht')
 const pubsub = require('./pubsub')
 const getPeerInfo = require('./get-peer-info')
+const validateConfig = require('./config').validate
 
 exports = module.exports
 
@@ -26,15 +27,15 @@ const NOT_STARTED_ERROR_MESSAGE = 'The libp2p node is not started yet'
 class Node extends EventEmitter {
   constructor (_options) {
     super()
-    assert(_options.modules, 'requires modules to equip libp2p with features')
-    assert(_options.peerInfo, 'requires a PeerInfo instance')
+    // validateConfig will ensure the config is correct,
+    // and add default values where appropriate
+    _options = validateConfig(_options)
 
     this.peerInfo = _options.peerInfo
     this.peerBook = _options.peerBook || new PeerBook()
 
     this._modules = _options.modules
-    // TODO populate with default config, if any
-    this._config = _options.config || {}
+    this._config = _options.config
     this._isStarted = false
     this._transport = [] // Transport instances/references
     this._discovery = [] // Discovery service instances/references
@@ -46,7 +47,6 @@ class Node extends EventEmitter {
     // Attach stream multiplexers
     if (this._modules.streamMuxer) {
       let muxers = this._modules.streamMuxer
-      muxers = Array.isArray(muxers) ? muxers : [muxers]
       muxers.forEach((muxer) => this._switch.connection.addStreamMuxer(muxer))
 
       // If muxer exists
@@ -70,16 +70,13 @@ class Node extends EventEmitter {
     // Attach crypto channels
     if (this._modules.connEncryption) {
       let cryptos = this._modules.connEncryption
-      cryptos = Array.isArray(cryptos) ? cryptos : [cryptos]
       cryptos.forEach((crypto) => {
         this._switch.connection.crypto(crypto.tag, crypto.encrypt)
       })
     }
 
     // dht provided components (peerRouting, contentRouting, dht)
-    if (this._config.EXPERIMENTAL &&
-      this._config.EXPERIMENTAL.dht &&
-      this._modules.dht) {
+    if (this._config.EXPERIMENTAL.dht) {
       const DHT = this._modules.dht
       this._dht = new DHT(this._switch, {
         kBucketSize: this._config.dht.kBucketSize || 20,
@@ -91,14 +88,13 @@ class Node extends EventEmitter {
 
     // enable/disable pubsub
     if (this._config.EXPERIMENTAL && this._config.EXPERIMENTAL.pubsub) {
-      // TODO only enable PubSub if flag is set to true
+      this.pubsub = pubsub(this)
     }
 
     // Attach remaining APIs
     this.peerRouting = peerRouting(this)
     this.contentRouting = contentRouting(this)
     this.dht = dht(this)
-    this.pubsub = pubsub(this)
 
     this._getPeerInfo = getPeerInfo(this)
 
@@ -195,7 +191,7 @@ class Node extends EventEmitter {
       (cb) => {
         // TODO: chicken-and-egg problem #2:
         // have to set started here because FloodSub requires libp2p is already started
-        if (this._options !== false) {
+        if (this._floodSub) {
           this._floodSub.start(cb)
         } else {
           cb()
@@ -225,17 +221,24 @@ class Node extends EventEmitter {
    * Stop the libp2p node by closing its listeners and open connections
    */
   stop (callback) {
-    if (this._modules.peerDiscovery) {
-      this._discovery.forEach((d) => {
-        setImmediate(() => d.stop(() => {}))
-      })
-    }
-
     series([
       (cb) => {
-        if (this._floodSub.started) {
-          this._floodSub.stop(cb)
+        if (this._modules.peerDiscovery) {
+          // stop all discoveries before continuing with shutdown
+          return parallel(
+            this._discovery.map((d) => {
+              return (_cb) => d.stop(() => { _cb() })
+            }),
+            cb
+          )
         }
+        cb()
+      },
+      (cb) => {
+        if (this._floodSub) {
+          return this._floodSub.stop(cb)
+        }
+        cb()
       },
       (cb) => {
         if (this._dht) {
@@ -303,7 +306,9 @@ class Node extends EventEmitter {
   }
 
   ping (peer, callback) {
-    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
+    if (!this.isStarted()) {
+      return callback(new Error(NOT_STARTED_ERROR_MESSAGE))
+    }
 
     this._getPeerInfo(peer, (err, peerInfo) => {
       if (err) { return callback(err) }

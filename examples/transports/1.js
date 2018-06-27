@@ -1,6 +1,6 @@
 'use strict'
 
-const libp2p = require('libp2p')
+const libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const PeerInfo = require('peer-info')
 const waterfall = require('async/waterfall')

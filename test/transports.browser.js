@@ -7,6 +7,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
+const Mplex = require('libp2p-mplex')
 const pull = require('pull-stream')
 const parallel = require('async/parallel')
 const goodbye = require('pull-goodbye')
@@ -52,7 +53,9 @@ describe('transports', () => {
 
         const b = new Node({
           peerInfo: peerInfo,
-          muxer: ['mplex']
+          modules: {
+            streamMuxer: [ Mplex ]
+          }
         })
         expect(b._modules.streamMuxer).to.eql([require('libp2p-mplex')])
         done()

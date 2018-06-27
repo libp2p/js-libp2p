@@ -26,6 +26,9 @@ class MyBundle extends libp2p {
             interval: 2000,
             enabled: true
           }
+        },
+        EXPERIMENTAL: {
+          pubsub: true
         }
       }
     }

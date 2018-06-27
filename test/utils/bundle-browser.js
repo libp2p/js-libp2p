@@ -55,8 +55,6 @@ class Node extends libp2p {
           wsStar.discovery,
           Bootstrap
         ],
-        peerRouting: [],
-        contentRouting: [],
         dht: KadDHT
       },
       config: {

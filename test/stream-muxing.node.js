@@ -6,7 +6,8 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 const series = require('async/series')
-
+const Mplex = require('libp2p-mplex')
+const SPDY = require('libp2p-spdy')
 const createNode = require('./utils/create-node')
 const tryEcho = require('./utils/try-echo')
 const echo = require('./utils/echo')
@@ -35,7 +36,9 @@ describe('stream muxing', () => {
     function setup (callback) {
       parallel([
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['spdy']
+          modules: {
+            streamMuxer: [ SPDY ]
+          }
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
@@ -43,7 +46,9 @@ describe('stream muxing', () => {
           node.start(cb)
         }),
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['spdy']
+          modules: {
+            streamMuxer: [ SPDY ]
+          }
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node
@@ -67,7 +72,9 @@ describe('stream muxing', () => {
     function setup (callback) {
       parallel([
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['mplex']
+          modules: {
+            streamMuxer: [ Mplex ]
+          }
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
@@ -75,7 +82,9 @@ describe('stream muxing', () => {
           node.start(cb)
         }),
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['mplex']
+          modules: {
+            streamMuxer: [ Mplex ]
+          }
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node
@@ -101,7 +110,9 @@ describe('stream muxing', () => {
     function setup (callback) {
       parallel([
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['spdy', 'mplex']
+          modules: {
+            streamMuxer: [ Mplex ]
+          }
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
@@ -109,7 +120,9 @@ describe('stream muxing', () => {
           node.start(cb)
         }),
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['spdy', 'mplex']
+          modules: {
+            streamMuxer: [ SPDY, Mplex ]
+          }
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node
@@ -135,7 +148,9 @@ describe('stream muxing', () => {
     function setup (callback) {
       parallel([
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['spdy', 'mplex']
+          modules: {
+            streamMuxer: [ SPDY, Mplex ]
+          }
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
@@ -143,7 +158,9 @@ describe('stream muxing', () => {
           node.start(cb)
         }),
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['mplex', 'spdy']
+          modules: {
+            streamMuxer: [ Mplex, SPDY ]
+          }
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node
@@ -169,7 +186,9 @@ describe('stream muxing', () => {
     function setup (callback) {
       parallel([
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['spdy']
+          modules: {
+            streamMuxer: [ SPDY ]
+          }
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
@@ -177,7 +196,9 @@ describe('stream muxing', () => {
           node.start(cb)
         }),
         (cb) => createNode('/ip4/0.0.0.0/tcp/0', {
-          muxer: ['mplex']
+          modules: {
+            streamMuxer: [ Mplex ]
+          }
         }, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node

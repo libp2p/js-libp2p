@@ -50,8 +50,6 @@ class Node extends libp2p {
           MulticastDNS,
           Bootstrap
         ],
-        peerRouting: [],
-        contentRouting: [],
         dht: KadDHT
       },
       config: {
@@ -66,8 +64,6 @@ class Node extends libp2p {
             list: _options.bootstrapList
           }
         },
-        peerRouting: {},
-        contentRouting: {},
         relay: {
           enabled: false,
           hop: {

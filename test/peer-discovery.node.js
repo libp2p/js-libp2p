@@ -52,7 +52,7 @@ describe('peer discovery', () => {
       parallel([
         (cb) => nodeA.stop(cb),
         (cb) => nodeB.stop(cb),
-        (cb) => ss.stop(done)
+        (cb) => ss.stop(cb)
       ], done)
     })
   }

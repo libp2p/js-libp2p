@@ -395,7 +395,14 @@ describe('transports', () => {
                 WS,
                 wstar
               ],
-              discovery: [wstar.discovery]
+              peerDiscovery: [wstar.discovery]
+            },
+            config: {
+              peerDiscovery: {
+                [wstar.discovery.tag]: {
+                  enabled: true
+                }
+              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
@@ -429,7 +436,14 @@ describe('transports', () => {
           ], {
             modules: {
               transport: [wstar],
-              discovery: [wstar.discovery]
+              peerDiscovery: [wstar.discovery]
+            },
+            config: {
+              peerDiscovery: {
+                [wstar.discovery.tag]: {
+                  enabled: true
+                }
+              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
@@ -543,7 +557,14 @@ describe('transports', () => {
                 WS,
                 wstar
               ],
-              discovery: [wstar.discovery]
+              peerDiscovery: [wstar.discovery]
+            },
+            config: {
+              peerDiscovery: {
+                [wstar.discovery.tag]: {
+                  enabled: true
+                }
+              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
@@ -578,7 +599,14 @@ describe('transports', () => {
           ], {
             modules: {
               transport: [wstar],
-              discovery: [wstar.discovery]
+              peerDiscovery: [wstar.discovery]
+            },
+            config: {
+              peerDiscovery: {
+                [wstar.discovery.tag]: {
+                  enabled: true
+                }
+              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
