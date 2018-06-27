@@ -52,9 +52,9 @@ class Railing extends EventEmitter {
   stop (callback) {
     setImmediate(callback)
 
-    if (this.timer) {
-      clearInterval(this.timer)
-      this.timer = null
+    if (this._timer) {
+      clearInterval(this._timer)
+      this._timer = null
     }
   }
 }
