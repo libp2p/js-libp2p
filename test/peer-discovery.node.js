@@ -59,7 +59,7 @@ describe('peer discovery', () => {
     })
   }
 
-  describe.only('module registration', () => {
+  describe('module registration', () => {
     it('should enable by default a module passed as an object', (done) => {
       const mockDiscovery = {
         on: sinon.stub(),
