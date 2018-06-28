@@ -27,10 +27,6 @@
     "node": ">=6.0.0",
     "npm": ">=3.0.0"
   },
-  "pre-push": [
-    "lint",
-    "test"
-  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
