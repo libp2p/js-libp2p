@@ -12,7 +12,6 @@
 </p>
 
 <p align="center">
-  <a href="https://travis-ci.org/libp2p/js-libp2p"><img src="https://travis-ci.org/libp2p/js-libp2p.svg?branch=master" /></a>
   <a href="https://circleci.com/gh/libp2p/js-libp2p"><img src="https://circleci.com/gh/libp2p/js-libp2p.svg?style=svg" /></a>
   <a href="https://coveralls.io/github/libp2p/js-libp2p?branch=master"><img src="https://coveralls.io/repos/github/libp2p/js-libp2p/badge.svg?branch=master"></a>
   <br>
