@@ -14,7 +14,9 @@ function createNode (callback) {
 
     peerInfo.multiaddrs.add(ma)
 
-    const node = new Node(peerInfo)
+    const node = new Node({
+      peerInfo
+    })
 
     node.idStr = peerIdStr
     callback(null, node)

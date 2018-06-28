@@ -1,28 +1,39 @@
 'use strict'
 
-const libp2p = require('libp2p')
+const libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const PeerInfo = require('peer-info')
 const MulticastDNS = require('libp2p-mdns')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 const waterfall = require('async/waterfall')
 const parallel = require('async/parallel')
 const series = require('async/series')
 
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP()],
-      connection: {
-        muxer: [Mplex],
-        crypto: [SECIO]
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [ TCP ],
+        streamMuxer: [ Mplex ],
+        connEncryption: [ SECIO ],
+        peerDiscovery: [ MulticastDNS ]
       },
-      discovery: [
-        new MulticastDNS(peerInfo, { interval: 2000 })
-      ]
+      config: {
+        peerDiscovery: {
+          mdns: {
+            interval: 2000,
+            enabled: true
+          }
+        },
+        EXPERIMENTAL: {
+          pubsub: true
+        }
+      }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 
@@ -33,7 +44,9 @@ function createNode (callback) {
     (cb) => PeerInfo.create(cb),
     (peerInfo, cb) => {
       peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-      node = new MyBundle(peerInfo)
+      node = new MyBundle({
+        peerInfo
+      })
       node.start(cb)
     }
   ], (err) => callback(err, node))

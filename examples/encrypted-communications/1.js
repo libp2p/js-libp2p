@@ -1,6 +1,6 @@
 'use strict'
 
-const libp2p = require('libp2p')
+const libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const SPDY = require('libp2p-spdy')
 const SECIO = require('libp2p-secio')
@@ -8,17 +8,19 @@ const PeerInfo = require('peer-info')
 const waterfall = require('async/waterfall')
 const parallel = require('async/parallel')
 const pull = require('pull-stream')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP()],
-      connection: {
-        muxer: [SPDY],
-        crypto: [SECIO]
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [ TCP ],
+        streamMuxer: [ SPDY ],
+        connEncryption: [ SECIO ]
       }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 
@@ -29,7 +31,9 @@ function createNode (callback) {
     (cb) => PeerInfo.create(cb),
     (peerInfo, cb) => {
       peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-      node = new MyBundle(peerInfo)
+      node = new MyBundle({
+        peerInfo
+      })
       node.start(cb)
     }
   ], (err) => callback(err, node))

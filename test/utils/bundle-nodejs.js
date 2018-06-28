@@ -4,21 +4,19 @@ const TCP = require('libp2p-tcp')
 const MulticastDNS = require('libp2p-mdns')
 const WS = require('libp2p-websockets')
 const Bootstrap = require('libp2p-railing')
-const spdy = require('libp2p-spdy')
+const SPDY = require('libp2p-spdy')
 const KadDHT = require('libp2p-kad-dht')
-const mplex = require('libp2p-mplex')
-const secio = require('libp2p-secio')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
 const defaultsDeep = require('@nodeutils/defaults-deep')
-const libp2p = require('../../..')
+const libp2p = require('../..')
 
 function mapMuxers (list) {
   return list.map((pref) => {
-    if (typeof pref !== 'string') {
-      return pref
-    }
+    if (typeof pref !== 'string') { return pref }
     switch (pref.trim().toLowerCase()) {
-      case 'spdy': return spdy
-      case 'mplex': return mplex
+      case 'spdy': return SPDY
+      case 'mplex': return MPLEX
       default:
         throw new Error(pref + ' muxer not available')
     }
@@ -32,7 +30,7 @@ function getMuxers (muxers) {
   } else if (muxers) {
     return mapMuxers(muxers)
   } else {
-    return [mplex, spdy]
+    return [MPLEX, SPDY]
   }
 }
 
@@ -45,7 +43,9 @@ class Node extends libp2p {
           WS
         ],
         streamMuxer: getMuxers(_options.muxer),
-        connEncryption: [ secio ],
+        connEncryption: [
+          SECIO
+        ],
         peerDiscovery: [
           MulticastDNS,
           Bootstrap
@@ -64,8 +64,19 @@ class Node extends libp2p {
             list: _options.bootstrapList
           }
         },
+        relay: {
+          enabled: false,
+          hop: {
+            enabled: false,
+            active: false
+          }
+        },
         dht: {
           kBucketSize: 20
+        },
+        EXPERIMENTAL: {
+          dht: false,
+          pubsub: false
         }
       }
     }

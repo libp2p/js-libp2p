@@ -9,8 +9,8 @@ const expect = chai.expect
 const parallel = require('async/parallel')
 const _times = require('lodash.times')
 const CID = require('cids')
-const utils = require('./utils/node')
-const createNode = utils.createNode
+
+const createNode = require('./utils/create-node')
 
 describe('.contentRouting', () => {
   let nodeA
@@ -23,8 +23,11 @@ describe('.contentRouting', () => {
     this.timeout(5 * 1000)
     const tasks = _times(5, () => (cb) => {
       createNode('/ip4/0.0.0.0/tcp/0', {
-        mdns: false,
-        dht: true
+        config: {
+          EXPERIMENTAL: {
+            dht: true
+          }
+        }
       }, (err, node) => {
         expect(err).to.not.exist()
         node.start((err) => cb(err, node))

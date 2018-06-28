@@ -14,14 +14,16 @@ PeerId.createFromJSON(require('./peer-id-listener'), (err, idListener) => {
   }
   const peerListener = new PeerInfo(idListener)
   peerListener.multiaddrs.add('/ip4/0.0.0.0/tcp/10333')
-  const nodeListener = new Node(peerListener)
+  const nodeListener = new Node({
+    peerInfo: peerListener
+  })
 
   nodeListener.start((err) => {
     if (err) {
       throw err
     }
 
-    nodeListener.switch.on('peer-mux-established', (peerInfo) => {
+    nodeListener.on('peer:connect', (peerInfo) => {
       console.log(peerInfo.id.toB58String())
     })
 

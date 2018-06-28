@@ -10,10 +10,10 @@ A more complete definition of what is a transport can be found on the [interface
 
 When using libp2p, you always want to create your own libp2p Bundle, that is, pick your set of modules and create your network stack with the properties you need. In this example, we will create a bundle with TCP. You can find the complete solution on the file [1.js](./1.js).
 
-You will need 4 deps total, so go ahead and install all of them with: 
+You will need 5 deps total, so go ahead and install all of them with:
 
 ```bash
-> npm install libp2p libp2p-tcp peer-info async
+> npm install libp2p libp2p-tcp peer-info async @nodeutils/defaults-deep
 ```
 
 Then, on your favorite text editor create a file with the `.js` extension. I've called mine `1.js`.
@@ -27,16 +27,22 @@ const libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const PeerInfo = require('peer-info')
 const waterfall = require('async/waterfall')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 
 // This MyBundle class is your libp2p bundle packed with TCP
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    // modules is a JS object that will describe the components
-    // we want for our libp2p bundle
-    const modules = {
-      transport: [new TCP()]
+  constructor (_options) {
+    const defaults = {
+      // modules is a JS object that will describe the components
+      // we want for our libp2p bundle
+      modules: {
+        transport: [
+          TCP
+        ]
+      }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 ```
@@ -57,7 +63,7 @@ waterfall([
     // the multiaddr format, a self describable address
     peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
     // Now we can create a node with that PeerInfo object
-    node = new MyBundle(peerInfo)
+    node = new MyBundle({ peerInfo: peerInfo })
     // Last, we start the node!
     node.start(cb)
   }
@@ -114,7 +120,7 @@ function createNode (callback) {
     (cb) => PeerInfo.create(cb),
     (peerInfo, cb) => {
       peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-      node = new MyBundle(peerInfo)
+      node = new MyBundle({ peerInfo: peerInfo })
       node.start(cb)
     }
   ], (err) => callback(err, node))
@@ -133,7 +139,7 @@ Now we are going to use `async/parallel` to create two nodes, print their addres
 const parallel = require('async/parallel')
 ```
 
-Then, 
+Then,
 
 ```js
 parallel([
@@ -196,11 +202,17 @@ const WebSockets = require('libp2p-websockets')
 // ...
 
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP(), new WebSockets()]
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [
+          TCP,
+          WebSockets
+        ]
+      }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 ```
@@ -219,7 +231,7 @@ function createNode (addrs, callback) {
     (cb) => PeerInfo.create(cb),
     (peerInfo, cb) => {
       addrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
-      node = new MyBundle(peerInfo)
+      node = new MyBundle({ peerInfo: peerInfo })
       node.start(cb)
     }
   ], (err) => callback(err, node))

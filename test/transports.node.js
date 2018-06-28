@@ -6,16 +6,17 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 const series = require('async/series')
-const utils = require('./utils/node.js')
 const signalling = require('libp2p-webrtc-star/src/sig-server')
 const rendezvous = require('libp2p-websocket-star-rendezvous')
+const TCP = require('libp2p-tcp')
+const WS = require('libp2p-websockets')
 const WSStar = require('libp2p-websocket-star')
 const WRTCStar = require('libp2p-webrtc-star')
 const wrtc = require('wrtc')
-const tryEcho = require('./utils/try-echo')
 
-const createNode = utils.createNode
-const echo = utils.echo
+const createNode = require('./utils/create-node.js')
+const tryEcho = require('./utils/try-echo')
+const echo = require('./utils/echo')
 
 describe('transports', () => {
   describe('TCP only', () => {
@@ -90,14 +91,14 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeA.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(0)
+              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
               cb()
             },
             (cb) => {
               const peers = nodeB.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
 
-              expect(Object.keys(nodeB.switch.muxedConns)).to.have.length(0)
+              expect(Object.keys(nodeB._switch.muxedConns)).to.have.length(0)
               cb()
             }
           ], done)
@@ -117,14 +118,14 @@ describe('transports', () => {
               const peers = nodeA.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
 
-              expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(1)
+              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(1)
               cb()
             },
             (cb) => {
               const peers = nodeB.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
 
-              expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(1)
+              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(1)
               cb()
             }
           ], () => tryEcho(conn, done))
@@ -143,14 +144,14 @@ describe('transports', () => {
               const peers = nodeA.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
 
-              expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(0)
+              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
               cb()
             },
             (cb) => {
               const peers = nodeB.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
 
-              expect(Object.keys(nodeB.switch.muxedConns)).to.have.length(0)
+              expect(Object.keys(nodeB._switch.muxedConns)).to.have.length(0)
               cb()
             }
           ], done)
@@ -169,13 +170,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeA.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(1)
+              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(1)
               cb()
             },
             (cb) => {
               const peers = nodeB.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(1)
+              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(1)
               cb()
             }
           ], () => tryEcho(conn, done))
@@ -193,13 +194,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeA.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(0)
+              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
               cb()
             },
             (cb) => {
               const peers = nodeB.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeB.switch.muxedConns)).to.have.length(0)
+              expect(Object.keys(nodeB._switch.muxedConns)).to.have.length(0)
               cb()
             }
           ], done)
@@ -263,13 +264,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeTCP.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeTCP.switch.muxedConns)).to.have.length(1)
+              expect(Object.keys(nodeTCP._switch.muxedConns)).to.have.length(1)
               cb()
             },
             (cb) => {
               const peers = nodeTCPnWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeTCPnWS.switch.muxedConns)).to.have.length(1)
+              expect(Object.keys(nodeTCPnWS._switch.muxedConns)).to.have.length(1)
               cb()
             }
           ], done)
@@ -287,14 +288,14 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeTCP.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeTCP.switch.muxedConns)).to.have.length(0)
+              expect(Object.keys(nodeTCP._switch.muxedConns)).to.have.length(0)
 
               cb()
             },
             (cb) => {
               const peers = nodeTCPnWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeTCPnWS.switch.muxedConns)).to.have.length(0)
+              expect(Object.keys(nodeTCPnWS._switch.muxedConns)).to.have.length(0)
               cb()
             }
           ], done)
@@ -314,13 +315,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeTCPnWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(2)
-              expect(Object.keys(nodeTCPnWS.switch.muxedConns)).to.have.length(1)
+              expect(Object.keys(nodeTCPnWS._switch.muxedConns)).to.have.length(1)
               cb()
             },
             (cb) => {
               const peers = nodeWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeWS.switch.muxedConns)).to.have.length(1)
+              expect(Object.keys(nodeWS._switch.muxedConns)).to.have.length(1)
               cb()
             }
           ], done)
@@ -338,14 +339,14 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeTCPnWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(2)
-              expect(Object.keys(nodeTCPnWS.switch.muxedConns)).to.have.length(0)
+              expect(Object.keys(nodeTCPnWS._switch.muxedConns)).to.have.length(0)
 
               cb()
             },
             (cb) => {
               const peers = nodeWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeWS.switch.muxedConns)).to.have.length(0)
+              expect(Object.keys(nodeWS._switch.muxedConns)).to.have.length(0)
               cb()
             }
           ], done)
@@ -367,7 +368,7 @@ describe('transports', () => {
     let nodeAll
     let nodeTCP
     let nodeWS
-    let nodeWStar
+    let nodeWebRTCStar
 
     let ss
 
@@ -375,23 +376,33 @@ describe('transports', () => {
       this.timeout(5 * 1000)
 
       parallel([
-        (cb) => {
-          signalling.start({ port: 24642 }, (err, server) => {
-            expect(err).to.not.exist()
-            ss = server
-            cb()
-          })
-        },
+        (cb) => signalling.start({ port: 24642 }, (err, server) => {
+          expect(err).to.not.exist()
+          ss = server
+          cb()
+        }),
         (cb) => {
           const wstar = new WRTCStar({wrtc: wrtc})
+
           createNode([
             '/ip4/0.0.0.0/tcp/0',
             '/ip4/127.0.0.1/tcp/25011/ws',
             '/ip4/127.0.0.1/tcp/24642/ws/p2p-webrtc-star'
           ], {
             modules: {
-              transport: [wstar],
-              discovery: [wstar.discovery]
+              transport: [
+                TCP,
+                WS,
+                wstar
+              ],
+              peerDiscovery: [wstar.discovery]
+            },
+            config: {
+              peerDiscovery: {
+                [wstar.discovery.tag]: {
+                  enabled: true
+                }
+              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
@@ -425,11 +436,18 @@ describe('transports', () => {
           ], {
             modules: {
               transport: [wstar],
-              discovery: [wstar.discovery]
+              peerDiscovery: [wstar.discovery]
+            },
+            config: {
+              peerDiscovery: {
+                [wstar.discovery.tag]: {
+                  enabled: true
+                }
+              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
-            nodeWStar = node
+            nodeWebRTCStar = node
             node.handle('/echo/1.0.0', echo)
             node.start(cb)
           })
@@ -444,7 +462,7 @@ describe('transports', () => {
         (cb) => nodeAll.stop(cb),
         (cb) => nodeTCP.stop(cb),
         (cb) => nodeWS.stop(cb),
-        (cb) => nodeWStar.stop(cb),
+        (cb) => nodeWebRTCStar.stop(cb),
         (cb) => ss.stop(cb)
       ], done)
     })
@@ -453,7 +471,7 @@ describe('transports', () => {
       let i = 1;
       [nodeAll, otherNode].forEach((node) => {
         expect(Object.keys(node.peerBook.getAll())).to.have.length(i-- ? peers : 1)
-        expect(Object.keys(node.switch.muxedConns)).to.have.length(muxed)
+        expect(Object.keys(node._switch.muxedConns)).to.have.length(muxed)
       })
       callback()
     }
@@ -490,20 +508,20 @@ describe('transports', () => {
       })
     })
 
-    it('nodeAll.dial nodeWStar using PeerInfo', function (done) {
+    it('nodeAll.dial nodeWebRTCStar using PeerInfo', function (done) {
       this.timeout(40 * 1000)
 
-      nodeAll.dial(nodeWStar.peerInfo, (err) => {
+      nodeAll.dial(nodeWebRTCStar.peerInfo, (err) => {
         expect(err).to.not.exist()
         // Some time for Identify to finish
-        setTimeout(() => check(nodeWStar, 1, 3, done), 500)
+        setTimeout(() => check(nodeWebRTCStar, 1, 3, done), 500)
       })
     })
 
-    it('nodeAll.hangUp nodeWStar using PeerInfo', (done) => {
-      nodeAll.hangUp(nodeWStar.peerInfo, (err) => {
+    it('nodeAll.hangUp nodeWebRTCStar using PeerInfo', (done) => {
+      nodeAll.hangUp(nodeWebRTCStar.peerInfo, (err) => {
         expect(err).to.not.exist()
-        setTimeout(() => check(nodeWStar, 0, 3, done), 500)
+        setTimeout(() => check(nodeWebRTCStar, 0, 3, done), 500)
       })
     })
   })
@@ -512,7 +530,7 @@ describe('transports', () => {
     let nodeAll
     let nodeTCP
     let nodeWS
-    let nodeWStar
+    let nodeWebSocketStar
 
     let ss
 
@@ -527,14 +545,26 @@ describe('transports', () => {
         },
         (cb) => {
           const wstar = new WSStar()
+
           createNode([
             '/ip4/0.0.0.0/tcp/0',
             '/ip4/127.0.0.1/tcp/25011/ws',
             '/ip4/127.0.0.1/tcp/24642/ws/p2p-websocket-star'
           ], {
             modules: {
-              transport: [wstar],
-              discovery: [wstar.discovery]
+              transport: [
+                TCP,
+                WS,
+                wstar
+              ],
+              peerDiscovery: [wstar.discovery]
+            },
+            config: {
+              peerDiscovery: {
+                [wstar.discovery.tag]: {
+                  enabled: true
+                }
+              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
@@ -569,11 +599,18 @@ describe('transports', () => {
           ], {
             modules: {
               transport: [wstar],
-              discovery: [wstar.discovery]
+              peerDiscovery: [wstar.discovery]
+            },
+            config: {
+              peerDiscovery: {
+                [wstar.discovery.tag]: {
+                  enabled: true
+                }
+              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
-            nodeWStar = node
+            nodeWebSocketStar = node
             wstar.lazySetId(node.peerInfo.id)
             node.handle('/echo/1.0.0', echo)
             node.start(cb)
@@ -587,7 +624,7 @@ describe('transports', () => {
         (cb) => nodeAll.stop(cb),
         (cb) => nodeTCP.stop(cb),
         (cb) => nodeWS.stop(cb),
-        (cb) => nodeWStar.stop(cb),
+        (cb) => nodeWebSocketStar.stop(cb),
         (cb) => ss.stop(cb)
       ], done)
     })
@@ -596,7 +633,7 @@ describe('transports', () => {
       let i = 1;
       [nodeAll, otherNode].forEach((node) => {
         expect(Object.keys(node.peerBook.getAll())).to.have.length(i-- ? peers : 1)
-        expect(Object.keys(node.switch.muxedConns)).to.have.length(muxed)
+        expect(Object.keys(node._switch.muxedConns)).to.have.length(muxed)
       })
       done()
     }
@@ -633,19 +670,19 @@ describe('transports', () => {
       })
     })
 
-    it('nodeAll.dial nodeWStar using PeerInfo', (done) => {
-      nodeAll.dial(nodeWStar.peerInfo, (err) => {
+    it('nodeAll.dial nodeWebSocketStar using PeerInfo', (done) => {
+      nodeAll.dial(nodeWebSocketStar.peerInfo, (err) => {
         expect(err).to.not.exist()
         // Some time for Identify to finish
-        setTimeout(() => check(nodeWStar, 1, 3, done), 500)
+        setTimeout(() => check(nodeWebSocketStar, 1, 3, done), 500)
       })
     })
 
-    it('nodeAll.hangUp nodeWStar using PeerInfo', (done) => {
-      nodeAll.hangUp(nodeWStar.peerInfo, (err) => {
+    it('nodeAll.hangUp nodeWebSocketStar using PeerInfo', (done) => {
+      nodeAll.hangUp(nodeWebSocketStar.peerInfo, (err) => {
         expect(err).to.not.exist()
         // Some time for Identify to finish
-        setTimeout(() => check(nodeWStar, 0, 3, done), 500)
+        setTimeout(() => check(nodeWebSocketStar, 0, 3, done), 500)
       })
     })
   })

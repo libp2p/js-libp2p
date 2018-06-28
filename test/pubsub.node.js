@@ -9,13 +9,22 @@ const expect = chai.expect
 const parallel = require('async/parallel')
 const waterfall = require('async/waterfall')
 const _times = require('lodash.times')
-const utils = require('./utils/node')
-const createNode = utils.createNode
+
+const createNode = require('./utils/create-node')
 
 function startTwo (callback) {
   const tasks = _times(2, () => (cb) => {
     createNode('/ip4/0.0.0.0/tcp/0', {
-      mdns: false
+      config: {
+        peerDiscovery: {
+          mdns: {
+            enabled: false
+          }
+        },
+        EXPERIMENTAL: {
+          pubsub: true
+        }
+      }
     }, (err, node) => {
       expect(err).to.not.exist()
       node.start((err) => cb(err, node))
@@ -69,18 +78,20 @@ describe('.pubsub', () => {
   describe('.pubsub off', () => {
     it('fail to use pubsub if disabled', (done) => {
       createNode('/ip4/0.0.0.0/tcp/0', {
-        mdns: false,
-        pubsub: false
+        config: {
+          peerDiscovery: {
+            mdns: {
+              enabled: false
+            }
+          },
+          EXPERIMENTAL: {
+            pubsub: false
+          }
+        }
       }, (err, node) => {
         expect(err).to.not.exist()
-
-        node.pubsub.subscribe('news',
-          (msg) => {},
-          (err) => {
-            expect(err).to.exist()
-            done()
-          }
-        )
+        expect(node.pubsub).to.not.exist()
+        done()
       })
     })
   })

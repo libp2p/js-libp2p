@@ -103,47 +103,83 @@ libp2p becomes very simple and basically acts as a glue for every module that co
 ```JavaScript
 // Creating a bundle that adds:
 //   transport: websockets + tcp
-//   stream-muxing: SPDY
+//   stream-muxing: spdy & mplex
 //   crypto-channel: secio
 //   discovery: multicast-dns
 
 const libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const WS = require('libp2p-websockets')
-const spdy = require('libp2p-spdy')
-const secio = require('libp2p-secio')
+const SPDY = require('libp2p-spdy')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
 const MulticastDNS = require('libp2p-mdns')
 const DHT = require('libp2p-kad-dht')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 
 class Node extends libp2p {
-  constructor (peerInfo, peerBook, options) {
-    options = options || {}
+  constructor (_peerInfo, _peerBook, _options) {
+    const defaults = {
+      peerInfo: _peerInfo             // The Identity of your Peer
+      peerBook: _peerBook,            // Where peers get tracked, if undefined libp2p will create one instance
 
-    const modules = {
-      transport: [
-        new TCP(),
-        new WS()
-      ],
-      connection: {
-        muxer: [
-          spdy
+      // The libp2p modules for this libp2p bundle
+      modules: {
+        transport: [
+          TCP,
+          new WS()                    // It can take instances too!
         ],
-        crypto: [
-          secio
+        streamMuxer: [
+          SPDY,
+          MPLEX
+        ],
+        connEncryption: [
+          SECIO
         ]
+        peerDiscovery: [
+          MulticastDNS
+        ],
+        peerRouting: {},              // Currently both peerRouting and contentRouting are patched through the DHT,
+        contentRouting: {}            // this will change once we factor that into two modules, for now do the following line:
+        dht: DHT                      // DHT enables PeerRouting, ContentRouting and DHT itself components
       },
-      discovery: [
-        new MulticastDNS(peerInfo)
-      ],
-      // DHT is passed as its own enabling PeerRouting, ContentRouting and DHT itself components
-      dht: DHT
+
+      // libp2p config options (typically found on a config.json)
+      config: {                       // The config object is the part of the config that can go into a file, config.json.
+        peerDiscovery: {
+          mdns: {                     // mdns options
+            interval: 1000            // ms
+            enabled: true
+          },
+          webrtcStar: {               // webrtc-star options
+            interval: 1000            // ms
+            enabled: false
+          }
+          // .. other discovery module options.
+        },
+        peerRouting: {},
+        contentRouting: {},
+        relay: {                      // Circuit Relay options
+          enabled: false,
+          hop: {
+            enabled: false,
+            active: false
+          }
+        }
+        // Enable/Disable Experimental features
+        EXPERIMENTAL: {               // Experimental features ("behind a flag")
+          pubsub: false,
+          dht: false
+        }
+      },
     }
 
-    super(modules, peerInfo, peerBook, options)
+    // overload any defaults of your bundle using https://github.com/nodeutils/defaults-deep
+    super(defaultsDeep(_options, defaults))
   }
 }
 
-// Now all the nodes you create, will have TCP, WebSockets, SPDY, SECIO and MulticastDNS support.
+// Now all the nodes you create, will have TCP, WebSockets, SPDY, MPLEX, SECIO and MulticastDNS support.
 ```
 
 ### API

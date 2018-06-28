@@ -1,16 +1,22 @@
 'use strict'
 
-const libp2p = require('libp2p')
+const libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const PeerInfo = require('peer-info')
 const waterfall = require('async/waterfall')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 
 class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const modules = {
-      transport: [new TCP()]
+  constructor (_options) {
+    const defaults = {
+      modules: {
+        transport: [
+          TCP
+        ]
+      }
     }
-    super(modules, peerInfo)
+
+    super(defaultsDeep(_options, defaults))
   }
 }
 
@@ -20,7 +26,7 @@ waterfall([
   (cb) => PeerInfo.create(cb),
   (peerInfo, cb) => {
     peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-    node = new MyBundle(peerInfo)
+    node = new MyBundle({ peerInfo: peerInfo })
     node.start(cb)
   }
 ], (err) => {

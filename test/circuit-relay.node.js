@@ -1,20 +1,21 @@
 /* eslint-env mocha */
 'use strict'
 
-const waterfall = require('async/waterfall')
-const series = require('async/series')
-const parallel = require('async/parallel')
-const utils = require('./utils/node')
-const Circuit = require('libp2p-circuit')
-const multiaddr = require('multiaddr')
-const tryEcho = require('./utils/try-echo')
-
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const sinon = require('sinon')
+const waterfall = require('async/waterfall')
+const series = require('async/series')
+const parallel = require('async/parallel')
+const Circuit = require('libp2p-circuit')
+const multiaddr = require('multiaddr')
 
-describe('circuit relay', function () {
+const createNode = require('./utils/create-node')
+const tryEcho = require('./utils/try-echo')
+const echo = require('./utils/echo')
+
+describe('circuit relay', () => {
   let handlerSpies = []
   let relayNode1
   let relayNode2
@@ -23,29 +24,32 @@ describe('circuit relay', function () {
   let nodeTCP1
   let nodeTCP2
 
-  function setupNode (addrs, options, cb) {
+  function setupNode (addrs, options, callback) {
     if (typeof options === 'function') {
-      cb = options
+      callback = options
       options = {}
     }
 
     options = options || {}
 
-    return utils.createNode(addrs, options, (err, node) => {
+    return createNode(addrs, options, (err, node) => {
       expect(err).to.not.exist()
 
-      node.handle('/echo/1.0.0', utils.echo)
+      node.handle('/echo/1.0.0', echo)
       node.start((err) => {
         expect(err).to.not.exist()
 
-        handlerSpies.push(sinon.spy(node.switch.transports[Circuit.tag].listeners[0].hopHandler, 'handle'))
-        cb(node)
+        handlerSpies.push(sinon.spy(
+          node._switch.transports[Circuit.tag].listeners[0].hopHandler, 'handle'
+        ))
+
+        callback(node)
       })
     })
   }
 
   before(function (done) {
-    this.timeout(20000)
+    this.timeout(20 * 1000)
 
     waterfall([
       // set up passive relay
@@ -53,11 +57,13 @@ describe('circuit relay', function () {
         '/ip4/0.0.0.0/tcp/0/ws',
         '/ip4/0.0.0.0/tcp/0'
       ], {
-        relay: {
-          enabled: true,
-          hop: {
+        config: {
+          relay: {
             enabled: true,
-            active: false // passive relay
+            hop: {
+              enabled: true,
+              active: false // passive relay
+            }
           }
         }
       }, (node) => {
@@ -69,11 +75,13 @@ describe('circuit relay', function () {
         '/ip4/0.0.0.0/tcp/0/ws',
         '/ip4/0.0.0.0/tcp/0'
       ], {
-        relay: {
-          enabled: true,
-          hop: {
+        config: {
+          relay: {
             enabled: true,
-            active: false // passive relay
+            hop: {
+              enabled: true,
+              active: false // passive relay
+            }
           }
         }
       }, (node) => {
@@ -84,8 +92,10 @@ describe('circuit relay', function () {
       (cb) => setupNode([
         '/ip4/0.0.0.0/tcp/0/ws'
       ], {
-        relay: {
-          enabled: true
+        config: {
+          relay: {
+            enabled: true
+          }
         }
       }, (node) => {
         nodeWS1 = node
@@ -95,8 +105,10 @@ describe('circuit relay', function () {
       (cb) => setupNode([
         '/ip4/0.0.0.0/tcp/0/ws'
       ], {
-        relay: {
-          enabled: true
+        config: {
+          relay: {
+            enabled: true
+          }
         }
       }, (node) => {
         nodeWS2 = node
@@ -107,8 +119,10 @@ describe('circuit relay', function () {
         '/ip4/0.0.0.0/tcp/0',
         `/ipfs/${relayNode1.peerInfo.id.toB58String()}/p2p-circuit`
       ], {
-        relay: {
-          enabled: true
+        config: {
+          relay: {
+            enabled: true
+          }
         }
       }, (node) => {
         nodeTCP1 = node
@@ -119,8 +133,10 @@ describe('circuit relay', function () {
         '/ip4/0.0.0.0/tcp/0',
         `/ip4/0.0.0.0/tcp/0/ipfs/${relayNode2.peerInfo.id.toB58String()}/p2p-circuit`
       ], {
-        relay: {
-          enabled: true
+        config: {
+          relay: {
+            enabled: true
+          }
         }
       }, (node) => {
         nodeTCP2 = node

@@ -2,13 +2,12 @@
 
 const WebRTCStar = require('libp2p-webrtc-star')
 const WebSockets = require('libp2p-websockets')
-
 const Mplex = require('libp2p-mplex')
 const SPDY = require('libp2p-spdy')
 const SECIO = require('libp2p-secio')
-
-const Railing = require('libp2p-railing')
-const libp2p = require('libp2p')
+const Bootstrap = require('libp2p-railing')
+const defaultsDeep = require('@nodeutils/defaults-deep')
+const libp2p = require('../../../../')
 
 // Find this list at: https://github.com/ipfs/js-ipfs/blob/master/src/core/runtime/config-browser.json
 const bootstrapers = [
@@ -25,30 +24,56 @@ const bootstrapers = [
 ]
 
 class Node extends libp2p {
-  constructor (peerInfo, peerBook, options) {
-    options = options || {}
+  constructor (_options) {
+    const wrtcStar = new WebRTCStar({ id: _options.peerInfo.id })
 
-    const wstar = new WebRTCStar()
-
-    const modules = {
-      transport: [
-        wstar,
-        new WebSockets()
-      ],
-      connection: {
-        muxer: [
+    const defaults = {
+      modules: {
+        transport: [
+          wrtcStar,
+          new WebSockets()
+        ],
+        streamMuxer: [
           Mplex,
           SPDY
         ],
-        crypto: [SECIO]
+        connEncryption: [
+          SECIO
+        ],
+        peerDiscovery: [
+          wrtcStar.discovery,
+          Bootstrap
+        ]
       },
-      discovery: [
-        wstar.discovery,
-        new Railing(bootstrapers)
-      ]
+      config: {
+        peerDiscovery: {
+          webRTCStar: {
+            enabled: true
+          },
+          websocketStar: {
+            enabled: true
+          },
+          bootstrap: {
+            interval: 10000,
+            enabled: false,
+            list: bootstrapers
+          }
+        },
+        relay: {
+          enabled: false,
+          hop: {
+            enabled: false,
+            active: false
+          }
+        },
+        EXPERIMENTAL: {
+          dht: false,
+          pubsub: false
+        }
+      }
     }
 
-    super(modules, peerInfo, peerBook, options)
+    super(defaultsDeep(_options, defaults))
   }
 }
 

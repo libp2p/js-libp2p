@@ -7,6 +7,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
+const Mplex = require('libp2p-mplex')
 const pull = require('pull-stream')
 const parallel = require('async/parallel')
 const goodbye = require('pull-goodbye')
@@ -14,46 +15,49 @@ const serializer = require('pull-serializer')
 const w = require('webrtcsupport')
 const tryEcho = require('./utils/try-echo')
 
-const Node = require('./utils/bundle.browser')
-const rawPeer = require('./fixtures/test-peer.json')
+const Node = require('./utils/bundle-browser')
+const jsonPeerId = require('./fixtures/test-peer.json')
 
 describe('transports', () => {
   describe('websockets', () => {
     let peerB
+    let peerBMultiaddr = '/ip4/127.0.0.1/tcp/9200/ws/ipfs/' + jsonPeerId.id
     let nodeA
 
     before((done) => {
-      const ma = '/ip4/127.0.0.1/tcp/9200/ws/ipfs/' + rawPeer.id
-
-      PeerId.createFromPrivKey(rawPeer.privKey, (err, id) => {
-        if (err) {
-          return done(err)
-        }
+      PeerId.createFromPrivKey(jsonPeerId.privKey, (err, id) => {
+        expect(err).to.not.exist()
 
         peerB = new PeerInfo(id)
-        peerB.multiaddrs.add(ma)
+        peerB.multiaddrs.add(peerBMultiaddr)
         done()
       })
     })
 
     after((done) => nodeA.stop(done))
 
-    it('create libp2pNode', (done) => {
+    it('create a libp2p Node', (done) => {
       PeerInfo.create((err, peerInfo) => {
         expect(err).to.not.exist()
-        peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
 
-        nodeA = new Node(peerInfo)
+        nodeA = new Node({
+          peerInfo: peerInfo
+        })
         done()
       })
     })
 
-    it('create libp2pNode with mplex only', (done) => {
+    it('create a libp2p Node with mplex only', (done) => {
       PeerInfo.create((err, peerInfo) => {
         expect(err).to.not.exist()
 
-        const b = new Node(peerInfo, null, { muxer: ['mplex'] })
-        expect(b.modules.connection.muxer).to.eql([require('libp2p-mplex')])
+        const b = new Node({
+          peerInfo: peerInfo,
+          modules: {
+            streamMuxer: [ Mplex ]
+          }
+        })
+        expect(b._modules.streamMuxer).to.eql([require('libp2p-mplex')])
         done()
       })
     })
@@ -65,7 +69,7 @@ describe('transports', () => {
     // General connectivity tests
 
     it('.dial using Multiaddr', (done) => {
-      nodeA.dial(peerB.multiaddrs.toArray()[0], (err) => {
+      nodeA.dial(peerBMultiaddr, (err) => {
         expect(err).to.not.exist()
 
         setTimeout(check, 500) // Some time for Identify to finish
@@ -79,7 +83,7 @@ describe('transports', () => {
     })
 
     it('.dialProtocol using Multiaddr', (done) => {
-      nodeA.dialProtocol(peerB.multiaddrs.toArray()[0], '/echo/1.0.0', (err, conn) => {
+      nodeA.dialProtocol(peerBMultiaddr, '/echo/1.0.0', (err, conn) => {
         expect(err).to.not.exist()
 
         const peers = nodeA.peerBook.getAll()
@@ -90,7 +94,7 @@ describe('transports', () => {
     })
 
     it('.hangUp using Multiaddr', (done) => {
-      nodeA.hangUp(peerB.multiaddrs.toArray()[0], (err) => {
+      nodeA.hangUp(peerBMultiaddr, (err) => {
         expect(err).to.not.exist()
 
         setTimeout(check, 500)
@@ -98,7 +102,7 @@ describe('transports', () => {
         function check () {
           const peers = nodeA.peerBook.getAll()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(0)
+          expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
           done()
         }
       })
@@ -138,7 +142,7 @@ describe('transports', () => {
           const peers = nodeA.peerBook.getAll()
           expect(err).to.not.exist()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(nodeA.switch.muxedConns)).to.have.length(0)
+          expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
           done()
         }
       })
@@ -197,8 +201,8 @@ describe('transports', () => {
 
     it('create two peerInfo with webrtc-star addrs', (done) => {
       parallel([
-        (cb) => PeerId.create({ bits: 1024 }, cb),
-        (cb) => PeerId.create({ bits: 1024 }, cb)
+        (cb) => PeerId.create({ bits: 512 }, cb),
+        (cb) => PeerId.create({ bits: 512 }, cb)
       ], (err, ids) => {
         expect(err).to.not.exist()
 
@@ -215,8 +219,12 @@ describe('transports', () => {
     })
 
     it('create two libp2p nodes with those peers', (done) => {
-      node1 = new Node(peer1, null, { webRTCStar: true })
-      node2 = new Node(peer2, null, { webRTCStar: true })
+      node1 = new Node({
+        peerInfo: peer1
+      })
+      node2 = new Node({
+        peerInfo: peer2
+      })
       done()
     })
 
@@ -256,24 +264,26 @@ describe('transports', () => {
         function check () {
           const peers = node1.peerBook.getAll()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(node1.switch.muxedConns)).to.have.length(0)
+          expect(Object.keys(node1._switch.muxedConns)).to.have.length(0)
           done()
         }
       })
     })
 
-    it('create a third node and check that discovery works', (done) => {
+    it('create a third node and check that discovery works', function (done) {
+      this.timeout(60 * 1000)
+
       let counter = 0
 
       function check () {
         if (++counter === 3) {
-          expect(Object.keys(node1.switch.muxedConns).length).to.equal(1)
-          expect(Object.keys(node2.switch.muxedConns).length).to.equal(1)
+          expect(Object.keys(node1._switch.muxedConns).length).to.equal(1)
+          expect(Object.keys(node2._switch.muxedConns).length).to.equal(1)
           done()
         }
       }
 
-      PeerId.create((err, id3) => {
+      PeerId.create({ bits: 512 }, (err, id3) => {
         expect(err).to.not.exist()
 
         const peer3 = new PeerInfo(id3)
@@ -283,7 +293,9 @@ describe('transports', () => {
         node1.on('peer:discovery', (peerInfo) => node1.dial(peerInfo, check))
         node2.on('peer:discovery', (peerInfo) => node2.dial(peerInfo, check))
 
-        const node3 = new Node(peer3, null, { webRTCStar: true })
+        const node3 = new Node({
+          peerInfo: peer3
+        })
         node3.start(check)
       })
     })
@@ -297,8 +309,8 @@ describe('transports', () => {
 
     it('create two peerInfo with websocket-star addrs', (done) => {
       parallel([
-        (cb) => PeerId.create({ bits: 1024 }, cb),
-        (cb) => PeerId.create({ bits: 1024 }, cb)
+        (cb) => PeerId.create({ bits: 512 }, cb),
+        (cb) => PeerId.create({ bits: 512 }, cb)
       ], (err, ids) => {
         expect(err).to.not.exist()
 
@@ -315,8 +327,12 @@ describe('transports', () => {
     })
 
     it('create two libp2p nodes with those peers', (done) => {
-      node1 = new Node(peer1, null, { wsStar: true })
-      node2 = new Node(peer2, null, { wsStar: true })
+      node1 = new Node({
+        peerInfo: peer1
+      })
+      node2 = new Node({
+        peerInfo: peer2
+      })
       done()
     })
 
@@ -356,19 +372,21 @@ describe('transports', () => {
         function check () {
           const peers = node1.peerBook.getAll()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(node1.switch.muxedConns)).to.have.length(0)
+          expect(Object.keys(node1._switch.muxedConns)).to.have.length(0)
           done()
         }
       })
     })
 
-    it('create a third node and check that discovery works', (done) => {
+    it('create a third node and check that discovery works', function (done) {
+      this.timeout(10 * 1000)
+
       let counter = 0
 
       function check () {
         if (++counter === 3) {
-          expect(Object.keys(node1.switch.muxedConns).length).to.equal(1)
-          expect(Object.keys(node2.switch.muxedConns).length).to.equal(1)
+          expect(Object.keys(node1._switch.muxedConns).length).to.equal(1)
+          expect(Object.keys(node2._switch.muxedConns).length).to.equal(1)
           done()
         }
       }
@@ -383,7 +401,9 @@ describe('transports', () => {
         node1.on('peer:discovery', (peerInfo) => node1.dial(peerInfo, check))
         node2.on('peer:discovery', (peerInfo) => node2.dial(peerInfo, check))
 
-        const node3 = new Node(peer3, null, { wsStar: true })
+        const node3 = new Node({
+          peerInfo: peer3
+        })
         node3.start(check)
       })
     })
