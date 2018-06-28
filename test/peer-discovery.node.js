@@ -59,8 +59,8 @@ describe('peer discovery', () => {
     })
   }
 
-  describe('module registration', () => {
-    it('should enable module by default', (done) => {
+  describe.only('module registration', () => {
+    it('should enable by default a module passed as an object', (done) => {
       const mockDiscovery = {
         on: sinon.stub(),
         start: sinon.stub().callsArg(0),
@@ -68,6 +68,28 @@ describe('peer discovery', () => {
       }
 
       const options = { modules: { peerDiscovery: [ mockDiscovery ] } }
+
+      createNode(['/ip4/0.0.0.0/tcp/0'], options, (err, node) => {
+        expect(err).to.not.exist()
+
+        node.start((err) => {
+          expect(err).to.not.exist()
+          expect(mockDiscovery.start.called).to.be.true()
+          node.stop(done)
+        })
+      })
+    })
+
+    it('should enable by default a module passed as a function', (done) => {
+      const mockDiscovery = {
+        on: sinon.stub(),
+        start: sinon.stub().callsArg(0),
+        stop: sinon.stub().callsArg(0)
+      }
+
+      const MockDiscovery = sinon.stub().returns(mockDiscovery)
+
+      const options = { modules: { peerDiscovery: [ MockDiscovery ] } }
 
       createNode(['/ip4/0.0.0.0/tcp/0'], options, (err, node) => {
         expect(err).to.not.exist()
