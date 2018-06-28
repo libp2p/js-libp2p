@@ -1,3 +1,19 @@
+<a name="0.21.0"></a>
+# [0.21.0](https://github.com/libp2p/js-libp2p/compare/v0.20.4...v0.21.0) (2018-06-28)
+
+
+### Bug Fixes
+
+* lock wrtc to 0.1.1 ([6507379](https://github.com/libp2p/js-libp2p/commit/6507379))
+
+
+### Features
+
+* (BREAKING CHANGE) overhaul libp2p config and constructor ([6905f1b](https://github.com/libp2p/js-libp2p/commit/6905f1b))
+* set and hook up libp2p-connection-manager ([#184](https://github.com/libp2p/js-libp2p/issues/184)) ([d597204](https://github.com/libp2p/js-libp2p/commit/d597204))
+
+
+
 <a name="0.20.4"></a>
 ## [0.20.4](https://github.com/libp2p/js-libp2p/compare/v0.20.2...v0.20.4) (2018-04-30)
 
