@@ -34,8 +34,8 @@ class Node extends EventEmitter {
     this.peerInfo = _options.peerInfo
     this.peerBook = _options.peerBook || new PeerBook()
 
-    this._modules = _options.modules
-    this._config = _options.config
+    this._modules = _options.modules || {}
+    this._config = _options.config || {}
     this._isStarted = false
     this._transport = [] // Transport instances/references
     this._discovery = [] // Discovery service instances/references
@@ -76,7 +76,7 @@ class Node extends EventEmitter {
     }
 
     // dht provided components (peerRouting, contentRouting, dht)
-    if (this._config.EXPERIMENTAL.dht) {
+    if (this._config.EXPERIMENTAL && this._config.EXPERIMENTAL.dht) {
       const DHT = this._modules.dht
       this._dht = new DHT(this._switch, {
         kBucketSize: this._config.dht.kBucketSize || 20,
