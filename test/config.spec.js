@@ -119,11 +119,11 @@ describe('configuration', () => {
       peerInfo,
       modules: {
         transport: [ WS ],
-        peerDiscover: [ Bootstrap ]
+        peerDiscovery: [ Bootstrap ]
       },
       config: {
         EXPERIMENTAL: {
-          dht: true
+          dht: false
         }
       }
     }
