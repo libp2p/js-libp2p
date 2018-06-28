@@ -172,8 +172,7 @@ class Node extends EventEmitter {
               let d
 
               if (typeof D === 'function') {
-                config.peerInfo = this.peerInfo
-                d = new D(config)
+                d = new D(Object.assign({}, config, { peerInfo: this.peerInfo }))
               } else {
                 d = D
               }
