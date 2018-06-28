@@ -64,7 +64,7 @@
     "libp2p-circuit": "~0.2.0",
     "libp2p-kad-dht": "~0.10.0",
     "libp2p-mdns": "~0.12.0",
-    "libp2p-mplex": "~0.7.0",
+    "libp2p-mplex": "~0.8.0",
     "libp2p-railing": "~0.9.1",
     "libp2p-secio": "~0.10.0",
     "libp2p-spdy": "~0.12.1",
