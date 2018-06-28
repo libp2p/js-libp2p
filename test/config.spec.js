@@ -113,21 +113,4 @@ describe('configuration', () => {
 
     expect(() => validateConfig(options)).to.throw()
   })
-
-  it('should require a non instanced peerDiscovery module to have associated options', () => {
-    const options = {
-      peerInfo,
-      modules: {
-        transport: [ WS ],
-        peerDiscovery: [ Bootstrap ]
-      },
-      config: {
-        EXPERIMENTAL: {
-          dht: false
-        }
-      }
-    }
-
-    expect(() => validateConfig(options)).to.throw()
-  })
 })
