@@ -154,15 +154,26 @@ class Node extends EventEmitter {
         }
 
         // all transports need to be setup before discover starts
-        if (this._modules.peerDiscovery && this._config.peerDiscovery) {
+        if (this._modules.peerDiscovery) {
           each(this._modules.peerDiscovery, (D, _cb) => {
+            let config = {}
+
+            if (D.tag &&
+              this._config.peerDiscovery &&
+              this._config.peerDiscovery[D.tag]) {
+              config = this._config.peerDiscovery[D.tag]
+            }
+
+            // If not configured to be enabled/disabled then enable by default
+            const enabled = config.enabled == null ? true : config.enabled
+
             // If enabled then start it
-            if (this._config.peerDiscovery[D.tag].enabled) {
+            if (enabled) {
               let d
 
               if (typeof D === 'function') {
-                this._config.peerDiscovery[D.tag].peerInfo = this.peerInfo
-                d = new D(this._config.peerDiscovery[D.tag])
+                config.peerInfo = this.peerInfo
+                d = new D(config)
               } else {
                 d = D
               }
