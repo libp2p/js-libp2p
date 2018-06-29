@@ -37,7 +37,6 @@
   "dependencies": {
     "async": "^2.6.1",
     "debug": "^3.1.0",
-    "lodash": "^4.17.10",
     "multiaddr": "^5.0.0",
     "mafmt": "^6.0.0",
     "peer-id": "~0.10.7",
