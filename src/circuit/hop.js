@@ -56,24 +56,27 @@ class Hop extends EE {
    */
   handle (message, sh) {
     if (!this.config.enabled) {
-      return this.utils.writeResponse(
+      this.utils.writeResponse(
         sh,
         proto.CircuitRelay.Status.HOP_CANT_SPEAK_RELAY)
+      return sh.close()
     }
 
     // check if message is `CAN_HOP`
     if (message.type === proto.CircuitRelay.Type.CAN_HOP) {
-      return this.utils.writeResponse(
+      this.utils.writeResponse(
         sh,
         proto.CircuitRelay.Status.SUCCESS)
+      return sh.close()
     }
 
     // This is a relay request - validate and create a circuit
     const srcPeerId = PeerId.createFromBytes(message.dstPeer.id)
     if (srcPeerId.toB58String() === this.peerInfo.id.toB58String()) {
-      return this.utils.writeResponse(
+      this.utils.writeResponse(
         sh,
         proto.CircuitRelay.Status.HOP_CANT_RELAY_TO_SELF)
+      return sh.close()
     }
 
     const dstPeerId = PeerId.createFromBytes(message.dstPeer.id).toB58String()
@@ -95,9 +98,10 @@ class Hop extends EE {
         const noPeer = (err) => {
           log.err(err)
           setImmediate(() => this.emit('circuit:error', err))
-          return this.utils.writeResponse(
+          this.utils.writeResponse(
             sh,
             proto.CircuitRelay.Status.HOP_NO_CONN_TO_DST)
+          return sh.close()
         }
 
         let dstPeer

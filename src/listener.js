@@ -35,7 +35,7 @@ module.exports = (swarm, options, connHandler) => {
   listener.listen = (ma, callback) => {
     callback = callback || (() => {})
 
-    swarm.handle(multicodec.relay, (relayProto, conn) => {
+    swarm.handle(multicodec.relay, (_, conn) => {
       const sh = new StreamHandler(conn)
 
       sh.read((err, msg) => {
