@@ -36,7 +36,7 @@
     "joi": "joi-browser"
   },
   "dependencies": {
-    "async": "^2.6.0",
+    "async": "^2.6.1",
     "joi": "^13.4.0",
     "joi-browser": "^13.4.0",
     "libp2p-connection-manager": "~0.0.2",
@@ -61,7 +61,7 @@
     "libp2p-kad-dht": "~0.10.0",
     "libp2p-mdns": "~0.12.0",
     "libp2p-mplex": "~0.8.0",
-    "libp2p-railing": "~0.9.1",
+    "libp2p-railing": "~0.9.2",
     "libp2p-secio": "~0.10.0",
     "libp2p-spdy": "~0.12.1",
     "libp2p-tcp": "~0.12.0",
@@ -72,7 +72,7 @@
     "pull-goodbye": "0.0.2",
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.8",
-    "sinon": "^5.0.7",
+    "sinon": "^6.0.1",
     "wrtc": "~0.1.6"
   },
   "contributors": [
