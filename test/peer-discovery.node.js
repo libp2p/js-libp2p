@@ -6,6 +6,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const signalling = require('libp2p-webrtc-star/src/sig-server')
 const parallel = require('async/parallel')
+const crypto = require('crypto')
 
 const createNode = require('./utils/create-node')
 const echo = require('./utils/echo')
@@ -62,7 +63,9 @@ describe('peer discovery', () => {
       config: {
         peerDiscovery: {
           mdns: {
-            enabled: true
+            enabled: true,
+            // use a random tag to prevent CI collision
+            serviceTag: crypto.randomBytes(10).toString('hex')
           }
         }
       }
@@ -81,7 +84,15 @@ describe('peer discovery', () => {
 
   // TODO needs a delay (this test is already long)
   describe.skip('WebRTCStar', () => {
-    setup({ webRTCStar: true })
+    setup({
+      config: {
+        peerDiscovery: {
+          webRTCStar: {
+            enabled: true
+          }
+        }
+      }
+    })
 
     it('find a peer', function (done) {
       this.timeout(15 * 1000)
@@ -98,7 +109,9 @@ describe('peer discovery', () => {
       config: {
         peerDiscovery: {
           mdns: {
-            enabled: true
+            enabled: true,
+            // use a random tag to prevent CI collision
+            serviceTag: crypto.randomBytes(10).toString('hex')
           },
           webRTCStar: {
             enabled: true
