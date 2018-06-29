@@ -1,3 +1,13 @@
+<a name="0.9.2"></a>
+## [0.9.2](https://github.com/libp2p/js-libp2p-railing/compare/v0.9.1...v0.9.2) (2018-06-29)
+
+
+### Bug Fixes
+
+* name of property and make it stop properly ([#77](https://github.com/libp2p/js-libp2p-railing/issues/77)) ([8f9bef6](https://github.com/libp2p/js-libp2p-railing/commit/8f9bef6))
+
+
+
 <a name="0.9.1"></a>
 ## [0.9.1](https://github.com/libp2p/js-libp2p-railing/compare/v0.9.0...v0.9.1) (2018-06-05)
 
