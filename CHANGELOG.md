@@ -1,3 +1,22 @@
+<a name="0.22.0"></a>
+# [0.22.0](https://github.com/libp2p/js-libp2p/compare/v0.21.0...v0.22.0) (2018-06-29)
+
+
+### Bug Fixes
+
+* add null property guards ([80f0b60](https://github.com/libp2p/js-libp2p/commit/80f0b60))
+* do not mutate the config object ([ac5cacb](https://github.com/libp2p/js-libp2p/commit/ac5cacb))
+* remove .only ([be9eafe](https://github.com/libp2p/js-libp2p/commit/be9eafe))
+* remove peer discovery module config checks ([4ad70ef](https://github.com/libp2p/js-libp2p/commit/4ad70ef))
+* typo in fixture and fail for correct reason ([1af5ba9](https://github.com/libp2p/js-libp2p/commit/1af5ba9))
+
+
+### Features
+
+* enable peer discovery modules by default ([e320854](https://github.com/libp2p/js-libp2p/commit/e320854))
+
+
+
 <a name="0.21.0"></a>
 # [0.21.0](https://github.com/libp2p/js-libp2p/compare/v0.20.4...v0.21.0) (2018-06-28)
 
