@@ -62,15 +62,36 @@ class Hop extends EE {
     }
 
     // This is a relay request - validate and create a circuit
-    const srcPeerId = PeerId.createFromBytes(message.dstPeer.id).toB58String()
-    if (srcPeerId === this.peerInfo.id.toB58String()) {
+    let srcPeerId = null
+    let dstPeerId = null
+    try {
+      srcPeerId = PeerId.createFromBytes(message.srcPeer.id).toB58String()
+      dstPeerId = PeerId.createFromBytes(message.dstPeer.id).toB58String()
+    } catch (err) {
+      log.err(err)
+
+      if (!srcPeerId) {
+        this.utils.writeResponse(
+          sh,
+          proto.Status.HOP_SRC_MULTIADDR_INVALID)
+        return sh.close()
+      }
+
+      if (!dstPeerId) {
+        this.utils.writeResponse(
+          sh,
+          proto.Status.HOP_DST_MULTIADDR_INVALID)
+        return sh.close()
+      }
+    }
+
+    if (srcPeerId === dstPeerId) {
       this.utils.writeResponse(
         sh,
         proto.Status.HOP_CANT_RELAY_TO_SELF)
       return sh.close()
     }
 
-    const dstPeerId = PeerId.createFromBytes(message.dstPeer.id).toB58String()
     if (!message.dstPeer.addrs.length) {
       // TODO: use encapsulate here
       const addr = multiaddr(`/p2p-circuit/ipfs/${dstPeerId}`).buffer
