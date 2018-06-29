@@ -7,7 +7,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 const series = require('async/series')
-const _times = require('lodash.times')
+const times = require('lodash/times')
 
 const FloodSub = require('../src')
 const utils = require('./utils')
@@ -139,7 +139,7 @@ describe('basics between 2 nodes', () => {
         }
       }
 
-      _times(10, () => fsB.publish('Z', new Buffer('banana')))
+      times(10, () => fsB.publish('Z', new Buffer('banana')))
     })
 
     it('Publish 10 msg to a topic:Z in nodeB as array', (done) => {
@@ -162,7 +162,7 @@ describe('basics between 2 nodes', () => {
       }
 
       let msgs = []
-      _times(10, () => msgs.push(new Buffer('banana')))
+      times(10, () => msgs.push(new Buffer('banana')))
       fsB.publish('Z', msgs)
     })
 

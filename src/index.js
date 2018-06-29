@@ -2,7 +2,7 @@
 
 const EventEmitter = require('events')
 const TimeCache = require('time-cache')
-const values = require('lodash.values')
+const values = require('lodash/values')
 const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
 const assert = require('assert')
