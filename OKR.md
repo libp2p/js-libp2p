@@ -15,6 +15,7 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 - libp2p has a network visualization tool 
 
 **libp2p is seen as the goto p2p networking stack**
+- js-libp2p releases get proper fanfare
 - kick off the js.libp2p.io Welcome page
 - Onboard 3 new full time contributors
 
