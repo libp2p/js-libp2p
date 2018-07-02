@@ -1,4 +1,4 @@
-js-libp2p-railing
+js-libp2p-bootstrap
 =================
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
@@ -19,7 +19,7 @@ js-libp2p-railing
 ## Usage
 
 ```JavaScript
-const Railing = require('libp2p-railing')
+const bootstrap = require('libp2p-bootstrap')
 
 const options = {
   list: <List of Multiaddrs>

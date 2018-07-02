@@ -19,7 +19,7 @@ function isIPFS (addr) {
   }
 }
 
-class Railing extends EventEmitter {
+class Bootstrap extends EventEmitter {
   constructor (options) {
     super()
     this._list = options.list
@@ -59,5 +59,5 @@ class Railing extends EventEmitter {
   }
 }
 
-exports = module.exports = Railing
+exports = module.exports = Bootstrap
 exports.tag = 'bootstrap'
