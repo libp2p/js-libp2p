@@ -14,6 +14,10 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 - libp2p and libp2p-switch become full state machines
 - libp2p has a network visualization tool 
 
+**libp2p is seen as the goto p2p networking stack**
+- kick off the js.libp2p.io Welcome page
+- Onboard 3 new full time contributors
+
 Once these OKRs are finished, you will be able to find them on the [2018 Q3 libp2p OKRs Spreadsheet](https://docs.google.com/spreadsheets/d/1HTXfgR5FyPTFhsTkFPRThkeMvHvCgJOaAs7BSl_vQ_0/edit#gid=1241853194)
 
 ## Previous Quarters
