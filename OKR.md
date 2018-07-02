@@ -4,13 +4,15 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 
 ## 2018 Q3
 
-**Objective 1**
-- KR 1
-- KR 2 
+**Ship Peer & Content Routing**
+- Delegated Peer Routing is completed 
+- Delegated Content Routing is completed  
+- DHT interops with go-libp2p
 
-**Objective 2**
-- KR 1
-- KR 2 
+**libp2p debugging is not painful**
+- Error handling is done correctly and error codes are part of the API
+- libp2p and libp2p-switch become full state machines
+- libp2p has a network visualization tool 
 
 Once these OKRs are finished, you will be able to find them on the [2018 Q3 libp2p OKRs Spreadsheet](https://docs.google.com/spreadsheets/d/1HTXfgR5FyPTFhsTkFPRThkeMvHvCgJOaAs7BSl_vQ_0/edit#gid=1241853194)
 
