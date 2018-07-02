@@ -1,5 +1,5 @@
 {
-  "name": "libp2p-railing",
+  "name": "libp2p-bootstrap",
   "version": "0.9.2",
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
@@ -15,20 +15,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/libp2p/js-libp2p-railing.git"
+    "url": "https://github.com/libp2p/js-libp2p-bootstrap.git"
   },
   "keywords": [
     "IPFS"
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/libp2p/js-ipfs-railing/issues"
+    "url": "https://github.com/libp2p/js-ipfs-bootstrap/issues"
   },
   "engines": {
     "node": ">=6.0.0",
     "npm": ">=3.0.0"
   },
-  "homepage": "https://github.com/libp2p/js-ipfs-railing",
+  "homepage": "https://github.com/libp2p/js-ipfs-bootstrap",
   "devDependencies": {
     "aegir": "^14.0.0",
     "chai": "^4.1.2",
