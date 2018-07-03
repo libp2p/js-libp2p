@@ -2,7 +2,7 @@
 'use strict'
 
 const sanitize = require('sanitize-filename')
-const deepmerge = require('lodash.merge')
+const deepmerge = require('lodash/merge')
 const crypto = require('libp2p-crypto')
 const DS = require('interface-datastore')
 const pull = require('pull-stream')
