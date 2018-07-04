@@ -15,7 +15,7 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 **libp2p debugging is not painful**
 
 - Error handling is done correctly and error codes are part of the API
-- libp2p and libp2p-switch become full state machines
+- libp2p and libp2p-switch become full state machines - @jacobheun
 - libp2p has a network visualization tool 
 
 **libp2p is seen as the go to p2p networking stack**
