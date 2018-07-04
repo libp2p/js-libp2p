@@ -6,17 +6,17 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 
 **All pieces are there. Ship Peer & Content Routing + IPNS**
 
-- Delegated Peer Routing is completed 
-- Delegated Content Routing is completed  
-- DHT interops with go-libp2p
+- Delegated Peer Routing is completed - @jacobheun
+- Delegated Content Routing is completed - @jacobheun
+- DHT interops with go-libp2p - @vascosantos
 - IPNS works over PubSub (+ go-libp2p interop) - @vascosantos
 - IPNS works over DHT (+ go-libp2p interop) - @vascosantos
 
 **libp2p debugging is not painful**
 
-- Error handling is done correctly and error codes are part of the API
+- Error handling is done correctly and error codes are part of the API - @jacobheun
 - libp2p and libp2p-switch become full state machines - @jacobheun
-- libp2p has a network visualization tool 
+- libp2p has a network visualization tool - @vascosantos
 
 **libp2p is seen as the go to p2p networking stack**
 
