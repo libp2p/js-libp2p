@@ -9,14 +9,14 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 - Delegated Peer Routing is completed - @jacobheun
 - Delegated Content Routing is completed - @jacobheun
 - DHT interops with go-libp2p - @vascosantos
-- IPNS works over PubSub (+ go-libp2p interop) - @vascosantos
-- IPNS works over DHT (+ go-libp2p interop) - @vascosantos
+- IPNS works over PubSub (+ go-libp2p interop) - @vasco-santos
+- IPNS works over DHT (+ go-libp2p interop) - @vasco-santos
 
 **libp2p debugging and interop testing is not painful**
 
 - Error handling is done correctly and error codes are part of the API - @jacobheun
 - libp2p and libp2p-switch become full state machines - @jacobheun
-- libp2p has a network visualization tool - @vascosantos
+- libp2p has a network visualization tool - @vasco-santos
 - js-libp2p has a daemon with a RPC API and a client library
 - We get the RPC API standardised so that go-libp2p and rust-libp2p can implement it as well
 - Write the first set of interop tests that tests
