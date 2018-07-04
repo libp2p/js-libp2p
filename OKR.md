@@ -12,11 +12,14 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 - IPNS works over PubSub (+ go-libp2p interop) - @vascosantos
 - IPNS works over DHT (+ go-libp2p interop) - @vascosantos
 
-**libp2p debugging is not painful**
+**libp2p debugging and interop testing is not painful**
 
 - Error handling is done correctly and error codes are part of the API - @jacobheun
 - libp2p and libp2p-switch become full state machines - @jacobheun
 - libp2p has a network visualization tool - @vascosantos
+- js-libp2p has a daemon with a RPC API and a client library
+- We get the RPC API standardised so that go-libp2p and rust-libp2p can implement it as well
+- Write the first set of interop tests that tests
 
 **libp2p is seen as the go to p2p networking stack**
 
