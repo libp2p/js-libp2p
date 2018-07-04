@@ -9,8 +9,8 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 - Delegated Peer Routing is completed 
 - Delegated Content Routing is completed  
 - DHT interops with go-libp2p
-- IPNS works over PubSub (+ go-libp2p interop)
-- IPNS works over DHT (+ go-libp2p interop)
+- IPNS works over PubSub (+ go-libp2p interop) - @vascosantos
+- IPNS works over DHT (+ go-libp2p interop) - @vascosantos
 
 **libp2p debugging is not painful**
 
