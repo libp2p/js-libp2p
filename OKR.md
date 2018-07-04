@@ -4,31 +4,7 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 
 ## 2018 Q3
 
-**All pieces are there. Ship Peer & Content Routing + IPNS**
-
-- Delegated Peer Routing is completed - @jacobheun
-- Delegated Content Routing is completed - @jacobheun
-- DHT interops with go-libp2p - @vascosantos
-- NAT Traversal is implemented in js-libp2p (for at least TCP) - @jacobheun
-- IPNS works over PubSub (+ go-libp2p interop) - @vasco-santos
-- IPNS works over DHT (+ go-libp2p interop) - @vasco-santos
-
-**libp2p debugging and interop testing is not painful**
-
-- Error handling is done correctly and error codes are part of the API - @jacobheun
-- libp2p and libp2p-switch become full state machines - @jacobheun
-- libp2p has a network visualization tool - @vasco-santos
-- js-libp2p has a daemon with a RPC API and a client library - @jacobheun
-- We get the RPC API standardised so that go-libp2p and rust-libp2p can implement it as well - @jacobheun
-- Write the first set of interop tests that tests - @jacobheun
-
-**libp2p is seen as the go to p2p networking stack**
-
-- js-libp2p releases get proper fanfare - @diasdavid
-- kick off the js.libp2p.io Welcome page - @diasdavid
-- Onboard 3 new full time contributors - @diasdavid
-
-Once these OKRs are finished, you will be able to find them on the [2018 Q3 libp2p OKRs Spreadsheet](https://docs.google.com/spreadsheets/d/1HTXfgR5FyPTFhsTkFPRThkeMvHvCgJOaAs7BSl_vQ_0/edit#gid=1241853194)
+Find the js-libp2p OKRs for 2018 Q2 at the [2018 Q3 libp2p OKRs Spreadsheet](https://docs.google.com/spreadsheets/d/1HTXfgR5FyPTFhsTkFPRThkeMvHvCgJOaAs7BSl_vQ_0/edit#gid=1241853194)
 
 ## Previous Quarters
 
