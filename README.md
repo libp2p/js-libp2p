@@ -12,8 +12,8 @@
 </p>
 
 <p align="center">
-  <a href="https://circleci.com/gh/libp2p/js-libp2p"><img src="https://circleci.com/gh/libp2p/js-libp2p.svg?style=svg" /></a>
-  <a href="https://coveralls.io/github/libp2p/js-libp2p?branch=master"><img src="https://coveralls.io/repos/github/libp2p/js-libp2p/badge.svg?branch=master"></a>
+  <a href="https://ci.ipfs.team/job/libp2p/job/js-libp2p/job/master/"><img src="https://ci.ipfs.team/buildStatus/icon?job=libp2p/js-libp2p/master" /></a>
+  <a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://codecov.io/gh/libp2p/js-libp2p/branch/master/graph/badge.svg"></a>
   <br>
   <a href="https://david-dm.org/libp2p/js-libp2p"><img src="https://david-dm.org/libp2p/js-libp2p.svg?style=flat-square" /></a>
   <a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
