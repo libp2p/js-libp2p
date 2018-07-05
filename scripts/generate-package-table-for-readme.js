@@ -17,10 +17,6 @@ const columns = [
 // Arrays are packages. Index 0 is the GitHub repo and index 1 is the npm package
 const rows = [
   'Libp2p',
-  ['libp2p/interface-', 'interface-'],
-  ['libp2p/js-libp2p-', 'libp2p-'],
-
-  'Libp2p',
   ['libp2p/interface-libp2p', 'interface-libp2p'],
   ['libp2p/js-libp2p', 'libp2p'],
 
