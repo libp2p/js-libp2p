@@ -63,9 +63,9 @@ const rows = [
   ['libp2p/js-peer-info', 'peer-info'],
 
   'Content Routing',
-  ['libp2p/interface-content-routing', 'interface-'],
-  ['libp2p/js-libp2p-delegated-content-routing', 'libp2p-'],
-  ['libp2p/js-libp2p-kad-dht', 'libp2p-'],
+  ['libp2p/interface-content-routing', 'interface-content-routing'],
+  ['libp2p/js-libp2p-delegated-content-routing', 'libp2p-delegated-content-routing'],
+  ['libp2p/js-libp2p-kad-dht', 'libp2p-kad-dht'],
 
   'Peer Routing',
   ['libp2p/interface-peer-routing', 'interface-peer-routing'],
