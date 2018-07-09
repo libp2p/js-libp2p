@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "async": "^2.6.0",
-    "big.js": "^5.0.3",
+    "big.js": "^5.1.2",
     "debug": "^3.1.0",
     "hashlru": "^2.2.1",
     "interface-connection": "~0.3.2",
