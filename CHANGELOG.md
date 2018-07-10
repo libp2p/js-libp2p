@@ -1,3 +1,14 @@
+<a name="0.40.5"></a>
+## [0.40.5](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.4...v0.40.5) (2018-07-10)
+
+
+### Bug Fixes
+
+* re-enable stats tests in node ([c4ed449](https://github.com/libp2p/js-libp2p-switch/commit/c4ed449))
+* stats - observer expects protocolTag ([41210cf](https://github.com/libp2p/js-libp2p-switch/commit/41210cf))
+
+
+
 <a name="0.40.4"></a>
 ## [0.40.4](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.3...v0.40.4) (2018-06-06)
 
