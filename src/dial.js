@@ -218,6 +218,7 @@ class Dialer {
       }
 
       if (err) {
+        log('muxer upgrade failed with error', err)
         // couldn't upgrade to Muxer, it is ok, use the existing connection
         return callback(null, connection)
       }
@@ -257,7 +258,7 @@ class Dialer {
       //  - add incomming new streams to connHandler
       const nextMuxer = (key) => {
         log('selecting %s', key)
-        selectSafe(msDialer, key, (err, conn) => {
+        selectSafe(msDialer, key, (err, _conn) => {
           if (err) {
             if (muxers.length === 0) {
               return callback(new Error('could not upgrade to stream muxing'))
@@ -265,6 +266,9 @@ class Dialer {
 
             return nextMuxer(muxers.shift())
           }
+
+          // observe muxed connections
+          const conn = observeConnection(null, key, _conn, this.switch.observer)
 
           const muxedConn = this.switch.muxers[key].dialer(conn)
           this.switch.muxedConns[b58Id] = {
@@ -404,7 +408,8 @@ class Dialer {
         return callback(err)
       }
 
-      selectSafe(msDialer, this.protocol, (err, conn) => {
+      selectSafe(msDialer, this.protocol, (err, _conn) => {
+        const conn = observeConnection(null, this.protocol, _conn, this.switch.observer)
         callback(err, conn)
       }, callback)
     }, callback)

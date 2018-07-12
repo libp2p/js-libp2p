@@ -3,9 +3,15 @@
 const multistream = require('multistream-select')
 const observeConn = require('./observe-connection')
 
+const debug = require('debug')
+const log = debug('libp2p:switch:protocol-muxer')
+
 module.exports = function protocolMuxer (protocols, observer) {
   return (transport) => (_parentConn) => {
-    const parentConn = observeConn(transport, null, _parentConn, observer)
+    const parentConn = transport
+      ? observeConn(transport, null, _parentConn, observer)
+      : _parentConn
+
     const ms = new multistream.Listener()
 
     Object.keys(protocols).forEach((protocol) => {
@@ -14,6 +20,7 @@ module.exports = function protocolMuxer (protocols, observer) {
       }
 
       const handler = (protocolName, _conn) => {
+        log(`registering handler with protocol ${protocolName}`)
         const protocol = protocols[protocolName]
         if (protocol) {
           const handlerFunc = protocol && protocol.handlerFunc
