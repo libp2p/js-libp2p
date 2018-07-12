@@ -174,8 +174,8 @@ describe('Stats', () => {
       expect(err).to.not.exist()
       switches.forEach((swtch) => {
         let snapshot = swtch.stats.forProtocol('/echo/1.0.0').snapshot
-        expect(snapshot.dataReceived.toFixed()).to.equal('4')
-        expect(snapshot.dataSent.toFixed()).to.equal('4')
+        expect(snapshot.dataReceived.toFixed()).to.equal('8')
+        expect(snapshot.dataSent.toFixed()).to.equal('8')
       })
       teardown(switches, done)
     })
