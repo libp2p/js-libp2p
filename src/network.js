@@ -205,8 +205,7 @@ class Network {
       pull.values([msg]),
       lp.encode(),
       conn,
-      lp.decode(),
-      pull.collect((err) => callback(err))
+      pull.collect(callback)
     )
   }
 }
