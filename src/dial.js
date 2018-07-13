@@ -409,8 +409,12 @@ class Dialer {
       }
 
       selectSafe(msDialer, this.protocol, (err, _conn) => {
+        if (err) {
+          log(`could not perform protocol handshake: `, err)
+          return callback(err)
+        }
         const conn = observeConnection(null, this.protocol, _conn, this.switch.observer)
-        callback(err, conn)
+        callback(null, conn)
       }, callback)
     }, callback)
   }
