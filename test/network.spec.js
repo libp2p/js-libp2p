@@ -8,7 +8,6 @@ const Connection = require('interface-connection').Connection
 const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
 const series = require('async/series')
-const Buffer = require('safe-buffer').Buffer
 const PeerBook = require('peer-book')
 const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
