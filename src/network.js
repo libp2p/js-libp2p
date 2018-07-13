@@ -205,7 +205,7 @@ class Network {
       pull.values([msg]),
       lp.encode(),
       conn,
-      pull.collect(callback)
+      pull.onEnd(callback)
     )
   }
 }
