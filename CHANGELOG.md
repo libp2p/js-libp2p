@@ -1,3 +1,15 @@
+<a name="0.40.6"></a>
+## [0.40.6](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.5...v0.40.6) (2018-07-17)
+
+
+### Bug Fixes
+
+* adjust test values ([19d99d3](https://github.com/libp2p/js-libp2p-switch/commit/19d99d3))
+* handle error in protocol handshake ([c18e0bd](https://github.com/libp2p/js-libp2p-switch/commit/c18e0bd))
+* no stats on multistream proto dial ([bff0a8b](https://github.com/libp2p/js-libp2p-switch/commit/bff0a8b))
+
+
+
 <a name="0.40.5"></a>
 ## [0.40.5](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.4...v0.40.5) (2018-07-10)
 
