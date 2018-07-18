@@ -7,7 +7,13 @@ const lp = require('pull-length-prefixed')
 
 const msg = require('./message')
 
-module.exports = (conn, callback) => {
+module.exports = (conn, expectedPeerInfo, callback) => {
+  if (typeof expectedPeerInfo === 'function') {
+    callback = expectedPeerInfo
+    expectedPeerInfo = null
+    console.warn('WARNING: no expected peer info was given, identify will not be able to verify peer integrity')
+  }
+
   pull(
     conn,
     lp.decode(),
@@ -30,6 +36,10 @@ module.exports = (conn, callback) => {
         }
 
         const peerInfo = new PeerInfo(id)
+        if (expectedPeerInfo && expectedPeerInfo.id.toB58String() !== id.toB58String()) {
+          return callback(new Error('invalid peer'))
+        }
+
         try {
           input.listenAddrs
             .map(multiaddr)
@@ -59,7 +69,7 @@ function getObservedAddrs (input) {
 
   let addrs = input.observedAddr
 
-  if (!Array.isArray(input.observedAddr)) {
+  if (!Array.isArray(addrs)) {
     addrs = [addrs]
   }
 

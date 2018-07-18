@@ -19,7 +19,7 @@
 
 ## Description
 
-Identify is a STUN protocol, used by libp2p-swarmin order to broadcast and learn about the `ip:port` pairs a specific peer is available through and to know when a new stream muxer is established, so a conn can be reused.
+Identify is a STUN protocol, used by libp2p-swarm in order to broadcast and learn about the `ip:port` pairs a specific peer is available through and to know when a new stream muxer is established, so a conn can be reused.
 
 ## How does it work
 
