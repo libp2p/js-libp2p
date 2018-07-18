@@ -47,3 +47,30 @@ exports.tryEcho = (conn, callback) => {
     })
   )
 }
+
+/**
+ * A utility method for calling done multiple times to help with async
+ * testing
+ *
+ * @param {Number} n The number of times done will be called
+ * @param {Function} willFinish An optional callback for cleanup before done is called
+ * @param {Function} done
+ * @returns {void}
+ */
+exports.doneAfter = (n, willFinish, done) => {
+  if (!done) {
+    done = willFinish
+    willFinish = undefined
+  }
+
+  let count = 0
+  let errors = []
+  return (err) => {
+    count++
+    if (err) errors.push(err)
+    if (count >= n) {
+      if (willFinish) willFinish()
+      done(errors.length > 0 ? errors : null)
+    }
+  }
+}

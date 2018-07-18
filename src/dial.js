@@ -317,6 +317,7 @@ class Dialer {
             delete this.switch.muxedConns[b58Id]
             this.peerInfo.disconnect()
             this.switch._peerInfo.disconnect()
+            log(`closed connection to ${b58Id}`)
             setImmediate(() => this.switch.emit('peer-mux-closed', this.peerInfo))
           })
 

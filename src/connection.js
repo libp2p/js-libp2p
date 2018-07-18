@@ -43,59 +43,77 @@ class ConnectionManager {
       //   2. call getPeerInfo
       //   3. add this conn to the pool
       if (this.switch.identify) {
-        // overload peerInfo to use Identify instead
-        conn.getPeerInfo = (callback) => {
-          const conn = muxedConn.newStream()
-          const ms = new multistream.Dialer()
-          callback = once(callback)
-
-          waterfall([
-            (cb) => ms.handle(conn, cb),
-            (cb) => ms.select(identify.multicodec, cb),
-            (conn, cb) => identify.dialer(conn, cb),
-            (peerInfo, observedAddrs, cb) => {
-              observedAddrs.forEach((oa) => {
-                this.switch._peerInfo.multiaddrs.addSafe(oa)
-              })
-              cb(null, peerInfo)
-            }
-          ], (err, peerInfo) => {
-            if (peerInfo) {
-              conn.setPeerInfo(peerInfo)
-            }
-            callback(err, peerInfo)
-          })
-        }
-
-        conn.getPeerInfo((err, peerInfo) => {
-          if (err) {
-            return log('Identify not successful')
+        // Get the peer info from the crypto exchange
+        conn.getPeerInfo((err, cryptoPI) => {
+          if (err || !cryptoPI) {
+            log('crypto peerInfo wasnt found')
           }
-          const b58Str = peerInfo.id.toB58String()
 
-          this.switch.muxedConns[b58Str] = { muxer: muxedConn }
+          // overload peerInfo to use Identify instead
+          conn.getPeerInfo = (callback) => {
+            const conn = muxedConn.newStream()
+            const ms = new multistream.Dialer()
+            callback = once(callback)
 
-          if (peerInfo.multiaddrs.size > 0) {
-            // with incomming conn and through identify, going to pick one
-            // of the available multiaddrs from the other peer as the one
-            // I'm connected to as we really can't be sure at the moment
-            // TODO add this consideration to the connection abstraction!
-            peerInfo.connect(peerInfo.multiaddrs.toArray()[0])
-          } else {
-            // for the case of websockets in the browser, where peers have
-            // no addr, use just their IPFS id
-            peerInfo.connect(`/ipfs/${b58Str}`)
+            waterfall([
+              (cb) => ms.handle(conn, cb),
+              (cb) => ms.select(identify.multicodec, cb),
+              // run identify and verify the peer has the same info from crypto
+              (conn, cb) => identify.dialer(conn, cryptoPI, cb),
+              (peerInfo, observedAddrs, cb) => {
+                observedAddrs.forEach((oa) => {
+                  this.switch._peerInfo.multiaddrs.addSafe(oa)
+                })
+                cb(null, peerInfo)
+              }
+            ], (err, peerInfo) => {
+              if (err) {
+                return muxedConn.end(() => {
+                  if (peerInfo) {
+                    setImmediate(() => this.switch.emit('peer-mux-closed', peerInfo))
+                  }
+                  callback(err, null)
+                })
+              }
+
+              if (peerInfo) {
+                conn.setPeerInfo(peerInfo)
+              }
+              callback(err, peerInfo)
+            })
           }
-          peerInfo = this.switch._peerBook.put(peerInfo)
 
-          muxedConn.on('close', () => {
-            delete this.switch.muxedConns[b58Str]
-            peerInfo.disconnect()
+          conn.getPeerInfo((err, peerInfo) => {
+            if (err) {
+              return log('identify not successful')
+            }
+            const b58Str = peerInfo.id.toB58String()
+
+            this.switch.muxedConns[b58Str] = { muxer: muxedConn }
+
+            if (peerInfo.multiaddrs.size > 0) {
+              // with incomming conn and through identify, going to pick one
+              // of the available multiaddrs from the other peer as the one
+              // I'm connected to as we really can't be sure at the moment
+              // TODO add this consideration to the connection abstraction!
+              peerInfo.connect(peerInfo.multiaddrs.toArray()[0])
+            } else {
+              // for the case of websockets in the browser, where peers have
+              // no addr, use just their IPFS id
+              peerInfo.connect(`/ipfs/${b58Str}`)
+            }
             peerInfo = this.switch._peerBook.put(peerInfo)
-            setImmediate(() => this.switch.emit('peer-mux-closed', peerInfo))
-          })
 
-          setImmediate(() => this.switch.emit('peer-mux-established', peerInfo))
+            muxedConn.on('close', () => {
+              delete this.switch.muxedConns[b58Str]
+              peerInfo.disconnect()
+              peerInfo = this.switch._peerBook.put(peerInfo)
+              log(`closed connection to ${b58Str}`)
+              setImmediate(() => this.switch.emit('peer-mux-closed', peerInfo))
+            })
+
+            setImmediate(() => this.switch.emit('peer-mux-established', peerInfo))
+          })
         })
       }
 
