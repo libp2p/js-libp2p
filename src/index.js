@@ -12,6 +12,7 @@ const plaintext = require('./plaintext')
 const Observer = require('./observer')
 const Stats = require('./stats')
 const assert = require('assert')
+const Errors = require('./errors')
 
 class Switch extends EE {
   constructor (peerInfo, peerBook, options) {
@@ -51,6 +52,8 @@ class Switch extends EE {
 
     // Crypto details
     this.crypto = plaintext
+
+    this.protector = this._options.protector || null
 
     this.transport = new TransportManager(this)
     this.connection = new ConnectionManager(this)
@@ -197,3 +200,4 @@ class Switch extends EE {
 }
 
 module.exports = Switch
+module.exports.errors = Errors

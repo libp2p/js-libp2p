@@ -1,5 +1,6 @@
 'use strict'
 
+require('./pnet.node')
 require('./transports.node')
 require('./stream-muxers.node')
 require('./secio.node')

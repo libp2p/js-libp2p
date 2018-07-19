@@ -143,9 +143,18 @@ class Dialer {
         if (!this.protocol) {
           return cb()
         }
+
         // If we have a muxer, create a new stream, otherwise it's a standard connection
-        const connection = muxer.newStream ? muxer.newStream() : muxer
-        this._performProtocolHandshake(connection, cb)
+        if (muxer.newStream) {
+          muxer.newStream((err, conn) => {
+            if (err) return cb(err)
+
+            this._performProtocolHandshake(conn, cb)
+          })
+          return
+        }
+
+        this._performProtocolHandshake(muxer, cb)
       }
     ], (err, connection) => {
       callback(err, connection)
@@ -181,8 +190,12 @@ class Dialer {
         this._attemptDial(cb)
       },
       (baseConnection, cb) => {
+        // Create a private connection if it's needed
+        this._createPrivateConnection(baseConnection, cb)
+      },
+      (connection, cb) => {
         // Add the Switch's crypt encryption to the connection
-        this._encryptConnection(baseConnection, cb)
+        this._encryptConnection(connection, cb)
       }
     ], (err, encryptedConnection) => {
       if (err) {
@@ -190,6 +203,31 @@ class Dialer {
       }
 
       callback(null, encryptedConnection)
+    })
+  }
+
+  /**
+   * If the switch has a private network protector, `switch.protector`, its `protect`
+   * method will be called with the given connection. The resulting, wrapped connection
+   * will be returned via the callback.
+   *
+   * @param {Connection} connection The connection to protect
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
+  _createPrivateConnection (connection, callback) {
+    if (this.switch.protector === null) {
+      return callback(null, connection)
+    }
+
+    // If the switch has a protector, be private
+    const protectedConnection = this.switch.protector.protect(connection, (err) => {
+      if (err) {
+        return callback(err)
+      }
+
+      protectedConnection.setPeerInfo(this.peerInfo)
+      callback(null, protectedConnection)
     })
   }
 

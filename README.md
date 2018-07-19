@@ -75,6 +75,11 @@ If defined, `options` should be an object with the following keys and respective
   ]
   ```
 
+### Private Networks
+
+libp2p-switch supports private networking. In order to enabled private networks, the `switch.protector` must be
+set and must contain a `protect` method. You can see an example of this in the [private network
+tests]([./test/pnet.node.js]).
 
 ## API
 
