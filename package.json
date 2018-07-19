@@ -33,7 +33,8 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p",
   "browser": {
-    "joi": "joi-browser"
+    "joi": "joi-browser",
+    "./test/utils/bundle-nodejs": "./test/utils/bundle-browser"
   },
   "dependencies": {
     "async": "^2.6.1",
@@ -73,6 +74,7 @@
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.8",
     "sinon": "^6.1.3",
+    "webrtcsupport": "^2.2.0",
     "wrtc": "~0.1.6"
   },
   "contributors": [
