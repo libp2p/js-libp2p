@@ -146,7 +146,10 @@ class Node extends EventEmitter {
     })
 
     series([
-      (cb) => this._switch.start(cb),
+      (cb) => {
+        this.connectionManager.start()
+        this._switch.start(cb)
+      },
       (cb) => {
         if (ws) {
           // always add dialing on websockets
@@ -256,7 +259,10 @@ class Node extends EventEmitter {
         }
         cb()
       },
-      (cb) => this._switch.stop(cb),
+      (cb) => {
+        this.connectionManager.stop()
+        this._switch.stop(cb)
+      },
       (cb) => {
         this.emit('stop')
         cb()

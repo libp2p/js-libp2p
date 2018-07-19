@@ -165,6 +165,9 @@ class Node extends libp2p {
             active: false
           }
         },
+        dht: {
+          kBucketSize: 20
+        },
         // Enable/Disable Experimental features
         EXPERIMENTAL: {               // Experimental features ("behind a flag")
           pubsub: false,
