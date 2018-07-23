@@ -1,3 +1,13 @@
+<a name="0.40.7"></a>
+## [0.40.7](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.6...v0.40.7) (2018-07-23)
+
+
+### Bug Fixes
+
+* improve erroring around invalid peers ([a62a72b](https://github.com/libp2p/js-libp2p-switch/commit/a62a72b))
+
+
+
 <a name="0.40.6"></a>
 ## [0.40.6](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.5...v0.40.6) (2018-07-17)
 
