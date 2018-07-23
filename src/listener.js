@@ -25,6 +25,15 @@ module.exports = (handler) => {
     socket.on('error', noop)
 
     const addr = getMultiaddr(socket)
+    if (!addr) {
+      if (socket.remoteAddress === undefined) {
+        log('connection closed before p2p connection made')
+      } else {
+        log('error interpreting incoming p2p connection')
+      }
+      return
+    }
+
     log('new connection', addr.toString())
 
     const s = toPull.duplex(socket)
