@@ -1,3 +1,13 @@
+<a name="0.7.2"></a>
+## [0.7.2](https://github.com/libp2p/js-libp2p-identify/compare/v0.7.1...v0.7.2) (2018-07-23)
+
+
+### Bug Fixes
+
+* add the ability to verify expected peer data ([aa19936](https://github.com/libp2p/js-libp2p-identify/commit/aa19936))
+
+
+
 <a name="0.7.1"></a>
 ## [0.7.1](https://github.com/libp2p/js-libp2p-identify/compare/v0.7.0...v0.7.1) (2018-04-30)
 
