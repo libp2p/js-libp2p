@@ -9,6 +9,8 @@ const PeerId = require('peer-id')
 const waterfall = require('async/waterfall')
 const WS = require('libp2p-websockets')
 const Bootstrap = require('libp2p-bootstrap')
+const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
+const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 
 const validateConfig = require('../src/config').validate
 
@@ -96,6 +98,29 @@ describe('configuration', () => {
     }
 
     expect(validateConfig(options)).to.deep.equal(expected)
+  })
+
+  it('should allow for delegated content and peer routing', () => {
+    const peerRouter = new DelegatedPeerRouter()
+    const contentRouter = new DelegatedContentRouter(peerInfo)
+
+    const options = {
+      peerInfo,
+      modules: {
+        transport: [ WS ],
+        peerDiscovery: [ Bootstrap ],
+        peerRouting: peerRouter,
+        contentRouting: contentRouter
+      },
+      config: {
+        peerDiscovery: {
+          bootstrap: {
+            interval: 1000,
+            enabled: true
+          }
+        }
+      }
+    }
   })
 
   it('should not allow for dht to be enabled without it being provided', () => {

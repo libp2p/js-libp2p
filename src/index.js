@@ -102,8 +102,9 @@ class Node extends EventEmitter {
     }
 
     // Attach remaining APIs
-    this.peerRouting = peerRouting(this)
-    this.contentRouting = contentRouting(this)
+    // If peer or content routing modules have been provided, use those, otherwise use the dht
+    this.peerRouting = this._modules.peerRouting || peerRouting(this)
+    this.contentRouting = this._modules.contentRouting || contentRouting(this)
     this.dht = dht(this)
 
     this._getPeerInfo = getPeerInfo(this)

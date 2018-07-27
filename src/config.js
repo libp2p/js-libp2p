@@ -10,14 +10,16 @@ const OptionsSchema = Joi.object({
   peerInfo: Joi.object().required(),
   peerBook: Joi.object(),
   modules: Joi.object().keys({
-    transport: Joi.array().items(ModuleSchema).min(1).required(),
-    streamMuxer: Joi.array().items(ModuleSchema).allow(null),
     connEncryption: Joi.array().items(ModuleSchema).allow(null),
     connProtector: Joi.object().keys({
       protect: Joi.func().required()
     }).unknown(),
+    contentRouting: Joi.object(),
+    dht: ModuleSchema.allow(null),
     peerDiscovery: Joi.array().items(ModuleSchema).allow(null),
-    dht: ModuleSchema.allow(null)
+    peerRouting: Joi.object(),
+    streamMuxer: Joi.array().items(ModuleSchema).allow(null),
+    transport: Joi.array().items(ModuleSchema).min(1).required()
   }).required(),
   config: Joi.object().keys({
     peerDiscovery: Joi.object().allow(null),
