@@ -1,3 +1,18 @@
+<a name="0.23.0"></a>
+# [0.23.0](https://github.com/libp2p/js-libp2p/compare/v0.22.0...v0.23.0) (2018-07-27)
+
+
+### Bug Fixes
+
+* start and stop connection manager with libp2p ([6106915](https://github.com/libp2p/js-libp2p/commit/6106915))
+
+
+### Features
+
+* add check for protector and enforced pnet ([2b7cc55](https://github.com/libp2p/js-libp2p/commit/2b7cc55))
+
+
+
 <a name="0.22.0"></a>
 # [0.22.0](https://github.com/libp2p/js-libp2p/compare/v0.21.0...v0.22.0) (2018-06-29)
 
