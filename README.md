@@ -39,7 +39,7 @@ We've come a long way, but this project is still in Alpha, lots of development i
 
 ## Lead Maintainer
 
-[David Dias](https://github.com/diasdavid/)
+[Jacob Heun](https://github.com/jacobheun/)
 
 ## Table of Contents
 
