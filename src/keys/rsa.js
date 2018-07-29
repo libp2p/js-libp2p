@@ -1,7 +1,19 @@
 'use strict'
 
 const crypto = require('crypto')
-const keypair = require('keypair')
+let keypair
+try {
+  const ursa = require('ursa-optional') // throws if not compiled
+  keypair = ({bits}) => {
+    const key = ursa.generatePrivateKey(bits)
+    return {
+      private: key.toPrivatePem(),
+      public: key.toPublicPem()
+    }
+  }
+} catch (e) {
+  keypair = require('keypair')
+}
 const setImmediate = require('async/setImmediate')
 const pemToJwk = require('pem-jwk').pem2jwk
 const jwkToPem = require('pem-jwk').jwk2pem
