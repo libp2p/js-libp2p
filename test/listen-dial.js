@@ -194,10 +194,9 @@ describe('dial', () => {
     })
   })
 
-  // TODO: figure out why is this failing
-  it.skip('dial and destroy on listener', (done) => {
+  it('dial and destroy on listener', (done) => {
     let count = 0
-    const closed = ++count === 2 ? finish() : null
+    const closed = () => ++count === 2 ? finish() : null
 
     const ma = multiaddr('/ip6/::/tcp/9067')
 
