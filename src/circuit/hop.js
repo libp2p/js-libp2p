@@ -11,7 +11,6 @@ const EE = require('events').EventEmitter
 const once = require('once')
 const utilsFactory = require('./utils')
 const StreamHandler = require('./stream-handler')
-const assignInWith = require('lodash/assignInWith')
 const proto = require('../protocol')
 const multiaddr = require('multiaddr')
 
@@ -36,14 +35,7 @@ class Hop extends EE {
     this.swarm = swarm
     this.peerInfo = this.swarm._peerInfo
     this.utils = utilsFactory(swarm)
-    this.config = assignInWith(
-      {
-        active: false,
-        enabled: false
-      },
-      options,
-      (orig, src) => typeof src === 'undefined' ? false : src)
-
+    this.config = options || {active: false, enabled: false}
     this.active = this.config.active
   }
 
