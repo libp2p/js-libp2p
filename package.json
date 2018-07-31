@@ -6,7 +6,7 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
-    "test": "aegir test -t node",
+    "test": "aegir test -t node -f test/**/*.js",
     "release": "aegir release -t node --no-build",
     "release-minor": "aegir release -t node --type minor --no-build",
     "release-major": "aegir-release -t node --type major --no-build",
@@ -34,7 +34,7 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^13.0.6",
+    "aegir": "^15.1.0",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "interface-transport": "~0.3.6",
