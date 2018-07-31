@@ -30,10 +30,11 @@ describe('listener', function () {
     let conn = null
 
     beforeEach(function (done) {
-      stream = handshake({timeout: 1000 * 60})
+      stream = handshake({ timeout: 1000 * 60 })
       shake = stream.handshake
       conn = new Connection(stream)
-      conn.setPeerInfo(new PeerInfo(PeerId.createFromB58String('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE')))
+      conn.setPeerInfo(new PeerInfo(PeerId
+        .createFromB58String('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE')))
 
       waterfall([
         (cb) => PeerId.createFromJSON(nodes.node4, cb),
@@ -91,7 +92,7 @@ describe('listener', function () {
         pull.values([proto.CircuitRelay.encode(relayMsg)]),
         lp.encode(),
         pull.collect((err, encoded) => {
-          expect(err).to.be.null()
+          expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
         })
       )
@@ -128,7 +129,7 @@ describe('listener', function () {
         pull.values([proto.CircuitRelay.encode(relayMsg)]),
         lp.encode(),
         pull.collect((err, encoded) => {
-          expect(err).to.be.null()
+          expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
         })
       )
@@ -165,7 +166,7 @@ describe('listener', function () {
         pull.values([proto.CircuitRelay.encode(relayMsg)]),
         lp.encode(),
         pull.collect((err, encoded) => {
-          expect(err).to.be.null()
+          expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
         })
       )
@@ -190,11 +191,11 @@ describe('listener', function () {
         pull.values([Buffer.from([relayMsg])]),
         lp.encode(),
         pull.collect((err, encoded) => {
-          expect(err).to.be.null()
+          expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
         }),
-        lp.decodeFromReader(shake, {maxLength: this.maxLength}, (err, msg) => {
-          expect(err).to.be.null()
+        lp.decodeFromReader(shake, { maxLength: this.maxLength }, (err, msg) => {
+          expect(err).to.not.exist()
           expect(proto.CircuitRelay.decode(msg).type).to.equal(proto.CircuitRelay.Type.STATUS)
           expect(proto.CircuitRelay.decode(msg).code).to.equal(proto.CircuitRelay.Status.MALFORMED_MESSAGE)
           done()
@@ -233,7 +234,7 @@ describe('listener', function () {
       peerInfo.multiaddrs.add(`/ip4/127.0.0.1/tcp/4003/ws`)
 
       listener.getAddrs((err, addrs) => {
-        expect(err).to.be.null()
+        expect(err).to.not.exist()
         expect(addrs).to.deep.equal([
           multiaddr(`/p2p-circuit/ip4/0.0.0.0/tcp/4002/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`),
           multiaddr(`/p2p-circuit/ip4/127.0.0.1/tcp/4003/ws/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`)])
@@ -244,7 +245,7 @@ describe('listener', function () {
       peerInfo.multiaddrs.add(`/ip4/127.0.0.1/tcp/4003/ws`)
       peerInfo.multiaddrs.add(`/p2p-circuit/ip4/0.0.0.0/tcp/4002`)
       listener.getAddrs((err, addrs) => {
-        expect(err).to.be.null()
+        expect(err).to.not.exist()
         expect(addrs[0]
           .toString())
           .to.equal(`/p2p-circuit/ip4/0.0.0.0/tcp/4002/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`)

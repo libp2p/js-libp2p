@@ -64,7 +64,8 @@ class Circuit {
         .filter(segment => segment.length)
 
       relaySegments.forEach((relaySegment) => {
-        this.dialer._dialRelay(this.utils.peerInfoFromMa(multiaddr(relaySegment)))
+        const ma = this.utils.peerInfoFromMa(multiaddr(relaySegment))
+        this.dialer._dialRelay(ma)
       })
     })
   }

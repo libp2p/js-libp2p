@@ -36,9 +36,9 @@ module.exports = (swarm, options, connHandler) => {
     callback = callback || (() => {})
 
     swarm.handle(multicodec.relay, (relayProto, conn) => {
-      const streamHandler = new StreamHandler(conn)
+      const sh = new StreamHandler(conn)
 
-      streamHandler.read((err, msg) => {
+      sh.read((err, msg) => {
         if (err) {
           log.err(err)
           return
@@ -48,21 +48,25 @@ module.exports = (swarm, options, connHandler) => {
         try {
           request = proto.CircuitRelay.decode(msg)
         } catch (err) {
-          return utils.writeResponse(streamHandler, proto.CircuitRelay.Status.MALFORMED_MESSAGE)
+          return utils.writeResponse(
+            sh,
+            proto.CircuitRelay.Status.MALFORMED_MESSAGE)
         }
 
         switch (request.type) {
           case proto.CircuitRelay.Type.CAN_HOP:
           case proto.CircuitRelay.Type.HOP: {
-            return listener.hopHandler.handle(request, streamHandler)
+            return listener.hopHandler.handle(request, sh)
           }
 
           case proto.CircuitRelay.Type.STOP: {
-            return listener.stopHandler.handle(request, streamHandler, connHandler)
+            return listener.stopHandler.handle(request, sh, connHandler)
           }
 
           default: {
-            return utils.writeResponse(streamHandler, proto.CircuitRelay.Status.INVALID_MSG_TYPE)
+            return utils.writeResponse(
+              sh,
+              proto.CircuitRelay.Status.INVALID_MSG_TYPE)
           }
         }
       })
@@ -128,7 +132,8 @@ module.exports = (swarm, options, connHandler) => {
           // by default we're reachable over any relay
           listenAddrs.push(multiaddr(`/p2p-circuit`).encapsulate(addr))
         } else {
-          listenAddrs.push(multiaddr(`/p2p-circuit`).encapsulate(`${addr}/ipfs/${swarm._peerInfo.id.toB58String()}`))
+          const ma = `${addr}/ipfs/${swarm._peerInfo.id.toB58String()}`
+          listenAddrs.push(multiaddr(`/p2p-circuit`).encapsulate(ma))
         }
       } else {
         listenAddrs.push(addr.encapsulate(`/ipfs/${swarm._peerInfo.id.toB58String()}`))

@@ -22,21 +22,38 @@ class Stop extends EE {
     this.utils = utilsFactory(swarm)
   }
 
-  handle (message, streamHandler, callback) {
+  /**
+   * Handle the incoming STOP message
+   *
+   * @param {{}} msg  - the parsed protobuf message
+   * @param {StreamHandler} sh  - the stream handler wrapped connection
+   * @param {Function} callback  - callback
+   * @returns {undefined}
+   */
+  handle (msg, sh, callback) {
     callback = callback || (() => {})
 
     series([
-      (cb) => this.utils.validateAddrs(message, streamHandler, proto.CircuitRelay.Type.STOP, cb),
-      (cb) => this.utils.writeResponse(streamHandler, proto.CircuitRelay.Status.Success, cb)
+      (cb) => this.utils.validateAddrs(
+        msg,
+        sh,
+        proto.CircuitRelay.Type.STOP,
+        cb),
+      (cb) => this.utils.writeResponse(
+        sh,
+        proto.CircuitRelay.Status.Success,
+        cb)
     ], (err) => {
       if (err) {
-        callback() // we don't return the error here, since multistream select don't expect one
+        // we don't return the error here,
+        // since multistream select don't expect one
+        callback()
         return log(err)
       }
 
-      const peerInfo = new PeerInfo(peerIdFromId(message.srcPeer.id))
-      message.srcPeer.addrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
-      const newConn = new Connection(streamHandler.rest())
+      const peerInfo = new PeerInfo(peerIdFromId(msg.srcPeer.id))
+      msg.srcPeer.addrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
+      const newConn = new Connection(sh.rest())
       newConn.setPeerInfo(peerInfo)
       setImmediate(() => this.emit('connection', newConn))
       callback(newConn)

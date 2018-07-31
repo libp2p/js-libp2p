@@ -4,7 +4,6 @@ const TestNode = require('./test-node')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const eachAsync = require('async/each')
-const pull = require('pull-stream')
 
 exports.createNodes = function createNodes (configNodes, callback) {
   const nodes = {}
@@ -76,35 +75,4 @@ exports.stopNodes = function stopNodes (nodes, callback) {
       }
       callback()
     })
-}
-
-function reverse (protocol, conn) {
-  pull(
-    conn,
-    pull.map((data) => {
-      return data.toString().split('').reverse().join('')
-    }),
-    conn
-  )
-}
-
-exports.dialAndReverse = function dialAndRevers (srcNode, dstNode, vals, done) {
-  dstNode.handle('/ipfs/reverse/1.0.0', reverse)
-
-  srcNode.dial(dstNode.peerInfo, '/ipfs/reverse/1.0.0', (err, conn) => {
-    if (err) return done(err)
-
-    pull(
-      pull.values(vals),
-      conn,
-      pull.collect((err, data) => {
-        if (err) return done(err)
-
-        let reversed = data.map((val, i) => {
-          return val.toString()
-        })
-
-        srcNode.hangUp(srcNode.peerInfo, () => done(null, reversed))
-      }))
-  })
 }

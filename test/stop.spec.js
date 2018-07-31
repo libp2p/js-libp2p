@@ -25,9 +25,10 @@ describe('stop', function () {
     let stream
 
     beforeEach(function (done) {
-      stream = handshake({timeout: 1000 * 60})
+      stream = handshake({ timeout: 1000 * 60 })
       conn = new Connection(stream)
-      conn.setPeerInfo(new PeerInfo(PeerId.createFromB58String('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE')))
+      const peerId = PeerId.createFromB58String('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE')
+      conn.setPeerInfo(new PeerInfo(peerId))
 
       waterfall([
         (cb) => PeerId.createFromJSON(nodes.node4, cb),

@@ -28,7 +28,7 @@ class StreamHandler {
       this.timeout = timeout || 1000 * 60
     }
 
-    this.stream = handshake({timeout: this.timeout}, cb)
+    this.stream = handshake({ timeout: this.timeout }, cb)
     this.shake = this.stream.handshake
 
     pull(this.stream, conn, this.stream)
@@ -49,15 +49,18 @@ class StreamHandler {
       cb(new Error(`handler is not in a valid state`))
     }
 
-    lp.decodeFromReader(this.shake, {maxLength: this.maxLength}, (err, msg) => {
-      if (err) {
-        log.err(err)
-        // this.shake.abort(err)
-        return cb(err)
-      }
+    lp.decodeFromReader(
+      this.shake,
+      { maxLength: this.maxLength },
+      (err, msg) => {
+        if (err) {
+          log.err(err)
+          // this.shake.abort(err)
+          return cb(err)
+        }
 
-      return cb(null, msg)
-    })
+        return cb(null, msg)
+      })
   }
 
   /**
@@ -111,6 +114,19 @@ class StreamHandler {
     this.stream = null
     this.shake = null
     return rest
+  }
+
+  /**
+   * Close the stream
+   *
+   * @returns {undefined}
+   */
+  close () {
+    // close stream
+    pull(
+      pull.empty(),
+      this.rest()
+    )
   }
 }
 

@@ -120,10 +120,10 @@ module.exports = function (swarm) {
   }
 
   return {
-    getB58String: getB58String,
-    peerInfoFromMa: peerInfoFromMa,
-    isPeerConnected: isPeerConnected,
-    validateAddrs: validateAddrs,
-    writeResponse: writeResponse
+    getB58String,
+    peerInfoFromMa,
+    isPeerConnected,
+    validateAddrs,
+    writeResponse
   }
 }

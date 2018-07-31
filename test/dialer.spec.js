@@ -52,7 +52,7 @@ describe(`dialer tests`, function () {
       })
 
       dialer.dial(dstMa, (err, conn) => {
-        expect(err).to.be.null()
+        expect(err).to.not.exist()
         expect(conn).to.be.an.instanceOf(Connection)
         done()
       })
@@ -66,7 +66,7 @@ describe(`dialer tests`, function () {
       })
 
       dialer.dial(dstMa, (err, conn) => {
-        expect(err).to.be.null()
+        expect(err).to.not.exist()
         expect(conn).to.be.an.instanceOf(Connection)
         done()
       })
@@ -103,7 +103,7 @@ describe(`dialer tests`, function () {
         })]),
         lp.encode(),
         pull.collect((err, encoded) => {
-          expect(err).to.be.null()
+          expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
           dialer._dialRelay.callsFake((peer, cb) => {
             cb(null, new StreamHandler(fromConn))
@@ -112,7 +112,7 @@ describe(`dialer tests`, function () {
       )
 
       dialer.canHop(peer, (err) => {
-        expect(err).to.be.null()
+        expect(err).to.not.exist()
         expect(dialer.relayPeers.has(peer.id.toB58String())).to.be.ok()
       })
     })
@@ -125,7 +125,7 @@ describe(`dialer tests`, function () {
         })]),
         lp.encode(),
         pull.collect((err, encoded) => {
-          expect(err).to.be.null()
+          expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
           dialer._dialRelay.callsFake((peer, cb) => {
             cb(null, new StreamHandler(fromConn))
@@ -134,7 +134,7 @@ describe(`dialer tests`, function () {
       )
 
       dialer.canHop(peer, (err) => {
-        expect(err).to.be.null()
+        expect(err).to.not.exist()
         expect(dialer.relayPeers.has(peer.id.toB58String())).to.not.be.ok()
       })
     })
@@ -166,7 +166,7 @@ describe(`dialer tests`, function () {
       })
 
       dialer._dialPeer(dstMa, (err, conn) => {
-        expect(err).to.be.null()
+        expect(err).to.not.exist()
         expect(conn).to.be.an.instanceOf(Connection)
         expect(conn).to.deep.equal(dialer.relayPeers.get(nodes.node3.id))
         done()
@@ -232,7 +232,7 @@ describe(`dialer tests`, function () {
           type: proto.CircuitRelay.Type.STATUS,
           code: proto.CircuitRelay.Status.SUCCESS
         }))
-        expect(err).to.be.null()
+        expect(err).to.not.exist()
         expect(proto.CircuitRelay.decode(msg).dstPeer.addrs[0]).to.deep.equal(dstMa.buffer)
         done()
       })
@@ -258,7 +258,7 @@ describe(`dialer tests`, function () {
           })]), // send arbitrary non 200 code
           lp.encode(),
           pull.collect((err, encoded) => {
-            expect(err).to.be.null()
+            expect(err).to.not.exist()
             encoded.forEach((e) => shake.write(e))
           })
         )
