@@ -57,8 +57,6 @@
     "protons": "^1.0.1",
     "pull-abortable": "^4.1.1",
     "pull-handshake": "^1.1.4",
-    "pull-stream": "^3.6.7",
-    "safe-buffer": "^5.1.1",
-    "setimmediate": "^1.0.5"
+    "pull-stream": "^3.6.7"
   }
 }

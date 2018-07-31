@@ -1,8 +1,5 @@
 'use strict'
 
-require('setimmediate')
-require('safe-buffer')
-
 const pull = require('pull-stream')
 const debug = require('debug')
 const PeerInfo = require('peer-info')
