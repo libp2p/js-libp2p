@@ -1,3 +1,13 @@
+<a name="0.12.1"></a>
+## [0.12.1](https://github.com/libp2p/js-libp2p-tcp/compare/v0.12.0...v0.12.1) (2018-07-31)
+
+
+### Bug Fixes
+
+* invalid ip address and daemon can be crashed by remote user ([4b04b17](https://github.com/libp2p/js-libp2p-tcp/commit/4b04b17))
+
+
+
 <a name="0.12.0"></a>
 # [0.12.0](https://github.com/libp2p/js-libp2p-tcp/compare/v0.11.6...v0.12.0) (2018-04-05)
 
