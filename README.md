@@ -26,7 +26,7 @@ const options = {
   interval: 5000 // ms, default is 10s
 }
 
-const b = new Railing(options)
+const b = new bootstrap(options)
 
 b.on('peer', function (peerInfo) {
   // found a new peer
