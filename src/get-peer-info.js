@@ -3,6 +3,7 @@
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
+const setImmediate = require('async/setImmediate')
 
 module.exports = (node) => {
   /*
@@ -16,12 +17,19 @@ module.exports = (node) => {
     // Multiaddr instance or Multiaddr String
     } else if (multiaddr.isMultiaddr(peer) || typeof peer === 'string') {
       if (typeof peer === 'string') {
-        peer = multiaddr(peer)
+        try {
+          peer = multiaddr(peer)
+        } catch (err) {
+          return setImmediate(() => callback(err))
+        }
       }
 
       const peerIdB58Str = peer.getPeerId()
+
       if (!peerIdB58Str) {
-        throw new Error(`peer multiaddr instance or string must include peerId`)
+        return setImmediate(() => {
+          callback(new Error('peer multiaddr instance or string must include peerId'))
+        })
       }
 
       try {
