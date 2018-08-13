@@ -1,3 +1,14 @@
+<a name="0.2.1"></a>
+## [0.2.1](https://github.com/libp2p/js-libp2p-circuit/compare/v0.2.0...v0.2.1) (2018-08-13)
+
+
+### Bug Fixes
+
+* close streams ([546af97](https://github.com/libp2p/js-libp2p-circuit/commit/546af97))
+* options ([22e8518](https://github.com/libp2p/js-libp2p-circuit/commit/22e8518))
+
+
+
 <a name="0.2.0"></a>
 # [0.2.0](https://github.com/libp2p/js-libp2p-circuit/compare/v0.1.5...v0.2.0) (2018-04-05)
 
