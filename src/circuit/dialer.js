@@ -29,8 +29,24 @@ class Dialer {
   constructor (swarm, options) {
     this.swarm = swarm
     this.relayPeers = new Map()
+    this.relayConns = new Map()
     this.options = options
     this.utils = utilsFactory(swarm)
+  }
+
+  /**
+   * Helper that returns a relay connection
+   *
+   * @param {*} relay
+   * @param {*} callback
+   * @returns {Function} - callback
+   */
+  _dialRelayHelper (relay, callback) {
+    if (this.relayConns.has(relay.id.toB58String())) {
+      return callback(null, this.relayConns.get(relay.id.toB58String()))
+    }
+
+    return this._dialRelay(relay, callback)
   }
 
   /**
@@ -40,10 +56,9 @@ class Dialer {
    * @param {Function} cb - a callback called once dialed
    * @returns {Connection} - the connection
    *
-   * @memberOf Dialer
    */
   dial (ma, cb) {
-    cb = cb || (() => {})
+    cb = cb || (() => { })
     const strMa = ma.toString()
     if (!strMa.includes('/p2p-circuit')) {
       log.err('invalid circuit address')
@@ -76,40 +91,41 @@ class Dialer {
    * Does the peer support the HOP protocol
    *
    * @param {PeerInfo} peer
-   * @param {Function} cb
+   * @param {Function} callback
    * @returns {*}
    */
-  canHop (peer, cb) {
-    cb = once(cb || (() => {}))
+  canHop (peer, callback) {
+    callback = once(callback || (() => { }))
 
-    if (!this.relayPeers.has(this.utils.getB58String(peer))) {
-      let sh
+    this._dialRelayHelper(peer, (err, conn) => {
+      if (err) {
+        return callback(err)
+      }
+
+      const sh = new StreamHandler(conn)
       waterfall([
-        (wCb) => this._dialRelay(peer, wCb),
-        (_sh, wCb) => {
-          sh = _sh
-          wCb()
-        },
-        (wCb) => sh.write(
-          proto.CircuitRelay.encode({
-            type: proto.CircuitRelay.Type.CAN_HOP
-          }), wCb),
-        (wCb) => sh.read(wCb),
-        (msg, wCb) => {
-          const response = proto.CircuitRelay.decode(msg)
-
-          if (response.code !== proto.CircuitRelay.Status.SUCCESS) {
-            return log(`HOP not supported, skipping - ${this.utils.getB58String(peer)}`)
-          }
-
-          log(`HOP supported adding as relay - ${this.utils.getB58String(peer)}`)
-          this.relayPeers.set(this.utils.getB58String(peer), peer)
-          wCb(null)
+        (cb) => sh.write(proto.CircuitRelay.encode({
+          type: proto.CircuitRelay.Type.CAN_HOP
+        }), cb),
+        (cb) => sh.read(cb)
+      ], (err, msg) => {
+        if (err) {
+          return callback(err)
         }
-      ], cb)
-    }
+        const response = proto.CircuitRelay.decode(msg)
 
-    return cb(null)
+        if (response.code !== proto.CircuitRelay.Status.SUCCESS) {
+          const err = new Error(`HOP not supported, skipping - ${this.utils.getB58String(peer)}`)
+          log(err)
+          return callback(err)
+        }
+
+        log(`HOP supported adding as relay - ${this.utils.getB58String(peer)}`)
+        this.relayPeers.set(this.utils.getB58String(peer), peer)
+        sh.close()
+        callback()
+      })
+    })
   }
 
   /**
@@ -182,50 +198,48 @@ class Dialer {
    */
   _negotiateRelay (relay, dstMa, callback) {
     dstMa = multiaddr(dstMa)
-
+    relay = this.utils.peerInfoFromMa(relay)
     const srcMas = this.swarm._peerInfo.multiaddrs.toArray()
-    let sh
-    waterfall([
-      (cb) => {
-        if (relay instanceof Connection) {
-          return cb(null, new StreamHandler(relay))
+    this._dialRelayHelper(relay, (err, conn) => {
+      if (err) {
+        log.err(err)
+        return callback(err)
+      }
+      let sh = new StreamHandler(conn)
+      waterfall([
+        (cb) => {
+          log(`negotiating relay for peer ${dstMa.getPeerId()}`)
+          sh.write(
+            proto.CircuitRelay.encode({
+              type: proto.CircuitRelay.Type.HOP,
+              srcPeer: {
+                id: this.swarm._peerInfo.id.id,
+                addrs: srcMas.map((addr) => addr.buffer)
+              },
+              dstPeer: {
+                id: PeerId.createFromB58String(dstMa.getPeerId()).id,
+                addrs: [dstMa.buffer]
+              }
+            }), cb)
+        },
+        (cb) => sh.read(cb)
+      ], (err, msg) => {
+        if (err) {
+          return callback(err)
         }
-        return this._dialRelay(this.utils.peerInfoFromMa(relay), cb)
-      },
-      (_sh, cb) => {
-        sh = _sh
-        cb(null)
-      },
-      (cb) => {
-        log(`negotiating relay for peer ${dstMa.getPeerId()}`)
-        sh.write(
-          proto.CircuitRelay.encode({
-            type: proto.CircuitRelay.Type.HOP,
-            srcPeer: {
-              id: this.swarm._peerInfo.id.id,
-              addrs: srcMas.map((addr) => addr.buffer)
-            },
-            dstPeer: {
-              id: PeerId.createFromB58String(dstMa.getPeerId()).id,
-              addrs: [dstMa.buffer]
-            }
-          }), cb)
-      },
-      (cb) => sh.read(cb),
-      (msg, cb) => {
         const message = proto.CircuitRelay.decode(msg)
         if (message.type !== proto.CircuitRelay.Type.STATUS) {
-          return cb(new Error(`Got invalid message type - ` +
+          return callback(new Error(`Got invalid message type - ` +
             `expected ${proto.CircuitRelay.Type.STATUS} got ${message.type}`))
         }
 
         if (message.code !== proto.CircuitRelay.Status.SUCCESS) {
-          return cb(new Error(`Got ${message.code} error code trying to dial over relay`))
+          return callback(new Error(`Got ${message.code} error code trying to dial over relay`))
         }
 
-        cb(null, new Connection(sh.rest()))
-      }
-    ], callback)
+        callback(null, new Connection(sh.rest()))
+      })
+    })
   }
 
   /**
@@ -237,7 +251,7 @@ class Dialer {
    * @private
    */
   _dialRelay (peer, cb) {
-    cb = once(cb || (() => {}))
+    cb = once(cb || (() => { }))
 
     this.swarm.dial(
       peer,
@@ -247,7 +261,7 @@ class Dialer {
           log.err(err)
           return cb(err)
         }
-        cb(null, new StreamHandler(conn))
+        cb(null, conn)
       }))
   }
 }

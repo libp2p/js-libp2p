@@ -32,12 +32,6 @@
     "url": "https://github.com/libp2p/js-libp2p-circuit/issues"
   },
   "homepage": "https://github.com/libp2p/js-libp2p-circuit#readme",
-  "devDependencies": {
-    "aegir": "^13.0.6",
-    "chai": "^4.1.2",
-    "dirty-chai": "^2.0.1",
-    "sinon": "^4.5.0"
-  },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
@@ -45,14 +39,25 @@
     "Pedro Teixeira <i@pgte.me>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>"
   ],
-  "dependencies": {
+  "devDependencies": {
+    "aegir": "^13.0.6",
     "assert": "^1.4.1",
+    "chai": "^4.1.2",
+    "dirty-chai": "^2.0.1",
+    "libp2p": "^0.23.0",
+    "libp2p-secio": "^0.10.0",
+    "pull-protocol-buffers": "^0.1.2",
+    "sinon": "^4.5.0"
+  },
+  "dependencies": {
     "async": "^2.6.0",
     "debug": "^3.1.0",
+    "defaults-deep": "^0.2.4",
     "interface-connection": "^0.3.2",
     "mafmt": "^6.0.0",
     "multiaddr": "^5.0.0",
     "multistream-select": "^0.14.1",
+    "peer-id": "^0.11.0",
     "peer-info": "~0.14.1",
     "protons": "^1.0.1",
     "pull-abortable": "^4.1.1",

@@ -83,7 +83,7 @@ module.exports = (swarm, options, connHandler) => {
    * @return {void}
    */
   listener.close = (cb) => {
-    swarm.unhandle(multicodec.stop)
+    swarm.unhandle(multicodec.relay)
     setImmediate(() => listener.emit('close'))
     cb()
   }

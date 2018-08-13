@@ -6,8 +6,7 @@ const EE = require('events').EventEmitter
 const Connection = require('interface-connection').Connection
 const utilsFactory = require('./utils')
 const PeerInfo = require('peer-info')
-const PeerId = require('peer-id')
-const proto = require('../protocol')
+const proto = require('../protocol').CircuitRelay
 const series = require('async/series')
 
 const debug = require('debug')
@@ -34,15 +33,8 @@ class Stop extends EE {
     callback = callback || (() => {})
 
     series([
-      (cb) => this.utils.validateAddrs(
-        msg,
-        sh,
-        proto.CircuitRelay.Type.STOP,
-        cb),
-      (cb) => this.utils.writeResponse(
-        sh,
-        proto.CircuitRelay.Status.Success,
-        cb)
+      (cb) => this.utils.validateAddrs(msg, sh, proto.Type.STOP, cb),
+      (cb) => this.utils.writeResponse(sh, proto.Status.Success, cb)
     ], (err) => {
       if (err) {
         // we don't return the error here,
@@ -51,7 +43,7 @@ class Stop extends EE {
         return log(err)
       }
 
-      const peerInfo = new PeerInfo(peerIdFromId(msg.srcPeer.id))
+      const peerInfo = new PeerInfo(this.utils.peerIdFromId(msg.srcPeer.id))
       msg.srcPeer.addrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
       const newConn = new Connection(sh.rest())
       newConn.setPeerInfo(peerInfo)
@@ -62,11 +54,3 @@ class Stop extends EE {
 }
 
 module.exports = Stop
-
-function peerIdFromId (id) {
-  if (typeof id === 'string') {
-    return PeerId.createFromB58String(id)
-  }
-
-  return PeerId.createFromBytes(id)
-}

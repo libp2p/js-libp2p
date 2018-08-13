@@ -119,11 +119,20 @@ module.exports = function (swarm) {
     return cb(null)
   }
 
+  function peerIdFromId (id) {
+    if (typeof id === 'string') {
+      return PeerId.createFromB58String(id)
+    }
+
+    return PeerId.createFromBytes(id)
+  }
+
   return {
     getB58String,
     peerInfoFromMa,
     isPeerConnected,
     validateAddrs,
-    writeResponse
+    writeResponse,
+    peerIdFromId
   }
 }

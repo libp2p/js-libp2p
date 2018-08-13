@@ -7,14 +7,14 @@ const Dialer = require('../src/circuit/dialer')
 const nodes = require('./fixtures/nodes')
 const Connection = require('interface-connection').Connection
 const multiaddr = require('multiaddr')
-const handshake = require('pull-handshake')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const waterfall = require('async/waterfall')
 const pull = require('pull-stream')
-const lp = require('pull-length-prefixed')
+const pair = require('pull-pair/duplex')
+const pb = require('pull-protocol-buffers')
+
 const proto = require('../src/protocol')
-const StreamHandler = require('../src/circuit/stream-handler')
 const utilsFactory = require('../src/circuit/utils')
 
 const sinon = require('sinon')
@@ -76,66 +76,62 @@ describe(`dialer tests`, function () {
   describe(`.canHop`, function () {
     const dialer = sinon.createStubInstance(Dialer)
 
-    let stream = null
-    let shake = null
     let fromConn = null
     let peer = new PeerInfo(PeerId.createFromB58String('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA'))
 
+    let p = null
     beforeEach(function () {
-      stream = handshake({ timeout: 1000 * 60 })
-      shake = stream.handshake
-      fromConn = new Connection(stream)
+      p = pair()
+      fromConn = new Connection(p[0])
 
       dialer.relayPeers = new Map()
+      dialer.relayConns = new Map()
       dialer.utils = utilsFactory({})
       dialer.canHop.callThrough()
+      dialer._dialRelayHelper.callThrough()
     })
 
     afterEach(function () {
       dialer._dialRelay.reset()
     })
 
-    it(`should handle successful CAN_HOP`, function () {
-      pull(
-        pull.values([proto.CircuitRelay.encode({
-          type: proto.CircuitRelay.type.HOP,
-          code: proto.CircuitRelay.Status.SUCCESS
-        })]),
-        lp.encode(),
-        pull.collect((err, encoded) => {
-          expect(err).to.not.exist()
-          encoded.forEach((e) => shake.write(e))
-          dialer._dialRelay.callsFake((peer, cb) => {
-            cb(null, new StreamHandler(fromConn))
-          })
-        })
-      )
+    it(`should handle successful CAN_HOP`, (done) => {
+      dialer._dialRelay.callsFake((_, cb) => {
+        pull(
+          pull.values([{
+            type: proto.CircuitRelay.type.HOP,
+            code: proto.CircuitRelay.Status.SUCCESS
+          }]),
+          pb.encode(proto.CircuitRelay),
+          p[1]
+        )
+        cb(null, fromConn)
+      })
 
       dialer.canHop(peer, (err) => {
         expect(err).to.not.exist()
         expect(dialer.relayPeers.has(peer.id.toB58String())).to.be.ok()
+        done()
       })
     })
 
-    it(`should handle failed CAN_HOP`, function () {
-      pull(
-        pull.values([proto.CircuitRelay.encode({
-          type: proto.CircuitRelay.type.HOP,
-          code: proto.CircuitRelay.Status.HOP_CANT_SPEAK_RELAY
-        })]),
-        lp.encode(),
-        pull.collect((err, encoded) => {
-          expect(err).to.not.exist()
-          encoded.forEach((e) => shake.write(e))
-          dialer._dialRelay.callsFake((peer, cb) => {
-            cb(null, new StreamHandler(fromConn))
-          })
-        })
-      )
+    it(`should handle failed CAN_HOP`, function (done) {
+      dialer._dialRelay.callsFake((_, cb) => {
+        pull(
+          pull.values([{
+            type: proto.CircuitRelay.type.HOP,
+            code: proto.CircuitRelay.Status.HOP_CANT_SPEAK_RELAY
+          }]),
+          pb.encode(proto.CircuitRelay),
+          p[1]
+        )
+        cb(null, fromConn)
+      })
 
       dialer.canHop(peer, (err) => {
-        expect(err).to.not.exist()
-        expect(dialer.relayPeers.has(peer.id.toB58String())).to.not.be.ok()
+        expect(err).to.exist()
+        expect(dialer.relayPeers.has(peer.id.toB58String())).not.to.be.ok()
+        done()
       })
     })
   })
@@ -192,9 +188,9 @@ describe(`dialer tests`, function () {
     const dialer = sinon.createStubInstance(Dialer)
     const dstMa = multiaddr(`/ipfs/${nodes.node4.id}`)
 
-    let conn
-    let stream
-    let shake
+    let conn = null
+    let peer = null
+    let p = null
     let callback = sinon.stub()
 
     beforeEach(function (done) {
@@ -209,14 +205,13 @@ describe(`dialer tests`, function () {
           cb()
         },
         (cb) => {
+          dialer.utils = utilsFactory({})
           dialer.relayConns = new Map()
           dialer._negotiateRelay.callThrough()
-          stream = handshake({ timeout: 1000 * 60 })
-          shake = stream.handshake
-          conn = new Connection()
-          conn.setPeerInfo(new PeerInfo(PeerId.createFromB58String(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`)))
-          conn.setInnerConn(stream)
-          dialer._negotiateRelay(conn, dstMa, callback)
+          dialer._dialRelayHelper.callThrough()
+          peer = new PeerInfo(PeerId.createFromB58String(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`))
+          p = pair()
+          conn = new Connection(p[1])
           cb()
         }
       ], done)
@@ -227,41 +222,69 @@ describe(`dialer tests`, function () {
     })
 
     it(`should write the correct dst addr`, function (done) {
-      lp.decodeFromReader(shake, (err, msg) => {
-        shake.write(proto.CircuitRelay.encode({
-          type: proto.CircuitRelay.Type.STATUS,
-          code: proto.CircuitRelay.Status.SUCCESS
-        }))
+      dialer._dialRelay.callsFake((_, cb) => {
+        pull(
+          p[0],
+          pb.decode(proto.CircuitRelay),
+          pull.asyncMap((msg, cb) => {
+            expect(msg.dstPeer.addrs[0]).to.deep.equal(dstMa.buffer)
+            cb(null, {
+              type: proto.CircuitRelay.Type.STATUS,
+              code: proto.CircuitRelay.Status.SUCCESS
+            })
+          }),
+          pb.encode(proto.CircuitRelay),
+          p[0]
+        )
+        cb(null, conn)
+      })
+
+      dialer._negotiateRelay(peer, dstMa, done)
+    })
+
+    it(`should negotiate relay`, function (done) {
+      dialer._dialRelay.callsFake((_, cb) => {
+        pull(
+          p[0],
+          pb.decode(proto.CircuitRelay),
+          pull.asyncMap((msg, cb) => {
+            expect(msg.dstPeer.addrs[0]).to.deep.equal(dstMa.buffer)
+            cb(null, {
+              type: proto.CircuitRelay.Type.STATUS,
+              code: proto.CircuitRelay.Status.SUCCESS
+            })
+          }),
+          pb.encode(proto.CircuitRelay),
+          p[0]
+        )
+        cb(null, conn)
+      })
+
+      dialer._negotiateRelay(peer, dstMa, (err, conn) => {
         expect(err).to.not.exist()
-        expect(proto.CircuitRelay.decode(msg).dstPeer.addrs[0]).to.deep.equal(dstMa.buffer)
+        expect(conn).to.be.instanceOf(Connection)
         done()
       })
     })
 
     it(`should handle failed relay negotiation`, function (done) {
-      callback.callsFake((err, msg) => {
+      dialer._dialRelay.callsFake((_, cb) => {
+        cb(null, conn)
+        pull(
+          pull.values([{
+            type: proto.CircuitRelay.Type.STATUS,
+            code: proto.CircuitRelay.Status.MALFORMED_MESSAGE
+          }]),
+          pb.encode(proto.CircuitRelay),
+          p[0]
+        )
+      })
+
+      dialer._negotiateRelay(peer, dstMa, (err, conn) => {
         expect(err).to.not.be.null()
         expect(err).to.be.an.instanceOf(Error)
         expect(err.message).to.be.equal(`Got 400 error code trying to dial over relay`)
-        expect(callback.calledOnce).to.be.ok()
         done()
-      })
-
-      // send failed message
-      lp.decodeFromReader(shake, (err, msg) => {
-        if (err) return done(err)
-
-        pull(
-          pull.values([proto.CircuitRelay.encode({
-            type: proto.CircuitRelay.Type.STATUS,
-            code: proto.CircuitRelay.Status.MALFORMED_MESSAGE
-          })]), // send arbitrary non 200 code
-          lp.encode(),
-          pull.collect((err, encoded) => {
-            expect(err).to.not.exist()
-            encoded.forEach((e) => shake.write(e))
-          })
-        )
       })
     })
   })
