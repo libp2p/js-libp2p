@@ -149,11 +149,11 @@ class Node extends libp2p {
       config: {                       // The config object is the part of the config that can go into a file, config.json.
         peerDiscovery: {
           mdns: {                     // mdns options
-            interval: 1000            // ms
+            interval: 1000,           // ms
             enabled: true
           },
           webrtcStar: {               // webrtc-star options
-            interval: 1000            // ms
+            interval: 1000,           // ms
             enabled: false
           }
           // .. other discovery module options.
