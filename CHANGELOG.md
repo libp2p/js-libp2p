@@ -1,3 +1,13 @@
+<a name="0.23.1"></a>
+## [0.23.1](https://github.com/libp2p/js-libp2p/compare/v0.23.0...v0.23.1) (2018-08-13)
+
+
+### Bug Fixes
+
+* callback with error for invalid or non-peer multiaddr ([#232](https://github.com/libp2p/js-libp2p/issues/232)) ([c8a86db](https://github.com/libp2p/js-libp2p/commit/c8a86db))
+
+
+
 <a name="0.23.0"></a>
 # [0.23.0](https://github.com/libp2p/js-libp2p/compare/v0.22.0...v0.23.0) (2018-07-27)
 
