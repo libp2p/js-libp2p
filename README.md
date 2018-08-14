@@ -118,11 +118,8 @@ const defaultsDeep = require('@nodeutils/defaults-deep')
 const Protector = require('libp2p-pnet')
 
 class Node extends libp2p {
-  constructor (_peerInfo, _peerBook, _options) {
+  constructor (_options) {
     const defaults = {
-      peerInfo: _peerInfo,            // The Identity of your Peer
-      peerBook: _peerBook,            // Where peers get tracked, if undefined libp2p will create one instance
-
       // The libp2p modules for this libp2p bundle
       modules: {
         transport: [
@@ -136,12 +133,11 @@ class Node extends libp2p {
         connEncryption: [
           SECIO
         ],
-        connProtector: new Protector(/*protector specific opts*/),
+        // Encryption for private networks. Needs additional private key to work
+        // connProtector: new Protector(/*protector specific opts*/),
         peerDiscovery: [
           MulticastDNS
         ],
-        peerRouting: {},              // Currently both peerRouting and contentRouting are patched through the DHT,
-        contentRouting: {},           // this will change once we factor that into two modules, for now do the following line:
         dht: DHT                      // DHT enables PeerRouting, ContentRouting and DHT itself components
       },
 
@@ -158,8 +154,6 @@ class Node extends libp2p {
           }
           // .. other discovery module options.
         },
-        peerRouting: {},
-        contentRouting: {},
         relay: {                      // Circuit Relay options
           enabled: false,
           hop: {
