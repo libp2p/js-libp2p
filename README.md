@@ -188,13 +188,13 @@ class Node extends libp2p {
 
 ### API
 
-#### Create a Node - `new libp2p.Node([peerInfo, peerBook, options])`
+#### Create a Node - `new libp2p.Node(options)`
 
 > Creates an instance of the libp2p.Node.
 
-- `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node. Optional.
-- `peerBook`: instance of [PeerBook][] that contains the [PeerInfo][] of known peers. Optional.
-- `options`: Object containing custom options for the bundle.
+Required keys in the `options` object:
+
+- `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node.
 
 #### `libp2p.start(callback)`
 
