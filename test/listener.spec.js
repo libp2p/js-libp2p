@@ -135,6 +135,41 @@ describe('listener', function () {
       )
     })
 
+    it(`should emit 'connection'`, function (done) {
+      handlerSpy(multicodec.relay, conn)
+
+      let relayMsg = {
+        type: proto.CircuitRelay.Type.STOP,
+        srcPeer: {
+          id: `QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`,
+          addrs: [`/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`]
+        },
+        dstPeer: {
+          id: `QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`,
+          addrs: [`/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`]
+        }
+      }
+
+      listener.stopHandler.handle = (message, sh) => {
+        const newConn = new Connection(sh.rest())
+        listener.stopHandler.emit('connection', newConn)
+      }
+
+      listener.on('connection', (conn) => {
+        expect(conn).to.be.instanceof(Connection)
+        done()
+      })
+
+      pull(
+        pull.values([proto.CircuitRelay.encode(relayMsg)]),
+        lp.encode(),
+        pull.collect((err, encoded) => {
+          expect(err).to.not.exist()
+          encoded.forEach((e) => shake.write(e))
+        })
+      )
+    })
+
     it(`should handle CAN_HOP`, function (done) {
       handlerSpy(multicodec.relay, conn)
 

@@ -23,6 +23,7 @@ module.exports = (swarm, options, connHandler) => {
   const utils = utilsFactory(swarm)
 
   listener.stopHandler = new Stop(swarm)
+  listener.stopHandler.on('connection', (conn) => listener.emit('connection', conn))
   listener.hopHandler = new Hop(swarm, options.hop)
 
   /**
