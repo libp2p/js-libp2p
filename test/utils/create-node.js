@@ -21,8 +21,7 @@ function createNode (multiaddrs, options, callback) {
   }
 
   waterfall([
-    (cb) => PeerId.create({ bits: 512 }, cb),
-    (peerId, cb) => PeerInfo.create(peerId, cb),
+    (cb) => createPeerInfo(cb),
     (peerInfo, cb) => {
       multiaddrs.map((ma) => peerInfo.multiaddrs.add(ma))
       options.peerInfo = peerInfo
@@ -31,4 +30,12 @@ function createNode (multiaddrs, options, callback) {
   ], callback)
 }
 
+function createPeerInfo (callback) {
+  waterfall([
+    (cb) => PeerId.create({ bits: 512 }, cb),
+    (peerId, cb) => PeerInfo.create(peerId, cb)
+  ], callback)
+}
+
 module.exports = createNode
+module.exports.createPeerInfo = createPeerInfo
