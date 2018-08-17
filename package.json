@@ -47,6 +47,7 @@
     "libp2p-websockets": "~0.12.0",
     "mafmt": "^6.0.2",
     "multiaddr": "^5.0.0",
+    "nock": "^9.4.3",
     "peer-book": "~0.8.0",
     "peer-id": "~0.11.0",
     "peer-info": "~0.14.1"
