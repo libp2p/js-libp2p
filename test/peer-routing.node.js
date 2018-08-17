@@ -12,7 +12,6 @@ const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const sinon = require('sinon')
 const nock = require('nock')
 
-const jsonPeerId = require('./fixtures/test-peer.json')
 const createNode = require('./utils/create-node')
 
 describe('.peerRouting', () => {
@@ -143,7 +142,7 @@ describe('.peerRouting', () => {
       const mockApi = nock('https://ipfs.io')
         .post('/api/v0/dht/findpeer')
         .query({
-          'arg': peerKey,
+          arg: peerKey,
           'stream-channels': true
         })
         .reply(200, `{"Extra":"","ID":"some other id","Responses":null,"Type":0}\n{"Extra":"","ID":"","Responses":[{"Addrs":["/ip4/127.0.0.1/tcp/4001"],"ID":"${peerKey}"}],"Type":2}\n`, [
@@ -164,7 +163,7 @@ describe('.peerRouting', () => {
       const mockApi = nock('https://ipfs.io')
         .post('/api/v0/dht/findpeer')
         .query({
-          'arg': peerKey,
+          arg: peerKey,
           'stream-channels': true
         })
         .reply(200, `{"Extra":"","ID":"some other id","Responses":null,"Type":6}\n{"Extra":"","ID":"yet another id","Responses":null,"Type":0}\n{"Extra":"routing:not found","ID":"","Responses":null,"Type":3}\n`, [
@@ -185,7 +184,7 @@ describe('.peerRouting', () => {
       const mockApi = nock('https://ipfs.io')
         .post('/api/v0/dht/findpeer')
         .query({
-          'arg': peerKey,
+          arg: peerKey,
           'stream-channels': true
         })
         .reply(502)

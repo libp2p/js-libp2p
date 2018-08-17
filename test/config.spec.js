@@ -121,6 +121,11 @@ describe('configuration', () => {
         }
       }
     }
+
+    expect(validateConfig(options).modules).to.deep.include({
+      peerRouting: peerRouter,
+      contentRouting: contentRouter
+    })
   })
 
   it('should not allow for dht to be enabled without it being provided', () => {
