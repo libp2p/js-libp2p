@@ -159,75 +159,116 @@ describe('.contentRouting', () => {
 
     afterEach(() => nock.cleanAll)
 
-    it('should use the delegate router to provide', (done) => {
-      const stub = sinon.stub(delegate, 'provide').callsFake(() => {
-        stub.restore()
-        done()
+    describe('provide', () => {
+      it('should use the delegate router to provide', (done) => {
+        const stub = sinon.stub(delegate, 'provide').callsFake(() => {
+          stub.restore()
+          done()
+        })
+        nodeA.contentRouting.provide()
       })
-      nodeA.contentRouting.provide()
+
+      it('should be able to register as a provider', (done) => {
+        const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+        const mockApi = nock('http://0.0.0.0:60197')
+          // mock the swarm connect
+          .post('/api/v0/swarm/connect')
+          .query({
+            arg: `/ip4/0.0.0.0/tcp/60194/p2p-circuit/ipfs/${nodeA.peerInfo.id.toB58String()}`,
+            'stream-channels': true
+          })
+          .reply(200, {
+            Strings: [`connect ${nodeA.peerInfo.id.toB58String()} success`]
+          }, ['Content-Type', 'application/json'])
+          // mock the refs call
+          .post('/api/v0/refs')
+          .query({
+            recursive: true,
+            arg: cid.toBaseEncodedString(),
+            'stream-channels': true
+          })
+          .reply(200, null, [
+            'Content-Type', 'application/json',
+            'X-Chunked-Output', '1'
+          ])
+
+        nodeA.contentRouting.provide(cid, (err) => {
+          expect(err).to.not.exist()
+          expect(mockApi.isDone()).to.equal(true)
+          done()
+        })
+      })
+
+      it('should handle errors when registering as a provider', (done) => {
+        const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+        const mockApi = nock('http://0.0.0.0:60197')
+          // mock the swarm connect
+          .post('/api/v0/swarm/connect')
+          .query({
+            arg: `/ip4/0.0.0.0/tcp/60194/p2p-circuit/ipfs/${nodeA.peerInfo.id.toB58String()}`,
+            'stream-channels': true
+          })
+          .reply(502, 'Bad Gateway', ['Content-Type', 'application/json'])
+
+        nodeA.contentRouting.provide(cid, (err) => {
+          expect(err).to.exist()
+          expect(mockApi.isDone()).to.equal(true)
+          done()
+        })
+      })
     })
 
-    it('should use the delegate router to find providers', (done) => {
-      const stub = sinon.stub(delegate, 'findProviders').callsFake(() => {
-        stub.restore()
-        done()
+    describe('find providers', () => {
+      it('should use the delegate router to find providers', (done) => {
+        const stub = sinon.stub(delegate, 'findProviders').callsFake(() => {
+          stub.restore()
+          done()
+        })
+        nodeA.contentRouting.findProviders()
       })
-      nodeA.contentRouting.findProviders()
-    })
 
-    it('should be able to register as a provider', (done) => {
-      const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
-      const mockApi = nock('http://0.0.0.0:60197')
-        // mock the swarm connect
-        .post('/api/v0/swarm/connect')
-        .query({
-          arg: `/ip4/0.0.0.0/tcp/60194/p2p-circuit/ipfs/${nodeA.peerInfo.id.toB58String()}`,
-          'stream-channels': true
-        })
-        .reply(200, {
-          Strings: [`connect ${nodeA.peerInfo.id.toB58String()} success`]
-        }, ['Content-Type', 'application/json'])
-        // mock the refs call
-        .post('/api/v0/refs')
-        .query({
-          recursive: true,
-          arg: cid.toBaseEncodedString(),
-          'stream-channels': true
-        })
-        .reply(200, null, [
-          'Content-Type', 'application/json',
-          'X-Chunked-Output', '1'
-        ])
+      it('should be able to find providers', (done) => {
+        const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+        const provider = 'QmZNgCqZCvTsi3B4Vt7gsSqpkqDpE7M2Y9TDmEhbDb4ceF'
+        const mockApi = nock('http://0.0.0.0:60197')
+          .post('/api/v0/dht/findprovs')
+          .query({
+            arg: cid.toBaseEncodedString(),
+            'stream-channels': true
+          })
+          .reply(200, `{"Extra":"","ID":"QmWKqWXCtRXEeCQTo3FoZ7g4AfnGiauYYiczvNxFCHicbB","Responses":[{"Addrs":["/ip4/0.0.0.0/tcp/0"],"ID":"${provider}"}],"Type":1}\n`, [
+            'Content-Type', 'application/json',
+            'X-Chunked-Output', '1'
+          ])
 
-      nodeA.contentRouting.provide(cid, (err) => {
-        expect(err).to.not.exist()
-        expect(mockApi.isDone()).to.equal(true)
-        done()
+        nodeA.contentRouting.findProviders(cid, (err, response) => {
+          expect(err).to.not.exist()
+          expect(response).to.have.length(1)
+          expect(response[0]).to.include({
+            id: provider
+          })
+          expect(mockApi.isDone()).to.equal(true)
+          done()
+        })
       })
-    })
 
-    it('should be able to find providers', (done) => {
-      const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
-      const provider = 'QmZNgCqZCvTsi3B4Vt7gsSqpkqDpE7M2Y9TDmEhbDb4ceF'
-      const mockApi = nock('http://0.0.0.0:60197')
-        .post('/api/v0/dht/findprovs')
-        .query({
-          arg: cid.toBaseEncodedString(),
-          'stream-channels': true
-        })
-        .reply(200, `{"Extra":"","ID":"QmWKqWXCtRXEeCQTo3FoZ7g4AfnGiauYYiczvNxFCHicbB","Responses":[{"Addrs":["/ip4/0.0.0.0/tcp/0"],"ID":"${provider}"}],"Type":1}\n`, [
-          'Content-Type', 'application/json',
-          'X-Chunked-Output', '1'
-        ])
+      it('should handle errors when finding providers', (done) => {
+        const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+        const mockApi = nock('http://0.0.0.0:60197')
+          .post('/api/v0/dht/findprovs')
+          .query({
+            arg: cid.toBaseEncodedString(),
+            'stream-channels': true
+          })
+          .reply(502, 'Bad Gateway', [
+            'X-Chunked-Output', '1'
+          ])
 
-      nodeA.contentRouting.findProviders(cid.toBaseEncodedString(), (err, response) => {
-        expect(err).to.not.exist()
-        expect(response).to.have.length(1)
-        expect(response[0]).to.include({
-          id: provider
+        nodeA.contentRouting.findProviders(cid, (err) => {
+          expect(err).to.exist()
+          expect(mockApi.isDone()).to.equal(true)
+          done()
         })
-        expect(mockApi.isDone()).to.equal(true)
-        done()
       })
     })
   })

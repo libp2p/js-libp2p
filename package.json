@@ -81,7 +81,7 @@
     "wrtc": "~0.2.0"
   },
   "resolutions": {
-    "ipfs-api": "github:ipfs/js-ipfs-api#test/easier-mocking"
+    "ipfs-api": "github:ipfs/js-ipfs-api#master"
   },
   "contributors": [
     "Alan Shaw <alan@tableflip.io>",
