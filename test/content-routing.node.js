@@ -13,6 +13,8 @@ const CID = require('cids')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const sinon = require('sinon')
 const nock = require('nock')
+const ma = require('multiaddr')
+const Node = require('./utils/bundle-nodejs')
 
 const createNode = require('./utils/create-node')
 const createPeerInfo = createNode.createPeerInfo
@@ -131,25 +133,31 @@ describe('.contentRouting', () => {
           delegate = new DelegatedContentRouter(peerInfo.id, {
             host: '0.0.0.0',
             protocol: 'http',
-            port: '50082'
-          })
-          createNode('/ip4/0.0.0.0/tcp/0', {
+            port: 60197
+          }, [
+            ma('/ip4/0.0.0.0/tcp/60194')
+          ])
+          nodeA = new Node({
+            peerInfo,
             modules: {
               contentRouting: delegate
+            },
+            config: {
+              relay: {
+                enabled: true,
+                hop: {
+                  enabled: true,
+                  active: false
+                }
+              }
             }
-          }, (err, node) => {
-            expect(err).to.not.exist()
-            nodeA = node
-            nodeA.start(cb)
           })
+          nodeA.start(cb)
         }
       ], done)
     })
 
-    afterEach(() => {
-      nock.cleanAll()
-      nock.restore()
-    })
+    afterEach(() => nock.cleanAll)
 
     it('should use the delegate router to provide', (done) => {
       const stub = sinon.stub(delegate, 'provide').callsFake(() => {
@@ -168,65 +176,59 @@ describe('.contentRouting', () => {
     })
 
     it('should be able to register as a provider', (done) => {
-      const cid = new CID('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL')
-      nock.recorder.rec()
-      // const mockApi = nock('https://ipfs.io')
-      //   .post('/api/v0/dht/findpeer')
-      //   .query({
-      //     arg: peerKey,
-      //     'stream-channels': true
-      //   })
-      //   .reply(200, `{"Extra":"","ID":"some other id","Responses":null,"Type":0}\n{"Extra":"","ID":"","Responses":[{"Addrs":["/ip4/127.0.0.1/tcp/4001"],"ID":"${peerKey}"}],"Type":2}\n`, [
-      //     'Content-Type', 'application/json',
-      //     'X-Chunked-Output', '1'
-      //   ])
+      const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+      const mockApi = nock('http://0.0.0.0:60197')
+        // mock the swarm connect
+        .post('/api/v0/swarm/connect')
+        .query({
+          arg: `/ip4/0.0.0.0/tcp/60194/p2p-circuit/ipfs/${nodeA.peerInfo.id.toB58String()}`,
+          'stream-channels': true
+        })
+        .reply(200, {
+          Strings: [`connect ${nodeA.peerInfo.id.toB58String()} success`]
+        }, ['Content-Type', 'application/json'])
+        // mock the refs call
+        .post('/api/v0/refs')
+        .query({
+          recursive: true,
+          arg: cid.toBaseEncodedString(),
+          'stream-channels': true
+        })
+        .reply(200, null, [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
 
-      nodeA.contentRouting.provide(cid, (err, data) => {
+      nodeA.contentRouting.provide(cid, (err) => {
         expect(err).to.not.exist()
-        expect(data).to.equal({})
-        nock.restore()
-        // expect(mockApi.isDone()).to.equal(true)
+        expect(mockApi.isDone()).to.equal(true)
         done()
       })
     })
 
-    // it('should error when a peer cannot be found', (done) => {
-    //   const peerKey = 'key of a peer not on the network'
-    //   const mockApi = nock('https://ipfs.io')
-    //     .post('/api/v0/dht/findpeer')
-    //     .query({
-    //       arg: peerKey,
-    //       'stream-channels': true
-    //     })
-    //     .reply(200, `{"Extra":"","ID":"some other id","Responses":null,"Type":6}\n{"Extra":"","ID":"yet another id","Responses":null,"Type":0}\n{"Extra":"routing:not found","ID":"","Responses":null,"Type":3}\n`, [
-    //       'Content-Type', 'application/json',
-    //       'X-Chunked-Output', '1'
-    //     ])
+    it('should be able to find providers', (done) => {
+      const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+      const provider = 'QmZNgCqZCvTsi3B4Vt7gsSqpkqDpE7M2Y9TDmEhbDb4ceF'
+      const mockApi = nock('http://0.0.0.0:60197')
+        .post('/api/v0/dht/findprovs')
+        .query({
+          arg: cid.toBaseEncodedString(),
+          'stream-channels': true
+        })
+        .reply(200, `{"Extra":"","ID":"QmWKqWXCtRXEeCQTo3FoZ7g4AfnGiauYYiczvNxFCHicbB","Responses":[{"Addrs":["/ip4/0.0.0.0/tcp/0"],"ID":"${provider}"}],"Type":1}\n`, [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
 
-    //   nodeA.peerRouting.findPeer(peerKey, (err, peerInfo) => {
-    //     expect(err).to.exist()
-    //     expect(peerInfo).to.not.exist()
-    //     expect(mockApi.isDone()).to.equal(true)
-    //     done()
-    //   })
-    // })
-
-    // it('should handle errors from the api', (done) => {
-    //   const peerKey = 'key of a peer not on the network'
-    //   const mockApi = nock('https://ipfs.io')
-    //     .post('/api/v0/dht/findpeer')
-    //     .query({
-    //       arg: peerKey,
-    //       'stream-channels': true
-    //     })
-    //     .reply(502)
-
-    //   nodeA.peerRouting.findPeer(peerKey, (err, peerInfo) => {
-    //     expect(err).to.exist()
-    //     expect(peerInfo).to.not.exist()
-    //     expect(mockApi.isDone()).to.equal(true)
-    //     done()
-    //   })
-    // })
+      nodeA.contentRouting.findProviders(cid.toBaseEncodedString(), (err, response) => {
+        expect(err).to.not.exist()
+        expect(response).to.have.length(1)
+        expect(response[0]).to.include({
+          id: provider
+        })
+        expect(mockApi.isDone()).to.equal(true)
+        done()
+      })
+    })
   })
 })
