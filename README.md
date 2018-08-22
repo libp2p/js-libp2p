@@ -479,6 +479,8 @@ N/A
 
 List of packages currently in existence for libp2p
 
+> This table is generated using the module `package-table` with `package-table --data=package-list.json`.
+
 | Package | Version | Deps | CI | Coverage |
 | ---------|---------|---------|---------|--------- |
 | **Libp2p** |
