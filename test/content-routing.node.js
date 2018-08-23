@@ -140,7 +140,7 @@ describe('.contentRouting', () => {
           nodeA = new Node({
             peerInfo,
             modules: {
-              contentRouting: delegate
+              contentRouting: [ delegate ]
             },
             config: {
               relay: {
@@ -157,7 +157,8 @@ describe('.contentRouting', () => {
       ], done)
     })
 
-    afterEach(() => nock.cleanAll)
+    after((done) => nodeA.stop(done))
+    afterEach(() => nock.cleanAll())
 
     describe('provide', () => {
       it('should use the delegate router to provide', (done) => {
@@ -267,6 +268,100 @@ describe('.contentRouting', () => {
         nodeA.contentRouting.findProviders(cid, (err) => {
           expect(err).to.exist()
           expect(mockApi.isDone()).to.equal(true)
+          done()
+        })
+      })
+    })
+  })
+
+  describe('via the dht and a delegate', () => {
+    let nodeA
+    let delegate
+
+    before((done) => {
+      waterfall([
+        (cb) => {
+          createPeerInfo(cb)
+        },
+        // Create the node using the delegate
+        (peerInfo, cb) => {
+          delegate = new DelegatedContentRouter(peerInfo.id, {
+            host: '0.0.0.0',
+            protocol: 'http',
+            port: 60197
+          }, [
+            ma('/ip4/0.0.0.0/tcp/60194')
+          ])
+          nodeA = new Node({
+            peerInfo,
+            modules: {
+              contentRouting: [ delegate ]
+            },
+            config: {
+              relay: {
+                enabled: true,
+                hop: {
+                  enabled: true,
+                  active: false
+                }
+              },
+              EXPERIMENTAL: {
+                dht: true
+              }
+            }
+          })
+          nodeA.start(cb)
+        }
+      ], done)
+    })
+
+    after((done) => nodeA.stop(done))
+
+    describe('provide', () => {
+      it('should use both the dht and delegate router to provide', (done) => {
+        const dhtStub = sinon.stub(nodeA._dht, 'provide').callsFake(() => {})
+        const delegateStub = sinon.stub(delegate, 'provide').callsFake(() => {
+          expect(dhtStub.calledOnce).to.equal(true)
+          expect(delegateStub.calledOnce).to.equal(true)
+          delegateStub.restore()
+          dhtStub.restore()
+          done()
+        })
+        nodeA.contentRouting.provide()
+      })
+    })
+
+    describe('findProviders', () => {
+      it('should only use the dht if it finds providers', (done) => {
+        const results = [true]
+        const dhtStub = sinon.stub(nodeA._dht, 'findProviders').callsArgWith(2, null, results)
+        const delegateStub = sinon.stub(delegate, 'findProviders').throws(() => {
+          return new Error('the delegate should not have been called')
+        })
+
+        nodeA.contentRouting.findProviders('a cid', 5000, (err, results) => {
+          expect(err).to.not.exist()
+          expect(results).to.equal(results)
+          expect(dhtStub.calledOnce).to.equal(true)
+          expect(delegateStub.notCalled).to.equal(true)
+          delegateStub.restore()
+          dhtStub.restore()
+          done()
+        })
+      })
+
+      it('should use the delegate if the dht fails to find providers', (done) => {
+        const results = [true]
+        const dhtStub = sinon.stub(nodeA._dht, 'findProviders').callsArgWith(2, null, [])
+        const delegateStub = sinon.stub(delegate, 'findProviders').callsArgWith(2, null, results)
+
+        nodeA.contentRouting.findProviders('a cid', 5000, (err, results) => {
+          expect(err).to.not.exist()
+          expect(results).to.deep.equal(results)
+          expect(dhtStub.calledOnce).to.equal(true)
+          expect(delegateStub.calledOnce).to.equal(true)
+          delegateStub.restore()
+          dhtStub.restore()
           done()
         })
       })

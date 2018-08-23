@@ -14,10 +14,10 @@ const OptionsSchema = Joi.object({
     connProtector: Joi.object().keys({
       protect: Joi.func().required()
     }).unknown(),
-    contentRouting: Joi.object(),
+    contentRouting: Joi.array().items(Joi.object()).allow(null),
     dht: ModuleSchema.allow(null),
     peerDiscovery: Joi.array().items(ModuleSchema).allow(null),
-    peerRouting: Joi.object(),
+    peerRouting: Joi.array().items(Joi.object()).allow(null),
     streamMuxer: Joi.array().items(ModuleSchema).allow(null),
     transport: Joi.array().items(ModuleSchema).min(1).required()
   }).required(),

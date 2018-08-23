@@ -109,8 +109,8 @@ describe('configuration', () => {
       modules: {
         transport: [ WS ],
         peerDiscovery: [ Bootstrap ],
-        peerRouting: peerRouter,
-        contentRouting: contentRouter
+        peerRouting: [ peerRouter ],
+        contentRouting: [ contentRouter ]
       },
       config: {
         peerDiscovery: {
@@ -123,8 +123,8 @@ describe('configuration', () => {
     }
 
     expect(validateConfig(options).modules).to.deep.include({
-      peerRouting: peerRouter,
-      contentRouting: contentRouter
+      peerRouting: [ peerRouter ],
+      contentRouting: [ contentRouter ]
     })
   })
 
