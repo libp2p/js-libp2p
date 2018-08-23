@@ -34,7 +34,9 @@ module.exports = (node) => {
 
           // If we don't have any results, we need to provide an error to keep trying
           if (!results || Object.keys(results).length === 0) {
-            return cb(true, null)
+            return cb(Object.assign(new Error('not found'), {
+              code: 'NOT_FOUND'
+            }), null)
           }
 
           cb(null, results)
@@ -42,7 +44,7 @@ module.exports = (node) => {
       })
 
       tryEach(tasks, (err, results) => {
-        if (err && err !== true) {
+        if (err && err.code !== 'NOT_FOUND') {
           return callback(err)
         }
         results = results || []

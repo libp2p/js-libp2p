@@ -15,7 +15,7 @@ module.exports = (node) => {
      * Iterates over all peer routers in series to find the given peer.
      *
      * @param {String} id The id of the peer to find
-     * @param {function(Error, Result<Array>)}
+     * @param {function(Error, Result<Array>)} callback
      * @returns {void}
      */
     findPeer: (id, callback) => {
@@ -31,7 +31,9 @@ module.exports = (node) => {
 
           // If we don't have a result, we need to provide an error to keep trying
           if (!result || Object.keys(result).length === 0) {
-            return cb(true, null)
+            return cb(Object.assign(new Error('not found'), {
+              code: 'NOT_FOUND'
+            }), null)
           }
 
           cb(null, result)
@@ -39,7 +41,7 @@ module.exports = (node) => {
       })
 
       tryEach(tasks, (err, results) => {
-        if (err && err !== true) {
+        if (err && err.code !== 'NOT_FOUND') {
           return callback(err)
         }
         results = results || null
