@@ -91,7 +91,7 @@ module.exports = (dht) => ({
    *@private
    */
   _checkLocalDatastore (key, callback) {
-    dht._log('checkLocalDatastore: %s', key)
+    dht._log('checkLocalDatastore: %b', key)
     const dsKey = utils.bufferToKey(key)
 
     // 2. fetch value from ds
@@ -201,7 +201,7 @@ module.exports = (dht) => ({
    * @private
    */
   _closerPeersSingle (key, peer, callback) {
-    dht._log('_closerPeersSingle %s from %s', key, peer.toB58String())
+    dht._log('_closerPeersSingle %b from %s', key, peer.toB58String())
     dht._findPeerSingle(peer, new PeerId(key), (err, msg) => {
       if (err) {
         return callback(err)
@@ -290,14 +290,14 @@ module.exports = (dht) => ({
    * @private
    */
   _get (key, maxTimeout, callback) {
-    dht._log('_get %s', key.toString())
+    dht._log('_get %b', key)
     waterfall([
       (cb) => dht.getMany(key, 16, maxTimeout, cb),
       (vals, cb) => {
         const recs = vals.map((v) => v.val)
         const i = libp2pRecord.selection.bestRecord(dht.selectors, key, recs)
         const best = recs[i]
-        dht._log('GetValue %s %s', key.toString(), best)
+        dht._log('GetValue %b %s', key, best)
 
         if (!best) {
           return cb(new errors.NotFoundError())
@@ -345,12 +345,12 @@ module.exports = (dht) => ({
    * @private
    */
   _getLocal (key, callback) {
-    dht._log('getLocal %s', key)
+    dht._log('getLocal %b', key)
 
     waterfall([
       (cb) => dht.datastore.get(utils.bufferToKey(key), cb),
       (raw, cb) => {
-        dht._log('found %s in local datastore', key)
+        dht._log('found %b in local datastore', key)
         let rec
         try {
           rec = Record.deserialize(raw)

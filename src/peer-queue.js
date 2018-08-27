@@ -53,7 +53,7 @@ class PeerQueue {
    * @param {Buffer} from - The sha2-256 encoded peer id
    */
   constructor (from) {
-    log('create: %s', from.toString('hex'))
+    log('create: %b', from)
     this.from = from
     this.heap = new Heap(utils.xorCompare)
   }
@@ -66,7 +66,7 @@ class PeerQueue {
    * @returns {void}
    */
   enqueue (id, callback) {
-    log('enqueue %s', id.id.toString('hex'))
+    log('enqueue %s', id.toB58String())
     utils.convertPeerId(id, (err, key) => {
       if (err) {
         return callback(err)

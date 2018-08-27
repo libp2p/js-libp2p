@@ -46,6 +46,7 @@
     "k-bucket": "^4.0.1",
     "libp2p-crypto": "~0.13.0",
     "libp2p-record": "~0.5.1",
+    "multihashes": "~0.4.14",
     "multihashing-async": "~0.5.1",
     "peer-id": "~0.11.0",
     "peer-info": "~0.14.1",
@@ -57,7 +58,7 @@
     "xor-distance": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^15.0.0",
+    "aegir": "^15.1.0",
     "chai": "^4.1.2",
     "datastore-level": "~0.8.0",
     "dirty-chai": "^2.0.1",

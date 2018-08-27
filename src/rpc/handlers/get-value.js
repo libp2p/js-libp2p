@@ -20,7 +20,7 @@ module.exports = (dht) => {
   return function getValue (peer, msg, callback) {
     const key = msg.key
 
-    log('key: %s', key)
+    log('key: %b', key)
 
     if (!key || key.length === 0) {
       return callback(new Error('Invalid key'))

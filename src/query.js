@@ -3,6 +3,7 @@
 const waterfall = require('async/waterfall')
 const each = require('async/each')
 const queue = require('async/queue')
+const mh = require('multihashes')
 
 const c = require('./constants')
 const PeerQueue = require('./peer-queue')
@@ -25,7 +26,7 @@ class Query {
     this.key = key
     this.query = query
     this.concurrency = c.ALPHA
-    this._log = utils.logger(this.dht.peerInfo.id, 'query:' + key.toString())
+    this._log = utils.logger(this.dht.peerInfo.id, 'query:' + mh.toB58String(key))
   }
 
   /**

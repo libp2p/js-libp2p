@@ -15,7 +15,7 @@ module.exports = (dht) => {
    */
   return function putValue (peer, msg, callback) {
     const key = msg.key
-    log('key: %s', key)
+    log('key: %b', key)
 
     const record = msg.record
 

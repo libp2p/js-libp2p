@@ -2,6 +2,7 @@
 
 const debug = require('debug')
 const multihashing = require('multihashing-async')
+const mh = require('multihashes')
 const Key = require('interface-datastore').Key
 const base32 = require('base32.js')
 const distance = require('xor-distance')
@@ -171,6 +172,12 @@ exports.logger = (id, subsystem) => {
   if (id) {
     name.push(`${id.toB58String().slice(0, 8)}`)
   }
+
+  // Add a formatter for converting to a base58 string
+  debug.formatters.b = (v) => {
+    return mh.toB58String(v)
+  }
+
   const logger = debug(name.join(':'))
   logger.error = debug(name.concat(['error']).join(':'))
 

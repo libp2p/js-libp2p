@@ -116,7 +116,8 @@ describe('Providers', () => {
           providers.stop()
           done()
         })
-      }, 300)
+        // TODO: this is a timeout based check, make cleanup monitorable
+      }, 400)
     })
   })
 

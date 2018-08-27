@@ -154,7 +154,7 @@ class KadDHT {
    * @returns {void}
    */
   put (key, value, callback) {
-    this._log('PutValue %s', key)
+    this._log('PutValue %b', key)
     let sign
     try {
       sign = libp2pRecord.validator.isSigned(this.validators, key)
@@ -214,7 +214,7 @@ class KadDHT {
       maxTimeout = c.minute
     }
 
-    this._log('getMany %s (%s)', key, nvals)
+    this._log('getMany %b (%s)', key, nvals)
     const vals = []
 
     this._getLocal(key, (err, localRec) => {
@@ -294,7 +294,7 @@ class KadDHT {
    * @returns {void}
    */
   getClosestPeers (key, callback) {
-    this._log('getClosestPeers to %s', key.toString())
+    this._log('getClosestPeers to %b', key)
     utils.convertBuffer(key, (err, id) => {
       if (err) {
         return callback(err)
