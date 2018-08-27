@@ -242,7 +242,7 @@ describe('.contentRouting', () => {
             'X-Chunked-Output', '1'
           ])
 
-        nodeA.contentRouting.findProviders(cid, (err, response) => {
+        nodeA.contentRouting.findProviders(cid, 1000, (err, response) => {
           expect(err).to.not.exist()
           expect(response).to.have.length(1)
           expect(response[0]).to.include({
