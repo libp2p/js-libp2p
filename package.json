@@ -80,9 +80,6 @@
     "webrtcsupport": "^2.2.0",
     "wrtc": "~0.2.0"
   },
-  "resolutions": {
-    "ipfs-api": "github:ipfs/js-ipfs-api#master"
-  },
   "contributors": [
     "Alan Shaw <alan@tableflip.io>",
     "Chris Bratlien <chrisbratlien@gmail.com>",
