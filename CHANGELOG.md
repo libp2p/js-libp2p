@@ -1,3 +1,14 @@
+<a name="0.10.2"></a>
+## [0.10.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.10.0...v0.10.2) (2018-08-29)
+
+
+### Bug Fixes
+
+* dont read when just doing a write ([7a92139](https://github.com/libp2p/js-libp2p-kad-dht/commit/7a92139))
+* make findProviders treat timeout the same as findPeer ([#35](https://github.com/libp2p/js-libp2p-kad-dht/issues/35)) ([fcdb01d](https://github.com/libp2p/js-libp2p-kad-dht/commit/fcdb01d))
+
+
+
 <a name="0.10.1"></a>
 ## [0.10.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.10.0...v0.10.1) (2018-07-13)
 
