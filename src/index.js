@@ -433,6 +433,15 @@ class KadDHT {
    * @returns {void}
    */
   findProviders (key, timeout, callback) {
+    if (typeof timeout === 'function') {
+      callback = timeout
+      timeout = null
+    }
+
+    if (timeout == null) {
+      timeout = c.minute
+    }
+
     this._log('findProviders %s', key.toBaseEncodedString())
     this._findNProviders(key, timeout, c.K, callback)
   }
