@@ -33,7 +33,7 @@ function pre (done) {
       if (err) { return cb(err) }
 
       const peerA = new PeerInfo(id)
-      const maA = '/ip4/127.0.0.1/tcp/9100/ws'
+      const maA = '/ip4/127.0.0.1/tcp/15337/ws'
 
       peerA.multiaddrs.add(maA)
       switchA = new Switch(peerA, new PeerBook())
@@ -48,7 +48,7 @@ function pre (done) {
       if (err) { return cb(err) }
 
       const peerB = new PeerInfo(id)
-      const maB = '/ip4/127.0.0.1/tcp/9200/ws'
+      const maB = '/ip4/127.0.0.1/tcp/15347/ws'
 
       peerB.multiaddrs.add(maB)
       switchB = new Switch(peerB, new PeerBook())

@@ -40,7 +40,7 @@ describe('Transports', () => {
 
     it('.transport.dial', (done) => {
       peer.multiaddrs.clear()
-      peer.multiaddrs.add('/ip4/127.0.0.1/tcp/9100/ws')
+      peer.multiaddrs.add('/ip4/127.0.0.1/tcp/15337/ws')
 
       const conn = sw.transport.dial('ws', peer, (err, conn) => {
         expect(err).to.not.exist()

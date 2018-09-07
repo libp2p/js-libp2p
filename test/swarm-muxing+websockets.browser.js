@@ -42,7 +42,7 @@ describe('Switch (WebSockets)', () => {
       expect(err).to.not.exist()
 
       peerDst = new PeerInfo(id)
-      const ma = '/ip4/127.0.0.1/tcp/9200/ws'
+      const ma = '/ip4/127.0.0.1/tcp/15347/ws'
       peerDst.multiaddrs.add(ma)
       done()
     })
