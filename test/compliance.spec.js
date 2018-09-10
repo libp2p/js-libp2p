@@ -12,7 +12,8 @@ describe('interface-transport compliance', () => {
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091'),
         multiaddr('/ip4/127.0.0.1/tcp/9092'),
-        multiaddr('/ip4/127.0.0.1/tcp/9093')
+        multiaddr('/ip4/127.0.0.1/tcp/9093'),
+        multiaddr('/dns4/ipfs.io')
       ]
       cb(null, tcp, addrs)
     },
