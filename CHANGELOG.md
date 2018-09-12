@@ -1,3 +1,13 @@
+<a name="0.13.0"></a>
+# [0.13.0](https://github.com/libp2p/js-libp2p-tcp/compare/v0.12.1...v0.13.0) (2018-09-12)
+
+
+### Features
+
+* add support for dialing over dns ([eba0b48](https://github.com/libp2p/js-libp2p-tcp/commit/eba0b48))
+
+
+
 <a name="0.12.1"></a>
 ## [0.12.1](https://github.com/libp2p/js-libp2p-tcp/compare/v0.12.0...v0.12.1) (2018-07-31)
 
