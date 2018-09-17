@@ -1,3 +1,19 @@
+<a name="0.14.0"></a>
+# [0.14.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.13.0...v0.14.0) (2018-09-17)
+
+
+### Bug Fixes
+
+* windows build ([c7e0409](https://github.com/libp2p/js-libp2p-crypto/commit/c7e0409))
+* **lint:** use ~ for ursa-optional version ([e8cbf13](https://github.com/libp2p/js-libp2p-crypto/commit/e8cbf13))
+
+
+### Features
+
+* use ursa-optional for lightning fast key generation ([b05e77f](https://github.com/libp2p/js-libp2p-crypto/commit/b05e77f))
+
+
+
 <a name="0.13.0"></a>
 # [0.13.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.12.1...v0.13.0) (2018-04-05)
 
