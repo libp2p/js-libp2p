@@ -1,3 +1,13 @@
+<a name="0.3.2"></a>
+## [0.3.2](https://github.com/libp2p/js-libp2p-keychain/compare/v0.3.1...v0.3.2) (2018-09-18)
+
+
+### Bug Fixes
+
+* validate createKey params properly ([#26](https://github.com/libp2p/js-libp2p-keychain/issues/26)) ([8dfaab1](https://github.com/libp2p/js-libp2p-keychain/commit/8dfaab1))
+
+
+
 <a name="0.3.1"></a>
 ## [0.3.1](https://github.com/libp2p/js-libp2p-keychain/compare/v0.3.0...v0.3.1) (2018-01-29)
 
