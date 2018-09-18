@@ -117,6 +117,30 @@ module.exports = (datastore1, datastore2) => {
         })
       })
 
+      it('should validate name is string', (done) => {
+        ks.createKey(5, 'rsa', 2048, (err) => {
+          expect(err).to.exist()
+          expect(err.message).to.contain('Invalid key name')
+          done()
+        })
+      })
+
+      it('should validate type is string', (done) => {
+        ks.createKey('TEST' + Date.now(), null, 2048, (err) => {
+          expect(err).to.exist()
+          expect(err.message).to.contain('Invalid key type')
+          done()
+        })
+      })
+
+      it('should validate size is integer', (done) => {
+        ks.createKey('TEST' + Date.now(), 'rsa', 'string', (err) => {
+          expect(err).to.exist()
+          expect(err.message).to.contain('Invalid key size')
+          done()
+        })
+      })
+
       describe('implements NIST SP 800-131A', () => {
         it('disallows RSA length < 2048', (done) => {
           ks.createKey('bad-nist-rsa', 'rsa', 1024, (err) => {

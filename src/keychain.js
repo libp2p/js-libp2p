@@ -6,6 +6,8 @@ const deepmerge = require('lodash/merge')
 const crypto = require('libp2p-crypto')
 const DS = require('interface-datastore')
 const pull = require('pull-stream')
+const isString = require('lodash/isString')
+const isSafeInteger = require('lodash/isSafeInteger')
 const CMS = require('./cms')
 
 const keyPrefix = '/pkcs8/'
@@ -30,6 +32,7 @@ const defaultOptions = {
 
 function validateKeyName (name) {
   if (!name) return false
+  if (!isString(name)) return false
   return name === sanitize(name.trim())
 }
 
@@ -182,6 +185,15 @@ class Keychain {
     if (!validateKeyName(name) || name === 'self') {
       return _error(callback, `Invalid key name '${name}'`)
     }
+
+    if (!isString(type)) {
+      return _error(callback, `Invalid key type '${type}'`)
+    }
+
+    if (!isSafeInteger(size)) {
+      return _error(callback, `Invalid key size '${size}'`)
+    }
+
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
       if (err) return _error(callback, err)
