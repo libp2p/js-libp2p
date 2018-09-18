@@ -62,9 +62,12 @@
     "rimraf": "^2.6.2"
   },
   "contributors": [
+    "Alan Shaw <alan.shaw@protocol.ai>",
     "David Dias <daviddias.p@gmail.com>",
     "Maciej Krüger <mkg20001@gmail.com>",
+    "Masahiro Saito <camelmasa@gmail.com>",
     "Richard Schneider <makaretu@gmail.com>",
+    "Vasco Santos <vasco.santos@ua.pt>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>"
   ]
 }
