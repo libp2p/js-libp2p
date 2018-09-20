@@ -283,16 +283,17 @@ module.exports = (dht) => ({
    * Get the value to the given key.
    *
    * @param {Buffer} key
-   * @param {number} maxTimeout
-   * @param {function(Error, Buffer)} callback
+   * @param {Object} options - get options
+   * @param {number} options.maxTimeout - optional timeout (default: 60000)
+   * @param {function(Error, Record)} callback
    * @returns {void}
    *
    * @private
    */
-  _get (key, maxTimeout, callback) {
+  _get (key, options, callback) {
     dht._log('_get %b', key)
     waterfall([
-      (cb) => dht.getMany(key, 16, maxTimeout, cb),
+      (cb) => dht.getMany(key, 16, options.maxTimeout, cb),
       (vals, cb) => {
         const recs = vals.map((v) => v.val)
         const i = libp2pRecord.selection.bestRecord(dht.selectors, key, recs)

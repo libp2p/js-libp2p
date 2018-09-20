@@ -179,21 +179,28 @@ class KadDHT {
    * Times out after 1 minute.
    *
    * @param {Buffer} key
-   * @param {number} [maxTimeout=60000] - optional timeout
+   * @param {Object} options - get options
+   * @param {number} options.maxTimeout - optional timeout (default: 60000)
    * @param {function(Error, Buffer)} callback
    * @returns {void}
    */
-  get (key, maxTimeout, callback) {
-    if (typeof maxTimeout === 'function') {
-      callback = maxTimeout
-      maxTimeout = null
+  get (key, options, callback) {
+    if (typeof options === 'function') {
+      callback = options
+      options = {}
+    } else if (typeof options === 'number') { // This will be deprecated in a next release
+      options = {
+        maxTimeout: options
+      }
+    } else {
+      options = options || {}
     }
 
-    if (maxTimeout == null) {
-      maxTimeout = c.minute
+    if (!options.maxTimeout) {
+      options.maxTimeout = c.minute
     }
 
-    this._get(key, maxTimeout, callback)
+    this._get(key, options, callback)
   }
 
   /**
@@ -201,17 +208,25 @@ class KadDHT {
    *
    * @param {Buffer} key
    * @param {number} nvals
-   * @param {number} [maxTimeout=60000]
+   * @param {Object} options - get options
+   * @param {number} options.maxTimeout - optional timeout (default: 60000)
    * @param {function(Error, Array<{from: PeerId, val: Buffer}>)} callback
    * @returns {void}
    */
-  getMany (key, nvals, maxTimeout, callback) {
-    if (typeof maxTimeout === 'function') {
-      callback = maxTimeout
-      maxTimeout = null
+  getMany (key, nvals, options, callback) {
+    if (typeof options === 'function') {
+      callback = options
+      options = {}
+    } else if (typeof options === 'number') { // This will be deprecated in a next release
+      options = {
+        maxTimeout: options
+      }
+    } else {
+      options = options || {}
     }
-    if (maxTimeout == null) {
-      maxTimeout = c.minute
+
+    if (!options.maxTimeout) {
+      options.maxTimeout = c.minute
     }
 
     this._log('getMany %b (%s)', key, nvals)
@@ -274,7 +289,7 @@ class KadDHT {
           })
 
           // run our query
-          timeout((cb) => query.run(rtp, cb), maxTimeout)(cb)
+          timeout((cb) => query.run(rtp, cb), options.maxTimeout)(cb)
         }
       ], (err) => {
         if (err && vals.length === 0) {

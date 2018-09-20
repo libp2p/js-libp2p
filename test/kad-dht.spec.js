@@ -147,7 +147,7 @@ describe('KadDHT', () => {
       waterfall([
         (cb) => connect(dhtA, dhtB, cb),
         (cb) => dhtA.put(Buffer.from('/v/hello'), Buffer.from('world'), cb),
-        (cb) => dhtB.get(Buffer.from('/v/hello'), 1000, cb),
+        (cb) => dhtB.get(Buffer.from('/v/hello'), { maxTimeout: 1000 }, cb),
         (res, cb) => {
           expect(res).to.eql(Buffer.from('world'))
           cb()
@@ -244,7 +244,7 @@ describe('KadDHT', () => {
           Buffer.from('world'),
           cb
         ),
-        (cb) => dhts[0].get(Buffer.from('/v/hello'), 1000, cb),
+        (cb) => dhts[0].get(Buffer.from('/v/hello'), { maxTimeout: 1000 }, cb),
         (res, cb) => {
           expect(res).to.eql(Buffer.from('world'))
           cb()
