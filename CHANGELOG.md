@@ -1,3 +1,13 @@
+<a name="0.10.3"></a>
+## [0.10.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.10.2...v0.10.3) (2018-09-20)
+
+
+### Bug Fixes
+
+* dht get options ([#40](https://github.com/libp2p/js-libp2p-kad-dht/issues/40)) ([0a2f9fe](https://github.com/libp2p/js-libp2p-kad-dht/commit/0a2f9fe))
+
+
+
 <a name="0.10.2"></a>
 ## [0.10.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.10.0...v0.10.2) (2018-08-29)
 
