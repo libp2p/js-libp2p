@@ -53,14 +53,14 @@ describe('.dht', () => {
       })
     })
 
-    it('should be able to dht.get a value from the DHT with a maxTimeout', (done) => {
+    it('should be able to dht.get a value from the DHT with options', (done) => {
       const key = Buffer.from('/v/hello')
       const value = Buffer.from('world')
 
       nodeA.dht.put(key, value, (err) => {
         expect(err).to.not.exist()
 
-        nodeA.dht.get(key, 3000, (err, res) => {
+        nodeA.dht.get(key, { maxTimeout: 3000 }, (err, res) => {
           expect(err).to.not.exist()
           expect(res).to.eql(value)
           done()
@@ -68,7 +68,7 @@ describe('.dht', () => {
       })
     })
 
-    it('should be able to dht.get a value from the DHT with no maxTimeout defined', (done) => {
+    it('should be able to dht.get a value from the DHT with no options defined', (done) => {
       const key = Buffer.from('/v/hello')
       const value = Buffer.from('world')
 
@@ -83,14 +83,14 @@ describe('.dht', () => {
       })
     })
 
-    it('should be able to dht.getMany a value from the DHT with a maxTimeout', (done) => {
+    it('should be able to dht.getMany a value from the DHT with options', (done) => {
       const key = Buffer.from('/v/hello')
       const value = Buffer.from('world')
 
       nodeA.dht.put(key, value, (err) => {
         expect(err).to.not.exist()
 
-        nodeA.dht.getMany(key, 1, (err, res) => {
+        nodeA.dht.getMany(key, 1, { maxTimeout: 3000 }, (err, res) => {
           expect(err).to.not.exist()
           expect(res).to.exist()
           done()
@@ -98,7 +98,7 @@ describe('.dht', () => {
       })
     })
 
-    it('should be able to dht.getMany a value from the DHT with no maxTimeout defined', (done) => {
+    it('should be able to dht.getMany a value from the DHT with no options defined', (done) => {
       const key = Buffer.from('/v/hello')
       const value = Buffer.from('world')
 
