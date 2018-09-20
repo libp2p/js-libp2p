@@ -9,29 +9,29 @@ module.exports = (node) => {
 
       node._dht.put(key, value, callback)
     },
-    get: (key, maxTimeout, callback) => {
-      if (typeof maxTimeout === 'function') {
-        callback = maxTimeout
-        maxTimeout = null
+    get: (key, options, callback) => {
+      if (typeof options === 'function') {
+        callback = options
+        options = {}
       }
 
       if (!node._dht) {
         return callback(new Error('DHT is not available'))
       }
 
-      node._dht.get(key, maxTimeout, callback)
+      node._dht.get(key, options, callback)
     },
-    getMany: (key, nVals, maxTimeout, callback) => {
-      if (typeof maxTimeout === 'function') {
-        callback = maxTimeout
-        maxTimeout = null
+    getMany: (key, nVals, options, callback) => {
+      if (typeof options === 'function') {
+        callback = options
+        options = {}
       }
 
       if (!node._dht) {
         return callback(new Error('DHT is not available'))
       }
 
-      node._dht.getMany(key, nVals, maxTimeout, callback)
+      node._dht.getMany(key, nVals, options, callback)
     }
   }
 }
