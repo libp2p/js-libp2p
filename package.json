@@ -7,6 +7,7 @@
   "scripts": {
     "lint": "aegir lint",
     "test": "aegir test -t node",
+    "test:node": "aegir test -t node",
     "release": "aegir release -t node",
     "release-minor": "aegir release --type minor -t node",
     "release-major": "aegir release --type major -t node",
