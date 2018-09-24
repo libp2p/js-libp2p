@@ -265,7 +265,9 @@ class Node extends EventEmitter {
       },
       (cb) => {
         if (this._dht) {
-          return this._dht.stop(cb)
+          return this._dht.randomWalk.stop(() => {
+            this._dht.stop(cb)
+          })
         }
         cb()
       },
