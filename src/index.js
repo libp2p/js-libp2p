@@ -203,7 +203,10 @@ class Node extends EventEmitter {
         // have to set started here because DHT requires libp2p is already started
         this._isStarted = true
         if (this._dht) {
-          this._dht.start(cb)
+          this._dht.start(() => {
+            this._dht.randomWalk.start()
+            cb()
+          })
         } else {
           cb()
         }
