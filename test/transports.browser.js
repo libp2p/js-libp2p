@@ -168,7 +168,9 @@ describe('transports', () => {
         })
       })
 
-      it('many writes', (done) => {
+      it('many writes', function (done) {
+        this.timeout(10000)
+
         nodeA.dialProtocol(peerB, '/echo/1.0.0', (err, conn) => {
           expect(err).to.not.exist()
 
