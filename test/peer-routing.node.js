@@ -134,11 +134,12 @@ describe('.peerRouting', () => {
     })
 
     it('should be able to find a peer', (done) => {
-      const peerKey = 'key of a peer on the network'
+      const peerKey = 'QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL'
       const mockApi = nock('https://ipfs.io')
         .post('/api/v0/dht/findpeer')
         .query({
           arg: peerKey,
+          timeout: '30000ms',
           'stream-channels': true
         })
         .reply(200, `{"Extra":"","ID":"some other id","Responses":null,"Type":0}\n{"Extra":"","ID":"","Responses":[{"Addrs":["/ip4/127.0.0.1/tcp/4001"],"ID":"${peerKey}"}],"Type":2}\n`, [
@@ -148,7 +149,7 @@ describe('.peerRouting', () => {
 
       nodeA.peerRouting.findPeer(peerKey, (err, peerInfo) => {
         expect(err).to.not.exist()
-        expect(peerInfo.id).to.equal(peerKey)
+        expect(peerInfo.id.toB58String()).to.equal(peerKey)
         expect(mockApi.isDone()).to.equal(true)
         done()
       })
@@ -160,6 +161,7 @@ describe('.peerRouting', () => {
         .post('/api/v0/dht/findpeer')
         .query({
           arg: peerKey,
+          timeout: '30000ms',
           'stream-channels': true
         })
         .reply(200, `{"Extra":"","ID":"some other id","Responses":null,"Type":6}\n{"Extra":"","ID":"yet another id","Responses":null,"Type":0}\n{"Extra":"routing:not found","ID":"","Responses":null,"Type":3}\n`, [
@@ -181,6 +183,7 @@ describe('.peerRouting', () => {
         .post('/api/v0/dht/findpeer')
         .query({
           arg: peerKey,
+          timeout: '30000ms',
           'stream-channels': true
         })
         .reply(502)
@@ -230,7 +233,7 @@ describe('.peerRouting', () => {
     describe('findPeer', () => {
       it('should only use the dht if it find the peer', (done) => {
         const results = [true]
-        const dhtStub = sinon.stub(nodeA._dht, 'findPeer').callsArgWith(1, null, results)
+        const dhtStub = sinon.stub(nodeA._dht, 'findPeer').callsArgWith(2, null, results)
         const delegateStub = sinon.stub(delegate, 'findPeer').throws(() => {
           return new Error('the delegate should not have been called')
         })
@@ -248,8 +251,8 @@ describe('.peerRouting', () => {
 
       it('should use the delegate if the dht fails to find the peer', (done) => {
         const results = [true]
-        const dhtStub = sinon.stub(nodeA._dht, 'findPeer').callsArgWith(1, null, undefined)
-        const delegateStub = sinon.stub(delegate, 'findPeer').callsArgWith(1, null, results)
+        const dhtStub = sinon.stub(nodeA._dht, 'findPeer').callsArgWith(2, null, undefined)
+        const delegateStub = sinon.stub(delegate, 'findPeer').callsArgWith(2, null, results)
 
         nodeA.peerRouting.findPeer('a peer id', (err, results) => {
           expect(err).to.not.exist()

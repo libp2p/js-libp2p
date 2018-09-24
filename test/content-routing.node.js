@@ -235,6 +235,7 @@ describe('.contentRouting', () => {
           .post('/api/v0/dht/findprovs')
           .query({
             arg: cid.toBaseEncodedString(),
+            timeout: '1000ms',
             'stream-channels': true
           })
           .reply(200, `{"Extra":"","ID":"QmWKqWXCtRXEeCQTo3FoZ7g4AfnGiauYYiczvNxFCHicbB","Responses":[{"Addrs":["/ip4/0.0.0.0/tcp/0"],"ID":"${provider}"}],"Type":1}\n`, [
@@ -245,9 +246,7 @@ describe('.contentRouting', () => {
         nodeA.contentRouting.findProviders(cid, 1000, (err, response) => {
           expect(err).to.not.exist()
           expect(response).to.have.length(1)
-          expect(response[0]).to.include({
-            id: provider
-          })
+          expect(response[0].id.toB58String()).to.equal(provider)
           expect(mockApi.isDone()).to.equal(true)
           done()
         })
@@ -259,6 +258,7 @@ describe('.contentRouting', () => {
           .post('/api/v0/dht/findprovs')
           .query({
             arg: cid.toBaseEncodedString(),
+            timeout: '30000ms',
             'stream-channels': true
           })
           .reply(502, 'Bad Gateway', [

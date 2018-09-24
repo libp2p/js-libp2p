@@ -15,16 +15,22 @@ module.exports = (node) => {
      * Iterates over all peer routers in series to find the given peer.
      *
      * @param {String} id The id of the peer to find
+     * @param {number} timeout How long the query should run
      * @param {function(Error, Result<Array>)} callback
      * @returns {void}
      */
-    findPeer: (id, callback) => {
+    findPeer: (id, timeout, callback) => {
       if (routers.length === 0) {
         return callback(new Error('No peer routers available'))
       }
 
+      if (typeof timeout === 'function') {
+        callback = timeout
+        timeout = null
+      }
+
       const tasks = routers.map((router) => {
-        return (cb) => router.findPeer(id, (err, result) => {
+        return (cb) => router.findPeer(id, timeout, (err, result) => {
           if (err) {
             return cb(err)
           }
