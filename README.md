@@ -116,9 +116,12 @@ const MulticastDNS = require('libp2p-mdns')
 const DHT = require('libp2p-kad-dht')
 const defaultsDeep = require('@nodeutils/defaults-deep')
 const Protector = require('libp2p-pnet')
+const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
+const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 
 class Node extends libp2p {
   constructor (_options) {
+    const peerInfo = _options.peerInfo
     const defaults = {
       // The libp2p modules for this libp2p bundle
       modules: {
@@ -133,8 +136,16 @@ class Node extends libp2p {
         connEncryption: [
           SECIO
         ],
-        // Encryption for private networks. Needs additional private key to work
+        /** Encryption for private networks. Needs additional private key to work **/
         // connProtector: new Protector(/*protector specific opts*/),
+        /** Enable custom content routers, such as delegated routing **/
+        // contentRouting: [
+        //   new DelegatedContentRouter(peerInfo.id)
+        // ],
+        /** Enable custom peer routers, such as delegated routing **/
+        // peerRouting: [
+        //   new DelegatedPeerRouter()
+        // ],
         peerDiscovery: [
           MulticastDNS
         ],
@@ -230,16 +241,17 @@ Required keys in the `options` object:
 
 `callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case stopping the node fails.
 
-#### `libp2p.peerRouting.findPeer(id, callback)`
+#### `libp2p.peerRouting.findPeer(id, timeout, callback)`
 
 > Looks up for multiaddrs of a peer in the DHT
 
 - `id`: instance of [PeerId][]
+- `timeout`: Number milliseconds
 
 #### `libp2p.contentRouting.findProviders(key, timeout, callback)`
 
 - `key`: Buffer
-- `timeout`: Number miliseconds
+- `timeout`: Number milliseconds
 
 #### `libp2p.contentRouting.provide(key, callback)`
 
@@ -307,14 +319,16 @@ Required keys in the `options` object:
 - `key`: Buffer
 - `value`: Buffer
 
-#### `libp2p.dht.get(key, callback)`
+#### `libp2p.dht.get(key, maxTimeout, callback)`
 
 - `key`: Buffer
+- `maxTimeout`: Number milliseconds
 
-#### `libp2p.dht.getMany(key, nVals, callback)`
+#### `libp2p.dht.getMany(key, nVals, maxTimeout, callback)`
 
 - `key`: Buffer
 - `nVals`: Number
+- `maxTimeout`: Number milliseconds
 
 [PeerInfo]: https://github.com/libp2p/js-peer-info
 [PeerId]: https://github.com/libp2p/js-peer-id
