@@ -198,6 +198,15 @@ describe('transports', () => {
     let peer2
     let node1
     let node2
+    let node3
+
+    after((done) => {
+      parallel([
+        (cb) => node1.stop(cb),
+        (cb) => node2.stop(cb),
+        (cb) => node3.stop(cb)
+      ], done)
+    })
 
     it('create two peerInfo with webrtc-star addrs', (done) => {
       parallel([
@@ -270,30 +279,27 @@ describe('transports', () => {
       })
     })
 
-    it('create a third node and check that discovery works', function (done) {
-      this.timeout(60 * 1000)
-
-      let counter = 0
-
-      function check () {
-        if (++counter === 3) {
-          expect(Object.keys(node1._switch.muxedConns).length).to.equal(1)
-          expect(Object.keys(node2._switch.muxedConns).length).to.equal(1)
-          done()
-        }
-      }
-
+    it('create a third node and check that discovery works', (done) => {
       PeerId.create({ bits: 512 }, (err, id3) => {
         expect(err).to.not.exist()
 
+        const b58Id = id3.toB58String()
+
+        function check () {
+          // Verify both nodes are connected to node 3
+          if (node1._switch.muxedConns[b58Id] && node2._switch.muxedConns[b58Id]) {
+            done()
+          }
+        }
+
         const peer3 = new PeerInfo(id3)
-        const ma3 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + id3.toB58String()
+        const ma3 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + b58Id
         peer3.multiaddrs.add(ma3)
 
         node1.on('peer:discovery', (peerInfo) => node1.dial(peerInfo, check))
         node2.on('peer:discovery', (peerInfo) => node2.dial(peerInfo, check))
 
-        const node3 = new Node({
+        node3 = new Node({
           peerInfo: peer3
         })
         node3.start(check)
