@@ -492,6 +492,92 @@ describe('KadDHT', () => {
     })
   })
 
+  describe('_checkLocalDatastore', () => {
+    it('valid if created by self', (done) => {
+      const sw = new Switch(peerInfos[0], new PeerBook())
+      sw.transport.add('tcp', new TCP())
+      sw.connection.addStreamMuxer(Mplex)
+      sw.connection.reuse()
+      const dht = new KadDHT(sw)
+
+      const record = new Record(
+        Buffer.from('hello'),
+        Buffer.from('world'),
+        peerInfos[0].id
+      )
+
+      waterfall([
+        (cb) => dht._putLocal(record.key, record.serialize(), cb),
+        (cb) => dht._checkLocalDatastore(record.key, cb)
+      ], (err, rec) => {
+        expect(err).to.not.exist()
+        expect(rec).to.exist('Record not located locally')
+        expect(rec.value.toString()).to.equal(record.value.toString())
+        done()
+      })
+    })
+    it('allow a peer record from store if recent', (done) => {
+      const sw = new Switch(peerInfos[0], new PeerBook())
+      sw.transport.add('tcp', new TCP())
+      sw.connection.addStreamMuxer(Mplex)
+      sw.connection.reuse()
+      const dht = new KadDHT(sw)
+
+      const record = new Record(
+        Buffer.from('hello'),
+        Buffer.from('world'),
+        peerInfos[1].id
+      )
+      record.timeReceived = new Date()
+
+      waterfall([
+        (cb) => dht._putLocal(record.key, record.serialize(), cb),
+        (cb) => dht._checkLocalDatastore(record.key, cb)
+      ], (err, rec) => {
+        expect(err).to.not.exist()
+        expect(rec).to.exist('Record should not have expired')
+        expect(rec.value.toString()).to.equal(record.value.toString())
+        done()
+      })
+    })
+    it('delete entries received from peers that have expired', (done) => {
+      const sw = new Switch(peerInfos[0], new PeerBook())
+      sw.transport.add('tcp', new TCP())
+      sw.connection.addStreamMuxer(Mplex)
+      sw.connection.reuse()
+      const dht = new KadDHT(sw)
+
+      const record = new Record(
+        Buffer.from('hello'),
+        Buffer.from('world'),
+        peerInfos[1].id
+      )
+      let received = new Date()
+      received.setDate(received.getDate() - 2)
+
+      record.timeReceived = received
+
+      waterfall([
+        (cb) => dht._putLocal(record.key, record.serialize(), cb),
+        (cb) => dht.datastore.get(kadUtils.bufferToKey(record.key), cb),
+        (lookup, cb) => {
+          expect(lookup).to.exist('Record should be in the local datastore')
+          cb()
+        },
+        (cb) => dht._checkLocalDatastore(record.key, cb)
+      ], (err, rec) => {
+        expect(err).to.not.exist()
+        expect(rec).to.not.exist('Record should have expired')
+
+        dht.datastore.get(kadUtils.bufferToKey(record.key), (err, lookup) => {
+          expect(err).to.exist('Should throw error for not existing')
+          expect(lookup).to.not.exist('Record should be removed from datastore')
+          done()
+        })
+      })
+    })
+  })
+
   describe('_verifyRecordLocally', () => {
     it('invalid record (missing public key)', (done) => {
       const sw = new Switch(peerInfos[0], new PeerBook())

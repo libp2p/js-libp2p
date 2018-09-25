@@ -133,7 +133,7 @@ module.exports = (dht) => ({
         if (record.timeReceived == null ||
             utils.now() - record.timeReceived > c.MAX_RECORD_AGE) {
           // 6. if: record is bad delete it and return
-          return dht.datastore.delete(key, callback)
+          return dht.datastore.delete(dsKey, callback)
         }
 
         //    else: return good record
