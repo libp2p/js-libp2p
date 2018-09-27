@@ -73,6 +73,7 @@
     "peer-book": "~0.8.0"
   },
   "contributors": [
+    "Blake Byrnes <blakebyrnes@gmail.com>",
     "David Dias <daviddias.p@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Jacob Heun <jacobheun@gmail.com>",
