@@ -241,17 +241,19 @@ Required keys in the `options` object:
 
 `callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case stopping the node fails.
 
-#### `libp2p.peerRouting.findPeer(id, timeout, callback)`
+#### `libp2p.peerRouting.findPeer(id, options, callback)`
 
 > Looks up for multiaddrs of a peer in the DHT
 
 - `id`: instance of [PeerId][]
-- `timeout`: Number milliseconds
+- `options`: object of options
+- `options.maxTimeout`: Number milliseconds
 
-#### `libp2p.contentRouting.findProviders(key, timeout, callback)`
+#### `libp2p.contentRouting.findProviders(key, options, callback)`
 
 - `key`: Buffer
-- `timeout`: Number milliseconds
+- `options`: object of options
+- `options.maxTimeout`: Number milliseconds
 
 #### `libp2p.contentRouting.provide(key, callback)`
 
@@ -319,16 +321,18 @@ Required keys in the `options` object:
 - `key`: Buffer
 - `value`: Buffer
 
-#### `libp2p.dht.get(key, maxTimeout, callback)`
+#### `libp2p.dht.get(key, options, callback)`
 
 - `key`: Buffer
-- `maxTimeout`: Number milliseconds
+- `options`: object of options
+- `options.maxTimeout`: Number milliseconds
 
-#### `libp2p.dht.getMany(key, nVals, maxTimeout, callback)`
+#### `libp2p.dht.getMany(key, nVals, options, callback)`
 
 - `key`: Buffer
 - `nVals`: Number
-- `maxTimeout`: Number milliseconds
+- `options`: object of options
+- `options.maxTimeout`: Number milliseconds
 
 [PeerInfo]: https://github.com/libp2p/js-peer-info
 [PeerId]: https://github.com/libp2p/js-peer-id

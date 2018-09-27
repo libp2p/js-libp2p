@@ -17,17 +17,27 @@ module.exports = (node) => {
      * Once a content router succeeds, iteration will stop.
      *
      * @param {CID} key The CID key of the content to find
-     * @param {number} timeout How long the query should run
+     * @param {object} options
+     * @param {number} options.maxTimeout How long the query should run
      * @param {function(Error, Result<Array>)} callback
      * @returns {void}
      */
-    findProviders: (key, timeout, callback) => {
+    findProviders: (key, options, callback) => {
       if (routers.length === 0) {
         return callback(new Error('No content routers available'))
       }
 
+      if (typeof options === 'function') {
+        callback = options
+        options = {}
+      } else if (typeof options === 'number') {
+        options = {
+          maxTimeout: options
+        }
+      }
+
       const tasks = routers.map((router) => {
-        return (cb) => router.findProviders(key, timeout, (err, results) => {
+        return (cb) => router.findProviders(key, options, (err, results) => {
           if (err) {
             return cb(err)
           }

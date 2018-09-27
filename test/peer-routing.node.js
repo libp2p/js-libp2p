@@ -231,7 +231,7 @@ describe('.peerRouting', () => {
     after((done) => nodeA.stop(done))
 
     describe('findPeer', () => {
-      it('should only use the dht if it find the peer', (done) => {
+      it('should only use the dht if it finds the peer', (done) => {
         const results = [true]
         const dhtStub = sinon.stub(nodeA._dht, 'findPeer').callsArgWith(2, null, results)
         const delegateStub = sinon.stub(delegate, 'findPeer').throws(() => {
