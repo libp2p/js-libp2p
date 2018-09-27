@@ -1,3 +1,13 @@
+<a name="0.10.4"></a>
+## [0.10.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.10.3...v0.10.4) (2018-09-27)
+
+
+### Bug Fixes
+
+* find peer and providers options ([#45](https://github.com/libp2p/js-libp2p-kad-dht/issues/45)) ([bba7500](https://github.com/libp2p/js-libp2p-kad-dht/commit/bba7500))
+
+
+
 <a name="0.10.3"></a>
 ## [0.10.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.10.2...v0.10.3) (2018-09-20)
 
