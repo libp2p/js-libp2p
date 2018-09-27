@@ -180,7 +180,7 @@ describe('KadDHT', () => {
           let n = 0
           each(values, (v, cb) => {
             n = (n + 1) % 3
-            dhts[n].findProviders(v.cid, 5000, (err, provs) => {
+            dhts[n].findProviders(v.cid, { maxTimeout: 5000 }, (err, provs) => {
               expect(err).to.not.exist()
               expect(provs).to.have.length(1)
               expect(provs[0].id.id).to.be.eql(ids[3].id)
@@ -271,7 +271,7 @@ describe('KadDHT', () => {
         (cb) => connect(dhts[0], dhts[1], cb),
         (cb) => connect(dhts[1], dhts[2], cb),
         (cb) => connect(dhts[2], dhts[3], cb),
-        (cb) => dhts[0].findPeer(ids[3], 1000, cb),
+        (cb) => dhts[0].findPeer(ids[3], { maxTimeout: 1000 }, cb),
         (res, cb) => {
           expect(res.id.isEqual(ids[3])).to.eql(true)
           cb()

@@ -443,22 +443,29 @@ class KadDHT {
    * Search the dht for up to `K` providers of the given CID.
    *
    * @param {CID} key
-   * @param {number} timeout - how long the query should maximally run, in milliseconds.
+   * @param {Object} options - findProviders options
+   * @param {number} options.maxTimeout - how long the query should maximally run, in milliseconds (default: 60000)
    * @param {function(Error, Array<PeerInfo>)} callback
    * @returns {void}
    */
-  findProviders (key, timeout, callback) {
-    if (typeof timeout === 'function') {
-      callback = timeout
-      timeout = null
+  findProviders (key, options, callback) {
+    if (typeof options === 'function') {
+      callback = options
+      options = {}
+    } else if (typeof options === 'number') { // This will be deprecated in a next release
+      options = {
+        maxTimeout: options
+      }
+    } else {
+      options = options || {}
     }
 
-    if (timeout == null) {
-      timeout = c.minute
+    if (!options.maxTimeout) {
+      options.maxTimeout = c.minute
     }
 
     this._log('findProviders %s', key.toBaseEncodedString())
-    this._findNProviders(key, timeout, c.K, callback)
+    this._findNProviders(key, options.maxTimeout, c.K, callback)
   }
 
   // ----------- Peer Routing
@@ -467,18 +474,25 @@ class KadDHT {
    * Search for a peer with the given ID.
    *
    * @param {PeerId} id
-   * @param {number} [maxTimeout=60000]
+   * @param {Object} options - findPeer options
+   * @param {number} options.maxTimeout - how long the query should maximally run, in milliseconds (default: 60000)
    * @param {function(Error, PeerInfo)} callback
    * @returns {void}
    */
-  findPeer (id, maxTimeout, callback) {
-    if (typeof maxTimeout === 'function') {
-      callback = maxTimeout
-      maxTimeout = null
+  findPeer (id, options, callback) {
+    if (typeof options === 'function') {
+      callback = options
+      options = {}
+    } else if (typeof options === 'number') { // This will be deprecated in a next release
+      options = {
+        maxTimeout: options
+      }
+    } else {
+      options = options || {}
     }
 
-    if (maxTimeout == null) {
-      maxTimeout = c.minute
+    if (!options.maxTimeout) {
+      options.maxTimeout = c.minute
     }
 
     this._log('findPeer %s', id.toB58String())
@@ -534,7 +548,7 @@ class KadDHT {
 
           timeout((cb) => {
             query.run(peers, cb)
-          }, maxTimeout)(cb)
+          }, options.maxTimeout)(cb)
         },
         (result, cb) => {
           this._log('findPeer %s: %s', id.toB58String(), result.success)

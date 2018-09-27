@@ -7,6 +7,7 @@
   "scripts": {
     "lint": "aegir lint",
     "test": "aegir test -t node",
+    "test:node": "aegir test -t node",
     "build": "aegir build",
     "docs": "aegir docs",
     "release": "aegir release --docs -t node",
