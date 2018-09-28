@@ -2,6 +2,7 @@
 
 const tryEach = require('async/tryEach')
 const parallel = require('async/parallel')
+const errCode = require('err-code')
 
 module.exports = (node) => {
   const routers = node._modules.contentRouting || []
@@ -23,14 +24,14 @@ module.exports = (node) => {
      * @returns {void}
      */
     findProviders: (key, options, callback) => {
-      if (routers.length === 0) {
-        return callback(new Error('No content routers available'))
+      if (!routers.length) {
+        return callback(errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE'))
       }
 
       if (typeof options === 'function') {
         callback = options
         options = {}
-      } else if (typeof options === 'number') {
+      } else if (typeof options === 'number') { // This can be deprecated in a future release
         options = {
           maxTimeout: options
         }
@@ -44,9 +45,7 @@ module.exports = (node) => {
 
           // If we don't have any results, we need to provide an error to keep trying
           if (!results || Object.keys(results).length === 0) {
-            return cb(Object.assign(new Error('not found'), {
-              code: 'NOT_FOUND'
-            }), null)
+            return cb(errCode(new Error('not found'), 'NOT_FOUND'), null)
           }
 
           cb(null, results)
@@ -71,8 +70,8 @@ module.exports = (node) => {
      * @returns {void}
      */
     provide: (key, callback) => {
-      if (routers.length === 0) {
-        return callback(new Error('No content routers available'))
+      if (!routers.length) {
+        return callback(errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE'))
       }
 
       parallel(routers.map((router) => {

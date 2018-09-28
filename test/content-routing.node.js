@@ -100,7 +100,7 @@ describe('.contentRouting', () => {
       })
 
       it('nodeE.contentRouting.findProviders for existing record', (done) => {
-        nodeE.contentRouting.findProviders(cid, 5000, (err, providers) => {
+        nodeE.contentRouting.findProviders(cid, { maxTimeout: 5000 }, (err, providers) => {
           expect(err).to.not.exist()
           expect(providers).to.have.length.above(0)
           done()
@@ -110,7 +110,7 @@ describe('.contentRouting', () => {
       it('nodeC.contentRouting.findProviders for non existing record (timeout)', (done) => {
         const cid = new CID('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSnnnn')
 
-        nodeE.contentRouting.findProviders(cid, 5000, (err, providers) => {
+        nodeE.contentRouting.findProviders(cid, { maxTimeout: 5000 }, (err, providers) => {
           expect(err).to.not.exist()
           expect(providers).to.have.length(0)
           done()
@@ -339,7 +339,7 @@ describe('.contentRouting', () => {
           return new Error('the delegate should not have been called')
         })
 
-        nodeA.contentRouting.findProviders('a cid', 5000, (err, results) => {
+        nodeA.contentRouting.findProviders('a cid', { maxTimeout: 5000 }, (err, results) => {
           expect(err).to.not.exist()
           expect(results).to.equal(results)
           expect(dhtStub.calledOnce).to.equal(true)
@@ -355,7 +355,7 @@ describe('.contentRouting', () => {
         const dhtStub = sinon.stub(nodeA._dht, 'findProviders').callsArgWith(2, null, [])
         const delegateStub = sinon.stub(delegate, 'findProviders').callsArgWith(2, null, results)
 
-        nodeA.contentRouting.findProviders('a cid', 5000, (err, results) => {
+        nodeA.contentRouting.findProviders('a cid', { maxTimeout: 5000 }, (err, results) => {
           expect(err).to.not.exist()
           expect(results).to.deep.equal(results)
           expect(dhtStub.calledOnce).to.equal(true)

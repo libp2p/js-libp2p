@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "async": "^2.6.1",
+    "err-code": "^1.1.2",
     "joi": "^13.6.0",
     "joi-browser": "^13.4.0",
     "libp2p-connection-manager": "~0.0.2",

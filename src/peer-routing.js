@@ -1,6 +1,7 @@
 'use strict'
 
 const tryEach = require('async/tryEach')
+const errCode = require('err-code')
 
 module.exports = (node) => {
   const routers = node._modules.peerRouting || []
@@ -21,8 +22,8 @@ module.exports = (node) => {
      * @returns {void}
      */
     findPeer: (id, options, callback) => {
-      if (routers.length === 0) {
-        return callback(new Error('No peer routers available'))
+      if (!routers.length) {
+        callback(errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE'))
       }
 
       if (typeof options === 'function') {
@@ -38,9 +39,7 @@ module.exports = (node) => {
 
           // If we don't have a result, we need to provide an error to keep trying
           if (!result || Object.keys(result).length === 0) {
-            return cb(Object.assign(new Error('not found'), {
-              code: 'NOT_FOUND'
-            }), null)
+            return cb(errCode(new Error('not found'), 'NOT_FOUND'), null)
           }
 
           cb(null, result)
@@ -51,7 +50,7 @@ module.exports = (node) => {
         if (err && err.code !== 'NOT_FOUND') {
           return callback(err)
         }
-        results = results || null
+        results = results || []
         callback(null, results)
       })
     }
