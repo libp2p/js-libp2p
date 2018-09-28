@@ -1,16 +1,19 @@
-import Libp2p from 'libp2p';
-import Websockets from 'libp2p-websockets';
-import WebSocketStar from 'libp2p-websocket-star';
-import WebRTCStar from 'libp2p-webrtc-star';
-import MPLEX from 'libp2p-mplex';
-import SECIO from 'libp2p-secio';
-import KadDHT from 'libp2p-kad-dht';
-import DelegatedPeerRouter from 'libp2p-delegated-peer-routing';
-import DelegatedContentRouter from 'libp2p-delegated-content-routing';
+// eslint-disable-next-line
+'use strict'
 
-export default ({peerInfo, peerBook}) => {
-  const wrtcstar = new WebRTCStar({id: peerInfo.id});
-  const wsstar = new WebSocketStar({id: peerInfo.id});
+const Libp2p = require('libp2p')
+const Websockets = require('libp2p-websockets')
+const WebSocketStar = require('libp2p-websocket-star')
+const WebRTCStar = require('libp2p-webrtc-star')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+const KadDHT = require('libp2p-kad-dht')
+const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
+const DelegatedContentRouter = require('libp2p-delegated-content-routing')
+
+module.exports = ({peerInfo, peerBook}) => {
+  const wrtcstar = new WebRTCStar({id: peerInfo.id})
+  const wsstar = new WebSocketStar({id: peerInfo.id})
   const delegatedApiOptions = {
     host: '0.0.0.0',
     protocol: 'http',
@@ -72,4 +75,4 @@ export default ({peerInfo, peerBook}) => {
       }
     }
   })
-};
+}

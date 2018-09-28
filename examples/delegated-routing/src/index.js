@@ -1,6 +1,9 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+// eslint-disable-next-line
+'use strict'
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const React = require('react') // eslint-disable-line no-unused-vars
+const ReactDOM = require('react-dom')
+const App = require('./App') // eslint-disable-line no-unused-vars
+// require('index.css')
+
+ReactDOM.render(<App />, document.getElementById('root'))

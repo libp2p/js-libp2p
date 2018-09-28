@@ -1,13 +1,17 @@
-import React, { Component } from 'react';
-import './App.css';
-import Ipfs from 'ipfs';
-import libp2pBundle from './libp2p-bundle';
+// eslint-disable-next-line
+'use strict'
+
+const React = require('react')
+const Component = React.Component
+const Ipfs = require('ipfs')
+const libp2pBundle = require('./libp2p-bundle')
+// require('./App.css')
 
 const BootstrapNode = '/ip4/127.0.0.1/tcp/8081/ws/ipfs/QmdoG8DpzYUZMVP5dGmgmigZwR1RE8Cf6SxMPg1SBXJAQ8'
 
 class App extends Component {
-  constructor(props) {
-    super(props);
+  constructor (props) {
+    super(props)
     this.state = {
       peers: 0,
       // This hash is the IPFS readme
@@ -15,28 +19,28 @@ class App extends Component {
       // This peer is one of the Bootstrap nodes for IPFS
       peer: 'QmV6kA2fB8kTr6jc3pL5zbNsjKbmPUHAPKKHRBYe1kDEyc',
       isLoading: 0
-    };
-    this.peerInterval = null;
+    }
+    this.peerInterval = null
 
-    this.handleHashChange = this.handleHashChange.bind(this);
-    this.handleHashSubmit = this.handleHashSubmit.bind(this);
-    this.handlePeerChange = this.handlePeerChange.bind(this);
-    this.handlePeerSubmit = this.handlePeerSubmit.bind(this);
+    this.handleHashChange = this.handleHashChange.bind(this)
+    this.handleHashSubmit = this.handleHashSubmit.bind(this)
+    this.handlePeerChange = this.handlePeerChange.bind(this)
+    this.handlePeerSubmit = this.handlePeerSubmit.bind(this)
   }
 
-  handleHashChange(event) {
+  handleHashChange (event) {
     this.setState({
       hash: event.target.value
-    });
+    })
   }
-  handlePeerChange(event) {
+  handlePeerChange (event) {
     this.setState({
       peer: event.target.value
-    });
+    })
   }
 
-  handleHashSubmit(event) {
-    event.preventDefault();
+  handleHashSubmit (event) {
+    event.preventDefault()
     this.setState({
       isLoading: this.state.isLoading + 1
     })
@@ -48,10 +52,10 @@ class App extends Component {
         response: data.toString(),
         isLoading: this.state.isLoading - 1
       })
-    });
+    })
   }
-  handlePeerSubmit(event) {
-    event.preventDefault();
+  handlePeerSubmit (event) {
+    event.preventDefault()
     this.setState({
       isLoading: this.state.isLoading + 1
     })
@@ -63,10 +67,10 @@ class App extends Component {
         response: JSON.stringify(results, null, 2),
         isLoading: this.state.isLoading - 1
       })
-    });
+    })
   }
 
-  componentDidMount() {
+  componentDidMount () {
     window.ipfs = this.ipfs = new Ipfs({
       config: {
         Addresses: {
@@ -101,7 +105,7 @@ class App extends Component {
         console.log('Connected!')
       })
 
-	    this.peerInterval = setInterval(() => {
+      this.peerInterval = setInterval(() => {
         this.ipfs.swarm.peers((err, peers) => {
           if (err) console.log(err)
           if (peers) this.setState({peers: peers.length})
@@ -110,7 +114,7 @@ class App extends Component {
     })
   }
 
-  render() {
+  render () {
     return (
       <div>
         <header className="center">
@@ -133,7 +137,7 @@ class App extends Component {
             </label>
           </form>
         </section>
-        <section className={[this.state.isLoading > 0 ? 'loading': '', 'loader'].join(' ')}>
+        <section className={[this.state.isLoading > 0 ? 'loading' : '', 'loader'].join(' ')}>
           <div className="lds-ripple"><div></div><div></div></div>
         </section>
         <section>
@@ -142,8 +146,8 @@ class App extends Component {
           </pre>
         </section>
       </div>
-    );
+    )
   }
 }
 
-export default App;
+module.exports = App
