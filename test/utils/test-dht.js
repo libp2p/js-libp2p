@@ -18,14 +18,24 @@ class TestDHT {
     this.nodes = []
   }
 
-  spawn (n, callback) {
-    times(n, (i, cb) => this._spawnOne(cb), (err, dhts) => {
+  spawn (n, options, callback) {
+    if (typeof options === 'function') {
+      callback = options
+      options = {}
+    }
+
+    times(n, (i, cb) => this._spawnOne(options, cb), (err, dhts) => {
       if (err) { return callback(err) }
       callback(null, dhts)
     })
   }
 
-  _spawnOne (callback) {
+  _spawnOne (options, callback) {
+    if (typeof options === 'function') {
+      callback = options
+      options = {}
+    }
+
     createPeerInfo(1, (err, peers) => {
       if (err) { return callback(err) }
 
@@ -37,7 +47,7 @@ class TestDHT {
       sw.connection.addStreamMuxer(Mplex)
       sw.connection.reuse()
 
-      const dht = new KadDHT(sw)
+      const dht = new KadDHT(sw, options)
 
       dht.validators.v = {
         func (key, publicKey, callback) {

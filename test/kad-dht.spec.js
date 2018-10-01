@@ -4,6 +4,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
+const sinon = require('sinon')
 const series = require('async/series')
 const times = require('async/times')
 const parallel = require('async/parallel')
@@ -69,7 +70,7 @@ function connect (a, b, callback) {
 
 function bootstrap (dhts) {
   dhts.forEach((dht) => {
-    dht.randomWalk._walk(3, 10000)
+    dht.randomWalk._walk(3, 10000, () => {}) // don't need to know when it finishes
   })
 }
 
@@ -133,6 +134,68 @@ describe('KadDHT', () => {
     expect(dht).to.have.property('switch').eql(sw)
     expect(dht).to.have.property('kBucketSize', 5)
     expect(dht).to.have.property('routingTable')
+  })
+
+  it('should be able to start and stop', function (done) {
+    const sw = new Switch(peerInfos[0], new PeerBook())
+    sw.transport.add('tcp', new TCP())
+    sw.connection.addStreamMuxer(Mplex)
+    sw.connection.reuse()
+    const dht = new KadDHT(sw)
+
+    sinon.spy(dht.network, 'start')
+    sinon.spy(dht.randomWalk, 'start')
+
+    sinon.spy(dht.network, 'stop')
+    sinon.spy(dht.randomWalk, 'stop')
+
+    series([
+      (cb) => dht.start(cb),
+      (cb) => {
+        expect(dht.network.start.calledOnce).to.equal(true)
+        expect(dht.randomWalk.start.calledOnce).to.equal(true)
+
+        cb()
+      },
+      (cb) => dht.stop(cb)
+    ], (err) => {
+      expect(err).to.not.exist()
+      expect(dht.network.stop.calledOnce).to.equal(true)
+      expect(dht.randomWalk.stop.calledOnce).to.equal(true)
+
+      done()
+    })
+  })
+
+  it('should be able to start with random-walk disabled', function (done) {
+    const sw = new Switch(peerInfos[0], new PeerBook())
+    sw.transport.add('tcp', new TCP())
+    sw.connection.addStreamMuxer(Mplex)
+    sw.connection.reuse()
+    const dht = new KadDHT(sw, { enabledDiscovery: false })
+
+    sinon.spy(dht.network, 'start')
+    sinon.spy(dht.randomWalk, 'start')
+
+    sinon.spy(dht.network, 'stop')
+    sinon.spy(dht.randomWalk, 'stop')
+
+    series([
+      (cb) => dht.start(cb),
+      (cb) => {
+        expect(dht.network.start.calledOnce).to.equal(true)
+        expect(dht.randomWalk.start.calledOnce).to.equal(false)
+
+        cb()
+      },
+      (cb) => dht.stop(cb)
+    ], (err) => {
+      expect(err).to.not.exist()
+      expect(dht.network.stop.calledOnce).to.equal(true)
+      expect(dht.randomWalk.stop.calledOnce).to.equal(true) // Should be always disabled, as it can be started using the instance
+
+      done()
+    })
   })
 
   it('put - get', function (done) {
@@ -206,7 +269,8 @@ describe('KadDHT', () => {
     const nDHTs = 20
     const tdht = new TestDHT()
 
-    tdht.spawn(nDHTs, (err, dhts) => {
+    // random walk disabled for a manual usage
+    tdht.spawn(nDHTs, { enabledDiscovery: false }, (err, dhts) => {
       expect(err).to.not.exist()
 
       series([
@@ -217,7 +281,6 @@ describe('KadDHT', () => {
         (cb) => {
           bootstrap(dhts)
           waitForWellFormedTables(dhts, 7, 0, 20 * 1000, cb)
-          cb()
         }
       ], (err) => {
         expect(err).to.not.exist()

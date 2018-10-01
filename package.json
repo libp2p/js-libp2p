@@ -64,13 +64,14 @@
     "datastore-level": "~0.8.0",
     "dirty-chai": "^2.0.1",
     "interface-connection": "~0.3.2",
-    "libp2p-mplex": "~0.8.0",
+    "libp2p-mplex": "~0.8.1",
     "libp2p-switch": "~0.40.5",
     "libp2p-tcp": "~0.12.0",
     "lodash": "^4.17.10",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
-    "peer-book": "~0.8.0"
+    "peer-book": "~0.8.0",
+    "sinon": "^6.3.4"
   },
   "contributors": [
     "Blake Byrnes <blakebyrnes@gmail.com>",

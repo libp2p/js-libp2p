@@ -13,7 +13,7 @@ const c = require('./constants')
 class RandomWalk {
   constructor (kadDHT) {
     assert(kadDHT, 'Random Walk needs an instance of the Kademlia DHT')
-    this._running = false
+    this._runningHandle = null
     this._kadDHT = kadDHT
   }
 
@@ -34,21 +34,57 @@ class RandomWalk {
     // Don't run twice
     if (this._running) { return }
 
-    this._running = setInterval(
-      () => this._walk(queries, maxTimeout),
-      period
-    )
+    // Create running handle
+    const runningHandle = {
+      _onCancel: null,
+      _timeoutId: null,
+      runPeriodically: (fn, period) => {
+        runningHandle._timeoutId = setTimeout(() => {
+          runningHandle._timeoutId = null
+
+          fn((nextPeriod) => {
+            // Was walk cancelled while fn was being called?
+            if (runningHandle._onCancel) {
+              return runningHandle._onCancel()
+            }
+            // Schedule next
+            runningHandle.runPeriodically(fn, nextPeriod)
+          })
+        }, period)
+      },
+      cancel: (cb) => {
+        // Not currently running, can callback immediately
+        if (runningHandle._timeoutId) {
+          clearTimeout(runningHandle._timeoutId)
+          return cb()
+        }
+        // Wait to finish and then call callback
+        runningHandle._onCancel = cb
+      }
+    }
+
+    // Start runner
+    runningHandle.runPeriodically((done) => {
+      this._walk(queries, maxTimeout, () => done(period))
+    }, period)
+    this._runningHandle = runningHandle
   }
 
   /**
    * Stop the random-walk process.
+   * @param {function(Error)} callback
    *
    * @returns {void}
    */
-  stop () {
-    if (this._running) {
-      clearInterval(this._running)
+  stop (callback) {
+    const runningHandle = this._runningHandle
+
+    if (!runningHandle) {
+      return callback()
     }
+
+    this._runningHandle = null
+    runningHandle.cancel(callback)
   }
 
   /**
@@ -56,11 +92,12 @@ class RandomWalk {
    *
    * @param {number} queries
    * @param {number} maxTimeout
+   * @param {function(Error)} callback
    * @returns {void}
    *
    * @private
    */
-  _walk (queries, maxTimeout) {
+  _walk (queries, maxTimeout, callback) {
     this._kadDHT._log('random-walk:start')
 
     times(queries, (i, cb) => {
@@ -70,9 +107,13 @@ class RandomWalk {
           this._query(id, cb)
         }, maxTimeout)(cb)
       ], (err) => {
-        if (err) { return this._kadDHT._log.error('random-walk:error', err) }
+        if (err) {
+          this._kadDHT._log.error('random-walk:error', err)
+          return callback(err)
+        }
 
         this._kadDHT._log('random-walk:done')
+        callback(null)
       })
     })
   }
