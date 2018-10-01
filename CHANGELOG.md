@@ -1,3 +1,13 @@
+<a name="0.8.2"></a>
+## [0.8.2](https://github.com/libp2p/js-libp2p-mplex/compare/v0.8.1...v0.8.2) (2018-10-01)
+
+
+### Bug Fixes
+
+* improve resiliency of internals _send ([#84](https://github.com/libp2p/js-libp2p-mplex/issues/84)) ([70dafb7](https://github.com/libp2p/js-libp2p-mplex/commit/70dafb7))
+
+
+
 <a name="0.8.1"></a>
 ## [0.8.1](https://github.com/libp2p/js-libp2p-mplex/compare/v0.8.0...v0.8.1) (2018-10-01)
 
