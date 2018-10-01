@@ -148,7 +148,6 @@ class Multiplex extends stream.Duplex {
   _send (header/* : number */, data /* :: ?: Buffer */)/* : bool */ {
     const len = data ? data.length : 0
     const oldUsed = used
-    let drained = true
 
     this.log('_send', header, len)
 
@@ -157,18 +156,22 @@ class Multiplex extends stream.Duplex {
     varint.encode(len, pool, used)
     used += varint.encode.bytes
 
-    drained = this.push(pool.slice(oldUsed, used))
+    let buf = pool.slice(oldUsed, used)
 
     if (pool.length - used < 100) {
       pool = Buffer.alloc(10 * 1024)
       used = 0
     }
 
-    if (data && drained) {
-      drained = this.push(data)
+    if (data) {
+      buf = Buffer.concat([
+        buf,
+        data
+      ])
     }
 
-    return drained
+    // Push and return the results
+    return this.push(buf)
   }
 
   _addChannel (channel/* : Channel */, id/* : number */, list/* : Array<Channel|null> */)/* : Channel */ {
