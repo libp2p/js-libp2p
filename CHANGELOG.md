@@ -1,3 +1,13 @@
+<a name="0.8.1"></a>
+## [0.8.1](https://github.com/libp2p/js-libp2p-mplex/compare/v0.8.0...v0.8.1) (2018-10-01)
+
+
+### Bug Fixes
+
+* verify drain before new push ([#82](https://github.com/libp2p/js-libp2p-mplex/issues/82)) ([cd77e01](https://github.com/libp2p/js-libp2p-mplex/commit/cd77e01))
+
+
+
 <a name="0.8.0"></a>
 # [0.8.0](https://github.com/libp2p/js-libp2p-mplex/compare/v0.7.0...v0.8.0) (2018-06-19)
 
