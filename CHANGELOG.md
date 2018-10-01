@@ -1,3 +1,13 @@
+<a name="0.10.5"></a>
+## [0.10.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.10.4...v0.10.5) (2018-10-01)
+
+
+### Features
+
+* start random walk and allow configuration for disabling ([#42](https://github.com/libp2p/js-libp2p-kad-dht/issues/42)) ([abe9407](https://github.com/libp2p/js-libp2p-kad-dht/commit/abe9407))
+
+
+
 <a name="0.10.4"></a>
 ## [0.10.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.10.3...v0.10.4) (2018-09-27)
 
