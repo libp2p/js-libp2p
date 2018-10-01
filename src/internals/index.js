@@ -164,7 +164,7 @@ class Multiplex extends stream.Duplex {
       used = 0
     }
 
-    if (data) {
+    if (data && drained) {
       drained = this.push(data)
     }
 
