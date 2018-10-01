@@ -65,9 +65,10 @@ module.exports = (swarm, options, connHandler) => {
           }
 
           default: {
-            return utils.writeResponse(
+            utils.writeResponse(
               sh,
               proto.CircuitRelay.Status.INVALID_MSG_TYPE)
+            return sh.close()
           }
         }
       })

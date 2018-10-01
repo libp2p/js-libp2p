@@ -323,7 +323,7 @@ describe('relay', () => {
 
       before(() => {
         relay._circuit(
-          srcConn,
+          new StreamHandler(srcConn),
           msg,
           (err) => {
             expect(err).to.not.exist()
@@ -385,6 +385,44 @@ describe('relay', () => {
                   })
               })
             )
+          })
+        )
+      })
+    })
+
+    describe('should fail creating circuit', () => {
+      let msg = {
+        type: proto.CircuitRelay.Type.STOP,
+        srcPeer: {
+          id: Buffer.from(`QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`),
+          addrs: [Buffer.from(`dsfsdfsdf`)]
+        },
+        dstPeer: {
+          id: Buffer.from(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`),
+          addrs: [Buffer.from(`sdflksdfndsklfnlkdf`)]
+        }
+      }
+
+      it('should not create circuit', (done) => {
+        relay._circuit(
+          new StreamHandler(srcConn),
+          msg,
+          (err) => {
+            expect(err).to.exist()
+            expect(err).to.match(/Unable to create circuit!/)
+            done()
+          })
+
+        pull(
+          pull.values([proto.CircuitRelay.encode({
+            type: proto.CircuitRelay.Type.STATUS,
+            code: proto.CircuitRelay.Status.STOP_RELAY_REFUSED
+          })]),
+          lp.encode(),
+          pull.collect((err, encoded) => {
+            expect(err).to.not.exist()
+
+            encoded.forEach((e) => dstShake.write(e))
           })
         )
       })
