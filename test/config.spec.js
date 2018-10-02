@@ -8,7 +8,7 @@ const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const waterfall = require('async/waterfall')
 const WS = require('libp2p-websockets')
-const Bootstrap = require('libp2p-railing')
+const Bootstrap = require('libp2p-bootstrap')
 
 const validateConfig = require('../src/config').validate
 
