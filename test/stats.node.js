@@ -107,8 +107,8 @@ describe('Stats', () => {
 
       switches.forEach((swtch) => {
         let snapshot = swtch.stats.global.snapshot
-        expect(snapshot.dataReceived.toFixed()).to.equal('2426')
-        expect(snapshot.dataSent.toFixed()).to.equal('2426')
+        expect(snapshot.dataReceived.toFixed()).to.equal('2210')
+        expect(snapshot.dataSent.toFixed()).to.equal('2210')
       })
 
       teardown(switches, done)
@@ -162,8 +162,8 @@ describe('Stats', () => {
       expect(err).to.not.exist()
       switches.forEach((swtch) => {
         let snapshot = swtch.stats.forTransport('tcp').snapshot
-        expect(snapshot.dataReceived.toFixed()).to.equal('2426')
-        expect(snapshot.dataSent.toFixed()).to.equal('2426')
+        expect(snapshot.dataReceived.toFixed()).to.equal('2210')
+        expect(snapshot.dataSent.toFixed()).to.equal('2210')
       })
       teardown(switches, done)
     })
@@ -187,8 +187,8 @@ describe('Stats', () => {
       switches.forEach((swtch, index) => {
         const other = selectOther(switches, index)
         let snapshot = swtch.stats.forPeer(other._peerInfo.id.toB58String()).snapshot
-        expect(snapshot.dataReceived.toFixed()).to.equal('2426')
-        expect(snapshot.dataSent.toFixed()).to.equal('2426')
+        expect(snapshot.dataReceived.toFixed()).to.equal('2210')
+        expect(snapshot.dataSent.toFixed()).to.equal('2210')
       })
       teardown(switches, done)
     })
@@ -226,8 +226,8 @@ describe('Stats', () => {
         switches.forEach((swtch, index) => {
           const other = selectOther(switches, index)
           const snapshot = swtch.stats.forPeer(other._peerInfo.id.toB58String()).snapshot
-          expect(snapshot.dataReceived.toFixed()).to.equal('2426')
-          expect(snapshot.dataSent.toFixed()).to.equal('2426')
+          expect(snapshot.dataReceived.toFixed()).to.equal('2210')
+          expect(snapshot.dataSent.toFixed()).to.equal('2210')
         })
         teardown(switches, done)
       })
@@ -264,10 +264,10 @@ describe('Stats', () => {
           switches.forEach((swtch, index) => {
             const other = selectOther(switches, index)
             const snapshot = swtch.stats.forPeer(other._peerInfo.id.toB58String()).snapshot
-            expect(snapshot.dataReceived.toFixed()).to.equal('4852')
-            expect(snapshot.dataSent.toFixed()).to.equal('4852')
+            expect(snapshot.dataReceived.toFixed()).to.equal('4420')
+            expect(snapshot.dataSent.toFixed()).to.equal('4420')
           })
-          teardown(switches, done)
+          teardown(switches, cb)
         }
       ], done)
     })
