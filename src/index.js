@@ -85,8 +85,11 @@ class Node extends EventEmitter {
     // dht provided components (peerRouting, contentRouting, dht)
     if (this._config.EXPERIMENTAL.dht) {
       const DHT = this._modules.dht
+      const enabledDiscovery = this._config.dht.enabledDiscovery !== false
+
       this._dht = new DHT(this._switch, {
         kBucketSize: this._config.dht.kBucketSize || 20,
+        enabledDiscovery,
         // TODO make datastore an option of libp2p itself so
         // that other things can use it as well
         datastore: dht.datastore

@@ -28,10 +28,12 @@ describe('libp2p creation', () => {
       sinon.spy(sw, 'start')
       sinon.spy(cm, 'start')
       sinon.spy(dht, 'start')
+      sinon.spy(dht.randomWalk, 'start')
       sinon.spy(pub, 'start')
       sinon.spy(sw, 'stop')
       sinon.spy(cm, 'stop')
       sinon.spy(dht, 'stop')
+      sinon.spy(dht.randomWalk, 'stop')
       sinon.spy(pub, 'stop')
       sinon.spy(node, 'emit')
 
@@ -41,6 +43,7 @@ describe('libp2p creation', () => {
           expect(sw.start.calledOnce).to.equal(true)
           expect(cm.start.calledOnce).to.equal(true)
           expect(dht.start.calledOnce).to.equal(true)
+          expect(dht.randomWalk.start.calledOnce).to.equal(true)
           expect(pub.start.calledOnce).to.equal(true)
           expect(node.emit.calledWith('start')).to.equal(true)
 
@@ -53,6 +56,7 @@ describe('libp2p creation', () => {
         expect(sw.stop.calledOnce).to.equal(true)
         expect(cm.stop.calledOnce).to.equal(true)
         expect(dht.stop.calledOnce).to.equal(true)
+        expect(dht.randomWalk.stop.called).to.equal(true)
         expect(pub.stop.calledOnce).to.equal(true)
         expect(node.emit.calledWith('stop')).to.equal(true)
 
