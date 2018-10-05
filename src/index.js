@@ -20,8 +20,6 @@ const pubsub = require('./pubsub')
 const getPeerInfo = require('./get-peer-info')
 const validateConfig = require('./config').validate
 
-exports = module.exports
-
 const NOT_STARTED_ERROR_MESSAGE = 'The libp2p node is not started yet'
 
 class Node extends EventEmitter {
