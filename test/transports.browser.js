@@ -230,6 +230,7 @@ describe('transports', () => {
   })
 
   describe('webrtc-star', () => {
+    /* eslint-disable-next-line no-console */
     if (!w.support) { return console.log('NO WEBRTC SUPPORT') }
 
     let peer1

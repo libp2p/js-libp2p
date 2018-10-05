@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 'use strict'
 
 const domReady = require('detect-dom-ready')

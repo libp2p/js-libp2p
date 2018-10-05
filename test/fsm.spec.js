@@ -3,12 +3,10 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
-chai.use(require("chai-checkmark"))
+chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const series = require('async/series')
-const parallel = require('async/parallel')
 const createNode = require('./utils/create-node')
-const sinon = require('sinon')
 
 describe('libp2p state machine (fsm)', () => {
   describe('starting and stopping', () => {

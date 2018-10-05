@@ -232,6 +232,7 @@ class Node extends EventEmitter {
    * and the `Connection` will be sent in the callback
    *
    * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to dial
+   * @param {string} protocol
    * @param {function(Error, Connection)} callback
    * @returns {void}
    */
