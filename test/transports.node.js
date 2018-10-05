@@ -208,6 +208,29 @@ describe('transports', () => {
       })
     })
 
+    it('.dialFSM check conn and close', (done) => {
+      nodeA.dialFSM(nodeB.peerInfo, (err, connFSM) => {
+        expect(err).to.not.exist()
+
+        connFSM.once('muxed', () => {
+          expect(nodeA._switch.muxedConns).to.have.any.keys(
+            nodeB.peerInfo.id.toB58String()
+          )
+
+          connFSM.once('error', done)
+          connFSM.once('close', () => {
+            // ensure the connection is closed
+            expect(nodeA._switch.muxedConns).to.not.have.any.keys([
+              nodeB.peerInfo.id.toB58String()
+            ])
+            done()
+          })
+
+          connFSM.close()
+        })
+      })
+    })
+
     it('.dialFSMProtocol do an echo and close', (done) => {
       nodeA.dialProtocolFSM(nodeB.peerInfo, '/echo/1.0.0', (err, connFSM) => {
         expect(err).to.not.exist()
