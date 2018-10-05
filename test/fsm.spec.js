@@ -5,6 +5,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-checkmark'))
 const expect = chai.expect
+const sinon = require('sinon')
 const series = require('async/series')
 const createNode = require('./utils/create-node')
 
@@ -70,6 +71,47 @@ describe('libp2p state machine (fsm)', () => {
         // start the started node
         node.start()
       })
+      node.start()
+    })
+
+    it('should error on start with no transports', (done) => {
+      let transports = node._modules.transport
+      node._modules.transport = null
+
+      node.on('stop', () => {
+        node._modules.transport = transports
+        expect(node._modules.transport).to.exist().mark()
+      })
+      node.on('error', (err) => {
+        expect(err).to.exist().mark()
+      })
+      node.on('start', () => {
+        throw new Error('should not start')
+      })
+
+      expect(2).checks(done)
+
+      node.start()
+    })
+
+    it('should not start if the switch fails to start', (done) => {
+      const error = new Error('switch didnt start')
+      const stub = sinon.stub(node._switch, 'start')
+        .callsArgWith(0, error)
+
+      node.on('stop', () => {
+        expect(stub.calledOnce).to.eql(true).mark()
+        stub.restore()
+      })
+      node.on('error', (err) => {
+        expect(err).to.eql(error).mark()
+      })
+      node.on('start', () => {
+        throw new Error('should not start')
+      })
+
+      expect(2).checks(done)
+
       node.start()
     })
   })

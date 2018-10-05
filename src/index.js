@@ -121,13 +121,17 @@ class Node extends EventEmitter {
       },
       STARTING: {
         done: 'STARTED',
+        abort: 'STOPPED',
         stop: 'STOPPING'
       },
       STARTED: {
         stop: 'STOPPING',
         start: 'STARTED'
       },
-      STOPPING: { done: 'STOPPED' }
+      STOPPING: {
+        stop: 'STOPPING',
+        done: 'STOPPED'
+      }
     })
     this.state.on('STARTING', () => {
       log('libp2p is starting')
@@ -318,7 +322,7 @@ class Node extends EventEmitter {
   _onStarting () {
     if (!this._modules.transport) {
       this.emit('error', new Error('no transports were present'))
-      return this.state('stop')
+      return this.state('abort')
     }
 
     let ws
@@ -435,6 +439,7 @@ class Node extends EventEmitter {
       if (err) {
         log.error(err)
         this.emit('error', err)
+        return this.state('stop')
       }
       this.state('done')
     })
