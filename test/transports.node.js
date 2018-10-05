@@ -185,7 +185,7 @@ describe('transports', () => {
     })
 
     it('nodeA.hangUp nodeB using PeerId (third)', (done) => {
-      nodeA.hangUp(nodeB.peerInfo.multiaddrs.toArray()[0], (err) => {
+      nodeA.hangUp(nodeB.peerInfo.id, (err) => {
         expect(err).to.not.exist()
         setTimeout(check, 500)
 
@@ -205,6 +205,28 @@ describe('transports', () => {
             }
           ], done)
         }
+      })
+    })
+
+    it('.dialFSMProtocol do an echo and close', (done) => {
+      nodeA.dialProtocolFSM(nodeB.peerInfo, '/echo/1.0.0', (err, connFSM) => {
+        expect(err).to.not.exist()
+        connFSM.once('connection', (conn) => {
+          expect(nodeA._switch.muxedConns).to.have.all.keys([
+            nodeB.peerInfo.id.toB58String()
+          ])
+          tryEcho(conn, () => {
+            connFSM.close()
+          })
+        })
+        connFSM.once('error', done)
+        connFSM.once('close', () => {
+          // ensure the connection is closed
+          expect(nodeA._switch.muxedConns).to.not.have.any.keys([
+            nodeB.peerInfo.id.toB58String()
+          ])
+          done()
+        })
       })
     })
   })

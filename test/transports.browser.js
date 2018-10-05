@@ -148,6 +148,19 @@ describe('transports', () => {
       })
     })
 
+    it('.dialFSMProtocol do an echo and close', (done) => {
+      nodeA.dialProtocolFSM(peerB, '/echo/1.0.0', (err, connFSM) => {
+        expect(err).to.not.exist()
+        connFSM.once('connection', (conn) => {
+          tryEcho(conn, () => {
+            connFSM.close()
+          })
+        })
+        connFSM.once('error', done)
+        connFSM.once('close', done)
+      })
+    })
+
     describe('stress', () => {
       it('one big write', (done) => {
         nodeA.dialProtocol(peerB, '/echo/1.0.0', (err, conn) => {
