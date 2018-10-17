@@ -171,8 +171,8 @@ describe('transports', () => {
       })
     })
 
-    it('.dialFSMProtocol do an echo and close', (done) => {
-      nodeA.dialProtocolFSM(peerB, '/echo/1.0.0', (err, connFSM) => {
+    it('.dialFSM with a protocol, do an echo and close', (done) => {
+      nodeA.dialFSM(peerB, '/echo/1.0.0', (err, connFSM) => {
         expect(err).to.not.exist()
         connFSM.once('connection', (conn) => {
           tryEcho(conn, () => {

@@ -207,30 +207,6 @@ class Node extends EventEmitter {
   }
 
   /**
-   * Similar to `dial`, but the callback will contain a
-   * Connection State Machine.
-   *
-   * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to dial
-   * @param {function(Error, ConnectionFSM)} callback
-   * @returns {void}
-   */
-  dialFSM (peer, callback) {
-    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
-
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) { return callback(err) }
-
-      const connFSM = this._switch.dialFSM(peerInfo, (err) => {
-        if (!err) {
-          this.peerBook.put(peerInfo)
-        }
-      })
-
-      callback(null, connFSM)
-    })
-  }
-
-  /**
    * Dials to the provided peer and handshakes with the given protocol.
    * If successful, the `PeerInfo` of the peer will be added to the nodes `PeerBook`,
    * and the `Connection` will be sent in the callback
@@ -260,7 +236,7 @@ class Node extends EventEmitter {
   }
 
   /**
-   * Similar to `dialProtocol`, but the callback will contain a
+   * Similar to `dial` and `dialProtocol`, but the callback will contain a
    * Connection State Machine.
    *
    * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to dial
@@ -268,7 +244,7 @@ class Node extends EventEmitter {
    * @param {function(Error, ConnectionFSM)} callback
    * @returns {void}
    */
-  dialProtocolFSM (peer, protocol, callback) {
+  dialFSM (peer, protocol, callback) {
     assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
 
     if (typeof protocol === 'function') {

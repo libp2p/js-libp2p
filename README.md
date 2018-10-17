@@ -219,9 +219,7 @@ Required keys in the `options` object:
 > Dials to another peer in the network, establishes the connection.
 
 - `peer`: can be an instance of [PeerInfo][], [PeerId][], [multiaddr][], or a multiaddr string
-- `callback`: Function with signature `function (err, conn) {}` where `conn` is a [Connection](https://github.com/libp2p/interface-connection) object
-
-`callback` is a function with the following `function (err, conn) {}` signature, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
+- `callback` is a function with the following `function (err, conn) {}` signature, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
 
 #### `libp2p.dialProtocol(peer, protocol, callback)`
 
@@ -232,6 +230,14 @@ Required keys in the `options` object:
 - `callback`: Function with signature `function (err, conn) {}` where `conn` is a [Connection](https://github.com/libp2p/interface-connection) object
 
 `callback` is a function with the following `function (err, conn) {}` signature, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
+
+#### `libp2p.dialFSM(peer, protocol, callback)`
+
+> Behaves like `.dial` and `.dialProtocol` but calls back with a Connection State Machine
+
+- `peer`: can be an instance of [PeerInfo][], [PeerId][], [multiaddr][], or a multiaddr string
+- `protocol`: an optional String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
+- `callback`: Function with signature `function (err, connFSM) {}` where `connFSM` is a [Connection State Machine]()
 
 #### `libp2p.hangUp(peer, callback)`
 

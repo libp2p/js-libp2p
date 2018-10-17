@@ -231,8 +231,8 @@ describe('transports', () => {
       })
     })
 
-    it('.dialFSMProtocol do an echo and close', (done) => {
-      nodeA.dialProtocolFSM(nodeB.peerInfo, '/echo/1.0.0', (err, connFSM) => {
+    it('.dialFSM with a protocol, do an echo and close', (done) => {
+      nodeA.dialFSM(nodeB.peerInfo, '/echo/1.0.0', (err, connFSM) => {
         expect(err).to.not.exist()
         connFSM.once('connection', (conn) => {
           expect(nodeA._switch.muxedConns).to.have.all.keys([
