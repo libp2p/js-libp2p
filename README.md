@@ -49,6 +49,7 @@ We've come a long way, but this project is still in Alpha, lots of development i
   - [Install](#install)
   - [Usage](#usage)
   - [API](#api)
+    - [Events](#events)
 - [Development](#development)
   - [Tests](#tests)
   - [Packages](#packages)
@@ -280,19 +281,35 @@ Required keys in the `options` object:
 
 - `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
 
-#### `libp2p.on('peer:discovery', (peer) => {})`
+#### Events
+
+##### `libp2p.on('start', () => {})`
+
+> Libp2p has started, along with all its services.
+
+##### `libp2p.on('stop', () => {})`
+
+> Libp2p has stopped, along with all its services.
+
+##### `libp2p.on('error', (err) => {})`
+
+> An error has occurred
+
+- `err`: instance of `Error`
+
+##### `libp2p.on('peer:discovery', (peer) => {})`
 
 > Peer has been discovered.
 
 - `peer`: instance of [PeerInfo][]
 
-#### `libp2p.on('peer:connect', (peer) => {})`
+##### `libp2p.on('peer:connect', (peer) => {})`
 
 > We connected to a new peer
 
 - `peer`: instance of [PeerInfo][]
 
-#### `libp2p.on('peer:disconnect', (peer) => {})`
+##### `libp2p.on('peer:disconnect', (peer) => {})`
 
 > We disconnected from Peer
 
