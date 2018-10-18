@@ -238,7 +238,7 @@ Required keys in the `options` object:
 
 - `peer`: can be an instance of [PeerInfo][], [PeerId][], [multiaddr][], or a multiaddr string
 - `protocol`: an optional String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
-- `callback`: Function with signature `function (err, connFSM) {}` where `connFSM` is a [Connection State Machine]()
+- `callback`: Function with signature `function (err, connFSM) {}` where `connFSM` is a [Connection State Machine](https://github.com/libp2p/js-libp2p-switch#connection-state-machine)
 
 #### `libp2p.hangUp(peer, callback)`
 
