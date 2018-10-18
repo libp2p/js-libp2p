@@ -1,3 +1,18 @@
+<a name="0.6.0"></a>
+# [0.6.0](https://github.com/libp2p/js-libp2p-record/compare/v0.5.1...v0.6.0) (2018-10-18)
+
+
+### Features
+
+* new record definition ([#8](https://github.com/libp2p/js-libp2p-record/issues/8)) ([10177ae](https://github.com/libp2p/js-libp2p-record/commit/10177ae))
+
+
+### BREAKING CHANGES
+
+* having the libp2p-record protobuf definition compliant with go-libp2p-record. Author and signature were removed.
+
+
+
 <a name="0.5.1"></a>
 ## [0.5.1](https://github.com/libp2p/js-libp2p-record/compare/v0.5.0...v0.5.1) (2017-09-07)
 
