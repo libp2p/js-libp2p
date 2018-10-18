@@ -81,34 +81,6 @@ describe('validator', () => {
     })
   })
 
-  describe('isSigned', () => {
-    it('returns false for missing validator', () => {
-      const validators = {}
-
-      expect(validator.isSigned(validators, Buffer.from('/hello')))
-        .to.eql(false)
-    })
-
-    it('throws on unkown validator', () => {
-      const validators = {}
-
-      expect(() => validator.isSigned(validators, Buffer.from('/hello/world')))
-        .to.throw(/Invalid record keytype/)
-    })
-
-    it('returns the value from the matching validator', () => {
-      const validators = {
-        hello: {sign: true},
-        world: {sign: false}
-      }
-
-      expect(validator.isSigned(validators, Buffer.from('/hello/world')))
-        .to.eql(true)
-
-      expect(validator.isSigned(validators, '/world/hello')).to.eql(false)
-    })
-  })
-
   describe('validators', () => {
     it('exports pk', () => {
       expect(validator.validators).to.have.keys(['pk'])
