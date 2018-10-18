@@ -13,6 +13,10 @@
 
 > JavaScript implementation of libp2p record.
 
+## Lead Maintainer
+
+[Vasco Santos](https://github.com/vasco-santos).
+
 ## Description
 
 Implementation of [go-libp2p-record](https://github.com/libp2p/go-libp2p-record) in JavaScript.

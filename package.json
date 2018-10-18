@@ -2,6 +2,7 @@
   "name": "libp2p-record",
   "version": "0.5.1",
   "description": "libp2p record implementation",
+  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
   "scripts": {
     "test": "aegir test",
