@@ -194,16 +194,7 @@ class Node extends EventEmitter {
   dial (peer, callback) {
     assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
 
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) { return callback(err) }
-
-      this._switch.dial(peerInfo, (err) => {
-        if (err) { return callback(err) }
-
-        this.peerBook.put(peerInfo)
-        callback()
-      })
-    })
+    this.dialProtocol(peer, null, callback)
   }
 
   /**
