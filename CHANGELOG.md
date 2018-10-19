@@ -1,3 +1,13 @@
+<a name="0.41.0"></a>
+# [0.41.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.8...v0.41.0) (2018-10-19)
+
+
+### Features
+
+* make switch a state machine ([#278](https://github.com/libp2p/js-libp2p-switch/issues/278)) ([7dcabdd](https://github.com/libp2p/js-libp2p-switch/commit/7dcabdd))
+
+
+
 <a name="0.40.8"></a>
 ## [0.40.8](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.7...v0.40.8) (2018-09-10)
 
