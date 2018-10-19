@@ -207,20 +207,20 @@ Required keys in the `options` object:
 
 > Start the libp2p Node.
 
-`callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case starting the node fails.
+`callback` following signature `function (err) {}`, where `err` is an Error in case starting the node fails.
 
 #### `libp2p.stop(callback)`
 
 > Stop the libp2p Node.
 
-`callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case stopping the node fails.
+`callback` following signature `function (err) {}`, where `err` is an Error in case stopping the node fails.
 
 #### `libp2p.dial(peer, callback)`
 
 > Dials to another peer in the network, establishes the connection.
 
 - `peer`: can be an instance of [PeerInfo][], [PeerId][], [multiaddr][], or a multiaddr string
-- `callback` is a function with the following `function (err, conn) {}` signature, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
+- `callback` following signature `function (err, conn) {}`, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
 
 #### `libp2p.dialProtocol(peer, protocol, callback)`
 
@@ -228,9 +228,9 @@ Required keys in the `options` object:
 
 - `peer`: can be an instance of [PeerInfo][], [PeerId][], [multiaddr][], or a multiaddr string
 - `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
-- `callback`: Function with signature `function (err, conn) {}` where `conn` is a [Connection](https://github.com/libp2p/interface-connection) object
+- `callback`: Function with signature `function (err, conn) {}`, where `conn` is a [Connection](https://github.com/libp2p/interface-connection) object
 
-`callback` is a function with the following `function (err, conn) {}` signature, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
+`callback` following signature `function (err, conn) {}`, where `err` is an Error in of failure to dial the connection and `conn` is a [Connection][] instance in case of a protocol selected, if not it is undefined.
 
 #### `libp2p.dialFSM(peer, protocol, callback)`
 
@@ -238,7 +238,7 @@ Required keys in the `options` object:
 
 - `peer`: can be an instance of [PeerInfo][], [PeerId][], [multiaddr][], or a multiaddr string
 - `protocol`: an optional String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
-- `callback`: Function with signature `function (err, connFSM) {}` where `connFSM` is a [Connection State Machine](https://github.com/libp2p/js-libp2p-switch#connection-state-machine)
+- `callback`: following signature `function (err, connFSM) {}`, where `connFSM` is a [Connection State Machine](https://github.com/libp2p/js-libp2p-switch#connection-state-machine)
 
 #### `libp2p.hangUp(peer, callback)`
 
@@ -246,7 +246,7 @@ Required keys in the `options` object:
 
 - `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
 
-`callback` is a function with the following `function (err) {}` signature, where `err` is an Error in case stopping the node fails.
+`callback` following signature `function (err) {}`, where `err` is an Error in case stopping the node fails.
 
 #### `libp2p.peerRouting.findPeer(id, options, callback)`
 
@@ -272,7 +272,7 @@ Required keys in the `options` object:
 > Handle new protocol
 
 - `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0')
-- `handlerFunc`: Function with signature `function (protocol, conn) {}` where `conn` is a [Connection](https://github.com/libp2p/interface-connection) object
+- `handlerFunc`: following signature `function (protocol, conn) {}`, where `conn` is a [Connection](https://github.com/libp2p/interface-connection) object
 - `matchFunc`: Function for matching on protocol (exact matching, semver, etc). Default to exact match.
 
 #### `libp2p.unhandle(protocol)`
@@ -597,4 +597,4 @@ The libp2p implementation in JavaScript is a work in progress. As such, there ar
 
 ## License
 
-[MIT](LICENSE) © David Dias
+[MIT](LICENSE) © Protocol Labs

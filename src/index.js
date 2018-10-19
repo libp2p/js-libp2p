@@ -26,6 +26,14 @@ const validateConfig = require('./config').validate
 
 const NOT_STARTED_ERROR_MESSAGE = 'The libp2p node is not started yet'
 
+/**
+ * @fires Node#error Emitted when an error occurs
+ * @fires Node#peer:connect Emitted when a peer is connected to this node
+ * @fires Node#peer:disconnect Emitted when a peer disconnects from this node
+ * @fires Node#peer:discovery Emitted when a peer is discovered
+ * @fires Node#start Emitted when the node and its services has started
+ * @fires Node#stop Emitted when the node and its services has stopped
+ */
 class Node extends EventEmitter {
   constructor (_options) {
     super()
@@ -159,7 +167,6 @@ class Node extends EventEmitter {
    * Starts the libp2p node and all sub services
    *
    * @param {function(Error)} callback
-   * @fires Node#start
    * @returns {void}
    */
   start (callback = () => {}) {
@@ -171,7 +178,6 @@ class Node extends EventEmitter {
    * Stop the libp2p node by closing its listeners and open connections
    *
    * @param {function(Error)} callback
-   * @fires Node#stop
    * @returns {void}
    */
   stop (callback = () => {}) {
