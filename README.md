@@ -166,7 +166,7 @@ class Node extends libp2p {
           // .. other discovery module options.
         },
         relay: {                      // Circuit Relay options
-          enabled: false,
+          enabled: true,
           hop: {
             enabled: false,
             active: false
