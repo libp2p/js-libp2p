@@ -148,6 +148,42 @@ describe('transports', () => {
       })
     })
 
+    it('.dialFSM check conn and close', (done) => {
+      nodeA.dialFSM(peerB, (err, connFSM) => {
+        expect(err).to.not.exist()
+
+        connFSM.once('muxed', () => {
+          expect(nodeA._switch.muxedConns).to.have.any.keys(
+            peerB.id.toB58String()
+          )
+
+          connFSM.once('error', done)
+          connFSM.once('close', () => {
+            // ensure the connection is closed
+            expect(nodeA._switch.muxedConns).to.not.have.any.keys([
+              peerB.id.toB58String()
+            ])
+            done()
+          })
+
+          connFSM.close()
+        })
+      })
+    })
+
+    it('.dialFSM with a protocol, do an echo and close', (done) => {
+      nodeA.dialFSM(peerB, '/echo/1.0.0', (err, connFSM) => {
+        expect(err).to.not.exist()
+        connFSM.once('connection', (conn) => {
+          tryEcho(conn, () => {
+            connFSM.close()
+          })
+        })
+        connFSM.once('error', done)
+        connFSM.once('close', done)
+      })
+    })
+
     describe('stress', () => {
       it('one big write', (done) => {
         nodeA.dialProtocol(peerB, '/echo/1.0.0', (err, conn) => {
@@ -194,6 +230,7 @@ describe('transports', () => {
   })
 
   describe('webrtc-star', () => {
+    /* eslint-disable-next-line no-console */
     if (!w.support) { return console.log('NO WEBRTC SUPPORT') }
 
     let peer1

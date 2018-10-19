@@ -42,6 +42,7 @@ describe('Turbolence tests', () => {
       }
     })
 
+    /* eslint-disable-next-line no-console */
     nodeSpawn.stderr.on('data', (data) => console.log(data.toString()))
   })
 
