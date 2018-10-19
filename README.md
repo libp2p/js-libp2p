@@ -26,16 +26,17 @@ libp2p-switch is used by [libp2p](https://github.com/libp2p/js-libp2p) but it ca
 - [Usage](#usage)
   - [Create a libp2p switch](#create-a-libp2p-switch)
 - [API](#api)
-  - [`switch.dial(peer, protocol, callback)`](#swarmdialpi-protocol-callback)
-  - [`switch.hangUp(peer, callback)`](#swarmhanguppi-callback)
-  - [`switch.handle(protocol, handler)`](#swarmhandleprotocol-handler)
-  - [`switch.unhandle(protocol)`](#swarmunhandleprotocol)
-  - [`switch.start(callback)`](#swarmlistencallback)
-  - [`switch.stop(callback)`](#swarmclosecallback)
-  - [`switch.connection`](#connection)
+  - [`switch.connection`](#switchconnection)
+  - [`switch.dial(peer, protocol, callback)`](#switchdialpeer-protocol-callback)
+  - [`switch.dialFSM(peer, protocol, callback)`](#switchdialfsmpeer-protocol-callback)
+  - [`switch.handle(protocol, handlerFunc, matchFunc)`](#switchhandleprotocol-handlerfunc-matchfunc)
+  - [`switch.hangUp(peer, callback)`](#switchhanguppeer-callback)
+  - [`switch.start(callback)`](#switchstartcallback)
+  - [`switch.stop(callback)`](#switchstopcallback)
   - [`switch.stats`](#stats-api)
-  - [Internal Transports API](#transports)
-- [Design Notes](#designnotes)
+  - [`switch.unhandle(protocol)`](#switchunhandleprotocol)
+  - [Internal Transports API](#internal-transports-api)
+- [Design Notes](#design-notes)
   - [Multitransport](#multitransport)
   - [Connection upgrades](#connection-upgrades)
   - [Identify](#identify)
@@ -86,54 +87,6 @@ tests]([./test/pnet.node.js]).
 - peerInfo is a [PeerInfo](https://github.com/libp2p/js-peer-info) object that has the peer information.
 - peerBook is a [PeerBook](https://github.com/libp2p/js-peer-book) object that stores all the known peers.
 
-### `switch.dial(peer, protocol, callback)`
-
-dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point where we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, then do nothing.
-
-- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
-- `protocol`
-- `callback`
-
-### `switch.hangUp(peer, callback)`
-
-Hang up the muxed connection we have with the peer.
-
-- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
-- `callback`
-
-
-### `switch.handle(protocol, handlerFunc, matchFunc)`
-
-Handle a new protocol.
-
-- `protocol`
-- `handlerFunc` - function called when we receive a dial on `protocol. Signature must be `function (protocol, conn) {}`
-- `matchFunc` - matchFunc for multistream-select
-
-### `switch.unhandle(protocol)`
-
-Unhandle a protocol.
-
-- `protocol`
-
-### `switch.on('peer-mux-established', (peer) => {})`
-
-- `peer`: is instance of [PeerInfo][] that has info of the peer we have just established a muxed connection with.
-
-### `switch.on('peer-mux-closed', (peer) => {})`
-
-- `peer`: is instance of [PeerInfo][] that has info of the peer we have just closed a muxed connection.
-
-### `switch.start(callback)`
-
-Start listening on all added transports that are available on the current `peerInfo`.
-
-### `switch.stop(callback)`
-
-Close all the listeners and muxers.
-
-- `callback`
-
 ### `switch.connection`
 
 ##### `switch.connection.addUpgrade()`
@@ -172,6 +125,80 @@ Enable circuit relaying.
     - hop - an object with two properties
         - enabled - enables circuit relaying
         - active - is it an active or passive relay (default false)
+- `callback`
+
+### `switch.dial(peer, protocol, callback)`
+
+dial uses the best transport (whatever works first, in the future we can have some criteria), and jump starts the connection until the point where we have to negotiate the protocol. If a muxer is available, then drop the muxer onto that connection. Good to warm up connections or to check for connectivity. If we have already a muxer for that peerInfo, then do nothing.
+
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+- `protocol`
+- `callback`
+
+### `switch.dialFSM(peer, protocol, callback)`
+
+works like dial, but calls back with a [Connection State Machine](#connection-state-machine)
+
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+- `protocol`: String that defines the protocol (e.g '/ipfs/bitswap/1.1.0') to be used
+- `callback`: Function with signature `function (err, connFSM) {}` where `connFSM` is a [Connection State Machine](#connection-state-machine)
+
+#### Connection State Machine
+Connection state machines emit a number of events that can be used to determine the current state of the connection
+and to received the underlying connection that can be used to transfer data.
+
+##### Events
+- `error`:  emitted whenever a fatal error occurs with the connection; the error will be emitted.
+- `error:upgrade_failed`: emitted whenever the connection fails to upgrade with a muxer, this is not fatal.
+- `error:connection_attempt_failed`: emitted whenever a dial attempt fails for a given transport. An array of errors is emitted.
+- `connection`: emitted whenever a useable connection has been established; the underlying [Connection](https://github.com/libp2p/interface-connection) will be emitted.
+- `close`: emitted when the connection has closed.
+
+### `switch.handle(protocol, handlerFunc, matchFunc)`
+
+Handle a new protocol.
+
+- `protocol`
+- `handlerFunc` - function called when we receive a dial on `protocol. Signature must be `function (protocol, conn) {}`
+- `matchFunc` - matchFunc for multistream-select
+
+### `switch.hangUp(peer, callback)`
+
+Hang up the muxed connection we have with the peer.
+
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+- `callback`
+
+### `switch.on('error', (err) => {})`
+
+Emitted when the switch encounters an error.
+
+- `err`: instance of [Error][]
+
+### `switch.on('peer-mux-established', (peer) => {})`
+
+- `peer`: is instance of [PeerInfo][] that has info of the peer we have just established a muxed connection with.
+
+### `switch.on('peer-mux-closed', (peer) => {})`
+
+- `peer`: is instance of [PeerInfo][] that has info of the peer we have just closed a muxed connection.
+
+### `switch.on('start', () => {})`
+
+Emitted when the switch has successfully started.
+
+### `switch.on('stop', () => {})`
+
+Emitted when the switch has successfully stopped.
+
+### `switch.start(callback)`
+
+Start listening on all added transports that are available on the current `peerInfo`.
+
+### `switch.stop(callback)`
+
+Close all the listeners and muxers.
+
 - `callback`
 
 ### Stats API
@@ -278,6 +305,11 @@ Each one of these values is [an exponential moving-average instance](https://git
 
 Stats are not updated in real-time. Instead, measurements are buffered and stats are updated at an interval. The maximum interval can be defined through the `Switch` constructor option `stats.computeThrottleTimeout`, defined in miliseconds.
 
+### `switch.unhandle(protocol)`
+
+Unhandle a protocol.
+
+- `protocol`
 
 ### Internal Transports API
 

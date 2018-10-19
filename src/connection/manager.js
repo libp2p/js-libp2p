@@ -4,13 +4,14 @@ const identify = require('libp2p-identify')
 const multistream = require('multistream-select')
 const waterfall = require('async/waterfall')
 const debug = require('debug')
-const log = debug('libp2p:switch:connection')
+const log = debug('libp2p:switch:conn-manager')
 const once = require('once')
 const setImmediate = require('async/setImmediate')
+const ConnectionFSM = require('../connection')
 
 const Circuit = require('libp2p-circuit')
 
-const plaintext = require('./plaintext')
+const plaintext = require('../plaintext')
 
 /**
  * Contains methods for binding handlers to the Switch
@@ -89,7 +90,11 @@ class ConnectionManager {
             }
             const b58Str = peerInfo.id.toB58String()
 
-            this.switch.muxedConns[b58Str] = { muxer: muxedConn }
+            this.switch.muxedConns[b58Str] = new ConnectionFSM({
+              _switch: this.switch,
+              peerInfo,
+              muxer: muxedConn
+            })
 
             if (peerInfo.multiaddrs.size > 0) {
               // with incomming conn and through identify, going to pick one
@@ -104,7 +109,7 @@ class ConnectionManager {
             }
             peerInfo = this.switch._peerBook.put(peerInfo)
 
-            muxedConn.on('close', () => {
+            muxedConn.once('close', () => {
               delete this.switch.muxedConns[b58Str]
               peerInfo.disconnect()
               peerInfo = this.switch._peerBook.put(peerInfo)
@@ -123,7 +128,7 @@ class ConnectionManager {
 
   /**
    * Adds the `encrypt` handler for the given `tag` and also sets the
-   * Switch's crypto to past `encrypt` function
+   * Switch's crypto to passed `encrypt` function
    *
    * @param {String} tag
    * @param {function(PeerID, Connection, PeerId, Callback)} encrypt
@@ -134,14 +139,6 @@ class ConnectionManager {
       tag = plaintext.tag
       encrypt = plaintext.encrypt
     }
-
-    this.switch.unhandle(this.switch.crypto.tag)
-    this.switch.handle(tag, (protocol, conn) => {
-      const myId = this.switch._peerInfo.id
-      const secure = encrypt(myId, conn, undefined, () => {
-        this.switch.protocolMuxer(null)(secure)
-      })
-    })
 
     this.switch.crypto = {tag, encrypt}
   }

@@ -44,6 +44,43 @@ class TransportManager {
   }
 
   /**
+   * Closes connections for the given transport key
+   * and removes it from the switch.
+   *
+   * @param {String} key
+   * @param {function(Error)} callback
+   * @returns {void}
+   */
+  remove (key, callback) {
+    callback = callback || function () {}
+
+    if (!this.switch.transports[key]) {
+      return callback()
+    }
+
+    this.close(key, (err) => {
+      delete this.switch.transports[key]
+      callback(err)
+    })
+  }
+
+  /**
+   * Calls `remove` on each transport the switch has
+   *
+   * @param {function(Error)} callback
+   * @returns {void}
+   */
+  removeAll (callback) {
+    const tasks = Object.keys(this.switch.transports).map((key) => {
+      return (cb) => {
+        this.remove(key, cb)
+      }
+    })
+
+    parallel(tasks, callback)
+  }
+
+  /**
    * For a given transport `key`, dial to all that transport multiaddrs
    *
    * @param {String} key Key of the `Transport` to dial
@@ -80,29 +117,13 @@ class TransportManager {
    * If a `handler` is not provided, the Switch's `protocolMuxer` will be used.
    *
    * @param {String} key
-   * @param {*} options
+   * @param {*} _options Currently ignored
    * @param {function(Connection)} handler
    * @param {function(Error)} callback
    * @returns {void}
    */
-  listen (key, options, handler, callback) {
-    let muxerHandler
-
-    // if no handler is passed, we pass conns to protocolMuxer
-    if (!handler) {
-      handler = this.switch.protocolMuxer(key)
-    }
-
-    // If we have a protector make the connection private
-    if (this.switch.protector) {
-      muxerHandler = handler
-      handler = (parentConnection) => {
-        const connection = this.switch.protector.protect(parentConnection, () => {
-          // If we get an error here, we should stop talking to this peer
-          muxerHandler(connection)
-        })
-      }
-    }
+  listen (key, _options, handler, callback) {
+    handler = this.switch._connectionHandler(key, handler)
 
     const transport = this.switch.transports[key]
     const multiaddrs = TransportManager.dialables(

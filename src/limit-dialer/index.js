@@ -4,7 +4,7 @@ const map = require('async/map')
 const debug = require('debug')
 const once = require('once')
 
-const log = debug('libp2p:swarm:dialer')
+const log = debug('libp2p:switch:dialer')
 
 const DialQueue = require('./queue')
 

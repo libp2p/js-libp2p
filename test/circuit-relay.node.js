@@ -260,7 +260,7 @@ describe(`circuit`, function () {
       })
     }))
 
-    after((done) => {
+    after(function (done) {
       parallel([
         (cb) => bootstrapSwitch.stop(cb),
         (cb) => tcpSwitch1.stop(cb),
@@ -271,9 +271,11 @@ describe(`circuit`, function () {
     })
 
     it('should be able to dial tcp -> tcp', (done) => {
-      tcpSwitch2.once('peer-mux-established', (peerInfo) => {
-        expect(peerInfo.id.toB58String()).to.equal(tcpPeer1.id.toB58String())
-        done()
+      tcpSwitch2.on('peer-mux-established', (peerInfo) => {
+        if (peerInfo.id.toB58String() === tcpPeer1.id.toB58String()) {
+          tcpSwitch2.removeAllListeners('peer-mux-established')
+          done()
+        }
       })
       tcpSwitch1.dial(tcpPeer2, (err, connection) => {
         expect(err).to.not.exist()
@@ -283,9 +285,11 @@ describe(`circuit`, function () {
     })
 
     it('should be able to dial tcp -> ws over relay', (done) => {
-      wsSwitch1.once('peer-mux-established', (peerInfo) => {
-        expect(peerInfo.id.toB58String()).to.equal(tcpPeer1.id.toB58String())
-        done()
+      wsSwitch1.on('peer-mux-established', (peerInfo) => {
+        if (peerInfo.id.toB58String() === tcpPeer1.id.toB58String()) {
+          wsSwitch1.removeAllListeners('peer-mux-established')
+          done()
+        }
       })
       tcpSwitch1.dial(wsPeer1, (err, connection) => {
         expect(err).to.not.exist()
@@ -295,9 +299,11 @@ describe(`circuit`, function () {
     })
 
     it('should be able to dial ws -> ws', (done) => {
-      wsSwitch2.once('peer-mux-established', (peerInfo) => {
-        expect(peerInfo.id.toB58String()).to.equal(wsPeer1.id.toB58String())
-        done()
+      wsSwitch2.on('peer-mux-established', (peerInfo) => {
+        if (peerInfo.id.toB58String() === wsPeer1.id.toB58String()) {
+          wsSwitch2.removeAllListeners('peer-mux-established')
+          done()
+        }
       })
       wsSwitch1.dial(wsPeer2, (err, connection) => {
         expect(err).to.not.exist()
@@ -307,10 +313,12 @@ describe(`circuit`, function () {
     })
 
     it('should be able to dial ws -> tcp over relay', (done) => {
-      tcpSwitch1.once('peer-mux-established', (peerInfo) => {
-        expect(peerInfo.id.toB58String()).to.equal(wsPeer2.id.toB58String())
-        expect(Object.keys(tcpSwitch1._peerBook.getAll())).to.include(wsPeer2.id.toB58String())
-        done()
+      tcpSwitch1.on('peer-mux-established', (peerInfo) => {
+        if (peerInfo.id.toB58String() === wsPeer2.id.toB58String()) {
+          tcpSwitch1.removeAllListeners('peer-mux-established')
+          expect(Object.keys(tcpSwitch1._peerBook.getAll())).to.include(wsPeer2.id.toB58String())
+          done()
+        }
       })
       wsSwitch2.dial(tcpPeer1, (err, connection) => {
         expect(err).to.not.exist()

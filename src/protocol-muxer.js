@@ -5,14 +5,19 @@ const observeConn = require('./observe-connection')
 
 const debug = require('debug')
 const log = debug('libp2p:switch:protocol-muxer')
+log.error = debug('libp2p:switch:protocol-muxer:error')
 
 module.exports = function protocolMuxer (protocols, observer) {
-  return (transport) => (_parentConn) => {
-    const parentConn = transport
-      ? observeConn(transport, null, _parentConn, observer)
-      : _parentConn
+  return (transport) => (_parentConn, msListener) => {
+    const ms = msListener || new multistream.Listener()
+    let parentConn
 
-    const ms = new multistream.Listener()
+    // Only observe the transport if we have one, and there is not already a listener
+    if (transport && !msListener) {
+      parentConn = observeConn(transport, null, _parentConn, observer)
+    } else {
+      parentConn = _parentConn
+    }
 
     Object.keys(protocols).forEach((protocol) => {
       if (!protocol) {
@@ -36,7 +41,7 @@ module.exports = function protocolMuxer (protocols, observer) {
 
     ms.handle(parentConn, (err) => {
       if (err) {
-        // the multistream handshake failed
+        log.error(`multistream handshake failed`, err)
       }
     })
   }

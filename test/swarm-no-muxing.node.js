@@ -48,7 +48,7 @@ describe('Switch (no Stream Multiplexing)', () => {
 
   it('handle a protocol', (done) => {
     switchB.handle('/bananas/1.0.0', (protocol, conn) => pull(conn, conn))
-    expect(Object.keys(switchB.protocols).length).to.equal(2)
+    expect(switchB.protocols).to.have.all.keys('/bananas/1.0.0')
     done()
   })
 

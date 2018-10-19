@@ -38,6 +38,7 @@
   "devDependencies": {
     "aegir": "^15.1.0",
     "chai": "^4.1.2",
+    "chai-checkmark": "^1.0.1",
     "dirty-chai": "^2.0.1",
     "libp2p-mplex": "~0.8.2",
     "libp2p-pnet": "~0.1.0",
@@ -54,7 +55,10 @@
   "dependencies": {
     "async": "^2.6.1",
     "big.js": "^5.1.2",
+    "class-is": "^1.1.0",
     "debug": "^3.1.0",
+    "err-code": "^1.1.2",
+    "fsm-event": "^2.1.0",
     "hashlru": "^2.2.1",
     "interface-connection": "~0.3.2",
     "ip-address": "^5.8.9",
