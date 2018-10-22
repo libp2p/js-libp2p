@@ -3,7 +3,6 @@
 const PeerId = require('peer-id')
 const libp2pRecord = require('libp2p-record')
 const waterfall = require('async/waterfall')
-const series = require('async/series')
 const each = require('async/each')
 const timeout = require('async/timeout')
 const PeerInfo = require('peer-info')
@@ -124,12 +123,7 @@ module.exports = (dht) => ({
 
         // 5. check validity
 
-        // 5. if: we are the author, all good
-        if (record.author.isEqual(dht.peerInfo.id)) {
-          return callback(null, record)
-        }
-
-        //    else: compare recvtime with maxrecordage
+        // compare recvtime with maxrecordage
         if (record.timeReceived == null ||
             utils.now() - record.timeReceived > c.MAX_RECORD_AGE) {
           // 6. if: record is bad delete it and return
@@ -165,30 +159,11 @@ module.exports = (dht) => ({
    */
   _verifyRecordLocally (record, callback) {
     dht._log('verifyRecordLocally')
-    series([
-      (cb) => {
-        if (record.signature) {
-          const peer = record.author
-          let info
-          if (dht.peerBook.has(peer)) {
-            info = dht.peerBook.get(peer)
-          }
-
-          if (!info || !info.id.pubKey) {
-            return callback(new Error('Missing public key for: ' + peer.toB58String()))
-          }
-
-          record.verifySignature(info.id.pubKey, cb)
-        } else {
-          cb()
-        }
-      },
-      (cb) => libp2pRecord.validator.verifyRecord(
-        dht.validators,
-        record,
-        cb
-      )
-    ], callback)
+    libp2pRecord.validator.verifyRecord(
+      dht.validators,
+      record,
+      callback
+    )
   },
   /**
    * Find close peers for a given peer
@@ -306,7 +281,7 @@ module.exports = (dht) => ({
 
         // Send out correction record
         waterfall([
-          (cb) => utils.createPutRecord(key, best, dht.peerInfo.id, true, cb),
+          (cb) => utils.createPutRecord(key, best, cb),
           (fixupRec, cb) => each(vals, (v, cb) => {
             // no need to do anything
             if (v.val.equals(best)) {
@@ -434,22 +409,7 @@ module.exports = (dht) => ({
    * @private
    */
   _verifyRecordOnline (record, callback) {
-    series([
-      (cb) => {
-        if (record.signature) {
-          // fetch the public key
-          waterfall([
-            (cb) => dht.getPublicKey(record.author, cb),
-            (pk, cb) => record.verifySignature(pk, cb)
-          ], cb)
-        } else {
-          cb()
-        }
-      },
-      (cb) => {
-        libp2pRecord.validator.verifyRecord(dht.validators, record, cb)
-      }
-    ], callback)
+    libp2pRecord.validator.verifyRecord(dht.validators, record, callback)
   },
   /**
    * Get the public key directly from a node.

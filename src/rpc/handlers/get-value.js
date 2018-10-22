@@ -41,7 +41,7 @@ module.exports = (dht) => {
 
       if (info && info.id.pubKey) {
         log('returning found public key')
-        response.record = new Record(key, info.id.pubKey.bytes, dht.peerInfo.id)
+        response.record = new Record(key, info.id.pubKey.bytes)
         return callback(null, response)
       }
     }

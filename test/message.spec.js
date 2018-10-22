@@ -51,7 +51,7 @@ describe('Message', () => {
       })
 
       const msg = new Message(Message.TYPES.GET_VALUE, Buffer.from('hello'), 5)
-      const record = new Record(Buffer.from('hello'), Buffer.from('world'), peers[0])
+      const record = new Record(Buffer.from('hello'), Buffer.from('world'))
 
       msg.closerPeers = closer
       msg.providerPeers = provider
@@ -104,7 +104,6 @@ describe('Message', () => {
       expect(msg.clusterLevel).to.gte(0)
       if (msg.record) {
         expect(Buffer.isBuffer(msg.record.key)).to.eql(true)
-        expect(PeerId.isPeerId(msg.record.author)).to.eql(true)
       }
 
       if (msg.providerPeers.length > 0) {

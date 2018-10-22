@@ -556,29 +556,6 @@ describe('KadDHT', () => {
   })
 
   describe('_checkLocalDatastore', () => {
-    it('valid if created by self', (done) => {
-      const sw = new Switch(peerInfos[0], new PeerBook())
-      sw.transport.add('tcp', new TCP())
-      sw.connection.addStreamMuxer(Mplex)
-      sw.connection.reuse()
-      const dht = new KadDHT(sw)
-
-      const record = new Record(
-        Buffer.from('hello'),
-        Buffer.from('world'),
-        peerInfos[0].id
-      )
-
-      waterfall([
-        (cb) => dht._putLocal(record.key, record.serialize(), cb),
-        (cb) => dht._checkLocalDatastore(record.key, cb)
-      ], (err, rec) => {
-        expect(err).to.not.exist()
-        expect(rec).to.exist('Record not located locally')
-        expect(rec.value.toString()).to.equal(record.value.toString())
-        done()
-      })
-    })
     it('allow a peer record from store if recent', (done) => {
       const sw = new Switch(peerInfos[0], new PeerBook())
       sw.transport.add('tcp', new TCP())
@@ -588,8 +565,7 @@ describe('KadDHT', () => {
 
       const record = new Record(
         Buffer.from('hello'),
-        Buffer.from('world'),
-        peerInfos[1].id
+        Buffer.from('world')
       )
       record.timeReceived = new Date()
 
@@ -612,8 +588,7 @@ describe('KadDHT', () => {
 
       const record = new Record(
         Buffer.from('hello'),
-        Buffer.from('world'),
-        peerInfos[1].id
+        Buffer.from('world')
       )
       let received = new Date()
       received.setDate(received.getDate() - 2)
@@ -642,32 +617,7 @@ describe('KadDHT', () => {
   })
 
   describe('_verifyRecordLocally', () => {
-    it('invalid record (missing public key)', (done) => {
-      const sw = new Switch(peerInfos[0], new PeerBook())
-      sw.transport.add('tcp', new TCP())
-      sw.connection.addStreamMuxer(Mplex)
-      sw.connection.reuse()
-      const dht = new KadDHT(sw)
-
-      // Not putting the peer info into the peerbook
-      // dht.peerBook.put(peerInfos[1])
-
-      const record = new Record(
-        Buffer.from('hello'),
-        Buffer.from('world'),
-        peerInfos[1].id
-      )
-
-      waterfall([
-        (cb) => record.serializeSigned(peerInfos[1].id.privKey, cb),
-        (enc, cb) => dht._verifyRecordLocally(Record.deserialize(enc), (err) => {
-          expect(err).to.match(/Missing public key/)
-          cb()
-        })
-      ], done)
-    })
-
-    it('valid record - signed', (done) => {
+    it('valid record', (done) => {
       const sw = new Switch(peerInfos[0], new PeerBook())
       sw.transport.add('tcp', new TCP())
       sw.connection.addStreamMuxer(Mplex)
@@ -678,29 +628,7 @@ describe('KadDHT', () => {
 
       const record = new Record(
         Buffer.from('hello'),
-        Buffer.from('world'),
-        peerInfos[1].id
-      )
-
-      waterfall([
-        (cb) => record.serializeSigned(peerInfos[1].id.privKey, cb),
-        (enc, cb) => dht._verifyRecordLocally(Record.deserialize(enc), cb)
-      ], done)
-    })
-
-    it('valid record - not signed', (done) => {
-      const sw = new Switch(peerInfos[0], new PeerBook())
-      sw.transport.add('tcp', new TCP())
-      sw.connection.addStreamMuxer(Mplex)
-      sw.connection.reuse()
-      const dht = new KadDHT(sw)
-
-      dht.peerBook.put(peerInfos[1])
-
-      const record = new Record(
-        Buffer.from('hello'),
-        Buffer.from('world'),
-        peerInfos[1].id
+        Buffer.from('world')
       )
 
       waterfall([

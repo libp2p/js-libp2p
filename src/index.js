@@ -172,15 +172,9 @@ class KadDHT {
    */
   put (key, value, callback) {
     this._log('PutValue %b', key)
-    let sign
-    try {
-      sign = libp2pRecord.validator.isSigned(this.validators, key)
-    } catch (err) {
-      return callback(err)
-    }
 
     waterfall([
-      (cb) => utils.createPutRecord(key, value, this.peerInfo.id, sign, cb),
+      (cb) => utils.createPutRecord(key, value, cb),
       (rec, cb) => waterfall([
         (cb) => this._putLocal(key, rec, cb),
         (cb) => this.getClosestPeers(key, cb),

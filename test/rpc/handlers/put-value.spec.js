@@ -56,8 +56,7 @@ describe('rpc - handlers - PutValue', () => {
     const msg = new Message(T, Buffer.from('hello'), 5)
     const record = new Record(
       Buffer.from('hello'),
-      Buffer.from('world'),
-      peers[0].id
+      Buffer.from('world')
     )
     msg.record = record
 

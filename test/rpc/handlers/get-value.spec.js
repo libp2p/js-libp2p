@@ -56,7 +56,6 @@ describe('rpc - handlers - GetValue', () => {
     const key = Buffer.from('hello')
     const value = Buffer.from('world')
     const msg = new Message(T, key, 0)
-
     waterfall([
       (cb) => dht.put(key, value, cb),
       (cb) => handler(dht)(peers[0], msg, cb)

@@ -138,17 +138,12 @@ exports.xorCompare = (a, b) => {
  *
  * @param {Buffer} key
  * @param {Buffer} value
- * @param {PeerId} peer
- * @param {bool} sign - Should the record be signed
  * @param {function(Error, Buffer)} callback
  * @returns {void}
  */
-exports.createPutRecord = (key, value, peer, sign, callback) => {
-  const rec = new Record(key, value, peer)
-
-  if (sign) {
-    return rec.serializeSigned(peer.privKey, callback)
-  }
+exports.createPutRecord = (key, value, callback) => {
+  const timeReceived = new Date()
+  const rec = new Record(key, value, timeReceived)
 
   setImmediate(() => {
     callback(null, rec.serialize())
