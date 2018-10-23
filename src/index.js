@@ -9,7 +9,6 @@ const BaseProtocol = require('./base')
 const utils = require('./utils')
 const pb = require('./message')
 const config = require('./config')
-const Buffer = require('safe-buffer').Buffer
 
 const multicodec = config.multicodec
 const ensureArray = utils.ensureArray
@@ -88,7 +87,7 @@ class FloodSub extends BaseProtocol {
 
   _processRpcMessages (msgs) {
     msgs.forEach((msg) => {
-      const seqno = utils.msgId(msg.from, msg.seqno.toString())
+      const seqno = utils.msgId(msg.from, msg.seqno)
       // 1. check if I've seen the message, if yes, ignore
       if (this.cache.has(seqno)) {
         return
@@ -168,7 +167,7 @@ class FloodSub extends BaseProtocol {
       return {
         from: from,
         data: msg,
-        seqno: new Buffer(seqno),
+        seqno: seqno,
         topicIDs: topics
       }
     }
