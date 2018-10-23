@@ -145,6 +145,8 @@ class ConnectionFSM extends BaseConnection {
   dial () {
     if (this.theirB58Id === this.ourPeerInfo.id.toB58String()) {
       return this.emit('error', Errors.DIAL_SELF())
+    } else if (this.getState() === 'DIALING') {
+      return this.log('attempted to dial while already dialing, ignoring')
     }
 
     this._state('dial')

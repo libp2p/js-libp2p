@@ -137,6 +137,20 @@ describe('ConnectionFSM', () => {
     connection.dial()
   })
 
+  it('should ignore concurrent dials', () => {
+    const connection = new ConnectionFSM({
+      _switch: dialerSwitch,
+      peerInfo: listenerSwitch._peerInfo
+    })
+
+    const stub = sinon.stub(connection, '_onDialing')
+
+    connection.dial()
+    connection.dial()
+
+    expect(stub.callCount).to.equal(1)
+  })
+
   it('should be able to encrypt a basic connection', (done) => {
     const connection = new ConnectionFSM({
       _switch: dialerSwitch,
