@@ -1,3 +1,18 @@
+<a name="0.15.1"></a>
+## [0.15.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.0...v0.15.1) (2018-10-23)
+
+
+### Bug Fixes
+
+* ignore message false positive ([#59](https://github.com/libp2p/js-libp2p-floodsub/issues/59)) ([55916fe](https://github.com/libp2p/js-libp2p-floodsub/commit/55916fe))
+
+
+### Features
+
+* breakout BaseProtocol ([#57](https://github.com/libp2p/js-libp2p-floodsub/issues/57)) ([c4a108d](https://github.com/libp2p/js-libp2p-floodsub/commit/c4a108d))
+
+
+
 <a name="0.15.0"></a>
 # [0.15.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.14.1...v0.15.0) (2018-04-05)
 
