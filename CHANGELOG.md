@@ -1,3 +1,13 @@
+<a name="0.41.1"></a>
+## [0.41.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.0...v0.41.1) (2018-10-24)
+
+
+### Bug Fixes
+
+* ignore dial request when one is in progress ([#283](https://github.com/libp2p/js-libp2p-switch/issues/283)) ([280d54f](https://github.com/libp2p/js-libp2p-switch/commit/280d54f))
+
+
+
 <a name="0.41.0"></a>
 # [0.41.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.8...v0.41.0) (2018-10-19)
 
