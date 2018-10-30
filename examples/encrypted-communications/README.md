@@ -37,4 +37,4 @@ And that's it, from now on, all your libp2p communications are encrypted. Try ru
 
 If you want to want to learn more about how SECIO works, you can read the [great write up done by Dominic Tarr](https://github.com/auditdrivencrypto/secure-channel/blob/master/prior-art.md#ipfss-secure-channel).
 
-Importante note: SECIO hasn't been audited and so, we do not recommend to trust its security. We intent to move to TLS 1.3 once the specification is finalized and an implementation exists that we can use.
+Important note: SECIO hasn't been audited and so, we do not recommend to trust its security. We intent to move to TLS 1.3 once the specification is finalized and an implementation exists that we can use.

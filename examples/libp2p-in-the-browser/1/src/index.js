@@ -17,24 +17,22 @@ domReady(() => {
     let connections = {}
 
     node.on('peer:discovery', (peerInfo) => {
-      console.log('Discovered a peer')
       const idStr = peerInfo.id.toB58String()
-      console.log('Discovered: ' + idStr)
       if (connections[idStr]) {
         // If we're already trying to connect to this peer, dont dial again
         return
       }
+      console.log('Discovered a peer:', idStr)
 
       connections[idStr] = true
       node.dial(peerInfo, (err, conn) => {
-        let timeToNextDial = 0
         if (err) {
           // Prevent immediate connection retries from happening
-          timeToNextDial = 30 * 1000
+          // and include a 10s jitter
+          const timeToNextDial = 25 * 1000 + (Math.random(0) * 10000).toFixed(0)
           console.log('Failed to dial:', idStr)
+          setTimeout(() => delete connections[idStr], timeToNextDial)
         }
-
-        setTimeout(() => delete connections[idStr], timeToNextDial)
       })
     })
 
@@ -49,8 +47,10 @@ domReady(() => {
 
     node.on('peer:disconnect', (peerInfo) => {
       const idStr = peerInfo.id.toB58String()
+      delete connections[idStr]
       console.log('Lost connection to: ' + idStr)
-      document.getElementById(idStr).remove()
+      const el = document.getElementById(idStr)
+      el && el.remove()
     })
 
     node.start((err) => {

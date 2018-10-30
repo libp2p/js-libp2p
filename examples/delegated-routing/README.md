@@ -18,8 +18,8 @@ various Peer Discovery modules and see the impact it has on your Peer count.
 1. Install IPFS locally if you dont already have it. [Install Guide](https://docs.ipfs.io/introduction/install/)
 2. Run the IPFS daemon: `ipfs daemon`
 3. The daemon will output a line about its API address, like `API server listening on /ip4/127.0.0.1/tcp/8080`
-4. In another window output the addresses of the node: `ipfs id`. Make note of the websocket address, is will contain `/ws/` in the address.
-5. In `./src/libp2p-bundle.js` replace the `delegatedApiOptions` host and port of your node if they are different.
+4. In another window output the addresses of the node: `ipfs id`. Make note of the websocket address, it will contain `/ws/` in the address.
+5. In `./src/libp2p-bundle.js` replace the `delegatedApiOptions` host and port of your node, if they are different.
 6. In `./src/App.js` replace `BootstrapNode` with your nodes Websocket address from step 4.
 7. Start this example:
 
