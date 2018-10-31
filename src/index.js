@@ -41,6 +41,7 @@ class Node extends EventEmitter {
     // and add default values where appropriate
     _options = validateConfig(_options)
 
+    this.datastore = _options.datastore
     this.peerInfo = _options.peerInfo
     this.peerBook = _options.peerBook || new PeerBook()
 
@@ -100,9 +101,7 @@ class Node extends EventEmitter {
       this._dht = new DHT(this._switch, {
         kBucketSize: this._config.dht.kBucketSize || 20,
         enabledDiscovery,
-        // TODO make datastore an option of libp2p itself so
-        // that other things can use it as well
-        datastore: dht.datastore
+        datastore: this.datastore
       })
     }
 

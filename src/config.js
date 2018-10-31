@@ -7,6 +7,7 @@ const ModuleSchema = Joi.alternatives().try(Joi.func(), Joi.object())
 const OptionsSchema = Joi.object({
   // TODO: create proper validators for the generics
   connectionManager: Joi.object(),
+  datastore: Joi.object(),
   peerInfo: Joi.object().required(),
   peerBook: Joi.object(),
   modules: Joi.object().keys({

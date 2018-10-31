@@ -63,6 +63,7 @@
     "cids": "~0.5.3",
     "dirty-chai": "^2.0.1",
     "electron-webrtc": "~0.3.0",
+    "interface-datastore": "~0.6.0",
     "libp2p-bootstrap": "~0.9.3",
     "libp2p-circuit": "~0.2.1",
     "libp2p-delegated-content-routing": "~0.2.2",
