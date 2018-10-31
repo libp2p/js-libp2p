@@ -39,7 +39,7 @@
     "libp2p-swarm": "~0.35.1",
     "libp2p-tcp": "~0.13.0",
     "multiaddr": "^5.0.0",
-    "peer-book": "^0.8.0",
+    "peer-book": "~0.8.0",
     "peer-id": "~0.12.0",
     "peer-info": "~0.14.1",
     "run-parallel": "^1.1.9"
