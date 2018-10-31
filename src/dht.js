@@ -9,19 +9,29 @@ module.exports = (node) => {
 
       node._dht.put(key, value, callback)
     },
-    get: (key, callback) => {
+    get: (key, options, callback) => {
+      if (typeof options === 'function') {
+        callback = options
+        options = {}
+      }
+
       if (!node._dht) {
         return callback(new Error('DHT is not available'))
       }
 
-      node._dht.get(key, callback)
+      node._dht.get(key, options, callback)
     },
-    getMany (key, nVals, callback) {
+    getMany: (key, nVals, options, callback) => {
+      if (typeof options === 'function') {
+        callback = options
+        options = {}
+      }
+
       if (!node._dht) {
         return callback(new Error('DHT is not available'))
       }
 
-      node._dht.getMany(key, nVals, callback)
+      node._dht.getMany(key, nVals, options, callback)
     }
   }
 }

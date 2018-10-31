@@ -3,7 +3,7 @@
 const TCP = require('libp2p-tcp')
 const MulticastDNS = require('libp2p-mdns')
 const WS = require('libp2p-websockets')
-const Bootstrap = require('libp2p-railing')
+const Bootstrap = require('libp2p-bootstrap')
 const SPDY = require('libp2p-spdy')
 const KadDHT = require('libp2p-kad-dht')
 const MPLEX = require('libp2p-mplex')
@@ -72,7 +72,8 @@ class Node extends libp2p {
           }
         },
         dht: {
-          kBucketSize: 20
+          kBucketSize: 20,
+          enabledDiscovery: true
         },
         EXPERIMENTAL: {
           dht: false,

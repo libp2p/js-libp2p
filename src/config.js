@@ -10,26 +10,29 @@ const OptionsSchema = Joi.object({
   peerInfo: Joi.object().required(),
   peerBook: Joi.object(),
   modules: Joi.object().keys({
-    transport: Joi.array().items(ModuleSchema).min(1).required(),
-    streamMuxer: Joi.array().items(ModuleSchema).allow(null),
     connEncryption: Joi.array().items(ModuleSchema).allow(null),
     connProtector: Joi.object().keys({
       protect: Joi.func().required()
     }).unknown(),
+    contentRouting: Joi.array().items(Joi.object()).allow(null),
+    dht: ModuleSchema.allow(null),
     peerDiscovery: Joi.array().items(ModuleSchema).allow(null),
-    dht: ModuleSchema.allow(null)
+    peerRouting: Joi.array().items(Joi.object()).allow(null),
+    streamMuxer: Joi.array().items(ModuleSchema).allow(null),
+    transport: Joi.array().items(ModuleSchema).min(1).required()
   }).required(),
   config: Joi.object().keys({
     peerDiscovery: Joi.object().allow(null),
     relay: Joi.object().keys({
-      enabled: Joi.boolean().default(false),
+      enabled: Joi.boolean().default(true),
       hop: Joi.object().keys({
         enabled: Joi.boolean().default(false),
         active: Joi.boolean().default(false)
       })
     }).default(),
     dht: Joi.object().keys({
-      kBucketSize: Joi.number().allow(null)
+      kBucketSize: Joi.number().allow(null),
+      enabledDiscovery: Joi.boolean().default(true)
     }),
     EXPERIMENTAL: Joi.object().keys({
       dht: Joi.boolean().default(false),

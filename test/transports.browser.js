@@ -148,6 +148,42 @@ describe('transports', () => {
       })
     })
 
+    it('.dialFSM check conn and close', (done) => {
+      nodeA.dialFSM(peerB, (err, connFSM) => {
+        expect(err).to.not.exist()
+
+        connFSM.once('muxed', () => {
+          expect(nodeA._switch.muxedConns).to.have.any.keys(
+            peerB.id.toB58String()
+          )
+
+          connFSM.once('error', done)
+          connFSM.once('close', () => {
+            // ensure the connection is closed
+            expect(nodeA._switch.muxedConns).to.not.have.any.keys([
+              peerB.id.toB58String()
+            ])
+            done()
+          })
+
+          connFSM.close()
+        })
+      })
+    })
+
+    it('.dialFSM with a protocol, do an echo and close', (done) => {
+      nodeA.dialFSM(peerB, '/echo/1.0.0', (err, connFSM) => {
+        expect(err).to.not.exist()
+        connFSM.once('connection', (conn) => {
+          tryEcho(conn, () => {
+            connFSM.close()
+          })
+        })
+        connFSM.once('error', done)
+        connFSM.once('close', done)
+      })
+    })
+
     describe('stress', () => {
       it('one big write', (done) => {
         nodeA.dialProtocol(peerB, '/echo/1.0.0', (err, conn) => {
@@ -168,7 +204,9 @@ describe('transports', () => {
         })
       })
 
-      it('many writes', (done) => {
+      it('many writes', function (done) {
+        this.timeout(10000)
+
         nodeA.dialProtocol(peerB, '/echo/1.0.0', (err, conn) => {
           expect(err).to.not.exist()
 
@@ -192,12 +230,22 @@ describe('transports', () => {
   })
 
   describe('webrtc-star', () => {
+    /* eslint-disable-next-line no-console */
     if (!w.support) { return console.log('NO WEBRTC SUPPORT') }
 
     let peer1
     let peer2
     let node1
     let node2
+    let node3
+
+    after((done) => {
+      parallel([
+        (cb) => node1.stop(cb),
+        (cb) => node2.stop(cb),
+        (cb) => node3.stop(cb)
+      ], done)
+    })
 
     it('create two peerInfo with webrtc-star addrs', (done) => {
       parallel([
@@ -270,30 +318,27 @@ describe('transports', () => {
       })
     })
 
-    it('create a third node and check that discovery works', function (done) {
-      this.timeout(60 * 1000)
-
-      let counter = 0
-
-      function check () {
-        if (++counter === 3) {
-          expect(Object.keys(node1._switch.muxedConns).length).to.equal(1)
-          expect(Object.keys(node2._switch.muxedConns).length).to.equal(1)
-          done()
-        }
-      }
-
+    it('create a third node and check that discovery works', (done) => {
       PeerId.create({ bits: 512 }, (err, id3) => {
         expect(err).to.not.exist()
 
+        const b58Id = id3.toB58String()
+
+        function check () {
+          // Verify both nodes are connected to node 3
+          if (node1._switch.muxedConns[b58Id] && node2._switch.muxedConns[b58Id]) {
+            done()
+          }
+        }
+
         const peer3 = new PeerInfo(id3)
-        const ma3 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + id3.toB58String()
+        const ma3 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + b58Id
         peer3.multiaddrs.add(ma3)
 
         node1.on('peer:discovery', (peerInfo) => node1.dial(peerInfo, check))
         node2.on('peer:discovery', (peerInfo) => node2.dial(peerInfo, check))
 
-        const node3 = new Node({
+        node3 = new Node({
           peerInfo: peer3
         })
         node3.start(check)

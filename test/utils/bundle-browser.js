@@ -3,7 +3,7 @@
 const WS = require('libp2p-websockets')
 const WebRTCStar = require('libp2p-webrtc-star')
 const WebSocketStar = require('libp2p-websocket-star')
-const Bootstrap = require('libp2p-railing')
+const Bootstrap = require('libp2p-bootstrap')
 const SPDY = require('libp2p-spdy')
 const MPLEX = require('libp2p-mplex')
 const KadDHT = require('libp2p-kad-dht')
@@ -79,7 +79,8 @@ class Node extends libp2p {
           }
         },
         dht: {
-          kBucketSize: 20
+          kBucketSize: 20,
+          enabledDiscovery: true
         },
         EXPERIMENTAL: {
           dht: false,

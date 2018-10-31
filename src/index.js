@@ -1,7 +1,11 @@
 'use strict'
 
+const FSM = require('fsm-event')
 const EventEmitter = require('events').EventEmitter
 const assert = require('assert')
+const debug = require('debug')
+const log = debug('libp2p')
+log.error = debug('libp2p:error')
 
 const each = require('async/each')
 const series = require('async/series')
@@ -20,10 +24,16 @@ const pubsub = require('./pubsub')
 const getPeerInfo = require('./get-peer-info')
 const validateConfig = require('./config').validate
 
-exports = module.exports
-
 const NOT_STARTED_ERROR_MESSAGE = 'The libp2p node is not started yet'
 
+/**
+ * @fires Node#error Emitted when an error occurs
+ * @fires Node#peer:connect Emitted when a peer is connected to this node
+ * @fires Node#peer:disconnect Emitted when a peer disconnects from this node
+ * @fires Node#peer:discovery Emitted when a peer is discovered
+ * @fires Node#start Emitted when the node and its services has started
+ * @fires Node#stop Emitted when the node and its services has stopped
+ */
 class Node extends EventEmitter {
   constructor (_options) {
     super()
@@ -85,8 +95,11 @@ class Node extends EventEmitter {
     // dht provided components (peerRouting, contentRouting, dht)
     if (this._config.EXPERIMENTAL.dht) {
       const DHT = this._modules.dht
+      const enabledDiscovery = this._config.dht.enabledDiscovery !== false
+
       this._dht = new DHT(this._switch, {
         kBucketSize: this._config.dht.kBucketSize || 20,
+        enabledDiscovery,
         // TODO make datastore an option of libp2p itself so
         // that other things can use it as well
         datastore: dht.datastore
@@ -99,6 +112,7 @@ class Node extends EventEmitter {
     }
 
     // Attach remaining APIs
+    // peer and content routing will automatically get modules from _modules and _dht
     this.peerRouting = peerRouting(this)
     this.contentRouting = contentRouting(this)
     this.dht = dht(this)
@@ -107,15 +121,181 @@ class Node extends EventEmitter {
 
     // Mount default protocols
     Ping.mount(this._switch)
+
+    this.state = new FSM('STOPPED', {
+      STOPPED: {
+        start: 'STARTING',
+        stop: 'STOPPED'
+      },
+      STARTING: {
+        done: 'STARTED',
+        abort: 'STOPPED',
+        stop: 'STOPPING'
+      },
+      STARTED: {
+        stop: 'STOPPING',
+        start: 'STARTED'
+      },
+      STOPPING: {
+        stop: 'STOPPING',
+        done: 'STOPPED'
+      }
+    })
+    this.state.on('STARTING', () => {
+      log('libp2p is starting')
+      this._onStarting()
+    })
+    this.state.on('STOPPING', () => {
+      log('libp2p is stopping')
+      this._onStopping()
+    })
+    this.state.on('STARTED', () => {
+      log('libp2p has started')
+      this.emit('start')
+    })
+    this.state.on('STOPPED', () => {
+      log('libp2p has stopped')
+      this.emit('stop')
+    })
+    this.state.on('error', (err) => {
+      log.error(err)
+      this.emit('error', err)
+    })
   }
 
-  /*
-   * Start the libp2p node
-   *   - create listeners on the multiaddrs the Peer wants to listen
+  /**
+   * Starts the libp2p node and all sub services
+   *
+   * @param {function(Error)} callback
+   * @returns {void}
    */
-  start (callback) {
+  start (callback = () => {}) {
+    this.once('start', callback)
+    this.state('start')
+  }
+
+  /**
+   * Stop the libp2p node by closing its listeners and open connections
+   *
+   * @param {function(Error)} callback
+   * @returns {void}
+   */
+  stop (callback = () => {}) {
+    this.once('stop', callback)
+    this.state('stop')
+  }
+
+  isStarted () {
+    return this.state ? this.state._state === 'STARTED' : false
+  }
+
+  /**
+   * Dials to the provided peer. If successful, the `PeerInfo` of the
+   * peer will be added to the nodes `PeerBook`
+   *
+   * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to dial
+   * @param {function(Error)} callback
+   * @returns {void}
+   */
+  dial (peer, callback) {
+    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
+
+    this.dialProtocol(peer, null, callback)
+  }
+
+  /**
+   * Dials to the provided peer and handshakes with the given protocol.
+   * If successful, the `PeerInfo` of the peer will be added to the nodes `PeerBook`,
+   * and the `Connection` will be sent in the callback
+   *
+   * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to dial
+   * @param {string} protocol
+   * @param {function(Error, Connection)} callback
+   * @returns {void}
+   */
+  dialProtocol (peer, protocol, callback) {
+    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
+
+    if (typeof protocol === 'function') {
+      callback = protocol
+      protocol = undefined
+    }
+
+    this._getPeerInfo(peer, (err, peerInfo) => {
+      if (err) { return callback(err) }
+
+      this._switch.dial(peerInfo, protocol, (err, conn) => {
+        if (err) { return callback(err) }
+        this.peerBook.put(peerInfo)
+        callback(null, conn)
+      })
+    })
+  }
+
+  /**
+   * Similar to `dial` and `dialProtocol`, but the callback will contain a
+   * Connection State Machine.
+   *
+   * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to dial
+   * @param {string} protocol
+   * @param {function(Error, ConnectionFSM)} callback
+   * @returns {void}
+   */
+  dialFSM (peer, protocol, callback) {
+    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
+
+    if (typeof protocol === 'function') {
+      callback = protocol
+      protocol = undefined
+    }
+
+    this._getPeerInfo(peer, (err, peerInfo) => {
+      if (err) { return callback(err) }
+
+      const connFSM = this._switch.dialFSM(peerInfo, protocol, (err) => {
+        if (!err) {
+          this.peerBook.put(peerInfo)
+        }
+      })
+
+      callback(null, connFSM)
+    })
+  }
+
+  hangUp (peer, callback) {
+    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
+
+    this._getPeerInfo(peer, (err, peerInfo) => {
+      if (err) { return callback(err) }
+
+      this._switch.hangUp(peerInfo, callback)
+    })
+  }
+
+  ping (peer, callback) {
+    if (!this.isStarted()) {
+      return callback(new Error(NOT_STARTED_ERROR_MESSAGE))
+    }
+
+    this._getPeerInfo(peer, (err, peerInfo) => {
+      if (err) { return callback(err) }
+
+      callback(null, new Ping(this._switch, peerInfo))
+    })
+  }
+
+  handle (protocol, handlerFunc, matchFunc) {
+    this._switch.handle(protocol, handlerFunc, matchFunc)
+  }
+
+  unhandle (protocol) {
+    this._switch.unhandle(protocol)
+  }
+
+  _onStarting () {
     if (!this._modules.transport) {
-      return callback(new Error('no transports were present'))
+      this.emit('error', new Error('no transports were present'))
+      return this.state('abort')
     }
 
     let ws
@@ -212,12 +392,10 @@ class Node extends EventEmitter {
         // TODO: chicken-and-egg problem #2:
         // have to set started here because FloodSub requires libp2p is already started
         if (this._floodSub) {
-          this._floodSub.start(cb)
-        } else {
-          cb()
+          return this._floodSub.start(cb)
         }
+        cb()
       },
-
       (cb) => {
         // detect which multiaddrs we don't have a transport for and remove them
         const multiaddrs = this.peerInfo.multiaddrs.toArray()
@@ -229,18 +407,18 @@ class Node extends EventEmitter {
           }
         })
         cb()
-      },
-      (cb) => {
-        this.emit('start')
-        cb()
       }
-    ], callback)
+    ], (err) => {
+      if (err) {
+        log.error(err)
+        this.emit('error', err)
+        return this.state('stop')
+      }
+      this.state('done')
+    })
   }
 
-  /*
-   * Stop the libp2p node by closing its listeners and open connections
-   */
-  stop (callback) {
+  _onStopping () {
     series([
       (cb) => {
         if (this._modules.peerDiscovery) {
@@ -267,85 +445,20 @@ class Node extends EventEmitter {
         cb()
       },
       (cb) => {
-        this.connectionManager.stop()
-        this._switch.stop(cb)
+        // Ensures idempotency for restarts
+        this._switch.transport.removeAll(cb)
       },
       (cb) => {
-        this.emit('stop')
-        cb()
+        this.connectionManager.stop()
+        this._switch.stop(cb)
       }
     ], (err) => {
-      this._isStarted = false
-      callback(err)
+      if (err) {
+        log.error(err)
+        this.emit('error', err)
+      }
+      this.state('done')
     })
-  }
-
-  isStarted () {
-    return this._isStarted
-  }
-
-  dial (peer, callback) {
-    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
-
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) { return callback(err) }
-
-      this._switch.dial(peerInfo, (err) => {
-        if (err) { return callback(err) }
-
-        this.peerBook.put(peerInfo)
-        callback()
-      })
-    })
-  }
-
-  dialProtocol (peer, protocol, callback) {
-    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
-
-    if (typeof protocol === 'function') {
-      callback = protocol
-      protocol = undefined
-    }
-
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) { return callback(err) }
-
-      this._switch.dial(peerInfo, protocol, (err, conn) => {
-        if (err) { return callback(err) }
-        this.peerBook.put(peerInfo)
-        callback(null, conn)
-      })
-    })
-  }
-
-  hangUp (peer, callback) {
-    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
-
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) { return callback(err) }
-
-      this._switch.hangUp(peerInfo, callback)
-    })
-  }
-
-  ping (peer, callback) {
-    if (!this.isStarted()) {
-      return callback(new Error(NOT_STARTED_ERROR_MESSAGE))
-    }
-
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) { return callback(err) }
-
-      callback(null, new Ping(this._switch, peerInfo))
-    })
-  }
-
-  handle (protocol, handlerFunc, matchFunc) {
-    this._switch.handle(protocol, handlerFunc, matchFunc)
-  }
-
-  unhandle (protocol) {
-    this._switch.unhandle(protocol)
   }
 }
 

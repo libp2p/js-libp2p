@@ -1,6 +1,5 @@
 /* eslint no-console: ["error", { allow: ["log"] }] */
 /* eslint max-nested-callbacks: ["error", 5] */
-
 'use strict'
 
 const domReady = require('detect-dom-ready')
