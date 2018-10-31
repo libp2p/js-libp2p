@@ -1,3 +1,8 @@
+<a name="0.8.1"></a>
+## [0.8.1](https://github.com/libp2p/js-libp2p-ping/compare/v0.8.0...v0.8.1) (2018-10-31)
+
+
+
 <a name="0.8.0"></a>
 # [0.8.0](https://github.com/libp2p/js-libp2p-ping/compare/v0.7.0...v0.8.0) (2018-04-23)
 
