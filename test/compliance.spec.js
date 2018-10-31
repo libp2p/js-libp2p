@@ -8,7 +8,7 @@ const TCP = require('../src')
 describe('interface-transport compliance', () => {
   tests({
     setup (cb) {
-      let tcp = new TCP()
+      const tcp = new TCP()
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091'),
         multiaddr('/ip4/127.0.0.1/tcp/9092'),
