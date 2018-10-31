@@ -1,4 +1,5 @@
-/* eslint-disable no-console */
+/* eslint no-console: ["error", { allow: ["log"] }] */
+/* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
 const domReady = require('detect-dom-ready')
@@ -13,13 +14,27 @@ domReady(() => {
       return console.log('Could not create the Node, check if your browser has WebRTC Support', err)
     }
 
+    let connections = {}
+
     node.on('peer:discovery', (peerInfo) => {
       console.log('Discovered a peer')
       const idStr = peerInfo.id.toB58String()
       console.log('Discovered: ' + idStr)
+      if (connections[idStr]) {
+        // If we're already trying to connect to this peer, dont dial again
+        return
+      }
 
+      connections[idStr] = true
       node.dial(peerInfo, (err, conn) => {
-        if (err) { return console.log('Failed to dial:', idStr) }
+        let timeToNextDial = 0
+        if (err) {
+          // Prevent immediate connection retries from happening
+          timeToNextDial = 30 * 1000
+          console.log('Failed to dial:', idStr)
+        }
+
+        setTimeout(() => delete connections[idStr], timeToNextDial)
       })
     })
 
