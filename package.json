@@ -42,13 +42,13 @@
     "protons": "^1.0.1",
     "rsa-pem-to-jwk": "^1.1.3",
     "tweetnacl": "^1.0.0",
-    "ursa-optional": "~0.9.8",
+    "ursa-optional": "~0.9.9",
     "webcrypto-shim": "github:dignifiedquire/webcrypto-shim#master"
   },
   "devDependencies": {
-    "aegir": "^15.2.0",
+    "aegir": "^17.0.1",
     "benchmark": "^2.1.4",
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "chai-string": "^1.5.0",
     "dirty-chai": "^2.0.1"
   },
