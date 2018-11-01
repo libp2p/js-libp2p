@@ -28,8 +28,6 @@ function teardown (nodeA, nodeB, callback) {
 
 describe('stream muxing', () => {
   it('spdy only', function (done) {
-    this.timeout(5 * 1000)
-
     let nodeA
     let nodeB
 
