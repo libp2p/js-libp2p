@@ -262,10 +262,10 @@ Required keys in the `options` object:
 - `options`: object of options
 - `options.maxTimeout`: Number milliseconds
 
-#### `libp2p.contentRouting.provide(key, callback)`
+#### `libp2p.contentRouting.provide(key, [value], callback)`
 
-- `key`: Buffer
-
+- `key`: CID
+- `value`: Buffer with value to provide
 
 #### `libp2p.handle(protocol, handlerFunc [, matchFunc])`
 

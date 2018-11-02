@@ -329,6 +329,24 @@ describe('.contentRouting', () => {
         })
         nodeA.contentRouting.provide()
       })
+
+      it('should put a value before providing it, if the value is received', (done) => {
+        const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+        const data = Buffer.from('data')
+
+        sinon.spy(nodeA._dht, 'put')
+        const dhtStub = sinon.stub(nodeA._dht, 'provide').callsFake(() => { })
+        const delegateStub = sinon.stub(delegate, 'provide').callsFake(() => {
+          expect(dhtStub.calledOnce).to.equal(true)
+          expect(delegateStub.calledOnce).to.equal(true)
+          expect(nodeA._dht.put.calledOnce).to.equal(true)
+          delegateStub.restore()
+          dhtStub.restore()
+          done()
+        })
+
+        nodeA.contentRouting.provide(cid, data)
+      })
     })
 
     describe('findProviders', () => {

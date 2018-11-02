@@ -63,20 +63,34 @@ module.exports = (node) => {
 
     /**
      * Iterates over all content routers in parallel to notify it is
-     * a provider of the given key.
+     * a provider of the given key. If a value is received, it is added to the dht.
      *
      * @param {CID} key The CID key of the content to find
+     * @param {Buffer} value The value to provide
      * @param {function(Error)} callback
      * @returns {void}
      */
-    provide: (key, callback) => {
+    provide: (key, value, callback) => {
+      if (typeof value === 'function') {
+        callback = value
+        value = undefined
+      }
+
       if (!routers.length) {
         return callback(errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE'))
       }
 
-      parallel(routers.map((router) => {
-        return (cb) => router.provide(key, cb)
-      }), callback)
+      const provideToRouters = () => {
+        parallel(routers.map((router) => {
+          return (cb) => router.provide(key, cb)
+        }), callback)
+      }
+
+      if (value && Buffer.isBuffer(value)) {
+        node.dht.put(key.multihash, value, provideToRouters)
+      } else {
+        provideToRouters()
+      }
     }
   }
 }
