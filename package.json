@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
   "leadMaintainer": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
@@ -70,6 +70,7 @@
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Greenkeeper <support@greenkeeper.io>",
     "Jack Kleeman <jackkleeman@gmail.com>",
+    "Jacob Heun <jacobheun@gmail.com>",
     "Joao Santos <jrmsantos15@gmail.com>",
     "Maciej Krüger <mkg20001@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
