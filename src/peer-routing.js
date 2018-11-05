@@ -22,13 +22,13 @@ module.exports = (node) => {
      * @returns {void}
      */
     findPeer: (id, options, callback) => {
-      if (!routers.length) {
-        callback(errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE'))
-      }
-
       if (typeof options === 'function') {
         callback = options
         options = {}
+      }
+
+      if (!routers.length) {
+        callback(errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE'))
       }
 
       const tasks = routers.map((router) => {

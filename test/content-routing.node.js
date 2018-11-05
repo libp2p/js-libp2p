@@ -367,4 +367,29 @@ describe('.contentRouting', () => {
       })
     })
   })
+
+  describe('no routers', () => {
+    let nodeA
+    before((done) => {
+      createNode('/ip4/0.0.0.0/tcp/0', (err, node) => {
+        expect(err).to.not.exist()
+        nodeA = node
+        done()
+      })
+    })
+
+    it('.findProviders should return an error with no options', (done) => {
+      nodeA.contentRouting.findProviders('a cid', (err) => {
+        expect(err).to.exist()
+        done()
+      })
+    })
+
+    it('.findProviders should return an error with options', (done) => {
+      nodeA.contentRouting.findProviders('a cid', { maxTimeout: 5000 }, (err) => {
+        expect(err).to.exist()
+        done()
+      })
+    })
+  })
 })

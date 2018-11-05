@@ -266,4 +266,29 @@ describe('.peerRouting', () => {
       })
     })
   })
+
+  describe('no routers', () => {
+    let nodeA
+    before((done) => {
+      createNode('/ip4/0.0.0.0/tcp/0', (err, node) => {
+        expect(err).to.not.exist()
+        nodeA = node
+        done()
+      })
+    })
+
+    it('.findPeer should return an error with no options', (done) => {
+      nodeA.peerRouting.findPeer('a cid', (err) => {
+        expect(err).to.exist()
+        done()
+      })
+    })
+
+    it('.findPeer should return an error with options', (done) => {
+      nodeA.peerRouting.findPeer('a cid', { maxTimeout: 5000 }, (err) => {
+        expect(err).to.exist()
+        done()
+      })
+    })
+  })
 })
