@@ -222,6 +222,40 @@ describe('KadDHT', () => {
     })
   })
 
+  it('put - get with update', function (done) {
+    this.timeout(20 * 1000)
+    const tdht = new TestDHT()
+
+    tdht.spawn(2, (err, dhts) => {
+      expect(err).to.not.exist()
+      const dhtA = dhts[0]
+      const dhtB = dhts[1]
+
+      const dhtASpy = sinon.spy(dhtA, '_putValueToPeer')
+
+      series([
+        (cb) => dhtA.put(Buffer.from('/v/hello'), Buffer.from('worldA'), cb),
+        (cb) => dhtB.put(Buffer.from('/v/hello'), Buffer.from('worldB'), cb),
+        (cb) => connect(dhtA, dhtB, cb)
+      ], (err) => {
+        expect(err).to.not.exist()
+
+        series([
+          (cb) => dhtA.get(Buffer.from('/v/hello'), { maxTimeout: 1000 }, cb),
+          (cb) => dhtB.get(Buffer.from('/v/hello'), { maxTimeout: 1000 }, cb)
+        ], (err, results) => {
+          expect(err).to.not.exist()
+          results.forEach((res) => {
+            expect(res).to.eql(Buffer.from('worldA')) // first is selected
+          })
+          expect(dhtASpy.callCount).to.eql(1)
+          expect(dhtASpy.getCall(0).args[2].isEqual(dhtB.peerInfo.id)).to.eql(true) // inform B
+          tdht.teardown(done)
+        })
+      })
+    })
+  })
+
   it('provides', function (done) {
     this.timeout(20 * 1000)
 

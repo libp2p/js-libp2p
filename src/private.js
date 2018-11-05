@@ -299,7 +299,7 @@ module.exports = (dht) => ({
             }
 
             // send correction
-            dht._putValueToPeer(v.from, key, fixupRec, (err) => {
+            dht._putValueToPeer(key, fixupRec, v.from, (err) => {
               if (err) {
                 dht._log.error('Failed error correcting entry', err)
               }
