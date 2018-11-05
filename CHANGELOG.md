@@ -1,3 +1,13 @@
+<a name="0.14.1"></a>
+## [0.14.1](https://github.com/libp2p/js-libp2p-crypto/compare/v0.14.0...v0.14.1) (2018-11-05)
+
+
+### Bug Fixes
+
+* dont setimmediate when its not needed ([9e57786](https://github.com/libp2p/js-libp2p-crypto/commit/9e57786))
+
+
+
 <a name="0.14.0"></a>
 # [0.14.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.13.0...v0.14.0) (2018-09-17)
 
