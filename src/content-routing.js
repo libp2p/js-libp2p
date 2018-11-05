@@ -24,10 +24,6 @@ module.exports = (node) => {
      * @returns {void}
      */
     findProviders: (key, options, callback) => {
-      if (!routers.length) {
-        return callback(errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE'))
-      }
-
       if (typeof options === 'function') {
         callback = options
         options = {}
@@ -35,6 +31,10 @@ module.exports = (node) => {
         options = {
           maxTimeout: options
         }
+      }
+
+      if (!routers.length) {
+        return callback(errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE'))
       }
 
       const tasks = routers.map((router) => {
