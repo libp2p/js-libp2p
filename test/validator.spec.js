@@ -79,6 +79,26 @@ describe('validator', () => {
       }
       validator.verifyRecord(validators, rec, done)
     })
+
+    it('calls not matching any validator', (done) => {
+      const k = Buffer.from('/hallo/you')
+      const rec = new Record(k, Buffer.from('world'), new PeerId(hash))
+
+      const validators = {
+        hello: {
+          func (key, value, cb) {
+            expect(key).to.eql(k)
+            expect(value).to.eql(Buffer.from('world'))
+            cb()
+          },
+          sign: false
+        }
+      }
+      validator.verifyRecord(validators, rec, (err) => {
+        expect(err).to.exist()
+        done()
+      })
+    })
   })
 
   describe('validators', () => {

@@ -1,6 +1,7 @@
 'use strict'
 
 const bsplit = require('buffer-split')
+const errcode = require('err-code')
 
 /**
  * Checks a record and ensures it is still valid.
@@ -23,7 +24,9 @@ const verifyRecord = (validators, record, callback) => {
   const validator = validators[parts[1].toString()]
 
   if (!validator) {
-    return callback(new Error('Invalid record keytype'))
+    const errMsg = `Invalid record keytype`
+
+    return callback(errcode(new Error(errMsg), 'ERR_INVALID_RECORD_KEY_TYPE'))
   }
 
   validator.func(key, record.value, callback)

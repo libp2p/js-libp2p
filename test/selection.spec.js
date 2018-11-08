@@ -11,6 +11,14 @@ const records = [Buffer.alloc(0), Buffer.from('hello')]
 
 describe('selection', () => {
   describe('bestRecord', () => {
+    it('throws no records given when no records received', () => {
+      expect(
+        () => selection.bestRecord({}, Buffer.from('/'), [])
+      ).to.throw(
+        /No records given/
+      )
+    })
+
     it('throws on missing selector in the record key', () => {
       expect(
         () => selection.bestRecord({}, Buffer.from('/'), records)
