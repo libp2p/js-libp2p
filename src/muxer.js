@@ -70,8 +70,8 @@ class MultiplexMuxer extends EventEmitter {
 
   end (callback) {
     callback = callback || noop
-    this.multiplex.once('close', callback)
     this.multiplex.destroy()
+    callback()
   }
 }
 

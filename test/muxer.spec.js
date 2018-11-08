@@ -6,10 +6,10 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 
-const EventEmitter = require('events')
 const pair = require('pull-pair/duplex')
 
 const Muxer = require('../src/muxer')
+const Multiplex = require('../src/internals')
 
 describe('multiplex-muxer', () => {
   let muxer
@@ -17,7 +17,7 @@ describe('multiplex-muxer', () => {
 
   it('can be created', () => {
     const p = pair()
-    multiplex = new EventEmitter()
+    multiplex = new Multiplex()
     muxer = new Muxer(p, multiplex)
   })
 
@@ -33,15 +33,21 @@ describe('multiplex-muxer', () => {
   })
 
   it('can get destroyed', (done) => {
-    let destroyed = false
-    multiplex.destroy = () => {
-      destroyed = true
-      setImmediate(() => multiplex.emit('close'))
-    }
+    expect(multiplex.destroyed).to.eql(false)
 
     muxer.end((err) => {
       expect(err).to.not.exist()
-      expect(destroyed).to.be.true()
+      expect(multiplex.destroyed).to.be.true()
+      done()
+    })
+  })
+
+  it('should handle a repeat destroy', (done) => {
+    expect(multiplex.destroyed).to.be.true()
+
+    muxer.end((err) => {
+      expect(err).to.not.exist()
+      expect(multiplex.destroyed).to.be.true()
       done()
     })
   })
