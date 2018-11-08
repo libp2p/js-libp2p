@@ -1,3 +1,13 @@
+<a name="0.8.3"></a>
+## [0.8.3](https://github.com/libp2p/js-libp2p-mplex/compare/v0.8.2...v0.8.3) (2018-11-08)
+
+
+### Bug Fixes
+
+* muxer.end will no longer hang ([#86](https://github.com/libp2p/js-libp2p-mplex/issues/86)) ([e23cbaf](https://github.com/libp2p/js-libp2p-mplex/commit/e23cbaf))
+
+
+
 <a name="0.8.2"></a>
 ## [0.8.2](https://github.com/libp2p/js-libp2p-mplex/compare/v0.8.1...v0.8.2) (2018-10-01)
 
