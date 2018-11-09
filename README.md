@@ -12,7 +12,7 @@ libp2p-ping JavaScript Implementation
 
 ## Lead Maintainer
 
-[Vasco Santos](https://github.com/vasco-santos).
+[Jacob Heun](https://github.com/jacobheun/)
 
 ## Usage
 

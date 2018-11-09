@@ -8,7 +8,7 @@ chai.use(dirtyChai)
 const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
 
-const Swarm = require('libp2p-swarm')
+const Swarm = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
 const series = require('async/series')
 const parallel = require('async/parallel')
@@ -43,8 +43,8 @@ describe('libp2p ping', () => {
         swarmB.transport.add('tcp', new TCP())
         cb()
       },
-      (cb) => swarmA.listen(cb),
-      (cb) => swarmB.listen(cb),
+      (cb) => swarmA.start(cb),
+      (cb) => swarmB.start(cb),
       (cb) => {
         Ping.mount(swarmA)
         Ping.mount(swarmB)
@@ -55,8 +55,8 @@ describe('libp2p ping', () => {
 
   after((done) => {
     parallel([
-      (cb) => swarmA.close(cb),
-      (cb) => swarmB.close(cb)
+      (cb) => swarmA.stop(cb),
+      (cb) => swarmB.stop(cb)
     ], done)
   })
 
@@ -96,17 +96,16 @@ describe('libp2p ping', () => {
     p.start()
   })
 
-  it('ping itself', (done) => {
+  it('cannot ping itself', (done) => {
     const p = new Ping(swarmA, peerA)
 
     p.on('error', (err) => {
-      expect(err).to.not.exist()
+      expect(err).to.exist()
+      done()
     })
 
-    p.on('ping', (time) => {
-      expect(time).to.be.a('Number')
-      p.stop()
-      done()
+    p.on('ping', () => {
+      expect.fail('should not be called')
     })
 
     p.start()

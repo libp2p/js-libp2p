@@ -2,14 +2,19 @@
   "name": "libp2p-ping",
   "version": "0.8.2",
   "description": "libp2p Ping protocol implementation",
-  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
+  "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
+  "files": [
+    "dist",
+    "src"
+  ],
   "pre-push": [
-    "lint",
-    "test"
+    "lint"
   ],
   "scripts": {
     "test": "aegir test -t node",
+    "test:node": "aegir test -t node",
+    "build": "aegir build",
     "lint": "aegir lint",
     "release": "aegir release -t node",
     "release-minor": "aegir release --type minor -t node",
@@ -35,17 +40,16 @@
     "chai": "^4.2.0",
     "debug": "^4.1.0",
     "dirty-chai": "^2.0.1",
-    "gulp": "^3.9.1",
-    "libp2p-swarm": "~0.35.1",
+    "libp2p-switch": "~0.41.1",
     "libp2p-tcp": "~0.13.0",
-    "multiaddr": "^5.0.0",
+    "multiaddr": "^5.0.2",
     "peer-book": "~0.8.0",
     "peer-id": "~0.12.0",
     "peer-info": "~0.14.1",
     "run-parallel": "^1.1.9"
   },
   "dependencies": {
-    "libp2p-crypto": "~0.14.0",
+    "libp2p-crypto": "~0.14.1",
     "pull-handshake": "^1.1.4",
     "pull-stream": "^3.6.9"
   },
