@@ -1,3 +1,18 @@
+<a name="0.11.0"></a>
+# [0.11.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.10.6...v0.11.0) (2018-11-09)
+
+
+### Bug Fixes
+
+* record outdated local correction ([#49](https://github.com/libp2p/js-libp2p-kad-dht/issues/49)) ([d1869ed](https://github.com/libp2p/js-libp2p-kad-dht/commit/d1869ed))
+
+
+### Features
+
+* select first record when no selector function ([#51](https://github.com/libp2p/js-libp2p-kad-dht/issues/51)) ([683a903](https://github.com/libp2p/js-libp2p-kad-dht/commit/683a903))
+
+
+
 <a name="0.10.6"></a>
 ## [0.10.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.10.5...v0.10.6) (2018-10-25)
 
