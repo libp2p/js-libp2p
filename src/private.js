@@ -271,7 +271,17 @@ module.exports = (dht) => ({
       (cb) => dht.getMany(key, 16, options.maxTimeout, cb),
       (vals, cb) => {
         const recs = vals.map((v) => v.val)
-        const i = libp2pRecord.selection.bestRecord(dht.selectors, key, recs)
+        let i = 0
+
+        try {
+          i = libp2pRecord.selection.bestRecord(dht.selectors, key, recs)
+        } catch (err) {
+          // Assume the first record if no selector available
+          if (err.code !== 'ERR_NO_SELECTOR_FUNCTION_FOR_RECORD_KEY') {
+            return cb(err)
+          }
+        }
+
         const best = recs[i]
         dht._log('GetValue %b %s', key, best)
 

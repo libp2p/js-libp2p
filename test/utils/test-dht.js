@@ -56,6 +56,8 @@ class TestDHT {
         sign: false
       }
 
+      dht.validators.v2 = dht.validators.v // added to simulate just validators available
+
       dht.selectors.v = (k, records) => 0
 
       series([
