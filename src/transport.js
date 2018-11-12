@@ -97,7 +97,7 @@ class TransportManager {
     }
 
     // filter the multiaddrs that are actually valid for this transport
-    multiaddrs = TransportManager.dialables(transport, multiaddrs)
+    multiaddrs = TransportManager.dialables(transport, multiaddrs, this.switch._peerInfo)
     log('dialing %s', key, multiaddrs.map((m) => m.toString()))
 
     // dial each of the multiaddrs with the given transport
@@ -197,10 +197,26 @@ class TransportManager {
    *
    * @param {Transport} transport
    * @param {Array<Multiaddr>} multiaddrs
+   * @param {PeerInfo} peerInfo Optional - a peer whose addresses should not be returned
    * @returns {Array<Multiaddr>}
    */
-  static dialables (transport, multiaddrs) {
-    return transport.filter(multiaddrs)
+  static dialables (transport, multiaddrs, peerInfo) {
+    const transportAddrs = transport.filter(multiaddrs)
+    if (!peerInfo) {
+      return transportAddrs
+    }
+
+    return transportAddrs.filter((addr) => {
+      // If our address is in the destination address, filter it out
+      return !peerInfo.multiaddrs.toArray().find((pAddr) => {
+        try {
+          addr.decapsulate(pAddr)
+        } catch (err) {
+          return false
+        }
+        return true
+      })
+    })
   }
 }
 
