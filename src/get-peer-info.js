@@ -3,7 +3,7 @@
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
-const setImmediate = require('async/setImmediate')
+const errCode = require('err-code')
 
 module.exports = (node) => {
   /*
@@ -20,16 +20,21 @@ module.exports = (node) => {
         try {
           peer = multiaddr(peer)
         } catch (err) {
-          return setImmediate(() => callback(err))
+          return callback(
+            errCode(err, 'ERR_INVALID_MULTIADDR')
+          )
         }
       }
 
       const peerIdB58Str = peer.getPeerId()
 
       if (!peerIdB58Str) {
-        return setImmediate(() => {
-          callback(new Error('peer multiaddr instance or string must include peerId'))
-        })
+        return callback(
+          errCode(
+            new Error('peer multiaddr instance or string must include peerId'),
+            'ERR_INVALID_MULTIADDR'
+          )
+        )
       }
 
       try {
@@ -48,9 +53,14 @@ module.exports = (node) => {
         return node.peerRouting.findPeer(peer, callback)
       }
     } else {
-      return setImmediate(() => callback(new Error('peer type not recognized')))
+      return callback(
+        errCode(
+          new Error(`${p} is not a valid peer type`),
+          'ERR_INVALID_PEER_TYPE'
+        )
+      )
     }
 
-    setImmediate(() => callback(null, p))
+    callback(null, p)
   }
 }

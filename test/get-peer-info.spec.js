@@ -11,7 +11,7 @@ describe('getPeerInfo', () => {
   it('should callback with error for invalid string multiaddr', (done) => {
     getPeerInfo(null)('INVALID MULTIADDR', (err) => {
       expect(err).to.exist()
-      expect(err.message).to.contain('must start with a "/"')
+      expect(err.code).to.eql('ERR_INVALID_MULTIADDR')
       done()
     })
   })
@@ -19,7 +19,15 @@ describe('getPeerInfo', () => {
   it('should callback with error for invalid non-peer multiaddr', (done) => {
     getPeerInfo(null)('/ip4/8.8.8.8/tcp/1080', (err) => {
       expect(err).to.exist()
-      expect(err.message).to.equal('peer multiaddr instance or string must include peerId')
+      expect(err.code).to.equal('ERR_INVALID_MULTIADDR')
+      done()
+    })
+  })
+
+  it('should callback with error for invalid non-peer multiaddr', (done) => {
+    getPeerInfo(null)(undefined, (err) => {
+      expect(err).to.exist()
+      expect(err.code).to.eql('ERR_INVALID_PEER_TYPE')
       done()
     })
   })
