@@ -80,4 +80,25 @@ describe('libp2p creation', () => {
       done()
     })
   })
+
+  it('should not throw errors from switch if node has no error listeners', (done) => {
+    createNode([], {}, (err, node) => {
+      expect(err).to.not.exist()
+
+      node._switch.emit('error', new Error('bad things'))
+      done()
+    })
+  })
+
+  it('should emit errors from switch if node has error listeners', (done) => {
+    const error = new Error('bad things')
+    createNode([], {}, (err, node) => {
+      expect(err).to.not.exist()
+      node.once('error', (err) => {
+        expect(err).to.eql(error)
+        done()
+      })
+      node._switch.emit('error', error)
+    })
+  })
 })
