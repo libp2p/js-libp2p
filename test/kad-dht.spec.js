@@ -342,6 +342,37 @@ describe('KadDHT', () => {
     })
   })
 
+  it('find providers', function (done) {
+    this.timeout(20 * 1000)
+
+    const val = values[0]
+    const tdht = new TestDHT()
+
+    tdht.spawn(3, (err, dhts) => {
+      expect(err).to.not.exist()
+
+      series([
+        (cb) => connect(dhts[0], dhts[1], cb),
+        (cb) => connect(dhts[1], dhts[2], cb),
+        (cb) => each(dhts, (dht, cb) => dht.provide(val.cid, cb), cb),
+        (cb) => dhts[0].findProviders(val.cid, {}, cb),
+        (cb) => dhts[0].findProviders(val.cid, { maxNumProviders: 2 }, cb)
+      ], (err, res) => {
+        expect(err).to.not.exist()
+
+        // find providers find all the 3 providers
+        expect(res[3]).to.exist()
+        expect(res[3]).to.have.length(3)
+
+        // find providers limited to a maxium of 2 providers
+        expect(res[4]).to.exist()
+        expect(res[4]).to.have.length(2)
+
+        done()
+      })
+    })
+  })
+
   it('random-walk', function (done) {
     this.timeout(40 * 1000)
 

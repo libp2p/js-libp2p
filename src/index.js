@@ -456,6 +456,7 @@ class KadDHT {
    * @param {CID} key
    * @param {Object} options - findProviders options
    * @param {number} options.maxTimeout - how long the query should maximally run, in milliseconds (default: 60000)
+   * @param {number} options.maxNumProviders - maximum number of providers to find
    * @param {function(Error, Array<PeerInfo>)} callback
    * @returns {void}
    */
@@ -471,12 +472,11 @@ class KadDHT {
       options = options || {}
     }
 
-    if (!options.maxTimeout) {
-      options.maxTimeout = c.minute
-    }
+    options.maxTimeout = options.maxTimeout || c.minute
+    options.maxNumProviders = options.maxNumProviders || c.K
 
     this._log('findProviders %s', key.toBaseEncodedString())
-    this._findNProviders(key, options.maxTimeout, c.K, callback)
+    this._findNProviders(key, options.maxTimeout, options.maxNumProviders, callback)
   }
 
   // ----------- Peer Routing
