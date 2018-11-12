@@ -51,7 +51,10 @@ class Node extends EventEmitter {
     this._transport = [] // Transport instances/references
     this._discovery = [] // Discovery service instances/references
 
+    // create the switch, and listen for errors
     this._switch = new Switch(this.peerInfo, this.peerBook, _options.switch)
+    this._switch.on('error', (...args) => this.emit('error', ...args))
+
     this.stats = this._switch.stats
     this.connectionManager = new ConnectionManager(this, _options.connectionManager)
 
@@ -160,6 +163,21 @@ class Node extends EventEmitter {
       log.error(err)
       this.emit('error', err)
     })
+  }
+
+  /**
+   * Overrides EventEmitter.emit to conditionally emit errors
+   * if there is a handler. If not, errors will be logged.
+   * @param {string} eventName
+   * @param  {...any} args
+   * @returns {void}
+   */
+  emit (eventName, ...args) {
+    if (eventName === 'error' && !this._events.error) {
+      log.error(...args)
+    } else {
+      super.emit(eventName, ...args)
+    }
   }
 
   /**
