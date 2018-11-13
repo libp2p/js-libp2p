@@ -20,6 +20,7 @@ module.exports = (node) => {
      * @param {CID} key The CID key of the content to find
      * @param {object} options
      * @param {number} options.maxTimeout How long the query should run
+     * @param {number} options.maxNumProviders - maximum number of providers to find
      * @param {function(Error, Result<Array>)} callback
      * @returns {void}
      */

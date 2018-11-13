@@ -107,6 +107,22 @@ describe('.contentRouting', () => {
         })
       })
 
+      it('nodeE.contentRouting.findProviders with limited number of providers', (done) => {
+        parallel([
+          (cb) => nodeA.contentRouting.provide(cid, cb),
+          (cb) => nodeB.contentRouting.provide(cid, cb),
+          (cb) => nodeC.contentRouting.provide(cid, cb)
+        ], (err) => {
+          expect(err).to.not.exist()
+
+          nodeE.contentRouting.findProviders(cid, { maxNumProviders: 2 }, (err, providers) => {
+            expect(err).to.not.exist()
+            expect(providers).to.have.length(2)
+            done()
+          })
+        })
+      })
+
       it('nodeC.contentRouting.findProviders for non existing record (timeout)', (done) => {
         const cid = new CID('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSnnnn')
 
