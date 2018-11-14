@@ -6,7 +6,7 @@ const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const PeerInfo = require('peer-info')
-const Bootstrap = require('libp2p-railing')
+const Bootstrap = require('libp2p-bootstrap')
 const waterfall = require('async/waterfall')
 const defaultsDeep = require('@nodeutils/defaults-deep')
 
