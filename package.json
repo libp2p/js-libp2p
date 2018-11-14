@@ -71,7 +71,7 @@
     "libp2p-mdns": "~0.12.0",
     "libp2p-mplex": "~0.8.2",
     "libp2p-secio": "~0.10.1",
-    "libp2p-spdy": "github:libp2p/js-libp2p-spdy#test/fix",
+    "libp2p-spdy": "~0.13.0",
     "libp2p-tcp": "~0.13.0",
     "libp2p-webrtc-star": "~0.15.5",
     "libp2p-websocket-star": "~0.9.0",
