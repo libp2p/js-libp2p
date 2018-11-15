@@ -33,7 +33,7 @@ describe(`circuit`, function () {
     const peerB = infos[1]
     const peerC = infos[2]
 
-    peerA.multiaddrs.add('/ip4/127.0.0.1/tcp/9001')
+    peerA.multiaddrs.add('/ip4/0.0.0.0/tcp/9001')
     peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9002/ws')
 
     swarmA = new Swarm(peerA, new PeerBook())
@@ -85,7 +85,10 @@ describe(`circuit`, function () {
     ], (err) => {
       expect(err).to.not.exist()
       expect(swarmA._peerInfo.multiaddrs.toArray().filter((a) => a.toString()
-        .includes(`/p2p-circuit`)).length).to.equal(2)
+        .includes(`/p2p-circuit`)).length).to.equal(3)
+      // ensure swarmA has had 0.0.0.0 replaced in the addresses
+      expect(swarmA._peerInfo.multiaddrs.toArray().filter((a) => a.toString()
+        .includes(`/0.0.0.0`)).length).to.equal(0)
       expect(swarmB._peerInfo.multiaddrs.toArray().filter((a) => a.toString()
         .includes(`/p2p-circuit`)).length).to.equal(2)
       done()

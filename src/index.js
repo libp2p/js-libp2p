@@ -3,6 +3,7 @@
 const FSM = require('fsm-event')
 const EventEmitter = require('events').EventEmitter
 const each = require('async/each')
+const eachSeries = require('async/eachSeries')
 const series = require('async/series')
 const TransportManager = require('./transport')
 const ConnectionManager = require('./connection/manager')
@@ -230,7 +231,7 @@ class Switch extends EventEmitter {
    * @returns {void}
    */
   _onStarting () {
-    each(this.availableTransports(this._peerInfo), (ts, cb) => {
+    eachSeries(this.availableTransports(this._peerInfo), (ts, cb) => {
       // Listen on the given transport
       this.transport.listen(ts, {}, null, cb)
     }, (err) => {
