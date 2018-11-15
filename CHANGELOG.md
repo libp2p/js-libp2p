@@ -1,3 +1,13 @@
+<a name="0.3.1"></a>
+## [0.3.1](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.0...v0.3.1) (2018-11-15)
+
+
+### Bug Fixes
+
+* catch bad peerid and update deps ([#39](https://github.com/libp2p/js-libp2p-circuit/issues/39)) ([f17539a](https://github.com/libp2p/js-libp2p-circuit/commit/f17539a))
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/libp2p/js-libp2p-circuit/compare/v0.2.1...v0.3.0) (2018-10-01)
 
