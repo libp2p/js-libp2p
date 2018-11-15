@@ -2,9 +2,9 @@
 'use strict'
 
 const chai = require('chai')
-const dirtyChai = require('dirty-chai')
+chai.use(require('dirty-chai'))
+chai.use(require('chai-checkmark'))
 const expect = chai.expect
-chai.use(dirtyChai)
 
 const concat = require('concat-stream')
 const through = require('through2')
@@ -127,15 +127,18 @@ describe('Internals - MplexCore', () => {
     const plex1 = new MplexCore()
     const stream1 = plex1.createStream()
 
+    expect(2).check(done)
+
     const plex2 = new MplexCore(function onStream (stream, id) {
       stream.on('error', function (err) {
-        expect(err.message).to.equal('0 had an error')
-        done()
+        expect(err.message).to.equal('0 had an error').mark()
       })
     })
 
     plex1.pipe(plex2)
-
+    stream1.on('error', function (err) {
+      expect(err.message).to.equal('0 had an error').mark()
+    })
     stream1.write(Buffer.from('hello'))
     stream1.destroy(new Error('0 had an error'))
   })

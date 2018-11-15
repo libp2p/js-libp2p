@@ -28,6 +28,7 @@ class Channel extends stream.Duplex {
     this.halfOpen = halfOpen
     this.destroyed = false
     this.finalized = false
+    this.local = true
 
     this._multiplex = plex
     this._dataHeader = 0
@@ -81,28 +82,25 @@ class Channel extends stream.Duplex {
     })
   }
 
-  destroy (err/* : Error */) {
-    this._destroy(err, true)
+  /**
+   * Conditionally emit errors if we have listeners. All other
+   * events are sent to EventEmitter.emit
+   * @param {string} eventName
+   * @param  {...any} args
+   * @returns {void}
+   */
+  emit (eventName, ...args) {
+    if (eventName === 'error' && !this._events.error) {
+      this.log('error', ...args)
+    } else {
+      super.emit(eventName, ...args)
+    }
   }
 
-  _destroy (err/* : Error */, local/* : bool */) {
-    this.log('_destroy:' + (local ? 'local' : 'remote'))
-    if (this.destroyed) {
-      this.log('already destroyed')
-      return
-    }
+  _destroy (err/* : Error */, callback) {
+    this.log('_destroy:' + (this.local ? 'local' : 'remote'))
 
-    this.destroyed = true
-
-    const hasErrorListeners = this.listenerCount('error') > 0
-
-    if (err && (!local || hasErrorListeners)) {
-      this.emit('error', err)
-    }
-
-    this.emit('close')
-
-    if (local && this._opened) {
+    if (this.local && this._opened) {
       if (this._lazy && this.initiator) {
         this._open()
       }
@@ -113,10 +111,11 @@ class Channel extends stream.Duplex {
           this.channel << 3 | (this.initiator ? 6 : 5),
           msg
         )
-      } catch (e) {}
+      } catch (e) { /* do nothing */ }
     }
 
     this._finalize()
+    callback(err)
   }
 
   _finalize () {

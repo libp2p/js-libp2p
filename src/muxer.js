@@ -6,6 +6,9 @@ const toPull = require('stream-to-pull-stream')
 const pull = require('pull-stream')
 const pullCatch = require('pull-catch')
 const setImmediate = require('async/setImmediate')
+const debug = require('debug')
+const log = debug('mplex')
+log.error = debug('mplex:error')
 
 const MULTIPLEX_CODEC = require('./codec')
 
@@ -48,6 +51,22 @@ class MultiplexMuxer extends EventEmitter {
     })
   }
 
+  /**
+   * Conditionally emit errors if we have listeners. All other
+   * events are sent to EventEmitter.emit
+   *
+   * @param {string} eventName
+   * @param  {...any} args
+   * @returns {void}
+   */
+  emit (eventName, ...args) {
+    if (eventName === 'error' && !this._events.error) {
+      log.error('error', ...args)
+    } else {
+      super.emit(eventName, ...args)
+    }
+  }
+
   // method added to enable pure stream muxer feeling
   newStream (callback) {
     callback = callback || noop
@@ -68,9 +87,20 @@ class MultiplexMuxer extends EventEmitter {
     return conn
   }
 
-  end (callback) {
+  /**
+   * Destroys multiplex and ends all internal streams
+   *
+   * @param {Error} err Optional error to pass to end the muxer with
+   * @param {function()} callback Optional
+   * @returns {void}
+   */
+  end (err, callback) {
+    if (typeof err === 'function') {
+      callback = err
+      err = null
+    }
     callback = callback || noop
-    this.multiplex.destroy()
+    this.multiplex.destroy(err)
     callback()
   }
 }

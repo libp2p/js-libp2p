@@ -304,7 +304,8 @@ class Multiplex extends stream.Duplex {
       case 5: // local error
       case 6: { // remote error
         const error = new Error(data.toString() || 'Channel destroyed')
-        stream._destroy(error, false)
+        stream.local = false
+        stream.destroy(error)
         return
       }
 
@@ -321,7 +322,7 @@ class Multiplex extends stream.Duplex {
           stream._awaitDrain++
         }
         break
-      default: {}
+      default: // no action
     }
   }
 
@@ -451,7 +452,8 @@ class Multiplex extends stream.Duplex {
 
     list.forEach(function (stream) {
       if (stream) {
-        stream._destroy(null, false)
+        stream.local = false
+        stream.destroy(null)
       }
     })
 
@@ -462,29 +464,19 @@ class Multiplex extends stream.Duplex {
     this._clear()
   }
 
-  destroy (err/* :: ?: Error */) {
+  _destroy (err/* :: ?: Error */, callback) {
     this.log('destroy')
-    if (this.destroyed) {
-      this.log('already destroyed')
-      return
-    }
 
-    var list = this._local.concat(this._remote)
-
-    this.destroyed = true
-
-    if (err) {
-      this.emit('error', err)
-    }
-    this.emit('close')
+    const list = this._local.concat(this._remote)
 
     list.forEach(function (stream) {
       if (stream) {
-        stream.emit('error', err || new Error('underlying socket has been closed'))
+        stream.destroy(err || new Error('Channel destroyed'))
       }
     })
 
     this._clear()
+    callback(err)
   }
 }
 
