@@ -4,6 +4,10 @@
   "description": "JavaScript base class for libp2p bundles",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "lint": "aegir lint",
     "build": "aegir build",
