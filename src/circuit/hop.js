@@ -124,7 +124,7 @@ class Hop extends EE {
    * @param {PeerInfo} peer
    * @param {StreamHandler} srcSh
    * @param {function} callback
-   * @returns {function}
+   * @returns {void}
    */
   _connectToStop (peer, srcSh, callback) {
     this._dialPeer(peer, (err, dstConn) => {
@@ -156,7 +156,7 @@ class Hop extends EE {
    * @param {StreamHandler} srcSh
    * @param {CircuitRelay} message
    * @param {function} callback
-   * @returns {function}
+   * @returns {void}
    */
   _negotiateStop (dstSh, srcSh, message, callback) {
     const stopMsg = Object.assign({}, message, {
@@ -241,7 +241,7 @@ class Hop extends EE {
    *
    * @param {Multiaddr} dstPeer
    * @param {Function} callback
-   * @returns {Function|void}
+   * @returns {void}
    * @private
    */
   _dialPeer (dstPeer, callback) {

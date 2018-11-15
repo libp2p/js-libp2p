@@ -92,7 +92,7 @@ class Dialer {
    *
    * @param {PeerInfo} peer
    * @param {Function} callback
-   * @returns {*}
+   * @returns {void}
    */
   canHop (peer, callback) {
     callback = once(callback || (() => { }))
@@ -209,6 +209,12 @@ class Dialer {
       waterfall([
         (cb) => {
           log(`negotiating relay for peer ${dstMa.getPeerId()}`)
+          let dstPeerId
+          try {
+            dstPeerId = PeerId.createFromB58String(dstMa.getPeerId()).id
+          } catch (err) {
+            return cb(err)
+          }
           sh.write(
             proto.CircuitRelay.encode({
               type: proto.CircuitRelay.Type.HOP,
@@ -217,7 +223,7 @@ class Dialer {
                 addrs: srcMas.map((addr) => addr.buffer)
               },
               dstPeer: {
-                id: PeerId.createFromB58String(dstMa.getPeerId()).id,
+                id: dstPeerId,
                 addrs: [dstMa.buffer]
               }
             }), cb)
@@ -247,7 +253,7 @@ class Dialer {
    *
    * @param {PeerInfo} peer - the PeerInfo of the relay peer
    * @param {Function} cb - a callback with the connection to the relay peer
-   * @returns {Function|void}
+   * @returns {void}
    * @private
    */
   _dialRelay (peer, cb) {

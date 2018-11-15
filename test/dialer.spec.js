@@ -267,6 +267,32 @@ describe(`dialer tests`, function () {
       })
     })
 
+    it(`should fail with an invalid peer id`, function (done) {
+      const dstMa = multiaddr('/ip4/127.0.0.1/tcp/4001')
+      dialer._dialRelay.callsFake((_, cb) => {
+        pull(
+          p[0],
+          pb.decode(proto.CircuitRelay),
+          pull.asyncMap((msg, cb) => {
+            expect(msg.dstPeer.addrs[0]).to.deep.equal(dstMa.buffer)
+            cb(null, {
+              type: proto.CircuitRelay.Type.STATUS,
+              code: proto.CircuitRelay.Status.SUCCESS
+            })
+          }),
+          pb.encode(proto.CircuitRelay),
+          p[0]
+        )
+        cb(null, conn)
+      })
+
+      dialer._negotiateRelay(peer, dstMa, (err, conn) => {
+        expect(err).to.exist()
+        expect(conn).to.not.exist()
+        done()
+      })
+    })
+
     it(`should handle failed relay negotiation`, function (done) {
       dialer._dialRelay.callsFake((_, cb) => {
         cb(null, conn)
