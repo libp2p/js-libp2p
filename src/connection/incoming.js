@@ -84,8 +84,7 @@ class IncomingConnectionFSM extends BaseConnection {
     this.msListener.addHandler(this.switch.crypto.tag, (protocol, _conn) => {
       this.conn = this.switch.crypto.encrypt(this.ourPeerInfo.id, _conn, undefined, (err) => {
         if (err) {
-          this.emit('error', err)
-          return this._state('disconnect')
+          return this.close(err)
         }
         this.conn.getPeerInfo((_, peerInfo) => {
           this.theirPeerInfo = peerInfo

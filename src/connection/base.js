@@ -11,6 +11,29 @@ class BaseConnection extends EventEmitter {
     this.switch = _switch
     this.ourPeerInfo = this.switch._peerInfo
     this.log = debug(`libp2p:conn:${name}`)
+    this.log.error = debug(`libp2p:conn:${name}:error`)
+  }
+
+  /**
+   * Puts the state into its disconnecting flow
+   *
+   * @param {Error} err Will be emitted if provided
+   * @returns {void}
+   */
+  close (err) {
+    this.log(`closing connection to ${this.theirB58Id}`)
+    if (err && this._events.error) {
+      this.emit('error', err)
+    }
+    this._state('disconnect')
+  }
+
+  emit (eventName, ...args) {
+    if (eventName === 'error' && !this._events.error) {
+      this.log.error(...args)
+    } else {
+      super.emit(eventName, ...args)
+    }
   }
 
   /**
@@ -86,8 +109,7 @@ class BaseConnection extends EventEmitter {
 
     this.conn = this.switch.protector.protect(this.conn, (err) => {
       if (err) {
-        this.emit('error', err)
-        return this._state('disconnect')
+        return this.close(err)
       }
 
       this.log(`successfully privatized conn to ${this.theirB58Id}`)

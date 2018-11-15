@@ -127,16 +127,6 @@ class ConnectionFSM extends BaseConnection {
   }
 
   /**
-   * Puts the state into its disconnecting flow
-   *
-   * @returns {void}
-   */
-  close () {
-    this.log(`closing connection to ${this.theirB58Id}`)
-    this._state('disconnect')
-  }
-
-  /**
    * Puts the state into dialing mode
    *
    * @fires ConnectionFSM#Error May emit a DIAL_SELF error
@@ -200,8 +190,7 @@ class ConnectionFSM extends BaseConnection {
     this.log(`dialing ${this.theirB58Id}`)
 
     if (!this.switch.hasTransports()) {
-      this.emit('error', Errors.NO_TRANSPORTS_REGISTERED())
-      return this._state('disconnect')
+      return this.close(Errors.NO_TRANSPORTS_REGISTERED())
     }
 
     const tKeys = this.switch.availableTransports(this.theirPeerInfo)
@@ -213,17 +202,15 @@ class ConnectionFSM extends BaseConnection {
       let transport = key
       if (!transport) {
         if (!circuitEnabled) {
-          this.emit('error', Errors.CONNECTION_FAILED(
+          return this.close(Errors.CONNECTION_FAILED(
             new Error(`Circuit not enabled and all transports failed to dial peer ${this.theirB58Id}!`)
           ))
-          return this._state('disconnect')
         }
 
         if (circuitTried) {
-          this.emit('error', Errors.CONNECTION_FAILED(
+          return this.close(Errors.CONNECTION_FAILED(
             new Error(`No available transports to dial peer ${this.theirB58Id}!`)
           ))
-          return this._state('disconnect')
         }
 
         this.log(`Falling back to dialing over circuit`)
@@ -300,24 +287,21 @@ class ConnectionFSM extends BaseConnection {
     const msDialer = new multistream.Dialer()
     msDialer.handle(this.conn, (err) => {
       if (err) {
-        this.emit('error', Errors.maybeUnexpectedEnd(err))
-        return this._state('disconnect')
+        return this.close(Errors.maybeUnexpectedEnd(err))
       }
 
       this.log('selecting crypto %s to %s', this.switch.crypto.tag, this.theirB58Id)
 
       msDialer.select(this.switch.crypto.tag, (err, _conn) => {
         if (err) {
-          this._state('disconnect')
-          return this.emit('error', Errors.maybeUnexpectedEnd(err))
+          return this.close(Errors.maybeUnexpectedEnd(err))
         }
 
         const conn = observeConnection(null, this.switch.crypto.tag, _conn, this.switch.observer)
 
         this.conn = this.switch.crypto.encrypt(this.ourPeerInfo.id, conn, this.theirPeerInfo.id, (err) => {
           if (err) {
-            this._state('disconnect')
-            return this.emit('error', err)
+            return this.close(err)
           }
 
           this.conn.setPeerInfo(this.theirPeerInfo)
@@ -371,8 +355,7 @@ class ConnectionFSM extends BaseConnection {
           this.switch.muxedConns[this.theirB58Id] = this
 
           this.muxer.once('close', () => {
-            delete this.muxer
-            this._state('disconnect')
+            this.close()
           })
 
           // For incoming streams, in case identify is on

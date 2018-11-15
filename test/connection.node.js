@@ -111,6 +111,21 @@ describe('ConnectionFSM', () => {
     connection.dial()
   })
 
+  it('should be able to close with an error and not throw', (done) => {
+    const connection = new ConnectionFSM({
+      _switch: dialerSwitch,
+      peerInfo: listenerSwitch._peerInfo
+    })
+
+    connection.once('connected', (conn) => {
+      expect(conn).to.be.an.instanceof(Connection)
+      expect(() => connection.close(new Error('shutting down'))).to.not.throw()
+      done()
+    })
+
+    connection.dial()
+  })
+
   it('should emit warning on dial failed attempt', (done) => {
     const connection = new ConnectionFSM({
       _switch: dialerSwitch,
@@ -362,6 +377,10 @@ describe('ConnectionFSM', () => {
       })
     })
 
+    afterEach(() => {
+      sinon.restore()
+    })
+
     it('should be able to protect a basic connection', (done) => {
       const connection = new ConnectionFSM({
         _switch: dialerSwitch,
@@ -375,6 +394,35 @@ describe('ConnectionFSM', () => {
 
       connection.once('connected', (conn) => {
         expect(conn).to.be.an.instanceof(Connection)
+        connection.protect()
+      })
+
+      connection.dial()
+    })
+
+    it('should close on failed protection', (done) => {
+      const connection = new ConnectionFSM({
+        _switch: dialerSwitch,
+        peerInfo: listenerSwitch._peerInfo
+      })
+
+      const error = new Error('invalid key')
+      const stub = sinon.stub(dialerSwitch.protector, 'protect').callsFake((_, cb) => {
+        cb(error)
+      })
+
+      expect(3).check(done)
+
+      connection.once('close', () => {
+        expect(stub.callCount).to.eql(1).mark()
+      })
+
+      connection.once('error', (err) => {
+        expect(err).to.eql(error).mark()
+      })
+
+      connection.once('connected', (conn) => {
+        expect(conn).to.be.an.instanceof(Connection).mark()
         connection.protect()
       })
 

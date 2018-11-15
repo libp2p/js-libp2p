@@ -2,9 +2,9 @@
 'use strict'
 
 const chai = require('chai')
-const dirtyChai = require('dirty-chai')
+chai.use(require('dirty-chai'))
+chai.use(require('chai-checkmark'))
 const expect = chai.expect
-chai.use(dirtyChai)
 const parallel = require('async/parallel')
 const TCP = require('libp2p-tcp')
 const multiplex = require('libp2p-mplex')
@@ -13,6 +13,7 @@ const secio = require('libp2p-secio')
 const PeerBook = require('peer-book')
 const identify = require('libp2p-identify')
 const lp = require('pull-length-prefixed')
+const sinon = require('sinon')
 
 const utils = require('./utils')
 const createInfos = utils.createInfos
@@ -61,8 +62,7 @@ describe('Identify', () => {
     ], done)
   }))
 
-  after(function (done) {
-    this.timeout(3 * 1000)
+  after((done) => {
     parallel([
       (cb) => switchA.stop(cb),
       (cb) => switchB.stop(cb),
@@ -71,6 +71,7 @@ describe('Identify', () => {
   })
 
   afterEach(function (done) {
+    sinon.restore()
     // Hangup everything
     parallel([
       (cb) => switchA.hangUp(switchB._peerInfo, cb),
@@ -99,8 +100,8 @@ describe('Identify', () => {
     })
   })
 
-  it('should require crypto and identify to have the same peerId', (done) => {
-    identify.listener = (conn) => {
+  it('should close connection when identify fails', (done) => {
+    const stub = sinon.stub(identify, 'listener').callsFake((conn) => {
       conn.getObservedAddrs((err, observedAddrs) => {
         if (err) { return }
         observedAddrs = observedAddrs[0]
@@ -122,20 +123,16 @@ describe('Identify', () => {
           conn
         )
       })
-    }
+    })
+
+    expect(2).check(done)
 
     switchA.handle('/id-test/1.0.0', (protocol, conn) => pull(conn, conn))
-    switchB.dial(switchA._peerInfo, '/id-test/1.0.0', (err, conn) => {
-      expect(err).to.not.exist()
-      pull(
-        pull.values([Buffer.from('data that cant be had')]),
-        conn,
-        pull.collect((err, values) => {
-          expect(err).to.exist()
-          expect(values).to.have.length(0)
-          done()
-        })
-      )
+    const connFSM = switchB.dialFSM(switchA._peerInfo, '/id-test/1.0.0', (err) => {
+      expect(err).to.not.exist().mark()
+    })
+    connFSM.once('close', () => {
+      expect(stub.called).to.eql(true).mark()
     })
   })
 })
