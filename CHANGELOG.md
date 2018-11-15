@@ -1,3 +1,15 @@
+<a name="0.41.2"></a>
+## [0.41.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.1...v0.41.2) (2018-11-15)
+
+
+### Bug Fixes
+
+* dont dial an address that we have ([f406dd5](https://github.com/libp2p/js-libp2p-switch/commit/f406dd5))
+* ensure circuit listens last on start ([7697281](https://github.com/libp2p/js-libp2p-switch/commit/7697281))
+* improve connection closing and error handling ([#285](https://github.com/libp2p/js-libp2p-switch/issues/285)) ([e757cf6](https://github.com/libp2p/js-libp2p-switch/commit/e757cf6))
+
+
+
 <a name="0.41.1"></a>
 ## [0.41.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.0...v0.41.1) (2018-10-24)
 
