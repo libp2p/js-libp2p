@@ -1,6 +1,6 @@
 {
   "name": "libp2p-switch",
-  "version": "0.41.1",
+  "version": "0.41.2",
   "description": "libp2p switch implementation in JavaScript",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
