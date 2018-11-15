@@ -29,10 +29,12 @@ describe('multiaddr trim', () => {
       expect(err).to.not.exist()
 
       const multiaddrs = node.peerInfo.multiaddrs.toArray()
+      expect(multiaddrs.length).to.be.at.least(2)
+      // ensure the p2p-webrtc-direct address has been trimmed
+      multiaddrs.forEach((addr) => {
+        expect(() => addr.decapsulate('/ip4/0.0.0.0/tcp/999/wss/p2p-webrtc-direct')).to.throw()
+      })
 
-      expect(multiaddrs.length).to.at.least(2)
-      expect(multiaddrs[0].toString())
-        .to.match(/^\/ip4\/127\.0\.0\.1\/tcp\/[0-9]+\/ws\/ipfs\/\w+$/)
       node.stop(done)
     })
   })
