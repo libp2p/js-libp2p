@@ -1,7 +1,23 @@
 <a name="0.24.0"></a>
 # [0.24.0](https://github.com/libp2p/js-libp2p/compare/v0.24.0-rc.3...v0.24.0) (2018-11-16)
 
+### Bug Fixes
 
+* add maxtimeout to dht get ([#248](https://github.com/libp2p/js-libp2p/issues/248)) ([69f7264](https://github.com/libp2p/js-libp2p/commit/69f7264))
+* dht get options ([4460e82](https://github.com/libp2p/js-libp2p/commit/4460e82))
+* dont call callback before it's properly set ([17b5f73](https://github.com/libp2p/js-libp2p/commit/17b5f73))
+* improve get peer info errors ([714b6ec](https://github.com/libp2p/js-libp2p/commit/714b6ec))
+* start kad dht random walk ([#251](https://github.com/libp2p/js-libp2p/issues/251)) ([dd934b9](https://github.com/libp2p/js-libp2p/commit/dd934b9))
+
+### Features
+
+* add datastore to config ([40e840d](https://github.com/libp2p/js-libp2p/commit/40e840d))
+* add delegated peer and content routing support ([#242](https://github.com/libp2p/js-libp2p/issues/242)) ([a95389a](https://github.com/libp2p/js-libp2p/commit/a95389a))
+* add maxNumProviders to findprovs ([#283](https://github.com/libp2p/js-libp2p/issues/283)) ([970deec](https://github.com/libp2p/js-libp2p/commit/970deec))
+* conditionally emit errors ([f71fdfd](https://github.com/libp2p/js-libp2p/commit/f71fdfd))
+* enable relay by default (no hop) ([#254](https://github.com/libp2p/js-libp2p/issues/254)) ([686379e](https://github.com/libp2p/js-libp2p/commit/686379e))
+* make libp2p a state machine ([#257](https://github.com/libp2p/js-libp2p/issues/257)) ([0b75f99](https://github.com/libp2p/js-libp2p/commit/0b75f99))
+* use package-table vs custom script ([a63432e](https://github.com/libp2p/js-libp2p/commit/a63432e))
 
 <a name="0.23.1"></a>
 ## [0.23.1](https://github.com/libp2p/js-libp2p/compare/v0.23.0...v0.23.1) (2018-08-13)
