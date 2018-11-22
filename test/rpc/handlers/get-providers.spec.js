@@ -53,7 +53,7 @@ describe('rpc - handlers - GetProviders', () => {
     const msg = new Message(T, Buffer.from('hello'), 0)
 
     handler(dht)(peers[0], msg, (err, response) => {
-      expect(err).to.match(/Invalid CID/)
+      expect(err.code).to.eql('ERR_INVALID_CID')
       expect(response).to.not.exist()
       done()
     })

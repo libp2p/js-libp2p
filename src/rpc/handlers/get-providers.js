@@ -4,6 +4,8 @@ const CID = require('cids')
 const parallel = require('async/parallel')
 const PeerInfo = require('peer-info')
 
+const errcode = require('err-code')
+
 const Message = require('../../message')
 const utils = require('../../utils')
 
@@ -23,7 +25,7 @@ module.exports = (dht) => {
     try {
       cid = new CID(msg.key)
     } catch (err) {
-      return callback(new Error('Invalid CID: ' + err.message))
+      return callback(errcode(new Error(`Invalid CID: ${err.message}`), 'ERR_INVALID_CID'))
     }
 
     log('%s', cid.toBaseEncodedString())

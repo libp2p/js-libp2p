@@ -41,6 +41,7 @@
     "base32.js": "~0.1.0",
     "cids": "~0.5.3",
     "debug": "^3.1.0",
+    "err-code": "^1.1.2",
     "hashlru": "^2.2.1",
     "heap": "~0.2.6",
     "interface-datastore": "~0.6.0",

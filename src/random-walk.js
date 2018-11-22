@@ -7,8 +7,9 @@ const timeout = require('async/timeout')
 const multihashing = require('multihashing-async')
 const PeerId = require('peer-id')
 const assert = require('assert')
-const errors = require('./errors')
 const c = require('./constants')
+
+const errcode = require('err-code')
 
 class RandomWalk {
   constructor (kadDHT) {
@@ -131,7 +132,7 @@ class RandomWalk {
     this._kadDHT._log('random-walk:query:%s', id.toB58String())
 
     this._kadDHT.findPeer(id, (err, peer) => {
-      if (err instanceof errors.NotFoundError) {
+      if (err.code === 'ERR_NOT_FOUND') {
         // expected case, we asked for random stuff after all
         return callback()
       }
@@ -141,7 +142,7 @@ class RandomWalk {
       this._kadDHT._log('random-walk:query:found', err, peer)
 
       // wait what, there was something found? Lucky day!
-      callback(new Error(`random-walk: ACTUALLY FOUND PEER: ${peer}, ${id.toB58String()}`))
+      callback(errcode(new Error(`random-walk: ACTUALLY FOUND PEER: ${peer}, ${id.toB58String()}`), 'ERR_FOUND_RANDOM_PEER'))
     })
   }
 

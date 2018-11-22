@@ -20,6 +20,8 @@ const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 
+const errcode = require('err-code')
+
 const KadDHT = require('../src')
 const kadUtils = require('../src/utils')
 const c = require('../src/constants')
@@ -70,7 +72,8 @@ function connect (a, b, callback) {
 
 function bootstrap (dhts) {
   dhts.forEach((dht) => {
-    dht.randomWalk._walk(3, 10000, () => {}) // don't need to know when it finishes
+    // dht.randomWalk._walk(3, 10000, () => {}) // don't need to know when it finishes
+    dht.randomWalk.start(1, 1000) // don't need to know when it finishes
   })
 }
 
@@ -194,6 +197,37 @@ describe('KadDHT', () => {
       expect(dht.network.stop.calledOnce).to.equal(true)
       expect(dht.randomWalk.stop.calledOnce).to.equal(true) // Should be always disabled, as it can be started using the instance
 
+      done()
+    })
+  })
+
+  it('should fail to start when already started', function (done) {
+    const sw = new Switch(peerInfos[0], new PeerBook())
+    sw.transport.add('tcp', new TCP())
+    sw.connection.addStreamMuxer(Mplex)
+    sw.connection.reuse()
+    const dht = new KadDHT(sw, { enabledDiscovery: false })
+
+    series([
+      (cb) => dht.start(cb),
+      (cb) => dht.start(cb)
+    ], (err) => {
+      expect(err).to.exist()
+      done()
+    })
+  })
+
+  it('should fail to stop when was not started', function (done) {
+    const sw = new Switch(peerInfos[0], new PeerBook())
+    sw.transport.add('tcp', new TCP())
+    sw.connection.addStreamMuxer(Mplex)
+    sw.connection.reuse()
+    const dht = new KadDHT(sw, { enabledDiscovery: false })
+
+    series([
+      (cb) => dht.stop(cb)
+    ], (err) => {
+      expect(err).to.exist()
       done()
     })
   })
@@ -429,7 +463,7 @@ describe('KadDHT', () => {
     })
   })
 
-  it.skip('findPeer', function (done) {
+  it('findPeer', function (done) {
     this.timeout(40 * 1000)
 
     const nDHTs = 4
@@ -482,8 +516,7 @@ describe('KadDHT', () => {
     })
   })
 
-  // TODO fix this
-  it.skip('find peer query', function (done) {
+  it('find peer query', function (done) {
     this.timeout(40 * 1000)
 
     const nDHTs = 101
@@ -745,6 +778,111 @@ describe('KadDHT', () => {
         (cb) => cb(null, record.serialize()),
         (enc, cb) => dht._verifyRecordLocally(Record.deserialize(enc), cb)
       ], done)
+    })
+  })
+
+  describe('errors', () => {
+    it('get many should fail if only has one peer', function (done) {
+      this.timeout(20 * 1000)
+
+      const nDHTs = 1
+      const tdht = new TestDHT()
+
+      tdht.spawn(nDHTs, (err, dhts) => {
+        expect(err).to.not.exist()
+
+        dhts[0].getMany('/v/hello', 5, (err) => {
+          expect(err).to.exist()
+          expect(err.code).to.be.eql('ERR_NO_PEERS_IN_ROUTING_TABLE')
+          tdht.teardown(done)
+        })
+      })
+    })
+
+    it('get should handle correctly an unexpected error', function (done) {
+      this.timeout(20 * 1000)
+
+      const errCode = 'ERR_INVALID_RECORD_FAKE'
+      const error = errcode(new Error('fake error'), errCode)
+
+      const nDHTs = 2
+      const tdht = new TestDHT()
+
+      tdht.spawn(nDHTs, (err, dhts) => {
+        expect(err).to.not.exist()
+
+        const dhtA = dhts[0]
+        const dhtB = dhts[1]
+        const stub = sinon.stub(dhtA, '_getValueOrPeers').callsArgWithAsync(2, error)
+
+        waterfall([
+          (cb) => connect(dhtA, dhtB, cb),
+          (cb) => dhtA.get(Buffer.from('/v/hello'), { maxTimeout: 1000 }, cb)
+        ], (err) => {
+          expect(err).to.exist()
+          expect(err.code).to.be.eql(errCode)
+
+          stub.restore()
+          tdht.teardown(done)
+        })
+      })
+    })
+
+    it('get should handle correctly an invalid record error and return not found', function (done) {
+      this.timeout(20 * 1000)
+
+      const error = errcode(new Error('invalid record error'), 'ERR_INVALID_RECORD')
+
+      const nDHTs = 2
+      const tdht = new TestDHT()
+
+      tdht.spawn(nDHTs, (err, dhts) => {
+        expect(err).to.not.exist()
+
+        const dhtA = dhts[0]
+        const dhtB = dhts[1]
+        const stub = sinon.stub(dhtA, '_getValueOrPeers').callsArgWithAsync(2, error)
+
+        waterfall([
+          (cb) => connect(dhtA, dhtB, cb),
+          (cb) => dhtA.get(Buffer.from('/v/hello'), cb)
+        ], (err) => {
+          expect(err).to.exist()
+          expect(err.code).to.be.eql('ERR_NOT_FOUND')
+
+          stub.restore()
+          tdht.teardown(done)
+        })
+      })
+    })
+
+    it('findPeer should fail if no closest peers available', function (done) {
+      this.timeout(40 * 1000)
+
+      const nDHTs = 4
+      const tdht = new TestDHT()
+
+      tdht.spawn(nDHTs, (err, dhts) => {
+        expect(err).to.not.exist()
+
+        const ids = dhts.map((d) => d.peerInfo.id)
+
+        waterfall([
+          (cb) => connect(dhts[0], dhts[1], cb),
+          (cb) => connect(dhts[1], dhts[2], cb),
+          (cb) => connect(dhts[2], dhts[3], cb)
+        ], (err) => {
+          expect(err).to.not.exist()
+          const stub = sinon.stub(dhts[0].routingTable, 'closestPeers').returns([])
+
+          dhts[0].findPeer(ids[3], { maxTimeout: 1000 }, (err) => {
+            expect(err).to.exist()
+            expect(err.code).to.eql('ERR_LOOKUP_FAILED')
+            stub.restore()
+            tdht.teardown(done)
+          })
+        })
+      })
     })
   })
 })

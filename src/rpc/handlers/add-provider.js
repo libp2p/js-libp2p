@@ -1,8 +1,8 @@
 'use strict'
 
 const CID = require('cids')
-
 const utils = require('../../utils')
+const errcode = require('err-code')
 
 module.exports = (dht) => {
   const log = utils.logger(dht.peerInfo.id, 'rpc:add-provider')
@@ -18,14 +18,16 @@ module.exports = (dht) => {
     log('start')
 
     if (!msg.key || msg.key.length === 0) {
-      return callback(new Error('Missing key'))
+      return callback(errcode(new Error('Missing key'), 'ERR_MISSING_KEY'))
     }
 
     let cid
     try {
       cid = new CID(msg.key)
     } catch (err) {
-      return callback(new Error('Invalid CID: ' + err.message))
+      const errMsg = `Invalid CID: ${err.message}`
+
+      return callback(errcode(new Error(errMsg), 'ERR_INVALID_CID'))
     }
 
     msg.providerPeers.forEach((pi) => {

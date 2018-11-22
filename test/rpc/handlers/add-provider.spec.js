@@ -51,19 +51,19 @@ describe('rpc - handlers - AddProvider', () => {
   describe('invalid messages', () => {
     const tests = [{
       message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.alloc(0), 0),
-      error: /Missing key/
+      error: 'ERR_MISSING_KEY'
     }, {
       message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.alloc(0), 0),
-      error: /Missing key/
+      error: 'ERR_MISSING_KEY'
     }, {
       message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.from('hello world'), 0),
-      error: /Invalid CID/
+      error: 'ERR_INVALID_CID'
     }]
 
     tests.forEach((t) => it(t.error.toString(), (done) => {
-      handler(dht)(peers[0], t.message, (err, res) => {
+      handler(dht)(peers[0], t.message, (err) => {
         expect(err).to.exist()
-        expect(err.message).to.match(t.error)
+        expect(err.code).to.eql(t.error)
         done()
       })
     }))

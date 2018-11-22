@@ -5,6 +5,8 @@ const timeout = require('async/timeout')
 const lp = require('pull-length-prefixed')
 const setImmediate = require('async/setImmediate')
 
+const errcode = require('err-code')
+
 const rpc = require('./rpc')
 const c = require('./constants')
 const Message = require('./message')
@@ -37,13 +39,13 @@ class Network {
   start (callback) {
     const cb = (err) => setImmediate(() => callback(err))
 
-    if (this.isOnline) {
-      return cb(new Error('Network is already running'))
+    if (this._running) {
+      return cb(errcode(new Error('Network is already running'), 'ERR_NETWORK_ALREADY_RUNNING'))
     }
 
     // TODO add a way to check if switch has started or not
     if (!this.dht.isStarted) {
-      return cb(new Error('Can not start network'))
+      return cb(errcode(new Error('Can not start network'), 'ERR_CANNOT_START_NETWORK'))
     }
 
     this._running = true
@@ -67,7 +69,7 @@ class Network {
     const cb = (err) => setImmediate(() => callback(err))
 
     if (!this.dht.isStarted && !this.isStarted) {
-      return cb(new Error('Network is already stopped'))
+      return cb(errcode(new Error('Network is already stopped'), 'ERR_NETWORK_ALREADY_STOPPED'))
     }
     this._running = false
     this.dht.switch.removeListener('peer-mux-established', this._onPeerConnected)
@@ -136,7 +138,7 @@ class Network {
   sendRequest (to, msg, callback) {
     // TODO: record latency
     if (!this.isConnected) {
-      return callback(new Error('Network is offline'))
+      return callback(errcode(new Error('Network is offline'), 'ERR_NETWORK_OFFLINE'))
     }
 
     this._log('sending to: %s', to.toB58String())
@@ -159,7 +161,7 @@ class Network {
    */
   sendMessage (to, msg, callback) {
     if (!this.isConnected) {
-      return setImmediate(() => callback(new Error('Network is offline')))
+      return setImmediate(() => callback(errcode(new Error('Network is offline'), 'ERR_NETWORK_OFFLINE')))
     }
 
     this._log('sending to: %s', to.toB58String())
@@ -222,14 +224,14 @@ function writeReadMessage (conn, msg, callback) {
         return callback(err)
       }
       if (res.length === 0) {
-        return callback(new Error('No message received'))
+        return callback(errcode(new Error('No message received'), 'ERR_NO_MESSAGE_RECEIVED'))
       }
 
       let response
       try {
         response = Message.deserialize(res[0])
       } catch (err) {
-        return callback(new Error('failed to deserialize response: ' + err.message))
+        return callback(errcode(err, 'ERR_FAILED_DESERIALIZE_RESPONSE'))
       }
 
       callback(null, response)

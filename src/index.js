@@ -9,12 +9,13 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const crypto = require('libp2p-crypto')
 
+const errcode = require('err-code')
+
 const RoutingTable = require('./routing')
 const utils = require('./utils')
 const c = require('./constants')
 const Query = require('./query')
 const Network = require('./network')
-const errors = require('./errors')
 const privateApi = require('./private')
 const Providers = require('./providers')
 const Message = require('./message')
@@ -266,8 +267,10 @@ class KadDHT {
 
           this._log('peers in rt: %d', rtp.length)
           if (rtp.length === 0) {
-            this._log.error('No peers from routing table!')
-            return cb(new Error('Failed to lookup key'))
+            const errMsg = 'Failed to lookup key! No peers from routing table!'
+
+            this._log.error(errMsg)
+            return cb(errcode(new Error(errMsg), 'ERR_NO_PEERS_IN_ROUTING_TABLE'))
           }
 
           // we have peers, lets do the actualy query to them
@@ -275,15 +278,14 @@ class KadDHT {
             this._getValueOrPeers(peer, key, (err, rec, peers) => {
               if (err) {
                 // If we have an invalid record we just want to continue and fetch a new one.
-                if (!(err instanceof errors.InvalidRecordError)) {
+                if (!(err.code === 'ERR_INVALID_RECORD')) {
                   return cb(err)
                 }
               }
 
               const res = { closerPeers: peers }
 
-              if ((rec && rec.value) ||
-                  err instanceof errors.InvalidRecordError) {
+              if ((rec && rec.value) || (err && err.code === 'ERR_INVALID_RECORD')) {
                 vals.push({
                   val: rec && rec.value,
                   from: peer
@@ -525,7 +527,7 @@ class KadDHT {
           const peers = this.routingTable.closestPeers(key, c.ALPHA)
 
           if (peers.length === 0) {
-            return cb(new errors.LookupFailureError())
+            return cb(errcode(new Error('Peer lookup failed'), 'ERR_LOOKUP_FAILED'))
           }
 
           // sanity check
@@ -564,7 +566,7 @@ class KadDHT {
         (result, cb) => {
           this._log('findPeer %s: %s', id.toB58String(), result.success)
           if (!result.peer) {
-            return cb(new errors.NotFoundError())
+            return cb(errcode(new Error('No peer found'), 'ERR_NOT_FOUND'))
           }
           cb(null, result.peer)
         }

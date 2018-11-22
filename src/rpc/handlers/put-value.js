@@ -1,6 +1,7 @@
 'use strict'
 
 const utils = require('../../utils')
+const errcode = require('err-code')
 
 module.exports = (dht) => {
   const log = utils.logger(dht.peerInfo.id, 'rpc:put-value')
@@ -20,8 +21,10 @@ module.exports = (dht) => {
     const record = msg.record
 
     if (!record) {
-      log.error('Got empty record from: %s', peer.id.toB58String())
-      return callback(new Error('Empty record'))
+      const errMsg = `Empty record from: ${peer.id.toB58String()}`
+
+      log.error(errMsg)
+      return callback(errcode(new Error(errMsg), 'ERR_EMPTY_RECORD'))
     }
 
     dht._verifyRecordLocally(record, (err) => {

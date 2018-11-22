@@ -7,8 +7,9 @@ const each = require('async/each')
 const timeout = require('async/timeout')
 const PeerInfo = require('peer-info')
 
+const errcode = require('err-code')
+
 const utils = require('./utils')
-const errors = require('./errors')
 const Message = require('./message')
 const c = require('./constants')
 const Query = require('./query')
@@ -118,7 +119,7 @@ module.exports = (dht) => ({
         }
 
         if (!record) {
-          return callback(new Error('Invalid record'))
+          return callback(errcode(new Error('Invalid record'), 'ERR_INVALID_RECORD'))
         }
 
         // 5. check validity
@@ -236,7 +237,7 @@ module.exports = (dht) => ({
       }
 
       if (!resp.record.value.equals(Record.deserialize(rec).value)) {
-        return callback(new Error('value not put correctly'))
+        return callback(errcode(new Error('value not put correctly'), 'ERR_PUT_VALUE_INVALID'))
       }
 
       callback()
@@ -286,7 +287,7 @@ module.exports = (dht) => ({
         dht._log('GetValue %b %s', key, best)
 
         if (!best) {
-          return cb(new errors.NotFoundError())
+          return cb(errcode(new Error('best value was not found'), 'ERR_NOT_FOUND'))
         }
 
         // Send out correction record
@@ -378,8 +379,10 @@ module.exports = (dht) => ({
           // We have a record
           return dht._verifyRecordOnline(record, (err) => {
             if (err) {
-              dht._log('invalid record received, discarded')
-              return cb(new errors.InvalidRecordError())
+              const errMsg = 'invalid record received, discarded'
+
+              dht._log(errMsg)
+              return cb(errcode(new Error(errMsg), 'ERR_INVALID_RECORD'))
             }
 
             return cb(null, record, peers)
@@ -390,7 +393,7 @@ module.exports = (dht) => ({
           return cb(null, null, peers)
         }
 
-        cb(new errors.NotFoundError('Not found'))
+        cb(errcode(new Error('Not found'), 'ERR_NOT_FOUND'))
       }
     ], callback)
   },
@@ -436,7 +439,7 @@ module.exports = (dht) => ({
       (cb) => dht._getValueSingle(peer, pkKey, cb),
       (msg, cb) => {
         if (!msg.record || !msg.record.value) {
-          return cb(new Error('Node not responding with its public key: ' + peer.toB58String()))
+          return cb(errcode(new Error(`Node not responding with its public key: ${peer.toB58String()}`), 'ERR_INVALID_RECORD'))
         }
 
         PeerId.createFromPubKey(msg.record.value, cb)
@@ -444,7 +447,7 @@ module.exports = (dht) => ({
       (recPeer, cb) => {
         // compare hashes of the pub key
         if (!recPeer.isEqual(peer)) {
-          return cb(new Error('public key does not match id'))
+          return cb(errcode(new Error('public key does not match id'), 'ERR_PUBLIC_KEY_DOES_NOT_MATCH_ID'))
         }
 
         cb(null, recPeer.pubKey)

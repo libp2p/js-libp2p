@@ -46,8 +46,8 @@ describe('rpc - handlers - PutValue', () => {
 
   it('errors on missing record', (done) => {
     const msg = new Message(T, Buffer.from('hello'), 5)
-    handler(dht)(peers[0], msg, (err, response) => {
-      expect(err).to.match(/Empty record/)
+    handler(dht)(peers[0], msg, (err) => {
+      expect(err.code).to.eql('ERR_EMPTY_RECORD')
       done()
     })
   })

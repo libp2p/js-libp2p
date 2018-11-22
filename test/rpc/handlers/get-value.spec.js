@@ -46,7 +46,7 @@ describe('rpc - handlers - GetValue', () => {
     const msg = new Message(T, Buffer.alloc(0), 0)
 
     handler(dht)(peers[0], msg, (err, response) => {
-      expect(err).to.match(/Invalid key/)
+      expect(err.code).to.eql('ERR_INVALID_KEY')
       expect(response).to.not.exist()
       done()
     })
