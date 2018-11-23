@@ -81,6 +81,21 @@ describe('libp2p creation', () => {
     })
   })
 
+  it('should create using dht defaults', (done) => {
+    createNode([], {
+      config: {
+        EXPERIMENTAL: {
+          dht: true
+        },
+        dht: {}
+      }
+    }, (err, node) => {
+      expect(err).to.not.exist()
+      expect(node._dht).to.exist()
+      done()
+    })
+  })
+
   it('should not throw errors from switch if node has no error listeners', (done) => {
     createNode([], {}, (err, node) => {
       expect(err).to.not.exist()

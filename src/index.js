@@ -10,6 +10,7 @@ log.error = debug('libp2p:error')
 const each = require('async/each')
 const series = require('async/series')
 const parallel = require('async/parallel')
+const get = require('lodash.get')
 
 const PeerBook = require('peer-book')
 const Switch = require('libp2p-switch')
@@ -99,10 +100,10 @@ class Node extends EventEmitter {
     // dht provided components (peerRouting, contentRouting, dht)
     if (this._config.EXPERIMENTAL.dht) {
       const DHT = this._modules.dht
-      const enabledDiscovery = this._config.dht.enabledDiscovery !== false
+      const enabledDiscovery = Boolean(get(this._config, 'dht.enabledDiscovery', true))
 
       this._dht = new DHT(this._switch, {
-        kBucketSize: this._config.dht.kBucketSize || 20,
+        kBucketSize: get(this._config, 'dht.kBucketSize', 20),
         enabledDiscovery,
         datastore: this.datastore
       })
