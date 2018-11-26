@@ -1,3 +1,13 @@
+<a name="0.9.4"></a>
+## [0.9.4](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.9.3...v0.9.4) (2018-11-26)
+
+
+### Bug Fixes
+
+* rename railing -> bootstrap ([#81](https://github.com/libp2p/js-libp2p-bootstrap/issues/81)) ([bda0dc8](https://github.com/libp2p/js-libp2p-bootstrap/commit/bda0dc8))
+
+
+
 <a name="0.9.3"></a>
 ## [0.9.3](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.9.2...v0.9.3) (2018-07-02)
 
