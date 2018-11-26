@@ -4,7 +4,7 @@
 const Railing = require('../src')
 const peerList = require('./default-peers')
 const partialValidPeerList = require('./some-invalid-peers')
-const {expect} = require('chai')
+const { expect } = require('chai')
 const mafmt = require('mafmt')
 
 describe('bootstrap', () => {

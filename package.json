@@ -31,16 +31,16 @@
   },
   "homepage": "https://github.com/libp2p/js-ipfs-bootstrap",
   "devDependencies": {
-    "aegir": "^14.0.0",
-    "chai": "^4.1.2",
-    "libp2p-tcp": "~0.12.0"
+    "aegir": "^17.1.1",
+    "chai": "^4.2.0",
+    "libp2p-tcp": "~0.13.0"
   },
   "dependencies": {
     "async": "^2.6.1",
-    "debug": "^3.1.0",
-    "multiaddr": "^5.0.0",
-    "mafmt": "^6.0.0",
-    "peer-id": "~0.10.7",
+    "debug": "^4.1.0",
+    "multiaddr": "^5.0.2",
+    "mafmt": "^6.0.2",
+    "peer-id": "~0.12.0",
     "peer-info": "~0.14.1"
   },
   "pre-push": [
