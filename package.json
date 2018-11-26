@@ -1,6 +1,6 @@
 {
   "name": "libp2p-identify",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "libp2p Identify Protocol",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -58,6 +58,7 @@
     "Jacob Heun <jake@andyet.net>",
     "Maciej Krüger <mkg20001@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
+    "Vasco Santos <vasco.santos@moxy.studio>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
   ]
 }
