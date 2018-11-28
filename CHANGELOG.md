@@ -1,3 +1,13 @@
+<a name="0.15.2"></a>
+## [0.15.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.1...v0.15.2) (2018-11-28)
+
+
+### Features
+
+* emit event when a remote peer's subscriptions change ([#61](https://github.com/libp2p/js-libp2p-floodsub/issues/61)) ([7611b2e](https://github.com/libp2p/js-libp2p-floodsub/commit/7611b2e))
+
+
+
 <a name="0.15.1"></a>
 ## [0.15.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.0...v0.15.1) (2018-10-23)
 
