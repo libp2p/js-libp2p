@@ -81,6 +81,7 @@ class FloodSub extends BaseProtocol {
       const peer = this.peers.get(idB58Str)
       if (peer) {
         peer.updateSubscriptions(subs)
+        this.emit('floodsub:subscription-change', peer.info, peer.topics, subs)
       }
     }
   }

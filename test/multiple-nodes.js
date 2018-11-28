@@ -59,7 +59,7 @@ describe('multiple nodes (more than 2)', () => {
         ], (err) => {
           expect(err).to.not.exist()
           // wait for the pubsub pipes to be established
-          setTimeout(done, 200)
+          setTimeout(done, 1000)
         })
       })
 
@@ -67,23 +67,27 @@ describe('multiple nodes (more than 2)', () => {
         a.ps.subscribe('Z')
         expectSet(a.ps.subscriptions, ['Z'])
 
-        setTimeout(() => {
+        b.ps.once('floodsub:subscription-change', () => {
           expect(b.ps.peers.size).to.equal(2)
-          const topics = Array.from(b.ps.peers.values())[1].topics
+          const aPeerId = a.libp2p.peerInfo.id.toB58String()
+          const topics = b.ps.peers.get(aPeerId).topics
           expectSet(topics, ['Z'])
 
           expect(c.ps.peers.size).to.equal(1)
           expectSet(first(c.ps.peers).topics, [])
 
           done()
-        }, 200)
+        })
       })
 
       it('subscribe to the topic on node b', (done) => {
         b.ps.subscribe('Z')
         expectSet(b.ps.subscriptions, ['Z'])
 
-        setTimeout(() => {
+        parallel([
+          cb => a.ps.once('floodsub:subscription-change', () => cb()),
+          cb => c.ps.once('floodsub:subscription-change', () => cb())
+        ], () => {
           expect(a.ps.peers.size).to.equal(1)
           expectSet(first(a.ps.peers).topics, ['Z'])
 
@@ -91,14 +95,14 @@ describe('multiple nodes (more than 2)', () => {
           expectSet(first(c.ps.peers).topics, ['Z'])
 
           done()
-        }, 200)
+        })
       })
 
       it('subscribe to the topic on node c', (done) => {
         c.ps.subscribe('Z')
         expectSet(c.ps.subscriptions, ['Z'])
 
-        setTimeout(() => {
+        b.ps.once('floodsub:subscription-change', () => {
           expect(a.ps.peers.size).to.equal(1)
           expectSet(first(a.ps.peers).topics, ['Z'])
 
@@ -108,7 +112,7 @@ describe('multiple nodes (more than 2)', () => {
           })
 
           done()
-        }, 200)
+        })
       })
 
       it('publish on node a', (done) => {

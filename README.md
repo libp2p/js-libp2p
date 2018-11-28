@@ -51,6 +51,24 @@ fsub.start((err) => {
 })
 ```
 
+## Events
+
+Floodsub emits two kinds of events:
+1. `<topic>` when a message is received for a particular topic
+  ```Javascript
+    fsub.on('fruit', (data) => { ... })
+  ```
+  - `data`: a Buffer containing the data that was published to the topic
+2. `floodsub:subscription-change` when the local peer receives an update to the subscriptions of a remote peer.
+  ```Javascript
+    fsub.on('floodsub:subscription-change', (peerInfo, topics, changes) => { ... })
+  ```
+  - `peerInfo`: a [PeerInfo](https://github.com/libp2p/js-peer-info) object
+  - `topics`: the topics that the peer is now subscribed to
+  - `changes`: an array of `{ topicCID: <topic>, subscribe: <boolean> }`
+     eg `[ { topicCID: 'fruit', subscribe: true }, { topicCID: 'vegetables': false } ]`
+
+
 ## API
 
 See https://libp2p.github.io/js-libp2p-floodsub
