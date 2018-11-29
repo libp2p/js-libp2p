@@ -102,9 +102,11 @@ class Node extends EventEmitter {
       const enabledDiscovery = this._config.dht.enabledDiscovery !== false
 
       this._dht = new DHT(this._switch, {
-        kBucketSize: this._config.dht.kBucketSize || 20,
+        kBucketSize: this._config.dht.kBucketSize,
         enabledDiscovery,
-        datastore: this.datastore
+        datastore: this.datastore,
+        validators: this._config.dht.validators || {},
+        selectors: this._config.dht.selectors || {}
       })
     }
 

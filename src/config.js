@@ -32,9 +32,11 @@ const OptionsSchema = Joi.object({
       })
     }).default(),
     dht: Joi.object().keys({
-      kBucketSize: Joi.number().allow(null),
-      enabledDiscovery: Joi.boolean().default(true)
-    }),
+      kBucketSize: Joi.number().default(20),
+      enabledDiscovery: Joi.boolean().default(true),
+      validators: Joi.object().allow(null),
+      selectors: Joi.object().allow(null)
+    }).default(),
     EXPERIMENTAL: Joi.object().keys({
       dht: Joi.boolean().default(false),
       pubsub: Joi.boolean().default(false)
