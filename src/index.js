@@ -105,8 +105,8 @@ class Node extends EventEmitter {
         kBucketSize: this._config.dht.kBucketSize,
         enabledDiscovery,
         datastore: this.datastore,
-        validators: this._config.dht.validators || {},
-        selectors: this._config.dht.selectors || {}
+        validators: this._config.dht.validators,
+        selectors: this._config.dht.selectors
       })
     }
 
