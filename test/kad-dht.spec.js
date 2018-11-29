@@ -139,6 +139,29 @@ describe('KadDHT', () => {
     expect(dht).to.have.property('routingTable')
   })
 
+  it('create with validators and selectors', () => {
+    const sw = new Switch(peerInfos[0], new PeerBook())
+    sw.transport.add('tcp', new TCP())
+    sw.connection.addStreamMuxer(Mplex)
+    sw.connection.reuse()
+    const dht = new KadDHT(sw, {
+      validators: {
+        ipns: {
+          func: (key, record, cb) => cb()
+        }
+      },
+      selectors: {
+        ipns: (key, records) => 0
+      }
+    })
+
+    expect(dht).to.have.property('peerInfo').eql(peerInfos[0])
+    expect(dht).to.have.property('switch').eql(sw)
+    expect(dht).to.have.property('routingTable')
+    expect(dht.validators).to.have.property('ipns')
+    expect(dht.selectors).to.have.property('ipns')
+  })
+
   it('should be able to start and stop', function (done) {
     const sw = new Switch(peerInfos[0], new PeerBook())
     sw.transport.add('tcp', new TCP())
@@ -269,6 +292,39 @@ describe('KadDHT', () => {
         (cb) => connect(dhtA, dhtB, cb),
         (cb) => dhtA.put(Buffer.from('hello'), Buffer.from('world'), cb),
         (cb) => dhtB.get(Buffer.from('hello'), { maxTimeout: 1000 }, cb),
+        (res, cb) => {
+          expect(res).to.eql(Buffer.from('world'))
+          cb()
+        }
+      ], (err) => {
+        expect(err).to.not.exist()
+        tdht.teardown(done)
+      })
+    })
+  })
+
+  it('put - get using key from provided validator and selector', function (done) {
+    this.timeout(10 * 1000)
+    const tdht = new TestDHT()
+
+    tdht.spawn(2, {
+      validators: {
+        ipns: {
+          func: (key, record, cb) => cb()
+        }
+      },
+      selectors: {
+        ipns: (key, records) => 0
+      }
+    }, (err, dhts) => {
+      expect(err).to.not.exist()
+      const dhtA = dhts[0]
+      const dhtB = dhts[1]
+
+      waterfall([
+        (cb) => connect(dhtA, dhtB, cb),
+        (cb) => dhtA.put(Buffer.from('/ipns/hello'), Buffer.from('world'), cb),
+        (cb) => dhtB.get(Buffer.from('/ipns/hello'), { maxTimeout: 1000 }, cb),
         (res, cb) => {
           expect(res).to.eql(Buffer.from('world'))
           cb()

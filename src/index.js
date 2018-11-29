@@ -36,10 +36,14 @@ class KadDHT {
    * @param {number} options.kBucketSize k-bucket size (default 20)
    * @param {Datastore} options.datastore datastore (default MemoryDatastore)
    * @param {boolean} options.enabledDiscovery enable dht discovery (default true)
+   * @param {object} options.validators validators object with namespace as keys and function(key, record, callback)
+   * @param {object} options.selectors selectors object with namespace as keys and function(key, records)
    */
   constructor (sw, options) {
     assert(sw, 'libp2p-kad-dht requires a instance of Switch')
     options = options || {}
+    options.validators = options.validators
+    options.selectors = options.selectors
 
     /**
      * Local reference to the libp2p-switch instance
@@ -83,8 +87,15 @@ class KadDHT {
      */
     this.providers = new Providers(this.datastore, this.peerInfo.id)
 
-    this.validators = { pk: libp2pRecord.validator.validators.pk }
-    this.selectors = { pk: libp2pRecord.selection.selectors.pk }
+    this.validators = {
+      pk: libp2pRecord.validator.validators.pk,
+      ...options.validators
+    }
+
+    this.selectors = {
+      pk: libp2pRecord.selection.selectors.pk,
+      ...options.selectors
+    }
 
     this.network = new Network(this)
 
