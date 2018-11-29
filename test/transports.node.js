@@ -427,7 +427,7 @@ describe('transports', () => {
           cb()
         }),
         (cb) => {
-          const wstar = new WRTCStar({wrtc: wrtc})
+          const wstar = new WRTCStar({ wrtc: wrtc })
 
           createNode([
             '/ip4/0.0.0.0/tcp/0',
@@ -474,7 +474,7 @@ describe('transports', () => {
         }),
 
         (cb) => {
-          const wstar = new WRTCStar({wrtc: wrtc})
+          const wstar = new WRTCStar({ wrtc: wrtc })
 
           createNode([
             '/ip4/127.0.0.1/tcp/24642/ws/p2p-webrtc-star'

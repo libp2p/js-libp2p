@@ -94,6 +94,10 @@ describe('configuration', () => {
         },
         relay: {
           enabled: true
+        },
+        dht: {
+          enabledDiscovery: true,
+          kBucketSize: 20
         }
       }
     }
