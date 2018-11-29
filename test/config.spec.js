@@ -11,6 +11,7 @@ const WS = require('libp2p-websockets')
 const Bootstrap = require('libp2p-bootstrap')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
+const DHT = require('libp2p-kad-dht')
 
 const validateConfig = require('../src/config').validate
 
@@ -91,6 +92,10 @@ describe('configuration', () => {
           pubsub: false,
           dht: false
         },
+        dht: {
+          kBucketSize: 20,
+          enabledDiscovery: true
+        },
         relay: {
           enabled: true
         }
@@ -142,5 +147,50 @@ describe('configuration', () => {
     }
 
     expect(() => validateConfig(options)).to.throw()
+  })
+
+  it('should add defaults, validators and selectors for dht', () => {
+    const selectors = {}
+    const validators = {}
+
+    const options = {
+      peerInfo,
+      modules: {
+        transport: [WS],
+        dht: DHT
+      },
+      config: {
+        EXPERIMENTAL: {
+          dht: true
+        },
+        dht: {
+          selectors,
+          validators
+        }
+      }
+    }
+    const expected = {
+      peerInfo,
+      modules: {
+        transport: [WS],
+        dht: DHT
+      },
+      config: {
+        EXPERIMENTAL: {
+          pubsub: false,
+          dht: true
+        },
+        relay: {
+          enabled: true
+        },
+        dht: {
+          kBucketSize: 20,
+          enabledDiscovery: true,
+          selectors,
+          validators
+        }
+      }
+    }
+    expect(validateConfig(options)).to.deep.equal(expected)
   })
 })
