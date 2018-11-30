@@ -1,3 +1,13 @@
+<a name="0.12.1"></a>
+## [0.12.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.12.0...v0.12.1) (2018-11-30)
+
+
+### Features
+
+* allow configurable validators and selectors ([#57](https://github.com/libp2p/js-libp2p-kad-dht/issues/57)) ([b731a1d](https://github.com/libp2p/js-libp2p-kad-dht/commit/b731a1d))
+
+
+
 <a name="0.12.0"></a>
 # [0.12.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.11.1...v0.12.0) (2018-11-22)
 
