@@ -1,3 +1,13 @@
+<a name="0.24.1"></a>
+## [0.24.1](https://github.com/libp2p/js-libp2p/compare/v0.24.0...v0.24.1) (2018-12-03)
+
+
+### Features
+
+* allow configurable validators and selectors to the dht ([#288](https://github.com/libp2p/js-libp2p/issues/288)) ([7d12eb9](https://github.com/libp2p/js-libp2p/commit/7d12eb9))
+
+
+
 <a name="0.24.0"></a>
 # [0.24.0](https://github.com/libp2p/js-libp2p/compare/v0.24.0-rc.3...v0.24.0) (2018-11-16)
 
