@@ -586,15 +586,18 @@ describe('KadDHT', () => {
       const guy = dhts[0]
       const others = dhts.slice(1)
       const val = Buffer.from('foobar')
+      const connected = {} // indexes in others that are reachable from guy
 
       series([
         (cb) => times(20, (i, cb) => {
           times(16, (j, cb) => {
             const t = 20 + random(79)
+            connected[t] = true
             connect(others[i], others[t], cb)
           }, cb)
         }, cb),
         (cb) => times(20, (i, cb) => {
+          connected[i] = true
           connect(guy, others[i], cb)
         }, cb),
         (cb) => kadUtils.convertBuffer(val, (err, rtval) => {
@@ -610,9 +613,11 @@ describe('KadDHT', () => {
             rtableSet[p.toB58String()] = true
           })
 
+          const connectedIds = ids.slice(1).filter((id, i) => connected[i])
+
           series([
             (cb) => guy.getClosestPeers(val, cb),
-            (cb) => kadUtils.sortClosestPeers(ids.slice(1), rtval, cb)
+            (cb) => kadUtils.sortClosestPeers(connectedIds, rtval, cb)
           ], (err, res) => {
             expect(err).to.not.exist()
             const out = res[0]
