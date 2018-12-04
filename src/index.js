@@ -342,7 +342,7 @@ class Node extends EventEmitter {
       }
 
       if (t.filter(multiaddrs).length > 0) {
-        this._switch.transport.add(t.tag || t.constructor.name, t)
+        this._switch.transport.add(t.tag || t[Symbol.toStringTag], t)
       } else if (WebSockets.isWebSockets(t)) {
         // TODO find a cleaner way to signal that a transport is always used
         // for dialing, even if no listener
