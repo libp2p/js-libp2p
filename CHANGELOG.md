@@ -1,3 +1,13 @@
+<a name="0.24.2"></a>
+## [0.24.2](https://github.com/libp2p/js-libp2p/compare/v0.24.1...v0.24.2) (2018-12-04)
+
+
+### Bug Fixes
+
+* use symbol instead of constructor name ([#292](https://github.com/libp2p/js-libp2p/issues/292)) ([53ed3bd](https://github.com/libp2p/js-libp2p/commit/53ed3bd))
+
+
+
 <a name="0.24.1"></a>
 ## [0.24.1](https://github.com/libp2p/js-libp2p/compare/v0.24.0...v0.24.1) (2018-12-03)
 
