@@ -6,18 +6,18 @@ const secio = require('libp2p-secio')
 const libp2p = require('libp2p')
 
 class Node extends libp2p {
-  constructor (peerInfo, peerBook, options) {
-    options = options || {}
-
+  constructor ({ peerInfo, peerBook }) {
     const modules = {
-      transport: [new TCP()],
-      connection: {
-        muxer: spdy,
-        crypto: [ secio ]
-      }
+      transport: [TCP],
+      streamMuxer: [spdy],
+      connEncryption: [secio]
     }
 
-    super(modules, peerInfo, peerBook, options)
+    super({
+      modules,
+      peerInfo,
+      peerBook
+    })
   }
 }
 

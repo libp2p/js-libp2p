@@ -22,7 +22,7 @@ const setImmediate = require('async/setImmediate')
 class FloodSub extends BaseProtocol {
   /**
    * @param {Object} libp2p
-   * @returns {FloodSub}
+   * @constructor
    */
   constructor (libp2p) {
     super('libp2p:floodsub', multicodec, libp2p)

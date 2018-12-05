@@ -57,7 +57,7 @@ map([0, 1], (i, cb) => {
 
     suite
       .on('cycle', (event) => {
-        console.log(String(event.target))
+        console.log(String(event.target)) // eslint-disable-line
       })
       .on('complete', () => {
         process.exit()

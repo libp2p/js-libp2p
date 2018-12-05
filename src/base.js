@@ -20,7 +20,7 @@ class BaseProtocol extends EventEmitter {
    * @param {String} debugName
    * @param {String} multicodec
    * @param {Object} libp2p
-   * @returns {FloodSub}
+   * @constructor
    */
   constructor (debugName, multicodec, libp2p) {
     super()

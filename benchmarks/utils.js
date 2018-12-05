@@ -19,7 +19,7 @@ suite.add('randomSeqno', () => {
 
 suite
   .on('cycle', (event) => {
-    console.log(String(event.target))
+    console.log(String(event.target)) // eslint-disable-line
     res = []
   })
   .run({
