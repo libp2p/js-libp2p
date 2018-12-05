@@ -253,7 +253,7 @@ class KadDHT {
     }
 
     this._log('getMany %b (%s)', key, nvals)
-    const vals = []
+    let vals = []
 
     this._getLocal(key, (err, localRec) => {
       if (err && nvals === 0) {
@@ -271,6 +271,7 @@ class KadDHT {
         return callback(null, vals)
       }
 
+      const paths = []
       waterfall([
         (cb) => utils.convertBuffer(key, cb),
         (id, cb) => {
@@ -284,38 +285,49 @@ class KadDHT {
             return cb(errcode(new Error(errMsg), 'ERR_NO_PEERS_IN_ROUTING_TABLE'))
           }
 
-          // we have peers, lets do the actualy query to them
-          const query = new Query(this, key, (peer, cb) => {
-            this._getValueOrPeers(peer, key, (err, rec, peers) => {
-              if (err) {
-                // If we have an invalid record we just want to continue and fetch a new one.
-                if (!(err.code === 'ERR_INVALID_RECORD')) {
-                  return cb(err)
+          // we have peers, lets do the actual query to them
+          const query = new Query(this, key, (pathIndex, numPaths) => {
+            // This function body runs once per disjoint path
+            const pathSize = utils.pathSize(nvals - vals.length, numPaths)
+            const pathVals = []
+            paths.push(pathVals)
+
+            // Here we return the query function to use on this particular disjoint path
+            return (peer, cb) => {
+              this._getValueOrPeers(peer, key, (err, rec, peers) => {
+                if (err) {
+                  // If we have an invalid record we just want to continue and fetch a new one.
+                  if (!(err.code === 'ERR_INVALID_RECORD')) {
+                    return cb(err)
+                  }
                 }
-              }
 
-              const res = { closerPeers: peers }
+                const res = { closerPeers: peers }
 
-              if ((rec && rec.value) || (err && err.code === 'ERR_INVALID_RECORD')) {
-                vals.push({
-                  val: rec && rec.value,
-                  from: peer
-                })
-              }
+                if ((rec && rec.value) || (err && err.code === 'ERR_INVALID_RECORD')) {
+                  pathVals.push({
+                    val: rec && rec.value,
+                    from: peer
+                  })
+                }
 
-              // enough is enough
-              if (vals.length >= nvals) {
-                res.success = true
-              }
+                // enough is enough
+                if (pathVals.length >= pathSize) {
+                  res.success = true
+                }
 
-              cb(null, res)
-            })
+                cb(null, res)
+              })
+            }
           })
 
           // run our query
           timeout((cb) => query.run(rtp, cb), options.maxTimeout)(cb)
         }
       ], (err) => {
+        // combine vals from each path
+        vals = [].concat.apply(vals, paths).slice(0, nvals)
+
         if (err && vals.length === 0) {
           return callback(err)
         }
@@ -341,15 +353,20 @@ class KadDHT {
 
       const tablePeers = this.routingTable.closestPeers(id, c.ALPHA)
 
-      const q = new Query(this, key, (peer, callback) => {
-        waterfall([
-          (cb) => this._closerPeersSingle(key, peer, cb),
-          (closer, cb) => {
-            cb(null, {
-              closerPeers: closer
-            })
-          }
-        ], callback)
+      const q = new Query(this, key, () => {
+        // There is no distinction between the disjoint paths,
+        // so there are no per-path variables in this scope.
+        // Just return the actual query function.
+        return (peer, callback) => {
+          waterfall([
+            (cb) => this._closerPeersSingle(key, peer, cb),
+            (closer, cb) => {
+              cb(null, {
+                closerPeers: closer
+              })
+            }
+          ], callback)
+        }
       })
 
       q.run(tablePeers, (err, res) => {
@@ -549,25 +566,30 @@ class KadDHT {
           }
 
           // query the network
-          const query = new Query(this, id.id, (peer, cb) => {
-            waterfall([
-              (cb) => this._findPeerSingle(peer, id, cb),
-              (msg, cb) => {
-                const match = msg.closerPeers.find((p) => p.id.isEqual(id))
+          const query = new Query(this, id.id, () => {
+            // There is no distinction between the disjoint paths,
+            // so there are no per-path variables in this scope.
+            // Just return the actual query function.
+            return (peer, cb) => {
+              waterfall([
+                (cb) => this._findPeerSingle(peer, id, cb),
+                (msg, cb) => {
+                  const match = msg.closerPeers.find((p) => p.id.isEqual(id))
 
-                // found it
-                if (match) {
-                  return cb(null, {
-                    peer: match,
-                    success: true
+                  // found it
+                  if (match) {
+                    return cb(null, {
+                      peer: match,
+                      success: true
+                    })
+                  }
+
+                  cb(null, {
+                    closerPeers: msg.closerPeers
                   })
                 }
-
-                cb(null, {
-                  closerPeers: msg.closerPeers
-                })
-              }
-            ], cb)
+              ], cb)
+            }
           })
 
           timeout((cb) => {
@@ -575,11 +597,18 @@ class KadDHT {
           }, options.maxTimeout)(cb)
         },
         (result, cb) => {
-          this._log('findPeer %s: %s', id.toB58String(), result.success)
-          if (!result.peer) {
+          let success = false
+          result.paths.forEach((result) => {
+            if (result.success) {
+              success = true
+              this.peerBook.put(result.peer)
+            }
+          })
+          this._log('findPeer %s: %s', id.toB58String(), success)
+          if (!success) {
             return cb(errcode(new Error('No peer found'), 'ERR_NOT_FOUND'))
           }
-          cb(null, result.peer)
+          cb(null, this.peerBook.get(id))
         }
       ], callback)
     })

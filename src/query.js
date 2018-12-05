@@ -10,21 +10,38 @@ const PeerQueue = require('./peer-queue')
 const utils = require('./utils')
 
 /**
- * Query peers from closest to farthest away.
+ * Divide peers up into disjoint paths (subqueries). Any peer can only be used once over all paths.
+ * Within each path, query peers from closest to farthest away.
  */
 class Query {
   /**
-   * Create a new query.
+   * User-supplied function to set up an individual disjoint path. Per-path
+   * query state should be held in this function's closure.
+   * @typedef {makePath} function
+   * @param {number} pathNum - Numeric index from zero to numPaths - 1
+   * @returns {queryFunc} - Function to call on each peer in the query
+   */
+
+  /**
+   * Query function.
+   * @typedef {queryFunc} function
+   * @param {PeerId} next - Peer to query
+   * @param {function(Error, Object)} callback - Query result callback
+   */
+
+  /**
+   * Create a new query. The makePath function is called once per disjoint path, so that per-path
+   * variables can be created in that scope. makePath then returns the actual query function (queryFunc) to
+   * use when on that path.
    *
    * @param {DHT} dht - DHT instance
    * @param {Buffer} key
-   * @param {function(PeerId, function(Error, Object))} query - The query function to exectue
-   *
+   * @param {makePath} makePath - Called to set up each disjoint path. Must return the query function.
    */
-  constructor (dht, key, query) {
+  constructor (dht, key, makePath) {
     this.dht = dht
     this.key = key
-    this.query = query
+    this.makePath = makePath
     this.concurrency = c.ALPHA
     this._log = utils.logger(this.dht.peerInfo.id, 'query:' + mh.toB58String(key))
   }
@@ -40,7 +57,7 @@ class Query {
     const run = {
       peersSeen: new Set(),
       errors: [],
-      peersToQuery: null
+      paths: null // array of states per disjoint path
     }
 
     if (peers.length === 0) {
@@ -48,14 +65,36 @@ class Query {
       return callback()
     }
 
-    waterfall([
-      (cb) => PeerQueue.fromKey(this.key, cb),
-      (q, cb) => {
-        run.peersToQuery = q
-        each(peers, (p, cb) => addPeerToQuery(p, this.dht, run, cb), cb)
-      },
-      (cb) => workerQueue(this, run, cb)
-    ], (err) => {
+    // create correct number of paths
+    const numPaths = Math.min(c.DISJOINT_PATHS, peers.length)
+    const pathPeers = []
+    for (let i = 0; i < numPaths; i++) {
+      pathPeers.push([])
+    }
+
+    // assign peers to paths round-robin style
+    peers.forEach((peer, i) => {
+      pathPeers[i % numPaths].push(peer)
+    })
+    run.paths = pathPeers.map((peers, i) => {
+      return {
+        peers,
+        run,
+        query: this.makePath(i, numPaths),
+        peersToQuery: null
+      }
+    })
+
+    each(run.paths, (path, cb) => {
+      waterfall([
+        (cb) => PeerQueue.fromKey(this.key, cb),
+        (q, cb) => {
+          path.peersToQuery = q
+          each(path.peers, (p, cb) => addPeerToQuery(p, this.dht, path, cb), cb)
+        },
+        (cb) => workerQueue(this, path, cb)
+      ], cb)
+    }, (err, results) => {
       this._log('query:done')
       if (err) {
         return callback(err)
@@ -64,31 +103,38 @@ class Query {
       if (run.errors.length === run.peersSeen.size) {
         return callback(run.errors[0])
       }
-      if (run.res && run.res.success) {
-        run.res.finalSet = run.peersSeen
-        return callback(null, run.res)
+
+      run.res = {
+        finalSet: run.peersSeen,
+        paths: []
       }
 
-      callback(null, {
-        finalSet: run.peersSeen
+      run.paths.forEach((path) => {
+        if (path.res && path.res.success) {
+          run.res.paths.push(path.res)
+        }
       })
+
+      callback(null, run.res)
     })
   }
 }
 
 /**
- * Use the queue from async to keep `concurrency` amount items running.
+ * Use the queue from async to keep `concurrency` amount items running
+ * per path.
  *
  * @param {Query} query
- * @param {Object} run
+ * @param {Object} path
  * @param {function(Error)} callback
  * @returns {void}
+ * @private
  */
-function workerQueue (query, run, callback) {
+function workerQueue (query, path, callback) {
   let killed = false
   const q = queue((next, cb) => {
     query._log('queue:work')
-    execQuery(next, query, run, (err, done) => {
+    execQuery(next, query, path, (err, done) => {
       // Ignore after kill
       if (killed) {
         return cb()
@@ -109,8 +155,8 @@ function workerQueue (query, run, callback) {
   const fill = () => {
     query._log('queue:fill')
     while (q.length() < query.concurrency &&
-           run.peersToQuery.length > 0) {
-      q.push(run.peersToQuery.dequeue())
+           path.peersToQuery.length > 0) {
+      q.push(path.peersToQuery.dequeue())
     }
   }
 
@@ -140,18 +186,18 @@ function workerQueue (query, run, callback) {
  *
  * @param {PeerId} next
  * @param {Query} query
- * @param {Object} run
+ * @param {Object} path
  * @param {function(Error)} callback
  * @returns {void}
  * @private
  */
-function execQuery (next, query, run, callback) {
-  query.query(next, (err, res) => {
+function execQuery (next, query, path, callback) {
+  path.query(next, (err, res) => {
     if (err) {
-      run.errors.push(err)
+      path.run.errors.push(err)
       callback()
     } else if (res.success) {
-      run.res = res
+      path.res = res
       callback(null, true)
     } else if (res.closerPeers && res.closerPeers.length > 0) {
       each(res.closerPeers, (closer, cb) => {
@@ -160,7 +206,7 @@ function execQuery (next, query, run, callback) {
           return cb()
         }
         closer = query.dht.peerBook.put(closer)
-        addPeerToQuery(closer.id, query.dht, run, cb)
+        addPeerToQuery(closer.id, query.dht, path, cb)
       }, callback)
     } else {
       callback()
@@ -173,12 +219,13 @@ function execQuery (next, query, run, callback) {
  *
  * @param {PeerId} next
  * @param {DHT} dht
- * @param {Object} run
+ * @param {Object} path
  * @param {function(Error)} callback
  * @returns {void}
  * @private
  */
-function addPeerToQuery (next, dht, run, callback) {
+function addPeerToQuery (next, dht, path, callback) {
+  const run = path.run
   if (dht._isSelf(next)) {
     return callback()
   }
@@ -188,7 +235,7 @@ function addPeerToQuery (next, dht, run, callback) {
   }
 
   run.peersSeen.add(next)
-  run.peersToQuery.enqueue(next, callback)
+  path.peersToQuery.enqueue(next, callback)
 }
 
 module.exports = Query

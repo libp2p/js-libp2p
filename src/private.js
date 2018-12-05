@@ -489,33 +489,49 @@ module.exports = (dht) => ({
       }
 
       // need more, query the network
-      const query = new Query(dht, key.buffer, (peer, cb) => {
-        waterfall([
-          (cb) => dht._findProvidersSingle(peer, key, cb),
-          (msg, cb) => {
-            const provs = msg.providerPeers
-            dht._log('(%s) found %s provider entries', dht.peerInfo.id.toB58String(), provs.length)
+      const paths = []
+      const query = new Query(dht, key.buffer, (pathIndex, numPaths) => {
+        // This function body runs once per disjoint path
+        const pathSize = utils.pathSize(out.length - n, numPaths)
+        const pathProviders = new LimitedPeerList(pathSize)
+        paths.push(pathProviders)
 
-            provs.forEach((prov) => {
-              out.push(dht.peerBook.put(prov))
-            })
+        // Here we return the query function to use on this particular disjoint path
+        return (peer, cb) => {
+          waterfall([
+            (cb) => dht._findProvidersSingle(peer, key, cb),
+            (msg, cb) => {
+              const provs = msg.providerPeers
+              dht._log('(%s) found %s provider entries', dht.peerInfo.id.toB58String(), provs.length)
 
-            // hooray we have all that we want
-            if (out.length >= n) {
-              return cb(null, {success: true})
+              provs.forEach((prov) => {
+                pathProviders.push(dht.peerBook.put(prov))
+              })
+
+              // hooray we have all that we want
+              if (pathProviders.length >= pathSize) {
+                return cb(null, {success: true})
+              }
+
+              // it looks like we want some more
+              cb(null, {
+                closerPeers: msg.closerPeers
+              })
             }
-
-            // it looks like we want some more
-            cb(null, {
-              closerPeers: msg.closerPeers
-            })
-          }
-        ], cb)
+          ], cb)
+        }
       })
 
       const peers = dht.routingTable.closestPeers(key.buffer, c.ALPHA)
 
       timeout((cb) => query.run(peers, cb), maxTimeout)((err) => {
+        // combine peers from each path
+        paths.forEach((path) => {
+          path.toArray().forEach((peer) => {
+            out.push(peer)
+          })
+        })
+
         if (err) {
           if (err.code === 'ETIMEDOUT' && out.length > 0) {
             return callback(null, out.toArray())

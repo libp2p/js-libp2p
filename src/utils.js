@@ -134,6 +134,18 @@ exports.xorCompare = (a, b) => {
 }
 
 /**
+ * Computes how many results to collect on each disjoint path, rounding up.
+ * This ensures that we look for at least one result per path.
+ *
+ * @param {number} resultsWanted
+ * @param {number} numPaths - total number of paths
+ * @returns {number}
+ */
+exports.pathSize = (resultsWanted, numPaths) => {
+  return Math.ceil(resultsWanted / numPaths)
+}
+
+/**
  * Create a new put record, encodes and signs it if enabled.
  *
  * @param {Buffer} key

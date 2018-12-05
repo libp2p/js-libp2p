@@ -31,4 +31,8 @@ exports.K = 20
 // Alpha is the concurrency for asynchronous requests
 exports.ALPHA = 3
 
+// Number of disjoint query paths to use
+// This is set to K/2 per the S/Kademlia paper
+exports.DISJOINT_PATHS = 10
+
 exports.maxMessageSize = 2 << 22 // 4MB
