@@ -4,6 +4,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-spies'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 const series = require('async/series')
@@ -388,6 +389,125 @@ describe('basics between 2 nodes', () => {
         (cb) => fsA.stop(cb),
         (cb) => fsB.stop(cb)
       ], done)
+    })
+  })
+
+  describe('prevent concurrent dials', () => {
+    let sandbox
+    let nodeA
+    let nodeB
+    let fsA
+    let fsB
+
+    before((done) => {
+      sandbox = chai.spy.sandbox()
+
+      series([
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+      ], (err, nodes) => {
+        if (err) return done(err)
+
+        nodeA = nodes[0]
+        nodeB = nodes[1]
+
+        // Put node B in node A's peer book
+        nodeA.peerBook.put(nodeB.peerInfo)
+
+        fsA = new FloodSub(nodeA)
+        fsB = new FloodSub(nodeB)
+
+        fsB.start(done)
+      })
+    })
+
+    after((done) => {
+      sandbox.restore()
+
+      parallel([
+        (cb) => nodeA.stop(cb),
+        (cb) => nodeB.stop(cb)
+      ], (ignoreErr) => {
+        done()
+      })
+    })
+
+    it('does not dial twice to same peer', (done) => {
+      sandbox.on(fsA, ['_onDial'])
+
+      // When node A starts, it will dial all peers in its peer book, which
+      // is just peer B
+      fsA.start(startComplete)
+
+      // Simulate a connection coming in from peer B at the same time. This
+      // causes floodsub to dial peer B
+      nodeA.emit('peer:connect', nodeB.peerInfo)
+
+      function startComplete () {
+        // Check that only one dial was made
+        setTimeout(() => {
+          expect(fsA._onDial).to.have.been.called.once()
+          done()
+        }, 1000)
+      }
+    })
+  })
+
+  describe('prevent processing dial after stop', () => {
+    let sandbox
+    let nodeA
+    let nodeB
+    let fsA
+    let fsB
+
+    before((done) => {
+      sandbox = chai.spy.sandbox()
+
+      series([
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+      ], (err, nodes) => {
+        if (err) return done(err)
+
+        nodeA = nodes[0]
+        nodeB = nodes[1]
+
+        fsA = new FloodSub(nodeA)
+        fsB = new FloodSub(nodeB)
+
+        parallel([
+          (cb) => fsA.start(cb),
+          (cb) => fsB.start(cb)
+        ], done)
+      })
+    })
+
+    after((done) => {
+      sandbox.restore()
+
+      parallel([
+        (cb) => nodeA.stop(cb),
+        (cb) => nodeB.stop(cb)
+      ], (ignoreErr) => {
+        done()
+      })
+    })
+
+    it('does not process dial after stop', (done) => {
+      sandbox.on(fsA, ['_onDial'])
+
+      // Simulate a connection coming in from peer B at the same time. This
+      // causes floodsub to dial peer B
+      nodeA.emit('peer:connect', nodeB.peerInfo)
+
+      // Stop floodsub before the dial can complete
+      fsA.stop(() => {
+        // Check that the dial was not processed
+        setTimeout(() => {
+          expect(fsA._onDial).to.not.have.been.called()
+          done()
+        }, 1000)
+      })
     })
   })
 })

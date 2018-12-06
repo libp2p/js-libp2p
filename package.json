@@ -41,6 +41,7 @@
     "aegir": "^17.1.1",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
+    "chai-spies": "^1.0.0",
     "dirty-chai": "^2.0.1",
     "libp2p": "~0.24.1",
     "libp2p-secio": "~0.10.1",

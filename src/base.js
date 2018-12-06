@@ -38,6 +38,9 @@ class BaseProtocol extends EventEmitter {
      */
     this.peers = new Map()
 
+    // Dials that are currently in progress
+    this._dials = new Set()
+
     this._onConnection = this._onConnection.bind(this)
     this._dialPeer = this._dialPeer.bind(this)
   }
@@ -88,12 +91,28 @@ class BaseProtocol extends EventEmitter {
       return setImmediate(() => callback())
     }
 
+    // If already dialing this peer, ignore
+    if (this._dials.has(idB58Str)) {
+      this.log('already dialing %s, ignoring dial attempt', idB58Str)
+      return setImmediate(() => callback())
+    }
+    this._dials.add(idB58Str)
+
     this.log('dialing %s', idB58Str)
     this.libp2p.dialProtocol(peerInfo, this.multicodec, (err, conn) => {
+      this.log('dial to %s complete', idB58Str)
       if (err) {
         this.log.err(err)
         return callback()
       }
+
+      // If the dial is not in the set, it means that floodsub has been
+      // stopped, so we should just bail out
+      if (!this._dials.has(idB58Str)) {
+        this.log('floodsub was stopped, not processing dial to %s', idB58Str)
+        return callback()
+      }
+      this._dials.delete(idB58Str)
 
       this._onDial(peerInfo, conn, callback)
     })
@@ -149,6 +168,7 @@ class BaseProtocol extends EventEmitter {
     if (this.started) {
       return setImmediate(() => callback(new Error('already started')))
     }
+    this.log('starting')
 
     this.libp2p.handle(this.multicodec, this._onConnection)
 
@@ -160,6 +180,7 @@ class BaseProtocol extends EventEmitter {
 
     asyncEach(peerInfos, (peer, cb) => this._dialPeer(peer, cb), (err) => {
       setImmediate(() => {
+        this.log('started')
         this.started = true
         callback(err)
       })
@@ -180,6 +201,9 @@ class BaseProtocol extends EventEmitter {
 
     this.libp2p.unhandle(this.multicodec)
     this.libp2p.removeListener('peer:connect', this._dialPeer)
+
+    // Prevent any dials that are in flight from being processed
+    this._dials = new Set()
 
     this.log('stopping')
     asyncEach(this.peers.values(), (peer, cb) => peer.close(cb), (err) => {
