@@ -1,3 +1,13 @@
+<a name="0.15.3"></a>
+## [0.15.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.2...v0.15.3) (2018-12-06)
+
+
+### Bug Fixes
+
+* prevent double dialing same peer ([#63](https://github.com/libp2p/js-libp2p-floodsub/issues/63)) ([3303ad0](https://github.com/libp2p/js-libp2p-floodsub/commit/3303ad0))
+
+
+
 <a name="0.15.2"></a>
 ## [0.15.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.1...v0.15.2) (2018-11-28)
 
