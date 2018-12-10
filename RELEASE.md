@@ -24,6 +24,7 @@
     - [ ] Twitter
     - [ ] IRC
     - [ ] Reddit
+    - [ ] [discuss.ipfs.io](https://discuss.ipfs.io/c/announcements)
   - [ ] Blog post
 
 # 🙌🏽 Want to contribute?
