@@ -4,23 +4,23 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 
 ## 2019 Q1
 ### Connectivity Magic
-* Gossipsub implementation exists and interops with go
-* Rendezvous Protocol is implemented
-* Connection manager supports dial backoff
-* POC of WebBluetooth
+* Gossipsub implementation exists and interops with go [p1]
+* Rendezvous Protocol is implemented [p0]
+* Connection manager supports dial backoff [p2]
+* POC of WebBluetooth [p2]
 ### Improved Performance
-* multistream 2.0 is implemented
-* DHT has stream support for searches
-* Improve DHT scalability
-* NAT manager core functionality is implemented (upnp, pmp, pcp, hole punching)
+* multistream 2.0 is implemented [p0]
+* DHT has stream support for searches [p1]
+* Improve DHT scalability [p1]
+* NAT manager core functionality is implemented (upnp, pmp, pcp, hole punching) [p1]
 ### Improve Debuggability and Stability
-* go and js are interoperable
-* Large Scale Testbed (50k+ nodes)
-* libp2p has a network visualization tool
-* libp2p has a suite of benchmark tests to run for each release
+* go and js are interoperable [p0]
+* Large Scale Testbed (50k+ nodes) [p0]
+* libp2p has a network visualization tool [p2]
+* libp2p has a suite of benchmark tests to run for each release [p1]
 ### Libp2p is seen as the go to p2p networking stack
-* Revamped API and improved development experience
-* Usage examples and proper documentation exist for all the modules of libp2p
+* Revamped API and improved development experience [p1]
+* Usage examples and proper documentation exist for all the modules of libp2p [p2]
 
 ## 2018 Q4
 
