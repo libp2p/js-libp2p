@@ -1,3 +1,13 @@
+<a name="0.14.1"></a>
+## [0.14.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.0...v0.14.1) (2018-12-11)
+
+
+### Bug Fixes
+
+* typo get many option ([#63](https://github.com/libp2p/js-libp2p-kad-dht/issues/63)) ([de5a9fb](https://github.com/libp2p/js-libp2p-kad-dht/commit/de5a9fb))
+
+
+
 <a name="0.14.0"></a>
 # [0.14.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.13.0...v0.14.0) (2018-12-11)
 
