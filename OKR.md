@@ -4,7 +4,7 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 
 ## 2019 Q1
 ### Connectivity Magic
-* Gossipsub interops with go
+* Gossipsub implementation exists and interops with go
 * Rendezvous Protocol is implemented
 * Connection manager supports dial backoff
 * QUIC transport in js
