@@ -25,13 +25,13 @@ class RandomWalk {
    *
    * @param {number} [queries=1] - how many queries to run per period
    * @param {number} [period=300000] - how often to run the the random-walk process, in milliseconds (5min)
-   * @param {number} [maxTimeout=10000] - how long to wait for the the random-walk query to run, in milliseconds (10s)
+   * @param {number} [timeout=10000] - how long to wait for the the random-walk query to run, in milliseconds (10s)
    * @returns {void}
    */
-  start (queries, period, maxTimeout) {
+  start (queries, period, timeout) {
     if (queries == null) { queries = 1 }
     if (period == null) { period = 5 * c.minute }
-    if (maxTimeout == null) { maxTimeout = 10 * c.second }
+    if (timeout == null) { timeout = 10 * c.second }
     // Don't run twice
     if (this._running) { return }
 
@@ -66,7 +66,7 @@ class RandomWalk {
 
     // Start runner
     runningHandle.runPeriodically((done) => {
-      this._walk(queries, maxTimeout, () => done(period))
+      this._walk(queries, timeout, () => done(period))
     }, period)
     this._runningHandle = runningHandle
   }
@@ -92,13 +92,13 @@ class RandomWalk {
    * Do the random walk work.
    *
    * @param {number} queries
-   * @param {number} maxTimeout
+   * @param {number} walkTimeout
    * @param {function(Error)} callback
    * @returns {void}
    *
    * @private
    */
-  _walk (queries, maxTimeout, callback) {
+  _walk (queries, walkTimeout, callback) {
     this._kadDHT._log('random-walk:start')
 
     times(queries, (i, cb) => {
@@ -106,7 +106,7 @@ class RandomWalk {
         (cb) => this._randomPeerId(cb),
         (id, cb) => timeout((cb) => {
           this._query(id, cb)
-        }, maxTimeout)(cb)
+        }, walkTimeout)(cb)
       ], (err) => {
         if (err) {
           this._kadDHT._log.error('random-walk:error', err)

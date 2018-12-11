@@ -260,7 +260,7 @@ module.exports = (dht) => ({
    *
    * @param {Buffer} key
    * @param {Object} options - get options
-   * @param {number} options.maxTimeout - optional timeout (default: 60000)
+   * @param {number} options.timeout - optional timeout (default: 60000)
    * @param {function(Error, Record)} callback
    * @returns {void}
    *
@@ -269,7 +269,7 @@ module.exports = (dht) => ({
   _get (key, options, callback) {
     dht._log('_get %b', key)
     waterfall([
-      (cb) => dht.getMany(key, 16, options.maxTimeout, cb),
+      (cb) => dht.getMany(key, 16, options, cb),
       (vals, cb) => {
         const recs = vals.map((v) => v.val)
         let i = 0
@@ -458,14 +458,14 @@ module.exports = (dht) => ({
    * Search the dht for up to `n` providers of the given CID.
    *
    * @param {CID} key
-   * @param {number} maxTimeout - How long the query should maximally run in milliseconds.
+   * @param {number} providerTimeout - How long the query should maximally run in milliseconds.
    * @param {number} n
    * @param {function(Error, Array<PeerInfo>)} callback
    * @returns {void}
    *
    * @private
    */
-  _findNProviders (key, maxTimeout, n, callback) {
+  _findNProviders (key, providerTimeout, n, callback) {
     let out = new LimitedPeerList(n)
 
     dht.providers.getProviders(key, (err, provs) => {
@@ -524,7 +524,7 @@ module.exports = (dht) => ({
 
       const peers = dht.routingTable.closestPeers(key.buffer, c.ALPHA)
 
-      timeout((cb) => query.run(peers, cb), maxTimeout)((err) => {
+      timeout((cb) => query.run(peers, cb), providerTimeout)((err) => {
         // combine peers from each path
         paths.forEach((path) => {
           path.toArray().forEach((peer) => {

@@ -203,7 +203,7 @@ class KadDHT {
    *
    * @param {Buffer} key
    * @param {Object} options - get options
-   * @param {number} options.maxTimeout - optional timeout (default: 60000)
+   * @param {number} options.timeout - optional timeout (default: 60000)
    * @param {function(Error, Buffer)} callback
    * @returns {void}
    */
@@ -211,16 +211,14 @@ class KadDHT {
     if (typeof options === 'function') {
       callback = options
       options = {}
-    } else if (typeof options === 'number') { // This will be deprecated in a next release
-      options = {
-        maxTimeout: options
-      }
     } else {
       options = options || {}
     }
 
-    if (!options.maxTimeout) {
-      options.maxTimeout = c.minute
+    if (!options.maxTimeout && !options.timeout) {
+      options.timeout = c.minute // default
+    } else if (options.maxTimeout && !options.timeout) { // TODO this will be deprecated in a next release
+      options.timeout = options.maxTimeout
     }
 
     this._get(key, options, callback)
@@ -232,7 +230,7 @@ class KadDHT {
    * @param {Buffer} key
    * @param {number} nvals
    * @param {Object} options - get options
-   * @param {number} options.maxTimeout - optional timeout (default: 60000)
+   * @param {number} options.timeout - optional timeout (default: 60000)
    * @param {function(Error, Array<{from: PeerId, val: Buffer}>)} callback
    * @returns {void}
    */
@@ -240,16 +238,14 @@ class KadDHT {
     if (typeof options === 'function') {
       callback = options
       options = {}
-    } else if (typeof options === 'number') { // This will be deprecated in a next release
-      options = {
-        maxTimeout: options
-      }
     } else {
       options = options || {}
     }
 
-    if (!options.maxTimeout) {
-      options.maxTimeout = c.minute
+    if (!options.maxTimeout && !options.timeout) {
+      options.timeout = 'c.minute' // default
+    } else if (options.maxTimeout && !options.timeout) { // TODO this will be deprecated in a next release
+      options.timeout = options.maxTimeout
     }
 
     this._log('getMany %b (%s)', key, nvals)
@@ -322,7 +318,7 @@ class KadDHT {
           })
 
           // run our query
-          timeout((cb) => query.run(rtp, cb), options.maxTimeout)(cb)
+          timeout((cb) => query.run(rtp, cb), options.timeout)(cb)
         }
       ], (err) => {
         // combine vals from each path
@@ -485,7 +481,7 @@ class KadDHT {
    *
    * @param {CID} key
    * @param {Object} options - findProviders options
-   * @param {number} options.maxTimeout - how long the query should maximally run, in milliseconds (default: 60000)
+   * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
    * @param {number} options.maxNumProviders - maximum number of providers to find
    * @param {function(Error, Array<PeerInfo>)} callback
    * @returns {void}
@@ -494,19 +490,20 @@ class KadDHT {
     if (typeof options === 'function') {
       callback = options
       options = {}
-    } else if (typeof options === 'number') { // This will be deprecated in a next release
-      options = {
-        maxTimeout: options
-      }
     } else {
       options = options || {}
     }
 
-    options.maxTimeout = options.maxTimeout || c.minute
+    if (!options.maxTimeout && !options.timeout) {
+      options.timeout = c.minute // default
+    } else if (options.maxTimeout && !options.timeout) { // TODO this will be deprecated in a next release
+      options.timeout = options.maxTimeout
+    }
+
     options.maxNumProviders = options.maxNumProviders || c.K
 
     this._log('findProviders %s', key.toBaseEncodedString())
-    this._findNProviders(key, options.maxTimeout, options.maxNumProviders, callback)
+    this._findNProviders(key, options.timeout, options.maxNumProviders, callback)
   }
 
   // ----------- Peer Routing
@@ -516,7 +513,7 @@ class KadDHT {
    *
    * @param {PeerId} id
    * @param {Object} options - findPeer options
-   * @param {number} options.maxTimeout - how long the query should maximally run, in milliseconds (default: 60000)
+   * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
    * @param {function(Error, PeerInfo)} callback
    * @returns {void}
    */
@@ -524,16 +521,14 @@ class KadDHT {
     if (typeof options === 'function') {
       callback = options
       options = {}
-    } else if (typeof options === 'number') { // This will be deprecated in a next release
-      options = {
-        maxTimeout: options
-      }
     } else {
       options = options || {}
     }
 
-    if (!options.maxTimeout) {
-      options.maxTimeout = c.minute
+    if (!options.maxTimeout && !options.timeout) {
+      options.timeout = c.minute // default
+    } else if (options.maxTimeout && !options.timeout) { // TODO this will be deprecated in a next release
+      options.timeout = options.maxTimeout
     }
 
     this._log('findPeer %s', id.toB58String())
@@ -594,7 +589,7 @@ class KadDHT {
 
           timeout((cb) => {
             query.run(peers, cb)
-          }, options.maxTimeout)(cb)
+          }, options.timeout)(cb)
         },
         (result, cb) => {
           let success = false

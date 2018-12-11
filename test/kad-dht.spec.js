@@ -77,7 +77,7 @@ function bootstrap (dhts) {
   })
 }
 
-function waitForWellFormedTables (dhts, minPeers, avgPeers, maxTimeout, callback) {
+function waitForWellFormedTables (dhts, minPeers, avgPeers, waitTimeout, callback) {
   timeout((cb) => {
     retry({ times: 50, interval: 200 }, (cb) => {
       let totalPeers = 0
@@ -98,7 +98,7 @@ function waitForWellFormedTables (dhts, minPeers, avgPeers, maxTimeout, callback
       const done = ready.every(Boolean)
       cb(done ? null : new Error('not done yet'))
     }, cb)
-  }, maxTimeout)(callback)
+  }, waitTimeout)(callback)
 }
 
 function countDiffPeers (a, b) {
@@ -267,7 +267,7 @@ describe('KadDHT', () => {
       waterfall([
         (cb) => connect(dhtA, dhtB, cb),
         (cb) => dhtA.put(Buffer.from('/v/hello'), Buffer.from('world'), cb),
-        (cb) => dhtB.get(Buffer.from('/v/hello'), { maxTimeout: 1000 }, cb),
+        (cb) => dhtB.get(Buffer.from('/v/hello'), { timeout: 1000 }, cb),
         (res, cb) => {
           expect(res).to.eql(Buffer.from('world'))
           cb()
@@ -291,7 +291,7 @@ describe('KadDHT', () => {
       waterfall([
         (cb) => connect(dhtA, dhtB, cb),
         (cb) => dhtA.put(Buffer.from('hello'), Buffer.from('world'), cb),
-        (cb) => dhtB.get(Buffer.from('hello'), { maxTimeout: 1000 }, cb),
+        (cb) => dhtB.get(Buffer.from('hello'), { timeout: 1000 }, cb),
         (res, cb) => {
           expect(res).to.eql(Buffer.from('world'))
           cb()
@@ -324,7 +324,7 @@ describe('KadDHT', () => {
       waterfall([
         (cb) => connect(dhtA, dhtB, cb),
         (cb) => dhtA.put(Buffer.from('/ipns/hello'), Buffer.from('world'), cb),
-        (cb) => dhtB.get(Buffer.from('/ipns/hello'), { maxTimeout: 1000 }, cb),
+        (cb) => dhtB.get(Buffer.from('/ipns/hello'), { timeout: 1000 }, cb),
         (res, cb) => {
           expect(res).to.eql(Buffer.from('world'))
           cb()
@@ -348,7 +348,7 @@ describe('KadDHT', () => {
       waterfall([
         (cb) => connect(dhtA, dhtB, cb),
         (cb) => dhtA.put(Buffer.from('/v2/hello'), Buffer.from('world'), cb),
-        (cb) => dhtB.get(Buffer.from('/v2/hello'), { maxTimeout: 1000 }, cb)
+        (cb) => dhtB.get(Buffer.from('/v2/hello'), { timeout: 1000 }, cb)
       ], (err) => {
         expect(err).to.exist()
         expect(err.code).to.eql('ERR_UNRECOGNIZED_KEY_PREFIX')
@@ -376,8 +376,8 @@ describe('KadDHT', () => {
         expect(err).to.not.exist()
 
         series([
-          (cb) => dhtA.get(Buffer.from('/v/hello'), { maxTimeout: 1000 }, cb),
-          (cb) => dhtB.get(Buffer.from('/v/hello'), { maxTimeout: 1000 }, cb)
+          (cb) => dhtA.get(Buffer.from('/v/hello'), { timeout: 1000 }, cb),
+          (cb) => dhtB.get(Buffer.from('/v/hello'), { timeout: 1000 }, cb)
         ], (err, results) => {
           expect(err).to.not.exist()
           results.forEach((res) => {
@@ -412,7 +412,7 @@ describe('KadDHT', () => {
           let n = 0
           each(values, (v, cb) => {
             n = (n + 1) % 3
-            dhts[n].findProviders(v.cid, { maxTimeout: 5000 }, (err, provs) => {
+            dhts[n].findProviders(v.cid, { timeout: 5000 }, (err, provs) => {
               expect(err).to.not.exist()
               expect(provs).to.have.length(1)
               expect(provs[0].id.id).to.be.eql(ids[3].id)
@@ -507,7 +507,7 @@ describe('KadDHT', () => {
           Buffer.from('world'),
           cb
         ),
-        (cb) => dhts[0].get(Buffer.from('/v/hello'), { maxTimeout: 1000 }, cb),
+        (cb) => dhts[0].get(Buffer.from('/v/hello'), { timeout: 1000 }, cb),
         (res, cb) => {
           expect(res).to.eql(Buffer.from('world'))
           cb()
@@ -534,7 +534,7 @@ describe('KadDHT', () => {
         (cb) => connect(dhts[0], dhts[1], cb),
         (cb) => connect(dhts[1], dhts[2], cb),
         (cb) => connect(dhts[2], dhts[3], cb),
-        (cb) => dhts[0].findPeer(ids[3], { maxTimeout: 1000 }, cb),
+        (cb) => dhts[0].findPeer(ids[3], { timeout: 1000 }, cb),
         (res, cb) => {
           expect(res.id.isEqual(ids[3])).to.eql(true)
           cb()
@@ -878,7 +878,7 @@ describe('KadDHT', () => {
 
         waterfall([
           (cb) => connect(dhtA, dhtB, cb),
-          (cb) => dhtA.get(Buffer.from('/v/hello'), { maxTimeout: 1000 }, cb)
+          (cb) => dhtA.get(Buffer.from('/v/hello'), { timeout: 1000 }, cb)
         ], (err) => {
           expect(err).to.exist()
           expect(err.code).to.be.eql(errCode)
@@ -936,7 +936,7 @@ describe('KadDHT', () => {
           expect(err).to.not.exist()
           const stub = sinon.stub(dhts[0].routingTable, 'closestPeers').returns([])
 
-          dhts[0].findPeer(ids[3], { maxTimeout: 1000 }, (err) => {
+          dhts[0].findPeer(ids[3], { timeout: 1000 }, (err) => {
             expect(err).to.exist()
             expect(err.code).to.eql('ERR_LOOKUP_FAILED')
             stub.restore()
