@@ -18,6 +18,7 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
   * The dht has a full, passing suite of interop tests
   * Circuit Relay has a full, passing suite of interop tests
   * TCP and Websocket transports have full, passing suites of interop tests over SECIO and mplex
+  * Floodsub has a full, passing suite of interop tests
 * Large Scale Testbed (50k+ nodes) [p0]
 * libp2p has a network visualization tool [p2]
 * libp2p has a suite of benchmark tests to run for each release [p1]
