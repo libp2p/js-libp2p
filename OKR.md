@@ -15,6 +15,9 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 * NAT manager core functionality is implemented (upnp, pmp, pcp, hole punching) [p1]
 ### Improve Debuggability and Stability
 * go and js are interoperable [p0]
+  * The dht has a full, passing suite of interop tests
+  * Circuit Relay has a full, passing suite of interop tests
+  * TCP and Websocket transports have full, passing suites of interop tests over SECIO and mplex
 * Large Scale Testbed (50k+ nodes) [p0]
 * libp2p has a network visualization tool [p2]
 * libp2p has a suite of benchmark tests to run for each release [p1]
