@@ -243,7 +243,7 @@ class KadDHT {
     }
 
     if (!options.maxTimeout && !options.timeout) {
-      options.timeout = 'c.minute' // default
+      options.timeout = c.minute // default
     } else if (options.maxTimeout && !options.timeout) { // TODO this will be deprecated in a next release
       options.timeout = options.maxTimeout
     }
