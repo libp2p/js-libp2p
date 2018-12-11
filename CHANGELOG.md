@@ -1,3 +1,20 @@
+<a name="0.14.0"></a>
+# [0.14.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.13.0...v0.14.0) (2018-12-11)
+
+
+### Chores
+
+* update options timeout property ([#62](https://github.com/libp2p/js-libp2p-kad-dht/issues/62)) ([3046b54](https://github.com/libp2p/js-libp2p-kad-dht/commit/3046b54))
+
+
+### BREAKING CHANGES
+
+* get, getMany, findProviders and findPeer do not accept a timeout number anymore. It must be a property of an object options.
+
+Co-Authored-By: vasco-santos <vasco.santos@ua.pt>
+
+
+
 <a name="0.13.0"></a>
 # [0.13.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.12.1...v0.13.0) (2018-12-05)
 
