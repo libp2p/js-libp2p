@@ -7,7 +7,6 @@ We try to frame our ongoing work using a process based on quarterly Objectives a
 * Gossipsub implementation exists and interops with go
 * Rendezvous Protocol is implemented
 * Connection manager supports dial backoff
-* QUIC transport in js
 * POC of WebBluetooth
 ### Improved Performance
 * multistream 2.0 is implemented
