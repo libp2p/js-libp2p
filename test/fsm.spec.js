@@ -114,5 +114,29 @@ describe('libp2p state machine (fsm)', () => {
 
       node.start()
     })
+
+    it('should not dial when the node is stopped', (done) => {
+      node.on('stop', () => {
+        node.dial(null, (err) => {
+          expect(err).to.exist()
+          expect(err.code).to.eql('ERR_NODE_NOT_STARTED')
+          done()
+        })
+      })
+
+      node.stop()
+    })
+
+    it('should not dial (fsm) when the node is stopped', (done) => {
+      node.on('stop', () => {
+        node.dialFSM(null, null, (err) => {
+          expect(err).to.exist()
+          expect(err.code).to.eql('ERR_NODE_NOT_STARTED')
+          done()
+        })
+      })
+
+      node.stop()
+    })
   })
 })
