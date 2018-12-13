@@ -3,6 +3,7 @@
 const EventEmitter = require('events')
 const Big = require('big.js').Big
 const MovingAverage = require('moving-average')
+const retimer = require('retimer')
 
 /**
  * A queue based manager for stat processing
@@ -55,7 +56,8 @@ class Stats extends EventEmitter {
    */
   stop () {
     if (this._timeout) {
-      clearTimeout(this._timeout)
+      this._timeout.clear()
+      this._timeout = null
     }
   }
 
@@ -98,9 +100,10 @@ class Stats extends EventEmitter {
    */
   _resetComputeTimeout () {
     if (this._timeout) {
-      clearTimeout(this._timeout)
+      this._timeout.reschedule(this._nextTimeout())
+    } else {
+      this._timeout = retimer(this._update, this._nextTimeout())
     }
-    this._timeout = setTimeout(this._update, this._nextTimeout())
   }
 
   /**

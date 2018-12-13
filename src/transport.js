@@ -1,5 +1,7 @@
 'use strict'
 
+/* eslint no-warning-comments: off */
+
 const parallel = require('async/parallel')
 const once = require('once')
 const debug = require('debug')

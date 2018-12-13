@@ -42,7 +42,7 @@ class DialQueue {
     this._dialWithTimeout(transport, addr, (err, conn) => {
       if (err) {
         log.error(`${transport.constructor.name}:work`, err)
-        return callback(null, {error: err})
+        return callback(null, { error: err })
       }
 
       if (token.cancel) {
@@ -51,9 +51,9 @@ class DialQueue {
         pull(pull.empty(), conn)
         // If we can close the connection, do it
         if (typeof conn.close === 'function') {
-          return conn.close((_) => callback(null, {cancel: true}))
+          return conn.close((_) => callback(null, { cancel: true }))
         }
-        return callback(null, {cancel: true})
+        return callback(null, { cancel: true })
       }
 
       // one is enough
@@ -99,7 +99,7 @@ class DialQueue {
    * @returns {void}
    */
   push (transport, addr, token, callback) {
-    this.queue.push({transport, addr, token}, callback)
+    this.queue.push({ transport, addr, token }, callback)
   }
 }
 

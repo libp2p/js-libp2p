@@ -75,7 +75,8 @@
     "once": "^1.4.0",
     "peer-id": "~0.12.0",
     "peer-info": "~0.14.1",
-    "pull-stream": "^3.6.9"
+    "pull-stream": "^3.6.9",
+    "retimer": "^2.0.0"
   },
   "contributors": [
     "Alan Shaw <alan@tableflip.io>",
@@ -93,6 +94,7 @@
     "Kevin Kwok <antimatter15@gmail.com>",
     "Kobi Gurkan <kobigurk@gmail.com>",
     "Maciej Krüger <mkg20001@gmail.com>",
+    "Matteo Collina <hello@matteocollina.com>",
     "Michael Fakhry <fakhrimichael@live.com>",
     "Oli Evans <oli@tableflip.io>",
     "Pau Ramon Revilla <masylum@gmail.com>",

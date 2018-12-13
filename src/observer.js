@@ -41,7 +41,7 @@ module.exports = (swtch) => {
     peerInfo.then((_peerInfo) => {
       if (_peerInfo) {
         const peerId = _peerInfo.id.toB58String()
-        setImmediate(() => observer.emit('message', peerId, transport, protocol, direction, bufferLength))
+        observer.emit('message', peerId, transport, protocol, direction, bufferLength)
       }
     })
   }

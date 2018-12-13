@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+/* eslint no-warning-comments: off */
 'use strict'
 
 const chai = require('chai')

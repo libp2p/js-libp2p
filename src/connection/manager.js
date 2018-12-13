@@ -85,6 +85,7 @@ class ConnectionManager {
           }
 
           conn.getPeerInfo((err, peerInfo) => {
+            /* eslint no-warning-comments: off */
             if (err) {
               return log('identify not successful')
             }
@@ -140,7 +141,7 @@ class ConnectionManager {
       encrypt = plaintext.encrypt
     }
 
-    this.switch.crypto = {tag, encrypt}
+    this.switch.crypto = { tag, encrypt }
   }
 
   /**
