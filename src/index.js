@@ -469,12 +469,12 @@ class Node extends EventEmitter {
         cb()
       },
       (cb) => {
-        // Ensures idempotency for restarts
-        this._switch.transport.removeAll(cb)
-      },
-      (cb) => {
         this.connectionManager.stop()
         this._switch.stop(cb)
+      },
+      (cb) => {
+        // Ensures idempotent restarts
+        this._switch.transport.removeAll(cb)
       }
     ], (err) => {
       if (err) {
