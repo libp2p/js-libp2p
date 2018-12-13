@@ -215,7 +215,7 @@ describe('stream muxing', () => {
 
         nodeA.dial(nodeB.peerInfo, (err) => {
           expect(err).to.not.exist()
-          expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
+          expect(nodeA._switch.connection.getAll()).to.have.length(0)
           cb()
         })
       },
