@@ -313,7 +313,7 @@ describe('transports', () => {
         function check () {
           const peers = node1.peerBook.getAll()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(nodeA._switch.connection.getAll()).to.have.length(0)
+          expect(node1._switch.connection.getAll()).to.have.length(0)
           done()
         }
       })
