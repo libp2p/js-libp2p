@@ -98,7 +98,7 @@ describe('Private Network', function () {
 
     switchA.dial(switchB._peerInfo, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      expect(Object.keys(switchA.muxedConns).length).to.equal(1)
+      expect(switchA.connection.getAll()).to.have.length(1)
       tryEcho(conn, done)
     })
   })
@@ -107,7 +107,7 @@ describe('Private Network', function () {
     switchB.dial(switchA._peerInfo, (err) => {
       expect(err).to.not.exist()
       expect(Object.keys(switchB.conns).length).to.equal(0)
-      expect(Object.keys(switchB.muxedConns).length).to.equal(1)
+      expect(switchB.connection.getAll()).to.have.length(1)
       done()
     })
   })
@@ -118,7 +118,7 @@ describe('Private Network', function () {
     switchB.dial(switchA._peerInfo, '/papaia/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
       expect(Object.keys(switchB.conns).length).to.equal(0)
-      expect(Object.keys(switchB.muxedConns).length).to.equal(1)
+      expect(switchB.connection.getAll()).to.have.length(1)
       tryEcho(conn, done)
     })
   })
@@ -130,8 +130,8 @@ describe('Private Network', function () {
     switchC.dial(switchA._peerInfo, (err) => {
       expect(err).to.not.exist()
       setTimeout(() => {
-        expect(Object.keys(switchC.muxedConns).length).to.equal(1)
-        expect(Object.keys(switchA.muxedConns).length).to.equal(2)
+        expect(switchC.connection.getAll()).to.have.length(1)
+        expect(switchA.connection.getAll()).to.have.length(2)
         done()
       }, 500)
     })

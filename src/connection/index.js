@@ -1,7 +1,6 @@
 'use strict'
 
 const FSM = require('fsm-event')
-const setImmediate = require('async/setImmediate')
 const Circuit = require('libp2p-circuit')
 const multistream = require('multistream-select')
 const withIs = require('class-is')
@@ -15,6 +14,8 @@ const Errors = require('../errors')
  * @property {Switch} _switch Our switch instance
  * @property {PeerInfo} peerInfo The PeerInfo of the peer to dial
  * @property {Muxer} muxer Optional - A muxed connection
+ * @property {Connection} conn Optional - The base connection
+ * @property {string} type Optional - identify the connection as incoming or outgoing. Defaults to out.
  */
 
 /**
@@ -29,16 +30,16 @@ class ConnectionFSM extends BaseConnection {
    * @param {ConnectionOptions} param0
    * @constructor
    */
-  constructor ({ _switch, peerInfo, muxer }) {
+  constructor ({ _switch, peerInfo, muxer, conn, type = 'out' }) {
     super({
       _switch,
-      name: `out:${_switch._peerInfo.id.toB58String().slice(0, 8)}`
+      name: `${type}:${_switch._peerInfo.id.toB58String().slice(0, 8)}`
     })
 
     this.theirPeerInfo = peerInfo
     this.theirB58Id = this.theirPeerInfo.id.toB58String()
 
-    this.conn = null // The base connection
+    this.conn = conn // The base connection
     this.muxer = muxer // The upgraded/muxed connection
 
     let startState = 'DISCONNECTED'
@@ -114,6 +115,7 @@ class ConnectionFSM extends BaseConnection {
     this._state.on('UPGRADING', () => this._onUpgrading())
     this._state.on('MUXED', () => {
       this.log(`successfully muxed connection to ${this.theirB58Id}`)
+      delete this.switch.conns[this.theirB58Id]
       this.emit('muxed', this.muxer)
     })
     this._state.on('CONNECTED', () => {
@@ -166,7 +168,6 @@ class ConnectionFSM extends BaseConnection {
       })
     }
 
-    this.conn.setPeerInfo(this.theirPeerInfo)
     this._protocolHandshake(protocol, this.conn, callback)
   }
 
@@ -266,14 +267,22 @@ class ConnectionFSM extends BaseConnection {
       this.muxer.end()
     }
 
-    delete this.switch.muxedConns[this.theirB58Id]
+    this.switch.connection.remove(this)
+
     delete this.switch.conns[this.theirB58Id]
     delete this.muxer
-    delete this.conn
 
-    this._state('done')
-
-    setImmediate(() => this.switch.emit('peer-mux-closed', this.theirPeerInfo))
+    // If we have the base connection, abort it
+    if (this.conn) {
+      this.conn.source(true, () => {
+        this._state('done')
+        this.switch.emit('peer-mux-closed', this.theirPeerInfo)
+        delete this.conn
+      })
+    } else {
+      this._state('done')
+      this.switch.emit('peer-mux-closed', this.theirPeerInfo)
+    }
   }
 
   /**
@@ -352,7 +361,8 @@ class ConnectionFSM extends BaseConnection {
           const conn = observeConnection(null, key, _conn, this.switch.observer)
 
           this.muxer = this.switch.muxers[key].dialer(conn)
-          this.switch.muxedConns[this.theirB58Id] = this
+          // this.switch.muxedConns[this.theirB58Id] = this
+          this.switch.connection.add(this)
 
           this.muxer.once('close', () => {
             this.close()
@@ -365,7 +375,7 @@ class ConnectionFSM extends BaseConnection {
             this.switch.protocolMuxer(null)(conn)
           })
 
-          setImmediate(() => this.switch.emit('peer-mux-established', this.theirPeerInfo))
+          this.switch.emit('peer-mux-established', this.theirPeerInfo)
 
           this._didUpgrade(null)
         })

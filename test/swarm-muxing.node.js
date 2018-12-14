@@ -118,7 +118,7 @@ describe('Switch (everything all together)', () => {
       }),
       (cb) => switchA.dial(switchB._peerInfo, (err) => {
         expect(err).to.not.exist()
-        expect(Object.keys(switchA.muxedConns).length).to.equal(1)
+        expect(switchA.connection.getAll()).to.have.length(1)
         cb()
       })
     ], done)
@@ -127,7 +127,7 @@ describe('Switch (everything all together)', () => {
   it('warm up a warmed up, from B to A', (done) => {
     switchB.dial(switchA._peerInfo, (err) => {
       expect(err).to.not.exist()
-      expect(Object.keys(switchA.muxedConns).length).to.equal(1)
+      expect(switchA.connection.getAll()).to.have.length(1)
       done()
     })
   })
@@ -137,7 +137,7 @@ describe('Switch (everything all together)', () => {
 
     switchA.dial(switchB._peerInfo, '/anona/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      expect(Object.keys(switchA.muxedConns).length).to.equal(1)
+      expect(switchA.connection.getAll()).to.have.length(1)
       tryEcho(conn, done)
     })
   })
@@ -145,7 +145,7 @@ describe('Switch (everything all together)', () => {
   it('dial from ws to ws no proto', (done) => {
     switchD.dial(switchE._peerInfo, (err) => {
       expect(err).to.not.exist()
-      expect(Object.keys(switchD.muxedConns).length).to.equal(1)
+      expect(switchD.connection.getAll()).to.have.length(1)
       done()
     })
   })
@@ -155,10 +155,10 @@ describe('Switch (everything all together)', () => {
 
     switchD.dial(switchE._peerInfo, '/abacaxi/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      expect(Object.keys(switchD.muxedConns).length).to.equal(1)
+      expect(switchD.connection.getAll()).to.have.length(1)
 
       tryEcho(conn, () => setTimeout(() => {
-        expect(Object.keys(switchE.muxedConns).length).to.equal(1)
+        expect(switchE.connection.getAll()).to.have.length(1)
         done()
       }, 1000))
     })
@@ -169,7 +169,7 @@ describe('Switch (everything all together)', () => {
 
     const conn = switchA.dial(switchB._peerInfo, '/grapes/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      expect(Object.keys(switchA.muxedConns).length).to.equal(1)
+      expect(switchA.connection.getAll()).to.have.length(1)
     })
 
     tryEcho(conn, done)
@@ -202,7 +202,7 @@ describe('Switch (everything all together)', () => {
         check()
       })
 
-      expect(Object.keys(switchA.muxedConns).length).to.equal(2)
+      expect(switchA.connection.getAll()).to.have.length(2)
       expect(switchC._peerInfo.isConnected).to.exist()
       expect(switchA._peerInfo.isConnected).to.exist()
 
@@ -215,13 +215,13 @@ describe('Switch (everything all together)', () => {
     const ready = () => ++count === 3 ? done() : null
 
     switchB.once('peer-mux-closed', (peerInfo) => {
-      expect(Object.keys(switchB.muxedConns).length).to.equal(0)
+      expect(switchB.connection.getAll()).to.have.length(0)
       expect(switchB._peerInfo.isConnected()).to.not.exist()
       ready()
     })
 
     switchA.once('peer-mux-closed', (peerInfo) => {
-      expect(Object.keys(switchA.muxedConns).length).to.equal(1)
+      expect(switchA.connection.getAll()).to.have.length(1)
       expect(switchA._peerInfo.isConnected()).to.not.exist()
       ready()
     })

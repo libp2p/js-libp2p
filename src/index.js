@@ -44,14 +44,6 @@ class Switch extends EventEmitter {
     // { peerIdB58: { conn: <conn> }}
     this.conns = {}
 
-    // {
-    //   peerIdB58: {
-    //     muxer: <muxer>
-    //     conn: <transport socket> // to extract info required for the Identify Protocol
-    //   }
-    // }
-    this.muxedConns = {}
-
     // { protocol: handler }
     this.protocols = {}
 
@@ -94,7 +86,10 @@ class Switch extends EventEmitter {
         stop: 'STOPPING',
         start: 'STARTED'
       },
-      STOPPING: { done: 'STOPPED' }
+      STOPPING: {
+        stop: 'STOPPING',
+        done: 'STOPPED'
+      }
     })
     this.state.on('STARTING', () => {
       log('The switch is starting')
@@ -176,16 +171,11 @@ class Switch extends EventEmitter {
   hangUp (peer, callback) {
     const peerInfo = getPeerInfo(peer, this.peerBook)
     const key = peerInfo.id.toB58String()
-    if (this.muxedConns[key]) {
-      const conn = this.muxedConns[key]
-      conn.once('close', () => {
-        delete this.muxedConns[key]
-        callback()
-      })
+    const conns = [...this.connection.getAllById(key)]
+    each(conns, (conn, cb) => {
+      conn.once('close', cb)
       conn.close()
-    } else {
-      callback()
-    }
+    }, callback)
   }
 
   /**
@@ -231,6 +221,7 @@ class Switch extends EventEmitter {
    * @returns {void}
    */
   _onStarting () {
+    this.stats.start()
     eachSeries(this.availableTransports(this._peerInfo), (ts, cb) => {
       // Listen on the given transport
       this.transport.listen(ts, {}, null, cb)
@@ -252,22 +243,17 @@ class Switch extends EventEmitter {
   _onStopping () {
     this.stats.stop()
     series([
-      (cb) => each(this.muxedConns, (conn, cb) => {
-        // If the connection was destroyed while we are hanging up, continue
-        if (!conn) {
-          return cb()
-        }
-
-        conn.once('close', cb)
-        conn.close()
-      }, cb),
       (cb) => {
         each(this.transports, (transport, cb) => {
           each(transport.listeners, (listener, cb) => {
             listener.close(cb)
           }, cb)
         }, cb)
-      }
+      },
+      (cb) => each([...this.connection.getAll()], (conn, cb) => {
+        conn.once('close', cb)
+        conn.close()
+      }, cb)
     ], (_) => {
       this.state('done')
     })

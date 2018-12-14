@@ -5,6 +5,7 @@ const pull = require('pull-stream')
 const timeout = require('async/timeout')
 const queue = require('async/queue')
 const debug = require('debug')
+const once = require('once')
 
 const log = debug('libp2p:switch:dialer:queue')
 log.error = debug('libp2p:switch:dialer:queue:error')
@@ -38,6 +39,7 @@ class DialQueue {
    * @private
    */
   _doWork (transport, addr, token, callback) {
+    callback = once(callback)
     log(`${transport.constructor.name}:work:start`)
     this._dialWithTimeout(transport, addr, (err, conn) => {
       if (err) {

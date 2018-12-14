@@ -50,8 +50,8 @@ describe('Stats', () => {
       switchB.connection.addStreamMuxer(multiplex)
 
       parallel([
-        (cb) => switchA.transport.listen('tcp', {}, null, cb),
-        (cb) => switchB.transport.listen('tcp', {}, null, cb)
+        (cb) => switchA.start(cb),
+        (cb) => switchB.start(cb)
       ], (err) => {
         if (err) {
           cb(err)

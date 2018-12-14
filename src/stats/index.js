@@ -40,6 +40,7 @@ module.exports = (observer, _options) => {
   const globalStats = new Stat(initialCounters, options)
 
   const stats = Object.assign(new EventEmitter(), {
+    start: start,
     stop: stop,
     global: globalStats,
     peers: () => Array.from(peerStats.keys()),
@@ -59,7 +60,19 @@ module.exports = (observer, _options) => {
   const transportStats = new Map()
   const protocolStats = new Map()
 
-  observer.on('message', (peerId, transportTag, protocolTag, direction, bufferLength) => {
+  observer.on('peer:closed', (peerId) => {
+    const peer = peerStats.get(peerId)
+    if (peer) {
+      peer.removeListener('update', propagateChange)
+      peer.stop()
+      peerStats.delete(peerId)
+      oldPeers.set(peerId, peer)
+    }
+  })
+
+  return stats
+
+  function onMessage (peerId, transportTag, protocolTag, direction, bufferLength) {
     const event = directionToEvent[direction]
 
     if (transportTag) {
@@ -104,22 +117,25 @@ module.exports = (observer, _options) => {
       }
       protocol.push(event, bufferLength)
     }
-  })
+  }
 
-  observer.on('peer:closed', (peerId) => {
-    const peer = peerStats.get(peerId)
-    if (peer) {
-      peer.removeListener('update', propagateChange)
-      peer.stop()
-      peerStats.delete(peerId)
-      oldPeers.set(peerId, peer)
+  function start () {
+    observer.on('message', onMessage)
+
+    globalStats.start()
+
+    for (let peerStat of peerStats.values()) {
+      peerStat.start()
     }
-  })
-
-  return stats
+    for (let transportStat of transportStats.values()) {
+      transportStat.start()
+    }
+  }
 
   function stop () {
+    observer.removeListener('message', onMessage)
     globalStats.stop()
+
     for (let peerStat of peerStats.values()) {
       peerStat.stop()
     }

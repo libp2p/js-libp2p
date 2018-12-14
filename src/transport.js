@@ -203,6 +203,9 @@ class TransportManager {
    * @returns {Array<Multiaddr>}
    */
   static dialables (transport, multiaddrs, peerInfo) {
+    // If we dont have a proper transport, return no multiaddrs
+    if (!transport || !transport.filter) return []
+
     const transportAddrs = transport.filter(multiaddrs)
     if (!peerInfo) {
       return transportAddrs

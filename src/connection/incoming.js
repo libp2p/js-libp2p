@@ -20,7 +20,9 @@ class IncomingConnectionFSM extends BaseConnection {
     this.msListener = new multistream.Listener()
 
     this._state = FSM('DIALED', {
-      DISCONNECTED: { },
+      DISCONNECTED: {
+        disconnect: 'DISCONNECTED'
+      },
       DIALED: { // Base connection to peer established
         privatize: 'PRIVATIZING',
         encrypt: 'ENCRYPTING'

@@ -54,13 +54,14 @@ function dial (_switch, returnFSM) {
 
     log(`dialing to ${b58Id.slice(0, 8)} with protocol ${protocol || 'unknown'}`)
 
-    let connection = _switch.muxedConns[b58Id] || _switch.conns[b58Id]
+    let connection = _switch.connection.getOne(b58Id)
 
     if (!ConnectionFSM.isConnectionFSM(connection)) {
       connection = new ConnectionFSM({
         _switch,
         peerInfo,
-        muxer: _switch.muxedConns[b58Id] || null
+        muxer: null,
+        conn: null
       })
       connection.once('error', (err) => callback(err))
       connection.once('connected', () => connection.protect())
