@@ -91,14 +91,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeA.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
+              expect(nodeA._switch.connection.getAll()).to.have.length(0)
               cb()
             },
             (cb) => {
               const peers = nodeB.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-
-              expect(Object.keys(nodeB._switch.muxedConns)).to.have.length(0)
+              expect(nodeB._switch.connection.getAll()).to.have.length(0)
               cb()
             }
           ], done)
@@ -117,15 +116,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeA.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-
-              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(1)
+              expect(nodeA._switch.connection.getAll()).to.have.length(1)
               cb()
             },
             (cb) => {
               const peers = nodeB.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-
-              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(1)
+              expect(nodeA._switch.connection.getAll()).to.have.length(1)
               cb()
             }
           ], () => tryEcho(conn, done))
@@ -143,15 +140,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeA.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-
-              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
+              expect(nodeA._switch.connection.getAll()).to.have.length(0)
               cb()
             },
             (cb) => {
               const peers = nodeB.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-
-              expect(Object.keys(nodeB._switch.muxedConns)).to.have.length(0)
+              expect(nodeB._switch.connection.getAll()).to.have.length(0)
               cb()
             }
           ], done)
@@ -170,13 +165,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeA.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(1)
+              expect(nodeA._switch.connection.getAll()).to.have.length(1)
               cb()
             },
             (cb) => {
               const peers = nodeB.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(1)
+              expect(nodeA._switch.connection.getAll()).to.have.length(1)
               cb()
             }
           ], () => tryEcho(conn, done))
@@ -194,13 +189,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeA.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
+              expect(nodeA._switch.connection.getAll()).to.have.length(0)
               cb()
             },
             (cb) => {
               const peers = nodeB.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeB._switch.muxedConns)).to.have.length(0)
+              expect(nodeB._switch.connection.getAll()).to.have.length(0)
               cb()
             }
           ], done)
@@ -213,16 +208,16 @@ describe('transports', () => {
         expect(err).to.not.exist()
 
         connFSM.once('muxed', () => {
-          expect(nodeA._switch.muxedConns).to.have.any.keys(
-            nodeB.peerInfo.id.toB58String()
-          )
+          expect(
+            nodeA._switch.connection.getAllById(nodeB.peerInfo.id.toB58String())
+          ).to.have.length(1)
 
           connFSM.once('error', done)
           connFSM.once('close', () => {
             // ensure the connection is closed
-            expect(nodeA._switch.muxedConns).to.not.have.any.keys([
-              nodeB.peerInfo.id.toB58String()
-            ])
+            expect(
+              nodeA._switch.connection.getAllById(nodeB.peerInfo.id.toB58String())
+            ).to.have.length(0)
             done()
           })
 
@@ -235,9 +230,9 @@ describe('transports', () => {
       nodeA.dialFSM(nodeB.peerInfo, '/echo/1.0.0', (err, connFSM) => {
         expect(err).to.not.exist()
         connFSM.once('connection', (conn) => {
-          expect(nodeA._switch.muxedConns).to.have.all.keys([
-            nodeB.peerInfo.id.toB58String()
-          ])
+          expect(
+            nodeA._switch.connection.getAllById(nodeB.peerInfo.id.toB58String())
+          ).to.have.length(1)
           tryEcho(conn, () => {
             connFSM.close()
           })
@@ -245,9 +240,9 @@ describe('transports', () => {
         connFSM.once('error', done)
         connFSM.once('close', () => {
           // ensure the connection is closed
-          expect(nodeA._switch.muxedConns).to.not.have.any.keys([
-            nodeB.peerInfo.id.toB58String()
-          ])
+          expect(
+            nodeA._switch.connection.getAllById(nodeB.peerInfo.id.toB58String())
+          ).to.have.length(0)
           done()
         })
       })
@@ -309,13 +304,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeTCP.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeTCP._switch.muxedConns)).to.have.length(1)
+              expect(nodeTCP._switch.connection.getAll()).to.have.length(1)
               cb()
             },
             (cb) => {
               const peers = nodeTCPnWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeTCPnWS._switch.muxedConns)).to.have.length(1)
+              expect(nodeTCPnWS._switch.connection.getAll()).to.have.length(1)
               cb()
             }
           ], done)
@@ -333,14 +328,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeTCP.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeTCP._switch.muxedConns)).to.have.length(0)
-
+              expect(nodeTCP._switch.connection.getAll()).to.have.length(0)
               cb()
             },
             (cb) => {
               const peers = nodeTCPnWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeTCPnWS._switch.muxedConns)).to.have.length(0)
+              expect(nodeTCPnWS._switch.connection.getAll()).to.have.length(0)
               cb()
             }
           ], done)
@@ -360,13 +354,13 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeTCPnWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(2)
-              expect(Object.keys(nodeTCPnWS._switch.muxedConns)).to.have.length(1)
+              expect(nodeTCPnWS._switch.connection.getAll()).to.have.length(1)
               cb()
             },
             (cb) => {
               const peers = nodeWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeWS._switch.muxedConns)).to.have.length(1)
+              expect(nodeWS._switch.connection.getAll()).to.have.length(1)
               cb()
             }
           ], done)
@@ -384,14 +378,14 @@ describe('transports', () => {
             (cb) => {
               const peers = nodeTCPnWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(2)
-              expect(Object.keys(nodeTCPnWS._switch.muxedConns)).to.have.length(0)
+              expect(nodeTCPnWS._switch.connection.getAll()).to.have.length(0)
 
               cb()
             },
             (cb) => {
               const peers = nodeWS.peerBook.getAll()
               expect(Object.keys(peers)).to.have.length(1)
-              expect(Object.keys(nodeWS._switch.muxedConns)).to.have.length(0)
+              expect(nodeWS._switch.connection.getAll()).to.have.length(0)
               cb()
             }
           ], done)
@@ -516,7 +510,7 @@ describe('transports', () => {
       let i = 1;
       [nodeAll, otherNode].forEach((node) => {
         expect(Object.keys(node.peerBook.getAll())).to.have.length(i-- ? peers : 1)
-        expect(Object.keys(node._switch.muxedConns)).to.have.length(muxed)
+        expect(node._switch.connection.getAll()).to.have.length(muxed)
       })
       callback()
     }
@@ -678,7 +672,7 @@ describe('transports', () => {
       let i = 1;
       [nodeAll, otherNode].forEach((node) => {
         expect(Object.keys(node.peerBook.getAll())).to.have.length(i-- ? peers : 1)
-        expect(Object.keys(node._switch.muxedConns)).to.have.length(muxed)
+        expect(node._switch.connection.getAll()).to.have.length(muxed)
       })
       done()
     }

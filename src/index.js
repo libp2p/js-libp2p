@@ -2,10 +2,10 @@
 
 const FSM = require('fsm-event')
 const EventEmitter = require('events').EventEmitter
-const assert = require('assert')
 const debug = require('debug')
 const log = debug('libp2p')
 log.error = debug('libp2p:error')
+const errCode = require('err-code')
 
 const each = require('async/each')
 const series = require('async/series')
@@ -24,7 +24,12 @@ const pubsub = require('./pubsub')
 const getPeerInfo = require('./get-peer-info')
 const validateConfig = require('./config').validate
 
-const NOT_STARTED_ERROR_MESSAGE = 'The libp2p node is not started yet'
+const notStarted = (action, state) => {
+  return errCode(
+    new Error(`libp2p cannot ${action} when not started; state is ${state}`),
+    'ERR_NODE_NOT_STARTED'
+  )
+}
 
 /**
  * @fires Node#error Emitted when an error occurs
@@ -217,8 +222,6 @@ class Node extends EventEmitter {
    * @returns {void}
    */
   dial (peer, callback) {
-    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
-
     this.dialProtocol(peer, null, callback)
   }
 
@@ -233,7 +236,9 @@ class Node extends EventEmitter {
    * @returns {void}
    */
   dialProtocol (peer, protocol, callback) {
-    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
+    if (!this.isStarted()) {
+      return callback(notStarted('dial', this.state._state))
+    }
 
     if (typeof protocol === 'function') {
       callback = protocol
@@ -261,7 +266,9 @@ class Node extends EventEmitter {
    * @returns {void}
    */
   dialFSM (peer, protocol, callback) {
-    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
+    if (!this.isStarted()) {
+      return callback(notStarted('dial', this.state._state))
+    }
 
     if (typeof protocol === 'function') {
       callback = protocol
@@ -282,8 +289,6 @@ class Node extends EventEmitter {
   }
 
   hangUp (peer, callback) {
-    assert(this.isStarted(), NOT_STARTED_ERROR_MESSAGE)
-
     this._getPeerInfo(peer, (err, peerInfo) => {
       if (err) { return callback(err) }
 
@@ -293,7 +298,7 @@ class Node extends EventEmitter {
 
   ping (peer, callback) {
     if (!this.isStarted()) {
-      return callback(new Error(NOT_STARTED_ERROR_MESSAGE))
+      return callback(notStarted('ping', this.state._state))
     }
 
     this._getPeerInfo(peer, (err, peerInfo) => {
@@ -464,12 +469,12 @@ class Node extends EventEmitter {
         cb()
       },
       (cb) => {
-        // Ensures idempotency for restarts
-        this._switch.transport.removeAll(cb)
-      },
-      (cb) => {
         this.connectionManager.stop()
         this._switch.stop(cb)
+      },
+      (cb) => {
+        // Ensures idempotent restarts
+        this._switch.transport.removeAll(cb)
       }
     ], (err) => {
       if (err) {

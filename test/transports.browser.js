@@ -102,7 +102,7 @@ describe('transports', () => {
         function check () {
           const peers = nodeA.peerBook.getAll()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
+          expect(nodeA._switch.connection.getAll()).to.have.length(0)
           done()
         }
       })
@@ -142,7 +142,7 @@ describe('transports', () => {
           const peers = nodeA.peerBook.getAll()
           expect(err).to.not.exist()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(nodeA._switch.muxedConns)).to.have.length(0)
+          expect(nodeA._switch.connection.getAll()).to.have.length(0)
           done()
         }
       })
@@ -153,16 +153,17 @@ describe('transports', () => {
         expect(err).to.not.exist()
 
         connFSM.once('muxed', () => {
-          expect(nodeA._switch.muxedConns).to.have.any.keys(
-            peerB.id.toB58String()
-          )
+          expect(
+            nodeA._switch.connection.getAllById(peerB.id.toB58String())
+          ).to.have.length(1)
 
           connFSM.once('error', done)
           connFSM.once('close', () => {
             // ensure the connection is closed
-            expect(nodeA._switch.muxedConns).to.not.have.any.keys([
-              peerB.id.toB58String()
-            ])
+            expect(
+              nodeA._switch.connection.getAllById(peerB.id.toB58String())
+            ).to.have.length(0)
+
             done()
           })
 
@@ -312,7 +313,7 @@ describe('transports', () => {
         function check () {
           const peers = node1.peerBook.getAll()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(node1._switch.muxedConns)).to.have.length(0)
+          expect(node1._switch.connection.getAll()).to.have.length(0)
           done()
         }
       })
@@ -326,7 +327,7 @@ describe('transports', () => {
 
         function check () {
           // Verify both nodes are connected to node 3
-          if (node1._switch.muxedConns[b58Id] && node2._switch.muxedConns[b58Id]) {
+          if (node1._switch.connection.getAllById(b58Id) && node2._switch.connection.getAllById(b58Id)) {
             done()
           }
         }
@@ -417,7 +418,7 @@ describe('transports', () => {
         function check () {
           const peers = node1.peerBook.getAll()
           expect(Object.keys(peers)).to.have.length(1)
-          expect(Object.keys(node1._switch.muxedConns)).to.have.length(0)
+          expect(node1._switch.connection.getAll()).to.have.length(0)
           done()
         }
       })
@@ -430,8 +431,8 @@ describe('transports', () => {
 
       function check () {
         if (++counter === 3) {
-          expect(Object.keys(node1._switch.muxedConns).length).to.equal(1)
-          expect(Object.keys(node2._switch.muxedConns).length).to.equal(1)
+          expect(node1._switch.connection.getAll()).to.have.length(1)
+          expect(node2._switch.connection.getAll()).to.have.length(1)
           done()
         }
       }
