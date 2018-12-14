@@ -50,7 +50,7 @@
     "libp2p-connection-manager": "~0.0.2",
     "libp2p-floodsub": "~0.15.1",
     "libp2p-ping": "~0.8.3",
-    "libp2p-switch": "github:libp2p/js-libp2p-switch#fix/many-conns",
+    "libp2p-switch": "~0.41.3",
     "libp2p-websockets": "~0.12.0",
     "mafmt": "^6.0.2",
     "multiaddr": "^5.0.2",
