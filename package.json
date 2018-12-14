@@ -1,6 +1,6 @@
 {
   "name": "libp2p-switch",
-  "version": "0.41.2",
+  "version": "0.41.3",
   "description": "libp2p switch implementation in JavaScript",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -94,7 +94,7 @@
     "Kevin Kwok <antimatter15@gmail.com>",
     "Kobi Gurkan <kobigurk@gmail.com>",
     "Maciej Krüger <mkg20001@gmail.com>",
-    "Matteo Collina <hello@matteocollina.com>",
+    "Matteo Collina <matteo.collina@gmail.com>",
     "Michael Fakhry <fakhrimichael@live.com>",
     "Oli Evans <oli@tableflip.io>",
     "Pau Ramon Revilla <masylum@gmail.com>",
