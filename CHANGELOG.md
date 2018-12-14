@@ -1,3 +1,13 @@
+<a name="0.24.3"></a>
+## [0.24.3](https://github.com/libp2p/js-libp2p/compare/v0.24.2...v0.24.3) (2018-12-14)
+
+
+### Bug Fixes
+
+* not started yet ([#297](https://github.com/libp2p/js-libp2p/issues/297)) ([fdfb7b4](https://github.com/libp2p/js-libp2p/commit/fdfb7b4))
+
+
+
 <a name="0.24.2"></a>
 ## [0.24.2](https://github.com/libp2p/js-libp2p/compare/v0.24.1...v0.24.2) (2018-12-04)
 
