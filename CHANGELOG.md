@@ -1,3 +1,14 @@
+<a name="0.41.3"></a>
+## [0.41.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.2...v0.41.3) (2018-12-14)
+
+
+### Bug Fixes
+
+* improve connection tracking and closing ([#291](https://github.com/libp2p/js-libp2p-switch/issues/291)) ([aa86307](https://github.com/libp2p/js-libp2p-switch/commit/aa86307))
+* use retimer to avoid creating so many timers ([#289](https://github.com/libp2p/js-libp2p-switch/issues/289)) ([f43084b](https://github.com/libp2p/js-libp2p-switch/commit/f43084b))
+
+
+
 <a name="0.41.2"></a>
 ## [0.41.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.1...v0.41.2) (2018-11-15)
 
