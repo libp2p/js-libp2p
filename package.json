@@ -19,6 +19,10 @@
   "browser": {
     "src/listener": "./src/listener.browser.js"
   },
+  "files": [
+    "src",
+    "dist"
+  ],
   "pre-push": [
     "lint",
     "test"
@@ -37,18 +41,17 @@
   "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",
   "dependencies": {
     "class-is": "^1.1.0",
+    "debug": "^4.1.0",
     "interface-connection": "~0.3.2",
-    "lodash.includes": "^4.3.0",
-    "mafmt": "^6.0.0",
-    "pull-ws": "^3.3.1"
+    "mafmt": "multiformats/js-mafmt#fix/bundle-size",
+    "pull-ws": "hugomrdias/pull-ws#fix/bundle-size"
   },
   "devDependencies": {
-    "aegir": "^13.1.0",
+    "aegir": "github:ipfs/aegir#feat/make-exp-build-test-default",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
-    "gulp": "^3.9.1",
     "interface-transport": "~0.3.6",
-    "multiaddr": "^5.0.0",
+    "multiaddr": "^6.0.0",
     "pull-goodbye": "0.0.2",
     "pull-stream": "^3.6.7"
   },

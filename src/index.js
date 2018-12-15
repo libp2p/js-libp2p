@@ -3,7 +3,6 @@
 const connect = require('pull-ws/client')
 const mafmt = require('mafmt')
 const withIs = require('class-is')
-const includes = require('lodash.includes')
 const Connection = require('interface-connection').Connection
 
 const maToUrl = require('./ma-to-url')
@@ -52,11 +51,11 @@ class WebSockets {
     }
 
     return multiaddrs.filter((ma) => {
-      if (includes(ma.protoNames(), 'p2p-circuit')) {
+      if (ma.protoNames().includes('p2p-circuit')) {
         return false
       }
 
-      if (includes(ma.protoNames(), 'ipfs')) {
+      if (ma.protoNames().includes('ipfs')) {
         ma = ma.decapsulate('ipfs')
       }
 

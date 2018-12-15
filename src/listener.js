@@ -1,7 +1,6 @@
 'use strict'
 
 const Connection = require('interface-connection').Connection
-const includes = require('lodash.includes')
 const multiaddr = require('multiaddr')
 const os = require('os')
 
@@ -26,7 +25,7 @@ module.exports = (options, handler) => {
     callback = callback || noop
     listeningMultiaddr = ma
 
-    if (includes(ma.protoNames(), 'ipfs')) {
+    if (ma.protoNames().includes('ipfs')) {
       ma = ma.decapsulate('ipfs')
     }
 
