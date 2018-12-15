@@ -46,8 +46,10 @@ class FloodSub extends BaseProtocol {
       if (err) return callback(err)
       const idB58Str = peerInfo.id.toB58String()
       const peer = this.peers.get(idB58Str)
-      // Immediately send my own subscriptions to the newly established conn
-      peer.sendSubscriptions(this.subscriptions)
+      if (peer && peer.isWritable) {
+        // Immediately send my own subscriptions to the newly established conn
+        peer.sendSubscriptions(this.subscriptions)
+      }
       setImmediate(() => callback())
     })
   }
