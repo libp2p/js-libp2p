@@ -1,3 +1,13 @@
+<a name="0.15.4"></a>
+## [0.15.4](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.3...v0.15.4) (2018-12-15)
+
+
+### Bug Fixes
+
+* allow dials even after error ([#66](https://github.com/libp2p/js-libp2p-floodsub/issues/66)) ([8f3c4e5](https://github.com/libp2p/js-libp2p-floodsub/commit/8f3c4e5))
+
+
+
 <a name="0.15.3"></a>
 ## [0.15.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.2...v0.15.3) (2018-12-06)
 
