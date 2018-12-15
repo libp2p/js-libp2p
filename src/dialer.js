@@ -2,7 +2,9 @@
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
+const take = require('pull-stream/throughs/take')
+const collect = require('pull-stream/sinks/collect')
 const lp = require('pull-length-prefixed')
 
 const msg = require('./message')
@@ -17,8 +19,8 @@ module.exports = (conn, expectedPeerInfo, callback) => {
   pull(
     conn,
     lp.decode(),
-    pull.take(1),
-    pull.collect((err, data) => {
+    take(1),
+    collect((err, data) => {
       if (err) {
         return callback(err)
       }

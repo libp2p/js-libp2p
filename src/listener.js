@@ -1,6 +1,7 @@
 'use strict'
 
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
+const values = require('pull-stream/sources/values')
 const lp = require('pull-length-prefixed')
 
 const msg = require('./message')
@@ -25,7 +26,7 @@ module.exports = (conn, pInfoSelf) => {
     })
 
     pull(
-      pull.values([msgSend]),
+      values([msgSend]),
       lp.encode(),
       conn
     )

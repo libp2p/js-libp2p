@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 'use strict'
 
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
+const collect = require('pull-stream/sinks/collect')
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
@@ -38,7 +39,7 @@ describe('identify.listener', () => {
     pull(
       p[1],
       lp.decode(),
-      pull.collect((err, result) => {
+      collect((err, result) => {
         expect(err).to.not.exist()
 
         const input = msg.decode(result[0])

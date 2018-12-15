@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 'use strict'
 
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
+const values = require('pull-stream/sources/values')
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
@@ -41,7 +42,7 @@ describe('identify.dialer', () => {
     })
 
     pull(
-      pull.values([input]),
+      values([input]),
       lp.encode(),
       p[0]
     )
@@ -73,7 +74,7 @@ describe('identify.dialer', () => {
     })
 
     pull(
-      pull.values([input]),
+      values([input]),
       lp.encode(),
       p[0]
     )
@@ -97,7 +98,7 @@ describe('identify.dialer', () => {
     })
 
     pull(
-      pull.values([input]),
+      values([input]),
       lp.encode(),
       p[0]
     )
@@ -126,7 +127,7 @@ describe('identify.dialer', () => {
       }
 
       pull(
-        pull.values([input]),
+        values([input]),
         lp.encode(),
         p[0]
       )
