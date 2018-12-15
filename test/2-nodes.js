@@ -453,6 +453,78 @@ describe('basics between 2 nodes', () => {
     })
   })
 
+  describe('allow dials even after error', () => {
+    let sandbox
+    let nodeA
+    let nodeB
+    let fsA
+    let fsB
+
+    before((done) => {
+      sandbox = chai.spy.sandbox()
+
+      series([
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
+        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+      ], (err, nodes) => {
+        if (err) return done(err)
+
+        nodeA = nodes[0]
+        nodeB = nodes[1]
+
+        // Put node B in node A's peer book
+        nodeA.peerBook.put(nodeB.peerInfo)
+
+        fsA = new FloodSub(nodeA)
+        fsB = new FloodSub(nodeB)
+
+        fsB.start(done)
+      })
+    })
+
+    after((done) => {
+      sandbox.restore()
+
+      parallel([
+        (cb) => nodeA.stop(cb),
+        (cb) => nodeB.stop(cb)
+      ], (ignoreErr) => {
+        done()
+      })
+    })
+
+    it('can dial again after error', (done) => {
+      let firstTime = true
+      const dialProtocol = fsA.libp2p.dialProtocol.bind(fsA.libp2p)
+      sandbox.on(fsA.libp2p, 'dialProtocol', (peerInfo, multicodec, cb) => {
+        // Return an error for the first dial
+        if (firstTime) {
+          firstTime = false
+          return cb(new Error('dial error'))
+        }
+
+        // Subsequent dials proceed as normal
+        dialProtocol(peerInfo, multicodec, cb)
+      })
+
+      // When node A starts, it will dial all peers in its peer book, which
+      // is just peer B
+      fsA.start(startComplete)
+
+      function startComplete () {
+        // Simulate a connection coming in from peer B. This causes floodsub
+        // to dial peer B
+        nodeA.emit('peer:connect', nodeB.peerInfo)
+
+        // Check that both dials were made
+        setTimeout(() => {
+          expect(fsA.libp2p.dialProtocol).to.have.been.called.twice()
+          done()
+        }, 1000)
+      }
+    })
+  })
+
   describe('prevent processing dial after stop', () => {
     let sandbox
     let nodeA
