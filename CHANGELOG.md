@@ -1,3 +1,13 @@
+<a name="0.15.5"></a>
+## [0.15.5](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.4...v0.15.5) (2018-12-15)
+
+
+### Bug Fixes
+
+* crash when disconnect happens during dial ([#65](https://github.com/libp2p/js-libp2p-floodsub/issues/65)) ([894e3cc](https://github.com/libp2p/js-libp2p-floodsub/commit/894e3cc))
+
+
+
 <a name="0.15.4"></a>
 ## [0.15.4](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.3...v0.15.4) (2018-12-15)
 
