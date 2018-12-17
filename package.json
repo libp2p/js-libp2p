@@ -8,16 +8,16 @@
     "secp256k1": "secp256k1/js"
   },
   "scripts": {
-    "lint": "aegir-lint",
-    "build": "aegir-build",
+    "lint": "aegir lint",
+    "build": "aegir build",
     "test": "npm run test:node && npm run test:browser",
-    "test:node": "aegir-test --env node",
-    "test:browser": "aegir-test --env browser",
-    "release": "aegir-release",
-    "release-minor": "aegir-release --type minor",
-    "release-major": "aegir-release --type major",
-    "coverage": "aegir-coverage",
-    "coverage-publish": "aegir-coverage publish"
+    "test:node": "aegir test --env node",
+    "test:browser": "aegir test --env browser",
+    "release": "aegir release",
+    "release-minor": "aegir release --type minor",
+    "release-major": "aegir release --type major",
+    "coverage": "aegir coverage",
+    "coverage-publish": "aegir coverage publish"
   },
   "keywords": [
     "IPFS",
@@ -28,17 +28,17 @@
   "license": "MIT",
   "dependencies": {
     "async": "^2.6.0",
-    "multihashing-async": "~0.4.8",
+    "multihashing-async": "~0.5.1",
     "nodeify": "^1.0.1",
     "safe-buffer": "^5.1.2",
     "secp256k1": "^3.5.0"
   },
   "devDependencies": {
-    "aegir": "^13.1.0",
+    "aegir": "github:ipfs/aegir#feat/make-exp-build-test-default",
     "benchmark": "^2.1.4",
-    "libp2p-crypto": "~0.13.0",
     "chai": "^4.1.2",
-    "dirty-chai": "^2.0.1"
+    "dirty-chai": "^2.0.1",
+    "libp2p-crypto": "~0.14.1"
   },
   "engines": {
     "node": ">=6.0.0",
