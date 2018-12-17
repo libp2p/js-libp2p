@@ -35,7 +35,6 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p",
   "browser": {
-    "joi": "joi-browser",
     "./test/utils/bundle-nodejs": "./test/utils/bundle-browser"
   },
   "dependencies": {
@@ -44,7 +43,7 @@
     "err-code": "^1.1.2",
     "fsm-event": "^2.1.0",
     "joi": "^14.0.6",
-    "joi-browser": "^13.4.0",
+    "kind-of": "^6.0.2",
     "libp2p-connection-manager": "~0.0.2",
     "libp2p-floodsub": "~0.15.1",
     "libp2p-ping": "~0.8.3",

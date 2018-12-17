@@ -1,60 +1,99 @@
 'use strict'
 
-const Joi = require('joi')
+const { struct, superstruct } = require('superstruct')
+const kind = require('kind-of')
+const { optional, list } = struct
 
-const ModuleSchema = Joi.alternatives().try(Joi.func(), Joi.object())
+const transports = ['tcp', 'utp', 'webrtcstar', 'webrtcdirect', 'websockets', 'websocketstar']
+// Define custom types
+const s = superstruct({
+  types: {
+    tcp: v => kind(v) === 'tcp',
+    utp: v => kind(v) === 'utp',
+    webrtcstar: v => kind(v) === 'webrtcstar',
+    webrtcdirect: v => kind(v) === 'webrtcdirect',
+    websockets: v => kind(v) === 'websockets',
+    websocketstar: v => kind(v) === 'websocketstar',
+    transport: value => {
+      const [error] = list([s.union([ ...transports, 'function' ])]).validate(value)
+      if (error) return error.message
 
-const OptionsSchema = Joi.object({
-  // TODO: create proper validators for the generics
-  connectionManager: Joi.object(),
-  datastore: Joi.object(),
-  peerInfo: Joi.object().required(),
-  peerBook: Joi.object(),
-  modules: Joi.object().keys({
-    connEncryption: Joi.array().items(ModuleSchema).allow(null),
-    connProtector: Joi.object().keys({
-      protect: Joi.func().required()
-    }).unknown(),
-    contentRouting: Joi.array().items(Joi.object()).allow(null),
-    dht: ModuleSchema.allow(null),
-    peerDiscovery: Joi.array().items(ModuleSchema).allow(null),
-    peerRouting: Joi.array().items(Joi.object()).allow(null),
-    streamMuxer: Joi.array().items(ModuleSchema).allow(null),
-    transport: Joi.array().items(ModuleSchema).min(1).required()
-  }).required(),
-  config: Joi.object().keys({
-    peerDiscovery: Joi.object().allow(null),
-    relay: Joi.object().keys({
-      enabled: Joi.boolean().default(true),
-      hop: Joi.object().keys({
-        enabled: Joi.boolean().default(false),
-        active: Joi.boolean().default(false)
-      })
-    }).default(),
-    dht: Joi.object().keys({
-      kBucketSize: Joi.number().default(20),
-      enabled: Joi.boolean().default(true),
-      randomWalk: Joi.object().keys({
-        enabled: Joi.boolean().default(true),
-        queriesPerPeriod: Joi.number().default(1),
-        interval: Joi.number().default(30000),
-        timeout: Joi.number().default(10000)
-      }).default(),
-      validators: Joi.object().allow(null),
-      selectors: Joi.object().allow(null)
-    }).default(),
-    EXPERIMENTAL: Joi.object().keys({
-      pubsub: Joi.boolean().default(false)
-    }).default()
-  }).default()
+      return value.length > 0
+        ? true
+        : 'You need to provide at least one transport.'
+    }
+  }
 })
 
-module.exports.validate = (options) => {
-  options = Joi.attempt(options, OptionsSchema)
+const optionsSchema = s(
+  {
+    connectionManager: 'object?',
+    datastore: 'object?',
+    peerInfo: 'object',
+    peerBook: 'object?',
+    modules: s({
+      connEncryption: optional(list([s('object|function')])),
+      connProtector: s.union(['undefined', s.interface({ protect: 'function' })]),
+      contentRouting: optional(list(['object'])),
+      dht: optional(s('null|function|object')),
+      peerDiscovery: optional(list([s('object|function')])),
+      peerRouting: optional(list(['object'])),
+      streamMuxer: optional(list([s('object|function')])),
+      transport: 'transport'
+    }),
+    config: s({
+      peerDiscovery: 'object?',
+      relay: s(
+        {
+          enabled: 'boolean',
+          hop: optional(
+            s(
+              {
+                enabled: 'boolean',
+                active: 'boolean'
+              },
+              { enabled: false, active: false }
+            )
+          )
+        },
+        { enabled: true, hop: {} }
+      ),
+      dht: s(
+        {
+          kBucketSize: 'number',
+          enabledDiscovery: 'boolean',
+          validators: 'object?',
+          selectors: 'object?'
+        },
+        { kBucketSize: 20, enabledDiscovery: true }
+      ),
+      EXPERIMENTAL: s(
+        {
+          dht: 'boolean',
+          pubsub: 'boolean'
+        },
+        { dht: false, pubsub: false }
+      )
+    }, { relay: {}, dht: {}, EXPERIMENTAL: {} })
+  },
+  {
+    config: {},
+    modules: {}
+  }
+)
 
-  // Ensure dht is correct
-  if (options.config.dht.enabled) {
-    Joi.assert(options.modules.dht, ModuleSchema.required())
+module.exports.validate = (opts) => {
+  // console.log(opts.modules)
+  const [error, options] = optionsSchema.validate(opts)
+
+  // Improve errors throwed, reduce stack by throwing here and add reason to the message
+  if (error) {
+    throw new Error(`${error.message}${error.reason ? ' - ' + error.reason : ''}`)
+  } else {
+    // Throw when dht is enabled but no dht module provided
+    if (options.config.EXPERIMENTAL.dht) {
+      s('function|object')(options.modules.dht)
+    }
   }
 
   return options
