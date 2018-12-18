@@ -33,6 +33,8 @@ const optionsSchema = s(
     peerBook: 'object?',
     modules: s({
       connEncryption: optional(list([s('object|function')])),
+      // this is hacky to simulate optional because interface doesnt work correctly with it
+      // change to optional when fixed upstream
       connProtector: s.union(['undefined', s.interface({ protect: 'function' })]),
       contentRouting: optional(list(['object'])),
       dht: optional(s('null|function|object')),
@@ -83,7 +85,6 @@ const optionsSchema = s(
 )
 
 module.exports.validate = (opts) => {
-  // console.log(opts.modules)
   const [error, options] = optionsSchema.validate(opts)
 
   // Improve errors throwed, reduce stack by throwing here and add reason to the message
