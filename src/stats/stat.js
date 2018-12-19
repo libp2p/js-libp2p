@@ -25,14 +25,18 @@ class Stats extends EventEmitter {
 
     this._update = this._update.bind(this)
 
-    initialCounters.forEach((key) => {
+    const intervals = this._options.movingAverageIntervals
+
+    for (var i = 0; i < initialCounters.length; i++) {
+      var key = initialCounters[i]
       this._stats[key] = Big(0)
       this._movingAverages[key] = {}
-      this._options.movingAverageIntervals.forEach((interval) => {
-        const ma = this._movingAverages[key][interval] = MovingAverage(interval)
+      for (var k = 0; k < intervals.length; k++) {
+        var interval = intervals[k]
+        var ma = this._movingAverages[key][interval] = MovingAverage(interval)
         ma.push(this._frequencyLastTime, 0)
-      })
-    })
+      }
+    }
   }
 
   /**
@@ -184,13 +188,17 @@ class Stats extends EventEmitter {
     if (!movingAverages) {
       movingAverages = this._movingAverages[key] = {}
     }
-    this._options.movingAverageIntervals.forEach((movingAverageInterval) => {
-      let movingAverage = movingAverages[movingAverageInterval]
+
+    const intervals = this._options.movingAverageIntervals
+
+    for (var i = 0; i < intervals.length; i++) {
+      var movingAverageInterval = intervals[i]
+      var movingAverage = movingAverages[movingAverageInterval]
       if (!movingAverage) {
         movingAverage = movingAverages[movingAverageInterval] = MovingAverage(movingAverageInterval)
       }
       movingAverage.push(latestTime, hz)
-    })
+    }
   }
 
   /**
