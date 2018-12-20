@@ -33,7 +33,7 @@ module.exports = (node) => {
       subscribe(callback)
     },
 
-    unsubscribe: (topic, handler) => {
+    unsubscribe: (topic, handler, callback) => {
       if (!node.isStarted() && !floodSub.started) {
         throw new Error(NOT_STARTED_YET)
       }
@@ -43,6 +43,8 @@ module.exports = (node) => {
       if (floodSub.listenerCount(topic) === 0) {
         floodSub.unsubscribe(topic)
       }
+
+      setImmediate(() => callback())
     },
 
     publish: (topic, data, callback) => {

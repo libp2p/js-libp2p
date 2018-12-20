@@ -52,21 +52,25 @@ function stopTwo (nodes, callback) {
 // TODO: consider if all or some of those should come here
 describe('.pubsub', () => {
   describe('.pubsub on (default)', (done) => {
-    it('start two nodes and send one message', (done) => {
+    it('start two nodes and send one message, then unsubscribe', (done) => {
+      const data = Buffer.from('test')
+      const handler = (msg, nodes, cb) => {
+        expect(msg.data).to.eql(data)
+        cb(null, nodes)
+      }
       waterfall([
         (cb) => startTwo(cb),
         (nodes, cb) => {
-          const data = Buffer.from('test')
-          nodes[0].pubsub.subscribe('pubsub',
-            (msg) => {
-              expect(msg.data).to.eql(data)
-              cb(null, nodes)
-            },
-            (err) => {
+          nodes[0].pubsub.subscribe('pubsub', (msg, nodes, cb) => handler, (err) => {
               expect(err).to.not.exist()
               setTimeout(() => nodes[1].pubsub.publish('pubsub', data, (err) => {
                 expect(err).to.not.exist()
               }), 500)
+              setTimeout(() => nodes[0].pubsub.unsubscribe('pubsub', handler, (err) => {
+                expect(err).to.not.exist()
+                console.log("\tunsubscribed!")
+                done()
+              }), 600)
             }
           )
         },
