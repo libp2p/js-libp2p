@@ -62,17 +62,16 @@ describe('.pubsub', () => {
         (cb) => startTwo(cb),
         (nodes, cb) => {
           nodes[0].pubsub.subscribe('pubsub', (msg, nodes, cb) => handler, (err) => {
+            expect(err).to.not.exist()
+            setTimeout(() => nodes[1].pubsub.publish('pubsub', data, (err) => {
               expect(err).to.not.exist()
-              setTimeout(() => nodes[1].pubsub.publish('pubsub', data, (err) => {
-                expect(err).to.not.exist()
-              }), 500)
-              setTimeout(() => nodes[0].pubsub.unsubscribe('pubsub', handler, (err) => {
-                expect(err).to.not.exist()
-                console.log("\tunsubscribed!")
-                done()
-              }), 600)
-            }
-          )
+            }), 500)
+            setTimeout(() => nodes[0].pubsub.unsubscribe('pubsub', handler, (err) => {
+              expect(err).to.not.exist()
+              console.log('tunsubscribed!')
+              done()
+            }), 600)
+          })
         },
         (nodes, cb) => stopTwo(nodes, cb)
       ], done)
