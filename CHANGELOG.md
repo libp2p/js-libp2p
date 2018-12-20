@@ -1,3 +1,13 @@
+<a name="0.41.4"></a>
+## [0.41.4](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.3...v0.41.4) (2018-12-20)
+
+
+### Bug Fixes
+
+* avoid sync callback in async functions ([#297](https://github.com/libp2p/js-libp2p-switch/issues/297)) ([089835e](https://github.com/libp2p/js-libp2p-switch/commit/089835e))
+
+
+
 <a name="0.41.3"></a>
 ## [0.41.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.2...v0.41.3) (2018-12-14)
 
