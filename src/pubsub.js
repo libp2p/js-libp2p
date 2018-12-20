@@ -44,7 +44,9 @@ module.exports = (node) => {
         floodSub.unsubscribe(topic)
       }
 
-      setImmediate(() => callback())
+      if (typeof callback === 'function') {
+        setImmediate(() => callback())
+      }
     },
 
     publish: (topic, data, callback) => {
