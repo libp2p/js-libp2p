@@ -2,11 +2,11 @@
 
 const identify = require('libp2p-identify')
 const multistream = require('multistream-select')
-const waterfall = require('async/waterfall')
 const debug = require('debug')
 const log = debug('libp2p:switch:conn-manager')
 const once = require('once')
 const ConnectionFSM = require('../connection')
+const { msHandle, msSelect, identifyDialer } = require('../utils')
 
 const Circuit = require('libp2p-circuit')
 
@@ -136,34 +136,33 @@ class ConnectionManager {
           }
 
           // overload peerInfo to use Identify instead
-          conn.getPeerInfo = (callback) => {
+          conn.getPeerInfo = async (callback) => {
             const conn = muxedConn.newStream()
             const ms = new multistream.Dialer()
             callback = once(callback)
 
-            waterfall([
-              (cb) => ms.handle(conn, cb),
-              (cb) => ms.select(identify.multicodec, cb),
-              // run identify and verify the peer has the same info from crypto
-              (conn, cb) => identify.dialer(conn, cryptoPI, cb),
-              (peerInfo, observedAddrs, cb) => {
-                observedAddrs.forEach((oa) => {
-                  this.switch._peerInfo.multiaddrs.addSafe(oa)
-                })
-                cb(null, peerInfo)
-              }
-            ], (err, peerInfo) => {
-              if (err) {
-                return muxedConn.end(() => {
-                  callback(err, null)
-                })
-              }
+            let results
+            try {
+              await msHandle(ms, conn)
+              const msConn = await msSelect(ms, identify.multicodec)
+              results = await identifyDialer(msConn, cryptoPI)
+            } catch (err) {
+              return muxedConn.end(() => {
+                callback(err, null)
+              })
+            }
 
-              if (peerInfo) {
-                conn.setPeerInfo(peerInfo)
-              }
-              callback(err, peerInfo)
-            })
+            const { peerInfo, observedAddrs } = results
+
+            for (var i = 0; i < observedAddrs.length; i++) {
+              var addr = observedAddrs[i]
+              this.switch._peerInfo.multiaddrs.addSafe(addr)
+            }
+
+            if (peerInfo) {
+              conn.setPeerInfo(peerInfo)
+            }
+            callback(null, peerInfo)
           }
 
           conn.getPeerInfo((err, peerInfo) => {

@@ -125,7 +125,9 @@ describe('dialFSM', () => {
       }
     })
 
-    const connFSM = switchA.dialFSM(switchB._peerInfo, '/closed/1.0.0', () => { })
+    const connFSM = switchA.dialFSM(switchB._peerInfo, '/closed/1.0.0', (err) => {
+      expect(err).to.not.exist()
+    })
     connFSM.once('close', () => {
       expect(switchA.connection.getAllById(switchB._peerInfo.id.toB58String())).to.have.length(0).mark()
     })
