@@ -5,6 +5,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 const waterfall = require('async/waterfall')
@@ -53,6 +54,7 @@ function stopTwo (nodes, callback) {
 describe('.pubsub', () => {
   describe('.pubsub on (default)', (done) => {
     it('start two nodes and send one message, then unsubscribe', (done) => {
+      expect(4).checks(done)
       const data = Buffer.from('test')
       const handler = (msg, nodes, cb) => {
         expect(msg.data).to.eql(data)
@@ -67,9 +69,8 @@ describe('.pubsub', () => {
               expect(err).to.not.exist()
             })
             nodes[0].pubsub.unsubscribe('pubsub', handler, (err) => {
-              expect(err).to.not.exist()
-              console.log('\tunsubscribed!')
               done()
+              expect(err).to.not.exist()
             })
           })
         },
