@@ -69,12 +69,12 @@ describe('.pubsub', () => {
               expect(err).to.not.exist()
             })
             nodes[0].pubsub.unsubscribe('pubsub', handler, (err) => {
-              done()
               expect(err).to.not.exist()
             })
           })
         },
-        (nodes, cb) => stopTwo(nodes, cb)
+        (nodes, cb) => stopTwo(nodes, cb),
+        done()
       ], done)
     })
   })
