@@ -9,6 +9,9 @@ const signalling = require('libp2p-webrtc-star/src/sig-server')
 const parallel = require('async/parallel')
 const crypto = require('crypto')
 
+const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
+
 const createNode = require('./utils/create-node')
 const echo = require('./utils/echo')
 
@@ -241,6 +244,9 @@ describe('peer discovery', () => {
   describe('MulticastDNS', () => {
     setup({
       config: {
+        dht: {
+          enabled: false
+        },
         peerDiscovery: {
           mdns: {
             enabled: true,
@@ -266,6 +272,9 @@ describe('peer discovery', () => {
   describe.skip('WebRTCStar', () => {
     setup({
       config: {
+        dht: {
+          enabled: false
+        },
         peerDiscovery: {
           webRTCStar: {
             enabled: true
@@ -287,6 +296,9 @@ describe('peer discovery', () => {
   describe('MulticastDNS + WebRTCStar', () => {
     setup({
       config: {
+        dht: {
+          enabled: false
+        },
         peerDiscovery: {
           mdns: {
             enabled: true,
@@ -306,6 +318,39 @@ describe('peer discovery', () => {
         expect(nodeB.peerInfo.id.toB58String())
           .to.eql(peerInfo.id.toB58String())
         done()
+      })
+    })
+  })
+
+  describe('dht', () => {
+    setup({
+      config: {
+        peerDiscovery: {
+          mdns: {
+            enabled: false
+          },
+          webRTCStar: {
+            enabled: false
+          }
+        }
+      }
+    })
+
+    it('find a peer', function (done) {
+      this.timeout(15 * 1000)
+
+      nodeA.once('peer:discovery', (peerInfo) => {
+        expect(nodeB.peerInfo.id.toB58String())
+          .to.eql(peerInfo.id.toB58String())
+        done()
+      })
+
+      // connect two dhts
+      const publicPeerId = new PeerId(nodeB._dht.peerInfo.id.id, null, nodeB._dht.peerInfo.id.pubKey)
+      const target = new PeerInfo(publicPeerId)
+      target.multiaddrs = nodeB._dht.peerInfo.multiaddrs
+      nodeA._dht.switch.dial(target, (err) => {
+        expect(err).to.not.exist()
       })
     })
   })

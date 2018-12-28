@@ -400,7 +400,10 @@ class Node extends EventEmitter {
       },
       (cb) => {
         if (this._dht) {
-          this._dht.start(cb)
+          this._dht.start(() => {
+            this._dht.on('peer', (peerInfo) => this.emit('peer:discovery', peerInfo))
+            cb()
+          })
         } else {
           cb()
         }
