@@ -169,7 +169,7 @@ class Switch extends EventEmitter {
    * @returns {void}
    */
   hangUp (peer, callback) {
-    const peerInfo = getPeerInfo(peer, this.peerBook)
+    const peerInfo = getPeerInfo(peer, this._peerBook)
     const key = peerInfo.id.toB58String()
     const conns = [...this.connection.getAllById(key)]
     each(conns, (conn, cb) => {
