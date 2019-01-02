@@ -1,3 +1,13 @@
+<a name="0.3.2"></a>
+## [0.3.2](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.1...v0.3.2) (2019-01-02)
+
+
+### Bug Fixes
+
+* connection establishment event handling ([#41](https://github.com/libp2p/js-libp2p-circuit/issues/41)) ([c27c344](https://github.com/libp2p/js-libp2p-circuit/commit/c27c344))
+
+
+
 <a name="0.3.1"></a>
 ## [0.3.1](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.0...v0.3.1) (2018-11-15)
 
