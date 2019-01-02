@@ -43,7 +43,9 @@ class Circuit {
 
     this.dialer = new CircuitDialer(swarm, options)
 
-    this.swarm.on('peer-mux-established', this.dialer.canHop.bind(this.dialer))
+    this.swarm.on('peer-mux-established', (peerInfo) => {
+      this.dialer.canHop(peerInfo)
+    })
     this.swarm.on('peer-mux-closed', (peerInfo) => {
       this.dialer.relayPeers.delete(peerInfo.id.toB58String())
     })
