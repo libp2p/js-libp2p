@@ -1,3 +1,13 @@
+<a name="0.9.5"></a>
+## [0.9.5](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.9.4...v0.9.5) (2019-01-03)
+
+
+### Bug Fixes
+
+* discover peers faster ([#86](https://github.com/libp2p/js-libp2p-bootstrap/issues/86)) ([63a6d10](https://github.com/libp2p/js-libp2p-bootstrap/commit/63a6d10)), closes [#85](https://github.com/libp2p/js-libp2p-bootstrap/issues/85)
+
+
+
 <a name="0.9.4"></a>
 ## [0.9.4](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.9.3...v0.9.4) (2018-11-26)
 
