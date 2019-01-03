@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const Railing = require('../src')
+const Bootstrap = require('../src')
 const peerList = require('./default-peers')
 const partialValidPeerList = require('./some-invalid-peers')
 const { expect } = require('chai')
@@ -10,7 +10,7 @@ const mafmt = require('mafmt')
 describe('bootstrap', () => {
   it('find the other peer', function (done) {
     this.timeout(5 * 1000)
-    const r = new Railing({
+    const r = new Bootstrap({
       list: peerList,
       interval: 2000
     })
@@ -22,7 +22,7 @@ describe('bootstrap', () => {
   it('not fail on malformed peers in peer list', function (done) {
     this.timeout(5 * 1000)
 
-    const r = new Railing({
+    const r = new Bootstrap({
       list: partialValidPeerList,
       interval: 2000
     })
