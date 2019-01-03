@@ -3,11 +3,11 @@
 const multihashing = require('multihashing-async')
 const protobuf = require('protons')
 const bs58 = require('bs58')
+const nextTick = require('async/nextTick')
 
 const crypto = require('./rsa')
 const pbm = protobuf(require('./keys.proto'))
 const forge = require('node-forge')
-const setImmediate = require('async/setImmediate')
 
 class RsaPublicKey {
   constructor (key) {
@@ -129,7 +129,7 @@ class RsaPrivateKey {
 
     ensure(callback)
 
-    setImmediate(() => {
+    nextTick(() => {
       let err = null
       let pem = null
       try {

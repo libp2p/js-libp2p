@@ -1,6 +1,8 @@
 'use strict'
 
 const crypto = require('crypto')
+const nextTick = require('async/nextTick')
+
 let keypair
 try {
   if (process.env.LP2P_FORCE_CRYPTO_LIB === 'keypair') {
@@ -8,7 +10,7 @@ try {
   }
 
   const ursa = require('ursa-optional') // throws if not compiled
-  keypair = ({bits}) => {
+  keypair = ({ bits }) => {
     const key = ursa.generatePrivateKey(bits)
     return {
       private: key.toPrivatePem(),
@@ -22,14 +24,13 @@ try {
 
   keypair = require('keypair')
 }
-const setImmediate = require('async/setImmediate')
 const pemToJwk = require('pem-jwk').pem2jwk
 const jwkToPem = require('pem-jwk').jwk2pem
 
 exports.utils = require('./rsa-utils')
 
 exports.generateKey = function (bits, callback) {
-  setImmediate(() => {
+  nextTick(() => {
     let result
     try {
       const key = keypair({ bits: bits })
@@ -47,7 +48,7 @@ exports.generateKey = function (bits, callback) {
 
 // Takes a jwk key
 exports.unmarshalPrivateKey = function (key, callback) {
-  setImmediate(() => {
+  nextTick(() => {
     if (!key) {
       return callback(new Error('Key is invalid'))
     }
@@ -67,7 +68,7 @@ exports.getRandomValues = function (arr) {
 }
 
 exports.hashAndSign = function (key, msg, callback) {
-  setImmediate(() => {
+  nextTick(() => {
     let result
     try {
       const sign = crypto.createSign('RSA-SHA256')
@@ -83,7 +84,7 @@ exports.hashAndSign = function (key, msg, callback) {
 }
 
 exports.hashAndVerify = function (key, sig, msg, callback) {
-  setImmediate(() => {
+  nextTick(() => {
     let result
     try {
       const verify = crypto.createVerify('RSA-SHA256')

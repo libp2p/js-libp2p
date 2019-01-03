@@ -12,7 +12,7 @@ exports.generateKey = function (bits, callback) {
       name: 'RSASSA-PKCS1-v1_5',
       modulusLength: bits,
       publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-      hash: {name: 'SHA-256'}
+      hash: { name: 'SHA-256' }
     },
     true,
     ['sign', 'verify']
@@ -31,7 +31,7 @@ exports.unmarshalPrivateKey = function (key, callback) {
     key,
     {
       name: 'RSASSA-PKCS1-v1_5',
-      hash: {name: 'SHA-256'}
+      hash: { name: 'SHA-256' }
     },
     true,
     ['sign']
@@ -59,13 +59,13 @@ exports.hashAndSign = function (key, msg, callback) {
     key,
     {
       name: 'RSASSA-PKCS1-v1_5',
-      hash: {name: 'SHA-256'}
+      hash: { name: 'SHA-256' }
     },
     false,
     ['sign']
   ).then((privateKey) => {
     return webcrypto.subtle.sign(
-      {name: 'RSASSA-PKCS1-v1_5'},
+      { name: 'RSASSA-PKCS1-v1_5' },
       privateKey,
       Uint8Array.from(msg)
     )
@@ -78,13 +78,13 @@ exports.hashAndVerify = function (key, sig, msg, callback) {
     key,
     {
       name: 'RSASSA-PKCS1-v1_5',
-      hash: {name: 'SHA-256'}
+      hash: { name: 'SHA-256' }
     },
     false,
     ['verify']
   ).then((publicKey) => {
     return webcrypto.subtle.verify(
-      {name: 'RSASSA-PKCS1-v1_5'},
+      { name: 'RSASSA-PKCS1-v1_5' },
       publicKey,
       sig,
       msg
@@ -109,7 +109,7 @@ function derivePublicFromPrivate (jwKey) {
     },
     {
       name: 'RSASSA-PKCS1-v1_5',
-      hash: {name: 'SHA-256'}
+      hash: { name: 'SHA-256' }
     },
     true,
     ['verify']

@@ -1,7 +1,7 @@
 'use strict'
 
 const crypto = require('crypto')
-const setImmediate = require('async/setImmediate')
+const nextTick = require('async/nextTick')
 
 const curves = {
   'P-256': 'prime256v1',
@@ -16,7 +16,7 @@ exports.generateEphmeralKeyPair = function (curve, callback) {
   const ecdh = crypto.createECDH(curves[curve])
   ecdh.generateKeys()
 
-  setImmediate(() => callback(null, {
+  nextTick(() => callback(null, {
     key: ecdh.getPublicKey(),
     genSharedKey (theirPub, forcePrivate, cb) {
       if (typeof forcePrivate === 'function') {
@@ -35,7 +35,7 @@ exports.generateEphmeralKeyPair = function (curve, callback) {
         return cb(err)
       }
 
-      setImmediate(() => cb(null, secret))
+      nextTick(() => cb(null, secret))
     }
   }))
 }
