@@ -1,3 +1,13 @@
+<a name="0.15.0"></a>
+# [0.15.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.14.1...v0.15.0) (2019-01-03)
+
+
+### Features
+
+* nextTick instead of setImmediate, and fix sync in async ([#136](https://github.com/libp2p/js-libp2p-crypto/issues/136)) ([c54ea20](https://github.com/libp2p/js-libp2p-crypto/commit/c54ea20))
+
+
+
 <a name="0.14.1"></a>
 ## [0.14.1](https://github.com/libp2p/js-libp2p-crypto/compare/v0.14.0...v0.14.1) (2018-11-05)
 
