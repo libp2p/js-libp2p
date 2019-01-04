@@ -1,6 +1,6 @@
 {
   "name": "libp2p-ping",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "libp2p Ping protocol implementation",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -60,6 +60,7 @@
     "Jacob Heun <jacobheun@gmail.com>",
     "João Antunes <j.goncalo.antunes@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
+    "Vasco Santos <vasco.santos@moxy.studio>",
     "Vasco Santos <vasco.santos@ua.pt>",
     "greenkeeperio-bot <support@greenkeeper.io>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
