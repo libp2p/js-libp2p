@@ -1,3 +1,8 @@
+<a name="0.7.4"></a>
+## [0.7.4](https://github.com/libp2p/js-libp2p-identify/compare/v0.7.3...v0.7.4) (2019-01-04)
+
+
+
 <a name="0.7.3"></a>
 ## [0.7.3](https://github.com/libp2p/js-libp2p-identify/compare/v0.7.2...v0.7.3) (2018-11-26)
 
