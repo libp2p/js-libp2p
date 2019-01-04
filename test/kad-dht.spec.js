@@ -13,8 +13,9 @@ const retry = require('async/retry')
 const each = require('async/each')
 const waterfall = require('async/waterfall')
 const random = require('lodash.random')
-const _ = require('lodash')
 const Record = require('libp2p-record').Record
+const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
 const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
@@ -32,9 +33,9 @@ const TestDHT = require('./utils/test-dht')
 
 // connect two dhts
 function connectNoSync (a, b, callback) {
-  const target = _.cloneDeep(b.peerInfo)
-  target.id._pubKey = target.id.pubKey
-  target.id._privKey = null
+  const publicPeerId = new PeerId(b.peerInfo.id.id, null, b.peerInfo.id.pubKey)
+  const target = new PeerInfo(publicPeerId)
+  target.multiaddrs = b.peerInfo.multiaddrs
   a.switch.dial(target, callback)
 }
 

@@ -50,7 +50,7 @@
     "libp2p-record": "~0.6.1",
     "multihashes": "~0.4.14",
     "multihashing-async": "~0.5.1",
-    "peer-id": "~0.11.0",
+    "peer-id": "~0.12.1",
     "peer-info": "~0.15.0",
     "priorityqueue": "~0.2.1",
     "protons": "^1.0.1",
