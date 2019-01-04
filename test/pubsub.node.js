@@ -8,6 +8,7 @@ chai.use(require('dirty-chai'))
 chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const parallel = require('async/parallel')
+const series = require('async/series')
 const waterfall = require('async/waterfall')
 const _times = require('lodash.times')
 
@@ -54,28 +55,36 @@ function stopTwo (nodes, callback) {
 describe('.pubsub', () => {
   describe('.pubsub on (default)', (done) => {
     it('start two nodes and send one message, then unsubscribe', (done) => {
-      expect(4).checks(done)
+      // Check the final series error, and the publish handler
+      expect(2).checks(done)
+
+      let nodes
       const data = Buffer.from('test')
-      const handler = (msg, nodes, cb) => {
-        expect(msg.data).to.eql(data)
-        cb(null, nodes)
+      const handler = (msg) => {
+        // verify the data is correct and mark the expect
+        expect(msg.data).to.eql(data).mark()
       }
-      waterfall([
-        (cb) => startTwo(cb),
-        (nodes, cb) => {
-          nodes[0].pubsub.subscribe('pubsub', (msg, nodes, cb) => handler, (err) => {
-            expect(err).to.not.exist()
-            nodes[1].pubsub.publish('pubsub', data, (err) => {
-              expect(err).to.not.exist()
-            })
-            nodes[0].pubsub.unsubscribe('pubsub', handler, (err) => {
-              expect(err).to.not.exist()
-            })
-          })
-        },
-        (nodes, cb) => stopTwo(nodes, cb),
-        done()
-      ], done)
+
+      series([
+        // Start the nodes
+        (cb) => startTwo((err, _nodes) => {
+          nodes = _nodes
+          cb(err)
+        }),
+        // subscribe on the first
+        (cb) => nodes[0].pubsub.subscribe('pubsub', handler, cb),
+        // Wait a moment before publishing
+        (cb) => setTimeout(cb, 500),
+        // publish on the second
+        (cb) => nodes[1].pubsub.publish('pubsub', data, cb),
+        // unsubscribe on the first
+        (cb) => nodes[0].pubsub.unsubscribe('pubsub', handler, cb),
+        // Stop both nodes
+        (cb) => stopTwo(nodes, cb)
+      ], (err) => {
+        // Verify there was no error, and mark the expect
+        expect(err).to.not.exist().mark()
+      })
     })
   })
 
