@@ -5,8 +5,8 @@ const async = require('async')
 const LevelStore = require('datastore-level')
 
 describe('browser', () => {
-  const datastore1 = new LevelStore('test-keystore-1', {db: require('level-js')})
-  const datastore2 = new LevelStore('test-keystore-2', {db: require('level-js')})
+  const datastore1 = new LevelStore('test-keystore-1', { db: require('level-js') })
+  const datastore2 = new LevelStore('test-keystore-2', { db: require('level-js') })
 
   before((done) => {
     async.series([

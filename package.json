@@ -44,22 +44,22 @@
   "dependencies": {
     "async": "^2.6.1",
     "interface-datastore": "~0.6.0",
-    "libp2p-crypto": "~0.13.0",
-    "lodash": "^4.6.1",
-    "pull-stream": "^3.6.8",
+    "libp2p-crypto": "~0.15.0",
+    "lodash": "^4.17.11",
+    "pull-stream": "^3.6.9",
     "sanitize-filename": "^1.6.1"
   },
   "devDependencies": {
-    "aegir": "^15.3.0",
+    "aegir": "^18.0.2",
     "chai": "^4.2.0",
-    "chai-string": "^1.4.0",
-    "datastore-fs": "~0.5.0",
-    "datastore-level": "~0.8.0",
+    "chai-string": "^1.5.0",
+    "datastore-fs": "~0.7.0",
+    "datastore-level": "~0.10.0",
     "dirty-chai": "^2.0.1",
-    "level-js": "^3.0.0",
+    "level-js": "^4.0.0",
     "mocha": "^5.2.0",
-    "peer-id": "~0.10.7",
-    "rimraf": "^2.6.2"
+    "peer-id": "~0.12.1",
+    "rimraf": "^2.6.3"
   },
   "contributors": [
     "Alan Shaw <alan.shaw@protocol.ai>",
