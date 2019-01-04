@@ -510,7 +510,7 @@ module.exports = (dht) => ({
 
               // hooray we have all that we want
               if (pathProviders.length >= pathSize) {
-                return cb(null, {success: true})
+                return cb(null, { success: true })
               }
 
               // it looks like we want some more

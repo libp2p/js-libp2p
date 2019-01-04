@@ -730,7 +730,7 @@ describe('KadDHT', () => {
     dht.peerBook.put(peerInfos[1])
     series([
       (cb) => dht._add(peerInfos[1], cb),
-      (cb) => dht._nearestPeersToQuery({key: 'hello'}, cb)
+      (cb) => dht._nearestPeersToQuery({ key: 'hello' }, cb)
     ], (err, res) => {
       expect(err).to.not.exist()
       expect(res[1]).to.be.eql([peerInfos[1]])
@@ -751,7 +751,7 @@ describe('KadDHT', () => {
     series([
       (cb) => dht._add(peerInfos[1], cb),
       (cb) => dht._add(peerInfos[2], cb),
-      (cb) => dht._betterPeersToQuery({key: 'hello'}, peerInfos[1], cb)
+      (cb) => dht._betterPeersToQuery({ key: 'hello' }, peerInfos[1], cb)
     ], (err, res) => {
       expect(err).to.not.exist()
       expect(res[2]).to.be.eql([peerInfos[2]])

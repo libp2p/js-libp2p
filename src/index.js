@@ -42,8 +42,8 @@ class KadDHT {
   constructor (sw, options) {
     assert(sw, 'libp2p-kad-dht requires a instance of Switch')
     options = options || {}
-    options.validators = options.validators
-    options.selectors = options.selectors
+    options.validators = options.validators || {}
+    options.selectors = options.selectors || {}
 
     /**
      * Local reference to the libp2p-switch instance

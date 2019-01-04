@@ -29,7 +29,7 @@ describe('Message', () => {
 
   it('serialize & deserialize', function (done) {
     this.timeout(10 * 1000)
-    map(range(5), (n, cb) => PeerId.create({bits: 1024}, cb), (err, peers) => {
+    map(range(5), (n, cb) => PeerId.create({ bits: 1024 }, cb), (err, peers) => {
       expect(err).to.not.exist()
 
       const closer = peers.slice(0, 5).map((p) => {

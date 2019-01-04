@@ -12,7 +12,7 @@ function createValues (n, callback) {
 
     waterfall([
       (cb) => multihashing(bytes, 'sha2-256', cb),
-      (h, cb) => cb(null, {cid: new CID(h), value: bytes})
+      (h, cb) => cb(null, { cid: new CID(h), value: bytes })
     ], cb)
   }, callback)
 }

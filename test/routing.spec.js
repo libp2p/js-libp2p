@@ -15,7 +15,7 @@ const RoutingTable = require('../src/routing')
 const kadUtils = require('../src/utils')
 
 function createPeerId (n, callback) {
-  map(range(n), (i, cb) => PeerId.create({bits: 512}, cb), callback)
+  map(range(n), (i, cb) => PeerId.create({ bits: 512 }, cb), callback)
 }
 
 describe('Routing Table', () => {

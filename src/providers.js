@@ -123,7 +123,7 @@ class Providers {
    */
   _getProviderCids (callback) {
     pull(
-      this.datastore.query({prefix: c.PROVIDERS_KEY_PREFIX}),
+      this.datastore.query({ prefix: c.PROVIDERS_KEY_PREFIX }),
       pull.map((entry) => {
         const parts = entry.key.toString().split('/')
         if (parts.length !== 4) {
@@ -316,7 +316,7 @@ function writeProviderEntry (store, cid, peer, time, callback) {
  */
 function loadProviders (store, cid, callback) {
   pull(
-    store.query({prefix: makeProviderKey(cid)}),
+    store.query({ prefix: makeProviderKey(cid) }),
     pull.map((entry) => {
       const parts = entry.key.toString().split('/')
       const lastPart = parts[parts.length - 1]
