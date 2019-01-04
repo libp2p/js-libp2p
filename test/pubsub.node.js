@@ -9,7 +9,6 @@ chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 const series = require('async/series')
-const waterfall = require('async/waterfall')
 const _times = require('lodash.times')
 
 const createNode = require('./utils/create-node')
