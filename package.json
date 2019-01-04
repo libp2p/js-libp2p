@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.24.3",
+  "version": "0.24.4",
   "description": "JavaScript base class for libp2p bundles",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -90,6 +90,7 @@
     "wrtc": "~0.3.2"
   },
   "contributors": [
+    "Alan Shaw <alan.shaw@protocol.ai>",
     "Alan Shaw <alan@tableflip.io>",
     "Chris Bratlien <chrisbratlien@gmail.com>",
     "Chris Dostert <chrisdostert@users.noreply.github.com>",
