@@ -82,7 +82,9 @@ class Node extends EventEmitter {
       })
 
       this._switch.on('peer-mux-closed', (peerInfo) => {
-        this.emit('peer:disconnect', peerInfo)
+        if (! this.peerBook.has(peerInfo)) {
+          this.emit('peer:disconnect', peerInfo)
+        }
       })
     }
 
