@@ -4,7 +4,15 @@ One of the primary goals with libp2p P2P was to get it fully working in the brow
 
 # 1. Setting up a simple app that lists connections to other nodes
 
-Simple go into the folder [1](./1) and execute the following
+Start by installing libp2p's dependencies.
+
+```bash
+> cd ../../
+> npm install
+> cd examples/libp2p-in-the-browser
+```
+
+Then simply go into the folder [1](./1) and execute the following
 
 ```bash
 > cd 1
