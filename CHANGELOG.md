@@ -1,3 +1,18 @@
+<a name="0.16.0"></a>
+# [0.16.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.15.0...v0.16.0) (2019-01-08)
+
+
+### Bug Fixes
+
+* clean up, bundle size reduction ([8d8294d](https://github.com/libp2p/js-libp2p-crypto/commit/8d8294d))
+
+
+### BREAKING CHANGES
+
+* getRandomValues method exported from src/keys/rsa-browser.js and src/keys/rsa.js signature has changed from accepting an array to a number for random byte length 
+
+
+
 <a name="0.15.0"></a>
 # [0.15.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.14.1...v0.15.0) (2019-01-03)
 
