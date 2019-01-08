@@ -1,6 +1,7 @@
 'use strict'
 
 const crypto = require('crypto')
+const randomBytes = require('../random-bytes')
 const nextTick = require('async/nextTick')
 
 let keypair
@@ -63,9 +64,7 @@ exports.unmarshalPrivateKey = function (key, callback) {
   })
 }
 
-exports.getRandomValues = function (arr) {
-  return crypto.randomBytes(arr.length)
-}
+exports.getRandomValues = randomBytes
 
 exports.hashAndSign = function (key, msg, callback) {
   nextTick(() => {

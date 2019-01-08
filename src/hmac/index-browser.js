@@ -2,7 +2,7 @@
 
 const nodeify = require('../nodeify')
 
-const crypto = require('../webcrypto.js')()
+const crypto = require('../webcrypto')
 const lengths = require('./lengths')
 
 const hashTypes = {

@@ -1,13 +1,9 @@
 'use strict'
+const randomBytes = require('iso-random-stream/src/random')
 
-const rsa = require('./keys/rsa')
-
-function randomBytes (number) {
+module.exports = function (number) {
   if (!number || typeof number !== 'number') {
     throw new Error('first argument must be a Number bigger than 0')
   }
-
-  return rsa.getRandomValues(new Uint8Array(number))
+  return randomBytes(number)
 }
-
-module.exports = randomBytes

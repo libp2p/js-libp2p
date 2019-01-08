@@ -1,6 +1,6 @@
 'use strict'
 
-const webcrypto = require('../webcrypto.js')()
+const webcrypto = require('../webcrypto')
 const nodeify = require('../nodeify')
 const BN = require('asn1.js').bignum
 

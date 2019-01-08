@@ -7,7 +7,9 @@ const nextTick = require('async/nextTick')
 
 const crypto = require('./rsa')
 const pbm = protobuf(require('./keys.proto'))
-const forge = require('node-forge')
+require('node-forge/lib/sha512')
+require('node-forge/lib/pbe')
+const forge = require('node-forge/lib/forge')
 
 class RsaPublicKey {
   constructor (key) {
@@ -53,7 +55,7 @@ class RsaPrivateKey {
   }
 
   genSecret () {
-    return crypto.getRandomValues(new Uint8Array(16))
+    return crypto.getRandomValues(16)
   }
 
   sign (message, callback) {
@@ -136,7 +138,6 @@ class RsaPrivateKey {
         const buffer = new forge.util.ByteBuffer(this.marshal())
         const asn1 = forge.asn1.fromDer(buffer)
         const privateKey = forge.pki.privateKeyFromAsn1(asn1)
-
         if (format === 'pkcs-8') {
           const options = {
             algorithm: 'aes256',

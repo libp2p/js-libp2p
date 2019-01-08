@@ -1,6 +1,7 @@
 'use strict'
 
-const forge = require('node-forge')
+const forgePbkdf2 = require('node-forge/lib/pbkdf2')
+const forgeUtil = require('node-forge/lib/util')
 
 /**
  * Maps an IPFS hash name to its node-forge equivalent.
@@ -30,13 +31,13 @@ function pbkdf2 (password, salt, iterations, keySize, hash) {
   if (!hasher) {
     throw new Error(`Hash '${hash}' is unknown or not supported`)
   }
-  const dek = forge.pkcs5.pbkdf2(
+  const dek = forgePbkdf2(
     password,
     salt,
     iterations,
     keySize,
     hasher)
-  return forge.util.encode64(dek)
+  return forgeUtil.encode64(dek)
 }
 
 module.exports = pbkdf2

@@ -2,7 +2,10 @@
 
 const protobuf = require('protons')
 const keysPBM = protobuf(require('./keys.proto'))
-const forge = require('node-forge')
+require('node-forge/lib/asn1')
+require('node-forge/lib/rsa')
+require('node-forge/lib/pbe')
+const forge = require('node-forge/lib/forge')
 
 exports = module.exports
 

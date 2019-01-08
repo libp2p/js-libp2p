@@ -1,8 +1,8 @@
 'use strict'
 
 const nodeify = require('../nodeify')
-
-const webcrypto = require('../webcrypto.js')()
+const webcrypto = require('../webcrypto')
+const randomBytes = require('../random-bytes')
 
 exports.utils = require('./rsa-utils')
 
@@ -49,9 +49,7 @@ exports.unmarshalPrivateKey = function (key, callback) {
   })), callback)
 }
 
-exports.getRandomValues = function (arr) {
-  return Buffer.from(webcrypto.getRandomValues(arr))
-}
+exports.getRandomValues = randomBytes
 
 exports.hashAndSign = function (key, msg, callback) {
   nodeify(webcrypto.subtle.importKey(
