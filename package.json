@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto-secp256k1",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Support for secp256k1 keys in libp2p-crypto",
   "leadMaintainer": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "main": "src/index.js",
@@ -55,6 +55,8 @@
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Hugo Dias <hugomrdias@gmail.com>",
+    "Victor Bjelkholm <victorbjelkholm@gmail.com>",
     "Yusef Napora <yusef@napora.org>"
   ]
 }
