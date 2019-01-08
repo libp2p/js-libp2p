@@ -36,8 +36,40 @@
 
 ### Example
 
-```
-TODO
+```js
+const WS = require('libp2p-websockets')
+const multiaddr = require('multiaddr')
+const pull = require('pull-stream')
+
+const mh = multiaddr('/ip4/0.0.0.0/tcp/9090/ws')
+
+const ws = new WS()
+
+const listener = ws.createListener((socket) => {
+  console.log('new connection opened')
+  pull(
+    pull.values(['hello']),
+    socket
+  )
+})
+
+listener.listen(mh, () => {
+  console.log('listening')
+
+  pull(
+    ws.dial(mh),
+    pull.collect((err, values) => {
+      if (!err) {
+        console.log(`Value: ${values.toString()}`)
+      } else {
+        console.log(`Error: ${err}`)
+      }
+
+      // Close connection after reading
+      listener.close()
+    }),
+  )
+})
 ```
 
 ## API
