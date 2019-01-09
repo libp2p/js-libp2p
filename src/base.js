@@ -1,8 +1,8 @@
 'use strict'
 
 const EventEmitter = require('events')
-const values = require('lodash/values')
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
+const empty = require('pull-stream/sources/empty')
 const asyncEach = require('async/each')
 const debug = require('debug')
 
@@ -136,7 +136,7 @@ class BaseProtocol extends EventEmitter {
     conn.getPeerInfo((err, peerInfo) => {
       if (err) {
         this.log.err('Failed to identify incomming conn', err)
-        return pull(pull.empty(), conn)
+        return pull(empty(), conn)
       }
 
       const idB58Str = peerInfo.id.toB58String()
@@ -180,7 +180,7 @@ class BaseProtocol extends EventEmitter {
     this.libp2p.on('peer:connect', this._dialPeer)
 
     // Dial already connected peers
-    const peerInfos = values(this.libp2p.peerBook.getAll())
+    const peerInfos = Object.values(this.libp2p.peerBook.getAll())
 
     asyncEach(peerInfos, (peer, cb) => this._dialPeer(peer, cb), (err) => {
       setImmediate(() => {

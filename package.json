@@ -17,6 +17,10 @@
     "coverage": "aegir coverage",
     "coverage-publish": "aegir coverage --provider coveralls"
   },
+  "files": [
+    "src",
+    "dist"
+  ],
   "pre-push": [
     "lint"
   ],
@@ -38,25 +42,25 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-floodsub#readme",
   "devDependencies": {
-    "aegir": "^18.0.2",
+    "aegir": "^18.0.3",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "chai-spies": "^1.0.0",
     "dirty-chai": "^2.0.1",
-    "libp2p": "~0.24.3",
+    "libp2p": "~0.24.4",
     "libp2p-secio": "~0.11.0",
     "libp2p-spdy": "~0.13.1",
     "libp2p-tcp": "~0.13.0",
-    "peer-id": "~0.12.1",
-    "peer-info": "~0.15.0"
+    "lodash": "^4.17.11",
+    "peer-id": "~0.12.2",
+    "peer-info": "~0.15.1"
   },
   "dependencies": {
     "async": "^2.6.1",
     "bs58": "^4.0.1",
     "debug": "^4.1.1",
     "length-prefixed-stream": "^1.6.0",
-    "libp2p-crypto": "~0.15.0",
-    "lodash": "^4.17.11",
+    "libp2p-crypto": "~0.16.0",
     "protons": "^1.0.1",
     "pull-pushable": "^2.2.0",
     "time-cache": "~0.3.0"
