@@ -37,15 +37,15 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-identify#readme",
   "devDependencies": {
-    "aegir": "github:ipfs/aegir#feat/make-exp-build-test-default",
+    "aegir": "^18.0.3",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
     "pull-pair": "^1.1.0"
   },
   "dependencies": {
-    "multiaddr": "multiformats/js-multiaddr#feat/bundle-size",
-    "peer-id": "libp2p/js-peer-id#feat/bundle-size",
-    "peer-info": "libp2p/js-peer-info#feat/bundle-size",
+    "multiaddr": "^6.0.3",
+    "peer-id": "~0.12.2",
+    "peer-info": "~0.15.1",
     "protons": "^1.0.1",
     "pull-length-prefixed": "^1.3.1",
     "pull-stream": "^3.6.9"
