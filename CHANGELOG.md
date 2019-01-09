@@ -1,3 +1,13 @@
+<a name="0.15.7"></a>
+## [0.15.7](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.6...v0.15.7) (2019-01-09)
+
+
+### Bug Fixes
+
+* reduce bundle size ([#67](https://github.com/libp2p/js-libp2p-floodsub/issues/67)) ([3ff955e](https://github.com/libp2p/js-libp2p-floodsub/commit/3ff955e))
+
+
+
 <a name="0.15.6"></a>
 ## [0.15.6](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.5...v0.15.6) (2019-01-04)
 
