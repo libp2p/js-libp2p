@@ -1,3 +1,13 @@
+<a name="0.3.4"></a>
+## [0.3.4](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.3...v0.3.4) (2019-01-10)
+
+
+### Bug Fixes
+
+* reduce bundle size ([#40](https://github.com/libp2p/js-libp2p-circuit/issues/40)) ([2c8ef1d](https://github.com/libp2p/js-libp2p-circuit/commit/2c8ef1d))
+
+
+
 <a name="0.3.3"></a>
 ## [0.3.3](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.2...v0.3.3) (2019-01-04)
 
