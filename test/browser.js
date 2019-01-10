@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const async = require('async')
+const series = require('async/series')
 const LevelStore = require('datastore-level')
 
 describe('browser', () => {
@@ -9,14 +9,14 @@ describe('browser', () => {
   const datastore2 = new LevelStore('test-keystore-2', { db: require('level-js') })
 
   before((done) => {
-    async.series([
+    series([
       (cb) => datastore1.open(cb),
       (cb) => datastore2.open(cb)
     ], done)
   })
 
   after((done) => {
-    async.series([
+    series([
       (cb) => datastore1.close(cb),
       (cb) => datastore2.close(cb)
     ], done)

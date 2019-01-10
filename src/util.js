@@ -1,6 +1,7 @@
 'use strict'
 
-const forge = require('node-forge')
+require('node-forge/lib/x509')
+const forge = require('node-forge/lib/forge')
 const pki = forge.pki
 exports = module.exports
 

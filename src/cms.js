@@ -1,7 +1,12 @@
 'use strict'
 
-const async = require('async')
-const forge = require('node-forge')
+const setImmediate = require('async/setImmediate')
+const series = require('async/series')
+const detect = require('async/detect')
+const waterfall = require('async/waterfall')
+require('node-forge/lib/pkcs7')
+require('node-forge/lib/pbe')
+const forge = require('node-forge/lib/forge')
 const util = require('./util')
 
 /**
@@ -39,13 +44,13 @@ class CMS {
    */
   encrypt (name, plain, callback) {
     const self = this
-    const done = (err, result) => async.setImmediate(() => callback(err, result))
+    const done = (err, result) => setImmediate(() => callback(err, result))
 
     if (!Buffer.isBuffer(plain)) {
       return done(new Error('Plain data must be a Buffer'))
     }
 
-    async.series([
+    series([
       (cb) => self.keychain.findKeyByName(name, cb),
       (cb) => self.keychain._getPrivateKey(name, cb)
     ], (err, results) => {
@@ -85,7 +90,7 @@ class CMS {
    * @returns {undefined}
    */
   decrypt (cmsData, callback) {
-    const done = (err, result) => async.setImmediate(() => callback(err, result))
+    const done = (err, result) => setImmediate(() => callback(err, result))
 
     if (!Buffer.isBuffer(cmsData)) {
       return done(new Error('CMS data is required'))
@@ -112,7 +117,7 @@ class CMS {
           keyId: r.issuer.find(a => a.shortName === 'CN').value
         }
       })
-    async.detect(
+    detect(
       recipients,
       (r, cb) => self.keychain.findKeyById(r.keyId, (err, info) => cb(null, !err && info)),
       (err, r) => {
@@ -124,7 +129,7 @@ class CMS {
           return done(err)
         }
 
-        async.waterfall([
+        waterfall([
           (cb) => self.keychain.findKeyById(r.keyId, cb),
           (key, cb) => self.keychain._getPrivateKey(key.name, cb)
         ], (err, pem) => {
