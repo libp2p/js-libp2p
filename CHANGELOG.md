@@ -1,3 +1,8 @@
+<a name="0.9.7"></a>
+## [0.9.7](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.9.6...v0.9.7) (2019-01-10)
+
+
+
 <a name="0.9.6"></a>
 ## [0.9.6](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.9.5...v0.9.6) (2019-01-04)
 
