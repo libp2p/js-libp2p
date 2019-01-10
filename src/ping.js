@@ -1,7 +1,8 @@
 'use strict'
 
 const EventEmitter = require('events').EventEmitter
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
+const empty = require('pull-stream/sources/empty')
 const handshake = require('pull-handshake')
 const constants = require('./constants')
 const util = require('./util')
@@ -73,7 +74,7 @@ class Ping extends EventEmitter {
     this._stopped = true
 
     pull(
-      pull.empty(),
+      empty(),
       this.shake.rest()
     )
   }

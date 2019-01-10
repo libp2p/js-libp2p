@@ -1,6 +1,6 @@
 'use strict'
 
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
 const handshake = require('pull-handshake')
 const constants = require('./constants')
 const PROTOCOL = constants.PROTOCOL
