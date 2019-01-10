@@ -1,6 +1,6 @@
 {
   "name": "libp2p-identify",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "libp2p Identify Protocol",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -54,6 +54,7 @@
     "David Dias <daviddias.p@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Greenkeeper <support@greenkeeper.io>",
+    "Hugo Dias <hugomrdias@gmail.com>",
     "Jacob Heun <jacobheun@gmail.com>",
     "Jacob Heun <jake@andyet.net>",
     "Maciej Krüger <mkg20001@gmail.com>",
