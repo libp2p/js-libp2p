@@ -1,3 +1,13 @@
+<a name="0.3.6"></a>
+## [0.3.6](https://github.com/libp2p/js-libp2p-keychain/compare/v0.3.5...v0.3.6) (2019-01-10)
+
+
+### Bug Fixes
+
+* reduce bundle size ([#28](https://github.com/libp2p/js-libp2p-keychain/issues/28)) ([7eeed87](https://github.com/libp2p/js-libp2p-keychain/commit/7eeed87))
+
+
+
 <a name="0.3.5"></a>
 ## [0.3.5](https://github.com/libp2p/js-libp2p-keychain/compare/v0.3.4...v0.3.5) (2019-01-10)
 
