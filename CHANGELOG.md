@@ -1,3 +1,13 @@
+<a name="0.12.1"></a>
+## [0.12.1](https://github.com/libp2p/js-libp2p-websockets/compare/v0.12.0...v0.12.1) (2019-01-10)
+
+
+### Bug Fixes
+
+* reduce bundle size ([68ae2c3](https://github.com/libp2p/js-libp2p-websockets/commit/68ae2c3))
+
+
+
 <a name="0.12.0"></a>
 # [0.12.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.11.0...v0.12.0) (2018-04-30)
 
