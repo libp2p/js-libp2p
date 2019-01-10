@@ -1,6 +1,6 @@
 {
   "name": "libp2p-circuit",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "JavaScript implementation of circuit/switch relaying",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -39,6 +39,7 @@
     "David Dias <daviddias.p@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Hugo Dias <mail@hugodias.me>",
     "Jacob Heun <jacobheun@gmail.com>",
     "Jacob Heun <jake@andyet.net>",
     "Maciej Krüger <mkg20001@gmail.com>",
