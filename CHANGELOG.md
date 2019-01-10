@@ -1,3 +1,13 @@
+<a name="0.8.5"></a>
+## [0.8.5](https://github.com/libp2p/js-libp2p-ping/compare/v0.8.4...v0.8.5) (2019-01-10)
+
+
+### Bug Fixes
+
+* bundle size ([#73](https://github.com/libp2p/js-libp2p-ping/issues/73)) ([c0ae7e9](https://github.com/libp2p/js-libp2p-ping/commit/c0ae7e9))
+
+
+
 <a name="0.8.4"></a>
 ## [0.8.4](https://github.com/libp2p/js-libp2p-ping/compare/v0.8.3...v0.8.4) (2019-01-04)
 
