@@ -1,6 +1,6 @@
 {
   "name": "libp2p-ping",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "libp2p Ping protocol implementation",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -57,6 +57,7 @@
     "David Dias <daviddias.p@gmail.com>",
     "Francisco Baio Dias <xicombd@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Hugo Dias <mail@hugodias.me>",
     "Jacob Heun <jacobheun@gmail.com>",
     "João Antunes <j.goncalo.antunes@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
