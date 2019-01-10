@@ -41,17 +41,17 @@
   "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",
   "dependencies": {
     "class-is": "^1.1.0",
-    "debug": "^4.1.0",
+    "debug": "^4.1.1",
     "interface-connection": "~0.3.2",
-    "mafmt": "multiformats/js-mafmt#fix/bundle-size",
+    "mafmt": "^6.0.4",
     "pull-ws": "hugomrdias/pull-ws#fix/bundle-size"
   },
   "devDependencies": {
-    "aegir": "github:ipfs/aegir#feat/make-exp-build-test-default",
+    "aegir": "^18.0.3",
     "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
     "interface-transport": "~0.3.6",
-    "multiaddr": "^6.0.0",
+    "multiaddr": "^6.0.3",
     "pull-goodbye": "0.0.2",
     "pull-stream": "^3.6.7"
   },
