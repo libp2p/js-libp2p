@@ -10,7 +10,9 @@ const multiaddr = require('multiaddr')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const waterfall = require('async/waterfall')
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
+const values = require('pull-stream/sources/values')
+const asyncMap = require('pull-stream/throughs/async-map')
 const pair = require('pull-pair/duplex')
 const pb = require('pull-protocol-buffers')
 
@@ -98,7 +100,7 @@ describe(`dialer tests`, function () {
     it(`should handle successful CAN_HOP`, (done) => {
       dialer._dialRelay.callsFake((_, cb) => {
         pull(
-          pull.values([{
+          values([{
             type: proto.CircuitRelay.type.HOP,
             code: proto.CircuitRelay.Status.SUCCESS
           }]),
@@ -118,7 +120,7 @@ describe(`dialer tests`, function () {
     it(`should handle failed CAN_HOP`, function (done) {
       dialer._dialRelay.callsFake((_, cb) => {
         pull(
-          pull.values([{
+          values([{
             type: proto.CircuitRelay.type.HOP,
             code: proto.CircuitRelay.Status.HOP_CANT_SPEAK_RELAY
           }]),
@@ -226,7 +228,7 @@ describe(`dialer tests`, function () {
         pull(
           p[0],
           pb.decode(proto.CircuitRelay),
-          pull.asyncMap((msg, cb) => {
+          asyncMap((msg, cb) => {
             expect(msg.dstPeer.addrs[0]).to.deep.equal(dstMa.buffer)
             cb(null, {
               type: proto.CircuitRelay.Type.STATUS,
@@ -247,7 +249,7 @@ describe(`dialer tests`, function () {
         pull(
           p[0],
           pb.decode(proto.CircuitRelay),
-          pull.asyncMap((msg, cb) => {
+          asyncMap((msg, cb) => {
             expect(msg.dstPeer.addrs[0]).to.deep.equal(dstMa.buffer)
             cb(null, {
               type: proto.CircuitRelay.Type.STATUS,
@@ -273,7 +275,7 @@ describe(`dialer tests`, function () {
         pull(
           p[0],
           pb.decode(proto.CircuitRelay),
-          pull.asyncMap((msg, cb) => {
+          asyncMap((msg, cb) => {
             expect(msg.dstPeer.addrs[0]).to.deep.equal(dstMa.buffer)
             cb(null, {
               type: proto.CircuitRelay.Type.STATUS,
@@ -297,7 +299,7 @@ describe(`dialer tests`, function () {
       dialer._dialRelay.callsFake((_, cb) => {
         cb(null, conn)
         pull(
-          pull.values([{
+          values([{
             type: proto.CircuitRelay.Type.STATUS,
             code: proto.CircuitRelay.Status.MALFORMED_MESSAGE
           }]),

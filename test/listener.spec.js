@@ -11,7 +11,9 @@ const handshake = require('pull-handshake')
 const Connection = require('interface-connection').Connection
 const proto = require('../src/protocol')
 const lp = require('pull-length-prefixed')
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
+const values = require('pull-stream/sources/values')
+const collect = require('pull-stream/sinks/collect')
 const multicodec = require('../src/multicodec')
 
 const chai = require('chai')
@@ -89,9 +91,9 @@ describe('listener', function () {
       }
 
       pull(
-        pull.values([proto.CircuitRelay.encode(relayMsg)]),
+        values([proto.CircuitRelay.encode(relayMsg)]),
         lp.encode(),
-        pull.collect((err, encoded) => {
+        collect((err, encoded) => {
           expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
         })
@@ -126,9 +128,9 @@ describe('listener', function () {
       }
 
       pull(
-        pull.values([proto.CircuitRelay.encode(relayMsg)]),
+        values([proto.CircuitRelay.encode(relayMsg)]),
         lp.encode(),
-        pull.collect((err, encoded) => {
+        collect((err, encoded) => {
           expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
         })
@@ -161,9 +163,9 @@ describe('listener', function () {
       })
 
       pull(
-        pull.values([proto.CircuitRelay.encode(relayMsg)]),
+        values([proto.CircuitRelay.encode(relayMsg)]),
         lp.encode(),
-        pull.collect((err, encoded) => {
+        collect((err, encoded) => {
           expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
         })
@@ -198,9 +200,9 @@ describe('listener', function () {
       }
 
       pull(
-        pull.values([proto.CircuitRelay.encode(relayMsg)]),
+        values([proto.CircuitRelay.encode(relayMsg)]),
         lp.encode(),
-        pull.collect((err, encoded) => {
+        collect((err, encoded) => {
           expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
         })
@@ -223,9 +225,9 @@ describe('listener', function () {
       }
 
       pull(
-        pull.values([Buffer.from([relayMsg])]),
+        values([Buffer.from([relayMsg])]),
         lp.encode(),
-        pull.collect((err, encoded) => {
+        collect((err, encoded) => {
           expect(err).to.not.exist()
           encoded.forEach((e) => shake.write(e))
         }),

@@ -1,6 +1,9 @@
 'use strict'
 
-const pull = require('pull-stream')
+const values = require('pull-stream/sources/values')
+const collect = require('pull-stream/sinks/collect')
+const empty = require('pull-stream/sources/empty')
+const pull = require('pull-stream/pull')
 const lp = require('pull-length-prefixed')
 const handshake = require('pull-handshake')
 
@@ -78,9 +81,9 @@ class StreamHandler {
     }
 
     pull(
-      pull.values([msg]),
+      values([msg]),
       lp.encode(),
-      pull.collect((err, encoded) => {
+      collect((err, encoded) => {
         if (err) {
           log.err(err)
           this.shake.abort(err)
@@ -128,7 +131,7 @@ class StreamHandler {
 
     // close stream
     pull(
-      pull.empty(),
+      empty(),
       this.rest()
     )
   }

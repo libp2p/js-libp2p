@@ -3,7 +3,6 @@
 const once = require('once')
 const PeerId = require('peer-id')
 const waterfall = require('async/waterfall')
-const isFunction = require('lodash.isfunction')
 const multiaddr = require('multiaddr')
 
 const Connection = require('interface-connection').Connection
@@ -138,7 +137,7 @@ class Dialer {
    * @private
    */
   _dialPeer (dstMa, relay, cb) {
-    if (isFunction(relay)) {
+    if (typeof relay === 'function') {
       cb = relay
       relay = null
     }

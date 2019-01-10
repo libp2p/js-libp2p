@@ -1,6 +1,6 @@
 'use strict'
 
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
 const debug = require('debug')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')

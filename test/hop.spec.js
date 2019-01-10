@@ -10,7 +10,9 @@ const waterfall = require('async/waterfall')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
+const values = require('pull-stream/sources/values')
+const collect = require('pull-stream/sinks/collect')
 const lp = require('pull-length-prefixed')
 const proto = require('../src/protocol')
 const StreamHandler = require('../src/circuit/stream-handler')
@@ -359,19 +361,19 @@ describe('relay', () => {
 
       it('should create circuit', (done) => {
         pull(
-          pull.values([proto.CircuitRelay.encode({
+          values([proto.CircuitRelay.encode({
             type: proto.CircuitRelay.Type.STATUS,
             code: proto.CircuitRelay.Status.SUCCESS
           })]),
           lp.encode(),
-          pull.collect((err, encoded) => {
+          collect((err, encoded) => {
             expect(err).to.not.exist()
 
             encoded.forEach((e) => dstShake.write(e))
             pull(
-              pull.values([Buffer.from('hello')]),
+              values([Buffer.from('hello')]),
               lp.encode(),
-              pull.collect((err, encoded) => {
+              collect((err, encoded) => {
                 expect(err).to.not.exist()
 
                 encoded.forEach((e) => srcShake.write(e))
@@ -414,12 +416,12 @@ describe('relay', () => {
           })
 
         pull(
-          pull.values([proto.CircuitRelay.encode({
+          values([proto.CircuitRelay.encode({
             type: proto.CircuitRelay.Type.STATUS,
             code: proto.CircuitRelay.Status.STOP_RELAY_REFUSED
           })]),
           lp.encode(),
-          pull.collect((err, encoded) => {
+          collect((err, encoded) => {
             expect(err).to.not.exist()
 
             encoded.forEach((e) => dstShake.write(e))
