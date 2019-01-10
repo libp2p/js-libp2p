@@ -4,7 +4,7 @@
 const os = require('os')
 const path = require('path')
 const rimraf = require('rimraf')
-const async = require('async')
+const series = require('async/series')
 const FsStore = require('datastore-fs')
 
 describe('node', () => {
@@ -14,14 +14,14 @@ describe('node', () => {
   const datastore2 = new FsStore(store2)
 
   before((done) => {
-    async.series([
+    series([
       (cb) => datastore1.open(cb),
       (cb) => datastore2.open(cb)
     ], done)
   })
 
   after((done) => {
-    async.series([
+    series([
       (cb) => datastore1.close(cb),
       (cb) => datastore2.close(cb),
       (cb) => rimraf(store1, cb),

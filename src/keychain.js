@@ -2,12 +2,11 @@
 'use strict'
 
 const sanitize = require('sanitize-filename')
-const deepmerge = require('lodash/merge')
+const mergeOptions = require('merge-options')
 const crypto = require('libp2p-crypto')
 const DS = require('interface-datastore')
-const pull = require('pull-stream')
-const isString = require('lodash/isString')
-const isSafeInteger = require('lodash/isSafeInteger')
+const collect = require('pull-stream/sinks/collect')
+const pull = require('pull-stream/pull')
 const CMS = require('./cms')
 
 const keyPrefix = '/pkcs8/'
@@ -32,7 +31,7 @@ const defaultOptions = {
 
 function validateKeyName (name) {
   if (!name) return false
-  if (!isString(name)) return false
+  if (typeof name !== 'string') return false
   return name === sanitize(name.trim())
 }
 
@@ -107,8 +106,7 @@ class Keychain {
     }
     this.store = store
 
-    const opts = {}
-    deepmerge(opts, defaultOptions, options)
+    const opts = mergeOptions(defaultOptions, options)
 
     // Enforce NIST SP 800-132
     if (!opts.passPhrase || opts.passPhrase.length < 20) {
@@ -186,11 +184,11 @@ class Keychain {
       return _error(callback, `Invalid key name '${name}'`)
     }
 
-    if (!isString(type)) {
+    if (typeof type !== 'string') {
       return _error(callback, `Invalid key type '${type}'`)
     }
 
-    if (!isSafeInteger(size)) {
+    if (!Number.isSafeInteger(size)) {
       return _error(callback, `Invalid key size '${size}'`)
     }
 
@@ -246,7 +244,7 @@ class Keychain {
     }
     pull(
       self.store.query(query),
-      pull.collect((err, res) => {
+      collect((err, res) => {
         if (err) return _error(callback, err)
 
         const info = res.map(r => JSON.parse(r.value))

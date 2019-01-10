@@ -44,21 +44,23 @@
   "dependencies": {
     "async": "^2.6.1",
     "interface-datastore": "~0.6.0",
-    "libp2p-crypto": "~0.15.0",
-    "lodash": "^4.17.11",
-    "pull-stream": "^3.6.9",
+    "libp2p-crypto": "~0.16.0",
+    "merge-options": "^1.0.1",
+    "node-forge": "~0.7.6",
+    "pull-stream": "^3.6.8",
     "sanitize-filename": "^1.6.1"
   },
   "devDependencies": {
-    "aegir": "^18.0.2",
+    "aegir": "^18.0.3",
     "chai": "^4.2.0",
-    "chai-string": "^1.5.0",
+    "chai-string": "^1.4.0",
     "datastore-fs": "~0.7.0",
     "datastore-level": "~0.10.0",
     "dirty-chai": "^2.0.1",
     "level-js": "^4.0.0",
     "mocha": "^5.2.0",
-    "peer-id": "~0.12.1",
+    "multihashes": "~0.4.14",
+    "peer-id": "~0.12.2",
     "rimraf": "^2.6.3"
   },
   "contributors": [
