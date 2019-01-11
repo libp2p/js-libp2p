@@ -1,3 +1,14 @@
+<a name="0.41.5"></a>
+## [0.41.5](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.4...v0.41.5) (2019-01-11)
+
+
+### Bug Fixes
+
+* peerBook undefined [#299](https://github.com/libp2p/js-libp2p-switch/issues/299) ([b3a6a74](https://github.com/libp2p/js-libp2p-switch/commit/b3a6a74))
+* reduce bundle size ([#292](https://github.com/libp2p/js-libp2p-switch/issues/292)) ([76e5d1d](https://github.com/libp2p/js-libp2p-switch/commit/76e5d1d))
+
+
+
 <a name="0.41.4"></a>
 ## [0.41.4](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.3...v0.41.4) (2018-12-20)
 
