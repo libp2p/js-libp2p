@@ -1,7 +1,8 @@
 'use strict'
 
 const Connection = require('interface-connection').Connection
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
+const empty = require('pull-stream/sources/empty')
 const timeout = require('async/timeout')
 const queue = require('async/queue')
 const debug = require('debug')
@@ -50,7 +51,7 @@ class DialQueue {
       if (token.cancel) {
         log(`${transport.constructor.name}:work:cancel`)
         // clean up already done dials
-        pull(pull.empty(), conn)
+        pull(empty(), conn)
         // If we can close the connection, do it
         if (typeof conn.close === 'function') {
           return conn.close((_) => callback(null, { cancel: true }))

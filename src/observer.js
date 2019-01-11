@@ -1,6 +1,6 @@
 'use strict'
 
-const pull = require('pull-stream')
+const map = require('pull-stream/throughs/map')
 const EventEmitter = require('events')
 
 /**
@@ -30,7 +30,7 @@ module.exports = (swtch) => {
 
   function observe (direction) {
     return (transport, protocol, peerInfo) => {
-      return pull.map((buffer) => {
+      return map((buffer) => {
         willObserve(peerInfo, transport, protocol, direction, buffer.length)
         return buffer
       })

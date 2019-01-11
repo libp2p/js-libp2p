@@ -1,7 +1,7 @@
 'use strict'
 
 const EventEmitter = require('events')
-const Big = require('big.js').Big
+const Big = require('bignumber.js')
 const MovingAverage = require('moving-average')
 const retimer = require('retimer')
 

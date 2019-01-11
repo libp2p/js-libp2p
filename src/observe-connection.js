@@ -1,7 +1,7 @@
 'use strict'
 
 const Connection = require('interface-connection').Connection
-const pull = require('pull-stream')
+const pull = require('pull-stream/pull')
 
 /**
  * Creates a pull stream to run the given Connection stream through
