@@ -1,6 +1,6 @@
 {
   "name": "libp2p-kad-dht",
-  "version": "0.14.3",
+  "version": "0.14.4",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -75,6 +75,7 @@
     "sinon": "^7.2.2"
   },
   "contributors": [
+    "Alan Shaw <alan.shaw@protocol.ai>",
     "Blake Byrnes <blakebyrnes@gmail.com>",
     "David Dias <daviddias.p@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
@@ -83,8 +84,8 @@
     "Lars Gierth <larsg@systemli.org>",
     "Pedro Teixeira <i@pgte.me>",
     "Richard Schneider <makaretu@gmail.com>",
-    "Vasco Santos <vasco.santos@ua.pt>",
     "Vasco Santos <vasco.santos@moxy.studio>",
+    "Vasco Santos <vasco.santos@ua.pt>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
   ]
 }
