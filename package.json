@@ -45,8 +45,8 @@
     "hashlru": "^2.3.0",
     "heap": "~0.2.6",
     "interface-datastore": "~0.6.0",
-    "k-bucket": "^4.0.1",
-    "libp2p-crypto": "~0.15.0",
+    "k-bucket": "^5.0.0",
+    "libp2p-crypto": "~0.16.0",
     "libp2p-record": "~0.6.1",
     "multihashes": "~0.4.14",
     "multihashing-async": "~0.5.1",
@@ -72,7 +72,7 @@
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "peer-book": "~0.9.0",
-    "sinon": "^6.3.4"
+    "sinon": "^7.2.2"
   },
   "contributors": [
     "Blake Byrnes <blakebyrnes@gmail.com>",
