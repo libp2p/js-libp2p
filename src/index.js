@@ -6,6 +6,7 @@ const debug = require('debug')
 const log = debug('libp2p')
 log.error = debug('libp2p:error')
 const errCode = require('err-code')
+const once = require('once')
 
 const each = require('async/each')
 const series = require('async/series')
@@ -29,6 +30,35 @@ const notStarted = (action, state) => {
     new Error(`libp2p cannot ${action} when not started; state is ${state}`),
     'ERR_NODE_NOT_STARTED'
   )
+}
+
+/**
+ * Registers `handler` to each event in `events`. The `handler`
+ * will only be called for the first event fired, at which point
+ * the `handler` will be removed as a listener.
+ *
+ * Ensures `handler` is only called once.
+ *
+ * @example
+ * // will call `callback` when `start` or `error` is emitted by `this`
+ * eitherOnce(this, ['error', 'start'], callback)
+ *
+ * @private
+ * @param {EventEmitter} emitter The emitter to listen on
+ * @param {Array<string>} events The events to listen for
+ * @param {function(*)} handler The handler to call when an event is triggered
+ * @returns {void}
+ */
+function eitherOnce (emitter, events, handler) {
+  handler = once(handler)
+  events.forEach((e) => {
+    emitter.once(e, (...args) => {
+      events.forEach((ev) => {
+        emitter.removeListener(ev, handler)
+      })
+      handler.apply(emitter, args)
+    })
+  })
 }
 
 /**
@@ -194,7 +224,7 @@ class Node extends EventEmitter {
    * @returns {void}
    */
   start (callback = () => {}) {
-    this.once('start', callback)
+    eitherOnce(this, ['error', 'start'], callback)
     this.state('start')
   }
 
