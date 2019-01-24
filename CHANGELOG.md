@@ -1,3 +1,13 @@
+<a name="0.12.2"></a>
+## [0.12.2](https://github.com/libp2p/js-libp2p-websockets/compare/v0.12.1...v0.12.2) (2019-01-24)
+
+
+### Bug Fixes
+
+* ipv6 naming with multiaddr-to-uri package ([#81](https://github.com/libp2p/js-libp2p-websockets/issues/81)) ([93ef7c3](https://github.com/libp2p/js-libp2p-websockets/commit/93ef7c3))
+
+
+
 <a name="0.12.1"></a>
 ## [0.12.1](https://github.com/libp2p/js-libp2p-websockets/compare/v0.12.0...v0.12.1) (2019-01-10)
 
