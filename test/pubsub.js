@@ -17,6 +17,18 @@ class PubsubImplementation extends PubsubBaseProtocol {
     super('libp2p:pubsub', 'libp2p:pubsub-implementation', libp2p)
   }
 
+  publish (topics, messages) {
+    // ...
+  }
+
+  subscribe (topics) {
+    // ...
+  }
+
+  unsubscribe (topics) {
+    // ...
+  }
+
   _processConnection (idB58Str, conn, peer) {
     // ...
   }

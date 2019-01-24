@@ -32,7 +32,9 @@ js-libp2p-pubsub
 
 ## Usage
 
-Create your pubsub implementation extending the base protocol.
+A pubsub implementation **MUST** override the `_processConnection`, `publish`, `subscribe` and `unsubscribe` functions. `add_peer` and `remove_peer` may be overwritten if the pubsub implementation needs to add custom logic when peers are added and remove. All the remaining functions **MUST NOT** be overwritten.
+
+The following example aims to show how to create your pubsub implementation extending this base protocol. The pubsub implementation will handle the subscriptions logic.
 
 ```JavaScript
 const Pubsub = require('libp2p-pubsub')
@@ -43,22 +45,29 @@ class PubsubImplementation extends Pubsub {
   }
 
   _processConnection(idB58Str, conn, peer) {
+    // Required to be implemented by the subclass
     // Process each message accordingly
   }
 
   publish() {
-
+    // Required to be implemented by the subclass
   }
 
   subscribe() {
-
+    // Required to be implemented by the subclass
   }
 
   unsubscribe() {
-
+    // Required to be implemented by the subclass
   }
 }
 ```
+
+## Implementations using this base protocol
+
+You can use the following implementations as examples for building your own pubsub implementation.
+
+- [libp2p/js-libp2p-floodsub](https://github.com/libp2p/js-libp2p-floodsub)
 
 ## Contribute
 

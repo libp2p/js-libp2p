@@ -4,7 +4,9 @@ const EventEmitter = require('events')
 const pull = require('pull-stream/pull')
 const empty = require('pull-stream/sources/empty')
 const asyncEach = require('async/each')
+
 const debug = require('debug')
+const errcode = require('err-code')
 
 const Peer = require('./peer')
 const message = require('./message')
@@ -18,7 +20,7 @@ class PubsubBaseProtocol extends EventEmitter {
   /**
    * @param {String} debugName
    * @param {String} multicodec
-   * @param {Object} libp2p
+   * @param {Object} libp2p libp2p implementation
    * @constructor
    */
   constructor (debugName, multicodec, libp2p) {
@@ -44,6 +46,12 @@ class PubsubBaseProtocol extends EventEmitter {
     this._dialPeer = this._dialPeer.bind(this)
   }
 
+  /**
+   * Add a new connected peer to the peers map.
+   * @private
+   * @param {PeerInfo} peer peer info
+   * @returns {PeerInfo}
+   */
   _addPeer (peer) {
     const id = peer.info.id.toB58String()
 
@@ -67,6 +75,12 @@ class PubsubBaseProtocol extends EventEmitter {
     return existing
   }
 
+  /**
+   * Remove a peer from the peers map if it has no references.
+   * @private
+   * @param {Peer} peer peer state
+   * @returns {PeerInfo}
+   */
   _removePeer (peer) {
     const id = peer.info.id.toB58String()
 
@@ -80,6 +94,13 @@ class PubsubBaseProtocol extends EventEmitter {
     return peer
   }
 
+  /**
+   * Dial a received peer.
+   * @private
+   * @param {PeerInfo} peerInfo peer info
+   * @param {function} callback
+   * @returns {void}
+   */
   _dialPeer (peerInfo, callback) {
     callback = callback || function noop () { }
     const idB58Str = peerInfo.id.toB58String()
@@ -121,6 +142,13 @@ class PubsubBaseProtocol extends EventEmitter {
     })
   }
 
+  /**
+   * Dial a received peer.
+   * @private
+   * @param {PeerInfo} peerInfo peer info
+   * @param {Connection} conn connection to the peer
+   * @param {function} callback
+   */
   _onDial (peerInfo, conn, callback) {
     const idB58Str = peerInfo.id.toB58String()
     this.log('connected', idB58Str)
@@ -131,6 +159,12 @@ class PubsubBaseProtocol extends EventEmitter {
     nextTick(() => callback())
   }
 
+  /**
+   * On successful connection event.
+   * @private
+   * @param {String} protocol connection protocol
+   * @param {Connection} conn connection to the peer
+   */
   _onConnection (protocol, conn) {
     conn.getPeerInfo((err, peerInfo) => {
       if (err) {
@@ -145,10 +179,27 @@ class PubsubBaseProtocol extends EventEmitter {
     })
   }
 
+  /**
+   * Overriding the implementation of _processConnection should keep the connection and is
+   * responsible for processing each RPC message received by other peers.
+   * @abstract
+   * @param {string} idB58Str peer id string in base58
+   * @param {Connection} conn connection
+   * @param {PeerInfo} peer peer info
+   * @returns {undefined}
+   *
+   */
   _processConnection (idB58Str, conn, peer) {
-    throw new Error('_processConnection must be implemented by the subclass')
+    throw errcode('_processConnection must be implemented by the subclass', 'ERR_NOT_IMPLEMENTED')
   }
 
+  /**
+   * On connection end event.
+   * @private
+   * @param {string} idB58Str peer id string in base58
+   * @param {PeerInfo} peer peer info
+   * @param {Error} err error for connection end
+   */
   _onConnectionEnd (idB58Str, peer, err) {
     // socket hang up, means the one side canceled
     if (err && err.message !== 'socket hang up') {
@@ -157,6 +208,41 @@ class PubsubBaseProtocol extends EventEmitter {
 
     this.log('connection ended', idB58Str, err ? err.message : '')
     this._removePeer(peer)
+  }
+
+  /**
+   * Overriding the implementation of publish should handle the appropriate algorithms for the publish/subscriber implementation.
+   * For example, a Floodsub implementation might simply publish each message to each topic for every peer
+   * @abstract
+   * @param {Array<string>|string} topics
+   * @param {Array<any>|any} messages
+   * @returns {undefined}
+   *
+   */
+  publish (topics, messages) {
+    throw errcode('publish must be implemented by the subclass', 'ERR_NOT_IMPLEMENTED')
+  }
+
+  /**
+   * Overriding the implementation of subscribe should handle the appropriate algorithms for the publish/subscriber implementation.
+   * For example, a Floodsub implementation might simply send a message for every peer showing interest in the topics
+   * @abstract
+   * @param {Array<string>|string} topics
+   * @returns {undefined}
+   */
+  subscribe (topics) {
+    throw errcode('subscribe must be implemented by the subclass', 'ERR_NOT_IMPLEMENTED')
+  }
+
+  /**
+   * Overriding the implementation of unsubscribe should handle the appropriate algorithms for the publish/subscriber implementation.
+   * For example, a Floodsub implementation might simply send a message for every peer revoking interest in the topics
+   * @abstract
+   * @param {Array<string>|string} topics
+   * @returns {undefined}
+   */
+  unsubscribe (topics) {
+    throw errcode('unsubscribe must be implemented by the subclass', 'ERR_NOT_IMPLEMENTED')
   }
 
   /**

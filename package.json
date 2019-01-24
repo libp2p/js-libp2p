@@ -57,6 +57,7 @@
     "dependencies": {
         "async": "^2.6.1",
         "debug": "^4.1.1",
+        "err-code": "^1.1.2",
         "length-prefixed-stream": "^1.6.0",
         "protons": "^1.0.1",
         "pull-pushable": "^2.2.0"
