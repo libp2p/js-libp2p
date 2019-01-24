@@ -5,7 +5,7 @@ const mafmt = require('mafmt')
 const withIs = require('class-is')
 const Connection = require('interface-connection').Connection
 
-const maToUrl = require('./ma-to-url')
+const toUri = require('multiaddr-to-uri')
 const debug = require('debug')
 const log = debug('libp2p:websockets:dialer')
 
@@ -18,9 +18,9 @@ class WebSockets {
       options = {}
     }
 
-    callback = callback || function () {}
+    callback = callback || function () { }
 
-    const url = maToUrl(ma)
+    const url = toUri(ma)
     log('dialing %s', url)
     const socket = connect(url, {
       binary: true,

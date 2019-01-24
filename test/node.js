@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-/* eslint max-nested-callbacks: ["error", 5] */
+/* eslint max-nested-callbacks: ["error", 6] */
 'use strict'
 
 const chai = require('chai')
@@ -11,7 +11,6 @@ const pull = require('pull-stream')
 const goodbye = require('pull-goodbye')
 
 const WS = require('../src')
-const maToUrl = require('../src/ma-to-url')
 
 require('./compliance.node')
 
@@ -23,132 +22,179 @@ describe('instantiate the transport', () => {
 })
 
 describe('listen', () => {
-  let ws
-  const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+  describe('ip4', () => {
+    let ws
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
 
-  beforeEach(() => {
-    ws = new WS()
-  })
-
-  it('listen, check for callback', (done) => {
-    const listener = ws.createListener((conn) => {})
-
-    listener.listen(ma, () => {
-      listener.close(done)
-    })
-  })
-
-  it('listen, check for listening event', (done) => {
-    const listener = ws.createListener((conn) => {})
-
-    listener.on('listening', () => {
-      listener.close(done)
+    beforeEach(() => {
+      ws = new WS()
     })
 
-    listener.listen(ma)
-  })
+    it('listen, check for callback', (done) => {
+      const listener = ws.createListener((conn) => { })
 
-  it('listen, check for the close event', (done) => {
-    const listener = ws.createListener((conn) => {})
-
-    listener.on('listening', () => {
-      listener.on('close', done)
-      listener.close()
-    })
-
-    listener.listen(ma)
-  })
-
-  it('listen on addr with /ipfs/QmHASH', (done) => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-
-    const listener = ws.createListener((conn) => {})
-
-    listener.listen(ma, () => {
-      listener.close(done)
-    })
-  })
-
-  it.skip('close listener with connections, through timeout', (done) => {
-    // TODO `ws` closes all anyway, we need to make it not close
-    // first - https://github.com/diasdavid/simple-websocket-server
-  })
-
-  it.skip('listen on port 0', (done) => {
-    // TODO port 0 not supported yet
-  })
-  it.skip('listen on IPv6 addr', (done) => {
-    // TODO IPv6 not supported yet
-  })
-
-  it.skip('listen on any Interface', (done) => {
-    // TODO 0.0.0.0 not supported yet
-  })
-
-  it('getAddrs', (done) => {
-    const listener = ws.createListener((conn) => {
-    })
-    listener.listen(ma, () => {
-      listener.getAddrs((err, addrs) => {
-        expect(err).to.not.exist()
-        expect(addrs.length).to.equal(1)
-        expect(addrs[0]).to.deep.equal(ma)
+      listener.listen(ma, () => {
         listener.close(done)
+      })
+    })
+
+    it('listen, check for listening event', (done) => {
+      const listener = ws.createListener((conn) => { })
+
+      listener.on('listening', () => {
+        listener.close(done)
+      })
+
+      listener.listen(ma)
+    })
+
+    it('listen, check for the close event', (done) => {
+      const listener = ws.createListener((conn) => { })
+
+      listener.on('listening', () => {
+        listener.on('close', done)
+        listener.close()
+      })
+
+      listener.listen(ma)
+    })
+
+    it('listen on addr with /ipfs/QmHASH', (done) => {
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+
+      const listener = ws.createListener((conn) => { })
+
+      listener.listen(ma, () => {
+        listener.close(done)
+      })
+    })
+
+    it.skip('close listener with connections, through timeout', (done) => {
+      // TODO `ws` closes all anyway, we need to make it not close
+      // first - https://github.com/diasdavid/simple-websocket-server
+    })
+
+    it.skip('listen on port 0', (done) => {
+      // TODO port 0 not supported yet
+    })
+
+    it.skip('listen on any Interface', (done) => {
+      // TODO 0.0.0.0 not supported yet
+    })
+
+    it('getAddrs', (done) => {
+      const listener = ws.createListener((conn) => {
+      })
+      listener.listen(ma, () => {
+        listener.getAddrs((err, addrs) => {
+          expect(err).to.not.exist()
+          expect(addrs.length).to.equal(1)
+          expect(addrs[0]).to.deep.equal(ma)
+          listener.close(done)
+        })
+      })
+    })
+
+    it('getAddrs on port 0 listen', (done) => {
+      const addr = multiaddr(`/ip4/127.0.0.1/tcp/0/ws`)
+      const listener = ws.createListener((conn) => {
+      })
+      listener.listen(addr, () => {
+        listener.getAddrs((err, addrs) => {
+          expect(err).to.not.exist()
+          expect(addrs.length).to.equal(1)
+          expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
+          listener.close(done)
+        })
+      })
+    })
+
+    it('getAddrs from listening on 0.0.0.0', (done) => {
+      const addr = multiaddr(`/ip4/0.0.0.0/tcp/9003/ws`)
+      const listener = ws.createListener((conn) => {
+      })
+      listener.listen(addr, () => {
+        listener.getAddrs((err, addrs) => {
+          expect(err).to.not.exist()
+          expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
+          listener.close(done)
+        })
+      })
+    })
+
+    it('getAddrs from listening on 0.0.0.0 and port 0', (done) => {
+      const addr = multiaddr(`/ip4/0.0.0.0/tcp/0/ws`)
+      const listener = ws.createListener((conn) => {
+      })
+      listener.listen(addr, () => {
+        listener.getAddrs((err, addrs) => {
+          expect(err).to.not.exist()
+          expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
+          expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
+          listener.close(done)
+        })
+      })
+    })
+
+    it('getAddrs preserves IPFS Id', (done) => {
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+
+      const listener = ws.createListener((conn) => { })
+
+      listener.listen(ma, () => {
+        listener.getAddrs((err, addrs) => {
+          expect(err).to.not.exist()
+          expect(addrs.length).to.equal(1)
+          expect(addrs[0]).to.deep.equal(ma)
+          listener.close(done)
+        })
       })
     })
   })
 
-  it('getAddrs on port 0 listen', (done) => {
-    const addr = multiaddr(`/ip4/127.0.0.1/tcp/0/ws`)
-    const listener = ws.createListener((conn) => {
+  describe('ip6', () => {
+    let ws
+    const ma = multiaddr('/ip6/::1/tcp/9091/ws')
+
+    beforeEach(() => {
+      ws = new WS()
     })
-    listener.listen(addr, () => {
-      listener.getAddrs((err, addrs) => {
-        expect(err).to.not.exist()
-        expect(addrs.length).to.equal(1)
-        expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
+
+    it('listen, check for callback', (done) => {
+      const listener = ws.createListener((conn) => { })
+
+      listener.listen(ma, () => {
         listener.close(done)
       })
     })
-  })
 
-  it('getAddrs from listening on 0.0.0.0', (done) => {
-    const addr = multiaddr(`/ip4/0.0.0.0/tcp/9003/ws`)
-    const listener = ws.createListener((conn) => {
-    })
-    listener.listen(addr, () => {
-      listener.getAddrs((err, addrs) => {
-        expect(err).to.not.exist()
-        expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
+    it('listen, check for listening event', (done) => {
+      const listener = ws.createListener((conn) => { })
+
+      listener.on('listening', () => {
         listener.close(done)
       })
-    })
-  })
 
-  it('getAddrs from listening on 0.0.0.0 and port 0', (done) => {
-    const addr = multiaddr(`/ip4/0.0.0.0/tcp/0/ws`)
-    const listener = ws.createListener((conn) => {
+      listener.listen(ma)
     })
-    listener.listen(addr, () => {
-      listener.getAddrs((err, addrs) => {
-        expect(err).to.not.exist()
-        expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
-        expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
-        listener.close(done)
+
+    it('listen, check for the close event', (done) => {
+      const listener = ws.createListener((conn) => { })
+
+      listener.on('listening', () => {
+        listener.on('close', done)
+        listener.close()
       })
+
+      listener.listen(ma)
     })
-  })
 
-  it('getAddrs preserves IPFS Id', (done) => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    it('listen on addr with /ipfs/QmHASH', (done) => {
+      const ma = multiaddr('/ip6/::1/tcp/9091/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-    const listener = ws.createListener((conn) => {})
+      const listener = ws.createListener((conn) => { })
 
-    listener.listen(ma, () => {
-      listener.getAddrs((err, addrs) => {
-        expect(err).to.not.exist()
-        expect(addrs.length).to.equal(1)
-        expect(addrs[0]).to.deep.equal(ma)
+      listener.listen(ma, () => {
         listener.close(done)
       })
     })
@@ -156,57 +202,106 @@ describe('listen', () => {
 })
 
 describe('dial', () => {
-  let ws
-  let listener
-  const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws')
+  describe('ip4', () => {
+    let ws
+    let listener
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws')
 
-  beforeEach((done) => {
-    ws = new WS()
-    listener = ws.createListener((conn) => {
-      pull(conn, conn)
-    })
-    listener.listen(ma, done)
-  })
-
-  afterEach((done) => {
-    listener.close(done)
-  })
-
-  it('dial on IPv4', (done) => {
-    const conn = ws.dial(ma)
-
-    const s = goodbye({
-      source: pull.values(['hey']),
-      sink: pull.collect((err, result) => {
-        expect(err).to.not.exist()
-
-        expect(result).to.be.eql(['hey'])
-        done()
+    beforeEach((done) => {
+      ws = new WS()
+      listener = ws.createListener((conn) => {
+        pull(conn, conn)
       })
+      listener.listen(ma, done)
     })
 
-    pull(s, conn, s)
-  })
+    afterEach((done) => {
+      listener.close(done)
+    })
 
-  it.skip('dial on IPv6', (done) => {
-    // TODO IPv6 not supported yet
-  })
+    it('dial', (done) => {
+      const conn = ws.dial(ma)
 
-  it('dial on IPv4 with IPFS Id', (done) => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-    const conn = ws.dial(ma)
+      const s = goodbye({
+        source: pull.values(['hey']),
+        sink: pull.collect((err, result) => {
+          expect(err).to.not.exist()
 
-    const s = goodbye({
-      source: pull.values(['hey']),
-      sink: pull.collect((err, result) => {
-        expect(err).to.not.exist()
-
-        expect(result).to.be.eql(['hey'])
-        done()
+          expect(result).to.be.eql(['hey'])
+          done()
+        })
       })
+
+      pull(s, conn, s)
     })
 
-    pull(s, conn, s)
+    it('dial with IPFS Id', (done) => {
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const conn = ws.dial(ma)
+
+      const s = goodbye({
+        source: pull.values(['hey']),
+        sink: pull.collect((err, result) => {
+          expect(err).to.not.exist()
+
+          expect(result).to.be.eql(['hey'])
+          done()
+        })
+      })
+
+      pull(s, conn, s)
+    })
+  })
+
+  describe('ip6', () => {
+    let ws
+    let listener
+    const ma = multiaddr('/ip6/::1/tcp/9091')
+
+    beforeEach((done) => {
+      ws = new WS()
+      listener = ws.createListener((conn) => {
+        pull(conn, conn)
+      })
+      listener.listen(ma, done)
+    })
+
+    afterEach((done) => {
+      listener.close(done)
+    })
+
+    it('dial', (done) => {
+      const conn = ws.dial(ma)
+
+      const s = goodbye({
+        source: pull.values(['hey']),
+        sink: pull.collect((err, result) => {
+          expect(err).to.not.exist()
+
+          expect(result).to.be.eql(['hey'])
+          done()
+        })
+      })
+
+      pull(s, conn, s)
+    })
+
+    it('dial with IPFS Id', (done) => {
+      const ma = multiaddr('/ip6/::1/tcp/9091/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const conn = ws.dial(ma)
+
+      const s = goodbye({
+        source: pull.values(['hey']),
+        sink: pull.collect((err, result) => {
+          expect(err).to.not.exist()
+
+          expect(result).to.be.eql(['hey'])
+          done()
+        })
+      })
+
+      pull(s, conn, s)
+    })
   })
 })
 
@@ -457,24 +552,6 @@ describe('valid Connection', () => {
         })
       }
     }
-  })
-})
-
-describe('ma-to-url test', function () {
-  it('should convert ipv4 ma to url', function () {
-    expect(maToUrl(multiaddr('/ip4/127.0.0.1/ws'))).to.equal('ws://127.0.0.1')
-  })
-
-  it('should convert ipv4 ma with port to url', function () {
-    expect(maToUrl(multiaddr('/ip4/127.0.0.1/tcp/80/ws'))).to.equal('ws://127.0.0.1:80')
-  })
-
-  it('should convert dns ma to url', function () {
-    expect(maToUrl(multiaddr('/dns4/ipfs.io/ws'))).to.equal('ws://ipfs.io')
-  })
-
-  it('should convert dns ma  with port to url', function () {
-    expect(maToUrl(multiaddr('/dns4/ipfs.io/tcp/80/ws'))).to.equal('ws://ipfs.io:80')
   })
 })
 
