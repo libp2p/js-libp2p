@@ -101,9 +101,9 @@ class PubsubBaseProtocol extends EventEmitter {
     this.libp2p.dialProtocol(peerInfo, this.multicodec, (err, conn) => {
       this.log('dial to %s complete', idB58Str)
 
-      // If the dial is not in the set, it means that floodsub has been
+      // If the dial is not in the set, it means that pubsub has been
       // stopped
-      const floodsubStopped = !this._dials.has(idB58Str)
+      const pubsubStopped = !this._dials.has(idB58Str)
       this._dials.delete(idB58Str)
 
       if (err) {
@@ -111,9 +111,9 @@ class PubsubBaseProtocol extends EventEmitter {
         return callback()
       }
 
-      // Floodsub has been stopped, so we should just bail out
-      if (floodsubStopped) {
-        this.log('floodsub was stopped, not processing dial to %s', idB58Str)
+      // pubsub has been stopped, so we should just bail out
+      if (pubsubStopped) {
+        this.log('pubsub was stopped, not processing dial to %s', idB58Str)
         return callback()
       }
 
@@ -160,7 +160,7 @@ class PubsubBaseProtocol extends EventEmitter {
   }
 
   /**
-   * Mounts the floodsub protocol onto the libp2p node and sends our
+   * Mounts the pubsub protocol onto the libp2p node and sends our
    * subscriptions to every peer conneceted
    *
    * @param {Function} callback
@@ -191,7 +191,7 @@ class PubsubBaseProtocol extends EventEmitter {
   }
 
   /**
-   * Unmounts the floodsub protocol and shuts down every connection
+   * Unmounts the pubsub protocol and shuts down every connection
    *
    * @param {Function} callback
    * @returns {undefined}

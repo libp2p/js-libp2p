@@ -14,7 +14,7 @@ const createNode = utils.createNode
 
 class PubsubImplementation extends PubsubBaseProtocol {
   constructor (libp2p) {
-    super('libp2p:floodsub', 'libp2p:pubsub-implementation', libp2p)
+    super('libp2p:pubsub', 'libp2p:pubsub-implementation', libp2p)
   }
 
   _processConnection (idB58Str, conn, peer) {
@@ -308,7 +308,7 @@ describe('pubsub base protocol', () => {
       // causes pubsub to dial peer B
       nodeA.emit('peer:connect', nodeB.peerInfo)
 
-      // Stop floodsub before the dial can complete
+      // Stop pubsub before the dial can complete
       psA.stop(() => {
         // Check that the dial was not processed
         setTimeout(() => {
