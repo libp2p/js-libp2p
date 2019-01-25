@@ -4,7 +4,7 @@ const EventEmitter = require('events')
 const pull = require('pull-stream/pull')
 const empty = require('pull-stream/sources/empty')
 const asyncEach = require('async/each')
-
+const TimeCache = require('time-cache')
 const debug = require('debug')
 const errcode = require('err-code')
 
@@ -31,6 +31,20 @@ class PubsubBaseProtocol extends EventEmitter {
     this.multicodec = multicodec
     this.libp2p = libp2p
     this.started = false
+    
+    /**
+     * Map of topics to which peers are subscribed to
+     *
+     * @type {Map<string, Peer>}
+     */
+    this.topics = new Map()
+
+    /**
+     * Cache of seen messages
+     *
+     * @type {TimeCache}
+     */
+    this.seenCache = new TimeCache()
 
     /**
      * Map of peers.
