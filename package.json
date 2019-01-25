@@ -10,7 +10,7 @@
         "test:node": "aegir test -t node",
         "build": "aegir build",
         "docs": "aegir-docs",
-        "release": "aegir release --docs",
+        "release": "aegir release --target node --docs",
         "release-minor": "aegir release --type minor --docs",
         "release-major": "aegir release --type major --docs",
         "coverage": "aegir coverage",
