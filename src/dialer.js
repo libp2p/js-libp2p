@@ -4,6 +4,7 @@ const Connection = require('interface-connection').Connection
 const ConnectionFSM = require('./connection')
 const getPeerInfo = require('./get-peer-info')
 const once = require('once')
+const setImmediate = require('async/setImmediate')
 
 const debug = require('debug')
 const log = debug('libp2p:switch:dial')
