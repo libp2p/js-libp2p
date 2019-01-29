@@ -33,12 +33,12 @@ const OptionsSchema = Joi.object({
     }).default(),
     dht: Joi.object().keys({
       kBucketSize: Joi.number().default(20),
+      enabled: Joi.boolean().default(true),
       enabledDiscovery: Joi.boolean().default(true),
       validators: Joi.object().allow(null),
       selectors: Joi.object().allow(null)
     }).default(),
     EXPERIMENTAL: Joi.object().keys({
-      dht: Joi.boolean().default(false),
       pubsub: Joi.boolean().default(false)
     }).default()
   }).default()
@@ -48,7 +48,7 @@ module.exports.validate = (options) => {
   options = Joi.attempt(options, OptionsSchema)
 
   // Ensure dht is correct
-  if (options.config.EXPERIMENTAL.dht) {
+  if (options.config.dht.enabled) {
     Joi.assert(options.modules.dht, ModuleSchema.required())
   }
 

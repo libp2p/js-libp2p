@@ -15,9 +15,6 @@ describe('libp2p', () => {
           mdns: {
             enabled: false
           }
-        },
-        EXPERIMENTAL: {
-          dht: true
         }
       }
     }, (err, node) => {

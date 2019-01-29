@@ -73,10 +73,10 @@ class Node extends libp2p {
         },
         dht: {
           kBucketSize: 20,
-          enabledDiscovery: true
+          enabledDiscovery: true,
+          enabled: true
         },
         EXPERIMENTAL: {
-          dht: false,
           pubsub: false
         }
       }
