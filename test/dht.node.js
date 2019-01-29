@@ -17,12 +17,7 @@ describe('.dht', () => {
 
     before(function (done) {
       createNode('/ip4/0.0.0.0/tcp/0', {
-        datastore,
-        config: {
-          EXPERIMENTAL: {
-            dht: true
-          }
-        }
+        datastore
       }, (err, node) => {
         expect(err).to.not.exist()
         nodeA = node
@@ -124,8 +119,8 @@ describe('.dht', () => {
     before(function (done) {
       createNode('/ip4/0.0.0.0/tcp/0', {
         config: {
-          EXPERIMENTAL: {
-            dht: false
+          dht: {
+            enabled: false
           }
         }
       }, (err, node) => {

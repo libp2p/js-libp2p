@@ -63,7 +63,8 @@ describe('configuration', () => {
       peerInfo,
       modules: {
         transport: [ WS ],
-        peerDiscovery: [ Bootstrap ]
+        peerDiscovery: [ Bootstrap ],
+        dht: DHT
       },
       config: {
         peerDiscovery: {
@@ -79,7 +80,8 @@ describe('configuration', () => {
       peerInfo,
       modules: {
         transport: [ WS ],
-        peerDiscovery: [ Bootstrap ]
+        peerDiscovery: [ Bootstrap ],
+        dht: DHT
       },
       config: {
         peerDiscovery: {
@@ -89,11 +91,11 @@ describe('configuration', () => {
           }
         },
         EXPERIMENTAL: {
-          pubsub: false,
-          dht: false
+          pubsub: false
         },
         dht: {
           kBucketSize: 20,
+          enabled: true,
           enabledDiscovery: true
         },
         relay: {
@@ -115,7 +117,8 @@ describe('configuration', () => {
         transport: [ WS ],
         peerDiscovery: [ Bootstrap ],
         peerRouting: [ peerRouter ],
-        contentRouting: [ contentRouter ]
+        contentRouting: [ contentRouter ],
+        dht: DHT
       },
       config: {
         peerDiscovery: {
@@ -160,9 +163,6 @@ describe('configuration', () => {
         dht: DHT
       },
       config: {
-        EXPERIMENTAL: {
-          dht: true
-        },
         dht: {
           selectors,
           validators
@@ -177,14 +177,14 @@ describe('configuration', () => {
       },
       config: {
         EXPERIMENTAL: {
-          pubsub: false,
-          dht: true
+          pubsub: false
         },
         relay: {
           enabled: true
         },
         dht: {
           kBucketSize: 20,
+          enabled: true,
           enabledDiscovery: true,
           selectors,
           validators

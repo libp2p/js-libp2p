@@ -13,8 +13,10 @@ describe('libp2p creation', () => {
     createNode([], {
       config: {
         EXPERIMENTAL: {
-          dht: true,
           pubsub: true
+        },
+        dht: {
+          enabled: true
         }
       }
     }, (err, node) => {
@@ -69,13 +71,11 @@ describe('libp2p creation', () => {
     createNode([], {
       config: {
         EXPERIMENTAL: {
-          dht: false,
           pubsub: false
         }
       }
     }, (err, node) => {
       expect(err).to.not.exist()
-      expect(node._dht).to.not.exist()
       expect(node._floodSub).to.not.exist()
       done()
     })

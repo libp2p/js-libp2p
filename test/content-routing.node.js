@@ -30,13 +30,7 @@ describe('.contentRouting', () => {
     before(function (done) {
       this.timeout(5 * 1000)
       const tasks = _times(5, () => (cb) => {
-        createNode('/ip4/0.0.0.0/tcp/0', {
-          config: {
-            EXPERIMENTAL: {
-              dht: true
-            }
-          }
-        }, (err, node) => {
+        createNode('/ip4/0.0.0.0/tcp/0', (err, node) => {
           expect(err).to.not.exist()
           node.start((err) => cb(err, node))
         })
@@ -159,6 +153,9 @@ describe('.contentRouting', () => {
               contentRouting: [ delegate ]
             },
             config: {
+              dht: {
+                enabled: false
+              },
               relay: {
                 enabled: true,
                 hop: {
@@ -320,9 +317,6 @@ describe('.contentRouting', () => {
                   enabled: true,
                   active: false
                 }
-              },
-              EXPERIMENTAL: {
-                dht: true
               }
             }
           })
@@ -387,7 +381,13 @@ describe('.contentRouting', () => {
   describe('no routers', () => {
     let nodeA
     before((done) => {
-      createNode('/ip4/0.0.0.0/tcp/0', (err, node) => {
+      createNode('/ip4/0.0.0.0/tcp/0', {
+        config: {
+          dht: {
+            enabled: false
+          }
+        }
+      }, (err, node) => {
         expect(err).to.not.exist()
         nodeA = node
         done()

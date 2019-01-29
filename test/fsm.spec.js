@@ -13,7 +13,13 @@ describe('libp2p state machine (fsm)', () => {
   describe('starting and stopping', () => {
     let node
     beforeEach((done) => {
-      createNode([], (err, _node) => {
+      createNode([], {
+        config: {
+          dht: {
+            enabled: false
+          }
+        }
+      }, (err, _node) => {
         node = _node
         done(err)
       })

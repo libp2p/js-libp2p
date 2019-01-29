@@ -24,13 +24,7 @@ describe('.peerRouting', () => {
 
     before('create the outer ring of connections', (done) => {
       const tasks = _times(5, () => (cb) => {
-        createNode('/ip4/0.0.0.0/tcp/0', {
-          config: {
-            EXPERIMENTAL: {
-              dht: true
-            }
-          }
-        }, (err, node) => {
+        createNode('/ip4/0.0.0.0/tcp/0', (err, node) => {
           expect(err).to.not.exist()
           node.start((err) => cb(err, node))
         })
@@ -112,6 +106,11 @@ describe('.peerRouting', () => {
           createNode('/ip4/0.0.0.0/tcp/0', {
             modules: {
               peerRouting: [ delegate ]
+            },
+            config: {
+              dht: {
+                enabled: false
+              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
@@ -213,11 +212,6 @@ describe('.peerRouting', () => {
           createNode('/ip4/0.0.0.0/tcp/0', {
             modules: {
               peerRouting: [ delegate ]
-            },
-            config: {
-              EXPERIMENTAL: {
-                dht: true
-              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
@@ -270,7 +264,13 @@ describe('.peerRouting', () => {
   describe('no routers', () => {
     let nodeA
     before((done) => {
-      createNode('/ip4/0.0.0.0/tcp/0', (err, node) => {
+      createNode('/ip4/0.0.0.0/tcp/0', {
+        config: {
+          dht: {
+            enabled: false
+          }
+        }
+      }, (err, node) => {
         expect(err).to.not.exist()
         nodeA = node
         done()

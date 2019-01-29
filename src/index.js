@@ -102,7 +102,7 @@ class Node extends EventEmitter {
     }
 
     // dht provided components (peerRouting, contentRouting, dht)
-    if (this._config.EXPERIMENTAL.dht) {
+    if (this._config.dht.enabled) {
       const DHT = this._modules.dht
       const enabledDiscovery = this._config.dht.enabledDiscovery !== false
 

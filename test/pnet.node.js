@@ -9,6 +9,7 @@ const PeerId = require('peer-id')
 const waterfall = require('async/waterfall')
 const WS = require('libp2p-websockets')
 const defaultsDeep = require('@nodeutils/defaults-deep')
+const DHT = require('libp2p-kad-dht')
 
 const Libp2p = require('../src')
 
@@ -23,7 +24,8 @@ describe('private network', () => {
         config = {
           peerInfo,
           modules: {
-            transport: [ WS ]
+            transport: [ WS ],
+            dht: DHT
           }
         }
         cb()
