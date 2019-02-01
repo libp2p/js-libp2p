@@ -17,6 +17,7 @@ const Ping = require('libp2p-ping')
 const WebSockets = require('libp2p-websockets')
 const ConnectionManager = require('libp2p-connection-manager')
 
+const { emitFirst } = require('./util')
 const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
 const dht = require('./dht')
@@ -194,7 +195,7 @@ class Node extends EventEmitter {
    * @returns {void}
    */
   start (callback = () => {}) {
-    this.once('start', callback)
+    emitFirst(this, ['error', 'start'], callback)
     this.state('start')
   }
 
@@ -205,7 +206,7 @@ class Node extends EventEmitter {
    * @returns {void}
    */
   stop (callback = () => {}) {
-    this.once('stop', callback)
+    emitFirst(this, ['error', 'stop'], callback)
     this.state('stop')
   }
 
@@ -473,8 +474,9 @@ class Node extends EventEmitter {
         this._switch.stop(cb)
       },
       (cb) => {
-        // Ensures idempotent restarts
-        this._switch.transport.removeAll(cb)
+        // Ensures idempotent restarts, ignore any errors
+        // from removeAll, they're not useful at this point
+        this._switch.transport.removeAll(() => cb())
       }
     ], (err) => {
       if (err) {

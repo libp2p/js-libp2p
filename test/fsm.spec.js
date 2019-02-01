@@ -26,6 +26,7 @@ describe('libp2p state machine (fsm)', () => {
     })
     afterEach(() => {
       node.removeAllListeners()
+      sinon.restore()
     })
     after((done) => {
       node.stop(done)
@@ -61,6 +62,23 @@ describe('libp2p state machine (fsm)', () => {
         // stop the stopped node
         node.stop()
       })
+      node.start()
+    })
+
+    it('should callback with an error when it occurs on stop', (done) => {
+      const error = new Error('some error starting')
+      node.once('start', () => {
+        node.once('error', (err) => {
+          expect(err).to.eql(error).mark()
+        })
+        node.stop((err) => {
+          expect(err).to.eql(error).mark()
+        })
+      })
+
+      expect(2).checks(done)
+
+      sinon.stub(node._switch, 'stop').callsArgWith(0, error)
       node.start()
     })
 
@@ -116,9 +134,11 @@ describe('libp2p state machine (fsm)', () => {
         throw new Error('should not start')
       })
 
-      expect(2).checks(done)
+      expect(3).checks(done)
 
-      node.start()
+      node.start((err) => {
+        expect(err).to.eql(error).mark()
+      })
     })
 
     it('should not dial when the node is stopped', (done) => {
