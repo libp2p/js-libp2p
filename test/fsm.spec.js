@@ -66,7 +66,7 @@ describe('libp2p state machine (fsm)', () => {
           expect(err).to.eql(error).mark()
         })
         node.stop((err) => {
-          expect(err).to.not.exist().mark()
+          expect(err).to.eql(error).mark()
         })
       })
 
