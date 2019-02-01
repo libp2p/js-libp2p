@@ -77,7 +77,8 @@ describe('.pubsub', () => {
         // publish on the second
         (cb) => nodes[1].pubsub.publish('pubsub', data, cb),
         // unsubscribe on the first
-        (cb) => nodes[0].pubsub.unsubscribe('pubsub', handler, cb),
+        (cb) => setTimeout(cb, 500),
+	(cb) => nodes[0].pubsub.unsubscribe('pubsub', handler, cb),
         // Stop both nodes
         (cb) => stopTwo(nodes, cb)
       ], (err) => {
