@@ -46,7 +46,7 @@ async.parallel([
     console.log('Dialer ready, listening on:')
 
     peerListener.multiaddrs.forEach((ma) => {
-      console.log(ma.toString() + '/ipfs/' + idListener.toB58String())
+      console.log(ma.toString() + '/p2p/' + idListener.toB58String())
     })
 
     nodeDialer.dialProtocol(peerListener, '/chat/1.0.0', (err, conn) => {

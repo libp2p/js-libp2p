@@ -41,6 +41,6 @@ series([
 
   console.log('Listener ready, listening on:')
   listenerNode.peerInfo.multiaddrs.forEach((ma) => {
-    console.log(ma.toString() + '/ipfs/' + listenerId.toB58String())
+    console.log(ma.toString() + '/p2p/' + listenerId.toB58String())
   })
 })

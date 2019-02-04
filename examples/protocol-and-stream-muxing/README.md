@@ -169,7 +169,7 @@ You can see this working on example [3.js](./3.js). The result should look like 
 > node 3.js
 from 1 to 2
 Addresses by which both peers are connected
-node 1 to node 2: /ip4/127.0.0.1/tcp/50629/ipfs/QmZwMKTo6wG4Te9A6M2eJnWDpR8uhsGed4YRegnV5DcKiv
-node 2 to node 1: /ip4/127.0.0.1/tcp/50630/ipfs/QmRgormJQeDyXhDKma11eUtksoh8vWmeBoxghVt4meauW9
+node 1 to node 2: /ip4/127.0.0.1/tcp/50629/p2p/QmZwMKTo6wG4Te9A6M2eJnWDpR8uhsGed4YRegnV5DcKiv
+node 2 to node 1: /ip4/127.0.0.1/tcp/50630/p2p/QmRgormJQeDyXhDKma11eUtksoh8vWmeBoxghVt4meauW9
 from 2 to 1
 ```

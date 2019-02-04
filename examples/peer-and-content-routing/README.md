@@ -69,8 +69,8 @@ You should see the output being something like:
 ```Bash
 > node 1.js
 Found it, multiaddrs are:
-/ip4/127.0.0.1/tcp/63617/ipfs/QmWrFXvZr9S4iDqycyoyc2zDdrT1jg9wpdenUTdd1LTar6
-/ip4/192.168.86.41/tcp/63617/ipfs/QmWrFXvZr9S4iDqycyoyc2zDdrT1jg9wpdenUTdd1LTar6
+/ip4/127.0.0.1/tcp/63617/p2p/QmWrFXvZr9S4iDqycyoyc2zDdrT1jg9wpdenUTdd1LTar6
+/ip4/192.168.86.41/tcp/63617/p2p/QmWrFXvZr9S4iDqycyoyc2zDdrT1jg9wpdenUTdd1LTar6
 ```
 
 You have successfully used Peer Routing to find a peer that you were not directly connected. Now all you have to do is to dial to the multiaddrs you discovered.

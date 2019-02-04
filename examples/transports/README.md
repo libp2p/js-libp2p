@@ -88,8 +88,8 @@ Running this should result in something like:
 > node 1.js
 node has started (true/false): true
 listening on:
-/ip4/127.0.0.1/tcp/61329/ipfs/QmW2cKTakTYqbQkUzBTEGXgWYFj1YEPeUndE1YWs6CBzDQ
-/ip4/192.168.2.156/tcp/61329/ipfs/QmW2cKTakTYqbQkUzBTEGXgWYFj1YEPeUndE1YWs6CBzDQ
+/ip4/127.0.0.1/tcp/61329/p2p/QmW2cKTakTYqbQkUzBTEGXgWYFj1YEPeUndE1YWs6CBzDQ
+/ip4/192.168.2.156/tcp/61329/p2p/QmW2cKTakTYqbQkUzBTEGXgWYFj1YEPeUndE1YWs6CBzDQ
 ```
 
 That `QmW2cKTakTYqbQkUzBTEGXgWYFj1YEPeUndE1YWs6CBzDQ` is the PeerId that was created during the PeerInfo generation.
@@ -175,11 +175,11 @@ The result should be look like:
 ```bash
 > node 2.js
 node 1 is listening on:
-/ip4/127.0.0.1/tcp/62279/ipfs/QmeM4wNWv1uci7UJjUXZYfvcy9uqAbw7G9icuxdqy88Mj9
-/ip4/192.168.2.156/tcp/62279/ipfs/QmeM4wNWv1uci7UJjUXZYfvcy9uqAbw7G9icuxdqy88Mj9
+/ip4/127.0.0.1/tcp/62279/p2p/QmeM4wNWv1uci7UJjUXZYfvcy9uqAbw7G9icuxdqy88Mj9
+/ip4/192.168.2.156/tcp/62279/p2p/QmeM4wNWv1uci7UJjUXZYfvcy9uqAbw7G9icuxdqy88Mj9
 node 2 is listening on:
-/ip4/127.0.0.1/tcp/62278/ipfs/QmWp58xJgzbouNJcyiNNTpZuqQCJU8jf6ixc7TZT9xEZhV
-/ip4/192.168.2.156/tcp/62278/ipfs/QmWp58xJgzbouNJcyiNNTpZuqQCJU8jf6ixc7TZT9xEZhV
+/ip4/127.0.0.1/tcp/62278/p2p/QmWp58xJgzbouNJcyiNNTpZuqQCJU8jf6ixc7TZT9xEZhV
+/ip4/192.168.2.156/tcp/62278/p2p/QmWp58xJgzbouNJcyiNNTpZuqQCJU8jf6ixc7TZT9xEZhV
 Hello p2p world!
 ```
 
@@ -304,14 +304,14 @@ If everything was set correctly, you now should see the following after you run 
 ```Bash
 > node 3.js
 node 1 is listening on:
-/ip4/127.0.0.1/tcp/62620/ipfs/QmWpWmcVJkF6EpmAaVDauku8g1uFGuxPsGP35XZp9GYEqs
-/ip4/192.168.2.156/tcp/62620/ipfs/QmWpWmcVJkF6EpmAaVDauku8g1uFGuxPsGP35XZp9GYEqs
+/ip4/127.0.0.1/tcp/62620/p2p/QmWpWmcVJkF6EpmAaVDauku8g1uFGuxPsGP35XZp9GYEqs
+/ip4/192.168.2.156/tcp/62620/p2p/QmWpWmcVJkF6EpmAaVDauku8g1uFGuxPsGP35XZp9GYEqs
 node 2 is listening on:
-/ip4/127.0.0.1/tcp/10000/ws/ipfs/QmWAQtWdzWXibgfyc7WRHhhv6MdqVKzXvyfSTnN2aAvixX
-/ip4/127.0.0.1/tcp/62619/ipfs/QmWAQtWdzWXibgfyc7WRHhhv6MdqVKzXvyfSTnN2aAvixX
-/ip4/192.168.2.156/tcp/62619/ipfs/QmWAQtWdzWXibgfyc7WRHhhv6MdqVKzXvyfSTnN2aAvixX
+/ip4/127.0.0.1/tcp/10000/ws/p2p/QmWAQtWdzWXibgfyc7WRHhhv6MdqVKzXvyfSTnN2aAvixX
+/ip4/127.0.0.1/tcp/62619/p2p/QmWAQtWdzWXibgfyc7WRHhhv6MdqVKzXvyfSTnN2aAvixX
+/ip4/192.168.2.156/tcp/62619/p2p/QmWAQtWdzWXibgfyc7WRHhhv6MdqVKzXvyfSTnN2aAvixX
 node 3 is listening on:
-/ip4/127.0.0.1/tcp/20000/ws/ipfs/QmVq1PWh3VSDYdFqYMtqp4YQyXcrH27N7968tGdM1VQPj1
+/ip4/127.0.0.1/tcp/20000/ws/p2p/QmVq1PWh3VSDYdFqYMtqp4YQyXcrH27N7968tGdM1VQPj1
 node 3 failed to dial to node 1 with: No available transport to dial to
 node 1 dialed to node 2 successfully
 node 2 dialed to node 3 successfully
