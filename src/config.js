@@ -34,7 +34,12 @@ const OptionsSchema = Joi.object({
     dht: Joi.object().keys({
       kBucketSize: Joi.number().default(20),
       enabled: Joi.boolean().default(true),
-      enabledDiscovery: Joi.boolean().default(true),
+      randomWalk: Joi.object().keys({
+        enabled: Joi.boolean().default(true),
+        queriesPerPeriod: Joi.number().default(1),
+        interval: Joi.number().default(30000),
+        timeout: Joi.number().default(10000),
+      }).default(),
       validators: Joi.object().allow(null),
       selectors: Joi.object().allow(null)
     }).default(),
