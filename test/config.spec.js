@@ -96,7 +96,12 @@ describe('configuration', () => {
         dht: {
           kBucketSize: 20,
           enabled: true,
-          enabledDiscovery: true
+          randomWalk: {
+            enabled: true,
+            queriesPerPeriod: 1,
+            interval: 30000,
+            timeout: 10000
+          }
         },
         relay: {
           enabled: true
@@ -185,7 +190,12 @@ describe('configuration', () => {
         dht: {
           kBucketSize: 20,
           enabled: true,
-          enabledDiscovery: true,
+          randomWalk: {
+            enabled: true,
+            queriesPerPeriod: 1,
+            interval: 30000,
+            timeout: 10000
+          },
           selectors,
           validators
         }
