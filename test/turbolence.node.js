@@ -48,7 +48,7 @@ describe('Turbolence tests', () => {
 
   it('connect nodeA to that node', (done) => {
     const spawnedId = require('./test-data/test-id.json')
-    const maddr = multiaddr('/ip4/127.0.0.1/tcp/12345/ipfs/' + spawnedId.id)
+    const maddr = multiaddr('/ip4/127.0.0.1/tcp/12345/p2p/' + spawnedId.id)
 
     nodeA.dial(maddr, '/echo/1.0.0', (err, conn) => {
       expect(err).to.not.exist()

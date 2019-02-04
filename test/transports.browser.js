@@ -21,7 +21,7 @@ const jsonPeerId = require('./fixtures/test-peer.json')
 describe('transports', () => {
   describe('websockets', () => {
     let peerB
-    let peerBMultiaddr = '/ip4/127.0.0.1/tcp/9200/ws/ipfs/' + jsonPeerId.id
+    let peerBMultiaddr = '/ip4/127.0.0.1/tcp/9200/ws/p2p/' + jsonPeerId.id
     let nodeA
 
     before((done) => {
@@ -256,11 +256,11 @@ describe('transports', () => {
         expect(err).to.not.exist()
 
         peer1 = new PeerInfo(ids[0])
-        const ma1 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + ids[0].toB58String()
+        const ma1 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/p2p/' + ids[0].toB58String()
         peer1.multiaddrs.add(ma1)
 
         peer2 = new PeerInfo(ids[1])
-        const ma2 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + ids[1].toB58String()
+        const ma2 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/p2p/' + ids[1].toB58String()
         peer2.multiaddrs.add(ma2)
 
         done()
@@ -333,7 +333,7 @@ describe('transports', () => {
         }
 
         const peer3 = new PeerInfo(id3)
-        const ma3 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/ipfs/' + b58Id
+        const ma3 = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/p2p/' + b58Id
         peer3.multiaddrs.add(ma3)
 
         node1.on('peer:discovery', (peerInfo) => node1.dial(peerInfo, check))
@@ -441,7 +441,7 @@ describe('transports', () => {
         expect(err).to.not.exist()
 
         const peer3 = new PeerInfo(id3)
-        const ma3 = '/ip4/127.0.0.1/tcp/14444/ws/p2p-websocket-star/ipfs/' + id3.toB58String()
+        const ma3 = '/ip4/127.0.0.1/tcp/14444/ws/p2p-websocket-star/p2p/' + id3.toB58String()
         peer3.multiaddrs.add(ma3)
 
         node1.on('peer:discovery', (peerInfo) => node1.dial(peerInfo, check))

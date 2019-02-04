@@ -117,7 +117,7 @@ describe('circuit relay', () => {
       // set up node with TCP and listening on relay1
       (cb) => setupNode([
         '/ip4/0.0.0.0/tcp/0',
-        `/ipfs/${relayNode1.peerInfo.id.toB58String()}/p2p-circuit`
+        `/p2p/${relayNode1.peerInfo.id.toB58String()}/p2p-circuit`
       ], {
         config: {
           relay: {
@@ -131,7 +131,7 @@ describe('circuit relay', () => {
       // set up node with TCP and listening on relay2 over TCP transport
       (cb) => setupNode([
         '/ip4/0.0.0.0/tcp/0',
-        `/ip4/0.0.0.0/tcp/0/ipfs/${relayNode2.peerInfo.id.toB58String()}/p2p-circuit`
+        `/ip4/0.0.0.0/tcp/0/p2p/${relayNode2.peerInfo.id.toB58String()}/p2p-circuit`
       ], {
         config: {
           relay: {
@@ -195,7 +195,7 @@ describe('circuit relay', () => {
 
         tryEcho(conn, () => {
           const addr = multiaddr(handlerSpies[0].args[2][0].dstPeer.addrs[0]).toString()
-          expect(addr).to.equal(`/ipfs/${nodeTCP1.peerInfo.id.toB58String()}`)
+          expect(addr).to.equal(`/p2p/${nodeTCP1.peerInfo.id.toB58String()}`)
           done()
         })
       })
@@ -208,7 +208,7 @@ describe('circuit relay', () => {
 
         tryEcho(conn, () => {
           const addr = multiaddr(handlerSpies[1].args[2][0].dstPeer.addrs[0]).toString()
-          expect(addr).to.equal(`/ipfs/${nodeTCP2.peerInfo.id.toB58String()}`)
+          expect(addr).to.equal(`/p2p/${nodeTCP2.peerInfo.id.toB58String()}`)
           done()
         })
       })

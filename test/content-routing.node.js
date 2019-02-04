@@ -191,7 +191,7 @@ describe('.contentRouting', () => {
           // mock the swarm connect
           .post('/api/v0/swarm/connect')
           .query({
-            arg: `/ip4/0.0.0.0/tcp/60194/p2p-circuit/ipfs/${nodeA.peerInfo.id.toB58String()}`,
+            arg: `/ip4/0.0.0.0/tcp/60194/p2p-circuit/p2p/${nodeA.peerInfo.id.toB58String()}`,
             'stream-channels': true
           })
           .reply(200, {
@@ -222,7 +222,7 @@ describe('.contentRouting', () => {
           // mock the swarm connect
           .post('/api/v0/swarm/connect')
           .query({
-            arg: `/ip4/0.0.0.0/tcp/60194/p2p-circuit/ipfs/${nodeA.peerInfo.id.toB58String()}`,
+            arg: `/ip4/0.0.0.0/tcp/60194/p2p-circuit/p2p/${nodeA.peerInfo.id.toB58String()}`,
             'stream-channels': true
           })
           .reply(502, 'Bad Gateway', ['Content-Type', 'application/json'])

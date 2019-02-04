@@ -32,7 +32,7 @@ test('story 3 - peerB', (t) => {
     t.ifErr(err, 'created Node')
     t.ok(node.isStarted(), 'PeerA is running')
 
-    const PeerAAddr = `/ip4/127.0.0.1/tcp/10000/ws/ipfs/${PeerA.id}`
+    const PeerAAddr = `/ip4/127.0.0.1/tcp/10000/ws/p2p/${PeerA.id}`
 
     setTimeout(() => node.dial(PeerAAddr, '/echo/1.0.0', (err, conn) => {
       t.ok(err, 'dial failed')

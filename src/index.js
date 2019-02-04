@@ -330,7 +330,7 @@ class Node extends EventEmitter {
     this.peerInfo.multiaddrs.toArray().forEach((ma) => {
       if (!ma.getPeerId()) {
         maOld.push(ma)
-        maNew.push(ma.encapsulate('/ipfs/' + this.peerInfo.id.toB58String()))
+        maNew.push(ma.encapsulate('/p2p/' + this.peerInfo.id.toB58String()))
       }
     })
     this.peerInfo.multiaddrs.replace(maOld, maNew)

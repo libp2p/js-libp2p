@@ -59,7 +59,7 @@ test('story 1 - peerA', (t) => {
     t.ifErr(err, 'created Node successfully')
     t.ok(node.isStarted(), 'PeerB is Running')
 
-    const peerAAddr = `/ip4/127.0.0.1/tcp/10000/ipfs/${PeerA.id}`
+    const peerAAddr = `/ip4/127.0.0.1/tcp/10000/p2p/${PeerA.id}`
 
     node.handle('/echo/1.0.0', (protocol, conn) => {
       pull(
