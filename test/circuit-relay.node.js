@@ -195,7 +195,7 @@ describe('circuit relay', () => {
 
         tryEcho(conn, () => {
           const addr = multiaddr(handlerSpies[0].args[2][0].dstPeer.addrs[0]).toString()
-          expect(addr).to.equal(`/p2p/${nodeTCP1.peerInfo.id.toB58String()}`)
+          expect(addr).to.equal(`/ipfs/${nodeTCP1.peerInfo.id.toB58String()}`)
           done()
         })
       })
@@ -208,7 +208,7 @@ describe('circuit relay', () => {
 
         tryEcho(conn, () => {
           const addr = multiaddr(handlerSpies[1].args[2][0].dstPeer.addrs[0]).toString()
-          expect(addr).to.equal(`/p2p/${nodeTCP2.peerInfo.id.toB58String()}`)
+          expect(addr).to.equal(`/ipfs/${nodeTCP2.peerInfo.id.toB58String()}`)
           done()
         })
       })
