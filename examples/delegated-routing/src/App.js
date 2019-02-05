@@ -7,7 +7,7 @@ const Ipfs = require('ipfs')
 const libp2pBundle = require('./libp2p-bundle')
 // require('./App.css')
 
-const BootstrapNode = '/ip4/127.0.0.1/tcp/8081/ws/ipfs/QmdoG8DpzYUZMVP5dGmgmigZwR1RE8Cf6SxMPg1SBXJAQ8'
+const BootstrapNode = '/ip4/127.0.0.1/tcp/8081/ws/p2p/QmdoG8DpzYUZMVP5dGmgmigZwR1RE8Cf6SxMPg1SBXJAQ8'
 
 class App extends Component {
   constructor (props) {

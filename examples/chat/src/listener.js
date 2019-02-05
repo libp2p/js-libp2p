@@ -50,7 +50,7 @@ PeerId.createFromJSON(require('./peer-id-listener'), (err, idListener) => {
 
     console.log('Listener ready, listening on:')
     peerListener.multiaddrs.forEach((ma) => {
-      console.log(ma.toString() + '/ipfs/' + idListener.toB58String())
+      console.log(ma.toString() + '/p2p/' + idListener.toB58String())
     })
   })
 })
