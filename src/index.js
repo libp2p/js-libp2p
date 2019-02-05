@@ -104,15 +104,11 @@ class Node extends EventEmitter {
 
     // dht provided components (peerRouting, contentRouting, dht)
     if (this._config.dht.enabled) {
-      const DHT = this._modules.dht
-      const enabledDiscovery = this._config.dht.enabledDiscovery !== false
+      const DHT = this._modules.dht;
 
       this._dht = new DHT(this._switch, {
-        kBucketSize: this._config.dht.kBucketSize,
-        enabledDiscovery,
         datastore: this.datastore,
-        validators: this._config.dht.validators,
-        selectors: this._config.dht.selectors
+        ...this._config.dht
       })
     }
 
