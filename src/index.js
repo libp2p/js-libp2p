@@ -53,7 +53,6 @@ class Node extends EventEmitter {
 
     this._modules = _options.modules
     this._config = _options.config
-    this._isStarted = false
     this._transport = [] // Transport instances/references
     this._discovery = [] // Discovery service instances/references
 
@@ -400,9 +399,6 @@ class Node extends EventEmitter {
         }
       },
       (cb) => {
-        // TODO: chicken-and-egg problem #1:
-        // have to set started here because DHT requires libp2p is already started
-        this._isStarted = true
         if (this._dht) {
           this._dht.start(cb)
         } else {
@@ -410,8 +406,6 @@ class Node extends EventEmitter {
         }
       },
       (cb) => {
-        // TODO: chicken-and-egg problem #2:
-        // have to set started here because FloodSub requires libp2p is already started
         if (this._floodSub) {
           return this._floodSub.start(cb)
         }
