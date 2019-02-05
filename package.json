@@ -39,6 +39,7 @@
   "dependencies": {
     "async": "^2.6.1",
     "base32.js": "~0.1.0",
+    "chai-checkmark": "^1.0.1",
     "cids": "~0.5.7",
     "debug": "^4.1.1",
     "err-code": "^1.1.2",

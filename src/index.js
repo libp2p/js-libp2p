@@ -1,5 +1,6 @@
 'use strict'
 
+const { EventEmitter } = require('events')
 const libp2pRecord = require('libp2p-record')
 const MemoryStore = require('interface-datastore').MemoryDatastore
 const waterfall = require('async/waterfall')
@@ -27,7 +28,7 @@ const assert = require('assert')
  *
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
-class KadDHT {
+class KadDHT extends EventEmitter {
   /**
    * Create a new KadDHT.
    *
@@ -40,6 +41,7 @@ class KadDHT {
    * @param {object} options.selectors selectors object with namespace as keys and function(key, records)
    */
   constructor (sw, options) {
+    super()
     assert(sw, 'libp2p-kad-dht requires a instance of Switch')
     options = options || {}
     options.validators = options.validators || {}
@@ -607,6 +609,10 @@ class KadDHT {
         }
       ], callback)
     })
+  }
+
+  _peerDiscovered (peerInfo) {
+    this.emit('peer', peerInfo)
   }
 }
 

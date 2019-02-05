@@ -3,6 +3,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const sinon = require('sinon')
 const series = require('async/series')
@@ -254,6 +255,31 @@ describe('KadDHT', () => {
       expect(err).to.exist()
       done()
     })
+  })
+
+  it('should emit a peer event when a peer is connected', function (done) {
+    this.timeout(10 * 1000)
+    const tdht = new TestDHT()
+
+    tdht.spawn(2, (err, dhts) => {
+      expect(err).to.not.exist()
+      const dhtA = dhts[0]
+      const dhtB = dhts[1]
+
+      dhtA.on('peer', (peerInfo) => {
+        expect(peerInfo).to.exist().mark()
+      })
+
+      dhtB.on('peer', (peerInfo) => {
+        expect(peerInfo).to.exist().mark()
+      })
+
+      connect(dhtA, dhtB, (err) => {
+        expect(err).to.not.exist()
+      })
+    })
+
+    expect(2).checks(done)
   })
 
   it('put - get', function (done) {

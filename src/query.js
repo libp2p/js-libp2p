@@ -206,6 +206,7 @@ function execQuery (next, query, path, callback) {
           return cb()
         }
         closer = query.dht.peerBook.put(closer)
+        query.dht._peerDiscovered(closer)
         addPeerToQuery(closer.id, query.dht, path, cb)
       }, callback)
     } else {
