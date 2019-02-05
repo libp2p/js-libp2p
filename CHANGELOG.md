@@ -1,3 +1,13 @@
+<a name="0.14.5"></a>
+## [0.14.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.4...v0.14.5) (2019-02-05)
+
+
+### Features
+
+* emit event on peer connected ([#66](https://github.com/libp2p/js-libp2p-kad-dht/issues/66)) ([ba0a537](https://github.com/libp2p/js-libp2p-kad-dht/commit/ba0a537))
+
+
+
 <a name="0.14.4"></a>
 ## [0.14.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.3...v0.14.4) (2019-01-14)
 
