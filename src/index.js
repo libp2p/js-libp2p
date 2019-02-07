@@ -31,7 +31,7 @@ class PubsubBaseProtocol extends EventEmitter {
     this.multicodec = multicodec
     this.libp2p = libp2p
     this.started = false
-    
+
     /**
      * Map of topics to which peers are subscribed to
      *
