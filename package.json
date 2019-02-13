@@ -16,9 +16,7 @@
     "test:browser": "aegir test -t browser",
     "release": "aegir release -t node -t browser",
     "release-minor": "aegir release --type minor -t node -t browser",
-    "release-major": "aegir release --type major -t node -t browser",
-    "coverage": "aegir coverage",
-    "coverage-publish": "aegir coverage --provider coveralls"
+    "release-major": "aegir release --type major -t node -t browser"
   },
   "repository": {
     "type": "git",
@@ -61,7 +59,7 @@
   },
   "devDependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
-    "aegir": "^18.0.2",
+    "aegir": "^18.1.0",
     "chai": "^4.2.0",
     "chai-checkmark": "^1.0.1",
     "cids": "~0.5.5",
