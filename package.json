@@ -85,7 +85,6 @@
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.9",
     "sinon": "^7.1.1",
-    "webrtcsupport": "^2.2.0",
     "wrtc": "~0.3.2"
   },
   "contributors": [
