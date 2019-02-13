@@ -30,6 +30,7 @@ jobs:
         chrome: stable
       script:
         - npx aegir test -t browser
+        - npx aegir test -t webworker
 
     - stage: test
       name: firefox
@@ -37,6 +38,7 @@ jobs:
         firefox: latest
       script:
         - npx aegir test -t browser -- --browsers FirefoxHeadless
+        - npx aegir test -t webworker -- --browsers FirefoxHeadless
 
 notifications:
   email: false
