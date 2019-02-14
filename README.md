@@ -32,7 +32,11 @@ js-libp2p-pubsub
 
 ## Usage
 
-A pubsub implementation **MUST** override the `_processConnection`, `publish`, `subscribe` and `unsubscribe` functions. `add_peer` and `remove_peer` may be overwritten if the pubsub implementation needs to add custom logic when peers are added and remove. All the remaining functions **MUST NOT** be overwritten.
+A pubsub implementation **MUST** override the `_processConnection`, `publish`, `subscribe` and `unsubscribe` functions.
+
+Other functions, such as `_addPeer`, `_removePeer`, `_onDial`, `start` and `stop` may be overwritten if the pubsub implementation needs to add custom logic on them. It is important pointing out that `start` and `stop` must call `super`. The `start` function is responsible for mounting the pubsub protocol onto the libp2p node and sending its' subscriptions to every peer conneceted, while the `stop` function is responsible for unmounting the pubsub protocol and shutting down every connection
+
+All the remaining functions **MUST NOT** be overwritten.
 
 The following example aims to show how to create your pubsub implementation extending this base protocol. The pubsub implementation will handle the subscriptions logic.
 
