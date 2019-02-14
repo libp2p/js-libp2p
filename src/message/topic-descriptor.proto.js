@@ -1,10 +1,9 @@
 'use strict'
 module.exports = `
-// topicCID = cid(merkledag_protobuf(topicDescriptor)); (not the topic.name)
 message TopicDescriptor {
   optional string name = 1;
   optional AuthOpts auth = 2;
-  optional EncOpts enc = 2;
+  optional EncOpts enc = 3;
 
   message AuthOpts {
     optional AuthMode mode = 1;
