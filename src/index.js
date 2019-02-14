@@ -5,9 +5,9 @@ const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
 const assert = require('assert')
 
-const BaseProtocol = require('./base')
+const BaseProtocol = require('libp2p-pubsub')
+const { message } = require('libp2p-pubsub')
 const utils = require('./utils')
-const pb = require('./message')
 const config = require('./config')
 
 const multicodec = config.multicodec
@@ -41,6 +41,13 @@ class FloodSub extends BaseProtocol {
     this.subscriptions = new Set()
   }
 
+  /**
+   * Dial a received peer.
+   * @override
+   * @param {PeerInfo} peerInfo peer info
+   * @param {Connection} conn connection to the peer
+   * @param {function} callback
+   */
   _onDial (peerInfo, conn, callback) {
     super._onDial(peerInfo, conn, (err) => {
       if (err) return callback(err)
@@ -54,11 +61,21 @@ class FloodSub extends BaseProtocol {
     })
   }
 
+  /**
+   * Overriding the implementation of _processConnection should keep the connection and is
+   * responsible for processing each RPC message received by other peers.
+   * @override
+   * @param {string} idB58Str peer id string in base58
+   * @param {Connection} conn connection
+   * @param {PeerInfo} peer peer info
+   * @returns {undefined}
+   *
+   */
   _processConnection (idB58Str, conn, peer) {
     pull(
       conn,
       lp.decode(),
-      pull.map((data) => pb.rpc.RPC.decode(data)),
+      pull.map((data) => message.rpc.RPC.decode(data)),
       pull.drain(
         (rpc) => this._onRpc(idB58Str, rpc),
         (err) => this._onConnectionEnd(idB58Str, peer, err)
@@ -132,7 +149,7 @@ class FloodSub extends BaseProtocol {
 
   /**
    * Unmounts the floodsub protocol and shuts down every connection
-   *
+   * @override
    * @param {Function} callback
    * @returns {undefined}
    *
@@ -147,7 +164,7 @@ class FloodSub extends BaseProtocol {
 
   /**
    * Publish messages to the given topics.
-   *
+   * @override
    * @param {Array<string>|string} topics
    * @param {Array<any>|any} messages
    * @returns {undefined}
@@ -186,7 +203,7 @@ class FloodSub extends BaseProtocol {
 
   /**
    * Subscribe to the given topic(s).
-   *
+   * @override
    * @param {Array<string>|string} topics
    * @returns {undefined}
    */
@@ -214,7 +231,7 @@ class FloodSub extends BaseProtocol {
 
   /**
    * Unsubscribe from the given topic(s).
-   *
+   * @override
    * @param {Array<string>|string} topics
    * @returns {undefined}
    */

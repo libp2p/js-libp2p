@@ -6,7 +6,8 @@ const pull = require('pull-stream')
 const setImmediate = require('async/setImmediate')
 const EventEmitter = require('events')
 
-const rpc = require('./message').rpc.RPC
+const { message } = require('libp2p-pubsub')
+const rpc = message.rpc.RPC
 
 /**
  * The known state of a connected peer.
