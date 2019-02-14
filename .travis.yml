@@ -13,7 +13,7 @@ os:
   - osx
   - windows
 before_install:
-  - if [ $TRAVIS_OS_NAME = windows ]; then npm install --global windows-build-tools; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then npm --silent install --global windows-build-tools; fi
 script: npx nyc -s npm run test:node -- --bail
 after_success: npx nyc report --reporter=text-lcov > coverage.lcov && npx codecov
 
