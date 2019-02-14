@@ -12,7 +12,7 @@ const pull = require('pull-stream')
 const parallel = require('async/parallel')
 const goodbye = require('pull-goodbye')
 const serializer = require('pull-serializer')
-const w = require('webrtcsupport')
+const wrtcSupport = self.RTCPeerConnection && ('createDataChannel' in self.RTCPeerConnection.prototype)
 const tryEcho = require('./utils/try-echo')
 
 const Node = require('./utils/bundle-browser')
@@ -232,7 +232,7 @@ describe('transports', () => {
 
   describe('webrtc-star', () => {
     /* eslint-disable-next-line no-console */
-    if (!w.support) { return console.log('NO WEBRTC SUPPORT') }
+    if (!wrtcSupport) { return console.log('NO WEBRTC SUPPORT') }
 
     let peer1
     let peer2
