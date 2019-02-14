@@ -14,6 +14,9 @@ os:
   - osx
   - windows
 
+before_install:
+  - if [ $TRAVIS_OS_NAME = windows ]; then choco install chromium -Y; fi
+
 script: npx nyc -s npm run test:node -- --bail
 after_success: npx nyc report --reporter=text-lcov > coverage.lcov && npx codecov
 
