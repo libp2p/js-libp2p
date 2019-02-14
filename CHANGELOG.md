@@ -1,3 +1,8 @@
+<a name="0.15.8"></a>
+## [0.15.8](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.7...v0.15.8) (2019-02-14)
+
+
+
 <a name="0.15.7"></a>
 ## [0.15.7](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.6...v0.15.7) (2019-01-09)
 
