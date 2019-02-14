@@ -13,17 +13,17 @@ os:
   - osx
   - windows
 before_install:
-  - choco install sysinternals -Y
-  - Listdlls64.exe -d KERNEL32.dll
-  - Listdlls64.exe -d SHLWAPI.dll
-  - Listdlls64.exe -d msdmo.dll
-  - Listdlls64.exe -d Secur32.dll
-  - Listdlls64.exe -d WINMM.dll
-  - Listdlls64.exe -d WS2_32.dll
-  - Listdlls64.exe -d IPHLPAPI.DLL
-  - Listdlls64.exe -d USER32.dll
-  - Listdlls64.exe -d ADVAPI32.dll
-  - Listdlls64.exe -d ole32.dll
+  - if [ $TRAVIS_OS_NAME = windows ]; then choco install sysinternals -Y; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then Listdlls64.exe -d KERNEL32.dll; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then Listdlls64.exe -d SHLWAPI.dll; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then Listdlls64.exe -d msdmo.dll; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then Listdlls64.exe -d Secur32.dll; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then Listdlls64.exe -d WINMM.dll; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then Listdlls64.exe -d WS2_32.dll; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then Listdlls64.exe -d IPHLPAPI.DLL; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then Listdlls64.exe -d USER32.dll; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then Listdlls64.exe -d ADVAPI32.dll; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then Listdlls64.exe -d ole32.dll; fi
 script: npx nyc -s npm run test:node -- --bail
 after_success: npx nyc report --reporter=text-lcov > coverage.lcov && npx codecov
 
