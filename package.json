@@ -49,20 +49,20 @@
     "dirkmc <dirk@mccormick.cx>"
   ],
   "devDependencies": {
-    "aegir": "^18.0.3",
+    "aegir": "^18.1.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
-    "libp2p": "~0.24.3",
-    "libp2p-secio": "~0.11.0",
+    "libp2p": "~0.24.4",
+    "libp2p-secio": "~0.11.1",
     "pull-protocol-buffers": "~0.1.2",
-    "sinon": "^7.2.2"
+    "sinon": "^7.2.3"
   },
   "dependencies": {
-    "async": "^2.6.1",
-    "debug": "^4.1.0",
-    "interface-connection": "~0.3.2",
-    "mafmt": "^6.0.4",
-    "multiaddr": "^6.0.3",
+    "async": "^2.6.2",
+    "debug": "^4.1.1",
+    "interface-connection": "~0.3.3",
+    "mafmt": "^6.0.6",
+    "multiaddr": "^6.0.4",
     "once": "^1.4.0",
     "peer-id": "~0.12.2",
     "peer-info": "~0.15.1",
