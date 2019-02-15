@@ -1,3 +1,13 @@
+<a name="0.3.5"></a>
+## [0.3.5](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.4...v0.3.5) (2019-02-15)
+
+
+### Bug Fixes
+
+* src/dst addrs validation ([68cccbe](https://github.com/libp2p/js-libp2p-circuit/commit/68cccbe))
+
+
+
 <a name="0.3.4"></a>
 ## [0.3.4](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.3...v0.3.4) (2019-01-10)
 
