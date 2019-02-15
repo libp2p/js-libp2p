@@ -6,6 +6,7 @@ const WebSocketStar = require('libp2p-websocket-star')
 const Bootstrap = require('libp2p-bootstrap')
 const SPDY = require('libp2p-spdy')
 const MPLEX = require('libp2p-mplex')
+const PULLMPLEX = require('pull-mplex')
 const KadDHT = require('libp2p-kad-dht')
 const SECIO = require('libp2p-secio')
 const defaultsDeep = require('@nodeutils/defaults-deep')
@@ -17,6 +18,7 @@ function mapMuxers (list) {
     switch (pref.trim().toLowerCase()) {
       case 'spdy': return SPDY
       case 'mplex': return MPLEX
+      case 'pullmplex': return PULLMPLEX
       default:
         throw new Error(pref + ' muxer not available')
     }
@@ -27,7 +29,7 @@ function getMuxers (options) {
   if (options) {
     return mapMuxers(options)
   } else {
-    return [MPLEX, SPDY]
+    return [PULLMPLEX, MPLEX, SPDY]
   }
 }
 
