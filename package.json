@@ -82,6 +82,7 @@
     "lodash.times": "^4.3.2",
     "nock": "^10.0.2",
     "pull-goodbye": "0.0.2",
+    "pull-mplex": "~0.1.0",
     "pull-serializer": "~0.3.2",
     "pull-stream": "^3.6.9",
     "sinon": "^7.1.1",
