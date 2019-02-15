@@ -2,12 +2,12 @@
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
-[![Build Status](https://travis-ci.org/libp2p/js-libp2p-circuit.svg?style=flat-square)](https://travis-ci.org/libp2p/js-libp2p-circuit)
-[![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-circuit/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-circuit?branch=master)
+[![Build Status](https://travis-ci.com/libp2p/js-libp2p-circuit.svg?style=flat-square)](https://travis-ci.com/libp2p/js-libp2p-circuit)
+[![codecov](https://codecov.io/gh/libp2p/js-libp2p-circuit/branch/master/graph/badge.svg)](https://codecov.io/gh/libp2p/js-libp2p-circuit)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-circuit.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-circuit)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
-![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
-![](https://img.shields.io/badge/Node.js-%3E%3D4.0.0-orange.svg?style=flat-square)
+![](https://img.shields.io/badge/npm-%3E%3D6.0.0-orange.svg?style=flat-square)
+![](https://img.shields.io/badge/Node.js-%3E%3D10.0.0-orange.svg?style=flat-square)
 
 ![](https://raw.githubusercontent.com/libp2p/interface-connection/master/img/badge.png)
 ![](https://raw.githubusercontent.com/libp2p/interface-transport/master/img/badge.png)
@@ -149,32 +149,32 @@ Both for dialing and listening.
 This module is not a transport, however it implements `interface-transport` interface in order to allow circuit to be plugged with `libp2p-swarm`. The rational behind it is that, `libp2p-circuit` has a dial and listen flow, which fits nicely with other transports, moreover, it requires the _raw_ connection to be encrypted and muxed just as a regular transport's connection does. All in all, `interface-transport` ended up being the correct level of abstraction for circuit, as well as allowed us to reuse existing integration points in `libp2p-swarm` and `libp2p` without adding any ad-hoc logic. All parts of `interface-transport` are used, including `.getAddr` which returns a list of `/p2p-circuit` addresses that circuit is currently listening.
 
 ```
-libp2p                                                                                  libp2p-circuit (transport)                     
-+-------------------------------------------------+                                     +--------------------------+                      
-|        +---------------------------------+      |                                     |                          |                      
-|        |                                 |      |                                     |   +------------------+   |                      
-|        |                                 |      |  circuit-relay listens for the HOP  |   |                  |   |                      
-|        |           libp2p-swarm          <------------------------------------------------|  circuit-relay   |   |                      
-|        |                                 |      |  message to handle incomming relay  |   |                  |   |                      
-|        |                                 |      |  requests from other nodes          |   +------------------+   |                      
-|        +---------------------------------+      |                                     |                          |                      
-|         ^     ^   ^  ^   ^           ^          |                                     |   +------------------+   |                      
-|         |     |   |  |   |           |          |                                     |   | +-------------+  |   |                      
-|         |     |   |  |   |           |          |  dialer uses libp2p-swarm to dial   |   | |             |  |   |                      
-|         |     |   |  +---------------------------------------------------------------------->   dialer    |  |   |                      
-|         |     | transports           |          |  to a circuit-relay node using the  |   | |             |  |   |                      
-|         |     |   |      |           |          |  HOP message                        |   | +-------------+  |   |                      
-|         |     |   |      |           |          |                                     |   |                  |   |                      
-|         v     v   |      v           v          |                                     |   |                  |   |                      
-|+------------------|----------------------------+|                                     |   |  +-------------+ |   |                      
-||           |      |    |      |                ||                                     |   |  |             | |   |                      
-||libp2p-tcp |libp2p-ws  | .... |libp2p-circuit  ||  listener handles STOP messages from|   |  | listener    | |   |                      
-||           |      +-------------------------------------------------------------------------->             | |   |                      
-||           |           |      |plugs in just   ||  circuit-relay nodes                |   |  +-------------+ |   |                      
-||           |           |      |as any other    ||                                     |   |                  |   |                      
-||           |           |      |transport       ||                                     |   +------------------+   |                      
-|+-----------------------------------------------+|                                     |                          |                      
-+-------------------------------------------------+                                     +--------------------------+ 
+libp2p                                                                                  libp2p-circuit (transport)
++-------------------------------------------------+                                     +--------------------------+
+|        +---------------------------------+      |                                     |                          |
+|        |                                 |      |                                     |   +------------------+   |
+|        |                                 |      |  circuit-relay listens for the HOP  |   |                  |   |
+|        |           libp2p-swarm          <------------------------------------------------|  circuit-relay   |   |
+|        |                                 |      |  message to handle incomming relay  |   |                  |   |
+|        |                                 |      |  requests from other nodes          |   +------------------+   |
+|        +---------------------------------+      |                                     |                          |
+|         ^     ^   ^  ^   ^           ^          |                                     |   +------------------+   |
+|         |     |   |  |   |           |          |                                     |   | +-------------+  |   |
+|         |     |   |  |   |           |          |  dialer uses libp2p-swarm to dial   |   | |             |  |   |
+|         |     |   |  +---------------------------------------------------------------------->   dialer    |  |   |
+|         |     | transports           |          |  to a circuit-relay node using the  |   | |             |  |   |
+|         |     |   |      |           |          |  HOP message                        |   | +-------------+  |   |
+|         |     |   |      |           |          |                                     |   |                  |   |
+|         v     v   |      v           v          |                                     |   |                  |   |
+|+------------------|----------------------------+|                                     |   |  +-------------+ |   |
+||           |      |    |      |                ||                                     |   |  |             | |   |
+||libp2p-tcp |libp2p-ws  | .... |libp2p-circuit  ||  listener handles STOP messages from|   |  | listener    | |   |
+||           |      +-------------------------------------------------------------------------->             | |   |
+||           |           |      |plugs in just   ||  circuit-relay nodes                |   |  +-------------+ |   |
+||           |           |      |as any other    ||                                     |   |                  |   |
+||           |           |      |transport       ||                                     |   +------------------+   |
+|+-----------------------------------------------+|                                     |                          |
++-------------------------------------------------+                                     +--------------------------+
 ```
 
 ## Contribute
