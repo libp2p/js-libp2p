@@ -12,7 +12,7 @@ const parallel = require('async/parallel')
 const series = require('async/series')
 const TCP = require('libp2p-tcp')
 const WS = require('libp2p-websockets')
-const multiplex = require('libp2p-mplex')
+const multiplex = require('pull-mplex')
 const PeerBook = require('peer-book')
 const getPorts = require('portfinder').getPorts
 

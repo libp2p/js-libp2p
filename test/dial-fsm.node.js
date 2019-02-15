@@ -11,7 +11,7 @@ const parallel = require('async/parallel')
 const WS = require('libp2p-websockets')
 const TCP = require('libp2p-tcp')
 const secio = require('libp2p-secio')
-const multiplex = require('libp2p-mplex')
+const multiplex = require('pull-mplex')
 const pull = require('pull-stream')
 
 const utils = require('./utils')

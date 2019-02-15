@@ -21,6 +21,7 @@ class BaseConnection extends EventEmitter {
    * @returns {void}
    */
   close (err) {
+    if (this._state._state === 'DISCONNECTING') return
     this.log(`closing connection to ${this.theirB58Id}`)
     if (err && this._events.error) {
       this.emit('error', err)

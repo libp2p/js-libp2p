@@ -10,6 +10,7 @@ chai.use(dirtyChai)
 const parallel = require('async/parallel')
 const TCP = require('libp2p-tcp')
 const multiplex = require('libp2p-mplex')
+const pullMplex = require('pull-mplex')
 const spdy = require('libp2p-spdy')
 const pull = require('pull-stream')
 const PeerBook = require('peer-book')
@@ -22,6 +23,7 @@ const Switch = require('../src')
 describe('Stream Multiplexing', () => {
   [
     multiplex,
+    pullMplex,
     spdy
   ].forEach((sm) => describe(sm.multicodec, () => {
     let switchA

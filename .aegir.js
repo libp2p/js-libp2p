@@ -8,6 +8,7 @@ const pull = require('pull-stream')
 const PeerBook = require('peer-book')
 
 const Switch = require('./src')
+const mplex = require('pull-mplex')
 const spdy = require('libp2p-spdy')
 const fs = require('fs')
 const path = require('path')
@@ -54,6 +55,7 @@ function pre (done) {
       switchB = new Switch(peerB, new PeerBook())
 
       switchB.transport.add('ws', new WebSockets())
+      switchB.connection.addStreamMuxer(mplex)
       switchB.connection.addStreamMuxer(spdy)
       switchB.connection.reuse()
       switchB.handle('/echo/1.0.0', echo)
