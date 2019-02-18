@@ -16,19 +16,19 @@ const wrtcSupport = self.RTCPeerConnection && ('createDataChannel' in self.RTCPe
 const tryEcho = require('./utils/try-echo')
 
 const Node = require('./utils/bundle-browser')
-const jsonPeerId = require('./fixtures/test-peer.json')
+const { getPeerRelay } = require('./utils/constants')
 
 describe('transports', () => {
   describe('websockets', () => {
     let peerB
-    let peerBMultiaddr = '/ip4/127.0.0.1/tcp/9200/ws/p2p/' + jsonPeerId.id
+    let peerBMultiaddr
     let nodeA
 
     before((done) => {
-      PeerId.createFromPrivKey(jsonPeerId.privKey, (err, id) => {
+      getPeerRelay((err, peerInfo) => {
         expect(err).to.not.exist()
-
-        peerB = new PeerInfo(id)
+        peerB = new PeerInfo(peerInfo.id)
+        peerBMultiaddr = `/ip4/127.0.0.1/tcp/9200/ws/p2p/${peerInfo.id.toB58String()}`
         peerB.multiaddrs.add(peerBMultiaddr)
         done()
       })

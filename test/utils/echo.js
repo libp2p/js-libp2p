@@ -8,3 +8,4 @@ function echo (protocol, conn) {
 }
 
 module.exports = echo
+module.exports.multicodec = '/echo/1.0.0'
