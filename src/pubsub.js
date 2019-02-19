@@ -1,7 +1,7 @@
 'use strict'
 
 const nextTick = require('async/nextTick')
-const NOT_STARTED_YET = require('./error-messages').NOT_STARTED_YET
+const { messages, codes } = require('./errors')
 const FloodSub = require('libp2p-floodsub')
 
 const errCode = require('err-code')
@@ -20,9 +20,7 @@ module.exports = (node) => {
       }
 
       if (!node.isStarted() && !floodSub.started) {
-        return nextTick(() => callback(
-          errCode(new Error(NOT_STARTED_YET), 'ERR_PUBSUB_NOT_STARTED')
-        ))
+        return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
       }
 
       function subscribe (cb) {
@@ -39,9 +37,7 @@ module.exports = (node) => {
 
     unsubscribe: (topic, handler, callback) => {
       if (!node.isStarted() && !floodSub.started) {
-        return nextTick(() => callback(
-          errCode(new Error(NOT_STARTED_YET), 'ERR_PUBSUB_NOT_STARTED')
-        ))
+        return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
       }
       if (!handler && !callback) {
         floodSub.removeAllListeners(topic)
@@ -60,15 +56,11 @@ module.exports = (node) => {
 
     publish: (topic, data, callback) => {
       if (!node.isStarted() && !floodSub.started) {
-        return nextTick(() => callback(
-          errCode(new Error(NOT_STARTED_YET), 'ERR_PUBSUB_NOT_STARTED')
-        ))
+        return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
       }
 
       if (!Buffer.isBuffer(data)) {
-        return nextTick(() => callback(
-          errCode(new Error('data must be a Buffer'), 'ERR_DATA_IS_NOT_A_BUFFER')
-        ))
+        return nextTick(callback, errCode(new Error('data must be a Buffer'), 'ERR_DATA_IS_NOT_A_BUFFER'))
       }
 
       floodSub.publish(topic, data)
@@ -78,9 +70,7 @@ module.exports = (node) => {
 
     ls: (callback) => {
       if (!node.isStarted() && !floodSub.started) {
-        return nextTick(() => callback(
-          errCode(new Error(NOT_STARTED_YET), 'ERR_PUBSUB_NOT_STARTED')
-        ))
+        return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
       }
 
       const subscriptions = Array.from(floodSub.subscriptions)
@@ -90,9 +80,7 @@ module.exports = (node) => {
 
     peers: (topic, callback) => {
       if (!node.isStarted() && !floodSub.started) {
-        return nextTick(() => callback(
-          errCode(new Error(NOT_STARTED_YET), 'ERR_PUBSUB_NOT_STARTED')
-        ))
+        return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
       }
 
       if (typeof topic === 'function') {
