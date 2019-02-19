@@ -1,8 +1,10 @@
 'use strict'
 
-const setImmediate = require('async/setImmediate')
+const nextTick = require('async/nextTick')
 const NOT_STARTED_YET = require('./error-messages').NOT_STARTED_YET
 const FloodSub = require('libp2p-floodsub')
+
+const errCode = require('err-code')
 
 module.exports = (node) => {
   const floodSub = new FloodSub(node)
@@ -18,7 +20,9 @@ module.exports = (node) => {
       }
 
       if (!node.isStarted() && !floodSub.started) {
-        return setImmediate(() => callback(new Error(NOT_STARTED_YET)))
+        return nextTick(() => callback(
+          errCode(new Error(NOT_STARTED_YET), 'ERR_PUBSUB_NOT_STARTED')
+        ))
       }
 
       function subscribe (cb) {
@@ -27,7 +31,7 @@ module.exports = (node) => {
         }
 
         floodSub.on(topic, handler)
-        setImmediate(cb)
+        nextTick(cb)
       }
 
       subscribe(callback)
@@ -35,7 +39,9 @@ module.exports = (node) => {
 
     unsubscribe: (topic, handler, callback) => {
       if (!node.isStarted() && !floodSub.started) {
-        throw new Error(NOT_STARTED_YET)
+        return nextTick(() => callback(
+          errCode(new Error(NOT_STARTED_YET), 'ERR_PUBSUB_NOT_STARTED')
+        ))
       }
       if (!handler && !callback) {
         floodSub.removeAllListeners(topic)
@@ -48,37 +54,45 @@ module.exports = (node) => {
       }
 
       if (typeof callback === 'function') {
-        setImmediate(() => callback())
+        nextTick(() => callback())
       }
     },
 
     publish: (topic, data, callback) => {
       if (!node.isStarted() && !floodSub.started) {
-        return setImmediate(() => callback(new Error(NOT_STARTED_YET)))
+        return nextTick(() => callback(
+          errCode(new Error(NOT_STARTED_YET), 'ERR_PUBSUB_NOT_STARTED')
+        ))
       }
 
       if (!Buffer.isBuffer(data)) {
-        return setImmediate(() => callback(new Error('data must be a Buffer')))
+        return nextTick(() => callback(
+          errCode(new Error('data must be a Buffer'), 'ERR_DATA_IS_NOT_A_BUFFER')
+        ))
       }
 
       floodSub.publish(topic, data)
 
-      setImmediate(() => callback())
+      nextTick(() => callback())
     },
 
     ls: (callback) => {
       if (!node.isStarted() && !floodSub.started) {
-        return setImmediate(() => callback(new Error(NOT_STARTED_YET)))
+        return nextTick(() => callback(
+          errCode(new Error(NOT_STARTED_YET), 'ERR_PUBSUB_NOT_STARTED')
+        ))
       }
 
       const subscriptions = Array.from(floodSub.subscriptions)
 
-      setImmediate(() => callback(null, subscriptions))
+      nextTick(() => callback(null, subscriptions))
     },
 
     peers: (topic, callback) => {
       if (!node.isStarted() && !floodSub.started) {
-        return setImmediate(() => callback(new Error(NOT_STARTED_YET)))
+        return nextTick(() => callback(
+          errCode(new Error(NOT_STARTED_YET), 'ERR_PUBSUB_NOT_STARTED')
+        ))
       }
 
       if (typeof topic === 'function') {
@@ -90,7 +104,7 @@ module.exports = (node) => {
         .filter((peer) => topic ? peer.topics.has(topic) : true)
         .map((peer) => peer.info.id.toB58String())
 
-      setImmediate(() => callback(null, peers))
+      nextTick(() => callback(null, peers))
     },
 
     setMaxListeners (n) {

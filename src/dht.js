@@ -1,10 +1,15 @@
 'use strict'
 
+const nextTick = require('async/nextTick')
+const errCode = require('err-code')
+
 module.exports = (node) => {
   return {
     put: (key, value, callback) => {
       if (!node._dht) {
-        return callback(new Error('DHT is not available'))
+        return nextTick(() => callback(
+          errCode(new Error('DHT is not available'), 'ERR_DHT_DISABLED')
+        ))
       }
 
       node._dht.put(key, value, callback)
@@ -16,7 +21,9 @@ module.exports = (node) => {
       }
 
       if (!node._dht) {
-        return callback(new Error('DHT is not available'))
+        return nextTick(() => callback(
+          errCode(new Error('DHT is not available'), 'ERR_DHT_DISABLED')
+        ))
       }
 
       node._dht.get(key, options, callback)
@@ -28,7 +35,9 @@ module.exports = (node) => {
       }
 
       if (!node._dht) {
-        return callback(new Error('DHT is not available'))
+        return nextTick(() => callback(
+          errCode(new Error('DHT is not available'), 'ERR_DHT_DISABLED')
+        ))
       }
 
       node._dht.getMany(key, nVals, options, callback)

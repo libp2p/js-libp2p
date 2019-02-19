@@ -140,6 +140,7 @@ describe('.dht', () => {
 
       nodeA.dht.put(key, value, (err) => {
         expect(err).to.exist()
+        expect(err.code).to.equal('ERR_DHT_DISABLED')
         done()
       })
     })
@@ -149,6 +150,7 @@ describe('.dht', () => {
 
       nodeA.dht.get(key, (err) => {
         expect(err).to.exist()
+        expect(err.code).to.equal('ERR_DHT_DISABLED')
         done()
       })
     })
@@ -158,6 +160,7 @@ describe('.dht', () => {
 
       nodeA.dht.getMany(key, 10, (err) => {
         expect(err).to.exist()
+        expect(err.code).to.equal('ERR_DHT_DISABLED')
         done()
       })
     })
