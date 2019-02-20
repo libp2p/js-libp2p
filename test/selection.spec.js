@@ -29,7 +29,7 @@ describe('selection', () => {
 
     it('throws on unknown key prefix', () => {
       expect(
-        () => selection.bestRecord({world () {}}, Buffer.from('/hello/'), records)
+        () => selection.bestRecord({ world () {} }, Buffer.from('/hello/'), records)
       ).to.throw(
         /Unrecognized key prefix: hello/
       )
