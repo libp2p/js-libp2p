@@ -39,7 +39,7 @@
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
-    "libp2p-crypto": "~0.15.0"
+    "libp2p-crypto": "~0.16.0"
   },
   "engines": {
     "node": ">=6.0.0",
