@@ -8,27 +8,7 @@ module.exports = (node) => {
   const floodSub = new FloodSub(node)
 
   node._floodSub = floodSub
-  const _internalUnsubscribe = (input)=>{
-    let {topic,handler,callback} = input
 
-    if (!node.isStarted() && !floodSub.started) {
-      throw new Error(NOT_STARTED_YET)
-    }
-
-    if(handler){
-      floodSub.removeListener(topic, handler)
-    }else{
-      floodSub.removeAllListeners(topic)
-    }
-
-    if (floodSub.listenerCount(topic) === 0) {
-      floodSub.unsubscribe(topic)
-    }
-
-    if (typeof callback === 'function') {
-      setImmediate(() => callback())
-    }
-  }
   return {
     subscribe: (topic, options, handler, callback) => {
       if (typeof options === 'function') {
@@ -52,12 +32,26 @@ module.exports = (node) => {
 
       subscribe(callback)
     },
-    unsubscribeAll : (topic,callback)=>{
-      _internalUnsubscribe({topic : topic, callback: callback});
-    },
+
     unsubscribe: (topic, handler, callback) => {
-      _internalUnsubscribe({topic : topic, handler : handler, callback: callback});
+      if (!node.isStarted() && !floodSub.started) {
+        throw new Error(NOT_STARTED_YET)
+      }
+      if (!handler && !callback) {
+        floodSub.removeAllListeners(topic)
+      } else {
+        floodSub.removeListener(topic, handler)
+      }
+
+      if (floodSub.listenerCount(topic) === 0) {
+        floodSub.unsubscribe(topic)
+      }
+
+      if (typeof callback === 'function') {
+        setImmediate(() => callback())
+      }
     },
+
     publish: (topic, data, callback) => {
       if (!node.isStarted() && !floodSub.started) {
         return setImmediate(() => callback(new Error(NOT_STARTED_YET)))

@@ -87,7 +87,7 @@ describe('.pubsub', () => {
         expect(err).to.not.exist().mark()
       })
     })
-    it('start two nodes and send one message, then unsubscribeAll', (done) => {
+    it('start two nodes and send one message, then unsubscribe without handler', (done) => {
       // Check the final series error, and the publish handler
       expect(3).checks(done)
 
@@ -113,12 +113,16 @@ describe('.pubsub', () => {
         // Wait a moment before unsubscribing
         (cb) => setTimeout(cb, 500),
         // unsubscribe on the first
-        (cb) => nodes[0].pubsub.unsubscribeAll('pubsub', cb),
+        (cb) => {
+          nodes[0].pubsub.unsubscribe('pubsub')
+          // Wait a moment to make sure the ubsubscribe-from-all worked
+          setTimeout(cb, 500)
+        },
         // Verify unsubscribed
         (cb) => {
-          nodes[0].pubsub.ls((err,topics)=>{
-            expect(topics.length).to.eql(0).mark();
-            cb(err);
+          nodes[0].pubsub.ls((err, topics) => {
+            expect(topics.length).to.eql(0).mark()
+            cb(err)
           })
         },
         // Stop both nodes
