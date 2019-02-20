@@ -1,3 +1,13 @@
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/libp2p/js-libp2p-crypto-secp256k1/compare/v0.2.3...v0.3.0) (2019-02-20)
+
+
+### Features
+
+* add `id()` method to Secp256k1PrivateKey ([f4dbd62](https://github.com/libp2p/js-libp2p-crypto-secp256k1/commit/f4dbd62))
+
+
+
 <a name="0.2.3"></a>
 ## [0.2.3](https://github.com/libp2p/js-libp2p-crypto-secp256k1/compare/v0.2.2...v0.2.3) (2019-01-08)
 
