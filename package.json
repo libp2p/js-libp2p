@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.25.0-rc.0",
+  "version": "0.25.0-rc.1",
   "description": "JavaScript base class for libp2p bundles",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -101,6 +101,7 @@
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Giovanni T. Parra <fiatjaf@gmail.com>",
     "Henrique Dias <hacdias@gmail.com>",
+    "Hugo Dias <mail@hugodias.me>",
     "Hugo Dias <hugomrdias@gmail.com>",
     "Irakli Gozalishvili <rfobic@gmail.com>",
     "Jacob Heun <jacobheun@gmail.com>",
@@ -121,12 +122,13 @@
     "Sönke Hahn <soenkehahn@gmail.com>",
     "Thomas Eizinger <thomas@eizinger.io>",
     "Tiago Alves <alvesjtiago@gmail.com>",
-    "Vasco Santos <vasco.santos@ua.pt>",
     "Vasco Santos <vasco.santos@moxy.studio>",
+    "Vasco Santos <vasco.santos@ua.pt>",
     "Volker Mische <volker.mische@gmail.com>",
     "Zane Starr <zcstarr@gmail.com>",
     "ebinks <elizabethjbinks@gmail.com>",
     "greenkeeperio-bot <support@greenkeeper.io>",
+    "isan_rivkin <isanrivkin@gmail.com>",
     "mayerwin <mayerwin@users.noreply.github.com>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
   ]
