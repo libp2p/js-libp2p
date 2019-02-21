@@ -50,6 +50,7 @@
     "libp2p-websockets": "~0.12.1",
     "mafmt": "^6.0.4",
     "multiaddr": "^6.0.3",
+    "once": "^1.4.0",
     "peer-book": "~0.9.1",
     "peer-id": "~0.12.2",
     "peer-info": "~0.15.1",
