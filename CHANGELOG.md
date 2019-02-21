@@ -1,3 +1,19 @@
+<a name="0.25.0-rc.1"></a>
+# [0.25.0-rc.1](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.0...v0.25.0-rc.1) (2019-02-21)
+
+
+### Bug Fixes
+
+* bundle-size ([#298](https://github.com/libp2p/js-libp2p/issues/298)) ([d497961](https://github.com/libp2p/js-libp2p/commit/d497961))
+* emit peer discovery for dht discovery ([9e7a080](https://github.com/libp2p/js-libp2p/commit/9e7a080))
+
+
+### Features
+
+* support unsubscribe all for pubsub ([#321](https://github.com/libp2p/js-libp2p/issues/321)) ([6e76aad](https://github.com/libp2p/js-libp2p/commit/6e76aad))
+
+
+
 <a name="0.24.4"></a>
 ## [0.24.4](https://github.com/libp2p/js-libp2p/compare/v0.24.3...v0.24.4) (2019-01-04)
 
