@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-kad-dht",
   "dependencies": {
-    "async": "^2.6.1",
+    "async": "^2.6.2",
     "base32.js": "~0.1.0",
     "chai-checkmark": "^1.0.1",
     "cids": "~0.5.7",
@@ -48,11 +48,11 @@
     "interface-datastore": "~0.6.0",
     "k-bucket": "^5.0.0",
     "libp2p-crypto": "~0.16.0",
-    "libp2p-record": "~0.6.1",
+    "libp2p-record": "~0.6.2",
     "multihashes": "~0.4.14",
-    "multihashing-async": "~0.5.1",
-    "peer-id": "~0.12.1",
-    "peer-info": "~0.15.0",
+    "multihashing-async": "~0.5.2",
+    "peer-id": "~0.12.2",
+    "peer-info": "~0.15.1",
     "priorityqueue": "~0.2.1",
     "protons": "^1.0.1",
     "pull-length-prefixed": "^1.3.1",
@@ -61,19 +61,19 @@
     "xor-distance": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^18.0.2",
+    "aegir": "^18.1.1",
     "chai": "^4.2.0",
     "datastore-level": "~0.10.0",
     "dirty-chai": "^2.0.1",
     "interface-connection": "~0.3.3",
     "libp2p-mplex": "~0.8.4",
-    "libp2p-switch": "~0.41.4",
+    "libp2p-switch": "~0.41.5",
     "libp2p-tcp": "~0.13.0",
     "lodash": "^4.17.11",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
-    "peer-book": "~0.9.0",
-    "sinon": "^7.2.2"
+    "peer-book": "~0.9.1",
+    "sinon": "^7.2.4"
   },
   "contributors": [
     "Alan Shaw <alan.shaw@protocol.ai>",
