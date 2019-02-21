@@ -37,8 +37,11 @@ module.exports = (node) => {
       if (!node.isStarted() && !floodSub.started) {
         throw new Error(NOT_STARTED_YET)
       }
-
-      floodSub.removeListener(topic, handler)
+      if (!handler && !callback) {
+        floodSub.removeAllListeners(topic)
+      } else {
+        floodSub.removeListener(topic, handler)
+      }
 
       if (floodSub.listenerCount(topic) === 0) {
         floodSub.unsubscribe(topic)
