@@ -164,7 +164,7 @@ describe('Internals - MplexCore', () => {
       }
     }
     const plex1 = new MplexCore()
-    const plex2 = new MplexCore({limit: 10})
+    const plex2 = new MplexCore({ limit: 10 })
 
     plex2.on('stream', function (stream) {
       stream.on('error', function (err) {
@@ -361,8 +361,8 @@ describe('Internals - MplexCore', () => {
   })
 
   it('half close a half closed muxed stream', (done) => {
-    const plex1 = new MplexCore({halfOpen: true})
-    const plex2 = new MplexCore({halfOpen: true})
+    const plex1 = new MplexCore({ halfOpen: true })
+    const plex2 = new MplexCore({ halfOpen: true })
 
     plex1.nameTag = 'plex1:'
     plex2.nameTag = 'plex2:'

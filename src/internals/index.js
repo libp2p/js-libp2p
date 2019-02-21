@@ -135,7 +135,7 @@ class Multiplex extends stream.Duplex {
 
   createSharedStream (name/* : Buffer | string */, opts/* : ChannelOpts */)/* : stream.Duplex */ {
     this.log('createSharedStream')
-    return duplexify(this.createStream(name, Object.assign(opts, {lazy: true})), this.receiveStream(name, opts))
+    return duplexify(this.createStream(name, Object.assign(opts, { lazy: true })), this.receiveStream(name, opts))
   }
 
   _name (name/* : Buffer | string */)/* : Buffer | string */ {
