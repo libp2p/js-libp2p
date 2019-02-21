@@ -4,6 +4,10 @@
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "lint": "aegir lint",
     "build": "aegir build",
@@ -12,9 +16,7 @@
     "test:browser": "aegir test -t browser",
     "release": "aegir release -t node -t browser",
     "release-minor": "aegir release --type minor -t node -t browser",
-    "release-major": "aegir release --type major -t node -t browser",
-    "coverage": "aegir coverage",
-    "coverage-publish": "aegir coverage --provider coveralls"
+    "release-major": "aegir release --type major -t node -t browser"
   },
   "repository": {
     "type": "git",
@@ -29,28 +31,28 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-mplex#readme",
   "devDependencies": {
-    "aegir": "^17.0.1",
+    "aegir": "^18.1.0",
     "chai": "^4.2.0",
     "chai-checkmark": "^1.0.1",
     "dirty-chai": "^2.0.1",
-    "interface-stream-muxer": "~0.5.9",
+    "interface-stream-muxer": "~0.6.0",
     "libp2p-tcp": "~0.13.0",
-    "libp2p-websockets": "~0.12.0",
+    "libp2p-websockets": "~0.12.2",
     "pull-pair": "^1.1.0",
     "through2": "^2.0.3"
   },
   "dependencies": {
-    "async": "^2.6.1",
+    "async": "^2.6.2",
     "chunky": "0.0.0",
     "concat-stream": "^1.6.2",
     "debug": "^4.1.0",
     "duplexify": "^3.6.0",
-    "interface-connection": "~0.3.2",
-    "pull-catch": "^1.0.0",
+    "interface-connection": "~0.3.3",
+    "pull-catch": "^1.0.1",
     "pull-stream": "^3.6.9",
     "pull-stream-to-stream": "^1.3.4",
     "pump": "^3.0.0",
-    "readable-stream": "^3.0.6",
+    "readable-stream": "^3.1.1",
     "stream-to-pull-stream": "^1.7.2",
     "varint": "^5.0.0"
   },
