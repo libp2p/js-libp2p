@@ -3,13 +3,12 @@
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
 [![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
-[![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-identify/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-identify?branch=master)
-[![Travis CI](https://travis-ci.org/libp2p/js-libp2p-identify.svg?branch=master)](https://travis-ci.org/libp2p/js-libp2p-identify)
-[![Circle CI](https://circleci.com/gh/libp2p/js-libp2p-identify.svg?style=svg)](https://circleci.com/gh/libp2p/js-libp2p-identify)
+[![](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-identify.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-identify)
+[![](https://img.shields.io/travis/libp2p/js-libp2p-identify.svg?style=flat-square)](https://travis-ci.com/libp2p/js-libp2p-identify)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-identify.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-identify)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
-![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
-![](https://img.shields.io/badge/Node.js-%3E%3D6.0.0-orange.svg?style=flat-square)
+![](https://img.shields.io/badge/npm-%3E%3D6.0.0-orange.svg?style=flat-square)
+![](https://img.shields.io/badge/Node.js-%3E%3D10.0.0-orange.svg?style=flat-square)
 
 > libp2p Identify Protocol
 
