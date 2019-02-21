@@ -38,6 +38,7 @@
     "interface-stream-muxer": "~0.6.0",
     "libp2p-tcp": "~0.13.0",
     "libp2p-websockets": "~0.12.2",
+    "multiaddr": "^6.0.4",
     "pull-pair": "^1.1.0",
     "through2": "^2.0.3"
   },
