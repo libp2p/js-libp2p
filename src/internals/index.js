@@ -3,7 +3,6 @@
 
 const stream = require('readable-stream')
 const varint = require('varint')
-const duplexify = require('duplexify')
 const debug = require('debug')
 
 const Channel = require('./channel')
@@ -131,11 +130,6 @@ class Multiplex extends stream.Duplex {
     this._receiving[channel.name] = channel
 
     return channel
-  }
-
-  createSharedStream (name/* : Buffer | string */, opts/* : ChannelOpts */)/* : stream.Duplex */ {
-    this.log('createSharedStream')
-    return duplexify(this.createStream(name, Object.assign(opts, { lazy: true })), this.receiveStream(name, opts))
   }
 
   _name (name/* : Buffer | string */)/* : Buffer | string */ {

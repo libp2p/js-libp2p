@@ -47,7 +47,6 @@
     "chunky": "0.0.0",
     "concat-stream": "^1.6.2",
     "debug": "^4.1.0",
-    "duplexify": "^3.6.0",
     "interface-connection": "~0.3.3",
     "pull-catch": "^1.0.1",
     "pull-stream": "^3.6.9",
