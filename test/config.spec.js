@@ -104,7 +104,11 @@ describe('configuration', () => {
           }
         },
         relay: {
-          enabled: true
+          enabled: true,
+          hop: {
+            active: false,
+            enabled: false
+          }
         }
       }
     }
@@ -185,7 +189,11 @@ describe('configuration', () => {
           pubsub: false
         },
         relay: {
-          enabled: true
+          enabled: true,
+          hop: {
+            active: false,
+            enabled: false
+          }
         },
         dht: {
           kBucketSize: 20,
