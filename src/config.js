@@ -45,43 +45,32 @@ const optionsSchema = s(
     }),
     config: s({
       peerDiscovery: 'object?',
-      relay: s(
-        {
+      relay: s({
+        enabled: 'boolean',
+        hop: optional(s({
           enabled: 'boolean',
-          hop: optional(
-            s(
-              {
-                enabled: 'boolean',
-                active: 'boolean'
-              },
-              { enabled: false, active: false }
-            )
-          )
+          active: 'boolean'
         },
-        { enabled: true, hop: {} }
-      ),
-      dht: s(
-        {
-          kBucketSize: 'number',
-          enabledDiscovery: 'boolean',
-          validators: 'object?',
-          selectors: 'object?'
-        },
-        { kBucketSize: 20, enabledDiscovery: true }
-      ),
-      EXPERIMENTAL: s(
-        {
-          dht: 'boolean',
-          pubsub: 'boolean'
-        },
-        { dht: false, pubsub: false }
-      )
+        { enabled: false, active: false }))
+      }, { enabled: true, hop: {} }),
+      dht: s({
+        kBucketSize: 'number',
+        enabled: 'boolean?',
+        randomWalk: optional(s({
+          enabled: 'boolean?',
+          queriesPerPeriod: 'number?',
+          interval: 'number?',
+          timeout: 'number?'
+        }, { enabled: true, queriesPerPeriod: 1, interval: 30000, timeout: 10000 })),
+        validators: 'object?',
+        selectors: 'object?'
+      }, { enabled: true, kBucketSize: 20, enabledDiscovery: true }),
+      EXPERIMENTAL: s({
+        pubsub: 'boolean'
+      }, { pubsub: false })
     }, { relay: {}, dht: {}, EXPERIMENTAL: {} })
   },
-  {
-    config: {},
-    modules: {}
-  }
+  { config: {}, modules: {} }
 )
 
 module.exports.validate = (opts) => {
@@ -92,7 +81,7 @@ module.exports.validate = (opts) => {
     throw new Error(`${error.message}${error.reason ? ' - ' + error.reason : ''}`)
   } else {
     // Throw when dht is enabled but no dht module provided
-    if (options.config.EXPERIMENTAL.dht) {
+    if (options.config.dht.enabled) {
       s('function|object')(options.modules.dht)
     }
   }
