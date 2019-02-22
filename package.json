@@ -42,7 +42,6 @@
     "debug": "^4.1.0",
     "err-code": "^1.1.2",
     "fsm-event": "^2.1.0",
-    "kind-of": "^6.0.2",
     "libp2p-connection-manager": "~0.0.2",
     "libp2p-floodsub": "~0.15.7",
     "libp2p-ping": "~0.8.5",
