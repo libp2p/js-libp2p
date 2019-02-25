@@ -337,7 +337,7 @@ class Node extends EventEmitter {
       let t
 
       if (typeof Transport === 'function') {
-        t = new Transport()
+        t = new Transport(this._config[Transport.name] || {}, this._switch)
       } else {
         t = Transport
       }
