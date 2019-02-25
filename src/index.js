@@ -45,7 +45,7 @@ class Node extends EventEmitter {
     super()
     // validateConfig will ensure the config is correct,
     // and add default values where appropriate
-    _options = validateConfig(_options)
+    // _options = validateConfig(_options)
 
     this.datastore = _options.datastore
     this.peerInfo = _options.peerInfo
