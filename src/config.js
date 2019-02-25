@@ -1,29 +1,17 @@
 'use strict'
 
 const { struct, superstruct } = require('superstruct')
-const kind = require('kind-of')
 const { optional, list } = struct
 
-const transports = ['tcp', 'utp', 'webrtcstar', 'webrtcdirect', 'websockets', 'websocketstar']
 // Define custom types
-const s = superstruct({
-  types: {
-    tcp: v => kind(v) === 'tcp',
-    utp: v => kind(v) === 'utp',
-    webrtcstar: v => kind(v) === 'webrtcstar',
-    webrtcdirect: v => kind(v) === 'webrtcdirect',
-    websockets: v => kind(v) === 'websockets',
-    websocketstar: v => kind(v) === 'websocketstar',
-    transport: value => {
-      const [error] = list([s.union([ ...transports, 'function' ])]).validate(value)
-      if (error) return error.message
-
-      return value.length > 0
-        ? true
-        : 'You need to provide at least one transport.'
-    }
-  }
-})
+const s = superstruct()
+const transport = s.union([
+  s.interface({
+    createListener: 'function',
+    dial: 'function'
+  }),
+  'function'
+])
 
 const optionsSchema = s(
   {
@@ -41,7 +29,7 @@ const optionsSchema = s(
       peerDiscovery: optional(list([s('object|function')])),
       peerRouting: optional(list(['object'])),
       streamMuxer: optional(list([s('object|function')])),
-      transport: 'transport'
+      transport: list([transport])
     }),
     config: s({
       peerDiscovery: 'object?',
