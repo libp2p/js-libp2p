@@ -1,3 +1,18 @@
+<a name="0.14.6"></a>
+## [0.14.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.5...v0.14.6) (2019-02-25)
+
+
+### Bug Fixes
+
+* specify # of peers for successful put ([#72](https://github.com/libp2p/js-libp2p-kad-dht/issues/72)) ([97e8e60](https://github.com/libp2p/js-libp2p-kad-dht/commit/97e8e60))
+
+
+### Features
+
+* expose randomwalk parameters in config ([#77](https://github.com/libp2p/js-libp2p-kad-dht/issues/77)) ([dc5a67f](https://github.com/libp2p/js-libp2p-kad-dht/commit/dc5a67f))
+
+
+
 <a name="0.14.5"></a>
 ## [0.14.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.4...v0.14.5) (2019-02-05)
 
