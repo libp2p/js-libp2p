@@ -37,6 +37,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-kad-dht",
   "dependencies": {
+    "@nodeutils/defaults-deep": "^1.1.0",
     "async": "^2.6.2",
     "base32.js": "~0.1.0",
     "chai-checkmark": "^1.0.1",

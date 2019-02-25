@@ -23,6 +23,7 @@ const Providers = require('./providers')
 const Message = require('./message')
 const RandomWalk = require('./random-walk')
 const assert = require('assert')
+const defaultsDeep = require('@nodeutils/defaults-deep')
 
 /**
  * A DHT implementation modeled after Kademlia with S/Kademlia modifications.
@@ -31,15 +32,25 @@ const assert = require('assert')
  */
 class KadDHT extends EventEmitter {
   /**
+   * Random walk options
+   *
+   * @typedef {Object} randomWalkOptions
+   * @property {boolean} enabled discovery enabled (default: true)
+   * @property {number} queriesPerPeriod how many queries to run per period (default: 1)
+   * @property {number} interval how often to run the the random-walk process, in milliseconds (default: 300000)
+   * @property {number} timeout how long to wait for the the random-walk query to run, in milliseconds (default: 10000)
+   */
+
+  /**
    * Create a new KadDHT.
    *
    * @param {Switch} sw libp2p-switch instance
    * @param {object} options DHT options
    * @param {number} options.kBucketSize k-bucket size (default 20)
    * @param {Datastore} options.datastore datastore (default MemoryDatastore)
-   * @param {boolean} options.enabledDiscovery enable dht discovery (default true)
    * @param {object} options.validators validators object with namespace as keys and function(key, record, callback)
    * @param {object} options.selectors selectors object with namespace as keys and function(key, records)
+   * @param {randomWalkOptions} options.randomWalk randomWalk options
    */
   constructor (sw, options) {
     super()
@@ -47,6 +58,7 @@ class KadDHT extends EventEmitter {
     options = options || {}
     options.validators = options.validators || {}
     options.selectors = options.selectors || {}
+    options.randomWalk = defaultsDeep(options.randomWalk, c.defaultRandomWalk)
 
     /**
      * Local reference to the libp2p-switch instance
@@ -118,7 +130,10 @@ class KadDHT extends EventEmitter {
     /**
      * Random walk state, default true
      */
-    this.randomWalkEnabled = !options.hasOwnProperty('enabledDiscovery') ? true : Boolean(options.enabledDiscovery)
+    this.randomWalkEnabled = Boolean(options.randomWalk.enabled)
+    this.randomWalkQueriesPerPeriod = parseInt(options.randomWalk.queriesPerPeriod)
+    this.randomWalkInterval = parseInt(options.randomWalk.interval)
+    this.randomWalkTimeout = parseInt(options.randomWalk.timeout)
   }
 
   /**
@@ -144,7 +159,7 @@ class KadDHT extends EventEmitter {
       }
 
       // Start random walk if enabled
-      this.randomWalkEnabled && this.randomWalk.start()
+      this.randomWalkEnabled && this.randomWalk.start(this.randomWalkQueriesPerPeriod, this.randomWalkInterval, this.randomWalkTimeout)
       callback()
     })
   }

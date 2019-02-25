@@ -200,7 +200,7 @@ describe('KadDHT', () => {
     sw.transport.add('tcp', new TCP())
     sw.connection.addStreamMuxer(Mplex)
     sw.connection.reuse()
-    const dht = new KadDHT(sw, { enabledDiscovery: false })
+    const dht = new KadDHT(sw, { randomWalk: { enabled: false } })
 
     sinon.spy(dht.network, 'start')
     sinon.spy(dht.randomWalk, 'start')

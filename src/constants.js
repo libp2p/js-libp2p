@@ -36,3 +36,10 @@ exports.ALPHA = 3
 exports.DISJOINT_PATHS = 10
 
 exports.maxMessageSize = 2 << 22 // 4MB
+
+exports.defaultRandomWalk = {
+  enabled: true,
+  queriesPerPeriod: 1,
+  interval: 5 * minute,
+  timeout: 10 * second
+}

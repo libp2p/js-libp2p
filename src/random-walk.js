@@ -28,10 +28,7 @@ class RandomWalk {
    * @param {number} [timeout=10000] - how long to wait for the the random-walk query to run, in milliseconds (10s)
    * @returns {void}
    */
-  start (queries, period, timeout) {
-    if (queries == null) { queries = 1 }
-    if (period == null) { period = 5 * c.minute }
-    if (timeout == null) { timeout = 10 * c.second }
+  start (queries = c.defaultRandomWalk.queriesPerPeriod, period = c.defaultRandomWalk.interval, timeout = c.defaultRandomWalk.timeout) {
     // Don't run twice
     if (this._running) { return }
 
