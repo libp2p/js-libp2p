@@ -1,3 +1,13 @@
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/libp2p/js-libp2p-keychain/compare/v0.3.6...v0.4.0) (2019-02-26)
+
+
+### Features
+
+* adds support for ed25199 and secp256k1 ([#31](https://github.com/libp2p/js-libp2p-keychain/issues/31)) ([9eb11f4](https://github.com/libp2p/js-libp2p-keychain/commit/9eb11f4))
+
+
+
 <a name="0.3.6"></a>
 ## [0.3.6](https://github.com/libp2p/js-libp2p-keychain/compare/v0.3.5...v0.3.6) (2019-01-10)
 
