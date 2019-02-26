@@ -1,9 +1,8 @@
 # js-libp2p-crypto
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
-[![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
-[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
-[![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
+[![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-crypto/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-crypto?branch=master)
 [![Travis CI](https://travis-ci.org/libp2p/js-libp2p-crypto.svg?branch=master)](https://travis-ci.org/libp2p/js-libp2p-crypto)
 [![Circle CI](https://circleci.com/gh/libp2p/js-libp2p-crypto.svg?style=svg)](https://circleci.com/gh/libp2p/js-libp2p-crypto)
@@ -62,7 +61,7 @@ This uses `CTR` mode.
 
 - `key: Buffer` The key, if length `16` then `AES 128` is used. For length `32`, `AES 256` is used.
 - `iv: Buffer` Must have length `16`.
-- `callback: Function` 
+- `callback: Function`
 
 ##### `decrypt(data, callback)`
 
@@ -109,7 +108,7 @@ async function main () {
         if (!err) {
           console.log(decryptedBuffer)
           // prints: <Buffer 42 f1 67 d9 2e 42 d0 32 9e b1 f8 3c>
-          
+
           console.log(decryptedBuffer.toString('utf-8'))
           // prints: Hello, world!
         }
