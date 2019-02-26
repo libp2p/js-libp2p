@@ -11,6 +11,7 @@ const parallel = require('async/parallel')
 const series = require('async/series')
 const _times = require('lodash.times')
 
+const { codes } = require('../src/errors')
 const createNode = require('./utils/create-node')
 
 function startTwo (callback) {
@@ -76,6 +77,10 @@ describe('.pubsub', () => {
         (cb) => setTimeout(cb, 500),
         // publish on the second
         (cb) => nodes[1].pubsub.publish('pubsub', data, cb),
+        // ls subscripts
+        (cb) => nodes[1].pubsub.ls(cb),
+        // get subscribed peers
+        (cb) => nodes[1].pubsub.peers('pubsub', cb),
         // Wait a moment before unsubscribing
         (cb) => setTimeout(cb, 500),
         // unsubscribe on the first
@@ -132,6 +137,33 @@ describe('.pubsub', () => {
         expect(err).to.not.exist().mark()
       })
     })
+    it('publish should fail if data is not a buffer', (done) => {
+      createNode('/ip4/0.0.0.0/tcp/0', {
+        config: {
+          peerDiscovery: {
+            mdns: {
+              enabled: false
+            }
+          },
+          EXPERIMENTAL: {
+            pubsub: true
+          }
+        }
+      }, (err, node) => {
+        expect(err).to.not.exist()
+
+        node.start((err) => {
+          expect(err).to.not.exist()
+
+          node.pubsub.publish('pubsub', 'datastr', (err) => {
+            expect(err).to.exist()
+            expect(err.code).to.equal('ERR_DATA_IS_NOT_A_BUFFER')
+
+            done()
+          })
+        })
+      })
+    })
   })
 
   describe('.pubsub off', () => {
@@ -150,6 +182,75 @@ describe('.pubsub', () => {
       }, (err, node) => {
         expect(err).to.not.exist()
         expect(node.pubsub).to.not.exist()
+        done()
+      })
+    })
+  })
+
+  describe('.pubsub on and node not started', () => {
+    let libp2pNode
+
+    before(function (done) {
+      createNode('/ip4/0.0.0.0/tcp/0', {
+        config: {
+          peerDiscovery: {
+            mdns: {
+              enabled: false
+            }
+          },
+          EXPERIMENTAL: {
+            pubsub: true
+          }
+        }
+      }, (err, node) => {
+        expect(err).to.not.exist()
+
+        libp2pNode = node
+        done()
+      })
+    })
+
+    it('fail to subscribe if node not started yet', (done) => {
+      libp2pNode.pubsub.subscribe('pubsub', () => { }, (err) => {
+        expect(err).to.exist()
+        expect(err.code).to.equal(codes.PUBSUB_NOT_STARTED)
+
+        done()
+      })
+    })
+
+    it('fail to unsubscribe if node not started yet', (done) => {
+      libp2pNode.pubsub.unsubscribe('pubsub', () => { }, (err) => {
+        expect(err).to.exist()
+        expect(err.code).to.equal(codes.PUBSUB_NOT_STARTED)
+
+        done()
+      })
+    })
+
+    it('fail to publish if node not started yet', (done) => {
+      libp2pNode.pubsub.publish('pubsub', Buffer.from('data'), (err) => {
+        expect(err).to.exist()
+        expect(err.code).to.equal(codes.PUBSUB_NOT_STARTED)
+
+        done()
+      })
+    })
+
+    it('fail to ls if node not started yet', (done) => {
+      libp2pNode.pubsub.ls((err) => {
+        expect(err).to.exist()
+        expect(err.code).to.equal(codes.PUBSUB_NOT_STARTED)
+
+        done()
+      })
+    })
+
+    it('fail to get subscribed peers to a topic if node not started yet', (done) => {
+      libp2pNode.pubsub.peers('pubsub', (err) => {
+        expect(err).to.exist()
+        expect(err.code).to.equal(codes.PUBSUB_NOT_STARTED)
+
         done()
       })
     })
