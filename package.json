@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
   "leadMaintainer": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
@@ -73,6 +73,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-crypto",
   "contributors": [
+    "Alberto Elias <hi@albertoelias.me>",
     "David Dias <daviddias.p@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
@@ -85,6 +86,7 @@
     "Richard Littauer <richard.littauer@gmail.com>",
     "Richard Schneider <makaretu@gmail.com>",
     "Tom Swindell <t.swindell@rubyx.co.uk>",
+    "Vasco Santos <vasco.santos@ua.pt>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>",
     "Yusef Napora <yusef@napora.org>",
     "greenkeeper[bot] <greenkeeper[bot]@users.noreply.github.com>",
