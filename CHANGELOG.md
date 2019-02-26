@@ -1,3 +1,8 @@
+<a name="0.25.0-rc.3"></a>
+# [0.25.0-rc.3](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.2...v0.25.0-rc.3) (2019-02-26)
+
+
+
 <a name="0.25.0-rc.2"></a>
 # [0.25.0-rc.2](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.1...v0.25.0-rc.2) (2019-02-26)
 
