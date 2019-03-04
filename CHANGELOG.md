@@ -1,3 +1,13 @@
+<a name="0.14.7"></a>
+## [0.14.7](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.6...v0.14.7) (2019-03-04)
+
+
+### Bug Fixes
+
+* put query for closest peers ([#85](https://github.com/libp2p/js-libp2p-kad-dht/issues/85)) ([84a40cd](https://github.com/libp2p/js-libp2p-kad-dht/commit/84a40cd))
+
+
+
 <a name="0.14.6"></a>
 ## [0.14.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.5...v0.14.6) (2019-02-25)
 
