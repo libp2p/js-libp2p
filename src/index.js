@@ -217,7 +217,7 @@ class KadDHT extends EventEmitter {
       (cb) => utils.createPutRecord(key, value, cb),
       (rec, cb) => waterfall([
         (cb) => this._putLocal(key, rec, cb),
-        (cb) => this.getClosestPeers(key, cb),
+        (cb) => this.getClosestPeers(key, { shallow: true }, cb),
         (peers, cb) => {
           // Ensure we have a default `minPeers`
           options.minPeers = options.minPeers || peers.length
@@ -387,11 +387,21 @@ class KadDHT extends EventEmitter {
    * Kademlia 'node lookup' operation.
    *
    * @param {Buffer} key
+   * @param {Object} options
+   * @param {boolean} options.shallow shallow query
    * @param {function(Error, Array<PeerId>)} callback
    * @returns {void}
    */
-  getClosestPeers (key, callback) {
+  getClosestPeers (key, options, callback) {
     this._log('getClosestPeers to %b', key)
+
+    if (typeof options === 'function') {
+      callback = options
+      options = {
+        shallow: false
+      }
+    }
+
     utils.convertBuffer(key, (err, id) => {
       if (err) {
         return callback(err)
@@ -408,7 +418,8 @@ class KadDHT extends EventEmitter {
             (cb) => this._closerPeersSingle(key, peer, cb),
             (closer, cb) => {
               cb(null, {
-                closerPeers: closer
+                closerPeers: closer,
+                success: options.shallow ? true : undefined
               })
             }
           ], callback)
