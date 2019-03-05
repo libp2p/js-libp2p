@@ -132,11 +132,9 @@ describe('ConnectionFSM', () => {
       peerInfo: listenerSwitch._peerInfo
     })
 
-    const stub = sinon.stub(dialerSwitch.transport, 'dial').callsArgWith(2, {
-      errors: [
-        new Error('address in use')
-      ]
-    })
+    const stub = sinon.stub(dialerSwitch.transport, 'dial').callsArgWith(2, [
+      new Error('address in use')
+    ])
 
     connection.once('error:connection_attempt_failed', (errors) => {
       expect(errors).to.have.length(1).mark()

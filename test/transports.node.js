@@ -45,6 +45,13 @@ describe('transports', () => {
       })
     })
 
+    after(function (done) {
+      parallel([
+        (next) => switchA.stop(next),
+        (next) => switchB.stop(next)
+      ], done)
+    })
+
     it('.transport.remove', () => {
       switchA.transport.add('test', new t.C())
       expect(switchA.transports).to.have.any.keys(['test'])
@@ -91,11 +98,10 @@ describe('transports', () => {
       const peer = morePeerInfo[0]
       peer.multiaddrs.add(t.maGen(9999))
 
-      const conn = switchA.transport.dial(t.n, peer, (err, conn) => {
+      switchA.transport.dial(t.n, peer, (err, conn) => {
         expect(err).to.not.exist()
+        tryEcho(conn, done)
       })
-
-      tryEcho(conn, done)
     })
 
     it('.transport.dial to set of multiaddr, only one is available', (done) => {
@@ -103,16 +109,15 @@ describe('transports', () => {
       peer.multiaddrs.add(t.maGen(9359))
       peer.multiaddrs.add(t.maGen(9329))
       peer.multiaddrs.add(t.maGen(9910))
-      peer.multiaddrs.add(t.maGen(9999))
+      peer.multiaddrs.add(switchB._peerInfo.multiaddrs.toArray()[0]) // the valid address
       peer.multiaddrs.add(t.maGen(9309))
       // addr not supported added on purpose
       peer.multiaddrs.add('/ip4/1.2.3.4/tcp/3456/ws/p2p-webrtc-star')
 
-      const conn = switchA.transport.dial(t.n, peer, (err, conn) => {
+      switchA.transport.dial(t.n, peer, (err, conn) => {
         expect(err).to.not.exist()
+        tryEcho(conn, done)
       })
-
-      tryEcho(conn, done)
     })
 
     it('.transport.dial to set of multiaddr, none is available', (done) => {
@@ -124,7 +129,6 @@ describe('transports', () => {
 
       switchA.transport.dial(t.n, peer, (err, conn) => {
         expect(err).to.exist()
-        expect(err.errors).to.have.length(2)
         expect(conn).to.not.exist()
         done()
       })

@@ -45,7 +45,7 @@ class DialQueue {
     this._dialWithTimeout(transport, addr, (err, conn) => {
       if (err) {
         log.error(`${transport.constructor.name}:work`, err)
-        return callback(null, { error: err })
+        return callback(err)
       }
 
       if (token.cancel) {

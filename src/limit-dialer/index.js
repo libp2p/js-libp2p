@@ -1,6 +1,6 @@
 'use strict'
 
-const map = require('async/map')
+const tryEach = require('async/tryEach')
 const debug = require('debug')
 const once = require('once')
 
@@ -40,25 +40,25 @@ class LimitDialer {
     const token = { cancel: false }
     callback = once(callback) // only call callback once
 
-    map(addrs, (m, cb) => {
-      this.dialSingle(peer, transport, m, token, cb)
-    }, (err, results) => {
-      if (err) {
-        return callback(err)
-      }
+    let errors = []
+    const tasks = addrs.map((m) => {
+      return (cb) => this.dialSingle(peer, transport, m, token, (err, result) => {
+        if (err) {
+          errors.push(err)
+          return cb(err)
+        }
+        return cb(null, result)
+      })
+    })
 
-      const success = results.filter((res) => res.conn)
-      if (success.length > 0) {
+    tryEach(tasks, (_, result) => {
+      if (result && result.conn) {
         log('dialMany:success')
-        return callback(null, success[0])
+        return callback(null, result)
       }
 
       log('dialMany:error')
-      const error = new Error('Failed to dial any provided address')
-      error.errors = results
-        .filter((res) => res.error)
-        .map((res) => res.error)
-      return callback(error)
+      return callback(errors)
     })
   }
 

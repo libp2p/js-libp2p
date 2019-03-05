@@ -32,19 +32,18 @@ describe('LimitDialer', () => {
 
   it('all failing', (done) => {
     const dialer = new LimitDialer(2, 10)
-
+    const error = new Error('fail')
     // mock transport
     const t1 = {
       dial (addr, cb) {
-        setTimeout(() => cb(new Error('fail')), 1)
+        setTimeout(() => cb(error), 1)
         return {}
       }
     }
 
     dialer.dialMany(peers[0].id, t1, peers[0].multiaddrs.toArray(), (err, conn) => {
       expect(err).to.exist()
-      expect(err.errors).to.have.length(3)
-      expect(err.errors[0].message).to.eql('fail')
+      expect(err).to.eql([error, error, error])
       expect(conn).to.not.exist()
       done()
     })
