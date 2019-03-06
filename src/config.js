@@ -45,11 +45,11 @@ const optionsSchema = s(
         kBucketSize: 'number',
         enabled: 'boolean?',
         randomWalk: optional(s({
-          enabled: 'boolean?',
+          enabled: 'boolean?', // disabled waiting for https://github.com/libp2p/js-libp2p-kad-dht/issues/86
           queriesPerPeriod: 'number?',
           interval: 'number?',
           timeout: 'number?'
-        }, { enabled: true, queriesPerPeriod: 1, interval: 30000, timeout: 10000 })),
+        }, { enabled: false, queriesPerPeriod: 1, interval: 30000, timeout: 10000 })),
         validators: 'object?',
         selectors: 'object?'
       }, { enabled: true, kBucketSize: 20, enabledDiscovery: true }),
