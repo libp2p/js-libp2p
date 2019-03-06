@@ -97,7 +97,7 @@ describe('configuration', () => {
           kBucketSize: 20,
           enabled: true,
           randomWalk: {
-            enabled: true,
+            enabled: false,
             queriesPerPeriod: 1,
             interval: 30000,
             timeout: 10000
@@ -199,7 +199,7 @@ describe('configuration', () => {
           kBucketSize: 20,
           enabled: true,
           randomWalk: {
-            enabled: true,
+            enabled: false,
             queriesPerPeriod: 1,
             interval: 30000,
             timeout: 10000
