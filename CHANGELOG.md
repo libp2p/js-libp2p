@@ -1,3 +1,14 @@
+<a name="0.41.6"></a>
+## [0.41.6](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.5...v0.41.6) (2019-03-06)
+
+
+### Bug Fixes
+
+* dial in series until we have proper abort support ([#306](https://github.com/libp2p/js-libp2p-switch/issues/306)) ([ddf622b](https://github.com/libp2p/js-libp2p-switch/commit/ddf622b))
+* import async/setImmediate to avoid webpack errors ([#303](https://github.com/libp2p/js-libp2p-switch/issues/303)) ([86e0a7a](https://github.com/libp2p/js-libp2p-switch/commit/86e0a7a))
+
+
+
 <a name="0.41.5"></a>
 ## [0.41.5](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.4...v0.41.5) (2019-01-11)
 
