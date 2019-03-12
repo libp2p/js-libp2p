@@ -97,7 +97,7 @@ You can find multiple examples on the [examples folder](/examples) that will gui
 
 ### Creating your own libp2p bundle
 
-The libp2p module acts as a glue for every libp2p module that you can use top create your own libp2p bundle. Creating your own libp2p bundle gives you a lot of freedom when it comes to customize it with features and default setup. We recommend creating your own libp2p bundle for the app you are developing that takes in account your needs (e.g. for a browser working version of libp2p that acts as the network layer of IPFS, we have a built one that leverages the Browser transports).
+The libp2p module acts as a glue for every libp2p module that you can use to create your own libp2p bundle. Creating your own libp2p bundle gives you a lot of freedom when it comes to customize it with features and default setup. We recommend creating your own libp2p bundle for the app you are developing that takes in account your needs (e.g. for a browser working version of libp2p that acts as the network layer of IPFS, we have a built one that leverages the Browser transports).
 
 **Example:**
 
