@@ -1,6 +1,6 @@
 {
   "name": "libp2p-circuit",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "JavaScript implementation of circuit/switch relaying",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -46,6 +46,7 @@
     "Pedro Teixeira <i@pgte.me>",
     "Vasco Santos <vasco.santos@ua.pt>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>",
+    "Yusef Napora <yusef@napora.org>",
     "dirkmc <dirk@mccormick.cx>"
   ],
   "devDependencies": {
