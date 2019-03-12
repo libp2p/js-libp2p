@@ -57,12 +57,12 @@ class IncomingConnectionFSM extends BaseConnection {
     this._state.on('PRIVATIZED', () => this._onPrivatized())
     this._state.on('ENCRYPTING', () => this._onEncrypting())
     this._state.on('ENCRYPTED', () => {
-      this.log(`successfully encrypted connection to ${this.theirB58Id || 'unknown peer'}`)
+      this.log('successfully encrypted connection to %s', this.theirB58Id || 'unknown peer')
       this.emit('encrypted', this.conn)
     })
     this._state.on('UPGRADING', () => this._onUpgrading())
     this._state.on('MUXED', () => {
-      this.log(`successfully muxed connection to ${this.theirB58Id || 'unknown peer'}`)
+      this.log('successfully muxed connection to %s', this.theirB58Id || 'unknown peer')
       this.emit('muxed', this.conn)
     })
     this._state.on('DISCONNECTING', () => {
@@ -81,7 +81,7 @@ class IncomingConnectionFSM extends BaseConnection {
    * @returns {void}
    */
   _onEncrypting () {
-    this.log(`encrypting connection via ${this.switch.crypto.tag}`)
+    this.log('encrypting connection via %s', this.switch.crypto.tag)
 
     this.msListener.addHandler(this.switch.crypto.tag, (protocol, _conn) => {
       this.conn = this.switch.crypto.encrypt(this.ourPeerInfo.id, _conn, undefined, (err) => {

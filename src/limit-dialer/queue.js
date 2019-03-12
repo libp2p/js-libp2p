@@ -41,7 +41,7 @@ class DialQueue {
    */
   _doWork (transport, addr, token, callback) {
     callback = once(callback)
-    log(`${transport.constructor.name}:work:start`)
+    log('work:start')
     this._dialWithTimeout(transport, addr, (err, conn) => {
       if (err) {
         log.error(`${transport.constructor.name}:work`, err)
@@ -49,7 +49,7 @@ class DialQueue {
       }
 
       if (token.cancel) {
-        log(`${transport.constructor.name}:work:cancel`)
+        log('work:cancel')
         // clean up already done dials
         pull(empty(), conn)
         // If we can close the connection, do it
@@ -62,7 +62,7 @@ class DialQueue {
       // one is enough
       token.cancel = true
 
-      log(`${transport.constructor.name}:work:success`)
+      log('work:success')
 
       const proxyConn = new Connection()
       proxyConn.setInnerConn(conn)

@@ -25,7 +25,7 @@ module.exports = function protocolMuxer (protocols, observer) {
       }
 
       const handler = (protocolName, _conn) => {
-        log(`registering handler with protocol ${protocolName}`)
+        log('registering handler with protocol %s', protocolName)
         const protocol = protocols[protocolName]
         if (protocol) {
           const handlerFunc = protocol && protocol.handlerFunc

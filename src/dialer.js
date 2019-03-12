@@ -4,7 +4,7 @@ const Connection = require('interface-connection').Connection
 const ConnectionFSM = require('./connection')
 const getPeerInfo = require('./get-peer-info')
 const once = require('once')
-const setImmediate = require('async/setImmediate')
+const nextTick = require('async/nextTick')
 
 const debug = require('debug')
 const log = debug('libp2p:switch:dial')
@@ -22,7 +22,7 @@ function maybePerformHandshake ({ protocol, proxyConnection, connection, callbac
     })
   }
 
-  callback()
+  nextTick(callback)
 }
 
 /**
@@ -53,7 +53,7 @@ function dial (_switch, returnFSM) {
     const peerInfo = getPeerInfo(peer, _switch._peerBook)
     const b58Id = peerInfo.id.toB58String()
 
-    log(`dialing to ${b58Id.slice(0, 8)} with protocol ${protocol || 'unknown'}`)
+    log('dialing to %s with protocol %s', b58Id, protocol || 'unknown')
 
     let connection = _switch.connection.getOne(b58Id)
 
@@ -89,7 +89,7 @@ function dial (_switch, returnFSM) {
     const proxyConnection = new Connection()
     proxyConnection.setPeerInfo(peerInfo)
 
-    setImmediate(() => {
+    nextTick(() => {
       // If we have a muxed connection, attempt the protocol handshake
       if (connection.getState() === 'MUXED') {
         maybePerformHandshake({
