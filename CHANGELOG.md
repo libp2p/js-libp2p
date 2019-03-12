@@ -1,3 +1,8 @@
+<a name="0.3.6"></a>
+## [0.3.6](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.5...v0.3.6) (2019-03-12)
+
+
+
 <a name="0.3.5"></a>
 ## [0.3.5](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.4...v0.3.5) (2019-02-15)
 
