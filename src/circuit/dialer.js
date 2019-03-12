@@ -119,7 +119,7 @@ class Dialer {
           return callback(err)
         }
 
-        log(`HOP supported adding as relay - ${this.utils.getB58String(peer)}`)
+        log('HOP supported adding as relay - %s', this.utils.getB58String(peer))
         this.relayPeers.set(this.utils.getB58String(peer), peer)
         sh.close()
         callback()
@@ -175,7 +175,7 @@ class Dialer {
         dstMa,
         (err, conn) => {
           if (err) {
-            log.err(`An error has occurred negotiating the relay connection`, err)
+            log.err('An error has occurred negotiating the relay connection', err)
             return cb(err)
           }
 
@@ -207,7 +207,7 @@ class Dialer {
       let sh = new StreamHandler(conn)
       waterfall([
         (cb) => {
-          log(`negotiating relay for peer ${dstMa.getPeerId()}`)
+          log('negotiating relay for peer %s', dstMa.getPeerId())
           let dstPeerId
           try {
             dstPeerId = PeerId.createFromB58String(dstMa.getPeerId()).id

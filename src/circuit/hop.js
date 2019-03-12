@@ -98,7 +98,7 @@ class Hop extends EE {
       message.dstPeer.addrs.push(addr)
     }
 
-    log(`trying to establish a circuit: ${srcPeerId} <-> ${dstPeerId}`)
+    log('trying to establish a circuit: %s <-> %s', srcPeerId, dstPeerId)
     const noPeer = () => {
       // log.err(err)
       this.utils.writeResponse(
@@ -252,7 +252,7 @@ class Hop extends EE {
         dst,
         src
       )
-      log(`circuit ${srcIdStr} <-> ${dstIdStr} established`)
+      log('circuit %s <-> %s established', srcIdStr, dstIdStr)
       callback()
     })
   }
