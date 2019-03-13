@@ -1,3 +1,13 @@
+<a name="0.41.7"></a>
+## [0.41.7](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.6...v0.41.7) (2019-03-13)
+
+
+### Bug Fixes
+
+* peer disconnect event and improve logging performance ([#309](https://github.com/libp2p/js-libp2p-switch/issues/309)) ([f731cdc](https://github.com/libp2p/js-libp2p-switch/commit/f731cdc))
+
+
+
 <a name="0.41.6"></a>
 ## [0.41.6](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.5...v0.41.6) (2019-03-06)
 
