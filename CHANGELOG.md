@@ -1,3 +1,13 @@
+<a name="0.14.8"></a>
+## [0.14.8](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.7...v0.14.8) (2019-03-13)
+
+
+### Bug Fixes
+
+* incoming message should not connect to peers ([#88](https://github.com/libp2p/js-libp2p-kad-dht/issues/88)) ([8c16b81](https://github.com/libp2p/js-libp2p-kad-dht/commit/8c16b81))
+
+
+
 <a name="0.14.7"></a>
 ## [0.14.7](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.6...v0.14.7) (2019-03-04)
 
