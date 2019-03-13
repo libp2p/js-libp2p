@@ -71,8 +71,6 @@ describe('Message', () => {
         expect(peer.id.isEqual(msg.closerPeers[i].id)).to.eql(true)
         expect(peer.multiaddrs.toArray())
           .to.eql(msg.closerPeers[i].multiaddrs.toArray())
-
-        expect(peer.isConnected()).to.eql(peer.multiaddrs.toArray()[0])
       })
 
       expect(dec.providerPeers).to.have.length(5)

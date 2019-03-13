@@ -116,11 +116,6 @@ function fromPbPeer (peer) {
   const info = new PeerInfo(new PeerId(peer.id))
   peer.addrs.forEach((a) => info.multiaddrs.add(a))
 
-  // TODO: upgrade protobuf to send the address connected on
-  if (peer.connection === CONNECTION_TYPE.CONNECTED) {
-    info.connect(peer.addrs[0])
-  }
-
   return info
 }
 
