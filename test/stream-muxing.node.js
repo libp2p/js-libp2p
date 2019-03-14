@@ -326,10 +326,10 @@ describe('stream muxing', () => {
         expect(Object.keys(nodeA._switch.muxers)).to.have.length(1)
         expect(Object.keys(nodeB._switch.muxers)).to.have.length(1)
 
-        nodeA.dial(nodeB.peerInfo, (err) => {
+        nodeA.dialFSM(nodeB.peerInfo, (err, connFSM) => {
           expect(err).to.not.exist()
-          expect(nodeA._switch.connection.getAll()).to.have.length(0)
-          cb()
+          // The connection should fall back to 'unmuxed'
+          connFSM.once('unmuxed', () => cb())
         })
       },
       (cb) => teardown(nodeA, nodeB, cb)

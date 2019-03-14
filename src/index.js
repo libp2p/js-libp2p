@@ -274,13 +274,12 @@ class Node extends EventEmitter {
     this._getPeerInfo(peer, (err, peerInfo) => {
       if (err) { return callback(err) }
 
-      const connFSM = this._switch.dialFSM(peerInfo, protocol, (err) => {
+      this._switch.dialFSM(peerInfo, protocol, (err, connFSM) => {
         if (!err) {
           this.peerBook.put(peerInfo)
         }
+        callback(err, connFSM)
       })
-
-      callback(null, connFSM)
     })
   }
 
