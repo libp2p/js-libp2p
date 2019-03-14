@@ -37,9 +37,7 @@ describe('transports', () => {
           node.handle('/echo/1.0.0', echo)
           node.start(cb)
         })
-      ], (err) => {
-        done(err)
-      })
+      ], done)
     })
 
     after((done) => {
