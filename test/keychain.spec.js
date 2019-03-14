@@ -13,11 +13,9 @@ const PeerId = require('peer-id')
 module.exports = (datastore1, datastore2) => {
   describe('keychain', () => {
     const passPhrase = 'this is not a secure phrase'
-    const keyName = 'tajné jméno'
-    const renamedKeyName = 'ชื่อลับ'
-    let keyInfo
-    let ecKeyInfo
-    let secpKeyInfo
+    const rsaKeyName = 'tajné jméno'
+    const renamedRsaKeyName = 'ชื่อลับ'
+    let rsaKeyInfo
     let emptyKeystore
     let ks
 
@@ -82,43 +80,23 @@ module.exports = (datastore1, datastore2) => {
     })
 
     describe('key', () => {
-      it('can be an ed25519 key', function (done) {
-        this.timeout(50 * 1000)
-        ks.createKey(keyName + 'ed25519', 'ed25519', 2048, (err, info) => {
-          expect(err).to.not.exist()
-          expect(info).exist()
-          ecKeyInfo = info
-          done()
-        })
-      })
-
-      it('can be an secp256k1 key', function (done) {
-        this.timeout(50 * 1000)
-        ks.createKey(keyName + 'secp256k1', 'secp256k1', 2048, (err, info) => {
-          expect(err).to.not.exist()
-          expect(info).exist()
-          secpKeyInfo = info
-          done()
-        })
-      })
-
       it('can be an RSA key', function (done) {
         this.timeout(50 * 1000)
-        ks.createKey(keyName, 'rsa', 2048, (err, info) => {
+        ks.createKey(rsaKeyName, 'rsa', 2048, (err, info) => {
           expect(err).to.not.exist()
           expect(info).exist()
-          keyInfo = info
+          rsaKeyInfo = info
           done()
         })
       })
 
       it('has a name and id', () => {
-        expect(keyInfo).to.have.property('name', keyName)
-        expect(keyInfo).to.have.property('id')
+        expect(rsaKeyInfo).to.have.property('name', rsaKeyName)
+        expect(rsaKeyInfo).to.have.property('id')
       })
 
       it('is encrypted PEM encoded PKCS #8', (done) => {
-        ks._getPrivateKey(keyName, (err, pem) => {
+        ks._getPrivateKey(rsaKeyName, (err, pem) => {
           expect(err).to.not.exist()
           expect(pem).to.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')
           done()
@@ -126,7 +104,7 @@ module.exports = (datastore1, datastore2) => {
       })
 
       it('does not overwrite existing key', (done) => {
-        ks.createKey(keyName, 'rsa', 2048, (err) => {
+        ks.createKey(rsaKeyName, 'rsa', 2048, (err) => {
           expect(err).to.exist()
           done()
         })
@@ -179,26 +157,26 @@ module.exports = (datastore1, datastore2) => {
         ks.listKeys((err, keys) => {
           expect(err).to.not.exist()
           expect(keys).to.exist()
-          const mykey = keys.find((k) => k.name.normalize() === keyName.normalize())
+          const mykey = keys.find((k) => k.name.normalize() === rsaKeyName.normalize())
           expect(mykey).to.exist()
           done()
         })
       })
 
       it('finds a key by name', (done) => {
-        ks.findKeyByName(keyName, (err, key) => {
+        ks.findKeyByName(rsaKeyName, (err, key) => {
           expect(err).to.not.exist()
           expect(key).to.exist()
-          expect(key).to.deep.equal(keyInfo)
+          expect(key).to.deep.equal(rsaKeyInfo)
           done()
         })
       })
 
       it('finds a key by id', (done) => {
-        ks.findKeyById(keyInfo.id, (err, key) => {
+        ks.findKeyById(rsaKeyInfo.id, (err, key) => {
           expect(err).to.not.exist()
           expect(key).to.exist()
-          expect(key).to.deep.equal(keyInfo)
+          expect(key).to.deep.equal(rsaKeyInfo)
           done()
         })
       })
@@ -233,14 +211,14 @@ module.exports = (datastore1, datastore2) => {
       })
 
       it('requires plain data as a Buffer', (done) => {
-        ks.cms.encrypt(keyName, 'plain data', (err, msg) => {
+        ks.cms.encrypt(rsaKeyName, 'plain data', (err, msg) => {
           expect(err).to.exist()
           done()
         })
       })
 
       it('encrypts', (done) => {
-        ks.cms.encrypt(keyName, plainData, (err, msg) => {
+        ks.cms.encrypt(rsaKeyName, plainData, (err, msg) => {
           expect(err).to.not.exist()
           expect(msg).to.exist()
           expect(msg).to.be.instanceOf(Buffer)
@@ -267,7 +245,7 @@ module.exports = (datastore1, datastore2) => {
         emptyKeystore.cms.decrypt(cms, (err, plain) => {
           expect(err).to.exist()
           expect(err).to.have.property('missingKeys')
-          expect(err.missingKeys).to.eql([keyInfo.id])
+          expect(err.missingKeys).to.eql([rsaKeyInfo.id])
           done()
         })
       })
@@ -284,11 +262,9 @@ module.exports = (datastore1, datastore2) => {
 
     describe('exported key', () => {
       let pemKey
-      let ed25519Key
-      let secp256k1Key
 
       it('is a PKCS #8 encrypted pem', (done) => {
-        ks.exportKey(keyName, 'password', (err, pem) => {
+        ks.exportKey(rsaKeyName, 'password', (err, pem) => {
           expect(err).to.not.exist()
           expect(pem).to.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')
           pemKey = pem
@@ -300,49 +276,13 @@ module.exports = (datastore1, datastore2) => {
         ks.importKey('imported-key', pemKey, 'password', (err, key) => {
           expect(err).to.not.exist()
           expect(key.name).to.equal('imported-key')
-          expect(key.id).to.equal(keyInfo.id)
-          done()
-        })
-      })
-
-      it('can export ed25519 key', (done) => {
-        ks.exportKey(keyName + 'ed25519', (err, key) => {
-          expect(err).to.not.exist()
-          ed25519Key = key
-          expect(key).to.exist()
-          done()
-        })
-      })
-
-      it('ed25519 key can be imported', (done) => {
-        ks.importKey('imported-key-ed25199', ed25519Key, (err, key) => {
-          expect(err).to.not.exist()
-          expect(key.name).to.equal('imported-key-ed25199')
-          expect(key.id).to.equal(ecKeyInfo.id)
-          done()
-        })
-      })
-
-      it('can export secp256k1 key', (done) => {
-        ks.exportKey(keyName + 'secp256k1', (err, key) => {
-          expect(err).to.not.exist()
-          secp256k1Key = key
-          expect(key).to.exist()
-          done()
-        })
-      })
-
-      it('secp256k1 key can be imported', (done) => {
-        ks.importKey('imported-key-secp256k1', secp256k1Key, (err, key) => {
-          expect(err).to.not.exist()
-          expect(key.name).to.equal('imported-key-secp256k1')
-          expect(key.id).to.equal(secpKeyInfo.id)
+          expect(key.id).to.equal(rsaKeyInfo.id)
           done()
         })
       })
 
       it('cannot be imported as an existing key name', (done) => {
-        ks.importKey(keyName, pemKey, 'password', (err, key) => {
+        ks.importKey(rsaKeyName, pemKey, 'password', (err, key) => {
           expect(err).to.exist()
           done()
         })
@@ -402,40 +342,40 @@ module.exports = (datastore1, datastore2) => {
 
     describe('rename', () => {
       it('requires an existing key name', (done) => {
-        ks.renameKey('not-there', renamedKeyName, (err) => {
+        ks.renameKey('not-there', renamedRsaKeyName, (err) => {
           expect(err).to.exist()
           done()
         })
       })
 
       it('requires a valid new key name', (done) => {
-        ks.renameKey(keyName, '..\not-valid', (err) => {
+        ks.renameKey(rsaKeyName, '..\not-valid', (err) => {
           expect(err).to.exist()
           done()
         })
       })
 
       it('does not overwrite existing key', (done) => {
-        ks.renameKey(keyName, keyName, (err) => {
+        ks.renameKey(rsaKeyName, rsaKeyName, (err) => {
           expect(err).to.exist()
           done()
         })
       })
 
       it('cannot create the "self" key', (done) => {
-        ks.renameKey(keyName, 'self', (err) => {
+        ks.renameKey(rsaKeyName, 'self', (err) => {
           expect(err).to.exist()
           done()
         })
       })
 
       it('removes the existing key name', (done) => {
-        ks.renameKey(keyName, renamedKeyName, (err, key) => {
+        ks.renameKey(rsaKeyName, renamedRsaKeyName, (err, key) => {
           expect(err).to.not.exist()
           expect(key).to.exist()
-          expect(key).to.have.property('name', renamedKeyName)
-          expect(key).to.have.property('id', keyInfo.id)
-          ks.findKeyByName(keyName, (err, key) => {
+          expect(key).to.have.property('name', renamedRsaKeyName)
+          expect(key).to.have.property('id', rsaKeyInfo.id)
+          ks.findKeyByName(rsaKeyName, (err, key) => {
             expect(err).to.exist()
             done()
           })
@@ -443,20 +383,20 @@ module.exports = (datastore1, datastore2) => {
       })
 
       it('creates the new key name', (done) => {
-        ks.findKeyByName(renamedKeyName, (err, key) => {
+        ks.findKeyByName(renamedRsaKeyName, (err, key) => {
           expect(err).to.not.exist()
           expect(key).to.exist()
-          expect(key).to.have.property('name', renamedKeyName)
+          expect(key).to.have.property('name', renamedRsaKeyName)
           done()
         })
       })
 
       it('does not change the key ID', (done) => {
-        ks.findKeyByName(renamedKeyName, (err, key) => {
+        ks.findKeyByName(renamedRsaKeyName, (err, key) => {
           expect(err).to.not.exist()
           expect(key).to.exist()
-          expect(key).to.have.property('name', renamedKeyName)
-          expect(key).to.have.property('id', keyInfo.id)
+          expect(key).to.have.property('name', renamedRsaKeyName)
+          expect(key).to.have.property('id', rsaKeyInfo.id)
           done()
         })
       })
@@ -478,11 +418,11 @@ module.exports = (datastore1, datastore2) => {
       })
 
       it('can remove a known key', (done) => {
-        ks.removeKey(renamedKeyName, (err, key) => {
+        ks.removeKey(renamedRsaKeyName, (err, key) => {
           expect(err).to.not.exist()
           expect(key).to.exist()
-          expect(key).to.have.property('name', renamedKeyName)
-          expect(key).to.have.property('id', keyInfo.id)
+          expect(key).to.have.property('name', renamedRsaKeyName)
+          expect(key).to.have.property('id', rsaKeyInfo.id)
           done()
         })
       })

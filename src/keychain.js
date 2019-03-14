@@ -20,7 +20,7 @@ const NIST = {
 }
 
 const defaultOptions = {
-  // See https://cryptosense.com/blog/parameter-choice-for-pbkdf2/
+  // See https://cryptosense.com/parametesr-choice-for-pbkdf2/
   dek: {
     keyLength: 512 / 8,
     iterationCount: 10000,
@@ -197,8 +197,7 @@ class Keychain {
       if (err) return _error(callback, err)
       if (exists) return _error(callback, `Key '${name}' already exists`)
 
-      type = type.toLowerCase()
-      switch (type) {
+      switch (type.toLowerCase()) {
         case 'rsa':
           if (size < 2048) {
             return _error(callback, `Invalid RSA key size ${size}`)
@@ -212,16 +211,21 @@ class Keychain {
         if (err) return _error(callback, err)
         keypair.id((err, kid) => {
           if (err) return _error(callback, err)
-
-          if (type === 'ed25519' || type === 'secp256k1') {
-            const keypairMarshal = keypair.bytes
-            self._storeKey(name, kid, keypairMarshal, dsname, callback)
-          } else {
-            keypair.export(this._(), (err, pem) => {
+          keypair.export(this._(), (err, pem) => {
+            if (err) return _error(callback, err)
+            const keyInfo = {
+              name: name,
+              id: kid
+            }
+            const batch = self.store.batch()
+            batch.put(dsname, pem)
+            batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+            batch.commit((err) => {
               if (err) return _error(callback, err)
-              self._storeKey(name, kid, pem, dsname, callback)
+
+              callback(null, keyInfo)
             })
-          }
+          })
         })
       })
     })
@@ -361,21 +365,19 @@ class Keychain {
   }
 
   /**
-   * Export an existing key.
-   * If it's as an RSA key, include a password to export as a PEM encrypted PKCS #8 string
+   * Export an existing key as a PEM encrypted PKCS #8 string
    *
    * @param {string} name - The local key name; must already exist.
-   * @param {string} password - The password, for RSA keys (optional)
+   * @param {string} password - The password
    * @param {function(Error, string)} callback
    * @returns {undefined}
    */
   exportKey (name, password, callback) {
-    if (typeof password === 'function' && typeof callback === 'undefined') {
-      callback = password
-      password = undefined
-    }
     if (!validateKeyName(name)) {
       return _error(callback, `Invalid key name '${name}'`)
+    }
+    if (!password) {
+      return _error(callback, 'Password is required')
     }
 
     const dsname = DsName(name)
@@ -383,63 +385,56 @@ class Keychain {
       if (err) {
         return _error(callback, `Key '${name}' does not exist. ${err.message}`)
       }
-      if (password) {
-        const encKey = res.toString()
-        crypto.keys.import(encKey, this._(), (err, privateKey) => {
-          if (err) return _error(callback, err)
-          privateKey.export(password, callback)
-        })
-      } else {
-        crypto.keys.unmarshalPrivateKey(res, callback)
-      }
+      const pem = res.toString()
+      crypto.keys.import(pem, this._(), (err, privateKey) => {
+        if (err) return _error(callback, err)
+        privateKey.export(password, callback)
+      })
     })
   }
 
   /**
-   * Import a new key
-   * If it's as an RSA key, include a password to import from a PEM encrypted PKCS #8 string
+   * Import a new key from a PEM encoded PKCS #8 string
    *
    * @param {string} name - The local key name; must not already exist.
-   * @param {string} encKey - The encoded key. If it's an RSA key, it needs to be a PEM encoded PKCS #8 string
-   * @param {string} password - The password for RSA keys. (optional)
+   * @param {string} pem - The PEM encoded PKCS #8 string
+   * @param {string} password - The password.
    * @param {function(Error, KeyInfo)} callback
    * @returns {undefined}
    */
-  importKey (name, encKey, password, callback) {
+  importKey (name, pem, password, callback) {
     const self = this
-    if (typeof password === 'function' && typeof callback === 'undefined') {
-      callback = password
-      password = undefined
-    }
     if (!validateKeyName(name) || name === 'self') {
       return _error(callback, `Invalid key name '${name}'`)
     }
-    if (!encKey) {
-      return _error(callback, 'The encoded key is required')
+    if (!pem) {
+      return _error(callback, 'PEM encoded key is required')
     }
-
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
       if (err) return _error(callback, err)
       if (exists) return _error(callback, `Key '${name}' already exists`)
-
-      if (password) {
-        crypto.keys.import(encKey, password, (err, privateKey) => {
-          if (err) return _error(callback, 'Cannot read the key, most likely the password is wrong')
-          privateKey.id((err, kid) => {
+      crypto.keys.import(pem, password, (err, privateKey) => {
+        if (err) return _error(callback, 'Cannot read the key, most likely the password is wrong')
+        privateKey.id((err, kid) => {
+          if (err) return _error(callback, err)
+          privateKey.export(this._(), (err, pem) => {
             if (err) return _error(callback, err)
-            privateKey.export(this._(), (err, pem) => {
+            const keyInfo = {
+              name: name,
+              id: kid
+            }
+            const batch = self.store.batch()
+            batch.put(dsname, pem)
+            batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+            batch.commit((err) => {
               if (err) return _error(callback, err)
-              self._storeKey(name, kid, pem, dsname, callback)
+
+              callback(null, keyInfo)
             })
           })
         })
-      } else {
-        encKey.id((err, kid) => {
-          if (err) return _error(callback, err)
-          self._storeKey(name, kid, encKey.bytes, dsname, callback)
-        })
-      }
+      })
     })
   }
 
@@ -462,25 +457,20 @@ class Keychain {
         if (err) return _error(callback, err)
         privateKey.export(this._(), (err, pem) => {
           if (err) return _error(callback, err)
-          self._storeKey(name, kid, pem, dsname, callback)
+          const keyInfo = {
+            name: name,
+            id: kid
+          }
+          const batch = self.store.batch()
+          batch.put(dsname, pem)
+          batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+          batch.commit((err) => {
+            if (err) return _error(callback, err)
+
+            callback(null, keyInfo)
+          })
         })
       })
-    })
-  }
-
-  _storeKey (name, kid, encKey, dsname, callback) {
-    const self = this
-    const keyInfo = {
-      name: name,
-      id: kid
-    }
-    const batch = self.store.batch()
-    batch.put(dsname, encKey)
-    batch.put(DsInfoName(name), JSON.stringify(keyInfo))
-    batch.commit((err) => {
-      if (err) return _error(callback, err)
-
-      callback(null, keyInfo)
     })
   }
 

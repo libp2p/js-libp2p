@@ -57,8 +57,8 @@ Managing a key
 - `createKey (name, type, size, callback)`
 - `renameKey (oldName, newName, callback)`
 - `removeKey (name, callback)`
-- `exportKey (name, password, callback)` // Omit _password_ for `ed25199` or `secp256k1` keys
-- `importKey (name, encKey, password, callback)` // Omit _password_ for `ed25199` or `secp256k1` keys
+- `exportKey (name, password, callback)`
+- `importKey (name, pem, password, callback)`
 - `importPeer (name, peer, callback)`
 
 A naming service for a key
@@ -67,7 +67,7 @@ A naming service for a key
 - `findKeyById (id, callback)`
 - `findKeyByName (name, callback)`
 
-Cryptographically protected messages (Only supported with RSA keys)
+Cryptographically protected messages
 
 - `cms.encrypt (name, plain, callback)`
 - `cms.decrypt (cmsData, callback)`
