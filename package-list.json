@@ -3,7 +3,7 @@
     "Package",
     "Version",
     "Deps",
-    "CI",
+    "CI/Travis",
     "Coverage",
     "Lead Maintainer"
   ],
