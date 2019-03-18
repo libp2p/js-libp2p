@@ -12,15 +12,19 @@ node_js:
 os:
   - linux
   - osx
-  - windows
 
 script: npx nyc -s npm run test:node -- --bail
 after_success: npx nyc report --reporter=text-lcov > coverage.lcov && npx codecov
 
 jobs:
   include:
+    - os: windows
+      filter_secrets: false
+      cache: false
+
     - stage: check
       script:
+        - npx aegir build --bundlesize
         - npx aegir commitlint --travis
         - npx aegir dep-check
         - npm run lint

@@ -6,6 +6,7 @@
 [![Build Status](https://travis-ci.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square)](https://travis-ci.org/libp2p/js-libp2p-kad-dht)
 [![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-kad-dht/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-kad-dht?branch=master)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-kad-dht)
+[![Bundle Size](https://flat.badgen.net/bundlephobia/minzip/libp2p-kad-dht)](https://bundlephobia.com/result?p=libp2p-kad-dht)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 ![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)

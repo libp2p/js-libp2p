@@ -23,7 +23,7 @@ const Providers = require('./providers')
 const Message = require('./message')
 const RandomWalk = require('./random-walk')
 const assert = require('assert')
-const defaultsDeep = require('@nodeutils/defaults-deep')
+const mergeOptions = require('merge-options')
 
 /**
  * A DHT implementation modeled after Kademlia with S/Kademlia modifications.
@@ -58,7 +58,7 @@ class KadDHT extends EventEmitter {
     options = options || {}
     options.validators = options.validators || {}
     options.selectors = options.selectors || {}
-    options.randomWalk = defaultsDeep(options.randomWalk, c.defaultRandomWalk)
+    options.randomWalk = mergeOptions(c.defaultRandomWalk, options.randomWalk)
 
     /**
      * Local reference to the libp2p-switch instance
