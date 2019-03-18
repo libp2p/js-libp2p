@@ -1,3 +1,13 @@
+<a name="0.14.9"></a>
+## [0.14.9](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.8...v0.14.9) (2019-03-18)
+
+
+### Bug Fixes
+
+* reduce bundle size ([#90](https://github.com/libp2p/js-libp2p-kad-dht/issues/90)) ([f79eeb2](https://github.com/libp2p/js-libp2p-kad-dht/commit/f79eeb2))
+
+
+
 <a name="0.14.8"></a>
 ## [0.14.8](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.7...v0.14.8) (2019-03-13)
 
