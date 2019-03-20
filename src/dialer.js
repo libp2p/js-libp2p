@@ -58,6 +58,9 @@ module.exports = (conn, expectedPeerInfo, callback) => {
           return callback(err)
         }
 
+        // Copy the protocols
+        peerInfo.protocols = new Set(input.protocols)
+
         callback(null, peerInfo, observedAddr)
       })
     })

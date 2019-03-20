@@ -26,6 +26,9 @@ describe('identify.listener', () => {
         return done(err)
       }
 
+      _info.protocols.add('/echo/1.0.0')
+      _info.protocols.add('/chat/1.0.0')
+
       info = _info
       done()
     })
@@ -51,7 +54,7 @@ describe('identify.listener', () => {
           publicKey: info.id.pubKey.bytes,
           listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/5002').buffer],
           observedAddr: multiaddr('/ip4/127.0.0.1/tcp/5001').buffer,
-          protocols: []
+          protocols: ['/echo/1.0.0', '/chat/1.0.0']
         })
         done()
       })

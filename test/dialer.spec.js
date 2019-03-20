@@ -33,12 +33,16 @@ describe('identify.dialer', () => {
   it('works', (done) => {
     const p = pair()
     original.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/5002'))
+    original.protocols.add('/echo/1.0.0')
+    original.protocols.add('/ping/1.0.0')
+
     const input = msg.encode({
       protocolVersion: 'ipfs/0.1.0',
       agentVersion: 'na',
       publicKey: original.id.pubKey.bytes,
       listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/5002').buffer],
-      observedAddr: multiaddr('/ip4/127.0.0.1/tcp/5001').buffer
+      observedAddr: multiaddr('/ip4/127.0.0.1/tcp/5001').buffer,
+      protocols: Array.from(original.protocols)
     })
 
     pull(
@@ -57,6 +61,44 @@ describe('identify.dialer', () => {
 
       expect(observedAddrs)
         .to.eql([multiaddr('/ip4/127.0.0.1/tcp/5001')])
+
+      expect(info.protocols).to.eql(original.protocols)
+
+      done()
+    })
+  })
+
+  it('should handle missing protocols', (done) => {
+    const p = pair()
+    original.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/5002'))
+
+    const input = msg.encode({
+      protocolVersion: 'ipfs/0.1.0',
+      agentVersion: 'na',
+      publicKey: original.id.pubKey.bytes,
+      listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/5002').buffer],
+      observedAddr: multiaddr('/ip4/127.0.0.1/tcp/5001').buffer,
+      protocols: Array.from(original.protocols)
+    })
+
+    pull(
+      values([input]),
+      lp.encode(),
+      p[0]
+    )
+
+    identify.dialer(p[1], (err, info, observedAddrs) => {
+      expect(err).to.not.exist()
+      expect(info.id.pubKey.bytes)
+        .to.eql(original.id.pubKey.bytes)
+
+      expect(info.multiaddrs.toArray())
+        .to.eql(original.multiaddrs.toArray())
+
+      expect(observedAddrs)
+        .to.eql([multiaddr('/ip4/127.0.0.1/tcp/5001')])
+
+      expect(Array.from(info.protocols)).to.eql([])
 
       done()
     })
