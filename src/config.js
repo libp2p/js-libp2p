@@ -29,7 +29,11 @@ const optionsSchema = s(
       peerDiscovery: optional(list([s('object|function')])),
       peerRouting: optional(list(['object'])),
       streamMuxer: optional(list([s('object|function')])),
-      transport: list([transport])
+      transport: s.intersection([[transport], s.interface({
+        length (v) {
+          return v > 0 ? true : 'ERROR_EMPTY'
+        }
+      })])
     }),
     config: s({
       peerDiscovery: 'object?',
@@ -52,7 +56,7 @@ const optionsSchema = s(
         }, { enabled: false, queriesPerPeriod: 1, interval: 30000, timeout: 10000 })),
         validators: 'object?',
         selectors: 'object?'
-      }, { enabled: true, kBucketSize: 20, enabledDiscovery: true }),
+      }, { enabled: false, kBucketSize: 20, enabledDiscovery: false }),
       EXPERIMENTAL: s({
         pubsub: 'boolean'
       }, { pubsub: false })
