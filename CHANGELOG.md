@@ -1,3 +1,13 @@
+<a name="0.7.6"></a>
+## [0.7.6](https://github.com/libp2p/js-libp2p-identify/compare/v0.7.5...v0.7.6) (2019-03-20)
+
+
+### Features
+
+* add protocol support to identify ([#51](https://github.com/libp2p/js-libp2p-identify/issues/51)) ([89ed15e](https://github.com/libp2p/js-libp2p-identify/commit/89ed15e))
+
+
+
 <a name="0.7.5"></a>
 ## [0.7.5](https://github.com/libp2p/js-libp2p-identify/compare/v0.7.4...v0.7.5) (2019-01-10)
 
