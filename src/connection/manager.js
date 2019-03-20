@@ -61,8 +61,12 @@ class ConnectionManager {
    */
   getOne (peerId) {
     if (this.connections[peerId]) {
-      // TODO: Maybe select the best?
-      return this.connections[peerId][0]
+      // Only return muxed connections
+      for (var i = 0; i < this.connections[peerId].length; i++) {
+        if (this.connections[peerId][i].getState() === 'MUXED') {
+          return this.connections[peerId][i]
+        }
+      }
     }
     return null
   }

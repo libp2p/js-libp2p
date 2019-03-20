@@ -38,7 +38,7 @@ function getPeerInfo (peer, peerBook) {
     try {
       return peerBook.get(peerIdB58Str)
     } catch (err) {
-      throw new Error('Couldnt get PeerInfo')
+      throw new Error(`Couldnt get PeerInfo for ${peerIdB58Str}`)
     }
   }
 

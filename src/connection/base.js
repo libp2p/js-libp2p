@@ -92,7 +92,6 @@ class BaseConnection extends EventEmitter {
    * @returns {void}
    */
   _onPrivatized () {
-    this.log('successfully privatized incoming connection')
     this.emit('private', this.conn)
   }
 

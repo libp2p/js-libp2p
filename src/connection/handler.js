@@ -14,31 +14,32 @@ function listener (_switch) {
    * @param {function} handler A custom handler to use
    * @returns {function(Connection)} A connection handler function
    */
-  return (transportKey, handler) => {
+  return function (transportKey, handler) {
     /**
      * Takes a base connection and manages listening behavior
      *
      * @param {Connection} conn The connection to manage
      * @returns {void}
      */
-    return (conn) => {
-      // Add a transport level observer, if needed
-      const connection = transportKey ? observeConn(transportKey, null, conn, _switch.observer) : conn
+    return function (conn) {
+      log('received incoming connection for transport %s', transportKey)
+      conn.getPeerInfo((_, peerInfo) => {
+        // Add a transport level observer, if needed
+        const connection = transportKey ? observeConn(transportKey, null, conn, _switch.observer) : conn
+        const connFSM = new IncomingConnection({ connection, _switch, transportKey, peerInfo })
 
-      log('received incoming connection')
-      const connFSM = new IncomingConnection({ connection, _switch, transportKey })
+        connFSM.once('error', (err) => log(err))
+        connFSM.once('private', (_conn) => {
+          // Use the custom handler, if it was provided
+          if (handler) {
+            return handler(_conn)
+          }
+          connFSM.encrypt()
+        })
+        connFSM.once('encrypted', () => connFSM.upgrade())
 
-      connFSM.once('error', (err) => log(err))
-      connFSM.once('private', (_conn) => {
-        // Use the custom handler, if it was provided
-        if (handler) {
-          return handler(_conn)
-        }
-        connFSM.encrypt()
+        connFSM.protect()
       })
-      connFSM.once('encrypted', () => connFSM.upgrade())
-
-      connFSM.protect()
     }
   }
 }

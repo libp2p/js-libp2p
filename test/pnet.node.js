@@ -26,8 +26,6 @@ generatePSK(psk)
 generatePSK(psk2)
 
 describe('Private Network', function () {
-  this.timeout(20 * 1000)
-
   let switchA
   let switchB
   let switchC
@@ -84,7 +82,6 @@ describe('Private Network', function () {
   }))
 
   after(function (done) {
-    this.timeout(3 * 1000)
     parallel([
       (cb) => switchA.stop(cb),
       (cb) => switchB.stop(cb),

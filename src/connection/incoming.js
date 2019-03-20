@@ -7,13 +7,14 @@ const withIs = require('class-is')
 const BaseConnection = require('./base')
 
 class IncomingConnectionFSM extends BaseConnection {
-  constructor ({ connection, _switch, transportKey }) {
+  constructor ({ connection, _switch, transportKey, peerInfo }) {
     super({
       _switch,
       name: `inc:${_switch._peerInfo.id.toB58String().slice(0, 8)}`
     })
     this.conn = connection
-    this.theirPeerInfo = null
+    this.theirPeerInfo = peerInfo || null
+    this.theirB58Id = this.theirPeerInfo ? this.theirPeerInfo.id.toB58String() : null
     this.ourPeerInfo = this.switch._peerInfo
     this.transportKey = transportKey
     this.protocolMuxer = this.switch.protocolMuxer(this.transportKey)

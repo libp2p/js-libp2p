@@ -211,9 +211,10 @@ class TransportManager {
       return transportAddrs
     }
 
+    const ourAddrs = peerInfo.multiaddrs.toArray()
     return transportAddrs.filter((addr) => {
       // If our address is in the destination address, filter it out
-      return !peerInfo.multiaddrs.toArray().find((pAddr) => {
+      return !ourAddrs.find((pAddr) => {
         try {
           addr.decapsulate(pAddr)
         } catch (err) {

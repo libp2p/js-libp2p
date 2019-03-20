@@ -5,6 +5,7 @@ const Circuit = require('libp2p-circuit')
 const multistream = require('multistream-select')
 const withIs = require('class-is')
 const BaseConnection = require('./base')
+const parallel = require('async/parallel')
 
 const observeConnection = require('../observe-connection')
 const {
@@ -33,7 +34,7 @@ const {
  */
 class ConnectionFSM extends BaseConnection {
   /**
-   * @param {ConnectionOptions} param0
+   * @param {ConnectionOptions} connectionOptions
    * @constructor
    */
   constructor ({ _switch, peerInfo, muxer, conn, type = 'out' }) {
@@ -261,7 +262,7 @@ class ConnectionFSM extends BaseConnection {
    * @returns {void}
    */
   _onDisconnecting () {
-    this.log('disconnecting from %s', this.theirB58Id)
+    this.log('disconnecting from %s', this.theirB58Id, Boolean(this.muxer))
 
     // Issue disconnects on both Peers
     if (this.theirPeerInfo) {
@@ -272,22 +273,31 @@ class ConnectionFSM extends BaseConnection {
 
     delete this.switch.conns[this.theirB58Id]
 
+    let tasks = []
+
     // Clean up stored connections
     if (this.muxer) {
-      this.muxer.end()
-      delete this.muxer
-      this.switch.emit('peer-mux-closed', this.theirPeerInfo)
+      tasks.push((cb) => {
+        this.muxer.end(() => {
+          delete this.muxer
+          this.switch.emit('peer-mux-closed', this.theirPeerInfo)
+          cb()
+        })
+      })
     }
 
     // If we have the base connection, abort it
+    // Ignore abort errors, since we're closing
     if (this.conn) {
-      this.conn.source(true, () => {
-        this._state('done')
-        delete this.conn
-      })
-    } else {
-      this._state('done')
+      try {
+        this.conn.source.abort()
+      } catch (_) { }
+      delete this.conn
     }
+
+    parallel(tasks, () => {
+      this._state('done')
+    })
   }
 
   /**
@@ -366,8 +376,6 @@ class ConnectionFSM extends BaseConnection {
           const conn = observeConnection(null, key, _conn, this.switch.observer)
 
           this.muxer = this.switch.muxers[key].dialer(conn)
-          // this.switch.muxedConns[this.theirB58Id] = this
-          this.switch.connection.add(this)
 
           this.muxer.once('close', () => {
             this.close()

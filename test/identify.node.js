@@ -128,11 +128,11 @@ describe('Identify', () => {
     expect(2).check(done)
 
     switchA.handle('/id-test/1.0.0', (protocol, conn) => pull(conn, conn))
-    const connFSM = switchB.dialFSM(switchA._peerInfo, '/id-test/1.0.0', (err) => {
+    switchB.dialFSM(switchA._peerInfo, '/id-test/1.0.0', (err, connFSM) => {
       expect(err).to.not.exist().mark()
-    })
-    connFSM.once('close', () => {
-      expect(stub.called).to.eql(true).mark()
+      connFSM.once('close', () => {
+        expect(stub.called).to.eql(true).mark()
+      })
     })
   })
 })

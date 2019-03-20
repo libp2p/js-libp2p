@@ -8,7 +8,7 @@ const series = require('async/series')
 const TransportManager = require('./transport')
 const ConnectionManager = require('./connection/manager')
 const getPeerInfo = require('./get-peer-info')
-const dial = require('./dialer')
+const getDialer = require('./dialer')
 const connectionHandler = require('./connection/handler')
 const ProtocolMuxer = require('./protocol-muxer')
 const plaintext = require('./plaintext')
@@ -65,10 +65,6 @@ class Switch extends EventEmitter {
     this.stats = Stats(this.observer, this._options.stats)
     this.protocolMuxer = ProtocolMuxer(this.protocols, this.observer)
 
-    // higher level (public) API
-    this.dial = dial(this)
-    this.dialFSM = dial(this, true)
-
     // All purpose connection handler for managing incoming connections
     this._connectionHandler = connectionHandler(this)
 
@@ -111,6 +107,11 @@ class Switch extends EventEmitter {
       log.error(err)
       this.emit('error', err)
     })
+
+    // higher level (public) API
+    const dialer = getDialer(this)
+    this.dial = dialer.dial
+    this.dialFSM = dialer.dialFSM
   }
 
   /**
@@ -250,7 +251,7 @@ class Switch extends EventEmitter {
           }, cb)
         }, cb)
       },
-      (cb) => each([...this.connection.getAll()], (conn, cb) => {
+      (cb) => each(this.connection.getAll(), (conn, cb) => {
         conn.once('close', cb)
         conn.close()
       }, cb)
