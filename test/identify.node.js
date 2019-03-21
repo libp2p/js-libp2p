@@ -87,7 +87,8 @@ describe('Identify', () => {
     switchA.handle('/id-test/1.0.0', (protocol, conn) => pull(conn, conn))
     switchB.dial(switchA._peerInfo, '/id-test/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
-      let data = Buffer.from('data that cant be had')
+
+      let data = Buffer.from('data that can be had')
       pull(
         pull.values([data]),
         conn,
@@ -97,6 +98,27 @@ describe('Identify', () => {
           done()
         })
       )
+    })
+  })
+
+  it('should get protocols for one another', (done) => {
+    switchA.handle('/id-test/1.0.0', (protocol, conn) => pull(conn, conn))
+    switchB.dial(switchA._peerInfo, '/id-test/1.0.0', (err, conn) => {
+      expect(err).to.not.exist()
+
+      const peerB = switchA._peerBook.get(switchB._peerInfo.id.toB58String())
+      const peerA = switchB._peerBook.get(switchA._peerInfo.id.toB58String())
+      expect(Array.from(peerB.protocols)).to.eql([
+        multiplex.multicodec,
+        identify.multicodec
+      ])
+      expect(Array.from(peerA.protocols)).to.eql([
+        multiplex.multicodec,
+        identify.multicodec,
+        '/id-test/1.0.0'
+      ])
+
+      done()
     })
   })
 
@@ -125,7 +147,7 @@ describe('Identify', () => {
       })
     })
 
-    expect(2).check(done)
+    expect(2).checks(done)
 
     switchA.handle('/id-test/1.0.0', (protocol, conn) => pull(conn, conn))
     switchB.dialFSM(switchA._peerInfo, '/id-test/1.0.0', (err, connFSM) => {

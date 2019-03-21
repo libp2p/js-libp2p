@@ -389,7 +389,6 @@ class ConnectionFSM extends BaseConnection {
           })
 
           this.switch.emit('peer-mux-established', this.theirPeerInfo)
-
           this._didUpgrade(null)
         })
       }

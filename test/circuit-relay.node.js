@@ -252,6 +252,10 @@ describe(`circuit`, function () {
         ], (err) => {
           if (err) return done(err)
 
+          if (bootstrapSwitch._peerBook.getAllArray().length === 4) {
+            return done()
+          }
+
           done = once(done)
           // Wait for everyone to connect, before we try relaying
           bootstrapSwitch.on('peer-mux-established', () => {
@@ -262,6 +266,10 @@ describe(`circuit`, function () {
         })
       })
     }))
+
+    before('wait so hop status can be negotiated', function (done) {
+      setTimeout(done, 1000)
+    })
 
     after(function (done) {
       parallel([
@@ -294,6 +302,7 @@ describe(`circuit`, function () {
           done()
         }
       })
+
       tcpSwitch1.dial(wsPeer1, (err, connection) => {
         expect(err).to.not.exist()
         // We're not dialing a protocol, so we won't get a connection back
@@ -323,6 +332,7 @@ describe(`circuit`, function () {
           done()
         }
       })
+
       wsSwitch2.dial(tcpPeer1, (err, connection) => {
         expect(err).to.not.exist()
         // We're not dialing a protocol, so we won't get a connection back
