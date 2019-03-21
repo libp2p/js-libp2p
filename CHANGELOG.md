@@ -1,3 +1,31 @@
+<a name="0.42.0"></a>
+# [0.42.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.7...v0.42.0) (2019-03-21)
+
+
+### Features
+
+* add basic dial queue to avoid many connections to peer ([#310](https://github.com/libp2p/js-libp2p-switch/issues/310)) ([6a94d9a](https://github.com/libp2p/js-libp2p-switch/commit/6a94d9a))
+* update identify to include supported protocols ([#311](https://github.com/libp2p/js-libp2p-switch/issues/311)) ([46e2509](https://github.com/libp2p/js-libp2p-switch/commit/46e2509))
+
+
+### BREAKING CHANGES
+
+* This adds a very basic dial queue peer peer.
+This will prevent multiple, simultaneous dial requests to the same
+peer from creating multiple connections. The requests will be queued
+per peer, and will leverage the same connection when possible.
+The breaking change here is that `.dial`, will no longer return a
+connection. js-libp2p, circuit relay, and kad-dht, which use `.dial`
+were not using the returned connection. So while this is a breaking change
+it should not break the existing libp2p stack. If custom applications
+are leveraging the returned connection, they will need to convert to only
+using the connection returned via the callback.
+
+* chore: dont log priviatized unless it actually happened
+* refactor: only get our addresses for filtering once
+
+
+
 <a name="0.41.7"></a>
 ## [0.41.7](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.6...v0.41.7) (2019-03-13)
 
