@@ -1,3 +1,13 @@
+<a name="0.42.1"></a>
+## [0.42.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.0...v0.42.1) (2019-03-21)
+
+
+### Bug Fixes
+
+* ensure dials always use the latest PeerInfo from the PeerBook ([#312](https://github.com/libp2p/js-libp2p-switch/issues/312)) ([16f2bc3](https://github.com/libp2p/js-libp2p-switch/commit/16f2bc3))
+
+
+
 <a name="0.42.0"></a>
 # [0.42.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.7...v0.42.0) (2019-03-21)
 
