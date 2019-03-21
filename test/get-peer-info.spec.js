@@ -63,6 +63,35 @@ describe('Get peer info', () => {
     })
   })
 
+  it('should add a peerInfo to the book', (done) => {
+    PeerId.createFromJSON(TestPeerInfos[1].id, (err, id) => {
+      const peerInfo = new PeerInfo(id)
+      expect(peerBook.has(peerInfo.id.toB58String())).to.eql(false)
+
+      expect(getPeerInfo(peerInfo, peerBook)).to.exist()
+      expect(peerBook.has(peerInfo.id.toB58String())).to.eql(true)
+      done(err)
+    })
+  })
+
+  it('should return the most up to date version of the peer', (done) => {
+    const ma1 = MultiAddr('/ip4/0.0.0.0/tcp/8080')
+    const ma2 = MultiAddr('/ip6/::/tcp/8080')
+    PeerId.createFromJSON(TestPeerInfos[1].id, (err, id) => {
+      const peerInfo = new PeerInfo(id)
+      peerInfo.multiaddrs.add(ma1)
+      expect(getPeerInfo(peerInfo, peerBook)).to.exist()
+
+      const peerInfo2 = new PeerInfo(id)
+      peerInfo2.multiaddrs.add(ma2)
+      const returnedPeerInfo = getPeerInfo(peerInfo2, peerBook)
+      expect(returnedPeerInfo.multiaddrs.toArray()).to.contain.members([
+        ma1, ma2
+      ])
+      done(err)
+    })
+  })
+
   it('an invalid peer type should throw an error', () => {
     let func = () => {
       getPeerInfo('/ip4/127.0.0.1/tcp/1234', peerBook)

@@ -48,7 +48,7 @@ class DialQueueManager {
   getQueue (peerInfo) {
     const id = peerInfo.id.toB58String()
 
-    this._queue[id] = this._queue[id] || new Queue(peerInfo, this.switch)
+    this._queue[id] = this._queue[id] || new Queue(id, this.switch)
     return this._queue[id]
   }
 }
