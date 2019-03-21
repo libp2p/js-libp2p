@@ -1,3 +1,18 @@
+<a name="0.25.0-rc.5"></a>
+# [0.25.0-rc.5](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.4...v0.25.0-rc.5) (2019-03-21)
+
+
+### Bug Fixes
+
+* disable dht by default [#338](https://github.com/libp2p/js-libp2p/issues/338) ([#339](https://github.com/libp2p/js-libp2p/issues/339)) ([e52ce66](https://github.com/libp2p/js-libp2p/commit/e52ce66))
+
+
+### Features
+
+* update to the latest switch ([#336](https://github.com/libp2p/js-libp2p/issues/336)) ([eee60ed](https://github.com/libp2p/js-libp2p/commit/eee60ed))
+
+
+
 <a name="0.25.0-rc.4"></a>
 # [0.25.0-rc.4](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.3...v0.25.0-rc.4) (2019-03-06)
 
