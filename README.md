@@ -1,12 +1,11 @@
 libp2p-mdns JavaScript implementation
 =====================================
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
-[![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
-[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
-[![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-mdns/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-mdns?branch=master)
-[![Travis CI](https://travis-ci.org/libp2p/js-libp2p-mdns.svg?branch=master)](https://travis-ci.org/libp2p/js-libp2p-mdns)
-[![Circle CI](https://circleci.com/gh/libp2p/js-libp2p-mdns.svg?style=svg)](https://circleci.com/gh/libp2p/js-libp2p-mdns)
+[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
+[![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
+[![](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-mdns.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-mdns)
+[![](https://img.shields.io/travis/libp2p/js-libp2p-mdns.svg?style=flat-square)](https://travis-ci.com/libp2p/js-libp2p-mdns)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-mdns.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-mdns)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 
