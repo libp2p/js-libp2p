@@ -219,11 +219,27 @@ describe('dialFSM', () => {
 
     expect(switchA.connection.getAllById(peerBId)).to.have.length(0)
 
-    // 4 close checks (1 inc and 1 out for each node) and 1 hangup check
-    expect(5).checks(() => {
-      switchA.removeAllListeners('peer-mux-closed')
-      switchB.removeAllListeners('peer-mux-closed')
-      done()
+    // Expect 4 `peer-mux-established` events
+    expect(4).checks(() => {
+      // Expect 4 `peer-mux-closed`, plus 1 hangup
+      expect(5).checks(() => {
+        switchA.removeAllListeners('peer-mux-closed')
+        switchB.removeAllListeners('peer-mux-closed')
+        switchA.removeAllListeners('peer-mux-established')
+        switchB.removeAllListeners('peer-mux-established')
+        done()
+      })
+
+      switchA.hangUp(switchB._peerInfo, (err) => {
+        expect(err).to.not.exist().mark()
+      })
+    })
+
+    switchA.on('peer-mux-established', (peerInfo) => {
+      expect(peerInfo.id.toB58String()).to.eql(peerBId).mark()
+    })
+    switchB.on('peer-mux-established', (peerInfo) => {
+      expect(peerInfo.id.toB58String()).to.eql(peerAId).mark()
     })
 
     switchA.on('peer-mux-closed', (peerInfo) => {
@@ -241,13 +257,6 @@ describe('dialFSM', () => {
         switchB.dialFSM(switchA._peerInfo, protocol, (err, connB) => {
           expect(err).to.not.exist()
           connB.on('muxed', cb)
-        })
-      })
-
-      connFSM.on('connection', () => {
-        // Hangup and verify the connections are closed
-        switchA.hangUp(switchB._peerInfo, (err) => {
-          expect(err).to.not.exist().mark()
         })
       })
     })

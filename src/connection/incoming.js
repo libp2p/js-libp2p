@@ -54,6 +54,7 @@ class IncomingConnectionFSM extends BaseConnection {
       }
     })
 
+    this._state.on('DISCONNECTED', () => this._onDisconnected())
     this._state.on('PRIVATIZING', () => this._onPrivatizing())
     this._state.on('PRIVATIZED', () => this._onPrivatized())
     this._state.on('ENCRYPTING', () => this._onEncrypting())

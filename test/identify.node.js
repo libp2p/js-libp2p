@@ -10,6 +10,7 @@ const TCP = require('libp2p-tcp')
 const multiplex = require('libp2p-mplex')
 const pull = require('pull-stream')
 const secio = require('libp2p-secio')
+const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
 const identify = require('libp2p-identify')
 const lp = require('pull-length-prefixed')
@@ -102,23 +103,35 @@ describe('Identify', () => {
   })
 
   it('should get protocols for one another', (done) => {
+    // We need to reset the PeerInfo objects we use,
+    // since we share memory we can receive a false positive if not
+    let peerA = new PeerInfo(switchA._peerInfo.id)
+    switchA._peerInfo.multiaddrs.toArray().forEach((m) => {
+      peerA.multiaddrs.add(m)
+    })
+    switchB._peerBook.remove(switchA._peerInfo.id.toB58String())
+    switchA._peerBook.remove(switchB._peerInfo.id.toB58String())
+
     switchA.handle('/id-test/1.0.0', (protocol, conn) => pull(conn, conn))
-    switchB.dial(switchA._peerInfo, '/id-test/1.0.0', (err, conn) => {
+    switchB.dial(peerA, '/id-test/1.0.0', (err) => {
       expect(err).to.not.exist()
 
-      const peerB = switchA._peerBook.get(switchB._peerInfo.id.toB58String())
-      const peerA = switchB._peerBook.get(switchA._peerInfo.id.toB58String())
-      expect(Array.from(peerB.protocols)).to.eql([
-        multiplex.multicodec,
-        identify.multicodec
-      ])
-      expect(Array.from(peerA.protocols)).to.eql([
-        multiplex.multicodec,
-        identify.multicodec,
-        '/id-test/1.0.0'
-      ])
+      // Give identify a moment to run
+      setTimeout(() => {
+        const peerB = switchA._peerBook.get(switchB._peerInfo.id.toB58String())
+        const peerA = switchB._peerBook.get(switchA._peerInfo.id.toB58String())
+        expect(Array.from(peerB.protocols)).to.eql([
+          multiplex.multicodec,
+          identify.multicodec
+        ])
+        expect(Array.from(peerA.protocols)).to.eql([
+          multiplex.multicodec,
+          identify.multicodec,
+          '/id-test/1.0.0'
+        ])
 
-      done()
+        done()
+      }, 500)
     })
   })
 
