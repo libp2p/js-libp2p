@@ -1,3 +1,13 @@
+<a name="0.42.2"></a>
+## [0.42.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.1...v0.42.2) (2019-03-25)
+
+
+### Bug Fixes
+
+* identify on dial ([#313](https://github.com/libp2p/js-libp2p-switch/issues/313)) ([6437139](https://github.com/libp2p/js-libp2p-switch/commit/6437139))
+
+
+
 <a name="0.42.1"></a>
 ## [0.42.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.0...v0.42.1) (2019-03-21)
 
