@@ -269,7 +269,7 @@ module.exports = (dht) => ({
   _get (key, options, callback) {
     dht._log('_get %b', key)
     waterfall([
-      (cb) => dht.getMany(key, 16, options, cb),
+      (cb) => dht.getMany(key, c.GET_MANY_RECORD_COUNT, options, cb),
       (vals, cb) => {
         const recs = vals.map((v) => v.val)
         let i = 0

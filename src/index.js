@@ -313,7 +313,7 @@ class KadDHT extends EventEmitter {
         })
       }
 
-      if (nvals <= 1) {
+      if (vals.length >= nvals) {
         return callback(null, vals)
       }
 
