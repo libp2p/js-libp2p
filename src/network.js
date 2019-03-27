@@ -122,8 +122,6 @@ class Network {
           return this._log.error('Failed to add to the routing table', err)
         }
 
-        this.dht._peerDiscovered(peer)
-
         this._log('added to the routing table: %s', peer.id.toB58String())
       })
     })

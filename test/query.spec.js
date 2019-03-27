@@ -157,4 +157,27 @@ describe('Query', () => {
       })
     })
   })
+
+  it('should discover closer peers', (done) => {
+    const peer = peerInfos[0]
+
+    // mock this so we can dial non existing peers
+    dht.switch.dial = (peer, callback) => callback()
+
+    const query = (p, cb) => {
+      cb(null, {
+        closerPeers: [peerInfos[2]]
+      })
+    }
+
+    const q = new Query(dht, peer.id.id, () => query)
+    q.run([peerInfos[1].id], (err, res) => {
+      expect(err).to.not.exist()
+    })
+
+    dht.once('peer', (peerInfo) => {
+      expect(peerInfo.id).to.eql(peerInfos[2].id)
+      done()
+    })
+  })
 })
