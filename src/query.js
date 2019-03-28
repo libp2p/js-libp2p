@@ -85,6 +85,8 @@ class Query {
       }
     })
 
+    // Create a manager to keep track of the worker queue for each path
+    this.workerManager = new WorkerManager()
     each(run.paths, (path, cb) => {
       waterfall([
         (cb) => PeerQueue.fromKey(this.key, cb),
@@ -92,10 +94,16 @@ class Query {
           path.peersToQuery = q
           each(path.peers, (p, cb) => addPeerToQuery(p, this.dht, path, cb), cb)
         },
-        (cb) => workerQueue(this, path, cb)
+        (cb) => {
+          this.workerManager.workerQueue(this, path, cb)
+        }
       ], cb)
     }, (err, results) => {
       this._log('query:done')
+
+      // Ensure worker queues for all paths are stopped at the end of the query
+      this.workerManager.stop()
+
       if (err) {
         return callback(err)
       }
@@ -110,7 +118,8 @@ class Query {
       }
 
       run.paths.forEach((path) => {
-        if (path.res && path.res.success) {
+        if (path.res && (path.res.pathComplete || path.res.queryComplete)) {
+          path.res.success = true
           run.res.paths.push(path.res)
         }
       })
@@ -118,101 +127,165 @@ class Query {
       callback(null, run.res)
     })
   }
+
+  /**
+   * Stop the query
+   */
+  stop () {
+    this.workerManager && this.workerManager.stop()
+  }
 }
 
 /**
- * Use the queue from async to keep `concurrency` amount items running
- * per path.
- *
- * @param {Query} query
- * @param {Object} path
- * @param {function(Error)} callback
- * @returns {void}
- * @private
+ * Manages the worker queues for each path through the DHT
  */
-function workerQueue (query, path, callback) {
-  let killed = false
-  const q = queue((next, cb) => {
-    query._log('queue:work')
-    execQuery(next, query, path, (err, done) => {
-      // Ignore after kill
-      if (killed) {
-        return cb()
-      }
-      query._log('queue:work:done', err, done)
-      if (err) {
-        return cb(err)
-      }
-      if (done) {
-        q.kill()
-        killed = true
-        return callback()
-      }
-      cb()
-    })
-  }, query.concurrency)
+class WorkerManager {
+  /**
+   * Creates a new WorkerManager
+   */
+  constructor () {
+    this.running = true
+    this.workers = []
+  }
 
-  const fill = () => {
-    query._log('queue:fill')
-    while (q.length() < query.concurrency &&
-           path.peersToQuery.length > 0) {
-      q.push(path.peersToQuery.dequeue())
+  /**
+   * Stop all the workers
+   */
+  stop () {
+    this.running = false
+    for (const worker of this.workers) {
+      worker.stop()
     }
   }
 
-  fill()
-
-  // callback handling
-  q.error = (err) => {
-    query._log.error('queue', err)
-    callback(err)
-  }
-
-  q.drain = () => {
-    query._log('queue:drain')
-    callback()
-  }
-
-  q.unsaturated = () => {
-    query._log('queue:unsatured')
-    fill()
-  }
-
-  q.buffer = 0
-}
-
-/**
- * Execute a query on the `next` peer.
- *
- * @param {PeerId} next
- * @param {Query} query
- * @param {Object} path
- * @param {function(Error)} callback
- * @returns {void}
- * @private
- */
-function execQuery (next, query, path, callback) {
-  path.query(next, (err, res) => {
-    if (err) {
-      path.run.errors.push(err)
-      callback()
-    } else if (res.success) {
-      path.res = res
-      callback(null, true)
-    } else if (res.closerPeers && res.closerPeers.length > 0) {
-      each(res.closerPeers, (closer, cb) => {
-        // don't add ourselves
-        if (query.dht._isSelf(closer.id)) {
+  /**
+   * Use the queue from async to keep `concurrency` amount items running
+   * per path.
+   *
+   * @param {Query} query
+   * @param {Object} path
+   * @param {function(Error)} callback
+   */
+  workerQueue (query, path, callback) {
+    let workerRunning = true
+    const q = queue((next, cb) => {
+      query._log('queue:work')
+      this.execQuery(next, query, path, (err, state) => {
+        // Ignore response after worker killed
+        if (!workerRunning || !this.running) {
           return cb()
         }
-        closer = query.dht.peerBook.put(closer)
-        query.dht._peerDiscovered(closer)
-        addPeerToQuery(closer.id, query.dht, path, cb)
-      }, callback)
-    } else {
-      callback()
+
+        query._log('queue:work:done', err, state)
+        if (err) {
+          return cb(err)
+        }
+
+        // If query is complete, stop all workers.
+        // Note: this.stop() calls stop() on all the workers, which kills the
+        // queue and calls callback(), so we don't need to call cb() here
+        if (state && state.queryComplete) {
+          query._log('query:complete')
+          return this.stop()
+        }
+
+        // If path is complete, just stop this worker.
+        // Note: worker.stop() kills the queue and calls callback() so we don't
+        // need to call cb() here
+        if (state && state.pathComplete) {
+          return worker.stop()
+        }
+
+        // Otherwise, process next peer
+        cb()
+      })
+    }, query.concurrency)
+
+    // Keeps track of a running worker
+    const worker = {
+      stop: (err) => {
+        if (workerRunning) {
+          q.kill()
+          workerRunning = false
+          callback(err)
+        }
+      }
     }
-  })
+    this.workers.push(worker)
+
+    // Add peers to the queue until there are enough to satisfy the concurrency
+    const fill = () => {
+      query._log('queue:fill')
+      while (q.length() < query.concurrency &&
+             path.peersToQuery.length > 0) {
+        q.push(path.peersToQuery.dequeue())
+      }
+    }
+
+    fill()
+
+    // If there's an error, stop the worker
+    q.error = (err) => {
+      query._log.error('queue', err)
+      worker.stop(err)
+    }
+
+    // When all peers in the queue have been processed, stop the worker
+    q.drain = () => {
+      query._log('queue:drain')
+      worker.stop()
+    }
+
+    // When a space opens up in the queue, add some more peers
+    q.unsaturated = () => {
+      query._log('queue:unsaturated')
+      fill()
+    }
+
+    q.buffer = 0
+  }
+
+  /**
+   * Execute a query on the `next` peer.
+   *
+   * @param {PeerId} next
+   * @param {Query} query
+   * @param {Object} path
+   * @param {function(Error)} callback
+   * @returns {void}
+   * @private
+   */
+  execQuery (next, query, path, callback) {
+    path.query(next, (err, res) => {
+      // If the run has completed, bail out
+      if (!this.running) {
+        return callback()
+      }
+
+      if (err) {
+        path.run.errors.push(err)
+        callback()
+      } else if (res.pathComplete || res.queryComplete) {
+        path.res = res
+        callback(null, {
+          pathComplete: res.pathComplete,
+          queryComplete: res.queryComplete
+        })
+      } else if (res.closerPeers && res.closerPeers.length > 0) {
+        each(res.closerPeers, (closer, cb) => {
+          // don't add ourselves
+          if (query.dht._isSelf(closer.id)) {
+            return cb()
+          }
+          closer = query.dht.peerBook.put(closer)
+          query.dht._peerDiscovered(closer)
+          addPeerToQuery(closer.id, query.dht, path, cb)
+        }, callback)
+      } else {
+        callback()
+      }
+    })
+  }
 }
 
 /**

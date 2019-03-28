@@ -70,10 +70,10 @@ function createDisjointTracks (peerInfos, goodLength, callback) {
         const nextPos = pos + 1
         // if we're at the end of the track
         if (nextPos === track.length) {
-          if (trackNum === 0) { // good track; success
+          if (trackNum === 0) { // good track; pathComplete
             return {
               end: true,
-              success: true
+              pathComplete: true
             }
           } else { // bad track; dead end
             return {
