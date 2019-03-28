@@ -1,3 +1,13 @@
+<a name="0.42.3"></a>
+## [0.42.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.2...v0.42.3) (2019-03-28)
+
+
+### Features
+
+* global dial queue ([#314](https://github.com/libp2p/js-libp2p-switch/issues/314)) ([20175dd](https://github.com/libp2p/js-libp2p-switch/commit/20175dd))
+
+
+
 <a name="0.42.2"></a>
 ## [0.42.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.1...v0.42.2) (2019-03-25)
 
