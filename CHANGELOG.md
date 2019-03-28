@@ -1,3 +1,14 @@
+<a name="0.14.11"></a>
+## [0.14.11](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.10...v0.14.11) (2019-03-28)
+
+
+### Bug Fixes
+
+* ensure queries stop after error or success ([#93](https://github.com/libp2p/js-libp2p-kad-dht/issues/93)) ([0e55b20](https://github.com/libp2p/js-libp2p-kad-dht/commit/0e55b20))
+* getMany with nvals=1 now goes out to network if no local val ([#91](https://github.com/libp2p/js-libp2p-kad-dht/issues/91)) ([478ee88](https://github.com/libp2p/js-libp2p-kad-dht/commit/478ee88))
+
+
+
 <a name="0.14.10"></a>
 ## [0.14.10](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.9...v0.14.10) (2019-03-27)
 
