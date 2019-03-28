@@ -19,6 +19,9 @@ const getPorts = require('portfinder').getPorts
 const utils = require('./utils')
 const createInfos = utils.createInfos
 const Swarm = require('../src')
+const switchOptions = {
+  blacklistTTL: 0 // nullifies blacklisting
+}
 
 describe(`circuit`, function () {
   let swarmA // TCP and WS
@@ -36,7 +39,7 @@ describe(`circuit`, function () {
     peerA.multiaddrs.add('/ip4/0.0.0.0/tcp/9001')
     peerB.multiaddrs.add('/ip4/127.0.0.1/tcp/9002/ws')
 
-    swarmA = new Swarm(peerA, new PeerBook())
+    swarmA = new Swarm(peerA, new PeerBook(), switchOptions)
     swarmB = new Swarm(peerB, new PeerBook())
     swarmC = new Swarm(peerC, new PeerBook())
 

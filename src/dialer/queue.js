@@ -1,7 +1,7 @@
 'use strict'
 
 const ConnectionFSM = require('../connection')
-const { DIAL_ABORTED } = require('../errors')
+const { DIAL_ABORTED, ERR_BLACKLISTED } = require('../errors')
 const Connection = require('interface-connection').Connection
 const nextTick = require('async/nextTick')
 const once = require('once')
@@ -63,12 +63,15 @@ class Queue {
    * @constructor
    * @param {string} peerId
    * @param {Switch} _switch
+   * @param {function} onStopped Called when the queue stops
    */
-  constructor (peerId, _switch) {
+  constructor (peerId, _switch, onStopped) {
     this.id = peerId
     this.switch = _switch
     this._queue = []
+    this.blackListed = null
     this.isRunning = false
+    this.onStopped = onStopped
   }
   get length () {
     return this._queue.length
@@ -80,39 +83,78 @@ class Queue {
    * @param {string} protocol
    * @param {boolean} useFSM If callback should use a ConnectionFSM instead
    * @param {function(Error, Connection)} callback
+   * @returns {boolean} whether or not the queue has been started
    */
   add (protocol, useFSM, callback) {
-    this._queue.push({ protocol, useFSM, callback })
-    if (!this.isRunning) {
-      log('starting dial queue to %s', this.id)
-      this.start()
+    if (!this.isDialAllowed()) {
+      nextTick(callback, ERR_BLACKLISTED())
+      return false
     }
+    this._queue.push({ protocol, useFSM, callback })
+    return this.start()
   }
 
   /**
-   * Starts the queue
+   * Determines whether or not dialing is currently allowed
+   * @returns {boolean}
+   */
+  isDialAllowed () {
+    if (this.blackListed) {
+      // If the blacklist ttl has passed, reset it
+      if (Date.now() - this.blackListed > this.switch.dialer.BLACK_LIST_TTL) {
+        this.blackListed = null
+        return true
+      }
+      // Dial is not allowed
+      return false
+    }
+    return true
+  }
+
+  /**
+   * Starts the queue. If the queue was started `true` will be returned.
+   * If the queue was already running `false` is returned.
+   * @returns {boolean}
    */
   start () {
-    this.isRunning = true
-    this._run()
+    if (!this.isRunning) {
+      log('starting dial queue to %s', this.id)
+      this.isRunning = true
+      this._run()
+      return true
+    }
+    return false
   }
 
   /**
    * Stops the queue
    */
   stop () {
-    this.isRunning = false
+    if (this.isRunning) {
+      log('stopping dial queue to %s', this.id)
+      this.isRunning = false
+      this.onStopped()
+    }
   }
 
   /**
    * Stops the queue and errors the callback for each dial request
    */
   abort () {
-    this.stop()
     while (this.length > 0) {
       let dial = this._queue.shift()
       dial.callback(DIAL_ABORTED())
     }
+    this.stop()
+  }
+
+  /**
+   * Marks the queue as blacklisted. The queue will be immediately aborted.
+   */
+  blacklist () {
+    log('blacklisting queue for %s', this.id)
+    this.blackListed = Date.now()
+    this.abort()
   }
 
   /**
@@ -189,6 +231,7 @@ class Queue {
     // depending on the error.
     connectionFSM.once('error', (err) => {
       queuedDial.callback(err)
+      this.blacklist()
     })
 
     connectionFSM.once('close', () => {

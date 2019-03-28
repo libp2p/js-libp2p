@@ -103,12 +103,31 @@ describe('dialFSM', () => {
     protocol = '/error/1.0.0'
     switchC.handle(protocol, () => { })
 
+    switchA.dialer.clearBlacklist(switchC._peerInfo)
     switchA.dialFSM(switchC._peerInfo, protocol, (err, connFSM) => {
       expect(err).to.not.exist()
       connFSM.once('error', (err) => {
         expect(err).to.be.exist()
         expect(err).to.have.property('code', 'CONNECTION_FAILED')
         done()
+      })
+    })
+  })
+
+  it('should error when the peer is blacklisted', (done) => {
+    protocol = '/error/1.0.0'
+    switchC.handle(protocol, () => { })
+
+    switchA.dialer.clearBlacklist(switchC._peerInfo)
+    switchA.dialFSM(switchC._peerInfo, protocol, (err, connFSM) => {
+      expect(err).to.not.exist()
+      connFSM.once('error', () => {
+        // dial with the blacklist
+        switchA.dialFSM(switchC._peerInfo, protocol, (err) => {
+          expect(err).to.exist()
+          expect(err.code).to.eql('ERR_BLACKLISTED')
+          done()
+        })
       })
     })
   })

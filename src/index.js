@@ -110,9 +110,9 @@ class Switch extends EventEmitter {
     })
 
     // higher level (public) API
-    const dialer = getDialer(this)
-    this.dial = dialer.dial
-    this.dialFSM = dialer.dialFSM
+    this.dialer = getDialer(this)
+    this.dial = this.dialer.dial
+    this.dialFSM = this.dialer.dialFSM
   }
 
   /**
