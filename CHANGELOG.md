@@ -1,3 +1,13 @@
+<a name="0.42.4"></a>
+## [0.42.4](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.3...v0.42.4) (2019-03-28)
+
+
+### Bug Fixes
+
+* improve dial queue and parallel dials ([#315](https://github.com/libp2p/js-libp2p-switch/issues/315)) ([fcbcccc](https://github.com/libp2p/js-libp2p-switch/commit/fcbcccc))
+
+
+
 <a name="0.42.3"></a>
 ## [0.42.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.2...v0.42.3) (2019-03-28)
 
