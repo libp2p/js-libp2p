@@ -63,7 +63,7 @@ class Queue {
    * @constructor
    * @param {string} peerId
    * @param {Switch} _switch
-   * @param {function} onStopped Called when the queue stops
+   * @param {function(string)} onStopped Called when the queue stops
    */
   constructor (peerId, _switch, onStopped) {
     this.id = peerId
@@ -78,20 +78,16 @@ class Queue {
   }
 
   /**
-   * Adds the dial request to the queue and starts the
-   * queue if it is stopped
+   * Adds the dial request to the queue. The queue is not automatically started
    * @param {string} protocol
    * @param {boolean} useFSM If callback should use a ConnectionFSM instead
    * @param {function(Error, Connection)} callback
-   * @returns {boolean} whether or not the queue has been started
    */
   add (protocol, useFSM, callback) {
     if (!this.isDialAllowed()) {
       nextTick(callback, ERR_BLACKLISTED())
-      return false
     }
     this._queue.push({ protocol, useFSM, callback })
-    return this.start()
   }
 
   /**
@@ -133,7 +129,7 @@ class Queue {
     if (this.isRunning) {
       log('stopping dial queue to %s', this.id)
       this.isRunning = false
-      this.onStopped()
+      this.onStopped(this.id)
     }
   }
 

@@ -8,13 +8,10 @@ const debug = require('debug')
 const log = debug('libp2p:switch:transport')
 
 const LimitDialer = require('./limit-dialer')
+const { DIAL_TIMEOUT } = require('./constants')
 
 // number of concurrent outbound dials to make per peer, same as go-libp2p-swtch
 const defaultPerPeerRateLimit = 8
-
-// the amount of time a single dial has to succeed
-// TODO this should be exposed as a option
-const dialTimeout = 30 * 1000
 
 /**
  * Manages the transports for the switch. This simplifies dialing and listening across
@@ -23,7 +20,7 @@ const dialTimeout = 30 * 1000
 class TransportManager {
   constructor (_switch) {
     this.switch = _switch
-    this.dialer = new LimitDialer(defaultPerPeerRateLimit, dialTimeout)
+    this.dialer = new LimitDialer(defaultPerPeerRateLimit, this.switch._options.dialTimeout || DIAL_TIMEOUT)
   }
 
   /**

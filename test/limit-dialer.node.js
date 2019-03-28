@@ -3,6 +3,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
@@ -52,13 +53,15 @@ describe('LimitDialer', () => {
   it('two success', (done) => {
     const dialer = new LimitDialer(2, 10)
 
+    expect(2).checks(done)
+
     // mock transport
     const t1 = {
       dial (addr, cb) {
         const as = addr.toString()
         if (as.match(/191/)) {
           setImmediate(() => cb(new Error('fail')))
-          return {}
+          return null
         } else if (as.match(/192/)) {
           setTimeout(cb, 2)
           return {
@@ -69,7 +72,10 @@ describe('LimitDialer', () => {
           setTimeout(cb, 8)
           return {
             source: pull.values([2]),
-            sink: pull.drain()
+            sink: pull.onEnd((err) => {
+              // Verify the unused connection gets closed
+              expect(err).to.not.exist().mark()
+            })
           }
         }
       }
@@ -83,8 +89,7 @@ describe('LimitDialer', () => {
         conn,
         pull.collect((err, res) => {
           expect(err).to.not.exist()
-          expect(res).to.be.eql([1])
-          done()
+          expect(res).to.be.eql([1]).mark()
         })
       )
     })

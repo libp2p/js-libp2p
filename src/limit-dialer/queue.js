@@ -54,9 +54,9 @@ class DialQueue {
         pull(empty(), conn)
         // If we can close the connection, do it
         if (typeof conn.close === 'function') {
-          return conn.close((_) => callback(null, { cancel: true }))
+          return conn.close((_) => callback(null))
         }
-        return callback(null, { cancel: true })
+        return callback(null)
       }
 
       // one is enough
