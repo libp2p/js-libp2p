@@ -74,7 +74,7 @@ function pre (done) {
 
 function post (done) {
   parallel([
-    (cb) => switchA.transport.close('ws', cb),
+    (cb) => switchA.stop(cb),
     (cb) => switchB.stop(cb),
     (cb) => sigS.stop(cb)
   ], done)

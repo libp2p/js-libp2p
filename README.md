@@ -61,8 +61,11 @@ const sw = new switch(peerInfo , peerBook [, options])
 
 If defined, `options` should be an object with the following keys and respective values:
 
-- `blacklistTTL`: - number of ms a peer should not be dialable to after it errors. Defaults to `120000`(120 seconds)
-- `maxParallelDials`: - number of concurrent dials the switch should allow. Defaults to `50`
+- `blacklistTTL`: - number of ms a peer should not be dialable to after it errors. Each successive blacklisting will increase the ttl from the base value. Defaults to 5 minutes
+- `blackListAttempts`: - number of blacklists before a peer
+is permanently blacklisted. Defaults to 5.
+- `maxParallelDials`: - number of concurrent dials the switch should allow. Defaults to `100`
+- `maxColdCalls`: - number of queued cold calls that are allowed. Defaults to `50`
 - `dialTimeout`: - number of ms a dial to a peer should be allowed to run. Defaults to `30000` (30 seconds)
 - `stats`: an object with the following keys and respective values:
   - `maxOldPeersRetention`: maximum old peers retention. For when peers disconnect and keeping the stats around in case they reconnect. Defaults to `100`.
