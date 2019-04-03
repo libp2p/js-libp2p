@@ -1,3 +1,18 @@
+<a name="0.42.5"></a>
+## [0.42.5](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.4...v0.42.5) (2019-04-03)
+
+
+### Bug Fixes
+
+* improve connection tracking ([#318](https://github.com/libp2p/js-libp2p-switch/issues/318)) ([828e685](https://github.com/libp2p/js-libp2p-switch/commit/828e685))
+
+
+### Features
+
+* limit the number of cold calls we can do ([#316](https://github.com/libp2p/js-libp2p-switch/issues/316)) ([4a543cb](https://github.com/libp2p/js-libp2p-switch/commit/4a543cb))
+
+
+
 <a name="0.42.4"></a>
 ## [0.42.4](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.3...v0.42.4) (2019-03-28)
 
