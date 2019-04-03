@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+/* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
 const chai = require('chai')
@@ -128,6 +129,27 @@ describe('dialFSM', () => {
           expect(err.code).to.eql('ERR_BLACKLISTED')
           done()
         })
+      })
+    })
+  })
+
+  it('should not blacklist a peer that was successfully connected', (done) => {
+    protocol = '/noblacklist/1.0.0'
+    switchB.handle(protocol, () => { })
+
+    switchA.dialer.clearBlacklist(switchB._peerInfo)
+    switchA.dialFSM(switchB._peerInfo, protocol, (err, connFSM) => {
+      expect(err).to.not.exist()
+      connFSM.once('connection', () => {
+        connFSM.once('close', () => {
+          // peer should not be blacklisted
+          switchA.dialFSM(switchB._peerInfo, protocol, (err, conn) => {
+            expect(err).to.not.exist()
+            conn.once('close', done)
+            conn.close()
+          })
+        })
+        connFSM.close(new Error('bad things'))
       })
     })
   })

@@ -241,6 +241,10 @@ class Queue {
     // depending on the error.
     connectionFSM.once('error', (err) => {
       queuedDial.callback(err)
+      // Dont blacklist peers we have identified and that we are connected to
+      if (peerInfo.protocols.size > 0 && peerInfo.isConnected()) {
+        return
+      }
       this.blacklist()
     })
 
