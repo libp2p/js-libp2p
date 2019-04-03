@@ -1,3 +1,14 @@
+<a name="0.42.6"></a>
+## [0.42.6](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.5...v0.42.6) (2019-04-03)
+
+
+### Bug Fixes
+
+* dont blacklist good peers ([#319](https://github.com/libp2p/js-libp2p-switch/issues/319)) ([f31663f](https://github.com/libp2p/js-libp2p-switch/commit/f31663f))
+* revert to try each ([#320](https://github.com/libp2p/js-libp2p-switch/issues/320)) ([805d1ad](https://github.com/libp2p/js-libp2p-switch/commit/805d1ad))
+
+
+
 <a name="0.42.5"></a>
 ## [0.42.5](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.4...v0.42.5) (2019-04-03)
 
