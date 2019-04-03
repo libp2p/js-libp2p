@@ -106,7 +106,6 @@ class TransportManager {
       }
 
       peerInfo.connect(success.multiaddr)
-      this.switch._peerBook.put(peerInfo)
       callback(null, success.conn)
     })
   }

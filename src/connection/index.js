@@ -268,11 +268,6 @@ class ConnectionFSM extends BaseConnection {
   _onDisconnecting () {
     this.log('disconnecting from %s', this.theirB58Id, Boolean(this.muxer))
 
-    // Issue disconnects on both Peers
-    if (this.theirPeerInfo) {
-      this.theirPeerInfo.disconnect()
-    }
-
     this.switch.connection.remove(this)
 
     delete this.switch.conns[this.theirB58Id]
@@ -284,7 +279,6 @@ class ConnectionFSM extends BaseConnection {
       tasks.push((cb) => {
         this.muxer.end(() => {
           delete this.muxer
-          this.switch.emit('peer-mux-closed', this.theirPeerInfo)
           cb()
         })
       })
@@ -325,13 +319,13 @@ class ConnectionFSM extends BaseConnection {
           return this.close(maybeUnexpectedEnd(err))
         }
 
-        const conn = observeConnection(null, this.switch.crypto.tag, _conn, this.switch.observer)
-
-        this.conn = this.switch.crypto.encrypt(this.ourPeerInfo.id, conn, this.theirPeerInfo.id, (err) => {
+        const observedConn = observeConnection(null, this.switch.crypto.tag, _conn, this.switch.observer)
+        const encryptedConn = this.switch.crypto.encrypt(this.ourPeerInfo.id, observedConn, this.theirPeerInfo.id, (err) => {
           if (err) {
             return this.close(err)
           }
 
+          this.conn = encryptedConn
           this.conn.setPeerInfo(this.theirPeerInfo)
           this._state('done')
         })
@@ -392,7 +386,6 @@ class ConnectionFSM extends BaseConnection {
             this.switch.protocolMuxer(null)(conn)
           })
 
-          this.switch.emit('peer-mux-established', this.theirPeerInfo)
           this._didUpgrade(null)
 
           // Run identify on the connection

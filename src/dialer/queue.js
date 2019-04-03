@@ -2,7 +2,6 @@
 
 const ConnectionFSM = require('../connection')
 const { DIAL_ABORTED, ERR_BLACKLISTED } = require('../errors')
-const Connection = require('interface-connection').Connection
 const nextTick = require('async/nextTick')
 const once = require('once')
 const debug = require('debug')
@@ -45,10 +44,8 @@ function createConnectionWithProtocol ({ protocol, connection, callback }) {
       return callback(err)
     }
 
-    const proxyConnection = new Connection()
-    proxyConnection.setPeerInfo(connection.theirPeerInfo)
-    proxyConnection.setInnerConn(conn)
-    callback(null, proxyConnection)
+    conn.setPeerInfo(connection.theirPeerInfo)
+    callback(null, conn)
   })
 }
 
@@ -192,6 +189,8 @@ class Queue {
         conn: null
       })
 
+      this.switch.connection.add(connectionFSM)
+
       // Add control events and start the dialer
       connectionFSM.once('connected', () => connectionFSM.protect())
       connectionFSM.once('private', () => connectionFSM.encrypt())
@@ -252,7 +251,6 @@ class Queue {
     // If we're not muxed yet, add listeners
     connectionFSM.once('muxed', () => {
       this.blackListCount = 0 // reset blacklisting on good connections
-      this.switch.connection.add(connectionFSM)
       queuedDial.connection = connectionFSM
       createConnectionWithProtocol(queuedDial)
       next()
@@ -260,7 +258,6 @@ class Queue {
 
     connectionFSM.once('unmuxed', () => {
       this.blackListCount = 0
-      this.switch.connection.add(connectionFSM)
       queuedDial.connection = connectionFSM
       createConnectionWithProtocol(queuedDial)
       next()

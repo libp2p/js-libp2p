@@ -68,9 +68,6 @@ class IncomingConnectionFSM extends BaseConnection {
       this.emit('muxed', this.conn)
     })
     this._state.on('DISCONNECTING', () => {
-      if (this.theirPeerInfo) {
-        this.theirPeerInfo.disconnect()
-      }
       this._state('done')
     })
   }

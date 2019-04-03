@@ -240,8 +240,8 @@ describe('dialFSM', () => {
 
     // Expect 4 `peer-mux-established` events
     expect(4).checks(() => {
-      // Expect 4 `peer-mux-closed`, plus 1 hangup
-      expect(5).checks(() => {
+      // Expect 2 `peer-mux-closed`, plus 1 hangup
+      expect(3).checks(() => {
         switchA.removeAllListeners('peer-mux-closed')
         switchB.removeAllListeners('peer-mux-closed')
         switchA.removeAllListeners('peer-mux-established')
@@ -286,8 +286,8 @@ describe('dialFSM', () => {
     switchA.handle(protocol, (_, conn) => { pull(conn, conn) })
     switchB.handle(protocol, (_, conn) => { pull(conn, conn) })
 
-    // 4 close checks and 1 hangup check
-    expect(5).checks(() => {
+    // 2 close checks and 1 hangup check
+    expect(2).checks(() => {
       switchA.removeAllListeners('peer-mux-closed')
       switchB.removeAllListeners('peer-mux-closed')
       // restart the node for subsequent tests
