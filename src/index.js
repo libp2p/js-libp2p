@@ -78,7 +78,6 @@ class Node extends EventEmitter {
       // reuse this muxed connection
       this._switch.on('peer-mux-established', (peerInfo) => {
         this.emit('peer:connect', peerInfo)
-        this.peerBook.put(peerInfo)
       })
 
       this._switch.on('peer-mux-closed', (peerInfo) => {
@@ -246,7 +245,6 @@ class Node extends EventEmitter {
 
       this._switch.dial(peerInfo, protocol, (err, conn) => {
         if (err) { return callback(err) }
-        this.peerBook.put(peerInfo)
         callback(null, conn)
       })
     })
@@ -275,9 +273,6 @@ class Node extends EventEmitter {
       if (err) { return callback(err) }
 
       this._switch.dialFSM(peerInfo, protocol, (err, connFSM) => {
-        if (!err) {
-          this.peerBook.put(peerInfo)
-        }
         callback(err, connFSM)
       })
     })
