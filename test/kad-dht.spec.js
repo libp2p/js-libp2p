@@ -953,29 +953,30 @@ describe('KadDHT', () => {
       sw.connection.addStreamMuxer(Mplex)
       sw.connection.reuse()
       const dht = new KadDHT(sw)
+      dht.start(() => {
+        const key = Buffer.from('/v/hello')
+        const value = Buffer.from('world')
+        const rec = new Record(key, value)
 
-      const key = Buffer.from('/v/hello')
-      const value = Buffer.from('world')
-      const rec = new Record(key, value)
+        const stubs = [
+          // Simulate returning a peer id to query
+          sinon.stub(dht.routingTable, 'closestPeers').returns([peerInfos[1].id]),
+          // Simulate going out to the network and returning the record
+          sinon.stub(dht, '_getValueOrPeers').callsFake((peer, k, cb) => {
+            cb(null, rec)
+          })
+        ]
 
-      const stubs = [
-        // Simulate returning a peer id to query
-        sinon.stub(dht.routingTable, 'closestPeers').returns([peerInfos[1].id]),
-        // Simulate going out to the network and returning the record
-        sinon.stub(dht, '_getValueOrPeers').callsFake((peer, k, cb) => {
-          cb(null, rec)
+        dht.getMany(key, 1, (err, res) => {
+          expect(err).to.not.exist()
+          expect(res.length).to.eql(1)
+          expect(res[0].val).to.eql(value)
+
+          for (const stub of stubs) {
+            stub.restore()
+          }
+          done()
         })
-      ]
-
-      dht.getMany(key, 1, (err, res) => {
-        expect(err).to.not.exist()
-        expect(res.length).to.eql(1)
-        expect(res[0].val).to.eql(value)
-
-        for (const stub of stubs) {
-          stub.restore()
-        }
-        done()
       })
     })
   })

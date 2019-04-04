@@ -16,6 +16,15 @@ const Query = require('../src/query')
 const createPeerInfo = require('./utils/create-peer-info')
 const createDisjointTracks = require('./utils/create-disjoint-tracks')
 
+const createDHT = (peerInfos, cb) => {
+  const sw = new Switch(peerInfos[0], new PeerBook())
+  sw.transport.add('tcp', new TCP())
+  sw.connection.addStreamMuxer(Mplex)
+  sw.connection.reuse()
+  const d = new DHT(sw)
+  d.start(() => cb(null, d))
+}
+
 describe('Query', () => {
   let peerInfos
   let dht
@@ -28,13 +37,14 @@ describe('Query', () => {
       }
 
       peerInfos = result
-      const sw = new Switch(peerInfos[0], new PeerBook())
-      sw.transport.add('tcp', new TCP())
-      sw.connection.addStreamMuxer(Mplex)
-      sw.connection.reuse()
-      dht = new DHT(sw)
+      createDHT(peerInfos, (err, d) => {
+        if (err) {
+          return done(err)
+        }
 
-      done()
+        dht = d
+        done()
+      })
     })
   })
 
@@ -113,6 +123,23 @@ describe('Query', () => {
     q.run([peerInfos[1].id], (err, res) => {
       expect(err).to.exist()
       expect(err.message).to.eql('fail')
+      done()
+    })
+  })
+
+  it('returns empty run if initial peer list is empty', (done) => {
+    const peer = peerInfos[0]
+
+    const query = (p, cb) => {}
+
+    const q = new Query(dht, peer.id.id, () => query)
+    q.run([], (err, res) => {
+      expect(err).to.not.exist()
+
+      // Should not visit any peers
+      expect(res.paths.length).to.eql(0)
+      expect(res.finalSet.size).to.eql(0)
+
       done()
     })
   })
@@ -231,6 +258,109 @@ describe('Query', () => {
       expect(res.finalSet.size).to.eql(2)
 
       done()
+    })
+  })
+
+  it('all queries stop after shutdown', (done) => {
+    createDHT(peerInfos, (err, dhtA) => {
+      if (err) {
+        return done(err)
+      }
+
+      const peer = peerInfos[0]
+
+      // mock this so we can dial non existing peers
+      dhtA.switch.dial = (peer, callback) => callback()
+
+      // 1 -> 2 -> 3 -> 4
+      const topology = {
+        [peerInfos[1].id.toB58String()]: {
+          closer: [peerInfos[2]]
+        },
+        [peerInfos[2].id.toB58String()]: {
+          closer: [peerInfos[3]]
+        },
+        // Should not reach here because query gets shut down
+        [peerInfos[3].id.toB58String()]: {
+          closer: [peerInfos[4]]
+        }
+      }
+
+      const visited = []
+      const query = (p, cb) => {
+        visited.push(p)
+
+        const invokeCb = () => {
+          const res = topology[p.toB58String()] || {}
+          cb(null, {
+            closerPeers: res.closer || []
+          })
+        }
+
+        // Shut down after visiting peerInfos[2]
+        if (p.toB58String() === peerInfos[2].id.toB58String()) {
+          dhtA.stop(invokeCb)
+          setTimeout(checkExpectations, 100)
+        } else {
+          invokeCb()
+        }
+      }
+
+      const q = new Query(dhtA, peer.id.id, () => query)
+      q.run([peerInfos[1].id], (err, res) => {
+        expect(err).to.not.exist()
+      })
+
+      function checkExpectations () {
+        // Should only visit peers up to the point where we shut down
+        expect(visited).to.eql([peerInfos[1].id, peerInfos[2].id])
+
+        done()
+      }
+    })
+  })
+
+  it('queries run after shutdown return immediately', (done) => {
+    createDHT(peerInfos, (err, dhtA) => {
+      if (err) {
+        return done(err)
+      }
+
+      const peer = peerInfos[0]
+
+      // mock this so we can dial non existing peers
+      dhtA.switch.dial = (peer, callback) => callback()
+
+      // 1 -> 2 -> 3
+      const topology = {
+        [peerInfos[1].id.toB58String()]: {
+          closer: [peerInfos[2]]
+        },
+        [peerInfos[2].id.toB58String()]: {
+          closer: [peerInfos[3]]
+        }
+      }
+
+      const query = (p, cb) => {
+        const res = topology[p.toB58String()] || {}
+        cb(null, {
+          closerPeers: res.closer || []
+        })
+      }
+
+      const q = new Query(dhtA, peer.id.id, () => query)
+
+      dhtA.stop(() => {
+        q.run([peerInfos[1].id], (err, res) => {
+          expect(err).to.not.exist()
+
+          // Should not visit any peers
+          expect(res.paths.length).to.eql(0)
+          expect(res.finalSet.size).to.eql(0)
+
+          done()
+        })
+      })
     })
   })
 
