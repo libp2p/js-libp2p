@@ -114,10 +114,9 @@ describe('circuit relay', () => {
         nodeWS2 = node
         cb()
       }),
-      // set up node with TCP and listening on relay1
+      // set up node with TCP
       (cb) => setupNode([
-        '/ip4/0.0.0.0/tcp/0',
-        `/p2p/${relayNode1.peerInfo.id.toB58String()}/p2p-circuit`
+        '/ip4/0.0.0.0/tcp/0'
       ], {
         config: {
           relay: {
@@ -128,10 +127,9 @@ describe('circuit relay', () => {
         nodeTCP1 = node
         cb()
       }),
-      // set up node with TCP and listening on relay2 over TCP transport
+      // set up node with TCP
       (cb) => setupNode([
-        '/ip4/0.0.0.0/tcp/0',
-        `/ip4/0.0.0.0/tcp/0/p2p/${relayNode2.peerInfo.id.toB58String()}/p2p-circuit`
+        '/ip4/0.0.0.0/tcp/0'
       ], {
         config: {
           relay: {
