@@ -1,3 +1,13 @@
+<a name="0.14.12"></a>
+## [0.14.12](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.11...v0.14.12) (2019-04-04)
+
+
+### Bug Fixes
+
+* stop running queries on shutdown ([#95](https://github.com/libp2p/js-libp2p-kad-dht/issues/95)) ([e137297](https://github.com/libp2p/js-libp2p-kad-dht/commit/e137297))
+
+
+
 <a name="0.14.11"></a>
 ## [0.14.11](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.10...v0.14.11) (2019-03-28)
 
