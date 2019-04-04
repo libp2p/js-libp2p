@@ -1,3 +1,14 @@
+<a name="0.42.7"></a>
+## [0.42.7](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.6...v0.42.7) (2019-04-04)
+
+
+### Bug Fixes
+
+* improve stopping logic ([#324](https://github.com/libp2p/js-libp2p-switch/issues/324)) ([5f9a4f6](https://github.com/libp2p/js-libp2p-switch/commit/5f9a4f6))
+* missing queue ([#323](https://github.com/libp2p/js-libp2p-switch/issues/323)) ([aeadc1b](https://github.com/libp2p/js-libp2p-switch/commit/aeadc1b))
+
+
+
 <a name="0.42.6"></a>
 ## [0.42.6](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.5...v0.42.6) (2019-04-03)
 
