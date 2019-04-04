@@ -95,7 +95,8 @@ class ConnectionFSM extends BaseConnection {
       UPGRADING: { // Attempting to upgrade the connection with muxers
         stop: 'CONNECTED', // If we cannot mux, stop upgrading
         done: 'MUXED',
-        error: 'ERRORED'
+        error: 'ERRORED',
+        disconnect: 'DISCONNECTING'
       },
       MUXED: {
         disconnect: 'DISCONNECTING'

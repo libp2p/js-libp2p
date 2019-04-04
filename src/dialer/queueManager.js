@@ -22,6 +22,7 @@ class DialQueueManager {
     this._queues = {}
     this.switch = _switch
     this._cleanInterval = retimer(this._clean.bind(this), QUARTER_HOUR)
+    this.start()
   }
 
   /**
@@ -67,12 +68,20 @@ class DialQueueManager {
   }
 
   /**
+   * Allows the `DialQueueManager` to execute dials
+   */
+  start () {
+    this.isRunning = true
+  }
+
+  /**
    * Iterates over all items in the DialerQueue
    * and executes there callback with an error.
    *
    * This causes the entire DialerQueue to be drained
    */
-  abort () {
+  stop () {
+    this.isRunning = false
     // Clear the general queue
     this._queue.clear()
     // Clear the cold call queue
@@ -140,6 +149,8 @@ class DialQueueManager {
    * Will execute up to `MAX_PARALLEL_DIALS` dials
    */
   run () {
+    if (!this.isRunning) return
+
     if (this._dialingQueues.size < this.switch.dialer.MAX_PARALLEL_DIALS) {
       let nextQueue = { done: true }
       // Check the queue first and fall back to the cold call queue

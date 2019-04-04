@@ -12,7 +12,8 @@ const {
 module.exports = function (_switch) {
   const dialQueueManager = new DialQueueManager(_switch)
 
-  _switch.state.on('STOPPING:enter', abort)
+  _switch.state.on('STARTED:enter', start)
+  _switch.state.on('STOPPING:enter', stop)
 
   /**
    * @param {DialRequest} dialRequest
@@ -35,13 +36,23 @@ module.exports = function (_switch) {
   }
 
   /**
+   * Starts the `DialQueueManager`
+   *
+   * @param {function} callback
+   */
+  function start (callback) {
+    dialQueueManager.start()
+    callback()
+  }
+
+  /**
    * Aborts all dials that are queued. This should
    * only be used when the Switch is being stopped
    *
    * @param {function} callback
    */
-  function abort (callback) {
-    dialQueueManager.abort()
+  function stop (callback) {
+    dialQueueManager.stop()
     callback()
   }
 
@@ -77,7 +88,6 @@ module.exports = function (_switch) {
   return {
     dial,
     dialFSM,
-    abort,
     clearBlacklist,
     BLACK_LIST_ATTEMPTS: isNaN(_switch._options.blackListAttempts) ? BLACK_LIST_ATTEMPTS : _switch._options.blackListAttempts,
     BLACK_LIST_TTL: isNaN(_switch._options.blacklistTTL) ? BLACK_LIST_TTL : _switch._options.blacklistTTL,

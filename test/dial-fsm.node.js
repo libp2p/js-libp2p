@@ -7,6 +7,7 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(require('chai-checkmark'))
 chai.use(dirtyChai)
+const sinon = require('sinon')
 const PeerBook = require('peer-book')
 const parallel = require('async/parallel')
 const WS = require('libp2p-websockets')
@@ -348,16 +349,24 @@ describe('dialFSM', () => {
 
     switchA.dialFSM(switchB._peerInfo, '/abort-queue/1.0.0', (err, connFSM) => {
       expect(err).to.not.exist()
-      connFSM._state.on('UPGRADING:enter', (cb) => {
-        expect(2).checks(done)
+      // 2 conn aborts, 1 close, and 1 stop
+      expect(4).checks(done)
+
+      connFSM.once('close', (err) => {
+        expect(err).to.not.exist().mark()
+      })
+
+      sinon.stub(connFSM, '_onUpgrading').callsFake(() => {
         switchA.dialFSM(switchB._peerInfo, '/abort-queue/1.0.0', (err) => {
-          expect(err).to.exist().mark()
+          expect(err.code).to.eql('DIAL_ABORTED').mark()
         })
         switchA.dialFSM(switchB._peerInfo, '/abort-queue/1.0.0', (err) => {
-          expect(err).to.exist().mark()
+          expect(err.code).to.eql('DIAL_ABORTED').mark()
         })
 
-        switchA.stop(cb)
+        switchA.stop((err) => {
+          expect(err).to.not.exist().mark()
+        })
       })
     })
   })
