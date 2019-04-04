@@ -8,6 +8,7 @@ const sinon = require('sinon')
 const signalling = require('libp2p-webrtc-star/src/sig-server')
 const parallel = require('async/parallel')
 const crypto = require('crypto')
+const { DISCOVERY_STRATEGIES } = require('../src')
 
 const createNode = require('./utils/create-node')
 const echo = require('./utils/echo')
@@ -416,6 +417,58 @@ describe('peer discovery', () => {
       })
       nodeC.dial(nodeB.peerInfo, (err) => {
         expect(err).to.not.exist()
+      })
+    })
+  })
+
+  describe('discovery strategies', () => {
+    describe('low', () => {
+      setup({
+        connectionManager: {
+          minPeers: 1
+        },
+        config: {
+          peerDiscovery: {
+            mdns: {
+              enabled: false
+            },
+            webRTCStar: {
+              enabled: false
+            },
+            bootstrap: {
+              enabled: true,
+              strategy: DISCOVERY_STRATEGIES.LOW,
+              list: []
+            }
+          },
+          dht: {
+            enabled: false
+          }
+        }
+      })
+
+      it('should only emit when the peer count is below the low watermark', (done) => {
+        let expectedPeers = [
+          nodeB.peerInfo
+        ]
+        let actualPeers = []
+        const bootstrap = nodeA._discovery[0]
+
+        nodeA.on('peer:discovery', (peerInfo) => {
+          actualPeers.push(peerInfo)
+
+          // Connect, which brings us to our low watermark
+          nodeA.dial(peerInfo, () => {
+            // This second emit should not trigger discovery
+            bootstrap.emit('peer', nodeC.peerInfo)
+
+            expect(expectedPeers).to.eql(actualPeers)
+            nodeA.removeAllListeners('peer:discovery')
+            done()
+          })
+        })
+
+        bootstrap.emit('peer', nodeB.peerInfo)
       })
     })
   })

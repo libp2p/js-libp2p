@@ -78,6 +78,9 @@ describe('configuration', () => {
 
     const expected = {
       peerInfo,
+      connectionManager: {
+        minPeers: 25
+      },
       modules: {
         transport: [ WS ],
         peerDiscovery: [ Bootstrap ],
@@ -180,6 +183,9 @@ describe('configuration', () => {
     }
     const expected = {
       peerInfo,
+      connectionManager: {
+        minPeers: 25
+      },
       modules: {
         transport: [WS],
         dht: DHT

@@ -25,6 +25,11 @@ const pubsub = require('./pubsub')
 const getPeerInfo = require('./get-peer-info')
 const validateConfig = require('./config').validate
 
+const DISCOVERY_STRATEGIES = {
+  ALL: 0, // All peers
+  LOW: 1 // When below the ConnectionManager watermark
+}
+
 const notStarted = (action, state) => {
   return errCode(
     new Error(`libp2p cannot ${action} when not started; state is ${state}`),
@@ -45,7 +50,7 @@ class Node extends EventEmitter {
     super()
     // validateConfig will ensure the config is correct,
     // and add default values where appropriate
-    _options = validateConfig(_options)
+    this._options = validateConfig(_options)
 
     this.datastore = _options.datastore
     this.peerInfo = _options.peerInfo
@@ -57,11 +62,11 @@ class Node extends EventEmitter {
     this._discovery = [] // Discovery service instances/references
 
     // create the switch, and listen for errors
-    this._switch = new Switch(this.peerInfo, this.peerBook, _options.switch)
+    this._switch = new Switch(this.peerInfo, this.peerBook, this._options.switch)
     this._switch.on('error', (...args) => this.emit('error', ...args))
 
     this.stats = this._switch.stats
-    this.connectionManager = new ConnectionManager(this, _options.connectionManager)
+    this.connectionManager = new ConnectionManager(this, this._options.connectionManager)
 
     // Attach stream multiplexers
     if (this._modules.streamMuxer) {
@@ -354,35 +359,7 @@ class Node extends EventEmitter {
 
         // all transports need to be setup before discover starts
         if (this._modules.peerDiscovery) {
-          each(this._modules.peerDiscovery, (D, _cb) => {
-            let config = {}
-
-            if (D.tag &&
-              this._config.peerDiscovery &&
-              this._config.peerDiscovery[D.tag]) {
-              config = this._config.peerDiscovery[D.tag]
-            }
-
-            // If not configured to be enabled/disabled then enable by default
-            const enabled = config.enabled == null ? true : config.enabled
-
-            // If enabled then start it
-            if (enabled) {
-              let d
-
-              if (typeof D === 'function') {
-                d = new D(Object.assign({}, config, { peerInfo: this.peerInfo }))
-              } else {
-                d = D
-              }
-
-              d.on('peer', (peerInfo) => this.emit('peer:discovery', peerInfo))
-              this._discovery.push(d)
-              d.start(_cb)
-            } else {
-              _cb()
-            }
-          }, cb)
+          this._setupPeerDiscovery(cb)
         } else {
           cb()
         }
@@ -468,6 +445,57 @@ class Node extends EventEmitter {
       this.state('done')
     })
   }
+
+  /**
+   * Initializes and starts peer discovery services
+   *
+   * @private
+   * @param {function(Error)} callback
+   */
+  _setupPeerDiscovery (callback) {
+    const minPeers = this._options.connectionManager.minPeers || 0
+    for (const DiscoveryService of this._modules.peerDiscovery) {
+      let config = {
+        enabled: true // on by default
+      }
+
+      if (DiscoveryService.tag &&
+        this._config.peerDiscovery &&
+        this._config.peerDiscovery[DiscoveryService.tag]) {
+        config = this._config.peerDiscovery[DiscoveryService.tag]
+      }
+
+      if (config.enabled) {
+        let discoveryService
+
+        if (typeof DiscoveryService === 'function') {
+          discoveryService = new DiscoveryService(Object.assign({}, config, { peerInfo: this.peerInfo }))
+        } else {
+          discoveryService = DiscoveryService
+        }
+
+        discoveryService.on('peer', (peerInfo) => {
+          switch (config.strategy) {
+            case DISCOVERY_STRATEGIES.LOW:
+              const peerConns = Object.keys(this._switch.connection.connections).length
+              if (peerConns < minPeers || peerConns === 0) {
+                this.emit('peer:discovery', peerInfo)
+              }
+              break
+            default:
+              this.emit('peer:discovery', peerInfo)
+          }
+        })
+
+        this._discovery.push(discoveryService)
+      }
+    }
+
+    each(this._discovery, (d, cb) => {
+      d.start(cb)
+    }, callback)
+  }
 }
 
 module.exports = Node
+module.exports.DISCOVERY_STRATEGIES = DISCOVERY_STRATEGIES

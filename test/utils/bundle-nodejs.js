@@ -62,6 +62,7 @@ class Node extends libp2p {
           },
           bootstrap: {
             interval: 10000,
+            strategy: libp2p.DISCOVERY_STRATEGIES.LOW,
             enabled: false,
             list: _options.bootstrapList
           }

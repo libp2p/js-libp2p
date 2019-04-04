@@ -15,7 +15,9 @@ const transport = s.union([
 
 const optionsSchema = s(
   {
-    connectionManager: 'object?',
+    connectionManager: s('object', {
+      minPeers: 25
+    }),
     datastore: 'object?',
     peerInfo: 'object',
     peerBook: 'object?',
