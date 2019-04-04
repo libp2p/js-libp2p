@@ -315,7 +315,7 @@ describe('peer discovery', () => {
         done()
       }
 
-      nodeA.on('peer:discovery', (peerInfo) => {s
+      nodeA.on('peer:discovery', (peerInfo) => {
         expectedPeers.delete(peerInfo.id.toB58String())
         if (expectedPeers.size === 0) {
           finish()
