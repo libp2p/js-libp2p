@@ -389,11 +389,23 @@ describe('peer discovery', () => {
       }
     })
 
-    it('find a peer through another dht node', function (done) {
-      nodeA.once('peer:discovery', (peerInfo) => {
-        expect(nodeC.peerInfo.id.toB58String())
-          .to.eql(peerInfo.id.toB58String())
+    it('find peers through the dht', function (done) {
+      let expectedPeers = new Set([
+        nodeB.peerInfo.id.toB58String(),
+        nodeC.peerInfo.id.toB58String()
+      ])
+
+      function finish () {
+        nodeA.removeAllListeners('peer:discovery')
+        expect(expectedPeers.size).to.eql(0)
         done()
+      }
+
+      nodeA.on('peer:discovery', (peerInfo) => {
+        expectedPeers.delete(peerInfo.id.toB58String())
+        if (expectedPeers.size === 0) {
+          finish()
+        }
       })
 
       // Topology:
