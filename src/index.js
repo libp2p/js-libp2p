@@ -243,10 +243,7 @@ class Node extends EventEmitter {
     this._getPeerInfo(peer, (err, peerInfo) => {
       if (err) { return callback(err) }
 
-      this._switch.dial(peerInfo, protocol, (err, conn) => {
-        if (err) { return callback(err) }
-        callback(null, conn)
-      })
+      this._switch.dial(peerInfo, protocol, callback)
     })
   }
 
@@ -272,9 +269,7 @@ class Node extends EventEmitter {
     this._getPeerInfo(peer, (err, peerInfo) => {
       if (err) { return callback(err) }
 
-      this._switch.dialFSM(peerInfo, protocol, (err, connFSM) => {
-        callback(err, connFSM)
-      })
+      this._switch.dialFSM(peerInfo, protocol, callback)
     })
   }
 
