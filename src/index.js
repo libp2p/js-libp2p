@@ -25,11 +25,6 @@ const pubsub = require('./pubsub')
 const getPeerInfo = require('./get-peer-info')
 const validateConfig = require('./config').validate
 
-const DISCOVERY_STRATEGIES = {
-  ALL: 0, // All peers
-  LOW: 1 // When below the ConnectionManager watermark
-}
-
 const notStarted = (action, state) => {
   return errCode(
     new Error(`libp2p cannot ${action} when not started; state is ${state}`),
@@ -467,6 +462,13 @@ class Node extends EventEmitter {
     this._maybeConnect(peerInfo)
   }
 
+  /**
+   * Will dial to the given `peerInfo` if the current number of
+   * connected peers is less than the configured `ConnectionManager`
+   * minPeers.
+   * @private
+   * @param {PeerInfo} peerInfo
+   */
   _maybeConnect (peerInfo) {
     // If auto dialing is on, check if we should dial
     if (this._config.peerDiscovery.autoDial === true && !peerInfo.isConnected()) {
