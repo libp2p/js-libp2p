@@ -52,12 +52,12 @@ class Node extends EventEmitter {
     // and add default values where appropriate
     this._options = validateConfig(_options)
 
-    this.datastore = _options.datastore
-    this.peerInfo = _options.peerInfo
-    this.peerBook = _options.peerBook || new PeerBook()
+    this.datastore = this._options.datastore
+    this.peerInfo = this._options.peerInfo
+    this.peerBook = this._options.peerBook || new PeerBook()
 
-    this._modules = _options.modules
-    this._config = _options.config
+    this._modules = this._options.modules
+    this._config = this._options.config
     this._transport = [] // Transport instances/references
     this._discovery = [] // Discovery service instances/references
 
@@ -357,17 +357,21 @@ class Node extends EventEmitter {
           this._switch.transport.add(ws.tag || ws.constructor.name, ws)
         }
 
-        // all transports need to be setup before discover starts
-        if (this._modules.peerDiscovery) {
-          this._setupPeerDiscovery(cb)
-        } else {
-          cb()
-        }
+        // detect which multiaddrs we don't have a transport for and remove them
+        const multiaddrs = this.peerInfo.multiaddrs.toArray()
+
+        multiaddrs.forEach((multiaddr) => {
+          if (!multiaddr.toString().match(/\/p2p-circuit($|\/)/) &&
+              !this._transport.find((transport) => transport.filter(multiaddr).length > 0)) {
+            this.peerInfo.multiaddrs.delete(multiaddr)
+          }
+        })
+        cb()
       },
       (cb) => {
         if (this._dht) {
           this._dht.start(() => {
-            this._dht.on('peer', (peerInfo) => this.emit('peer:discovery', peerInfo))
+            this._dht.on('peer', this._peerDiscovered.bind(this))
             cb()
           })
         } else {
@@ -380,17 +384,13 @@ class Node extends EventEmitter {
         }
         cb()
       },
+      // Peer Discovery
       (cb) => {
-        // detect which multiaddrs we don't have a transport for and remove them
-        const multiaddrs = this.peerInfo.multiaddrs.toArray()
-
-        multiaddrs.forEach((multiaddr) => {
-          if (!multiaddr.toString().match(/\/p2p-circuit($|\/)/) &&
-              !this._transport.find((transport) => transport.filter(multiaddr).length > 0)) {
-            this.peerInfo.multiaddrs.delete(multiaddr)
-          }
-        })
-        cb()
+        if (this._modules.peerDiscovery) {
+          this._setupPeerDiscovery(cb)
+        } else {
+          cb()
+        }
       }
     ], (err) => {
       if (err) {
@@ -447,13 +447,54 @@ class Node extends EventEmitter {
   }
 
   /**
+   * Handles discovered peers. If the peer is not known, it
+   * will be emitted to listeners. If auto dial is enabled for libp2p
+   * and the current connection count is under the low watermark, the
+   * peer will be dialed.
+   *
+   * @private
+   * @param {PeerInfo} peerInfo
+   */
+  _peerDiscovered (peerInfo) {
+    const havePeer = this.peerBook.has(peerInfo)
+    peerInfo = this.peerBook.put(peerInfo)
+
+    if (!this.isStarted()) return
+
+    if (!havePeer) {
+      this.emit('peer:discovery', peerInfo)
+    }
+    this._maybeConnect(peerInfo)
+  }
+
+  _maybeConnect (peerInfo) {
+    // If auto dialing is on, check if we should dial
+    if (this._config.peerDiscovery.autoDial === true && !peerInfo.isConnected()) {
+      const minPeers = this._options.connectionManager.minPeers || 0
+      if (minPeers > Object.keys(this._switch.connection.connections).length) {
+        log('connecting to discovered peer', peerInfo)
+        this.dial(peerInfo, (err) => {
+          log.error('could not connect to discovered peer', err)
+        })
+      }
+    }
+  }
+
+  /**
    * Initializes and starts peer discovery services
    *
    * @private
    * @param {function(Error)} callback
    */
   _setupPeerDiscovery (callback) {
-    const minPeers = this._options.connectionManager.minPeers || 0
+    // Once we start, emit and dial any peers we may have already discovered
+    this.state.on('STARTED', () => {
+      this.peerBook.getAllArray().forEach((peerInfo) => {
+        this.emit('peer:discovery', peerInfo)
+        this._maybeConnect(peerInfo)
+      })
+    })
+
     for (const DiscoveryService of this._modules.peerDiscovery) {
       let config = {
         enabled: true // on by default
@@ -474,19 +515,7 @@ class Node extends EventEmitter {
           discoveryService = DiscoveryService
         }
 
-        discoveryService.on('peer', (peerInfo) => {
-          switch (config.strategy) {
-            case DISCOVERY_STRATEGIES.LOW:
-              const peerConns = Object.keys(this._switch.connection.connections).length
-              if (peerConns < minPeers || peerConns === 0) {
-                this.emit('peer:discovery', peerInfo)
-              }
-              break
-            default:
-              this.emit('peer:discovery', peerInfo)
-          }
-        })
-
+        discoveryService.on('peer', this._peerDiscovered.bind(this))
         this._discovery.push(discoveryService)
       }
     }
@@ -498,4 +527,3 @@ class Node extends EventEmitter {
 }
 
 module.exports = Node
-module.exports.DISCOVERY_STRATEGIES = DISCOVERY_STRATEGIES

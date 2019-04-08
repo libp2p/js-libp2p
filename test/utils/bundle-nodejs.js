@@ -56,13 +56,13 @@ class Node extends libp2p {
       },
       config: {
         peerDiscovery: {
+          autoDial: true,
           mdns: {
             interval: 10000,
             enabled: false
           },
           bootstrap: {
             interval: 10000,
-            strategy: libp2p.DISCOVERY_STRATEGIES.LOW,
             enabled: false,
             list: _options.bootstrapList
           }

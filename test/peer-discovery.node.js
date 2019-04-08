@@ -3,12 +3,12 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const sinon = require('sinon')
 const signalling = require('libp2p-webrtc-star/src/sig-server')
 const parallel = require('async/parallel')
 const crypto = require('crypto')
-const { DISCOVERY_STRATEGIES } = require('../src')
 
 const createNode = require('./utils/create-node')
 const echo = require('./utils/echo')
@@ -37,6 +37,7 @@ describe('peer discovery', () => {
         ], options, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
+          sinon.spy(nodeA, 'emit')
           node.handle('/echo/1.0.0', echo)
           node.start(cb)
         }),
@@ -46,6 +47,7 @@ describe('peer discovery', () => {
         ], options, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node
+          sinon.spy(nodeB, 'emit')
           node.handle('/echo/1.0.0', echo)
           node.start(cb)
         }),
@@ -55,6 +57,7 @@ describe('peer discovery', () => {
         ], options, (err, node) => {
           expect(err).to.not.exist()
           nodeC = node
+          sinon.spy(nodeC, 'emit')
           node.handle('/echo/1.0.0', echo)
           node.start(cb)
         })
@@ -68,6 +71,10 @@ describe('peer discovery', () => {
         (cb) => nodeC.stop(cb),
         (cb) => ss.stop(cb)
       ], done)
+    })
+
+    afterEach(() => {
+      sinon.restore()
     })
   }
 
@@ -114,7 +121,7 @@ describe('peer discovery', () => {
       })
     })
 
-    it('should enable module by configutation', (done) => {
+    it('should enable module by configuration', (done) => {
       const mockDiscovery = {
         on: sinon.stub(),
         start: sinon.stub().callsArg(0),
@@ -149,7 +156,7 @@ describe('peer discovery', () => {
       })
     })
 
-    it('should disable module by configutation', (done) => {
+    it('should disable module by configuration', (done) => {
       const mockDiscovery = {
         on: sinon.stub(),
         start: sinon.stub().callsArg(0),
@@ -267,23 +274,14 @@ describe('peer discovery', () => {
       }
     })
 
-    it('find peers', function (done) {
-      let expectedPeers = new Set([
+    it('find peers', function () {
+      let expectedPeers = [
         nodeB.peerInfo.id.toB58String(),
         nodeC.peerInfo.id.toB58String()
-      ])
+      ]
 
-      function finish () {
-        nodeA.removeAllListeners('peer:discovery')
-        expect(expectedPeers.size).to.eql(0)
-        done()
-      }
-
-      nodeA.on('peer:discovery', (peerInfo) => {
-        expectedPeers.delete(peerInfo.id.toB58String())
-        if (expectedPeers.size === 0) {
-          finish()
-        }
+      expectedPeers.forEach((peer) => {
+        expect(nodeA.emit.calledWith('peer:discovery', nodeA.peerBook.get(peer))).to.eql(true)
       })
     })
   })
@@ -303,24 +301,14 @@ describe('peer discovery', () => {
       }
     })
 
-    it('find peers', function (done) {
-      this.timeout(20e3)
-      let expectedPeers = new Set([
+    it('find peers', function () {
+      let expectedPeers = [
         nodeB.peerInfo.id.toB58String(),
         nodeC.peerInfo.id.toB58String()
-      ])
+      ]
 
-      function finish () {
-        nodeA.removeAllListeners('peer:discovery')
-        expect(expectedPeers.size).to.eql(0)
-        done()
-      }
-
-      nodeA.on('peer:discovery', (peerInfo) => {
-        expectedPeers.delete(peerInfo.id.toB58String())
-        if (expectedPeers.size === 0) {
-          finish()
-        }
+      expectedPeers.forEach((peer) => {
+        expect(nodeA.emit.calledWith('peer:discovery', nodeA.peerBook.get(peer))).to.eql(true)
       })
     })
   })
@@ -345,23 +333,14 @@ describe('peer discovery', () => {
       }
     })
 
-    it('find peers', function (done) {
-      let expectedPeers = new Set([
+    it('find peers', function () {
+      let expectedPeers = [
         nodeB.peerInfo.id.toB58String(),
         nodeC.peerInfo.id.toB58String()
-      ])
+      ]
 
-      function finish () {
-        nodeA.removeAllListeners('peer:discovery')
-        expect(expectedPeers.size).to.eql(0)
-        done()
-      }
-
-      nodeA.on('peer:discovery', (peerInfo) => {
-        expectedPeers.delete(peerInfo.id.toB58String())
-        if (expectedPeers.size === 0) {
-          finish()
-        }
+      expectedPeers.forEach((peer) => {
+        expect(nodeA.emit.calledWith('peer:discovery', nodeA.peerBook.get(peer))).to.eql(true)
       })
     })
   })
@@ -391,85 +370,57 @@ describe('peer discovery', () => {
     })
 
     it('find peers through the dht', function (done) {
-      let expectedPeers = new Set([
-        nodeB.peerInfo.id.toB58String(),
-        nodeC.peerInfo.id.toB58String()
-      ])
-
-      function finish () {
-        nodeA.removeAllListeners('peer:discovery')
-        expect(expectedPeers.size).to.eql(0)
-        done()
-      }
-
+      expect(3).checks(done)
       nodeA.on('peer:discovery', (peerInfo) => {
-        expectedPeers.delete(peerInfo.id.toB58String())
-        if (expectedPeers.size === 0) {
-          finish()
-        }
+        expect(peerInfo).to.eql(nodeC.peerInfo)
+        nodeA.removeAllListeners('peer:discovery')
       })
 
       // Topology:
       // A -> B
-      // C -> B
-      nodeA.dial(nodeB.peerInfo, (err) => {
+      // B -> C
+      nodeB.dial(nodeC.peerInfo, (err) => {
         expect(err).to.not.exist()
       })
-      nodeC.dial(nodeB.peerInfo, (err) => {
+      nodeA.dial(nodeB.peerInfo, (err) => {
         expect(err).to.not.exist()
       })
     })
   })
 
-  describe('discovery strategies', () => {
-    describe('low', () => {
-      setup({
-        connectionManager: {
-          minPeers: 1
-        },
-        config: {
-          peerDiscovery: {
-            mdns: {
-              enabled: false
-            },
-            webRTCStar: {
-              enabled: false
-            },
-            bootstrap: {
-              enabled: true,
-              strategy: DISCOVERY_STRATEGIES.LOW,
-              list: []
-            }
-          },
-          dht: {
+  describe('auto dial', () => {
+    setup({
+      connectionManager: {
+        minPeers: 1
+      },
+      config: {
+        peerDiscovery: {
+          autoDial: true,
+          mdns: {
             enabled: false
+          },
+          webRTCStar: {
+            enabled: false
+          },
+          bootstrap: {
+            enabled: true,
+            list: []
           }
+        },
+        dht: {
+          enabled: false
         }
-      })
+      }
+    })
 
-      it('should only emit when the peer count is below the low watermark', (done) => {
-        let expectedPeers = [
-          nodeB.peerInfo
-        ]
-        let actualPeers = []
-        const bootstrap = nodeA._discovery[0]
+    it('should only dial when the peer count is below the low watermark', () => {
+      const bootstrap = nodeA._discovery[0]
 
-        nodeA.on('peer:discovery', (peerInfo) => {
-          actualPeers.push(peerInfo)
+      sinon.spy(nodeA, 'dial')
+      bootstrap.emit('peer', nodeB.peerInfo)
+      bootstrap.emit('peer', nodeC.peerInfo)
 
-          // Connect, which brings us to our low watermark
-          nodeA.dial(peerInfo, () => {
-            // This second emit should not trigger discovery
-            bootstrap.emit('peer', nodeC.peerInfo)
-
-            expect(expectedPeers).to.eql(actualPeers)
-            nodeA.removeAllListeners('peer:discovery')
-            done()
-          })
-        })
-
-        bootstrap.emit('peer', nodeB.peerInfo)
-      })
+      expect(nodeA.dial.callCount).to.eql(1)
     })
   })
 })
