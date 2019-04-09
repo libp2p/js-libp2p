@@ -453,16 +453,19 @@ describe('peer discovery', () => {
       }
     })
 
-    it('should only dial when the peer count is below the low watermark', () => {
+    it('should only dial when the peer count is below the low watermark', (done) => {
       const bootstrap = nodeA._discovery[0]
-      sinon.spy(nodeA, 'dial')
+      sinon.stub(nodeA._switch.dialer, 'connect').callsFake((peerInfo) => {
+        nodeA._switch.connection.connections[peerInfo.id.toB58String()] = []
+      })
 
       bootstrap.emit('peer', nodeB.peerInfo)
       bootstrap.emit('peer', nodeC.peerInfo)
 
       // Only nodeB should get dialed
-      expect(nodeA.dial.callCount).to.eql(1)
-      expect(nodeA.dial.getCall(0).args[0]).to.eql(nodeB.peerInfo)
+      expect(nodeA._switch.dialer.connect.callCount).to.eql(1)
+      expect(nodeA._switch.dialer.connect.getCall(0).args[0]).to.eql(nodeB.peerInfo)
+      done()
     })
   })
 })

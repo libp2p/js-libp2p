@@ -477,7 +477,7 @@ class Node extends EventEmitter {
       const minPeers = this._options.connectionManager.minPeers || 0
       if (minPeers > Object.keys(this._switch.connection.connections).length) {
         log('connecting to discovered peer', peerInfo)
-        this.dial(peerInfo, (err) => {
+        this._switch.dialer.connect(peerInfo, (err) => {
           log.error('could not connect to discovered peer', err)
         })
       }

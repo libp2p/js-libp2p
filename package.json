@@ -45,7 +45,7 @@
     "libp2p-connection-manager": "~0.0.2",
     "libp2p-floodsub": "~0.15.8",
     "libp2p-ping": "~0.8.5",
-    "libp2p-switch": "~0.42.7",
+    "libp2p-switch": "github:libp2p/js-libp2p-switch#feat/priority-queue",
     "libp2p-websockets": "~0.12.2",
     "mafmt": "^6.0.7",
     "multiaddr": "^6.0.6",
