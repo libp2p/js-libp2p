@@ -159,6 +159,7 @@ class Node extends libp2p {
       // libp2p config options (typically found on a config.json)
       config: {                       // The config object is the part of the config that can go into a file, config.json.
         peerDiscovery: {
+          autoDial: true,             // Auto connect to discovered peers (limited by ConnectionManager minPeers)
           mdns: {                     // mdns options
             interval: 1000,           // ms
             enabled: true
@@ -303,6 +304,9 @@ Required keys in the `options` object:
 ##### `libp2p.on('peer:discovery', (peer) => {})`
 
 > Peer has been discovered.
+
+If `autoDial` is not set to false, applications should **not** attempt to connect to the peer
+unless they are performing a specific action. See [peer discovery and auto dial](./PEER_DISCOVERY.md) for more information.
 
 - `peer`: instance of [PeerInfo][]
 
@@ -506,18 +510,6 @@ Some available network protectors:
 
 # run just Browser tests (Chrome)
 > npm run test:browser
-```
-
-#### Run interop tests
-
-```sh
-N/A
-```
-
-#### Run benchmark tests
-
-```sh
-N/A
 ```
 
 ### Packages

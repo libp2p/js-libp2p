@@ -442,23 +442,25 @@ class Node extends EventEmitter {
   }
 
   /**
-   * Handles discovered peers. If the peer is not known, it
-   * will be emitted to listeners. If auto dial is enabled for libp2p
+   * Handles discovered peers. Each discovered peer will be emitted via
+   * the `peer:discovery` event. If auto dial is enabled for libp2p
    * and the current connection count is under the low watermark, the
    * peer will be dialed.
+   *
+   * TODO: If `peerBook.put` becomes centralized, https://github.com/libp2p/js-libp2p/issues/345,
+   * it would be ideal if only new peers were emitted. Currently, with
+   * other modules adding peers to the `PeerBook` we have no way of knowing
+   * if a peer is new or not, so it has to be emitted.
    *
    * @private
    * @param {PeerInfo} peerInfo
    */
   _peerDiscovered (peerInfo) {
-    const havePeer = this.peerBook.has(peerInfo)
     peerInfo = this.peerBook.put(peerInfo)
 
     if (!this.isStarted()) return
 
-    if (!havePeer) {
-      this.emit('peer:discovery', peerInfo)
-    }
+    this.emit('peer:discovery', peerInfo)
     this._maybeConnect(peerInfo)
   }
 
