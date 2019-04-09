@@ -138,6 +138,7 @@ describe('configuration', () => {
       },
       config: {
         peerDiscovery: {
+          autoDial: true,
           bootstrap: {
             interval: 1000,
             enabled: true

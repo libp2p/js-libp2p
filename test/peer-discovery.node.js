@@ -78,6 +78,7 @@ describe('peer discovery', () => {
     it('should enable by default a module passed as an object', (done) => {
       const mockDiscovery = {
         on: sinon.stub(),
+        removeListener: sinon.stub(),
         start: sinon.stub().callsArg(0),
         stop: sinon.stub().callsArg(0)
       }
@@ -98,6 +99,7 @@ describe('peer discovery', () => {
     it('should enable by default a module passed as a function', (done) => {
       const mockDiscovery = {
         on: sinon.stub(),
+        removeListener: sinon.stub(),
         start: sinon.stub().callsArg(0),
         stop: sinon.stub().callsArg(0)
       }
@@ -120,6 +122,7 @@ describe('peer discovery', () => {
     it('should enable module by configutation', (done) => {
       const mockDiscovery = {
         on: sinon.stub(),
+        removeListener: sinon.stub(),
         start: sinon.stub().callsArg(0),
         stop: sinon.stub().callsArg(0),
         tag: 'mockDiscovery'
@@ -155,6 +158,7 @@ describe('peer discovery', () => {
     it('should disable module by configutation', (done) => {
       const mockDiscovery = {
         on: sinon.stub(),
+        removeListener: sinon.stub(),
         start: sinon.stub().callsArg(0),
         stop: sinon.stub().callsArg(0),
         tag: 'mockDiscovery'
@@ -190,6 +194,7 @@ describe('peer discovery', () => {
     it('should register module passed as function', (done) => {
       const mockDiscovery = {
         on: sinon.stub(),
+        removeListener: sinon.stub(),
         start: sinon.stub().callsArg(0),
         stop: sinon.stub().callsArg(0)
       }
@@ -227,6 +232,7 @@ describe('peer discovery', () => {
     it('should register module passed as object', (done) => {
       const mockDiscovery = {
         on: sinon.stub(),
+        removeListener: sinon.stub(),
         start: sinon.stub().callsArg(0),
         stop: sinon.stub().callsArg(0),
         tag: 'mockDiscovery'

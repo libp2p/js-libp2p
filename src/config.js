@@ -108,5 +108,9 @@ module.exports.validate = (opts) => {
     }
   }
 
+  if (options.config.peerDiscovery.autoDial === undefined) {
+    options.config.peerDiscovery.autoDial = true
+  }
+
   return options
 }

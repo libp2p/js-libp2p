@@ -165,6 +165,16 @@ class Node extends EventEmitter {
       log.error(err)
       this.emit('error', err)
     })
+
+    // Once we start, emit and dial any peers we may have already discovered
+    this.state.on('STARTED', () => {
+      this.peerBook.getAllArray().forEach((peerInfo) => {
+        this.emit('peer:discovery', peerInfo)
+        this._maybeConnect(peerInfo)
+      })
+    })
+
+    this._peerDiscovered = this._peerDiscovered.bind(this)
   }
 
   /**
@@ -366,7 +376,7 @@ class Node extends EventEmitter {
       (cb) => {
         if (this._dht) {
           this._dht.start(() => {
-            this._dht.on('peer', this._peerDiscovered.bind(this))
+            this._dht.on('peer', this._peerDiscovered)
             cb()
           })
         } else {
@@ -400,16 +410,14 @@ class Node extends EventEmitter {
   _onStopping () {
     series([
       (cb) => {
-        if (this._modules.peerDiscovery) {
-          // stop all discoveries before continuing with shutdown
-          return parallel(
-            this._discovery.map((d) => {
-              return (_cb) => d.stop(() => { _cb() })
-            }),
-            cb
-          )
-        }
-        cb()
+        // stop all discoveries before continuing with shutdown
+        parallel(
+          this._discovery.map((d) => {
+            d.removeListener('peer', this._peerDiscovered)
+            return (_cb) => d.stop(() => { _cb() })
+          }),
+          cb
+        )
       },
       (cb) => {
         if (this._floodSub) {
@@ -419,6 +427,7 @@ class Node extends EventEmitter {
       },
       (cb) => {
         if (this._dht) {
+          this._dht.removeListener('peer', this._peerDiscovered)
           return this._dht.stop(cb)
         }
         cb()
@@ -476,7 +485,7 @@ class Node extends EventEmitter {
     if (this._config.peerDiscovery.autoDial === true && !peerInfo.isConnected()) {
       const minPeers = this._options.connectionManager.minPeers || 0
       if (minPeers > Object.keys(this._switch.connection.connections).length) {
-        log('connecting to discovered peer', peerInfo)
+        log('connecting to discovered peer')
         this._switch.dialer.connect(peerInfo, (err) => {
           log.error('could not connect to discovered peer', err)
         })
@@ -491,14 +500,6 @@ class Node extends EventEmitter {
    * @param {function(Error)} callback
    */
   _setupPeerDiscovery (callback) {
-    // Once we start, emit and dial any peers we may have already discovered
-    this.state.on('STARTED', () => {
-      this.peerBook.getAllArray().forEach((peerInfo) => {
-        this.emit('peer:discovery', peerInfo)
-        this._maybeConnect(peerInfo)
-      })
-    })
-
     for (const DiscoveryService of this._modules.peerDiscovery) {
       let config = {
         enabled: true // on by default
@@ -507,7 +508,7 @@ class Node extends EventEmitter {
       if (DiscoveryService.tag &&
         this._config.peerDiscovery &&
         this._config.peerDiscovery[DiscoveryService.tag]) {
-        config = this._config.peerDiscovery[DiscoveryService.tag]
+        config = { ...config, ...this._config.peerDiscovery[DiscoveryService.tag] }
       }
 
       if (config.enabled) {
@@ -519,7 +520,7 @@ class Node extends EventEmitter {
           discoveryService = DiscoveryService
         }
 
-        discoveryService.on('peer', this._peerDiscovered.bind(this))
+        discoveryService.on('peer', this._peerDiscovered)
         this._discovery.push(discoveryService)
       }
     }

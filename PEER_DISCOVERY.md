@@ -7,9 +7,7 @@
   * Applications who have not disabled this should **never** connect on peer discovery, unless performing a specific action.
 
 ## Scenarios
-In any scenario, if a peer is discovered it should be added to the PeerBook. This ensures that
-even if we don't dial to a node when we discover it, we know about it in the event that it
-becomes known as a provider for something we need.
+In any scenario, if a peer is discovered it should be added to the PeerBook. This ensures that even if we don't dial to a node when we discover it, we know about it in the event that it becomes known as a provider for something we need. The scenarios listed below detail what actions the auto dialer will take when peers are discovered.
 
 ### 1. Joining the network
 The node is new and needs to join the network. It currently has 0 peers.
@@ -40,6 +38,9 @@ The node has more connections than it wants. The current number of connections i
 
 [WIP Connection Manager v2 spec](https://github.com/libp2p/specs/pull/161)
 **Discovery Mechanisms**: [Ambient Discovery](#ambient-discovery) and [Active Discovery](#active-discovery)
+
+### Action to take
+None, the `ConnectionManager` will automatically prune connections.
 
 ## Discovery Mechanisms
 Means of which a libp2p node discovers other peers.
