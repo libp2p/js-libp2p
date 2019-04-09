@@ -59,7 +59,6 @@ describe('configuration', () => {
   })
 
   it('should add defaults to config', () => {
-
     const options = {
       peerInfo,
       modules: {
