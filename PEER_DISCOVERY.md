@@ -4,7 +4,7 @@
 * All peers discovered are emitted via `peer:discovery` so applications can take any desired action.
 * Libp2p defaults to automatically connecting to new peers, when under the [ConnectionManager](https://github.com/libp2p/js-libp2p-connection-manager) low watermark (minimum peers).
   * Applications can disable this via the `peerDiscovery.autoDial` config property, and handle connections themselves.
-  * Applications who have not disabled this should **never** connect on peer discovery, unless performing a specific action.
+  * Applications who have not disabled this should **never** connect on peer discovery. Applications should use the `peer:connect` event if they wish to take a specific action on new peers.
 
 ## Scenarios
 In any scenario, if a peer is discovered it should be added to the PeerBook. This ensures that even if we don't dial to a node when we discover it, we know about it in the event that it becomes known as a provider for something we need. The scenarios listed below detail what actions the auto dialer will take when peers are discovered.
