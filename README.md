@@ -4,6 +4,7 @@ libp2p-switch JavaScript implementation
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
+[![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
 [![Travis CI](https://flat.badgen.net/travis/libp2p/js-libp2p-switch)](https://travis-ci.com/libp2p/js-libp2p-switch)
 [![codecov](https://codecov.io/gh/libp2p/js-libp2p-switch/branch/master/graph/badge.svg)](https://codecov.io/gh/libp2p/js-libp2p-switch)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-switch.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-switch)
