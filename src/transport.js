@@ -203,23 +203,61 @@ class TransportManager {
     if (!transport || !transport.filter) return []
 
     const transportAddrs = transport.filter(multiaddrs)
-    if (!peerInfo) {
+    if (!peerInfo || !transportAddrs.length) {
       return transportAddrs
     }
 
-    const ourAddrs = peerInfo.multiaddrs.toArray()
-    return transportAddrs.filter((addr) => {
+    const ourAddrs = ourAddresses(peerInfo)
+
+    const result = transportAddrs.filter(transportAddr => {
       // If our address is in the destination address, filter it out
-      return !ourAddrs.find((pAddr) => {
-        try {
-          addr.decapsulate(pAddr)
-        } catch (err) {
-          return false
-        }
-        return true
-      })
+      return !ourAddrs.some(a => getDestination(transportAddr).startsWith(a))
     })
+
+    return result
   }
+}
+
+/**
+ * Expand addresses in peer info into array of addresses with and without peer
+ * ID suffix.
+ *
+ * @param {PeerInfo} peerInfo Our peer info object
+ * @returns {String[]}
+ */
+function ourAddresses (peerInfo) {
+  const ourPeerId = peerInfo.id.toB58String()
+  return peerInfo.multiaddrs.toArray()
+    .reduce((ourAddrs, addr) => {
+      const peerId = addr.getPeerId()
+      addr = addr.toString()
+      const otherAddr = peerId
+        ? addr.slice(0, addr.lastIndexOf(`/ipfs/${peerId}`))
+        : `${addr}/ipfs/${ourPeerId}`
+      return ourAddrs.concat([addr, otherAddr])
+    }, [])
+    .concat(`/ipfs/${ourPeerId}`)
+}
+
+const RelayProtos = [
+  'p2p-circuit',
+  'p2p-websocket-star',
+  'p2p-webrtc-star',
+  'p2p-stardust'
+]
+
+/**
+ * Get the destination address of a (possibly relay) multiaddr as a string
+ *
+ * @param {Multiaddr} addr
+ * @returns {String}
+ */
+function getDestination (addr) {
+  const protos = addr.protoNames().reverse()
+  const splitProto = protos.find(p => RelayProtos.includes(p))
+  addr = addr.toString()
+  if (!splitProto) return addr
+  return addr.slice(addr.lastIndexOf(splitProto) + splitProto.length)
 }
 
 module.exports = TransportManager
