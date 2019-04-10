@@ -269,8 +269,6 @@ class ConnectionFSM extends BaseConnection {
   _onDisconnecting () {
     this.log('disconnecting from %s', this.theirB58Id, Boolean(this.muxer))
 
-    this.switch.connection.remove(this)
-
     delete this.switch.conns[this.theirB58Id]
 
     let tasks = []

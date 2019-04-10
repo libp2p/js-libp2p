@@ -80,6 +80,7 @@ class BaseConnection extends EventEmitter {
    * @returns {void}
    */
   _onDisconnected () {
+    this.switch.connection.remove(this)
     this.log('disconnected from %s', this.theirB58Id)
     this.emit('close')
     this.removeAllListeners()

@@ -6,7 +6,9 @@ const {
   BLACK_LIST_ATTEMPTS,
   BLACK_LIST_TTL,
   MAX_COLD_CALLS,
-  MAX_PARALLEL_DIALS
+  MAX_PARALLEL_DIALS,
+  PRIORITY_HIGH,
+  PRIORITY_LOW
 } = require('../constants')
 
 module.exports = function (_switch) {
@@ -19,7 +21,7 @@ module.exports = function (_switch) {
    * @param {DialRequest} dialRequest
    * @returns {void}
    */
-  function _dial ({ peerInfo, protocol, useFSM, callback }) {
+  function _dial ({ peerInfo, protocol, options, callback }) {
     if (typeof protocol === 'function') {
       callback = protocol
       protocol = null
@@ -32,7 +34,7 @@ module.exports = function (_switch) {
     }
 
     // Add it to the queue, it will automatically get executed
-    dialQueueManager.add({ peerInfo, protocol, useFSM, callback })
+    dialQueueManager.add({ peerInfo, protocol, options, callback })
   }
 
   /**
@@ -65,13 +67,32 @@ module.exports = function (_switch) {
   }
 
   /**
+   * Attempts to establish a connection to the given `peerInfo` at
+   * a lower priority than a standard dial.
+   * @param {PeerInfo} peerInfo
+   * @param {object} options
+   * @param {boolean} options.useFSM Whether or not to return a `ConnectionFSM`. Defaults to false.
+   * @param {number} options.priority Lowest priority goes first. Defaults to 20.
+   * @param {function(Error, Connection)} callback
+   */
+  function connect (peerInfo, options, callback) {
+    if (typeof options === 'function') {
+      callback = options
+      options = null
+    }
+    options = { useFSM: false, priority: PRIORITY_LOW, ...options }
+    _dial({ peerInfo, protocol: null, options, callback })
+  }
+
+  /**
    * Adds the dial request to the queue for the given `peerInfo`
+   * The request will be added with a high priority (10).
    * @param {PeerInfo} peerInfo
    * @param {string} protocol
    * @param {function(Error, Connection)} callback
    */
   function dial (peerInfo, protocol, callback) {
-    _dial({ peerInfo, protocol, useFSM: false, callback })
+    _dial({ peerInfo, protocol, options: { useFSM: false, priority: PRIORITY_HIGH }, callback })
   }
 
   /**
@@ -82,10 +103,11 @@ module.exports = function (_switch) {
    * @param {function(Error, ConnectionFSM)} callback
    */
   function dialFSM (peerInfo, protocol, callback) {
-    _dial({ peerInfo, protocol, useFSM: true, callback })
+    _dial({ peerInfo, protocol, options: { useFSM: true, priority: PRIORITY_HIGH }, callback })
   }
 
   return {
+    connect,
     dial,
     dialFSM,
     clearBlacklist,

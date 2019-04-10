@@ -153,6 +153,16 @@ works like dial, but calls back with a [Connection State Machine](#connection-st
 Connection state machines emit a number of events that can be used to determine the current state of the connection
 and to received the underlying connection that can be used to transfer data.
 
+### `switch.dialer.connect(peer, options, callback)`
+
+a low priority dial to the provided peer. Calls to `dial` and `dialFSM` will take priority. This should be used when an application only wishes to establish connections to new peers, such as during peer discovery when there is a low peer count. Currently, anything greater than the HIGH_PRIORITY (10) will be placed into the cold call queue, and anything less than or equal to the HIGH_PRIORITY will be added to the normal queue.
+
+- `peer`: can be an instance of [PeerInfo][], [PeerId][] or [multiaddr][]
+- `options`: Optional
+- `options.priority`: Number of the priority of the dial, defaults to 20.
+- `options.useFSM`: Boolean of whether or not to callback with a [Connection State Machine](#connection-state-machine)
+- `callback`: Function with signature `function (err, connFSM) {}` where `connFSM` is a [Connection State Machine](#connection-state-machine)
+
 ##### Events
 - `error`:  emitted whenever a fatal error occurs with the connection; the error will be emitted.
 - `error:upgrade_failed`: emitted whenever the connection fails to upgrade with a muxer, this is not fatal.
@@ -187,7 +197,17 @@ Emitted when the switch encounters an error.
 
 ### `switch.on('peer-mux-closed', (peer) => {})`
 
-- `peer`: is instance of [PeerInfo][] that has info of the peer we have just closed a muxed connection.
+- `peer`: is instance of [PeerInfo][] that has info of the peer we have just closed a muxed connection with.
+
+### `switch.on('connection:start', (peer) => {})`
+This will be triggered anytime a new connection is created.
+
+- `peer`: is instance of [PeerInfo][] that has info of the peer we have just started a connection with.
+
+### `switch.on('connection:end', (peer) => {})`
+This will be triggered anytime an existing connection, regardless of state, is removed from the switch's internal connection tracking.
+
+- `peer`: is instance of [PeerInfo][] that has info of the peer we have just closed a connection with.
 
 ### `switch.on('start', () => {})`
 

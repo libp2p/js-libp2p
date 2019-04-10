@@ -13,7 +13,9 @@ log.error = debug('libp2p:switch:dial:error')
  * @typedef {Object} DialRequest
  * @property {PeerInfo} peerInfo - The peer to dial to
  * @property {string} [protocol] - The protocol to create a stream for
- * @property {boolean} useFSM - If `callback` should return a ConnectionFSM
+ * @property {object} options
+ * @property {boolean} options.useFSM - If `callback` should return a ConnectionFSM
+ * @property {number} options.priority - The priority of the dial
  * @property {function(Error, Connection|ConnectionFSM)} callback
  */
 
