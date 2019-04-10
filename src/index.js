@@ -414,7 +414,10 @@ class Node extends EventEmitter {
         parallel(
           this._discovery.map((d) => {
             d.removeListener('peer', this._peerDiscovered)
-            return (_cb) => d.stop(() => { _cb() })
+            return (_cb) => d.stop((err) => {
+              log.error('an error occurred stopping the discovery service', err)
+              _cb()
+            })
           }),
           cb
         )
@@ -487,7 +490,7 @@ class Node extends EventEmitter {
       if (minPeers > Object.keys(this._switch.connection.connections).length) {
         log('connecting to discovered peer')
         this._switch.dialer.connect(peerInfo, (err) => {
-          log.error('could not connect to discovered peer', err)
+          err && log.error('could not connect to discovered peer', err)
         })
       }
     }
