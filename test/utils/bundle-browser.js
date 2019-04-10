@@ -61,7 +61,7 @@ class Node extends libp2p {
       },
       config: {
         peerDiscovery: {
-          autoDial: true,
+          autoDial: false,
           webRTCStar: {
             enabled: true
           },
