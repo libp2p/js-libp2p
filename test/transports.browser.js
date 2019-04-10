@@ -4,6 +4,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
@@ -422,16 +423,10 @@ describe('transports', () => {
 
     it('create a third node and check that discovery works', function (done) {
       this.timeout(10 * 1000)
-
-      let counter = 0
-
-      function check () {
-        if (++counter === 3) {
-          expect(node1._switch.connection.getAll()).to.have.length(1)
-          expect(node2._switch.connection.getAll()).to.have.length(1)
-          done()
-        }
-      }
+      const expectedPeers = [
+        node1.peerInfo.id.toB58String(),
+        node2.peerInfo.id.toB58String()
+      ]
 
       PeerId.create((err, id3) => {
         expect(err).to.not.exist()
@@ -440,13 +435,18 @@ describe('transports', () => {
         const ma3 = '/ip4/127.0.0.1/tcp/14444/ws/p2p-websocket-star/p2p/' + id3.toB58String()
         peer3.multiaddrs.add(ma3)
 
-        node1.on('peer:discovery', (peerInfo) => node1.dial(peerInfo, check))
-        node2.on('peer:discovery', (peerInfo) => node2.dial(peerInfo, check))
+        // 2 connects and 1 start
+        expect(3).checks(done)
 
         const node3 = new Node({
           peerInfo: peer3
         })
-        node3.start(check)
+        node3.on('peer:connect', (peerInfo) => {
+          expect(expectedPeers).to.include(peerInfo.id.toB58String()).mark()
+        })
+        node3.start((err) => {
+          expect(err).to.not.exist().mark()
+        })
       })
     })
   })
