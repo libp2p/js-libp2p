@@ -313,13 +313,25 @@ unless they are performing a specific action. See [peer discovery and auto dial]
 
 ##### `libp2p.on('peer:connect', (peer) => {})`
 
-> We connected to a new peer
+> We have a new muxed connection to a peer
 
 - `peer`: instance of [PeerInfo][]
 
 ##### `libp2p.on('peer:disconnect', (peer) => {})`
 
-> We disconnected from Peer
+> We have closed a connection to a peer
+
+- `peer`: instance of [PeerInfo][]
+
+##### `libp2p.on('connection:start', (peer) => {})`
+
+> We created a new connection to a peer
+
+- `peer`: instance of [PeerInfo][]
+
+##### `libp2p.on('connection:end', (peer) => {})`
+
+> We closed a connection to a peer
 
 - `peer`: instance of [PeerInfo][]
 
