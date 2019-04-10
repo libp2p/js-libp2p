@@ -79,7 +79,7 @@ const after = (done) => {
 }
 
 module.exports = {
-  bundlesize: { maxSize: '217kB' },
+  bundlesize: { maxSize: '218kB' },
   hooks: {
     pre: before,
     post: after
