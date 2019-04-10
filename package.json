@@ -1,6 +1,6 @@
 {
   "name": "libp2p-switch",
-  "version": "0.42.7",
+  "version": "0.42.8",
   "description": "libp2p switch implementation in JavaScript",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -105,6 +105,7 @@
     "Pius Nyakoojo <piusnyakoojo@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
     "Sid Harder <sideharder@gmail.com>",
+    "Vasco Santos <vasco.santos@ua.pt>",
     "greenkeeper[bot] <greenkeeper[bot]@users.noreply.github.com>",
     "harrshasri <35241544+harrshasri@users.noreply.github.com>",
     "kumavis <kumavis@users.noreply.github.com>",
