@@ -1,3 +1,18 @@
+<a name="0.42.8"></a>
+## [0.42.8](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.7...v0.42.8) (2019-04-10)
+
+
+### Bug Fixes
+
+* dial self ([#329](https://github.com/libp2p/js-libp2p-switch/issues/329)) ([4862c48](https://github.com/libp2p/js-libp2p-switch/commit/4862c48))
+
+
+### Features
+
+* support a priority queue for dials ([#325](https://github.com/libp2p/js-libp2p-switch/issues/325)) ([0357bf2](https://github.com/libp2p/js-libp2p-switch/commit/0357bf2))
+
+
+
 <a name="0.42.7"></a>
 ## [0.42.7](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.6...v0.42.7) (2019-04-04)
 
