@@ -413,14 +413,10 @@ describe('transports', () => {
     it('node1 hangUp node2', (done) => {
       node1.hangUp(peer2, (err) => {
         expect(err).to.not.exist()
-        setTimeout(check, 500)
-
-        function check () {
-          const peers = node1.peerBook.getAll()
-          expect(Object.keys(peers)).to.have.length(1)
-          expect(node1._switch.connection.getAll()).to.have.length(0)
-          done()
-        }
+        const peers = node1.peerBook.getAll()
+        expect(Object.keys(peers)).to.have.length(1)
+        expect(node1._switch.connection.getAll()).to.have.length(0)
+        done()
       })
     })
 
