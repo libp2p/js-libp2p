@@ -4,6 +4,7 @@ js-libp2p-pubsub
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://libp2p.io/)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
+[![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
 [![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-pubsub/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-pubsub?branch=master)
 [![Travis CI](https://travis-ci.org/libp2p/js-libp2p-pubsub.svg?branch=master)](https://travis-ci.org/libp2p/js-libp2p-pubsub)
 [![Circle CI](https://circleci.com/gh/libp2p/js-libp2p-pubsub.svg?style=svg)](https://circleci.com/gh/libp2p/js-libp2p-pubsub)
