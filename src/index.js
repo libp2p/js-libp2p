@@ -85,6 +85,14 @@ class Node extends EventEmitter {
       })
     }
 
+    // Events for anytime connections are created/removed
+    this._switch.on('connection:start', (peerInfo) => {
+      this.emit('connection:start', peerInfo)
+    })
+    this._switch.on('connection:end', (peerInfo) => {
+      this.emit('connection:end', peerInfo)
+    })
+
     // Attach crypto channels
     if (this._modules.connEncryption) {
       let cryptos = this._modules.connEncryption
