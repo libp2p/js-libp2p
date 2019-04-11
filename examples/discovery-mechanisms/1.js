@@ -34,8 +34,9 @@ class MyBundle extends libp2p {
       },
       config: {
         peerDiscovery: {
+          autoDial: true,
           bootstrap: {
-            interval: 2000,
+            interval: 20e3,
             enabled: true,
             list: bootstrapers
           }
@@ -62,8 +63,8 @@ waterfall([
   if (err) { throw err }
 
   node.on('peer:discovery', (peer) => {
+    // No need to dial, autoDial is on
     console.log('Discovered:', peer.id.toB58String())
-    node.dial(peer, () => {})
   })
 
   node.on('peer:connect', (peer) => {
