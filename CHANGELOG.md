@@ -1,3 +1,19 @@
+<a name="0.25.0-rc.6"></a>
+# [0.25.0-rc.6](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.5...v0.25.0-rc.6) (2019-04-11)
+
+
+### Bug Fixes
+
+* connection emits ([#352](https://github.com/libp2p/js-libp2p/issues/352)) ([313b1ea](https://github.com/libp2p/js-libp2p/commit/313b1ea))
+* remove unneeded peerbook puts ([#348](https://github.com/libp2p/js-libp2p/issues/348)) ([e5f19e8](https://github.com/libp2p/js-libp2p/commit/e5f19e8))
+
+
+### Features
+
+* auto dial discovered peers ([#349](https://github.com/libp2p/js-libp2p/issues/349)) ([01aa447](https://github.com/libp2p/js-libp2p/commit/01aa447))
+
+
+
 <a name="0.25.0-rc.5"></a>
 # [0.25.0-rc.5](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.4...v0.25.0-rc.5) (2019-03-21)
 
