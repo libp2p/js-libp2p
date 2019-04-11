@@ -58,6 +58,56 @@ describe('configuration', () => {
     }).to.throw('ERROR_EMPTY')
   })
 
+  it('should add defaults to config', () => {
+    const options = {
+      peerInfo,
+      modules: {
+        transport: [ WS ],
+        peerDiscovery: [ Bootstrap ],
+        dht: DHT
+      }
+    }
+
+    const expected = {
+      peerInfo,
+      connectionManager: {
+        minPeers: 25
+      },
+      modules: {
+        transport: [ WS ],
+        peerDiscovery: [ Bootstrap ],
+        dht: DHT
+      },
+      config: {
+        peerDiscovery: {
+          autoDial: true
+        },
+        EXPERIMENTAL: {
+          pubsub: false
+        },
+        dht: {
+          kBucketSize: 20,
+          enabled: false,
+          randomWalk: {
+            enabled: false,
+            queriesPerPeriod: 1,
+            interval: 30000,
+            timeout: 10000
+          }
+        },
+        relay: {
+          enabled: true,
+          hop: {
+            active: false,
+            enabled: false
+          }
+        }
+      }
+    }
+
+    expect(validateConfig(options)).to.deep.equal(expected)
+  })
+
   it('should add defaults to missing items', () => {
     const options = {
       peerInfo,
@@ -78,6 +128,9 @@ describe('configuration', () => {
 
     const expected = {
       peerInfo,
+      connectionManager: {
+        minPeers: 25
+      },
       modules: {
         transport: [ WS ],
         peerDiscovery: [ Bootstrap ],
@@ -85,6 +138,7 @@ describe('configuration', () => {
       },
       config: {
         peerDiscovery: {
+          autoDial: true,
           bootstrap: {
             interval: 1000,
             enabled: true
@@ -180,6 +234,9 @@ describe('configuration', () => {
     }
     const expected = {
       peerInfo,
+      connectionManager: {
+        minPeers: 25
+      },
       modules: {
         transport: [WS],
         dht: DHT
@@ -187,6 +244,9 @@ describe('configuration', () => {
       config: {
         EXPERIMENTAL: {
           pubsub: false
+        },
+        peerDiscovery: {
+          autoDial: true
         },
         relay: {
           enabled: true,
