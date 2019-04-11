@@ -1,3 +1,13 @@
+<a name="0.42.9"></a>
+## [0.42.9](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.8...v0.42.9) (2019-04-11)
+
+
+### Bug Fixes
+
+* dont compare empty strings ([#330](https://github.com/libp2p/js-libp2p-switch/issues/330)) ([bb1a235](https://github.com/libp2p/js-libp2p-switch/commit/bb1a235))
+
+
+
 <a name="0.42.8"></a>
 ## [0.42.8](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.7...v0.42.8) (2019-04-10)
 
