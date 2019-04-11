@@ -7,6 +7,7 @@ const Mplex = require('libp2p-mplex')
 const SPDY = require('libp2p-spdy')
 const SECIO = require('libp2p-secio')
 const Bootstrap = require('libp2p-bootstrap')
+const DHT = require('libp2p-kad-dht')
 const defaultsDeep = require('@nodeutils/defaults-deep')
 const libp2p = require('../../../../')
 
@@ -47,10 +48,12 @@ class Node extends libp2p {
           wrtcStar.discovery,
           wsstar.discovery,
           Bootstrap
-        ]
+        ],
+        dht: DHT
       },
       config: {
         peerDiscovery: {
+          autoDial: true,
           webRTCStar: {
             enabled: true
           },
@@ -58,7 +61,7 @@ class Node extends libp2p {
             enabled: true
           },
           bootstrap: {
-            interval: 10000,
+            interval: 20e3,
             enabled: true,
             list: bootstrapList
           }
@@ -66,16 +69,19 @@ class Node extends libp2p {
         relay: {
           enabled: true,
           hop: {
-            enabled: true,
+            enabled: false,
             active: false
           }
         },
+        dht: {
+          enabled: false
+        },
         EXPERIMENTAL: {
-          dht: false,
           pubsub: false
         }
       },
       connectionManager: {
+        minPeers: 10,
         maxPeers: 50
       }
     }
