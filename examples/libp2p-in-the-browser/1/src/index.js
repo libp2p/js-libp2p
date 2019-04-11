@@ -14,26 +14,8 @@ domReady(() => {
       return console.log('Could not create the Node, check if your browser has WebRTC Support', err)
     }
 
-    let connections = {}
-
     node.on('peer:discovery', (peerInfo) => {
-      const idStr = peerInfo.id.toB58String()
-      if (connections[idStr]) {
-        // If we're already trying to connect to this peer, dont dial again
-        return
-      }
-      console.log('Discovered a peer:', idStr)
-
-      connections[idStr] = true
-      node.dial(peerInfo, (err, conn) => {
-        if (err) {
-          // Prevent immediate connection retries from happening
-          // and include a 10s jitter
-          const timeToNextDial = 25 * 1000 + (Math.random(0) * 10000).toFixed(0)
-          console.log('Failed to dial:', idStr)
-          setTimeout(() => delete connections[idStr], timeToNextDial)
-        }
-      })
+      console.log('Discovered a peer:', peerInfo.id.toB58String())
     })
 
     node.on('peer:connect', (peerInfo) => {
@@ -47,15 +29,13 @@ domReady(() => {
 
     node.on('peer:disconnect', (peerInfo) => {
       const idStr = peerInfo.id.toB58String()
-      delete connections[idStr]
-      console.log('Lost connection to: ' + idStr)
       const el = document.getElementById(idStr)
       el && el.remove()
     })
 
     node.start((err) => {
       if (err) {
-        return console.log('WebRTC not supported')
+        return console.log(err)
       }
 
       const idStr = node.peerInfo.id.toB58String()

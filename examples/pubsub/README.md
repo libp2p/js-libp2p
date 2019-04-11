@@ -12,14 +12,11 @@ We've seen many interesting use cases appear with this, here are some highlights
 
 For this example, we will use MulticastDNS for automatic Peer Discovery. This example is based the previous examples found in [Discovery Mechanisms](../discovery-mechanisms). You can find the complete version at [1.js](./1.js).
 
-Using PubSub is super simple, all you have to do is start a libp2p node, PubSub will be enabled by default.
+Using PubSub is super simple, all you have to do is start a libp2p node with `EXPERIMENTAL.pubsub` set to true.
 
 ```JavaScript
-series([
-  (cb) => node1.once('peer:discovery', (peer) => node1.dial(peer, cb)),
-  (cb) => setTimeout(cb, 500)
-], (err) => {
-  if (err) { throw err }
+node1.once('peer:connect', (peer) => {
+  console.log('connected to %s', peer.id.toB58String())
 
   // Subscribe to the topic 'news'
   node1.pubsub.subscribe('news',
@@ -42,6 +39,7 @@ The output of the program should look like:
 
 ```
 > node 1.js
+connected to QmWpvkKm6qHLhoxpWrTswY6UMNWDyn8hN265Qp9ZYvgS82
 QmWpvkKm6qHLhoxpWrTswY6UMNWDyn8hN265Qp9ZYvgS82 Bird bird bird, bird is the word!
 QmWpvkKm6qHLhoxpWrTswY6UMNWDyn8hN265Qp9ZYvgS82 Bird bird bird, bird is the word!
 QmWpvkKm6qHLhoxpWrTswY6UMNWDyn8hN265Qp9ZYvgS82 Bird bird bird, bird is the word!

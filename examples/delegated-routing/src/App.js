@@ -1,11 +1,10 @@
 // eslint-disable-next-line
 'use strict'
 
-const React = require('react')
+import React from 'react'
+import Ipfs from 'ipfs'
+import libp2pBundle from './libp2p-bundle'
 const Component = React.Component
-const Ipfs = require('ipfs')
-const libp2pBundle = require('./libp2p-bundle')
-// require('./App.css')
 
 const BootstrapNode = '/ip4/127.0.0.1/tcp/8081/ws/p2p/QmdoG8DpzYUZMVP5dGmgmigZwR1RE8Cf6SxMPg1SBXJAQ8'
 
@@ -150,4 +149,4 @@ class App extends Component {
   }
 }
 
-module.exports = App
+export default App
