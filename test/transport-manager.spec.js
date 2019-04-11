@@ -95,6 +95,23 @@ describe('Transport Manager', () => {
       expect(dialableAddrs[0].toString()).to.equal('/ip6/::1/tcp/4001')
     })
 
+    it('should filter out our addrs that start with /ipfs/', () => {
+      const queryAddrs = [
+        '/ip4/127.0.0.1/tcp/4002/ipfs/QmebzNV1kSzLfaYpSZdShuiABNUxoKT1vJmCdxM2iWsM2j'
+      ].map(a => Multiaddr(a))
+
+      const ourAddrs = [
+        '/ipfs/QmSoLnSGccFuZQJzRadHn95W2CrSFmZuTdDWP8HXaHca9z'
+      ]
+
+      ourAddrs.forEach(a => peerInfo.multiaddrs.add(a))
+
+      const dialableAddrs = TransportManager.dialables(dialAllTransport, queryAddrs, peerInfo)
+
+      expect(dialableAddrs).to.have.length(1)
+      expect(dialableAddrs[0]).to.eql(queryAddrs[0])
+    })
+
     it('should filter our addresses over relay/rendezvous', () => {
       const peerId = peerInfo.id.toB58String()
       const queryAddrs = [

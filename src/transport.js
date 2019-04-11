@@ -236,6 +236,7 @@ function ourAddresses (peerInfo) {
         : `${addr}/ipfs/${ourPeerId}`
       return ourAddrs.concat([addr, otherAddr])
     }, [])
+    .filter(a => Boolean(a))
     .concat(`/ipfs/${ourPeerId}`)
 }
 
