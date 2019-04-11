@@ -11,7 +11,7 @@ const KadDHT = require('libp2p-kad-dht')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 
-module.exports = ({peerInfo, peerBook}) => {
+export default function Libp2pBundle ({peerInfo, peerBook}) {
   const wrtcstar = new WebRTCStar({id: peerInfo.id})
   const wsstar = new WebSocketStar({id: peerInfo.id})
   const delegatedApiOptions = {
@@ -54,6 +54,7 @@ module.exports = ({peerInfo, peerBook}) => {
     },
     config: {
       peerDiscovery: {
+        autoDial: false,
         webrtcStar: {
           enabled: false
         },
@@ -62,16 +63,13 @@ module.exports = ({peerInfo, peerBook}) => {
         }
       },
       dht: {
-        kBucketSize: 20
+        enabled: false
       },
       relay: {
         enabled: true,
         hop: {
           enabled: false
         }
-      },
-      EXPERIMENTAL: {
-        dht: false
       }
     }
   })
