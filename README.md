@@ -3,6 +3,7 @@
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [![](https://img.shields.io/badge/project-libp2p-blue.svg?style=flat-square)](http://libp2p.io/)
 [![](https://img.shields.io/badge/freenode-%23libp2p-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
+[![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 [![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-record/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-record?branch=master)
 [![Travis CI](https://travis-ci.org/libp2p/js-libp2p-record.svg?branch=master)](https://travis-ci.org/libp2p/js-libp2p-record)
