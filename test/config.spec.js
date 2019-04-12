@@ -170,6 +170,33 @@ describe('configuration', () => {
     expect(validateConfig(options)).to.deep.equal(expected)
   })
 
+  it('should allow for configuring the switch', () => {
+    const options = {
+      peerInfo,
+      switch: {
+        blacklistTTL: 60e3,
+        blackListAttempts: 5,
+        maxParallelDials: 100,
+        maxColdCalls: 50,
+        dialTimeout: 30e3
+      },
+      modules: {
+        transport: [ WS ],
+        peerDiscovery: [ ]
+      }
+    }
+
+    expect(validateConfig(options)).to.deep.include({
+      switch: {
+        blacklistTTL: 60e3,
+        blackListAttempts: 5,
+        maxParallelDials: 100,
+        maxColdCalls: 50,
+        dialTimeout: 30e3
+      }
+    })
+  })
+
   it('should allow for delegated content and peer routing', () => {
     const peerRouter = new DelegatedPeerRouter()
     const contentRouter = new DelegatedContentRouter(peerInfo)
