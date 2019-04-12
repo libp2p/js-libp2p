@@ -1,3 +1,13 @@
+<a name="0.25.0"></a>
+# [0.25.0](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.6...v0.25.0) (2019-04-12)
+
+
+### Bug Fixes
+
+* allow switch to be configured ([#354](https://github.com/libp2p/js-libp2p/issues/354)) ([eb5aa03](https://github.com/libp2p/js-libp2p/commit/eb5aa03))
+
+
+
 <a name="0.25.0-rc.6"></a>
 # [0.25.0-rc.6](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.5...v0.25.0-rc.6) (2019-04-11)
 
