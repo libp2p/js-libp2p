@@ -85,6 +85,7 @@ const configSchema = s({
 })
 
 const optionsSchema = s({
+  switch: 'object?',
   connectionManager: s('object', {
     minPeers: 25
   }),
