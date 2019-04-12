@@ -50,26 +50,26 @@
     "dirkmc <dirk@mccormick.cx>"
   ],
   "devDependencies": {
-    "aegir": "^18.1.0",
+    "aegir": "^18.2.2",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
-    "libp2p": "~0.24.4",
+    "libp2p": "~0.25.0",
     "libp2p-secio": "~0.11.1",
     "pull-protocol-buffers": "~0.1.2",
-    "sinon": "^7.2.3"
+    "sinon": "^7.3.1"
   },
   "dependencies": {
     "async": "^2.6.2",
     "debug": "^4.1.1",
     "interface-connection": "~0.3.3",
-    "mafmt": "^6.0.6",
-    "multiaddr": "^6.0.4",
+    "mafmt": "^6.0.7",
+    "multiaddr": "^6.0.6",
     "once": "^1.4.0",
     "peer-id": "~0.12.2",
     "peer-info": "~0.15.1",
     "protons": "^1.0.1",
     "pull-handshake": "^1.1.4",
-    "pull-length-prefixed": "^1.3.1",
+    "pull-length-prefixed": "^1.3.2",
     "pull-pair": "^1.1.0",
     "pull-stream": "^3.6.9"
   }
