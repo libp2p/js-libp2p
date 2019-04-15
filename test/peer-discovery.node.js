@@ -259,6 +259,33 @@ describe('peer discovery', () => {
     })
   })
 
+  describe('discovery scenarios', () => {
+    setup({
+      config: {
+        dht: {
+          enabled: false
+        },
+        peerDiscovery: {
+          autoDial: false,
+          bootstrap: {
+            enabled: true,
+            list: []
+          }
+        }
+      }
+    })
+
+    it('should ignore self on discovery', function () {
+      const discoverySpy = sinon.spy()
+      nodeA.on('peer:discovery', discoverySpy)
+      nodeA._discovery[0].emit('peer', nodeA.peerInfo)
+
+      expect(discoverySpy.called).to.eql(false)
+      expect(nodeA.peerBook.getAllArray()).to.have.length(0)
+      expect()
+    })
+  })
+
   describe('MulticastDNS', () => {
     setup({
       config: {
