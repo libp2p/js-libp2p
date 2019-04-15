@@ -253,7 +253,8 @@ describe('dial', () => {
     })
   })
 
-  describe('ip6', () => {
+  // TODO: https://github.com/libp2p/js-libp2p-websockets/issues/84
+  describe.skip('ip6', () => {
     let ws
     let listener
     const ma = multiaddr('/ip6/::1/tcp/9091')
