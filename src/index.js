@@ -127,9 +127,11 @@ class Switch extends EventEmitter {
 
     // Only listen on transports we actually have addresses for
     return myTransports.filter((ts) => this.transports[ts].filter(myAddrs).length > 0)
-      // push Circuit to be the last proto to be dialed
-      .sort((a) => {
-        return a === Circuit.tag ? 1 : 0
+      // push Circuit to be the last proto to be dialed, and alphabetize the others
+      .sort((a, b) => {
+        if (a === Circuit.tag) return 1
+        if (b === Circuit.tag) return -1
+        return a < b ? -1 : 1
       })
   }
 
