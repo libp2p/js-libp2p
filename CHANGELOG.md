@@ -1,3 +1,14 @@
+<a name="0.42.10"></a>
+## [0.42.10](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.9...v0.42.10) (2019-04-16)
+
+
+### Bug Fixes
+
+* dont use peerinfo distinct ([#334](https://github.com/libp2p/js-libp2p-switch/issues/334)) ([9af0e3a](https://github.com/libp2p/js-libp2p-switch/commit/9af0e3a))
+* resolve transport sort order in browsers ([#333](https://github.com/libp2p/js-libp2p-switch/issues/333)) ([951e0c9](https://github.com/libp2p/js-libp2p-switch/commit/951e0c9))
+
+
+
 <a name="0.42.9"></a>
 ## [0.42.9](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.8...v0.42.9) (2019-04-11)
 
