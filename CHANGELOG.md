@@ -1,3 +1,13 @@
+<a name="0.25.1"></a>
+## [0.25.1](https://github.com/libp2p/js-libp2p/compare/v0.25.0...v0.25.1) (2019-04-16)
+
+
+### Bug Fixes
+
+* bail when discovering self ([#357](https://github.com/libp2p/js-libp2p/issues/357)) ([f28dffb](https://github.com/libp2p/js-libp2p/commit/f28dffb))
+
+
+
 <a name="0.25.0"></a>
 # [0.25.0](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.6...v0.25.0) (2019-04-12)
 
