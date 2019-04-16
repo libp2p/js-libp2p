@@ -181,7 +181,11 @@ class Node extends libp2p {
         dht: {
           kBucketSize: 20,
           enabled: true,
-          enabledDiscovery: true      // Allows to disable discovery (enabled by default)
+          randomWalk: {
+            enabled: true,      // Allows to disable discovery (enabled by default)
+            interval: 300e3,
+            timeout: 10e3
+          }
         },
         // Enable/Disable Experimental features
         EXPERIMENTAL: {               // Experimental features ("behind a flag")
