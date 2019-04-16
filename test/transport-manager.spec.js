@@ -7,10 +7,15 @@ const expect = chai.expect
 chai.use(dirtyChai)
 const Multiaddr = require('multiaddr')
 const PeerInfo = require('peer-info')
+const sinon = require('sinon')
 
 const TransportManager = require('../src/transport')
 
 describe('Transport Manager', () => {
+  afterEach(() => {
+    sinon.restore()
+  })
+
   describe('dialables', () => {
     let peerInfo
     const dialAllTransport = { filter: addrs => addrs }
@@ -139,6 +144,147 @@ describe('Transport Manager', () => {
 
       expect(dialableAddrs).to.have.length(1)
       expect(dialableAddrs[0].toString()).to.equal('/ip6/::1/tcp/4001')
+    })
+  })
+
+  describe('listen', () => {
+    const listener = {
+      once: function () {},
+      listen: function () {},
+      removeListener: function () {},
+      getAddrs: function () {}
+    }
+
+    it('should allow for multiple addresses with port 0', (done) => {
+      const mockListener = sinon.stub(listener)
+      mockListener.listen.callsArg(1)
+      mockListener.getAddrs.callsArgWith(0, null, [])
+      const mockSwitch = {
+        _peerInfo: {
+          multiaddrs: {
+            toArray: () => [
+              Multiaddr('/ip4/127.0.0.1/tcp/0'),
+              Multiaddr('/ip4/0.0.0.0/tcp/0')
+            ],
+            replace: () => {}
+          }
+        },
+        _options: {},
+        _connectionHandler: () => {},
+        transports: {
+          TCP: {
+            filter: (addrs) => addrs,
+            createListener: () => {
+              return mockListener
+            }
+          }
+        }
+      }
+      const transportManager = new TransportManager(mockSwitch)
+      transportManager.listen('TCP', null, null, (err) => {
+        expect(err).to.not.exist()
+        expect(mockListener.listen.callCount).to.eql(2)
+        done()
+      })
+    })
+
+    it('should filter out equal addresses', (done) => {
+      const mockListener = sinon.stub(listener)
+      mockListener.listen.callsArg(1)
+      mockListener.getAddrs.callsArgWith(0, null, [])
+      const mockSwitch = {
+        _peerInfo: {
+          multiaddrs: {
+            toArray: () => [
+              Multiaddr('/ip4/127.0.0.1/tcp/0'),
+              Multiaddr('/ip4/127.0.0.1/tcp/0')
+            ],
+            replace: () => {}
+          }
+        },
+        _options: {},
+        _connectionHandler: () => {},
+        transports: {
+          TCP: {
+            filter: (addrs) => addrs,
+            createListener: () => {
+              return mockListener
+            }
+          }
+        }
+      }
+      const transportManager = new TransportManager(mockSwitch)
+      transportManager.listen('TCP', null, null, (err) => {
+        expect(err).to.not.exist()
+        expect(mockListener.listen.callCount).to.eql(1)
+        done()
+      })
+    })
+
+    it('should account for addresses with no port', (done) => {
+      const mockListener = sinon.stub(listener)
+      mockListener.listen.callsArg(1)
+      mockListener.getAddrs.callsArgWith(0, null, [])
+      const mockSwitch = {
+        _peerInfo: {
+          multiaddrs: {
+            toArray: () => [
+              Multiaddr('/p2p-circuit'),
+              Multiaddr('/p2p-websocket-star')
+            ],
+            replace: () => {}
+          }
+        },
+        _options: {},
+        _connectionHandler: () => {},
+        transports: {
+          TCP: {
+            filter: (addrs) => addrs,
+            createListener: () => {
+              return mockListener
+            }
+          }
+        }
+      }
+      const transportManager = new TransportManager(mockSwitch)
+      transportManager.listen('TCP', null, null, (err) => {
+        expect(err).to.not.exist()
+        expect(mockListener.listen.callCount).to.eql(2)
+        done()
+      })
+    })
+
+    it('should filter out addresses with the same, non 0, port', (done) => {
+      const mockListener = sinon.stub(listener)
+      mockListener.listen.callsArg(1)
+      mockListener.getAddrs.callsArgWith(0, null, [])
+      const mockSwitch = {
+        _peerInfo: {
+          multiaddrs: {
+            toArray: () => [
+              Multiaddr('/ip4/127.0.0.1/tcp/8000'),
+              Multiaddr('/dnsaddr/libp2p.io/tcp/8000')
+            ],
+            replace: () => {}
+          }
+        },
+        _options: {},
+        _connectionHandler: () => {},
+        transports: {
+          TCP: {
+            filter: (addrs) => addrs,
+            createListener: () => {
+              return mockListener
+            }
+          }
+        }
+      }
+      const transportManager = new TransportManager(mockSwitch)
+      transportManager.listen('TCP', null, null, (err) => {
+        expect(err).to.not.exist()
+        expect(mockListener.listen.callCount).to.eql(1)
+        done()
+      })
     })
   })
 })

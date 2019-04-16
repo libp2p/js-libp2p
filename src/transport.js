@@ -9,6 +9,7 @@ const log = debug('libp2p:switch:transport')
 
 const LimitDialer = require('./limit-dialer')
 const { DIAL_TIMEOUT } = require('./constants')
+const { uniqueBy } = require('./utils')
 
 // number of concurrent outbound dials to make per peer, same as go-libp2p-swtch
 const defaultPerPeerRateLimit = 8
@@ -124,10 +125,17 @@ class TransportManager {
     handler = this.switch._connectionHandler(key, handler)
 
     const transport = this.switch.transports[key]
-    const multiaddrs = TransportManager.dialables(
-      transport,
-      this.switch._peerInfo.multiaddrs.distinct()
-    )
+    let originalAddrs = this.switch._peerInfo.multiaddrs.toArray()
+
+    // Until TCP can handle distinct addresses on listen, https://github.com/libp2p/interface-transport/issues/41,
+    // make sure we aren't trying to listen on duplicate ports. This also applies to websockets.
+    originalAddrs = uniqueBy(originalAddrs, (addr) => {
+      // Any non 0 port should register as unique
+      const port = Number(addr.toOptions().port)
+      return isNaN(port) || port === 0 ? addr.toString() : port
+    })
+
+    const multiaddrs = TransportManager.dialables(transport, originalAddrs)
 
     if (!transport.listeners) {
       transport.listeners = []

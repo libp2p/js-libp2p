@@ -47,3 +47,14 @@ module.exports.identifyDialer = (connection, cryptoPeerInfo) => {
     })
   })
 }
+
+/**
+ * Get unique values from `arr` using `getValue` to determine
+ * what is used for uniqueness
+ * @param {Array} arr The array to get unique values for
+ * @param {function(value)} getValue The function to determine what is compared
+ * @returns {Array}
+ */
+module.exports.uniqueBy = (arr, getValue) => {
+  return [...new Map(arr.map((i) => [getValue(i), i])).values()]
+}
