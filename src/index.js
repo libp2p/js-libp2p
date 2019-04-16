@@ -24,11 +24,12 @@ const dht = require('./dht')
 const pubsub = require('./pubsub')
 const getPeerInfo = require('./get-peer-info')
 const validateConfig = require('./config').validate
+const { codes } = require('./errors')
 
 const notStarted = (action, state) => {
   return errCode(
     new Error(`libp2p cannot ${action} when not started; state is ${state}`),
-    'ERR_NODE_NOT_STARTED'
+    codes.ERR_NODE_NOT_STARTED
   )
 }
 
@@ -476,6 +477,10 @@ class Node extends EventEmitter {
    * @param {PeerInfo} peerInfo
    */
   _peerDiscovered (peerInfo) {
+    if (peerInfo.id.toB58String() === this.peerInfo.id.toB58String()) {
+      log.error(new Error(codes.ERR_DISCOVERED_SELF))
+      return
+    }
     peerInfo = this.peerBook.put(peerInfo)
 
     if (!this.isStarted()) return
