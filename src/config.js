@@ -68,8 +68,7 @@ const configSchema = s({
   }, {
     // DHT defaults
     enabled: false,
-    kBucketSize: 20,
-    enabledDiscovery: false
+    kBucketSize: 20
   }),
   // Experimental config
   EXPERIMENTAL: s({
