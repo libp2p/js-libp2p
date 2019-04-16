@@ -105,7 +105,7 @@ class Peer extends EventEmitter {
     topics.forEach((topic) => {
       subs.push({
         subscribe: subscribe,
-        topicCID: topic
+        topicID: topic
       })
     })
 
@@ -153,9 +153,9 @@ class Peer extends EventEmitter {
   updateSubscriptions (changes) {
     changes.forEach((subopt) => {
       if (subopt.subscribe) {
-        this.topics.add(subopt.topicCID)
+        this.topics.add(subopt.topicID)
       } else {
-        this.topics.delete(subopt.topicCID)
+        this.topics.delete(subopt.topicID)
       }
     })
   }
