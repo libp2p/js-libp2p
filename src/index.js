@@ -24,7 +24,6 @@ const Message = require('./message')
 const RandomWalk = require('./random-walk')
 const QueryManager = require('./query-manager')
 const assert = require('assert')
-const mergeOptions = require('merge-options')
 
 /**
  * A DHT implementation modeled after Kademlia with S/Kademlia modifications.
@@ -40,6 +39,7 @@ class KadDHT extends EventEmitter {
    * @property {number} queriesPerPeriod how many queries to run per period (default: 1)
    * @property {number} interval how often to run the the random-walk process, in milliseconds (default: 300000)
    * @property {number} timeout how long to wait for the the random-walk query to run, in milliseconds (default: 10000)
+   * @property {number} delay how long to wait before starting the first random walk, in milliseconds (default: 10000)
    */
 
   /**
@@ -59,7 +59,6 @@ class KadDHT extends EventEmitter {
     options = options || {}
     options.validators = options.validators || {}
     options.selectors = options.selectors || {}
-    options.randomWalk = mergeOptions(c.defaultRandomWalk, options.randomWalk)
 
     /**
      * Local reference to the libp2p-switch instance
@@ -126,15 +125,7 @@ class KadDHT extends EventEmitter {
      *
      * @type {RandomWalk}
      */
-    this.randomWalk = new RandomWalk(this)
-
-    /**
-     * Random walk state, default true
-     */
-    this.randomWalkEnabled = Boolean(options.randomWalk.enabled)
-    this.randomWalkQueriesPerPeriod = parseInt(options.randomWalk.queriesPerPeriod)
-    this.randomWalkInterval = parseInt(options.randomWalk.interval)
-    this.randomWalkTimeout = parseInt(options.randomWalk.timeout)
+    this.randomWalk = new RandomWalk(this, options.randomWalk)
 
     /**
      * Keeps track of running queries
@@ -167,8 +158,8 @@ class KadDHT extends EventEmitter {
         return callback(err)
       }
 
-      // Start random walk if enabled
-      this.randomWalkEnabled && this.randomWalk.start(this.randomWalkQueriesPerPeriod, this.randomWalkInterval, this.randomWalkTimeout)
+      // Start random walk, it will not run if it's disabled
+      this.randomWalk.start()
       callback()
     })
   }
