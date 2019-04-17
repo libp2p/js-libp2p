@@ -91,7 +91,7 @@ describe('configuration', () => {
           randomWalk: {
             enabled: false,
             queriesPerPeriod: 1,
-            interval: 30000,
+            interval: 300000,
             timeout: 10000
           }
         },
@@ -153,7 +153,7 @@ describe('configuration', () => {
           randomWalk: {
             enabled: false,
             queriesPerPeriod: 1,
-            interval: 30000,
+            interval: 300000,
             timeout: 10000
           }
         },
@@ -242,7 +242,7 @@ describe('configuration', () => {
     expect(() => validateConfig(options)).to.throw()
   })
 
-  it('should add defaults, validators and selectors for dht', () => {
+  it('should be able to add validators and selectors for dht', () => {
     const selectors = {}
     const validators = {}
 
@@ -283,19 +283,50 @@ describe('configuration', () => {
           }
         },
         dht: {
-          kBucketSize: 20,
-          enabled: false,
-          randomWalk: {
-            enabled: false,
-            queriesPerPeriod: 1,
-            interval: 30000,
-            timeout: 10000
-          },
           selectors,
           validators
         }
       }
     }
     expect(validateConfig(options)).to.deep.equal(expected)
+  })
+
+  it('should support new properties for the dht config', () => {
+    const options = {
+      peerInfo,
+      modules: {
+        transport: [WS],
+        dht: DHT
+      },
+      config: {
+        dht: {
+          kBucketSize: 20,
+          enabled: false,
+          myNewDHTConfigProperty: true,
+          randomWalk: {
+            enabled: false,
+            queriesPerPeriod: 1,
+            interval: 300000,
+            timeout: 10000
+          }
+        }
+      }
+    }
+
+    const expected = {
+      kBucketSize: 20,
+      enabled: false,
+      myNewDHTConfigProperty: true,
+      randomWalk: {
+        enabled: false,
+        queriesPerPeriod: 1,
+        interval: 300000,
+        timeout: 10000
+      }
+    }
+
+    const actual = validateConfig(options).config.dht
+
+    expect(actual).to.deep.equal(expected)
   })
 })
