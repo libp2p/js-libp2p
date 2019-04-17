@@ -92,7 +92,6 @@ describe('configuration', () => {
             enabled: false,
             queriesPerPeriod: 1,
             interval: 300000,
-            delay: 10000,
             timeout: 10000
           }
         },
@@ -155,7 +154,6 @@ describe('configuration', () => {
             enabled: false,
             queriesPerPeriod: 1,
             interval: 300000,
-            delay: 10000,
             timeout: 10000
           }
         },
@@ -309,7 +307,6 @@ describe('configuration', () => {
             enabled: false,
             queriesPerPeriod: 1,
             interval: 300000,
-            delay: 10000,
             timeout: 10000
           }
         }
@@ -324,7 +321,6 @@ describe('configuration', () => {
         enabled: false,
         queriesPerPeriod: 1,
         interval: 300000,
-        delay: 10000,
         timeout: 10000
       }
     }

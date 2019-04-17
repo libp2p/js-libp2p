@@ -56,7 +56,6 @@ const configSchema = s({
       enabled: false, // disabled waiting for https://github.com/libp2p/js-libp2p-kad-dht/issues/86
       queriesPerPeriod: 1,
       interval: 300e3,
-      delay: 10e3,
       timeout: 10e3
     }
   }),
