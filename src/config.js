@@ -48,27 +48,17 @@ const configSchema = s({
     enabled: true
   }),
   // DHT config
-  dht: s({
-    kBucketSize: 'number',
-    enabled: 'boolean?',
-    validators: 'object?',
-    selectors: 'object?',
-    randomWalk: optional(s({
-      enabled: 'boolean?',
-      queriesPerPeriod: 'number?',
-      interval: 'number?',
-      timeout: 'number?'
-    }, {
-      // random walk defaults
-      enabled: false, // disabled waiting for https://github.com/libp2p/js-libp2p-kad-dht/issues/86
-      queriesPerPeriod: 1,
-      interval: 30000,
-      timeout: 10000
-    }))
-  }, {
+  dht: s('object?', {
     // DHT defaults
     enabled: false,
-    kBucketSize: 20
+    kBucketSize: 20,
+    randomWalk: {
+      enabled: false, // disabled waiting for https://github.com/libp2p/js-libp2p-kad-dht/issues/86
+      queriesPerPeriod: 1,
+      interval: 300e3,
+      delay: 10e3,
+      timeout: 10e3
+    }
   }),
   // Experimental config
   EXPERIMENTAL: s({
@@ -77,11 +67,7 @@ const configSchema = s({
     // Experimental defaults
     pubsub: false
   })
-}, {
-  relay: {},
-  dht: {},
-  EXPERIMENTAL: {}
-})
+}, {})
 
 const optionsSchema = s({
   switch: 'object?',
