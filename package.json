@@ -1,6 +1,6 @@
 {
   "name": "libp2p-pubsub",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Pubsub base protocol for libp2p pubsub routers",
   "leadMaintainer": "Vasco Santos <santos.vasco10@gmail.com>",
   "main": "src/index.js",
@@ -68,7 +68,10 @@
     "time-cache": "~0.3.0"
   },
   "contributors": [
+    "Cayman <caymannava@gmail.com>",
+    "Jacob Heun <jacobheun@gmail.com>",
     "Mikerah <mikerahqc@protonmail.com>",
+    "Vasco Santos <vasco.santos@ua.pt>",
     "Vasco Santos <vasco.santos@moxy.studio>"
   ]
 }
