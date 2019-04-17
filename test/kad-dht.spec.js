@@ -13,7 +13,6 @@ const timeout = require('async/timeout')
 const retry = require('async/retry')
 const each = require('async/each')
 const waterfall = require('async/waterfall')
-const random = require('lodash.random')
 const Record = require('libp2p-record').Record
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
@@ -102,6 +101,7 @@ function waitForWellFormedTables (dhts, minPeers, avgPeers, waitTimeout, callbac
   }, waitTimeout)(callback)
 }
 
+// Count how many peers are in b but are not in a
 function countDiffPeers (a, b) {
   const s = new Set()
   a.forEach((p) => s.add(p.toB58String()))
@@ -689,68 +689,102 @@ describe('KadDHT', () => {
   it('find peer query', function (done) {
     this.timeout(40 * 1000)
 
-    const nDHTs = 101
+    // Create 101 nodes
+    const nDHTs = 100
     const tdht = new TestDHT()
 
     tdht.spawn(nDHTs, (err, dhts) => {
       expect(err).to.not.exist()
 
-      const ids = dhts.map((d) => d.peerInfo.id)
+      const dhtsById = new Map(dhts.map((d) => [d.peerInfo.id, d]))
+      const ids = [...dhtsById.keys()]
 
+      // The origin node for the FIND_PEER query
       const guy = dhts[0]
-      const others = dhts.slice(1)
+
+      // The key
       const val = Buffer.from('foobar')
-      const connected = {} // indexes in others that are reachable from guy
+      // The key as a DHT key
+      let rtval
 
       series([
-        (cb) => times(20, (i, cb) => {
-          times(16, (j, cb) => {
-            const t = 20 + random(79)
-            connected[t] = true
-            connect(others[i], others[t], cb)
-          }, cb)
-        }, cb),
-        (cb) => times(20, (i, cb) => {
-          connected[i] = true
-          connect(guy, others[i], cb)
-        }, cb),
-        (cb) => kadUtils.convertBuffer(val, (err, rtval) => {
+        // Hash the key into the DHT's key format
+        (cb) => kadUtils.convertBuffer(val, (err, dhtKey) => {
           expect(err).to.not.exist()
+          rtval = dhtKey
+          cb()
+        }),
+        // Make connections between nodes close to each other
+        (cb) => kadUtils.sortClosestPeers(ids, rtval, (err, sorted) => {
+          expect(err).to.not.exist()
+
+          const conns = []
+          const maxRightIndex = sorted.length - 1
+          for (let i = 0; i < sorted.length; i++) {
+            // Connect to 5 nodes on either side (10 in total)
+            for (const distance of [1, 3, 11, 31, 63]) {
+              let rightIndex = i + distance
+              if (rightIndex > maxRightIndex) {
+                rightIndex = maxRightIndex * 2 - (rightIndex + 1)
+              }
+              let leftIndex = i - distance
+              if (leftIndex < 0) {
+                leftIndex = 1 - leftIndex
+              }
+              conns.push([sorted[leftIndex], sorted[rightIndex]])
+            }
+          }
+
+          each(conns, (conn, _cb) => connect(dhtsById.get(conn[0]), dhtsById.get(conn[1]), _cb), cb)
+        }),
+        (cb) => {
+          // Get the alpha (3) closest peers to the key from the origin's
+          // routing table
           const rtablePeers = guy.routingTable.closestPeers(rtval, c.ALPHA)
           expect(rtablePeers).to.have.length(3)
 
-          const netPeers = guy.peerBook.getAllArray().filter((p) => p.isConnected())
-          expect(netPeers).to.have.length(20)
-
+          // The set of peers used to initiate the query (the closest alpha
+          // peers to the key that the origin knows about)
           const rtableSet = {}
           rtablePeers.forEach((p) => {
             rtableSet[p.toB58String()] = true
           })
 
-          const connectedIds = ids.slice(1).filter((id, i) => connected[i])
-
+          const guyIndex = ids.findIndex(i => i.id.equals(guy.peerInfo.id.id))
+          const otherIds = ids.slice(0, guyIndex).concat(ids.slice(guyIndex + 1))
           series([
+            // Make the query
             (cb) => guy.getClosestPeers(val, cb),
-            (cb) => kadUtils.sortClosestPeers(connectedIds, rtval, cb)
+            // Find the closest connected peers to the key
+            (cb) => kadUtils.sortClosestPeers(otherIds, rtval, cb)
           ], (err, res) => {
             expect(err).to.not.exist()
+
+            // Query response
             const out = res[0]
+
+            // All connected peers in order of distance from key
             const actualClosest = res[1]
 
+            // Expect that the response includes nodes that are were not
+            // already in the origin's routing table (ie it went out to
+            // the network to find closer peers)
             expect(out.filter((p) => !rtableSet[p.toB58String()]))
               .to.not.be.empty()
 
+            // Expect that there were 20 peers found
             expect(out).to.have.length(20)
+
+            // The expected closest 20 peers to the key
             const exp = actualClosest.slice(0, 20)
 
-            kadUtils.sortClosestPeers(out, rtval, (err, got) => {
-              expect(err).to.not.exist()
-              expect(countDiffPeers(exp, got)).to.eql(0)
+            // Expect the 20 peers found to be the 20 closest connected peers
+            // to the key
+            expect(countDiffPeers(exp, out)).to.eql(0)
 
-              cb()
-            })
+            cb()
           })
-        })
+        }
       ], (err) => {
         expect(err).to.not.exist()
         tdht.teardown(done)

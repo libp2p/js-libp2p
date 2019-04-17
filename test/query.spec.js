@@ -15,6 +15,7 @@ const Query = require('../src/query')
 
 const createPeerInfo = require('./utils/create-peer-info')
 const createDisjointTracks = require('./utils/create-disjoint-tracks')
+const kadUtils = require('../src/utils')
 
 const createDHT = (peerInfos, cb) => {
   const sw = new Switch(peerInfos[0], new PeerBook())
@@ -31,7 +32,7 @@ describe('Query', () => {
 
   before(function (done) {
     this.timeout(5 * 1000)
-    createPeerInfo(12, (err, result) => {
+    createPeerInfo(40, (err, result) => {
       if (err) {
         return done(err)
       }
@@ -87,10 +88,14 @@ describe('Query', () => {
     dht.switch.dial = (peer, callback) => callback()
 
     let i = 0
+    const visited = []
     const query = (p, cb) => {
+      visited.push(p)
+
       if (i++ === 1) {
         return cb(new Error('fail'))
       }
+
       cb(null, {
         closerPeers: [peerInfos[2]]
       })
@@ -103,9 +108,12 @@ describe('Query', () => {
       // Should have visited
       // - the initial peer passed to the query: peerInfos[1]
       // - the peer returned in closerPeers: peerInfos[2]
-      expect(res.finalSet.size).to.eql(2)
+      expect(visited).to.eql([peerInfos[1].id, peerInfos[2].id])
+
+      // The final set should only contain peers that were successfully queried
+      // (ie no errors)
+      expect(res.finalSet.size).to.eql(1)
       expect(res.finalSet.has(peerInfos[1].id)).to.equal(true)
-      expect(res.finalSet.has(peerInfos[2].id)).to.equal(true)
 
       done()
     })
@@ -570,6 +578,104 @@ describe('Query', () => {
     })
   })
 
+  it('stop after finding k closest peers', (done) => {
+    // mock this so we can dial non existing peers
+    dht.switch.dial = (peer, callback) => callback()
+
+    // Sort peers by distance from peerInfos[0]
+    kadUtils.convertPeerId(peerInfos[0].id, (err, peerZeroDhtKey) => {
+      if (err) {
+        return done(err)
+      }
+
+      const peerIds = peerInfos.map(pi => pi.id)
+      kadUtils.sortClosestPeers(peerIds, peerZeroDhtKey, (err, sorted) => {
+        if (err) {
+          return done(err)
+        }
+
+        // Local node has nodes 10, 16 and 18 in k-bucket
+        const initial = [sorted[10], sorted[16], sorted[18]]
+
+        // Should zoom in to peers near target, and then zoom out again until it
+        // has successfully queried 20 peers
+        const topology = {
+          // Local node has nodes 10, 16 and 18 in k-bucket
+          10: [12, 20, 22, 24, 26, 28],
+          16: [14, 18, 20, 22, 24, 26],
+          18: [4, 6, 8, 12, 14, 16],
+
+          26: [24, 28, 30, 38],
+          30: [14, 28],
+          38: [2],
+
+          // Should zoom out from this point, until it has 20 peers
+          2: [13],
+          13: [15],
+          15: [17],
+
+          // Right before we get to 20 peers, it finds some new peers that are
+          // closer than some of the ones it has already queried
+          17: [1, 3, 5, 11],
+          1: [7, 9],
+          9: [19],
+
+          // At this point it's visited 20 (actually more than 20 peers), and
+          // there are no closer peers to be found, so it should stop querying.
+          // Because there are 3 paths, each with a worker queue with
+          // concurrency 3, the exact order in which peers are visited is
+          // unpredictable, so we add a long tail and below we test to make
+          // sure that it never reaches the end of the tail.
+          19: [21],
+          21: [23],
+          23: [25],
+          25: [27],
+          27: [29],
+          29: [31]
+        }
+
+        const peerIndex = (peerId) => sorted.findIndex(p => p === peerId)
+        const peerIdToInfo = (peerId) => peerInfos.find(pi => pi.id === peerId)
+
+        const visited = []
+        const query = (peerId, cb) => {
+          visited.push(peerId)
+          const i = peerIndex(peerId)
+          const closerIndexes = topology[i] || []
+          const closerPeers = closerIndexes.map(j => peerIdToInfo(sorted[j]))
+          setTimeout(() => cb(null, { closerPeers }))
+        }
+
+        const q = new Query(dht, peerInfos[0].id.id, () => query)
+        q.run(initial, (err, res) => {
+          expect(err).to.not.exist()
+
+          // Should query 19 peers, then find some peers closer to the key, and
+          // finally stop once those closer peers have been queried
+          const expectedVisited = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 26, 28, 30, 38])
+          const visitedSet = new Set(visited.map(peerIndex))
+          for (const i of expectedVisited) {
+            expect(visitedSet.has(i))
+          }
+
+          // Should never get to end of tail (see note above)
+          expect(visited.find(p => peerIndex(p) === 29)).not.to.exist()
+
+          // Final set should have 20 peers, and the closer peers that were
+          // found near the end of the query should displace further away
+          // peers that were found at the beginning
+          expect(res.finalSet.size).to.eql(20)
+          expect(res.finalSet.has(sorted[1])).to.eql(true)
+          expect(res.finalSet.has(sorted[3])).to.eql(true)
+          expect(res.finalSet.has(sorted[5])).to.eql(true)
+          expect(res.finalSet.has(sorted[38])).to.eql(false)
+
+          done()
+        })
+      })
+    })
+  })
+
   /*
    * This test creates two disjoint tracks of peers, one for
    * each of the query's two paths to follow. The "good"
@@ -590,7 +696,8 @@ describe('Query', () => {
    */
   it('uses disjoint paths', (done) => {
     const goodLength = 3
-    createDisjointTracks(peerInfos, goodLength, (err, targetId, starts, getResponse) => {
+    const samplePeerInfos = peerInfos.slice(0, 12)
+    createDisjointTracks(samplePeerInfos, goodLength, (err, targetId, starts, getResponse) => {
       expect(err).to.not.exist()
       // mock this so we can dial non existing peers
       dht.switch.dial = (peer, callback) => callback()
@@ -619,7 +726,7 @@ describe('Query', () => {
         // we should reach the target node
         expect(targetVisited).to.eql(true)
         // we should visit all nodes (except the target)
-        expect(res.finalSet.size).to.eql(peerInfos.length - 1)
+        expect(res.finalSet.size).to.eql(samplePeerInfos.length - 1)
         // there should be one successful path
         expect(res.paths.length).to.eql(1)
         done()

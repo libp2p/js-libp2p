@@ -1,4 +1,4 @@
 module.exports = {
-    bundlesize: { maxSize: '191kB' }
+    bundlesize: { maxSize: '192kB' }
 }
   

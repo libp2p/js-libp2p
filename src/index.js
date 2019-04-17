@@ -72,14 +72,14 @@ class KadDHT extends EventEmitter {
      *
      * @type {number}
      */
-    this.kBucketSize = options.kBucketSize || 20
+    this.kBucketSize = options.kBucketSize || c.K
 
     /**
-     * Number of closest peers to return on kBucket search, default 6
+     * Number of closest peers to return on kBucket search, default 20
      *
      * @type {number}
      */
-    this.ncp = options.ncp || 6
+    this.ncp = options.ncp || c.K
 
     /**
      * The routing table.

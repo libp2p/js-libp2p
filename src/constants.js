@@ -28,7 +28,7 @@ exports.READ_MESSAGE_TIMEOUT = minute
 // The number of records that will be retrieved on a call to getMany()
 exports.GET_MANY_RECORD_COUNT = 16
 
-// K is the maximum number of requests to perform before returning failue
+// K is the maximum number of requests to perform before returning failure
 exports.K = 20
 
 // Alpha is the concurrency for asynchronous requests
