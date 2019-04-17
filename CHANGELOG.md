@@ -1,3 +1,13 @@
+<a name="0.25.2"></a>
+## [0.25.2](https://github.com/libp2p/js-libp2p/compare/v0.25.1...v0.25.2) (2019-04-17)
+
+
+### Bug Fixes
+
+* dht config ([#359](https://github.com/libp2p/js-libp2p/issues/359)) ([f3801f0](https://github.com/libp2p/js-libp2p/commit/f3801f0))
+
+
+
 <a name="0.25.1"></a>
 ## [0.25.1](https://github.com/libp2p/js-libp2p/compare/v0.25.0...v0.25.1) (2019-04-16)
 
