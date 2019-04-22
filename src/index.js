@@ -1,6 +1,5 @@
 'use strict'
 
-const TimeCache = require('time-cache')
 const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
 const assert = require('assert')
@@ -26,13 +25,6 @@ class FloodSub extends BaseProtocol {
    */
   constructor (libp2p) {
     super('libp2p:floodsub', multicodec, libp2p)
-
-    /**
-     * Time based cache for sequence numbers.
-     *
-     * @type {TimeCache}
-     */
-    this.cache = new TimeCache()
 
     /**
      * List of our subscriptions
@@ -109,11 +101,11 @@ class FloodSub extends BaseProtocol {
     msgs.forEach((msg) => {
       const seqno = utils.msgId(msg.from, msg.seqno)
       // 1. check if I've seen the message, if yes, ignore
-      if (this.cache.has(seqno)) {
+      if (this.seenCache.has(seqno)) {
         return
       }
 
-      this.cache.put(seqno)
+      this.seenCache.put(seqno)
 
       // 2. emit to self
       this._emitMessages(msg.topicIDs, [msg])
@@ -182,7 +174,7 @@ class FloodSub extends BaseProtocol {
 
     const buildMessage = (msg) => {
       const seqno = utils.randomSeqno()
-      this.cache.put(utils.msgId(from, seqno))
+      this.seenCache.put(utils.msgId(from, seqno))
 
       return {
         from: from,
