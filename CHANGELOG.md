@@ -1,3 +1,19 @@
+<a name="0.14.13"></a>
+## [0.14.13](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.12...v0.14.13) (2019-04-22)
+
+
+### Bug Fixes
+
+* random walk ([#104](https://github.com/libp2p/js-libp2p-kad-dht/issues/104)) ([9db17eb](https://github.com/libp2p/js-libp2p-kad-dht/commit/9db17eb))
+
+
+### Features
+
+* add delay support to random walk ([#101](https://github.com/libp2p/js-libp2p-kad-dht/issues/101)) ([7b70fa7](https://github.com/libp2p/js-libp2p-kad-dht/commit/7b70fa7))
+* limit scope of queries to k closest peers ([#97](https://github.com/libp2p/js-libp2p-kad-dht/issues/97)) ([f03619e](https://github.com/libp2p/js-libp2p-kad-dht/commit/f03619e))
+
+
+
 <a name="0.14.12"></a>
 ## [0.14.12](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.11...v0.14.12) (2019-04-04)
 
