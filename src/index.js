@@ -10,6 +10,7 @@ const errcode = require('err-code')
 
 const Peer = require('./peer')
 const message = require('./message')
+const utils = require('./utils')
 
 const nextTick = require('async/nextTick')
 
@@ -324,3 +325,4 @@ class PubsubBaseProtocol extends EventEmitter {
 
 module.exports = PubsubBaseProtocol
 module.exports.message = message
+module.exports.utils = utils
