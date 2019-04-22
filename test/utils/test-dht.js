@@ -36,6 +36,14 @@ class TestDHT {
       options = {}
     }
 
+    // Disable random walk by default for more controlled testing
+    options = {
+      randomWalk: {
+        enabled: false
+      },
+      ...options
+    }
+
     createPeerInfo(1, (err, peers) => {
       if (err) { return callback(err) }
 

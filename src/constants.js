@@ -44,6 +44,6 @@ exports.defaultRandomWalk = {
   enabled: true,
   queriesPerPeriod: 1,
   interval: 5 * minute,
-  timeout: 10 * second,
+  timeout: 30 * second,
   delay: 10 * second
 }

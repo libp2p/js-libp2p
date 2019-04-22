@@ -38,7 +38,7 @@ class KadDHT extends EventEmitter {
    * @property {boolean} enabled discovery enabled (default: true)
    * @property {number} queriesPerPeriod how many queries to run per period (default: 1)
    * @property {number} interval how often to run the the random-walk process, in milliseconds (default: 300000)
-   * @property {number} timeout how long to wait for the the random-walk query to run, in milliseconds (default: 10000)
+   * @property {number} timeout how long to wait for the the random-walk query to run, in milliseconds (default: 30000)
    * @property {number} delay how long to wait before starting the first random walk, in milliseconds (default: 10000)
    */
 
@@ -173,11 +173,10 @@ class KadDHT extends EventEmitter {
    */
   stop (callback) {
     this._running = false
-    this.randomWalk.stop(() => { // guarantee that random walk is stopped if it was started
-      this.providers.stop()
-      this.network.stop(callback)
-    })
+    this.randomWalk.stop()
+    this.providers.stop()
     this._queryManager.stop()
+    this.network.stop(callback)
   }
 
   /**

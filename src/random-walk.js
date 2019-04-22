@@ -3,12 +3,12 @@
 const times = require('async/times')
 const crypto = require('libp2p-crypto')
 const waterfall = require('async/waterfall')
-const timeout = require('async/timeout')
 const multihashing = require('multihashing-async')
 const PeerId = require('peer-id')
 const assert = require('assert')
 const c = require('./constants')
 const { logger } = require('./utils')
+const AbortController = require('abort-controller')
 
 const errcode = require('err-code')
 
@@ -25,9 +25,8 @@ class RandomWalk {
    * @param {DHT} options.dht
    */
   constructor (dht, options) {
-    this._options = { ...c.defaultRandomWalk, ...options }
     assert(dht, 'Random Walk needs an instance of the Kademlia DHT')
-    this._runningHandle = null
+    this._options = { ...c.defaultRandomWalk, ...options }
     this._kadDHT = dht
     this.log = logger(dht.peerInfo.id, 'random-walk')
   }
@@ -41,64 +40,44 @@ class RandomWalk {
    */
   start () {
     // Don't run twice
-    if (this._running || !this._options.enabled) { return }
-
-    // Create running handle
-    const runningHandle = {
-      _onCancel: null,
-      _timeoutId: null,
-      runPeriodically: (walk, period) => {
-        runningHandle._timeoutId = setTimeout(() => {
-          runningHandle._timeoutId = null
-
-          walk((nextPeriod) => {
-            // Was walk cancelled while fn was being called?
-            if (runningHandle._onCancel) {
-              return runningHandle._onCancel()
-            }
-            // Schedule next
-            runningHandle.runPeriodically(walk, nextPeriod)
-          })
-        }, period)
-      },
-      cancel: (cb) => {
-        // Not currently running, can callback immediately
-        if (runningHandle._timeoutId) {
-          clearTimeout(runningHandle._timeoutId)
-          return cb()
-        }
-        // Wait to finish and then call callback
-        runningHandle._onCancel = cb
-      }
-    }
+    if (this._timeoutId || !this._options.enabled) { return }
 
     // Start doing random walks after `this._options.delay`
-    runningHandle._timeoutId = setTimeout(() => {
+    this._timeoutId = setTimeout(() => {
       // Start runner immediately
-      runningHandle.runPeriodically((done) => {
+      this._runPeriodically((done) => {
         // Each subsequent walk should run on a `this._options.interval` interval
         this._walk(this._options.queriesPerPeriod, this._options.timeout, () => done(this._options.interval))
       }, 0)
     }, this._options.delay)
-
-    this._runningHandle = runningHandle
   }
 
   /**
-   * Stop the random-walk process.
-   * @param {function(Error)} callback
+   * Stop the random-walk process. Any active
+   * queries will be aborted.
    *
    * @returns {void}
    */
-  stop (callback) {
-    const runningHandle = this._runningHandle
+  stop () {
+    clearTimeout(this._timeoutId)
+    this._timeoutId = null
+    this._controller && this._controller.abort()
+  }
 
-    if (!runningHandle) {
-      return callback()
-    }
-
-    this._runningHandle = null
-    runningHandle.cancel(callback)
+  /**
+   * Run function `walk` on every `interval` ms
+   * @param {function(callback)} walk The function to execute on `interval`
+   * @param {number} interval The interval to run on in ms
+   *
+   * @private
+   */
+  _runPeriodically (walk, interval) {
+    this._timeoutId = setTimeout(() => {
+      walk((nextInterval) => {
+        // Schedule next
+        this._runPeriodically(walk, nextInterval)
+      })
+    }, interval)
   }
 
   /**
@@ -113,39 +92,63 @@ class RandomWalk {
    */
   _walk (queries, walkTimeout, callback) {
     this.log('start')
+    this._controller = new AbortController()
 
-    times(queries, (i, cb) => {
+    times(queries, (i, next) => {
+      this.log('running query %d', i)
+
+      // Perform the walk
       waterfall([
         (cb) => this._randomPeerId(cb),
-        (id, cb) => timeout((cb) => {
-          this._query(id, cb)
-        }, walkTimeout)(cb)
+        (id, cb) => {
+          // Check if we've happened to already abort
+          if (!this._controller) return cb()
+
+          this._query(id, {
+            timeout: walkTimeout,
+            signal: this._controller.signal
+          }, cb)
+        }
       ], (err) => {
-        if (err) {
-          this.log.error('query finished with error', err)
-          return callback(err)
+        if (err && err.code !== 'ETIMEDOUT') {
+          this.log.error('query %d finished with error', i, err)
+          return next(err)
         }
 
-        this.log('done')
-        callback(null)
+        this.log('finished query %d', i)
+        next(null)
       })
+    }, (err) => {
+      this._controller = null
+      this.log('finished queries')
+      callback(err)
     })
   }
 
   /**
    * The query run during a random walk request.
    *
+   * TODO: While query currently supports an abort controller, it is not
+   * yet supported by `DHT.findPeer`. Once https://github.com/libp2p/js-libp2p-kad-dht/pull/82
+   * is complete, and AbortController support has been added to the
+   * DHT query functions, the abort here will just work, provided the
+   * functions support `options.signal`. Once done, this todo should be
+   * removed.
+   *
    * @param {PeerId} id
+   * @param {object} options
+   * @param {number} options.timeout
+   * @param {AbortControllerSignal} options.signal
    * @param {function(Error)} callback
    * @returns {void}
    *
    * @private
    */
-  _query (id, callback) {
+  _query (id, options, callback) {
     this.log('query:%s', id.toB58String())
 
-    this._kadDHT.findPeer(id, (err, peer) => {
-      if (err.code === 'ERR_NOT_FOUND') {
+    this._kadDHT.findPeer(id, options, (err, peer) => {
+      if (err && err.code === 'ERR_NOT_FOUND') {
         // expected case, we asked for random stuff after all
         return callback()
       }
