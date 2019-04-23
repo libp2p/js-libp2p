@@ -24,19 +24,5 @@ jobs:
         - npx aegir dep-check -- -i wrtc -i electron-webrtc
         - npm run lint
 
-    - stage: test
-      name: chrome
-      addons:
-        chrome: stable
-      script:
-        - npx aegir test -t browser
-
-    - stage: test
-      name: firefox
-      addons:
-        firefox: latest
-      script:
-        - npx aegir test -t browser -- --browsers FirefoxHeadless
-
 notifications:
   email: false
