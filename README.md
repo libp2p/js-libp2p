@@ -65,8 +65,8 @@ Floodsub emits two kinds of events:
   ```
   - `peerInfo`: a [PeerInfo](https://github.com/libp2p/js-peer-info) object
   - `topics`: the topics that the peer is now subscribed to
-  - `changes`: an array of `{ topicCID: <topic>, subscribe: <boolean> }`
-     eg `[ { topicCID: 'fruit', subscribe: true }, { topicCID: 'vegetables': false } ]`
+  - `changes`: an array of `{ topicID: <topic>, subscribe: <boolean> }`
+     eg `[ { topicID: 'fruit', subscribe: true }, { topicID: 'vegetables': false } ]`
 
 
 ## API
