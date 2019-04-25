@@ -1,3 +1,13 @@
+<a name="0.42.11"></a>
+## [0.42.11](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.10...v0.42.11) (2019-04-25)
+
+
+### Bug Fixes
+
+* **stats:** prevent 0ms timeDiff breaking movingAverage ([#336](https://github.com/libp2p/js-libp2p-switch/issues/336)) ([7aebb9c](https://github.com/libp2p/js-libp2p-switch/commit/7aebb9c))
+
+
+
 <a name="0.42.10"></a>
 ## [0.42.10](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.9...v0.42.10) (2019-04-16)
 
