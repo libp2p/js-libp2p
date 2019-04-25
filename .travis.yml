@@ -22,7 +22,6 @@ jobs:
 
     - stage: check
       script:
-        - npx aegir commitlint --travis
         - npx aegir dep-check
         - npm run lint
 

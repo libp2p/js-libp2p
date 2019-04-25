@@ -182,7 +182,9 @@ class Stats extends EventEmitter {
   _updateFrequencyFor (key, timeDiffMS, latestTime) {
     const count = this._frequencyAccumulators[key] || 0
     this._frequencyAccumulators[key] = 0
-    const hz = (count / timeDiffMS) * 1000
+    // if `timeDiff` is zero, `hz` becomes Infinity, so we fallback to 1ms
+    const safeTimeDiff = timeDiffMS || 1
+    const hz = (count / safeTimeDiff) * 1000
 
     let movingAverages = this._movingAverages[key]
     if (!movingAverages) {
