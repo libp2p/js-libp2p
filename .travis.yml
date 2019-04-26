@@ -1,32 +1,36 @@
-# Warning: This file is automatically synced from https://github.com/ipfs/ci-sync so if you want to change it, please change it there and ask someone to sync all repositories.
-sudo: false
 language: node_js
+cache: npm
 
-matrix:
+stages:
+  - check
+  - test
+  - cov
+
+node_js:
+  - '10'
+
+script: npx nyc -s npm run test:node -- --bail
+after_success: npx nyc report --reporter=text-lcov > coverage.lcov && npx codecov
+
+jobs:
   include:
-  - node_js: 6
-    env: CXX=g++-4.8
-  - node_js: 8
-    env: CXX=g++-4.8
-    #  - node_js: stable
-    #    env: CXX=g++-4.8
+    - os: linux
+      sudo: false
+      before_script: sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
 
-script:
-  - npm run lint
-  - npm run test
-  - npm run coverage
+    - os: windows
+      filter_secrets: false
+      cache: false
 
-before_script:
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
+    - os: osx
 
-after_success:
-  - npm run coverage-publish
+    - stage: check
+      os: linux
+      script:
+        - npx aegir build --bundlesize
+        - npx aegir commitlint --travis
+        - npx aegir dep-check
+        - npm run lint
 
-addons:
-  firefox: 'latest'
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++-4.8
+notifications:
+  email: false
