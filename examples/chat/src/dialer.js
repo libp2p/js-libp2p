@@ -3,7 +3,7 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const Node = require('./libp2p-bundle')
+const Node = require('./libp2p-bundle.js')
 const pull = require('pull-stream')
 const async = require('async')
 const Pushable = require('pull-pushable')
