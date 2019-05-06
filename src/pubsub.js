@@ -63,9 +63,7 @@ module.exports = (node) => {
         return nextTick(callback, errCode(new Error('data must be a Buffer'), 'ERR_DATA_IS_NOT_A_BUFFER'))
       }
 
-      floodSub.publish(topic, data)
-
-      nextTick(() => callback())
+      floodSub.publish(topic, data, callback)
     },
 
     ls: (callback) => {

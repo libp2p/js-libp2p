@@ -43,7 +43,7 @@
     "err-code": "^1.1.2",
     "fsm-event": "^2.1.0",
     "libp2p-connection-manager": "~0.1.0",
-    "libp2p-floodsub": "~0.15.8",
+    "libp2p-floodsub": "libp2p/js-libp2p-floodsub#feat/signing",
     "libp2p-ping": "~0.8.5",
     "libp2p-switch": "~0.42.9",
     "libp2p-websockets": "~0.12.2",
