@@ -10,6 +10,7 @@ const errcode = require('err-code')
 
 const Peer = require('./peer')
 const message = require('./message')
+const { signMessage } = require('./message/sign')
 const utils = require('./utils')
 
 const nextTick = require('async/nextTick')
@@ -22,16 +23,27 @@ class PubsubBaseProtocol extends EventEmitter {
    * @param {String} debugName
    * @param {String} multicodec
    * @param {Object} libp2p libp2p implementation
+   * @param {Object} options
+   * @param {boolean} options.signMessages if messages should be signed, defaults to true
    * @constructor
    */
-  constructor (debugName, multicodec, libp2p) {
+  constructor (debugName, multicodec, libp2p, options) {
     super()
+
+    options = {
+      signMessages: true,
+      ...options
+    }
 
     this.log = debug(debugName)
     this.log.err = debug(`${debugName}:error`)
     this.multicodec = multicodec
     this.libp2p = libp2p
     this.started = false
+
+    if (options.signMessages) {
+      this.peerId = this.libp2p.peerInfo.id
+    }
 
     /**
      * Map of topics to which peers are subscribed to
@@ -226,15 +238,31 @@ class PubsubBaseProtocol extends EventEmitter {
   }
 
   /**
+   * Normalizes the message and signs it, if signing is enabled
+   *
+   * @param {Message} message
+   * @param {function(Error, Message)} callback
+   */
+  _buildMessage (message, callback) {
+    const msg = utils.normalizeOutRpcMessage(message)
+    if (this.peerId) {
+      signMessage(this.peerId, msg, callback)
+    } else {
+      nextTick(callback, null, msg)
+    }
+  }
+
+  /**
    * Overriding the implementation of publish should handle the appropriate algorithms for the publish/subscriber implementation.
    * For example, a Floodsub implementation might simply publish each message to each topic for every peer
    * @abstract
    * @param {Array<string>|string} topics
    * @param {Array<any>|any} messages
+   * @param {function(Error)} callback
    * @returns {undefined}
    *
    */
-  publish (topics, messages) {
+  publish (topics, messages, callback) {
     throw errcode('publish must be implemented by the subclass', 'ERR_NOT_IMPLEMENTED')
   }
 
