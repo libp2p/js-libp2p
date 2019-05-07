@@ -1,3 +1,23 @@
+<a name="0.16.0"></a>
+# [0.16.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.8...v0.16.0) (2019-05-07)
+
+
+### Bug Fixes
+
+* use pubsub seenCache ([#75](https://github.com/libp2p/js-libp2p-floodsub/issues/75)) ([19d9a96](https://github.com/libp2p/js-libp2p-floodsub/commit/19d9a96))
+
+
+### Features
+
+* add support for signing ([#78](https://github.com/libp2p/js-libp2p-floodsub/issues/78)) ([4feadeb](https://github.com/libp2p/js-libp2p-floodsub/commit/4feadeb))
+
+
+### BREAKING CHANGES
+
+* publish now takes a callback as it needs to sign messages
+
+
+
 <a name="0.15.8"></a>
 ## [0.15.8](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.7...v0.15.8) (2019-02-14)
 
