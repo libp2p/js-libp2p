@@ -1,3 +1,18 @@
+<a name="0.1.0"></a>
+# [0.1.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.0.4...v0.1.0) (2019-05-07)
+
+
+### Features
+
+* add support for message signing ([5cb17fd](https://github.com/libp2p/js-libp2p-pubsub/commit/5cb17fd))
+
+
+### BREAKING CHANGES
+
+* as .publish should now sign messages (via _buildMessage) it now requires a callback since signing is async. This also adds an options param to the pubsub constructor to allow for disabling signing. While this change shouldnt break things upstream, implementations need to be sure to call _buildMessage for each message they will publish.
+
+
+
 <a name="0.0.4"></a>
 ## [0.0.4](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.0.3...v0.0.4) (2019-04-22)
 
