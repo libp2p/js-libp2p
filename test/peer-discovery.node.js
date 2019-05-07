@@ -423,6 +423,7 @@ describe('peer discovery', () => {
           randomWalk: {
             enabled: true,
             queriesPerPeriod: 1,
+            delay: 100,
             interval: 200, // start the query sooner
             timeout: 3000
           }
