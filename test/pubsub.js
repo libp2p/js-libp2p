@@ -8,7 +8,10 @@ const expect = chai.expect
 const series = require('async/series')
 const parallel = require('async/parallel')
 
+const { Message } = require('../src/message')
+const { SignPrefix } = require('../src/message/sign')
 const PubsubBaseProtocol = require('../src')
+const { randomSeqno, normalizeOutRpcMessage } = require('../src/utils')
 const utils = require('./utils')
 const createNode = utils.createNode
 
@@ -55,14 +58,7 @@ describe('pubsub base protocol', () => {
       })
     })
 
-    after((done) => {
-      parallel([
-        (cb) => nodeA.stop(cb),
-        (cb) => nodeB.stop(cb)
-      ], done)
-    })
-
-    it('mount the pubsub protocol', (done) => {
+    before('mount the pubsub protocol', (done) => {
       psA = new PubsubImplementation(nodeA)
       psB = new PubsubImplementation(nodeB)
 
@@ -73,10 +69,17 @@ describe('pubsub base protocol', () => {
       }, 50)
     })
 
-    it('start both Pubsub', (done) => {
+    before('start both Pubsub', (done) => {
       parallel([
         (cb) => psA.start(cb),
         (cb) => psB.start(cb)
+      ], done)
+    })
+
+    after((done) => {
+      parallel([
+        (cb) => nodeA.stop(cb),
+        (cb) => nodeB.stop(cb)
       ], done)
     })
 
@@ -89,6 +92,29 @@ describe('pubsub base protocol', () => {
           cb()
         }, 1000)
       ], done)
+    })
+
+    it('_buildMessage normalizes and signs messages', (done) => {
+      const message = {
+        from: 'QmABC',
+        data: 'hello',
+        seqno: randomSeqno(),
+        topicIDs: ['test-topic']
+      }
+
+      psA._buildMessage(message, (err, signedMessage) => {
+        expect(err).to.not.exist()
+
+        const bytesToSign = Buffer.concat([
+          SignPrefix,
+          Message.encode(normalizeOutRpcMessage(message))
+        ])
+
+        psA.peerId.pubKey.verify(bytesToSign, signedMessage.signature, (err, verified) => {
+          expect(verified).to.eql(true)
+          done(err)
+        })
+      })
     })
   })
 

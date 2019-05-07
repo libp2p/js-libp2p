@@ -6,7 +6,7 @@ const pull = require('pull-stream')
 const setImmediate = require('async/setImmediate')
 const EventEmitter = require('events')
 
-const rpc = require('./message').rpc.RPC
+const { RPC } = require('./message')
 
 /**
  * The known state of a connected peer.
@@ -109,7 +109,7 @@ class Peer extends EventEmitter {
       })
     })
 
-    this.write(rpc.encode({
+    this.write(RPC.encode({
       subscriptions: subs
     }))
   }
@@ -139,7 +139,7 @@ class Peer extends EventEmitter {
    * @returns {undefined}
    */
   sendMessages (msgs) {
-    this.write(rpc.encode({
+    this.write(RPC.encode({
       msgs: msgs
     }))
   }
