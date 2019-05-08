@@ -1,3 +1,13 @@
+<a name="0.14.14"></a>
+## [0.14.14](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.13...v0.14.14) (2019-05-08)
+
+
+### Bug Fixes
+
+* performance improvements ([#107](https://github.com/libp2p/js-libp2p-kad-dht/issues/107)) ([ddf80fe](https://github.com/libp2p/js-libp2p-kad-dht/commit/ddf80fe))
+
+
+
 <a name="0.14.13"></a>
 ## [0.14.13](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.12...v0.14.13) (2019-04-22)
 
