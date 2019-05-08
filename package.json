@@ -1,6 +1,6 @@
 {
   "name": "libp2p-floodsub",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "description": "libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -81,8 +81,8 @@
     "Mikerah <mikerah14@gmail.com>",
     "Pedro Teixeira <i@pgte.me>",
     "Richard Schneider <makaretu@gmail.com>",
-    "Vasco Santos <vasco.santos@ua.pt>",
     "Vasco Santos <vasco.santos@moxy.studio>",
+    "Vasco Santos <vasco.santos@ua.pt>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>",
     "Yusef Napora <yusef@napora.org>",
     "dirkmc <dirk@mccormick.cx>",
