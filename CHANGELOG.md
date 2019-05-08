@@ -1,3 +1,13 @@
+<a name="0.16.1"></a>
+## [0.16.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.16.0...v0.16.1) (2019-05-08)
+
+
+### Bug Fixes
+
+* _emitMessages should not emit normalized messages ([#79](https://github.com/libp2p/js-libp2p-floodsub/issues/79)) ([917b7f1](https://github.com/libp2p/js-libp2p-floodsub/commit/917b7f1))
+
+
+
 <a name="0.16.0"></a>
 # [0.16.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.15.8...v0.16.0) (2019-05-07)
 
