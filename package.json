@@ -53,7 +53,8 @@
     "libp2p-tcp": "~0.13.0",
     "lodash": "^4.17.11",
     "peer-id": "~0.12.2",
-    "peer-info": "~0.15.1"
+    "peer-info": "~0.15.1",
+    "sinon": "^7.3.2"
   },
   "dependencies": {
     "async": "^2.6.2",

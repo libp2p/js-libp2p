@@ -179,19 +179,21 @@ class FloodSub extends BaseProtocol {
       const seqno = utils.randomSeqno()
       this.seenCache.put(utils.msgId(from, seqno))
 
-      this._buildMessage({
+      const message = {
         from: from,
         data: msg,
         seqno: seqno,
         topicIDs: topics
-      }, cb)
+      }
+
+      // Emit to self if I'm interested
+      this._emitMessages(topics, [message])
+
+      this._buildMessage(message, cb)
     }
 
     asyncMap(messages, buildMessage, (err, msgObjects) => {
       if (err) return callback(err)
-
-      // Emit to self if I'm interested
-      this._emitMessages(topics, msgObjects)
 
       // send to all the other peers
       this._forwardMessages(topics, msgObjects)
