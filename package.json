@@ -14,7 +14,8 @@
     "release-minor": "aegir release --type minor --docs -t node",
     "release-major": "aegir release --type major --docs -t node",
     "coverage": "aegir coverage",
-    "coverage-publish": "aegir-coverage publish"
+    "coverage-publish": "aegir-coverage publish",
+    "sim": "node test/simulation/index.js"
   },
   "pre-push": [
     "lint",

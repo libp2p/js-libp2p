@@ -737,7 +737,7 @@ describe('KadDHT', () => {
           // Get the alpha (3) closest peers to the key from the origin's
           // routing table
           const rtablePeers = guy.routingTable.closestPeers(rtval, c.ALPHA)
-          expect(rtablePeers).to.have.length(3)
+          expect(rtablePeers).to.have.length(c.ALPHA)
 
           // The set of peers used to initiate the query (the closest alpha
           // peers to the key that the origin knows about)
@@ -768,13 +768,13 @@ describe('KadDHT', () => {
             expect(out.filter((p) => !rtableSet[p.toB58String()]))
               .to.not.be.empty()
 
-            // Expect that there were 20 peers found
-            expect(out).to.have.length(20)
+            // Expect that there were kValue peers found
+            expect(out).to.have.length(c.K)
 
-            // The expected closest 20 peers to the key
-            const exp = actualClosest.slice(0, 20)
+            // The expected closest kValue peers to the key
+            const exp = actualClosest.slice(0, c.K)
 
-            // Expect the 20 peers found to be the 20 closest connected peers
+            // Expect the kValue peers found to be the kValue closest connected peers
             // to the key
             expect(countDiffPeers(exp, out)).to.eql(0)
 

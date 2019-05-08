@@ -48,6 +48,7 @@ class KadDHT extends EventEmitter {
    * @param {Switch} sw libp2p-switch instance
    * @param {object} options DHT options
    * @param {number} options.kBucketSize k-bucket size (default 20)
+   * @param {number} options.concurrency alpha concurrency of queries (default 3)
    * @param {Datastore} options.datastore datastore (default MemoryDatastore)
    * @param {object} options.validators validators object with namespace as keys and function(key, record, callback)
    * @param {object} options.selectors selectors object with namespace as keys and function(key, records)
@@ -75,11 +76,17 @@ class KadDHT extends EventEmitter {
     this.kBucketSize = options.kBucketSize || c.K
 
     /**
-     * Number of closest peers to return on kBucket search, default 20
-     *
+     * ALPHA concurrency at which each query path with run, defaults to 3
      * @type {number}
      */
-    this.ncp = options.ncp || c.K
+    this.concurrency = options.concurrency || c.ALPHA
+
+    /**
+     * Number of disjoint query paths to use
+     * This is set to `kBucketSize`/2 per the S/Kademlia paper
+     * @type {number}
+     */
+    this.disjointPaths = Math.ceil(this.kBucketSize / 2)
 
     /**
      * The routing table.
@@ -321,7 +328,7 @@ class KadDHT extends EventEmitter {
       waterfall([
         (cb) => utils.convertBuffer(key, cb),
         (id, cb) => {
-          const rtp = this.routingTable.closestPeers(id, c.ALPHA)
+          const rtp = this.routingTable.closestPeers(id, this.kBucketSize)
 
           this._log('peers in rt: %d', rtp.length)
           if (rtp.length === 0) {
@@ -412,7 +419,7 @@ class KadDHT extends EventEmitter {
         return callback(err)
       }
 
-      const tablePeers = this.routingTable.closestPeers(id, c.ALPHA)
+      const tablePeers = this.routingTable.closestPeers(id, this.kBucketSize)
 
       const q = new Query(this, key, () => {
         // There is no distinction between the disjoint paths,
@@ -442,7 +449,7 @@ class KadDHT extends EventEmitter {
 
         waterfall([
           (cb) => utils.sortClosestPeers(Array.from(res.finalSet), id, cb),
-          (sorted, cb) => cb(null, sorted.slice(0, c.K))
+          (sorted, cb) => cb(null, sorted.slice(0, this.kBucketSize))
         ], callback)
       })
     })
@@ -527,6 +534,7 @@ class KadDHT extends EventEmitter {
   provide (key, callback) {
     this._log('provide: %s', key.toBaseEncodedString())
 
+    const errors = []
     waterfall([
       (cb) => this.providers.addProvider(key, this.peerInfo.id, cb),
       (cb) => this.getClosestPeers(key.buffer, cb),
@@ -536,10 +544,21 @@ class KadDHT extends EventEmitter {
 
         each(peers, (peer, cb) => {
           this._log('putProvider %s to %s', key.toBaseEncodedString(), peer.toB58String())
-          this.network.sendMessage(peer, msg, cb)
+          this.network.sendMessage(peer, msg, (err) => {
+            if (err) errors.push(err)
+            cb()
+          })
         }, cb)
       }
-    ], (err) => callback(err))
+    ], (err) => {
+      if (errors.length) {
+        // This should be infrequent. This means a peer we previously connected
+        // to failed to exchange the provide message. If getClosestPeers was an
+        // iterator, we could continue to pull until we announce to kBucketSize peers.
+        err = errcode(`Failed to provide to ${errors.length} of ${this.kBucketSize} peers`, 'ERR_SOME_PROVIDES_FAILED', { errors })
+      }
+      callback(err)
+    })
   }
 
   /**
@@ -613,7 +632,7 @@ class KadDHT extends EventEmitter {
       waterfall([
         (cb) => utils.convertPeerId(id, cb),
         (key, cb) => {
-          const peers = this.routingTable.closestPeers(key, c.ALPHA)
+          const peers = this.routingTable.closestPeers(key, this.kBucketSize)
 
           if (peers.length === 0) {
             return cb(errcode(new Error('Peer lookup failed'), 'ERR_LOOKUP_FAILED'))

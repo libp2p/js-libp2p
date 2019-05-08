@@ -34,7 +34,7 @@ module.exports = (dht) => ({
       }
       let ids
       try {
-        ids = dht.routingTable.closestPeers(key, dht.ncp)
+        ids = dht.routingTable.closestPeers(key, dht.kBucketSize)
       } catch (err) {
         return callback(err)
       }
@@ -82,7 +82,7 @@ module.exports = (dht) => ({
    * Try to fetch a given record by from the local datastore.
    * Returns the record iff it is still valid, meaning
    * - it was either authored by this node, or
-   * - it was receceived less than `MAX_RECORD_AGE` ago.
+   * - it was received less than `MAX_RECORD_AGE` ago.
    *
    * @param {Buffer} key
    * @param {function(Error, Record)} callback
@@ -171,7 +171,7 @@ module.exports = (dht) => ({
    *
    * @param {Buffer} key
    * @param {PeerId} peer
-   * @param {function(Error)} callback
+   * @param {function(Error, Array<PeerInfo>)} callback
    * @returns {void}
    *
    * @private
@@ -185,13 +185,12 @@ module.exports = (dht) => ({
 
       const out = msg.closerPeers
         .filter((pInfo) => !dht._isSelf(pInfo.id))
-        .map((pInfo) => dht.peerBook.put(pInfo))
 
       callback(null, out)
     })
   },
   /**
-   * Is the given peer id the peer id?
+   * Is the given peer id our PeerId?
    *
    * @param {PeerId} other
    * @returns {bool}
@@ -206,7 +205,7 @@ module.exports = (dht) => ({
    *
    * @param {PeerId} peer
    * @param {PeerId} target
-   * @param {function(Error)} callback
+   * @param {function(Error, Message)} callback
    * @returns {void}
    *
    * @private
@@ -522,7 +521,7 @@ module.exports = (dht) => ({
         }
       })
 
-      const peers = dht.routingTable.closestPeers(key.buffer, c.ALPHA)
+      const peers = dht.routingTable.closestPeers(key.buffer, dht.kBucketSize)
 
       timeout((cb) => query.run(peers, cb), providerTimeout)((err) => {
         query.stop()
