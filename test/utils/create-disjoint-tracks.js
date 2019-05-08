@@ -1,38 +1,10 @@
 'use strict'
 
-const multihashing = require('multihashing-async')
-const distance = require('xor-distance')
 const waterfall = require('async/waterfall')
-const map = require('async/map')
-
-function convertPeerId (peer, callback) {
-  multihashing.digest(peer.id, 'sha2-256', callback)
-}
-
-function sortClosestPeers (peers, target, callback) {
-  map(peers, (peer, cb) => {
-    convertPeerId(peer, (err, id) => {
-      if (err) {
-        return cb(err)
-      }
-
-      cb(null, {
-        peer: peer,
-        distance: distance(id, target)
-      })
-    })
-  }, (err, distances) => {
-    if (err) {
-      return callback(err)
-    }
-
-    callback(null, distances.sort(xorCompare).map((d) => d.peer))
-  })
-}
-
-function xorCompare (a, b) {
-  return distance.compare(a.distance, b.distance)
-}
+const {
+  convertPeerId,
+  sortClosestPeers
+} = require('../../src/utils')
 
 /*
  * Given an array of peerInfos, decide on a target, start peers, and

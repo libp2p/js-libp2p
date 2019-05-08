@@ -94,11 +94,11 @@ exports.decodeBase32 = (raw) => {
 }
 
 /**
- * Sort peers by distance to the given `id`.
+ * Sort peers by distance to the given `target`.
  *
  * @param {Array<PeerId>} peers
  * @param {Buffer} target
- * @param {function(Error, )} callback
+ * @param {function(Error, Array<PeerId>)} callback
  * @returns {void}
  */
 exports.sortClosestPeers = (peers, target, callback) => {

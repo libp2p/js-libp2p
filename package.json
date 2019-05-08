@@ -1,6 +1,6 @@
 {
   "name": "libp2p-kad-dht",
-  "version": "0.14.13",
+  "version": "0.14.14",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -14,7 +14,8 @@
     "release-minor": "aegir release --type minor --docs -t node",
     "release-major": "aegir release --type major --docs -t node",
     "coverage": "aegir coverage",
-    "coverage-publish": "aegir-coverage publish"
+    "coverage-publish": "aegir-coverage publish",
+    "sim": "node test/simulation/index.js"
   },
   "pre-push": [
     "lint",
@@ -91,8 +92,8 @@
     "Pedro Teixeira <i@pgte.me>",
     "Richard Schneider <makaretu@gmail.com>",
     "Thomas Eizinger <thomas@eizinger.io>",
-    "Vasco Santos <vasco.santos@ua.pt>",
     "Vasco Santos <vasco.santos@moxy.studio>",
+    "Vasco Santos <vasco.santos@ua.pt>",
     "dirkmc <dirkmdev@gmail.com>",
     "dirkmc <dirk@mccormick.cx>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"

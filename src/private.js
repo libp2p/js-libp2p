@@ -35,7 +35,7 @@ module.exports = (dht) => ({
   async _nearestPeersToQueryAsync (msg) {
     const key = await pify(utils.convertBuffer)(msg.key)
 
-    const ids = dht.routingTable.closestPeers(key, dht.ncp)
+    const ids = dht.routingTable.closestPeers(key, dht.kBucketSize)
     return ids.map((p) => {
       if (dht.peerBook.has(p)) {
         return dht.peerBook.get(p)
@@ -568,7 +568,7 @@ module.exports = (dht) => ({
       }
     })
 
-    const peers = dht.routingTable.closestPeers(key.buffer, c.ALPHA)
+    const peers = dht.routingTable.closestPeers(key.buffer, dht.kBucketSize)
 
     try {
       await pify(callback => timeout((cb) => query.run(peers, cb), providerTimeout)(callback))()
