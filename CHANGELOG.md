@@ -1,3 +1,13 @@
+<a name="0.12.3"></a>
+## [0.12.3](https://github.com/libp2p/js-libp2p-mdns/compare/v0.12.2...v0.12.3) (2019-05-09)
+
+
+### Features
+
+* compatibility with go-libp2p-mdns ([#80](https://github.com/libp2p/js-libp2p-mdns/issues/80)) ([c6d1d49](https://github.com/libp2p/js-libp2p-mdns/commit/c6d1d49))
+
+
+
 <a name="0.12.2"></a>
 ## [0.12.2](https://github.com/libp2p/js-libp2p-mdns/compare/v0.12.1...v0.12.2) (2019-01-04)
 
