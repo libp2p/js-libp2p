@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "lint": "aegir lint",
-    "coverage": "aegir coverage",
+    "coverage": "nyc --reporter=lcov --reporter=text npm run test:node",
     "test": "aegir test -t node",
     "test:node": "aegir test -t node",
     "release": "aegir release -t node --no-build",
@@ -35,11 +35,11 @@
   "homepage": "https://github.com/libp2p/js-libp2p-mdns",
   "devDependencies": {
     "aegir": "^18.2.2",
-    "async": "^2.6.2",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1"
   },
   "dependencies": {
+    "async": "^2.6.2",
     "debug": "^4.1.1",
     "libp2p-tcp": "~0.13.0",
     "multiaddr": "^6.0.6",

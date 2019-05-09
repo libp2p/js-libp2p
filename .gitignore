@@ -3,6 +3,7 @@ docs
 **/*.log
 test/repo-tests*
 **/bundle.js
+.nyc_output
 
 # Logs
 logs

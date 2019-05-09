@@ -33,9 +33,10 @@ mdns.start(() => setTimeout(() => mdns.stop(() => {}), 20 * 1000))
 
 - options
   - `peerInfo` - PeerInfo to announce
-  - `broadcast` - (true/false) announce our presence through mDNS, default false
+  - `broadcast` - (true/false) announce our presence through mDNS, default `false`
   - `interval` - query interval, default 10 * 1000 (10 seconds)
   - `serviceTag` - name of the service announce , default 'ipfs.local`
+  - `compat` - enable/disable compatibility with go-libp2p-mdns, default `true`
 
 ## MDNS messages
 

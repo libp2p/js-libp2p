@@ -67,12 +67,14 @@ describe('MulticastDNS', () => {
     const mdnsA = new MulticastDNS({
       peerInfo: pA,
       broadcast: false, // do not talk to ourself
-      port: 50001
+      port: 50001,
+      compat: false
     })
 
     const mdnsB = new MulticastDNS({
       peerInfo: pB,
-      port: 50001 // port must be the same
+      port: 50001, // port must be the same
+      compat: false
     })
 
     parallel([
@@ -97,15 +99,18 @@ describe('MulticastDNS', () => {
     const mdnsA = new MulticastDNS({
       peerInfo: pA,
       broadcast: false, // do not talk to ourself
-      port: 50003
+      port: 50003,
+      compat: false
     })
     const mdnsC = new MulticastDNS({
       peerInfo: pC,
-      port: 50003 // port must be the same
+      port: 50003, // port must be the same
+      compat: false
     })
     const mdnsD = new MulticastDNS({
       peerInfo: pD,
-      port: 50003 // port must be the same
+      port: 50003, // port must be the same
+      compat: false
     })
 
     parallel([
@@ -134,12 +139,14 @@ describe('MulticastDNS', () => {
     const mdnsA = new MulticastDNS({
       peerInfo: pA,
       broadcast: false, // do not talk to ourself
-      port: 50001
+      port: 50001,
+      compat: false
     })
 
     const mdnsB = new MulticastDNS({
       peerInfo: pB,
-      port: 50001
+      port: 50001,
+      compat: false
     })
 
     series([
@@ -164,12 +171,14 @@ describe('MulticastDNS', () => {
 
     const mdnsA = new MulticastDNS({
       peerInfo: pA,
-      port: 50004 // port must be the same
+      port: 50004, // port must be the same
+      compat: false
     })
 
     const mdnsC = new MulticastDNS({
       peerInfo: pC,
-      port: 50004
+      port: 50004,
+      compat: false
     })
 
     series([
@@ -181,6 +190,18 @@ describe('MulticastDNS', () => {
       setTimeout(() => mdnsC.stop(done), 5000)
       mdnsC.once('peer', (peerInfo) => {
         done(new Error('Should not receive new peer.'))
+      })
+    })
+  })
+
+  it('should start and stop with go-libp2p-mdns compat', done => {
+    const mdns = new MulticastDNS({ peerInfo: pA, port: 50004 })
+
+    mdns.start(err => {
+      expect(err).to.not.exist()
+      mdns.stop(err => {
+        expect(err).to.not.exist()
+        done()
       })
     })
   })

@@ -3,9 +3,12 @@
 const multicastDNS = require('multicast-dns')
 const EventEmitter = require('events').EventEmitter
 const assert = require('assert')
+const nextTick = require('async/nextTick')
+const parallel = require('async/parallel')
 const debug = require('debug')
 const log = debug('libp2p:mdns')
 const query = require('./query')
+const GoMulticastDNS = require('./compat')
 
 class MulticastDNS extends EventEmitter {
   constructor (options) {
@@ -18,10 +21,18 @@ class MulticastDNS extends EventEmitter {
     this.port = options.port || 5353
     this.peerInfo = options.peerInfo
     this._queryInterval = null
+    this._onPeer = this._onPeer.bind(this)
+
+    if (options.compat !== false) {
+      this._goMdns = new GoMulticastDNS(options.peerInfo, {
+        queryPeriod: options.compatQueryPeriod,
+        queryInterval: options.compatQueryInterval
+      })
+      this._goMdns.on('peer', this._onPeer)
+    }
   }
 
   start (callback) {
-    const self = this
     const mdns = multicastDNS({ port: this.port })
 
     this.mdns = mdns
@@ -34,7 +45,7 @@ class MulticastDNS extends EventEmitter {
           return log('Error processing peer response', err)
         }
 
-        self.emit('peer', foundPeer)
+        this._onPeer(foundPeer)
       })
     })
 
@@ -42,15 +53,32 @@ class MulticastDNS extends EventEmitter {
       query.gotQuery(event, this.mdns, this.peerInfo, this.serviceTag, this.broadcast)
     })
 
-    setImmediate(() => callback())
+    if (this._goMdns) {
+      this._goMdns.start(callback)
+    } else {
+      nextTick(() => callback())
+    }
+  }
+
+  _onPeer (peerInfo) {
+    this.emit('peer', peerInfo)
   }
 
   stop (callback) {
     if (!this.mdns) {
-      callback(new Error('MulticastDNS service had not started yet'))
+      return callback(new Error('MulticastDNS service had not started yet'))
+    }
+
+    clearInterval(this._queryInterval)
+    this._queryInterval = null
+
+    if (this._goMdns) {
+      this._goMdns.removeListener('peer', this._onPeer)
+      parallel([
+        cb => this._goMdns.stop(cb),
+        cb => this.mdns.destroy(cb)
+      ], callback)
     } else {
-      clearInterval(this._queryInterval)
-      this._queryInterval = null
       this.mdns.destroy(callback)
       this.mdns = undefined
     }
