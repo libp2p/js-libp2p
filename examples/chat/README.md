@@ -3,8 +3,8 @@
 This example creates a simple chat app in your terminal.
 
 ## Setup
-1. Install the modules, `npm install`.
-2. Open 2 terminal windows in the `./src` directory.
+1. Install the modules in the libp2p root directory, `npm install`.
+2. Open 2 terminal windows in the `./examples/chat/src` directory.
 
 ## Running
 1. Run the listener in window 1, `node listener.js`

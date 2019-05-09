@@ -62,11 +62,8 @@ parallel([
   const node1 = nodes[0]
   const node2 = nodes[1]
 
-  series([
-    (cb) => node1.once('peer:discovery', (peer) => node1.dial(peer, cb)),
-    (cb) => setTimeout(cb, 500)
-  ], (err) => {
-    if (err) { throw err }
+  node1.once('peer:connect', (peer) => {
+    console.log('connected to %s', peer.id.toB58String())
 
     // Subscribe to the topic 'news'
     node1.pubsub.subscribe('news',

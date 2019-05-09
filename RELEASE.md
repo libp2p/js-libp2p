@@ -33,7 +33,7 @@
     - [ ] Twitter
     - [ ] IRC
     - [ ] Reddit
-    - [ ] [discuss.ipfs.io](https://discuss.ipfs.io/c/announcements)
+    - [ ] [discuss.libp2p.io](https://discuss.libp2p.io/c/news)
   - [ ] Blog post
   - [ ] Copy release notes to the [GitHub Release description](https://github.com/libp2p/js-libp2p/releases)
 
@@ -47,7 +47,7 @@ In alphabetical order, here are all the humans that contributed to the release:
 
 Would you like to contribute to the libp2p project and don't know how? Well, there are a few places you can get started:
 
-- Check the issues with the `help wanted` label at the Ready column in our waffle board - https://waffle.io/libp2p/js-libp2p?label=help%20wanted
+- Check the issues with the `help wanted` label in the [libp2p repo](https://github.com/libp2p/js-libp2p/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - Join an IPFS All Hands, introduce yourself and let us know where you would like to contribute - https://github.com/ipfs/team-mgmt#all-hands-call
 - Hack with IPFS and show us what you made! The All Hands call is also the perfect venue for demos, join in and show us what you built
 - Join the discussion at http://discuss.ipfs.io/ and help users finding their answers.
@@ -55,4 +55,4 @@ Would you like to contribute to the libp2p project and don't know how? Well, the
 
 # ⁉️ Do you have questions?
 
-The best place to ask your questions about libp2p, how it works and what you can do with it is at [discuss.ipfs.io](http://discuss.ipfs.io). We are also available at the #libp2p channel on Freenode.
+The best place to ask your questions about libp2p, how it works and what you can do with it is at [discuss.libp2p.io](https://discuss.libp2p.io). We are also available at the #libp2p channel on Freenode.

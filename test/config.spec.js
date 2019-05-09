@@ -55,7 +55,57 @@ describe('configuration', () => {
           transport: [ ]
         }
       })
-    }).to.throw()
+    }).to.throw('ERROR_EMPTY')
+  })
+
+  it('should add defaults to config', () => {
+    const options = {
+      peerInfo,
+      modules: {
+        transport: [ WS ],
+        peerDiscovery: [ Bootstrap ],
+        dht: DHT
+      }
+    }
+
+    const expected = {
+      peerInfo,
+      connectionManager: {
+        minPeers: 25
+      },
+      modules: {
+        transport: [ WS ],
+        peerDiscovery: [ Bootstrap ],
+        dht: DHT
+      },
+      config: {
+        peerDiscovery: {
+          autoDial: true
+        },
+        EXPERIMENTAL: {
+          pubsub: false
+        },
+        dht: {
+          kBucketSize: 20,
+          enabled: false,
+          randomWalk: {
+            enabled: false,
+            queriesPerPeriod: 1,
+            interval: 300000,
+            timeout: 10000
+          }
+        },
+        relay: {
+          enabled: true,
+          hop: {
+            active: false,
+            enabled: false
+          }
+        }
+      }
+    }
+
+    expect(validateConfig(options)).to.deep.equal(expected)
   })
 
   it('should add defaults to missing items', () => {
@@ -78,6 +128,9 @@ describe('configuration', () => {
 
     const expected = {
       peerInfo,
+      connectionManager: {
+        minPeers: 25
+      },
       modules: {
         transport: [ WS ],
         peerDiscovery: [ Bootstrap ],
@@ -85,6 +138,7 @@ describe('configuration', () => {
       },
       config: {
         peerDiscovery: {
+          autoDial: true,
           bootstrap: {
             interval: 1000,
             enabled: true
@@ -95,11 +149,11 @@ describe('configuration', () => {
         },
         dht: {
           kBucketSize: 20,
-          enabled: true,
+          enabled: false,
           randomWalk: {
-            enabled: true,
+            enabled: false,
             queriesPerPeriod: 1,
-            interval: 30000,
+            interval: 300000,
             timeout: 10000
           }
         },
@@ -114,6 +168,33 @@ describe('configuration', () => {
     }
 
     expect(validateConfig(options)).to.deep.equal(expected)
+  })
+
+  it('should allow for configuring the switch', () => {
+    const options = {
+      peerInfo,
+      switch: {
+        blacklistTTL: 60e3,
+        blackListAttempts: 5,
+        maxParallelDials: 100,
+        maxColdCalls: 50,
+        dialTimeout: 30e3
+      },
+      modules: {
+        transport: [ WS ],
+        peerDiscovery: [ ]
+      }
+    }
+
+    expect(validateConfig(options)).to.deep.include({
+      switch: {
+        blacklistTTL: 60e3,
+        blackListAttempts: 5,
+        maxParallelDials: 100,
+        maxColdCalls: 50,
+        dialTimeout: 30e3
+      }
+    })
   })
 
   it('should allow for delegated content and peer routing', () => {
@@ -152,8 +233,8 @@ describe('configuration', () => {
         transport: [ WS ]
       },
       config: {
-        EXPERIMENTAL: {
-          dht: true
+        dht: {
+          enabled: true
         }
       }
     }
@@ -161,7 +242,7 @@ describe('configuration', () => {
     expect(() => validateConfig(options)).to.throw()
   })
 
-  it('should add defaults, validators and selectors for dht', () => {
+  it('should be able to add validators and selectors for dht', () => {
     const selectors = {}
     const validators = {}
 
@@ -180,6 +261,9 @@ describe('configuration', () => {
     }
     const expected = {
       peerInfo,
+      connectionManager: {
+        minPeers: 25
+      },
       modules: {
         transport: [WS],
         dht: DHT
@@ -187,6 +271,9 @@ describe('configuration', () => {
       config: {
         EXPERIMENTAL: {
           pubsub: false
+        },
+        peerDiscovery: {
+          autoDial: true
         },
         relay: {
           enabled: true,
@@ -196,19 +283,50 @@ describe('configuration', () => {
           }
         },
         dht: {
-          kBucketSize: 20,
-          enabled: true,
-          randomWalk: {
-            enabled: true,
-            queriesPerPeriod: 1,
-            interval: 30000,
-            timeout: 10000
-          },
           selectors,
           validators
         }
       }
     }
     expect(validateConfig(options)).to.deep.equal(expected)
+  })
+
+  it('should support new properties for the dht config', () => {
+    const options = {
+      peerInfo,
+      modules: {
+        transport: [WS],
+        dht: DHT
+      },
+      config: {
+        dht: {
+          kBucketSize: 20,
+          enabled: false,
+          myNewDHTConfigProperty: true,
+          randomWalk: {
+            enabled: false,
+            queriesPerPeriod: 1,
+            interval: 300000,
+            timeout: 10000
+          }
+        }
+      }
+    }
+
+    const expected = {
+      kBucketSize: 20,
+      enabled: false,
+      myNewDHTConfigProperty: true,
+      randomWalk: {
+        enabled: false,
+        queriesPerPeriod: 1,
+        interval: 300000,
+        timeout: 10000
+      }
+    }
+
+    const actual = validateConfig(options).config.dht
+
+    expect(actual).to.deep.equal(expected)
   })
 })

@@ -56,6 +56,7 @@ class Node extends libp2p {
       },
       config: {
         peerDiscovery: {
+          autoDial: true,
           mdns: {
             interval: 10000,
             enabled: false

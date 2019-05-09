@@ -1,3 +1,94 @@
+<a name="0.25.3"></a>
+## [0.25.3](https://github.com/libp2p/js-libp2p/compare/v0.25.2...v0.25.3) (2019-05-07)
+
+
+### Features
+
+* sign pubsub messages ([#362](https://github.com/libp2p/js-libp2p/issues/362)) ([40978a1](https://github.com/libp2p/js-libp2p/commit/40978a1))
+
+
+
+<a name="0.25.2"></a>
+## [0.25.2](https://github.com/libp2p/js-libp2p/compare/v0.25.1...v0.25.2) (2019-04-17)
+
+
+### Bug Fixes
+
+* dht config ([#359](https://github.com/libp2p/js-libp2p/issues/359)) ([f3801f0](https://github.com/libp2p/js-libp2p/commit/f3801f0))
+
+
+
+<a name="0.25.1"></a>
+## [0.25.1](https://github.com/libp2p/js-libp2p/compare/v0.25.0...v0.25.1) (2019-04-16)
+
+
+### Bug Fixes
+
+* bail when discovering self ([#357](https://github.com/libp2p/js-libp2p/issues/357)) ([f28dffb](https://github.com/libp2p/js-libp2p/commit/f28dffb))
+
+
+
+<a name="0.25.0"></a>
+# [0.25.0](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.6...v0.25.0) (2019-04-12)
+
+
+### Bug Fixes
+
+* allow switch to be configured ([#354](https://github.com/libp2p/js-libp2p/issues/354)) ([eb5aa03](https://github.com/libp2p/js-libp2p/commit/eb5aa03))
+
+
+
+<a name="0.25.0-rc.6"></a>
+# [0.25.0-rc.6](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.5...v0.25.0-rc.6) (2019-04-11)
+
+
+### Bug Fixes
+
+* connection emits ([#352](https://github.com/libp2p/js-libp2p/issues/352)) ([313b1ea](https://github.com/libp2p/js-libp2p/commit/313b1ea))
+* remove unneeded peerbook puts ([#348](https://github.com/libp2p/js-libp2p/issues/348)) ([e5f19e8](https://github.com/libp2p/js-libp2p/commit/e5f19e8))
+
+
+### Features
+
+* auto dial discovered peers ([#349](https://github.com/libp2p/js-libp2p/issues/349)) ([01aa447](https://github.com/libp2p/js-libp2p/commit/01aa447))
+
+
+
+<a name="0.25.0-rc.5"></a>
+# [0.25.0-rc.5](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.4...v0.25.0-rc.5) (2019-03-21)
+
+
+### Bug Fixes
+
+* disable dht by default [#338](https://github.com/libp2p/js-libp2p/issues/338) ([#339](https://github.com/libp2p/js-libp2p/issues/339)) ([e52ce66](https://github.com/libp2p/js-libp2p/commit/e52ce66))
+
+
+### Features
+
+* update to the latest switch ([#336](https://github.com/libp2p/js-libp2p/issues/336)) ([eee60ed](https://github.com/libp2p/js-libp2p/commit/eee60ed))
+
+
+
+<a name="0.25.0-rc.4"></a>
+# [0.25.0-rc.4](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.3...v0.25.0-rc.4) (2019-03-06)
+
+
+
+<a name="0.25.0-rc.3"></a>
+# [0.25.0-rc.3](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.2...v0.25.0-rc.3) (2019-02-26)
+
+
+
+<a name="0.25.0-rc.2"></a>
+# [0.25.0-rc.2](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.1...v0.25.0-rc.2) (2019-02-26)
+
+
+### Bug Fixes
+
+* make the config less restrictive ([#329](https://github.com/libp2p/js-libp2p/issues/329)) ([5f92acd](https://github.com/libp2p/js-libp2p/commit/5f92acd))
+
+
+
 <a name="0.25.0-rc.1"></a>
 # [0.25.0-rc.1](https://github.com/libp2p/js-libp2p/compare/v0.25.0-rc.0...v0.25.0-rc.1) (2019-02-21)
 

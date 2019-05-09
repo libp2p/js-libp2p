@@ -24,10 +24,8 @@ class MyBundle extends libp2p {
       },
       config: {
         dht: {
+          enabled: true,
           kBucketSize: 20
-        },
-        EXPERIMENTAL: {
-          dht: true
         }
       }
     }
