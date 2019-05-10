@@ -64,12 +64,12 @@ class Query {
       return callback(null, { finalSet: new Set(), paths: [] })
     }
 
-    this.run = new Run(this)
+    this._run = new Run(this)
 
     this._log(`query running with K=${this.dht.kBucketSize}, A=${this.dht.concurrency}, D=${Math.min(this.dht.disjointPaths, peers.length)}`)
-    this.run.once('start', this._onStart)
-    this.run.once('complete', this._onComplete)
-    this.run.execute(peers, callback)
+    this._run.once('start', this._onStart)
+    this._run.once('complete', this._onComplete)
+    this._run.execute(peers, callback)
   }
 
   /**
@@ -97,17 +97,20 @@ class Query {
    */
   stop () {
     this._log(`query:done in ${Date.now() - this._startTime}ms`)
-    this._log(`${this.run.errors.length} of ${this.run.peersSeen.size} peers errored (${this.run.errors.length / this.run.peersSeen.size * 100}% fail rate)`)
+
+    if (this._run) {
+      this._log(`${this._run.errors.length} of ${this._run.peersSeen.size} peers errored (${this._run.errors.length / this._run.peersSeen.size * 100}% fail rate)`)
+    }
 
     if (!this.running) {
       return
     }
 
-    this.run.removeListener('start', this._onStart)
-    this.run.removeListener('complete', this._onComplete)
+    this._run.removeListener('start', this._onStart)
+    this._run.removeListener('complete', this._onComplete)
 
     this.running = false
-    this.run && this.run.stop()
+    this._run && this._run.stop()
     this.dht._queryManager.queryCompleted(this)
   }
 }
