@@ -1,3 +1,13 @@
+<a name="0.14.15"></a>
+## [0.14.15](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.14...v0.14.15) (2019-05-10)
+
+
+### Bug Fixes
+
+* query stop with query not initialized ([b29dfde](https://github.com/libp2p/js-libp2p-kad-dht/commit/b29dfde))
+
+
+
 <a name="0.14.14"></a>
 ## [0.14.14](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.13...v0.14.14) (2019-05-08)
 
