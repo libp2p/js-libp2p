@@ -1,3 +1,23 @@
+<a name="0.15.0"></a>
+# [0.15.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.15...v0.15.0) (2019-05-13)
+
+
+### Chores
+
+* update cids dependency ([#117](https://github.com/libp2p/js-libp2p-kad-dht/issues/117)) ([04e213a](https://github.com/libp2p/js-libp2p-kad-dht/commit/04e213a))
+
+
+### BREAKING CHANGES
+
+* v1 CIDs are now encoded in base32 when stringified.
+
+https://github.com/ipfs/js-ipfs/issues/1995
+
+License: MIT
+Signed-off-by: Alan Shaw <alan.shaw@protocol.ai>
+
+
+
 <a name="0.14.15"></a>
 ## [0.14.15](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.14...v0.14.15) (2019-05-10)
 
