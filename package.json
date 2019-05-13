@@ -42,7 +42,7 @@
     "async": "^2.6.2",
     "base32.js": "~0.1.0",
     "chai-checkmark": "^1.0.1",
-    "cids": "~0.6.0",
+    "cids": "~0.7.0",
     "debug": "^4.1.1",
     "err-code": "^1.1.2",
     "hashlru": "^2.3.0",
