@@ -5,7 +5,7 @@ const libp2pRecord = require('libp2p-record')
 const waterfall = require('async/waterfall')
 const timeout = require('async/timeout')
 const PeerInfo = require('peer-info')
-const pify = require('pify')
+const promisify = require('promisify-es6')
 const promiseToCallback = require('promise-to-callback')
 
 const errcode = require('err-code')
@@ -33,7 +33,7 @@ module.exports = (dht) => ({
   },
 
   async _nearestPeersToQueryAsync (msg) {
-    const key = await pify(utils.convertBuffer)(msg.key)
+    const key = await promisify(utils.convertBuffer)(msg.key)
 
     const ids = dht.routingTable.closestPeers(key, dht.kBucketSize)
     return ids.map((p) => {
@@ -97,7 +97,7 @@ module.exports = (dht) => ({
     // Fetch value from ds
     let rawRecord
     try {
-      rawRecord = await pify(cb => dht.datastore.get(dsKey, cb))()
+      rawRecord = await promisify(cb => dht.datastore.get(dsKey, cb))()
     } catch (err) {
       if (err.code === 'ERR_NOT_FOUND') {
         return undefined
@@ -116,7 +116,7 @@ module.exports = (dht) => ({
     if (record.timeReceived == null ||
         utils.now() - record.timeReceived > c.MAX_RECORD_AGE) {
       // If record is bad delete it and return
-      await pify(cb => dht.datastore.delete(dsKey, cb))()
+      await promisify(cb => dht.datastore.delete(dsKey, cb))()
       return undefined
     }
 
@@ -139,7 +139,7 @@ module.exports = (dht) => ({
 
   async _addAsync (peer) {
     peer = dht.peerBook.put(peer)
-    await pify(cb => dht.routingTable.add(peer.id, cb))()
+    await promisify(cb => dht.routingTable.add(peer.id, cb))()
     return undefined
   },
   /**
@@ -158,7 +158,7 @@ module.exports = (dht) => ({
 
   async _verifyRecordLocallyAsync (record) {
     dht._log('verifyRecordLocally')
-    await pify(cb => libp2pRecord.validator.verifyRecord(
+    await promisify(cb => libp2pRecord.validator.verifyRecord(
       dht.validators,
       record,
       cb
@@ -220,7 +220,7 @@ module.exports = (dht) => ({
   async _findPeerSingleAsync (peer, target) {
     dht._log('_findPeerSingle %s', peer.toB58String())
     const msg = new Message(Message.TYPES.FIND_NODE, target.id, 0)
-    return pify(callback => dht.network.sendRequest(peer, msg, callback))()
+    return promisify(callback => dht.network.sendRequest(peer, msg, callback))()
   },
 
   /**
@@ -243,7 +243,7 @@ module.exports = (dht) => ({
     const msg = new Message(Message.TYPES.PUT_VALUE, key, 0)
     msg.record = rec
 
-    const resp = await pify(cb => dht.network.sendRequest(target, msg, cb))()
+    const resp = await promisify(cb => dht.network.sendRequest(target, msg, cb))()
 
     if (!resp.record.value.equals(Record.deserialize(rec).value)) {
       throw errcode(new Error('value not put correctly'), 'ERR_PUT_VALUE_INVALID')
@@ -265,7 +265,7 @@ module.exports = (dht) => ({
   },
 
   async _putLocalAsync (key, rec) {
-    await pify(cb => dht.datastore.put(utils.bufferToKey(key), rec, cb))()
+    await promisify(cb => dht.datastore.put(utils.bufferToKey(key), rec, cb))()
     return undefined
   },
 
@@ -288,7 +288,7 @@ module.exports = (dht) => ({
   async _getAsync (key, options) {
     dht._log('_get %b', key)
 
-    const vals = await pify(cb => dht.getMany(key, c.GET_MANY_RECORD_COUNT, options, cb))()
+    const vals = await promisify(cb => dht.getMany(key, c.GET_MANY_RECORD_COUNT, options, cb))()
 
     const recs = vals.map((v) => v.val)
     let i = 0
@@ -325,7 +325,7 @@ module.exports = (dht) => ({
    * @private
    */
   async _sendCorrectionRecord (key, vals, best) {
-    const fixupRec = await pify(cb => utils.createPutRecord(key, best, cb))()
+    const fixupRec = await promisify(cb => utils.createPutRecord(key, best, cb))()
 
     return Promise.all(vals.map(async (v) => {
       // no need to do anything
@@ -336,7 +336,7 @@ module.exports = (dht) => ({
       // correct ourself
       if (dht._isSelf(v.from)) {
         try {
-          await pify(cb => dht._putLocal(key, fixupRec, cb))()
+          await promisify(cb => dht._putLocal(key, fixupRec, cb))()
           // await dht._putLocalAsync(key, fixupRec)
         } catch (err) {
           dht._log.error('Failed error correcting self', err)
@@ -346,7 +346,7 @@ module.exports = (dht) => ({
 
       // send correction
       try {
-        await pify(cb => dht._putValueToPeer(key, fixupRec, v.from, cb))()
+        await promisify(cb => dht._putValueToPeer(key, fixupRec, v.from, cb))()
         // await dht._putValueToPeerAsync(key, fixupRec, v.from)
       } catch (err) {
         dht._log.error('Failed error correcting entry', err)
@@ -371,7 +371,7 @@ module.exports = (dht) => ({
   async _getLocalAsync (key) {
     dht._log('getLocal %b', key)
 
-    const raw = await pify(cb => dht.datastore.get(utils.bufferToKey(key), cb))()
+    const raw = await promisify(cb => dht.datastore.get(utils.bufferToKey(key), cb))()
     dht._log('found %b in local datastore', key)
     const rec = Record.deserialize(raw)
 
@@ -401,7 +401,7 @@ module.exports = (dht) => ({
   },
 
   async _getValueOrPeersAsync (peer, key) {
-    const msg = await pify(cb => dht._getValueSingle(peer, key, cb))()
+    const msg = await promisify(cb => dht._getValueSingle(peer, key, cb))()
 
     const peers = msg.closerPeers
     const record = msg.record
@@ -410,7 +410,7 @@ module.exports = (dht) => ({
       // We have a record
       try {
         // await dht._verifyRecordOnlineAsync(record)
-        await pify(cb => dht._verifyRecordOnline(record, cb))()
+        await promisify(cb => dht._verifyRecordOnline(record, cb))()
       } catch (err) {
         const errMsg = 'invalid record received, discarded'
         dht._log(errMsg)
@@ -444,7 +444,7 @@ module.exports = (dht) => ({
 
   async _getValueSingleAsync (peer, key) {
     const msg = new Message(Message.TYPES.GET_VALUE, key, 0)
-    return pify(cb => dht.network.sendRequest(peer, msg, cb))()
+    return promisify(cb => dht.network.sendRequest(peer, msg, cb))()
   },
 
   /**
@@ -463,7 +463,7 @@ module.exports = (dht) => ({
   },
 
   async _verifyRecordOnlineAsync (record) {
-    return pify(cb => libp2pRecord.validator.verifyRecord(dht.validators, record, cb))()
+    return promisify(cb => libp2pRecord.validator.verifyRecord(dht.validators, record, cb))()
   },
 
   /**
@@ -483,13 +483,13 @@ module.exports = (dht) => ({
   async _getPublicKeyFromNodeAsync (peer) {
     const pkKey = utils.keyForPublicKey(peer)
     // const msg = await dht._getValueSingleAsync(peer, pkKey)
-    const msg = await pify(cb => dht._getValueSingle(peer, pkKey, cb))()
+    const msg = await promisify(cb => dht._getValueSingle(peer, pkKey, cb))()
 
     if (!msg.record || !msg.record.value) {
       throw errcode(`Node not responding with its public key: ${peer.toB58String()}`, 'ERR_INVALID_RECORD')
     }
 
-    const recPeer = await pify(cb => PeerId.createFromPubKey(msg.record.value, cb))()
+    const recPeer = await promisify(cb => PeerId.createFromPubKey(msg.record.value, cb))()
 
     // compare hashes of the pub key
     if (!recPeer.isEqual(peer)) {
@@ -517,7 +517,7 @@ module.exports = (dht) => ({
   async _findNProvidersAsync (key, providerTimeout, n) {
     const out = new LimitedPeerList(n)
 
-    const provs = await pify(cb => dht.providers.getProviders(key, cb))()
+    const provs = await promisify(cb => dht.providers.getProviders(key, cb))()
 
     provs.forEach((id) => {
       let info
@@ -571,7 +571,7 @@ module.exports = (dht) => ({
     const peers = dht.routingTable.closestPeers(key.buffer, dht.kBucketSize)
 
     try {
-      await pify(callback => timeout((cb) => query.run(peers, cb), providerTimeout)(callback))()
+      await promisify(callback => timeout((cb) => query.run(peers, cb), providerTimeout)(callback))()
     } catch (err) {
       if (err.code !== 'ETIMEDOUT' || out.length === 0) {
         throw err
@@ -606,6 +606,6 @@ module.exports = (dht) => ({
 
   async _findProvidersSingleAsync (peer, key) {
     const msg = new Message(Message.TYPES.GET_PROVIDERS, key.buffer, 0)
-    return pify(cb => dht.network.sendRequest(peer, msg, cb))()
+    return promisify(cb => dht.network.sendRequest(peer, msg, cb))()
   }
 })
