@@ -11,7 +11,7 @@ node_js:
 os:
   - linux
   - osx
-  
+
 script: npx nyc -s npm run test:node -- --bail
 after_success: npx nyc report --reporter=text-lcov > coverage.lcov && npx codecov
 
@@ -20,7 +20,6 @@ jobs:
     - stage: check
       script:
         - npx aegir build --bundlesize
-        - npx aegir commitlint --travis
         - npx aegir dep-check -- -i wrtc -i electron-webrtc
         - npm run lint
 
