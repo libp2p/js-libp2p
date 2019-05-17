@@ -345,7 +345,7 @@ class Node extends EventEmitter {
       let t
 
       if (typeof Transport === 'function') {
-        t = new Transport()
+        t = new Transport({ libp2p: this })
       } else {
         t = Transport
       }
