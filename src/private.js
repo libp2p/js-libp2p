@@ -538,7 +538,7 @@ module.exports = (dht) => ({
     const paths = []
     const query = new Query(dht, key.buffer, (pathIndex, numPaths) => {
       // This function body runs once per disjoint path
-      const pathSize = utils.pathSize(out.length - n, numPaths)
+      const pathSize = utils.pathSize(n - out.length, numPaths)
       const pathProviders = new LimitedPeerList(pathSize)
       paths.push(pathProviders)
 
