@@ -1126,4 +1126,125 @@ describe('KadDHT', () => {
       })
     })
   })
+
+  describe('multiple nodes', () => {
+    const n = 8
+    let tdht
+    let dhts
+
+    // spawn nodes
+    before(function (done) {
+      this.timeout(10 * 1000)
+
+      tdht = new TestDHT()
+      tdht.spawn(n, (err, res) => {
+        expect(err).to.not.exist()
+        dhts = res
+
+        done()
+      })
+    })
+
+    // connect nodes
+    before(function (done) {
+      // all nodes except the last one
+      const range = Array.from(Array(n - 1).keys())
+
+      // connect the last one with the others one by one
+      parallel(range.map((i) =>
+        (cb) => connect(dhts[n - 1], dhts[i], cb)), done)
+    })
+
+    after(function (done) {
+      this.timeout(10 * 1000)
+
+      tdht.teardown(done)
+    })
+
+    it('put to "bootstrap" node and get with the others', function (done) {
+      this.timeout(10 * 1000)
+
+      dhts[7].put(Buffer.from('/v/hello0'), Buffer.from('world'), (err) => {
+        expect(err).to.not.exist()
+
+        parallel([
+          (cb) => dhts[0].get(Buffer.from('/v/hello0'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[1].get(Buffer.from('/v/hello0'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[2].get(Buffer.from('/v/hello0'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[3].get(Buffer.from('/v/hello0'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[4].get(Buffer.from('/v/hello0'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[5].get(Buffer.from('/v/hello0'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[6].get(Buffer.from('/v/hello0'), { maxTimeout: 1000 }, cb)
+        ], (err, res) => {
+          expect(err).to.not.exist()
+          expect(res[0]).to.eql(Buffer.from('world'))
+          expect(res[1]).to.eql(Buffer.from('world'))
+          expect(res[2]).to.eql(Buffer.from('world'))
+          expect(res[3]).to.eql(Buffer.from('world'))
+          expect(res[4]).to.eql(Buffer.from('world'))
+          expect(res[5]).to.eql(Buffer.from('world'))
+          expect(res[6]).to.eql(Buffer.from('world'))
+          done()
+        })
+      })
+    })
+
+    it('put to a node and get with the others', function (done) {
+      this.timeout(10 * 1000)
+
+      dhts[1].put(Buffer.from('/v/hello1'), Buffer.from('world'), (err) => {
+        expect(err).to.not.exist()
+
+        parallel([
+          (cb) => dhts[0].get(Buffer.from('/v/hello1'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[2].get(Buffer.from('/v/hello1'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[3].get(Buffer.from('/v/hello1'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[4].get(Buffer.from('/v/hello1'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[5].get(Buffer.from('/v/hello1'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[6].get(Buffer.from('/v/hello1'), { maxTimeout: 1000 }, cb),
+          (cb) => dhts[7].get(Buffer.from('/v/hello1'), { maxTimeout: 1000 }, cb)
+        ], (err, res) => {
+          expect(err).to.not.exist()
+          expect(res[0]).to.eql(Buffer.from('world'))
+          expect(res[1]).to.eql(Buffer.from('world'))
+          expect(res[2]).to.eql(Buffer.from('world'))
+          expect(res[3]).to.eql(Buffer.from('world'))
+          expect(res[4]).to.eql(Buffer.from('world'))
+          expect(res[5]).to.eql(Buffer.from('world'))
+          expect(res[6]).to.eql(Buffer.from('world'))
+          done()
+        })
+      })
+    })
+
+    it('put to several nodes in series with different values and get the last one in a subset of them', function (done) {
+      this.timeout(20 * 1000)
+      const key = Buffer.from('/v/hallo')
+      const result = Buffer.from('world4')
+
+      series([
+        (cb) => dhts[0].put(key, Buffer.from('world0'), cb),
+        (cb) => dhts[1].put(key, Buffer.from('world1'), cb),
+        (cb) => dhts[2].put(key, Buffer.from('world2'), cb),
+        (cb) => dhts[3].put(key, Buffer.from('world3'), cb),
+        (cb) => dhts[4].put(key, Buffer.from('world4'), cb)
+      ], (err) => {
+        expect(err).to.not.exist()
+
+        parallel([
+          (cb) => dhts[3].get(key, { maxTimeout: 2000 }, cb),
+          (cb) => dhts[4].get(key, { maxTimeout: 2000 }, cb),
+          (cb) => dhts[5].get(key, { maxTimeout: 2000 }, cb),
+          (cb) => dhts[6].get(key, { maxTimeout: 2000 }, cb)
+        ], (err, res) => {
+          expect(err).to.not.exist()
+          expect(res[0]).to.eql(result)
+          expect(res[1]).to.eql(result)
+          expect(res[2]).to.eql(result)
+          expect(res[3]).to.eql(result)
+          done()
+        })
+      })
+    })
+  })
 })
