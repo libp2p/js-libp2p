@@ -1,7 +1,5 @@
 'use strict'
 
-const leftPad = require('left-pad')
-
 /**
  * Convert a JavaScript date into an `RFC3339Nano` formatted
  * string.
@@ -11,11 +9,11 @@ const leftPad = require('left-pad')
  */
 module.exports.toRFC3339 = (time) => {
   const year = time.getUTCFullYear()
-  const month = leftPad(time.getUTCMonth() + 1, 2, '0')
-  const day = leftPad(time.getUTCDate(), 2, '0')
-  const hour = leftPad(time.getUTCHours(), 2, '0')
-  const minute = leftPad(time.getUTCMinutes(), 2, '0')
-  const seconds = leftPad(time.getUTCSeconds(), 2, '0')
+  const month = String(time.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(time.getUTCDate()).padStart(2, '0')
+  const hour = String(time.getUTCHours()).padStart(2, '0')
+  const minute = String(time.getUTCMinutes()).padStart(2, '0')
+  const seconds = String(time.getUTCSeconds()).padStart(2, '0')
   const milliseconds = time.getUTCMilliseconds()
   const nanoseconds = milliseconds * 1000 * 1000
 
