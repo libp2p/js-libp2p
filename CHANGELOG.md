@@ -1,3 +1,13 @@
+<a name="0.6.3"></a>
+## [0.6.3](https://github.com/libp2p/js-libp2p-record/compare/v0.6.2...v0.6.3) (2019-05-23)
+
+
+### Bug Fixes
+
+* remove leftpad ([#16](https://github.com/libp2p/js-libp2p-record/issues/16)) ([4f46885](https://github.com/libp2p/js-libp2p-record/commit/4f46885))
+
+
+
 <a name="0.6.2"></a>
 ## [0.6.2](https://github.com/libp2p/js-libp2p-record/compare/v0.6.1...v0.6.2) (2019-02-20)
 
