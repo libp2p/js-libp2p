@@ -2,11 +2,11 @@
 
 const PeerId = require('peer-id')
 const libp2pRecord = require('libp2p-record')
-const waterfall = require('async/waterfall')
 const timeout = require('async/timeout')
 const PeerInfo = require('peer-info')
 const promisify = require('promisify-es6')
 const promiseToCallback = require('promise-to-callback')
+const callbackify = require('callbackify')
 
 const errcode = require('err-code')
 
@@ -543,29 +543,23 @@ module.exports = (dht) => ({
       paths.push(pathProviders)
 
       // Here we return the query function to use on this particular disjoint path
-      return (peer, cb) => {
-        waterfall([
-          (cb) => dht._findProvidersSingle(peer, key, cb),
-          (msg, cb) => {
-            const provs = msg.providerPeers
-            dht._log('(%s) found %s provider entries', dht.peerInfo.id.toB58String(), provs.length)
+      return callbackify(async (peer) => {
+        const msg = await dht._findProvidersSingleAsync(peer, key)
+        const provs = msg.providerPeers
+        dht._log('(%s) found %s provider entries', dht.peerInfo.id.toB58String(), provs.length)
 
-            provs.forEach((prov) => {
-              pathProviders.push(dht.peerBook.put(prov))
-            })
+        provs.forEach((prov) => {
+          pathProviders.push(dht.peerBook.put(prov))
+        })
 
-            // hooray we have all that we want
-            if (pathProviders.length >= pathSize) {
-              return cb(null, { pathComplete: true })
-            }
+        // hooray we have all that we want
+        if (pathProviders.length >= pathSize) {
+          return { pathComplete: true }
+        }
 
-            // it looks like we want some more
-            cb(null, {
-              closerPeers: msg.closerPeers
-            })
-          }
-        ], cb)
-      }
+        // it looks like we want some more
+        return { closerPeers: msg.closerPeers }
+      })
     })
 
     const peers = dht.routingTable.closestPeers(key.buffer, dht.kBucketSize)
