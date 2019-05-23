@@ -18,8 +18,7 @@
     "sim": "node test/simulation/index.js"
   },
   "pre-push": [
-    "lint",
-    "test"
+    "lint"
   ],
   "repository": {
     "type": "git",
