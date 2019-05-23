@@ -3,6 +3,7 @@
 const Heap = require('heap')
 const distance = require('xor-distance')
 const debug = require('debug')
+const promisify = require('promisify-es6')
 
 const utils = require('./utils')
 
@@ -17,34 +18,22 @@ class PeerQueue {
    * Create from a given peer id.
    *
    * @param {PeerId} id
-   * @param {function(Error, PeerQueue)} callback
-   * @returns {void}
+   * @returns {Promise<PeerQueue>}
    */
-  static fromPeerId (id, callback) {
-    utils.convertPeerId(id, (err, key) => {
-      if (err) {
-        return callback(err)
-      }
-
-      callback(null, new PeerQueue(key))
-    })
+  static async fromPeerId (id) {
+    const key = await promisify(cb => utils.convertPeerId(id, cb))()
+    return new PeerQueue(key)
   }
 
   /**
    * Create from a given buffer.
    *
-   * @param {Buffer} key
-   * @param {function(Error, PeerQueue)} callback
-   * @returns {void}
+   * @param {Buffer} keyBuffer
+   * @returns {Promise<PeerQueue>}
    */
-  static fromKey (key, callback) {
-    utils.convertBuffer(key, (err, key) => {
-      if (err) {
-        return callback(err)
-      }
-
-      callback(null, new PeerQueue(key))
-    })
+  static async fromKey (keyBuffer) {
+    const key = await promisify(cb => utils.convertBuffer(keyBuffer, cb))()
+    return new PeerQueue(key)
   }
 
   /**
@@ -62,24 +51,18 @@ class PeerQueue {
    * Add a new PeerId to the queue.
    *
    * @param {PeerId} id
-   * @param {function(Error)} callback
-   * @returns {void}
+   * @returns {Promise}
    */
-  enqueue (id, callback) {
+  async enqueue (id) {
     log('enqueue %s', id.toB58String())
-    utils.convertPeerId(id, (err, key) => {
-      if (err) {
-        return callback(err)
-      }
+    const key = await promisify(cb => utils.convertPeerId(id, cb))()
 
-      const el = {
-        id: id,
-        distance: distance(this.from, key)
-      }
+    const el = {
+      id: id,
+      distance: distance(this.from, key)
+    }
 
-      this.heap.push(el)
-      callback()
-    })
+    this.heap.push(el)
   }
 
   /**

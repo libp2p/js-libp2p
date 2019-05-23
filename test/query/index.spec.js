@@ -9,6 +9,7 @@ const expect = chai.expect
 const sinon = require('sinon')
 const each = require('async/each')
 const PeerBook = require('peer-book')
+const promiseToCallback = require('promise-to-callback')
 
 const Query = require('../../src/query')
 const Path = require('../../src/query/path')
@@ -71,7 +72,7 @@ describe('Query', () => {
       let query = new Query(dht, targetKey.key, () => querySpy)
 
       let run = new Run(query)
-      run.init(() => {
+      promiseToCallback(run.init())(() => {
         // Add the sorted peers into 5 paths. This will weight
         // the paths with increasingly further peers
         let sortedPeerIds = sortedPeers.map(peerInfo => peerInfo.id)
@@ -96,7 +97,7 @@ describe('Query', () => {
           const continueSpy = sinon.spy(run, 'continueQuerying')
 
           // Run the 4 paths
-          run.executePaths(paths, (err) => {
+          promiseToCallback(run.executePaths(paths))((err) => {
             expect(err).to.not.exist()
             // The resulting peers should all be from path 0 as it had the closest
             expect(run.peersQueried.peers).to.eql(paths[0].initialPeers)
@@ -125,7 +126,7 @@ describe('Query', () => {
       let query = new Query(dht, targetKey.key, () => querySpy)
 
       let run = new Run(query)
-      run.init(() => {
+      promiseToCallback(run.init())(() => {
         let sortedPeerIds = sortedPeers.map(peerInfo => peerInfo.id)
 
         // Take the top 15 peers and peers 20 - 25 to seed `run.peersQueried`
@@ -146,8 +147,8 @@ describe('Query', () => {
         const returnPeers = sortedPeers.slice(16, 20)
         // When the second query happens, which is a further peer,
         // return peers 16 - 19
-        querySpy.onCall(1).callsArgWith(1, null, {
-          closerPeers: returnPeers
+        querySpy.onCall(1).callsFake((_, cb) => {
+          setTimeout(() => cb(null, { closerPeers: returnPeers }), 10)
         })
 
         each(queriedPeers, (peerId, cb) => {
@@ -156,7 +157,7 @@ describe('Query', () => {
           if (err) return done(err)
 
           // Run the path
-          run.executePaths([path], (err) => {
+          promiseToCallback(run.executePaths([path]))((err) => {
             expect(err).to.not.exist()
 
             // Querying will stop after the first ALPHA peers are queried

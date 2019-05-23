@@ -1,7 +1,8 @@
 'use strict'
 
-const each = require('async/each')
 const queue = require('async/queue')
+const promisify = require('promisify-es6')
+const promiseToCallback = require('promise-to-callback')
 
 class WorkerQueue {
   /**
@@ -20,6 +21,9 @@ class WorkerQueue {
 
     this.concurrency = this.dht.concurrency
     this.queue = this.setupQueue()
+    // a container for resolve/reject functions that will be populated
+    // when execute() is called
+    this.execution = null
   }
 
   /**
@@ -28,7 +32,9 @@ class WorkerQueue {
    * @returns {Object}
    */
   setupQueue () {
-    const q = queue(this.processNext.bind(this), this.concurrency)
+    const q = queue((peer, cb) => {
+      promiseToCallback(this.processNext(peer))(cb)
+    }, this.concurrency)
 
     // If there's an error, stop the worker
     q.error = (err) => {
@@ -68,19 +74,28 @@ class WorkerQueue {
     this.running = false
     this.queue.kill()
     this.log('worker:stop, %d workers still running', this.run.workers.filter(w => w.running).length)
-    this.callbackFn(err)
+    if (err) {
+      this.execution.reject(err)
+    } else {
+      this.execution.resolve()
+    }
   }
 
   /**
    * Use the queue from async to keep `concurrency` amount items running
    * per path.
    *
-   * @param {function(Error)} callback
+   * @return {Promise<void>}
    */
-  execute (callback) {
+  async execute () {
     this.running = true
-    this.callbackFn = callback
+    // store the promise resolution functions to be resolved at end of queue
+    this.execution = {}
+    const execPromise = new Promise((resolve, reject) => Object.assign(this.execution, { resolve, reject }))
+    // start queue
     this.fill()
+    // await completion
+    await execPromise
   }
 
   /**
@@ -105,131 +120,136 @@ class WorkerQueue {
    * Process the next peer in the queue
    *
    * @param {PeerId} peer
-   * @param {function(Error)} cb
-   * @returns {void}
+   * @returns {Promise<void>}
    */
-  processNext (peer, cb) {
+  async processNext (peer) {
     if (!this.running) {
-      return cb()
+      return
     }
 
     // The paths must be disjoint, meaning that no two paths in the Query may
     // traverse the same peer
     if (this.run.peersSeen.has(peer)) {
-      return cb()
+      return
     }
 
     // Check if we've queried enough peers already
-    this.run.continueQuerying(this, (err, continueQuerying) => {
-      if (!this.running) {
-        return cb()
-      }
+    let continueQuerying, continueQueryingError
+    try {
+      continueQuerying = await this.run.continueQuerying(this)
+    } catch (err) {
+      continueQueryingError = err
+    }
 
-      if (err) {
-        return cb(err)
-      }
+    // Abort and ignore any error if we're no longer running
+    if (!this.running) {
+      return
+    }
 
-      // No peer we're querying is closer stop the queue
-      // This will cause queries that may potentially result in
-      // closer nodes to be ended, but it reduces overall query time
-      if (!continueQuerying) {
-        this.stop()
-        return cb()
-      }
+    if (continueQueryingError) {
+      throw continueQueryingError
+    }
 
-      // Check if another path has queried this peer in the mean time
-      if (this.run.peersSeen.has(peer)) {
-        return cb()
-      }
-      this.run.peersSeen.add(peer)
+    // No peer we're querying is closer, stop the queue
+    // This will cause queries that may potentially result in
+    // closer nodes to be ended, but it reduces overall query time
+    if (!continueQuerying) {
+      this.stop()
+      return
+    }
 
-      // Execute the query on the next peer
-      this.log('queue:work')
-      this.execQuery(peer, (err, state) => {
-        // Ignore response after worker killed
-        if (!this.running) {
-          return cb()
-        }
+    // Check if another path has queried this peer in the mean time
+    if (this.run.peersSeen.has(peer)) {
+      return
+    }
+    this.run.peersSeen.add(peer)
 
-        this.log('queue:work:done', err, state)
-        if (err) {
-          return cb(err)
-        }
+    // Execute the query on the next peer
+    this.log('queue:work')
+    let state, execError
+    try {
+      state = await this.execQuery(peer)
+    } catch (err) {
+      execError = err
+    }
 
-        // If query is complete, stop all workers.
-        // Note: run.stop() calls stop() on all the workers, which kills the
-        // queue and calls callbackFn()
-        if (state && state.queryComplete) {
-          this.log('query:complete')
-          this.run.stop()
-          return cb()
-        }
+    // Abort and ignore any error if we're no longer running
+    if (!this.running) {
+      return
+    }
 
-        // If path is complete, just stop this worker.
-        // Note: this.stop() kills the queue and calls callbackFn()
-        if (state && state.pathComplete) {
-          this.stop()
-          return cb()
-        }
+    this.log('queue:work:done', execError, state)
 
-        // Otherwise, process next peer
-        cb()
-      })
-    })
+    if (execError) {
+      throw execError
+    }
+
+    // If query is complete, stop all workers.
+    // Note: run.stop() calls stop() on all the workers, which kills the
+    // queue and resolves execution
+    if (state && state.queryComplete) {
+      this.log('query:complete')
+      this.run.stop()
+      return
+    }
+
+    // If path is complete, just stop this worker.
+    // Note: this.stop() kills the queue and resolves execution
+    if (state && state.pathComplete) {
+      this.stop()
+    }
   }
 
   /**
    * Execute a query on the next peer.
    *
    * @param {PeerId} peer
-   * @param {function(Error)} callback
-   * @returns {void}
+   * @returns {Promise<void>}
    * @private
    */
-  execQuery (peer, callback) {
-    this.path.queryFunc(peer, (err, res) => {
-      // If the run has completed, bail out
-      if (!this.running) {
-        return callback()
+  async execQuery (peer) {
+    let res, queryError
+    try {
+      res = await this.path.queryFuncAsync(peer)
+    } catch (err) {
+      queryError = err
+    }
+
+    // Abort and ignore any error if we're no longer running
+    if (!this.running) {
+      return
+    }
+
+    if (queryError) {
+      this.run.errors.push(queryError)
+      return
+    }
+
+    // Add the peer to the closest peers we have successfully queried
+    await promisify(cb => this.run.peersQueried.add(peer, cb))()
+
+    // If the query indicates that this path or the whole query is complete
+    // set the path result and bail out
+    if (res.pathComplete || res.queryComplete) {
+      this.path.res = res
+      return {
+        pathComplete: res.pathComplete,
+        queryComplete: res.queryComplete
       }
+    }
 
-      if (err) {
-        this.run.errors.push(err)
-        return callback()
-      }
-
-      // Add the peer to the closest peers we have successfully queried
-      this.run.peersQueried.add(peer, (err) => {
-        if (err) {
-          return callback(err)
+    // If there are closer peers to query, add them to the queue
+    if (res.closerPeers && res.closerPeers.length > 0) {
+      await Promise.all(res.closerPeers.map(async (closer) => {
+        // don't add ourselves
+        if (this.dht._isSelf(closer.id)) {
+          return
         }
-
-        // If the query indicates that this path or the whole query is complete
-        // set the path result and bail out
-        if (res.pathComplete || res.queryComplete) {
-          this.path.res = res
-          return callback(null, {
-            pathComplete: res.pathComplete,
-            queryComplete: res.queryComplete
-          })
-        }
-
-        // If there are closer peers to query, add them to the queue
-        if (res.closerPeers && res.closerPeers.length > 0) {
-          return each(res.closerPeers, (closer, cb) => {
-            // don't add ourselves
-            if (this.dht._isSelf(closer.id)) {
-              return cb()
-            }
-            closer = this.dht.peerBook.put(closer)
-            this.dht._peerDiscovered(closer)
-            this.path.addPeerToQuery(closer.id, cb)
-          }, callback)
-        }
-
-        callback()
-      })
-    })
+        closer = this.dht.peerBook.put(closer)
+        this.dht._peerDiscovered(closer)
+        await this.path.addPeerToQuery(closer.id)
+      }))
+    }
   }
 }
 

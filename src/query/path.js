@@ -1,8 +1,7 @@
 'use strict'
 
-const each = require('async/each')
 const timeout = require('async/timeout')
-const waterfall = require('async/waterfall')
+const promisify = require('promisify-es6')
 const PeerQueue = require('../peer-queue')
 
 // TODO: Temporary until parallel dial in Switch have a proper
@@ -24,6 +23,7 @@ class Path {
   constructor (run, queryFunc) {
     this.run = run
     this.queryFunc = timeout(queryFunc, QUERY_FUNC_TIMEOUT)
+    this.queryFuncAsync = promisify(this.queryFunc)
 
     /**
      * @type {Array<PeerId>}
@@ -48,45 +48,37 @@ class Path {
   /**
    * Execute the path.
    *
-   * @param {function(Error)} callback
+   * @returns {Promise}
+   *
    */
-  execute (callback) {
-    waterfall([
-      // Create a queue of peers ordered by distance from the key
-      (cb) => PeerQueue.fromKey(this.run.query.key, cb),
-      // Add initial peers to the queue
-      (q, cb) => {
-        this.peersToQuery = q
-        each(this.initialPeers, this.addPeerToQuery.bind(this), cb)
-      },
-      // Start processing the queue
-      (cb) => {
-        this.run.workerQueue(this, cb)
-      }
-    ], callback)
+  async execute () {
+    // Create a queue of peers ordered by distance from the key
+    const queue = await PeerQueue.fromKey(this.run.query.key)
+    // Add initial peers to the queue
+    this.peersToQuery = queue
+    await Promise.all(this.initialPeers.map(peer => this.addPeerToQuery(peer)))
+    await this.run.workerQueue(this)
   }
 
   /**
    * Add a peer to the peers to be queried.
    *
    * @param {PeerId} peer
-   * @param {function(Error)} callback
-   * @returns {void}
-   * @private
+   * @returns {Promise<void>}
    */
-  addPeerToQuery (peer, callback) {
+  async addPeerToQuery (peer) {
     // Don't add self
     if (this.run.query.dht._isSelf(peer)) {
-      return callback()
+      return
     }
 
     // The paths must be disjoint, meaning that no two paths in the Query may
     // traverse the same peer
     if (this.run.peersSeen.has(peer)) {
-      return callback()
+      return
     }
 
-    this.peersToQuery.enqueue(peer, callback)
+    await this.peersToQuery.enqueue(peer)
   }
 }
 

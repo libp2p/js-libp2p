@@ -10,6 +10,7 @@ const timeout = require('async/timeout')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const crypto = require('libp2p-crypto')
+const promiseToCallback = require('promise-to-callback')
 
 const errcode = require('err-code')
 
@@ -376,7 +377,7 @@ class KadDHT extends EventEmitter {
 
           // run our query
           timeout((_cb) => {
-            query.run(rtp, _cb)
+            promiseToCallback(query.run(rtp))(_cb)
           }, options.timeout)((err, res) => {
             query.stop()
             cb(err, res)
@@ -438,7 +439,7 @@ class KadDHT extends EventEmitter {
         }
       })
 
-      q.run(tablePeers, (err, res) => {
+      promiseToCallback(q.run(tablePeers))((err, res) => {
         if (err) {
           return callback(err)
         }
@@ -673,7 +674,7 @@ class KadDHT extends EventEmitter {
           })
 
           timeout((_cb) => {
-            query.run(peers, _cb)
+            promiseToCallback(query.run(peers))(_cb)
           }, options.timeout)((err, res) => {
             query.stop()
             cb(err, res)
