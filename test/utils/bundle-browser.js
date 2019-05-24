@@ -8,6 +8,7 @@ const SPDY = require('libp2p-spdy')
 const MPLEX = require('libp2p-mplex')
 const PULLMPLEX = require('pull-mplex')
 const KadDHT = require('libp2p-kad-dht')
+const GossipSub = require('libp2p-gossipsub')
 const SECIO = require('libp2p-secio')
 const defaultsDeep = require('@nodeutils/defaults-deep')
 const libp2p = require('../..')
@@ -57,7 +58,8 @@ class Node extends libp2p {
           wsStar.discovery,
           Bootstrap
         ],
-        dht: KadDHT
+        dht: KadDHT,
+        pubsub: GossipSub
       },
       config: {
         peerDiscovery: {
@@ -88,8 +90,8 @@ class Node extends libp2p {
           },
           enabled: false
         },
-        EXPERIMENTAL: {
-          pubsub: false
+        pubsub: {
+          enabled: false
         }
       }
     }

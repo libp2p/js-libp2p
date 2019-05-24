@@ -119,6 +119,7 @@ const MPLEX = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const MulticastDNS = require('libp2p-mdns')
 const DHT = require('libp2p-kad-dht')
+const GossipSub = require('gossipsub')
 const defaultsDeep = require('@nodeutils/defaults-deep')
 const Protector = require('libp2p-pnet')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
@@ -154,7 +155,8 @@ class Node extends Libp2p {
         peerDiscovery: [
           MulticastDNS
         ],
-        dht: DHT                      // DHT enables PeerRouting, ContentRouting and DHT itself components
+        dht: DHT,                      // DHT enables PeerRouting, ContentRouting and DHT itself components
+        pubsub: GossipSub
       },
 
       // libp2p config options (typically found on a config.json)
@@ -187,9 +189,8 @@ class Node extends Libp2p {
             timeout: 10e3
           }
         },
-        // Enable/Disable Experimental features
-        EXPERIMENTAL: {               // Experimental features ("behind a flag")
-          pubsub: false
+        pubsub: {
+          enabled: true
         }
       }
     }
