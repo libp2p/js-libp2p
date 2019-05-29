@@ -3,6 +3,7 @@
 const once = require('once')
 const PeerId = require('peer-id')
 const waterfall = require('async/waterfall')
+const setImmediate = require('async/setImmediate')
 const multiaddr = require('multiaddr')
 
 const Connection = require('interface-connection').Connection

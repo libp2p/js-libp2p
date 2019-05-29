@@ -12,6 +12,7 @@ const proto = require('../protocol').CircuitRelay
 const multiaddr = require('multiaddr')
 const series = require('async/series')
 const waterfall = require('async/waterfall')
+const setImmediate = require('async/setImmediate')
 
 const multicodec = require('./../multicodec')
 
