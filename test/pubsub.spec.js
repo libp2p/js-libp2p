@@ -46,8 +46,8 @@ describe('pubsub base protocol', () => {
 
     before((done) => {
       series([
-        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
-        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+        (cb) => createNode(cb),
+        (cb) => createNode(cb)
       ], (err, nodes) => {
         if (err) {
           return done(err)
@@ -126,8 +126,8 @@ describe('pubsub base protocol', () => {
 
     before((done) => {
       series([
-        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
-        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+        (cb) => createNode(cb),
+        (cb) => createNode(cb)
       ], (cb, nodes) => {
         nodeA = nodes[0]
         nodeB = nodes[1]
@@ -177,8 +177,8 @@ describe('pubsub base protocol', () => {
       sandbox = chai.spy.sandbox()
 
       series([
-        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
-        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+        (cb) => createNode(cb),
+        (cb) => createNode(cb)
       ], (err, nodes) => {
         if (err) return done(err)
 
@@ -238,8 +238,8 @@ describe('pubsub base protocol', () => {
       sandbox = chai.spy.sandbox()
 
       series([
-        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
-        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+        (cb) => createNode(cb),
+        (cb) => createNode(cb)
       ], (err, nodes) => {
         if (err) return done(err)
 
@@ -310,8 +310,8 @@ describe('pubsub base protocol', () => {
       sandbox = chai.spy.sandbox()
 
       series([
-        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb),
-        (cb) => createNode('/ip4/127.0.0.1/tcp/0', cb)
+        (cb) => createNode(cb),
+        (cb) => createNode(cb)
       ], (err, nodes) => {
         if (err) return done(err)
 
