@@ -1,3 +1,13 @@
+<a name="0.3.7"></a>
+## [0.3.7](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.6...v0.3.7) (2019-05-29)
+
+
+### Bug Fixes
+
+* shim setImmediate in browser ([#51](https://github.com/libp2p/js-libp2p-circuit/issues/51)) ([9ea72f3](https://github.com/libp2p/js-libp2p-circuit/commit/9ea72f3))
+
+
+
 <a name="0.3.6"></a>
 ## [0.3.6](https://github.com/libp2p/js-libp2p-circuit/compare/v0.3.5...v0.3.6) (2019-03-12)
 
