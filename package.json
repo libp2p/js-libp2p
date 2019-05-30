@@ -1,6 +1,6 @@
 {
   "name": "libp2p-kad-dht",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -97,6 +97,7 @@
     "dirkmc <dirkmdev@gmail.com>",
     "dirkmc <dirk@mccormick.cx>",
     "kumavis <kumavis@users.noreply.github.com>",
+    "kumavis <aaron@kumavis.me>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
   ]
 }
