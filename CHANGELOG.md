@@ -1,3 +1,19 @@
+<a name="0.15.1"></a>
+## [0.15.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.15.0...v0.15.1) (2019-05-30)
+
+
+### Bug Fixes
+
+* in _findNProviders correctly calculate pathSize ([5841dfe](https://github.com/libp2p/js-libp2p-kad-dht/commit/5841dfe))
+* send correct payload in ADD_PROVIDER RPC ([#127](https://github.com/libp2p/js-libp2p-kad-dht/issues/127)) ([8d92d5a](https://github.com/libp2p/js-libp2p-kad-dht/commit/8d92d5a))
+
+
+### Features
+
+* use promisify-es6 instead of pify ([1d228e0](https://github.com/libp2p/js-libp2p-kad-dht/commit/1d228e0))
+
+
+
 <a name="0.15.0"></a>
 # [0.15.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.14.15...v0.15.0) (2019-05-13)
 
