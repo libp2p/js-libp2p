@@ -7,6 +7,8 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const parallel = require('async/parallel')
 
+const isNode = require('detect-node')
+
 const FloodSub = require('../src')
 const utils = require('./utils')
 const first = utils.first
@@ -198,110 +200,115 @@ describe('multiple nodes (more than 2)', () => {
       })
     })
 
-    describe('2 level tree', () => {
-      // 2 levels tree
-      //      ┌◉┐
-      //      │c│
-      //   ┌◉─┘ └─◉┐
-      //   │b     d│
-      // ◉─┘       └─◉
-      // a           e
+    if (isNode) {
+      // TODO enable for browser
+      describe('2 level tree', () => {
+        // 2 levels tree
+        //      ┌◉┐
+        //      │c│
+        //   ┌◉─┘ └─◉┐
+        //   │b     d│
+        // ◉─┘       └─◉
+        // a           e
 
-      let a
-      let b
-      let c
-      let d
-      let e
+        let a
+        let b
+        let c
+        let d
+        let e
 
-      before((done) => {
-        parallel([
-          (cb) => spawnPubSubNode(cb),
-          (cb) => spawnPubSubNode(cb),
-          (cb) => spawnPubSubNode(cb),
-          (cb) => spawnPubSubNode(cb),
-          (cb) => spawnPubSubNode(cb)
-        ], (err, nodes) => {
-          if (err) {
-            return done(err)
-          }
-          a = nodes[0]
-          b = nodes[1]
-          c = nodes[2]
-          d = nodes[3]
-          e = nodes[4]
-
-          done()
-        })
-      })
-
-      after((done) => {
-        // note: setTimeout to avoid the tests finishing
-        // before swarm does its dials
-        setTimeout(() => {
+        before((done) => {
           parallel([
-            (cb) => a.libp2p.stop(cb),
-            (cb) => b.libp2p.stop(cb),
-            (cb) => c.libp2p.stop(cb),
-            (cb) => d.libp2p.stop(cb),
-            (cb) => e.libp2p.stop(cb)
-          ], done)
-        }, 1000)
-      })
+            (cb) => spawnPubSubNode(cb),
+            (cb) => spawnPubSubNode(cb),
+            (cb) => spawnPubSubNode(cb),
+            (cb) => spawnPubSubNode(cb),
+            (cb) => spawnPubSubNode(cb)
+          ], (err, nodes) => {
+            if (err) {
+              return done(err)
+            }
+            a = nodes[0]
+            b = nodes[1]
+            c = nodes[2]
+            d = nodes[3]
+            e = nodes[4]
 
-      it('establish the connections', (done) => {
-        parallel([
-          (cb) => a.libp2p.dial(b.libp2p.peerInfo, cb),
-          (cb) => b.libp2p.dial(c.libp2p.peerInfo, cb),
-          (cb) => c.libp2p.dial(d.libp2p.peerInfo, cb),
-          (cb) => d.libp2p.dial(e.libp2p.peerInfo, cb)
-        ], (err) => {
-          expect(err).to.not.exist()
-          // wait for the pubsub pipes to be established
-          setTimeout(done, 2000)
+            done()
+          })
+        })
+
+        after((done) => {
+          // note: setTimeout to avoid the tests finishing
+          // before swarm does its dials
+          setTimeout(() => {
+            parallel([
+              (cb) => a.libp2p.stop(cb),
+              (cb) => b.libp2p.stop(cb),
+              (cb) => c.libp2p.stop(cb),
+              (cb) => d.libp2p.stop(cb),
+              (cb) => e.libp2p.stop(cb)
+            ], done)
+          }, 1000)
+        })
+
+        it('establish the connections', function (done) {
+          this.timeout(30 * 1000)
+          parallel([
+            (cb) => a.libp2p.dial(b.libp2p.peerInfo, cb),
+            (cb) => b.libp2p.dial(c.libp2p.peerInfo, cb),
+            (cb) => c.libp2p.dial(d.libp2p.peerInfo, cb),
+            (cb) => d.libp2p.dial(e.libp2p.peerInfo, cb)
+          ], (err) => {
+            expect(err).to.not.exist()
+            // wait for the pubsub pipes to be established
+            setTimeout(done, 10000)
+          })
+        })
+
+        it('subscribes', () => {
+          a.ps.subscribe('Z')
+          expectSet(a.ps.subscriptions, ['Z'])
+          b.ps.subscribe('Z')
+          expectSet(b.ps.subscriptions, ['Z'])
+          c.ps.subscribe('Z')
+          expectSet(c.ps.subscriptions, ['Z'])
+          d.ps.subscribe('Z')
+          expectSet(d.ps.subscriptions, ['Z'])
+          e.ps.subscribe('Z')
+          expectSet(e.ps.subscriptions, ['Z'])
+        })
+
+        it('publishes from c', function (done) {
+          this.timeout(30 * 1000)
+          let counter = 0
+
+          a.ps.on('Z', incMsg)
+          b.ps.on('Z', incMsg)
+          c.ps.on('Z', incMsg)
+          d.ps.on('Z', incMsg)
+          e.ps.on('Z', incMsg)
+
+          c.ps.publish('Z', Buffer.from('hey from c'))
+
+          function incMsg (msg) {
+            expect(msg.data.toString()).to.equal('hey from c')
+            check()
+          }
+
+          function check () {
+            if (++counter === 5) {
+              a.ps.removeListener('Z', incMsg)
+              b.ps.removeListener('Z', incMsg)
+              c.ps.removeListener('Z', incMsg)
+              d.ps.removeListener('Z', incMsg)
+              e.ps.removeListener('Z', incMsg)
+              done()
+            }
+          }
         })
       })
-
-      it('subscribes', () => {
-        a.ps.subscribe('Z')
-        expectSet(a.ps.subscriptions, ['Z'])
-        b.ps.subscribe('Z')
-        expectSet(b.ps.subscriptions, ['Z'])
-        c.ps.subscribe('Z')
-        expectSet(c.ps.subscriptions, ['Z'])
-        d.ps.subscribe('Z')
-        expectSet(d.ps.subscriptions, ['Z'])
-        e.ps.subscribe('Z')
-        expectSet(e.ps.subscriptions, ['Z'])
-      })
-
-      it('publishes from c', (done) => {
-        let counter = 0
-
-        a.ps.on('Z', incMsg)
-        b.ps.on('Z', incMsg)
-        c.ps.on('Z', incMsg)
-        d.ps.on('Z', incMsg)
-        e.ps.on('Z', incMsg)
-
-        c.ps.publish('Z', Buffer.from('hey from c'))
-
-        function incMsg (msg) {
-          expect(msg.data.toString()).to.equal('hey from c')
-          check()
-        }
-
-        function check () {
-          if (++counter === 5) {
-            a.ps.removeListener('Z', incMsg)
-            b.ps.removeListener('Z', incMsg)
-            c.ps.removeListener('Z', incMsg)
-            d.ps.removeListener('Z', incMsg)
-            e.ps.removeListener('Z', incMsg)
-            done()
-          }
-        }
-      })
-    })
+    }
   })
 
   describe('only some nodes subscribe the networks', () => {
@@ -341,7 +348,7 @@ describe('multiple nodes (more than 2)', () => {
 })
 
 function spawnPubSubNode (callback) {
-  createNode('/ip4/127.0.0.1/tcp/0', (err, node) => {
+  createNode((err, node) => {
     if (err) {
       return callback(err)
     }

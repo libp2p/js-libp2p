@@ -17,6 +17,9 @@
     "coverage": "aegir coverage",
     "coverage-publish": "aegir coverage --provider coveralls"
   },
+  "browser": {
+    "test/utils/nodejs-bundle": "./test/utils/browser-bundle.js"
+  },
   "files": [
     "src",
     "dist"
@@ -46,12 +49,16 @@
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "chai-spies": "^1.0.0",
+    "detect-node": "^2.0.4",
     "dirty-chai": "^2.0.1",
     "libp2p": "~0.24.4",
     "libp2p-secio": "~0.11.1",
     "libp2p-spdy": "~0.13.3",
     "libp2p-tcp": "~0.13.0",
+    "libp2p-websocket-star": "~0.10.2",
+    "libp2p-websocket-star-rendezvous": "~0.3.0",
     "lodash": "^4.17.11",
+    "multiaddr": "^6.0.6",
     "peer-id": "~0.12.2",
     "peer-info": "~0.15.1",
     "sinon": "^7.3.2"

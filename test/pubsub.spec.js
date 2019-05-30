@@ -16,7 +16,7 @@ describe('pubsub', () => {
   let libp2p
 
   before((done) => {
-    createNode('/ip4/127.0.0.1/tcp/0', (err, node) => {
+    createNode((err, node) => {
       expect(err).to.not.exist()
       libp2p = node
       floodsub = new Floodsub(libp2p)
