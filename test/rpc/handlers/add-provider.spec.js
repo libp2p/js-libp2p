@@ -53,9 +53,6 @@ describe('rpc - handlers - AddProvider', () => {
       message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.alloc(0), 0),
       error: 'ERR_MISSING_KEY'
     }, {
-      message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.alloc(0), 0),
-      error: 'ERR_MISSING_KEY'
-    }, {
       message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.from('hello world'), 0),
       error: 'ERR_INVALID_CID'
     }]

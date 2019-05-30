@@ -541,7 +541,7 @@ class KadDHT extends EventEmitter {
       (cb) => this.getClosestPeers(key.buffer, cb),
       (peers, cb) => {
         const msg = new Message(Message.TYPES.ADD_PROVIDER, key.buffer, 0)
-        msg.providerPeers = peers.map((p) => new PeerInfo(p))
+        msg.providerPeers = [this.peerInfo]
 
         each(peers, (peer, cb) => {
           this._log('putProvider %s to %s', key.toBaseEncodedString(), peer.toB58String())

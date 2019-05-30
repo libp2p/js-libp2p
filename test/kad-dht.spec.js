@@ -26,6 +26,7 @@ const errcode = require('err-code')
 const KadDHT = require('../src')
 const kadUtils = require('../src/utils')
 const c = require('../src/constants')
+const Message = require('../src/message')
 
 const createPeerInfo = require('./utils/create-peer-info')
 const createValues = require('./utils/create-values')
@@ -510,6 +511,8 @@ describe('KadDHT', () => {
       expect(err).to.not.exist()
       const addrs = dhts.map((d) => d.peerInfo.multiaddrs.toArray()[0])
       const ids = dhts.map((d) => d.peerInfo.id)
+      const idsB58 = ids.map(id => id.toB58String())
+      sinon.spy(dhts[3].network, 'sendMessage')
 
       series([
         (cb) => connect(dhts[0], dhts[1], cb),
@@ -519,6 +522,19 @@ describe('KadDHT', () => {
           dhts[3].provide(v.cid, cb)
         }, cb),
         (cb) => {
+          // Expect an ADD_PROVIDER message to be sent to each peer for each value
+          const fn = dhts[3].network.sendMessage
+          const valuesBuffs = values.map(v => v.cid.buffer)
+          const calls = fn.getCalls().map(c => c.args)
+          for (const [peerId, msg] of calls) {
+            expect(idsB58).includes(peerId.toB58String())
+            expect(msg.type).equals(Message.TYPES.ADD_PROVIDER)
+            expect(valuesBuffs).includes(msg.key)
+            expect(msg.providerPeers.length).equals(1)
+            expect(msg.providerPeers[0].id.toB58String()).equals(idsB58[3])
+          }
+
+          // Expect each DHT to find the provider of each value
           let n = 0
           each(values, (v, cb) => {
             n = (n + 1) % 3
