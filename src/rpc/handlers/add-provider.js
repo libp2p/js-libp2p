@@ -30,6 +30,7 @@ module.exports = (dht) => {
       return callback(errcode(new Error(errMsg), 'ERR_INVALID_CID'))
     }
 
+    let foundProvider = false
     msg.providerPeers.forEach((pi) => {
       // Ignore providers not from the originator
       if (!pi.id.isEqual(peer.id)) {
@@ -45,10 +46,20 @@ module.exports = (dht) => {
       log('received provider %s for %s (addrs %s)', peer.id.toB58String(), cid.toBaseEncodedString(), pi.multiaddrs.toArray().map((m) => m.toString()))
 
       if (!dht._isSelf(pi.id)) {
+        foundProvider = true
         dht.peerBook.put(pi)
+        dht.providers.addProvider(cid, pi.id, callback)
       }
     })
 
-    dht.providers.addProvider(cid, peer.id, callback)
+    // Previous versions of the JS DHT sent erroneous providers in the
+    // `providerPeers` field. In order to accommodate older clients that have
+    // this bug, we fall back to assuming the originator is the provider if
+    // we can't find any valid providers in the payload.
+    // https://github.com/libp2p/js-libp2p-kad-dht/pull/127
+    // https://github.com/libp2p/js-libp2p-kad-dht/issues/128
+    if (!foundProvider) {
+      dht.providers.addProvider(cid, peer.id, callback)
+    }
   }
 }

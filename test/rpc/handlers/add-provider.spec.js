@@ -66,16 +66,17 @@ describe('rpc - handlers - AddProvider', () => {
     }))
   })
 
-  it('ignore providers not from the originator', (done) => {
+  it('ignore providers that do not match the sender', (done) => {
     const cid = values[0].cid
 
     const msg = new Message(Message.TYPES.ADD_PROVIDER, cid.buffer, 0)
-    const sender = peers[0]
-    sender.multiaddrs.add('/ip4/127.0.0.1/tcp/1234')
-    const other = peers[1]
+    const sender = _.cloneDeep(peers[0])
+    const provider = _.cloneDeep(peers[0])
+    provider.multiaddrs.add('/ip4/127.0.0.1/tcp/1234')
+    const other = _.cloneDeep(peers[1])
     other.multiaddrs.add('/ip4/127.0.0.1/tcp/2345')
     msg.providerPeers = [
-      sender,
+      provider,
       other
     ]
 
@@ -84,30 +85,32 @@ describe('rpc - handlers - AddProvider', () => {
       (cb) => dht.providers.getProviders(cid, cb),
       (provs, cb) => {
         expect(provs).to.have.length(1)
-        expect(provs[0].id).to.eql(sender.id.id)
-        const bookEntry = dht.peerBook.get(sender.id)
+        expect(provs[0].id).to.eql(provider.id.id)
+        const bookEntry = dht.peerBook.get(provider.id)
+        // Favour peerInfo from payload over peerInfo from sender
         expect(bookEntry.multiaddrs.toArray()).to.eql(
-          sender.multiaddrs.toArray()
+          provider.multiaddrs.toArray()
         )
         cb()
       }
     ], done)
   })
 
-  it('ignore providers with no multiaddrs', (done) => {
+  it('fall back to sender if providers have no multiaddrs', (done) => {
     const cid = values[0].cid
     const msg = new Message(Message.TYPES.ADD_PROVIDER, cid.buffer, 0)
     const sender = _.cloneDeep(peers[0])
-    sender.multiaddrs.clear()
-    msg.providerPeers = [sender]
+    const provider = _.cloneDeep(peers[0])
+    provider.multiaddrs.clear()
+    msg.providerPeers = [provider]
 
     waterfall([
       (cb) => handler(dht)(sender, msg, cb),
       (cb) => dht.providers.getProviders(cid, cb),
       (provs, cb) => {
+        expect(dht.peerBook.has(provider.id)).to.equal(false)
         expect(provs).to.have.length(1)
-        expect(provs[0].id).to.eql(sender.id.id)
-        expect(dht.peerBook.has(sender.id)).to.equal(false)
+        expect(provs[0].id).to.eql(provider.id.id)
         cb()
       }
     ], done)
