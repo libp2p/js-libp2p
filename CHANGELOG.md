@@ -1,3 +1,13 @@
+<a name="0.15.2"></a>
+## [0.15.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.15.1...v0.15.2) (2019-05-31)
+
+
+### Bug Fixes
+
+* favour providers peerInfo over sender peerInfo in ADD_PROVIDER ([#129](https://github.com/libp2p/js-libp2p-kad-dht/issues/129)) ([6da26b0](https://github.com/libp2p/js-libp2p-kad-dht/commit/6da26b0))
+
+
+
 <a name="0.15.1"></a>
 ## [0.15.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.15.0...v0.15.1) (2019-05-30)
 
