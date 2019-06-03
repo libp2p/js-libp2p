@@ -4,6 +4,7 @@ const Benchmark = require('benchmark')
 const crypto = require('crypto')
 const map = require('async/map')
 const parallel = require('async/parallel')
+const series = require('async/series')
 
 const PSG = require('../src')
 const utils = require('../test/utils')
@@ -14,14 +15,25 @@ const suite = new Benchmark.Suite('pubsub')
 // one node to another.
 
 map([0, 1], (i, cb) => {
-  utils.createNode('/ip4/127.0.0.1/tcp/0', (err, node) => {
+  utils.createNode((err, node) => {
     if (err) {
       return cb(err)
     }
 
-    cb(null, {
-      libp2p: node,
-      ps: new PSG(node)
+    const ps = new PSG(node)
+
+    series([
+      (cb) => node.start(cb),
+      (cb) => ps.start(cb)
+    ], (err) => {
+      if (err) {
+        return cb(err)
+      }
+
+      cb(null, {
+        libp2p: node,
+        ps
+      })
     })
   })
 }, (err, peers) => {
@@ -30,16 +42,17 @@ map([0, 1], (i, cb) => {
   }
 
   parallel([
-    (cb) => peers[0].libp2p.dialByPeerInfo(peers[1].libp2p.peerInfo, cb),
+    (cb) => peers[0].libp2p.dial(peers[1].libp2p.peerInfo, cb),
     (cb) => setTimeout(() => {
-      peers[0].ps.subscribe('Z')
-      peers[1].ps.subscribe('Z')
+      peers[0].ps.subscribe('Z', () => {}, () => {})
+      peers[1].ps.subscribe('Z', () => {}, () => {})
       cb(null, peers)
     }, 200)
   ], (err, res) => {
     if (err) {
       throw err
     }
+
     const peers = res[1]
 
     suite.add('publish and receive', (deferred) => {
