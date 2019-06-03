@@ -6,8 +6,9 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
-    "test": "aegir test -t node",
+    "test": "aegir test",
     "test:node": "aegir test -t node",
+    "test:browser": "aegir test -t browser",
     "build": "aegir build",
     "docs": "aegir-docs",
     "release": "aegir release --target node --docs",
@@ -15,6 +16,9 @@
     "release-major": "aegir release --type major --docs",
     "coverage": "aegir coverage",
     "coverage-publish": "aegir coverage --provider coveralls"
+  },
+  "browser": {
+    "test/utils/nodejs-bundle": "./test/utils/browser-bundle.js"
   },
   "files": [
     "src",
@@ -50,7 +54,10 @@
     "libp2p-secio": "~0.11.1",
     "libp2p-spdy": "~0.13.3",
     "libp2p-tcp": "~0.13.0",
+    "libp2p-websocket-star": "~0.10.2",
+    "libp2p-websocket-star-rendezvous": "~0.3.0",
     "lodash": "^4.17.11",
+    "multiaddr": "^6.0.6",
     "peer-id": "~0.12.2",
     "peer-info": "~0.15.1"
   },
