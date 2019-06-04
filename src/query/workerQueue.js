@@ -210,7 +210,7 @@ class WorkerQueue {
   async execQuery (peer) {
     let res, queryError
     try {
-      res = await this.path.queryFuncAsync(peer)
+      res = await this.path.queryFunc(peer)
     } catch (err) {
       queryError = err
     }

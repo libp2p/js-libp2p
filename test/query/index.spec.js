@@ -67,7 +67,7 @@ describe('Query', () => {
       const PATHS = 5
       sinon.stub(dht, 'disjointPaths').value(PATHS)
       sinon.stub(dht._queryManager, 'running').value(true)
-      let querySpy = sinon.stub().callsArgWith(1, null, {})
+      const querySpy = sinon.stub().resolves({})
 
       let query = new Query(dht, targetKey.key, () => querySpy)
 
@@ -122,7 +122,7 @@ describe('Query', () => {
       sinon.stub(dht, 'disjointPaths').value(1)
       sinon.stub(dht._queryManager, 'running').value(true)
 
-      let querySpy = sinon.stub().callsArgWith(1, null, {})
+      const querySpy = sinon.stub().resolves({})
       let query = new Query(dht, targetKey.key, () => querySpy)
 
       let run = new Run(query)
@@ -147,8 +147,11 @@ describe('Query', () => {
         const returnPeers = sortedPeers.slice(16, 20)
         // When the second query happens, which is a further peer,
         // return peers 16 - 19
-        querySpy.onCall(1).callsFake((_, cb) => {
-          setTimeout(() => cb(null, { closerPeers: returnPeers }), 10)
+        querySpy.onCall(1).callsFake(async () => {
+          // this timeout ensures the queries finish in serial
+          // see https://github.com/libp2p/js-libp2p-kad-dht/pull/121#discussion_r286437978
+          await new Promise(resolve => setTimeout(resolve, 10))
+          return { closerPeers: returnPeers }
         })
 
         each(queriedPeers, (peerId, cb) => {

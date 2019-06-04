@@ -302,7 +302,7 @@ describe('KadDHT', () => {
       const dhtB = dhts[1]
       const dhtC = dhts[2]
       const dhtD = dhts[3]
-      const stub = sinon.stub(dhtD, '_verifyRecordLocally').callsArgWithAsync(1, error)
+      const stub = sinon.stub(dhtD, '_verifyRecordLocallyAsync').rejects(error)
 
       waterfall([
         (cb) => connect(dhtA, dhtB, cb),
@@ -335,8 +335,8 @@ describe('KadDHT', () => {
       const dhtB = dhts[1]
       const dhtC = dhts[2]
       const dhtD = dhts[3]
-      const stub = sinon.stub(dhtD, '_verifyRecordLocally').callsArgWithAsync(1, error)
-      const stub2 = sinon.stub(dhtC, '_verifyRecordLocally').callsArgWithAsync(1, error)
+      const stub = sinon.stub(dhtD, '_verifyRecordLocallyAsync').rejects(error)
+      const stub2 = sinon.stub(dhtC, '_verifyRecordLocallyAsync').rejects(error)
 
       waterfall([
         (cb) => connect(dhtA, dhtB, cb),
@@ -370,7 +370,7 @@ describe('KadDHT', () => {
       const dhtA = dhts[0]
       const dhtB = dhts[1]
       const dhtC = dhts[2]
-      const stub = sinon.stub(dhtC, '_verifyRecordLocally').callsArgWithAsync(1, error)
+      const stub = sinon.stub(dhtC, '_verifyRecordLocallyAsync').rejects(error)
 
       waterfall([
         (cb) => connect(dhtA, dhtB, cb),
@@ -477,7 +477,7 @@ describe('KadDHT', () => {
       const dhtA = dhts[0]
       const dhtB = dhts[1]
 
-      const dhtASpy = sinon.spy(dhtA, '_putValueToPeer')
+      const dhtASpy = sinon.spy(dhtA, '_putValueToPeerAsync')
 
       series([
         (cb) => dhtA.put(Buffer.from('/v/hello'), Buffer.from('worldA'), cb),
@@ -1010,7 +1010,9 @@ describe('KadDHT', () => {
       sw.connection.addStreamMuxer(Mplex)
       sw.connection.reuse()
       const dht = new KadDHT(sw)
-      dht.start(() => {
+      dht.start((err) => {
+        expect(err).to.not.exist()
+
         const key = Buffer.from('/v/hello')
         const value = Buffer.from('world')
         const rec = new Record(key, value)
@@ -1019,9 +1021,7 @@ describe('KadDHT', () => {
           // Simulate returning a peer id to query
           sinon.stub(dht.routingTable, 'closestPeers').returns([peerInfos[1].id]),
           // Simulate going out to the network and returning the record
-          sinon.stub(dht, '_getValueOrPeers').callsFake((peer, k, cb) => {
-            cb(null, rec)
-          })
+          sinon.stub(dht, '_getValueOrPeersAsync').callsFake(async () => ({ record: rec }))
         ]
 
         dht.getMany(key, 1, (err, res) => {
@@ -1070,7 +1070,7 @@ describe('KadDHT', () => {
 
         const dhtA = dhts[0]
         const dhtB = dhts[1]
-        const stub = sinon.stub(dhtA, '_getValueOrPeers').callsArgWithAsync(2, error)
+        const stub = sinon.stub(dhtA, '_getValueOrPeersAsync').rejects(error)
 
         waterfall([
           (cb) => connect(dhtA, dhtB, cb),
@@ -1098,7 +1098,7 @@ describe('KadDHT', () => {
 
         const dhtA = dhts[0]
         const dhtB = dhts[1]
-        const stub = sinon.stub(dhtA, '_getValueOrPeers').callsArgWithAsync(2, error)
+        const stub = sinon.stub(dhtA, '_getValueOrPeersAsync').rejects(error)
 
         waterfall([
           (cb) => connect(dhtA, dhtB, cb),

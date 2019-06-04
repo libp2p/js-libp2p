@@ -1,8 +1,7 @@
 'use strict'
 
-const timeout = require('async/timeout')
-const promisify = require('promisify-es6')
 const PeerQueue = require('../peer-queue')
+const utils = require('../utils')
 
 // TODO: Temporary until parallel dial in Switch have a proper
 // timeout. Requires async/await refactor of transports and
@@ -22,8 +21,9 @@ class Path {
    */
   constructor (run, queryFunc) {
     this.run = run
-    this.queryFunc = timeout(queryFunc, QUERY_FUNC_TIMEOUT)
-    this.queryFuncAsync = promisify(this.queryFunc)
+    this.queryFunc = utils.withTimeout(queryFunc, QUERY_FUNC_TIMEOUT)
+    if (!this.queryFunc) throw new Error('Path requires a `queryFn` to be specified')
+    if (typeof this.queryFunc !== 'function') throw new Error('Path expected `queryFn` to be a function. Got ' + typeof this.queryFunc)
 
     /**
      * @type {Array<PeerId>}

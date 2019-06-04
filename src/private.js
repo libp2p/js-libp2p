@@ -6,8 +6,6 @@ const timeout = require('async/timeout')
 const PeerInfo = require('peer-info')
 const promisify = require('promisify-es6')
 const promiseToCallback = require('promise-to-callback')
-const callbackify = require('callbackify')
-
 const errcode = require('err-code')
 
 const utils = require('./utils')
@@ -163,7 +161,6 @@ module.exports = (dht) => ({
       record,
       cb
     ))()
-    return undefined
   },
 
   /**
@@ -336,8 +333,7 @@ module.exports = (dht) => ({
       // correct ourself
       if (dht._isSelf(v.from)) {
         try {
-          await promisify(cb => dht._putLocal(key, fixupRec, cb))()
-          // await dht._putLocalAsync(key, fixupRec)
+          await dht._putLocalAsync(key, fixupRec)
         } catch (err) {
           dht._log.error('Failed error correcting self', err)
         }
@@ -346,8 +342,7 @@ module.exports = (dht) => ({
 
       // send correction
       try {
-        await promisify(cb => dht._putValueToPeer(key, fixupRec, v.from, cb))()
-        // await dht._putValueToPeerAsync(key, fixupRec, v.from)
+        await dht._putValueToPeerAsync(key, fixupRec, v.from)
       } catch (err) {
         dht._log.error('Failed error correcting entry', err)
       }
@@ -409,8 +404,7 @@ module.exports = (dht) => ({
     if (record) {
       // We have a record
       try {
-        // await dht._verifyRecordOnlineAsync(record)
-        await promisify(cb => dht._verifyRecordOnline(record, cb))()
+        await dht._verifyRecordOnlineAsync(record)
       } catch (err) {
         const errMsg = 'invalid record received, discarded'
         dht._log(errMsg)
@@ -463,7 +457,7 @@ module.exports = (dht) => ({
   },
 
   async _verifyRecordOnlineAsync (record) {
-    return promisify(cb => libp2pRecord.validator.verifyRecord(dht.validators, record, cb))()
+    await promisify(cb => libp2pRecord.validator.verifyRecord(dht.validators, record, cb))()
   },
 
   /**
@@ -543,7 +537,7 @@ module.exports = (dht) => ({
       paths.push(pathProviders)
 
       // Here we return the query function to use on this particular disjoint path
-      return callbackify(async (peer) => {
+      return async (peer) => {
         const msg = await dht._findProvidersSingleAsync(peer, key)
         const provs = msg.providerPeers
         dht._log('(%s) found %s provider entries', dht.peerInfo.id.toB58String(), provs.length)
@@ -559,7 +553,7 @@ module.exports = (dht) => ({
 
         // it looks like we want some more
         return { closerPeers: msg.closerPeers }
-      })
+      }
     })
 
     const peers = dht.routingTable.closestPeers(key.buffer, dht.kBucketSize)

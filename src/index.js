@@ -347,31 +347,35 @@ class KadDHT extends EventEmitter {
             paths.push(pathVals)
 
             // Here we return the query function to use on this particular disjoint path
-            return (peer, cb) => {
-              this._getValueOrPeers(peer, key, (err, rec, peers) => {
-                if (err) {
-                  // If we have an invalid record we just want to continue and fetch a new one.
-                  if (!(err.code === 'ERR_INVALID_RECORD')) {
-                    return cb(err)
-                  }
+            return async (peer) => {
+              let rec, peers, lookupErr
+              try {
+                const results = await this._getValueOrPeersAsync(peer, key)
+                rec = results.record
+                peers = results.peers
+              } catch (err) {
+                // If we have an invalid record we just want to continue and fetch a new one.
+                if (err.code !== 'ERR_INVALID_RECORD') {
+                  throw err
                 }
+                lookupErr = err
+              }
 
-                const res = { closerPeers: peers }
+              const res = { closerPeers: peers }
 
-                if ((rec && rec.value) || (err && err.code === 'ERR_INVALID_RECORD')) {
-                  pathVals.push({
-                    val: rec && rec.value,
-                    from: peer
-                  })
-                }
+              if ((rec && rec.value) || lookupErr) {
+                pathVals.push({
+                  val: rec && rec.value,
+                  from: peer
+                })
+              }
 
-                // enough is enough
-                if (pathVals.length >= pathSize) {
-                  res.pathComplete = true
-                }
+              // enough is enough
+              if (pathVals.length >= pathSize) {
+                res.pathComplete = true
+              }
 
-                cb(null, res)
-              })
+              return res
             }
           })
 
@@ -426,16 +430,12 @@ class KadDHT extends EventEmitter {
         // There is no distinction between the disjoint paths,
         // so there are no per-path variables in this scope.
         // Just return the actual query function.
-        return (peer, callback) => {
-          waterfall([
-            (cb) => this._closerPeersSingle(key, peer, cb),
-            (closer, cb) => {
-              cb(null, {
-                closerPeers: closer,
-                pathComplete: options.shallow ? true : undefined
-              })
-            }
-          ], callback)
+        return async (peer) => {
+          const closer = await this._closerPeersSingleAsync(key, peer)
+          return {
+            closerPeers: closer,
+            pathComplete: options.shallow ? true : undefined
+          }
         }
       })
 
@@ -651,25 +651,21 @@ class KadDHT extends EventEmitter {
             // There is no distinction between the disjoint paths,
             // so there are no per-path variables in this scope.
             // Just return the actual query function.
-            return (peer, cb) => {
-              waterfall([
-                (cb) => this._findPeerSingle(peer, id, cb),
-                (msg, cb) => {
-                  const match = msg.closerPeers.find((p) => p.id.isEqual(id))
+            return async (peer) => {
+              const msg = await this._findPeerSingleAsync(peer, id)
+              const match = msg.closerPeers.find((p) => p.id.isEqual(id))
 
-                  // found it
-                  if (match) {
-                    return cb(null, {
-                      peer: match,
-                      queryComplete: true
-                    })
-                  }
-
-                  cb(null, {
-                    closerPeers: msg.closerPeers
-                  })
+              // found it
+              if (match) {
+                return {
+                  peer: match,
+                  queryComplete: true
                 }
-              ], cb)
+              }
+
+              return {
+                closerPeers: msg.closerPeers
+              }
             }
           })
 

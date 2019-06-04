@@ -39,6 +39,22 @@ describe('kad utils', () => {
     })
   })
 
+  describe('withTimeout', () => {
+    it('rejects with the error in the original function', async () => {
+      const original = async () => { throw new Error('explode') }
+      const asyncFn = utils.withTimeout(original, 100)
+      let err
+      try {
+        await asyncFn()
+      } catch (_err) {
+        err = _err
+      }
+
+      expect(err).to.exist()
+      expect(err.message).to.include('explode')
+    })
+  })
+
   describe('sortClosestPeers', () => {
     it('sorts a list of PeerInfos', (done) => {
       const rawIds = [
