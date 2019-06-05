@@ -1,3 +1,14 @@
+<a name="0.42.12"></a>
+## [0.42.12](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.11...v0.42.12) (2019-06-05)
+
+
+### Bug Fixes
+
+* clear blacklist for peer when connection is established ([#340](https://github.com/libp2p/js-libp2p-switch/issues/340)) ([f306cba](https://github.com/libp2p/js-libp2p-switch/commit/f306cba))
+* dont blindly add observed addresses to our list ([#337](https://github.com/libp2p/js-libp2p-switch/issues/337)) ([f879cfc](https://github.com/libp2p/js-libp2p-switch/commit/f879cfc))
+
+
+
 <a name="0.42.11"></a>
 ## [0.42.11](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.10...v0.42.11) (2019-04-25)
 
