@@ -10,6 +10,7 @@ chai.use(dirtyChai)
 const sinon = require('sinon')
 const PeerBook = require('peer-book')
 const parallel = require('async/parallel')
+const series = require('async/series')
 const WS = require('libp2p-websockets')
 const TCP = require('libp2p-tcp')
 const secio = require('libp2p-secio')
@@ -25,16 +26,18 @@ describe('dialFSM', () => {
   let switchA
   let switchB
   let switchC
+  let switchDialOnly
   let peerAId
   let peerBId
   let protocol
 
-  before((done) => createInfos(3, (err, infos) => {
+  before((done) => createInfos(4, (err, infos) => {
     expect(err).to.not.exist()
 
     const peerA = infos[0]
     const peerB = infos[1]
     const peerC = infos[2]
+    const peerDialOnly = infos[3]
 
     peerAId = peerA.id.toB58String()
     peerBId = peerB.id.toB58String()
@@ -48,22 +51,27 @@ describe('dialFSM', () => {
     switchA = new Switch(peerA, new PeerBook())
     switchB = new Switch(peerB, new PeerBook())
     switchC = new Switch(peerC, new PeerBook())
+    switchDialOnly = new Switch(peerDialOnly, new PeerBook())
 
     switchA.transport.add('tcp', new TCP())
     switchB.transport.add('tcp', new TCP())
     switchC.transport.add('ws', new WS())
+    switchDialOnly.transport.add('ws', new WS())
 
     switchA.connection.crypto(secio.tag, secio.encrypt)
     switchB.connection.crypto(secio.tag, secio.encrypt)
     switchC.connection.crypto(secio.tag, secio.encrypt)
+    switchDialOnly.connection.crypto(secio.tag, secio.encrypt)
 
     switchA.connection.addStreamMuxer(multiplex)
     switchB.connection.addStreamMuxer(multiplex)
     switchC.connection.addStreamMuxer(multiplex)
+    switchDialOnly.connection.addStreamMuxer(multiplex)
 
     switchA.connection.reuse()
     switchB.connection.reuse()
     switchC.connection.reuse()
+    switchDialOnly.connection.reuse()
 
     parallel([
       (cb) => switchA.start(cb),
@@ -152,6 +160,30 @@ describe('dialFSM', () => {
         })
         connFSM.close(new Error('bad things'))
       })
+    })
+  })
+
+  it('should clear the blacklist for a peer that connected to us', (done) => {
+    series([
+      // Attempt to dial the peer that's not listening
+      (cb) => switchC.dial(switchDialOnly._peerInfo, (err) => {
+        expect(err).to.exist()
+        cb()
+      }),
+      // Dial from the dial only peer
+      (cb) => switchDialOnly.dial(switchC._peerInfo, (err) => {
+        expect(err).to.not.exist()
+        // allow time for muxing to occur
+        setTimeout(cb, 100)
+      }),
+      // "Dial" to the dial only peer, this should reuse the existing connection
+      (cb) => switchC.dial(switchDialOnly._peerInfo, (err) => {
+        expect(err).to.not.exist()
+        cb()
+      })
+    ], (err) => {
+      expect(err).to.not.exist()
+      done()
     })
   })
 

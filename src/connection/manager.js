@@ -36,8 +36,14 @@ class ConnectionManager {
       this.switch.emit('connection:start', connection.theirPeerInfo)
       if (connection.getState() === 'MUXED') {
         this.switch.emit('peer-mux-established', connection.theirPeerInfo)
+        // Clear the blacklist of the peer
+        this.switch.dialer.clearBlacklist(connection.theirPeerInfo)
       } else {
-        connection.once('muxed', () => this.switch.emit('peer-mux-established', connection.theirPeerInfo))
+        connection.once('muxed', () => {
+          this.switch.emit('peer-mux-established', connection.theirPeerInfo)
+          // Clear the blacklist of the peer
+          this.switch.dialer.clearBlacklist(connection.theirPeerInfo)
+        })
       }
     }
   }

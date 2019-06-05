@@ -82,10 +82,11 @@ class Queue {
    * @param {string} protocol
    * @param {boolean} useFSM If callback should use a ConnectionFSM instead
    * @param {function(Error, Connection)} callback
+   * @returns {void}
    */
   add (protocol, useFSM, callback) {
     if (!this.isDialAllowed()) {
-      nextTick(callback, ERR_BLACKLISTED())
+      return nextTick(callback, ERR_BLACKLISTED())
     }
     this._queue.push({ protocol, useFSM, callback })
   }
