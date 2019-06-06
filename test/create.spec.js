@@ -7,8 +7,15 @@ const expect = chai.expect
 const series = require('async/series')
 const createNode = require('./utils/create-node')
 const sinon = require('sinon')
+const { createLibp2p } = require('../src')
+const WS = require('libp2p-websockets')
+const PeerInfo = require('peer-info')
 
 describe('libp2p creation', () => {
+  afterEach(() => {
+    sinon.restore()
+  })
+
   it('should be able to start and stop successfully', (done) => {
     createNode([], {
       config: {
@@ -99,6 +106,36 @@ describe('libp2p creation', () => {
         done()
       })
       node._switch.emit('error', error)
+    })
+  })
+
+  it('createLibp2p should create a peerInfo instance', (done) => {
+    createLibp2p({
+      modules: {
+        transport: [ WS ]
+      }
+    }, (err, libp2p) => {
+      expect(err).to.not.exist()
+      expect(libp2p).to.exist()
+      done()
+    })
+  })
+
+  it('createLibp2p should allow for a provided peerInfo instance', (done) => {
+    PeerInfo.create((err, peerInfo) => {
+      expect(err).to.not.exist()
+      sinon.spy(PeerInfo, 'create')
+      createLibp2p({
+        peerInfo,
+        modules: {
+          transport: [ WS ]
+        }
+      }, (err, libp2p) => {
+        expect(err).to.not.exist()
+        expect(libp2p).to.exist()
+        expect(PeerInfo.create.callCount).to.eql(0)
+        done()
+      })
     })
   })
 })

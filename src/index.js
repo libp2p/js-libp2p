@@ -10,8 +10,10 @@ const errCode = require('err-code')
 const each = require('async/each')
 const series = require('async/series')
 const parallel = require('async/parallel')
+const nextTick = require('async/nextTick')
 
 const PeerBook = require('peer-book')
+const PeerInfo = require('peer-info')
 const Switch = require('libp2p-switch')
 const Ping = require('libp2p-ping')
 const WebSockets = require('libp2p-websockets')
@@ -34,14 +36,14 @@ const notStarted = (action, state) => {
 }
 
 /**
- * @fires Node#error Emitted when an error occurs
- * @fires Node#peer:connect Emitted when a peer is connected to this node
- * @fires Node#peer:disconnect Emitted when a peer disconnects from this node
- * @fires Node#peer:discovery Emitted when a peer is discovered
- * @fires Node#start Emitted when the node and its services has started
- * @fires Node#stop Emitted when the node and its services has stopped
+ * @fires Libp2p#error Emitted when an error occurs
+ * @fires Libp2p#peer:connect Emitted when a peer is connected to this node
+ * @fires Libp2p#peer:disconnect Emitted when a peer disconnects from this node
+ * @fires Libp2p#peer:discovery Emitted when a peer is discovered
+ * @fires Libp2p#start Emitted when the node and its services has started
+ * @fires Libp2p#stop Emitted when the node and its services has stopped
  */
-class Node extends EventEmitter {
+class Libp2p extends EventEmitter {
   constructor (_options) {
     super()
     // validateConfig will ensure the config is correct,
@@ -547,4 +549,21 @@ class Node extends EventEmitter {
   }
 }
 
-module.exports = Node
+module.exports = Libp2p
+/**
+ * Like `new Libp2p(options)` except it will create a `PeerInfo`
+ * instance if one is not provided in options.
+ * @param {object} options Libp2p configuration options
+ * @param {function(Error, Libp2p)} callback
+ * @returns {void}
+ */
+module.exports.createLibp2p = (options, callback) => {
+  if (options.peerInfo) {
+    return nextTick(callback, null, new Libp2p(options))
+  }
+  PeerInfo.create((err, peerInfo) => {
+    if (err) return callback(err)
+    options.peerInfo = peerInfo
+    callback(null, new Libp2p(options))
+  })
+}
