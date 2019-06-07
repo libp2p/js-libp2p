@@ -111,7 +111,7 @@ The libp2p module acts as a glue for every libp2p module that you can use to cre
 //   crypto-channel: secio
 //   discovery: multicast-dns
 
-const libp2p = require('libp2p')
+const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const WS = require('libp2p-websockets')
 const SPDY = require('libp2p-spdy')
@@ -124,7 +124,7 @@ const Protector = require('libp2p-pnet')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 
-class Node extends libp2p {
+class Node extends Libp2p {
   constructor (_options) {
     const peerInfo = _options.peerInfo
     const defaults = {
@@ -204,13 +204,31 @@ class Node extends libp2p {
 
 ### API
 
-#### Create a Node - `new libp2p.Node(options)`
+#### Create a Node - `Libp2p.createLibp2p(options, callback)`
 
-> Creates an instance of the libp2p.Node.
+> Behaves exactly like `new Libp2p(options)`, but doesn't require a PeerInfo. One will be generated instead
+
+```js
+const { createLibp2p } = require('libp2p')
+createLibp2p(options, (err, libp2p) => {
+  if (err) throw err
+  libp2p.start((err) => {
+    if (err) throw err
+  })
+})
+```
+
+- `options`: Object of libp2p configuration options
+- `callback`: Function with signature `function (Error, Libp2p) {}`
+
+#### Create a Node alternative - `new Libp2p(options)`
+
+> Creates an instance of Libp2p with a custom `PeerInfo` provided via `options.peerInfo`.
 
 Required keys in the `options` object:
 
 - `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node.
+- `modules.transport`: An array that must include at least 1 transport, such as `libp2p-tcp`.
 
 #### `libp2p.start(callback)`
 

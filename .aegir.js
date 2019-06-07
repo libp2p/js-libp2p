@@ -22,13 +22,12 @@ const before = (done) => {
       sigServer.start({
         port: WRTC_RENDEZVOUS_MULTIADDR.nodeAddress().port
         // cryptoChallenge: true TODO: needs https://github.com/libp2p/js-libp2p-webrtc-star/issues/128
-      }, (err, server) => {
-        if (err) {
-          return cb(err)
-        }
+      })
+      .then(server => {
         wrtcRendezvous = server
         cb()
       })
+      .catch(cb)
     },
     (cb) => {
       WebSocketStarRendezvous.start({
@@ -72,14 +71,16 @@ const before = (done) => {
 
 const after = (done) => {
   setTimeout(() =>
-    parallel(
-      [node, wrtcRendezvous, wsRendezvous].map((s) => (cb) => s.stop(cb)),
-      done),
-  2000)
+    parallel([
+      (cb) => wrtcRendezvous.stop().then(cb).catch(cb),
+      ...[node, wsRendezvous].map((s) => (cb) => s.stop(cb)),
+    ], done),
+    2000
+  )
 }
 
 module.exports = {
-  bundlesize: { maxSize: '218kB' },
+  bundlesize: { maxSize: '220kB' },
   hooks: {
     pre: before,
     post: after
