@@ -1,3 +1,14 @@
+<a name="0.25.4"></a>
+## [0.25.4](https://github.com/libp2p/js-libp2p/compare/v0.25.3...v0.25.4) (2019-06-07)
+
+
+### Features
+
+* add createLibp2p to generate a PeerInfo instance ([#367](https://github.com/libp2p/js-libp2p/issues/367)) ([04faf18](https://github.com/libp2p/js-libp2p/commit/04faf18))
+* pass libp2p as option to transport creation ([#363](https://github.com/libp2p/js-libp2p/issues/363)) ([b06ca1b](https://github.com/libp2p/js-libp2p/commit/b06ca1b))
+
+
+
 <a name="0.25.3"></a>
 ## [0.25.3](https://github.com/libp2p/js-libp2p/compare/v0.25.2...v0.25.3) (2019-05-07)
 
