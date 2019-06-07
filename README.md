@@ -211,7 +211,10 @@ class Node extends Libp2p {
 ```js
 const { createLibp2p } = require('libp2p')
 createLibp2p(options, (err, libp2p) => {
-  libp2p.start(() => {})
+  if (err) throw err
+  libp2p.start((err) => {
+    if (err) throw err
+  })
 })
 ```
 
