@@ -5,7 +5,6 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const sinon = require('sinon')
-const signalling = require('libp2p-webrtc-star/src/sig-server')
 const parallel = require('async/parallel')
 const crypto = require('crypto')
 
