@@ -11,28 +11,19 @@ const crypto = require('crypto')
 
 const createNode = require('./utils/create-node')
 const echo = require('./utils/echo')
+const { WRTC_RENDEZVOUS_MULTIADDR } = require('./utils/constants')
 
 describe('peer discovery', () => {
   let nodeA
   let nodeB
   let nodeC
-  let port = 24642
-  let ss
 
   function setup (options) {
     before((done) => {
-      port++
       parallel([
-        (cb) => {
-          signalling.start({ port: port }, (err, server) => {
-            expect(err).to.not.exist()
-            ss = server
-            cb()
-          })
-        },
         (cb) => createNode([
           '/ip4/0.0.0.0/tcp/0',
-          `/ip4/127.0.0.1/tcp/${port}/ws/p2p-webrtc-star`
+          `${WRTC_RENDEZVOUS_MULTIADDR.toString()}/p2p-webrtc-star`
         ], options, (err, node) => {
           expect(err).to.not.exist()
           nodeA = node
@@ -41,7 +32,7 @@ describe('peer discovery', () => {
         }),
         (cb) => createNode([
           '/ip4/0.0.0.0/tcp/0',
-          `/ip4/127.0.0.1/tcp/${port}/ws/p2p-webrtc-star`
+          `${WRTC_RENDEZVOUS_MULTIADDR.toString()}/p2p-webrtc-star`
         ], options, (err, node) => {
           expect(err).to.not.exist()
           nodeB = node
@@ -50,7 +41,7 @@ describe('peer discovery', () => {
         }),
         (cb) => createNode([
           '/ip4/0.0.0.0/tcp/0',
-          `/ip4/127.0.0.1/tcp/${port}/ws/p2p-webrtc-star`
+          `${WRTC_RENDEZVOUS_MULTIADDR.toString()}/p2p-webrtc-star`
         ], options, (err, node) => {
           expect(err).to.not.exist()
           nodeC = node
@@ -64,8 +55,7 @@ describe('peer discovery', () => {
       parallel([
         (cb) => nodeA.stop(cb),
         (cb) => nodeB.stop(cb),
-        (cb) => nodeC.stop(cb),
-        (cb) => ss.stop(cb)
+        (cb) => nodeC.stop(cb)
       ], done)
     })
 
