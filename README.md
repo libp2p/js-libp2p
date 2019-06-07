@@ -204,15 +204,7 @@ class Node extends Libp2p {
 
 ### API
 
-#### Create a Node - `new Libp2p(options)`
-
-> Creates an instance of Libp2p.
-
-Required keys in the `options` object:
-
-- `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node.
-
-#### Create a Node alternative - `Libp2p.createLibp2p(options, callback)`
+#### Create a Node - `Libp2p.createLibp2p(options, callback)`
 
 > Behaves exactly like `new Libp2p(options)`, but doesn't require a PeerInfo. One will be generated instead
 
@@ -225,6 +217,15 @@ createLibp2p(options, (err, libp2p) => {
 
 - `options`: Object of libp2p configuration options
 - `callback`: Function with signature `function (Error, Libp2p) {}`
+
+#### Create a Node alternative - `new Libp2p(options)`
+
+> Creates an instance of Libp2p with a custom `PeerInfo` provided via `options.peerInfo`.
+
+Required keys in the `options` object:
+
+- `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node.
+- `modules.transport`: An array that must include at least 1 transport, such as `libp2p-tcp`.
 
 #### `libp2p.start(callback)`
 
