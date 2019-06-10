@@ -8,6 +8,7 @@ const expect = chai.expect
 const parallel = require('async/parallel')
 const waterfall = require('async/waterfall')
 const _ = require('lodash')
+const promiseToCallback = require('promise-to-callback')
 
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/add-provider')
@@ -82,7 +83,7 @@ describe('rpc - handlers - AddProvider', () => {
 
     waterfall([
       (cb) => handler(dht)(sender, msg, cb),
-      (cb) => dht.providers.getProviders(cid, cb),
+      (cb) => promiseToCallback(dht.providers.getProviders(cid))(cb),
       (provs, cb) => {
         expect(provs).to.have.length(1)
         expect(provs[0].id).to.eql(provider.id.id)
@@ -106,7 +107,7 @@ describe('rpc - handlers - AddProvider', () => {
 
     waterfall([
       (cb) => handler(dht)(sender, msg, cb),
-      (cb) => dht.providers.getProviders(cid, cb),
+      (cb) => promiseToCallback(dht.providers.getProviders(cid))(cb),
       (provs, cb) => {
         expect(dht.peerBook.has(provider.id)).to.equal(false)
         expect(provs).to.have.length(1)

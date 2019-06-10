@@ -2,11 +2,11 @@
 
 const cache = require('hashlru')
 const varint = require('varint')
-const each = require('async/each')
-const pull = require('pull-stream')
-const CID = require('cids')
 const PeerId = require('peer-id')
 const Key = require('interface-datastore').Key
+const Queue = require('p-queue')
+const promisify = require('promisify-es6')
+const toIterator = require('pull-stream-to-async-iterator')
 
 const c = require('./constants')
 const utils = require('./utils')
@@ -56,6 +56,8 @@ class Providers {
     this.lruCacheSize = cacheSize || c.PROVIDERS_LRU_CACHE_SIZE
 
     this.providers = cache(this.lruCacheSize)
+
+    this.syncQueue = new Queue({ concurrency: 1 })
   }
 
   /**
@@ -71,134 +73,89 @@ class Providers {
   }
 
   /**
-   * Check all providers if they are still valid, and if not
-   * delete them.
+   * Check all providers if they are still valid, and if not delete them.
    *
-   * @returns {undefined}
+   * @returns {Promise}
    *
    * @private
    */
   _cleanup () {
-    this._getProviderCids((err, cids) => {
-      if (err) {
-        return this._log.error('Failed to get cids', err)
+    return this.syncQueue.add(async () => {
+      this._log('start cleanup')
+      const start = Date.now()
+
+      let count = 0
+      let deleteCount = 0
+      const deleted = new Map()
+      const batch = this.datastore.batch()
+
+      // Get all provider entries from the datastore
+      const query = this.datastore.query({ prefix: c.PROVIDERS_KEY_PREFIX })
+      for await (const entry of toIterator(query)) {
+        try {
+          // Add a delete to the batch for each expired entry
+          const { cid, peerId } = parseProviderKey(entry.key)
+          const time = readTime(entry.value)
+          const now = Date.now()
+          const delta = now - time
+          const expired = delta > this.provideValidity
+          this._log('comparing: %d - %d = %d > %d %s',
+            now, time, delta, this.provideValidity, expired ? '(expired)' : '')
+          if (expired) {
+            deleteCount++
+            batch.delete(entry.key)
+            const peers = deleted.get(cid) || new Set()
+            peers.add(peerId)
+            deleted.set(cid, peers)
+          }
+          count++
+        } catch (err) {
+          this._log.error(err.message)
+        }
+      }
+      this._log('deleting %d / %d entries', deleteCount, count)
+
+      // Commit the deletes to the datastore
+      if (deleted.size) {
+        await promisify(cb => batch.commit(cb))()
       }
 
-      each(cids, (cid, cb) => {
-        this._getProvidersMap(cid, (err, provs) => {
-          if (err) {
-            return cb(err)
+      // Clear expired entries from the cache
+      for (const [cid, peers] of deleted) {
+        const key = makeProviderKey(cid)
+        const provs = this.providers.get(key)
+        if (provs) {
+          for (const peerId of peers) {
+            provs.delete(peerId)
           }
-
-          provs.forEach((time, provider) => {
-            this._log('comparing: %s - %s > %s', Date.now(), time, this.provideValidity)
-            if (Date.now() - time > this.provideValidity) {
-              provs.delete(provider)
-            }
-          })
-
           if (provs.size === 0) {
-            return this._deleteProvidersMap(cid, cb)
+            this.providers.remove(key)
+          } else {
+            this.providers.set(key, provs)
           }
-
-          cb()
-        })
-      }, (err) => {
-        if (err) {
-          return this._log.error('Failed to cleanup', err)
         }
+      }
 
-        this._log('Cleanup successfull')
-      })
+      this._log('Cleanup successful (%dms)', Date.now() - start)
     })
   }
 
   /**
-   * Get a list of all cids that providers are known for.
-   *
-   * @param {function(Error, Array<CID>)} callback
-   * @returns {undefined}
-   *
-   * @private
-   */
-  _getProviderCids (callback) {
-    pull(
-      this.datastore.query({ prefix: c.PROVIDERS_KEY_PREFIX }),
-      pull.map((entry) => {
-        const parts = entry.key.toString().split('/')
-        if (parts.length !== 4) {
-          this._log.error('incorrectly formatted provider entry in datastore: %s', entry.key)
-          return
-        }
-
-        let decoded
-        try {
-          decoded = utils.decodeBase32(parts[2])
-        } catch (err) {
-          this._log.error('error decoding base32 provider key: %s', parts[2])
-          return
-        }
-
-        let cid
-        try {
-          cid = new CID(decoded)
-        } catch (err) {
-          this._log.error('error converting key to cid from datastore: %s', err.message)
-        }
-
-        return cid
-      }),
-      pull.filter(Boolean),
-      pull.collect(callback)
-    )
-  }
-
-  /**
-   * Get the currently known provider maps for a given CID.
+   * Get the currently known provider peer ids for a given CID.
    *
    * @param {CID} cid
-   * @param {function(Error, Map<PeerId, Date>)} callback
-   * @returns {undefined}
+   * @returns {Promise<Map<String, Date>>}
    *
    * @private
    */
-  _getProvidersMap (cid, callback) {
-    const provs = this.providers.get(makeProviderKey(cid))
-
+  async _getProvidersMap (cid) {
+    const cacheKey = makeProviderKey(cid)
+    let provs = this.providers.get(cacheKey)
     if (!provs) {
-      return loadProviders(this.datastore, cid, callback)
+      provs = await loadProviders(this.datastore, cid)
+      this.providers.set(cacheKey, provs)
     }
-
-    callback(null, provs)
-  }
-
-  /**
-   * Completely remove a providers map entry for a given CID.
-   *
-   * @param {CID} cid
-   * @param {function(Error)} callback
-   * @returns {undefined}
-   *
-   * @private
-   */
-  _deleteProvidersMap (cid, callback) {
-    const dsKey = makeProviderKey(cid)
-    this.providers.set(dsKey, null)
-    const batch = this.datastore.batch()
-
-    pull(
-      this.datastore.query({
-        keysOnly: true,
-        prefix: dsKey
-      }),
-      pull.through((entry) => batch.delete(entry.key)),
-      pull.onEnd((err) => {
-        if (err) {
-          return callback(err)
-        }
-        batch.commit(callback)
-      })
-    )
+    return provs
   }
 
   get cleanupInterval () {
@@ -219,53 +176,40 @@ class Providers {
   }
 
   /**
-   * Add a new provider.
+   * Add a new provider for the given CID.
    *
    * @param {CID} cid
    * @param {PeerId} provider
-   * @param {function(Error)} callback
-   * @returns {undefined}
+   * @returns {Promise}
    */
-  addProvider (cid, provider, callback) {
-    this._log('addProvider %s', cid.toBaseEncodedString())
-    const dsKey = makeProviderKey(cid)
-    const provs = this.providers.get(dsKey)
-
-    const next = (err, provs) => {
-      if (err) {
-        return callback(err)
-      }
+  async addProvider (cid, provider) {
+    return this.syncQueue.add(async () => {
+      this._log('addProvider %s', cid.toBaseEncodedString())
+      const provs = await this._getProvidersMap(cid)
 
       this._log('loaded %s provs', provs.size)
       const now = Date.now()
-      provs.set(provider, now)
+      provs.set(utils.encodeBase32(provider.id), now)
 
+      const dsKey = makeProviderKey(cid)
       this.providers.set(dsKey, provs)
-      writeProviderEntry(this.datastore, cid, provider, now, callback)
-    }
-
-    if (!provs) {
-      loadProviders(this.datastore, cid, next)
-    } else {
-      next(null, provs)
-    }
+      return writeProviderEntry(this.datastore, cid, provider, now)
+    })
   }
 
   /**
    * Get a list of providers for the given CID.
    *
    * @param {CID} cid
-   * @param {function(Error, Array<PeerId>)} callback
-   * @returns {undefined}
+   * @returns {Promise<Array<PeerId>>}
    */
-  getProviders (cid, callback) {
-    this._log('getProviders %s', cid.toBaseEncodedString())
-    this._getProvidersMap(cid, (err, provs) => {
-      if (err) {
-        return callback(err)
-      }
-
-      callback(null, Array.from(provs.keys()))
+  async getProviders (cid) {
+    return this.syncQueue.add(async () => {
+      this._log('getProviders %s', cid.toBaseEncodedString())
+      const provs = await this._getProvidersMap(cid)
+      return [...provs.keys()].map((base32PeerId) => {
+        return new PeerId(utils.decodeBase32(base32PeerId))
+      })
     })
   }
 }
@@ -273,13 +217,14 @@ class Providers {
 /**
  * Encode the given key its matching datastore key.
  *
- * @param {CID} cid
+ * @param {CID|string} cid - cid or base32 encoded string
  * @returns {string}
  *
  * @private
  */
 function makeProviderKey (cid) {
-  return c.PROVIDERS_KEY_PREFIX + utils.encodeBase32(cid.buffer)
+  cid = typeof cid === 'string' ? cid : utils.encodeBase32(cid.buffer)
+  return c.PROVIDERS_KEY_PREFIX + cid
 }
 
 /**
@@ -289,48 +234,59 @@ function makeProviderKey (cid) {
  * @param {CID} cid
  * @param {PeerId} peer
  * @param {number} time
- * @param {function(Error)} callback
- * @returns {undefined}
+ * @returns {Promise}
  *
  * @private
  */
-function writeProviderEntry (store, cid, peer, time, callback) {
+async function writeProviderEntry (store, cid, peer, time) {
   const dsKey = [
     makeProviderKey(cid),
     '/',
     utils.encodeBase32(peer.id)
   ].join('')
 
-  store.put(new Key(dsKey), Buffer.from(varint.encode(time)), callback)
+  const key = new Key(dsKey)
+  const buffer = Buffer.from(varint.encode(time))
+  return promisify(cb => store.put(key, buffer, cb))()
 }
 
 /**
- * Load providers from the store.
+ * Parse the CID and provider peer id from the key
  *
- * @param {Datastore} store
- * @param {CID} cid
- * @param {function(Error, Map<PeerId, Date>)} callback
- * @returns {undefined}
+ * @param {DKey} key
+ * @returns {Object} object with peer id and cid
  *
  * @private
  */
-function loadProviders (store, cid, callback) {
-  pull(
-    store.query({ prefix: makeProviderKey(cid) }),
-    pull.map((entry) => {
-      const parts = entry.key.toString().split('/')
-      const lastPart = parts[parts.length - 1]
-      const rawPeerId = utils.decodeBase32(lastPart)
-      return [new PeerId(rawPeerId), readTime(entry.value)]
-    }),
-    pull.collect((err, res) => {
-      if (err) {
-        return callback(err)
-      }
+function parseProviderKey (key) {
+  const parts = key.toString().split('/')
+  if (parts.length !== 4) {
+    throw new Error('incorrectly formatted provider entry key in datastore: ' + key)
+  }
 
-      return callback(null, new Map(res))
-    })
-  )
+  return {
+    cid: parts[2],
+    peerId: parts[3]
+  }
+}
+
+/**
+ * Load providers for the given CID from the store.
+ *
+ * @param {Datastore} store
+ * @param {CID} cid
+ * @returns {Promise<Map<PeerId, Date>>}
+ *
+ * @private
+ */
+async function loadProviders (store, cid) {
+  const providers = new Map()
+  const query = store.query({ prefix: makeProviderKey(cid) })
+  for await (const entry of toIterator(query)) {
+    const { peerId } = parseProviderKey(entry.key)
+    providers.set(peerId, readTime(entry.value))
+  }
+  return providers
 }
 
 function readTime (buf) {

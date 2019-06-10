@@ -4,165 +4,145 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
+const promisify = require('promisify-es6')
 const Store = require('interface-datastore').MemoryDatastore
-const parallel = require('async/parallel')
-const waterfall = require('async/waterfall')
 const CID = require('cids')
-const multihashing = require('multihashing-async')
-const map = require('async/map')
-const timesSeries = require('async/timesSeries')
-const each = require('async/each')
-const eachSeries = require('async/eachSeries')
-const range = require('lodash.range')
 const LevelStore = require('datastore-level')
 const path = require('path')
 const os = require('os')
+const multihashing = promisify(require('multihashing-async'))
 
 const Providers = require('../src/providers')
 
-const createPeerInfo = require('./utils/create-peer-info')
-const createValues = require('./utils/create-values')
+const createPeerInfo = promisify(require('./utils/create-peer-info'))
+const createValues = promisify(require('./utils/create-values'))
 
 describe('Providers', () => {
   let infos
+  let providers
 
-  before(function (done) {
+  before(async function () {
     this.timeout(10 * 1000)
-    createPeerInfo(3, (err, peers) => {
-      if (err) {
-        return done(err)
-      }
-
-      infos = peers
-      done()
-    })
+    infos = await createPeerInfo(3)
   })
 
-  it('simple add and get of providers', (done) => {
-    const providers = new Providers(new Store(), infos[2].id)
+  afterEach(() => {
+    providers && providers.stop()
+  })
+
+  it('simple add and get of providers', async () => {
+    providers = new Providers(new Store(), infos[2].id)
 
     const cid = new CID('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
-    parallel([
-      (cb) => providers.addProvider(cid, infos[0].id, cb),
-      (cb) => providers.addProvider(cid, infos[1].id, cb)
-    ], (err) => {
-      expect(err).to.not.exist()
-      providers.getProviders(cid, (err, provs) => {
-        expect(err).to.not.exist()
-        expect(provs).to.be.eql([infos[0].id, infos[1].id])
-        providers.stop()
+    await Promise.all([
+      providers.addProvider(cid, infos[0].id),
+      providers.addProvider(cid, infos[1].id)
+    ])
 
-        done()
-      })
-    })
+    const provs = await providers.getProviders(cid)
+    const ids = new Set(provs.map((peerId) => peerId.toB58String()))
+    expect(ids.has(infos[0].id.toB58String())).to.be.eql(true)
+    expect(ids.has(infos[1].id.toB58String())).to.be.eql(true)
   })
 
-  it('more providers than space in the lru cache', (done) => {
-    const providers = new Providers(new Store(), infos[2].id, 10)
+  it('duplicate add of provider is deduped', async () => {
+    providers = new Providers(new Store(), infos[2].id)
 
-    waterfall([
-      (cb) => map(
-        range(100),
-        (i, cb) => multihashing(Buffer.from(`hello ${i}`), 'sha2-256', cb),
-        cb
-      ),
-      (hashes, cb) => {
-        const cids = hashes.map((h) => new CID(h))
+    const cid = new CID('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
-        map(cids, (cid, cb) => {
-          providers.addProvider(cid, infos[0].id, cb)
-        }, (err) => cb(err, cids))
-      },
-      (cids, cb) => {
-        map(cids, (cid, cb) => {
-          providers.getProviders(cid, cb)
-        }, (err, provs) => {
-          expect(err).to.not.exist()
-          expect(provs).to.have.length(100)
-          provs.forEach((p) => {
-            expect(p[0].id).to.be.eql(infos[0].id.id)
-          })
-          providers.stop()
-          cb()
-        })
-      }
-    ], done)
+    await Promise.all([
+      providers.addProvider(cid, infos[0].id),
+      providers.addProvider(cid, infos[0].id),
+      providers.addProvider(cid, infos[1].id),
+      providers.addProvider(cid, infos[1].id),
+      providers.addProvider(cid, infos[1].id)
+    ])
+
+    const provs = await providers.getProviders(cid)
+    expect(provs).to.have.length(2)
+    const ids = new Set(provs.map((peerId) => peerId.toB58String()))
+    expect(ids.has(infos[0].id.toB58String())).to.be.eql(true)
+    expect(ids.has(infos[1].id.toB58String())).to.be.eql(true)
   })
 
-  it('expires', (done) => {
-    const providers = new Providers(new Store(), infos[2].id)
+  it('more providers than space in the lru cache', async () => {
+    providers = new Providers(new Store(), infos[2].id, 10)
+
+    const hashes = await Promise.all([...new Array(100)].map((i) => {
+      return multihashing(Buffer.from(`hello ${i}`), 'sha2-256')
+    }))
+
+    const cids = hashes.map((h) => new CID(h))
+
+    await Promise.all(cids.map(cid => providers.addProvider(cid, infos[0].id)))
+    const provs = await Promise.all(cids.map(cid => providers.getProviders(cid)))
+
+    expect(provs).to.have.length(100)
+    for (const p of provs) {
+      expect(p[0].id).to.be.eql(infos[0].id.id)
+    }
+  })
+
+  it('expires', async () => {
+    providers = new Providers(new Store(), infos[2].id)
     providers.cleanupInterval = 100
     providers.provideValidity = 200
 
     const cid = new CID('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
-    parallel([
-      (cb) => providers.addProvider(cid, infos[0].id, cb),
-      (cb) => providers.addProvider(cid, infos[1].id, cb)
-    ], (err) => {
-      expect(err).to.not.exist()
+    await Promise.all([
+      providers.addProvider(cid, infos[0].id),
+      providers.addProvider(cid, infos[1].id)
+    ])
 
-      providers.getProviders(cid, (err, provs) => {
-        expect(err).to.not.exist()
-        expect(provs).to.have.length(2)
-        expect(provs[0].id).to.be.eql(infos[0].id.id)
-        expect(provs[1].id).to.be.eql(infos[1].id.id)
-      })
+    const provs = await providers.getProviders(cid)
 
-      setTimeout(() => {
-        providers.getProviders(cid, (err, provs) => {
-          expect(err).to.not.exist()
-          expect(provs).to.have.length(0)
-          providers.stop()
-          done()
-        })
-        // TODO: this is a timeout based check, make cleanup monitorable
-      }, 400)
-    })
+    expect(provs).to.have.length(2)
+    expect(provs[0].id).to.be.eql(infos[0].id.id)
+    expect(provs[1].id).to.be.eql(infos[1].id.id)
+
+    await new Promise(resolve => setTimeout(resolve, 400))
+
+    const provsAfter = await providers.getProviders(cid)
+    expect(provsAfter).to.have.length(0)
   })
 
   // slooow so only run when you need to
-  it.skip('many', (done) => {
+  it.skip('many', async function () {
     const p = path.join(
       os.tmpdir(), (Math.random() * 100).toString()
     )
     const store = new LevelStore(p)
-    const providers = new Providers(store, infos[2].id, 10)
+    providers = new Providers(store, infos[2].id, 10)
 
     console.log('starting')
-    waterfall([
-      (cb) => parallel([
-        (cb) => createValues(100, cb),
-        (cb) => createPeerInfo(600, cb)
-      ], cb),
-      (res, cb) => {
-        console.log('got values and peers')
-        const values = res[0]
-        const peers = res[1]
-        let total = Date.now()
-        eachSeries(values, (v, cb) => {
-          eachSeries(peers, (p, cb) => {
-            providers.addProvider(v.cid, p.id, cb)
-          }, cb)
-        }, (err) => {
-          console.log('addProvider %s peers %s cids in %sms', peers.length, values.length, Date.now() - total)
-          expect(err).to.not.exist()
-          console.log('starting profile with %s peers and %s cids', peers.length, values.length)
-          timesSeries(3, (i, cb) => {
-            const start = Date.now()
-            each(values, (v, cb) => {
-              providers.getProviders(v.cid, cb)
-            }, (err) => {
-              expect(err).to.not.exist()
-              console.log('query %sms', (Date.now() - start))
-              cb()
-            })
-          }, cb)
-        })
+    const res = await Promise.all([
+      createValues(100),
+      createPeerInfo(600)
+    ])
+
+    console.log('got values and peers')
+    const values = res[0]
+    const peers = res[1]
+    let total = Date.now()
+
+    for (const v of values) {
+      for (const p of peers) {
+        await providers.addProvider(v.cid, p.id)
       }
-    ], (err) => {
-      expect(err).to.not.exist()
-      store.close(done)
-    })
+    }
+
+    console.log('addProvider %s peers %s cids in %sms', peers.length, values.length, Date.now() - total)
+    console.log('starting profile with %s peers and %s cids', peers.length, values.length)
+
+    for (let i = 0; i < 3; i++) {
+      const start = Date.now()
+      for (const v of values) {
+        await providers.getProviders(v.cid)
+        console.log('query %sms', (Date.now() - start))
+      }
+    }
+
+    await store.close()
   })
 })

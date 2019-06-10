@@ -511,7 +511,7 @@ module.exports = (dht) => ({
   async _findNProvidersAsync (key, providerTimeout, n) {
     const out = new LimitedPeerList(n)
 
-    const provs = await promisify(cb => dht.providers.getProviders(key, cb))()
+    const provs = await dht.providers.getProviders(key)
 
     provs.forEach((id) => {
       let info

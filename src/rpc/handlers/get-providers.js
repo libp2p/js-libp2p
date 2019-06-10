@@ -3,7 +3,7 @@
 const CID = require('cids')
 const parallel = require('async/parallel')
 const PeerInfo = require('peer-info')
-
+const promiseToCallback = require('promise-to-callback')
 const errcode = require('err-code')
 
 const Message = require('../../message')
@@ -41,7 +41,7 @@ module.exports = (dht) => {
 
         cb(null, exists)
       }),
-      (cb) => dht.providers.getProviders(cid, cb),
+      (cb) => promiseToCallback(dht.providers.getProviders(cid))(cb),
       (cb) => dht._betterPeersToQuery(msg, peer, cb)
     ], (err, res) => {
       if (err) {
