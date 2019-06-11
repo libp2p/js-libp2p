@@ -55,6 +55,7 @@
     "multihashes": "~0.4.14",
     "multihashing-async": "~0.5.2",
     "p-queue": "^5.0.0",
+    "p-times": "^2.1.0",
     "peer-id": "~0.12.2",
     "peer-info": "~0.15.1",
     "priorityqueue": "~0.2.1",

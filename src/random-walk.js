@@ -1,16 +1,15 @@
 'use strict'
 
-const times = require('async/times')
+const promisify = require('promisify-es6')
 const crypto = require('libp2p-crypto')
-const waterfall = require('async/waterfall')
-const multihashing = require('multihashing-async')
+const multihashing = promisify(require('multihashing-async'))
 const PeerId = require('peer-id')
 const assert = require('assert')
+const AbortController = require('abort-controller')
+const errcode = require('err-code')
+const times = require('p-times')
 const c = require('./constants')
 const { logger } = require('./utils')
-const AbortController = require('abort-controller')
-
-const errcode = require('err-code')
 
 class RandomWalk {
   /**
@@ -29,6 +28,7 @@ class RandomWalk {
     this._options = { ...c.defaultRandomWalk, ...options }
     this._kadDHT = dht
     this.log = logger(dht.peerInfo.id, 'random-walk')
+    this._timeoutId = undefined
   }
 
   /**
@@ -45,10 +45,7 @@ class RandomWalk {
     // Start doing random walks after `this._options.delay`
     this._timeoutId = setTimeout(() => {
       // Start runner immediately
-      this._runPeriodically((done) => {
-        // Each subsequent walk should run on a `this._options.interval` interval
-        this._walk(this._options.queriesPerPeriod, this._options.timeout, () => done(this._options.interval))
-      }, 0)
+      this._runPeriodically()
     }, this._options.delay)
   }
 
@@ -59,25 +56,31 @@ class RandomWalk {
    * @returns {void}
    */
   stop () {
-    clearTimeout(this._timeoutId)
-    this._timeoutId = null
+    if (this._timeoutId) {
+      clearTimeout(this._timeoutId)
+      this._timeoutId = undefined
+    }
     this._controller && this._controller.abort()
   }
 
   /**
-   * Run function `walk` on every `interval` ms
-   * @param {function(callback)} walk The function to execute on `interval`
-   * @param {number} interval The interval to run on in ms
+   * Run function `randomWalk._walk` on every `options.interval` ms
    *
    * @private
    */
-  _runPeriodically (walk, interval) {
-    this._timeoutId = setTimeout(() => {
-      walk((nextInterval) => {
-        // Schedule next
-        this._runPeriodically(walk, nextInterval)
+  async _runPeriodically () {
+    // run until the walk has been stopped
+    while (this._timeoutId) {
+      try {
+        await this._walk(this._options.queriesPerPeriod, this._options.timeout)
+      } catch (err) {
+        this._kadDHT._log.error('random-walk:error', err)
+      }
+      // Each subsequent walk should run on a `this._options.interval` interval
+      await new Promise(resolve => {
+        this._timeoutId = setTimeout(resolve, this._options.interval)
       })
-    }, interval)
+    }
   }
 
   /**
@@ -85,44 +88,40 @@ class RandomWalk {
    *
    * @param {number} queries
    * @param {number} walkTimeout
-   * @param {function(Error)} callback
-   * @returns {void}
+   * @returns {Promise}
    *
    * @private
    */
-  _walk (queries, walkTimeout, callback) {
+  async _walk (queries, walkTimeout) {
     this.log('start')
     this._controller = new AbortController()
 
-    times(queries, (i, next) => {
-      this.log('running query %d', i)
+    try {
+      await times(queries, async (index) => {
+        this.log('running query %d', index)
+        try {
+          const id = await this._randomPeerId()
 
-      // Perform the walk
-      waterfall([
-        (cb) => this._randomPeerId(cb),
-        (id, cb) => {
           // Check if we've happened to already abort
-          if (!this._controller) return cb()
+          if (!this._controller) return
 
-          this._query(id, {
+          await this._query(id, {
             timeout: walkTimeout,
             signal: this._controller.signal
-          }, cb)
-        }
-      ], (err) => {
-        if (err && err.code !== 'ETIMEDOUT') {
-          this.log.error('query %d finished with error', i, err)
-          return next(err)
+          })
+        } catch (err) {
+          if (err && err.code !== 'ETIMEDOUT') {
+            this.log.error('query %d finished with error', index, err)
+            throw err
+          }
         }
 
-        this.log('finished query %d', i)
-        next(null)
+        this.log('finished query %d', index)
       })
-    }, (err) => {
+    } finally {
       this._controller = null
       this.log('finished queries')
-      callback(err)
-    })
+    }
   }
 
   /**
@@ -139,44 +138,41 @@ class RandomWalk {
    * @param {object} options
    * @param {number} options.timeout
    * @param {AbortControllerSignal} options.signal
-   * @param {function(Error)} callback
-   * @returns {void}
+   * @returns {Promise}
    *
    * @private
    */
-  _query (id, options, callback) {
+  async _query (id, options) {
     this.log('query:%s', id.toB58String())
 
-    this._kadDHT.findPeer(id, options, (err, peer) => {
+    let peer
+    try {
+      peer = await promisify(cb => this._kadDHT.findPeer(id, options, cb))()
+    } catch (err) {
       if (err && err.code === 'ERR_NOT_FOUND') {
         // expected case, we asked for random stuff after all
-        return callback()
+        return
       }
-      if (err) {
-        return callback(err)
-      }
-      this.log('query:found', peer)
 
-      // wait what, there was something found? Lucky day!
-      callback(errcode(new Error(`random-walk: ACTUALLY FOUND PEER: ${peer}, ${id.toB58String()}`), 'ERR_FOUND_RANDOM_PEER'))
-    })
+      throw err
+    }
+
+    this.log('query:found', peer)
+
+    // wait what, there was something found? Lucky day!
+    throw errcode(`random-walk: ACTUALLY FOUND PEER: ${peer}, ${id.toB58String()}`, 'ERR_FOUND_RANDOM_PEER')
   }
 
   /**
    * Generate a random peer id for random-walk purposes.
    *
-   * @param {function(Error, PeerId)} callback
-   * @returns {void}
+   * @returns {Promise<PeerId>}
    *
    * @private
    */
-  _randomPeerId (callback) {
-    multihashing(crypto.randomBytes(16), 'sha2-256', (err, digest) => {
-      if (err) {
-        return callback(err)
-      }
-      callback(null, new PeerId(digest))
-    })
+  async _randomPeerId () {
+    const digest = await multihashing(crypto.randomBytes(16), 'sha2-256')
+    return new PeerId(digest)
   }
 }
 

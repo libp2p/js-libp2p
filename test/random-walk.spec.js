@@ -54,81 +54,75 @@ describe('Random Walk', () => {
       randomWalk = new RandomWalk(mockDHT)
     })
 
-    it('should be able to specify the number of queries', (done) => {
+    it('should be able to specify the number of queries', async () => {
       const queries = 5
-      sinon.stub(randomWalk, '_query').callsArgWith(2, null)
-      randomWalk._walk(queries, 1e3, (err) => {
-        expect(err).to.not.exist()
-        expect(randomWalk._query.callCount).to.eql(queries)
-        done()
-      })
+      sinon.stub(randomWalk, '_query').resolves(null)
+      await randomWalk._walk(queries, 1e3)
+      expect(randomWalk._query.callCount).to.eql(queries)
     })
 
-    it('should stop walking if a query errors', (done) => {
+    it('should NOT stop walking if a query errors', async () => {
       const queries = 5
       const error = new Error('ERR_BOOM')
       const findPeerStub = sinon.stub(randomWalk._kadDHT, 'findPeer')
       findPeerStub.onCall(2).callsArgWith(2, error)
       findPeerStub.callsArgWith(2, { code: 'ERR_NOT_FOUND' })
 
-      randomWalk._walk(queries, 1e3, (err) => {
-        expect(err).to.eql(error)
-        // 2 successes and error on the 3rd
-        expect(findPeerStub.callCount).to.eql(3)
-        done()
-      })
+      let err
+      try {
+        await randomWalk._walk(queries, 1e3)
+      } catch (_err) {
+        err = _err
+      }
+      expect(err.message).to.include('ERR_BOOM')
+      expect(findPeerStub.callCount).to.eql(5)
     })
 
-    it('should ignore timeout errors and keep walking', (done) => {
+    it('should ignore timeout errors and keep walking', async () => {
       const queries = 5
       const _queryStub = sinon.stub(randomWalk, '_query')
-      _queryStub.onCall(2).callsArgWith(2, {
-        code: 'ETIMEDOUT'
-      })
-      _queryStub.callsArgWith(2, null)
+      _queryStub.onCall(2).rejects({ code: 'ETIMEDOUT' })
+      _queryStub.resolves(null)
 
-      randomWalk._walk(queries, 1e3, (err) => {
-        expect(err).to.not.exist()
-        expect(randomWalk._query.callCount).to.eql(queries)
-        done()
-      })
+      await randomWalk._walk(queries, 1e3)
+      expect(randomWalk._query.callCount).to.eql(queries)
     })
 
-    it('should pass its timeout to the find peer query', (done) => {
+    it('should pass its timeout to the find peer query', async () => {
       sinon.stub(randomWalk._kadDHT, 'findPeer').callsArgWith(2, { code: 'ERR_NOT_FOUND' })
 
-      randomWalk._walk(1, 111, (err) => {
-        const mockCalls = randomWalk._kadDHT.findPeer.getCalls()
-        expect(err).to.not.exist()
-        expect(mockCalls).to.have.length(1)
-        expect(mockCalls[0].args[1]).to.include({
-          timeout: 111
-        })
-        done()
-      })
+      await randomWalk._walk(1, 111)
+      const mockCalls = randomWalk._kadDHT.findPeer.getCalls()
+      expect(mockCalls).to.have.length(1)
+      expect(mockCalls[0].args[1]).to.include({ timeout: 111 })
     })
 
-    it('should error if the random id peer is found', (done) => {
+    it('should error if the random id peer is found', async () => {
       const queries = 5
       const findPeerStub = sinon.stub(randomWalk._kadDHT, 'findPeer').callsArgWith(2, { code: 'ERR_NOT_FOUND' })
-      findPeerStub.onCall(2).callsArgWith(2, null, {
-        id: 'QmB'
-      })
+      findPeerStub.onCall(2).callsArgWith(2, null, { id: 'QmB' })
 
-      randomWalk._walk(queries, 1e3, (err) => {
-        expect(err).to.exist()
-        expect(findPeerStub.callCount).to.eql(3)
-        done()
-      })
+      let err
+      try {
+        await randomWalk._walk(queries, 1e3)
+      } catch (_err) {
+        err = _err
+      }
+
+      expect(err).to.exist()
+      expect(findPeerStub.callCount).to.eql(5)
     })
 
-    it('should error if random id generation errors', (done) => {
+    it('should error if random id generation errors', async () => {
       const error = new Error('ERR_BOOM')
-      sinon.stub(randomWalk, '_randomPeerId').callsArgWith(0, error)
-      randomWalk._walk(1, 1e3, (err) => {
-        expect(err).to.eql(error)
-        done()
-      })
+      sinon.stub(randomWalk, '_randomPeerId').rejects(error)
+      let err
+      try {
+        await randomWalk._walk(1, 1e3)
+      } catch (_err) {
+        err = _err
+      }
+      expect(err).to.eql(error)
     })
   })
 
@@ -141,7 +135,7 @@ describe('Random Walk', () => {
       })
       sinon.spy(randomWalk, '_runPeriodically')
 
-      sinon.stub(randomWalk, '_walk').callsFake(() => {
+      sinon.stub(randomWalk, '_walk').callsFake(async () => {
         // Try to start again
         randomWalk.start()
 
@@ -180,7 +174,7 @@ describe('Random Walk', () => {
         queriesPerPeriod: 1
       }
       const randomWalk = new RandomWalk(mockDHT, options)
-      sinon.stub(randomWalk, '_walk').callsFake((queries, timeout) => {
+      sinon.stub(randomWalk, '_walk').callsFake(async (queries, timeout) => {
         expect(queries).to.eql(options.queriesPerPeriod)
         expect(timeout).to.eql(options.timeout)
         done()
@@ -200,7 +194,7 @@ describe('Random Walk', () => {
       const randomWalk = new RandomWalk(mockDHT, options)
       sinon.stub(randomWalk._kadDHT, 'findPeer').callsFake((_, opts, callback) => {
         expect(opts.timeout).to.eql(options.timeout).mark()
-        callback(error)
+        setTimeout(() => callback(error), 100)
       })
 
       expect(3).checks(() => {
@@ -224,7 +218,7 @@ describe('Random Walk', () => {
       expect(() => randomWalk.stop()).to.not.throw()
     })
 
-    it('should cancel the timer if the walk is not active', () => {
+    it('should not be running if the walk is not active', () => {
       const randomWalk = new RandomWalk(mockDHT, {
         enabled: true,
         delay: 100e3,
@@ -233,7 +227,7 @@ describe('Random Walk', () => {
       randomWalk.start()
       expect(randomWalk._timeoutId).to.exist()
       randomWalk.stop()
-      expect(randomWalk._timeoutId).to.not.exist()
+      expect(randomWalk._timeoutId).to.eql(undefined)
     })
 
     it('should cancel the walk if already running', (done) => {
