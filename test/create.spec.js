@@ -109,7 +109,8 @@ describe('libp2p creation', () => {
     })
   })
 
-  it('createLibp2p should create a peerInfo instance', (done) => {
+  it('createLibp2p should create a peerInfo instance', function (done) {
+    this.timeout(10e3)
     createLibp2p({
       modules: {
         transport: [ WS ]
@@ -121,7 +122,8 @@ describe('libp2p creation', () => {
     })
   })
 
-  it('createLibp2p should allow for a provided peerInfo instance', (done) => {
+  it('createLibp2p should allow for a provided peerInfo instance', function (done) {
+    this.timeout(10e3)
     PeerInfo.create((err, peerInfo) => {
       expect(err).to.not.exist()
       sinon.spy(PeerInfo, 'create')
