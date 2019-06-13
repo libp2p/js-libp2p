@@ -1,3 +1,13 @@
+<a name="0.4.2"></a>
+## [0.4.2](https://github.com/libp2p/js-libp2p-keychain/compare/v0.4.1...v0.4.2) (2019-06-13)
+
+
+### Bug Fixes
+
+* throw errors with correct stack trace ([#35](https://github.com/libp2p/js-libp2p-keychain/issues/35)) ([7051b9c](https://github.com/libp2p/js-libp2p-keychain/commit/7051b9c))
+
+
+
 <a name="0.4.1"></a>
 ## [0.4.1](https://github.com/libp2p/js-libp2p-keychain/compare/v0.4.0...v0.4.1) (2019-03-14)
 
