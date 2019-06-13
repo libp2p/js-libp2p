@@ -43,6 +43,7 @@
   "homepage": "https://github.com/libp2p/js-libp2p-keychain#readme",
   "dependencies": {
     "async": "^2.6.2",
+    "err-code": "^1.1.2",
     "interface-datastore": "~0.6.0",
     "libp2p-crypto": "~0.16.1",
     "merge-options": "^1.0.1",

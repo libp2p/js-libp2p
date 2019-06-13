@@ -8,6 +8,7 @@ require('node-forge/lib/pkcs7')
 require('node-forge/lib/pbe')
 const forge = require('node-forge/lib/forge')
 const util = require('./util')
+const errcode = require('err-code')
 
 /**
  * Cryptographic Message Syntax (aka PKCS #7)
@@ -26,7 +27,7 @@ class CMS {
    */
   constructor (keychain) {
     if (!keychain) {
-      throw new Error('keychain is required')
+      throw errcode(new Error('keychain is required'), 'ERR_KEYCHAIN_REQUIRED')
     }
 
     this.keychain = keychain
@@ -47,7 +48,7 @@ class CMS {
     const done = (err, result) => setImmediate(() => callback(err, result))
 
     if (!Buffer.isBuffer(plain)) {
-      return done(new Error('Plain data must be a Buffer'))
+      return done(errcode(new Error('Plain data must be a Buffer'), 'ERR_INVALID_PARAMS'))
     }
 
     series([
@@ -93,7 +94,7 @@ class CMS {
     const done = (err, result) => setImmediate(() => callback(err, result))
 
     if (!Buffer.isBuffer(cmsData)) {
-      return done(new Error('CMS data is required'))
+      return done(errcode(new Error('CMS data is required'), 'ERR_INVALID_PARAMS'))
     }
 
     const self = this
@@ -103,7 +104,7 @@ class CMS {
       const obj = forge.asn1.fromDer(buf)
       cms = forge.pkcs7.messageFromAsn1(obj)
     } catch (err) {
-      return done(new Error('Invalid CMS: ' + err.message))
+      return done(errcode(new Error('Invalid CMS: ' + err.message), 'ERR_INVALID_CMS'))
     }
 
     // Find a recipient whose key we hold. We only deal with recipient certs
@@ -124,8 +125,9 @@ class CMS {
         if (err) return done(err)
         if (!r) {
           const missingKeys = recipients.map(r => r.keyId)
-          err = new Error('Decryption needs one of the key(s): ' + missingKeys.join(', '))
-          err.missingKeys = missingKeys
+          err = errcode(new Error('Decryption needs one of the key(s): ' + missingKeys.join(', ')), 'ERR_MISSING_KEYS', {
+            missingKeys
+          })
           return done(err)
         }
 

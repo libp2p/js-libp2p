@@ -59,22 +59,27 @@ module.exports = (datastore1, datastore2) => {
         ks.removeKey('../../nasty', (err) => {
           expect(err).to.exist()
           expect(err).to.have.property('message', 'Invalid key name \'../../nasty\'')
+          expect(err).to.have.property('code', 'ERR_INVALID_KEY_NAME')
         })
         ks.removeKey('', (err) => {
           expect(err).to.exist()
           expect(err).to.have.property('message', 'Invalid key name \'\'')
+          expect(err).to.have.property('code', 'ERR_INVALID_KEY_NAME')
         })
         ks.removeKey('    ', (err) => {
           expect(err).to.exist()
           expect(err).to.have.property('message', 'Invalid key name \'    \'')
+          expect(err).to.have.property('code', 'ERR_INVALID_KEY_NAME')
         })
         ks.removeKey(null, (err) => {
           expect(err).to.exist()
           expect(err).to.have.property('message', 'Invalid key name \'null\'')
+          expect(err).to.have.property('code', 'ERR_INVALID_KEY_NAME')
         })
         ks.removeKey(undefined, (err) => {
           expect(err).to.exist()
           expect(err).to.have.property('message', 'Invalid key name \'undefined\'')
+          expect(err).to.have.property('code', 'ERR_INVALID_KEY_NAME')
         })
       })
     })
@@ -106,6 +111,7 @@ module.exports = (datastore1, datastore2) => {
       it('does not overwrite existing key', (done) => {
         ks.createKey(rsaKeyName, 'rsa', 2048, (err) => {
           expect(err).to.exist()
+          expect(err).to.have.property('code', 'ERR_KEY_ALREADY_EXISTS')
           done()
         })
       })
@@ -146,6 +152,7 @@ module.exports = (datastore1, datastore2) => {
           ks.createKey('bad-nist-rsa', 'rsa', 1024, (err) => {
             expect(err).to.exist()
             expect(err).to.have.property('message', 'Invalid RSA key size 1024')
+            expect(err).to.have.property('code', 'ERR_INVALID_KEY_SIZE')
             done()
           })
         })
@@ -246,6 +253,7 @@ module.exports = (datastore1, datastore2) => {
           expect(err).to.exist()
           expect(err).to.have.property('missingKeys')
           expect(err.missingKeys).to.eql([rsaKeyInfo.id])
+          expect(err).to.have.property('code', 'ERR_MISSING_KEYS')
           done()
         })
       })
@@ -344,6 +352,7 @@ module.exports = (datastore1, datastore2) => {
       it('requires an existing key name', (done) => {
         ks.renameKey('not-there', renamedRsaKeyName, (err) => {
           expect(err).to.exist()
+          expect(err).to.have.property('code', 'ERR_KEY_NOT_FOUND')
           done()
         })
       })
@@ -351,6 +360,7 @@ module.exports = (datastore1, datastore2) => {
       it('requires a valid new key name', (done) => {
         ks.renameKey(rsaKeyName, '..\not-valid', (err) => {
           expect(err).to.exist()
+          expect(err).to.have.property('code', 'ERR_NEW_KEY_NAME_INVALID')
           done()
         })
       })
@@ -358,6 +368,7 @@ module.exports = (datastore1, datastore2) => {
       it('does not overwrite existing key', (done) => {
         ks.renameKey(rsaKeyName, rsaKeyName, (err) => {
           expect(err).to.exist()
+          expect(err).to.have.property('code', 'ERR_KEY_ALREADY_EXISTS')
           done()
         })
       })
@@ -365,6 +376,7 @@ module.exports = (datastore1, datastore2) => {
       it('cannot create the "self" key', (done) => {
         ks.renameKey(rsaKeyName, 'self', (err) => {
           expect(err).to.exist()
+          expect(err).to.have.property('code', 'ERR_NEW_KEY_NAME_INVALID')
           done()
         })
       })
@@ -406,6 +418,7 @@ module.exports = (datastore1, datastore2) => {
       it('cannot remove the "self" key', (done) => {
         ks.removeKey('self', (err) => {
           expect(err).to.exist()
+          expect(err).to.have.property('code', 'ERR_INVALID_KEY_NAME')
           done()
         })
       })
@@ -413,6 +426,7 @@ module.exports = (datastore1, datastore2) => {
       it('cannot remove an unknown key', (done) => {
         ks.removeKey('not-there', (err) => {
           expect(err).to.exist()
+          expect(err).to.have.property('code', 'ERR_KEY_NOT_FOUND')
           done()
         })
       })

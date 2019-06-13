@@ -8,6 +8,7 @@ const DS = require('interface-datastore')
 const collect = require('pull-stream/sinks/collect')
 const pull = require('pull-stream/pull')
 const CMS = require('./cms')
+const errcode = require('err-code')
 
 const keyPrefix = '/pkcs8/'
 const infoPrefix = '/info/'
@@ -50,7 +51,7 @@ function _error (callback, err) {
   const min = 200
   const max = 1000
   const delay = Math.random() * (max - min) + min
-  if (typeof err === 'string') err = new Error(err)
+
   setTimeout(callback, delay, err, null)
 }
 
@@ -181,26 +182,26 @@ class Keychain {
     const self = this
 
     if (!validateKeyName(name) || name === 'self') {
-      return _error(callback, `Invalid key name '${name}'`)
+      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
 
     if (typeof type !== 'string') {
-      return _error(callback, `Invalid key type '${type}'`)
+      return _error(callback, errcode(new Error(`Invalid key type '${type}'`), 'ERR_INVALID_KEY_TYPE'))
     }
 
     if (!Number.isSafeInteger(size)) {
-      return _error(callback, `Invalid key size '${size}'`)
+      return _error(callback, errcode(new Error(`Invalid key size '${size}'`), 'ERR_INVALID_KEY_SIZE'))
     }
 
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
       if (err) return _error(callback, err)
-      if (exists) return _error(callback, `Key '${name}' already exists`)
+      if (exists) return _error(callback, errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
 
       switch (type.toLowerCase()) {
         case 'rsa':
           if (size < 2048) {
-            return _error(callback, `Invalid RSA key size ${size}`)
+            return _error(callback, errcode(new Error(`Invalid RSA key size ${size}`), 'ERR_INVALID_KEY_SIZE'))
           }
           break
         default:
@@ -278,13 +279,13 @@ class Keychain {
    */
   findKeyByName (name, callback) {
     if (!validateKeyName(name)) {
-      return _error(callback, `Invalid key name '${name}'`)
+      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
 
     const dsname = DsInfoName(name)
     this.store.get(dsname, (err, res) => {
       if (err) {
-        return _error(callback, `Key '${name}' does not exist. ${err.message}`)
+        return _error(callback, errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
       }
 
       callback(null, JSON.parse(res.toString()))
@@ -301,7 +302,7 @@ class Keychain {
   removeKey (name, callback) {
     const self = this
     if (!validateKeyName(name) || name === 'self') {
-      return _error(callback, `Invalid key name '${name}'`)
+      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
     const dsname = DsName(name)
     self.findKeyByName(name, (err, keyinfo) => {
@@ -327,10 +328,10 @@ class Keychain {
   renameKey (oldName, newName, callback) {
     const self = this
     if (!validateKeyName(oldName) || oldName === 'self') {
-      return _error(callback, `Invalid old key name '${oldName}'`)
+      return _error(callback, errcode(new Error(`Invalid old key name '${oldName}'`), 'ERR_OLD_KEY_NAME_INVALID'))
     }
     if (!validateKeyName(newName) || newName === 'self') {
-      return _error(callback, `Invalid new key name '${newName}'`)
+      return _error(callback, errcode(new Error(`Invalid new key name '${newName}'`), 'ERR_NEW_KEY_NAME_INVALID'))
     }
     const oldDsname = DsName(oldName)
     const newDsname = DsName(newName)
@@ -338,12 +339,12 @@ class Keychain {
     const newInfoName = DsInfoName(newName)
     this.store.get(oldDsname, (err, res) => {
       if (err) {
-        return _error(callback, `Key '${oldName}' does not exist. ${err.message}`)
+        return _error(callback, errcode(new Error(`Key '${oldName}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
       }
       const pem = res.toString()
       self.store.has(newDsname, (err, exists) => {
         if (err) return _error(callback, err)
-        if (exists) return _error(callback, `Key '${newName}' already exists`)
+        if (exists) return _error(callback, errcode(new Error(`Key '${newName}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
 
         self.store.get(oldInfoName, (err, res) => {
           if (err) return _error(callback, err)
@@ -374,16 +375,16 @@ class Keychain {
    */
   exportKey (name, password, callback) {
     if (!validateKeyName(name)) {
-      return _error(callback, `Invalid key name '${name}'`)
+      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
     if (!password) {
-      return _error(callback, 'Password is required')
+      return _error(callback, errcode(new Error('Password is required'), 'ERR_PASSWORD_REQUIRED'))
     }
 
     const dsname = DsName(name)
     this.store.get(dsname, (err, res) => {
       if (err) {
-        return _error(callback, `Key '${name}' does not exist. ${err.message}`)
+        return _error(callback, errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
       }
       const pem = res.toString()
       crypto.keys.import(pem, this._(), (err, privateKey) => {
@@ -405,7 +406,7 @@ class Keychain {
   importKey (name, pem, password, callback) {
     const self = this
     if (!validateKeyName(name) || name === 'self') {
-      return _error(callback, `Invalid key name '${name}'`)
+      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
     if (!pem) {
       return _error(callback, 'PEM encoded key is required')
@@ -413,9 +414,9 @@ class Keychain {
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
       if (err) return _error(callback, err)
-      if (exists) return _error(callback, `Key '${name}' already exists`)
+      if (exists) return _error(callback, errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
       crypto.keys.import(pem, password, (err, privateKey) => {
-        if (err) return _error(callback, 'Cannot read the key, most likely the password is wrong')
+        if (err) return _error(callback, errcode(new Error('Cannot read the key, most likely the password is wrong'), 'ERR_CANNOT_READ_KEY'))
         privateKey.id((err, kid) => {
           if (err) return _error(callback, err)
           privateKey.export(this._(), (err, pem) => {
@@ -441,17 +442,17 @@ class Keychain {
   importPeer (name, peer, callback) {
     const self = this
     if (!validateKeyName(name)) {
-      return _error(callback, `Invalid key name '${name}'`)
+      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
     if (!peer || !peer.privKey) {
-      return _error(callback, 'Peer.privKey is required')
+      return _error(callback, errcode(new Error('Peer.privKey is required'), 'ERR_MISSING_PRIVATE_KEY'))
     }
 
     const privateKey = peer.privKey
     const dsname = DsName(name)
     self.store.has(dsname, (err, exists) => {
       if (err) return _error(callback, err)
-      if (exists) return _error(callback, `Key '${name}' already exists`)
+      if (exists) return _error(callback, errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
 
       privateKey.id((err, kid) => {
         if (err) return _error(callback, err)
@@ -484,11 +485,11 @@ class Keychain {
    */
   _getPrivateKey (name, callback) {
     if (!validateKeyName(name)) {
-      return _error(callback, `Invalid key name '${name}'`)
+      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
     this.store.get(DsName(name), (err, res) => {
       if (err) {
-        return _error(callback, `Key '${name}' does not exist. ${err.message}`)
+        return _error(callback, errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
       }
       callback(null, res.toString())
     })
