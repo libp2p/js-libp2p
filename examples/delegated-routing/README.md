@@ -10,11 +10,10 @@ The starting [Libp2p Bundle](./src/libp2p-bundle.js) in this example starts by d
 Once you've completed the example, you should try enabled the DHT and see what kind of results you get! You can also enable the
 various Peer Discovery modules and see the impact it has on your Peer count.
 
-## Prerequisite
 
 ## Running this example
 
-1. Install IPFS locally if you dont already have it. [Install Guide](https://docs.ipfs.io/introduction/install/).
+1. Install go-ipfs locally if you dont already have it. [Install Guide](https://docs.ipfs.io/introduction/install/).
 1. Run the IPFS daemon: `ipfs daemon`.
 1. The daemon will output a line about its API address, like `API server listening on /ip4/127.0.0.1/tcp/8080`.
 1. In another window, while the daemon is running, Configure the IPFS Gateway to support delegate routing `ipfs config Gateway.APICommands --json '["dht/findprovs", "dht/findpeer", "refs", "swarm/connect"]'`.
