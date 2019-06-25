@@ -11,17 +11,17 @@ Once you've completed the example, you should try enabled the DHT and see what k
 various Peer Discovery modules and see the impact it has on your Peer count.
 
 ## Prerequisite
-**NOTE**: This example is currently dependent on a clone of the [delegated routing support branch of go-ipfs](https://github.com/ipfs/go-ipfs/pull/4595).
 
 ## Running this example
 
-1. Install IPFS locally if you dont already have it. [Install Guide](https://docs.ipfs.io/introduction/install/)
-2. Run the IPFS daemon: `ipfs daemon`
-3. The daemon will output a line about its API address, like `API server listening on /ip4/127.0.0.1/tcp/8080`
-4. In another window output the addresses of the node: `ipfs id`. Make note of the websocket address, it will contain `/ws/` in the address.
-5. In `./src/libp2p-bundle.js` check if the host and port of your node are correct, according to the previous step. If they are different, replace them.
-6. In `./src/App.js` replace `BootstrapNode` with your nodes Websocket address from step 4.
-7. Start this example:
+1. Install IPFS locally if you dont already have it. [Install Guide](https://docs.ipfs.io/introduction/install/).
+1. Run the IPFS daemon: `ipfs daemon`.
+1. The daemon will output a line about its API address, like `API server listening on /ip4/127.0.0.1/tcp/8080`.
+1. In another window, while the daemon is running, Configure the IPFS Gateway to support delegate routing `ipfs config Gateway.APICommands --json '["dht/findprovs", "dht/findpeer", "refs", "swarm/connect"]'`.
+1. In the same window, output the addresses of the node: `ipfs id`. Make note of the websocket address, it will contain `/ws` in the address, like `/ip4/127.0.0.1/tcp/8081/ws`.
+1. In `./src/libp2p-bundle.js` check if the host and port of your node are correct, according to the previous step. If they are different, replace them.
+1. In `./src/App.js` replace `BootstrapNode` with your nodes Websocket address from step 3. **Also**, in `./src/App.js` set BootstrapNodeID to your nodes id, which is displayed when running `ipfs id` in the `ID` property.
+1. Start this example:
 
 ```sh
 npm install
@@ -47,3 +47,12 @@ This will do a few things:
 2. Copy one of the CIDs from the list of peer addresses, this will be the last portion of the address and will look something like `QmdoG8DpzYUZMVP5dGmgmigZwR1RE8Cf6SxMPg1SBXJAQ8`.
 3. In your browser, paste the CID into the *Peer* field and hit `Find`.
 4. You should see information about the peer including its addresses.
+
+### Adding Content via the Delegate
+1. In one browser, such as Firefox, enter some text in the `Add Data` field and click `Add`.
+2. Once added, JSON will be printed in the browser. Copy the value of `"hash"`.
+3. Close your Firefox tab. Open a new browser window in a **different** browser, such as Chrome.
+4. In the new window, copy the hash from step 2 into the `Hash` field and click `Find`.
+5. The text you entered in step 1 should display.
+
+**Note**: By closing the first window before fetching the content, you are ensuring that data cannot be retrieved from it, and instead the delegate must be relied on.

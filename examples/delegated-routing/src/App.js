@@ -6,7 +6,10 @@ import Ipfs from 'ipfs'
 import libp2pBundle from './libp2p-bundle'
 const Component = React.Component
 
-const BootstrapNode = '/ip4/127.0.0.1/tcp/8081/ws/p2p/QmdoG8DpzYUZMVP5dGmgmigZwR1RE8Cf6SxMPg1SBXJAQ8'
+/* TODO: Add your go IPFS nodes ID here by running `ipfs id` */
+const BootstrapNodeID = 'Qm...'
+/* TODO: Ensure the IP and port match your nodes Websocket address shown when running the daemon `ipfs daemon` */
+const BootstrapNode = `/ip4/127.0.0.1/tcp/8081/ws/p2p/${BootstrapNodeID}`
 
 class App extends Component {
   constructor (props) {
@@ -17,6 +20,7 @@ class App extends Component {
       hash: 'QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB',
       // This peer is one of the Bootstrap nodes for IPFS
       peer: 'QmV6kA2fB8kTr6jc3pL5zbNsjKbmPUHAPKKHRBYe1kDEyc',
+      data: '',
       isLoading: 0
     }
     this.peerInterval = null
@@ -25,6 +29,8 @@ class App extends Component {
     this.handleHashSubmit = this.handleHashSubmit.bind(this)
     this.handlePeerChange = this.handlePeerChange.bind(this)
     this.handlePeerSubmit = this.handlePeerSubmit.bind(this)
+    this.handleDataChange = this.handleDataChange.bind(this)
+    this.handleDataSubmit = this.handleDataSubmit.bind(this)
   }
 
   handleHashChange (event) {
@@ -37,6 +43,11 @@ class App extends Component {
       peer: event.target.value
     })
   }
+  handleDataChange (event) {
+    this.setState({
+      data: event.target.value
+    })
+  }
 
   handleHashSubmit (event) {
     event.preventDefault()
@@ -44,7 +55,7 @@ class App extends Component {
       isLoading: this.state.isLoading + 1
     })
 
-    this.ipfs.files.cat(this.state.hash, (err, data) => {
+    this.ipfs.cat(this.state.hash, (err, data) => {
       if (err) console.log('Error', err)
 
       this.setState({
@@ -59,7 +70,22 @@ class App extends Component {
       isLoading: this.state.isLoading + 1
     })
 
-    this.ipfs.dht.findpeer(this.state.peer, (err, results) => {
+    this.ipfs.dht.findPeer(this.state.peer, (err, results) => {
+      if (err) console.log('Error', err)
+
+      this.setState({
+        response: JSON.stringify(results, null, 2),
+        isLoading: this.state.isLoading - 1
+      })
+    })
+  }
+  handleDataSubmit (event) {
+    event.preventDefault()
+    this.setState({
+      isLoading: this.state.isLoading + 1
+    })
+
+    this.ipfs.add(Buffer.from(this.state.data), (err, results) => {
       if (err) console.log('Error', err)
 
       this.setState({
@@ -133,6 +159,13 @@ class App extends Component {
               Peer:
               <input type="text" value={this.state.peer} onChange={this.handlePeerChange} />
               <input type="submit" value="Find" />
+            </label>
+          </form>
+          <form onSubmit={this.handleDataSubmit}>
+            <label>
+              Add Data:
+              <input type="text" value={this.state.data} onChange={this.handleDataChange} />
+              <input type="submit" value="Add" />
             </label>
           </form>
         </section>
