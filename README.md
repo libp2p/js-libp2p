@@ -21,23 +21,24 @@ This repo contains the JavaScript implementation of the crypto primitives needed
 
 - [Install](#install)
 - [API](#api)
-  - [`crypto.hmac`](#hmac)
-    - [`create(hash, secret, callback)`](#createhash-secret-callback)
+  - [`crypto.hmac`](#cryptohmac)
+    - [`create(hash, secret, callback)`](#cryptohmaccreatehash-secret-callback)
       - [`digest(data, callback)`](#digestdata-callback)
-  - [`crypto.aes`](#aes)
-    - [`create(key, iv, callback)`](#createkey-iv-callback)
+  - [`crypto.aes`](#cryptoaes)
+    - [`create(key, iv, callback)`](#cryptoaescreatekey-iv-callback)
       - [`encrypt(data, callback)`](#encryptdata-callback)
       - [`decrypt(data, callback)`](#decryptdata-callback)
-  - [`keys`](#keys)
-    - [`generateKeyPair(type, bits, callback)`](#generatekeypairtype-bits-callback)
-    - [`generateEphemeralKeyPair(curve, callback)`](#generateephemeralkeypaircurve-callback)
-    - [`keyStretcher(cipherType, hashType, secret, callback)`](#keystretcherciphertype-hashtype-secret-callback)
-    - [`marshalPublicKey(key[, type], callback)`](#marshalpublickeykey-type-callback)
-    - [`unmarshalPublicKey(buf)`](#unmarshalpublickeybuf)
-    - [`marshalPrivateKey(key[, type])`](#marshalprivatekeykey-type)
-    - [`unmarshalPrivateKey(buf, callback)`](#unmarshalprivatekeybuf-callback)
-    - [`import(pem, password, callback)`](#importpem-password-callback)
-  - [`webcrypto`](#webcrypto)
+  - [`keys`](#cryptokeys)
+    - [`generateKeyPair(type, bits, callback)`](#cryptokeysgeneratekeypairtype-bits-callback)
+    - [`generateEphemeralKeyPair(curve, callback)`](#cryptokeysgenerateephemeralkeypaircurve-callback)
+    - [`keyStretcher(cipherType, hashType, secret, callback)`](#cryptokeyskeystretcherciphertype-hashtype-secret-callback)
+    - [`marshalPublicKey(key[, type], callback)`](#cryptokeysmarshalpublickeykey-type-callback)
+    - [`unmarshalPublicKey(buf)`](#cryptokeysunmarshalpublickeybuf)
+    - [`marshalPrivateKey(key[, type])`](#cryptokeysmarshalprivatekeykey-type)
+    - [`unmarshalPrivateKey(buf, callback)`](#cryptokeysunmarshalprivatekeybuf-callback)
+    - [`import(pem, password, callback)`](#cryptokeysimportpem-password-callback)
+    - [`randomBytes(number)`](#cryptorandombytesnumber)
+    - [`pbkdf2(password, salt, iterations, keySize, hash)`](#cryptopbkdf2password-salt-iterations-keysize-hash)
 - [Contribute](#contribute)
 - [License](#license)
 
@@ -155,7 +156,7 @@ crypto.hmac.create(hash, Buffer.from('secret'), (err, hmac) => {
 
 **Supported Key Types**
 
-The [`generateKeyPair`](#generatekeypairtype-bits-callback), [`marshalPublicKey`](#marshalpublickeykey-type-callback), and [`marshalPrivateKey`](#marshalprivatekeykey-type) functions accept a string `type` argument.
+The [`generateKeyPair`](#cryptokeysgeneratekeypairtype-bits-callback), [`marshalPublicKey`](#cryptokeysmarshalpublickeykey-type-callback), and [`marshalPrivateKey`](#cryptokeysmarshalprivatekeykey-type) functions accept a string `type` argument.
 
 Currently the `'RSA'` and `'ed25519'` types are supported, although ed25519 keys support only signing and verification of messages.  For encryption / decryption support, RSA keys should be used.
 
