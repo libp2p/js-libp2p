@@ -1,3 +1,18 @@
+<a name="0.17.0"></a>
+# [0.17.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.16.1...v0.17.0) (2019-07-08)
+
+
+### Features
+
+* add strict signing validation for messages ([#84](https://github.com/libp2p/js-libp2p-floodsub/issues/84) ([eed2bc5](https://github.com/libp2p/js-libp2p-floodsub/commit/eed2bc5))
+
+
+### BREAKING CHANGES
+
+* If messages are not being signed, this change will result in them being dropped. A previous release of floodsub added signing by default, but any Floodsub version older than v0.16.0 will have their messages dropped. This is inline with the latest go pubsub behavior.
+
+
+
 <a name="0.16.1"></a>
 ## [0.16.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.16.0...v0.16.1) (2019-05-08)
 
