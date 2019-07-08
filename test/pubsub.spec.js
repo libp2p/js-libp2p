@@ -103,11 +103,6 @@ describe('pubsub base protocol', () => {
       psA._buildMessage(message, (err, signedMessage) => {
         expect(err).to.not.exist()
 
-        // const bytesToSign = Buffer.concat([
-        //   SignPrefix,
-        //   Message.encode(normalizeOutRpcMessage(message))
-        // ])
-
         psA.validate(signedMessage, (err, verified) => {
           expect(verified).to.eql(true)
           done(err)

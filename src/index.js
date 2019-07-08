@@ -51,6 +51,12 @@ class PubsubBaseProtocol extends EventEmitter {
     }
 
     /**
+     * If message signing should be required for incoming messages
+     * @type {boolean}
+     */
+    this.strictSigning = options.strictSigning
+
+    /**
      * Map of topics to which peers are subscribed to
      *
      * @type {Map<string, Peer>}
@@ -374,6 +380,9 @@ class PubsubBaseProtocol extends EventEmitter {
         if (err) return callback(err)
         callback(null, valid)
       })
+    } else {
+      // The message is valid
+      nextTick(callback, null, true)
     }
   }
 }
