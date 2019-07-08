@@ -16,6 +16,8 @@ describe('pubsub', () => {
   let libp2p
 
   before((done) => {
+    expect(Floodsub.multicodec).to.exist()
+
     createNode((err, node) => {
       expect(err).to.not.exist()
       libp2p = node

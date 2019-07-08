@@ -259,3 +259,4 @@ class FloodSub extends BaseProtocol {
 }
 
 module.exports = FloodSub
+module.exports.multicodec = multicodec
