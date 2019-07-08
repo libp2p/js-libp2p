@@ -5,13 +5,12 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-spies'))
 const expect = chai.expect
+const sinon = require('sinon')
 const series = require('async/series')
 const parallel = require('async/parallel')
 
-const { Message } = require('../src/message')
-const { SignPrefix } = require('../src/message/sign')
 const PubsubBaseProtocol = require('../src')
-const { randomSeqno, normalizeOutRpcMessage } = require('../src/utils')
+const { randomSeqno } = require('../src/utils')
 const utils = require('./utils')
 const createNode = utils.createNode
 
@@ -38,6 +37,10 @@ class PubsubImplementation extends PubsubBaseProtocol {
 }
 
 describe('pubsub base protocol', () => {
+  afterEach(() => {
+    sinon.restore()
+  })
+
   describe('fresh nodes', () => {
     let nodeA
     let nodeB
@@ -96,7 +99,7 @@ describe('pubsub base protocol', () => {
 
     it('_buildMessage normalizes and signs messages', (done) => {
       const message = {
-        from: 'QmABC',
+        from: psA.peerId.id,
         data: 'hello',
         seqno: randomSeqno(),
         topicIDs: ['test-topic']
@@ -105,15 +108,44 @@ describe('pubsub base protocol', () => {
       psA._buildMessage(message, (err, signedMessage) => {
         expect(err).to.not.exist()
 
-        const bytesToSign = Buffer.concat([
-          SignPrefix,
-          Message.encode(normalizeOutRpcMessage(message))
-        ])
-
-        psA.peerId.pubKey.verify(bytesToSign, signedMessage.signature, (err, verified) => {
+        psA.validate(signedMessage, (err, verified) => {
           expect(verified).to.eql(true)
           done(err)
         })
+      })
+    })
+
+    it('validate with strict signing off will validate a present signature', (done) => {
+      const message = {
+        from: psA.peerId.id,
+        data: 'hello',
+        seqno: randomSeqno(),
+        topicIDs: ['test-topic']
+      }
+
+      sinon.stub(psA, 'strictSigning').value(false)
+
+      psA._buildMessage(message, (err, signedMessage) => {
+        expect(err).to.not.exist()
+
+        psA.validate(signedMessage, (err, verified) => {
+          expect(verified).to.eql(true)
+          done(err)
+        })
+      })
+    })
+
+    it('validate with strict signing requires a signature', (done) => {
+      const message = {
+        from: psA.peerId.id,
+        data: 'hello',
+        seqno: randomSeqno(),
+        topicIDs: ['test-topic']
+      }
+
+      psA.validate(message, (err, verified) => {
+        expect(verified).to.eql(false)
+        done(err)
       })
     })
   })

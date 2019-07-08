@@ -68,6 +68,19 @@ class PubsubImplementation extends Pubsub {
 }
 ```
 
+### Validate
+
+Validates the signature of a message.
+
+#### `pubsub.validate(message, callback)`
+
+##### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| message | `Message` | a pubsub message |
+| callback | `function(Error, Boolean)` | calls back with true if the message is valid |
+
 ## Implementations using this base protocol
 
 You can use the following implementations as examples for building your own pubsub implementation.
