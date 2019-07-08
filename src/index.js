@@ -76,6 +76,12 @@ class FloodSub extends BaseProtocol {
     )
   }
 
+  /**
+   * Called for each RPC call received from the given peer
+   * @private
+   * @param {string} idB58Str b58 string PeerId of the connected peer
+   * @param {rpc.RPC} rpc The pubsub RPC message
+   */
   _onRpc (idB58Str, rpc) {
     if (!rpc) {
       return
@@ -86,7 +92,7 @@ class FloodSub extends BaseProtocol {
     const msgs = rpc.msgs
 
     if (msgs && msgs.length) {
-      this._processRpcMessages(utils.normalizeInRpcMessages(rpc.msgs))
+      rpc.msgs.forEach((msg) => this._processRpcMessage(msg))
     }
 
     if (subs && subs.length) {
@@ -98,20 +104,31 @@ class FloodSub extends BaseProtocol {
     }
   }
 
-  _processRpcMessages (msgs) {
-    msgs.forEach((msg) => {
-      const seqno = utils.msgId(msg.from, msg.seqno)
-      // 1. check if I've seen the message, if yes, ignore
-      if (this.seenCache.has(seqno)) {
+  /**
+   * @private
+   * @param {rpc.RPC.Message} message The message to process
+   * @returns {void}
+   */
+  _processRpcMessage (message) {
+    const msg = utils.normalizeInRpcMessage(message)
+    const seqno = utils.msgId(msg.from, msg.seqno)
+    // 1. check if I've seen the message, if yes, ignore
+    if (this.seenCache.has(seqno)) {
+      return
+    }
+
+    this.seenCache.put(seqno)
+    // 2. validate the message (signature verification)
+    this.validate(message, (err, isValid) => {
+      if (err || !isValid) {
+        this.log('Message could not be validated, dropping it. isValid=%s', isValid, err)
         return
       }
 
-      this.seenCache.put(seqno)
-
-      // 2. emit to self
+      // 3. if message is valid, emit to self
       this._emitMessages(msg.topicIDs, [msg])
 
-      // 3. propagate msg to others
+      // 4. if message is valid, propagate msg to others
       this._forwardMessages(msg.topicIDs, [msg])
     })
   }

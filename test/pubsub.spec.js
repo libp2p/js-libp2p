@@ -6,6 +6,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const sinon = require('sinon')
+const nextTick = require('async/nextTick')
 
 const Floodsub = require('../src')
 const { createNode } = require('./utils')
@@ -85,6 +86,63 @@ describe('pubsub', () => {
           ])
           done()
         })
+      })
+    })
+  })
+
+  describe('validate', () => {
+    it('should drop unsigned messages', (done) => {
+      sinon.spy(floodsub, '_emitMessages')
+      sinon.spy(floodsub, '_forwardMessages')
+      sinon.spy(floodsub, 'validate')
+
+      const topic = 'my-topic'
+      const rpc = {
+        subscriptions: [],
+        msgs: [{
+          from: libp2p.peerInfo.id.id,
+          data: Buffer.from('an unsigned message'),
+          seqno: utils.randomSeqno(),
+          topicIDs: [topic]
+        }]
+      }
+
+      floodsub._onRpc('QmAnotherPeer', rpc)
+
+      nextTick(() => {
+        expect(floodsub.validate.callCount).to.eql(1)
+        expect(floodsub._emitMessages.called).to.eql(false)
+        expect(floodsub._forwardMessages.called).to.eql(false)
+
+        done()
+      })
+    })
+
+    it('should not drop unsigned messages if strict signing is disabled', (done) => {
+      sinon.spy(floodsub, '_emitMessages')
+      sinon.spy(floodsub, '_forwardMessages')
+      sinon.spy(floodsub, 'validate')
+      sinon.stub(floodsub, 'strictSigning').value(false)
+
+      const topic = 'my-topic'
+      const rpc = {
+        subscriptions: [],
+        msgs: [{
+          from: libp2p.peerInfo.id.id,
+          data: Buffer.from('an unsigned message'),
+          seqno: utils.randomSeqno(),
+          topicIDs: [topic]
+        }]
+      }
+
+      floodsub._onRpc('QmAnotherPeer', rpc)
+
+      nextTick(() => {
+        expect(floodsub.validate.callCount).to.eql(1)
+        expect(floodsub._emitMessages.called).to.eql(true)
+        expect(floodsub._forwardMessages.called).to.eql(true)
+
+        done()
       })
     })
   })
