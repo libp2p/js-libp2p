@@ -10,7 +10,10 @@ const errcode = require('err-code')
 
 const Peer = require('./peer')
 const message = require('./message')
-const { signMessage } = require('./message/sign')
+const {
+  signMessage,
+  verifySignature
+} = require('./message/sign')
 const utils = require('./utils')
 
 const nextTick = require('async/nextTick')
@@ -25,6 +28,7 @@ class PubsubBaseProtocol extends EventEmitter {
    * @param {Object} libp2p libp2p implementation
    * @param {Object} options
    * @param {boolean} options.signMessages if messages should be signed, defaults to true
+   * @param {boolean} options.strictSigning if message signing should be required, defaults to true
    * @constructor
    */
   constructor (debugName, multicodec, libp2p, options) {
@@ -32,6 +36,7 @@ class PubsubBaseProtocol extends EventEmitter {
 
     options = {
       signMessages: true,
+      strictSigning: true,
       ...options
     }
 
@@ -348,6 +353,27 @@ class PubsubBaseProtocol extends EventEmitter {
       this.started = false
       callback()
     })
+  }
+
+  /**
+   * Validates the given message. The signature will be checked for authenticity.
+   * @param {rpc.RPC.Message} message
+   * @param {function(Error, Boolean)} callback
+   */
+  validate (message, callback) {
+    // If strict signing is on and we have no signature, abort
+    if (this.strictSigning && !message.signature) {
+      this.log('Signing required and no signature was present, dropping message:', message)
+      return nextTick(callback, null, false)
+    }
+
+    // Check the message signature if present
+    if (message.signature) {
+      verifySignature(message, (err, valid) => {
+        if (err) return callback(err)
+        callback(null, valid)
+      })
+    }
   }
 }
 

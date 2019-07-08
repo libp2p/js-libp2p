@@ -96,7 +96,7 @@ describe('pubsub base protocol', () => {
 
     it('_buildMessage normalizes and signs messages', (done) => {
       const message = {
-        from: 'QmABC',
+        from: psA.peerId.id,
         data: 'hello',
         seqno: randomSeqno(),
         topicIDs: ['test-topic']
@@ -105,12 +105,12 @@ describe('pubsub base protocol', () => {
       psA._buildMessage(message, (err, signedMessage) => {
         expect(err).to.not.exist()
 
-        const bytesToSign = Buffer.concat([
-          SignPrefix,
-          Message.encode(normalizeOutRpcMessage(message))
-        ])
+        // const bytesToSign = Buffer.concat([
+        //   SignPrefix,
+        //   Message.encode(normalizeOutRpcMessage(message))
+        // ])
 
-        psA.peerId.pubKey.verify(bytesToSign, signedMessage.signature, (err, verified) => {
+        psA.validate(signedMessage, (err, verified) => {
           expect(verified).to.eql(true)
           done(err)
         })
