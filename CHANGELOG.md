@@ -1,3 +1,18 @@
+<a name="0.2.0"></a>
+# [0.2.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.1.0...v0.2.0) (2019-07-08)
+
+
+### Bug Fixes
+
+* use strict signing properly and fix callback issue ([ca99ce9](https://github.com/libp2p/js-libp2p-pubsub/commit/ca99ce9))
+
+
+### Features
+
+* add validate method for validating signatures ([c36fefa](https://github.com/libp2p/js-libp2p-pubsub/commit/c36fefa))
+
+
+
 <a name="0.1.0"></a>
 # [0.1.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.0.4...v0.1.0) (2019-05-07)
 
