@@ -359,6 +359,7 @@ class PubsubBaseProtocol extends EventEmitter {
    * Validates the given message. The signature will be checked for authenticity.
    * @param {rpc.RPC.Message} message
    * @param {function(Error, Boolean)} callback
+   * @returns {void}
    */
   validate (message, callback) {
     // If strict signing is on and we have no signature, abort

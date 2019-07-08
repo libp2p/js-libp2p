@@ -8,10 +8,8 @@ const expect = chai.expect
 const series = require('async/series')
 const parallel = require('async/parallel')
 
-const { Message } = require('../src/message')
-const { SignPrefix } = require('../src/message/sign')
 const PubsubBaseProtocol = require('../src')
-const { randomSeqno, normalizeOutRpcMessage } = require('../src/utils')
+const { randomSeqno } = require('../src/utils')
 const utils = require('./utils')
 const createNode = utils.createNode
 
