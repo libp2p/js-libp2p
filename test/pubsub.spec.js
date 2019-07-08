@@ -5,6 +5,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-spies'))
 const expect = chai.expect
+const sinon = require('sinon')
 const series = require('async/series')
 const parallel = require('async/parallel')
 
@@ -36,6 +37,10 @@ class PubsubImplementation extends PubsubBaseProtocol {
 }
 
 describe('pubsub base protocol', () => {
+  afterEach(() => {
+    sinon.restore()
+  })
+
   describe('fresh nodes', () => {
     let nodeA
     let nodeB
@@ -107,6 +112,40 @@ describe('pubsub base protocol', () => {
           expect(verified).to.eql(true)
           done(err)
         })
+      })
+    })
+
+    it('validate with strict signing off will validate a present signature', (done) => {
+      const message = {
+        from: psA.peerId.id,
+        data: 'hello',
+        seqno: randomSeqno(),
+        topicIDs: ['test-topic']
+      }
+
+      sinon.stub(psA, 'strictSigning').value(false)
+
+      psA._buildMessage(message, (err, signedMessage) => {
+        expect(err).to.not.exist()
+
+        psA.validate(signedMessage, (err, verified) => {
+          expect(verified).to.eql(true)
+          done(err)
+        })
+      })
+    })
+
+    it('validate with strict signing requires a signature', (done) => {
+      const message = {
+        from: psA.peerId.id,
+        data: 'hello',
+        seqno: randomSeqno(),
+        topicIDs: ['test-topic']
+      }
+
+      psA.validate(message, (err, verified) => {
+        expect(verified).to.eql(false)
+        done(err)
       })
     })
   })
