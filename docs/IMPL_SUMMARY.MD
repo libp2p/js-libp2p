@@ -1,6 +1,6 @@
 # js-libp2p-kad-dht
 
-js-libp2p-kad-dht is a JavaScript implementation of the Kademlia DHT with some features of S/Kademlia. A "provider" node uses the DHT to advertise that it has a particular piece of content, and "querying" nodes will search the DHT for peers that have a particular piece of content. Content is modeled as a value that is identified by a key, where the key and value are Buffers.
+js-libp2p-kad-dht is a JavaScript implementation of the [Kademlia DHT](http://www.scs.stanford.edu/%7Edm/home/papers/kpos.pdf) with some features of S/Kademlia. A "provider" node uses the DHT to advertise that it has a particular piece of content, and "querying" nodes will search the DHT for peers that have a particular piece of content. Content is modeled as a value that is identified by a key, where the key and value are Buffers.
 
 #### DHT Identifiers
 
