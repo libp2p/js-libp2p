@@ -12,9 +12,8 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
       this._key = key
     }
 
-    verify (data, sig, callback) {
-      ensure(callback)
-      crypto.hashAndVerify(this._key, sig, data, callback)
+    verify (data, sig) {
+      return crypto.hashAndVerify(this._key, sig, data)
     }
 
     marshal () {
@@ -32,9 +31,8 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
       return this.bytes.equals(key.bytes)
     }
 
-    hash (callback) {
-      ensure(callback)
-      multihashing(this.bytes, 'sha2-256', callback)
+    hash () {
+      return multihashing(this.bytes, 'sha2-256')
     }
   }
 
@@ -46,9 +44,8 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
       crypto.validatePublicKey(this._publicKey)
     }
 
-    sign (message, callback) {
-      ensure(callback)
-      crypto.hashAndSign(this._key, message, callback)
+    sign (message) {
+      return crypto.hashAndSign(this._key, message)
     }
 
     get public () {
@@ -70,9 +67,8 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
       return this.bytes.equals(key.bytes)
     }
 
-    hash (callback) {
-      ensure(callback)
-      multihashing(this.bytes, 'sha2-256', callback)
+    hash () {
+      return multihashing(this.bytes, 'sha2-256')
     }
 
     /**
@@ -85,47 +81,24 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
      * @param {function(Error, id)} callback
      * @returns {undefined}
      */
-    id (callback) {
-      this.public.hash((err, hash) => {
-        if (err) {
-          return callback(err)
-        }
-        callback(null, bs58.encode(hash))
-      })
+    async id () {
+      const hash = await this.public.hash()
+
+      return bs58.encode(hash)
     }
   }
 
-  function unmarshalSecp256k1PrivateKey (bytes, callback) {
-    callback(null, new Secp256k1PrivateKey(bytes))
+  function unmarshalSecp256k1PrivateKey (bytes) {
+    return new Secp256k1PrivateKey(bytes)
   }
 
   function unmarshalSecp256k1PublicKey (bytes) {
     return new Secp256k1PublicKey(bytes)
   }
 
-  function generateKeyPair (_bits, callback) {
-    if (callback === undefined && typeof _bits === 'function') {
-      callback = _bits
-    }
-
-    ensure(callback)
-
-    crypto.generateKey((err, privateKeyBytes) => {
-      if (err) { return callback(err) }
-
-      let privkey
-      try {
-        privkey = new Secp256k1PrivateKey(privateKeyBytes)
-      } catch (err) { return callback(err) }
-
-      callback(null, privkey)
-    })
-  }
-
-  function ensure (callback) {
-    if (typeof callback !== 'function') {
-      throw new Error('callback is required')
-    }
+  async function generateKeyPair () {
+    const privateKeyBytes = await crypto.generateKey()
+    return new Secp256k1PrivateKey(privateKeyBytes)
   }
 
   return {
