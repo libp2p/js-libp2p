@@ -10,30 +10,24 @@ const keys = []
 const bits = [1024, 2048, 4096]
 
 bits.forEach((bit) => {
-  suite.add(`generateKeyPair ${bit}bits`, (d) => {
-    crypto.keys.generateKeyPair('RSA', bit, (err, key) => {
-      if (err) { throw err }
-      keys.push(key)
-      d.resolve()
-    })
+  suite.add(`generateKeyPair ${bit}bits`, async (d) => {
+    const key = await crypto.keys.generateKeyPair('RSA', bit)
+    keys.push(key)
+    d.resolve()
   }, {
     defer: true
   })
 })
 
-suite.add('sign and verify', (d) => {
+suite.add('sign and verify', async (d) => {
   const key = keys[0]
   const text = key.genSecret()
 
-  key.sign(text, (err, sig) => {
-    if (err) { throw err }
+  const sig = await key.sign(text)
+  const res = await key.public.verify(text, sig)
 
-    key.public.verify(text, sig, (err, res) => {
-      if (err) { throw err }
-      if (res !== true) { throw new Error('failed to verify') }
-      d.resolve()
-    })
-  })
+  if (res !== true) { throw new Error('failed to verify') }
+  d.resolve()
 }, {
   defer: true
 })

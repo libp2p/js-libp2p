@@ -15,115 +15,67 @@ const testGarbage = require('../helpers/test-garbage-error-handling')
 describe('ed25519', function () {
   this.timeout(20 * 1000)
   let key
-  before((done) => {
-    crypto.keys.generateKeyPair('Ed25519', 512, (err, _key) => {
-      if (err) return done(err)
-      key = _key
-      done()
-    })
+  before(async () => {
+    key = await crypto.keys.generateKeyPair('Ed25519', 512)
   })
 
-  it('generates a valid key', (done) => {
+  it('generates a valid key', async () => {
     expect(key).to.be.an.instanceof(ed25519.Ed25519PrivateKey)
-
-    key.hash((err, digest) => {
-      if (err) {
-        return done(err)
-      }
-
-      expect(digest).to.have.length(34)
-      done()
-    })
+    const digest = await key.hash()
+    expect(digest).to.have.length(34)
   })
 
-  it('generates a valid key from seed', (done) => {
+  it('generates a valid key from seed', async () => {
     var seed = crypto.randomBytes(32)
-    crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey) => {
-      if (err) return done(err)
-      expect(seededkey).to.be.an.instanceof(ed25519.Ed25519PrivateKey)
-
-      seededkey.hash((err, digest) => {
-        if (err) {
-          return done(err)
-        }
-
-        expect(digest).to.have.length(34)
-        done()
-      })
-    })
+    const seededkey = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512)
+    expect(seededkey).to.be.an.instanceof(ed25519.Ed25519PrivateKey)
+    const digest = await seededkey.hash()
+    expect(digest).to.have.length(34)
   })
 
-  it('generates the same key from the same seed', (done) => {
-    var seed = crypto.randomBytes(32)
-    crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey1) => {
-      if (err) return done(err)
-      crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512, (err, seededkey2) => {
-        if (err) return done(err)
-        expect(seededkey1.equals(seededkey2)).to.eql(true)
-        expect(seededkey1.public.equals(seededkey2.public)).to.eql(true)
-        done()
-      })
-    })
+  it('generates the same key from the same seed', async () => {
+    const seed = crypto.randomBytes(32)
+    const seededkey1 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512)
+    const seededkey2 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512)
+    expect(seededkey1.equals(seededkey2)).to.eql(true)
+    expect(seededkey1.public.equals(seededkey2.public)).to.eql(true)
   })
 
-  it('generates different keys for different seeds', (done) => {
+  it('generates different keys for different seeds', async () => {
     const seed1 = crypto.randomBytes(32)
-    crypto.keys.generateKeyPairFromSeed('Ed25519', seed1, 512, (err, seededkey1) => {
-      expect(err).to.not.exist()
-
-      const seed2 = crypto.randomBytes(32)
-      crypto.keys.generateKeyPairFromSeed('Ed25519', seed2, 512, (err, seededkey2) => {
-        expect(err).to.not.exist()
-
-        expect(seededkey1.equals(seededkey2)).to.eql(false)
-        expect(seededkey1.public.equals(seededkey2.public))
-          .to.eql(false)
-        done()
-      })
-    })
+    const seededkey1 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed1, 512)
+    const seed2 = crypto.randomBytes(32)
+    const seededkey2 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed2, 512)
+    expect(seededkey1.equals(seededkey2)).to.eql(false)
+    expect(seededkey1.public.equals(seededkey2.public)).to.eql(false)
   })
 
-  it('signs', (done) => {
+  it('signs', async () => {
     const text = crypto.randomBytes(512)
-
-    key.sign(text, (err, sig) => {
-      expect(err).to.not.exist()
-
-      key.public.verify(text, sig, (err, res) => {
-        expect(err).to.not.exist()
-        expect(res).to.be.eql(true)
-        done()
-      })
-    })
+    const sig = await key.sign(text)
+    const res = await key.public.verify(text, sig)
+    expect(res).to.be.eql(true)
   })
 
-  it('encoding', (done) => {
+  it('encoding', async () => {
     const keyMarshal = key.marshal()
-    ed25519.unmarshalEd25519PrivateKey(keyMarshal, (err, key2) => {
-      if (err) {
-        return done(err)
-      }
-      const keyMarshal2 = key2.marshal()
+    const key2 = await ed25519.unmarshalEd25519PrivateKey(keyMarshal)
+    const keyMarshal2 = key2.marshal()
 
-      expect(keyMarshal).to.eql(keyMarshal2)
+    expect(keyMarshal).to.eql(keyMarshal2)
 
-      const pk = key.public
-      const pkMarshal = pk.marshal()
-      const pk2 = ed25519.unmarshalEd25519PublicKey(pkMarshal)
-      const pkMarshal2 = pk2.marshal()
+    const pk = key.public
+    const pkMarshal = pk.marshal()
+    const pk2 = ed25519.unmarshalEd25519PublicKey(pkMarshal)
+    const pkMarshal2 = pk2.marshal()
 
-      expect(pkMarshal).to.eql(pkMarshal2)
-      done()
-    })
+    expect(pkMarshal).to.eql(pkMarshal2)
   })
 
-  it('key id', (done) => {
-    key.id((err, id) => {
-      expect(err).to.not.exist()
-      expect(id).to.exist()
-      expect(id).to.be.a('string')
-      done()
-    })
+  it('key id', async () => {
+    const id = await key.id()
+    expect(id).to.exist()
+    expect(id).to.be.a('string')
   })
 
   describe('key equals', () => {
@@ -141,51 +93,27 @@ describe('ed25519', function () {
       )
     })
 
-    it('not equals other key', (done) => {
-      crypto.keys.generateKeyPair('Ed25519', 512, (err, key2) => {
-        if (err) return done(err)
-
-        expect(key.equals(key2)).to.eql(false)
-        expect(key2.equals(key)).to.eql(false)
-        expect(key.public.equals(key2.public)).to.eql(false)
-        expect(key2.public.equals(key.public)).to.eql(false)
-        done()
-      })
+    it('not equals other key', async () => {
+      const key2 = await crypto.keys.generateKeyPair('Ed25519', 512)
+      expect(key.equals(key2)).to.eql(false)
+      expect(key2.equals(key)).to.eql(false)
+      expect(key.public.equals(key2.public)).to.eql(false)
+      expect(key2.public.equals(key.public)).to.eql(false)
     })
   })
 
-  it('sign and verify', (done) => {
+  it('sign and verify', async () => {
     const data = Buffer.from('hello world')
-    key.sign(data, (err, sig) => {
-      if (err) {
-        return done(err)
-      }
-
-      key.public.verify(data, sig, (err, valid) => {
-        if (err) {
-          return done(err)
-        }
-        expect(valid).to.eql(true)
-        done()
-      })
-    })
+    const sig = await key.sign(data)
+    const valid = await key.public.verify(data, sig)
+    expect(valid).to.eql(true)
   })
 
-  it('fails to verify for different data', (done) => {
+  it('fails to verify for different data', async () => {
     const data = Buffer.from('hello world')
-    key.sign(data, (err, sig) => {
-      if (err) {
-        return done(err)
-      }
-
-      key.public.verify(Buffer.from('hello'), sig, (err, valid) => {
-        if (err) {
-          return done(err)
-        }
-        expect(valid).to.be.eql(false)
-        done()
-      })
-    })
+    const sig = await key.sign(data)
+    const valid = await key.public.verify(Buffer.from('hello'), sig)
+    expect(valid).to.be.eql(false)
   })
 
   describe('returns error via cb instead of crashing', () => {
@@ -197,30 +125,20 @@ describe('ed25519', function () {
   describe('go interop', () => {
     let privateKey
 
-    before((done) => {
-      crypto.keys.unmarshalPrivateKey(fixtures.verify.privateKey, (err, key) => {
-        expect(err).to.not.exist()
-        privateKey = key
-        done()
-      })
+    before(async () => {
+      const key = await crypto.keys.unmarshalPrivateKey(fixtures.verify.privateKey)
+      privateKey = key
     })
 
-    it('verifies with data from go', (done) => {
+    it('verifies with data from go', async () => {
       const key = crypto.keys.unmarshalPublicKey(fixtures.verify.publicKey)
-
-      key.verify(fixtures.verify.data, fixtures.verify.signature, (err, ok) => {
-        expect(err).to.not.exist()
-        expect(ok).to.eql(true)
-        done()
-      })
+      const ok = await key.verify(fixtures.verify.data, fixtures.verify.signature)
+      expect(ok).to.eql(true)
     })
 
-    it('generates the same signature as go', (done) => {
-      privateKey.sign(fixtures.verify.data, (err, sig) => {
-        expect(err).to.not.exist()
-        expect(sig).to.eql(fixtures.verify.signature)
-        done()
-      })
+    it('generates the same signature as go', async () => {
+      const sig = await privateKey.sign(fixtures.verify.data)
+      expect(sig).to.eql(fixtures.verify.signature)
     })
   })
 })

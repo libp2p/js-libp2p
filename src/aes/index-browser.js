@@ -1,13 +1,10 @@
 'use strict'
 
 const asm = require('asmcrypto.js')
-const nextTick = require('async/nextTick')
 
-exports.create = function (key, iv, callback) {
-  const done = (err, res) => nextTick(() => callback(err, res))
-
+exports.create = async function (key, iv) { // eslint-disable-line require-await
   if (key.length !== 16 && key.length !== 32) {
-    return done(new Error('Invalid key length'))
+    throw new Error('Invalid key length')
   }
 
   const enc = new asm.AES_CTR.Encrypt({
@@ -20,36 +17,18 @@ exports.create = function (key, iv, callback) {
   })
 
   const res = {
-    encrypt (data, cb) {
-      const done = (err, res) => nextTick(() => cb(err, res))
-
-      let res
-      try {
-        res = Buffer.from(
-          enc.process(data).result
-        )
-      } catch (err) {
-        return done(err)
-      }
-
-      done(null, res)
+    async encrypt (data) { // eslint-disable-line require-await
+      return Buffer.from(
+        enc.process(data).result
+      )
     },
 
-    decrypt (data, cb) {
-      const done = (err, res) => nextTick(() => cb(err, res))
-
-      let res
-      try {
-        res = Buffer.from(
-          dec.process(data).result
-        )
-      } catch (err) {
-        return done(err)
-      }
-
-      done(null, res)
+    async decrypt (data) { // eslint-disable-line require-await
+      return Buffer.from(
+        dec.process(data).result
+      )
     }
   }
 
-  done(null, res)
+  return res
 }

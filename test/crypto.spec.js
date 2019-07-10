@@ -12,14 +12,8 @@ const fixtures = require('./fixtures/go-key-rsa')
 describe('libp2p-crypto', function () {
   this.timeout(20 * 1000)
   let key
-  before((done) => {
-    crypto.keys.generateKeyPair('RSA', 512, (err, _key) => {
-      if (err) {
-        return done(err)
-      }
-      key = _key
-      done()
-    })
+  before(async () => {
+    key = await crypto.keys.generateKeyPair('RSA', 512)
   })
 
   it('marshalPublicKey and unmarshalPublicKey', () => {
@@ -33,71 +27,41 @@ describe('libp2p-crypto', function () {
     }).to.throw()
   })
 
-  it('marshalPrivateKey and unmarshalPrivateKey', (done) => {
+  it('marshalPrivateKey and unmarshalPrivateKey', async () => {
     expect(() => {
       crypto.keys.marshalPrivateKey(key, 'invalid-key-type')
     }).to.throw()
 
-    crypto.keys.unmarshalPrivateKey(crypto.keys.marshalPrivateKey(key), (err, key2) => {
-      if (err) {
-        return done(err)
-      }
+    const key2 = await crypto.keys.unmarshalPrivateKey(crypto.keys.marshalPrivateKey(key))
 
-      expect(key2.equals(key)).to.be.eql(true)
-      expect(key2.public.equals(key.public)).to.be.eql(true)
-      done()
-    })
+    expect(key2.equals(key)).to.be.eql(true)
+    expect(key2.public.equals(key.public)).to.be.eql(true)
   })
 
   // marshalled keys seem to be slightly different
   // unsure as to if this is just a difference in encoding
   // or a bug
   describe('go interop', () => {
-    it('unmarshals private key', (done) => {
-      crypto.keys.unmarshalPrivateKey(fixtures.private.key, (err, key) => {
-        if (err) {
-          return done(err)
-        }
-        const hash = fixtures.private.hash
-        expect(fixtures.private.key).to.eql(key.bytes)
-
-        key.hash((err, digest) => {
-          if (err) {
-            return done(err)
-          }
-
-          expect(digest).to.eql(hash)
-          done()
-        })
-      })
+    it('unmarshals private key', async () => {
+      const key = await crypto.keys.unmarshalPrivateKey(fixtures.private.key)
+      const hash = fixtures.private.hash
+      expect(fixtures.private.key).to.eql(key.bytes)
+      const digest = await key.hash()
+      expect(digest).to.eql(hash)
     })
 
-    it('unmarshals public key', (done) => {
+    it('unmarshals public key', async () => {
       const key = crypto.keys.unmarshalPublicKey(fixtures.public.key)
       const hash = fixtures.public.hash
-
       expect(crypto.keys.marshalPublicKey(key)).to.eql(fixtures.public.key)
-
-      key.hash((err, digest) => {
-        if (err) {
-          return done(err)
-        }
-
-        expect(digest).to.eql(hash)
-        done()
-      })
+      const digest = await key.hash()
+      expect(digest).to.eql(hash)
     })
 
-    it('unmarshal -> marshal, private key', (done) => {
-      crypto.keys.unmarshalPrivateKey(fixtures.private.key, (err, key) => {
-        if (err) {
-          return done(err)
-        }
-
-        const marshalled = crypto.keys.marshalPrivateKey(key)
-        expect(marshalled).to.eql(fixtures.private.key)
-        done()
-      })
+    it('unmarshal -> marshal, private key', async () => {
+      const key = await crypto.keys.unmarshalPrivateKey(fixtures.private.key)
+      const marshalled = crypto.keys.marshalPrivateKey(key)
+      expect(marshalled).to.eql(fixtures.private.key)
     })
 
     it('unmarshal -> marshal, public key', () => {

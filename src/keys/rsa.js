@@ -2,7 +2,6 @@
 
 const crypto = require('crypto')
 const randomBytes = require('../random-bytes')
-const nextTick = require('async/nextTick')
 
 let keypair
 try {
@@ -30,70 +29,41 @@ const jwkToPem = require('pem-jwk').jwk2pem
 
 exports.utils = require('./rsa-utils')
 
-exports.generateKey = function (bits, callback) {
-  nextTick(() => {
-    let result
-    try {
-      const key = keypair({ bits: bits })
-      result = {
-        privateKey: pemToJwk(key.private),
-        publicKey: pemToJwk(key.public)
-      }
-    } catch (err) {
-      return callback(err)
-    }
-
-    callback(null, result)
-  })
+exports.generateKey = async function (bits) { // eslint-disable-line require-await
+  const key = keypair({ bits })
+  return {
+    privateKey: pemToJwk(key.private),
+    publicKey: pemToJwk(key.public)
+  }
 }
 
 // Takes a jwk key
-exports.unmarshalPrivateKey = function (key, callback) {
-  nextTick(() => {
-    if (!key) {
-      return callback(new Error('Key is invalid'))
+exports.unmarshalPrivateKey = async function (key) { // eslint-disable-line require-await
+  if (!key) {
+    throw new Error('Key is invalid')
+  }
+  return {
+    privateKey: key,
+    publicKey: {
+      kty: key.kty,
+      n: key.n,
+      e: key.e
     }
-    callback(null, {
-      privateKey: key,
-      publicKey: {
-        kty: key.kty,
-        n: key.n,
-        e: key.e
-      }
-    })
-  })
+  }
 }
 
 exports.getRandomValues = randomBytes
 
-exports.hashAndSign = function (key, msg, callback) {
-  nextTick(() => {
-    let result
-    try {
-      const sign = crypto.createSign('RSA-SHA256')
-      sign.update(msg)
-      const pem = jwkToPem(key)
-      result = sign.sign(pem)
-    } catch (err) {
-      return callback(new Error('Key or message is invalid!: ' + err.message))
-    }
-
-    callback(null, result)
-  })
+exports.hashAndSign = async function (key, msg) { // eslint-disable-line require-await
+  const sign = crypto.createSign('RSA-SHA256')
+  sign.update(msg)
+  const pem = jwkToPem(key)
+  return sign.sign(pem)
 }
 
-exports.hashAndVerify = function (key, sig, msg, callback) {
-  nextTick(() => {
-    let result
-    try {
-      const verify = crypto.createVerify('RSA-SHA256')
-      verify.update(msg)
-      const pem = jwkToPem(key)
-      result = verify.verify(pem, sig)
-    } catch (err) {
-      return callback(new Error('Key or message is invalid!:' + err.message))
-    }
-
-    callback(null, result)
-  })
+exports.hashAndVerify = async function (key, sig, msg) { // eslint-disable-line require-await
+  const verify = crypto.createVerify('RSA-SHA256')
+  verify.update(msg)
+  const pem = jwkToPem(key)
+  return verify.verify(pem, sig)
 }

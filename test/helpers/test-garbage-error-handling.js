@@ -1,11 +1,6 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const expect = chai.expect
-chai.use(dirtyChai)
-
 const util = require('util')
 const garbage = [Buffer.from('00010203040506070809', 'hex'), {}, null, false, undefined, true, 1, 0, Buffer.from(''), 'aGVsbG93b3JsZA==', 'helloworld', '']
 
@@ -23,14 +18,13 @@ function doTests (fncName, fnc, num, skipBuffersAndStrings) {
     for (let i = 0; i < num; i++) {
       args.push(garbage)
     }
-    it(fncName + '(' + args.map(garbage => util.inspect(garbage)).join(', ') + ')', cb => {
-      args.push((err, res) => {
-        expect(err).to.exist()
-        expect(res).to.not.exist()
-        cb()
-      })
-
-      fnc.apply(null, args)
+    it(fncName + '(' + args.map(garbage => util.inspect(garbage)).join(', ') + ')', async () => {
+      try {
+        await fnc.apply(null, args)
+      } catch (err) {
+        return // expected
+      }
+      throw new Error('Expected error to be thrown')
     })
   })
 }

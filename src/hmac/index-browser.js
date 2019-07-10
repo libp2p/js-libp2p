@@ -1,8 +1,6 @@
 'use strict'
 
-const nodeify = require('../nodeify')
-
-const crypto = require('../webcrypto')
+const webcrypto = require('../webcrypto.js')
 const lengths = require('./lengths')
 
 const hashTypes = {
@@ -11,15 +9,14 @@ const hashTypes = {
   SHA512: 'SHA-512'
 }
 
-const sign = (key, data, cb) => {
-  nodeify(crypto.subtle.sign({ name: 'HMAC' }, key, data)
-    .then((raw) => Buffer.from(raw)), cb)
+const sign = async (key, data) => {
+  return Buffer.from(await webcrypto.subtle.sign({ name: 'HMAC' }, key, data))
 }
 
-exports.create = function (hashType, secret, callback) {
+exports.create = async function (hashType, secret) {
   const hash = hashTypes[hashType]
 
-  nodeify(crypto.subtle.importKey(
+  const key = await webcrypto.subtle.importKey(
     'raw',
     secret,
     {
@@ -28,12 +25,12 @@ exports.create = function (hashType, secret, callback) {
     },
     false,
     ['sign']
-  ).then((key) => {
-    return {
-      digest (data, cb) {
-        sign(key, data, cb)
-      },
-      length: lengths[hashType]
-    }
-  }), callback)
+  )
+
+  return {
+    async digest (data) { // eslint-disable-line require-await
+      return sign(key, data)
+    },
+    length: lengths[hashType]
+  }
 }

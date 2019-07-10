@@ -1,7 +1,6 @@
 'use strict'
 
 const crypto = require('crypto')
-const nextTick = require('async/nextTick')
 
 const curves = {
   'P-256': 'prime256v1',
@@ -9,33 +8,21 @@ const curves = {
   'P-521': 'secp521r1'
 }
 
-exports.generateEphmeralKeyPair = function (curve, callback) {
+exports.generateEphmeralKeyPair = async function (curve) { // eslint-disable-line require-await
   if (!curves[curve]) {
-    return callback(new Error(`Unkown curve: ${curve}`))
+    throw new Error(`Unkown curve: ${curve}`)
   }
   const ecdh = crypto.createECDH(curves[curve])
   ecdh.generateKeys()
 
-  nextTick(() => callback(null, {
+  return {
     key: ecdh.getPublicKey(),
-    genSharedKey (theirPub, forcePrivate, cb) {
-      if (typeof forcePrivate === 'function') {
-        cb = forcePrivate
-        forcePrivate = null
-      }
-
+    async genSharedKey (theirPub, forcePrivate) { // eslint-disable-line require-await
       if (forcePrivate) {
         ecdh.setPrivateKey(forcePrivate.private)
       }
 
-      let secret
-      try {
-        secret = ecdh.computeSecret(theirPub)
-      } catch (err) {
-        return cb(err)
-      }
-
-      nextTick(() => cb(null, secret))
+      return ecdh.computeSecret(theirPub)
     }
-  }))
+  }
 }

@@ -6,6 +6,4 @@ const ecdh = require('./ecdh')
 // the shared secret key.
 //
 // Focuses only on ECDH now, but can be made more general in the future.
-module.exports = (curve, callback) => {
-  ecdh.generateEphmeralKeyPair(curve, callback)
-}
+module.exports = async (curve) => ecdh.generateEphmeralKeyPair(curve) // eslint-disable-line require-await

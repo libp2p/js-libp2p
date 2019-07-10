@@ -6,7 +6,6 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
-const series = require('async/series')
 
 const crypto = require('../../src')
 const fixtures = require('./../fixtures/aes')
@@ -19,53 +18,43 @@ const bytes = {
 
 describe('AES-CTR', () => {
   Object.keys(bytes).forEach((byte) => {
-    it(`${bytes[byte]} - encrypt and decrypt`, (done) => {
+    it(`${bytes[byte]} - encrypt and decrypt`, async () => {
       const key = Buffer.alloc(parseInt(byte, 10))
       key.fill(5)
 
       const iv = Buffer.alloc(16)
       iv.fill(1)
 
-      crypto.aes.create(key, iv, (err, cipher) => {
-        expect(err).to.not.exist()
+      const cipher = await crypto.aes.create(key, iv)
 
-        series([
-          encryptAndDecrypt(cipher),
-          encryptAndDecrypt(cipher),
-          encryptAndDecrypt(cipher),
-          encryptAndDecrypt(cipher),
-          encryptAndDecrypt(cipher)
-        ], done)
-      })
+      await encryptAndDecrypt(cipher)
+      await encryptAndDecrypt(cipher)
+      await encryptAndDecrypt(cipher)
+      await encryptAndDecrypt(cipher)
+      await encryptAndDecrypt(cipher)
     })
   })
 
   Object.keys(bytes).forEach((byte) => {
-    it(`${bytes[byte]} - fixed - encrypt and decrypt`, (done) => {
+    it(`${bytes[byte]} - fixed - encrypt and decrypt`, async () => {
       const key = Buffer.alloc(parseInt(byte, 10))
       key.fill(5)
 
       const iv = Buffer.alloc(16)
       iv.fill(1)
 
-      crypto.aes.create(key, iv, (err, cipher) => {
-        expect(err).to.not.exist()
+      const cipher = await crypto.aes.create(key, iv)
 
-        series(fixtures[byte].inputs.map((rawIn, i) => (cb) => {
-          const input = Buffer.from(rawIn)
-          const output = Buffer.from(fixtures[byte].outputs[i])
-          cipher.encrypt(input, (err, res) => {
-            expect(err).to.not.exist()
-            expect(res).to.have.length(output.length)
-            expect(res).to.eql(output)
-            cipher.decrypt(res, (err, res) => {
-              expect(err).to.not.exist()
-              expect(res).to.eql(input)
-              cb()
-            })
-          })
-        }), done)
-      })
+      for (let i = 0; i < fixtures[byte].inputs.length; i++) {
+        const rawIn = fixtures[byte].inputs[i]
+        const input = Buffer.from(rawIn)
+        const output = Buffer.from(fixtures[byte].outputs[i])
+        const encrypted = await cipher.encrypt(input)
+        expect(encrypted).to.have.length(output.length)
+        expect(encrypted).to.eql(output)
+        const decrypted = await cipher.decrypt(encrypted)
+        expect(decrypted).to.eql(input)
+      }
     })
   })
 
@@ -74,46 +63,35 @@ describe('AES-CTR', () => {
       return
     }
 
-    it(`${bytes[byte]} - go interop - encrypt and decrypt`, (done) => {
+    it(`${bytes[byte]} - go interop - encrypt and decrypt`, async () => {
       const key = Buffer.alloc(parseInt(byte, 10))
       key.fill(5)
 
       const iv = Buffer.alloc(16)
       iv.fill(1)
 
-      crypto.aes.create(key, iv, (err, cipher) => {
-        expect(err).to.not.exist()
+      const cipher = await crypto.aes.create(key, iv)
 
-        series(goFixtures[byte].inputs.map((rawIn, i) => (cb) => {
-          const input = Buffer.from(rawIn)
-          const output = Buffer.from(goFixtures[byte].outputs[i])
-          cipher.encrypt(input, (err, res) => {
-            expect(err).to.not.exist()
-            expect(res).to.have.length(output.length)
-            expect(res).to.be.eql(output)
-            cipher.decrypt(res, (err, res) => {
-              expect(err).to.not.exist()
-              expect(res).to.be.eql(input)
-              cb()
-            })
-          })
-        }), done)
-      })
+      for (let i = 0; i < goFixtures[byte].inputs.length; i++) {
+        const rawIn = goFixtures[byte].inputs[i]
+        const input = Buffer.from(rawIn)
+        const output = Buffer.from(goFixtures[byte].outputs[i])
+        const encrypted = await cipher.encrypt(input)
+        expect(encrypted).to.have.length(output.length)
+        expect(encrypted).to.eql(output)
+        const decrypted = await cipher.decrypt(encrypted)
+        expect(decrypted).to.eql(input)
+      }
     })
   })
 })
 
-function encryptAndDecrypt (cipher) {
+async function encryptAndDecrypt (cipher) {
   const data = Buffer.alloc(100)
   data.fill(Math.ceil(Math.random() * 100))
-  return (cb) => {
-    cipher.encrypt(data, (err, res) => {
-      expect(err).to.not.exist()
-      cipher.decrypt(res, (err, res) => {
-        expect(err).to.not.exist()
-        expect(res).to.be.eql(data)
-        cb()
-      })
-    })
-  }
+
+  const encrypted = await cipher.encrypt(data)
+  const decrypted = await cipher.decrypt(encrypted)
+
+  expect(decrypted).to.be.eql(data)
 }

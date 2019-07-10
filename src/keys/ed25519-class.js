@@ -12,9 +12,8 @@ class Ed25519PublicKey {
     this._key = ensureKey(key, crypto.publicKeyLength)
   }
 
-  verify (data, sig, callback) {
-    ensure(callback)
-    crypto.hashAndVerify(this._key, sig, data, callback)
+  async verify (data, sig) { // eslint-disable-line require-await
+    return crypto.hashAndVerify(this._key, sig, data)
   }
 
   marshal () {
@@ -32,9 +31,8 @@ class Ed25519PublicKey {
     return this.bytes.equals(key.bytes)
   }
 
-  hash (callback) {
-    ensure(callback)
-    multihashing(this.bytes, 'sha2-256', callback)
+  async hash () { // eslint-disable-line require-await
+    return multihashing(this.bytes, 'sha2-256')
   }
 }
 
@@ -46,9 +44,8 @@ class Ed25519PrivateKey {
     this._publicKey = ensureKey(publicKey, crypto.publicKeyLength)
   }
 
-  sign (message, callback) {
-    ensure(callback)
-    crypto.hashAndSign(this._key, message, callback)
+  async sign (message) { // eslint-disable-line require-await
+    return crypto.hashAndSign(this._key, message)
   }
 
   get public () {
@@ -74,9 +71,8 @@ class Ed25519PrivateKey {
     return this.bytes.equals(key.bytes)
   }
 
-  hash (callback) {
-    ensure(callback)
-    multihashing(this.bytes, 'sha2-256', callback)
+  async hash () { // eslint-disable-line require-await
+    return multihashing(this.bytes, 'sha2-256')
   }
 
   /**
@@ -86,28 +82,19 @@ class Ed25519PrivateKey {
    * The public key is a protobuf encoding containing a type and the DER encoding
    * of the PKCS SubjectPublicKeyInfo.
    *
-   * @param {function(Error, id)} callback
-   * @returns {undefined}
+   * @returns {Promise<String>}
    */
-  id (callback) {
-    this.public.hash((err, hash) => {
-      if (err) {
-        return callback(err)
-      }
-      callback(null, bs58.encode(hash))
-    })
+  async id () {
+    const hash = await this.public.hash()
+    return bs58.encode(hash)
   }
 }
 
-function unmarshalEd25519PrivateKey (bytes, callback) {
-  try {
-    bytes = ensureKey(bytes, crypto.privateKeyLength + crypto.publicKeyLength)
-  } catch (err) {
-    return callback(err)
-  }
+function unmarshalEd25519PrivateKey (bytes) {
+  bytes = ensureKey(bytes, crypto.privateKeyLength + crypto.publicKeyLength)
   const privateKeyBytes = bytes.slice(0, crypto.privateKeyLength)
   const publicKeyBytes = bytes.slice(crypto.privateKeyLength, bytes.length)
-  callback(null, new Ed25519PrivateKey(privateKeyBytes, publicKeyBytes))
+  return new Ed25519PrivateKey(privateKeyBytes, publicKeyBytes)
 }
 
 function unmarshalEd25519PublicKey (bytes) {
@@ -115,52 +102,14 @@ function unmarshalEd25519PublicKey (bytes) {
   return new Ed25519PublicKey(bytes)
 }
 
-function generateKeyPair (_bits, cb) {
-  if (cb === undefined && typeof _bits === 'function') {
-    cb = _bits
-  }
-
-  crypto.generateKey((err, keys) => {
-    if (err) {
-      return cb(err)
-    }
-    let privkey
-    try {
-      privkey = new Ed25519PrivateKey(keys.secretKey, keys.publicKey)
-    } catch (err) {
-      cb(err)
-      return
-    }
-
-    cb(null, privkey)
-  })
+async function generateKeyPair () {
+  const { secretKey, publicKey } = await crypto.generateKey()
+  return new Ed25519PrivateKey(secretKey, publicKey)
 }
 
-function generateKeyPairFromSeed (seed, _bits, cb) {
-  if (cb === undefined && typeof _bits === 'function') {
-    cb = _bits
-  }
-
-  crypto.generateKeyFromSeed(seed, (err, keys) => {
-    if (err) {
-      return cb(err)
-    }
-    let privkey
-    try {
-      privkey = new Ed25519PrivateKey(keys.secretKey, keys.publicKey)
-    } catch (err) {
-      cb(err)
-      return
-    }
-
-    cb(null, privkey)
-  })
-}
-
-function ensure (cb) {
-  if (typeof cb !== 'function') {
-    throw new Error('callback is required')
-  }
+async function generateKeyPairFromSeed (seed) {
+  const { secretKey, publicKey } = await crypto.generateKeyFromSeed(seed)
+  return new Ed25519PrivateKey(secretKey, publicKey)
 }
 
 function ensureKey (key, length) {

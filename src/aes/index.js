@@ -7,24 +7,24 @@ const CIPHER_MODES = {
   32: 'aes-256-ctr'
 }
 
-exports.create = function (key, iv, callback) {
+exports.create = async function (key, iv) { // eslint-disable-line require-await
   const mode = CIPHER_MODES[key.length]
   if (!mode) {
-    return callback(new Error('Invalid key length'))
+    throw new Error('Invalid key length')
   }
 
   const cipher = ciphers.createCipheriv(mode, key, iv)
   const decipher = ciphers.createDecipheriv(mode, key, iv)
 
   const res = {
-    encrypt (data, cb) {
-      cb(null, cipher.update(data))
+    async encrypt (data) { // eslint-disable-line require-await
+      return cipher.update(data)
     },
 
-    decrypt (data, cb) {
-      cb(null, decipher.update(data))
+    async decrypt (data) { // eslint-disable-line require-await
+      return decipher.update(data)
     }
   }
 
-  callback(null, res)
+  return res
 }

@@ -27,27 +27,27 @@ exports.keyStretcher = require('./key-stretcher')
 exports.generateEphemeralKeyPair = require('./ephemeral-keys')
 
 // Generates a keypair of the given type and bitsize
-exports.generateKeyPair = (type, bits, cb) => {
+exports.generateKeyPair = async (type, bits) => { // eslint-disable-line require-await
   let key = supportedKeys[type.toLowerCase()]
 
   if (!key) {
-    return cb(new Error('invalid or unsupported key type'))
+    throw new Error('invalid or unsupported key type')
   }
 
-  key.generateKeyPair(bits, cb)
+  return key.generateKeyPair(bits)
 }
 
 // Generates a keypair of the given type and bitsize
 // seed is a 32 byte uint8array
-exports.generateKeyPairFromSeed = (type, seed, bits, cb) => {
+exports.generateKeyPairFromSeed = async (type, seed, bits) => { // eslint-disable-line require-await
   let key = supportedKeys[type.toLowerCase()]
   if (!key) {
-    return cb(new Error('invalid or unsupported key type'))
+    throw new Error('invalid or unsupported key type')
   }
   if (type.toLowerCase() !== 'ed25519') {
-    return cb(new Error('Seed key derivation is unimplemented for RSA or secp256k1'))
+    throw new Error('Seed key derivation is unimplemented for RSA or secp256k1')
   }
-  key.generateKeyPairFromSeed(seed, bits, cb)
+  return key.generateKeyPairFromSeed(seed, bits)
 }
 
 // Converts a protobuf serialized public key into its
@@ -84,29 +84,23 @@ exports.marshalPublicKey = (key, type) => {
 
 // Converts a protobuf serialized private key into its
 // representative object
-exports.unmarshalPrivateKey = (buf, callback) => {
-  let decoded
-  try {
-    decoded = keysPBM.PrivateKey.decode(buf)
-  } catch (err) {
-    return callback(err)
-  }
-
+exports.unmarshalPrivateKey = async (buf) => { // eslint-disable-line require-await
+  const decoded = keysPBM.PrivateKey.decode(buf)
   const data = decoded.Data
 
   switch (decoded.Type) {
     case keysPBM.KeyType.RSA:
-      return supportedKeys.rsa.unmarshalRsaPrivateKey(data, callback)
+      return supportedKeys.rsa.unmarshalRsaPrivateKey(data)
     case keysPBM.KeyType.Ed25519:
-      return supportedKeys.ed25519.unmarshalEd25519PrivateKey(data, callback)
+      return supportedKeys.ed25519.unmarshalEd25519PrivateKey(data)
     case keysPBM.KeyType.Secp256k1:
       if (supportedKeys.secp256k1) {
-        return supportedKeys.secp256k1.unmarshalSecp256k1PrivateKey(data, callback)
+        return supportedKeys.secp256k1.unmarshalSecp256k1PrivateKey(data)
       } else {
-        return callback(new Error('secp256k1 support requires libp2p-crypto-secp256k1 package'))
+        throw new Error('secp256k1 support requires libp2p-crypto-secp256k1 package')
       }
     default:
-      callback(new Error('invalid or unsupported key type'))
+      throw new Error('invalid or unsupported key type')
   }
 }
 
@@ -120,16 +114,12 @@ exports.marshalPrivateKey = (key, type) => {
   return key.bytes
 }
 
-exports.import = (pem, password, callback) => {
-  try {
-    const key = forge.pki.decryptRsaPrivateKey(pem, password)
-    if (key === null) {
-      throw new Error('Cannot read the key, most likely the password is wrong or not a RSA key')
-    }
-    let der = forge.asn1.toDer(forge.pki.privateKeyToAsn1(key))
-    der = Buffer.from(der.getBytes(), 'binary')
-    return supportedKeys.rsa.unmarshalRsaPrivateKey(der, callback)
-  } catch (err) {
-    callback(err)
+exports.import = async (pem, password) => { // eslint-disable-line require-await
+  const key = forge.pki.decryptRsaPrivateKey(pem, password)
+  if (key === null) {
+    throw new Error('Cannot read the key, most likely the password is wrong or not a RSA key')
   }
+  let der = forge.asn1.toDer(forge.pki.privateKeyToAsn1(key))
+  der = Buffer.from(der.getBytes(), 'binary')
+  return supportedKeys.rsa.unmarshalRsaPrivateKey(der)
 }
