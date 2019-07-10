@@ -88,7 +88,7 @@ describe('RSA', function () {
 
   describe('export and import', () => {
     it('password protected PKCS #8', async () => {
-      const pem = await key.export('pkcs-8', 'my secret')
+      const pem = await key.export('my secret', 'pkcs-8')
       expect(pem).to.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')
       const clone = await crypto.keys.import(pem, 'my secret')
       expect(clone).to.exist()

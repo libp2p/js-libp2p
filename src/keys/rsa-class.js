@@ -103,16 +103,11 @@ class RsaPrivateKey {
   /**
    * Exports the key into a password protected PEM format
    *
-   * @param {string} [format] - Defaults to 'pkcs-8'.
    * @param {string} password - The password to read the encrypted PEM
+   * @param {string} [format] - Defaults to 'pkcs-8'.
    * @returns {KeyInfo}
    */
-  async export (format, password) { // eslint-disable-line require-await
-    if (password == null) {
-      password = format
-      format = 'pkcs-8'
-    }
-
+  async export (password, format = 'pkcs-8') { // eslint-disable-line require-await
     let pem = null
 
     const buffer = new forge.util.ByteBuffer(this.marshal())
