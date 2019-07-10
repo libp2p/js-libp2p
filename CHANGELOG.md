@@ -1,3 +1,26 @@
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/libp2p/js-libp2p-crypto-secp256k1/compare/v0.3.1...v0.4.0) (2019-07-10)
+
+
+### Features
+
+* use async await ([#18](https://github.com/libp2p/js-libp2p-crypto-secp256k1/issues/18)) ([1974eb9](https://github.com/libp2p/js-libp2p-crypto-secp256k1/commit/1974eb9))
+
+
+### BREAKING CHANGES
+
+* Callback support has been dropped in favor of async/await.
+
+* feat: use async/await
+
+This PR changes this module to remove callbacks and use async/await. The API is unchanged aside from the obvious removal of the `callback` parameter.
+
+refs https://github.com/ipfs/js-ipfs/issues/1670
+
+* fix: use latest multihashing-async as it is all promises now
+
+
+
 <a name="0.3.1"></a>
 ## [0.3.1](https://github.com/libp2p/js-libp2p-crypto-secp256k1/compare/v0.2.2...v0.3.1) (2019-07-10)
 
