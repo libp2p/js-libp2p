@@ -96,7 +96,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
   }
 
   function unmarshalSecp256k1PrivateKey (bytes, callback) {
-    callback(null, new Secp256k1PrivateKey(bytes), null)
+    callback(null, new Secp256k1PrivateKey(bytes))
   }
 
   function unmarshalSecp256k1PublicKey (bytes) {
