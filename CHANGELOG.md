@@ -1,3 +1,35 @@
+<a name="0.17.0"></a>
+# [0.17.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.16.1...v0.17.0) (2019-07-11)
+
+
+### Bug Fixes
+
+* **deps:** update to ursa-optiona@0.10 ([26b6217](https://github.com/libp2p/js-libp2p-crypto/commit/26b6217))
+* fix links in README ([#148](https://github.com/libp2p/js-libp2p-crypto/issues/148)) ([5cd0e8c](https://github.com/libp2p/js-libp2p-crypto/commit/5cd0e8c))
+* put optional args last for key export ([#154](https://github.com/libp2p/js-libp2p-crypto/issues/154)) ([d675670](https://github.com/libp2p/js-libp2p-crypto/commit/d675670))
+
+
+### Features
+
+* refactor to use async/await ([#131](https://github.com/libp2p/js-libp2p-crypto/issues/131)) ([ad71072](https://github.com/libp2p/js-libp2p-crypto/commit/ad71072))
+
+
+### BREAKING CHANGES
+
+* key export arguments are now swapped so that the optional format is last
+* API refactored to use async/await
+
+feat: WIP use async await
+fix: passing tests
+chore: update travis node.js versions
+fix: skip ursa optional tests on windows
+fix: benchmarks
+docs: update docs
+fix: remove broken and intested private key decrypt
+chore: update deps
+
+
+
 <a name="0.16.1"></a>
 ## [0.16.1](https://github.com/libp2p/js-libp2p-crypto/compare/v0.16.0...v0.16.1) (2019-02-26)
 
