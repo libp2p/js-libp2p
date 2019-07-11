@@ -62,10 +62,10 @@ describe('.pubsub', () => {
       expect(2).checks(done)
 
       let nodes
-      const data = Buffer.from('test')
+      const data = 'test'
       const handler = (msg) => {
         // verify the data is correct and mark the expect
-        expect(msg.data).to.eql(data).mark()
+        expect(msg.data.toString()).to.eql(data).mark()
       }
 
       series([
@@ -80,10 +80,6 @@ describe('.pubsub', () => {
         (cb) => setTimeout(cb, 500),
         // publish on the second
         (cb) => nodes[1].pubsub.publish('pubsub', data, cb),
-        // ls subscripts
-        (cb) => nodes[1].pubsub.ls(cb),
-        // get subscribed peers
-        (cb) => nodes[1].pubsub.peers('pubsub', cb),
         // Wait a moment before unsubscribing
         (cb) => setTimeout(cb, 500),
         // unsubscribe on the first
@@ -118,6 +114,10 @@ describe('.pubsub', () => {
         (cb) => setTimeout(cb, 500),
         // publish on the second
         (cb) => nodes[1].pubsub.publish('pubsub', data, cb),
+        // ls subscripts
+        (cb) => nodes[1].pubsub.ls(cb),
+        // get subscribed peers
+        (cb) => nodes[1].pubsub.peers('pubsub', cb),
         // Wait a moment before unsubscribing
         (cb) => setTimeout(cb, 500),
         // unsubscribe from all
@@ -136,7 +136,7 @@ describe('.pubsub', () => {
         expect(err).to.not.exist().mark()
       })
     })
-    it('publish should fail if data is not a buffer', (done) => {
+    it('publish should fail if data is not a buffer nor a string', (done) => {
       createNode('/ip4/0.0.0.0/tcp/0', {
         config: {
           peerDiscovery: {
@@ -154,9 +154,9 @@ describe('.pubsub', () => {
         node.start((err) => {
           expect(err).to.not.exist()
 
-          node.pubsub.publish('pubsub', 'datastr', (err) => {
+          node.pubsub.publish('pubsub', 10, (err) => {
             expect(err).to.exist()
-            expect(err.code).to.equal('ERR_DATA_IS_NOT_A_BUFFER')
+            expect(err.code).to.equal('ERR_DATA_IS_NOT_VALID')
 
             done()
           })
@@ -193,10 +193,6 @@ describe('.pubsub', () => {
         (cb) => setTimeout(cb, 500),
         // publish on the second
         (cb) => nodes[1].pubsub.publish('pubsub', data, cb),
-        // ls subscripts
-        (cb) => nodes[1].pubsub.ls(cb),
-        // get subscribed peers
-        (cb) => nodes[1].pubsub.peers('pubsub', cb),
         // Wait a moment before unsubscribing
         (cb) => setTimeout(cb, 500),
         // unsubscribe on the first
@@ -278,9 +274,9 @@ describe('.pubsub', () => {
         node.start((err) => {
           expect(err).to.not.exist()
 
-          node.pubsub.publish('pubsub', 'datastr', (err) => {
+          node.pubsub.publish('pubsub', 10, (err) => {
             expect(err).to.exist()
-            expect(err.code).to.equal('ERR_DATA_IS_NOT_A_BUFFER')
+            expect(err.code).to.equal('ERR_DATA_IS_NOT_VALID')
 
             done()
           })
