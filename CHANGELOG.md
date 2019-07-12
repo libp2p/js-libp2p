@@ -1,3 +1,13 @@
+<a name="0.25.5"></a>
+## [0.25.5](https://github.com/libp2p/js-libp2p/compare/v0.25.4...v0.25.5) (2019-07-12)
+
+
+### Bug Fixes
+
+* peer routing for delegate router ([#377](https://github.com/libp2p/js-libp2p/issues/377)) ([905c911](https://github.com/libp2p/js-libp2p/commit/905c911)), closes [/github.com/libp2p/go-libp2p-core/blob/6e566d10f4a5447317a66d64c7459954b969bdab/routing/query.go#L15-L24](https://github.com//github.com/libp2p/go-libp2p-core/blob/6e566d10f4a5447317a66d64c7459954b969bdab/routing/query.go/issues/L15-L24)
+
+
+
 <a name="0.25.4"></a>
 ## [0.25.4](https://github.com/libp2p/js-libp2p/compare/v0.25.3...v0.25.4) (2019-06-07)
 
