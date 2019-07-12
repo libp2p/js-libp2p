@@ -251,7 +251,7 @@ describe('.contentRouting', () => {
             timeout: '1000ms',
             'stream-channels': true
           })
-          .reply(200, `{"Extra":"","ID":"QmWKqWXCtRXEeCQTo3FoZ7g4AfnGiauYYiczvNxFCHicbB","Responses":[{"Addrs":["/ip4/0.0.0.0/tcp/0"],"ID":"${provider}"}],"Type":1}\n`, [
+          .reply(200, `{"Extra":"","ID":"QmWKqWXCtRXEeCQTo3FoZ7g4AfnGiauYYiczvNxFCHicbB","Responses":[{"Addrs":["/ip4/0.0.0.0/tcp/0"],"ID":"${provider}"}],"Type":4}\n`, [
             'Content-Type', 'application/json',
             'X-Chunked-Output', '1'
           ])
