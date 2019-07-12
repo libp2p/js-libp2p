@@ -80,6 +80,13 @@ describe('RSA', function () {
     expect(valid).to.be.eql(true)
   })
 
+  it('encrypt and decrypt', async () => {
+    const data = Buffer.from('hello world')
+    const enc = await key.public.encrypt(data)
+    const dec = await key.decrypt(enc)
+    expect(dec).to.be.eql(data)
+  })
+
   it('fails to verify for different data', async () => {
     const data = Buffer.from('hello world')
     const sig = await key.sign(data)
