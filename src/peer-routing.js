@@ -47,7 +47,7 @@ module.exports = (node) => {
       })
 
       tryEach(tasks, (err, results) => {
-        if (err && err.code !== 'NOT_FOUND') {
+        if (err) {
           return callback(err)
         }
         results = results || []
