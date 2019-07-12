@@ -6,8 +6,8 @@ const promisify = require('promisify-es6')
 
 const errCode = require('err-code')
 
-module.exports = (node) => {
-  const pubsub = node._pubsub
+module.exports = (node, Pubsub) => {
+  const pubsub = new Pubsub(node)
 
   return {
     /**
@@ -141,6 +141,10 @@ module.exports = (node) => {
 
     setMaxListeners (n) {
       return pubsub.setMaxListeners(n)
-    }
+    },
+
+    start: (cb) => pubsub.start(cb),
+
+    stop: (cb) => pubsub.stop(cb)
   }
 }

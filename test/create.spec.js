@@ -32,7 +32,7 @@ describe('libp2p creation', () => {
       const sw = node._switch
       const cm = node.connectionManager
       const dht = node._dht
-      const pub = node._pubsub
+      const pub = node.pubsub
 
       sinon.spy(sw, 'start')
       sinon.spy(cm, 'start')
