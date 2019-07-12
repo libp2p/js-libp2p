@@ -120,3 +120,47 @@ function derivePublicFromPrivate (jwKey) {
     ['verify']
   )
 }
+
+exports.encrypt = async function (key, msg) {
+  key = Object.assign({}, key)
+  key.key_ops = ['encrypt']
+
+  return webcrypto.subtle.importKey(
+    'jwk',
+    key,
+    {
+      name: 'RSA-OAEP',
+      hash: { name: 'SHA-256' }
+    },
+    false,
+    ['encrypt']
+  ).then((publicKey) => {
+    return webcrypto.subtle.encrypt(
+      { name: 'RSA-OEAP' },
+      publicKey,
+      Uint8Array.from(msg)
+    )
+  }).then((enc) => Buffer.from(enc))
+}
+
+exports.decrypt = async function (key, msg) {
+  key = Object.assign({}, key)
+  key.key_ops = ['decrypt']
+
+  return webcrypto.subtle.importKey(
+    'jwk',
+    key,
+    {
+      name: 'RSA-OAEP',
+      hash: { name: 'SHA-256' }
+    },
+    false,
+    ['decrypt']
+  ).then((privateKey) => {
+    return webcrypto.subtle.decrypt(
+      { name: 'RSA-OAEP' },
+      privateKey,
+      Uint8Array.from(msg)
+    )
+  }).then((dec) => Buffer.from(dec))
+}
