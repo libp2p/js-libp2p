@@ -1,3 +1,18 @@
+<a name="0.10.0"></a>
+# [0.10.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.9.7...v0.10.0) (2019-07-15)
+
+
+### Code Refactoring
+
+* callbacks -> async/await ([#89](https://github.com/libp2p/js-libp2p-bootstrap/issues/89)) ([77cfc28](https://github.com/libp2p/js-libp2p-bootstrap/commit/77cfc28))
+
+
+### BREAKING CHANGES
+
+* All places in the API that used callbacks are now replaced with async/await
+
+
+
 <a name="0.9.7"></a>
 ## [0.9.7](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.9.6...v0.9.7) (2019-01-10)
 
