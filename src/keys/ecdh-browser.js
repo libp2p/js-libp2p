@@ -1,7 +1,7 @@
 'use strict'
 
 const errcode = require('err-code')
-const webcrypto = require('../webcrypto.js')
+const webcrypto = require('../webcrypto')
 const BN = require('asn1.js').bignum
 const { toBase64, toBn } = require('../util')
 const validateCurveType = require('./validate-curve-type')
@@ -14,8 +14,7 @@ const bits = {
 
 exports.generateEphmeralKeyPair = async function (curve) {
   validateCurveType(Object.keys(bits), curve)
-
-  const pair = await webcrypto.subtle.generateKey(
+  const pair = await webcrypto.get().subtle.generateKey(
     {
       name: 'ECDH',
       namedCurve: curve
@@ -29,7 +28,7 @@ exports.generateEphmeralKeyPair = async function (curve) {
     let privateKey
 
     if (forcePrivate) {
-      privateKey = await webcrypto.subtle.importKey(
+      privateKey = await webcrypto.get().subtle.importKey(
         'jwk',
         unmarshalPrivateKey(curve, forcePrivate),
         {
@@ -44,7 +43,7 @@ exports.generateEphmeralKeyPair = async function (curve) {
     }
 
     const keys = [
-      await webcrypto.subtle.importKey(
+      await webcrypto.get().subtle.importKey(
         'jwk',
         unmarshalPublicKey(curve, theirPub),
         {
@@ -57,7 +56,7 @@ exports.generateEphmeralKeyPair = async function (curve) {
       privateKey
     ]
 
-    return Buffer.from(await webcrypto.subtle.deriveBits(
+    return Buffer.from(await webcrypto.get().subtle.deriveBits(
       {
         name: 'ECDH',
         namedCurve: curve,
@@ -68,7 +67,7 @@ exports.generateEphmeralKeyPair = async function (curve) {
     ))
   }
 
-  const publicKey = await webcrypto.subtle.exportKey('jwk', pair.publicKey)
+  const publicKey = await webcrypto.get().subtle.exportKey('jwk', pair.publicKey)
 
   return {
     key: marshalPublicKey(publicKey),

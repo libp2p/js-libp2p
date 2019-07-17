@@ -1,6 +1,6 @@
 'use strict'
 
-const webcrypto = require('../webcrypto.js')
+const webcrypto = require('../webcrypto')
 const lengths = require('./lengths')
 
 const hashTypes = {
@@ -10,13 +10,13 @@ const hashTypes = {
 }
 
 const sign = async (key, data) => {
-  return Buffer.from(await webcrypto.subtle.sign({ name: 'HMAC' }, key, data))
+  return Buffer.from(await webcrypto.get().subtle.sign({ name: 'HMAC' }, key, data))
 }
 
 exports.create = async function (hashType, secret) {
   const hash = hashTypes[hashType]
 
-  const key = await webcrypto.subtle.importKey(
+  const key = await webcrypto.get().subtle.importKey(
     'raw',
     secret,
     {
