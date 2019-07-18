@@ -6,6 +6,7 @@ const debug = require('debug')
 const log = debug('libp2p')
 log.error = debug('libp2p:error')
 const errCode = require('err-code')
+const promisify = require('promisify-es6')
 
 const each = require('async/each')
 const series = require('async/series')
@@ -186,6 +187,13 @@ class Libp2p extends EventEmitter {
     })
 
     this._peerDiscovered = this._peerDiscovered.bind(this)
+
+    // promisify all instance methods
+    ;['start', 'stop', 'dial', 'dialProtocol', 'dialFSM', 'hangUp', 'ping'].forEach(method => {
+      this[method] = promisify(this[method], {
+        context: this
+      })
+    })
   }
 
   /**
@@ -557,7 +565,7 @@ module.exports = Libp2p
  * @param {function(Error, Libp2p)} callback
  * @returns {void}
  */
-module.exports.createLibp2p = (options, callback) => {
+module.exports.createLibp2p = promisify((options, callback) => {
   if (options.peerInfo) {
     return nextTick(callback, null, new Libp2p(options))
   }
@@ -566,4 +574,4 @@ module.exports.createLibp2p = (options, callback) => {
     options.peerInfo = peerInfo
     callback(null, new Libp2p(options))
   })
-}
+})

@@ -2,6 +2,7 @@
 
 const tryEach = require('async/tryEach')
 const errCode = require('err-code')
+const promisify = require('promisify-es6')
 
 module.exports = (node) => {
   const routers = node._modules.peerRouting || []
@@ -21,7 +22,7 @@ module.exports = (node) => {
      * @param {function(Error, Result<Array>)} callback
      * @returns {void}
      */
-    findPeer: (id, options, callback) => {
+    findPeer: promisify((id, options, callback) => {
       if (typeof options === 'function') {
         callback = options
         options = {}
@@ -53,6 +54,6 @@ module.exports = (node) => {
         results = results || []
         callback(null, results)
       })
-    }
+    })
   }
 }

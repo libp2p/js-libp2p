@@ -3,6 +3,7 @@
 const nextTick = require('async/nextTick')
 const { messages, codes } = require('./errors')
 const FloodSub = require('libp2p-floodsub')
+const promisify = require('promisify-es6')
 
 const errCode = require('err-code')
 
@@ -12,7 +13,7 @@ module.exports = (node) => {
   node._floodSub = floodSub
 
   return {
-    subscribe: (topic, options, handler, callback) => {
+    subscribe: promisify((topic, options, handler, callback) => {
       if (typeof options === 'function') {
         callback = handler
         handler = options
@@ -33,13 +34,19 @@ module.exports = (node) => {
       }
 
       subscribe(callback)
-    },
+    }),
 
-    unsubscribe: (topic, handler, callback) => {
+    unsubscribe: promisify((topic, handler, callback) => {
       if (!node.isStarted() && !floodSub.started) {
         return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
       }
-      if (!handler && !callback) {
+      if (!callback) {
+        // we will always be passed a callback because of promisify. If we weren't passed one
+        // really it means no handler was passed..
+        callback = handler
+        handler = null
+      }
+      if (!handler) {
         floodSub.removeAllListeners(topic)
       } else {
         floodSub.removeListener(topic, handler)
@@ -52,9 +59,9 @@ module.exports = (node) => {
       if (typeof callback === 'function') {
         nextTick(() => callback())
       }
-    },
+    }),
 
-    publish: (topic, data, callback) => {
+    publish: promisify((topic, data, callback) => {
       if (!node.isStarted() && !floodSub.started) {
         return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
       }
@@ -64,9 +71,9 @@ module.exports = (node) => {
       }
 
       floodSub.publish(topic, data, callback)
-    },
+    }),
 
-    ls: (callback) => {
+    ls: promisify((callback) => {
       if (!node.isStarted() && !floodSub.started) {
         return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
       }
@@ -74,9 +81,9 @@ module.exports = (node) => {
       const subscriptions = Array.from(floodSub.subscriptions)
 
       nextTick(() => callback(null, subscriptions))
-    },
+    }),
 
-    peers: (topic, callback) => {
+    peers: promisify((topic, callback) => {
       if (!node.isStarted() && !floodSub.started) {
         return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
       }
@@ -91,7 +98,7 @@ module.exports = (node) => {
         .map((peer) => peer.info.id.toB58String())
 
       nextTick(() => callback(null, peers))
-    },
+    }),
 
     setMaxListeners (n) {
       return floodSub.setMaxListeners(n)

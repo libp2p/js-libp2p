@@ -3,6 +3,7 @@
 const tryEach = require('async/tryEach')
 const parallel = require('async/parallel')
 const errCode = require('err-code')
+const promisify = require('promisify-es6')
 
 module.exports = (node) => {
   const routers = node._modules.contentRouting || []
@@ -24,7 +25,7 @@ module.exports = (node) => {
      * @param {function(Error, Result<Array>)} callback
      * @returns {void}
      */
-    findProviders: (key, options, callback) => {
+    findProviders: promisify((key, options, callback) => {
       if (typeof options === 'function') {
         callback = options
         options = {}
@@ -60,7 +61,7 @@ module.exports = (node) => {
         results = results || []
         callback(null, results)
       })
-    },
+    }),
 
     /**
      * Iterates over all content routers in parallel to notify it is
@@ -70,7 +71,7 @@ module.exports = (node) => {
      * @param {function(Error)} callback
      * @returns {void}
      */
-    provide: (key, callback) => {
+    provide: promisify((key, callback) => {
       if (!routers.length) {
         return callback(errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE'))
       }
@@ -78,6 +79,6 @@ module.exports = (node) => {
       parallel(routers.map((router) => {
         return (cb) => router.provide(key, cb)
       }), callback)
-    }
+    })
   }
 }
