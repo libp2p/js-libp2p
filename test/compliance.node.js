@@ -8,7 +8,7 @@ const WS = require('../src')
 describe('compliance', () => {
   tests({
     setup (callback) {
-      let ws = new WS()
+      const ws = new WS()
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
         multiaddr('/ip4/127.0.0.1/tcp/9092/wss'),

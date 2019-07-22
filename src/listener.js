@@ -40,7 +40,7 @@ module.exports = (options, handler) => {
       return callback(new Error('Listener is not ready yet'))
     }
 
-    let ipfsId = listeningMultiaddr.getPeerId()
+    const ipfsId = listeningMultiaddr.getPeerId()
 
     // Because TCP will only return the IPv6 version
     // we need to capture from the passed multiaddr

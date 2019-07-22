@@ -48,7 +48,7 @@
     "pull-ws": "hugomrdias/pull-ws#fix/bundle-size"
   },
   "devDependencies": {
-    "aegir": "^18.2.1",
+    "aegir": "^20.0.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
     "interface-transport": "~0.3.7",
