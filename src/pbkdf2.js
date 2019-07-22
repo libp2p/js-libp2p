@@ -2,6 +2,7 @@
 
 const forgePbkdf2 = require('node-forge/lib/pbkdf2')
 const forgeUtil = require('node-forge/lib/util')
+const errcode = require('err-code')
 
 /**
  * Maps an IPFS hash name to its node-forge equivalent.
@@ -29,7 +30,8 @@ const hashName = {
 function pbkdf2 (password, salt, iterations, keySize, hash) {
   const hasher = hashName[hash]
   if (!hasher) {
-    throw new Error(`Hash '${hash}' is unknown or not supported`)
+    const types = Object.keys(hashName).join(' / ')
+    throw errcode(new Error(`Hash '${hash}' is unknown or not supported. Must be ${types}`), 'ERR_UNSUPPORTED_HASH_TYPE')
   }
   const dek = forgePbkdf2(
     password,

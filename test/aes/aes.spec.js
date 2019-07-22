@@ -6,6 +6,7 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
+const { expectErrCode } = require('../util')
 
 const crypto = require('../../src')
 const fixtures = require('./../fixtures/aes')
@@ -83,6 +84,12 @@ describe('AES-CTR', () => {
         expect(decrypted).to.eql(input)
       }
     })
+  })
+
+  it('checks key length', () => {
+    const key = Buffer.alloc(5)
+    const iv = Buffer.alloc(16)
+    return expectErrCode(crypto.aes.create(key, iv), 'ERR_INVALID_KEY_LENGTH')
   })
 })
 

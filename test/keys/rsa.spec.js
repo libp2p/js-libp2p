@@ -7,6 +7,7 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 chai.use(require('chai-string'))
+const { expectErrCode } = require('../util')
 
 const crypto = require('../../src')
 const rsa = crypto.keys.supportedKeys.rsa
@@ -112,9 +113,13 @@ describe('RSA', function () {
       }
       throw new Error('Expected error to be thrown')
     })
+
+    it('handles invalid export type', () => {
+      return expectErrCode(key.export('secret', 'invalid-type'), 'ERR_INVALID_EXPORT_FORMAT')
+    })
   })
 
-  describe('returns error via cb instead of crashing', () => {
+  describe('throws error instead of crashing', () => {
     const key = crypto.keys.unmarshalPublicKey(fixtures.verify.publicKey)
     testGarbage.doTests('key.verify', key.verify.bind(key), 2, true)
     testGarbage.doTests('crypto.keys.unmarshalPrivateKey', crypto.keys.unmarshalPrivateKey.bind(crypto.keys))

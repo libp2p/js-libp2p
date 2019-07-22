@@ -1,5 +1,6 @@
 'use strict'
 
+const errcode = require('err-code')
 const hmac = require('../hmac')
 
 const cipherMap = {
@@ -23,11 +24,12 @@ module.exports = async (cipherType, hash, secret) => {
   const cipher = cipherMap[cipherType]
 
   if (!cipher) {
-    throw new Error('unkown cipherType passed')
+    const allowed = Object.keys(cipherMap).join(' / ')
+    throw errcode(new Error(`unknown cipher type '${cipherType}'. Must be ${allowed}`), 'ERR_INVALID_CIPHER_TYPE')
   }
 
   if (!hash) {
-    throw new Error('unkown hashType passed')
+    throw errcode(new Error(`missing hash type`), 'ERR_MISSING_HASH_TYPE')
   }
 
   const cipherKeySize = cipher.keySize

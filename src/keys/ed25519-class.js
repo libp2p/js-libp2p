@@ -3,6 +3,7 @@
 const multihashing = require('multihashing-async')
 const protobuf = require('protons')
 const bs58 = require('bs58')
+const errcode = require('err-code')
 
 const crypto = require('./ed25519')
 const pbm = protobuf(require('./keys.proto'))
@@ -49,10 +50,6 @@ class Ed25519PrivateKey {
   }
 
   get public () {
-    if (!this._publicKey) {
-      throw new Error('public key not provided')
-    }
-
     return new Ed25519PublicKey(this._publicKey)
   }
 
@@ -117,7 +114,7 @@ function ensureKey (key, length) {
     key = new Uint8Array(key)
   }
   if (!(key instanceof Uint8Array) || key.length !== length) {
-    throw new Error('Key must be a Uint8Array or Buffer of length ' + length)
+    throw errcode(new Error('Key must be a Uint8Array or Buffer of length ' + length), 'ERR_INVALID_KEY_TYPE')
   }
   return key
 }

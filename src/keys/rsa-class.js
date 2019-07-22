@@ -3,6 +3,7 @@
 const multihashing = require('multihashing-async')
 const protobuf = require('protons')
 const bs58 = require('bs58')
+const errcode = require('err-code')
 
 const crypto = require('./rsa')
 const pbm = protobuf(require('./keys.proto'))
@@ -61,7 +62,7 @@ class RsaPrivateKey {
 
   get public () {
     if (!this._publicKey) {
-      throw new Error('public key not provided')
+      throw errcode(new Error('public key not provided'), 'ERR_PUBKEY_NOT_PROVIDED')
     }
 
     return new RsaPublicKey(this._publicKey)
@@ -123,7 +124,7 @@ class RsaPrivateKey {
       }
       pem = forge.pki.encryptRsaPrivateKey(privateKey, password, options)
     } else {
-      throw new Error(`Unknown export format '${format}'`)
+      throw errcode(new Error(`Unknown export format '${format}'. Must be pkcs-8`), 'ERR_INVALID_EXPORT_FORMAT')
     }
 
     return pem

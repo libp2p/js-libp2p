@@ -6,6 +6,7 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
+const { expectErrCode } = require('../util')
 const crypto = require('../../src')
 const fixtures = require('../fixtures/go-stretch-key')
 
@@ -29,6 +30,14 @@ describe('keyStretcher', () => {
           expect(keys.k2).to.exist()
         })
       })
+    })
+
+    it('handles invalid cipher type', () => {
+      return expectErrCode(crypto.keys.keyStretcher('invalid-cipher', 'SHA256', 'secret'), 'ERR_INVALID_CIPHER_TYPE')
+    })
+
+    it('handles missing hash type', () => {
+      return expectErrCode(crypto.keys.keyStretcher('AES-128', '', 'secret'), 'ERR_MISSING_HASH_TYPE')
     })
   })
 

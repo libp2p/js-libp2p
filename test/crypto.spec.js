@@ -8,6 +8,7 @@ const expect = chai.expect
 chai.use(dirtyChai)
 const crypto = require('../src')
 const fixtures = require('./fixtures/go-key-rsa')
+const { expectErrCode } = require('./util')
 
 describe('libp2p-crypto', function () {
   this.timeout(20 * 1000)
@@ -36,6 +37,15 @@ describe('libp2p-crypto', function () {
 
     expect(key2.equals(key)).to.be.eql(true)
     expect(key2.public.equals(key.public)).to.be.eql(true)
+  })
+
+  it('generateKeyPair', () => {
+    return expectErrCode(crypto.keys.generateKeyPair('invalid-key-type', 512), 'ERR_UNSUPPORTED_KEY_TYPE')
+  })
+
+  it('generateKeyPairFromSeed', () => {
+    var seed = crypto.randomBytes(32)
+    return expectErrCode(crypto.keys.generateKeyPairFromSeed('invalid-key-type', seed, 512), 'ERR_UNSUPPORTED_KEY_TYPE')
   })
 
   // marshalled keys seem to be slightly different
@@ -93,7 +103,8 @@ describe('libp2p-crypto', function () {
     })
 
     it('throws on invalid hash name', () => {
-      expect(() => crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'shaX-xxx')).to.throw()
+      const fn = () => crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'shaX-xxx')
+      expect(fn).to.throw().with.property('code', 'ERR_UNSUPPORTED_HASH_TYPE')
     })
   })
 

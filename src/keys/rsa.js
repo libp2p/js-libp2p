@@ -1,6 +1,7 @@
 'use strict'
 
 const crypto = require('crypto')
+const errcode = require('err-code')
 const randomBytes = require('../random-bytes')
 
 let keypair
@@ -40,7 +41,7 @@ exports.generateKey = async function (bits) { // eslint-disable-line require-awa
 // Takes a jwk key
 exports.unmarshalPrivateKey = async function (key) { // eslint-disable-line require-await
   if (!key) {
-    throw new Error('Key is invalid')
+    throw errcode(new Error('Missing key parameter'), 'ERR_MISSING_KEY')
   }
   return {
     privateKey: key,

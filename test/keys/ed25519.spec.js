@@ -116,7 +116,7 @@ describe('ed25519', function () {
     expect(valid).to.be.eql(false)
   })
 
-  describe('returns error via cb instead of crashing', () => {
+  describe('throws error instead of crashing', () => {
     const key = crypto.keys.unmarshalPublicKey(fixtures.verify.publicKey)
     testGarbage.doTests('key.verify', key.verify.bind(key), 2)
     testGarbage.doTests('crypto.keys.unmarshalPrivateKey', crypto.keys.unmarshalPrivateKey.bind(crypto.keys))

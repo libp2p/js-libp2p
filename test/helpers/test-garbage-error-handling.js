@@ -29,12 +29,4 @@ function doTests (fncName, fnc, num, skipBuffersAndStrings) {
   })
 }
 
-module.exports = (obj, fncs, num) => {
-  describe('returns error via cb instead of crashing', () => {
-    fncs.forEach(fnc => {
-      doTests(fnc, obj[fnc], num)
-    })
-  })
-}
-
-module.exports.doTests = doTests
+module.exports = { doTests }
