@@ -204,6 +204,8 @@ class Node extends Libp2p {
 
 ### API
 
+**IMPORTANT NOTE**: All the methods listed in the API section that take a callback are also now Promisified. Libp2p is migrating away from callbacks to async/await, and in a future release (that will be announced in advance), callback support will be removed entirely. You can follow progress of the async/await endeavor at https://github.com/ipfs/js-ipfs/issues/1670.
+
 #### Create a Node - `Libp2p.createLibp2p(options, callback)`
 
 > Behaves exactly like `new Libp2p(options)`, but doesn't require a PeerInfo. One will be generated instead
