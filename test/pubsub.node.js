@@ -233,12 +233,8 @@ describe('.pubsub', () => {
         (cb) => nodes[1].pubsub.publish('pubsub', data, cb),
         // Wait a moment before unsubscribing
         (cb) => setTimeout(cb, 500),
-        // unsubscribe on the first
-        (cb) => {
-          nodes[0].pubsub.unsubscribe('pubsub')
-          // Wait a moment to make sure the ubsubscribe-from-all worked
-          setTimeout(cb, 500)
-        },
+        // unsubscribe from all
+        (cb) => nodes[0].pubsub.unsubscribe('pubsub', null, cb),
         // Verify unsubscribed
         (cb) => {
           nodes[0].pubsub.ls((err, topics) => {

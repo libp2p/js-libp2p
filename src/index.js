@@ -123,7 +123,7 @@ class Libp2p extends EventEmitter {
     }
 
     // start pubsub
-    if (this._config.pubsub.enabled) {
+    if (this._modules.pubsub && this._config.pubsub.enabled !== false) {
       this.pubsub = pubsub(this, this._modules.pubsub)
     }
 
