@@ -1,3 +1,13 @@
+<a name="0.17.1"></a>
+## [0.17.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.17.0...v0.17.1) (2019-07-25)
+
+
+### Features
+
+* optional self emit ([#85](https://github.com/libp2p/js-libp2p-floodsub/issues/85)) ([a9e73d7](https://github.com/libp2p/js-libp2p-floodsub/commit/a9e73d7))
+
+
+
 <a name="0.17.0"></a>
 # [0.17.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.16.1...v0.17.0) (2019-07-08)
 
