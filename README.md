@@ -71,7 +71,18 @@ Floodsub emits two kinds of events:
 
 ## API
 
-See https://libp2p.github.io/js-libp2p-floodsub
+### Create a floodsub implementation
+
+```js
+const options = {…}
+const floodsub = new Floodsub(libp2pNode, options)
+```
+
+Options is an optional object with the following key-value pairs:
+
+* **`emitSelf`**: boolean identifying whether the node should emit to self on publish, in the event of the topic being subscribed (defaults to **true**).
+
+For more, see https://libp2p.github.io/js-libp2p-floodsub
 
 ## Contribute
 

@@ -21,10 +21,12 @@ const noop = () => {}
  */
 class FloodSub extends BaseProtocol {
   /**
-   * @param {Object} libp2p
+   * @param {Object} libp2p an instance of Libp2p
+   * @param {Object} [options]
+   * @param {boolean} options.emitSelf if publish should emit to self, if subscribed, defaults to true
    * @constructor
    */
-  constructor (libp2p) {
+  constructor (libp2p, options = {}) {
     super('libp2p:floodsub', multicodec, libp2p)
 
     /**
@@ -32,6 +34,14 @@ class FloodSub extends BaseProtocol {
      * @type {Set<string>}
      */
     this.subscriptions = new Set()
+
+    /**
+     * Pubsub options
+     */
+    this._options = {
+      emitSelf: true,
+      ...options
+    }
   }
 
   /**
@@ -203,8 +213,8 @@ class FloodSub extends BaseProtocol {
         topicIDs: topics
       }
 
-      // Emit to self if I'm interested
-      this._emitMessages(topics, [message])
+      // Emit to self if I'm interested and it is enabled
+      this._options.emitSelf && this._emitMessages(topics, [message])
 
       this._buildMessage(message, cb)
     }
