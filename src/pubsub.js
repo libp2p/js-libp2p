@@ -36,16 +36,33 @@ module.exports = (node) => {
       subscribe(callback)
     }),
 
+    /**
+     * Unsubscribes from a pubsub topic
+     *
+     * @param {string} topic
+     * @param {function|null} handler The handler to unsubscribe from
+     * @param {function} [callback] An optional callback
+     *
+     * @returns {Promise|void} A promise is returned if no callback is provided
+     *
+     * @example <caption>Unsubscribe a topic for all handlers</caption>
+     *
+     * // `null` must be passed until unsubscribe is no longer using promisify
+     * await libp2p.unsubscribe(topic, null)
+     *
+     * @example <caption>Unsubscribe a topic for 1 handler</caption>
+     *
+     * await libp2p.unsubscribe(topic, handler)
+     *
+     * @example <caption>Use a callback instead of the Promise api</caption>
+     *
+     * libp2p.unsubscribe(topic, handler, callback)
+     */
     unsubscribe: promisify((topic, handler, callback) => {
       if (!node.isStarted() && !floodSub.started) {
         return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
       }
-      if (!callback) {
-        // we will always be passed a callback because of promisify. If we weren't passed one
-        // really it means no handler was passed..
-        callback = handler
-        handler = null
-      }
+
       if (!handler) {
         floodSub.removeAllListeners(topic)
       } else {
@@ -57,8 +74,10 @@ module.exports = (node) => {
       }
 
       if (typeof callback === 'function') {
-        nextTick(() => callback())
+        return nextTick(() => callback())
       }
+
+      return Promise.resolve()
     }),
 
     publish: promisify((topic, data, callback) => {
