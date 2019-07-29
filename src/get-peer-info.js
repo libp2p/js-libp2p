@@ -4,12 +4,13 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
 const errCode = require('err-code')
+const promisify = require('promisify-es6')
 
 module.exports = (node) => {
   /*
    * Helper method to check the data type of peer and convert it to PeerInfo
    */
-  return function (peer, callback) {
+  return promisify(function (peer, callback) {
     let p
     // PeerInfo
     if (PeerInfo.isPeerInfo(peer)) {
@@ -62,5 +63,5 @@ module.exports = (node) => {
     }
 
     callback(null, p)
-  }
+  })
 }

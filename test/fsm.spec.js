@@ -60,9 +60,9 @@ describe('libp2p state machine (fsm)', () => {
         node.once('stop', done)
 
         // stop the stopped node
-        node.stop()
+        node.stop(() => {})
       })
-      node.start()
+      node.start(() => {})
     })
 
     it('should callback with an error when it occurs on stop', (done) => {
@@ -79,7 +79,7 @@ describe('libp2p state machine (fsm)', () => {
       expect(2).checks(done)
 
       sinon.stub(node._switch, 'stop').callsArgWith(0, error)
-      node.start()
+      node.start(() => {})
     })
 
     it('should noop when starting a started node', (done) => {
@@ -89,13 +89,13 @@ describe('libp2p state machine (fsm)', () => {
         })
         node.once('start', () => {
           node.once('stop', done)
-          node.stop()
+          node.stop(() => {})
         })
 
         // start the started node
-        node.start()
+        node.start(() => {})
       })
-      node.start()
+      node.start(() => {})
     })
 
     it('should error on start with no transports', (done) => {
@@ -115,7 +115,7 @@ describe('libp2p state machine (fsm)', () => {
 
       expect(2).checks(done)
 
-      node.start()
+      node.start(() => {})
     })
 
     it('should not start if the switch fails to start', (done) => {
@@ -150,7 +150,7 @@ describe('libp2p state machine (fsm)', () => {
         })
       })
 
-      node.stop()
+      node.stop(() => {})
     })
 
     it('should not dial (fsm) when the node is stopped', (done) => {
@@ -162,7 +162,7 @@ describe('libp2p state machine (fsm)', () => {
         })
       })
 
-      node.stop()
+      node.stop(() => {})
     })
   })
 })
