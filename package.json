@@ -1,6 +1,6 @@
 {
   "name": "libp2p-kad-dht",
-  "version": "0.15.2",
+  "version": "0.15.3",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -93,6 +93,7 @@
     "John Hiesey <jhiesey@cs.stanford.edu>",
     "Lars Gierth <larsg@systemli.org>",
     "Pedro Teixeira <i@pgte.me>",
+    "Qmstream <51881352+Qmstream@users.noreply.github.com>",
     "Richard Schneider <makaretu@gmail.com>",
     "Thomas Eizinger <thomas@eizinger.io>",
     "Vasco Santos <vasco.santos@moxy.studio>",
