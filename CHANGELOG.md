@@ -1,3 +1,13 @@
+<a name="0.15.3"></a>
+## [0.15.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.15.2...v0.15.3) (2019-07-29)
+
+
+### Bug Fixes
+
+* _findNProvidersAsync discarding search results ([#137](https://github.com/libp2p/js-libp2p-kad-dht/issues/137)) ([e656c6b](https://github.com/libp2p/js-libp2p-kad-dht/commit/e656c6b))
+
+
+
 <a name="0.15.2"></a>
 ## [0.15.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.15.1...v0.15.2) (2019-05-31)
 
