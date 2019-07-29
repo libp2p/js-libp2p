@@ -1,0 +1,1072 @@
+<a name="0.42.12"></a>
+## [0.42.12](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.11...v0.42.12) (2019-06-05)
+
+
+### Bug Fixes
+
+* clear blacklist for peer when connection is established ([#340](https://github.com/libp2p/js-libp2p-switch/issues/340)) ([f306cba](https://github.com/libp2p/js-libp2p-switch/commit/f306cba))
+* dont blindly add observed addresses to our list ([#337](https://github.com/libp2p/js-libp2p-switch/issues/337)) ([f879cfc](https://github.com/libp2p/js-libp2p-switch/commit/f879cfc))
+
+
+
+<a name="0.42.11"></a>
+## [0.42.11](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.10...v0.42.11) (2019-04-25)
+
+
+### Bug Fixes
+
+* **stats:** prevent 0ms timeDiff breaking movingAverage ([#336](https://github.com/libp2p/js-libp2p-switch/issues/336)) ([7aebb9c](https://github.com/libp2p/js-libp2p-switch/commit/7aebb9c))
+
+
+
+<a name="0.42.10"></a>
+## [0.42.10](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.9...v0.42.10) (2019-04-16)
+
+
+### Bug Fixes
+
+* dont use peerinfo distinct ([#334](https://github.com/libp2p/js-libp2p-switch/issues/334)) ([9af0e3a](https://github.com/libp2p/js-libp2p-switch/commit/9af0e3a))
+* resolve transport sort order in browsers ([#333](https://github.com/libp2p/js-libp2p-switch/issues/333)) ([951e0c9](https://github.com/libp2p/js-libp2p-switch/commit/951e0c9))
+
+
+
+<a name="0.42.9"></a>
+## [0.42.9](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.8...v0.42.9) (2019-04-11)
+
+
+### Bug Fixes
+
+* dont compare empty strings ([#330](https://github.com/libp2p/js-libp2p-switch/issues/330)) ([bb1a235](https://github.com/libp2p/js-libp2p-switch/commit/bb1a235))
+
+
+
+<a name="0.42.8"></a>
+## [0.42.8](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.7...v0.42.8) (2019-04-10)
+
+
+### Bug Fixes
+
+* dial self ([#329](https://github.com/libp2p/js-libp2p-switch/issues/329)) ([4862c48](https://github.com/libp2p/js-libp2p-switch/commit/4862c48))
+
+
+### Features
+
+* support a priority queue for dials ([#325](https://github.com/libp2p/js-libp2p-switch/issues/325)) ([0357bf2](https://github.com/libp2p/js-libp2p-switch/commit/0357bf2))
+
+
+
+<a name="0.42.7"></a>
+## [0.42.7](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.6...v0.42.7) (2019-04-04)
+
+
+### Bug Fixes
+
+* improve stopping logic ([#324](https://github.com/libp2p/js-libp2p-switch/issues/324)) ([5f9a4f6](https://github.com/libp2p/js-libp2p-switch/commit/5f9a4f6))
+* missing queue ([#323](https://github.com/libp2p/js-libp2p-switch/issues/323)) ([aeadc1b](https://github.com/libp2p/js-libp2p-switch/commit/aeadc1b))
+
+
+
+<a name="0.42.6"></a>
+## [0.42.6](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.5...v0.42.6) (2019-04-03)
+
+
+### Bug Fixes
+
+* dont blacklist good peers ([#319](https://github.com/libp2p/js-libp2p-switch/issues/319)) ([f31663f](https://github.com/libp2p/js-libp2p-switch/commit/f31663f))
+* revert to try each ([#320](https://github.com/libp2p/js-libp2p-switch/issues/320)) ([805d1ad](https://github.com/libp2p/js-libp2p-switch/commit/805d1ad))
+
+
+
+<a name="0.42.5"></a>
+## [0.42.5](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.4...v0.42.5) (2019-04-03)
+
+
+### Bug Fixes
+
+* improve connection tracking ([#318](https://github.com/libp2p/js-libp2p-switch/issues/318)) ([828e685](https://github.com/libp2p/js-libp2p-switch/commit/828e685))
+
+
+### Features
+
+* limit the number of cold calls we can do ([#316](https://github.com/libp2p/js-libp2p-switch/issues/316)) ([4a543cb](https://github.com/libp2p/js-libp2p-switch/commit/4a543cb))
+
+
+
+<a name="0.42.4"></a>
+## [0.42.4](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.3...v0.42.4) (2019-03-28)
+
+
+### Bug Fixes
+
+* improve dial queue and parallel dials ([#315](https://github.com/libp2p/js-libp2p-switch/issues/315)) ([fcbcccc](https://github.com/libp2p/js-libp2p-switch/commit/fcbcccc))
+
+
+
+<a name="0.42.3"></a>
+## [0.42.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.2...v0.42.3) (2019-03-28)
+
+
+### Features
+
+* global dial queue ([#314](https://github.com/libp2p/js-libp2p-switch/issues/314)) ([20175dd](https://github.com/libp2p/js-libp2p-switch/commit/20175dd))
+
+
+
+<a name="0.42.2"></a>
+## [0.42.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.1...v0.42.2) (2019-03-25)
+
+
+### Bug Fixes
+
+* identify on dial ([#313](https://github.com/libp2p/js-libp2p-switch/issues/313)) ([6437139](https://github.com/libp2p/js-libp2p-switch/commit/6437139))
+
+
+
+<a name="0.42.1"></a>
+## [0.42.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.0...v0.42.1) (2019-03-21)
+
+
+### Bug Fixes
+
+* ensure dials always use the latest PeerInfo from the PeerBook ([#312](https://github.com/libp2p/js-libp2p-switch/issues/312)) ([16f2bc3](https://github.com/libp2p/js-libp2p-switch/commit/16f2bc3))
+
+
+
+<a name="0.42.0"></a>
+# [0.42.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.7...v0.42.0) (2019-03-21)
+
+
+### Features
+
+* add basic dial queue to avoid many connections to peer ([#310](https://github.com/libp2p/js-libp2p-switch/issues/310)) ([6a94d9a](https://github.com/libp2p/js-libp2p-switch/commit/6a94d9a))
+* update identify to include supported protocols ([#311](https://github.com/libp2p/js-libp2p-switch/issues/311)) ([46e2509](https://github.com/libp2p/js-libp2p-switch/commit/46e2509))
+
+
+### BREAKING CHANGES
+
+* This adds a very basic dial queue peer peer.
+This will prevent multiple, simultaneous dial requests to the same
+peer from creating multiple connections. The requests will be queued
+per peer, and will leverage the same connection when possible.
+The breaking change here is that `.dial`, will no longer return a
+connection. js-libp2p, circuit relay, and kad-dht, which use `.dial`
+were not using the returned connection. So while this is a breaking change
+it should not break the existing libp2p stack. If custom applications
+are leveraging the returned connection, they will need to convert to only
+using the connection returned via the callback.
+
+* chore: dont log priviatized unless it actually happened
+* refactor: only get our addresses for filtering once
+
+
+
+<a name="0.41.7"></a>
+## [0.41.7](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.6...v0.41.7) (2019-03-13)
+
+
+### Bug Fixes
+
+* peer disconnect event and improve logging performance ([#309](https://github.com/libp2p/js-libp2p-switch/issues/309)) ([f731cdc](https://github.com/libp2p/js-libp2p-switch/commit/f731cdc))
+
+
+
+<a name="0.41.6"></a>
+## [0.41.6](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.5...v0.41.6) (2019-03-06)
+
+
+### Bug Fixes
+
+* dial in series until we have proper abort support ([#306](https://github.com/libp2p/js-libp2p-switch/issues/306)) ([ddf622b](https://github.com/libp2p/js-libp2p-switch/commit/ddf622b))
+* import async/setImmediate to avoid webpack errors ([#303](https://github.com/libp2p/js-libp2p-switch/issues/303)) ([86e0a7a](https://github.com/libp2p/js-libp2p-switch/commit/86e0a7a))
+
+
+
+<a name="0.41.5"></a>
+## [0.41.5](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.4...v0.41.5) (2019-01-11)
+
+
+### Bug Fixes
+
+* peerBook undefined [#299](https://github.com/libp2p/js-libp2p-switch/issues/299) ([b3a6a74](https://github.com/libp2p/js-libp2p-switch/commit/b3a6a74))
+* reduce bundle size ([#292](https://github.com/libp2p/js-libp2p-switch/issues/292)) ([76e5d1d](https://github.com/libp2p/js-libp2p-switch/commit/76e5d1d))
+
+
+
+<a name="0.41.4"></a>
+## [0.41.4](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.3...v0.41.4) (2018-12-20)
+
+
+### Bug Fixes
+
+* avoid sync callback in async functions ([#297](https://github.com/libp2p/js-libp2p-switch/issues/297)) ([089835e](https://github.com/libp2p/js-libp2p-switch/commit/089835e))
+
+
+
+<a name="0.41.3"></a>
+## [0.41.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.2...v0.41.3) (2018-12-14)
+
+
+### Bug Fixes
+
+* improve connection tracking and closing ([#291](https://github.com/libp2p/js-libp2p-switch/issues/291)) ([aa86307](https://github.com/libp2p/js-libp2p-switch/commit/aa86307))
+* use retimer to avoid creating so many timers ([#289](https://github.com/libp2p/js-libp2p-switch/issues/289)) ([f43084b](https://github.com/libp2p/js-libp2p-switch/commit/f43084b))
+
+
+
+<a name="0.41.2"></a>
+## [0.41.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.1...v0.41.2) (2018-11-15)
+
+
+### Bug Fixes
+
+* dont dial an address that we have ([f406dd5](https://github.com/libp2p/js-libp2p-switch/commit/f406dd5))
+* ensure circuit listens last on start ([7697281](https://github.com/libp2p/js-libp2p-switch/commit/7697281))
+* improve connection closing and error handling ([#285](https://github.com/libp2p/js-libp2p-switch/issues/285)) ([e757cf6](https://github.com/libp2p/js-libp2p-switch/commit/e757cf6))
+
+
+
+<a name="0.41.1"></a>
+## [0.41.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.41.0...v0.41.1) (2018-10-24)
+
+
+### Bug Fixes
+
+* ignore dial request when one is in progress ([#283](https://github.com/libp2p/js-libp2p-switch/issues/283)) ([280d54f](https://github.com/libp2p/js-libp2p-switch/commit/280d54f))
+
+
+
+<a name="0.41.0"></a>
+# [0.41.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.8...v0.41.0) (2018-10-19)
+
+
+### Features
+
+* make switch a state machine ([#278](https://github.com/libp2p/js-libp2p-switch/issues/278)) ([7dcabdd](https://github.com/libp2p/js-libp2p-switch/commit/7dcabdd))
+
+
+
+<a name="0.40.8"></a>
+## [0.40.8](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.7...v0.40.8) (2018-09-10)
+
+
+
+<a name="0.40.7"></a>
+## [0.40.7](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.6...v0.40.7) (2018-07-23)
+
+
+### Bug Fixes
+
+* improve erroring around invalid peers ([a62a72b](https://github.com/libp2p/js-libp2p-switch/commit/a62a72b))
+
+
+
+<a name="0.40.6"></a>
+## [0.40.6](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.5...v0.40.6) (2018-07-17)
+
+
+### Bug Fixes
+
+* adjust test values ([19d99d3](https://github.com/libp2p/js-libp2p-switch/commit/19d99d3))
+* handle error in protocol handshake ([c18e0bd](https://github.com/libp2p/js-libp2p-switch/commit/c18e0bd))
+* no stats on multistream proto dial ([bff0a8b](https://github.com/libp2p/js-libp2p-switch/commit/bff0a8b))
+
+
+
+<a name="0.40.5"></a>
+## [0.40.5](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.4...v0.40.5) (2018-07-10)
+
+
+### Bug Fixes
+
+* re-enable stats tests in node ([c4ed449](https://github.com/libp2p/js-libp2p-switch/commit/c4ed449))
+* stats - observer expects protocolTag ([41210cf](https://github.com/libp2p/js-libp2p-switch/commit/41210cf))
+
+
+
+<a name="0.40.4"></a>
+## [0.40.4](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.3...v0.40.4) (2018-06-06)
+
+
+### Features
+
+* swap quick-lru by hashlru ([888e973](https://github.com/libp2p/js-libp2p-switch/commit/888e973))
+
+
+
+<a name="0.40.3"></a>
+## [0.40.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.2...v0.40.3) (2018-06-01)
+
+
+### Bug Fixes
+
+* prevent undefined error during a mutual hangup ([81d4394](https://github.com/libp2p/js-libp2p-switch/commit/81d4394))
+
+
+
+<a name="0.40.2"></a>
+## [0.40.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.1...v0.40.2) (2018-05-31)
+
+
+### Bug Fixes
+
+* add utility methods to prevent already piped error ([1eb28ca](https://github.com/libp2p/js-libp2p-switch/commit/1eb28ca))
+* drop connection when stream ends unexpectedly ([cb5245a](https://github.com/libp2p/js-libp2p-switch/commit/cb5245a)), closes [/github.com/multiformats/js-multistream-select/blob/5b19358b91850b528b3f93babd60d63ddcf56a99/src/select.js#L18-L21](https://github.com//github.com/multiformats/js-multistream-select/blob/5b19358b91850b528b3f93babd60d63ddcf56a99/src/select.js/issues/L18-L21) [/github.com/libp2p/js-libp2p-switch/blob/fef2d11850379a4720bb9c736236a81a067dc901/src/dial.js#L238-L241](https://github.com//github.com/libp2p/js-libp2p-switch/blob/fef2d11850379a4720bb9c736236a81a067dc901/src/dial.js/issues/L238-L241) [#235](https://github.com/libp2p/js-libp2p-switch/issues/235)
+* return on call to nextMuxer ([fef2d11](https://github.com/libp2p/js-libp2p-switch/commit/fef2d11))
+
+
+
+<a name="0.40.1"></a>
+## [0.40.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.40.0...v0.40.1) (2018-05-23)
+
+
+### Bug Fixes
+
+* libp2p/js-libp2p[#189](https://github.com/libp2p/js-libp2p-switch/issues/189) Prevent self-dial ([5cdec34](https://github.com/libp2p/js-libp2p-switch/commit/5cdec34))
+
+
+
+<a name="0.40.0"></a>
+# [0.40.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.39.2...v0.40.0) (2018-05-01)
+
+
+### Bug Fixes
+
+* dont create base conn when muxed exists ([71b6316](https://github.com/libp2p/js-libp2p-switch/commit/71b6316))
+* tests and conflicts ([350695c](https://github.com/libp2p/js-libp2p-switch/commit/350695c))
+
+
+### Features
+
+* improve circuit err messages ([#250](https://github.com/libp2p/js-libp2p-switch/issues/250)) ([63ad87a](https://github.com/libp2p/js-libp2p-switch/commit/63ad87a))
+
+
+
+<a name="0.39.2"></a>
+## [0.39.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.39.0...v0.39.2) (2018-04-30)
+
+
+
+<a name="0.39.1"></a>
+## [0.39.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.39.0...v0.39.1) (2018-04-30)
+
+
+
+<a name="0.39.0"></a>
+# [0.39.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.37.3...v0.39.0) (2018-04-05)
+
+
+### Bug Fixes
+
+* revert version back to the current release ([132d5df](https://github.com/libp2p/js-libp2p-switch/commit/132d5df)), closes [/github.com/libp2p/js-libp2p-switch/pull/249/files#r178832198](https://github.com//github.com/libp2p/js-libp2p-switch/pull/249/files/issues/r178832198)
+
+
+
+<a name="0.38.0"></a>
+# [0.38.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.37.3...v0.38.0) (2018-04-05)
+
+
+### Bug Fixes
+
+* revert version back to the current release ([132d5df](https://github.com/libp2p/js-libp2p-switch/commit/132d5df)), closes [/github.com/libp2p/js-libp2p-switch/pull/249/files#r178832198](https://github.com//github.com/libp2p/js-libp2p-switch/pull/249/files/issues/r178832198)
+
+
+
+<a name="0.37.3"></a>
+## [0.37.3](https://github.com/libp2p/js-libp2p-switch/compare/v0.37.2...v0.37.3) (2018-03-15)
+
+
+### Bug Fixes
+
+* one more observer edge case ([6265ec6](https://github.com/libp2p/js-libp2p-switch/commit/6265ec6))
+
+
+
+<a name="0.37.2"></a>
+## [0.37.2](https://github.com/libp2p/js-libp2p-switch/compare/v0.37.1...v0.37.2) (2018-03-14)
+
+
+
+<a name="0.37.1"></a>
+## [0.37.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.37.0...v0.37.1) (2018-03-12)
+
+
+### Bug Fixes
+
+* for when handler func is not defined ([ae6b52e](https://github.com/libp2p/js-libp2p-switch/commit/ae6b52e))
+* for when peerinfo resolves to undefined ([6f98b0c](https://github.com/libp2p/js-libp2p-switch/commit/6f98b0c))
+
+
+
+<a name="0.37.0"></a>
+# [0.37.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.36.1...v0.37.0) (2018-02-27)
+
+
+### Features
+
+* observe traffic and expose statistics ([#243](https://github.com/libp2p/js-libp2p-switch/issues/243)) ([a4521dd](https://github.com/libp2p/js-libp2p-switch/commit/a4521dd))
+* use mplex, update CI ([0f0f314](https://github.com/libp2p/js-libp2p-switch/commit/0f0f314))
+
+
+
+<a name="0.36.1"></a>
+## [0.36.1](https://github.com/libp2p/js-libp2p-switch/compare/v0.36.0...v0.36.1) (2018-02-12)
+
+
+
+<a name="0.36.0"></a>
+# [0.36.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.35.1...v0.36.0) (2018-02-07)
+
+
+### Bug Fixes
+
+* enableCircuitRelay is async and therefore needs a callback ([69ea434](https://github.com/libp2p/js-libp2p-switch/commit/69ea434))
+* transports.add does not need to be async at all ([ca610a5](https://github.com/libp2p/js-libp2p-switch/commit/ca610a5))
+
+
+
+<a name="0.35.1"></a>
+## [0.35.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.35.0...v0.35.1) (2018-01-28)
+
+
+
+<a name="0.35.0"></a>
+# [0.35.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.34.0...v0.35.0) (2018-01-07)
+
+
+
+<a name="0.34.0"></a>
+# [0.34.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.33.2...v0.34.0) (2017-12-14)
+
+
+### Bug Fixes
+
+* circuit dialing ([77a4f61](https://github.com/libp2p/js-libp2p-swarm/commit/77a4f61))
+
+
+
+<a name="0.33.2"></a>
+## [0.33.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.33.1...v0.33.2) (2017-11-18)
+
+
+### Bug Fixes
+
+* don't dial circuit if no transports available ([#236](https://github.com/libp2p/js-libp2p-swarm/issues/236)) ([f22ee2a](https://github.com/libp2p/js-libp2p-swarm/commit/f22ee2a))
+
+
+
+<a name="0.33.1"></a>
+## [0.33.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.33.0...v0.33.1) (2017-10-27)
+
+
+### Bug Fixes
+
+* don't dial on relay if not enabled ([#234](https://github.com/libp2p/js-libp2p-swarm/issues/234)) ([94b00dd](https://github.com/libp2p/js-libp2p-swarm/commit/94b00dd))
+
+
+
+<a name="0.33.0"></a>
+# [0.33.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.32.4...v0.33.0) (2017-10-23)
+
+
+### Features
+
+* Circuit Relay ([#224](https://github.com/libp2p/js-libp2p-swarm/issues/224)) ([30fb36f](https://github.com/libp2p/js-libp2p-swarm/commit/30fb36f))
+
+
+
+<a name="0.32.4"></a>
+## [0.32.4](https://github.com/libp2p/js-libp2p-swarm/compare/v0.32.3...v0.32.4) (2017-09-10)
+
+
+### Bug Fixes
+
+* increase dial timeout ([6bd287c](https://github.com/libp2p/js-libp2p-swarm/commit/6bd287c))
+
+
+
+<a name="0.32.3"></a>
+## [0.32.3](https://github.com/libp2p/js-libp2p-swarm/compare/v0.32.2...v0.32.3) (2017-09-07)
+
+
+
+<a name="0.32.2"></a>
+## [0.32.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.32.1...v0.32.2) (2017-09-07)
+
+
+### Bug Fixes
+
+* remove unused protocol-buffers dep ([#230](https://github.com/libp2p/js-libp2p-swarm/issues/230)) ([619c8e9](https://github.com/libp2p/js-libp2p-swarm/commit/619c8e9))
+
+
+
+<a name="0.32.1"></a>
+## [0.32.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.32.0...v0.32.1) (2017-09-07)
+
+
+
+<a name="0.32.0"></a>
+# [0.32.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.31.2...v0.32.0) (2017-09-03)
+
+
+### Features
+
+* p2p addrs situation ([#229](https://github.com/libp2p/js-libp2p-swarm/issues/229)) ([6163bed](https://github.com/libp2p/js-libp2p-swarm/commit/6163bed))
+
+
+
+<a name="0.31.2"></a>
+## [0.31.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.31.1...v0.31.2) (2017-08-25)
+
+
+### Features
+
+* increase maxListeners to Infinity ([#226](https://github.com/libp2p/js-libp2p-swarm/issues/226)) ([77bf1ab](https://github.com/libp2p/js-libp2p-swarm/commit/77bf1ab))
+
+
+
+<a name="0.31.1"></a>
+## [0.31.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.31.0...v0.31.1) (2017-08-24)
+
+
+### Bug Fixes
+
+* use the right callback ([4a9ecf2](https://github.com/libp2p/js-libp2p-swarm/commit/4a9ecf2))
+
+
+
+<a name="0.31.0"></a>
+# [0.31.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.30.0...v0.31.0) (2017-07-22)
+
+
+
+<a name="0.30.0"></a>
+# [0.30.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.29.2...v0.30.0) (2017-07-17)
+
+
+### Features
+
+* dial to PeerId and/or Multiaddr in addition to PeerInfo ([#222](https://github.com/libp2p/js-libp2p-swarm/issues/222)) ([80c3853](https://github.com/libp2p/js-libp2p-swarm/commit/80c3853))
+
+
+
+<a name="0.29.2"></a>
+## [0.29.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.29.1...v0.29.2) (2017-07-08)
+
+
+### Bug Fixes
+
+* move 'pull-stream' from devDependencies to dependencies ([#220](https://github.com/libp2p/js-libp2p-swarm/issues/220)) ([8b86473](https://github.com/libp2p/js-libp2p-swarm/commit/8b86473))
+
+
+
+<a name="0.29.1"></a>
+## [0.29.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.29.0...v0.29.1) (2017-04-06)
+
+
+### Bug Fixes
+
+* move emitters to last thing in the method ([#218](https://github.com/libp2p/js-libp2p-swarm/issues/218)) ([a5b1b63](https://github.com/libp2p/js-libp2p-swarm/commit/a5b1b63))
+
+
+
+<a name="0.29.0"></a>
+# [0.29.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.28.0...v0.29.0) (2017-03-31)
+
+
+
+<a name="0.28.0"></a>
+# [0.28.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.27.0...v0.28.0) (2017-03-28)
+
+
+
+<a name="0.27.0"></a>
+# [0.27.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.20...v0.27.0) (2017-03-27)
+
+
+
+<a name="0.26.20"></a>
+## [0.26.20](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.19...v0.26.20) (2017-03-27)
+
+
+### Features
+
+* **transport:** use parallel limited dialer ([#195](https://github.com/libp2p/js-libp2p-swarm/issues/195)) ([a15e63c](https://github.com/libp2p/js-libp2p-swarm/commit/a15e63c))
+
+
+
+<a name="0.26.19"></a>
+## [0.26.19](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.18...v0.26.19) (2017-03-21)
+
+
+
+<a name="0.26.18"></a>
+## [0.26.18](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.17...v0.26.18) (2017-02-24)
+
+
+### Bug Fixes
+
+* correctly handle multiplex stream muxers ([#179](https://github.com/libp2p/js-libp2p-swarm/issues/179)) ([5fb9c8a](https://github.com/libp2p/js-libp2p-swarm/commit/5fb9c8a))
+
+
+
+<a name="0.26.17"></a>
+## [0.26.17](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.16...v0.26.17) (2017-02-11)
+
+
+### Bug Fixes
+
+* error if listener errors ([4906ae3](https://github.com/libp2p/js-libp2p-swarm/commit/4906ae3))
+
+
+
+<a name="0.26.16"></a>
+## [0.26.16](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.15...v0.26.16) (2017-02-11)
+
+
+
+<a name="0.26.15"></a>
+## [0.26.15](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.14...v0.26.15) (2017-02-09)
+
+
+
+<a name="0.26.14"></a>
+## [0.26.14](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.13...v0.26.14) (2017-01-29)
+
+
+
+<a name="0.26.13"></a>
+## [0.26.13](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.12...v0.26.13) (2017-01-26)
+
+
+### Bug Fixes
+
+* **hangup:** change order of listen for close and ending muxer ([#163](https://github.com/libp2p/js-libp2p-swarm/issues/163)) ([4de013d](https://github.com/libp2p/js-libp2p-swarm/commit/4de013d))
+
+
+
+<a name="0.26.12"></a>
+## [0.26.12](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.11...v0.26.12) (2017-01-24)
+
+
+
+<a name="0.26.11"></a>
+## [0.26.11](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.10...v0.26.11) (2017-01-24)
+
+
+
+<a name="0.26.10"></a>
+## [0.26.10](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.9...v0.26.10) (2017-01-24)
+
+
+### Bug Fixes
+
+* last identify with multiplex test ([#159](https://github.com/libp2p/js-libp2p-swarm/issues/159)) ([ae0cc15](https://github.com/libp2p/js-libp2p-swarm/commit/ae0cc15))
+
+
+
+<a name="0.26.9"></a>
+## [0.26.9](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.8...v0.26.9) (2017-01-23)
+
+
+
+<a name="0.26.8"></a>
+## [0.26.8](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.7...v0.26.8) (2017-01-22)
+
+
+### Bug Fixes
+
+* **deps:** use browserify-zlib-next@1.0.0  ([62da8a1](https://github.com/libp2p/js-libp2p-swarm/commit/62da8a1))
+
+
+
+<a name="0.26.7"></a>
+## [0.26.7](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.6...v0.26.7) (2017-01-18)
+
+
+
+<a name="0.26.6"></a>
+## [0.26.6](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.5...v0.26.6) (2017-01-11)
+
+
+
+<a name="0.26.5"></a>
+## [0.26.5](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.4...v0.26.5) (2016-12-18)
+
+
+### Bug Fixes
+
+* **transport:** do not callback after listen errored ([#139](https://github.com/libp2p/js-libp2p-swarm/issues/139)) ([5d47adc](https://github.com/libp2p/js-libp2p-swarm/commit/5d47adc))
+
+
+
+<a name="0.26.4"></a>
+## [0.26.4](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.3...v0.26.4) (2016-12-06)
+
+
+
+<a name="0.26.3"></a>
+## [0.26.3](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.2...v0.26.3) (2016-11-22)
+
+
+
+<a name="0.26.2"></a>
+## [0.26.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.1...v0.26.2) (2016-11-11)
+
+
+
+<a name="0.26.1"></a>
+## [0.26.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.26.0...v0.26.1) (2016-11-08)
+
+
+
+<a name="0.26.0"></a>
+# [0.26.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.25.0...v0.26.0) (2016-11-03)
+
+
+
+<a name="0.25.0"></a>
+# [0.25.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.24.0...v0.25.0) (2016-11-03)
+
+
+
+<a name="0.24.0"></a>
+# [0.24.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.23.0...v0.24.0) (2016-11-03)
+
+
+
+<a name="0.23.0"></a>
+# [0.23.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.22.3...v0.23.0) (2016-09-07)
+
+
+### Bug Fixes
+
+* **dial:** fix typo causing plaintext mode to fail ([6091e94](https://github.com/libp2p/js-libp2p-swarm/commit/6091e94))
+* **dial:** fix typo causing plaintext mode to fail ([381d3c2](https://github.com/libp2p/js-libp2p-swarm/commit/381d3c2))
+
+
+### Features
+
+* **deps:** downgrade aegir to 6.0.1 ([784934d](https://github.com/libp2p/js-libp2p-swarm/commit/784934d))
+
+
+
+<a name="0.22.3"></a>
+## [0.22.3](https://github.com/libp2p/js-libp2p-swarm/compare/v0.22.2...v0.22.3) (2016-08-07)
+
+
+### Bug Fixes
+
+* **dep:** add missing dependency - debug ([5b0d96e](https://github.com/libp2p/js-libp2p-swarm/commit/5b0d96e))
+
+
+
+<a name="0.22.2"></a>
+## [0.22.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.22.1...v0.22.2) (2016-08-03)
+
+
+
+<a name="0.22.1"></a>
+## [0.22.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.22.0...v0.22.1) (2016-06-27)
+
+
+
+<a name="0.22.0"></a>
+# [0.22.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.21.0...v0.22.0) (2016-06-27)
+
+
+
+<a name="0.21.0"></a>
+# [0.21.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.20.0...v0.21.0) (2016-06-24)
+
+
+
+<a name="0.20.0"></a>
+# [0.20.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.19.5...v0.20.0) (2016-06-04)
+
+
+
+<a name="0.19.5"></a>
+## [0.19.5](https://github.com/libp2p/js-libp2p-swarm/compare/v0.19.4...v0.19.5) (2016-05-30)
+
+
+
+<a name="0.19.4"></a>
+## [0.19.4](https://github.com/libp2p/js-libp2p-swarm/compare/v0.19.3...v0.19.4) (2016-05-29)
+
+
+
+<a name="0.19.3"></a>
+## [0.19.3](https://github.com/libp2p/js-libp2p-swarm/compare/v0.19.2...v0.19.3) (2016-05-29)
+
+
+
+<a name="0.19.2"></a>
+## [0.19.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.19.1...v0.19.2) (2016-05-28)
+
+
+
+<a name="0.19.1"></a>
+## [0.19.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.19.0...v0.19.1) (2016-05-28)
+
+
+
+<a name="0.19.0"></a>
+# [0.19.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.18.2...v0.19.0) (2016-05-27)
+
+
+
+<a name="0.18.2"></a>
+## [0.18.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.18.1...v0.18.2) (2016-05-24)
+
+
+
+<a name="0.18.1"></a>
+## [0.18.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.18.0...v0.18.1) (2016-05-23)
+
+
+
+<a name="0.18.0"></a>
+# [0.18.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.17.0...v0.18.0) (2016-05-23)
+
+
+
+<a name="0.17.0"></a>
+# [0.17.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.16.0...v0.17.0) (2016-05-21)
+
+
+
+<a name="0.16.0"></a>
+# [0.16.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.15.0...v0.16.0) (2016-05-20)
+
+
+
+<a name="0.15.0"></a>
+# [0.15.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.13.0...v0.15.0) (2016-05-18)
+
+
+
+<a name="0.13.0"></a>
+# [0.13.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.11...v0.13.0) (2016-05-18)
+
+
+
+<a name="0.12.11"></a>
+## [0.12.11](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.10...v0.12.11) (2016-05-11)
+
+
+### Bug Fixes
+
+* handling of ipfs addresses in available transports ([8e1413b](https://github.com/libp2p/js-libp2p-swarm/commit/8e1413b))
+
+
+
+<a name="0.12.10"></a>
+## [0.12.10](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.9...v0.12.10) (2016-05-10)
+
+
+### Features
+
+* add .listen method ([9c8a8bb](https://github.com/libp2p/js-libp2p-swarm/commit/9c8a8bb))
+
+
+
+<a name="0.12.9"></a>
+## [0.12.9](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.8...v0.12.9) (2016-05-09)
+
+
+
+<a name="0.12.8"></a>
+## [0.12.8](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.7...v0.12.8) (2016-05-08)
+
+
+
+<a name="0.12.7"></a>
+## [0.12.7](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.6...v0.12.7) (2016-05-06)
+
+
+
+<a name="0.12.6"></a>
+## [0.12.6](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.5...v0.12.6) (2016-05-06)
+
+
+### Bug Fixes
+
+* call cb in close after all transport are closed ([85a0647](https://github.com/libp2p/js-libp2p-swarm/commit/85a0647))
+
+
+
+<a name="0.12.5"></a>
+## [0.12.5](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.4...v0.12.5) (2016-05-04)
+
+
+
+<a name="0.12.4"></a>
+## [0.12.4](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.3...v0.12.4) (2016-05-04)
+
+
+
+<a name="0.12.3"></a>
+## [0.12.3](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.2...v0.12.3) (2016-05-04)
+
+
+
+<a name="0.12.2"></a>
+## [0.12.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.12.1...v0.12.2) (2016-04-27)
+
+
+
+<a name="0.12.1"></a>
+## [0.12.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.11.8...v0.12.1) (2016-04-25)
+
+
+
+<a name="0.11.8"></a>
+## [0.11.8](https://github.com/libp2p/js-libp2p-swarm/compare/v0.10.7...v0.11.8) (2016-04-24)
+
+
+
+<a name="0.10.7"></a>
+## [0.10.7](https://github.com/libp2p/js-libp2p-swarm/compare/v0.10.6...v0.10.7) (2016-04-24)
+
+
+### Bug Fixes
+
+* **identify:** convert all addresses to multiaddr ([6943e3e](https://github.com/libp2p/js-libp2p-swarm/commit/6943e3e)), closes [#37](https://github.com/libp2p/js-libp2p-swarm/issues/37)
+
+
+
+<a name="0.10.6"></a>
+## [0.10.6](https://github.com/libp2p/js-libp2p-swarm/compare/v0.10.5...v0.10.6) (2016-04-20)
+
+
+### Bug Fixes
+
+* always use fs.readFileSync ([851c8ee](https://github.com/libp2p/js-libp2p-swarm/commit/851c8ee))
+
+
+### Features
+
+* handle ipfs multiaddrs ([0fa14c9](https://github.com/libp2p/js-libp2p-swarm/commit/0fa14c9)), closes [#38](https://github.com/libp2p/js-libp2p-swarm/issues/38)
+
+
+
+<a name="0.10.5"></a>
+## [0.10.5](https://github.com/libp2p/js-libp2p-swarm/compare/v0.10.4...v0.10.5) (2016-04-14)
+
+
+
+<a name="0.10.4"></a>
+## [0.10.4](https://github.com/libp2p/js-libp2p-swarm/compare/v0.10.3...v0.10.4) (2016-04-14)
+
+
+
+<a name="0.10.3"></a>
+## [0.10.3](https://github.com/libp2p/js-libp2p-swarm/compare/v0.9.3...v0.10.3) (2016-04-14)
+
+
+
+<a name="0.9.3"></a>
+## [0.9.3](https://github.com/libp2p/js-libp2p-swarm/compare/v0.9.2...v0.9.3) (2016-04-14)
+
+
+
+<a name="0.9.2"></a>
+## [0.9.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.9.1...v0.9.2) (2016-03-23)
+
+
+
+<a name="0.9.1"></a>
+## [0.9.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.9.0...v0.9.1) (2016-03-23)
+
+
+
+<a name="0.9.0"></a>
+# [0.9.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.8.1...v0.9.0) (2016-03-15)
+
+
+
+<a name="0.8.1"></a>
+## [0.8.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.8.0...v0.8.1) (2016-03-15)
+
+
+
+<a name="0.8.0"></a>
+# [0.8.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.7.0...v0.8.0) (2016-03-15)
+
+
+
+<a name="0.7.0"></a>
+# [0.7.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.6.0...v0.7.0) (2016-03-11)
+
+
+
+<a name="0.6.0"></a>
+# [0.6.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.5.5...v0.6.0) (2016-03-10)
+
+
+
+<a name="0.5.5"></a>
+## [0.5.5](https://github.com/libp2p/js-libp2p-swarm/compare/v0.5.4...v0.5.5) (2015-10-29)
+
+
+
+<a name="0.5.4"></a>
+## [0.5.4](https://github.com/libp2p/js-libp2p-swarm/compare/v0.5.3...v0.5.4) (2015-10-29)
+
+
+
+<a name="0.5.3"></a>
+## [0.5.3](https://github.com/libp2p/js-libp2p-swarm/compare/v0.5.2...v0.5.3) (2015-09-28)
+
+
+
+<a name="0.5.2"></a>
+## [0.5.2](https://github.com/libp2p/js-libp2p-swarm/compare/v0.5.1...v0.5.2) (2015-09-28)
+
+
+
+<a name="0.5.1"></a>
+## [0.5.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.5.0...v0.5.1) (2015-09-26)
+
+
+
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.4.1...v0.5.0) (2015-09-23)
+
+
+
+<a name="0.4.1"></a>
+## [0.4.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.4.0...v0.4.1) (2015-09-14)
+
+
+
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.3.1...v0.4.0) (2015-08-03)
+
+
+
+<a name="0.3.1"></a>
+## [0.3.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.3.0...v0.3.1) (2015-08-01)
+
+
+
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.2.0...v0.3.0) (2015-07-30)
+
+
+
+<a name="0.2.0"></a>
+# [0.2.0](https://github.com/libp2p/js-libp2p-swarm/compare/v0.1.1...v0.2.0) (2015-07-26)
+
+
+
+<a name="0.1.1"></a>
+## [0.1.1](https://github.com/libp2p/js-libp2p-swarm/compare/v0.1.0...v0.1.1) (2015-07-21)
+
+
+
+<a name="0.1.0"></a>
+# 0.1.0 (2015-07-19)
+
+
+
