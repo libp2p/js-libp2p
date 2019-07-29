@@ -6,7 +6,7 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 
-const Switch = require('../src')
+const Switch = require('libp2p-switch')
 
 describe('create Switch instance', () => {
   it('throws on missing peerInfo', () => {

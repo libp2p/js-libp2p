@@ -20,8 +20,8 @@ const generatePSK = Protector.generate
 const psk = Buffer.alloc(95)
 generatePSK(psk)
 
-const ConnectionFSM = require('../src/connection')
-const Switch = require('../src')
+const ConnectionFSM = require('libp2p-switch/connection')
+const Switch = require('libp2p-switch')
 const createInfos = require('./utils').createInfos
 
 describe('ConnectionFSM', () => {

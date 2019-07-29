@@ -9,7 +9,7 @@ const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
 const setImmediate = require('async/setImmediate')
 
-const LimitDialer = require('../src/limit-dialer')
+const LimitDialer = require('libp2p-switch/limit-dialer')
 const utils = require('./utils')
 
 describe('LimitDialer', () => {

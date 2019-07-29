@@ -16,7 +16,7 @@ const pull = require('pull-stream')
 const PeerBook = require('peer-book')
 const tryEcho = require('./utils').tryEcho
 
-const Switch = require('../src')
+const Switch = require('libp2p-switch')
 
 describe('Switch (webrtc-star)', () => {
   let switch1

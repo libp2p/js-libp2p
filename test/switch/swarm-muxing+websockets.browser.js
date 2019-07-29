@@ -15,7 +15,7 @@ const spdy = require('libp2p-spdy')
 const PeerBook = require('peer-book')
 const tryEcho = require('./utils').tryEcho
 
-const Switch = require('../src')
+const Switch = require('libp2p-switch')
 
 describe('Switch (WebSockets)', () => {
   [

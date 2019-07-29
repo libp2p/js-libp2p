@@ -18,7 +18,7 @@ const getPorts = require('portfinder').getPorts
 
 const utils = require('./utils')
 const createInfos = utils.createInfos
-const Swarm = require('../src')
+const Swarm = require('libp2p-switch')
 const switchOptions = {
   blacklistTTL: 0 // nullifies blacklisting
 }

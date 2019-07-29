@@ -12,7 +12,7 @@ const PeerId = require('peer-id')
 const MultiAddr = require('multiaddr')
 const TestPeerInfos = require('./test-data/ids.json').infos
 
-const getPeerInfo = require('../src/get-peer-info')
+const getPeerInfo = require('libp2p-switch/get-peer-info')
 
 describe('Get peer info', () => {
   let peerBook

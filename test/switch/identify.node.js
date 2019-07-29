@@ -18,7 +18,7 @@ const sinon = require('sinon')
 
 const utils = require('./utils')
 const createInfos = utils.createInfos
-const Switch = require('../src')
+const Switch = require('libp2p-switch')
 
 describe('Identify', () => {
   let switchA

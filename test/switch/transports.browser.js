@@ -12,7 +12,7 @@ const PeerBook = require('peer-book')
 const WebSockets = require('libp2p-websockets')
 
 const tryEcho = require('./utils').tryEcho
-const Switch = require('../src')
+const Switch = require('libp2p-switch')
 
 describe('Transports', () => {
   describe('WebSockets', () => {

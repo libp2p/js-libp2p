@@ -13,7 +13,7 @@ const Duplex = require('pull-pair/duplex')
 
 const utils = require('./utils')
 const createInfos = utils.createInfos
-const Swarm = require('../src')
+const Swarm = require('libp2p-switch')
 
 class MockTransport extends EventEmitter {
   constructor () {

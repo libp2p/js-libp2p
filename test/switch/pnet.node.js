@@ -16,7 +16,7 @@ const Protector = require('libp2p-pnet')
 const utils = require('./utils')
 const createInfos = utils.createInfos
 const tryEcho = utils.tryEcho
-const Switch = require('../src')
+const Switch = require('libp2p-switch')
 
 const generatePSK = Protector.generate
 
