@@ -563,7 +563,7 @@ module.exports = (dht) => ({
         promiseToCallback(query.run(peers))(cb)
       }, providerTimeout)(callback))()
     } catch (err) {
-      if (err.code !== 'ETIMEDOUT' || out.length === 0) {
+      if (err.code !== 'ETIMEDOUT') {
         throw err
       }
     } finally {
@@ -576,6 +576,10 @@ module.exports = (dht) => ({
         out.push(peer)
       })
     })
+
+    if (out.length === 0) {
+      throw errcode(new Error('no providers found'), 'ERR_NOT_FOUND')
+    }
 
     return out.toArray()
   },
