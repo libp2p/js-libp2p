@@ -185,19 +185,10 @@ describe('.contentRouting', () => {
       it('should be able to register as a provider', (done) => {
         const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
         const mockApi = nock('http://0.0.0.0:60197')
-          // mock the swarm connect
-          .post('/api/v0/swarm/connect')
-          .query({
-            arg: `/ip4/0.0.0.0/tcp/60194/p2p-circuit/ipfs/${nodeA.peerInfo.id.toB58String()}`,
-            'stream-channels': true
-          })
-          .reply(200, {
-            Strings: [`connect ${nodeA.peerInfo.id.toB58String()} success`]
-          }, ['Content-Type', 'application/json'])
           // mock the refs call
           .post('/api/v0/refs')
           .query({
-            recursive: true,
+            recursive: false,
             arg: cid.toBaseEncodedString(),
             'stream-channels': true
           })
@@ -216,10 +207,11 @@ describe('.contentRouting', () => {
       it('should handle errors when registering as a provider', (done) => {
         const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
         const mockApi = nock('http://0.0.0.0:60197')
-          // mock the swarm connect
-          .post('/api/v0/swarm/connect')
+          // mock the refs call
+          .post('/api/v0/refs')
           .query({
-            arg: `/ip4/0.0.0.0/tcp/60194/p2p-circuit/ipfs/${nodeA.peerInfo.id.toB58String()}`,
+            recursive: false,
+            arg: cid.toBaseEncodedString(),
             'stream-channels': true
           })
           .reply(502, 'Bad Gateway', ['Content-Type', 'application/json'])
