@@ -8,8 +8,7 @@ const SPDY = require('libp2p-spdy')
 const SECIO = require('libp2p-secio')
 const Bootstrap = require('libp2p-bootstrap')
 const DHT = require('libp2p-kad-dht')
-const defaultsDeep = require('@nodeutils/defaults-deep')
-const libp2p = require('../../../../')
+const libp2p = require('libp2p')
 
 // Find this list at: https://github.com/ipfs/js-ipfs/blob/master/src/core/runtime/config-browser.json
 const bootstrapList = [
@@ -26,9 +25,9 @@ const bootstrapList = [
 ]
 
 class Node extends libp2p {
-  constructor (_options) {
-    const wrtcStar = new WebRTCStar({ id: _options.peerInfo.id })
-    const wsstar = new WebSocketStar({ id: _options.peerInfo.id })
+  constructor ({ peerInfo }) {
+    const wrtcStar = new WebRTCStar({ id: peerInfo.id })
+    const wsstar = new WebSocketStar({ id: peerInfo.id })
 
     const defaults = {
       modules: {
@@ -86,7 +85,7 @@ class Node extends libp2p {
       }
     }
 
-    super(defaultsDeep(_options, defaults))
+    super({ ...defaults, peerInfo })
   }
 }
 
