@@ -46,6 +46,9 @@ domReady(() => {
       myPeerDiv.append(idDiv)
 
       console.log('Node is listening o/')
+      node.peerInfo.multiaddrs.toArray().forEach(ma => {
+        console.log(ma.toString())
+      })
 
       // NOTE: to stop the node
       // node.stop((err) => {})
