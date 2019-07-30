@@ -72,7 +72,7 @@ describe('peer discovery', () => {
         stop: sinon.stub().callsArg(0)
       }
 
-      const options = { modules: { peerDiscovery: [ mockDiscovery ] } }
+      const options = { modules: { peerDiscovery: [mockDiscovery] } }
 
       createNode(['/ip4/0.0.0.0/tcp/0'], options, (err, node) => {
         expect(err).to.not.exist()
@@ -95,7 +95,7 @@ describe('peer discovery', () => {
 
       const MockDiscovery = sinon.stub().returns(mockDiscovery)
 
-      const options = { modules: { peerDiscovery: [ MockDiscovery ] } }
+      const options = { modules: { peerDiscovery: [MockDiscovery] } }
 
       createNode(['/ip4/0.0.0.0/tcp/0'], options, (err, node) => {
         expect(err).to.not.exist()
@@ -120,7 +120,7 @@ describe('peer discovery', () => {
       const enabled = sinon.stub().returns(true)
 
       const options = {
-        modules: { peerDiscovery: [ mockDiscovery ] },
+        modules: { peerDiscovery: [mockDiscovery] },
         config: {
           peerDiscovery: {
             mockDiscovery: {
@@ -156,7 +156,7 @@ describe('peer discovery', () => {
       const disabled = sinon.stub().returns(false)
 
       const options = {
-        modules: { peerDiscovery: [ mockDiscovery ] },
+        modules: { peerDiscovery: [mockDiscovery] },
         config: {
           peerDiscovery: {
             mockDiscovery: {
@@ -192,7 +192,7 @@ describe('peer discovery', () => {
       MockDiscovery.tag = 'mockDiscovery'
 
       const options = {
-        modules: { peerDiscovery: [ MockDiscovery ] },
+        modules: { peerDiscovery: [MockDiscovery] },
         config: {
           peerDiscovery: {
             mockDiscovery: {
@@ -228,7 +228,7 @@ describe('peer discovery', () => {
       }
 
       const options = {
-        modules: { peerDiscovery: [ mockDiscovery ] },
+        modules: { peerDiscovery: [mockDiscovery] },
         config: {
           peerDiscovery: {
             mockDiscovery: { enabled: true }
@@ -294,7 +294,7 @@ describe('peer discovery', () => {
     })
 
     it('find peers', function (done) {
-      let expectedPeers = new Set([
+      const expectedPeers = new Set([
         nodeB.peerInfo.id.toB58String(),
         nodeC.peerInfo.id.toB58String()
       ])
@@ -332,7 +332,7 @@ describe('peer discovery', () => {
 
     it('find peers', function (done) {
       this.timeout(20e3)
-      let expectedPeers = new Set([
+      const expectedPeers = new Set([
         nodeB.peerInfo.id.toB58String(),
         nodeC.peerInfo.id.toB58String()
       ])
@@ -374,7 +374,7 @@ describe('peer discovery', () => {
     })
 
     it('find peers', function (done) {
-      let expectedPeers = new Set([
+      const expectedPeers = new Set([
         nodeB.peerInfo.id.toB58String(),
         nodeC.peerInfo.id.toB58String()
       ])
@@ -421,7 +421,7 @@ describe('peer discovery', () => {
     })
 
     it('find peers through the dht', function (done) {
-      let expectedPeers = new Set([
+      const expectedPeers = new Set([
         nodeB.peerInfo.id.toB58String(),
         nodeC.peerInfo.id.toB58String()
       ])

@@ -33,7 +33,7 @@ describe('configuration', () => {
     expect(() => {
       validateConfig({
         modules: {
-          transport: [ WS ]
+          transport: [WS]
         }
       })
     }).to.throw()
@@ -52,7 +52,7 @@ describe('configuration', () => {
       validateConfig({
         peerInfo,
         modules: {
-          transport: [ ]
+          transport: []
         }
       })
     }).to.throw('ERROR_EMPTY')
@@ -62,8 +62,8 @@ describe('configuration', () => {
     const options = {
       peerInfo,
       modules: {
-        transport: [ WS ],
-        peerDiscovery: [ Bootstrap ],
+        transport: [WS],
+        peerDiscovery: [Bootstrap],
         dht: DHT
       }
     }
@@ -74,8 +74,8 @@ describe('configuration', () => {
         minPeers: 25
       },
       modules: {
-        transport: [ WS ],
-        peerDiscovery: [ Bootstrap ],
+        transport: [WS],
+        peerDiscovery: [Bootstrap],
         dht: DHT
       },
       config: {
@@ -112,8 +112,8 @@ describe('configuration', () => {
     const options = {
       peerInfo,
       modules: {
-        transport: [ WS ],
-        peerDiscovery: [ Bootstrap ],
+        transport: [WS],
+        peerDiscovery: [Bootstrap],
         dht: DHT
       },
       config: {
@@ -132,8 +132,8 @@ describe('configuration', () => {
         minPeers: 25
       },
       modules: {
-        transport: [ WS ],
-        peerDiscovery: [ Bootstrap ],
+        transport: [WS],
+        peerDiscovery: [Bootstrap],
         dht: DHT
       },
       config: {
@@ -181,8 +181,8 @@ describe('configuration', () => {
         dialTimeout: 30e3
       },
       modules: {
-        transport: [ WS ],
-        peerDiscovery: [ ]
+        transport: [WS],
+        peerDiscovery: []
       }
     }
 
@@ -204,10 +204,10 @@ describe('configuration', () => {
     const options = {
       peerInfo,
       modules: {
-        transport: [ WS ],
-        peerDiscovery: [ Bootstrap ],
-        peerRouting: [ peerRouter ],
-        contentRouting: [ contentRouter ],
+        transport: [WS],
+        peerDiscovery: [Bootstrap],
+        peerRouting: [peerRouter],
+        contentRouting: [contentRouter],
         dht: DHT
       },
       config: {
@@ -221,8 +221,8 @@ describe('configuration', () => {
     }
 
     expect(validateConfig(options).modules).to.deep.include({
-      peerRouting: [ peerRouter ],
-      contentRouting: [ contentRouter ]
+      peerRouting: [peerRouter],
+      contentRouting: [contentRouter]
     })
   })
 
@@ -230,7 +230,7 @@ describe('configuration', () => {
     const options = {
       peerInfo,
       modules: {
-        transport: [ WS ]
+        transport: [WS]
       },
       config: {
         dht: {

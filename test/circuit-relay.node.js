@@ -16,7 +16,7 @@ const tryEcho = require('./utils/try-echo')
 const echo = require('./utils/echo')
 
 describe('circuit relay', () => {
-  let handlerSpies = []
+  const handlerSpies = []
   let relayNode1
   let relayNode2
   let nodeWS1

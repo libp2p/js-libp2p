@@ -105,7 +105,7 @@ describe('.peerRouting', () => {
           })
           createNode('/ip4/0.0.0.0/tcp/0', {
             modules: {
-              peerRouting: [ delegate ]
+              peerRouting: [delegate]
             },
             config: {
               dht: {
@@ -211,7 +211,7 @@ describe('.peerRouting', () => {
           })
           createNode('/ip4/0.0.0.0/tcp/0', {
             modules: {
-              peerRouting: [ delegate ]
+              peerRouting: [delegate]
             }
           }, (err, node) => {
             expect(err).to.not.exist()

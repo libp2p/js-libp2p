@@ -29,10 +29,10 @@ describe('libp2p creation', () => {
     }, (err, node) => {
       expect(err).to.not.exist()
 
-      let sw = node._switch
-      let cm = node.connectionManager
-      let dht = node._dht
-      let pub = node._floodSub
+      const sw = node._switch
+      const cm = node.connectionManager
+      const dht = node._dht
+      const pub = node._floodSub
 
       sinon.spy(sw, 'start')
       sinon.spy(cm, 'start')
@@ -113,7 +113,7 @@ describe('libp2p creation', () => {
     this.timeout(10e3)
     createLibp2p({
       modules: {
-        transport: [ WS ]
+        transport: [WS]
       }
     }, (err, libp2p) => {
       expect(err).to.not.exist()
@@ -130,7 +130,7 @@ describe('libp2p creation', () => {
       createLibp2p({
         peerInfo,
         modules: {
-          transport: [ WS ]
+          transport: [WS]
         }
       }, (err, libp2p) => {
         expect(err).to.not.exist()

@@ -24,7 +24,7 @@ describe('private network', () => {
         config = {
           peerInfo,
           modules: {
-            transport: [ WS ],
+            transport: [WS],
             dht: DHT
           }
         }
@@ -50,14 +50,14 @@ describe('private network', () => {
 
     it('should create a libp2p node with a provided protector', () => {
       let node
-      let protector = {
+      const protector = {
         psk: '123',
         tag: '/psk/1.0.0',
         protect: () => { }
       }
 
       expect(() => {
-        let options = defaultsDeep(config, {
+        const options = defaultsDeep(config, {
           modules: {
             connProtector: protector
           }
@@ -71,7 +71,7 @@ describe('private network', () => {
 
     it('should throw an error if the protector does not have a protect method', () => {
       expect(() => {
-        let options = defaultsDeep(config, {
+        const options = defaultsDeep(config, {
           modules: {
             connProtector: { }
           }

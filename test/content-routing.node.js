@@ -151,7 +151,7 @@ describe('.contentRouting', () => {
           nodeA = new Node({
             peerInfo,
             modules: {
-              contentRouting: [ delegate ]
+              contentRouting: [delegate]
             },
             config: {
               dht: {
@@ -301,7 +301,7 @@ describe('.contentRouting', () => {
           nodeA = new Node({
             peerInfo,
             modules: {
-              contentRouting: [ delegate ]
+              contentRouting: [delegate]
             },
             config: {
               relay: {
