@@ -69,7 +69,7 @@ class Libp2p extends EventEmitter {
 
     // Attach stream multiplexers
     if (this._modules.streamMuxer) {
-      let muxers = this._modules.streamMuxer
+      const muxers = this._modules.streamMuxer
       muxers.forEach((muxer) => this._switch.connection.addStreamMuxer(muxer))
 
       // If muxer exists
@@ -99,7 +99,7 @@ class Libp2p extends EventEmitter {
 
     // Attach crypto channels
     if (this._modules.connEncryption) {
-      let cryptos = this._modules.connEncryption
+      const cryptos = this._modules.connEncryption
       cryptos.forEach((crypto) => {
         this._switch.connection.crypto(crypto.tag, crypto.encrypt)
       })

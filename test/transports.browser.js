@@ -55,7 +55,7 @@ describe('transports', () => {
         const b = new Node({
           peerInfo: peerInfo,
           modules: {
-            streamMuxer: [ Mplex ]
+            streamMuxer: [Mplex]
           }
         })
         expect(b._modules.streamMuxer).to.eql([require('pull-mplex')])

@@ -99,7 +99,7 @@ describe('libp2p state machine (fsm)', () => {
     })
 
     it('should error on start with no transports', (done) => {
-      let transports = node._modules.transport
+      const transports = node._modules.transport
       node._modules.transport = null
 
       node.on('stop', () => {
