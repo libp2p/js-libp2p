@@ -13,10 +13,31 @@ module.exports = (node) => {
   node._floodSub = floodSub
 
   return {
-    subscribe: promisify((topic, options, handler, callback) => {
+    /**
+     * Subscribe the given handler to a pubsub topic
+     *
+     * @param {string} topic
+     * @param {function} handler The handler to subscribe
+     * @param {object|null} [options]
+     * @param {function} [callback] An optional callback
+     *
+     * @returns {Promise|void} A promise is returned if no callback is provided
+     *
+     * @example <caption>Subscribe a handler to a topic</caption>
+     *
+     * // `null` must be passed for options until subscribe is no longer using promisify
+     * const handler = (message) => { }
+     * await libp2p.subscribe(topic, handler, null)
+     *
+     * @example <caption>Use a callback instead of the Promise api</caption>
+     *
+     * // `options` may be passed or omitted when supplying a callback
+     * const handler = (message) => { }
+     * libp2p.subscribe(topic, handler, callback)
+     */
+    subscribe: promisify((topic, handler, options, callback) => {
       if (typeof options === 'function') {
-        callback = handler
-        handler = options
+        callback = options
         options = {}
       }
 

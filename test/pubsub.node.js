@@ -72,7 +72,7 @@ describe('.pubsub', () => {
           cb(err)
         }),
         // subscribe on the first
-        (cb) => nodes[0].pubsub.subscribe('pubsub', handler, cb),
+        (cb) => nodes[0].pubsub.subscribe('pubsub', handler, null, cb),
         // Wait a moment before publishing
         (cb) => setTimeout(cb, 500),
         // publish on the second
@@ -110,7 +110,7 @@ describe('.pubsub', () => {
           cb(err)
         }),
         // subscribe on the first
-        (cb) => nodes[0].pubsub.subscribe('pubsub', handler, cb),
+        (cb) => nodes[0].pubsub.subscribe('pubsub', handler, {}, cb),
         // Wait a moment before publishing
         (cb) => setTimeout(cb, 500),
         // publish on the second
