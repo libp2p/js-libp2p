@@ -121,8 +121,9 @@ describe('.contentRouting', () => {
         const cid = new CID('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSnnnn')
 
         nodeE.contentRouting.findProviders(cid, { maxTimeout: 5000 }, (err, providers) => {
-          expect(err).to.not.exist()
-          expect(providers).to.have.length(0)
+          expect(err).to.exist()
+          expect(err.code).to.eql('ERR_NOT_FOUND')
+          expect(providers).to.not.exist()
           done()
         })
       })
