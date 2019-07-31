@@ -1,55 +1,175 @@
 <!doctype html>
-<html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>libp2p - Documentation</title><link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500|Roboto:300,500,700" rel="stylesheet"/><style>body{margin: 0;
-padding: 0;
-color: #000;
-font-family: Roboto, sans-serif;
-font-weight: 300;
-line-height: 26px;
-font-size: 17px;}*{-moz-box-sizing: border-box;
-box-sizing: border-box;}</style></head><body><main id="app"><div data-radium="true"><div style="position:fixed;box-shadow:0px 2px 3px 0px rgba(0, 0, 0, 0.25);width:100%;min-width:100%;margin-left:0px;margin-right:0px;height:65px;z-index:99;background:#FFFFFF;padding-top:10px;padding-bottom:10px;padding-left:20px;padding-right:20px;" data-radium="true"><div style="margin-right:auto;margin-left:auto;padding-left:15px;padding-right:15px;" class="rmq-87b609c0 rmq-159a7c96 rmq-27601239" data-radium="true"><div style="margin-left:-15px;margin-right:-15px;" data-radium="true"><div style="position:relative;min-height:1px;padding-left:15px;padding-right:15px;float:left;width:50.00000%;" class="rmq-aa1729d5 rmq-a22eaf97 rmq-1918856d rmq-6156e77b rmq-21ab0466 rmq-a01b93a4 rmq-d226cb7e rmq-5cc71c8" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:inherit;font-size:36px;margin-right:20px;"><g><path d="m30 22.5h-5c-1.3 0-2.5 1.3-2.5 2.5h10c0-1.3-1.2-2.5-2.5-2.5z m-2.1-16.2c-6.6 0-8.2 1.2-9.1 2.1-1-0.9-2.6-2.1-9.2-2.1s-9.6 1.7-9.6 3v22.9c1.1-0.6 4.6-1.9 8.4-2.2 4.4-0.4 9.1 0.4 9.1 1.2 0 0.7 0.3 1.3 1.2 1.3h0.1c0.9 0 1.2-0.6 1.2-1.2 0-0.9 4.6-1.7 9.1-1.3 3.7 0.3 7.3 1.6 8.4 2.2v-22.9c0-1.3-3.1-3-9.6-3z m-10.4 22.3c-1.2-0.6-4-1.1-7.5-1.1s-6.6 0.5-7.5 1.1v-17.3s2.5-2.4 7.5-2.4 7.5 1.1 7.5 2.4v17.3z m17.5 0c-0.9-0.6-4-1.1-7.5-1.1s-6.3 0.5-7.5 1.1v-17.3s2.5-2.4 7.5-2.4 7.5 1.1 7.5 2.4v17.3z m-5-11.1h-5c-1.3 0-2.5 1.3-2.5 2.5h10c0-1.3-1.2-2.5-2.5-2.5z m0-5h-5c-1.3 0-2.5 1.3-2.5 2.5h10c0-1.3-1.2-2.5-2.5-2.5z m-17.5 5h-5c-1.2 0-2.5 1.2-2.5 2.5h10c0-1.2-1.2-2.5-2.5-2.5z m0 5h-5c-1.2 0-2.5 1.2-2.5 2.5h10c0-1.2-1.2-2.5-2.5-2.5z m0-10h-5c-1.2 0-2.5 1.2-2.5 2.5h10c0-1.2-1.2-2.5-2.5-2.5z"></path></g></svg><div style="display:inline-block;" data-radium="true"><div style="text-transform:uppercase;font-family:Roboto, sans-serif;" data-radium="true">libp2p</div><div style="font-family:Roboto Mono, Menlo, Monaco, Courier, monospace;font-weight:300;" data-radium="true">0.25.5</div></div></div><div style="position:relative;min-height:1px;padding-left:15px;padding-right:15px;float:right !important;width:25.00000%;text-align:right;font-size:36px;" class="rmq-aa1729d5 rmq-a22eaf97 rmq-1918856d rmq-6156e77b rmq-77267d84 rmq-5c0c1446 rmq-4605701c rmq-34ee8e6a" data-radium="true"><a href="https://libp2p.io"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m20 0c-11 0-20 9-20 20 0 8.8 5.7 16.3 13.7 19 1 0.2 1.3-0.5 1.3-1 0-0.5 0-2 0-3.7-5.5 1.2-6.7-2.4-6.7-2.4-0.9-2.3-2.2-2.9-2.2-2.9-1.9-1.2 0.1-1.2 0.1-1.2 2 0.1 3.1 2.1 3.1 2.1 1.7 3 4.6 2.1 5.8 1.6 0.2-1.3 0.7-2.2 1.3-2.7-4.5-0.5-9.2-2.2-9.2-9.8 0-2.2 0.8-4 2.1-5.4-0.2-0.5-0.9-2.6 0.2-5.3 0 0 1.7-0.5 5.5 2 1.6-0.4 3.3-0.6 5-0.6 1.7 0 3.4 0.2 5 0.7 3.8-2.6 5.5-2.1 5.5-2.1 1.1 2.8 0.4 4.8 0.2 5.3 1.3 1.4 2.1 3.2 2.1 5.4 0 7.6-4.7 9.3-9.2 9.8 0.7 0.6 1.4 1.9 1.4 3.7 0 2.7 0 4.9 0 5.5 0 0.6 0.3 1.2 1.3 1 8-2.7 13.7-10.2 13.7-19 0-11-9-20-20-20z"></path></g></svg></a></div><div style="clear:both;" data-radium="true"></div></div><div style="clear:both;" data-radium="true"></div></div></div><div style="margin-right:auto;margin-left:auto;padding-left:15px;padding-right:15px;padding-top:104px;" class="rmq-87b609c0 rmq-159a7c96 rmq-27601239" data-radium="true"><div style="margin-left:-15px;margin-right:-15px;" data-radium="true"><div style="position:fixed;min-height:1px;padding-left:15px;padding-right:15px;float:left;width:8.33333%;height:80%;max-width:300px;" class="rmq-aa1729d5 rmq-a22eaf97 rmq-1918856d rmq-6156e77b rmq-5c4c5b38 rmq-5c0c1446 rmq-4605701c rmq-34ee8e6a rmq-35757987 rmq-f09e82ae" data-radium="true"><div style="font-family:Roboto, sans-serif;border-radius:4px;padding-top:0;padding-bottom:0;margin-top:26px;border:1px solid #e6e9ed;font-weight:500;font-size:15px;line-height:18px;max-height:70vh;overflow-x:auto;" data-radium="true"><ul style="list-style:none;margin-top:0;margin-bottom:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-left:20px;padding-right:20px;padding-top:13px;padding-bottom:13px;border-bottom:1px solid #e6e9ed;" data-radium="true"><a style="color:#000;" href="#intro" data-radium="true">Intro</a></li></div><div data-radium="true"><li style="padding-left:20px;padding-right:20px;padding-top:13px;padding-bottom:13px;border-bottom:1px solid #e6e9ed;" data-radium="true"><a style="color:#000;" href="#libp2p" data-radium="true">Libp2p</a></li><li style="padding-left:20px;padding-right:20px;padding-top:13px;padding-bottom:13px;border-bottom:1px solid #e6e9ed;" data-radium="true"><div style="padding-top:0;" data-radium="true"><span style="text-transform:uppercase;font-size:13px;line-height:18px;color:#666;" data-radium="true">Instance</span><ul style="list-style:none;padding-left:0;" data-radium="true"><li data-radium="true"><a href="#libp2pemit" style="font-family:Roboto, sans-serif;font-weight:300;font-size:13px;line-height:16px;text-decoration:none;color:#555;" data-radium="true">emit</a></li><li data-radium="true"><a href="#libp2pstart" style="font-family:Roboto, sans-serif;font-weight:300;font-size:13px;line-height:16px;text-decoration:none;color:#555;" data-radium="true">start</a></li><li data-radium="true"><a href="#libp2pstop" style="font-family:Roboto, sans-serif;font-weight:300;font-size:13px;line-height:16px;text-decoration:none;color:#555;" data-radium="true">stop</a></li><li data-radium="true"><a href="#libp2pdial" style="font-family:Roboto, sans-serif;font-weight:300;font-size:13px;line-height:16px;text-decoration:none;color:#555;" data-radium="true">dial</a></li><li data-radium="true"><a href="#libp2pdialprotocol" style="font-family:Roboto, sans-serif;font-weight:300;font-size:13px;line-height:16px;text-decoration:none;color:#555;" data-radium="true">dialProtocol</a></li><li data-radium="true"><a href="#libp2pdialfsm" style="font-family:Roboto, sans-serif;font-weight:300;font-size:13px;line-height:16px;text-decoration:none;color:#555;" data-radium="true">dialFSM</a></li></ul></div></li></div><div data-radium="true"><li style="padding-left:20px;padding-right:20px;padding-top:13px;padding-bottom:13px;border-bottom:1px solid #e6e9ed;" data-radium="true"><a style="color:#000;" href="#createlibp2p" data-radium="true">createLibp2p</a></li></div><div data-radium="true"><li style="padding-left:20px;padding-right:20px;padding-top:13px;padding-bottom:13px;border-bottom:1px solid #e6e9ed;" data-radium="true"><a style="color:#000;" href="#findpeer" data-radium="true">findPeer</a></li></div><div data-radium="true"><li style="padding-left:20px;padding-right:20px;padding-top:13px;padding-bottom:13px;border-bottom:1px solid #e6e9ed;" data-radium="true"><a style="color:#000;" href="#findproviders" data-radium="true">findProviders</a></li></div><div data-radium="true"><li style="padding-left:20px;padding-right:20px;padding-top:13px;padding-bottom:13px;border-bottom:none;" data-radium="true"><a style="color:#000;" href="#provide" data-radium="true">provide</a></li></div></ul></div></div><div style="position:relative;min-height:1px;padding-left:15px;padding-right:15px;float:left;width:100.00000%;" class="rmq-aa1729d5 rmq-a22eaf97 rmq-1918856d rmq-6156e77b rmq-89bb2272 rmq-2d0e68c6 rmq-3752549c rmq-3b9282ea rmq-4d29a8df rmq-ea7683a5 rmq-ad95cc33" data-radium="true"><div class="content" data-radium="true"><style>h1, h2, h3, h4, h5, h6{font-family: Roboto, sans-serif;
-font-weight: 300;}h1{font-size: 48px;
-line-height: 72px;}h2{font-size: 24px;
-line-height: 36px;}h3{font-size: 19px;
-line-height: 29px;
-font-weight: 400;}h4{font-size: 17px;
-line-height: 22px;
-font-weight: 400;}a{text-decoration: none;
-color: #00AAFF;
-:hover: [object Object];}a.anchor:before{content: "";
-display: block;
-height: 100px;
-margin: -80px 0 0;}.content blockquote{padding-left: 20px;
-margin: 0;
-border-left: 4px solid #eee;}.content ul, content li{list-style: none;}.content ul li:before{color: #CCC;
-float: left;
-margin-left: -20px;
-margin-top: 1px;
-content: "•";}pre.hljs, pre > code{margin-bottom: 30px;
-font-family: Roboto Mono, Menlo, Monaco, Courier, monospace;
-padding: 12px 15px 12px 15px;
-border-radius: 4px;
-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
-display: block;
-position: relative;
-overflow-x: auto;
-font-size: 13px;
-color: #666;
-white-space: pre;}code{font-family: Roboto Mono, Menlo, Monaco, Courier, monospace;
-display: inline;
-font-size: 13px;
-font-weight: 400;
-margin: 0 2px;
-padding: 1px 6px;
-box-shadow: 0 0 0 1px #DDD;
-white-space: nowrap;
-border-radius: 4px;}.hljs{display: block;
-overflow-x: auto;}.hljs-comment, .hljs-quote{color: #998;
-font-style: italic;}.hljs-keyword, .hljs-selector-tag, .hljs-subst{color: #333;
-font-weight: bold;}.hljs-number, .hljs-literal, .hljs-variable, .hljs-template-variable, .hljs-tag .hljs-attr{color: #008080;}.hljs-string, .hljs-doctag{color: #d14;}.hljs-title, .hljs-section, .hljs-selector-id{color: #900;
-font-weight: bold;}.hljs-subst{font-weight: normal;}.hljs-type, .hljs-class .hljs-title{color: #458;
-font-weight: bold;}.hljs-tag, .hljs-name, .hljs-attribute{color: #000080;
-font-weight: normal;}.hljs-regexp, .hljs-link{color: #009926;}.hljs-symbol, .hljs-bullet{color: #990073;}.hljs-built_in, .hljs-builtin-name{color: #0086b3;}.hljs-meta{color: #999;
-font-weight: bold;}.hljs-deletion{background: #fdd;}.hljs-addition{background: #dfd;}.hljs-emphasis{font-style: italic;}.hljs-strong{font-weight: bold;}</style><div style="margin-bottom:104px;" data-radium="true"><h1 data-radium="true"><a class="anchor" name="intro"></a>Intro</h1><div><p>Installable via  <code>npm install --save libp2p</code>, it can also be used directly in the browser.</p>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <title>libp2p 0.26.0-rc.0 | Documentation</title>
+  <meta name='description' content='JavaScript implementation of libp2p, a modular peer to peer network stack'>
+  <meta name='viewport' content='width=device-width,initial-scale=1'>
+  <link href='assets/bass.css' rel='stylesheet'>
+  <link href='assets/style.css' rel='stylesheet'>
+  <link href='assets/github.css' rel='stylesheet'>
+  <link href='assets/split.css' rel='stylesheet'>
+</head>
+<body class='documentation m0'>
+    <div class='flex'>
+      <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
+        <div class='py1 px2'>
+          <h3 class='mb0 no-anchor'>libp2p</h3>
+          <div class='mb1'><code>0.26.0-rc.0</code></div>
+          <input
+            placeholder='Filter'
+            id='filter-input'
+            class='col12 block input'
+            type='text' />
+          <div id='toc'>
+            <ul class='list-reset h5 py1-ul'>
+              
+                
+                <li><a
+                  href='#intro'
+                  class="h5 bold black caps">
+                  Intro
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#libp2p'
+                  class=" toggle-sibling">
+                  Libp2p
+                  <span class='icon'>▸</span>
+                </a>
+                
+                <div class='toggle-target display-none'>
+                  
+                  
+                    <ul class='list-reset py1-ul pl1'>
+                      <li class='h5'><span>Instance members</span></li>
+                      
+                      <li><a
+                        href='#libp2pemit'
+                        class='regular pre-open'>
+                        #emit
+                      </a></li>
+                      
+                      <li><a
+                        href='#libp2pstart'
+                        class='regular pre-open'>
+                        #start
+                      </a></li>
+                      
+                      <li><a
+                        href='#libp2pstop'
+                        class='regular pre-open'>
+                        #stop
+                      </a></li>
+                      
+                      <li><a
+                        href='#libp2pdial'
+                        class='regular pre-open'>
+                        #dial
+                      </a></li>
+                      
+                      <li><a
+                        href='#libp2pdialprotocol'
+                        class='regular pre-open'>
+                        #dialProtocol
+                      </a></li>
+                      
+                      <li><a
+                        href='#libp2pdialfsm'
+                        class='regular pre-open'>
+                        #dialFSM
+                      </a></li>
+                      
+                    </ul>
+                  
+                  
+                  
+                </div>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#createlibp2p'
+                  class="">
+                  createLibp2p
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#findpeer'
+                  class="">
+                  findPeer
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#findproviders'
+                  class="">
+                  findProviders
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#provide'
+                  class="">
+                  provide
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#subscribe'
+                  class="">
+                  subscribe
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#unsubscribe'
+                  class="">
+                  unsubscribe
+                  
+                </a>
+                
+                </li>
+              
+            </ul>
+          </div>
+          <div class='mt1 h6 quiet'>
+            <a href='https://documentation.js.org/reading-documentation.html'>Need help reading this?</a>
+          </div>
+        </div>
+      </div>
+      <div id='split-right' class='relative overflow-auto height-viewport-100'>
+        
+          
+            <div class='keyline-top-not py2'><section class='py2 clearfix'>
+
+  <h2 id='intro' class='mt0'>
+    Intro
+  </h2>
+
+  
+    <p>Installable via  <code>npm install --save libp2p</code>, it can also be used directly in the browser.</p>
 <h2>Download</h2>
 <p>The source is available for download from <a href="https://github.com/libp2p/js-libp2p.git">GitHub</a>. Alternatively, you can install using npm:</p>
 <pre class='hljs'>$ npm install --save libp2p</pre>
@@ -64,66 +184,1239 @@ font-weight: bold;}.hljs-deletion{background: #fdd;}.hljs-addition{background: #
 <li><a href="https://unpkg.com/libp2p/dist/index.min.js">https://unpkg.com/libp2p/dist/index.min.js</a></li>
 <li><a href="https://unpkg.com/libp2p/dist/index.js">https://unpkg.com/libp2p/dist/index.js</a></li>
 </ul>
-</div></div><div style="margin-bottom:104px;" data-radium="true"><h1 data-radium="true"><a class="anchor" name="libp2p"></a>Libp2p<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/index.js#L46-L550" title="src/index.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h1><div></div><div style="display:inline;" data-radium="true"><span> Extends </span><span>EventEmitter.</span></div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>_options: any</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h2 style="text-transform:uppercase;" data-radium="true">instance</h2><div style="margin-bottom:52px;" data-radium="true"><h3 data-radium="true"><a class="anchor" name="libp2pemit"></a>Libp2p.prototype.emit<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/index.js#L198-L204" title="src/index.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h3><pre><code>emit(eventName: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, args: ...any): void</code></pre><div style="margin-top:13px;margin-bottom:13px;" data-radium="true"><p>Overrides EventEmitter.emit to conditionally emit errors
+
+  
+</section></div>
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='libp2p'>
+      Libp2p
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/index.js#L47-L558'>
+      <span>src/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  
+    <div class='pre p1 fill-light mt0'>new Libp2p(_options: any)</div>
+  
+  
+    <p>
+      Extends
+      
+        EventEmitter
+      
+    </p>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>_options</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='libp2pemit'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>emit(eventName, args)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/index.js#L206-L212'>
+      <span>src/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Overrides EventEmitter.emit to conditionally emit errors
 if there is a handler. If not, errors will be logged.</p>
-</div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>eventName: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:  <div style="display:inline-block;" data-radium="true"></div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>args: ...any</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h4>Returns</h4><div data-radium="true"><code>void</code><span> 
-</span></div></div></div><div style="margin-bottom:52px;" data-radium="true"><h3 data-radium="true"><a class="anchor" name="libp2pstart"></a>Libp2p.prototype.start<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/index.js#L212-L215" title="src/index.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h3><pre><code>start(callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>)): void</code></pre><div style="margin-top:13px;margin-bottom:13px;" data-radium="true"><p>Starts the libp2p node and all sub services</p>
-</div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>) (=()=>{})</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h4>Returns</h4><div data-radium="true"><code>void</code><span> 
-</span></div></div></div><div style="margin-bottom:52px;" data-radium="true"><h3 data-radium="true"><a class="anchor" name="libp2pstop"></a>Libp2p.prototype.stop<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/index.js#L223-L226" title="src/index.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h3><pre><code>stop(callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>)): void</code></pre><div style="margin-top:13px;margin-bottom:13px;" data-radium="true"><p>Stop the libp2p node by closing its listeners and open connections</p>
-</div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>) (=()=>{})</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h4>Returns</h4><div data-radium="true"><code>void</code><span> 
-</span></div></div></div><div style="margin-bottom:52px;" data-radium="true"><h3 data-radium="true"><a class="anchor" name="libp2pdial"></a>Libp2p.prototype.dial<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/index.js#L240-L242" title="src/index.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h3><pre><code>dial(peer: (PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>), callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>)): void</code></pre><div style="margin-top:13px;margin-bottom:13px;" data-radium="true"><p>Dials to the provided peer. If successful, the <code>PeerInfo</code> of the
+
+    <div class='pre p1 fill-light mt0'>emit(eventName: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, args: ...any): void</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>eventName</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>args</span> <code class='quiet'>(...any)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='libp2pstart'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>start(callback)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/index.js#L220-L223'>
+      <span>src/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Starts the libp2p node and all sub services</p>
+
+    <div class='pre p1 fill-light mt0'>start(callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>)): void</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>)
+            = <code>()=&gt;{}</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='libp2pstop'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>stop(callback)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/index.js#L231-L234'>
+      <span>src/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Stop the libp2p node by closing its listeners and open connections</p>
+
+    <div class='pre p1 fill-light mt0'>stop(callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>)): void</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>)
+            = <code>()=&gt;{}</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='libp2pdial'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>dial(peer, callback)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/index.js#L248-L250'>
+      <span>src/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Dials to the provided peer. If successful, the <code>PeerInfo</code> of the
 peer will be added to the nodes <code>PeerBook</code></p>
-</div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>peer: (PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>:  <div style="display:inline-block;" data-radium="true">The peer to dial
-</div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>)</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h4>Returns</h4><div data-radium="true"><code>void</code><span> 
-</span></div></div></div><div style="margin-bottom:52px;" data-radium="true"><h3 data-radium="true"><a class="anchor" name="libp2pdialprotocol"></a>Libp2p.prototype.dialProtocol<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/index.js#L254-L269" title="src/index.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h3><pre><code>dialProtocol(peer: (PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>), protocol: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, Connection)): void</code></pre><div style="margin-top:13px;margin-bottom:13px;" data-radium="true"><p>Dials to the provided peer and handshakes with the given protocol.
+
+    <div class='pre p1 fill-light mt0'>dial(peer: (PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>), callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>)): void</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>peer</span> <code class='quiet'>((PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>))</code>
+	    The peer to dial
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>))</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='libp2pdialprotocol'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>dialProtocol(peer, protocol, callback)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/index.js#L262-L277'>
+      <span>src/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Dials to the provided peer and handshakes with the given protocol.
 If successful, the <code>PeerInfo</code> of the peer will be added to the nodes <code>PeerBook</code>,
 and the <code>Connection</code> will be sent in the callback</p>
-</div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>peer: (PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>:  <div style="display:inline-block;" data-radium="true">The peer to dial
-</div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>protocol: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:  <div style="display:inline-block;" data-radium="true"></div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, Connection)</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h4>Returns</h4><div data-radium="true"><code>void</code><span> 
-</span></div></div></div><div style="margin-bottom:52px;" data-radium="true"><h3 data-radium="true"><a class="anchor" name="libp2pdialfsm"></a>Libp2p.prototype.dialFSM<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/index.js#L280-L295" title="src/index.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h3><pre><code>dialFSM(peer: (PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>), protocol: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, ConnectionFSM)): void</code></pre><div style="margin-top:13px;margin-bottom:13px;" data-radium="true"><p>Similar to <code>dial</code> and <code>dialProtocol</code>, but the callback will contain a
+
+    <div class='pre p1 fill-light mt0'>dialProtocol(peer: (PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>), protocol: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, Connection)): void</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>peer</span> <code class='quiet'>((PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>))</code>
+	    The peer to dial
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>protocol</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, Connection))</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='libp2pdialfsm'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>dialFSM(peer, protocol, callback)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/index.js#L288-L303'>
+      <span>src/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Similar to <code>dial</code> and <code>dialProtocol</code>, but the callback will contain a
 Connection State Machine.</p>
-</div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>peer: (PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>:  <div style="display:inline-block;" data-radium="true">The peer to dial
-</div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>protocol: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:  <div style="display:inline-block;" data-radium="true"></div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, ConnectionFSM)</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h4>Returns</h4><div data-radium="true"><code>void</code><span> 
-</span></div></div></div></div></div><div style="margin-bottom:104px;" data-radium="true"><h1 data-radium="true"><a class="anchor" name="createlibp2p"></a>createLibp2p<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/index.js#L560-L569" title="src/index.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h1><div><p>Like <code>new Libp2p(options)</code> except it will create a <code>PeerInfo</code>
+
+    <div class='pre p1 fill-light mt0'>dialFSM(peer: (PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>), protocol: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, ConnectionFSM)): void</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>peer</span> <code class='quiet'>((PeerInfo | PeerId | Multiaddr | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>))</code>
+	    The peer to dial
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>protocol</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, ConnectionFSM))</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='createlibp2p'>
+      createLibp2p
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/index.js#L568-L577'>
+      <span>src/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Like <code>new Libp2p(options)</code> except it will create a <code>PeerInfo</code>
 instance if one is not provided in options.</p>
-</div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:  <div style="display:inline-block;" data-radium="true">Libp2p configuration options
-</div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, <a href="#libp2p">Libp2p</a>)</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h4>Returns</h4><div data-radium="true"><code>void</code><span> 
-</span></div></div></div><div style="margin-bottom:104px;" data-radium="true"><h1 data-radium="true"><a class="anchor" name="findpeer"></a>findPeer<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/peer-routing.js#L24-L56" title="src/peer-routing.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h1><div><p>Iterates over all peer routers in series to find the given peer.</p>
-</div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>:  <div style="display:inline-block;" data-radium="true">The id of the peer to find
-</div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:  <div style="display:inline-block;" data-radium="true"></div></li><li style="padding-bottom:13px;" data-radium="true"><code>options.maxTimeout: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>:  <div style="display:inline-block;" data-radium="true">How long the query should run
-</div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, Result&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>>)</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h4>Returns</h4><div data-radium="true"><code>void</code><span> 
-</span></div></div></div><div style="margin-bottom:104px;" data-radium="true"><h1 data-radium="true"><a class="anchor" name="findproviders"></a>findProviders<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/content-routing.js#L27-L63" title="src/content-routing.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h1><div><p>Iterates over all content routers in series to find providers of the given key.
+
+    <div class='pre p1 fill-light mt0'>createLibp2p</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    Libp2p configuration options
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, <a href="#libp2p">Libp2p</a>))</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='findpeer'>
+      findPeer
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/peer-routing.js#L25-L57'>
+      <span>src/peer-routing.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Iterates over all peer routers in series to find the given peer.</p>
+
+    <div class='pre p1 fill-light mt0'>findPeer</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
+	    The id of the peer to find
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    
+          </div>
+          
+          <table class='mt1 mb2 fixed-table h5 col-12'>
+            <colgroup>
+              <col width='30%' />
+              <col width='70%' />
+            </colgroup>
+            <thead>
+              <tr class='bold fill-light'>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody class='mt1'>
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>options.maxTimeout</span> <code class='quiet'><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>
+  </td>
+  <td class='break-word'><span>How long the query should run
+</span></td>
+</tr>
+
+
+              
+            </tbody>
+          </table>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, Result&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>>))</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='findproviders'>
+      findProviders
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/content-routing.js#L28-L64'>
+      <span>src/content-routing.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Iterates over all content routers in series to find providers of the given key.
 Once a content router succeeds, iteration will stop.</p>
-</div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>key: CID</code>:  <div style="display:inline-block;" data-radium="true">The CID key of the content to find
-</div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:  <div style="display:inline-block;" data-radium="true"></div></li><li style="padding-bottom:13px;" data-radium="true"><code>options.maxTimeout: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>:  <div style="display:inline-block;" data-radium="true">How long the query should run
-</div></li><li style="padding-bottom:13px;" data-radium="true"><code>options.maxNumProviders: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>:  <div style="display:inline-block;" data-radium="true">maximum number of providers to find
-</div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, Result&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>>)</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h4>Returns</h4><div data-radium="true"><code>void</code><span> 
-</span></div></div></div><div style="margin-bottom:104px;" data-radium="true"><h1 data-radium="true"><a class="anchor" name="provide"></a>provide<a href="https://github.com/libp2p/js-libp2p/blob/b4a70ea47668573c213537b4b52f3c7431b27db0/src/content-routing.js#L73-L81" title="src/content-routing.js" style="float:right;" data-radium="true"><svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align:middle;"><g><path d="m26.3 7.5l-3.8 3.8 8.8 8.7-8.8 8.8 3.8 3.7 11.2-12.5-11.2-12.5z m-12.5 0l-11.3 12.5 11.3 12.5 3.7-3.7-8.7-8.8 8.7-8.7-3.7-3.8z"></path></g></svg></a></h1><div><p>Iterates over all content routers in parallel to notify it is
+
+    <div class='pre p1 fill-light mt0'>findProviders</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>key</span> <code class='quiet'>(CID)</code>
+	    The CID key of the content to find
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    
+          </div>
+          
+          <table class='mt1 mb2 fixed-table h5 col-12'>
+            <colgroup>
+              <col width='30%' />
+              <col width='70%' />
+            </colgroup>
+            <thead>
+              <tr class='bold fill-light'>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody class='mt1'>
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>options.maxTimeout</span> <code class='quiet'><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>
+  </td>
+  <td class='break-word'><span>How long the query should run
+</span></td>
+</tr>
+
+
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>options.maxNumProviders</span> <code class='quiet'><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>
+  </td>
+  <td class='break-word'><span>maximum number of providers to find
+</span></td>
+</tr>
+
+
+              
+            </tbody>
+          </table>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>, Result&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>>))</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='provide'>
+      provide
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/content-routing.js#L74-L82'>
+      <span>src/content-routing.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Iterates over all content routers in parallel to notify it is
 a provider of the given key.</p>
-</div><div data-radium="true"><h4>Parameters</h4><ol style="list-style:none;margin-left:0;padding-left:0;" data-radium="true"><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>key: CID</code>:  <div style="display:inline-block;" data-radium="true">The CID key of the content to find
-</div></li></div><div data-radium="true"><li style="padding-bottom:13px;" data-radium="true"><code>callback: function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>)</code>:  <div style="display:inline-block;" data-radium="true"></div></li></div></ol></div><div data-radium="true"><h4>Returns</h4><div data-radium="true"><code>void</code><span> 
-</span></div></div></div></div></div><div style="clear:both;" data-radium="true"></div></div><div style="clear:both;" data-radium="true"></div></div><style>@media (min-width: 768px) and (max-width: 991px){ .rmq-87b609c0{width: 750px !important;}}
-@media (min-width: 992px) and (max-width: 1199px){ .rmq-159a7c96{width: 970px !important;}}
-@media (min-width: 1200px){ .rmq-27601239{width: 1170px !important;}}
-@media (min-width: 480px) and (max-width: 767px){ .rmq-aa1729d5{float: left !important;}}
-@media (min-width: 768px) and (max-width: 991px){ .rmq-a22eaf97{float: left !important;}}
-@media (min-width: 992px) and (max-width: 1199px){ .rmq-1918856d{float: left !important;}}
-@media (min-width: 1200px){ .rmq-6156e77b{float: left !important;}}
-@media (min-width: 480px) and (max-width: 767px) { .rmq-21ab0466{width: 50.00000% !important;}}
-@media (min-width: 768px) and (max-width: 991px) { .rmq-a01b93a4{width: 50.00000% !important;}}
-@media (min-width: 992px) and (max-width: 1199px) { .rmq-d226cb7e{width: 50.00000% !important;}}
-@media (min-width: 1200px) { .rmq-5cc71c8{width: 50.00000% !important;}}
-@media (min-width: 480px) and (max-width: 767px) { .rmq-77267d84{width: 25.00000% !important;}}
-@media (min-width: 768px) and (max-width: 991px) { .rmq-5c0c1446{width: 25.00000% !important;}}
-@media (min-width: 992px) and (max-width: 1199px) { .rmq-4605701c{width: 25.00000% !important;}}
-@media (min-width: 1200px) { .rmq-34ee8e6a{width: 25.00000% !important;}}
-@media (min-width: 480px) and (max-width: 767px) { .rmq-5c4c5b38{width: 8.33333% !important;}}
-@media (max-width: 479px){ .rmq-35757987{display: none !important;}}
-@media (min-width: 480px) and (max-width: 767px)  { .rmq-f09e82ae{display: none !important;}}
-@media (min-width: 480px) and (max-width: 767px) { .rmq-89bb2272{width: 100.00000% !important;}}
-@media (min-width: 768px) and (max-width: 991px) { .rmq-2d0e68c6{width: 66.66667% !important;}}
-@media (min-width: 992px) and (max-width: 1199px) { .rmq-3752549c{width: 66.66667% !important;}}
-@media (min-width: 1200px) { .rmq-3b9282ea{width: 66.66667% !important;}}
-@media (min-width: 768px) and (max-width: 991px)  { .rmq-4d29a8df{left: 33.33333% !important;}}
-@media (min-width: 992px) and (max-width: 1199px)  { .rmq-ea7683a5{left: 33.33333% !important;}}
-@media (min-width: 1200px)  { .rmq-ad95cc33{left: 33.33333% !important;}}</style></div></main></body></html>
+
+    <div class='pre p1 fill-light mt0'>provide</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>key</span> <code class='quiet'>(CID)</code>
+	    The CID key of the content to find
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(function (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>))</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='subscribe'>
+      subscribe
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/pubsub.js#L35-L55'>
+      <span>src/pubsub.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Subscribe the given handler to a pubsub topic</p>
+
+    <div class='pre p1 fill-light mt0'>subscribe</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>topic</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>handler</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>)</code>
+	    The handler to subscribe
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>options</span> <code class='quiet'>((<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a> | null)?)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>?)</code>
+	    An optional callback
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a> | void)</code>:
+        A promise is returned if no callback is provided
+
+      
+    
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Example</div>
+    
+      <p><p>Subscribe a handler to a topic</p>
+</p>
+      <pre class='p1 overflow-auto round fill-light'><span class="hljs-comment">// `null` must be passed for options until subscribe is no longer using promisify</span>
+<span class="hljs-keyword">const</span> handler = <span class="hljs-function">(<span class="hljs-params">message</span>) =&gt;</span> { }
+<span class="hljs-keyword">await</span> libp2p.subscribe(topic, handler, <span class="hljs-literal">null</span>)</pre>
+    
+      <p><p>Use a callback instead of the Promise api</p>
+</p>
+      <pre class='p1 overflow-auto round fill-light'><span class="hljs-comment">// `options` may be passed or omitted when supplying a callback</span>
+<span class="hljs-keyword">const</span> handler = <span class="hljs-function">(<span class="hljs-params">message</span>) =&gt;</span> { }
+libp2p.subscribe(topic, handler, callback)</pre>
+    
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='unsubscribe'>
+      unsubscribe
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/99a53592e28dfd410875d1c27fcd22a53ea01c94/src/pubsub.js#L79-L99'>
+      <span>src/pubsub.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Unsubscribes from a pubsub topic</p>
+
+    <div class='pre p1 fill-light mt0'>unsubscribe</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>topic</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>handler</span> <code class='quiet'>((<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a> | null))</code>
+	    The handler to unsubscribe from
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>?)</code>
+	    An optional callback
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a> | void)</code>:
+        A promise is returned if no callback is provided
+
+      
+    
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Example</div>
+    
+      <p><p>Unsubscribe a topic for all handlers</p>
+</p>
+      <pre class='p1 overflow-auto round fill-light'><span class="hljs-comment">// `null` must be passed until unsubscribe is no longer using promisify</span>
+<span class="hljs-keyword">await</span> libp2p.unsubscribe(topic, <span class="hljs-literal">null</span>)</pre>
+    
+      <p><p>Unsubscribe a topic for 1 handler</p>
+</p>
+      <pre class='p1 overflow-auto round fill-light'><span class="hljs-keyword">await</span> libp2p.unsubscribe(topic, handler)</pre>
+    
+      <p><p>Use a callback instead of the Promise api</p>
+</p>
+      <pre class='p1 overflow-auto round fill-light'>libp2p.unsubscribe(topic, handler, callback)</pre>
+    
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+      </div>
+    </div>
+  <script src='assets/anchor.js'></script>
+  <script src='assets/split.js'></script>
+  <script src='assets/site.js'></script>
+</body>
+</html>
