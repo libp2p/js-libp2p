@@ -19,6 +19,7 @@ const modulesSchema = s({
   connProtector: s.union(['undefined', s.interface({ protect: 'function' })]),
   contentRouting: optional(list(['object'])),
   dht: optional(s('null|function|object')),
+  pubsub: optional(s('null|function|object')),
   peerDiscovery: optional(list([s('object|function')])),
   peerRouting: optional(list(['object'])),
   streamMuxer: optional(list([s('object|function')])),
@@ -59,12 +60,10 @@ const configSchema = s({
       timeout: 10e3
     }
   }),
-  // Experimental config
-  EXPERIMENTAL: s({
-    pubsub: 'boolean'
-  }, {
-    // Experimental defaults
-    pubsub: false
+  // Pubsub config
+  pubsub: s('object?', {
+    // DHT defaults
+    enabled: false
   })
 }, {})
 

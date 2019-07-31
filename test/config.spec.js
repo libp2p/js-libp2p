@@ -82,8 +82,8 @@ describe('configuration', () => {
         peerDiscovery: {
           autoDial: true
         },
-        EXPERIMENTAL: {
-          pubsub: false
+        pubsub: {
+          enabled: false
         },
         dht: {
           kBucketSize: 20,
@@ -144,8 +144,8 @@ describe('configuration', () => {
             enabled: true
           }
         },
-        EXPERIMENTAL: {
-          pubsub: false
+        pubsub: {
+          enabled: false
         },
         dht: {
           kBucketSize: 20,
@@ -269,8 +269,8 @@ describe('configuration', () => {
         dht: DHT
       },
       config: {
-        EXPERIMENTAL: {
-          pubsub: false
+        pubsub: {
+          enabled: false
         },
         peerDiscovery: {
           autoDial: true

@@ -6,6 +6,7 @@ const WS = require('libp2p-websockets')
 const Bootstrap = require('libp2p-bootstrap')
 const SPDY = require('libp2p-spdy')
 const KadDHT = require('libp2p-kad-dht')
+const GossipSub = require('libp2p-gossipsub')
 const MPLEX = require('libp2p-mplex')
 const PULLMPLEX = require('pull-mplex')
 const SECIO = require('libp2p-secio')
@@ -52,7 +53,8 @@ class Node extends libp2p {
           MulticastDNS,
           Bootstrap
         ],
-        dht: KadDHT
+        dht: KadDHT,
+        pubsub: GossipSub
       },
       config: {
         peerDiscovery: {
@@ -81,8 +83,8 @@ class Node extends libp2p {
           },
           enabled: true
         },
-        EXPERIMENTAL: {
-          pubsub: false
+        pubsub: {
+          enabled: false
         }
       }
     }
