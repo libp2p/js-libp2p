@@ -1,5 +1,6 @@
 'use strict'
 
+const nextTick = require('async/nextTick')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
@@ -31,8 +32,10 @@ class Bootstrap extends EventEmitter {
 
   /**
    * Start emitting events.
+   *
+   * @param {Function} cb - callback indicating completion
    */
-  start () {
+  start (cb) {
     if (this._timer) {
       return
     }
@@ -40,6 +43,8 @@ class Bootstrap extends EventEmitter {
     this._timer = setInterval(() => this._discoverBootstrapPeers(), this._interval)
 
     this._discoverBootstrapPeers()
+
+    cb && nextTick(() => cb())
   }
 
   /**
