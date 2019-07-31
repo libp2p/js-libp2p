@@ -83,7 +83,7 @@ describe('configuration', () => {
           autoDial: true
         },
         pubsub: {
-          enabled: false
+          enabled: true
         },
         dht: {
           kBucketSize: 20,
@@ -145,7 +145,7 @@ describe('configuration', () => {
           }
         },
         pubsub: {
-          enabled: false
+          enabled: true
         },
         dht: {
           kBucketSize: 20,
@@ -270,7 +270,7 @@ describe('configuration', () => {
       },
       config: {
         pubsub: {
-          enabled: false
+          enabled: true
         },
         peerDiscovery: {
           autoDial: true

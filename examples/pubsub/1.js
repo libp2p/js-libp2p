@@ -7,10 +7,10 @@ const Mplex = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const PeerInfo = require('peer-info')
 const MulticastDNS = require('libp2p-mdns')
+const Gossipsub = require('libp2p-gossipsub')
 const defaultsDeep = require('@nodeutils/defaults-deep')
 const waterfall = require('async/waterfall')
 const parallel = require('async/parallel')
-const series = require('async/series')
 
 class MyBundle extends libp2p {
   constructor (_options) {
@@ -19,7 +19,8 @@ class MyBundle extends libp2p {
         transport: [ TCP ],
         streamMuxer: [ Mplex ],
         connEncryption: [ SECIO ],
-        peerDiscovery: [ MulticastDNS ]
+        peerDiscovery: [ MulticastDNS ],
+        pubsub: Gossipsub
       },
       config: {
         peerDiscovery: {
@@ -27,9 +28,6 @@ class MyBundle extends libp2p {
             interval: 2000,
             enabled: true
           }
-        },
-        EXPERIMENTAL: {
-          pubsub: true
         }
       }
     }

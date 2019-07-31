@@ -62,8 +62,8 @@ const configSchema = s({
   }),
   // Pubsub config
   pubsub: s('object?', {
-    // DHT defaults
-    enabled: false
+    // Pubsub defaults
+    enabled: true
   })
 }, {})
 
