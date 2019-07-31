@@ -1,3 +1,13 @@
+<a name="0.10.1"></a>
+## [0.10.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.10.0...v0.10.1) (2019-07-31)
+
+
+### Bug Fixes
+
+* use callback in start from js-libp2p ([#93](https://github.com/libp2p/js-libp2p-bootstrap/issues/93)) ([74c305d](https://github.com/libp2p/js-libp2p-bootstrap/commit/74c305d))
+
+
+
 <a name="0.10.0"></a>
 # [0.10.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.9.7...v0.10.0) (2019-07-15)
 
