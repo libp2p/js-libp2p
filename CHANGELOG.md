@@ -1,3 +1,31 @@
+<a name="0.26.0-rc.0"></a>
+# [0.26.0-rc.0](https://github.com/libp2p/js-libp2p/compare/v0.25.5...v0.26.0-rc.0) (2019-07-31)
+
+
+### Bug Fixes
+
+* make subscribe comply with ipfs interface ([#389](https://github.com/libp2p/js-libp2p/issues/389)) ([9554b05](https://github.com/libp2p/js-libp2p/commit/9554b05))
+
+
+### Features
+
+* integrate gossipsub by default ([#365](https://github.com/libp2p/js-libp2p/issues/365)) ([791f39a](https://github.com/libp2p/js-libp2p/commit/791f39a))
+* promisify all api methods that accept callbacks ([#381](https://github.com/libp2p/js-libp2p/issues/381)) ([df6ef45](https://github.com/libp2p/js-libp2p/commit/df6ef45))
+
+
+### BREAKING CHANGES
+
+* new configuration for deciding the implementation of pubsub to be used.
+In this context, the experimental flags were also removed. See the README for the latest usage.
+* The ipfs interface specified that options
+should be provided after the handler, not before.
+https://github.com/ipfs/interface-js-ipfs-core/blob/v0.109.0/SPEC/PUBSUB.md#pubsubsubscribe
+
+This corrects the order of parameters. See the jsdocs examples
+for subscribe to see how it should be used.
+
+
+
 <a name="0.25.5"></a>
 ## [0.25.5](https://github.com/libp2p/js-libp2p/compare/v0.25.4...v0.25.5) (2019-07-12)
 
