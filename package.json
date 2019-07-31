@@ -1,6 +1,6 @@
 {
   "name": "libp2p-bootstrap",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -43,6 +43,7 @@
     "test"
   ],
   "contributors": [
+    "Abraham Elmahrek <abe@apache.org>",
     "Alan Shaw <alan.shaw@protocol.ai>",
     "David Dias <daviddias.p@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
@@ -52,8 +53,8 @@
     "Kevin Kwok <antimatter15@gmail.com>",
     "Nuno Nogueira <nunofmn@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
-    "Vasco Santos <vasco.santos@ua.pt>",
     "Vasco Santos <vasco.santos@moxy.studio>",
+    "Vasco Santos <vasco.santos@ua.pt>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>",
     "Zane Starr <zcstarr@gmail.com>",
     "dirkmc <dirkmdev@gmail.com>",
