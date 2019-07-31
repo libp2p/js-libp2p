@@ -143,8 +143,8 @@ module.exports = (node, Pubsub) => {
       return pubsub.setMaxListeners(n)
     },
 
-    start: (cb) => pubsub.start(cb),
+    start: promisify((cb) => pubsub.start(cb)),
 
-    stop: (cb) => pubsub.stop(cb)
+    stop: promisify((cb) => pubsub.stop(cb))
   }
 }
