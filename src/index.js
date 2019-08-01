@@ -551,7 +551,7 @@ class Libp2p extends EventEmitter {
 }
 
 // promisify all instance methods
-;['start', 'stop', 'dial', 'dialProtocol', 'dialFSM', 'hangUp', 'ping'].forEach(method => {
+['start', 'stop', 'dial', 'dialProtocol', 'dialFSM', 'hangUp', 'ping'].forEach(method => {
   Libp2p[method] = promisify(Libp2p[method])
 })
 
