@@ -174,8 +174,8 @@ describe('configuration', () => {
     const options = {
       peerInfo,
       switch: {
-        blacklistTTL: 60e3,
-        blackListAttempts: 5,
+        denyTTL: 60e3,
+        denyAttempts: 5,
         maxParallelDials: 100,
         maxColdCalls: 50,
         dialTimeout: 30e3
@@ -188,8 +188,8 @@ describe('configuration', () => {
 
     expect(validateConfig(options)).to.deep.include({
       switch: {
-        blacklistTTL: 60e3,
-        blackListAttempts: 5,
+        denyTTL: 60e3,
+        denyAttempts: 5,
         maxParallelDials: 100,
         maxColdCalls: 50,
         dialTimeout: 30e3
