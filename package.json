@@ -49,7 +49,7 @@
     "fsm-event": "^2.1.0",
     "libp2p-connection-manager": "^0.1.0",
     "libp2p-ping": "^0.8.5",
-    "libp2p-switch": "^0.42.12",
+    "libp2p-switch": "^0.43.0",
     "libp2p-websockets": "^0.12.2",
     "mafmt": "^6.0.7",
     "multiaddr": "^6.1.0",
