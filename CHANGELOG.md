@@ -1,3 +1,25 @@
+<a name="0.26.0-rc.2"></a>
+# [0.26.0-rc.2](https://github.com/libp2p/js-libp2p/compare/v0.26.0-rc.1...v0.26.0-rc.2) (2019-08-01)
+
+
+### Bug Fixes
+
+* dont override methods of created instance ([#394](https://github.com/libp2p/js-libp2p/issues/394)) ([3e95e6f](https://github.com/libp2p/js-libp2p/commit/3e95e6f))
+* pubsub default config ([#393](https://github.com/libp2p/js-libp2p/issues/393)) ([f4f3f0f](https://github.com/libp2p/js-libp2p/commit/f4f3f0f))
+
+
+### Chores
+
+* update switch ([#395](https://github.com/libp2p/js-libp2p/issues/395)) ([684f283](https://github.com/libp2p/js-libp2p/commit/684f283))
+
+
+### BREAKING CHANGES
+
+* switch configuration has changed.
+'blacklistTTL' is now 'denyTTL' and 'blackListAttempts' is now 'denyAttempts'
+
+
+
 <a name="0.26.0-rc.1"></a>
 # [0.26.0-rc.1](https://github.com/libp2p/js-libp2p/compare/v0.26.0-rc.0...v0.26.0-rc.1) (2019-07-31)
 
