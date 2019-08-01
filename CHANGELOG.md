@@ -1,3 +1,21 @@
+<a name="0.43.0"></a>
+# [0.43.0](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.12...v0.43.0) (2019-08-01)
+
+
+### Code Refactoring
+
+* blacklist to denylist ([#341](https://github.com/libp2p/js-libp2p-switch/issues/341)) ([f64c73b](https://github.com/libp2p/js-libp2p-switch/commit/f64c73b))
+
+
+### BREAKING CHANGES
+
+* Constructor options `blacklistTTL` and `blackListAttempts` have been renamed to `denyTTL` and `denyAttempts`. The error code from errors thrown when dial is currently denied has changed from `ERR_BLACKLISTED` to `ERR_DENIED`.
+
+License: MIT
+Signed-off-by: Alan Shaw <alan.shaw@protocol.ai>
+
+
+
 <a name="0.42.12"></a>
 ## [0.42.12](https://github.com/libp2p/js-libp2p-switch/compare/v0.42.11...v0.42.12) (2019-06-05)
 
