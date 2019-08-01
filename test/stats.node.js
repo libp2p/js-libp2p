@@ -106,7 +106,7 @@ describe('Stats', () => {
       expect(err).to.not.exist()
 
       switches.forEach((swtch) => {
-        let snapshot = swtch.stats.global.snapshot
+        const snapshot = swtch.stats.global.snapshot
         expect(snapshot.dataReceived.toFixed()).to.equal('2210')
         expect(snapshot.dataSent.toFixed()).to.equal('2210')
       })
@@ -161,7 +161,7 @@ describe('Stats', () => {
     setup((err, switches) => {
       expect(err).to.not.exist()
       switches.forEach((swtch) => {
-        let snapshot = swtch.stats.forTransport('tcp').snapshot
+        const snapshot = swtch.stats.forTransport('tcp').snapshot
         expect(snapshot.dataReceived.toFixed()).to.equal('2210')
         expect(snapshot.dataSent.toFixed()).to.equal('2210')
       })
@@ -173,7 +173,7 @@ describe('Stats', () => {
     setup((err, switches) => {
       expect(err).to.not.exist()
       switches.forEach((swtch) => {
-        let snapshot = swtch.stats.forProtocol('/echo/1.0.0').snapshot
+        const snapshot = swtch.stats.forProtocol('/echo/1.0.0').snapshot
         expect(snapshot.dataReceived.toFixed()).to.equal('8')
         expect(snapshot.dataSent.toFixed()).to.equal('8')
       })
@@ -186,7 +186,7 @@ describe('Stats', () => {
       expect(err).to.not.exist()
       switches.forEach((swtch, index) => {
         const other = selectOther(switches, index)
-        let snapshot = swtch.stats.forPeer(other._peerInfo.id.toB58String()).snapshot
+        const snapshot = swtch.stats.forPeer(other._peerInfo.id.toB58String()).snapshot
         expect(snapshot.dataReceived.toFixed()).to.equal('2210')
         expect(snapshot.dataSent.toFixed()).to.equal('2210')
       })
@@ -199,7 +199,7 @@ describe('Stats', () => {
       expect(err).to.not.exist()
       switches.forEach((swtch, index) => {
         const other = selectOther(switches, index)
-        let ma = swtch.stats.forPeer(other._peerInfo.id.toB58String()).movingAverages
+        const ma = swtch.stats.forPeer(other._peerInfo.id.toB58String()).movingAverages
         const intervals = [60000, 300000, 900000]
         intervals.forEach((interval) => {
           const average = ma.dataReceived[interval].movingAverage()

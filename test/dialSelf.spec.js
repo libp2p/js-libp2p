@@ -20,15 +20,18 @@ class MockTransport extends EventEmitter {
     super()
     this.conn = Duplex()
   }
+
   dial (addr, cb) {
-    let c = this.conn[0]
+    const c = this.conn[0]
     this.emit('connection', this.conn[1])
     setImmediate(() => cb(null, c))
     return c
   }
+
   listen (addr, cb) {
     return cb()
   }
+
   filter (mas) {
     return Array.isArray(mas) ? mas : [mas]
   }

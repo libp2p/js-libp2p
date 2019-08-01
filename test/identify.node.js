@@ -89,7 +89,7 @@ describe('Identify', () => {
     switchB.dial(switchA._peerInfo, '/id-test/1.0.0', (err, conn) => {
       expect(err).to.not.exist()
 
-      let data = Buffer.from('data that can be had')
+      const data = Buffer.from('data that can be had')
       pull(
         pull.values([data]),
         conn,
@@ -105,7 +105,7 @@ describe('Identify', () => {
   it('should get protocols for one another', (done) => {
     // We need to reset the PeerInfo objects we use,
     // since we share memory we can receive a false positive if not
-    let peerA = new PeerInfo(switchA._peerInfo.id)
+    const peerA = new PeerInfo(switchA._peerInfo.id)
     switchA._peerInfo.multiaddrs.toArray().forEach((m) => {
       peerA.multiaddrs.add(m)
     })
@@ -142,7 +142,7 @@ describe('Identify', () => {
         observedAddrs = observedAddrs[0]
 
         // pretend to be another peer
-        let publicKey = switchC._peerInfo.id.pubKey.bytes
+        const publicKey = switchC._peerInfo.id.pubKey.bytes
 
         const msgSend = identify.message.encode({
           protocolVersion: 'ipfs/0.1.0',

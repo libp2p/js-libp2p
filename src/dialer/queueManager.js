@@ -171,7 +171,7 @@ class DialQueueManager {
         return
       }
 
-      let targetQueue = this._queues[nextQueue.value]
+      const targetQueue = this._queues[nextQueue.value]
 
       if (!targetQueue) {
         log('missing queue %s, maybe it was aborted?', nextQueue.value)

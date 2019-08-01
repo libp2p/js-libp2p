@@ -73,6 +73,7 @@ class Queue {
     this.isRunning = false
     this.onStopped = onStopped
   }
+
   get length () {
     return this._queue.length
   }
@@ -139,7 +140,7 @@ class Queue {
    */
   abort () {
     while (this.length > 0) {
-      let dial = this._queue.shift()
+      const dial = this._queue.shift()
       dial.callback(DIAL_ABORTED())
     }
     this.stop()
@@ -223,8 +224,8 @@ class Queue {
     })
 
     const peerInfo = this.switch._peerBook.get(this.id)
-    let queuedDial = this._queue.shift()
-    let { connectionFSM, didCreate } = this._getOrCreateConnection(peerInfo)
+    const queuedDial = this._queue.shift()
+    const { connectionFSM, didCreate } = this._getOrCreateConnection(peerInfo)
 
     // If the dial expects a ConnectionFSM, we can provide that back now
     if (queuedDial.useFSM) {

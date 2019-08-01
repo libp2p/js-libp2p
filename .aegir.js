@@ -64,8 +64,8 @@ function pre (done) {
   }
 
   parallel([
-    (cb) => {
-      sigS = sigServer.start(sigOptions, cb)
+    async () => {
+      sigS = await sigServer.start(sigOptions)
     },
     (cb) => createA(cb),
     (cb) => createB(cb)
@@ -76,7 +76,9 @@ function post (done) {
   parallel([
     (cb) => switchA.stop(cb),
     (cb) => switchB.stop(cb),
-    (cb) => sigS.stop(cb)
+    async () => {
+      await sigS.stop()
+    }
   ], done)
 }
 

@@ -64,7 +64,7 @@ exports.doneAfter = (n, willFinish, done) => {
   }
 
   let count = 0
-  let errors = []
+  const errors = []
   return (err) => {
     count++
     if (err) errors.push(err)
