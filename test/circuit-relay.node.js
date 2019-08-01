@@ -20,7 +20,7 @@ const utils = require('./utils')
 const createInfos = utils.createInfos
 const Swarm = require('../src')
 const switchOptions = {
-  blacklistTTL: 0 // nullifies blacklisting
+  denyTTL: 0 // nullifies denylisting
 }
 
 describe(`circuit`, function () {

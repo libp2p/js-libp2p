@@ -3,8 +3,8 @@
 const DialQueueManager = require('./queueManager')
 const getPeerInfo = require('../get-peer-info')
 const {
-  BLACK_LIST_ATTEMPTS,
-  BLACK_LIST_TTL,
+  DENY_ATTEMPTS,
+  DENY_TTL,
   MAX_COLD_CALLS,
   MAX_PARALLEL_DIALS,
   PRIORITY_HIGH,
@@ -59,11 +59,11 @@ module.exports = function (_switch) {
   }
 
   /**
-   * Clears the blacklist for a given peer
+   * Clears the denylist for a given peer
    * @param {PeerInfo} peerInfo
    */
-  function clearBlacklist (peerInfo) {
-    dialQueueManager.clearBlacklist(peerInfo)
+  function clearDenylist (peerInfo) {
+    dialQueueManager.clearDenylist(peerInfo)
   }
 
   /**
@@ -110,9 +110,9 @@ module.exports = function (_switch) {
     connect,
     dial,
     dialFSM,
-    clearBlacklist,
-    BLACK_LIST_ATTEMPTS: isNaN(_switch._options.blackListAttempts) ? BLACK_LIST_ATTEMPTS : _switch._options.blackListAttempts,
-    BLACK_LIST_TTL: isNaN(_switch._options.blacklistTTL) ? BLACK_LIST_TTL : _switch._options.blacklistTTL,
+    clearDenylist,
+    DENY_ATTEMPTS: isNaN(_switch._options.denyAttempts) ? DENY_ATTEMPTS : _switch._options.denyAttempts,
+    DENY_TTL: isNaN(_switch._options.denyTTL) ? DENY_TTL : _switch._options.denyTTL,
     MAX_COLD_CALLS: isNaN(_switch._options.maxColdCalls) ? MAX_COLD_CALLS : _switch._options.maxColdCalls,
     MAX_PARALLEL_DIALS: isNaN(_switch._options.maxParallelDials) ? MAX_PARALLEL_DIALS : _switch._options.maxParallelDials
   }

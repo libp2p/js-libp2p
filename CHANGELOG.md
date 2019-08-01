@@ -4,7 +4,7 @@
 
 ### Bug Fixes
 
-* clear blacklist for peer when connection is established ([#340](https://github.com/libp2p/js-libp2p-switch/issues/340)) ([f306cba](https://github.com/libp2p/js-libp2p-switch/commit/f306cba))
+* clear denylist for peer when connection is established ([#340](https://github.com/libp2p/js-libp2p-switch/issues/340)) ([f306cba](https://github.com/libp2p/js-libp2p-switch/commit/f306cba))
 * dont blindly add observed addresses to our list ([#337](https://github.com/libp2p/js-libp2p-switch/issues/337)) ([f879cfc](https://github.com/libp2p/js-libp2p-switch/commit/f879cfc))
 
 
@@ -72,7 +72,7 @@
 
 ### Bug Fixes
 
-* dont blacklist good peers ([#319](https://github.com/libp2p/js-libp2p-switch/issues/319)) ([f31663f](https://github.com/libp2p/js-libp2p-switch/commit/f31663f))
+* dont denylist good peers ([#319](https://github.com/libp2p/js-libp2p-switch/issues/319)) ([f31663f](https://github.com/libp2p/js-libp2p-switch/commit/f31663f))
 * revert to try each ([#320](https://github.com/libp2p/js-libp2p-switch/issues/320)) ([805d1ad](https://github.com/libp2p/js-libp2p-switch/commit/805d1ad))
 
 
@@ -1067,6 +1067,3 @@ using the connection returned via the callback.
 
 <a name="0.1.0"></a>
 # 0.1.0 (2015-07-19)
-
-
-

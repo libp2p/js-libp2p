@@ -36,7 +36,7 @@ describe('dialer', () => {
 
   describe('connect', () => {
     afterEach(() => {
-      switchA.dialer.clearBlacklist(switchB._peerInfo)
+      switchA.dialer.clearDenylist(switchB._peerInfo)
     })
 
     it('should use default options', (done) => {
@@ -55,16 +55,16 @@ describe('dialer', () => {
   })
 
   describe('queue', () => {
-    it('should blacklist forever after 5 blacklists', () => {
+    it('should denylist forever after 5 denylists', () => {
       const queue = new Queue('QM', switchA)
       for (var i = 0; i < 4; i++) {
-        queue.blacklist()
-        expect(queue.blackListed).to.be.a('number')
-        expect(queue.blackListed).to.not.eql(Infinity)
+        queue.denylist()
+        expect(queue.denylisted).to.be.a('number')
+        expect(queue.denylisted).to.not.eql(Infinity)
       }
 
-      queue.blacklist()
-      expect(queue.blackListed).to.eql(Infinity)
+      queue.denylist()
+      expect(queue.denylisted).to.eql(Infinity)
     })
   })
 
@@ -159,9 +159,9 @@ describe('dialer', () => {
       queueManager.add(dialRequest)
     })
 
-    it('should remove a queue that has reached max blacklist', () => {
+    it('should remove a queue that has reached max denylist', () => {
       const queue = new Queue('QmA', switchA)
-      queue.blackListed = Infinity
+      queue.denylisted = Infinity
 
       const abortSpy = sinon.spy(queue, 'abort')
       const queueManager = new QueueManager(switchA)
@@ -173,9 +173,9 @@ describe('dialer', () => {
       expect(queueManager._queues).to.eql({})
     })
 
-    it('should not remove a queue that is blacklisted below max', () => {
+    it('should not remove a queue that is denylisted below max', () => {
       const queue = new Queue('QmA', switchA)
-      queue.blackListed = Date.now() + 10e3
+      queue.denylisted = Date.now() + 10e3
 
       const abortSpy = sinon.spy(queue, 'abort')
       const queueManager = new QueueManager(switchA)
