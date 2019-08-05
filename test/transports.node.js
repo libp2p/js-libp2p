@@ -18,8 +18,7 @@ const tryEcho = require('./utils/try-echo')
 const echo = require('./utils/echo')
 
 const {
-  WRTC_RENDEZVOUS_MULTIADDR,
-  WS_RENDEZVOUS_MULTIADDR
+  WRTC_RENDEZVOUS_MULTIADDR
 } = require('./utils/constants')
 
 describe('transports', () => {

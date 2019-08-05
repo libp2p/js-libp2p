@@ -24,16 +24,17 @@ const Ping = require('libp2p-ping')
  * promisify callbacks are properly resolved
  */
 class AsyncLibp2p extends Node {
-  async start(...args) {
-    super.start(...args)
+  async start (...args) {
+    await super.start(...args)
   }
-  async stop(...args) {
-    super.start(...args)
+
+  async stop (...args) {
+    await super.start(...args)
   }
 }
 
 async function createAsyncNode () {
-  let peerInfo = await promisify(createPeerInfo)()
+  const peerInfo = await promisify(createPeerInfo)()
   peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
   return new AsyncLibp2p({ peerInfo })
 }

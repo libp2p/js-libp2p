@@ -54,7 +54,6 @@ describe('circuit relay', () => {
   })
 
   before('connect to the relay node', async () => {
-    peerRelay.multiaddrs.toArray().forEach(m => console.log(m.toString()))
     await Promise.all(
       [browserNode1, browserNode2].map((node) => {
         return new Promise(resolve => {
