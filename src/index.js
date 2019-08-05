@@ -187,6 +187,11 @@ class Libp2p extends EventEmitter {
     })
 
     this._peerDiscovered = this._peerDiscovered.bind(this)
+
+    // promisify all instance methods
+    ;['start', 'stop', 'dial', 'dialProtocol', 'dialFSM', 'hangUp', 'ping'].forEach(method => {
+      this[method] = promisify(this[method], { context: this })
+    })
   }
 
   /**
@@ -295,6 +300,13 @@ class Libp2p extends EventEmitter {
     })
   }
 
+  /**
+   * Disconnects from the given peer
+   *
+   * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to ping
+   * @param {function(Error)} callback
+   * @returns {void}
+   */
   hangUp (peer, callback) {
     this._getPeerInfo(peer, (err, peerInfo) => {
       if (err) { return callback(err) }
@@ -303,6 +315,13 @@ class Libp2p extends EventEmitter {
     })
   }
 
+  /**
+   * Pings the provided peer
+   *
+   * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to ping
+   * @param {function(Error, Ping)} callback
+   * @returns {void}
+   */
   ping (peer, callback) {
     if (!this.isStarted()) {
       return callback(notStarted('ping', this.state._state))
@@ -549,11 +568,6 @@ class Libp2p extends EventEmitter {
     }, callback)
   }
 }
-
-// promisify all instance methods
-['start', 'stop', 'dial', 'dialProtocol', 'dialFSM', 'hangUp', 'ping'].forEach(method => {
-  Libp2p[method] = promisify(Libp2p[method])
-})
 
 module.exports = Libp2p
 /**
