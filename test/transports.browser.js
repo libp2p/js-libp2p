@@ -25,14 +25,11 @@ describe('transports', () => {
     let peerBMultiaddr
     let nodeA
 
-    before((done) => {
-      getPeerRelay((err, peerInfo) => {
-        expect(err).to.not.exist()
-        peerB = new PeerInfo(peerInfo.id)
-        peerBMultiaddr = `/ip4/127.0.0.1/tcp/9200/ws/p2p/${peerInfo.id.toB58String()}`
-        peerB.multiaddrs.add(peerBMultiaddr)
-        done()
-      })
+    before(async () => {
+      const peerInfo = await getPeerRelay()
+      peerB = new PeerInfo(peerInfo.id)
+      peerBMultiaddr = `/ip4/127.0.0.1/tcp/9200/ws/p2p/${peerInfo.id.toB58String()}`
+      peerB.multiaddrs.add(peerBMultiaddr)
     })
 
     after((done) => nodeA.stop(done))

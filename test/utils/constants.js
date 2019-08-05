@@ -5,6 +5,7 @@ const PeerInfo = require('peer-info')
 const nextTick = require('async/nextTick')
 const peerJSON = require('../fixtures/test-peer')
 const multiaddr = require('multiaddr')
+const promisify = require('promisify-es6')
 
 let peerRelay = null
 
@@ -20,7 +21,7 @@ let peerRelay = null
  * @param {function(error, PeerInfo)} callback
  * @returns {void}
  */
-module.exports.getPeerRelay = (callback) => {
+module.exports.getPeerRelay = promisify((callback) => {
   if (peerRelay) return nextTick(callback, null, peerRelay)
 
   PeerId.createFromJSON(peerJSON, (err, peerId) => {
@@ -34,7 +35,7 @@ module.exports.getPeerRelay = (callback) => {
 
     callback(null, peerRelay)
   })
-}
+})
 
-module.exports.WS_RENDEZVOUS_MULTIADDR = multiaddr('/ip4/127.0.0.1/tcp/14444/wss')
-module.exports.WRTC_RENDEZVOUS_MULTIADDR = multiaddr('/ip4/127.0.0.1/tcp/15555/wss')
+module.exports.WS_RENDEZVOUS_MULTIADDR = multiaddr('/ip4/127.0.0.1/tcp/14444/ws')
+module.exports.WRTC_RENDEZVOUS_MULTIADDR = multiaddr('/ip4/127.0.0.1/tcp/15555/ws')

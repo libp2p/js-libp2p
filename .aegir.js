@@ -1,7 +1,6 @@
 'use strict'
 
 const pull = require('pull-stream')
-const parallel = require('async/parallel')
 const WebSocketStarRendezvous = require('libp2p-websocket-star-rendezvous')
 const sigServer = require('libp2p-webrtc-star/src/sig-server')
 
@@ -15,68 +14,46 @@ const {
 let wrtcRendezvous
 let wsRendezvous
 let node
+let peerInfo
 
-const before = (done) => {
-  parallel([
-    (cb) => {
-      sigServer.start({
-        port: WRTC_RENDEZVOUS_MULTIADDR.nodeAddress().port
-        // cryptoChallenge: true TODO: needs https://github.com/libp2p/js-libp2p-webrtc-star/issues/128
-      })
-      .then(server => {
-        wrtcRendezvous = server
-        cb()
-      })
-      .catch(cb)
-    },
-    (cb) => {
-      WebSocketStarRendezvous.start({
-        port: WS_RENDEZVOUS_MULTIADDR.nodeAddress().port,
-        refreshPeerListIntervalMS: 1000,
-        strictMultiaddr: false,
-        cryptoChallenge: true
-      }, (err, _server) => {
-        if (err) {
-          return cb(err)
+const before = async () => {
+  [wrtcRendezvous, wsRendezvous, peerInfo] = await Promise.all([
+    sigServer.start({
+      port: WRTC_RENDEZVOUS_MULTIADDR.nodeAddress().port
+      // cryptoChallenge: true TODO: needs https://github.com/libp2p/js-libp2p-webrtc-star/issues/128
+    }),
+    WebSocketStarRendezvous.start({
+      port: WS_RENDEZVOUS_MULTIADDR.nodeAddress().port,
+      refreshPeerListIntervalMS: 1000,
+      strictMultiaddr: false,
+      cryptoChallenge: true
+    }),
+    getPeerRelay()
+  ])
+
+  node = new Node({
+    peerInfo,
+    config: {
+      relay: {
+        enabled: true,
+        hop: {
+          enabled: true,
+          active: true
         }
-        wsRendezvous = _server
-        cb()
-      })
-    },
-    (cb) => {
-      getPeerRelay((err, peerInfo) => {
-        if (err) {
-          return done(err)
-        }
-
-        node = new Node({
-          peerInfo,
-          config: {
-            relay: {
-              enabled: true,
-              hop: {
-                enabled: true,
-                active: true
-              }
-            }
-          }
-        })
-
-        node.handle('/echo/1.0.0', (protocol, conn) => pull(conn, conn))
-        node.start(cb)
-      })
+      }
     }
-  ], done)
+  })
+
+  node.handle('/echo/1.0.0', (protocol, conn) => pull(conn, conn))
+  await node.start()
 }
 
-const after = (done) => {
-  setTimeout(() =>
-    parallel([
-      (cb) => wrtcRendezvous.stop().then(cb).catch(cb),
-      ...[node, wsRendezvous].map((s) => (cb) => s.stop(cb)),
-    ], done),
-    2000
-  )
+const after = () => {
+  return Promise.all([
+    wrtcRendezvous.stop(),
+    wsRendezvous.stop(),
+    node.stop()
+  ])
 }
 
 module.exports = {

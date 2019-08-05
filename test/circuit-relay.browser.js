@@ -43,12 +43,7 @@ describe('circuit relay', () => {
   let peerRelay
 
   before('get peer relay', async () => {
-    peerRelay = await new Promise(resolve => {
-      getPeerRelay((err, peer) => {
-        expect(err).to.not.exist()
-        resolve(peer)
-      })
-    })
+    peerRelay = await getPeerRelay()
   })
 
   before('create the browser nodes', async () => {
@@ -59,6 +54,7 @@ describe('circuit relay', () => {
   })
 
   before('connect to the relay node', async () => {
+    peerRelay.multiaddrs.toArray().forEach(m => console.log(m.toString()))
     await Promise.all(
       [browserNode1, browserNode2].map((node) => {
         return new Promise(resolve => {

@@ -17,7 +17,10 @@ const createNode = require('./utils/create-node.js')
 const tryEcho = require('./utils/try-echo')
 const echo = require('./utils/echo')
 
-const { WRTC_RENDEZVOUS_MULTIADDR } = require('./utils/constants')
+const {
+  WRTC_RENDEZVOUS_MULTIADDR,
+  WS_RENDEZVOUS_MULTIADDR
+} = require('./utils/constants')
 
 describe('transports', () => {
   describe('TCP only', () => {
@@ -576,25 +579,24 @@ describe('transports', () => {
     let nodeTCP
     let nodeWS
     let nodeWebSocketStar
-
     let ss
+    const PORT = 24642
+
+    before(async () => {
+      ss = await rendezvous.start({
+        port: PORT
+      })
+    })
 
     before((done) => {
       parallel([
-        (cb) => {
-          rendezvous.start({ port: 24642 }, (err, server) => {
-            expect(err).to.not.exist()
-            ss = server
-            cb()
-          })
-        },
         (cb) => {
           const wstar = new WSStar()
 
           createNode([
             '/ip4/0.0.0.0/tcp/0',
             '/ip4/127.0.0.1/tcp/25011/ws',
-            '/ip4/127.0.0.1/tcp/24642/ws/p2p-websocket-star'
+            `/ip4/127.0.0.1/tcp/${PORT}/ws/p2p-websocket-star`
           ], {
             modules: {
               transport: [
@@ -603,13 +605,6 @@ describe('transports', () => {
                 wstar
               ],
               peerDiscovery: [wstar.discovery]
-            },
-            config: {
-              peerDiscovery: {
-                [wstar.discovery.tag]: {
-                  enabled: true
-                }
-              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
@@ -640,18 +635,11 @@ describe('transports', () => {
           const wstar = new WSStar({})
 
           createNode([
-            '/ip4/127.0.0.1/tcp/24642/ws/p2p-websocket-star'
+            `/ip4/127.0.0.1/tcp/${PORT}/ws/p2p-websocket-star`
           ], {
             modules: {
               transport: [wstar],
               peerDiscovery: [wstar.discovery]
-            },
-            config: {
-              peerDiscovery: {
-                [wstar.discovery.tag]: {
-                  enabled: true
-                }
-              }
             }
           }, (err, node) => {
             expect(err).to.not.exist()
@@ -670,7 +658,9 @@ describe('transports', () => {
         (cb) => nodeTCP.stop(cb),
         (cb) => nodeWS.stop(cb),
         (cb) => nodeWebSocketStar.stop(cb),
-        (cb) => ss.stop(cb)
+        async () => {
+          await ss.stop()
+        }
       ], done)
     })
 
