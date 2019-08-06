@@ -83,7 +83,7 @@
     "libp2p-tcp": "^0.13.0",
     "libp2p-webrtc-star": "^0.16.1",
     "libp2p-websocket-star": "~0.10.2",
-    "libp2p-websocket-star-rendezvous": "~0.3.0",
+    "libp2p-websocket-star-rendezvous": "~0.4.1",
     "lodash.times": "^4.3.2",
     "merge-options": "^1.0.1",
     "nock": "^10.0.6",
