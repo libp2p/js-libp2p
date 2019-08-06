@@ -1,3 +1,13 @@
+<a name="0.26.0-rc.3"></a>
+# [0.26.0-rc.3](https://github.com/libp2p/js-libp2p/compare/v0.26.0-rc.2...v0.26.0-rc.3) (2019-08-06)
+
+
+### Bug Fixes
+
+* promisified methods ([#398](https://github.com/libp2p/js-libp2p/issues/398)) ([ff7a6c8](https://github.com/libp2p/js-libp2p/commit/ff7a6c8))
+
+
+
 <a name="0.26.0-rc.2"></a>
 # [0.26.0-rc.2](https://github.com/libp2p/js-libp2p/compare/v0.26.0-rc.1...v0.26.0-rc.2) (2019-08-01)
 
