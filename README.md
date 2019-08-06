@@ -94,6 +94,8 @@ npm install --save libp2p
 
 ## Usage
 
+**IMPORTANT NOTE**: We are currently on the way of migrating all our `libp2p` modules to use `async await` and `async iterators`, instead of callbacks and `pull-streams`. As a consequence, when you start a new libp2p project, we must check which versions of the modules you should use. For now, it is required to use the modules using callbacks with `libp2p`, while we are working on getting the remaining modules ready for a full migration. For more details, you can have a look at [libp2p/js-libp2p#266](https://github.com/libp2p/js-libp2p/issues/266).
+
 ### [Tutorials and Examples](/examples)
 
 You can find multiple examples on the [examples folder](/examples) that will guide you through using libp2p for several scenarios.
