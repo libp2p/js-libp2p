@@ -20,7 +20,7 @@ describe('Transport Manager', () => {
     let peerInfo
     const dialAllTransport = { filter: addrs => addrs }
 
-    before(function(done) {
+    before(function (done) {
       this.timeout(10e3)
       PeerInfo.create((err, info) => {
         if (err) return done(err)
