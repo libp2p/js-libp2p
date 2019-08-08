@@ -1,0 +1,21 @@
+{
+  "name": "libp2p-circuit",
+  "version": "0.3.7",
+  "description": "JavaScript implementation of circuit/switch relaying",
+  "main": "src/index.js",
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Dmitriy Ryajov <dryajov@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Hugo Dias <mail@hugodias.me>",
+    "Jacob Heun <jacobheun@gmail.com>",
+    "Jacob Heun <jake@andyet.net>",
+    "Maciej Krüger <mkg20001@gmail.com>",
+    "Oli Evans <oli@tableflip.io>",
+    "Pedro Teixeira <i@pgte.me>",
+    "Vasco Santos <vasco.santos@ua.pt>",
+    "Victor Bjelkholm <victorbjelkholm@gmail.com>",
+    "Yusef Napora <yusef@napora.org>",
+    "dirkmc <dirk@mccormick.cx>"
+  ]
+}
