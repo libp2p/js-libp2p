@@ -13,3 +13,5 @@ require('./circuit-relay.node')
 require('./multiaddr-trim.node')
 require('./stats')
 require('./dht.node')
+
+require('./switch/node')
