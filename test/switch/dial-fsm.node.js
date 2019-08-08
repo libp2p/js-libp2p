@@ -113,7 +113,7 @@ describe('dialFSM', () => {
     protocol = '/error/1.0.0'
     switchC.handle(protocol, () => { })
 
-    switchA.dialer.clearBlacklist(switchC._peerInfo)
+    switchA.dialer.clearDenylist(switchC._peerInfo)
     switchA.dialFSM(switchC._peerInfo, protocol, (err, connFSM) => {
       expect(err).to.not.exist()
       connFSM.once('error', (err) => {
@@ -124,34 +124,34 @@ describe('dialFSM', () => {
     })
   })
 
-  it('should error when the peer is blacklisted', (done) => {
+  it('should error when the peer is denylisted', (done) => {
     protocol = '/error/1.0.0'
     switchC.handle(protocol, () => { })
 
-    switchA.dialer.clearBlacklist(switchC._peerInfo)
+    switchA.dialer.clearDenylist(switchC._peerInfo)
     switchA.dialFSM(switchC._peerInfo, protocol, (err, connFSM) => {
       expect(err).to.not.exist()
       connFSM.once('error', () => {
-        // dial with the blacklist
+        // dial with the denylist
         switchA.dialFSM(switchC._peerInfo, protocol, (err) => {
           expect(err).to.exist()
-          expect(err.code).to.eql('ERR_BLACKLISTED')
+          expect(err.code).to.eql('ERR_DENIED')
           done()
         })
       })
     })
   })
 
-  it('should not blacklist a peer that was successfully connected', (done) => {
-    protocol = '/noblacklist/1.0.0'
+  it('should not denylist a peer that was successfully connected', (done) => {
+    protocol = '/nodenylist/1.0.0'
     switchB.handle(protocol, () => { })
 
-    switchA.dialer.clearBlacklist(switchB._peerInfo)
+    switchA.dialer.clearDenylist(switchB._peerInfo)
     switchA.dialFSM(switchB._peerInfo, protocol, (err, connFSM) => {
       expect(err).to.not.exist()
       connFSM.once('connection', () => {
         connFSM.once('close', () => {
-          // peer should not be blacklisted
+          // peer should not be denylisted
           switchA.dialFSM(switchB._peerInfo, protocol, (err, conn) => {
             expect(err).to.not.exist()
             conn.once('close', done)
@@ -163,7 +163,7 @@ describe('dialFSM', () => {
     })
   })
 
-  it('should clear the blacklist for a peer that connected to us', (done) => {
+  it('should clear the denylist for a peer that connected to us', (done) => {
     series([
       // Attempt to dial the peer that's not listening
       (cb) => switchC.dial(switchDialOnly._peerInfo, (err) => {

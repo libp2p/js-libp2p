@@ -222,7 +222,7 @@ class Stats extends EventEmitter {
 
     let n
 
-    if (!this._stats.hasOwnProperty(key)) {
+    if (!Object.prototype.hasOwnProperty.call(this._stats, key)) {
       n = this._stats[key] = Big(0)
     } else {
       n = this._stats[key]

@@ -33,27 +33,27 @@ describe('Get peer info', () => {
   })
 
   it('should be able get peer info from multiaddr', () => {
-    let _peerInfo = getPeerInfo(multiaddrA, peerBook)
+    const _peerInfo = getPeerInfo(multiaddrA, peerBook)
     expect(peerBook.has(_peerInfo)).to.equal(true)
     expect(peerInfoA).to.deep.equal(_peerInfo)
   })
 
   it('should return a new PeerInfo with a multiAddr not in the PeerBook', () => {
-    let wrongMultiAddr = MultiAddr('/ipfs/QmckZzdVd72h9QUFuJJpQqhsZqGLwjhh81qSvZ9BhB2FQi')
-    let _peerInfo = getPeerInfo(wrongMultiAddr, peerBook)
+    const wrongMultiAddr = MultiAddr('/ipfs/QmckZzdVd72h9QUFuJJpQqhsZqGLwjhh81qSvZ9BhB2FQi')
+    const _peerInfo = getPeerInfo(wrongMultiAddr, peerBook)
     expect(PeerInfo.isPeerInfo(_peerInfo)).to.equal(true)
     expect(peerBook.has(_peerInfo)).to.equal(false)
   })
 
   it('should be able get peer info from peer id', () => {
-    let _peerInfo = getPeerInfo(multiaddrA, peerBook)
+    const _peerInfo = getPeerInfo(multiaddrA, peerBook)
     expect(peerBook.has(_peerInfo)).to.equal(true)
     expect(peerInfoA).to.deep.equal(_peerInfo)
   })
 
   it('should not be able to get the peer info for a wrong peer id', (done) => {
     PeerId.createFromJSON(TestPeerInfos[1].id, (err, id) => {
-      let func = () => {
+      const func = () => {
         getPeerInfo(id, peerBook)
       }
 
@@ -93,7 +93,7 @@ describe('Get peer info', () => {
   })
 
   it('an invalid peer type should throw an error', () => {
-    let func = () => {
+    const func = () => {
       getPeerInfo('/ip4/127.0.0.1/tcp/1234', peerBook)
     }
 

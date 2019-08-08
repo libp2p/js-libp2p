@@ -15,6 +15,7 @@ const series = require('async/series')
 const pull = require('pull-stream')
 const PeerBook = require('peer-book')
 const tryEcho = require('./utils').tryEcho
+const sinon = require('sinon')
 
 const Switch = require('libp2p-switch')
 
@@ -51,6 +52,10 @@ describe('Switch (webrtc-star)', () => {
     switch2 = new Switch(peer2, new PeerBook())
     done()
   }))
+
+  afterEach(() => {
+    sinon.restore()
+  })
 
   it('add WebRTCStar transport to switch 1', () => {
     wstar1 = new WebRTCStar()
@@ -119,6 +124,8 @@ describe('Switch (webrtc-star)', () => {
 
     wstar1.discovery.on('peer', (peerInfo) => switch1.dial(peerInfo, check))
     wstar2.discovery.on('peer', (peerInfo) => switch2.dial(peerInfo, check))
+    sinon.stub(wstar1.discovery, '_isStarted').value(true)
+    sinon.stub(wstar2.discovery, '_isStarted').value(true)
 
     peerId.create((err, id3) => {
       expect(err).to.not.exist()
@@ -129,6 +136,7 @@ describe('Switch (webrtc-star)', () => {
 
       switch3 = new Switch(peer3, new PeerBook())
       const wstar3 = new WebRTCStar()
+      sinon.stub(wstar3.discovery, '_isStarted').value(true)
       switch3.transport.add('wstar', wstar3)
       switch3.connection.addStreamMuxer(spdy)
       switch3.connection.reuse()

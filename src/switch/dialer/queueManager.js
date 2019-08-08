@@ -27,22 +27,22 @@ class DialQueueManager {
 
   /**
    * Runs through all queues, aborts and removes them if they
-   * are no longer valid. A queue that is blacklisted indefinitely,
+   * are no longer valid. A queue that is denylisted indefinitely,
    * is considered no longer valid.
    * @private
    */
   _clean () {
     const queues = Object.values(this._queues)
     queues.forEach(dialQueue => {
-      // Clear if the queue has reached max blacklist
-      if (dialQueue.blackListed === Infinity) {
+      // Clear if the queue has reached max denylist
+      if (dialQueue.denylisted === Infinity) {
         dialQueue.abort()
         delete this._queues[dialQueue.id]
         return
       }
 
-      // Keep track of blacklisted queues
-      if (dialQueue.blackListed) return
+      // Keep track of denylisted queues
+      if (dialQueue.denylisted) return
 
       // Clear if peer is no longer active
       // To avoid reallocating memory, dont delete queues of
@@ -125,7 +125,7 @@ class DialQueueManager {
 
     // If we're already connected to the peer, start the queue now
     // While it might cause queues to go over the max parallel amount,
-    // it avoids blocking peers we're already connected to
+    // it avoids denying peers we're already connected to
     if (peerInfo.isConnected()) {
       targetQueue.start()
       return
@@ -171,7 +171,7 @@ class DialQueueManager {
         return
       }
 
-      let targetQueue = this._queues[nextQueue.value]
+      const targetQueue = this._queues[nextQueue.value]
 
       if (!targetQueue) {
         log('missing queue %s, maybe it was aborted?', nextQueue.value)
@@ -184,13 +184,13 @@ class DialQueueManager {
   }
 
   /**
-   * Will remove the `peerInfo` from the dial blacklist
+   * Will remove the `peerInfo` from the dial denylist
    * @param {PeerInfo} peerInfo
    */
-  clearBlacklist (peerInfo) {
+  clearDenylist (peerInfo) {
     const queue = this.getQueue(peerInfo)
-    queue.blackListed = null
-    queue.blackListCount = 0
+    queue.denylisted = null
+    queue.denylistCount = 0
   }
 
   /**

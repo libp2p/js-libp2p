@@ -124,10 +124,10 @@ module.exports = (observer, _options) => {
 
     globalStats.start()
 
-    for (let peerStat of peerStats.values()) {
+    for (const peerStat of peerStats.values()) {
       peerStat.start()
     }
-    for (let transportStat of transportStats.values()) {
+    for (const transportStat of transportStats.values()) {
       transportStat.start()
     }
   }
@@ -136,10 +136,10 @@ module.exports = (observer, _options) => {
     observer.removeListener('message', onMessage)
     globalStats.stop()
 
-    for (let peerStat of peerStats.values()) {
+    for (const peerStat of peerStats.values()) {
       peerStat.stop()
     }
-    for (let transportStat of transportStats.values()) {
+    for (const transportStat of transportStats.values()) {
       transportStat.stop()
     }
   }

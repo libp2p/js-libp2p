@@ -215,7 +215,7 @@ class ConnectionFSM extends BaseConnection {
     }
 
     const nextTransport = (key) => {
-      let transport = key
+      const transport = key
       if (!transport) {
         if (!circuitEnabled) {
           return this.close(
@@ -271,7 +271,7 @@ class ConnectionFSM extends BaseConnection {
 
     delete this.switch.conns[this.theirB58Id]
 
-    let tasks = []
+    const tasks = []
 
     // Clean up stored connections
     if (this.muxer) {

@@ -1,7 +1,7 @@
 'use strict'
 
 const ConnectionFSM = require('../connection')
-const { DIAL_ABORTED, ERR_BLACKLISTED } = require('../errors')
+const { DIAL_ABORTED, ERR_DENIED } = require('../errors')
 const nextTick = require('async/nextTick')
 const once = require('once')
 const debug = require('debug')
@@ -68,11 +68,12 @@ class Queue {
     this.id = peerId
     this.switch = _switch
     this._queue = []
-    this.blackListed = null
-    this.blackListCount = 0
+    this.denylisted = null
+    this.denylistCount = 0
     this.isRunning = false
     this.onStopped = onStopped
   }
+
   get length () {
     return this._queue.length
   }
@@ -86,7 +87,7 @@ class Queue {
    */
   add (protocol, useFSM, callback) {
     if (!this.isDialAllowed()) {
-      return nextTick(callback, ERR_BLACKLISTED())
+      return nextTick(callback, ERR_DENIED())
     }
     this._queue.push({ protocol, useFSM, callback })
   }
@@ -96,10 +97,10 @@ class Queue {
    * @returns {boolean}
    */
   isDialAllowed () {
-    if (this.blackListed) {
-      // If the blacklist ttl has passed, reset it
-      if (Date.now() > this.blackListed) {
-        this.blackListed = null
+    if (this.denylisted) {
+      // If the deny ttl has passed, reset it
+      if (Date.now() > this.denylisted) {
+        this.denylisted = null
         return true
       }
       // Dial is not allowed
@@ -139,32 +140,32 @@ class Queue {
    */
   abort () {
     while (this.length > 0) {
-      let dial = this._queue.shift()
+      const dial = this._queue.shift()
       dial.callback(DIAL_ABORTED())
     }
     this.stop()
   }
 
   /**
-   * Marks the queue as blacklisted. The queue will be immediately aborted.
+   * Marks the queue as denylisted. The queue will be immediately aborted.
    * @returns {void}
    */
-  blacklist () {
-    this.blackListCount++
+  denylist () {
+    this.denylistCount++
 
-    if (this.blackListCount >= this.switch.dialer.BLACK_LIST_ATTEMPTS) {
-      this.blackListed = Infinity
+    if (this.denylistCount >= this.switch.dialer.DENY_ATTEMPTS) {
+      this.denylisted = Infinity
       return
     }
 
-    let ttl = this.switch.dialer.BLACK_LIST_TTL * Math.pow(this.blackListCount, 3)
+    let ttl = this.switch.dialer.DENY_TTL * Math.pow(this.denylistCount, 3)
     const minTTL = ttl * 0.9
     const maxTTL = ttl * 1.1
 
     // Add a random jitter of 20% to the ttl
     ttl = Math.floor(Math.random() * (maxTTL - minTTL) + minTTL)
 
-    this.blackListed = Date.now() + ttl
+    this.denylisted = Date.now() + ttl
     this.abort()
   }
 
@@ -223,8 +224,8 @@ class Queue {
     })
 
     const peerInfo = this.switch._peerBook.get(this.id)
-    let queuedDial = this._queue.shift()
-    let { connectionFSM, didCreate } = this._getOrCreateConnection(peerInfo)
+    const queuedDial = this._queue.shift()
+    const { connectionFSM, didCreate } = this._getOrCreateConnection(peerInfo)
 
     // If the dial expects a ConnectionFSM, we can provide that back now
     if (queuedDial.useFSM) {
@@ -244,11 +245,11 @@ class Queue {
     // depending on the error.
     connectionFSM.once('error', (err) => {
       queuedDial.callback(err)
-      // Dont blacklist peers we have identified and that we are connected to
+      // Dont denylist peers we have identified and that we are connected to
       if (peerInfo.protocols.size > 0 && peerInfo.isConnected()) {
         return
       }
-      this.blacklist()
+      this.denylist()
     })
 
     connectionFSM.once('close', () => {
@@ -257,14 +258,14 @@ class Queue {
 
     // If we're not muxed yet, add listeners
     connectionFSM.once('muxed', () => {
-      this.blackListCount = 0 // reset blacklisting on good connections
+      this.denylistCount = 0 // reset denylisting on good connections
       queuedDial.connection = connectionFSM
       createConnectionWithProtocol(queuedDial)
       next()
     })
 
     connectionFSM.once('unmuxed', () => {
-      this.blackListCount = 0
+      this.denylistCount = 0
       queuedDial.connection = connectionFSM
       createConnectionWithProtocol(queuedDial)
       next()
