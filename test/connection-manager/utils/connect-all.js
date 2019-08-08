@@ -7,7 +7,7 @@ module.exports = (nodes, callback) => {
     nodes,
     (node, cb) => {
       eachSeries(
-        nodes.filter(n => node != n),
+        nodes.filter(n => node !== n),
         (otherNode, cb) => node.dial(otherNode.peerInfo, cb),
         cb
       )

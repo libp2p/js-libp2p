@@ -9,7 +9,7 @@ module.exports = (nodes, callback) => {
     (node, cb) => {
       const connectedTo = []
       eachSeries(
-        nodes.filter(n => node != n),
+        nodes.filter(n => node !== n),
         (otherNode, cb) => {
           const otherNodePeerInfo = otherNode.peerInfo
           node.dial(otherNodePeerInfo, (err) => {

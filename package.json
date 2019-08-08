@@ -54,7 +54,7 @@
     "latency-monitor": "~0.2.1",
     "libp2p-circuit": "~0.3.6",
     "libp2p-connection-manager": "./src/connection-manager",
-    "libp2p-identify": "~0.7.6",
+    "libp2p-identify": "./src/identify",
     "libp2p-ping": "^0.8.5",
     "libp2p-switch": "./src/switch",
     "libp2p-websockets": "^0.12.2",
@@ -68,6 +68,7 @@
     "peer-info": "~0.15.1",
     "pull-stream": "^3.6.13",
     "promisify-es6": "^1.0.3",
+    "protons": "^1.0.1",
     "retimer": "^2.0.0",
     "superstruct": "^0.6.0"
   },

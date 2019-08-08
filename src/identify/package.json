@@ -1,0 +1,19 @@
+{
+  "name": "libp2p-identify",
+  "version": "0.7.6",
+  "description": "libp2p Identify Protocol",
+  "main": "src/index.js",
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Greenkeeper <support@greenkeeper.io>",
+    "Hugo Dias <hugomrdias@gmail.com>",
+    "Jacob Heun <jacobheun@gmail.com>",
+    "Jacob Heun <jake@andyet.net>",
+    "Maciej Krüger <mkg20001@gmail.com>",
+    "Richard Littauer <richard.littauer@gmail.com>",
+    "Vasco Santos <vasco.santos@moxy.studio>",
+    "Yusef Napora <yusef@protocol.ai>",
+    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
+  ]
+}
