@@ -20,12 +20,17 @@ describe('Transport Manager', () => {
     let peerInfo
     const dialAllTransport = { filter: addrs => addrs }
 
-    beforeEach(done => {
+    before(function(done) {
+      this.timeout(10e3)
       PeerInfo.create((err, info) => {
         if (err) return done(err)
         peerInfo = info
         done()
       })
+    })
+
+    afterEach(() => {
+      peerInfo.multiaddrs.clear()
     })
 
     it('should return all transport addresses when peer info has 0 addrs', () => {
