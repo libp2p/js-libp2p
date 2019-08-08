@@ -1,0 +1,12 @@
+{
+  "name": "libp2p-connection-manager",
+  "version": "0.1.0",
+  "description": "JS Libp2p Connection Manager",
+  "main": "src/index.js",
+  "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Jacob Heun <jacobheun@gmail.com>",
+    "Pedro Teixeira <i@pgte.me>",
+    "Vasco Santos <vasco.santos@ua.pt>"
+  ]
+}
