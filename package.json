@@ -6,8 +6,8 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
-    "test": "aegir test -t node -f test/**/*.js",
-    "test:node": "aegir test -t node -f test/**/*.js",
+    "test": "aegir test -t node",
+    "test:node": "aegir test -t node",
     "release": "aegir release -t node --no-build",
     "release-minor": "aegir release -t node --type minor --no-build",
     "release-major": "aegir-release -t node --type major --no-build",
@@ -35,22 +35,21 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^18.2.2",
+    "aegir": "^20.0.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
     "interface-transport": "~0.3.6",
-    "lodash.isfunction": "^3.0.9",
-    "pull-stream": "^3.6.9"
+    "pull-stream": "^3.6.14"
   },
   "dependencies": {
     "class-is": "^1.1.0",
     "debug": "^4.1.1",
     "interface-connection": "~0.3.3",
-    "ip-address": "^5.9.0",
+    "ip-address": "^6.1.0",
     "lodash.includes": "^4.3.0",
     "lodash.isfunction": "^3.0.9",
     "mafmt": "^6.0.7",
-    "multiaddr": "^6.0.6",
+    "multiaddr": "^6.1.0",
     "once": "^1.4.0",
     "stream-to-pull-stream": "^1.7.3"
   },
