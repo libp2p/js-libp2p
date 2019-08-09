@@ -17,7 +17,8 @@ const identify = require('libp2p-identify')
 
 describe('identify.dialer', () => {
   let original
-  beforeEach(function (done) {
+
+  before(function (done) {
     this.timeout(20 * 1000)
 
     PeerInfo.create((err, info) => {
@@ -28,6 +29,11 @@ describe('identify.dialer', () => {
       original = info
       done()
     })
+  })
+
+  afterEach(() => {
+    original.multiaddrs.clear()
+    original.protocols.clear()
   })
 
   it('works', (done) => {
@@ -56,11 +62,11 @@ describe('identify.dialer', () => {
       expect(info.id.pubKey.bytes)
         .to.eql(original.id.pubKey.bytes)
 
-      expect(info.multiaddrs.toArray())
-        .to.eql(original.multiaddrs.toArray())
+      expect(info.multiaddrs.has(original.multiaddrs.toArray()[0]))
+        .to.eql(true)
 
-      expect(observedAddrs)
-        .to.eql([multiaddr('/ip4/127.0.0.1/tcp/5001')])
+      expect(multiaddr('/ip4/127.0.0.1/tcp/5001').equals(observedAddrs[0]))
+        .to.eql(true)
 
       expect(info.protocols).to.eql(original.protocols)
 
@@ -92,11 +98,11 @@ describe('identify.dialer', () => {
       expect(info.id.pubKey.bytes)
         .to.eql(original.id.pubKey.bytes)
 
-      expect(info.multiaddrs.toArray())
-        .to.eql(original.multiaddrs.toArray())
+      expect(info.multiaddrs.has(original.multiaddrs.toArray()[0]))
+        .to.eql(true)
 
-      expect(observedAddrs)
-        .to.eql([multiaddr('/ip4/127.0.0.1/tcp/5001')])
+      expect(multiaddr('/ip4/127.0.0.1/tcp/5001').equals(observedAddrs[0]))
+        .to.eql(true)
 
       expect(Array.from(info.protocols)).to.eql([])
 
