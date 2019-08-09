@@ -1,7 +1,7 @@
 'use strict'
 
 const DialQueueManager = require('./queueManager')
-const getPeerInfo = require('../get-peer-info')
+const { getPeerInfo } = require('../../get-peer-info')
 const {
   DENY_ATTEMPTS,
   DENY_TTL,

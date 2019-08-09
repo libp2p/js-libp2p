@@ -25,7 +25,7 @@ const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
 const dht = require('./dht')
 const pubsub = require('./pubsub')
-const getPeerInfo = require('./get-peer-info')
+const { getPeerInfoRemote } = require('./get-peer-info')
 const validateConfig = require('./config').validate
 const { codes } = require('./errors')
 
@@ -132,8 +132,6 @@ class Libp2p extends EventEmitter {
     this.peerRouting = peerRouting(this)
     this.contentRouting = contentRouting(this)
     this.dht = dht(this)
-
-    this._getPeerInfo = getPeerInfo(this)
 
     // Mount default protocols
     Ping.mount(this._switch)
@@ -267,11 +265,10 @@ class Libp2p extends EventEmitter {
       protocol = undefined
     }
 
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) { return callback(err) }
-
-      this._switch.dial(peerInfo, protocol, callback)
-    })
+    getPeerInfoRemote(peer, this)
+      .then(peerInfo => {
+        this._switch.dial(peerInfo, protocol, callback)
+      }, callback)
   }
 
   /**
@@ -293,11 +290,10 @@ class Libp2p extends EventEmitter {
       protocol = undefined
     }
 
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) { return callback(err) }
-
-      this._switch.dialFSM(peerInfo, protocol, callback)
-    })
+    getPeerInfoRemote(peer, this)
+      .then(peerInfo => {
+        this._switch.dialFSM(peerInfo, protocol, callback)
+      }, callback)
   }
 
   /**
@@ -308,11 +304,10 @@ class Libp2p extends EventEmitter {
    * @returns {void}
    */
   hangUp (peer, callback) {
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) { return callback(err) }
-
-      this._switch.hangUp(peerInfo, callback)
-    })
+    getPeerInfoRemote(peer, this)
+      .then(peerInfo => {
+        this._switch.hangUp(peerInfo, callback)
+      }, callback)
   }
 
   /**
@@ -327,11 +322,10 @@ class Libp2p extends EventEmitter {
       return callback(notStarted('ping', this.state._state))
     }
 
-    this._getPeerInfo(peer, (err, peerInfo) => {
-      if (err) { return callback(err) }
-
-      callback(null, new Ping(this._switch, peerInfo))
-    })
+    getPeerInfoRemote(peer, this)
+      .then(peerInfo => {
+        callback(null, new Ping(this._switch, peerInfo))
+      }, callback)
   }
 
   handle (protocol, handlerFunc, matchFunc) {
