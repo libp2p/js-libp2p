@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "async": "^2.6.2",
-    "bignumber.js": "^8.1.1",
+    "bignumber.js": "^9.0.0",
     "class-is": "^1.1.0",
     "debug": "^4.1.1",
     "err-code": "^1.1.2",
