@@ -158,7 +158,9 @@ describe('identify.dialer', () => {
     })
   })
 
-  it('should return an error with mismatched peerInfo data', (done) => {
+  it('should return an error with mismatched peerInfo data', function (done) {
+    this.timeout(10e3)
+
     const p = pair()
     original.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/5002'))
     const input = msg.encode({
