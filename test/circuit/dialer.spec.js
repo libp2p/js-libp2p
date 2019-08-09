@@ -9,7 +9,6 @@ const Connection = require('interface-connection').Connection
 const multiaddr = require('multiaddr')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
-const waterfall = require('async/waterfall')
 const pull = require('pull-stream/pull')
 const values = require('pull-stream/sources/values')
 const asyncMap = require('pull-stream/throughs/async-map')
@@ -26,18 +25,22 @@ const expect = chai.expect
 chai.use(dirtyChai)
 
 describe(`dialer tests`, function () {
-  describe(`.dial`, function () {
-    const dialer = sinon.createStubInstance(Dialer)
+  let dialer
 
+  beforeEach(() => {
+    dialer = sinon.createStubInstance(Dialer)
+  })
+
+  afterEach(() => {
+    sinon.restore()
+  })
+
+  describe(`.dial`, function () {
     beforeEach(function () {
       dialer.relayPeers = new Map()
       dialer.relayPeers.set(nodes.node2.id, new Connection())
       dialer.relayPeers.set(nodes.node3.id, new Connection())
       dialer.dial.callThrough()
-    })
-
-    afterEach(function () {
-      dialer._dialPeer.reset()
     })
 
     it(`fail on non circuit addr`, function () {
@@ -76,8 +79,6 @@ describe(`dialer tests`, function () {
   })
 
   describe(`.canHop`, function () {
-    const dialer = sinon.createStubInstance(Dialer)
-
     let fromConn = null
     const peer = new PeerInfo(PeerId.createFromB58String('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA'))
 
@@ -91,10 +92,6 @@ describe(`dialer tests`, function () {
       dialer.utils = utilsFactory({})
       dialer.canHop.callThrough()
       dialer._dialRelayHelper.callThrough()
-    })
-
-    afterEach(function () {
-      dialer._dialRelay.reset()
     })
 
     it(`should handle successful CAN_HOP`, (done) => {
@@ -139,18 +136,12 @@ describe(`dialer tests`, function () {
   })
 
   describe(`._dialPeer`, function () {
-    const dialer = sinon.createStubInstance(Dialer)
-
     beforeEach(function () {
       dialer.relayPeers = new Map()
       dialer.relayPeers.set(nodes.node1.id, new Connection())
       dialer.relayPeers.set(nodes.node2.id, new Connection())
       dialer.relayPeers.set(nodes.node3.id, new Connection())
       dialer._dialPeer.callThrough()
-    })
-
-    afterEach(function () {
-      dialer._negotiateRelay.reset()
     })
 
     it(`should dial a peer over any relay`, function (done) {
@@ -187,40 +178,33 @@ describe(`dialer tests`, function () {
   })
 
   describe(`._negotiateRelay`, function () {
-    const dialer = sinon.createStubInstance(Dialer)
     const dstMa = multiaddr(`/ipfs/${nodes.node4.id}`)
 
     let conn = null
     let peer = null
     let p = null
-    const callback = sinon.stub()
 
-    beforeEach(function (done) {
-      waterfall([
-        (cb) => PeerId.createFromJSON(nodes.node4, cb),
-        (peerId, cb) => PeerInfo.create(peerId, cb),
-        (peer, cb) => {
+    before((done) => {
+      PeerId.createFromJSON(nodes.node4, (_, peerId) => {
+        PeerInfo.create(peerId, (err, peerInfo) => {
+          peer = peerInfo
           peer.multiaddrs.add(`/p2p-circuit/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`)
-          dialer.swarm = {
-            _peerInfo: peer
-          }
-          cb()
-        },
-        (cb) => {
-          dialer.utils = utilsFactory({})
-          dialer.relayConns = new Map()
-          dialer._negotiateRelay.callThrough()
-          dialer._dialRelayHelper.callThrough()
-          peer = new PeerInfo(PeerId.createFromB58String(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`))
-          p = pair()
-          conn = new Connection(p[1])
-          cb()
-        }
-      ], done)
+          done(err)
+        })
+      })
     })
 
-    afterEach(() => {
-      callback.reset()
+    beforeEach(() => {
+      dialer.swarm = {
+        _peerInfo: peer
+      }
+      dialer.utils = utilsFactory({})
+      dialer.relayConns = new Map()
+      dialer._negotiateRelay.callThrough()
+      dialer._dialRelayHelper.callThrough()
+      peer = new PeerInfo(PeerId.createFromB58String(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`))
+      p = pair()
+      conn = new Connection(p[1])
     })
 
     it(`should write the correct dst addr`, function (done) {
