@@ -7,7 +7,7 @@ chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const multiaddr = require('multiaddr')
 const pull = require('pull-stream')
-const setImmediate = require('async/setImmediate')
+const nextTick = require('async/nextTick')
 
 const LimitDialer = require('libp2p-switch/limit-dialer')
 const utils = require('./utils')
@@ -37,14 +37,14 @@ describe('LimitDialer', () => {
     // mock transport
     const t1 = {
       dial (addr, cb) {
-        setTimeout(() => cb(error), 1)
+        nextTick(cb, error)
         return {}
       }
     }
 
     dialer.dialMany(peers[0].id, t1, peers[0].multiaddrs.toArray(), (err, conn) => {
       expect(err).to.exist()
-      expect(err).to.eql([error, error, error])
+      expect(err).to.include.members([error, error, error])
       expect(conn).to.not.exist()
       done()
     })
@@ -58,16 +58,16 @@ describe('LimitDialer', () => {
       dial (addr, cb) {
         const as = addr.toString()
         if (as.match(/191/)) {
-          setImmediate(() => cb(new Error('fail')))
+          nextTick(cb, new Error('fail'))
           return null
         } else if (as.match(/192/)) {
-          setTimeout(cb, 2)
+          nextTick(cb)
           return {
             source: pull.values([1]),
             sink: pull.drain()
           }
         } else if (as.match(/193/)) {
-          setTimeout(cb, 8)
+          nextTick(cb)
           return {
             source: pull.values([2]),
             sink: pull.drain()
