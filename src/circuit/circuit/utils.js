@@ -4,6 +4,7 @@ const multiaddr = require('multiaddr')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const proto = require('../protocol')
+const { getPeerInfo } = require('../../get-peer-info')
 
 module.exports = function (swarm) {
   /**
@@ -27,33 +28,12 @@ module.exports = function (swarm) {
   /**
    * Helper to make a peer info from a multiaddrs
    *
-   * @param {Multiaddr|PeerInfo|PeerId} ma
-   * @param {Swarm} swarm
+   * @param {Multiaddr|PeerInfo|PeerId} peer
    * @return {PeerInfo}
    * @private
    */
-  // TODO: this is ripped off of libp2p, should probably be a generally available util function
   function peerInfoFromMa (peer) {
-    let p
-    // PeerInfo
-    if (PeerInfo.isPeerInfo(peer)) {
-      p = peer
-      // Multiaddr instance (not string)
-    } else if (multiaddr.isMultiaddr(peer)) {
-      const peerIdB58Str = peer.getPeerId()
-      try {
-        p = swarm._peerBook.get(peerIdB58Str)
-      } catch (err) {
-        p = new PeerInfo(PeerId.createFromB58String(peerIdB58Str))
-      }
-      p.multiaddrs.add(peer)
-      // PeerId
-    } else if (PeerId.isPeerId(peer)) {
-      const peerIdB58Str = peer.toB58String()
-      p = swarm._peerBook.has(peerIdB58Str) ? swarm._peerBook.get(peerIdB58Str) : peer
-    }
-
-    return p
+    return getPeerInfo(peer, swarm._peerBook)
   }
 
   /**

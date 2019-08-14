@@ -38,7 +38,7 @@ function getPeerInfo (peer, peerBook) {
 
   addr && peer.multiaddrs.add(addr)
 
-  return peerBook.put(peer)
+  return peerBook ? peerBook.put(peer) : peer
 }
 
 /**
