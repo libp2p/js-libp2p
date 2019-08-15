@@ -11,6 +11,7 @@ const Gossipsub = require('libp2p-gossipsub')
 const defaultsDeep = require('@nodeutils/defaults-deep')
 const waterfall = require('async/waterfall')
 const parallel = require('async/parallel')
+const series = require('async/series')
 
 class MyBundle extends libp2p {
   constructor (_options) {
@@ -28,6 +29,10 @@ class MyBundle extends libp2p {
             interval: 2000,
             enabled: true
           }
+        },
+        pubsub: {
+          enabled: true,
+          emitSelf: true
         }
       }
     }
@@ -63,19 +68,36 @@ parallel([
   node1.once('peer:connect', (peer) => {
     console.log('connected to %s', peer.id.toB58String())
 
-    // Subscribe to the topic 'news'
-    node1.pubsub.subscribe('news',
-      (msg) => console.log(msg.from, msg.data.toString()),
-      () => {
+    series([
+      // node1 subscribes to "news"
+      (cb) => node1.pubsub.subscribe(
+        'news',
+        (msg) => console.log(`node1 received: ${msg.data.toString()}`),
+        cb
+      ),
+      (cb) => setTimeout(cb, 500),
+      // node2 subscribes to "news"
+      (cb) => node2.pubsub.subscribe(
+        'news',
+        (msg) => console.log(`node2 received: ${msg.data.toString()}`),
+        cb
+      ),
+      (cb) => setTimeout(cb, 500),
+      // node2 publishes "news" every second
+      (cb) => {
         setInterval(() => {
-          // Publish the message on topic 'news'
           node2.pubsub.publish(
             'news',
             Buffer.from('Bird bird bird, bird is the word!'),
-            () => {}
+            (err) => {
+              if (err) { throw err }
+            }
           )
         }, 1000)
-      }
-    )
+        cb()
+      },
+    ], (err) => {
+      if (err) { throw err }
+    })
   })
 })
