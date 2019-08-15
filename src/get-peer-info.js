@@ -43,7 +43,7 @@ function getPeerInfo (peer, peerBook) {
 
 /**
  * If `getPeerInfo` does not return a peer with multiaddrs,
- * the `libp2p` PeerRouter will be used to attempt to fund the peer.
+ * the `libp2p` PeerRouter will be used to attempt to find the peer.
  *
  * @async
  * @param {PeerInfo|PeerId|Multiaddr|string} peer
