@@ -192,7 +192,10 @@ class Node extends Libp2p {
           }
         },
         pubsub: {
-          enabled: true
+          enabled: true,
+          emitSelf: true,      // whether the node should emit to self on publish, in the event of the topic being subscribed
+          signMessages: true,  // if messages should be signed
+          strictSigning: true  // if message signing should be required
         }
       }
     }
