@@ -63,7 +63,10 @@ const configSchema = s({
   // Pubsub config
   pubsub: s('object?', {
     // Pubsub defaults
-    enabled: true
+    enabled: true,
+    emitSelf: true,
+    signMessages: true,
+    strictSigning: true
   })
 }, {})
 
