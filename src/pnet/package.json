@@ -1,40 +1,5 @@
 {
   "name": "libp2p-pnet",
-  "version": "0.1.0",
   "description": "Private Network protection implementation",
-  "main": "src/index.js",
-  "dependencies": {
-    "debug": "^4.1.1",
-    "interface-connection": "~0.3.3",
-    "pull-cat": "^1.1.11",
-    "pull-defer": "~0.2.3",
-    "pull-handshake": "^1.1.4",
-    "pull-reader": "^1.3.1",
-    "pull-stream": "^3.6.9",
-    "xsalsa20": "^1.0.2"
-  },
-  "devDependencies": {
-    "aegir": "^18.2.2",
-    "async": "^2.6.2",
-    "chai": "^4.2.0",
-    "dirty-chai": "^2.0.1",
-    "peer-id": "~0.12.2",
-    "pull-pair": "^1.1.0"
-  },
-  "engines": {
-    "node": ">=6.0.0",
-    "npm": ">=3.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/libp2p/js-libp2p-pnet.git"
-  },
-  "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-pnet/issues"
-  },
-  "homepage": "https://github.com/libp2p/js-libp2p-pnet",
-  "contributors": [
-    "Jacob Heun <jacobheun@gmail.com>",
-    "Jacob Heun <jake@andyet.net>"
-  ]
+  "main": "./index.js"
 }

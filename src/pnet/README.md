@@ -45,7 +45,7 @@ use one of the methods below to generate your key.
 If you have libp2p-pnet locally, you can run the following from the projects root.
 
 ```sh
-node src/key-generator.js > swarm.key
+node ./key-generator.js > swarm.key
 ```
 
 #### From a module using libp2p

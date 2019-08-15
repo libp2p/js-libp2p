@@ -1,19 +1,5 @@
 {
   "name": "libp2p-ping",
-  "version": "0.8.5",
   "description": "libp2p Ping protocol implementation",
-  "main": "src/index.js",
-  "contributors": [
-    "David Dias <daviddias.p@gmail.com>",
-    "Francisco Baio Dias <xicombd@gmail.com>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "Hugo Dias <mail@hugodias.me>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "João Antunes <j.goncalo.antunes@gmail.com>",
-    "Richard Littauer <richard.littauer@gmail.com>",
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "Vasco Santos <vasco.santos@ua.pt>",
-    "greenkeeperio-bot <support@greenkeeper.io>",
-    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
-  ]
+  "main": "./index.js"
 }
