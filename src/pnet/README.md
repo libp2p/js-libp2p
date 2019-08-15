@@ -3,6 +3,8 @@ js-libp2p-pnet
 
 > Connection protection management for libp2p leveraging PSK encryption via XSalsa20.
 
+**Note**: git history prior to merging into js-libp2p can be found in the original repository, https://github.com/libp2p/js-libp2p-pnet.
+
 ## Table of Contents
 
 - [Usage](#usage)

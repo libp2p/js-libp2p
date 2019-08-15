@@ -2,9 +2,11 @@
 
 > Node.js implementation of the Circuit module that libp2p uses, which implements the [interface-connection](https://github.com/libp2p/interface-connection) interface for dial/listen.
 
+**Note**: git history prior to merging into js-libp2p can be found in the original repository, https://github.com/libp2p/js-libp2p-circuit.
+
 `libp2p-circuit` implements the circuit-relay mechanism that allows nodes that don't speak the same protocol to communicate using a third _relay_ node.
 
-**Note:** This module uses [pull-streams](https://pull-stream.github.io) for all stream based interfaces.
+This module uses [pull-streams](https://pull-stream.github.io) for all stream based interfaces.
 
 ### Why?
 
