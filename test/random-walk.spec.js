@@ -11,7 +11,7 @@ const { defaultRandomWalk } = require('../src/constants')
 const { AssertionError } = require('assert')
 
 describe('Random Walk', () => {
-  let mockDHT = {
+  const mockDHT = {
     peerInfo: {
       id: {
         toB58String: () => 'QmRLoXS3E73psYaUsma1VSbboTa2J8Z9kso1tpiGLk9WQ4'
@@ -135,7 +135,7 @@ describe('Random Walk', () => {
       })
       sinon.spy(randomWalk, '_runPeriodically')
 
-      sinon.stub(randomWalk, '_walk').callsFake(async () => {
+      sinon.stub(randomWalk, '_walk').callsFake(async () => { // eslint-disable-line require-await
         // Try to start again
         randomWalk.start()
 
@@ -174,7 +174,7 @@ describe('Random Walk', () => {
         queriesPerPeriod: 1
       }
       const randomWalk = new RandomWalk(mockDHT, options)
-      sinon.stub(randomWalk, '_walk').callsFake(async (queries, timeout) => {
+      sinon.stub(randomWalk, '_walk').callsFake(async (queries, timeout) => { // eslint-disable-line require-await
         expect(queries).to.eql(options.queriesPerPeriod)
         expect(timeout).to.eql(options.timeout)
         done()

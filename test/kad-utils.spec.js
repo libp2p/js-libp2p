@@ -41,7 +41,7 @@ describe('kad utils', () => {
 
   describe('withTimeout', () => {
     it('rejects with the error in the original function', async () => {
-      const original = async () => { throw new Error('explode') }
+      const original = async () => { throw new Error('explode') } // eslint-disable-line require-await
       const asyncFn = utils.withTimeout(original, 100)
       let err
       try {

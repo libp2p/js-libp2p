@@ -57,7 +57,7 @@ describe('Query', () => {
     dht.switch.dial = (peer, callback) => callback()
 
     let i = 0
-    const queryFunc = async (p) => {
+    const queryFunc = async (p) => { // eslint-disable-line require-await
       if (i++ === 1) {
         expect(p.id).to.eql(peerInfos[2].id.id)
 
@@ -90,7 +90,7 @@ describe('Query', () => {
 
     let i = 0
     const visited = []
-    const queryFunc = async (p) => {
+    const queryFunc = async (p) => { // eslint-disable-line require-await
       visited.push(p)
 
       if (i++ === 1) {
@@ -126,7 +126,7 @@ describe('Query', () => {
     // mock this so we can dial non existing peers
     dht.switch.dial = (peer, callback) => callback()
 
-    const queryFunc = async (p) => { throw new Error('fail') }
+    const queryFunc = async (p) => { throw new Error('fail') } // eslint-disable-line require-await
 
     const q = new Query(dht, peer.id.id, () => queryFunc)
     promiseToCallback(q.run([peerInfos[1].id]))((err, res) => {
@@ -159,7 +159,7 @@ describe('Query', () => {
     // mock this so we can dial non existing peers
     dht.switch.dial = (peer, callback) => callback()
 
-    const queryFunc = async (p) => {
+    const queryFunc = async (p) => { // eslint-disable-line require-await
       return {
         closerPeers: [peerInfos[2]]
       }
@@ -207,7 +207,7 @@ describe('Query', () => {
       ]
     }
 
-    const queryFunc = async (p) => {
+    const queryFunc = async (p) => { // eslint-disable-line require-await
       const closer = topology[p.toB58String()]
       return {
         closerPeers: closer || []
@@ -246,7 +246,7 @@ describe('Query', () => {
       }
     }
 
-    const queryFunc = async (p) => {
+    const queryFunc = async (p) => { // eslint-disable-line require-await
       const res = topology[p.toB58String()] || {}
       return {
         closerPeers: res.closer || [],
@@ -353,7 +353,7 @@ describe('Query', () => {
         }
       }
 
-      const queryFunc = async (p) => {
+      const queryFunc = async (p) => { // eslint-disable-line require-await
         const res = topology[p.toB58String()] || {}
         return {
           closerPeers: res.closer || []
@@ -639,7 +639,7 @@ describe('Query', () => {
         const peerIdToInfo = (peerId) => peerInfos.find(pi => pi.id === peerId)
 
         const visited = []
-        const queryFunc = async (peerId) => {
+        const queryFunc = async (peerId) => { // eslint-disable-line require-await
           visited.push(peerId)
           const i = peerIndex(peerId)
           const closerIndexes = topology[i] || []
@@ -706,7 +706,7 @@ describe('Query', () => {
       let targetVisited = false
 
       const q = new Query(dht, targetId, (trackNum) => {
-        return async (p) => {
+        return async (p) => { // eslint-disable-line require-await
           const response = getResponse(p, trackNum)
           expect(response).to.exist() // or we aren't on the right track
           if (response.end && !response.pathComplete) {
@@ -741,7 +741,7 @@ describe('Query', () => {
     // mock this so we can dial non existing peers
     dht.switch.dial = (peer, callback) => callback()
 
-    const queryFunc = async (p) => {
+    const queryFunc = async (p) => { // eslint-disable-line require-await
       return {
         closerPeers: [peerInfos[2]]
       }

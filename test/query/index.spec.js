@@ -33,7 +33,7 @@ describe('Query', () => {
   })
 
   describe('get closest peers', () => {
-    let targetKey = {
+    const targetKey = {
       key: Buffer.from('A key to find'),
       dhtKey: null
     }
@@ -69,18 +69,18 @@ describe('Query', () => {
       sinon.stub(dht._queryManager, 'running').value(true)
       const querySpy = sinon.stub().resolves({})
 
-      let query = new Query(dht, targetKey.key, () => querySpy)
+      const query = new Query(dht, targetKey.key, () => querySpy)
 
-      let run = new Run(query)
+      const run = new Run(query)
       promiseToCallback(run.init())(() => {
         // Add the sorted peers into 5 paths. This will weight
         // the paths with increasingly further peers
-        let sortedPeerIds = sortedPeers.map(peerInfo => peerInfo.id)
-        let peersPerPath = sortedPeerIds.length / PATHS
-        let paths = [...new Array(PATHS)].map((_, index) => {
-          let path = new Path(run, query.makePath())
-          let start = index * peersPerPath
-          let peers = sortedPeerIds.slice(start, start + peersPerPath)
+        const sortedPeerIds = sortedPeers.map(peerInfo => peerInfo.id)
+        const peersPerPath = sortedPeerIds.length / PATHS
+        const paths = [...new Array(PATHS)].map((_, index) => {
+          const path = new Path(run, query.makePath())
+          const start = index * peersPerPath
+          const peers = sortedPeerIds.slice(start, start + peersPerPath)
           peers.forEach(p => path.addInitialPeer(p))
           return path
         })
@@ -88,7 +88,7 @@ describe('Query', () => {
         // Get the peers of the 2nd closest path, and remove the path
         // We don't want to execute it. Just add its peers to peers we've
         // already queried.
-        let queriedPeers = paths.splice(1, 1)[0].initialPeers
+        const queriedPeers = paths.splice(1, 1)[0].initialPeers
         each(queriedPeers, (peerId, cb) => {
           run.peersQueried.add(peerId, cb)
         }, (err) => {
@@ -123,22 +123,22 @@ describe('Query', () => {
       sinon.stub(dht._queryManager, 'running').value(true)
 
       const querySpy = sinon.stub().resolves({})
-      let query = new Query(dht, targetKey.key, () => querySpy)
+      const query = new Query(dht, targetKey.key, () => querySpy)
 
-      let run = new Run(query)
+      const run = new Run(query)
       promiseToCallback(run.init())(() => {
-        let sortedPeerIds = sortedPeers.map(peerInfo => peerInfo.id)
+        const sortedPeerIds = sortedPeers.map(peerInfo => peerInfo.id)
 
         // Take the top 15 peers and peers 20 - 25 to seed `run.peersQueried`
         // This leaves us with only 16 - 19 as closer peers
-        let queriedPeers = [
+        const queriedPeers = [
           ...sortedPeerIds.slice(0, 15),
           ...sortedPeerIds.slice(20, 25)
         ]
 
-        let path = new Path(run, query.makePath())
+        const path = new Path(run, query.makePath())
         // Give the path a closet peer and 15 further peers
-        let pathPeers = [
+        const pathPeers = [
           ...sortedPeerIds.slice(15, 16), // 1 closer
           ...sortedPeerIds.slice(80, 95)
         ]

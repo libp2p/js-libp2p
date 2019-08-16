@@ -52,7 +52,7 @@ class Query {
    * @param {Array<PeerId>} peers
    * @returns {Promise}
    */
-  async run (peers) {
+  async run (peers) { // eslint-disable-line require-await
     if (!this.dht._queryManager.running) {
       this._log.error('Attempt to run query after shutdown')
       return { finalSet: new Set(), paths: [] }

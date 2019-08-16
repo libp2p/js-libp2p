@@ -67,8 +67,8 @@ describe('rpc - handlers - GetProviders', () => {
     const dsKey = utils.bufferToKey(v.cid.buffer)
 
     waterfall([
-      (cb) => dht.datastore.put(dsKey, v.value, cb),
-      (cb) => handler(dht)(peers[0], msg, cb)
+      (cb) => promiseToCallback(dht.datastore.put(dsKey, v.value))(cb),
+      (_, cb) => handler(dht)(peers[0], msg, cb)
     ], (err, response) => {
       expect(err).to.not.exist()
 

@@ -20,7 +20,7 @@ const PeerBook = require('peer-book')
 const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
-
+const promiseToCallback = require('promise-to-callback')
 const errcode = require('err-code')
 
 const KadDHT = require('../src')
@@ -955,14 +955,16 @@ describe('KadDHT', () => {
         Buffer.from('hello'),
         Buffer.from('world')
       )
-      let received = new Date()
+      const received = new Date()
       received.setDate(received.getDate() - 2)
 
       record.timeReceived = received
 
       waterfall([
         (cb) => dht._putLocal(record.key, record.serialize(), cb),
-        (cb) => dht.datastore.get(kadUtils.bufferToKey(record.key), cb),
+        (cb) => {
+          promiseToCallback(dht.datastore.get(kadUtils.bufferToKey(record.key)))(cb)
+        },
         (lookup, cb) => {
           expect(lookup).to.exist('Record should be in the local datastore')
           cb()
@@ -972,7 +974,7 @@ describe('KadDHT', () => {
         expect(err).to.not.exist()
         expect(rec).to.not.exist('Record should have expired')
 
-        dht.datastore.get(kadUtils.bufferToKey(record.key), (err, lookup) => {
+        promiseToCallback(dht.datastore.get(kadUtils.bufferToKey(record.key)))((err, lookup) => {
           expect(err).to.exist('Should throw error for not existing')
           expect(lookup).to.not.exist('Record should be removed from datastore')
           done()
@@ -1021,7 +1023,7 @@ describe('KadDHT', () => {
           // Simulate returning a peer id to query
           sinon.stub(dht.routingTable, 'closestPeers').returns([peerInfos[1].id]),
           // Simulate going out to the network and returning the record
-          sinon.stub(dht, '_getValueOrPeersAsync').callsFake(async () => ({ record: rec }))
+          sinon.stub(dht, '_getValueOrPeersAsync').callsFake(async () => ({ record: rec })) // eslint-disable-line require-await
         ]
 
         dht.getMany(key, 1, (err, res) => {

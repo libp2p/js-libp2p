@@ -2,6 +2,7 @@
 
 const utils = require('../../utils')
 const errcode = require('err-code')
+const promiseToCallback = require('promise-to-callback')
 
 module.exports = (dht) => {
   const log = utils.logger(dht.peerInfo.id, 'rpc:put-value')
@@ -37,7 +38,7 @@ module.exports = (dht) => {
 
       const key = utils.bufferToKey(record.key)
 
-      dht.datastore.put(key, record.serialize(), (err) => {
+      promiseToCallback(dht.datastore.put(key, record.serialize()))(err => {
         if (err) {
           return callback(err)
         }

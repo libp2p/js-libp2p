@@ -209,7 +209,7 @@ exports.TimeoutError = class TimeoutError extends Error {
  * @private
  */
 exports.withTimeout = (asyncFn, time) => {
-  return async (...args) => {
+  return async (...args) => { // eslint-disable-line require-await
     return Promise.race([
       asyncFn(...args),
       new Promise((resolve, reject) => {

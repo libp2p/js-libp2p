@@ -1,5 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
+/* eslint-disable no-console */
+
 'use strict'
 const { promisify } = require('util')
 const PeerBook = require('peer-book')
@@ -47,7 +49,7 @@ let topIds // Closest 20 peerIds in the network
 
   console.log('Total Nodes=%d, Dead Nodes=%d, Max Siblings per Peer=%d', NUM_PEERS, NUM_DEAD_NODES, MAX_PEERS_KNOWN)
   console.log('Starting %d runs with concurrency %d...', RUNS, ALPHA)
-  let topRunIds = []
+  const topRunIds = []
   for (var i = 0; i < RUNS; i++) {
     const { closestPeers, runTime } = await GetClosestPeersSimulation()
     const foundIds = closestPeers.map(peerId => peerId.toB58String())
@@ -99,7 +101,7 @@ async function GetClosestPeersSimulation () {
   })
 
   // Add random peers to our table
-  let ourPeers = randomMembers(peers, randomInteger(MIN_PEERS_KNOWN, MAX_PEERS_KNOWN))
+  const ourPeers = randomMembers(peers, randomInteger(MIN_PEERS_KNOWN, MAX_PEERS_KNOWN))
   for (const peer of ourPeers) {
     await promisify((peer, callback) => dht._add(peer, callback))(peer)
   }
@@ -164,7 +166,7 @@ function createPeers (num) {
  * @returns {Network}
  */
 async function MockNetwork (peers) {
-  let network = {
+  const network = {
     peers: {}
   }
 
@@ -177,7 +179,7 @@ async function MockNetwork (peers) {
 
   // Give the remaining nodes:
   for (const peer of peers.slice(NUM_DEAD_NODES)) {
-    let netPeer = network.peers[peer.id.toB58String()] = {
+    const netPeer = network.peers[peer.id.toB58String()] = {
       // dial latency
       latency: randomInteger(LATENCY_MIN, LATENCY_MAX),
       // random sibling peers from the full list
@@ -209,7 +211,7 @@ function randomInteger (min, max) {
  * @returns {Array<any>}
  */
 function randomMembers (list, num) {
-  let randomMembers = []
+  const randomMembers = []
 
   if (list.length < num) throw new Error(`cant get random members, ${num} is less than ${list.length}`)
 

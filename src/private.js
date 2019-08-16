@@ -95,7 +95,7 @@ module.exports = (dht) => ({
     // Fetch value from ds
     let rawRecord
     try {
-      rawRecord = await promisify(cb => dht.datastore.get(dsKey, cb))()
+      rawRecord = await dht.datastore.get(dsKey)
     } catch (err) {
       if (err.code === 'ERR_NOT_FOUND') {
         return undefined
@@ -114,7 +114,7 @@ module.exports = (dht) => ({
     if (record.timeReceived == null ||
         utils.now() - record.timeReceived > c.MAX_RECORD_AGE) {
       // If record is bad delete it and return
-      await promisify(cb => dht.datastore.delete(dsKey, cb))()
+      await dht.datastore.delete(dsKey)
       return undefined
     }
 
@@ -214,7 +214,7 @@ module.exports = (dht) => ({
     promiseToCallback(this._findPeerSingleAsync(peer, target))(callback)
   },
 
-  async _findPeerSingleAsync (peer, target) {
+  async _findPeerSingleAsync (peer, target) { // eslint-disable-line require-await
     dht._log('_findPeerSingle %s', peer.toB58String())
     const msg = new Message(Message.TYPES.FIND_NODE, target.id, 0)
     return promisify(callback => dht.network.sendRequest(peer, msg, callback))()
@@ -262,7 +262,7 @@ module.exports = (dht) => ({
   },
 
   async _putLocalAsync (key, rec) {
-    await promisify(cb => dht.datastore.put(utils.bufferToKey(key), rec, cb))()
+    await dht.datastore.put(utils.bufferToKey(key), rec)
     return undefined
   },
 
@@ -366,7 +366,7 @@ module.exports = (dht) => ({
   async _getLocalAsync (key) {
     dht._log('getLocal %b', key)
 
-    const raw = await promisify(cb => dht.datastore.get(utils.bufferToKey(key), cb))()
+    const raw = await dht.datastore.get(utils.bufferToKey(key))
     dht._log('found %b in local datastore', key)
     const rec = Record.deserialize(raw)
 
@@ -436,7 +436,7 @@ module.exports = (dht) => ({
     promiseToCallback(this._getValueSingleAsync(peer, key))(callback)
   },
 
-  async _getValueSingleAsync (peer, key) {
+  async _getValueSingleAsync (peer, key) { // eslint-disable-line require-await
     const msg = new Message(Message.TYPES.GET_VALUE, key, 0)
     return promisify(cb => dht.network.sendRequest(peer, msg, cb))()
   },
@@ -598,7 +598,7 @@ module.exports = (dht) => ({
     promiseToCallback(this._findProvidersSingleAsync(peer, key))(callback)
   },
 
-  async _findProvidersSingleAsync (peer, key) {
+  async _findProvidersSingleAsync (peer, key) { // eslint-disable-line require-await
     const msg = new Message(Message.TYPES.GET_PROVIDERS, key.buffer, 0)
     return promisify(cb => dht.network.sendRequest(peer, msg, cb))()
   }

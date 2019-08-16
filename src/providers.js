@@ -5,8 +5,6 @@ const varint = require('varint')
 const PeerId = require('peer-id')
 const Key = require('interface-datastore').Key
 const Queue = require('p-queue')
-const promisify = require('promisify-es6')
-const toIterator = require('pull-stream-to-async-iterator')
 
 const c = require('./constants')
 const utils = require('./utils')
@@ -91,7 +89,7 @@ class Providers {
 
       // Get all provider entries from the datastore
       const query = this.datastore.query({ prefix: c.PROVIDERS_KEY_PREFIX })
-      for await (const entry of toIterator(query)) {
+      for await (const entry of query) {
         try {
           // Add a delete to the batch for each expired entry
           const { cid, peerId } = parseProviderKey(entry.key)
@@ -117,7 +115,7 @@ class Providers {
 
       // Commit the deletes to the datastore
       if (deleted.size) {
-        await promisify(cb => batch.commit(cb))()
+        await batch.commit()
       }
 
       // Clear expired entries from the cache
@@ -182,7 +180,7 @@ class Providers {
    * @param {PeerId} provider
    * @returns {Promise}
    */
-  async addProvider (cid, provider) {
+  async addProvider (cid, provider) { // eslint-disable-line require-await
     return this.syncQueue.add(async () => {
       this._log('addProvider %s', cid.toBaseEncodedString())
       const provs = await this._getProvidersMap(cid)
@@ -203,7 +201,7 @@ class Providers {
    * @param {CID} cid
    * @returns {Promise<Array<PeerId>>}
    */
-  async getProviders (cid) {
+  async getProviders (cid) { // eslint-disable-line require-await
     return this.syncQueue.add(async () => {
       this._log('getProviders %s', cid.toBaseEncodedString())
       const provs = await this._getProvidersMap(cid)
@@ -238,7 +236,7 @@ function makeProviderKey (cid) {
  *
  * @private
  */
-async function writeProviderEntry (store, cid, peer, time) {
+async function writeProviderEntry (store, cid, peer, time) { // eslint-disable-line require-await
   const dsKey = [
     makeProviderKey(cid),
     '/',
@@ -247,7 +245,7 @@ async function writeProviderEntry (store, cid, peer, time) {
 
   const key = new Key(dsKey)
   const buffer = Buffer.from(varint.encode(time))
-  return promisify(cb => store.put(key, buffer, cb))()
+  return store.put(key, buffer)
 }
 
 /**
@@ -282,7 +280,7 @@ function parseProviderKey (key) {
 async function loadProviders (store, cid) {
   const providers = new Map()
   const query = store.query({ prefix: makeProviderKey(cid) })
-  for await (const entry of toIterator(query)) {
+  for await (const entry of query) {
     const { peerId } = parseProviderKey(entry.key)
     providers.set(peerId, readTime(entry.value))
   }

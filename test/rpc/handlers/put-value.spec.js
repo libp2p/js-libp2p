@@ -6,6 +6,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const Record = require('libp2p-record').Record
+const promiseToCallback = require('promise-to-callback')
 
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/put-value')
@@ -65,7 +66,7 @@ describe('rpc - handlers - PutValue', () => {
       expect(response).to.be.eql(msg)
 
       const key = utils.bufferToKey(Buffer.from('hello'))
-      dht.datastore.get(key, (err, res) => {
+      promiseToCallback(dht.datastore.get(key))((err, res) => {
         expect(err).to.not.exist()
         const rec = Record.deserialize(res)
 

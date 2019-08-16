@@ -115,16 +115,16 @@ describe('Providers', () => {
     const store = new LevelStore(p)
     providers = new Providers(store, infos[2].id, 10)
 
-    console.log('starting')
+    console.log('starting') // eslint-disable-line no-console
     const res = await Promise.all([
       createValues(100),
       createPeerInfo(600)
     ])
 
-    console.log('got values and peers')
+    console.log('got values and peers') // eslint-disable-line no-console
     const values = res[0]
     const peers = res[1]
-    let total = Date.now()
+    const total = Date.now()
 
     for (const v of values) {
       for (const p of peers) {
@@ -132,14 +132,14 @@ describe('Providers', () => {
       }
     }
 
-    console.log('addProvider %s peers %s cids in %sms', peers.length, values.length, Date.now() - total)
-    console.log('starting profile with %s peers and %s cids', peers.length, values.length)
+    console.log('addProvider %s peers %s cids in %sms', peers.length, values.length, Date.now() - total) // eslint-disable-line no-console
+    console.log('starting profile with %s peers and %s cids', peers.length, values.length) // eslint-disable-line no-console
 
     for (let i = 0; i < 3; i++) {
       const start = Date.now()
       for (const v of values) {
         await providers.getProviders(v.cid)
-        console.log('query %sms', (Date.now() - start))
+        console.log('query %sms', (Date.now() - start)) // eslint-disable-line no-console
       }
     }
 
