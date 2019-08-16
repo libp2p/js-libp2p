@@ -1,6 +1,6 @@
 {
   "name": "libp2p-keychain",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Key management and cryptographically protected messages",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -66,11 +66,12 @@
     "Alex Potsides <alex@achingbrain.net>",
     "David Dias <daviddias.p@gmail.com>",
     "Hugo Dias <mail@hugodias.me>",
+    "Jacob Heun <jacobheun@gmail.com>",
     "Maciej Krüger <mkg20001@gmail.com>",
     "Masahiro Saito <camelmasa@gmail.com>",
     "Richard Schneider <makaretu@gmail.com>",
-    "Vasco Santos <vasco.santos@ua.pt>",
     "Vasco Santos <vasco.santos@moxy.studio>",
+    "Vasco Santos <vasco.santos@ua.pt>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>"
   ]
 }
