@@ -15,7 +15,7 @@ const bestRecord = (selectors, k, records) => {
   if (records.length === 0) {
     const errMsg = `No records given`
 
-    throw errcode(new Error(errMsg), 'ERR_NO_RECORDS_RECEIVED')
+    throw errcode(errMsg, 'ERR_NO_RECORDS_RECEIVED')
   }
 
   const parts = bsplit(k, Buffer.from('/'))
@@ -23,7 +23,7 @@ const bestRecord = (selectors, k, records) => {
   if (parts.length < 3) {
     const errMsg = `Record key does not have a selector function`
 
-    throw errcode(new Error(errMsg), 'ERR_NO_SELECTOR_FUNCTION_FOR_RECORD_KEY')
+    throw errcode(errMsg, 'ERR_NO_SELECTOR_FUNCTION_FOR_RECORD_KEY')
   }
 
   const selector = selectors[parts[1].toString()]
@@ -31,7 +31,7 @@ const bestRecord = (selectors, k, records) => {
   if (!selector) {
     const errMsg = `Unrecognized key prefix: ${parts[1]}`
 
-    throw errcode(new Error(errMsg), 'ERR_UNRECOGNIZED_KEY_PREFIX')
+    throw errcode(errMsg, 'ERR_UNRECOGNIZED_KEY_PREFIX')
   }
 
   return selector(k, records)

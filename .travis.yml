@@ -8,6 +8,7 @@ stages:
 
 node_js:
   - '10'
+  - '12'
 
 os:
   - linux
@@ -21,7 +22,6 @@ jobs:
   include:
     - stage: check
       script:
-        - npx aegir commitlint --travis
         - npx aegir dep-check
         - npm run lint
 

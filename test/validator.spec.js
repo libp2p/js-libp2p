@@ -5,8 +5,6 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const waterfall = require('async/waterfall')
-const each = require('async/each')
 const crypto = require('libp2p-crypto')
 const PeerId = require('peer-id')
 
@@ -29,14 +27,16 @@ const generateCases = (hash) => {
     invalid: {
       publicKey: [
         // missing hashkey
-        Buffer.from('/pk/'),
+        [Buffer.from('/pk/'), 'ERR_INVALID_RECORD_KEY_TOO_SHORT'],
         // not the hash of a key
-        Buffer.concat([
+        [Buffer.concat([
           Buffer.from('/pk/'),
           Buffer.from('random')
-        ]),
+        ]), 'ERR_INVALID_RECORD_HASH_MISMATCH'],
         // missing prefix
-        hash
+        [hash, 'ERR_INVALID_RECORD_KEY_BAD_PREFIX'],
+        // not a buffer
+        ['not a buffer', 'ERR_INVALID_RECORD_KEY_NOT_BUFFER']
       ]
     }
   }
@@ -47,57 +47,47 @@ describe('validator', () => {
   let hash
   let cases
 
-  before((done) => {
-    waterfall([
-      (cb) => crypto.keys.generateKeyPair('rsa', 1024, cb),
-      (pair, cb) => {
-        key = pair
-        pair.public.hash(cb)
-      },
-      (_hash, cb) => {
-        hash = _hash
-        cases = generateCases(hash)
-        cb()
-      }
-    ], done)
+  before(async () => {
+    key = await crypto.keys.generateKeyPair('rsa', 1024)
+    hash = await key.public.hash()
+    cases = generateCases(hash)
   })
 
   describe('verifyRecord', () => {
-    it('calls matching validator', (done) => {
+    it('calls matching validator', () => {
       const k = Buffer.from('/hello/you')
       const rec = new Record(k, Buffer.from('world'), new PeerId(hash))
 
       const validators = {
         hello: {
-          func (key, value, cb) {
+          func (key, value) {
             expect(key).to.eql(k)
             expect(value).to.eql(Buffer.from('world'))
-            cb()
           },
           sign: false
         }
       }
-      validator.verifyRecord(validators, rec, done)
+      return validator.verifyRecord(validators, rec)
     })
 
-    it('calls not matching any validator', (done) => {
+    it('calls not matching any validator', () => {
       const k = Buffer.from('/hallo/you')
       const rec = new Record(k, Buffer.from('world'), new PeerId(hash))
 
       const validators = {
         hello: {
-          func (key, value, cb) {
+          func (key, value) {
             expect(key).to.eql(k)
             expect(value).to.eql(Buffer.from('world'))
-            cb()
           },
           sign: false
         }
       }
-      validator.verifyRecord(validators, rec, (err) => {
-        expect(err).to.exist()
-        done()
-      })
+      return expect(
+        () => validator.verifyRecord(validators, rec)
+      ).to.throw(
+        /Invalid record keytype/
+      )
     })
   })
 
@@ -107,40 +97,40 @@ describe('validator', () => {
     })
 
     describe('public key', () => {
-      it('exports func and sing', () => {
+      it('exports func and sign', () => {
         const pk = validator.validators.pk
 
         expect(pk).to.have.property('func')
         expect(pk).to.have.property('sign', false)
       })
 
-      it('does not error on valid record', (done) => {
-        each(cases.valid.publicKey, (k, cb) => {
-          validator.validators.pk.func(k, key.public.bytes, cb)
-        }, done)
+      it('does not error on valid record', () => {
+        return Promise.all(cases.valid.publicKey.map((k) => {
+          return validator.validators.pk.func(k, key.public.bytes)
+        }))
       })
 
-      it('throws on invalid records', (done) => {
-        each(cases.invalid.publicKey, (k, cb) => {
-          validator.validators.pk.func(k, key.public.bytes, (err) => {
-            expect(err).to.exist()
-            cb()
-          })
-        }, done)
+      it('throws on invalid records', () => {
+        return Promise.all(cases.invalid.publicKey.map(async ([k, errCode]) => {
+          try {
+            await validator.validators.pk.func(k, key.public.bytes)
+          } catch (err) {
+            expect(err.code).to.eql(errCode)
+            return
+          }
+          expect.fail('did not throw an error with code ' + errCode)
+        }))
       })
     })
   })
 
   describe('go interop', () => {
-    it('record with key from from go', (done) => {
+    it('record with key from from go', async () => {
       const pubKey = crypto.keys.unmarshalPublicKey(fixture.publicKey)
 
-      pubKey.hash((err, hash) => {
-        expect(err).to.not.exist()
-        const k = Buffer.concat([Buffer.from('/pk/'), hash])
-
-        validator.validators.pk.func(k, pubKey.bytes, done)
-      })
+      const hash = await pubKey.hash()
+      const k = Buffer.concat([Buffer.from('/pk/'), hash])
+      return validator.validators.pk.func(k, pubKey.bytes)
     })
   })
 })

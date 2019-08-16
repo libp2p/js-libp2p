@@ -6,19 +6,19 @@ const errcode = require('err-code')
 /**
  * Checks a record and ensures it is still valid.
  * It runs the needed validators.
+ * If verification fails the returned Promise will reject with the error.
  *
  * @param {Object} validators
  * @param {Record} record
- * @param {function(Error)} callback
- * @returns {undefined}
+ * @returns {Promise}
  */
-const verifyRecord = (validators, record, callback) => {
+const verifyRecord = (validators, record) => {
   const key = record.key
   const parts = bsplit(key, Buffer.from('/'))
 
   if (parts.length < 3) {
     // No validator available
-    return callback()
+    return
   }
 
   const validator = validators[parts[1].toString()]
@@ -26,10 +26,10 @@ const verifyRecord = (validators, record, callback) => {
   if (!validator) {
     const errMsg = `Invalid record keytype`
 
-    return callback(errcode(new Error(errMsg), 'ERR_INVALID_RECORD_KEY_TYPE'))
+    throw errcode(errMsg, 'ERR_INVALID_RECORD_KEY_TYPE')
   }
 
-  validator.func(key, record.value, callback)
+  return validator.func(key, record.value)
 }
 
 module.exports = {
