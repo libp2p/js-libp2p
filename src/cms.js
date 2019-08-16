@@ -1,13 +1,9 @@
 'use strict'
 
-const setImmediate = require('async/setImmediate')
-const series = require('async/series')
-const detect = require('async/detect')
-const waterfall = require('async/waterfall')
 require('node-forge/lib/pkcs7')
 require('node-forge/lib/pbe')
 const forge = require('node-forge/lib/forge')
-const util = require('./util')
+const { certificateForKey, findAsync } = require('./util')
 const errcode = require('err-code')
 
 /**
@@ -40,44 +36,27 @@ class CMS {
    *
    * @param {string} name - The local key name.
    * @param {Buffer} plain - The data to encrypt.
-   * @param {function(Error, Buffer)} callback
    * @returns {undefined}
    */
-  encrypt (name, plain, callback) {
-    const self = this
-    const done = (err, result) => setImmediate(() => callback(err, result))
-
+  async encrypt (name, plain) {
     if (!Buffer.isBuffer(plain)) {
-      return done(errcode(new Error('Plain data must be a Buffer'), 'ERR_INVALID_PARAMS'))
+      throw errcode(new Error('Plain data must be a Buffer'), 'ERR_INVALID_PARAMS')
     }
 
-    series([
-      (cb) => self.keychain.findKeyByName(name, cb),
-      (cb) => self.keychain._getPrivateKey(name, cb)
-    ], (err, results) => {
-      if (err) return done(err)
+    const key = await this.keychain.findKeyByName(name)
+    const pem = await this.keychain._getPrivateKey(name)
+    const privateKey = forge.pki.decryptRsaPrivateKey(pem, this.keychain._())
+    const certificate = await certificateForKey(key, privateKey)
 
-      let key = results[0]
-      let pem = results[1]
-      try {
-        const privateKey = forge.pki.decryptRsaPrivateKey(pem, self.keychain._())
-        util.certificateForKey(key, privateKey, (err, certificate) => {
-          if (err) return callback(err)
+    // create a p7 enveloped message
+    const p7 = forge.pkcs7.createEnvelopedData()
+    p7.addRecipient(certificate)
+    p7.content = forge.util.createBuffer(plain)
+    p7.encrypt()
 
-          // create a p7 enveloped message
-          const p7 = forge.pkcs7.createEnvelopedData()
-          p7.addRecipient(certificate)
-          p7.content = forge.util.createBuffer(plain)
-          p7.encrypt()
-
-          // convert message to DER
-          const der = forge.asn1.toDer(p7.toAsn1()).getBytes()
-          done(null, Buffer.from(der, 'binary'))
-        })
-      } catch (err) {
-        done(err)
-      }
-    })
+    // convert message to DER
+    const der = forge.asn1.toDer(p7.toAsn1()).getBytes()
+    return Buffer.from(der, 'binary')
   }
 
   /**
@@ -87,24 +66,20 @@ class CMS {
    * exists, an Error is returned with the property 'missingKeys'.  It is array of key ids.
    *
    * @param {Buffer} cmsData - The CMS encrypted data to decrypt.
-   * @param {function(Error, Buffer)} callback
    * @returns {undefined}
    */
-  decrypt (cmsData, callback) {
-    const done = (err, result) => setImmediate(() => callback(err, result))
-
+  async decrypt (cmsData) {
     if (!Buffer.isBuffer(cmsData)) {
-      return done(errcode(new Error('CMS data is required'), 'ERR_INVALID_PARAMS'))
+      throw errcode(new Error('CMS data is required'), 'ERR_INVALID_PARAMS')
     }
 
-    const self = this
     let cms
     try {
       const buf = forge.util.createBuffer(cmsData.toString('binary'))
       const obj = forge.asn1.fromDer(buf)
       cms = forge.pkcs7.messageFromAsn1(obj)
     } catch (err) {
-      return done(errcode(new Error('Invalid CMS: ' + err.message), 'ERR_INVALID_CMS'))
+      throw errcode(new Error('Invalid CMS: ' + err.message), 'ERR_INVALID_CMS')
     }
 
     // Find a recipient whose key we hold. We only deal with recipient certs
@@ -118,31 +93,29 @@ class CMS {
           keyId: r.issuer.find(a => a.shortName === 'CN').value
         }
       })
-    detect(
-      recipients,
-      (r, cb) => self.keychain.findKeyById(r.keyId, (err, info) => cb(null, !err && info)),
-      (err, r) => {
-        if (err) return done(err)
-        if (!r) {
-          const missingKeys = recipients.map(r => r.keyId)
-          err = errcode(new Error('Decryption needs one of the key(s): ' + missingKeys.join(', ')), 'ERR_MISSING_KEYS', {
-            missingKeys
-          })
-          return done(err)
-        }
 
-        waterfall([
-          (cb) => self.keychain.findKeyById(r.keyId, cb),
-          (key, cb) => self.keychain._getPrivateKey(key.name, cb)
-        ], (err, pem) => {
-          if (err) return done(err)
-
-          const privateKey = forge.pki.decryptRsaPrivateKey(pem, self.keychain._())
-          cms.decrypt(r.recipient, privateKey)
-          done(null, Buffer.from(cms.content.getBytes(), 'binary'))
-        })
+    const r = await findAsync(recipients, async (recipient) => {
+      try {
+        const key = await this.keychain.findKeyById(recipient.keyId)
+        if (key) return true
+      } catch (err) {
+        return false
       }
-    )
+      return false
+    })
+
+    if (!r) {
+      const missingKeys = recipients.map(r => r.keyId)
+      throw errcode(new Error('Decryption needs one of the key(s): ' + missingKeys.join(', ')), 'ERR_MISSING_KEYS', {
+        missingKeys
+      })
+    }
+
+    const key = await this.keychain.findKeyById(r.keyId)
+    const pem = await this.keychain._getPrivateKey(key.name)
+    const privateKey = forge.pki.decryptRsaPrivateKey(pem, this.keychain._())
+    cms.decrypt(r.recipient, privateKey)
+    return Buffer.from(cms.content.getBytes(), 'binary')
   }
 }
 

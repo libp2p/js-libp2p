@@ -9,6 +9,7 @@ logs
 *.log
 
 coverage
+.nyc_output
 
 # Runtime data
 pids

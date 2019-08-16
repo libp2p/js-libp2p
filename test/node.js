@@ -3,8 +3,8 @@
 
 const os = require('os')
 const path = require('path')
-const rimraf = require('rimraf')
-const series = require('async/series')
+const promisify = require('promisify-es6')
+const rimraf = promisify(require('rimraf'))
 const FsStore = require('datastore-fs')
 
 describe('node', () => {
@@ -13,20 +13,16 @@ describe('node', () => {
   const datastore1 = new FsStore(store1)
   const datastore2 = new FsStore(store2)
 
-  before((done) => {
-    series([
-      (cb) => datastore1.open(cb),
-      (cb) => datastore2.open(cb)
-    ], done)
+  before(async () => {
+    await datastore1.open()
+    await datastore2.open()
   })
 
-  after((done) => {
-    series([
-      (cb) => datastore1.close(cb),
-      (cb) => datastore2.close(cb),
-      (cb) => rimraf(store1, cb),
-      (cb) => rimraf(store2, cb)
-    ], done)
+  after(async () => {
+    await datastore1.close()
+    await datastore2.close()
+    await rimraf(store1)
+    await rimraf(store2)
   })
 
   require('./keychain.spec')(datastore1, datastore2)

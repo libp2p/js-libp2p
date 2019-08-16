@@ -21,55 +21,32 @@ describe('peer ID', () => {
   let peer
   let publicKeyDer // a buffer
 
-  before(function (done) {
+  before(async () => {
     const encoded = Buffer.from(sample.privKey, 'base64')
-    PeerId.createFromPrivKey(encoded, (err, id) => {
-      expect(err).to.not.exist()
-      peer = id
-      done()
-    })
+    peer = await PeerId.createFromPrivKey(encoded)
   })
 
-  it('decoded public key', (done) => {
-    // console.log('peer id', peer.toJSON())
-    // console.log('id', peer.toB58String())
-    // console.log('id decoded', multihash.decode(peer.id))
-
+  it('decoded public key', () => {
     // get protobuf version of the public key
     const publicKeyProtobuf = peer.marshalPubKey()
     const publicKey = crypto.keys.unmarshalPublicKey(publicKeyProtobuf)
-    // console.log('public key', publicKey)
     publicKeyDer = publicKey.marshal()
-    // console.log('public key der', publicKeyDer.toString('base64'))
 
     // get protobuf version of the private key
     const privateKeyProtobuf = peer.marshalPrivKey()
-    crypto.keys.unmarshalPrivateKey(privateKeyProtobuf, (err, key) => {
-      expect(err).to.not.exist()
-      // console.log('private key', key)
-      // console.log('\nprivate key der', key.marshal().toString('base64'))
-      done()
-    })
+    const key = crypto.keys.unmarshalPrivateKey(privateKeyProtobuf)
+    expect(key).to.exist()
   })
 
-  it('encoded public key with DER', (done) => {
+  it('encoded public key with DER', async () => {
     const jwk = rsaUtils.pkixToJwk(publicKeyDer)
-    // console.log('jwk', jwk)
     const rsa = new rsaClass.RsaPublicKey(jwk)
-    // console.log('rsa', rsa)
-    rsa.hash((err, keyId) => {
-      expect(err).to.not.exist()
-      // console.log('err', err)
-      // console.log('keyId', keyId)
-      // console.log('id decoded', multihash.decode(keyId))
-      const kids = multihash.toB58String(keyId)
-      // console.log('id', kids)
-      expect(kids).to.equal(peer.toB58String())
-      done()
-    })
+    const keyId = await rsa.hash()
+    const kids = multihash.toB58String(keyId)
+    expect(kids).to.equal(peer.toB58String())
   })
 
-  it('encoded public key with JWT', (done) => {
+  it('encoded public key with JWT', async () => {
     const jwk = {
       kty: 'RSA',
       n: 'tkiqPxzBWXgZpdQBd14o868a30F3Sc43jwWQG3caikdTHOo7kR14o-h12D45QJNNQYRdUty5eC8ItHAB4YIH-Oe7DIOeVFsnhinlL9LnILwqQcJUeXENNtItDIM4z1ji1qta7b0mzXAItmRFZ-vkNhHB6N8FL1kbS3is_g2UmX8NjxAwvgxjyT5e3_IO85eemMpppsx_ZYmSza84P6onaJFL-btaXRq3KS7jzXkzg5NHKigfjlG7io_RkoWBAghI2smyQ5fdu-qGpS_YIQbUnhL9tJLoGrU72MufdMBZSZJL8pfpz8SB9BBGDCivV0VpbvV2J6En26IsHL_DN0pbIw',
@@ -77,33 +54,16 @@ describe('peer ID', () => {
       alg: 'RS256',
       kid: '2011-04-29'
     }
-    // console.log('jwk', jwk)
     const rsa = new rsaClass.RsaPublicKey(jwk)
-    // console.log('rsa', rsa)
-    rsa.hash((err, keyId) => {
-      expect(err).to.not.exist()
-      // console.log('err', err)
-      // console.log('keyId', keyId)
-      // console.log('id decoded', multihash.decode(keyId))
-      const kids = multihash.toB58String(keyId)
-      // console.log('id', kids)
-      expect(kids).to.equal(peer.toB58String())
-      done()
-    })
+    const keyId = await rsa.hash()
+    const kids = multihash.toB58String(keyId)
+    expect(kids).to.equal(peer.toB58String())
   })
 
-  it('decoded private key', (done) => {
-    // console.log('peer id', peer.toJSON())
-    // console.log('id', peer.toB58String())
-    // console.log('id decoded', multihash.decode(peer.id))
-
+  it('decoded private key', async () => {
     // get protobuf version of the private key
     const privateKeyProtobuf = peer.marshalPrivKey()
-    crypto.keys.unmarshalPrivateKey(privateKeyProtobuf, (err, key) => {
-      expect(err).to.not.exist()
-      // console.log('private key', key)
-      // console.log('\nprivate key der', key.marshal().toString('base64'))
-      done()
-    })
+    const key = await crypto.keys.unmarshalPrivateKey(privateKeyProtobuf)
+    expect(key).to.exist()
   })
 })

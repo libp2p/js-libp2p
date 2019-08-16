@@ -15,14 +15,13 @@ module.exports = (datastore) => {
     const aliceKeyName = 'cms-interop-alice'
     let ks
 
-    before((done) => {
+    before(() => {
       ks = new Keychain(datastore, { passPhrase: passPhrase })
-      done()
     })
 
     const plainData = Buffer.from('This is a message from Alice to Bob')
 
-    it('imports openssl key', function (done) {
+    it('imports openssl key', async function () {
       this.timeout(10 * 1000)
       const aliceKid = 'QmNzBqPwp42HZJccsLtc4ok6LjZAspckgs2du5tTmjPfFA'
       const alice = `-----BEGIN ENCRYPTED PRIVATE KEY-----
@@ -43,15 +42,12 @@ igg5jozKCW82JsuWSiW9tu0F/6DuvYiZwHS3OLiJP0CuLfbOaRw8Jia1RTvXEH7m
 cn4oisOvxCprs4aM9UVjtZTCjfyNpX8UWwT1W3rySV+KQNhxuMy3RzmL
 -----END ENCRYPTED PRIVATE KEY-----
 `
-      ks.importKey(aliceKeyName, alice, 'mypassword', (err, key) => {
-        expect(err).to.not.exist()
-        expect(key.name).to.equal(aliceKeyName)
-        expect(key.id).to.equal(aliceKid)
-        done()
-      })
+      const key = await ks.importKey(aliceKeyName, alice, 'mypassword')
+      expect(key.name).to.equal(aliceKeyName)
+      expect(key.id).to.equal(aliceKid)
     })
 
-    it('decrypts node-forge example', (done) => {
+    it('decrypts node-forge example', async () => {
       const example = `
 MIIBcwYJKoZIhvcNAQcDoIIBZDCCAWACAQAxgfowgfcCAQAwYDBbMQ0wCwYDVQQK
 EwRpcGZzMREwDwYDVQQLEwhrZXlzdG9yZTE3MDUGA1UEAxMuUW1OekJxUHdwNDJI
@@ -62,12 +58,9 @@ knU1yykWGkdlbclCuu0NaAfmb8o0OX50CbEKZB7xmsv8tnqn0H0jMF4GCSqGSIb3
 DQEHATAdBglghkgBZQMEASoEEP/PW1JWehQx6/dsLkp/Mf+gMgQwFM9liLTqC56B
 nHILFmhac/+a/StQOKuf9dx5qXeGvt9LnwKuGGSfNX4g+dTkoa6N
 `
-      ks.cms.decrypt(Buffer.from(example, 'base64'), (err, plain) => {
-        expect(err).to.not.exist()
-        expect(plain).to.exist()
-        expect(plain.toString()).to.equal(plainData.toString())
-        done()
-      })
+      const plain = await ks.cms.decrypt(Buffer.from(example, 'base64'))
+      expect(plain).to.exist()
+      expect(plain.toString()).to.equal(plainData.toString())
     })
   })
 }

@@ -7,21 +7,19 @@
   "scripts": {
     "lint": "aegir lint",
     "build": "aegir build",
+    "coverage": "nyc --reporter=text --reporter=lcov npm run test:node",
     "test": "aegir test -t node -t browser",
     "test:node": "aegir test -t node",
     "test:browser": "aegir test -t browser",
     "release": "aegir release",
     "release-minor": "aegir release --type minor",
-    "release-major": "aegir release --type major",
-    "coverage": "aegir coverage",
-    "coverage-publish": "aegir coverage publish"
+    "release-major": "aegir release --type major"
   },
   "pre-push": [
-    "lint",
-    "test"
+    "lint"
   ],
   "engines": {
-    "node": ">=6.0.0",
+    "node": ">=10.0.0",
     "npm": ">=3.0.0"
   },
   "repository": {
@@ -42,26 +40,24 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-keychain#readme",
   "dependencies": {
-    "async": "^2.6.2",
-    "err-code": "^1.1.2",
-    "interface-datastore": "~0.6.0",
-    "libp2p-crypto": "~0.16.1",
+    "err-code": "^2.0.0",
+    "interface-datastore": "^0.7.0",
+    "libp2p-crypto": "^0.17.0",
     "merge-options": "^1.0.1",
-    "node-forge": "~0.7.6",
-    "pull-stream": "^3.6.9",
+    "node-forge": "^0.8.5",
     "sanitize-filename": "^1.6.1"
   },
   "devDependencies": {
-    "aegir": "^18.2.1",
+    "aegir": "^20.0.0",
     "chai": "^4.2.0",
     "chai-string": "^1.5.0",
-    "datastore-fs": "~0.8.0",
-    "datastore-level": "~0.10.0",
+    "datastore-fs": "^0.9.0",
+    "datastore-level": "^0.12.1",
     "dirty-chai": "^2.0.1",
-    "level-js": "^4.0.1",
-    "mocha": "^5.2.0",
-    "multihashes": "~0.4.14",
-    "peer-id": "~0.12.2",
+    "level": "^5.0.1",
+    "multihashes": "^0.4.15",
+    "peer-id": "^0.13.2",
+    "promisify-es6": "^1.0.3",
     "rimraf": "^2.6.3"
   },
   "contributors": [

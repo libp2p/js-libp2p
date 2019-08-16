@@ -5,8 +5,6 @@ const sanitize = require('sanitize-filename')
 const mergeOptions = require('merge-options')
 const crypto = require('libp2p-crypto')
 const DS = require('interface-datastore')
-const collect = require('pull-stream/sinks/collect')
-const pull = require('pull-stream/pull')
 const CMS = require('./cms')
 const errcode = require('err-code')
 
@@ -37,22 +35,21 @@ function validateKeyName (name) {
 }
 
 /**
- * Returns an error to the caller, after a delay
+ * Throws an error after a delay
  *
  * This assumes than an error indicates that the keychain is under attack. Delay returning an
  * error to make brute force attacks harder.
  *
- * @param {function(Error)} callback - The caller
  * @param {string | Error} err - The error
- * @returns {undefined}
  * @private
  */
-function _error (callback, err) {
+async function throwDelayed (err) {
   const min = 200
   const max = 1000
   const delay = Math.random() * (max - min) + min
 
-  setTimeout(callback, delay, err, null)
+  await new Promise(resolve => setTimeout(resolve, delay))
+  throw err
 }
 
 /**
@@ -175,146 +172,131 @@ class Keychain {
    * @param {string} name - The local key name; cannot already exist.
    * @param {string} type - One of the key types; 'rsa'.
    * @param {int} size - The key size in bits.
-   * @param {function(Error, KeyInfo)} callback
-   * @returns {undefined}
+    * @returns {KeyInfo}
    */
-  createKey (name, type, size, callback) {
+  async createKey (name, type, size) {
     const self = this
 
     if (!validateKeyName(name) || name === 'self') {
-      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
 
     if (typeof type !== 'string') {
-      return _error(callback, errcode(new Error(`Invalid key type '${type}'`), 'ERR_INVALID_KEY_TYPE'))
+      return throwDelayed(errcode(new Error(`Invalid key type '${type}'`), 'ERR_INVALID_KEY_TYPE'))
     }
 
     if (!Number.isSafeInteger(size)) {
-      return _error(callback, errcode(new Error(`Invalid key size '${size}'`), 'ERR_INVALID_KEY_SIZE'))
+      return throwDelayed(errcode(new Error(`Invalid key size '${size}'`), 'ERR_INVALID_KEY_SIZE'))
     }
 
     const dsname = DsName(name)
-    self.store.has(dsname, (err, exists) => {
-      if (err) return _error(callback, err)
-      if (exists) return _error(callback, errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
+    const exists = await self.store.has(dsname)
+    if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
 
-      switch (type.toLowerCase()) {
-        case 'rsa':
-          if (size < 2048) {
-            return _error(callback, errcode(new Error(`Invalid RSA key size ${size}`), 'ERR_INVALID_KEY_SIZE'))
-          }
-          break
-        default:
-          break
+    switch (type.toLowerCase()) {
+      case 'rsa':
+        if (size < 2048) {
+          return throwDelayed(errcode(new Error(`Invalid RSA key size ${size}`), 'ERR_INVALID_KEY_SIZE'))
+        }
+        break
+      default:
+        break
+    }
+
+    let keyInfo
+    try {
+      const keypair = await crypto.keys.generateKeyPair(type, size)
+
+      const kid = await keypair.id()
+      const pem = await keypair.export(this._())
+      keyInfo = {
+        name: name,
+        id: kid
       }
+      const batch = self.store.batch()
+      batch.put(dsname, pem)
+      batch.put(DsInfoName(name), JSON.stringify(keyInfo))
 
-      crypto.keys.generateKeyPair(type, size, (err, keypair) => {
-        if (err) return _error(callback, err)
-        keypair.id((err, kid) => {
-          if (err) return _error(callback, err)
-          keypair.export(this._(), (err, pem) => {
-            if (err) return _error(callback, err)
-            const keyInfo = {
-              name: name,
-              id: kid
-            }
-            const batch = self.store.batch()
-            batch.put(dsname, pem)
-            batch.put(DsInfoName(name), JSON.stringify(keyInfo))
-            batch.commit((err) => {
-              if (err) return _error(callback, err)
+      await batch.commit()
+    } catch (err) {
+      return throwDelayed(err)
+    }
 
-              callback(null, keyInfo)
-            })
-          })
-        })
-      })
-    })
+    return keyInfo
   }
 
   /**
    * List all the keys.
    *
-   * @param {function(Error, KeyInfo[])} callback
-   * @returns {undefined}
+    * @returns {KeyInfo[]}
    */
-  listKeys (callback) {
+  async listKeys () {
     const self = this
     const query = {
       prefix: infoPrefix
     }
-    pull(
-      self.store.query(query),
-      collect((err, res) => {
-        if (err) return _error(callback, err)
 
-        const info = res.map(r => JSON.parse(r.value))
-        callback(null, info)
-      })
-    )
+    const info = []
+    for await (const value of self.store.query(query)) {
+      info.push(JSON.parse(value.value))
+    }
+
+    return info
   }
 
   /**
    * Find a key by it's id.
    *
    * @param {string} id - The universally unique key identifier.
-   * @param {function(Error, KeyInfo)} callback
-   * @returns {undefined}
+    * @returns {KeyInfo}
    */
-  findKeyById (id, callback) {
-    this.listKeys((err, keys) => {
-      if (err) return _error(callback, err)
-
-      const key = keys.find((k) => k.id === id)
-      callback(null, key)
-    })
+  async findKeyById (id) {
+    try {
+      const keys = await this.listKeys()
+      return keys.find((k) => k.id === id)
+    } catch (err) {
+      return throwDelayed(err)
+    }
   }
 
   /**
    * Find a key by it's name.
    *
    * @param {string} name - The local key name.
-   * @param {function(Error, KeyInfo)} callback
-   * @returns {undefined}
+    * @returns {KeyInfo}
    */
-  findKeyByName (name, callback) {
+  async findKeyByName (name) {
     if (!validateKeyName(name)) {
-      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
 
     const dsname = DsInfoName(name)
-    this.store.get(dsname, (err, res) => {
-      if (err) {
-        return _error(callback, errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
-      }
-
-      callback(null, JSON.parse(res.toString()))
-    })
+    try {
+      const res = await this.store.get(dsname)
+      return JSON.parse(res.toString())
+    } catch (err) {
+      return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
+    }
   }
 
   /**
    * Remove an existing key.
    *
    * @param {string} name - The local key name; must already exist.
-   * @param {function(Error, KeyInfo)} callback
-   * @returns {undefined}
+    * @returns {KeyInfo}
    */
-  removeKey (name, callback) {
+  async removeKey (name) {
     const self = this
     if (!validateKeyName(name) || name === 'self') {
-      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
     const dsname = DsName(name)
-    self.findKeyByName(name, (err, keyinfo) => {
-      if (err) return _error(callback, err)
-      const batch = self.store.batch()
-      batch.delete(dsname)
-      batch.delete(DsInfoName(name))
-      batch.commit((err) => {
-        if (err) return _error(callback, err)
-        callback(null, keyinfo)
-      })
-    })
+    const keyInfo = await self.findKeyByName(name)
+    const batch = self.store.batch()
+    batch.delete(dsname)
+    batch.delete(DsInfoName(name))
+    await batch.commit()
+    return keyInfo
   }
 
   /**
@@ -322,47 +304,41 @@ class Keychain {
    *
    * @param {string} oldName - The old local key name; must already exist.
    * @param {string} newName - The new local key name; must not already exist.
-   * @param {function(Error, KeyInfo)} callback
-   * @returns {undefined}
+    * @returns {KeyInfo}
    */
-  renameKey (oldName, newName, callback) {
+  async renameKey (oldName, newName) {
     const self = this
     if (!validateKeyName(oldName) || oldName === 'self') {
-      return _error(callback, errcode(new Error(`Invalid old key name '${oldName}'`), 'ERR_OLD_KEY_NAME_INVALID'))
+      return throwDelayed(errcode(new Error(`Invalid old key name '${oldName}'`), 'ERR_OLD_KEY_NAME_INVALID'))
     }
     if (!validateKeyName(newName) || newName === 'self') {
-      return _error(callback, errcode(new Error(`Invalid new key name '${newName}'`), 'ERR_NEW_KEY_NAME_INVALID'))
+      return throwDelayed(errcode(new Error(`Invalid new key name '${newName}'`), 'ERR_NEW_KEY_NAME_INVALID'))
     }
     const oldDsname = DsName(oldName)
     const newDsname = DsName(newName)
     const oldInfoName = DsInfoName(oldName)
     const newInfoName = DsInfoName(newName)
-    this.store.get(oldDsname, (err, res) => {
-      if (err) {
-        return _error(callback, errcode(new Error(`Key '${oldName}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
-      }
+
+    const exists = await self.store.has(newDsname)
+    if (exists) return throwDelayed(errcode(new Error(`Key '${newName}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
+
+    try {
+      let res = await this.store.get(oldDsname)
       const pem = res.toString()
-      self.store.has(newDsname, (err, exists) => {
-        if (err) return _error(callback, err)
-        if (exists) return _error(callback, errcode(new Error(`Key '${newName}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
+      res = await self.store.get(oldInfoName)
 
-        self.store.get(oldInfoName, (err, res) => {
-          if (err) return _error(callback, err)
-
-          const keyInfo = JSON.parse(res.toString())
-          keyInfo.name = newName
-          const batch = self.store.batch()
-          batch.put(newDsname, pem)
-          batch.put(newInfoName, JSON.stringify(keyInfo))
-          batch.delete(oldDsname)
-          batch.delete(oldInfoName)
-          batch.commit((err) => {
-            if (err) return _error(callback, err)
-            callback(null, keyInfo)
-          })
-        })
-      })
-    })
+      const keyInfo = JSON.parse(res.toString())
+      keyInfo.name = newName
+      const batch = self.store.batch()
+      batch.put(newDsname, pem)
+      batch.put(newInfoName, JSON.stringify(keyInfo))
+      batch.delete(oldDsname)
+      batch.delete(oldInfoName)
+      await batch.commit()
+      return keyInfo
+    } catch (err) {
+      return throwDelayed(err)
+    }
   }
 
   /**
@@ -370,28 +346,25 @@ class Keychain {
    *
    * @param {string} name - The local key name; must already exist.
    * @param {string} password - The password
-   * @param {function(Error, string)} callback
-   * @returns {undefined}
+    * @returns {string}
    */
-  exportKey (name, password, callback) {
+  async exportKey (name, password) {
     if (!validateKeyName(name)) {
-      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
     if (!password) {
-      return _error(callback, errcode(new Error('Password is required'), 'ERR_PASSWORD_REQUIRED'))
+      return throwDelayed(errcode(new Error('Password is required'), 'ERR_PASSWORD_REQUIRED'))
     }
 
     const dsname = DsName(name)
-    this.store.get(dsname, (err, res) => {
-      if (err) {
-        return _error(callback, errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
-      }
+    try {
+      const res = await this.store.get(dsname)
       const pem = res.toString()
-      crypto.keys.import(pem, this._(), (err, privateKey) => {
-        if (err) return _error(callback, err)
-        privateKey.export(password, callback)
-      })
-    })
+      const privateKey = await crypto.keys.import(pem, this._())
+      return privateKey.export(password)
+    } catch (err) {
+      return throwDelayed(err)
+    }
   }
 
   /**
@@ -400,99 +373,97 @@ class Keychain {
    * @param {string} name - The local key name; must not already exist.
    * @param {string} pem - The PEM encoded PKCS #8 string
    * @param {string} password - The password.
-   * @param {function(Error, KeyInfo)} callback
-   * @returns {undefined}
+    * @returns {KeyInfo}
    */
-  importKey (name, pem, password, callback) {
+  async importKey (name, pem, password) {
     const self = this
     if (!validateKeyName(name) || name === 'self') {
-      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
     if (!pem) {
-      return _error(callback, 'PEM encoded key is required')
+      return throwDelayed(errcode(new Error('PEM encoded key is required'), 'ERR_PEM_REQUIRED'))
     }
     const dsname = DsName(name)
-    self.store.has(dsname, (err, exists) => {
-      if (err) return _error(callback, err)
-      if (exists) return _error(callback, errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
-      crypto.keys.import(pem, password, (err, privateKey) => {
-        if (err) return _error(callback, errcode(new Error('Cannot read the key, most likely the password is wrong'), 'ERR_CANNOT_READ_KEY'))
-        privateKey.id((err, kid) => {
-          if (err) return _error(callback, err)
-          privateKey.export(this._(), (err, pem) => {
-            if (err) return _error(callback, err)
-            const keyInfo = {
-              name: name,
-              id: kid
-            }
-            const batch = self.store.batch()
-            batch.put(dsname, pem)
-            batch.put(DsInfoName(name), JSON.stringify(keyInfo))
-            batch.commit((err) => {
-              if (err) return _error(callback, err)
+    const exists = await self.store.has(dsname)
+    if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
 
-              callback(null, keyInfo)
-            })
-          })
-        })
-      })
-    })
+    let privateKey
+    try {
+      privateKey = await crypto.keys.import(pem, password)
+    } catch (err) {
+      return throwDelayed(errcode(new Error('Cannot read the key, most likely the password is wrong'), 'ERR_CANNOT_READ_KEY'))
+    }
+
+    let kid
+    try {
+      kid = await privateKey.id()
+      pem = await privateKey.export(this._())
+    } catch (err) {
+      return throwDelayed(err)
+    }
+
+    const keyInfo = {
+      name: name,
+      id: kid
+    }
+    const batch = self.store.batch()
+    batch.put(dsname, pem)
+    batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+    await batch.commit()
+
+    return keyInfo
   }
 
-  importPeer (name, peer, callback) {
+  async importPeer (name, peer) {
     const self = this
     if (!validateKeyName(name)) {
-      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
     if (!peer || !peer.privKey) {
-      return _error(callback, errcode(new Error('Peer.privKey is required'), 'ERR_MISSING_PRIVATE_KEY'))
+      return throwDelayed(errcode(new Error('Peer.privKey is required'), 'ERR_MISSING_PRIVATE_KEY'))
     }
 
     const privateKey = peer.privKey
     const dsname = DsName(name)
-    self.store.has(dsname, (err, exists) => {
-      if (err) return _error(callback, err)
-      if (exists) return _error(callback, errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
+    const exists = await self.store.has(dsname)
+    if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
 
-      privateKey.id((err, kid) => {
-        if (err) return _error(callback, err)
-        privateKey.export(this._(), (err, pem) => {
-          if (err) return _error(callback, err)
-          const keyInfo = {
-            name: name,
-            id: kid
-          }
-          const batch = self.store.batch()
-          batch.put(dsname, pem)
-          batch.put(DsInfoName(name), JSON.stringify(keyInfo))
-          batch.commit((err) => {
-            if (err) return _error(callback, err)
-
-            callback(null, keyInfo)
-          })
-        })
-      })
-    })
+    try {
+      const kid = await privateKey.id()
+      const pem = await privateKey.export(this._())
+      const keyInfo = {
+        name: name,
+        id: kid
+      }
+      const batch = self.store.batch()
+      batch.put(dsname, pem)
+      batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+      await batch.commit()
+      return keyInfo
+    } catch (err) {
+      return throwDelayed(err)
+    }
   }
 
   /**
    * Gets the private key as PEM encoded PKCS #8 string.
    *
    * @param {string} name
-   * @param {function(Error, string)} callback
-   * @returns {undefined}
+    * @returns {string}
    * @private
    */
-  _getPrivateKey (name, callback) {
+  async _getPrivateKey (name) {
     if (!validateKeyName(name)) {
-      return _error(callback, errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
-    this.store.get(DsName(name), (err, res) => {
-      if (err) {
-        return _error(callback, errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
-      }
-      callback(null, res.toString())
-    })
+
+    try {
+      const dsname = DsName(name)
+      const res = await this.store.get(dsname)
+      return res.toString()
+    } catch (err) {
+      return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
+    }
   }
 }
 

@@ -1,17 +1,13 @@
 # js-libp2p-keychain
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
-[![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
-[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
+[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
+[![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
-[![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
-[![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-keychain/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-keychain?branch=master)
-[![Travis CI](https://travis-ci.org/libp2p/js-libp2p-keychain.svg?branch=master)](https://travis-ci.org/libp2p/js-libp2p-keychain)
-[![Circle CI](https://circleci.com/gh/libp2p/js-libp2p-keychain.svg?style=svg)](https://circleci.com/gh/libp2p/js-libp2p-keychain)
+[![](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-keychain.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-keychain)
+[![](https://img.shields.io/travis/libp2p/js-libp2p-keychain.svg?style=flat-square)](https://travis-ci.com/libp2p/js-libp2p-keychain)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-keychain.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-keychain)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
-![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
-![](https://img.shields.io/badge/Node.js-%3E%3D6.0.0-orange.svg?style=flat-square)
 
 > A secure key chain for libp2p in JavaScript
 
@@ -55,23 +51,23 @@ const keychain = new Keychain(datastore, opts)
 
 Managing a key
 
-- `createKey (name, type, size, callback)`
-- `renameKey (oldName, newName, callback)`
-- `removeKey (name, callback)`
-- `exportKey (name, password, callback)`
-- `importKey (name, pem, password, callback)`
-- `importPeer (name, peer, callback)`
+- `async createKey (name, type, size)`
+- `async renameKey (oldName, newName)`
+- `async removeKey (name)`
+- `async exportKey (name, password)`
+- `async importKey (name, pem, password)`
+- `async importPeer (name, peer)`
 
 A naming service for a key
 
-- `listKeys (callback)`
-- `findKeyById (id, callback)`
-- `findKeyByName (name, callback)`
+- `async listKeys ()`
+- `async findKeyById (id)`
+- `async findKeyByName (name)`
 
 Cryptographically protected messages
 
-- `cms.encrypt (name, plain, callback)`
-- `cms.decrypt (cmsData, callback)`
+- `async cms.encrypt (name, plain)`
+- `async cms.decrypt (cmsData)`
 
 ### KeyInfo
 
@@ -116,11 +112,11 @@ CMS, aka [PKCS #7](https://en.wikipedia.org/wiki/PKCS) and [RFC 5652](https://to
 
 ## Contribute
 
-Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/js-libp2p-crypto/issues)!
+Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/js-libp2p-keychain/issues)!
 
 This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
 
-[![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/contributing.md)
+[![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/CONTRIBUTING.md)
 
 ## License
 

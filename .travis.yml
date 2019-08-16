@@ -7,6 +7,7 @@ stages:
 
 node_js:
   - '10'
+  - '12'
 
 os:
   - linux
@@ -20,8 +21,7 @@ jobs:
   include:
     - stage: check
       script:
-        - npx aegir commitlint --travis
-        - npx aegir dep-check -- -i wrtc -i electron-webrtc
+        - npx aegir dep-check
         - npm run lint
 
     - stage: test
@@ -29,14 +29,14 @@ jobs:
       addons:
         chrome: stable
       script:
-        - npx aegir test -t browser
+        - npx aegir test -t browser -t webworker
 
     - stage: test
       name: firefox
       addons:
         firefox: latest
       script:
-        - npx aegir test -t browser -- --browsers FirefoxHeadless
+        - npx aegir test -t browser -t webworker -- --browsers FirefoxHeadless
 
 notifications:
   email: false
