@@ -1,3 +1,18 @@
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/libp2p/js-libp2p-keychain/compare/v0.4.2...v0.5.0) (2019-08-16)
+
+
+*  refactor: use async/await instead of callbacks (#37) ([dda315a](https://github.com/libp2p/js-libp2p-keychain/commit/dda315a)), closes [#37](https://github.com/libp2p/js-libp2p-keychain/issues/37)
+
+
+### BREAKING CHANGES
+
+* The api now uses async/await instead of callbacks.
+
+Co-Authored-By: Vasco Santos <vasco.santos@moxy.studio>
+
+
+
 <a name="0.4.2"></a>
 ## [0.4.2](https://github.com/libp2p/js-libp2p-keychain/compare/v0.4.1...v0.4.2) (2019-06-13)
 
