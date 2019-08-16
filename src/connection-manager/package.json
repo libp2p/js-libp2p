@@ -1,0 +1,5 @@
+{
+  "name": "libp2p-connection-manager",
+  "description": "JS Libp2p Connection Manager",
+  "main": "./index.js"
+}

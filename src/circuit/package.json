@@ -1,0 +1,5 @@
+{
+  "name": "libp2p-circuit",
+  "description": "JavaScript implementation of circuit/switch relaying",
+  "main": "./index.js"
+}

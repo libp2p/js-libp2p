@@ -13,7 +13,6 @@ const secio = require('libp2p-secio')
 const pull = require('pull-stream')
 const multiplex = require('pull-mplex')
 const spdy = require('libp2p-spdy')
-const Connection = require('interface-connection').Connection
 const Protector = require('libp2p-pnet')
 const generatePSK = Protector.generate
 
@@ -104,7 +103,7 @@ describe('ConnectionFSM', () => {
     })
 
     connection.once('connected', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       done()
     })
 
@@ -118,7 +117,7 @@ describe('ConnectionFSM', () => {
     })
 
     connection.once('connected', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       expect(() => connection.close(new Error('shutting down'))).to.not.throw()
       done()
     })
@@ -171,11 +170,11 @@ describe('ConnectionFSM', () => {
     })
 
     connection.once('connected', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       connection.encrypt()
     })
     connection.once('encrypted', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       done()
     })
 
@@ -192,7 +191,7 @@ describe('ConnectionFSM', () => {
       .callsArgWith(3, new Error('fail encrypt'))
 
     connection.once('connected', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       connection.encrypt()
     })
     connection.once('close', () => {
@@ -213,11 +212,11 @@ describe('ConnectionFSM', () => {
     })
 
     connection.once('connected', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       connection.encrypt()
     })
     connection.once('encrypted', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       connection.upgrade()
     })
     connection.once('muxed', (conn) => {
@@ -235,11 +234,11 @@ describe('ConnectionFSM', () => {
     })
 
     connection.once('connected', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       connection.encrypt()
     })
     connection.once('encrypted', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       connection.upgrade()
     })
     connection.once('error:upgrade_failed', (err) => {
@@ -261,11 +260,11 @@ describe('ConnectionFSM', () => {
     })
 
     connection.once('connected', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       connection.encrypt()
     })
     connection.once('encrypted', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       connection.upgrade()
     })
     connection.once('muxed', (conn) => {
@@ -273,7 +272,7 @@ describe('ConnectionFSM', () => {
 
       connection.shake('/muxed-conn-test/1.0.0', (err, protocolConn) => {
         expect(err).to.not.exist()
-        expect(protocolConn).to.be.an.instanceof(Connection)
+        expect(protocolConn).to.exist()
         done()
       })
     })
@@ -292,11 +291,11 @@ describe('ConnectionFSM', () => {
     })
 
     connection.once('connected', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       connection.encrypt()
     })
     connection.once('encrypted', (conn) => {
-      expect(conn).to.be.an.instanceof(Connection)
+      expect(conn).to.exist()
       connection.upgrade()
     })
     connection.once('muxed', (conn) => {
@@ -334,22 +333,22 @@ describe('ConnectionFSM', () => {
       })
 
       connection.once('connected', (conn) => {
-        expect(conn).to.be.an.instanceof(Connection)
+        expect(conn).to.exist()
         connection.encrypt()
       })
       connection.once('encrypted', (conn) => {
-        expect(conn).to.be.an.instanceof(Connection)
+        expect(conn).to.exist()
         connection.upgrade()
       })
       connection.once('muxed', () => {
         throw new Error('connection shouldnt be muxed')
       })
       connection.once('unmuxed', (conn) => {
-        expect(conn).to.be.an.instanceof(Connection)
+        expect(conn).to.exist()
 
         connection.shake('/unmuxed-conn-test/1.0.0', (err, protocolConn) => {
           expect(err).to.not.exist()
-          expect(protocolConn).to.be.an.instanceof(Connection)
+          expect(protocolConn).to.exist()
           done()
         })
       })
@@ -386,12 +385,12 @@ describe('ConnectionFSM', () => {
       })
 
       connection.once('private', (conn) => {
-        expect(conn).to.be.an.instanceof(Connection)
+        expect(conn).to.exist()
         done()
       })
 
       connection.once('connected', (conn) => {
-        expect(conn).to.be.an.instanceof(Connection)
+        expect(conn).to.exist()
         connection.protect()
       })
 
@@ -420,7 +419,7 @@ describe('ConnectionFSM', () => {
       })
 
       connection.once('connected', (conn) => {
-        expect(conn).to.be.an.instanceof(Connection).mark()
+        expect(conn).to.exist().mark()
         connection.protect()
       })
 
@@ -434,15 +433,15 @@ describe('ConnectionFSM', () => {
       })
 
       connection.once('connected', (conn) => {
-        expect(conn).to.be.an.instanceof(Connection)
+        expect(conn).to.exist()
         connection.protect()
       })
       connection.once('private', (conn) => {
-        expect(conn).to.be.an.instanceof(Connection)
+        expect(conn).to.exist()
         connection.encrypt()
       })
       connection.once('encrypted', (conn) => {
-        expect(conn).to.be.an.instanceof(Connection)
+        expect(conn).to.exist()
         done()
       })
 

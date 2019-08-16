@@ -14,4 +14,5 @@ require('./multiaddr-trim.node')
 require('./stats')
 require('./dht.node')
 
+require('./ping/node')
 require('./switch/node')

@@ -1,24 +1,9 @@
 libp2p-switch JavaScript implementation
 ======================================
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
-[![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
-[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
-[![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
-[![Travis CI](https://flat.badgen.net/travis/libp2p/js-libp2p-switch)](https://travis-ci.com/libp2p/js-libp2p-switch)
-[![codecov](https://codecov.io/gh/libp2p/js-libp2p-switch/branch/master/graph/badge.svg)](https://codecov.io/gh/libp2p/js-libp2p-switch)
-[![Dependency Status](https://david-dm.org/libp2p/js-libp2p-switch.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-switch)
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
-![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
-![](https://img.shields.io/badge/Node.js-%3E%3D6.0.0-orange.svg?style=flat-square)
-
 > libp2p-switch is a dialer machine, it leverages the multiple libp2p transports, stream muxers, crypto channels and other connection upgrades to dial to peers in the libp2p network. It also supports Protocol Multiplexing through a multicodec and multistream-select handshake.
 
-libp2p-switch is used by [libp2p](https://github.com/libp2p/js-libp2p) but it can be also used as a standalone module.
-
-## Lead Maintainer
-
-[Jacob Heun](https://github.com/jacobheun)
+**Note**: git history prior to merging into js-libp2p can be found in the original repository, https://github.com/libp2p/js-libp2p-switch.
 
 ## Table of Contents
 
@@ -436,12 +421,3 @@ const nodeStreamInstance = pullToStream(pullStreamInstance)
 ```
 
 To learn more about this utility, visit https://pull-stream.github.io/#pull-stream-to-stream.
-
-
-## Contribute
-
-This module is actively under development. Please check out the issues and submit PRs!
-
-## License
-
-MIT © Protocol Labs
