@@ -1,3 +1,21 @@
+<a name="0.16.0"></a>
+# [0.16.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.15.3...v0.16.0) (2019-08-16)
+
+
+### Code Refactoring
+
+* use async datastore ([#140](https://github.com/libp2p/js-libp2p-kad-dht/issues/140)) ([daf9b00](https://github.com/libp2p/js-libp2p-kad-dht/commit/daf9b00))
+
+
+### BREAKING CHANGES
+
+* The DHT now requires its datastore to have
+a promise based api, instead of callbacks. Datastores that use
+ipfs/interface-datastore@0.7 or later should be used.
+https://github.com/ipfs/interface-datastore/releases/tag/v0.7.0
+
+
+
 <a name="0.15.3"></a>
 ## [0.15.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.15.2...v0.15.3) (2019-07-29)
 
