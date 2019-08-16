@@ -63,7 +63,7 @@ node2 received: Bird bird bird, bird is the word!
 node1 received: Bird bird bird, bird is the word!
 ```
 
-You can change the pubsub `emitSelf` option if you don't want that the publishing node also receives its own messages.
+You can change the pubsub `emitSelf` option if you don't want the publishing node to receive its own messages.
 
 ```JavaScript
 const defaults = {
