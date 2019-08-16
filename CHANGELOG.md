@@ -1,3 +1,18 @@
+<a name="0.7.0"></a>
+# [0.7.0](https://github.com/libp2p/js-libp2p-record/compare/v0.6.3...v0.7.0) (2019-08-16)
+
+
+### Code Refactoring
+
+* convert from callbacks to async ([#13](https://github.com/libp2p/js-libp2p-record/issues/13)) ([42eab95](https://github.com/libp2p/js-libp2p-record/commit/42eab95))
+
+
+### BREAKING CHANGES
+
+* All places in the API that used callbacks are now replaced with async/await
+
+
+
 <a name="0.6.3"></a>
 ## [0.6.3](https://github.com/libp2p/js-libp2p-record/compare/v0.6.2...v0.6.3) (2019-05-23)
 
