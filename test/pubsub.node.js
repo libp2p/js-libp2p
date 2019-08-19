@@ -367,4 +367,70 @@ describe('.pubsub', () => {
       })
     })
   })
+
+  describe('.pubsub config', () => {
+    it('toggle all pubsub options off (except enabled)', done => {
+      expect(3).checks(done)
+
+      class PubSubSpy {
+        constructor (node, config) {
+          expect(config).to.be.eql({
+            enabled: true,
+            selfEmit: false,
+            signMessages: false,
+            strictSigning: false
+          }).mark()
+        }
+      }
+
+      createNode('/ip4/0.0.0.0/tcp/0', {
+        modules: {
+          pubsub: PubSubSpy
+        },
+        config: {
+          pubsub: {
+            enabled: true,
+            selfEmit: false,
+            signMessages: false,
+            strictSigning: false
+          }
+        }
+      }, (err, node) => {
+        expect(err).to.not.exist().mark()
+        expect(node).to.exist().mark()
+      })
+    })
+
+    it('toggle all pubsub options on', done => {
+      expect(3).checks(done)
+
+      class PubSubSpy {
+        constructor (node, config) {
+          expect(config).to.be.eql({
+            enabled: true,
+            selfEmit: true,
+            signMessages: true,
+            strictSigning: true
+          }).mark()
+        }
+      }
+
+      createNode('/ip4/0.0.0.0/tcp/0', {
+        modules: {
+          pubsub: PubSubSpy
+        },
+        config: {
+          pubsub: {
+            enabled: true,
+            selfEmit: true,
+            signMessages: true,
+            strictSigning: true
+          }
+        }
+      }, (err, node) => {
+        expect(err).to.not.exist().mark()
+        expect(node).to.exist().mark()
+      })
+    })
+  })
 })
