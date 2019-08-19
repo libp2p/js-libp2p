@@ -6,8 +6,8 @@ const promisify = require('promisify-es6')
 
 const errCode = require('err-code')
 
-module.exports = (node, Pubsub) => {
-  const pubsub = new Pubsub(node, { emitSelf: true })
+module.exports = (node, Pubsub, config) => {
+  const pubsub = new Pubsub(node, config)
 
   return {
     /**

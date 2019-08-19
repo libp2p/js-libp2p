@@ -83,7 +83,10 @@ describe('configuration', () => {
           autoDial: true
         },
         pubsub: {
-          enabled: true
+          enabled: true,
+          emitSelf: true,
+          signMessages: true,
+          strictSigning: true
         },
         dht: {
           kBucketSize: 20,
@@ -145,7 +148,10 @@ describe('configuration', () => {
           }
         },
         pubsub: {
-          enabled: true
+          enabled: true,
+          emitSelf: true,
+          signMessages: true,
+          strictSigning: true
         },
         dht: {
           kBucketSize: 20,
@@ -270,7 +276,10 @@ describe('configuration', () => {
       },
       config: {
         pubsub: {
-          enabled: true
+          enabled: true,
+          emitSelf: true,
+          signMessages: true,
+          strictSigning: true
         },
         peerDiscovery: {
           autoDial: true
