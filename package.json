@@ -115,7 +115,6 @@
     "pull-protocol-buffers": "~0.1.2",
     "pull-serializer": "^0.3.2",
     "sinon": "^7.2.7",
-    "webrtcsupport": "^2.2.0",
     "wrtc": "^0.4.1"
   },
   "contributors": [
