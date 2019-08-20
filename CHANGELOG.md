@@ -1,3 +1,13 @@
+<a name="0.25.6"></a>
+## [0.25.6](https://github.com/libp2p/js-libp2p/compare/v0.25.5...v0.25.6) (2019-08-20)
+
+
+### Bug Fixes
+
+* config validation ([#405](https://github.com/libp2p/js-libp2p/issues/405)) ([2f6fea9](https://github.com/libp2p/js-libp2p/commit/2f6fea9))
+
+
+
 <a name="0.25.5"></a>
 ## [0.25.5](https://github.com/libp2p/js-libp2p/compare/v0.25.4...v0.25.5) (2019-07-12)
 
