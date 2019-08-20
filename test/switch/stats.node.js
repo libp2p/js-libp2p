@@ -18,7 +18,7 @@ const PeerBook = require('peer-book')
 const utils = require('./utils')
 const createInfos = utils.createInfos
 const tryEcho = utils.tryEcho
-const Switch = require('libp2p-switch')
+const Switch = require('../../src/switch')
 
 describe('Stats', () => {
   const setup = (cb) => {

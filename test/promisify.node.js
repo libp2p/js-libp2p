@@ -16,7 +16,7 @@ const createNode = promisify(require('./utils/create-node'))
 const { createPeerInfo } = require('./utils/create-node')
 const Node = require('./utils/bundle-nodejs')
 const pull = require('pull-stream')
-const Ping = require('libp2p-ping')
+const Ping = require('../src/ping')
 
 /**
  * As libp2p is currently promisified, when extending libp2p,

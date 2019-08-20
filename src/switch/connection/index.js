@@ -1,13 +1,13 @@
 'use strict'
 
 const FSM = require('fsm-event')
-const Circuit = require('libp2p-circuit')
+const Circuit = require('../../circuit')
 const multistream = require('multistream-select')
 const withIs = require('class-is')
 const BaseConnection = require('./base')
 const parallel = require('async/parallel')
 const nextTick = require('async/nextTick')
-const identify = require('libp2p-identify')
+const identify = require('../../identify')
 const errCode = require('err-code')
 const { msHandle, msSelect, identifyDialer } = require('../utils')
 

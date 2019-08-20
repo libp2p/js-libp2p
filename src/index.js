@@ -15,10 +15,10 @@ const nextTick = require('async/nextTick')
 
 const PeerBook = require('peer-book')
 const PeerInfo = require('peer-info')
-const Switch = require('libp2p-switch')
-const Ping = require('libp2p-ping')
+const Switch = require('./switch')
+const Ping = require('./ping')
 const WebSockets = require('libp2p-websockets')
-const ConnectionManager = require('libp2p-connection-manager')
+const ConnectionManager = require('./connection-manager')
 
 const { emitFirst } = require('./util')
 const peerRouting = require('./peer-routing')

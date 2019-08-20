@@ -1,5 +1,0 @@
-{
-  "name": "libp2p-pnet",
-  "description": "Private Network protection implementation",
-  "main": "./index.js"
-}

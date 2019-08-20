@@ -12,13 +12,13 @@ const pull = require('pull-stream')
 const secio = require('libp2p-secio')
 const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
-const identify = require('libp2p-identify')
+const identify = require('../../src/identify')
 const lp = require('pull-length-prefixed')
 const sinon = require('sinon')
 
 const utils = require('./utils')
 const createInfos = utils.createInfos
-const Switch = require('libp2p-switch')
+const Switch = require('../../src/switch')
 
 describe('Identify', () => {
   let switchA

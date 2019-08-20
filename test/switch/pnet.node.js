@@ -11,12 +11,12 @@ const multiplex = require('pull-mplex')
 const pull = require('pull-stream')
 const PeerBook = require('peer-book')
 const secio = require('libp2p-secio')
-const Protector = require('libp2p-pnet')
+const Protector = require('../../src/pnet')
 
 const utils = require('./utils')
 const createInfos = utils.createInfos
 const tryEcho = utils.tryEcho
-const Switch = require('libp2p-switch')
+const Switch = require('../../src/switch')
 
 const generatePSK = Protector.generate
 

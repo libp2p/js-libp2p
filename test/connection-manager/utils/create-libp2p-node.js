@@ -8,7 +8,7 @@ const waterfall = require('async/waterfall')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 
-const ConnManager = require('libp2p-connection-manager')
+const ConnManager = require('../../../src/connection-manager')
 
 class Node extends libp2p {
   constructor (peerInfo) {

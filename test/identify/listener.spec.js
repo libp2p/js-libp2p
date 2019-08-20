@@ -12,8 +12,8 @@ const PeerInfo = require('peer-info')
 const lp = require('pull-length-prefixed')
 const multiaddr = require('multiaddr')
 
-const msg = require('libp2p-identify').message
-const identify = require('libp2p-identify')
+const identify = require('../../src/identify')
+const msg = identify.message
 
 describe('identify.listener', () => {
   let info

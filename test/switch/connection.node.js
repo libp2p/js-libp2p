@@ -13,14 +13,14 @@ const secio = require('libp2p-secio')
 const pull = require('pull-stream')
 const multiplex = require('pull-mplex')
 const spdy = require('libp2p-spdy')
-const Protector = require('libp2p-pnet')
+const Protector = require('../../src/pnet')
 const generatePSK = Protector.generate
 
 const psk = Buffer.alloc(95)
 generatePSK(psk)
 
-const ConnectionFSM = require('libp2p-switch/connection')
-const Switch = require('libp2p-switch')
+const ConnectionFSM = require('../../src/switch/connection')
+const Switch = require('../../src/switch')
 const createInfos = require('./utils').createInfos
 
 describe('ConnectionFSM', () => {

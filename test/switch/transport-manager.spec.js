@@ -9,7 +9,7 @@ const Multiaddr = require('multiaddr')
 const PeerInfo = require('peer-info')
 const sinon = require('sinon')
 
-const TransportManager = require('libp2p-switch/transport')
+const TransportManager = require('../../src/switch/transport')
 
 describe('Transport Manager', () => {
   afterEach(() => {
