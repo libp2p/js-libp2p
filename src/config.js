@@ -4,30 +4,34 @@ const { struct, superstruct } = require('superstruct')
 const { optional, list } = struct
 
 // Define custom types
-const s = superstruct()
-const transport = s.union([
-  s.interface({
-    createListener: 'function',
-    dial: 'function'
-  }),
-  'function'
-])
+const s = superstruct({
+  types: {
+    transport: value => {
+      if (value.length === 0) return 'ERROR_EMPTY'
+      value.forEach(i => {
+        if (!i.dial) return 'ERR_NOT_A_TRANSPORT'
+      })
+      return true
+    },
+    protector: value => {
+      if (!value.protect) return 'ERR_NOT_A_PROTECTOR'
+      return true
+    }
+  }
+})
+
 const modulesSchema = s({
   connEncryption: optional(list([s('object|function')])),
   // this is hacky to simulate optional because interface doesnt work correctly with it
   // change to optional when fixed upstream
-  connProtector: s.union(['undefined', s.interface({ protect: 'function' })]),
+  connProtector: s('undefined|protector'),
   contentRouting: optional(list(['object'])),
   dht: optional(s('null|function|object')),
   pubsub: optional(s('null|function|object')),
   peerDiscovery: optional(list([s('object|function')])),
   peerRouting: optional(list(['object'])),
   streamMuxer: optional(list([s('object|function')])),
-  transport: s.intersection([[transport], s.interface({
-    length (v) {
-      return v > 0 ? true : 'ERROR_EMPTY'
-    }
-  })])
+  transport: 'transport'
 })
 
 const configSchema = s({
