@@ -125,6 +125,15 @@ describe('configuration', () => {
             interval: 1000,
             enabled: true
           }
+        },
+        dht: {
+          enabled: false
+        },
+        relay: {
+          enabled: true
+        },
+        pubsub: {
+          enabled: true
         }
       }
     }
@@ -292,6 +301,14 @@ describe('configuration', () => {
           }
         },
         dht: {
+          kBucketSize: 20,
+          enabled: false,
+          randomWalk: {
+            enabled: false,
+            queriesPerPeriod: 1,
+            interval: 300000,
+            timeout: 10000
+          },
           selectors,
           validators
         }

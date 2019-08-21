@@ -1,7 +1,42 @@
 'use strict'
 
+const mergeOptions = require('merge-options')
 const { struct, superstruct } = require('superstruct')
 const { optional, list } = struct
+
+const DefaultConfig = {
+  connectionManager: {
+    minPeers: 25
+  },
+  config: {
+    dht: {
+      enabled: false,
+      kBucketSize: 20,
+      randomWalk: {
+        enabled: false, // disabled waiting for https://github.com/libp2p/js-libp2p-kad-dht/issues/86
+        queriesPerPeriod: 1,
+        interval: 300e3,
+        timeout: 10e3
+      }
+    },
+    peerDiscovery: {
+      autoDial: true
+    },
+    pubsub: {
+      enabled: true,
+      emitSelf: true,
+      signMessages: true,
+      strictSigning: true
+    },
+    relay: {
+      enabled: true,
+      hop: {
+        enabled: false,
+        active: false
+      }
+    }
+  }
+}
 
 // Define custom types
 const s = superstruct({
@@ -35,50 +70,15 @@ const modulesSchema = s({
 })
 
 const configSchema = s({
-  peerDiscovery: s('object', {
-    autoDial: true
-  }),
-  relay: s({
-    enabled: 'boolean',
-    hop: optional(s({
-      enabled: 'boolean',
-      active: 'boolean'
-    }, {
-      // HOP defaults
-      enabled: false,
-      active: false
-    }))
-  }, {
-    // Relay defaults
-    enabled: true
-  }),
-  // DHT config
-  dht: s('object?', {
-    // DHT defaults
-    enabled: false,
-    kBucketSize: 20,
-    randomWalk: {
-      enabled: false, // disabled waiting for https://github.com/libp2p/js-libp2p-kad-dht/issues/86
-      queriesPerPeriod: 1,
-      interval: 300e3,
-      timeout: 10e3
-    }
-  }),
-  // Pubsub config
-  pubsub: s('object?', {
-    // Pubsub defaults
-    enabled: true,
-    emitSelf: true,
-    signMessages: true,
-    strictSigning: true
-  })
-}, {})
+  peerDiscovery: 'object?',
+  relay: 'object?',
+  dht: 'object?',
+  pubsub: 'object?'
+})
 
 const optionsSchema = s({
   switch: 'object?',
-  connectionManager: s('object', {
-    minPeers: 25
-  }),
+  connectionManager: 'object?',
   datastore: 'object?',
   peerInfo: 'object',
   peerBook: 'object?',
@@ -87,6 +87,7 @@ const optionsSchema = s({
 })
 
 module.exports.validate = (opts) => {
+  opts = mergeOptions(DefaultConfig, opts)
   const [error, options] = optionsSchema.validate(opts)
 
   // Improve errors throwed, reduce stack by throwing here and add reason to the message
@@ -97,10 +98,6 @@ module.exports.validate = (opts) => {
     if (options.config.dht.enabled) {
       s('function|object')(options.modules.dht)
     }
-  }
-
-  if (options.config.peerDiscovery.autoDial === undefined) {
-    options.config.peerDiscovery.autoDial = true
   }
 
   return options

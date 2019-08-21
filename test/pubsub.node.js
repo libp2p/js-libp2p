@@ -376,7 +376,7 @@ describe('.pubsub', () => {
         constructor (node, config) {
           expect(config).to.be.eql({
             enabled: true,
-            selfEmit: false,
+            emitSelf: false,
             signMessages: false,
             strictSigning: false
           }).mark()
@@ -390,7 +390,7 @@ describe('.pubsub', () => {
         config: {
           pubsub: {
             enabled: true,
-            selfEmit: false,
+            emitSelf: false,
             signMessages: false,
             strictSigning: false
           }
@@ -408,7 +408,7 @@ describe('.pubsub', () => {
         constructor (node, config) {
           expect(config).to.be.eql({
             enabled: true,
-            selfEmit: true,
+            emitSelf: true,
             signMessages: true,
             strictSigning: true
           }).mark()
@@ -422,7 +422,7 @@ describe('.pubsub', () => {
         config: {
           pubsub: {
             enabled: true,
-            selfEmit: true,
+            emitSelf: true,
             signMessages: true,
             strictSigning: true
           }
