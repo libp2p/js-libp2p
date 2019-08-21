@@ -9,10 +9,10 @@ chai.use(dirtyChai)
 const sinon = require('sinon')
 
 const PeerBook = require('peer-book')
-const Queue = require('libp2p-switch/dialer/queue')
-const QueueManager = require('libp2p-switch/dialer/queueManager')
-const Switch = require('libp2p-switch')
-const { PRIORITY_HIGH, PRIORITY_LOW } = require('libp2p-switch/constants')
+const Queue = require('../../src/switch/dialer/queue')
+const QueueManager = require('../../src/switch/dialer/queueManager')
+const Switch = require('../../src/switch')
+const { PRIORITY_HIGH, PRIORITY_LOW } = require('../../src/switch/constants')
 
 const utils = require('./utils')
 const createInfos = utils.createInfos

@@ -10,7 +10,7 @@ const PeerBook = require('peer-book')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const path = require('path')
-const Switch = require('libp2p-switch')
+const Switch = require('./src/switch')
 const WebSockets = require('libp2p-websockets')
 
 const Node = require('./test/utils/bundle-nodejs.js')

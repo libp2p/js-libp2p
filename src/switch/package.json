@@ -1,5 +1,0 @@
-{
-  "name": "libp2p-switch",
-  "description": "libp2p switch implementation in JavaScript",
-  "main": "./index.js"
-}

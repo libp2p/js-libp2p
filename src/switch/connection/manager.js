@@ -1,6 +1,6 @@
 'use strict'
 
-const identify = require('libp2p-identify')
+const identify = require('../../identify')
 const multistream = require('multistream-select')
 const debug = require('debug')
 const log = debug('libp2p:switch:conn-manager')
@@ -8,7 +8,7 @@ const once = require('once')
 const ConnectionFSM = require('../connection')
 const { msHandle, msSelect, identifyDialer } = require('../utils')
 
-const Circuit = require('libp2p-circuit')
+const Circuit = require('../../circuit')
 
 const plaintext = require('../plaintext')
 

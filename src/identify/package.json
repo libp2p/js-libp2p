@@ -1,5 +1,0 @@
-{
-  "name": "libp2p-identify",
-  "description": "libp2p Identify Protocol",
-  "main": "./index.js"
-}

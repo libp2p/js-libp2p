@@ -12,7 +12,7 @@ const Connection = require('interface-connection').Connection
 const pair = require('pull-pair/duplex')
 const pull = require('pull-stream')
 
-const Protector = require('libp2p-pnet')
+const Protector = require('../../src/pnet')
 const Errors = Protector.errors
 const generate = Protector.generate
 

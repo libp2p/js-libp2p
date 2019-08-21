@@ -17,7 +17,7 @@ const PeerBook = require('peer-book')
 const tryEcho = require('./utils').tryEcho
 const sinon = require('sinon')
 
-const Switch = require('libp2p-switch')
+const Switch = require('../../src/switch')
 
 describe('Switch (webrtc-star)', () => {
   let switch1

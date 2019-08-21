@@ -8,12 +8,12 @@ chai.use(dirtyChai)
 const PeerInfo = require('peer-info')
 const PeerBook = require('peer-book')
 
-const Swarm = require('libp2p-switch')
+const Swarm = require('../../src/switch')
 const TCP = require('libp2p-tcp')
 const series = require('async/series')
 const parallel = require('async/parallel')
 
-const Ping = require('libp2p-ping')
+const Ping = require('../../src/ping')
 
 describe('libp2p ping', () => {
   let swarmA

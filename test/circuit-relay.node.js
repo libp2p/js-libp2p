@@ -8,7 +8,7 @@ const sinon = require('sinon')
 const waterfall = require('async/waterfall')
 const series = require('async/series')
 const parallel = require('async/parallel')
-const Circuit = require('libp2p-circuit')
+const Circuit = require('../src/circuit')
 const multiaddr = require('multiaddr')
 
 const createNode = require('./utils/create-node')

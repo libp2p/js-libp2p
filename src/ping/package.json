@@ -1,5 +1,0 @@
-{
-  "name": "libp2p-ping",
-  "description": "libp2p Ping protocol implementation",
-  "main": "./index.js"
-}

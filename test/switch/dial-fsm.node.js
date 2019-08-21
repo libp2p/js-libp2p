@@ -16,11 +16,11 @@ const TCP = require('libp2p-tcp')
 const secio = require('libp2p-secio')
 const multiplex = require('pull-mplex')
 const pull = require('pull-stream')
-const identify = require('libp2p-identify')
+const identify = require('../../src/identify')
 
 const utils = require('./utils')
 const createInfos = utils.createInfos
-const Switch = require('libp2p-switch')
+const Switch = require('../../src/switch')
 
 describe('dialFSM', () => {
   let switchA

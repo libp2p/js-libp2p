@@ -6,7 +6,7 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 
-const identify = require('libp2p-identify')
+const identify = require('../../src/identify')
 
 describe('basic', () => {
   it('multicodec', () => {
