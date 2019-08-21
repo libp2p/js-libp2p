@@ -1,3 +1,8 @@
+<a name="0.12.3"></a>
+## [0.12.3](https://github.com/libp2p/js-libp2p-websockets/compare/v0.12.2...v0.12.3) (2019-08-21)
+
+
+
 <a name="0.12.2"></a>
 ## [0.12.2](https://github.com/libp2p/js-libp2p-websockets/compare/v0.12.1...v0.12.2) (2019-01-24)
 
