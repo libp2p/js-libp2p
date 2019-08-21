@@ -1,3 +1,17 @@
+<a name="0.26.1"></a>
+## [0.26.1](https://github.com/libp2p/js-libp2p/compare/v0.26.0...v0.26.1) (2019-08-21)
+
+
+### Bug Fixes
+
+* avoid using superstruct interface ([aa95ab9](https://github.com/libp2p/js-libp2p/commit/aa95ab9))
+* improve config defaults ([#409](https://github.com/libp2p/js-libp2p/issues/409)) ([3eef695](https://github.com/libp2p/js-libp2p/commit/3eef695)), closes [#406](https://github.com/libp2p/js-libp2p/issues/406)
+* pubsub configuration ([#404](https://github.com/libp2p/js-libp2p/issues/404)) ([b0f124b](https://github.com/libp2p/js-libp2p/commit/b0f124b)), closes [#401](https://github.com/libp2p/js-libp2p/issues/401) [#401](https://github.com/libp2p/js-libp2p/issues/401) [#401](https://github.com/libp2p/js-libp2p/issues/401) [#401](https://github.com/libp2p/js-libp2p/issues/401) [#401](https://github.com/libp2p/js-libp2p/issues/401)
+* reference files directly to avoid npm install failures ([#408](https://github.com/libp2p/js-libp2p/issues/408)) ([b3deb35](https://github.com/libp2p/js-libp2p/commit/b3deb35))
+* reject rather than throw in get peer info ([#410](https://github.com/libp2p/js-libp2p/issues/410)) ([60b0cbc](https://github.com/libp2p/js-libp2p/commit/60b0cbc)), closes [#400](https://github.com/libp2p/js-libp2p/issues/400)
+
+
+
 <a name="0.26.0"></a>
 # [0.26.0](https://github.com/libp2p/js-libp2p/compare/v0.26.0-rc.3...v0.26.0) (2019-08-07)
 
