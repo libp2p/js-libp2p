@@ -123,5 +123,12 @@ describe('Get Peer Info', () => {
 
       expect(error.code).to.eql('ERR_INVALID_PEER_TYPE')
     })
+
+    it('should callback with error for invalid non-peer multiaddr (promise)', () => {
+      return getPeerInfoRemote(undefined)
+        .then(expect.fail, (err) => {
+          expect(err.code).to.eql('ERR_INVALID_PEER_TYPE')
+        })
+    })
   })
 })
