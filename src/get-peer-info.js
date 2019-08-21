@@ -56,10 +56,10 @@ function getPeerInfoRemote (peer, libp2p) {
   try {
     peerInfo = getPeerInfo(peer, libp2p.peerBook)
   } catch (err) {
-    throw errCode(
+    return Promise.reject(errCode(
       new Error(`${peer} is not a valid peer type`),
       'ERR_INVALID_PEER_TYPE'
-    )
+    ))
   }
 
   // If we don't have an address for the peer, attempt to find it
