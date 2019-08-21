@@ -1,6 +1,6 @@
 {
   "name": "libp2p-websockets",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -69,6 +69,8 @@
     "Jacob Heun <jacobheun@gmail.com>",
     "Jacob Heun <jake@andyet.net>",
     "Maciej Krüger <mkg20001@gmail.com>",
+    "Marcin Rataj <lidel@lidel.org>",
+    "Michael FIG <michael+github@fig.org>",
     "Richard Littauer <richard.littauer@gmail.com>",
     "Vasco Santos <vasco.santos@ua.pt>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>",
