@@ -13,6 +13,7 @@ module.exports = (node, Pubsub, config) => {
     /**
      * Subscribe the given handler to a pubsub topic
      *
+     * @method
      * @param {string} topic
      * @param {function} handler The handler to subscribe
      * @param {object|null} [options]
@@ -57,6 +58,7 @@ module.exports = (node, Pubsub, config) => {
     /**
      * Unsubscribes from a pubsub topic
      *
+     * @method
      * @param {string} topic
      * @param {function|null} handler The handler to unsubscribe from
      * @param {function} [callback] An optional callback

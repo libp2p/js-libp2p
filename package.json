@@ -4,6 +4,7 @@
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
+  "typings": "src/types.d.ts",
   "files": [
     "dist",
     "src"
@@ -17,7 +18,8 @@
     "release": "aegir release -t node -t browser",
     "release-minor": "aegir release --type minor -t node -t browser",
     "release-major": "aegir release --type major -t node -t browser",
-    "coverage": "nyc --reporter=text --reporter=lcov npm run test:node"
+    "coverage": "nyc --reporter=text --reporter=lcov npm run test:node",
+    "generate-typings": "./node_modules/.bin/jsdoc -c ./.jsdoc.json"
   },
   "repository": {
     "type": "git",
@@ -84,6 +86,7 @@
     "dirty-chai": "^2.0.1",
     "electron-webrtc": "^0.3.0",
     "interface-datastore": "^0.6.0",
+    "jsdoc": "^3.6.3",
     "libp2p-bootstrap": "^0.9.7",
     "libp2p-delegated-content-routing": "^0.2.2",
     "libp2p-delegated-peer-routing": "^0.2.2",
@@ -109,6 +112,7 @@
     "pull-protocol-buffers": "~0.1.2",
     "pull-serializer": "^0.3.2",
     "sinon": "^7.2.7",
+    "tsd-jsdoc": "^2.3.1",
     "wrtc": "^0.4.1"
   },
   "contributors": [

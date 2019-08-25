@@ -8,8 +8,9 @@ const LRU = require('hashlru')
  * @param {Number} maxSize
  * @returns {LRUCache}
  */
-module.exports = (maxSize) => {
+function oldPeers (maxSize) {
   const patched = LRU(maxSize)
   patched.delete = patched.remove
   return patched
 }
+module.exports = oldPeers

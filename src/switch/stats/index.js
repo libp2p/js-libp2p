@@ -35,7 +35,7 @@ const directionToEvent = {
  * @param {any} _options
  * @returns {Stats}
  */
-module.exports = (observer, _options) => {
+function stats (observer, _options) {
   const options = Object.assign({}, defaultOptions, _options)
   const globalStats = new Stat(initialCounters, options)
 
@@ -148,3 +148,5 @@ module.exports = (observer, _options) => {
     stats.emit('update')
   }
 }
+
+module.exports = stats

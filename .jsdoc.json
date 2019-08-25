@@ -1,0 +1,12 @@
+{
+    "recurseDepth": 10,
+    "source": {
+        "include": ["src/"],
+        "exclude": ["node_modules"]
+    },
+    "opts": {
+        "destination": "src/",
+        "template": "./node_modules/tsd-jsdoc/dist",
+        "recurse": true
+    }
+}

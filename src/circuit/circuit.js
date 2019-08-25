@@ -12,6 +12,7 @@ log.err = debug('libp2p:circuit:error:transportdialer')
 
 const createListener = require('./listener')
 
+/** @class Circuit */
 class Circuit {
   static get tag () {
     return 'Circuit'

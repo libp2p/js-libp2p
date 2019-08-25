@@ -67,7 +67,9 @@ class Stats extends EventEmitter {
 
   /**
    * Returns a clone of the current stats.
-   *
+   * 
+   * @method
+   * @readonly
    * @returns {Map<string, Stat>}
    */
   get snapshot () {
@@ -76,7 +78,9 @@ class Stats extends EventEmitter {
 
   /**
    * Returns a clone of the internal movingAverages
-   *
+   * 
+   * @method
+   * @readonly
    * @returns {Array<MovingAverage>}
    */
   get movingAverages () {

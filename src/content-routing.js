@@ -5,7 +5,12 @@ const parallel = require('async/parallel')
 const errCode = require('err-code')
 const promisify = require('promisify-es6')
 
-module.exports = (node) => {
+/**
+ * @method
+ * @param {*} node 
+ */
+
+function router(node) {
   const routers = node._modules.contentRouting || []
 
   // If we have the dht, make it first
@@ -17,13 +22,14 @@ module.exports = (node) => {
     /**
      * Iterates over all content routers in series to find providers of the given key.
      * Once a content router succeeds, iteration will stop.
-     *
+     * 
+     * @method
      * @param {CID} key The CID key of the content to find
      * @param {object} options
      * @param {number} options.maxTimeout How long the query should run
      * @param {number} options.maxNumProviders - maximum number of providers to find
      * @param {function(Error, Result<Array>)} callback
-     * @returns {void}
+     * @promise {void}
      */
     findProviders: promisify((key, options, callback) => {
       if (typeof options === 'function') {
@@ -67,6 +73,7 @@ module.exports = (node) => {
      * Iterates over all content routers in parallel to notify it is
      * a provider of the given key.
      *
+     * @method
      * @param {CID} key The CID key of the content to find
      * @param {function(Error)} callback
      * @returns {void}
@@ -82,3 +89,5 @@ module.exports = (node) => {
     })
   }
 }
+
+module.exports = router

@@ -17,8 +17,18 @@ const debug = require('debug')
 
 const log = debug('libp2p:circuit:listener')
 log.err = debug('libp2p:circuit:error:listener')
-
-module.exports = (swarm, options, connHandler) => {
+/**
+ * @method
+ * 
+ * @param {@} swarm 
+ * @param {*} options 
+ * @param {*} connHandler 
+ * @returns {EventEmitter}
+ */
+function listener (swarm, options, connHandler) {
+  /**
+   * @class
+   */
   const listener = new EE()
   const utils = utilsFactory(swarm)
 
@@ -28,7 +38,7 @@ module.exports = (swarm, options, connHandler) => {
 
   /**
    * Add swarm handler and listen for incoming connections
-   *
+   * 
    * @param {Multiaddr} ma
    * @param {Function} callback
    * @return {void}
@@ -147,3 +157,5 @@ module.exports = (swarm, options, connHandler) => {
 
   return listener
 }
+
+module.exports = listener

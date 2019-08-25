@@ -16,7 +16,7 @@ log.error = debug('libp2p:switch:dial:error')
  * @property {object} options
  * @property {boolean} options.useFSM - If `callback` should return a ConnectionFSM
  * @property {number} options.priority - The priority of the dial
- * @property {function(Error, Connection|ConnectionFSM)} callback
+ * @property {function} callback function(Error, Connection|ConnectionFSM)
  */
 
 /**

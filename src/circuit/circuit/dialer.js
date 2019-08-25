@@ -18,13 +18,16 @@ log.err = debug('libp2p:circuit:error:dialer')
 const multicodec = require('../multicodec')
 const proto = require('../protocol')
 
+/**
+ * @class Dialer
+ * 
+ */
 class Dialer {
   /**
    * Creates an instance of Dialer.
    * @param {Swarm} swarm - the swarm
    * @param {any} options - config options
    *
-   * @memberOf Dialer
    */
   constructor (swarm, options) {
     this.swarm = swarm

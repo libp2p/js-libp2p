@@ -14,6 +14,10 @@ const debug = require('debug')
 const log = debug('libp2p:circuit:stop')
 log.err = debug('libp2p:circuit:error:stop')
 
+/**
+ * @class
+ * @extends EventEmitter
+ */
 class Stop extends EE {
   constructor (swarm) {
     super()

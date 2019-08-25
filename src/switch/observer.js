@@ -12,7 +12,7 @@ const EventEmitter = require('events')
  * @param {Switch} swtch
  * @returns {EventEmitter}
  */
-module.exports = (swtch) => {
+function observer (swtch) {
   const observer = Object.assign(new EventEmitter(), {
     incoming: observe('in'),
     outgoing: observe('out')
@@ -46,3 +46,4 @@ module.exports = (swtch) => {
     })
   }
 }
+module.exports = observer

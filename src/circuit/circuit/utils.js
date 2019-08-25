@@ -6,7 +6,11 @@ const PeerId = require('peer-id')
 const proto = require('../protocol')
 const { getPeerInfo } = require('../../get-peer-info')
 
-module.exports = function (swarm) {
+/**
+ * Utils
+ * 
+ */
+function utils (swarm) {
   /**
    * Get b58 string from multiaddr or peerinfo
    *
@@ -116,3 +120,5 @@ module.exports = function (swarm) {
     peerIdFromId
   }
 }
+
+module.exports = utils

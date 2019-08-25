@@ -4,6 +4,7 @@ const EventEmitter = require('events').EventEmitter
 const debug = require('debug')
 const withIs = require('class-is')
 
+/** @class BaseConnection */
 class BaseConnection extends EventEmitter {
   constructor ({ _switch, name }) {
     super()

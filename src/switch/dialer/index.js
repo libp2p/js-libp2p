@@ -11,6 +11,9 @@ const {
   PRIORITY_LOW
 } = require('../constants')
 
+/**
+ * @module dialer/index
+ */
 module.exports = function (_switch) {
   const dialQueueManager = new DialQueueManager(_switch)
 

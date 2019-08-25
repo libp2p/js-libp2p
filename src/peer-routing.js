@@ -16,6 +16,7 @@ module.exports = (node) => {
     /**
      * Iterates over all peer routers in series to find the given peer.
      *
+     * @method
      * @param {String} id The id of the peer to find
      * @param {object} options
      * @param {number} options.maxTimeout How long the query should run

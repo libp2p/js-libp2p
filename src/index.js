@@ -567,9 +567,11 @@ module.exports = Libp2p
 /**
  * Like `new Libp2p(options)` except it will create a `PeerInfo`
  * instance if one is not provided in options.
+ * 
+ * @method
  * @param {object} options Libp2p configuration options
  * @param {function(Error, Libp2p)} callback
- * @returns {void}
+ * @return {Promise<{void}>}
  */
 module.exports.createLibp2p = promisify((options, callback) => {
   if (options.peerInfo) {
