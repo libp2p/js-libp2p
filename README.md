@@ -9,7 +9,6 @@
   <a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" /></a>
   <a href="http://webchat.freenode.net/?channels=%23libp2p"><img src="https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square" /></a>
   <a href="https://discuss.libp2p.io"><img src="https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg" /></a>
-  <a href="https://waffle.io/libp2p/libp2p"><img src="https://img.shields.io/badge/pm-waffle-yellow.svg?style=flat-square" /></a>
 </p>
 
 <p align="center">
@@ -29,9 +28,7 @@
 
 We've come a long way, but this project is still in Alpha, lots of development is happening, API might change, beware of the Dragons 🐉..
 
-**Want to get started?** Check our [examples folder](/examples). You can check the development status at the [Waffle Board](https://waffle.io/libp2p/js-libp2p).
-
-[![Throughput Graph](https://graphs.waffle.io/libp2p/js-libp2p/throughput.svg)](https://waffle.io/libp2p/js-libp2p/metrics/throughput)
+**Want to get started?** Check our [examples folder](/examples).
 
 [**`Weekly Core Dev Calls`**](https://github.com/ipfs/pm/issues/650)
 
