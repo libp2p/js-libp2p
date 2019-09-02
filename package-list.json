@@ -18,14 +18,11 @@
     "Transport",
     ["libp2p/interface-transport", "interface-transport"],
     ["libp2p/js-libp2p-tcp", "libp2p-tcp"],
-    ["libp2p/js-libp2p-udp", "libp2p-udp"],
-    ["libp2p/js-libp2p-udt", "libp2p-udt"],
     ["libp2p/js-libp2p-utp", "libp2p-utp"],
     ["libp2p/js-libp2p-webrtc-direct", "libp2p-webrtc-direct"],
     ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
     ["libp2p/js-libp2p-websockets", "libp2p-websockets"],
     ["libp2p/js-libp2p-websocket-star", "libp2p-websocket-star"],
-    ["libp2p/js-libp2p-websocket-star-rendezvous", "libp2p-websocket-star-rendezvous"],
 
     "Crypto Channels",
     ["libp2p/js-libp2p-secio", "libp2p-secio"],
@@ -63,24 +60,11 @@
     ["libp2p/js-libp2p-delegated-peer-routing", "libp2p-delegated-peer-routing"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
 
-    "Record Store",
-    ["libp2p/interface-record-store", "interface-record-store"],
-    ["libp2p/js-libp2p-record", "libp2p-record"],
-
     "Generics",
-    ["libp2p/js-libp2p-connection-manager", "libp2p-connection-manager"],
     ["libp2p/js-libp2p-crypto", "libp2p-crypto"],
     ["libp2p/js-libp2p-crypto-secp256k1", "libp2p-crypto-secp256k1"],
-    ["libp2p/js-libp2p-switch", "libp2p-switch"],
 
     "Extensions",
-    ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"],
-    ["libp2p/js-libp2p-identify", "libp2p-identify"],
-    ["libp2p/js-libp2p-keychain", "libp2p-keychain"],
-    ["libp2p/js-libp2p-ping", "libp2p-ping"],
-    ["libp2p/js-libp2p-pnet", "libp2p-pnet"],
-
-    "Utilities",
-    ["libp2p/js-p2pcat", "p2pcat"]
+    ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"]
   ]
 }
