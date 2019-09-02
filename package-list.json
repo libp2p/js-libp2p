@@ -3,7 +3,7 @@
     "Package",
     "Version",
     "Deps",
-    "CI/Travis",
+    "CI",
     "Coverage",
     "Lead Maintainer"
   ],
@@ -41,15 +41,6 @@
     ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
     ["libp2p/js-libp2p-websocket-star", "libp2p-websocket-star"],
 
-    "NAT Traversal",
-    ["libp2p/js-libp2p-circuit", "libp2p-circuit"],
-    ["libp2p/js-libp2p-nat-mngr", "libp2p-nat-mngr"],
-
-    "Data Types",
-    ["libp2p/js-peer-book", "peer-book"],
-    ["libp2p/js-peer-id", "peer-id"],
-    ["libp2p/js-peer-info", "peer-info"],
-
     "Content Routing",
     ["libp2p/interface-content-routing", "interface-content-routing"],
     ["libp2p/js-libp2p-delegated-content-routing", "libp2p-delegated-content-routing"],
@@ -60,9 +51,14 @@
     ["libp2p/js-libp2p-delegated-peer-routing", "libp2p-delegated-peer-routing"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
 
-    "Generics",
+    "Utilities",
     ["libp2p/js-libp2p-crypto", "libp2p-crypto"],
     ["libp2p/js-libp2p-crypto-secp256k1", "libp2p-crypto-secp256k1"],
+
+    "Data Types",
+    ["libp2p/js-peer-book", "peer-book"],
+    ["libp2p/js-peer-id", "peer-id"],
+    ["libp2p/js-peer-info", "peer-info"],
 
     "Extensions",
     ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"]
