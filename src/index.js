@@ -27,7 +27,7 @@ class FloodSub extends BaseProtocol {
    * @constructor
    */
   constructor (libp2p, options = {}) {
-    super('libp2p:floodsub', multicodec, libp2p)
+    super('libp2p:floodsub', multicodec, libp2p, options)
 
     /**
      * List of our subscriptions
