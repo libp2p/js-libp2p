@@ -1,3 +1,13 @@
+<a name="0.17.2"></a>
+## [0.17.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.17.1...v0.17.2) (2019-09-03)
+
+
+### Features
+
+* pass options to base protocol constructor ([#87](https://github.com/libp2p/js-libp2p-floodsub/issues/87)) ([daa97f8](https://github.com/libp2p/js-libp2p-floodsub/commit/daa97f8))
+
+
+
 <a name="0.17.1"></a>
 ## [0.17.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.17.0...v0.17.1) (2019-07-25)
 
