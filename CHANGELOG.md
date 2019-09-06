@@ -1,3 +1,18 @@
+<a name="0.18.0"></a>
+# [0.18.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.17.2...v0.18.0) (2019-09-06)
+
+
+### Features
+
+* emit self default to false ([#89](https://github.com/libp2p/js-libp2p-floodsub/issues/89)) ([39ff708](https://github.com/libp2p/js-libp2p-floodsub/commit/39ff708))
+
+
+### BREAKING CHANGES
+
+* messages are not self emitted by default anymore. You need to set the emitSelf option to true to use it
+
+
+
 <a name="0.17.2"></a>
 ## [0.17.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.17.1...v0.17.2) (2019-09-03)
 
