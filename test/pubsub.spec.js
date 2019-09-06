@@ -22,7 +22,7 @@ describe('pubsub', () => {
     createNode((err, node) => {
       expect(err).to.not.exist()
       libp2p = node
-      floodsub = new Floodsub(libp2p)
+      floodsub = new Floodsub(libp2p, { emitSelf: true })
       done(err)
     })
   })

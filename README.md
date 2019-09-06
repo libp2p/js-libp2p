@@ -80,7 +80,7 @@ const floodsub = new Floodsub(libp2pNode, options)
 
 Options is an optional object with the following key-value pairs:
 
-* **`emitSelf`**: boolean identifying whether the node should emit to self on publish, in the event of the topic being subscribed (defaults to **true**).
+* **`emitSelf`**: boolean identifying whether the node should emit to self on publish, in the event of the topic being subscribed (defaults to **false**).
 
 For more, see https://libp2p.github.io/js-libp2p-floodsub
 

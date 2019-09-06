@@ -352,7 +352,7 @@ function spawnPubSubNode (callback) {
     if (err) {
       return callback(err)
     }
-    const ps = new FloodSub(node)
+    const ps = new FloodSub(node, { emitSelf: true })
     ps.start((err) => {
       if (err) {
         return callback(err)

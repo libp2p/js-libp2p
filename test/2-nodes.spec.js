@@ -45,8 +45,8 @@ describe('basics between 2 nodes', () => {
     })
 
     it('Mount the pubsub protocol', (done) => {
-      fsA = new FloodSub(nodeA)
-      fsB = new FloodSub(nodeB)
+      fsA = new FloodSub(nodeA, { emitSelf: true })
+      fsB = new FloodSub(nodeB, { emitSelf: true })
 
       setTimeout(() => {
         expect(fsA.peers.size).to.be.eql(0)
@@ -369,8 +369,8 @@ describe('basics between 2 nodes', () => {
     })
 
     it('dial on floodsub on mount', (done) => {
-      fsA = new FloodSub(nodeA)
-      fsB = new FloodSub(nodeB)
+      fsA = new FloodSub(nodeA, { emitSelf: true })
+      fsB = new FloodSub(nodeB, { emitSelf: true })
 
       parallel([
         (cb) => fsA.start(cb),
