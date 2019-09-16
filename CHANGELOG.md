@@ -1,3 +1,18 @@
+<a name="0.14.0"></a>
+# [0.14.0](https://github.com/libp2p/js-libp2p-tcp/compare/v0.13.1...v0.14.0) (2019-09-16)
+
+
+### Features
+
+* change api to async / await ([#112](https://github.com/libp2p/js-libp2p-tcp/issues/112)) ([cf7d1b8](https://github.com/libp2p/js-libp2p-tcp/commit/cf7d1b8))
+
+
+### BREAKING CHANGES
+
+* All places in the API that used callbacks are now replaced with async/await. The API has also been updated according to the latest `interface-transport` version, https://github.com/libp2p/interface-transport/tree/v0.6.0#api.
+
+
+
 <a name="0.13.1"></a>
 ## [0.13.1](https://github.com/libp2p/js-libp2p-tcp/compare/v0.13.0...v0.13.1) (2019-08-08)
 
