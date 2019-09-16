@@ -13,7 +13,7 @@
 [![](https://raw.githubusercontent.com/libp2p/interface-connection/master/img/badge.png)](https://github.com/libp2p/interface-connection)
 
 
-> JavaScript implementation of the TCP module for libp2p. It exposes the [interface-transport](https://github.com/libp2p/interface-connection) for dial/listen. `libp2p-tcp` is a very thin shim that adds support for dialing to a `multiaddr`. This small shim will enable libp2p to use other different transports.
+> JavaScript implementation of the TCP module for libp2p. It exposes the [interface-transport](https://github.com/libp2p/interface-connection) for dial/listen. `libp2p-tcp` is a very thin shim that adds support for dialing to a `multiaddr`. This small shim will enable libp2p to use other transports.
 
 ## Lead Maintainer
 
@@ -41,37 +41,33 @@
 ```js
 const TCP = require('libp2p-tcp')
 const multiaddr = require('multiaddr')
-const pull = require('pull-stream')
+const pipe = require('it-pipe')
+const { collect } = require('streaming-iterables')
 
-const mh = multiaddr('/ip4/127.0.0.1/tcp/9090')
+const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
 
 const tcp = new TCP()
 
 const listener = tcp.createListener((socket) => {
   console.log('new connection opened')
-  pull(
-    pull.values(['hello']),
+  pipe(
+    ['hello'],
     socket
   )
 })
 
-listener.listen(mh, () => {
-  console.log('listening')
+await listener.listen(addr)
+console.log('listening')
 
-  pull(
-    tcp.dial(mh),
-    pull.collect((err, values) => {
-      if (!err) {
-        console.log(`Value: ${values.toString()}`)
-      } else {
-        console.log(`Error: ${err}`)
-      }
+const socket = await tcp.dial(addr)
+const values = await pipe(
+  socket,
+  collect
+)
+console.log(`Value: ${values.toString()}`)
 
-      // Close connection after reading
-      listener.close()
-    }),
-  )
-})
+// Close connection after reading
+await listener.close()
 ```
 
 Outputs:
@@ -88,12 +84,12 @@ Value: hello
 
 [![](https://raw.githubusercontent.com/libp2p/interface-transport/master/img/badge.png)](https://github.com/libp2p/interface-transport)
 
-`libp2p-tcp` accepts TCP addresses both IPFS and non IPFS encapsulated addresses, i.e:
+`libp2p-tcp` accepts TCP addresses as both IPFS and non IPFS encapsulated addresses, i.e:
 
 `/ip4/127.0.0.1/tcp/4001`
 `/ip4/127.0.0.1/tcp/4001/ipfs/QmHash`
 
-Both for dialing and listening.
+(both for dialing and listening)
 
 ### Connection
 

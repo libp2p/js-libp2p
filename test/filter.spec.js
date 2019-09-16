@@ -15,7 +15,7 @@ describe('filter addrs', () => {
   let tcp
 
   before(() => {
-    tcp = new TCP()
+    tcp = new TCP({ upgrader: {} })
   })
 
   it('filter valid addrs for this transport', () => {

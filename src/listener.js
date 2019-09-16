@@ -1,156 +1,122 @@
 'use strict'
 
 const multiaddr = require('multiaddr')
-const Connection = require('interface-connection').Connection
 const os = require('os')
-const includes = require('lodash.includes')
 const net = require('net')
-const toPull = require('stream-to-pull-stream')
-const EventEmitter = require('events').EventEmitter
-const debug = require('debug')
-const log = debug('libp2p:tcp:listen')
+const EventEmitter = require('events')
+const log = require('debug')('libp2p:tcp:listener')
+const toConnection = require('./socket-to-conn')
+const { CODE_P2P } = require('./constants')
+const ProtoFamily = { ip4: 'IPv4', ip6: 'IPv6' }
 
-const getMultiaddr = require('./get-multiaddr')
-
-const IPFS_CODE = 421
-const CLOSE_TIMEOUT = 2000
-
-function noop () {}
-
-module.exports = (handler) => {
+module.exports = ({ handler, upgrader }, options) => {
   const listener = new EventEmitter()
 
-  const server = net.createServer((socket) => {
-    // Avoid uncaught errors cause by unstable connections
-    socket.on('error', noop)
+  const server = net.createServer(async socket => {
+    // Avoid uncaught errors caused by unstable connections
+    socket.on('error', err => log('socket error', err))
 
-    const addr = getMultiaddr(socket)
-    if (!addr) {
-      if (socket.remoteAddress === undefined) {
-        log('connection closed before p2p connection made')
-      } else {
-        log('error interpreting incoming p2p connection')
-      }
-      return
-    }
+    const maConn = toConnection(socket)
+    log('new inbound connection %s', maConn.remoteAddr)
 
-    log('new connection', addr.toString())
+    const conn = await upgrader.upgradeInbound(maConn)
+    log('inbound connection %s upgraded', maConn.remoteAddr)
 
-    const s = toPull.duplex(socket)
+    trackConn(server, maConn)
 
-    s.getObservedAddrs = (cb) => {
-      cb(null, [addr])
-    }
-
-    trackSocket(server, socket)
-
-    const conn = new Connection(s)
-    handler(conn)
+    if (handler) handler(conn)
     listener.emit('connection', conn)
   })
 
-  server.on('listening', () => listener.emit('listening'))
-  server.on('error', (err) => listener.emit('error', err))
-  server.on('close', () => listener.emit('close'))
+  server
+    .on('listening', () => listener.emit('listening'))
+    .on('error', err => listener.emit('error', err))
+    .on('close', () => listener.emit('close'))
 
   // Keep track of open connections to destroy in case of timeout
-  server.__connections = {}
+  server.__connections = []
 
-  listener.close = (options, callback) => {
-    if (typeof options === 'function') {
-      callback = options
-      options = {}
-    }
-    callback = callback || noop
-    options = options || {}
+  listener.close = () => {
+    if (!server.listening) return
 
-    const timeout = setTimeout(() => {
-      log('unable to close graciously, destroying conns')
-      Object.keys(server.__connections).forEach((key) => {
-        log('destroying %s', key)
-        server.__connections[key].destroy()
-      })
-    }, options.timeout || CLOSE_TIMEOUT)
-
-    server.close(callback)
-
-    server.once('close', () => {
-      clearTimeout(timeout)
+    return new Promise((resolve, reject) => {
+      server.__connections.forEach(maConn => maConn.close())
+      server.close(err => err ? reject(err) : resolve())
     })
   }
 
-  let ipfsId
-  let listeningAddr
+  let peerId, listeningAddr
 
-  listener.listen = (ma, callback) => {
+  listener.listen = ma => {
     listeningAddr = ma
-    if (includes(ma.protoNames(), 'ipfs')) {
-      ipfsId = getIpfsId(ma)
-      listeningAddr = ma.decapsulate('ipfs')
+    peerId = ma.getPeerId()
+
+    if (peerId) {
+      listeningAddr = ma.decapsulateCode(CODE_P2P)
     }
 
-    const lOpts = listeningAddr.toOptions()
-    log('Listening on %s %s', lOpts.port, lOpts.host)
-    return server.listen(lOpts.port, lOpts.host, callback)
+    return new Promise((resolve, reject) => {
+      const { host, port } = listeningAddr.toOptions()
+      server.listen(port, host, err => {
+        if (err) return reject(err)
+        log('Listening on %s %s', port, host)
+        resolve()
+      })
+    })
   }
 
-  listener.getAddrs = (callback) => {
-    const multiaddrs = []
+  listener.getAddrs = () => {
+    let addrs = []
     const address = server.address()
 
     if (!address) {
-      return callback(new Error('Listener is not ready yet'))
+      throw new Error('Listener is not ready yet')
     }
 
     // Because TCP will only return the IPv6 version
     // we need to capture from the passed multiaddr
-    if (listeningAddr.toString().indexOf('ip4') !== -1) {
-      let m = listeningAddr.decapsulate('tcp')
-      m = m.encapsulate('/tcp/' + address.port)
-      if (ipfsId) {
-        m = m.encapsulate('/ipfs/' + ipfsId)
-      }
-
-      if (m.toString().indexOf('0.0.0.0') !== -1) {
-        const netInterfaces = os.networkInterfaces()
-        Object.keys(netInterfaces).forEach((niKey) => {
-          netInterfaces[niKey].forEach((ni) => {
-            if (ni.family === 'IPv4') {
-              multiaddrs.push(multiaddr(m.toString().replace('0.0.0.0', ni.address)))
-            }
-          })
-        })
-      } else {
-        multiaddrs.push(m)
-      }
+    if (listeningAddr.toString().startsWith('/ip4')) {
+      addrs = addrs.concat(getMulitaddrs('ip4', address.address, address.port))
+    } else if (address.family === 'IPv6') {
+      addrs = addrs.concat(getMulitaddrs('ip6', address.address, address.port))
     }
 
-    if (address.family === 'IPv6') {
-      let ma = multiaddr('/ip6/' + address.address + '/tcp/' + address.port)
-      if (ipfsId) {
-        ma = ma.encapsulate('/ipfs/' + ipfsId)
-      }
-
-      multiaddrs.push(ma)
-    }
-
-    callback(null, multiaddrs)
+    return addrs.map(ma => peerId ? ma.encapsulate(`/p2p/${peerId}`) : ma)
   }
 
   return listener
 }
 
-function getIpfsId (ma) {
-  return ma.stringTuples().filter((tuple) => {
-    return tuple[0] === IPFS_CODE
-  })[0][1]
+function getMulitaddrs (proto, ip, port) {
+  const toMa = ip => multiaddr(`/${proto}/${ip}/tcp/${port}`)
+  return (isAnyAddr(ip) ? getNetworkAddrs(ProtoFamily[proto]) : [ip]).map(toMa)
 }
 
-function trackSocket (server, socket) {
-  const key = `${socket.remoteAddress}:${socket.remotePort}`
-  server.__connections[key] = socket
+function isAnyAddr (ip) {
+  return ['0.0.0.0', '::'].includes(ip)
+}
 
-  socket.on('close', () => {
-    delete server.__connections[key]
-  })
+/**
+ * @private
+ * @param {string} family One of ['IPv6', 'IPv4']
+ * @returns {string[]} an array of ip address strings
+ */
+function getNetworkAddrs (family) {
+  return Object.values(os.networkInterfaces()).reduce((addresses, netAddrs) => {
+    netAddrs.forEach(netAddr => {
+      // Add the ip of each matching network interface
+      if (netAddr.family === family) addresses.push(netAddr.address)
+    })
+    return addresses
+  }, [])
+}
+
+function trackConn (server, maConn) {
+  server.__connections.push(maConn)
+
+  const untrackConn = () => {
+    server.__connections = server.__connections.filter(c => c !== maConn)
+  }
+
+  maConn.conn.once('close', untrackConn)
 }
