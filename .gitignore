@@ -1,13 +1,7 @@
+node_modules
+coverage
+.nyc_output
 package-lock.json
 yarn.lock
 docs
-
-**/node_modules
-**/*.log
-test/setup/tmp-disposable-nodes-addrs.json
 dist
-coverage
-**/*.swp
-examples/sub-module/**/bundle.js
-examples/sub-module/**/*-minified.js
-examples/sub-module/*-bundle.js

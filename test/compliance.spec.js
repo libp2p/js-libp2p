@@ -2,15 +2,11 @@
 'use strict'
 
 const tests = require('interface-stream-muxer')
-const multiplex = require('../src')
+const Mplex = require('../src')
 
 describe('compliance', () => {
   tests({
-    setup (cb) {
-      cb(null, multiplex)
-    },
-    teardown (cb) {
-      cb()
-    }
+    setup: () => Mplex,
+    teardown () {}
   })
 })

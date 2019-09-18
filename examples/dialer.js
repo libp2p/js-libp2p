@@ -2,21 +2,42 @@
 'use strict'
 
 const tcp = require('net')
-const pull = require('pull-stream')
-const toPull = require('stream-to-pull-stream')
-const multiplex = require('../src')
+const pipe = require('it-pipe')
+const AbortController = require('abort-controller')
+const { toIterable } = require('./util')
+const Mplex = require('../src')
 
-const socket = tcp.connect(9999)
+const socket = toIterable(tcp.connect(9999))
+console.log('[dialer] socket stream opened')
 
-const muxer = multiplex.dialer(toPull(socket))
+const controller = new AbortController()
 
-console.log('[dialer] opening stream')
-const stream = muxer.newStream((err) => {
-  console.log('[dialer] opened stream')
-  if (err) throw err
-})
+const muxer = new Mplex({ signal: controller.signal })
 
-pull(
-  pull.values(['hey, how is it going. I am the dialer']),
-  stream
-)
+const pipeMuxerToSocket = async () => {
+  await pipe(muxer, socket, muxer)
+  console.log('[dialer] socket stream closed')
+}
+
+const sendAndReceive = async () => {
+  const muxedStream = muxer.newStream()
+  console.log('[dialer] muxed stream opened')
+
+  await pipe(
+    ['hey, how is it going. I am the dialer'],
+    muxedStream,
+    async source => {
+      for await (const chunk of source) {
+        console.log('[dialer] received:')
+        console.log(chunk.toString())
+      }
+    }
+  )
+  console.log('[dialer] muxed stream closed')
+
+  // Close the socket stream after 1s
+  setTimeout(() => controller.abort(), 1000)
+}
+
+pipeMuxerToSocket()
+sendAndReceive()
