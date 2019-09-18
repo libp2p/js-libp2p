@@ -1,6 +1,6 @@
 {
   "name": "libp2p-mplex",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -60,6 +60,7 @@
     "varint": "^5.0.0"
   },
   "contributors": [
+    "Alan Shaw <alan.shaw@protocol.ai>",
     "David Dias <daviddias.p@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "Francisco Baio Dias <xicombd@gmail.com>",
@@ -70,8 +71,8 @@
     "Richard Littauer <richard.littauer@gmail.com>",
     "Stephen Whitmore <stephen.whitmore@gmail.com>",
     "Steven Allen <steven@stebalien.com>",
-    "Vasco Santos <vasco.santos@moxy.studio>",
     "Vasco Santos <vasco.santos@ua.pt>",
+    "Vasco Santos <vasco.santos@moxy.studio>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>",
     "greenkeeperio-bot <support@greenkeeper.io>"
   ]
