@@ -1,3 +1,21 @@
+<a name="0.9.0"></a>
+# [0.9.0](https://github.com/libp2p/js-libp2p-mplex/compare/v0.8.5...v0.9.0) (2019-09-18)
+
+
+### Code Refactoring
+
+* async iterators ([#94](https://github.com/libp2p/js-libp2p-mplex/issues/94)) ([c9bede5](https://github.com/libp2p/js-libp2p-mplex/commit/c9bede5))
+
+
+### BREAKING CHANGES
+
+* All places in the API that used callbacks are now replaced with async/await while pull-streams are replaced with async iterators. The API has also been updated according to the latest `interface-stream-muxer` version, https://github.com/libp2p/interface-stream-muxer/tree/v0.7.0.
+
+License: MIT
+Signed-off-by: Alan Shaw <alan.shaw@protocol.ai>
+
+
+
 <a name="0.8.5"></a>
 ## [0.8.5](https://github.com/libp2p/js-libp2p-mplex/compare/v0.8.4...v0.8.5) (2019-03-18)
 
