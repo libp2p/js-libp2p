@@ -14,8 +14,7 @@ describe('interface-transport compliance', () => {
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091'),
         multiaddr('/ip4/127.0.0.1/tcp/9092'),
-        multiaddr('/ip4/127.0.0.1/tcp/9093'),
-        multiaddr('/dns4/ipfs.io')
+        multiaddr('/ip4/127.0.0.1/tcp/9093')
       ]
 
       // Used by the dial tests to simulate a delayed connect

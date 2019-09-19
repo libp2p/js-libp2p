@@ -79,5 +79,14 @@ module.exports = (socket, options) => {
     }
   }
 
+  socket.once('close', () => {
+    // In instances where `close` was not explicitly called,
+    // such as an iterable stream ending, ensure we have set the close
+    // timeline
+    if (!maConn.timeline.close) {
+      maConn.timeline.close = Date.now()
+    }
+  })
+
   return maConn
 }
