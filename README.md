@@ -44,9 +44,13 @@ const multiaddr = require('multiaddr')
 const pipe = require('it-pipe')
 const { collect } = require('streaming-iterables')
 
-const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
+// A simple upgrader that just returns the MultiaddrConnection
+const upgrader = {
+  upgradeInbound: maConn => maConn,
+  upgradeOutbound: maConn => maConn
+}
 
-const tcp = new TCP()
+const tcp = new TCP({ upgrader })
 
 const listener = tcp.createListener((socket) => {
   console.log('new connection opened')
@@ -56,6 +60,7 @@ const listener = tcp.createListener((socket) => {
   )
 })
 
+const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
 await listener.listen(addr)
 console.log('listening')
 
