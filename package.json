@@ -1,6 +1,6 @@
 {
   "name": "libp2p-utils",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "leadMaintainer": "Vasco Santos <santos.vasco10@gmail.com>",
   "main": "src/index.js",
@@ -12,7 +12,7 @@
     "test:electron-renderer": "aegir test -t electron-renderer",
     "lint": "aegir lint",
     "release": "aegir release --docs",
-    "release-minor": "aegir release --type minor --docs",
+    "release-minor": "aegir release --target node --type minor --docs",
     "release-major": "aegir release --type major --docs",
     "build": "aegir build"
   },
@@ -36,5 +36,8 @@
   "dependencies": {
     "ip-address": "^6.1.0",
     "multiaddr": "^7.1.0"
-  }
+  },
+  "contributors": [
+    "Vasco Santos <vasco.santos@moxy.studio>"
+  ]
 }
