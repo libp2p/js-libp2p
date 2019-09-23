@@ -1,3 +1,13 @@
+<a name="0.9.1"></a>
+## [0.9.1](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.0...v0.9.1) (2019-09-23)
+
+
+### Features
+
+* add better support for external stream metadata tracking ([#98](https://github.com/libp2p/js-libp2p-mplex/issues/98)) ([96f1ca0](https://github.com/libp2p/js-libp2p-mplex/commit/96f1ca0))
+
+
+
 <a name="0.9.0"></a>
 # [0.9.0](https://github.com/libp2p/js-libp2p-mplex/compare/v0.8.5...v0.9.0) (2019-09-18)
 
