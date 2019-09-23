@@ -1,7 +1,7 @@
 'use strict'
 
 const varint = require('varint')
-const BufferList = require('bl')
+const { BufferList } = require('bl')
 
 // Decode a chunk and yield an _array_ of decoded messages
 module.exports = source => (async function * decode () {

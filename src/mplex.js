@@ -14,6 +14,7 @@ class Mplex {
    * @constructor
    * @param {object} options
    * @param {function(*)} options.onStream Called whenever an inbound stream is created
+   * @param {function(*)} options.onStreamEnd Called whenever a stream ends
    * @param {AbortSignal} options.signal An AbortController signal
    */
   constructor (options) {
@@ -47,6 +48,27 @@ class Mplex {
      * @property {function} onStream
      */
     this.onStream = options.onStream
+
+    /**
+     * @property {function} onStreamEnd
+     */
+    this.onStreamEnd = options.onStreamEnd
+  }
+
+  /**
+   * Returns a Map of streams and their ids
+   * @returns {Map<number,*>}
+   */
+  get streams () {
+    // Inbound and Outbound streams may have the same ids, so we need to make those unique
+    const streams = []
+    this._streams.initiators.forEach(stream => {
+      streams.push(stream)
+    })
+    this._streams.receivers.forEach(stream => {
+      streams.push(stream)
+    })
+    return streams
   }
 
   /**
@@ -99,6 +121,7 @@ class Mplex {
     const onEnd = () => {
       log('%s stream %s %s ended', type, id, name)
       registry.delete(id)
+      this.onStreamEnd && this.onStreamEnd(stream)
     }
     const stream = createStream({ id, name, send, type, onEnd })
     registry.set(id, stream)

@@ -19,6 +19,7 @@ module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator' }) => {
   const abortController = new AbortController()
   const resetController = new AbortController()
   const Types = type === 'initiator' ? InitiatorMessageTypes : ReceiverMessageTypes
+  const externalId = type === 'initiator' ? (`i${id}`) : `r${id}`
 
   name = String(name == null ? id : name)
 
@@ -30,14 +31,20 @@ module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator' }) => {
     sourceEnded = true
     log('%s stream %s source end', type, name, err)
     if (err && !endErr) endErr = err
-    if (sinkEnded) onEnd(endErr)
+    if (sinkEnded) {
+      stream.timeline.close = Date.now()
+      onEnd(endErr)
+    }
   }
 
   const onSinkEnd = err => {
     sinkEnded = true
     log('%s stream %s sink end', type, name, err)
     if (err && !endErr) endErr = err
-    if (sourceEnded) onEnd(endErr)
+    if (sourceEnded) {
+      stream.timeline.close = Date.now()
+      onEnd(endErr)
+    }
   }
 
   const stream = {
@@ -82,7 +89,12 @@ module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator' }) => {
       send({ id, type: Types.CLOSE })
       onSinkEnd()
     },
-    source: pushable(onSourceEnd)
+    source: pushable(onSourceEnd),
+    timeline: {
+      open: Date.now(),
+      close: null
+    },
+    id: externalId
   }
 
   return stream

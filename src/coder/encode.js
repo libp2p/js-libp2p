@@ -1,7 +1,7 @@
 'use strict'
 
 const varint = require('varint')
-const BufferList = require('bl')
+const { BufferList } = require('bl')
 
 const POOL_SIZE = 10 * 1024
 

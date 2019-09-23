@@ -4,7 +4,7 @@
 
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
-const BufferList = require('bl')
+const { BufferList } = require('bl')
 const { expect } = chai
 chai.use(dirtyChai)
 

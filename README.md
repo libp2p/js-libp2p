@@ -34,6 +34,9 @@ const pipe = require('it-pipe')
 const muxer = new Mplex({
   onStream: stream => { // Receive a duplex stream from the remote
     // ...receive data from the remote and optionally send data back
+  },
+  onStreamEnd: stream => {
+    // ...handle any tracking you may need of stream closures
   }
 })
 
@@ -86,6 +89,15 @@ pipe(conn, muxer, conn) // conn is duplex connection to another peer
     ```js
     new Mplex(stream => { /* ... */ })
     ```
+* `onStreamEnd` - A function called when a stream ends
+    ```js
+    // Receive a notification when a stream ends
+    const onStreamEnd = stream => {
+      // Manage any tracking changes, etc
+    }
+    const muxer = new Mplex({ onStreamEnd })
+    // ...
+    ```
 * `signal` - An [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) which can be used to abort the muxer, _including_ all of it's multiplexed connections. e.g.
     ```js
     const controller = new AbortController()
@@ -100,6 +112,14 @@ pipe(conn, muxer, conn) // conn is duplex connection to another peer
 ### `muxer.onStream`
 
 Use this property as an alternative to passing `onStream` as an option to the `Mplex` constructor.
+
+### `muxer.onStreamEnd`
+
+Use this property as an alternative to passing `onStreamEnd` as an option to the `Mplex` constructor.
+
+### `muxer.streams`
+
+Returns an `Array` of streams that are currently open. Closed streams will not be returned.
 
 ### `const stream = muxer.newStream([options])`
 
@@ -142,6 +162,14 @@ Closes the stream _immediately_ for **reading** _and_ **writing**. This should b
 This function is called automatically by the muxer when it receives a `RESET` message from the remote.
 
 The sink will return and the source will throw.
+
+#### `stream.timeline`
+
+Returns an `object` with `close` and `open` times of the stream.
+
+#### `stream.id`
+
+Returns a `string` with an identifier unique to **this** muxer. Identifiers are not unique across muxers.
 
 ## Contribute
 
