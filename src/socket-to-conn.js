@@ -3,7 +3,7 @@
 const abortable = require('abortable-iterator')
 const log = require('debug')('libp2p:tcp:socket')
 const toIterable = require('stream-to-it')
-const toMultiaddr = require('./ip-port-to-multiaddr')
+const toMultiaddr = require('libp2p-utils/src/ip-port-to-multiaddr')
 const { CLOSE_TIMEOUT } = require('./constants')
 
 // Convert a socket into a MultiaddrConnection
