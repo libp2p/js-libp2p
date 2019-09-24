@@ -10,7 +10,8 @@ const expect = chai.expect
 const parallel = require('async/parallel')
 const series = require('async/series')
 const _times = require('lodash.times')
-
+const promisify = require('promisify-es6')
+const delay = require('delay')
 const Floodsub = require('libp2p-floodsub')
 const mergeOptions = require('merge-options')
 
@@ -203,6 +204,36 @@ describe('.pubsub', () => {
         // Verify there was no error, and mark the expect
         expect(err).to.not.exist().mark()
       })
+    })
+    it('start two nodes and send one message, then unsubscribe (promises)', async () => {
+      let messageRecieved
+      const data = Buffer.from('test')
+      const handler = (msg) => {
+        expect(msg.data).to.eql(data)
+        messageRecieved = true
+      }
+
+      // Start the nodes
+      const nodes = await promisify(startTwo)({
+        modules: {
+          pubsub: Floodsub
+        }
+      })
+
+      // subscribe on the first
+      await nodes[0].pubsub.subscribe('pubsub', handler)
+      // Wait a moment before publishing
+      await delay(500)
+      // publish on the second
+      await nodes[1].pubsub.publish('pubsub', data)
+      // Wait a moment before unsubscribing
+      await delay(500)
+      // unsubscribe on the first
+      await nodes[0].pubsub.unsubscribe('pubsub', handler)
+      // Stop both nodes
+      await promisify(stopTwo)(nodes)
+
+      expect(messageRecieved).to.be.true()
     })
     it('start two nodes and send one message, then unsubscribe without handler', (done) => {
       // Check the final series error, and the publish handler
