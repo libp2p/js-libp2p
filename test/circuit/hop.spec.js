@@ -24,7 +24,7 @@ const expect = chai.expect
 chai.use(dirtyChai)
 
 describe('relay', () => {
-  describe(`.handle`, () => {
+  describe('.handle', () => {
     let relay
     let swarm
     let fromConn
@@ -40,11 +40,11 @@ describe('relay', () => {
 
       const peers = {
         QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE:
-          new PeerInfo(PeerId.createFromB58String(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`)),
+          new PeerInfo(PeerId.createFromB58String('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE')),
         QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA:
-          new PeerInfo(PeerId.createFromB58String(`QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`)),
+          new PeerInfo(PeerId.createFromB58String('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA')),
         QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy:
-          new PeerInfo(PeerId.createFromB58String(`QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`))
+          new PeerInfo(PeerId.createFromB58String('QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy'))
       }
 
       Object.keys(peers).forEach((key) => { peers[key]._connectedMultiaddr = true }) // make it truthy
@@ -86,16 +86,16 @@ describe('relay', () => {
       relay._circuit.reset()
     })
 
-    it(`should handle a valid circuit request`, (done) => {
+    it('should handle a valid circuit request', (done) => {
       const relayMsg = {
         type: proto.CircuitRelay.Type.HOP,
         srcPeer: {
-          id: PeerId.createFromB58String(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`).id,
-          addrs: [multiaddr(`/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`).buffer]
+          id: PeerId.createFromB58String('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE').id,
+          addrs: [multiaddr('/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE').buffer]
         },
         dstPeer: {
-          id: PeerId.createFromB58String(`QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`).id,
-          addrs: [multiaddr(`/ipfs/QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`).buffer]
+          id: PeerId.createFromB58String('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA').id,
+          addrs: [multiaddr('/ipfs/QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA').buffer]
         }
       }
 
@@ -107,16 +107,16 @@ describe('relay', () => {
       relay.handle(relayMsg, new StreamHandler(fromConn))
     })
 
-    it(`should handle a request to passive circuit`, (done) => {
+    it('should handle a request to passive circuit', (done) => {
       const relayMsg = {
         type: proto.CircuitRelay.Type.HOP,
         srcPeer: {
-          id: PeerId.createFromB58String(`QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`).id,
-          addrs: [multiaddr(`/ipfs/QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`).buffer]
+          id: PeerId.createFromB58String('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA').id,
+          addrs: [multiaddr('/ipfs/QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA').buffer]
         },
         dstPeer: {
-          id: PeerId.createFromB58String(`QmYJjAri5soV8RbeQcHaYYcTAYTET17QTvcoFMyKvRDTXe`).id,
-          addrs: [multiaddr(`/ipfs/QmYJjAri5soV8RbeQcHaYYcTAYTET17QTvcoFMyKvRDTXe`).buffer]
+          id: PeerId.createFromB58String('QmYJjAri5soV8RbeQcHaYYcTAYTET17QTvcoFMyKvRDTXe').id,
+          addrs: [multiaddr('/ipfs/QmYJjAri5soV8RbeQcHaYYcTAYTET17QTvcoFMyKvRDTXe').buffer]
         }
       }
 
@@ -135,16 +135,16 @@ describe('relay', () => {
       relay.handle(relayMsg, new StreamHandler(fromConn))
     })
 
-    it(`should handle a request to active circuit`, (done) => {
+    it('should handle a request to active circuit', (done) => {
       const relayMsg = {
         type: proto.CircuitRelay.Type.HOP,
         srcPeer: {
-          id: PeerId.createFromB58String(`QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`).id,
-          addrs: [multiaddr(`/ipfs/QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`).buffer]
+          id: PeerId.createFromB58String('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA').id,
+          addrs: [multiaddr('/ipfs/QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA').buffer]
         },
         dstPeer: {
-          id: PeerId.createFromB58String(`QmYJjAri5soV8RbeQcHaYYcTAYTET17QTvcoFMyKvRDTXe`).id,
-          addrs: [multiaddr(`/ipfs/QmYJjAri5soV8RbeQcHaYYcTAYTET17QTvcoFMyKvRDTXe`).buffer]
+          id: PeerId.createFromB58String('QmYJjAri5soV8RbeQcHaYYcTAYTET17QTvcoFMyKvRDTXe').id,
+          addrs: [multiaddr('/ipfs/QmYJjAri5soV8RbeQcHaYYcTAYTET17QTvcoFMyKvRDTXe').buffer]
         }
       }
 
@@ -161,16 +161,16 @@ describe('relay', () => {
       relay.handle(relayMsg, new StreamHandler(fromConn))
     })
 
-    it(`not dial to self`, (done) => {
+    it('not dial to self', (done) => {
       const relayMsg = {
         type: proto.CircuitRelay.Type.HOP,
         srcPeer: {
-          id: PeerId.createFromB58String(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`).id,
-          addrs: [multiaddr(`/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`).buffer]
+          id: PeerId.createFromB58String('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE').id,
+          addrs: [multiaddr('/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE').buffer]
         },
         dstPeer: {
-          id: PeerId.createFromB58String(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`).id,
-          addrs: [multiaddr(`/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`).buffer]
+          id: PeerId.createFromB58String('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE').id,
+          addrs: [multiaddr('/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE').buffer]
         }
       }
 
@@ -188,16 +188,16 @@ describe('relay', () => {
       relay.handle(relayMsg, new StreamHandler(fromConn))
     })
 
-    it(`fail on invalid src address`, (done) => {
+    it('fail on invalid src address', (done) => {
       const relayMsg = {
         type: proto.CircuitRelay.Type.HOP,
         srcPeer: {
-          id: `sdfkjsdnfkjdsb`,
-          addrs: [`sdfkjsdnfkjdsb`]
+          id: 'sdfkjsdnfkjdsb',
+          addrs: ['sdfkjsdnfkjdsb']
         },
         dstPeer: {
-          id: PeerId.createFromB58String(`QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`).id,
-          addrs: [multiaddr(`/ipfs/QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`).buffer]
+          id: PeerId.createFromB58String('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA').id,
+          addrs: [multiaddr('/ipfs/QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA').buffer]
         }
       }
 
@@ -215,16 +215,16 @@ describe('relay', () => {
       relay.handle(relayMsg, new StreamHandler(fromConn))
     })
 
-    it(`fail on invalid dst address`, (done) => {
+    it('fail on invalid dst address', (done) => {
       const relayMsg = {
         type: proto.CircuitRelay.Type.HOP,
         srcPeer: {
-          id: PeerId.createFromB58String(`QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`).id,
-          addrs: [multiaddr(`/ipfs/QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`).buffer]
+          id: PeerId.createFromB58String('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA').id,
+          addrs: [multiaddr('/ipfs/QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA').buffer]
         },
         dstPeer: {
-          id: PeerId.createFromB58String(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`).id,
-          addrs: [`sdfkjsdnfkjdsb`]
+          id: PeerId.createFromB58String('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE').id,
+          addrs: ['sdfkjsdnfkjdsb']
         }
       }
 
@@ -243,7 +243,7 @@ describe('relay', () => {
     })
   })
 
-  describe(`._circuit`, () => {
+  describe('._circuit', () => {
     let relay
     let swarm
     let srcConn
@@ -265,11 +265,11 @@ describe('relay', () => {
 
       const peers = {
         QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE:
-          new PeerInfo(PeerId.createFromB58String(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`)),
+          new PeerInfo(PeerId.createFromB58String('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE')),
         QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA:
-          new PeerInfo(PeerId.createFromB58String(`QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`)),
+          new PeerInfo(PeerId.createFromB58String('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA')),
         QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy:
-          new PeerInfo(PeerId.createFromB58String(`QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`))
+          new PeerInfo(PeerId.createFromB58String('QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy'))
       }
 
       Object.keys(peers).forEach((key) => { peers[key]._connectedMultiaddr = true }) // make it truthy
@@ -314,12 +314,12 @@ describe('relay', () => {
       const msg = {
         type: proto.CircuitRelay.Type.STOP,
         srcPeer: {
-          id: Buffer.from(`QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`),
-          addrs: [Buffer.from(`dsfsdfsdf`)]
+          id: Buffer.from('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA'),
+          addrs: [Buffer.from('dsfsdfsdf')]
         },
         dstPeer: {
-          id: Buffer.from(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`),
-          addrs: [Buffer.from(`sdflksdfndsklfnlkdf`)]
+          id: Buffer.from('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE'),
+          addrs: [Buffer.from('sdflksdfndsklfnlkdf')]
         }
       }
 
@@ -396,12 +396,12 @@ describe('relay', () => {
       const msg = {
         type: proto.CircuitRelay.Type.STOP,
         srcPeer: {
-          id: Buffer.from(`QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA`),
-          addrs: [Buffer.from(`dsfsdfsdf`)]
+          id: Buffer.from('QmQWqGdndSpAkxfk8iyiJyz3XXGkrDNujvc8vEst3baubA'),
+          addrs: [Buffer.from('dsfsdfsdf')]
         },
         dstPeer: {
-          id: Buffer.from(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`),
-          addrs: [Buffer.from(`sdflksdfndsklfnlkdf`)]
+          id: Buffer.from('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE'),
+          addrs: [Buffer.from('sdflksdfndsklfnlkdf')]
         }
       }
 

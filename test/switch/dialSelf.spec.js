@@ -37,7 +37,7 @@ class MockTransport extends EventEmitter {
   }
 }
 
-describe(`dial self`, () => {
+describe('dial self', () => {
   let swarmA
   let peerInfos
 

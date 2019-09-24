@@ -153,7 +153,7 @@ class Dialer {
       const relays = Array.from(this.relayPeers.values())
       const next = (nextRelay) => {
         if (!nextRelay) {
-          const err = `no relay peers were found or all relays failed to dial`
+          const err = 'no relay peers were found or all relays failed to dial'
           log.err(err)
           return cb(err)
         }
@@ -235,7 +235,7 @@ class Dialer {
         }
         const message = proto.CircuitRelay.decode(msg)
         if (message.type !== proto.CircuitRelay.Type.STATUS) {
-          return callback(new Error(`Got invalid message type - ` +
+          return callback(new Error('Got invalid message type - ' +
             `expected ${proto.CircuitRelay.Type.STATUS} got ${message.type}`))
         }
 

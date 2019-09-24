@@ -32,27 +32,35 @@ module.exports = (node, Pubsub, config) => {
      * const handler = (message) => { }
      * libp2p.subscribe(topic, handler, callback)
      */
-    subscribe: promisify((topic, handler, options, callback) => {
+    subscribe: (topic, handler, options, callback) => {
+      // can't use promisify because it thinks the handler is a callback
       if (typeof options === 'function') {
         callback = options
         options = {}
       }
 
       if (!node.isStarted() && !pubsub.started) {
-        return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
-      }
+        const err = errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED)
 
-      function subscribe (cb) {
-        if (pubsub.listenerCount(topic) === 0) {
-          pubsub.subscribe(topic)
+        if (callback) {
+          return nextTick(() => callback(err))
         }
 
-        pubsub.on(topic, handler)
-        nextTick(cb)
+        return Promise.reject(err)
       }
 
-      subscribe(callback)
-    }),
+      if (pubsub.listenerCount(topic) === 0) {
+        pubsub.subscribe(topic)
+      }
+
+      pubsub.on(topic, handler)
+
+      if (callback) {
+        return nextTick(() => callback())
+      }
+
+      return Promise.resolve()
+    },
 
     /**
      * Unsubscribes from a pubsub topic
@@ -76,9 +84,16 @@ module.exports = (node, Pubsub, config) => {
      *
      * libp2p.unsubscribe(topic, handler, callback)
      */
-    unsubscribe: promisify((topic, handler, callback) => {
+    unsubscribe: (topic, handler, callback) => {
+      // can't use promisify because it thinks the handler is a callback
       if (!node.isStarted() && !pubsub.started) {
-        return nextTick(callback, errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED))
+        const err = errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED)
+
+        if (callback) {
+          return nextTick(() => callback(err))
+        }
+
+        return Promise.reject(err)
       }
 
       if (!handler) {
@@ -91,12 +106,12 @@ module.exports = (node, Pubsub, config) => {
         pubsub.unsubscribe(topic)
       }
 
-      if (typeof callback === 'function') {
+      if (callback) {
         return nextTick(() => callback())
       }
 
       return Promise.resolve()
-    }),
+    },
 
     publish: promisify((topic, data, callback) => {
       if (!node.isStarted() && !pubsub.started) {

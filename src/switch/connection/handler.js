@@ -5,7 +5,7 @@ const IncomingConnection = require('./incoming')
 const observeConn = require('../observe-connection')
 
 function listener (_switch) {
-  const log = debug(`libp2p:switch:listener`)
+  const log = debug('libp2p:switch:listener')
 
   /**
    * Takes a transport key and returns a connection handler function

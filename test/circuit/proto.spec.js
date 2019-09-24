@@ -39,12 +39,12 @@ describe('protocol', function () {
     message = proto.CircuitRelay.decode(buff)
   })
 
-  it(`should source and dest`, () => {
+  it('should source and dest', () => {
     expect(message.srcPeer).to.deep.equal(msgObject.srcPeer)
     expect(message.dstPeer).to.deep.equal(msgObject.dstPeer)
   })
 
-  it(`should encode message`, () => {
+  it('should encode message', () => {
     expect(message.message).to.deep.equal(msgObject.message)
   })
 })
