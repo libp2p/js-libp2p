@@ -1,3 +1,13 @@
+<a name="0.26.2"></a>
+## [0.26.2](https://github.com/libp2p/js-libp2p/compare/v0.26.1...v0.26.2) (2019-09-24)
+
+
+### Bug Fixes
+
+* pubsub promisify ([#456](https://github.com/libp2p/js-libp2p/issues/456)) ([ae6af20](https://github.com/libp2p/js-libp2p/commit/ae6af20))
+
+
+
 <a name="0.26.1"></a>
 ## [0.26.1](https://github.com/libp2p/js-libp2p/compare/v0.26.0...v0.26.1) (2019-08-21)
 
