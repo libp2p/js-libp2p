@@ -203,7 +203,7 @@ class Hop extends EE {
 
           const message = proto.decode(msg)
           if (message.code !== proto.Status.SUCCESS) {
-            return callback(new Error(`Unable to create circuit!`))
+            return callback(new Error('Unable to create circuit!'))
           }
 
           return callback(null, msg)

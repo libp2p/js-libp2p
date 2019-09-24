@@ -17,7 +17,7 @@ const expect = chai.expect
 chai.use(dirtyChai)
 
 describe('stop', function () {
-  describe(`handle relayed connections`, function () {
+  describe('handle relayed connections', function () {
     let stopHandler
 
     let swarm
@@ -48,16 +48,16 @@ describe('stop', function () {
       ], done)
     })
 
-    it(`handle request with a valid multiaddr`, function (done) {
+    it('handle request with a valid multiaddr', function (done) {
       stopHandler.handle({
         type: proto.CircuitRelay.Type.STOP,
         srcPeer: {
-          id: `QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`,
-          addrs: [`/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`]
+          id: 'QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE',
+          addrs: ['/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE']
         },
         dstPeer: {
-          id: `QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`,
-          addrs: [`/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`]
+          id: 'QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy',
+          addrs: ['/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy']
         }
       }, new StreamHandler(conn), (conn) => { // multistream handler doesn't expect errors...
         expect(conn).to.be.instanceOf(Connection)
@@ -65,16 +65,16 @@ describe('stop', function () {
       })
     })
 
-    it(`handle request with invalid multiaddr`, function (done) {
+    it('handle request with invalid multiaddr', function (done) {
       stopHandler.handle({
         type: proto.CircuitRelay.Type.STOP,
         srcPeer: {
-          id: `QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`,
-          addrs: [`dsfsdfsdf`]
+          id: 'QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE',
+          addrs: ['dsfsdfsdf']
         },
         dstPeer: {
-          id: `QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`,
-          addrs: [`sdflksdfndsklfnlkdf`]
+          id: 'QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy',
+          addrs: ['sdflksdfndsklfnlkdf']
         }
       }, new StreamHandler(conn), (conn) => {
         expect(conn).to.not.exist()

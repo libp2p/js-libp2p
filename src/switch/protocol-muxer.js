@@ -41,7 +41,7 @@ module.exports = function protocolMuxer (protocols, observer) {
 
     ms.handle(parentConn, (err) => {
       if (err) {
-        log.error(`multistream handshake failed`, err)
+        log.error('multistream handshake failed', err)
       }
     })
   }

@@ -163,7 +163,7 @@ describe('.peerRouting', () => {
           timeout: '30000ms',
           'stream-channels': true
         })
-        .reply(200, `{"Extra":"","ID":"some other id","Responses":null,"Type":6}\n{"Extra":"","ID":"yet another id","Responses":null,"Type":0}\n{"Extra":"routing:not found","ID":"","Responses":null,"Type":3}\n`, [
+        .reply(200, '{"Extra":"","ID":"some other id","Responses":null,"Type":6}\n{"Extra":"","ID":"yet another id","Responses":null,"Type":0}\n{"Extra":"routing:not found","ID":"","Responses":null,"Type":3}\n', [
           'Content-Type', 'application/json',
           'X-Chunked-Output', '1'
         ])

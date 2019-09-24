@@ -132,10 +132,10 @@ module.exports = (swarm, options, connHandler) => {
       if (!mafmt.Circuit.matches(addr)) {
         if (addr.getPeerId()) {
           // by default we're reachable over any relay
-          listenAddrs.push(multiaddr(`/p2p-circuit`).encapsulate(addr))
+          listenAddrs.push(multiaddr('/p2p-circuit').encapsulate(addr))
         } else {
           const ma = `${addr}/ipfs/${swarm._peerInfo.id.toB58String()}`
-          listenAddrs.push(multiaddr(`/p2p-circuit`).encapsulate(ma))
+          listenAddrs.push(multiaddr('/p2p-circuit').encapsulate(ma))
         }
       } else {
         listenAddrs.push(addr.encapsulate(`/ipfs/${swarm._peerInfo.id.toB58String()}`))

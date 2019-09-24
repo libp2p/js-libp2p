@@ -23,7 +23,7 @@ chai.use(dirtyChai)
 const sinon = require('sinon')
 
 describe('listener', function () {
-  describe(`listen`, function () {
+  describe('listen', function () {
     let swarm = null
     let handlerSpy = null
     let listener = null
@@ -63,18 +63,18 @@ describe('listener', function () {
       listener = null
     })
 
-    it(`should handle HOP`, function (done) {
+    it('should handle HOP', function (done) {
       handlerSpy(multicodec.relay, conn)
 
       const relayMsg = {
         type: proto.CircuitRelay.Type.HOP,
         srcPeer: {
-          id: `QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`,
-          addrs: [`/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`]
+          id: 'QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE',
+          addrs: ['/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE']
         },
         dstPeer: {
-          id: `QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`,
-          addrs: [`/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`]
+          id: 'QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy',
+          addrs: ['/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy']
         }
       }
 
@@ -100,18 +100,18 @@ describe('listener', function () {
       )
     })
 
-    it(`should handle STOP`, function (done) {
+    it('should handle STOP', function (done) {
       handlerSpy(multicodec.relay, conn)
 
       const relayMsg = {
         type: proto.CircuitRelay.Type.STOP,
         srcPeer: {
-          id: `QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`,
-          addrs: [`/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`]
+          id: 'QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE',
+          addrs: ['/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE']
         },
         dstPeer: {
-          id: `QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`,
-          addrs: [`/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`]
+          id: 'QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy',
+          addrs: ['/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy']
         }
       }
 
@@ -137,18 +137,18 @@ describe('listener', function () {
       )
     })
 
-    it(`should emit 'connection'`, function (done) {
+    it('should emit \'connection\'', function (done) {
       handlerSpy(multicodec.relay, conn)
 
       const relayMsg = {
         type: proto.CircuitRelay.Type.STOP,
         srcPeer: {
-          id: `QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`,
-          addrs: [`/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`]
+          id: 'QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE',
+          addrs: ['/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE']
         },
         dstPeer: {
-          id: `QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`,
-          addrs: [`/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`]
+          id: 'QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy',
+          addrs: ['/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy']
         }
       }
 
@@ -172,18 +172,18 @@ describe('listener', function () {
       )
     })
 
-    it(`should handle CAN_HOP`, function (done) {
+    it('should handle CAN_HOP', function (done) {
       handlerSpy(multicodec.relay, conn)
 
       const relayMsg = {
         type: proto.CircuitRelay.Type.CAN_HOP,
         srcPeer: {
-          id: `QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`,
-          addrs: [`/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`]
+          id: 'QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE',
+          addrs: ['/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE']
         },
         dstPeer: {
-          id: `QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`,
-          addrs: [`/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`]
+          id: 'QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy',
+          addrs: ['/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy']
         }
       }
 
@@ -209,18 +209,18 @@ describe('listener', function () {
       )
     })
 
-    it(`should handle invalid message correctly`, function (done) {
+    it('should handle invalid message correctly', function (done) {
       handlerSpy(multicodec.relay, conn)
 
       const relayMsg = {
         type: 100000,
         srcPeer: {
-          id: Buffer.from(`QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`),
-          addrs: [multiaddr(`/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE`).buffer]
+          id: Buffer.from('QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE'),
+          addrs: [multiaddr('/ipfs/QmSswe1dCFRepmhjAMR5VfHeokGLcvVggkuDJm7RMfJSrE').buffer]
         },
         dstPeer: {
-          id: Buffer.from(`QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`),
-          addrs: [multiaddr(`/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`).buffer]
+          id: Buffer.from('QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy'),
+          addrs: [multiaddr('/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy').buffer]
         }
       }
 
@@ -241,7 +241,7 @@ describe('listener', function () {
     })
   })
 
-  describe(`getAddrs`, function () {
+  describe('getAddrs', function () {
     let swarm = null
     let listener = null
     let peerInfo = null
@@ -266,26 +266,26 @@ describe('listener', function () {
       peerInfo = null
     })
 
-    it(`should return correct addrs`, function () {
-      peerInfo.multiaddrs.add(`/ip4/0.0.0.0/tcp/4002`)
-      peerInfo.multiaddrs.add(`/ip4/127.0.0.1/tcp/4003/ws`)
+    it('should return correct addrs', function () {
+      peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/4002')
+      peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/4003/ws')
 
       listener.getAddrs((err, addrs) => {
         expect(err).to.not.exist()
         expect(addrs).to.deep.equal([
-          multiaddr(`/p2p-circuit/ip4/0.0.0.0/tcp/4002/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`),
-          multiaddr(`/p2p-circuit/ip4/127.0.0.1/tcp/4003/ws/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`)])
+          multiaddr('/p2p-circuit/ip4/0.0.0.0/tcp/4002/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy'),
+          multiaddr('/p2p-circuit/ip4/127.0.0.1/tcp/4003/ws/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy')])
       })
     })
 
-    it(`don't return default addrs in an explicit p2p-circuit addres`, function () {
-      peerInfo.multiaddrs.add(`/ip4/127.0.0.1/tcp/4003/ws`)
-      peerInfo.multiaddrs.add(`/p2p-circuit/ip4/0.0.0.0/tcp/4002`)
+    it('don\'t return default addrs in an explicit p2p-circuit addres', function () {
+      peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/4003/ws')
+      peerInfo.multiaddrs.add('/p2p-circuit/ip4/0.0.0.0/tcp/4002')
       listener.getAddrs((err, addrs) => {
         expect(err).to.not.exist()
         expect(addrs[0]
           .toString())
-          .to.equal(`/p2p-circuit/ip4/0.0.0.0/tcp/4002/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy`)
+          .to.equal('/p2p-circuit/ip4/0.0.0.0/tcp/4002/ipfs/QmQvM2mpqkjyXWbTHSUidUAWN26GgdMphTh9iGDdjgVXCy')
       })
     })
   })

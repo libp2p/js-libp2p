@@ -49,7 +49,7 @@ class StreamHandler {
    */
   read (cb) {
     if (!this.isValid()) {
-      return cb(new Error(`handler is not in a valid state`))
+      return cb(new Error('handler is not in a valid state'))
     }
 
     lp.decodeFromReader(
@@ -77,7 +77,7 @@ class StreamHandler {
     cb = cb || (() => {})
 
     if (!this.isValid()) {
-      return cb(new Error(`handler is not in a valid state`))
+      return cb(new Error('handler is not in a valid state'))
     }
 
     pull(

@@ -93,7 +93,7 @@ describe('Transport Manager', () => {
       ].map(a => Multiaddr(a))
 
       const ourAddrs = [
-        `/ip4/127.0.0.1/tcp/4002`,
+        '/ip4/127.0.0.1/tcp/4002',
         `/ip4/192.168.0.3/tcp/4002/ipfs/${peerInfo.id.toB58String()}`
       ]
 
@@ -126,12 +126,12 @@ describe('Transport Manager', () => {
       const peerId = peerInfo.id.toB58String()
       const queryAddrs = [
         `/p2p-circuit/ipfs/${peerId}`,
-        `/p2p-circuit/ip4/127.0.0.1/tcp/4002`,
-        `/p2p-circuit/ip4/192.168.0.3/tcp/4002`,
+        '/p2p-circuit/ip4/127.0.0.1/tcp/4002',
+        '/p2p-circuit/ip4/192.168.0.3/tcp/4002',
         `/p2p-circuit/ip4/127.0.0.1/tcp/4002/ipfs/${peerId}`,
         `/p2p-circuit/ip4/192.168.0.3/tcp/4002/ipfs/${peerId}`,
-        `/p2p-circuit/ip4/127.0.0.1/tcp/4002/ipfs/QmebzNV1kSzLfaYpSZdShuiABNUxoKT1vJmCdxM2iWsM2j`,
-        `/p2p-circuit/ip4/192.168.0.3/tcp/4002/ipfs/QmebzNV1kSzLfaYpSZdShuiABNUxoKT1vJmCdxM2iWsM2j`,
+        '/p2p-circuit/ip4/127.0.0.1/tcp/4002/ipfs/QmebzNV1kSzLfaYpSZdShuiABNUxoKT1vJmCdxM2iWsM2j',
+        '/p2p-circuit/ip4/192.168.0.3/tcp/4002/ipfs/QmebzNV1kSzLfaYpSZdShuiABNUxoKT1vJmCdxM2iWsM2j',
         `/p2p-webrtc-star/ipfs/${peerId}`,
         `/p2p-websocket-star/ipfs/${peerId}`,
         `/p2p-stardust/ipfs/${peerId}`,
@@ -139,7 +139,7 @@ describe('Transport Manager', () => {
       ].map(a => Multiaddr(a))
 
       const ourAddrs = [
-        `/ip4/127.0.0.1/tcp/4002`,
+        '/ip4/127.0.0.1/tcp/4002',
         `/ip4/192.168.0.3/tcp/4002/ipfs/${peerInfo.id.toB58String()}`
       ]
 
