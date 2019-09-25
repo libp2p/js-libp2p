@@ -58,7 +58,7 @@
     "libp2p-websocket-star-rendezvous": "~0.3.0",
     "lodash": "^4.17.11",
     "multiaddr": "^6.0.6",
-    "peer-id": "~0.12.2",
+    "peer-id": "~0.12.5",
     "peer-info": "~0.15.1"
   },
   "dependencies": {
