@@ -1,3 +1,8 @@
+<a name="0.5.1"></a>
+## [0.5.1](https://github.com/libp2p/js-libp2p-keychain/compare/v0.5.0...v0.5.1) (2019-09-25)
+
+
+
 <a name="0.5.0"></a>
 # [0.5.0](https://github.com/libp2p/js-libp2p-keychain/compare/v0.4.2...v0.5.0) (2019-08-16)
 
