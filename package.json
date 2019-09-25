@@ -53,7 +53,7 @@
     "hashlru": "^2.3.0",
     "interface-connection": "~0.3.3",
     "latency-monitor": "~0.2.1",
-    "libp2p-crypto": "~0.16.1",
+    "libp2p-crypto": "^0.16.2",
     "libp2p-websockets": "^0.12.2",
     "mafmt": "^6.0.7",
     "merge-options": "^1.0.1",
