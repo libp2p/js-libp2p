@@ -8,8 +8,8 @@ const rimraf = promisify(require('rimraf'))
 const FsStore = require('datastore-fs')
 
 describe('node', () => {
-  const store1 = path.join(os.tmpdir(), 'test-keystore-1')
-  const store2 = path.join(os.tmpdir(), 'test-keystore-2')
+  const store1 = path.join(os.tmpdir(), 'test-keystore-1-' + Date.now())
+  const store2 = path.join(os.tmpdir(), 'test-keystore-2-' + Date.now())
   const datastore1 = new FsStore(store1)
   const datastore2 = new FsStore(store2)
 
