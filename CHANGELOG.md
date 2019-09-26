@@ -1,3 +1,19 @@
+<a name="0.2.1"></a>
+## [0.2.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.2.0...v0.2.1) (2019-09-26)
+
+
+### Bug Fixes
+
+* add gossipsub implementation in README ([2684e36](https://github.com/libp2p/js-libp2p-pubsub/commit/2684e36))
+* typo in README ([929ec61](https://github.com/libp2p/js-libp2p-pubsub/commit/929ec61))
+
+
+### Features
+
+* allow inline public keys in messages ([3b3fcea](https://github.com/libp2p/js-libp2p-pubsub/commit/3b3fcea))
+
+
+
 <a name="0.2.0"></a>
 # [0.2.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.1.0...v0.2.0) (2019-07-08)
 
