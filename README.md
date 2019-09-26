@@ -15,7 +15,7 @@ This repo contains the JavaScript implementation of the crypto primitives needed
 
 ## Lead Maintainer
 
-[Friedel Ziegelmayer](https://github.com/dignifiedquire/)
+[Jacob Heun](https://github.com/jacobheun/)
 
 ## Table of Contents
 

@@ -3,7 +3,7 @@
   "version": "0.17.0",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
-  "leadMaintainer": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+  "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "browser": {
     "./src/hmac/index.js": "./src/hmac/index-browser.js",
     "./src/keys/ecdh.js": "./src/keys/ecdh-browser.js",
