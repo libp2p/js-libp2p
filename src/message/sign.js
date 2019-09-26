@@ -72,9 +72,14 @@ function messagePublicKey (message, callback) {
       callback(new Error('Public Key does not match the originator'))
     })
     return
+  } else {
+    // should be available in the from property of the message (peer id)
+    const from = PeerId.createFromBytes(message.from)
+    if (from.pubKey) {
+      return callback(null, from.pubKey)
+    }
   }
-  // TODO: Once js libp2p supports inlining public keys with the peer id
-  // attempt to unmarshal the public key here.
+
   callback(new Error('Could not get the public key from the originator id'))
 }
 
