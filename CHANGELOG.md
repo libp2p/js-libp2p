@@ -1,3 +1,21 @@
+<a name="0.13.0"></a>
+# [0.13.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.12.3...v0.13.0) (2019-09-27)
+
+
+### Code Refactoring
+
+* callbacks -> async / await ([#78](https://github.com/libp2p/js-libp2p-mdns/issues/78)) ([46d78eb](https://github.com/libp2p/js-libp2p-mdns/commit/46d78eb))
+
+
+### BREAKING CHANGES
+
+* All places in the API that used callbacks are now replaced with async/await
+
+* chore: update CI file
+* test: add compliance tests
+
+
+
 <a name="0.12.3"></a>
 ## [0.12.3](https://github.com/libp2p/js-libp2p-mdns/compare/v0.12.2...v0.12.3) (2019-05-09)
 
