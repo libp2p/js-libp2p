@@ -34,18 +34,20 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-mdns",
   "devDependencies": {
-    "aegir": "^18.2.2",
+    "aegir": "^20.3.1",
     "chai": "^4.2.0",
-    "dirty-chai": "^2.0.1"
+    "delay": "^4.3.0",
+    "dirty-chai": "^2.0.1",
+    "interface-discovery": "^0.1.1",
+    "p-defer": "^3.0.0"
   },
   "dependencies": {
     "async": "^2.6.2",
     "debug": "^4.1.1",
-    "libp2p-tcp": "~0.13.0",
-    "multiaddr": "^6.0.6",
+    "multiaddr": "^7.1.0",
     "multicast-dns": "^7.2.0",
-    "peer-id": "~0.12.2",
-    "peer-info": "~0.15.1"
+    "peer-id": "~0.13.3",
+    "peer-info": "~0.17.0"
   },
   "contributors": [
     "Alan Shaw <alan.shaw@protocol.ai>",

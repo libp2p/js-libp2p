@@ -28,7 +28,8 @@ mdns.on('peer', (peerInfo) => {
 })
 
 // Broadcast for 20 seconds
-mdns.start(() => setTimeout(() => mdns.stop(() => {}), 20 * 1000))
+mdns.start()
+setTimeout(() => mdns.stop(), 20 * 1000)
 ```
 
 - options

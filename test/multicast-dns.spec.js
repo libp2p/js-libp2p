@@ -7,8 +7,6 @@ const expect = chai.expect
 chai.use(dirtyChai)
 const multiaddr = require('multiaddr')
 const PeerInfo = require('peer-info')
-const parallel = require('async/parallel')
-const series = require('async/series')
 
 const MulticastDNS = require('./../src')
 
@@ -18,50 +16,28 @@ describe('MulticastDNS', () => {
   let pC
   let pD
 
-  before(function (done) {
+  before(async function () {
     this.timeout(80 * 1000)
 
-    parallel([
-      (cb) => {
-        PeerInfo.create((err, peer) => {
-          expect(err).to.not.exist()
+    ;[pA, pB, pC, pD] = await Promise.all([
+      PeerInfo.create(),
+      PeerInfo.create(),
+      PeerInfo.create(),
+      PeerInfo.create()
+    ])
 
-          pA = peer
-          pA.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/20001'))
-          cb()
-        })
-      },
-      (cb) => {
-        PeerInfo.create((err, peer) => {
-          expect(err).to.not.exist()
+    pA.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/20001'))
 
-          pB = peer
-          pB.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/20002'))
-          pB.multiaddrs.add(multiaddr('/ip6/::1/tcp/20002'))
-          cb()
-        })
-      },
-      (cb) => {
-        PeerInfo.create((err, peer) => {
-          expect(err).to.not.exist()
-          pC = peer
-          pC.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/20003'))
-          pC.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/30003/ws'))
-          cb()
-        })
-      },
-      (cb) => {
-        PeerInfo.create((err, peer) => {
-          if (err) { cb(err) }
-          pD = peer
-          pD.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/30003/ws'))
-          cb()
-        })
-      }
-    ], done)
+    pB.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/20002'))
+    pB.multiaddrs.add(multiaddr('/ip6/::1/tcp/20002'))
+
+    pC.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/20003'))
+    pC.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/30003/ws'))
+
+    pD.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/30003/ws'))
   })
 
-  it('find another peer', function (done) {
+  it('find another peer', async function () {
     this.timeout(40 * 1000)
 
     const mdnsA = new MulticastDNS({
@@ -77,23 +53,17 @@ describe('MulticastDNS', () => {
       compat: false
     })
 
-    parallel([
-      (cb) => mdnsA.start(cb),
-      (cb) => mdnsB.start(cb)
-    ], () => {
-      mdnsA.once('peer', (peerInfo) => {
-        expect(pB.id.toB58String()).to.eql(peerInfo.id.toB58String())
-        parallel([
-          (cb) => mdnsA.stop(cb),
-          (cb) => mdnsB.stop(cb)
-        ], done)
-      })
+    mdnsA.start()
+    mdnsB.start()
 
-      mdnsB.once('peer', (peerInfo) => {})
-    })
+    const peerInfo = await new Promise((resolve) => mdnsA.once('peer', resolve))
+
+    expect(pB.id.toB58String()).to.eql(peerInfo.id.toB58String())
+
+    await Promise.all([mdnsA.stop(), mdnsB.stop()])
   })
 
-  it('only announce TCP multiaddrs', function (done) {
+  it('only announce TCP multiaddrs', async function () {
     this.timeout(40 * 1000)
 
     const mdnsA = new MulticastDNS({
@@ -113,27 +83,23 @@ describe('MulticastDNS', () => {
       compat: false
     })
 
-    parallel([
-      (cb) => mdnsA.start(cb),
-      (cb) => mdnsC.start(cb),
-      (cb) => mdnsD.start(cb)
+    mdnsA.start()
+    mdnsC.start()
+    mdnsD.start()
 
-    ], () => {
-      mdnsA.once('peer', (peerInfo) => {
-        expect(pC.id.toB58String()).to.eql(peerInfo.id.toB58String())
-        expect(peerInfo.multiaddrs.size).to.equal(1)
-        parallel([
-          (cb) => mdnsA.stop(cb),
-          (cb) => mdnsC.stop(cb),
-          (cb) => mdnsD.stop(cb)
-        ], done)
-      })
+    const peerInfo = await new Promise((resolve) => mdnsA.once('peer', resolve))
 
-      mdnsC.once('peer', (peerInfo) => {})
-    })
+    expect(pC.id.toB58String()).to.eql(peerInfo.id.toB58String())
+    expect(peerInfo.multiaddrs.size).to.equal(1)
+
+    await Promise.all([
+      mdnsA.stop(),
+      mdnsC.stop(),
+      mdnsD.stop()
+    ])
   })
 
-  it('announces IP6 addresses', function (done) {
+  it('announces IP6 addresses', async function () {
     this.timeout(40 * 1000)
 
     const mdnsA = new MulticastDNS({
@@ -149,24 +115,18 @@ describe('MulticastDNS', () => {
       compat: false
     })
 
-    series([
-      (cb) => mdnsB.start(cb),
-      (cb) => mdnsA.start(cb)
-    ], () => {
-      mdnsA.once('peer', (peerInfo) => {
-        expect(pB.id.toB58String()).to.eql(peerInfo.id.toB58String())
-        expect(peerInfo.multiaddrs.size).to.equal(2)
-        parallel([
-          (cb) => mdnsA.stop(cb),
-          (cb) => mdnsB.stop(cb)
-        ], done)
-      })
+    mdnsA.start()
+    mdnsB.start()
 
-      mdnsB.once('peer', (peerInfo) => {})
-    })
+    const peerInfo = await new Promise((resolve) => mdnsA.once('peer', resolve))
+
+    expect(pB.id.toB58String()).to.eql(peerInfo.id.toB58String())
+    expect(peerInfo.multiaddrs.size).to.equal(2)
+
+    await Promise.all([mdnsA.stop(), mdnsB.stop()])
   })
 
-  it('doesn\'t emit peers after stop', function (done) {
+  it('doesn\'t emit peers after stop', async function () {
     this.timeout(40 * 1000)
 
     const mdnsA = new MulticastDNS({
@@ -181,28 +141,23 @@ describe('MulticastDNS', () => {
       compat: false
     })
 
-    series([
-      (cb) => mdnsA.start(cb),
-      (cb) => setTimeout(cb, 1000),
-      (cb) => mdnsA.stop(cb),
-      (cb) => mdnsC.start(cb)
-    ], () => {
-      setTimeout(() => mdnsC.stop(done), 5000)
-      mdnsC.once('peer', (peerInfo) => {
-        done(new Error('Should not receive new peer.'))
-      })
+    mdnsA.start()
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await mdnsA.stop()
+    mdnsC.start()
+
+    mdnsC.once('peer', (peerInfo) => {
+      throw new Error('Should not receive new peer.')
     })
+
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+    await mdnsC.stop()
   })
 
-  it('should start and stop with go-libp2p-mdns compat', done => {
+  it('should start and stop with go-libp2p-mdns compat', async () => {
     const mdns = new MulticastDNS({ peerInfo: pA, port: 50004 })
 
-    mdns.start(err => {
-      expect(err).to.not.exist()
-      mdns.stop(err => {
-        expect(err).to.not.exist()
-        done()
-      })
-    })
+    await mdns.start()
+    await mdns.stop()
   })
 })

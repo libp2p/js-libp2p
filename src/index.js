@@ -3,15 +3,13 @@
 const multicastDNS = require('multicast-dns')
 const EventEmitter = require('events').EventEmitter
 const assert = require('assert')
-const nextTick = require('async/nextTick')
-const parallel = require('async/parallel')
 const debug = require('debug')
 const log = debug('libp2p:mdns')
 const query = require('./query')
 const GoMulticastDNS = require('./compat')
 
 class MulticastDNS extends EventEmitter {
-  constructor (options) {
+  constructor (options = {}) {
     super()
     assert(options.peerInfo, 'needs a PeerInfo to work')
 
@@ -32,31 +30,35 @@ class MulticastDNS extends EventEmitter {
     }
   }
 
-  start (callback) {
-    const mdns = multicastDNS({ port: this.port })
+  /**
+   * Start sending queries to the LAN.
+   *
+   * @returns {void}
+   */
+  async start () {
+    if (this.mdns) return
 
-    this.mdns = mdns
+    this.mdns = multicastDNS({ port: this.port })
+    this.mdns.on('query', (event) => this._onMdnsQuery(event))
+    this.mdns.on('response', (event) => this._onMdnsResponse(event))
 
     this._queryInterval = query.queryLAN(this.mdns, this.serviceTag, this.interval)
 
-    mdns.on('response', (event) => {
-      query.gotResponse(event, this.peerInfo, this.serviceTag, (err, foundPeer) => {
-        if (err) {
-          return log('Error processing peer response', err)
-        }
-
-        this._onPeer(foundPeer)
-      })
-    })
-
-    mdns.on('query', (event) => {
-      query.gotQuery(event, this.mdns, this.peerInfo, this.serviceTag, this.broadcast)
-    })
-
     if (this._goMdns) {
-      this._goMdns.start(callback)
-    } else {
-      nextTick(() => callback())
+      await this._goMdns.start()
+    }
+  }
+
+  _onMdnsQuery (event) {
+    query.gotQuery(event, this.mdns, this.peerInfo, this.serviceTag, this.broadcast)
+  }
+
+  async _onMdnsResponse (event) {
+    try {
+      const foundPeer = await query.gotResponse(event, this.peerInfo, this.serviceTag)
+      this.emit('peer', foundPeer)
+    } catch (err) {
+      log('Error processing peer response', err)
     }
   }
 
@@ -64,24 +66,29 @@ class MulticastDNS extends EventEmitter {
     this.emit('peer', peerInfo)
   }
 
-  stop (callback) {
+  /**
+   * Stop sending queries to the LAN.
+   *
+   * @returns {Promise}
+   */
+  async stop () {
     if (!this.mdns) {
-      return callback(new Error('MulticastDNS service had not started yet'))
+      return
     }
+
+    this.mdns.removeListener('query', this._onMdnsQuery)
+    this.mdns.removeListener('query', this._onMdnsResponse)
+    this._goMdns && this._goMdns.removeListener('peer', this._onPeer)
 
     clearInterval(this._queryInterval)
     this._queryInterval = null
 
-    if (this._goMdns) {
-      this._goMdns.removeListener('peer', this._onPeer)
-      parallel([
-        cb => this._goMdns.stop(cb),
-        cb => this.mdns.destroy(cb)
-      ], callback)
-    } else {
-      this.mdns.destroy(callback)
-      this.mdns = undefined
-    }
+    await Promise.all([
+      this._goMdns && this._goMdns.stop(),
+      new Promise((resolve) => this.mdns.destroy(resolve))
+    ])
+
+    this.mdns = undefined
   }
 }
 
