@@ -1,6 +1,6 @@
 {
   "name": "libp2p-mdns",
-  "version": "0.12.3",
+  "version": "0.13.0",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -60,6 +60,7 @@
     "Richard Schneider <makaretu@gmail.com>",
     "Vasco Santos <vasco.santos@ua.pt>",
     "Vasco Santos <vasco.santos@moxy.studio>",
+    "dirkmc <dirkmdev@gmail.com>",
     "emersion <contact@emersion.fr>",
     "greenkeeperio-bot <support@greenkeeper.io>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
