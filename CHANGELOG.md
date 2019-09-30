@@ -1,3 +1,18 @@
+<a name="0.13.0"></a>
+# [0.13.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.12.3...v0.13.0) (2019-09-30)
+
+
+### Code Refactoring
+
+* async with multiaddr conn ([#92](https://github.com/libp2p/js-libp2p-websockets/issues/92)) ([ce7bf4f](https://github.com/libp2p/js-libp2p-websockets/commit/ce7bf4f))
+
+
+### BREAKING CHANGES
+
+* Switch to using async/await and async iterators. The transport and connection interfaces have changed. See the README for new usage.
+
+
+
 <a name="0.12.3"></a>
 ## [0.12.3](https://github.com/libp2p/js-libp2p-websockets/compare/v0.12.2...v0.12.3) (2019-08-21)
 
