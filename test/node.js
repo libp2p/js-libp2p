@@ -75,17 +75,24 @@ describe('listen', () => {
       await listener.close()
     })
 
-    it.skip('close listener with connections, through timeout', (done) => {
-      // TODO `ws` closes all anyway, we need to make it not close
-      // first - https://github.com/diasdavid/simple-websocket-server
+    it('listen on port 0', async () => {
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/0/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const listener = ws.createListener((conn) => { })
+
+      await listener.listen(ma)
+      const addrs = await listener.getAddrs()
+      expect(addrs.map((a) => a.toOptions().port)).to.not.include(0)
+      await listener.close()
     })
 
-    it.skip('listen on port 0', (done) => {
-      // TODO port 0 not supported yet
-    })
+    it('listen on any Interface', async () => {
+      const ma = multiaddr('/ip4/0.0.0.0/tcp/0/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const listener = ws.createListener((conn) => { })
 
-    it.skip('listen on any Interface', (done) => {
-      // TODO 0.0.0.0 not supported yet
+      await listener.listen(ma)
+      const addrs = await listener.getAddrs()
+      expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
+      await listener.close()
     })
 
     it('getAddrs', async () => {

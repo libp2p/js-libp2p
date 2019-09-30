@@ -1,5 +1,7 @@
 language: node_js
 cache: npm
+sudo: false
+
 stages:
   - check
   - test
@@ -7,25 +9,25 @@ stages:
 
 node_js:
   - '10'
+  - '12'
+
+os:
+  - linux
+  - osx
+  - windows
+
+before_script:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'; fi
 
 script: npx nyc -s npm run test:node -- --bail
 after_success: npx nyc report --reporter=text-lcov > coverage.lcov && npx codecov
 
 jobs:
   include:
-    - os: linux
-      sudo: false
-      before_script: sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
-
-    - os: windows
-      cache: false
-
-    - os: osx
-
     - stage: check
       script:
         - npx aegir build --bundlesize
-        - npx aegir dep-check -- -i wrtc -i electron-webrtc
+        - npx aegir dep-check
         - npm run lint
 
     - stage: test
