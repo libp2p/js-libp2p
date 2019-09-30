@@ -40,37 +40,33 @@
 ```js
 const WS = require('libp2p-websockets')
 const multiaddr = require('multiaddr')
-const pull = require('pull-stream')
+const pipe = require('it-pipe')
+const { collect } = require('streaming-iterables')
 
-const mh = multiaddr('/ip4/0.0.0.0/tcp/9090/ws')
+const addr = multiaddr('/ip4/0.0.0.0/tcp/9090/ws')
 
-const ws = new WS()
+const ws = new WS({ upgrader })
 
 const listener = ws.createListener((socket) => {
   console.log('new connection opened')
-  pull(
-    pull.values(['hello']),
+  pipe(
+    ['hello'],
     socket
   )
 })
 
-listener.listen(mh, () => {
-  console.log('listening')
+await listener.listen(addr)
+console.log('listening')
 
-  pull(
-    ws.dial(mh),
-    pull.collect((err, values) => {
-      if (!err) {
-        console.log(`Value: ${values.toString()}`)
-      } else {
-        console.log(`Error: ${err}`)
-      }
+const socket = await ws.dial(addr)
+const values = await pipe(
+  socket,
+  collect
+)
+console.log(`Value: ${values.toString()}`)
 
-      // Close connection after reading
-      listener.close()
-    }),
-  )
-})
+// Close connection after reading
+await listener.close()
 ```
 
 ## API

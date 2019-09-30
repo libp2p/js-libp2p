@@ -24,7 +24,7 @@ jobs:
 
     - stage: check
       script:
-        - npx aegir commitlint --travis
+        - npx aegir build --bundlesize
         - npx aegir dep-check -- -i wrtc -i electron-webrtc
         - npm run lint
 

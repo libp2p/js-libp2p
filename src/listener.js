@@ -1,43 +1,58 @@
 'use strict'
 
-const Connection = require('interface-connection').Connection
-const multiaddr = require('multiaddr')
+const EventEmitter = require('events')
 const os = require('os')
+const multiaddr = require('multiaddr')
+const { createServer } = require('it-ws')
 
-function noop () {}
+const log = require('debug')('libp2p:websockets:listener')
 
-const createServer = require('pull-ws/server') || noop
+const toConnection = require('./socket-to-conn')
 
-module.exports = (options, handler) => {
-  const listener = createServer(options, (socket) => {
-    socket.getObservedAddrs = (callback) => {
-      // TODO research if we can reuse the address in anyway
-      return callback(null, [])
-    }
+module.exports = ({ handler, upgrader }, options = {}) => {
+  const listener = new EventEmitter()
 
-    handler(new Connection(socket))
+  const server = createServer(options, async (stream) => {
+    const maConn = toConnection(stream)
+
+    log('new inbound connection %s', maConn.remoteAddr)
+
+    const conn = await upgrader.upgradeInbound(maConn)
+    log('inbound connection %s upgraded', maConn.remoteAddr)
+
+    trackConn(server, maConn)
+
+    if (handler) handler(conn)
+    listener.emit('connection', conn)
   })
+
+  server
+    .on('listening', () => listener.emit('listening'))
+    .on('error', err => listener.emit('error', err))
+    .on('close', () => listener.emit('close'))
+
+  // Keep track of open connections to destroy in case of timeout
+  server.__connections = []
 
   let listeningMultiaddr
 
-  listener._listen = listener.listen
-  listener.listen = (ma, callback) => {
-    callback = callback || noop
-    listeningMultiaddr = ma
-
-    if (ma.protoNames().includes('ipfs')) {
-      ma = ma.decapsulate('ipfs')
-    }
-
-    listener._listen(ma.toOptions(), callback)
+  listener.close = () => {
+    server.__connections.forEach(maConn => maConn.close())
+    return server.close()
   }
 
-  listener.getAddrs = (callback) => {
+  listener.listen = (ma) => {
+    listeningMultiaddr = ma
+
+    return server.listen(ma.toOptions())
+  }
+
+  listener.getAddrs = () => {
     const multiaddrs = []
-    const address = listener.address()
+    const address = server.address()
 
     if (!address) {
-      return callback(new Error('Listener is not ready yet'))
+      throw new Error('Listener is not ready yet')
     }
 
     const ipfsId = listeningMultiaddr.getPeerId()
@@ -48,7 +63,7 @@ module.exports = (options, handler) => {
       let m = listeningMultiaddr.decapsulate('tcp')
       m = m.encapsulate('/tcp/' + address.port + '/ws')
       if (listeningMultiaddr.getPeerId()) {
-        m = m.encapsulate('/ipfs/' + ipfsId)
+        m = m.encapsulate('/p2p/' + ipfsId)
       }
 
       if (m.toString().indexOf('0.0.0.0') !== -1) {
@@ -65,8 +80,12 @@ module.exports = (options, handler) => {
       }
     }
 
-    callback(null, multiaddrs)
+    return multiaddrs
   }
 
   return listener
+}
+
+function trackConn (server, maConn) {
+  server.__connections.push(maConn)
 }

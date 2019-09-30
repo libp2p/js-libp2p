@@ -2,21 +2,30 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 'use strict'
 
+const https = require('https')
+const fs = require('fs')
+
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 const multiaddr = require('multiaddr')
-const pull = require('pull-stream')
-const goodbye = require('pull-goodbye')
+const goodbye = require('it-goodbye')
+const { collect } = require('streaming-iterables')
+const pipe = require('it-pipe')
 
 const WS = require('../src')
 
 require('./compliance.node')
 
+const mockUpgrader = {
+  upgradeInbound: maConn => maConn,
+  upgradeOutbound: maConn => maConn
+}
+
 describe('instantiate the transport', () => {
   it('create', () => {
-    const ws = new WS()
+    const ws = new WS({ upgrader: mockUpgrader })
     expect(ws).to.exist()
   })
 })
@@ -27,22 +36,21 @@ describe('listen', () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
 
     beforeEach(() => {
-      ws = new WS()
+      ws = new WS({ upgrader: mockUpgrader })
     })
 
-    it('listen, check for callback', (done) => {
+    it('listen, check for promise', async () => {
       const listener = ws.createListener((conn) => { })
-
-      listener.listen(ma, () => {
-        listener.close(done)
-      })
+      await listener.listen(ma)
+      await listener.close()
     })
 
     it('listen, check for listening event', (done) => {
       const listener = ws.createListener((conn) => { })
 
-      listener.on('listening', () => {
-        listener.close(done)
+      listener.on('listening', async () => {
+        await listener.close()
+        done()
       })
 
       listener.listen(ma)
@@ -59,14 +67,12 @@ describe('listen', () => {
       listener.listen(ma)
     })
 
-    it('listen on addr with /ipfs/QmHASH', (done) => {
+    it('listen on addr with /ipfs/QmHASH', async () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-
       const listener = ws.createListener((conn) => { })
 
-      listener.listen(ma, () => {
-        listener.close(done)
-      })
+      await listener.listen(ma)
+      await listener.close()
     })
 
     it.skip('close listener with connections, through timeout', (done) => {
@@ -82,73 +88,53 @@ describe('listen', () => {
       // TODO 0.0.0.0 not supported yet
     })
 
-    it('getAddrs', (done) => {
-      const listener = ws.createListener((conn) => {
-      })
-      listener.listen(ma, () => {
-        listener.getAddrs((err, addrs) => {
-          expect(err).to.not.exist()
-          expect(addrs.length).to.equal(1)
-          expect(addrs[0]).to.deep.equal(ma)
-          listener.close(done)
-        })
-      })
+    it('getAddrs', async () => {
+      const listener = ws.createListener((conn) => { })
+      await listener.listen(ma)
+      const addrs = await listener.getAddrs()
+      expect(addrs.length).to.equal(1)
+      expect(addrs[0]).to.deep.equal(ma)
+      await listener.close()
     })
 
-    it('getAddrs on port 0 listen', (done) => {
-      const addr = multiaddr(`/ip4/127.0.0.1/tcp/0/ws`)
-      const listener = ws.createListener((conn) => {
-      })
-      listener.listen(addr, () => {
-        listener.getAddrs((err, addrs) => {
-          expect(err).to.not.exist()
-          expect(addrs.length).to.equal(1)
-          expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
-          listener.close(done)
-        })
-      })
+    it('getAddrs on port 0 listen', async () => {
+      const addr = multiaddr('/ip4/127.0.0.1/tcp/0/ws')
+      const listener = ws.createListener((conn) => { })
+      await listener.listen(addr)
+      const addrs = await listener.getAddrs()
+      expect(addrs.length).to.equal(1)
+      expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
+      await listener.close()
     })
 
-    it('getAddrs from listening on 0.0.0.0', (done) => {
-      const addr = multiaddr(`/ip4/0.0.0.0/tcp/9003/ws`)
-      const listener = ws.createListener((conn) => {
-      })
-      listener.listen(addr, () => {
-        listener.getAddrs((err, addrs) => {
-          expect(err).to.not.exist()
-          expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
-          listener.close(done)
-        })
-      })
+    it('getAddrs from listening on 0.0.0.0', async () => {
+      const addr = multiaddr('/ip4/0.0.0.0/tcp/9003/ws')
+      const listener = ws.createListener((conn) => { })
+      await listener.listen(addr)
+      const addrs = await listener.getAddrs()
+      expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
+      await listener.close()
     })
 
-    it('getAddrs from listening on 0.0.0.0 and port 0', (done) => {
-      const addr = multiaddr(`/ip4/0.0.0.0/tcp/0/ws`)
-      const listener = ws.createListener((conn) => {
-      })
-      listener.listen(addr, () => {
-        listener.getAddrs((err, addrs) => {
-          expect(err).to.not.exist()
-          expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
-          expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
-          listener.close(done)
-        })
-      })
+    it('getAddrs from listening on 0.0.0.0 and port 0', async () => {
+      const addr = multiaddr('/ip4/0.0.0.0/tcp/0/ws')
+      const listener = ws.createListener((conn) => { })
+      await listener.listen(addr)
+      const addrs = await listener.getAddrs()
+      expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
+      expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
+      await listener.close()
     })
 
-    it('getAddrs preserves IPFS Id', (done) => {
-      const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-
+    it('getAddrs preserves p2p Id', async () => {
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
       const listener = ws.createListener((conn) => { })
 
-      listener.listen(ma, () => {
-        listener.getAddrs((err, addrs) => {
-          expect(err).to.not.exist()
-          expect(addrs.length).to.equal(1)
-          expect(addrs[0]).to.deep.equal(ma)
-          listener.close(done)
-        })
-      })
+      await listener.listen(ma)
+      const addrs = await listener.getAddrs()
+      expect(addrs.length).to.equal(1)
+      expect(addrs[0]).to.deep.equal(ma)
+      await listener.close()
     })
   })
 
@@ -157,22 +143,21 @@ describe('listen', () => {
     const ma = multiaddr('/ip6/::1/tcp/9091/ws')
 
     beforeEach(() => {
-      ws = new WS()
+      ws = new WS({ upgrader: mockUpgrader })
     })
 
-    it('listen, check for callback', (done) => {
+    it('listen, check for promise', async () => {
       const listener = ws.createListener((conn) => { })
-
-      listener.listen(ma, () => {
-        listener.close(done)
-      })
+      await listener.listen(ma)
+      await listener.close()
     })
 
     it('listen, check for listening event', (done) => {
       const listener = ws.createListener((conn) => { })
 
-      listener.on('listening', () => {
-        listener.close(done)
+      listener.on('listening', async () => {
+        await listener.close()
+        done()
       })
 
       listener.listen(ma)
@@ -189,14 +174,11 @@ describe('listen', () => {
       listener.listen(ma)
     })
 
-    it('listen on addr with /ipfs/QmHASH', (done) => {
+    it('listen on addr with /ipfs/QmHASH', async () => {
       const ma = multiaddr('/ip6/::1/tcp/9091/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-
       const listener = ws.createListener((conn) => { })
-
-      listener.listen(ma, () => {
-        listener.close(done)
-      })
+      await listener.listen(ma)
+      await listener.close()
     })
   })
 })
@@ -207,49 +189,86 @@ describe('dial', () => {
     let listener
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws')
 
-    beforeEach((done) => {
-      ws = new WS()
-      listener = ws.createListener((conn) => {
-        pull(conn, conn)
-      })
-      listener.listen(ma, done)
+    beforeEach(() => {
+      ws = new WS({ upgrader: mockUpgrader })
+      listener = ws.createListener(conn => pipe(conn, conn))
+      return listener.listen(ma)
     })
 
-    afterEach((done) => {
-      listener.close(done)
+    afterEach(() => listener.close())
+
+    it('dial', async () => {
+      const conn = await ws.dial(ma)
+      const s = goodbye({ source: ['hey'], sink: collect })
+
+      const result = await pipe(s, conn, s)
+
+      expect(result).to.be.eql([Buffer.from('hey')])
     })
 
-    it('dial', (done) => {
-      const conn = ws.dial(ma)
+    it('dial with p2p Id', async () => {
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const conn = await ws.dial(ma)
+      const s = goodbye({ source: ['hey'], sink: collect })
 
-      const s = goodbye({
-        source: pull.values(['hey']),
-        sink: pull.collect((err, result) => {
-          expect(err).to.not.exist()
+      const result = await pipe(s, conn, s)
 
-          expect(result).to.be.eql(['hey'])
-          done()
-        })
-      })
-
-      pull(s, conn, s)
+      expect(result).to.be.eql([Buffer.from('hey')])
     })
 
-    it('dial with IPFS Id', (done) => {
-      const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-      const conn = ws.dial(ma)
+    it('should resolve port 0', async () => {
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/0/ws')
+      const ws = new WS({ upgrader: mockUpgrader })
 
-      const s = goodbye({
-        source: pull.values(['hey']),
-        sink: pull.collect((err, result) => {
-          expect(err).to.not.exist()
+      // Create a Promise that resolves when a connection is handled
+      let handled
+      const handlerPromise = new Promise(resolve => { handled = resolve })
+      const handler = conn => handled(conn)
 
-          expect(result).to.be.eql(['hey'])
-          done()
-        })
-      })
+      const listener = ws.createListener(handler)
 
-      pull(s, conn, s)
+      // Listen on the multiaddr
+      await listener.listen(ma)
+
+      const localAddrs = listener.getAddrs()
+      expect(localAddrs.length).to.equal(1)
+
+      // Dial to that address
+      await ws.dial(localAddrs[0])
+
+      // Wait for the incoming dial to be handled
+      await handlerPromise
+
+      // close the listener
+      await listener.close()
+    })
+  })
+
+  describe('ip4 with wss', () => {
+    let ws
+    let listener
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/wss')
+
+    const server = https.createServer({
+      cert: fs.readFileSync('./test/fixtures/certificate.pem'),
+      key: fs.readFileSync('./test/fixtures/key.pem')
+    })
+
+    beforeEach(() => {
+      ws = new WS({ upgrader: mockUpgrader })
+      listener = ws.createListener({ server }, conn => pipe(conn, conn))
+      return listener.listen(ma)
+    })
+
+    afterEach(() => listener.close())
+
+    it('dial', async () => {
+      const conn = await ws.dial(ma, { websocket: { rejectUnauthorized: false } })
+      const s = goodbye({ source: ['hey'], sink: collect })
+
+      const result = await pipe(s, conn, s)
+
+      expect(result).to.be.eql([Buffer.from('hey')])
     })
   })
 
@@ -258,49 +277,34 @@ describe('dial', () => {
     let listener
     const ma = multiaddr('/ip6/::1/tcp/9091')
 
-    beforeEach((done) => {
-      ws = new WS()
-      listener = ws.createListener((conn) => {
-        pull(conn, conn)
-      })
-      listener.listen(ma, done)
+    beforeEach(() => {
+      ws = new WS({ upgrader: mockUpgrader })
+      listener = ws.createListener(conn => pipe(conn, conn))
+      return listener.listen(ma)
     })
 
-    afterEach((done) => {
-      listener.close(done)
+    afterEach(() => listener.close())
+
+    it('dial', async () => {
+      const conn = await ws.dial(ma)
+      const s = goodbye({ source: ['hey'], sink: collect })
+
+      const result = await pipe(s, conn, s)
+
+      expect(result).to.be.eql([Buffer.from('hey')])
     })
 
-    it('dial', (done) => {
-      const conn = ws.dial(ma)
+    it('dial with p2p Id', async () => {
+      const ma = multiaddr('/ip6/::1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const conn = await ws.dial(ma)
 
       const s = goodbye({
-        source: pull.values(['hey']),
-        sink: pull.collect((err, result) => {
-          expect(err).to.not.exist()
-
-          expect(result).to.be.eql(['hey'])
-          done()
-        })
+        source: ['hey'],
+        sink: collect
       })
 
-      pull(s, conn, s)
-    })
-
-    it('dial with IPFS Id', (done) => {
-      const ma = multiaddr('/ip6/::1/tcp/9091/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-      const conn = ws.dial(ma)
-
-      const s = goodbye({
-        source: pull.values(['hey']),
-        sink: pull.collect((err, result) => {
-          expect(err).to.not.exist()
-
-          expect(result).to.be.eql(['hey'])
-          done()
-        })
-      })
-
-      pull(s, conn, s)
+      const result = await pipe(s, conn, s)
+      expect(result).to.be.eql([Buffer.from('hey')])
     })
   })
 })
@@ -309,7 +313,7 @@ describe('filter addrs', () => {
   let ws
 
   before(() => {
-    ws = new WS()
+    ws = new WS({ upgrader: mockUpgrader })
   })
 
   describe('filter valid addrs for this transport', function () {
@@ -437,127 +441,5 @@ describe('filter addrs', () => {
     expect(valid.length).to.equal(1)
     expect(valid[0]).to.deep.equal(ma)
     done()
-  })
-})
-
-describe('valid Connection', () => {
-  const ma = multiaddr('/ip4/127.0.0.1/tcp/9092/ws')
-
-  it('get observed addrs', (done) => {
-    let dialerObsAddrs
-    let listenerObsAddrs
-
-    const ws = new WS()
-
-    const listener = ws.createListener((conn) => {
-      expect(conn).to.exist()
-
-      conn.getObservedAddrs((err, addrs) => {
-        expect(err).to.not.exist()
-        dialerObsAddrs = addrs
-      })
-
-      pull(conn, conn)
-    })
-
-    listener.listen(ma, () => {
-      const conn = ws.dial(ma)
-
-      pull(
-        pull.empty(),
-        conn,
-        pull.onEnd(onEnd)
-      )
-
-      function onEnd () {
-        conn.getObservedAddrs((err, addrs) => {
-          expect(err).to.not.exist()
-          listenerObsAddrs = addrs
-
-          listener.close(onClose)
-
-          function onClose () {
-            expect(listenerObsAddrs[0]).to.deep.equal(ma)
-            expect(dialerObsAddrs.length).to.equal(0)
-            done()
-          }
-        })
-      }
-    })
-  })
-
-  it('get Peer Info', (done) => {
-    const ws = new WS()
-
-    const listener = ws.createListener((conn) => {
-      expect(conn).to.exist()
-
-      conn.getPeerInfo((err, peerInfo) => {
-        expect(err).to.exist()
-      })
-
-      pull(conn, conn)
-    })
-
-    listener.listen(ma, () => {
-      const conn = ws.dial(ma)
-
-      pull(
-        pull.empty(),
-        conn,
-        pull.onEnd(onEnd)
-      )
-
-      function onEnd () {
-        conn.getPeerInfo((err, peerInfo) => {
-          expect(err).to.exist()
-          listener.close(done)
-        })
-      }
-    })
-  })
-
-  it('set Peer Info', (done) => {
-    const ws = new WS()
-
-    const listener = ws.createListener((conn) => {
-      expect(conn).to.exist()
-      conn.setPeerInfo('a')
-
-      conn.getPeerInfo((err, peerInfo) => {
-        expect(err).to.not.exist()
-        expect(peerInfo).to.equal('a')
-      })
-
-      pull(conn, conn)
-    })
-
-    listener.listen(ma, onListen)
-
-    function onListen () {
-      const conn = ws.dial(ma)
-      conn.setPeerInfo('b')
-
-      pull(
-        pull.empty(),
-        conn,
-        pull.onEnd(onEnd)
-      )
-
-      function onEnd () {
-        conn.getPeerInfo((err, peerInfo) => {
-          expect(err).to.not.exist()
-          expect(peerInfo).to.equal('b')
-          listener.close(done)
-        })
-      }
-    }
-  })
-})
-
-describe.skip('turbolence', () => {
-  it('dialer - emits error on the other end is terminated abruptly', (done) => {
-  })
-  it('listener - emits error on the other end is terminated abruptly', (done) => {
   })
 })

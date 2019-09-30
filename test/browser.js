@@ -7,75 +7,64 @@ const expect = chai.expect
 chai.use(dirtyChai)
 
 const multiaddr = require('multiaddr')
-const pull = require('pull-stream')
-const goodbye = require('pull-goodbye')
+const pipe = require('it-pipe')
+const goodbye = require('it-goodbye')
+const { collect, take } = require('streaming-iterables')
 
 const WS = require('../src')
+
+const mockUpgrader = {
+  upgradeInbound: maConn => maConn,
+  upgradeOutbound: maConn => maConn
+}
 
 describe('libp2p-websockets', () => {
   const ma = multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
   let ws
   let conn
 
-  beforeEach((done) => {
-    ws = new WS()
-    expect(ws).to.exist()
-    conn = ws.dial(ma, (err, res) => {
-      expect(err).to.not.exist()
-      done()
-    })
+  beforeEach(async () => {
+    ws = new WS({ upgrader: mockUpgrader })
+    conn = await ws.dial(ma)
   })
 
-  it('echo', (done) => {
-    const message = 'Hello World!'
+  it('echo', async () => {
+    const message = Buffer.from('Hello World!')
+    const s = goodbye({ source: [message], sink: collect })
 
-    const s = goodbye({
-      source: pull.values([message]),
-      sink: pull.collect((err, results) => {
-        expect(err).to.not.exist()
-        expect(results).to.eql([message])
-        done()
-      })
-    })
-
-    pull(s, conn, s)
+    const results = await pipe(s, conn, s)
+    expect(results).to.eql([message])
   })
 
   describe('stress', () => {
-    it('one big write', (done) => {
+    it('one big write', async () => {
       const rawMessage = Buffer.allocUnsafe(1000000).fill('a')
 
-      const s = goodbye({
-        source: pull.values([rawMessage]),
-        sink: pull.collect((err, results) => {
-          expect(err).to.not.exist()
-          expect(results).to.eql([rawMessage])
-          done()
-        })
-      })
-      pull(s, conn, s)
+      const s = goodbye({ source: [rawMessage], sink: collect })
+
+      const results = await pipe(s, conn, s)
+      expect(results).to.eql([rawMessage])
     })
 
-    it('many writes', function (done) {
+    it('many writes', async function () {
       this.timeout(10000)
       const s = goodbye({
-        source: pull(
-          pull.infinite(),
-          pull.take(1000),
-          pull.map((val) => Buffer.from(val.toString()))
+        source: pipe(
+          {
+            [Symbol.iterator] () { return this },
+            next: () => ({ done: false, value: Buffer.from(Math.random().toString()) })
+          },
+          take(20000)
         ),
-        sink: pull.collect((err, result) => {
-          expect(err).to.not.exist()
-          expect(result).to.have.length(1000)
-          done()
-        })
+        sink: collect
       })
 
-      pull(s, conn, s)
+      const result = await pipe(s, conn, s)
+      expect(result).to.have.length(20000)
     })
   })
-})
 
-it('.createServer throws in browser', () => {
-  expect(new WS().createListener).to.throw()
+  it('.createServer throws in browser', () => {
+    expect(new WS({ upgrader: mockUpgrader }).createListener).to.throw()
+  })
 })
