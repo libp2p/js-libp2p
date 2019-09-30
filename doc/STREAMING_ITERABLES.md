@@ -1,6 +1,6 @@
 # Iterable Streams
 
-> This document is a guide on how to use Iterable Streams in Libp2p. As a part of the refactor away from callbacks, we have also moved to using Iterable Streams instead of [pull-streams](https://pull-stream.github.io/). If there are missing usage guides you feel should be added, please submit a PR!
+> This document is a guide on how to use Iterable Streams in Libp2p. As a part of the [refactor away from callbacks](https://github.com/ipfs/js-ipfs/issues/1670), we have also moved to using Iterable Streams instead of [pull-streams](https://pull-stream.github.io/). If there are missing usage guides you feel should be added, please submit a PR!
 
 ## Table of Contents
 
