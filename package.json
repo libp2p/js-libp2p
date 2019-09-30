@@ -36,9 +36,6 @@
   },
   "homepage": "https://libp2p.io",
   "license": "MIT",
-  "browser": {
-    "./test/utils/bundle-nodejs": "./test/utils/bundle-browser"
-  },
   "engines": {
     "node": ">=10.0.0",
     "npm": ">=6.0.0"
