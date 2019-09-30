@@ -336,7 +336,7 @@ Required keys in the `options` object:
 > Peer has been discovered.
 
 If `autoDial` is `true`, applications should **not** attempt to connect to the peer
-unless they are performing a specific action. See [peer discovery and auto dial](./PEER_DISCOVERY.md) for more information.
+unless they are performing a specific action. See [peer discovery and auto dial](./doc/PEER_DISCOVERY.md) for more information.
 
 - `peer`: instance of [PeerInfo][]
 
