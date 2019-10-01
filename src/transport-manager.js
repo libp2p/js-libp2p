@@ -8,6 +8,13 @@ const log = debug('libp2p:transports')
 log.error = debug('error:libp2p:transports')
 
 class TransportManager {
+  /**
+   * @constructor
+   * @param {object} options
+   * @param {Libp2p} options.libp2p The Libp2p instance. It will be passed to the transports.
+   * @param {Upgrader} options.upgrader The upgrader to provide to the transports
+   * @param {function(Connection)} options.onConnection Called whenever an incoming connection is received
+   */
   constructor({ libp2p, upgrader, onConnection }) {
     this.libp2p = libp2p
     this.upgrader = upgrader
