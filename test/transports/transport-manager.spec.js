@@ -4,6 +4,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
+const sinon = require('sinon')
 
 const multiaddr = require('multiaddr')
 const Transport = require('libp2p-websockets')
@@ -11,6 +12,10 @@ const TransportManager = require('../../src/transport-manager')
 const mockUpgrader = require('../utils/mockUpgrader')
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const { codes: ErrorCodes } = require('../../src/errors')
+const Libp2p = require('../../src')
+const Peers = require('../fixtures/peers')
+const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
 
 describe('Transport Manager (WebSockets)', () => {
   let tm
@@ -81,5 +86,54 @@ describe('Transport Manager (WebSockets)', () => {
       expect(err).to.satisfy((err) => err.code === ErrorCodes.ERR_NO_VALID_ADDRESSES)
       return
     }
+
+    expect.fail('should have failed')
+  })
+})
+
+describe('libp2p.transportManager', () => {
+  let peerInfo
+  let libp2p
+
+  before(async () => {
+    const peerId = await PeerId.createFromJSON(Peers[0])
+    peerInfo = new PeerInfo(peerId)
+  })
+
+  afterEach(async () => {
+    sinon.restore()
+    libp2p && await libp2p.stop()
+    libp2p = null
+  })
+
+  it('should create a TransportManager', () => {
+    libp2p = new Libp2p({
+      peerInfo,
+      modules: {
+        transport: [Transport]
+      }
+    })
+
+    expect(libp2p.transportManager).to.exist()
+    expect(libp2p.transportManager._transports.size).to.equal(1)
+  })
+
+  it('starting and stopping libp2p should start and stop TransportManager', async () => {
+    libp2p = new Libp2p({
+      peerInfo,
+      modules: {
+        transport: [Transport]
+      }
+    })
+
+    // We don't need to listen, stub it
+    sinon.stub(libp2p.transportManager, 'listen').returns(true)
+    sinon.spy(libp2p.transportManager, 'close')
+
+    await libp2p.start()
+    await libp2p.stop()
+
+    expect(libp2p.transportManager.listen.callCount).to.equal(1)
+    expect(libp2p.transportManager.close.callCount).to.equal(1)
   })
 })

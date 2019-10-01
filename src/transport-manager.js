@@ -15,7 +15,7 @@ class TransportManager {
    * @param {Upgrader} options.upgrader The upgrader to provide to the transports
    * @param {function(Connection)} options.onConnection Called whenever an incoming connection is received
    */
-  constructor({ libp2p, upgrader, onConnection }) {
+  constructor ({ libp2p, upgrader, onConnection }) {
     this.libp2p = libp2p
     this.upgrader = upgrader
     this._transports = new Map()
@@ -53,7 +53,7 @@ class TransportManager {
    * @async
    */
   async close () {
-    let tasks = []
+    const tasks = []
     for (const [key, listeners] of this._listeners) {
       log('closing listeners for %s', key)
       while (listeners.length) {
@@ -64,7 +64,6 @@ class TransportManager {
     await Promise.all(tasks)
     this._listeners.clear()
   }
-
 
   /**
    * Dials the given Multiaddr over it's supported transport
@@ -166,7 +165,7 @@ class TransportManager {
    * @async
    */
   async removeAll () {
-    let tasks = []
+    const tasks = []
     for (const key of this._transports.keys()) {
       tasks.push(this.remove(key))
     }
