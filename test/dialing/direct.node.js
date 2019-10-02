@@ -95,5 +95,7 @@ describe('Dialing (direct)', () => {
       expect(err).to.satisfy((err) => err.code === ErrorCodes.ERR_CONNECTION_FAILED)
       return
     }
+
+    expect.fail('Dial should have failed')
   })
 })

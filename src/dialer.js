@@ -8,14 +8,13 @@ log.error = debug('libp2p:dialer:error')
 
 const { codes } = require('./errors')
 
-
 class Dialer {
   /**
    * @constructor
    * @param {object} options
    * @param {TransportManager} options.transportManager
    */
-  constructor({ transportManager }) {
+  constructor ({ transportManager }) {
     this.transportManager = transportManager
   }
 
@@ -55,7 +54,7 @@ class Dialer {
     // TODO: Send this through the Queue or Limit Dialer
     for (const addr of addrs) {
       try {
-        return await this.connectToMultiaddr(addr).catch(log.error)
+        return await this.connectToMultiaddr(addr)
       } catch (_) {
         // The error is already logged, just move to the next addr
         continue
