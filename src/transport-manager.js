@@ -5,7 +5,7 @@ const { codes } = require('./errors')
 const errCode = require('err-code')
 const debug = require('debug')
 const log = debug('libp2p:transports')
-log.error = debug('error:libp2p:transports')
+log.error = debug('libp2p:transports:error')
 
 class TransportManager {
   /**
