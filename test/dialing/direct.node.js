@@ -4,6 +4,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
+const sinon = require('sinon')
 const Dialer = require('../../src/dialer')
 const TransportManager = require('../../src/transport-manager')
 const Transport = require('libp2p-tcp')
@@ -13,6 +14,8 @@ const { codes: ErrorCodes } = require('../../src/errors')
 const Peers = require('../fixtures/peers')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
+const delay = require('delay')
+const pDefer = require('p-defer')
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws')
@@ -44,6 +47,10 @@ describe('Dialing (direct, TCP)', () => {
 
   after(async () => {
     await remoteTM.close()
+  })
+
+  afterEach(() => {
+    sinon.restore()
   })
 
   it('should be able to connect to a remote node via its multiaddr', async () => {
@@ -100,5 +107,64 @@ describe('Dialing (direct, TCP)', () => {
     }
 
     expect.fail('Dial should have failed')
+  })
+
+  it('should abort dials on queue task timeout', async () => {
+    const dialer = new Dialer({
+      transportManager: localTM,
+      timeout: 50
+    })
+    sinon.stub(localTM, 'dial').callsFake(async (addr, options) => {
+      expect(options.signal).to.exist()
+      expect(options.signal.aborted).to.equal(false)
+      expect(addr.toString()).to.eql(remoteAddr.toString())
+      await delay(60)
+      expect(options.signal.aborted).to.equal(true)
+    })
+
+    try {
+      await dialer.connectToMultiaddr(remoteAddr)
+    } catch (err) {
+      expect(err).to.satisfy((err) => err.code === ErrorCodes.ERR_TIMEOUT)
+      return
+    }
+
+    expect.fail('Dial should have failed')
+  })
+
+  it('should dial to the max concurrency', async () => {
+    const dialer = new Dialer({
+      transportManager: localTM,
+      concurrency: 2
+    })
+
+    const deferredDial = pDefer()
+    sinon.stub(localTM, 'dial').callsFake(async () => {
+      await deferredDial.promise
+    })
+
+    // Add 3 dials
+    Promise.all([
+      dialer.connectToMultiaddr(remoteAddr),
+      dialer.connectToMultiaddr(remoteAddr),
+      dialer.connectToMultiaddr(remoteAddr)
+    ])
+
+    // Let the call stack run
+    await delay(0)
+
+    // We should have 2 in progress, and 1 waiting
+    expect(localTM.dial.callCount).to.equal(2)
+    expect(dialer.queue.pending).to.equal(2)
+    expect(dialer.queue.size).to.equal(1)
+
+    deferredDial.resolve()
+
+    // Let the call stack run
+    await delay(0)
+    // All dials should have executed
+    expect(localTM.dial.callCount).to.equal(3)
+    expect(dialer.queue.pending).to.equal(0)
+    expect(dialer.queue.size).to.equal(0)
   })
 })
