@@ -76,8 +76,12 @@ class TransportManager {
     if (!transport) {
       throw errCode(new Error(`No transport available for address ${String(ma)}`), codes.ERR_TRANSPORT_UNAVAILABLE)
     }
-    const conn = await transport.dial(ma, options)
-    return conn
+
+    try {
+      return await transport.dial(ma, options)
+    } catch (err) {
+      throw errCode(new Error('Transport dial failed'), codes.ERR_TRANSPORT_DIAL_FAILED, err)
+    }
   }
 
   /**

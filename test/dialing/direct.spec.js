@@ -6,7 +6,7 @@ chai.use(require('dirty-chai'))
 const { expect } = chai
 const Dialer = require('../../src/dialer')
 const TransportManager = require('../../src/transport-manager')
-const Transport = require('libp2p-tcp')
+const Transport = require('libp2p-websockets')
 const multiaddr = require('multiaddr')
 const mockUpgrader = require('../utils/mockUpgrader')
 const { codes: ErrorCodes } = require('../../src/errors')
@@ -14,36 +14,20 @@ const Peers = require('../fixtures/peers')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 
-const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws')
 
-describe('Dialing (direct, TCP)', () => {
-  let remoteTM
+describe('Dialing (direct, WebSockets)', () => {
   let localTM
-  let remoteAddr
+  const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 
-  before(async () => {
-    remoteTM = new TransportManager({
-      libp2p: {},
-      upgrader: mockUpgrader,
-      onConnection: () => {}
-    })
-    remoteTM.add(Transport.prototype[Symbol.toStringTag], Transport)
-
+  before(() => {
     localTM = new TransportManager({
       libp2p: {},
       upgrader: mockUpgrader,
       onConnection: () => {}
     })
     localTM.add(Transport.prototype[Symbol.toStringTag], Transport)
-
-    await remoteTM.listen([listenAddr])
-
-    remoteAddr = remoteTM.getAddrs()[0]
-  })
-
-  after(async () => {
-    await remoteTM.close()
   })
 
   it('should be able to connect to a remote node via its multiaddr', async () => {
@@ -68,7 +52,7 @@ describe('Dialing (direct, TCP)', () => {
     try {
       await dialer.connectToMultiaddr(unsupportedAddr)
     } catch (err) {
-      expect(err).to.satisfy((err) => err.code === ErrorCodes.ERR_TRANSPORT_UNAVAILABLE)
+      expect(err).to.satisfy((err) => err.code === ErrorCodes.ERR_TRANSPORT_DIAL_FAILED)
       return
     }
 
