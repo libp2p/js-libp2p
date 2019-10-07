@@ -13,6 +13,7 @@ const Transport = require('libp2p-websockets')
 const multiaddr = require('multiaddr')
 const mockUpgrader = require('../utils/mockUpgrader')
 const { codes: ErrorCodes } = require('../../src/errors')
+const Constants = require('../../src/constants')
 const Peers = require('../fixtures/peers')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
@@ -35,6 +36,12 @@ describe('Dialing (direct, WebSockets)', () => {
 
   afterEach(() => {
     sinon.restore()
+  })
+
+  it('should have appropriate defaults', () => {
+    const dialer = new Dialer({ transportManager: localTM })
+    expect(dialer.concurrency).to.equal(Constants.MAX_PARALLEL_DIALS)
+    expect(dialer.timeout).to.equal(Constants.DIAL_TIMEOUT)
   })
 
   it('should be able to connect to a remote node via its multiaddr', async () => {
