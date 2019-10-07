@@ -24,7 +24,7 @@ class Dialer {
    */
   constructor ({
     transportManager,
-    concurrency = MAX_PARALLEL_DIALS ,
+    concurrency = MAX_PARALLEL_DIALS,
     timeout = DIAL_TIMEOUT
   }) {
     this.transportManager = transportManager
@@ -58,7 +58,7 @@ class Dialer {
     } catch (err) {
       if (err.name === 'TimeoutError') {
         controller.abort()
-        err = errCode(err, codes.ERR_TIMEOUT)
+        err.code = codes.ERR_TIMEOUT
       }
       log.error('Error dialing address %s,', addr, err)
       throw err
