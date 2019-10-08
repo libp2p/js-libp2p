@@ -47,6 +47,43 @@ describe('Upgrader', () => {
     remoteUpgrader.protocols.set('/echo/1.0.0', (stream) => pipe(stream, stream))
   })
 
+  it('should ignore a missing remote peer id', async () => {
+    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
+
+    const muxers = new Map([[Muxer.multicodec, Muxer]])
+    sinon.stub(localUpgrader, 'muxers').value(muxers)
+    sinon.stub(remoteUpgrader, 'muxers').value(muxers)
+
+    const crypto = {
+      tag: '/insecure',
+      secureInbound: (localPeer, stream) => {
+        return {
+          conn: stream,
+          remotePeer: localPeer
+        }
+      },
+      secureOutbound: (localPeer, stream, remotePeerId) => {
+        return {
+          conn: stream,
+          remotePeer: remotePeer
+        }
+      }
+    }
+    const cryptos = new Map([[crypto.tag, crypto]])
+    sinon.stub(localUpgrader, 'cryptos').value(cryptos)
+    sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
+
+    // Remove the peer id from the remote address
+    outbound.remoteAddr = outbound.remoteAddr.decapsulateCode(421)
+
+    const connections = await Promise.all([
+      localUpgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+
+    expect(connections).to.have.length(2)
+  })
+
   it('should upgrade with valid muxers and crypto', async () => {
     const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
 
@@ -198,9 +235,9 @@ describe('Upgrader', () => {
 
     expect(connections).to.have.length(2)
 
-    // Create a few streams
+    // Create a few streams, at least 1 in each direction
     await connections[0].newStream('/echo/1.0.0')
-    await connections[0].newStream('/echo/1.0.0')
+    await connections[1].newStream('/echo/1.0.0')
     await connections[0].newStream('/echo/1.0.0')
     connections.forEach(conn => {
       expect(conn.streams).to.have.length(3)
@@ -212,5 +249,49 @@ describe('Upgrader', () => {
     await Promise.all(connections.map(conn => conn.close()))
     expect(inbound.close.callCount).to.equal(1)
     expect(outbound.close.callCount).to.equal(1)
+  })
+
+  it('should fail to create a stream for an unsupported protocol', async () => {
+    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
+
+    const muxers = new Map([[Muxer.multicodec, Muxer]])
+    sinon.stub(localUpgrader, 'muxers').value(muxers)
+    sinon.stub(remoteUpgrader, 'muxers').value(muxers)
+
+    const crypto = {
+      tag: '/insecure',
+      secureInbound: (localPeer, stream) => {
+        return {
+          conn: stream,
+          remotePeer: localPeer
+        }
+      },
+      secureOutbound: (localPeer, stream, remotePeerId) => {
+        return {
+          conn: stream,
+          remotePeer: remotePeer
+        }
+      }
+    }
+    const cryptos = new Map([[crypto.tag, crypto]])
+    sinon.stub(localUpgrader, 'cryptos').value(cryptos)
+    sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
+
+    const connections = await Promise.all([
+      localUpgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+
+    expect(connections).to.have.length(2)
+
+    const results = await pSettle([
+      connections[0].newStream('/unsupported/1.0.0'),
+      connections[1].newStream('/unsupported/1.0.0')
+    ])
+    expect(results).to.have.length(2)
+    results.forEach(result => {
+      expect(result.isRejected).to.equal(true)
+      expect(result.reason.code).to.equal(codes.ERR_UNSUPPORTED_PROTOCOL)
+    })
   })
 })

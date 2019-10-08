@@ -90,7 +90,7 @@ class Upgrader {
         return { stream: { ...muxedStream, ...stream }, protocol }
       } catch (err) {
         log.error('could not create new stream for protocols %s', protocols, err)
-        throw errCode(err, 'ERR_UNSUPPORTED_PROTOCOL')
+        throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
       }
     }
 
@@ -163,7 +163,7 @@ class Upgrader {
       // Run anytime a remote stream is created
       onStream: async muxedStream => {
         const mss = new Multistream.Listener(muxedStream)
-        const { stream, protocol } = await mss.handle(this._protocols)
+        const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
         log('outbound: incoming stream opened on %s', protocol)
         connection.addStream(stream, protocol)
         this._onStream({ stream, protocol })
@@ -183,7 +183,7 @@ class Upgrader {
         return { stream: { ...muxedStream, ...stream }, protocol }
       } catch (err) {
         log.error('could not create new stream', err)
-        throw errCode(err, 'ERR_UNSUPPORTED_PROTOCOL')
+        throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
       }
     }
 
@@ -275,7 +275,7 @@ class Upgrader {
     try {
       const { stream, protocol } = await mss.select(protocols)
       const crypto = cryptos.get(protocol)
-      log('encrypting outbound connection to %s', remotePeerId.toB58String())
+      log('encrypting outbound connection to %j', remotePeerId)
       const cryptoResponse = await crypto.secureOutbound(localPeer, stream, remotePeerId)
 
       return {
