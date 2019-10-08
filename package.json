@@ -75,6 +75,7 @@
   },
   "devDependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
+    "abortable-iterator": "^2.1.0",
     "aegir": "^20.0.0",
     "chai": "^4.2.0",
     "chai-checkmark": "^1.0.1",
@@ -84,6 +85,7 @@
     "electron-webrtc": "^0.3.0",
     "glob": "^7.1.4",
     "interface-datastore": "^0.6.0",
+    "it-pair": "^1.0.0",
     "libp2p-bootstrap": "^0.9.7",
     "libp2p-delegated-content-routing": "^0.2.2",
     "libp2p-delegated-peer-routing": "^0.2.2",
@@ -91,7 +93,7 @@
     "libp2p-gossipsub": "~0.0.4",
     "libp2p-kad-dht": "^0.15.3",
     "libp2p-mdns": "^0.12.3",
-    "libp2p-mplex": "^0.8.4",
+    "libp2p-mplex": "^0.9.1",
     "libp2p-pnet": "~0.1.0",
     "libp2p-secio": "^0.11.1",
     "libp2p-spdy": "^0.13.2",
@@ -108,6 +110,7 @@
     "pull-protocol-buffers": "~0.1.2",
     "pull-serializer": "^0.3.2",
     "sinon": "^7.2.7",
+    "streaming-iterables": "^4.1.0",
     "wrtc": "^0.4.1"
   },
   "contributors": [

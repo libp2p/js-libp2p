@@ -56,6 +56,7 @@ class Dialer {
     try {
       conn = await this.queue.add(() => this.transportManager.dial(addr, options))
     } catch (err) {
+      // TODO: Add the multiaddr to the deny list
       if (err.name === 'TimeoutError') {
         controller.abort()
         err.code = codes.ERR_TIMEOUT
