@@ -48,8 +48,8 @@ describe('Upgrader', () => {
       localPeer: remotePeer
     })
 
-    localUpgrader.protocols.set('/echo/1.0.0', (stream) => pipe(stream, stream))
-    remoteUpgrader.protocols.set('/echo/1.0.0', (stream) => pipe(stream, stream))
+    localUpgrader.protocols.set('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
+    remoteUpgrader.protocols.set('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
   })
 
   it('should ignore a missing remote peer id', async () => {
@@ -261,5 +261,29 @@ describe('libp2p.upgrader', () => {
     expect(libp2p.upgrader.cryptos).to.eql(new Map([[mockCrypto.tag, mockCrypto]]))
     // Ensure the transport manager also has the upgrader
     expect(libp2p.upgrader).to.equal(libp2p.transportManager.upgrader)
+  })
+
+  it('should be able to register and unregister a handler', () => {
+    libp2p = new Libp2p({
+      peerInfo,
+      modules: {
+        transport: [Transport],
+        streamMuxer: [Muxer],
+        connEncryption: [mockCrypto]
+      }
+    })
+
+    expect(libp2p.upgrader.protocols.size).to.equal(0)
+
+    const echoHandler = () => {}
+    libp2p.handle(['/echo/1.0.0', '/echo/1.0.1'], echoHandler)
+    expect(libp2p.upgrader.protocols.size).to.equal(2)
+    expect(libp2p.upgrader.protocols.get('/echo/1.0.0')).to.equal(echoHandler)
+    expect(libp2p.upgrader.protocols.get('/echo/1.0.1')).to.equal(echoHandler)
+
+    libp2p.unhandle(['/echo/1.0.0'])
+    expect(libp2p.upgrader.protocols.size).to.equal(1)
+    expect(libp2p.upgrader.protocols.get('/echo/1.0.0')).to.equal(undefined)
+    expect(libp2p.upgrader.protocols.get('/echo/1.0.1')).to.equal(echoHandler)
   })
 })

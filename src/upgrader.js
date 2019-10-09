@@ -222,7 +222,7 @@ class Upgrader {
    */
   _onStream ({ stream, protocol }) {
     const handler = this.protocols.get(protocol)
-    handler(stream)
+    handler({ stream, protocol })
   }
 
   /**

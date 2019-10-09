@@ -142,7 +142,6 @@ class Switch extends EventEmitter {
    *
    * @param {string} protocol
    * @param {function(string, Connection)} handlerFunc
-   * @param {function(string, string, function(Error, boolean))} matchFunc
    * @returns {void}
    */
   handle (protocol, handlerFunc, matchFunc) {

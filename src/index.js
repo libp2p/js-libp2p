@@ -346,12 +346,28 @@ class Libp2p extends EventEmitter {
       }, callback)
   }
 
-  handle (protocol, handlerFunc, matchFunc) {
-    this._switch.handle(protocol, handlerFunc, matchFunc)
+  /**
+   * Registers the `handler` for each protocol
+   * @param {string[]|string} protocols
+   * @param {function({ stream:*, protocol:string })} handler
+   */
+  handle (protocols, handler) {
+    protocols = Array.isArray(protocols) ? protocols : [protocols]
+    protocols.forEach(protocol => {
+      this.upgrader.protocols.set(protocol, handler)
+    })
   }
 
-  unhandle (protocol) {
-    this._switch.unhandle(protocol)
+  /**
+   * Removes the handler for each protocol. The protocol
+   * will no longer be supported on streams.
+   * @param {string[]|string} protocols
+   */
+  unhandle (protocols) {
+    protocols = Array.isArray(protocols) ? protocols : [protocols]
+    protocols.forEach(protocol => {
+      this.upgrader.protocols.delete(protocol)
+    })
   }
 
   async _onStarting () {
