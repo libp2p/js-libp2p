@@ -59,6 +59,7 @@ class Upgrader {
     } catch (err) {
       log.error('Failed to upgrade inbound connection', err)
       await maConn.close(err)
+      // TODO: We shouldn't throw here, as there isn't anything to catch the failure
       throw err
     }
 
@@ -131,7 +132,7 @@ class Upgrader {
     try {
       remotePeerId = PeerId.createFromB58String(maConn.remoteAddr.getPeerId())
     } catch (err) {
-      log.error(err)
+      log.error('multiaddr did not contain a valid peer id', err)
     }
 
     let encryptedConn
