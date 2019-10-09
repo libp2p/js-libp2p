@@ -27,6 +27,7 @@ const validateConfig = require('./config').validate
 const { codes } = require('./errors')
 
 const TransportManager = require('./transport-manager')
+const Upgrader = require('./upgrader')
 
 const notStarted = (action, state) => {
   return errCode(
@@ -66,14 +67,15 @@ class Libp2p extends EventEmitter {
     this.stats = this._switch.stats
     this.connectionManager = new ConnectionManager(this, this._options.connectionManager)
 
+    // Setup the Upgrader
+    this.upgrader = new Upgrader({
+      localPeer: this.peerInfo.id
+    })
+
     // Setup the transport manager
     this.transportManager = new TransportManager({
       libp2p: this,
-      // TODO: set the actual upgrader
-      upgrader: {
-        upgradeInbound: (maConn) => maConn,
-        upgradeOutbound: (maConn) => maConn
-      },
+      upgrader: this.upgrader,
       // TODO: Route incoming connections to a multiplex protocol router
       onConnection: () => {}
     })
@@ -81,10 +83,20 @@ class Libp2p extends EventEmitter {
       this.transportManager.add(Transport.prototype[Symbol.toStringTag], Transport)
     })
 
+    // Attach crypto channels
+    if (this._modules.connEncryption) {
+      const cryptos = this._modules.connEncryption
+      cryptos.forEach((crypto) => {
+        this.upgrader.cryptos.set(crypto.tag, crypto)
+      })
+    }
+
     // Attach stream multiplexers
     if (this._modules.streamMuxer) {
       const muxers = this._modules.streamMuxer
-      muxers.forEach((muxer) => this._switch.connection.addStreamMuxer(muxer))
+      muxers.forEach((muxer) => {
+        this.upgrader.muxers.set(muxer.multicodec, muxer)
+      })
 
       // If muxer exists
       //   we can use Identify
@@ -110,14 +122,6 @@ class Libp2p extends EventEmitter {
     this._switch.on('connection:end', (peerInfo) => {
       this.emit('connection:end', peerInfo)
     })
-
-    // Attach crypto channels
-    if (this._modules.connEncryption) {
-      const cryptos = this._modules.connEncryption
-      cryptos.forEach((crypto) => {
-        this._switch.connection.crypto(crypto.tag, crypto.encrypt)
-      })
-    }
 
     // Attach private network protector
     if (this._modules.connProtector) {

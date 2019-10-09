@@ -8,12 +8,17 @@ const sinon = require('sinon')
 const Muxer = require('libp2p-mplex')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
 const pipe = require('it-pipe')
-const Upgrader = require('../../src/upgrader')
-const { codes } = require('../../src/errors')
 const { collect } = require('streaming-iterables')
 const pSettle = require('p-settle')
+const Transport = require('libp2p-websockets')
 
+const Libp2p = require('../../src')
+const Upgrader = require('../../src/upgrader')
+const { codes } = require('../../src/errors')
+
+const mockCrypto = require('../utils/mockCrypto')
 const mockMultiaddrConn = require('../utils/mockMultiaddrConn')
 const Peers = require('../fixtures/peers')
 const addrs = [
@@ -54,22 +59,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxers)
     sinon.stub(remoteUpgrader, 'muxers').value(muxers)
 
-    const crypto = {
-      tag: '/insecure',
-      secureInbound: (localPeer, stream) => {
-        return {
-          conn: stream,
-          remotePeer: localPeer
-        }
-      },
-      secureOutbound: (localPeer, stream, remotePeerId) => {
-        return {
-          conn: stream,
-          remotePeer: remotePeer
-        }
-      }
-    }
-    const cryptos = new Map([[crypto.tag, crypto]])
+    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -91,22 +81,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxers)
     sinon.stub(remoteUpgrader, 'muxers').value(muxers)
 
-    const crypto = {
-      tag: '/insecure',
-      secureInbound: (localPeer, stream) => {
-        return {
-          conn: stream,
-          remotePeer: localPeer
-        }
-      },
-      secureOutbound: (localPeer, stream, remotePeerId) => {
-        return {
-          conn: stream,
-          remotePeer: remotePeer
-        }
-      }
-    }
-    const cryptos = new Map([[crypto.tag, crypto]])
+    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -174,17 +149,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxersLocal)
     sinon.stub(remoteUpgrader, 'muxers').value(muxersRemote)
 
-    const crypto = {
-      tag: '/insecure',
-      secureInbound: (remotePeer, conn) => {
-        return { conn, remotePeer }
-      },
-      secureOutbound: (_, conn, remotePeer) => {
-        return { conn, remotePeer }
-      }
-    }
-
-    const cryptos = new Map([[crypto.tag, crypto]])
+    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -209,22 +174,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxers)
     sinon.stub(remoteUpgrader, 'muxers').value(muxers)
 
-    const crypto = {
-      tag: '/insecure',
-      secureInbound: (localPeer, stream) => {
-        return {
-          conn: stream,
-          remotePeer: localPeer
-        }
-      },
-      secureOutbound: (localPeer, stream, remotePeerId) => {
-        return {
-          conn: stream,
-          remotePeer: remotePeer
-        }
-      }
-    }
-    const cryptos = new Map([[crypto.tag, crypto]])
+    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -258,22 +208,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxers)
     sinon.stub(remoteUpgrader, 'muxers').value(muxers)
 
-    const crypto = {
-      tag: '/insecure',
-      secureInbound: (localPeer, stream) => {
-        return {
-          conn: stream,
-          remotePeer: localPeer
-        }
-      },
-      secureOutbound: (localPeer, stream, remotePeerId) => {
-        return {
-          conn: stream,
-          remotePeer: remotePeer
-        }
-      }
-    }
-    const cryptos = new Map([[crypto.tag, crypto]])
+    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -293,5 +228,38 @@ describe('Upgrader', () => {
       expect(result.isRejected).to.equal(true)
       expect(result.reason.code).to.equal(codes.ERR_UNSUPPORTED_PROTOCOL)
     })
+  })
+})
+
+describe('libp2p.upgrader', () => {
+  let peerInfo
+  let libp2p
+
+  before(async () => {
+    const peerId = await PeerId.createFromJSON(Peers[0])
+    peerInfo = new PeerInfo(peerId)
+  })
+
+  afterEach(async () => {
+    sinon.restore()
+    libp2p && await libp2p.stop()
+    libp2p = null
+  })
+
+  it('should create an Upgrader', () => {
+    libp2p = new Libp2p({
+      peerInfo,
+      modules: {
+        transport: [Transport],
+        streamMuxer: [Muxer],
+        connEncryption: [mockCrypto]
+      }
+    })
+
+    expect(libp2p.upgrader).to.exist()
+    expect(libp2p.upgrader.muxers).to.eql(new Map([[Muxer.multicodec, Muxer]]))
+    expect(libp2p.upgrader.cryptos).to.eql(new Map([[mockCrypto.tag, mockCrypto]]))
+    // Ensure the transport manager also has the upgrader
+    expect(libp2p.upgrader).to.equal(libp2p.transportManager.upgrader)
   })
 })
