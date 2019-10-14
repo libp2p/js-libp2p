@@ -122,7 +122,7 @@ const MulticastDNS = require('libp2p-mdns')
 const DHT = require('libp2p-kad-dht')
 const GossipSub = require('libp2p-gossipsub')
 const defaultsDeep = require('@nodeutils/defaults-deep')
-const Protector = require('libp2p-pnet')
+const Protector = require('libp2p/src/pnet')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 
@@ -527,15 +527,15 @@ Libp2p provides support for connection protection, such as for private networks.
 #### Protectors
 
 Some available network protectors:
-* [libp2p-pnet](https://github.com/libp2p/js-libp2p-pnet)
+* [libp2p-pnet](https://github.com/libp2p/js-libp2p/tree/master/src/pnet)
 
 ## Development
 
 **Clone and install dependencies:**
 
 ```sh
-> git clone https://github.com/ipfs/js-ipfs.git
-> cd js-ipfs
+> git clone https://github.com/libp2p/js-libp2p.git
+> cd js-libp2p
 > npm install
 ```
 

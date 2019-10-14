@@ -11,11 +11,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ipfs": "~0.32.3",
-    "libp2p": "~0.23.1",
-    "libp2p-mplex": "~0.8.2",
-    "libp2p-pnet": "../../",
-    "libp2p-secio": "~0.10.0",
-    "libp2p-tcp": "~0.13.0"
+    "ipfs": "^0.38.0",
+    "libp2p": "^0.26.2",
+    "libp2p-mplex": "^0.8.5",
+    "libp2p-secio": "^0.11.1",
+    "libp2p-tcp": "^0.13.2"
   }
 }
