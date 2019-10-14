@@ -139,10 +139,10 @@ class Stats extends EventEmitter {
     this._timeout = null
     if (this._queue.length) {
       let last
-      while (this._queue.length) {
-        const op = last = this._queue.shift()
-        this._applyOp(op)
+      for (last of this._queue) {
+        this._applyOp(last)
       }
+      this._queue = []
 
       this._updateFrequency(last[2]) // contains timestamp of last op
 
