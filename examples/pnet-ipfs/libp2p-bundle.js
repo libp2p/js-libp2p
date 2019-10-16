@@ -5,7 +5,7 @@ const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const fs = require('fs')
-const Protector = require('libp2p-pnet')
+const Protector = require('libp2p/src/pnet')
 
 /**
  * Options for the libp2p bundle
