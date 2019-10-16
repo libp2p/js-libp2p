@@ -7,12 +7,15 @@ js-libp2p-pnet
 
 ## Table of Contents
 
-- [Usage](#usage)
-  - [Examples](#examples)
-  - [Private Shared Keys (PSK)](#private-shared-keys)
-  - [PSK Generation](#psk-generation)
-- [Contribute](#contribute)
-- [License](#license)
+- [js-libp2p-pnet](#js-libp2p-pnet)
+  - [Table of Contents](#table-of-contents)
+  - [Usage](#usage)
+    - [Examples](#examples)
+    - [Private Shared Keys](#private-shared-keys)
+    - [PSK Generation](#psk-generation)
+      - [From libp2p-pnet](#from-libp2p-pnet)
+      - [From a module using libp2p](#from-a-module-using-libp2p)
+      - [Programmatically](#programmatically)
 
 ## Usage
 
@@ -23,7 +26,7 @@ const privateConnection = protector.protect(myPublicConnection, (err) => { })
 ```
 
 ### Examples
-[Private Networks with IPFS](./examples/pnet-ipfs)
+[Private Networks with IPFS](../../examples/pnet-ipfs)
 
 ### Private Shared Keys
 
@@ -42,25 +45,25 @@ use one of the methods below to generate your key.
 
 #### From libp2p-pnet
 
-If you have libp2p-pnet locally, you can run the following from the projects root.
+If you have libp2p locally, you can run the following from the projects root.
 
 ```sh
-node ./key-generator.js > swarm.key
+node ./src/pnet/key-generator.js > swarm.key
 ```
 
 #### From a module using libp2p
 
-If you have a module locally that depends on libp2p-pnet, you can run the following from
+If you have a module locally that depends on libp2p, you can run the following from
 that project, assuming the node_modules are installed.
 
 ```sh
-node -e "require('libp2p-pnet').generate(process.stdout)" > swarm.key
+node -e "require('libp2p/src/pnet').generate(process.stdout)" > swarm.key
 ```
 
 #### Programmatically
 
 ```js
-const writeKey = require('libp2p-pnet').generate
+const writeKey = require('libp2p/src/pnet').generate
 const swarmKey = Buffer.alloc(95)
 writeKey(swarmKey)
 fs.writeFileSync('swarm.key', swarmKey)
