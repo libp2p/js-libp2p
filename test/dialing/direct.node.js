@@ -34,15 +34,13 @@ describe('Dialing (direct, TCP)', () => {
   before(async () => {
     remoteTM = new TransportManager({
       libp2p: {},
-      upgrader: mockUpgrader,
-      onConnection: () => {}
+      upgrader: mockUpgrader
     })
     remoteTM.add(Transport.prototype[Symbol.toStringTag], Transport)
 
     localTM = new TransportManager({
       libp2p: {},
-      upgrader: mockUpgrader,
-      onConnection: () => {}
+      upgrader: mockUpgrader
     })
     localTM.add(Transport.prototype[Symbol.toStringTag], Transport)
 

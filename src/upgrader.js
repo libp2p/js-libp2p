@@ -26,11 +26,13 @@ class Upgrader {
    * @param {Map<string, Crypto>} options.cryptos
    * @param {Map<string, Muxer>} options.muxers
    */
-  constructor ({ localPeer, cryptos, muxers }) {
+  constructor ({ localPeer, cryptos, muxers, onConnectionEnd = () => {}, onConnection = () => {} }) {
     this.localPeer = localPeer
     this.cryptos = cryptos || new Map()
     this.muxers = muxers || new Map()
     this.protocols = new Map()
+    this.onConnection = onConnection
+    this.onConnectionEnd = onConnectionEnd
   }
 
   /**
@@ -98,6 +100,17 @@ class Upgrader {
     // Pipe all data through the muxer
     pipe(muxedConnection, muxer, muxedConnection)
 
+    maConn.timeline.upgraded = Date.now()
+    const timelineProxy = new Proxy(maConn.timeline, {
+      set: (...args) => {
+        if (args[1] === 'close' && args[2]) {
+          this.onConnectionEnd(connection)
+        }
+
+        return Reflect.set(...args)
+      }
+    })
+
     // Create the connection
     const connection = new Connection({
       localAddr: maConn.localAddr,
@@ -106,10 +119,7 @@ class Upgrader {
       remotePeer,
       stat: {
         direction: 'inbound',
-        timeline: {
-          open: maConn.timeline.open,
-          upgraded: Date.now()
-        },
+        timeline: timelineProxy,
         multiplexer: Muxer.multicodec,
         encryption: cryptoProtocol
       },
@@ -117,6 +127,8 @@ class Upgrader {
       getStreams: () => muxer.streams,
       close: err => maConn.close(err)
     })
+
+    this.onConnection(connection)
 
     return connection
   }
@@ -191,6 +203,17 @@ class Upgrader {
     // Pipe all data through the muxer
     pipe(muxedConnection, muxer, muxedConnection)
 
+    maConn.timeline.upgraded = Date.now()
+    const timelineProxy = new Proxy(maConn.timeline, {
+      set: (...args) => {
+        if (args[1] === 'close' && args[2]) {
+          this.onConnectionEnd(connection)
+        }
+
+        return Reflect.set(...args)
+      }
+    })
+
     // Create the connection
     const connection = new Connection({
       localAddr: maConn.localAddr,
@@ -199,10 +222,7 @@ class Upgrader {
       remotePeer: remotePeer,
       stat: {
         direction: 'outbound',
-        timeline: {
-          open: maConn.timeline.open,
-          upgraded: Date.now()
-        },
+        timeline: timelineProxy,
         multiplexer: Muxer.multicodec,
         encryption: cryptoProtocol
       },
@@ -210,6 +230,8 @@ class Upgrader {
       getStreams: () => muxer.streams,
       close: err => maConn.close(err)
     })
+
+    this.onConnection(connection)
 
     return connection
   }

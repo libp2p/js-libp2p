@@ -52,6 +52,10 @@ describe('Upgrader', () => {
     remoteUpgrader.protocols.set('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
   })
 
+  afterEach(() => {
+    sinon.restore()
+  })
+
   it('should ignore a missing remote peer id', async () => {
     const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
 
@@ -199,6 +203,41 @@ describe('Upgrader', () => {
     await Promise.all(connections.map(conn => conn.close()))
     expect(inbound.close.callCount).to.equal(1)
     expect(outbound.close.callCount).to.equal(1)
+  })
+
+  it('should call connection handlers', async () => {
+    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
+
+    const muxers = new Map([[Muxer.multicodec, Muxer]])
+    sinon.stub(localUpgrader, 'muxers').value(muxers)
+    sinon.stub(remoteUpgrader, 'muxers').value(muxers)
+
+    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
+    sinon.stub(localUpgrader, 'cryptos').value(cryptos)
+    sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
+
+    // Verify onConnection is called with the connection
+    sinon.spy(localUpgrader, 'onConnection')
+    sinon.spy(remoteUpgrader, 'onConnection')
+    const connections = await Promise.all([
+      localUpgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+    expect(connections).to.have.length(2)
+    expect(localUpgrader.onConnection.callCount).to.equal(1)
+    expect(localUpgrader.onConnection.getCall(0).args).to.eql([connections[0]])
+    expect(remoteUpgrader.onConnection.callCount).to.equal(1)
+    expect(remoteUpgrader.onConnection.getCall(0).args).to.eql([connections[1]])
+
+
+    // Verify onConnectionEnd is called with the connection
+    sinon.spy(localUpgrader, 'onConnectionEnd')
+    sinon.spy(remoteUpgrader, 'onConnectionEnd')
+    await Promise.all(connections.map(conn => conn.close()))
+    expect(localUpgrader.onConnectionEnd.callCount).to.equal(1)
+    expect(localUpgrader.onConnectionEnd.getCall(0).args).to.eql([connections[0]])
+    expect(remoteUpgrader.onConnectionEnd.callCount).to.equal(1)
+    expect(remoteUpgrader.onConnectionEnd.getCall(0).args).to.eql([connections[1]])
   })
 
   it('should fail to create a stream for an unsupported protocol', async () => {

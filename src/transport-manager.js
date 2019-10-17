@@ -13,14 +13,12 @@ class TransportManager {
    * @param {object} options
    * @param {Libp2p} options.libp2p The Libp2p instance. It will be passed to the transports.
    * @param {Upgrader} options.upgrader The upgrader to provide to the transports
-   * @param {function(Connection)} options.onConnection Called whenever an incoming connection is received
    */
-  constructor ({ libp2p, upgrader, onConnection }) {
+  constructor ({ libp2p, upgrader }) {
     this.libp2p = libp2p
     this.upgrader = upgrader
     this._transports = new Map()
     this._listeners = new Map()
-    this.onConnection = onConnection
   }
 
   /**

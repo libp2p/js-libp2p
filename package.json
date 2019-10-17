@@ -49,7 +49,7 @@
     "err-code": "^1.1.2",
     "fsm-event": "^2.1.0",
     "hashlru": "^2.3.0",
-    "interface-connection": "^0.4.0",
+    "interface-connection": "^0.4.1",
     "latency-monitor": "~0.2.1",
     "libp2p-crypto": "^0.16.2",
     "mafmt": "^7.0.0",
