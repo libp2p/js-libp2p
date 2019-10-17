@@ -229,7 +229,6 @@ describe('Upgrader', () => {
     expect(remoteUpgrader.onConnection.callCount).to.equal(1)
     expect(remoteUpgrader.onConnection.getCall(0).args).to.eql([connections[1]])
 
-
     // Verify onConnectionEnd is called with the connection
     sinon.spy(localUpgrader, 'onConnectionEnd')
     sinon.spy(remoteUpgrader, 'onConnectionEnd')
@@ -271,12 +270,15 @@ describe('Upgrader', () => {
 })
 
 describe('libp2p.upgrader', () => {
-  let peerInfo
+  let peers
   let libp2p
 
   before(async () => {
-    const peerId = await PeerId.createFromJSON(Peers[0])
-    peerInfo = new PeerInfo(peerId)
+    const ids = await Promise.all([
+      PeerId.createFromJSON(Peers[0]),
+      PeerId.createFromJSON(Peers[1])
+    ])
+    peers = ids.map(peerId => new PeerInfo(peerId))
   })
 
   afterEach(async () => {
@@ -287,7 +289,7 @@ describe('libp2p.upgrader', () => {
 
   it('should create an Upgrader', () => {
     libp2p = new Libp2p({
-      peerInfo,
+      peerInfo: peers[0],
       modules: {
         transport: [Transport],
         streamMuxer: [Muxer],
@@ -304,7 +306,7 @@ describe('libp2p.upgrader', () => {
 
   it('should be able to register and unregister a handler', () => {
     libp2p = new Libp2p({
-      peerInfo,
+      peerInfo: peers[0],
       modules: {
         transport: [Transport],
         streamMuxer: [Muxer],
@@ -324,5 +326,45 @@ describe('libp2p.upgrader', () => {
     expect(libp2p.upgrader.protocols.size).to.equal(1)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.0')).to.equal(undefined)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.1')).to.equal(echoHandler)
+  })
+
+  it('should emit connect and disconnect events', async () => {
+    const remotePeer = peers[1]
+    libp2p = new Libp2p({
+      peerInfo: peers[0],
+      modules: {
+        transport: [Transport],
+        streamMuxer: [Muxer],
+        connEncryption: [mockCrypto]
+      }
+    })
+
+    const remoteUpgrader = new Upgrader({
+      localPeer: remotePeer.id,
+      muxers: new Map([[Muxer.multicodec, Muxer]]),
+      cryptos: new Map([[mockCrypto.tag, mockCrypto]])
+    })
+
+    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer: remotePeer.id })
+
+    // Spy on emit for easy verification
+    sinon.spy(libp2p, 'emit')
+
+    // Upgrade and check the connect event
+    const connections = await Promise.all([
+      libp2p.upgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+    expect(libp2p.emit.callCount).to.equal(1)
+    let [event, peerInfo] = libp2p.emit.getCall(0).args
+    expect(event).to.equal('peer:connect')
+    expect(peerInfo.id.isEqual(remotePeer.id)).to.equal(true)
+
+    // Close and check the disconnect event
+    await Promise.all(connections.map(conn => conn.close()))
+    expect(libp2p.emit.callCount).to.equal(2)
+    ;([event, peerInfo] = libp2p.emit.getCall(1).args)
+    expect(event).to.equal('peer:disconnect')
+    expect(peerInfo.id.isEqual(remotePeer.id)).to.equal(true)
   })
 })

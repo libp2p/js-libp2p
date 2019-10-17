@@ -22,8 +22,8 @@ const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
 const dht = require('./dht')
 const pubsub = require('./pubsub')
-const { getPeerInfoRemote } = require('./get-peer-info')
-const validateConfig = require('./config').validate
+const { getPeerInfo, getPeerInfoRemote } = require('./get-peer-info')
+const { validate: validateConfig } = require('./config')
 const { codes } = require('./errors')
 
 const Dialer = require('./dialer')
@@ -66,15 +66,22 @@ class Libp2p extends EventEmitter {
 
     // Setup the Upgrader
     this.upgrader = new Upgrader({
-      localPeer: this.peerInfo.id
+      localPeer: this.peerInfo.id,
+      // TODO: Route incoming connections to a multiplex protocol router
+      onConnection: (connection) => {
+        const peerInfo = getPeerInfo(connection.remotePeer)
+        this.emit('peer:connect', peerInfo)
+      },
+      onConnectionEnd: (connection) => {
+        const peerInfo = getPeerInfo(connection.remotePeer)
+        this.emit('peer:disconnect', peerInfo)
+      }
     })
 
     // Setup the transport manager
     this.transportManager = new TransportManager({
       libp2p: this,
-      upgrader: this.upgrader,
-      // TODO: Route incoming connections to a multiplex protocol router
-      onConnection: (connection) => { }
+      upgrader: this.upgrader
     })
     this._modules.transport.forEach((Transport) => {
       this.transportManager.add(Transport.prototype[Symbol.toStringTag], Transport)
