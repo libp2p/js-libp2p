@@ -7,11 +7,144 @@
 - [Iterable Streams](#iterable-streams)
   - [Table of Contents](#table-of-contents)
   - [Usage Guide](#usage-guide)
+    - [Wrapping Duplex Iterables](#wrapping-duplex-iterables)
+  - [Iterable Stream Types](#iterable-stream-types)
+    - [Source](#source)
+    - [Sink](#sink)
+    - [Transform](#transform)
+    - [Duplex](#duplex)
   - [Iterable Modules](#iterable-modules)
 
 ## Usage Guide
 
-**Coming Soon!**
+### Wrapping Duplex Iterables
+
+Sometimes you may need to wrap an existing duplex stream in order to perform incoming and outgoing [transforms](#transform) on data. This type of wrapping is commonly used in encryption streams. Using [it-pait][it-pair] and [it-pipe], we can do this rather easily, given an existing [duplex iterable](#duplex).
+
+```js
+const duplexPair = require('it-pair/duplex')
+const pipe = require('it-pipe')
+
+// Wrapper is what we will write and read from
+// This gives us two duplex iterables that are internally connected
+const wrapper = duplexPair()
+
+// Now we can pipe our wrapper to the existing duplex iterable
+pipe(
+  wrapper[0], // Use one half of our pairs as the primary wrapper
+  outgoingTransform, // A transform iterable to send data through (ie: encrypting)
+  existingDuplex, // The original duplex iterable we are wrapping
+  decrypt, // A transform iterable to read data through (ie: decrypting)
+  wrapper[0]
+)
+
+// We can now read and write from the other half of our pair
+pipe(
+  ['some data'],
+  wrapper[1],
+  async (source) => {
+    for await (const chunk of source) {
+      // Chunk will be a BufferList, we can slice it to get the underlying buffer
+      console.log('Data: %s', chunk.slice())
+      // > Data: some data
+    }
+  }
+)
+```
+
+## Iterable Stream Types
+
+These types are pulled from [@alanshaw's gist](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9) on streaming iterables.
+
+### Source
+
+A "source" is something that can be consumed. It is an iterable object.
+
+```js
+const ints = {
+  [Symbol.asyncIterator] () {
+    let i = 0
+    return {
+      async next () {
+        return { done: false, value: i++ }
+      }
+    }
+  }
+}
+
+// or, more succinctly using a generator and for/await:
+
+const ints = (async function * () {
+  let i = 0
+  while (true) yield i++
+})()
+```
+
+### Sink
+
+A "sink" is something that consumes (or drains) a source. It is a function that takes a source and iterates over it. It optionally returns a value.
+
+```js
+const logger = async source => {
+  const it = source[Symbol.asyncIterator]()
+  while (true) {
+    const { done, value } = await it.next()
+    if (done) break
+    console.log(value) // prints 0, 1, 2, 3...
+  }
+}
+
+// or, more succinctly using a generator and for/await:
+
+const logger = async source => {
+  for await (const chunk of source) {
+    console.log(chunk) // prints 0, 1, 2, 3...
+  }
+}
+```
+
+### Transform
+
+A "transform" is both a sink _and_ a source where the values it consumes and the values that can be consumed from it are connected in some way. It is a function that takes a source and returns a source.
+
+```js
+const doubler = source => {
+  return {
+    [Symbol.asyncIterator] () {
+      const it = source[Symbol.asyncIterator]()
+      return {
+        async next () {
+          const { done, value } = await it.next()
+          if (done) return { done }
+          return { done, value: value * 2 }
+        }
+        return () {
+          return it.return && it.return()
+        }
+      }
+    }
+  }
+}
+
+// or, more succinctly using a generator and for/await:
+
+const doubler = source => (async function * () {
+  for await (const chunk of source) {
+    yield chunk * 2
+  }
+})()
+```
+
+### Duplex
+
+A "duplex" is similar to a transform but the values it consumes are not necessarily connected to the values that can be consumed from it. It is an object with two properties, `sink` and `source`.
+
+```js
+const duplex = {
+  sink: async source => {/* ... */},
+  source: { [Symbol.asyncIterator] () {/* ... */} }
+}
+```
 
 ## Iterable Modules
 
