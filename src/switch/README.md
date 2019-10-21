@@ -81,7 +81,7 @@ tests]([./test/pnet.node.js]).
 
 ##### `switch.connection.addUpgrade()`
 
-A connection upgrade must be able to receive and return something that implements the [interface-connection](https://github.com/libp2p/interface-connection) specification.
+A connection upgrade must be able to receive and return something that implements the [interface-connection](https://github.com/libp2p/js-interfaces/tree/master/src/connection) specification.
 
 > **WIP**
 
@@ -151,7 +151,7 @@ a low priority dial to the provided peer. Calls to `dial` and `dialFSM` will tak
 - `error`:  emitted whenever a fatal error occurs with the connection; the error will be emitted.
 - `error:upgrade_failed`: emitted whenever the connection fails to upgrade with a muxer, this is not fatal.
 - `error:connection_attempt_failed`: emitted whenever a dial attempt fails for a given transport. An array of errors is emitted.
-- `connection`: emitted whenever a useable connection has been established; the underlying [Connection](https://github.com/libp2p/interface-connection) will be emitted.
+- `connection`: emitted whenever a useable connection has been established; the underlying [Connection](https://github.com/libp2p/js-interfaces/tree/master/src/connection) will be emitted.
 - `close`: emitted when the connection has closed.
 
 ### `switch.handle(protocol, handlerFunc, matchFunc)`
@@ -365,7 +365,7 @@ In order for a transport to be supported, it has to follow the [interface-transp
 
 ### Connection upgrades
 
-Each connection in libp2p follows the [interface-connection](https://github.com/libp2p/interface-connection) spec. This design decision enables libp2p to have upgradable transports.
+Each connection in libp2p follows the [interface-connection](https://github.com/libp2p/js-interfaces/tree/master/src/connection) spec. This design decision enables libp2p to have upgradable transports.
 
 We think of `upgrade` as a very important notion when we are talking about connections, we can see mechanisms like: stream multiplexing, congestion control, encrypted channels, multipath, simulcast, etc, as `upgrades` to a connection. A connection can be a simple and with no guarantees, drop a packet on the network with a destination thing, a transport in the other hand can be a connection and or a set of different upgrades that are mounted on top of each other, giving extra functionality to that connection and therefore `upgrading` it.
 

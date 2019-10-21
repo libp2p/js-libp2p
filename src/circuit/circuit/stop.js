@@ -3,7 +3,7 @@
 const setImmediate = require('async/setImmediate')
 
 const EE = require('events').EventEmitter
-const Connection = require('interface-connection').Connection
+const { Connection } = require('libp2p-interfaces/src/connection')
 const utilsFactory = require('./utils')
 const PeerInfo = require('peer-info')
 const proto = require('../protocol').CircuitRelay

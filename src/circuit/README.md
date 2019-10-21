@@ -1,6 +1,6 @@
 # js-libp2p-circuit
 
-> Node.js implementation of the Circuit module that libp2p uses, which implements the [interface-connection](https://github.com/libp2p/interface-connection) interface for dial/listen.
+> Node.js implementation of the Circuit module that libp2p uses, which implements the [interface-connection](https://github.com/libp2p/js-interfaces/tree/master/src/connection) interface for dial/listen.
 
 **Note**: git history prior to merging into js-libp2p can be found in the original repository, https://github.com/libp2p/js-libp2p-circuit.
 
@@ -24,15 +24,18 @@ Prior to `libp2p-circuit` there was a rift in the IPFS network, were IPFS nodes 
 
 ## Table of Contents
 
-- [Install](#install)
-  - [npm](#npm)
-- [Usage](#usage)
-  - [Example](#example)
-  - [This module uses `pull-streams`](#this-module-uses-pull-streams)
-    - [Converting `pull-streams` to Node.js Streams](#converting-pull-streams-to-nodejs-streams)
-- [API](#api)
-- [Contribute](#contribute)
-- [License](#license)
+- [js-libp2p-circuit](#js-libp2p-circuit)
+    - [Why?](#why)
+    - [libp2p-circuit and IPFS](#libp2p-circuit-and-ipfs)
+  - [Table of Contents](#table-of-contents)
+  - [Usage](#usage)
+    - [Example](#example)
+      - [Create dialer/listener](#create-dialerlistener)
+      - [Create `relay`](#create-relay)
+    - [This module uses `pull-streams`](#this-module-uses-pull-streams)
+      - [Converting `pull-streams` to Node.js Streams](#converting-pull-streams-to-nodejs-streams)
+  - [API](#api)
+    - [Implementation rational](#implementation-rational)
 
 ## Usage
 

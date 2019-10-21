@@ -1,7 +1,7 @@
 'use strict'
 
 const pull = require('pull-stream')
-const Connection = require('interface-connection').Connection
+const { Connection } = require('libp2p-interfaces/src/connection')
 const assert = require('assert')
 
 const Errors = require('./errors')
