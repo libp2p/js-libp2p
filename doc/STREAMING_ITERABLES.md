@@ -19,7 +19,7 @@
 
 ### Wrapping Duplex Iterables
 
-Sometimes you may need to wrap an existing duplex stream in order to perform incoming and outgoing [transforms](#transform) on data. This type of wrapping is commonly used in encryption streams. Using [it-pait][it-pair] and [it-pipe], we can do this rather easily, given an existing [duplex iterable](#duplex).
+Sometimes you may need to wrap an existing duplex stream in order to perform incoming and outgoing [transforms](#transform) on data. This type of wrapping is commonly used in encryption streams. Using [it-pair][it-pair] and [it-pipe], we can do this rather easily, given an existing [duplex iterable](#duplex).
 
 ```js
 const duplexPair = require('it-pair/duplex')
