@@ -19,6 +19,13 @@ const { codes } = require('./errors')
  * @property {Multiaddr} remoteAddr
  */
 
+/**
+ * @typedef CryptoResult
+ * @property {*} conn A duplex iterable
+ * @property {PeerId} remotePeer
+ * @property {string} protocol
+ */
+
 class Upgrader {
   /**
    * @param {object} options
@@ -255,7 +262,7 @@ class Upgrader {
    * @param {PeerId} localPeer The initiators PeerInfo
    * @param {*} connection
    * @param {Map<string, Crypto>} cryptos
-   * @returns {[connection, string]} An encrypted connection and the tag of the `Crypto` used
+   * @returns {CryptoResult} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
    */
   async _encryptInbound (localPeer, connection, cryptos) {
     const mss = new Multistream.Listener(connection)
@@ -266,13 +273,10 @@ class Upgrader {
       const { stream, protocol } = await mss.handle(protocols)
       const crypto = cryptos.get(protocol)
       log('encrypting inbound connection...')
-      const cryptoResponse = await crypto.secureInbound(localPeer, stream)
 
-      if (cryptoResponse) {
-        return {
-          ...cryptoResponse,
-          protocol
-        }
+      return {
+        ...await crypto.secureInbound(localPeer, stream),
+        protocol
       }
     } catch (err) {
       throw errCode(err, codes.ERR_ENCRYPTION_FAILED)
@@ -288,7 +292,7 @@ class Upgrader {
    * @param {*} connection
    * @param {PeerId} remotePeerId
    * @param {Map<string, Crypto>} cryptos
-   * @returns {[connection, string]} An encrypted connection and the tag of the `Crypto` used
+   * @returns {CryptoResult} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
    */
   async _encryptOutbound (localPeer, connection, remotePeerId, cryptos) {
     const mss = new Multistream.Dialer(connection)
@@ -299,10 +303,9 @@ class Upgrader {
       const { stream, protocol } = await mss.select(protocols)
       const crypto = cryptos.get(protocol)
       log('encrypting outbound connection to %j', remotePeerId)
-      const cryptoResponse = await crypto.secureOutbound(localPeer, stream, remotePeerId)
 
       return {
-        ...cryptoResponse,
+        ...await crypto.secureOutbound(localPeer, stream, remotePeerId),
         protocol
       }
     } catch (err) {

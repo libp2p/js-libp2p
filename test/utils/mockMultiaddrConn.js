@@ -11,7 +11,7 @@ const AbortController = require('abort-controller')
  * @param {PeerId} options.remotePeer The peer that is being "dialed"
  * @returns {{inbound:MultiaddrConnection, outbound:MultiaddrConnection}}
  */
-module.exports = function mockMultiaddrConn ({ addrs, remotePeer }) {
+module.exports = function mockMultiaddrConnPair ({ addrs, remotePeer }) {
   const controller = new AbortController()
 
   const [inbound, outbound] = duplexPair()

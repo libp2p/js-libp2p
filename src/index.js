@@ -67,7 +67,6 @@ class Libp2p extends EventEmitter {
     // Setup the Upgrader
     this.upgrader = new Upgrader({
       localPeer: this.peerInfo.id,
-      // TODO: Route incoming connections to a multiplex protocol router
       onConnection: (connection) => {
         const peerInfo = getPeerInfo(connection.remotePeer)
         this.emit('peer:connect', peerInfo)
@@ -228,7 +227,6 @@ class Libp2p extends EventEmitter {
   async stop () {
     this.state('stop')
 
-    // Start parallel tasks
     try {
       await this.transportManager.close()
     } catch (err) {

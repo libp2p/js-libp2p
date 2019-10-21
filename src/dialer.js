@@ -56,7 +56,6 @@ class Dialer {
     try {
       conn = await this.queue.add(() => this.transportManager.dial(addr, options))
     } catch (err) {
-      // TODO: Add the multiaddr to the deny list
       if (err.name === 'TimeoutError') {
         controller.abort()
         err.code = codes.ERR_TIMEOUT
@@ -74,14 +73,13 @@ class Dialer {
    * will be used.
    *
    * @async
-   * @param {PeerInfo} peerInfo The address to dial
+   * @param {PeerInfo} peerInfo The remote peer to dial
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] An AbortController signal
    * @returns {Promise<Connection>}
    */
   async connectToPeer (peerInfo, options = {}) {
     const addrs = peerInfo.multiaddrs.toArray()
-    // TODO: Allow for parallel dials to a peer
     for (const addr of addrs) {
       try {
         return await this.connectToMultiaddr(addr, options)

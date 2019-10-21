@@ -19,7 +19,7 @@ const Upgrader = require('../../src/upgrader')
 const { codes } = require('../../src/errors')
 
 const mockCrypto = require('../utils/mockCrypto')
-const mockMultiaddrConn = require('../utils/mockMultiaddrConn')
+const mockMultiaddrConnPair = require('../utils/mockMultiaddrConnPair')
 const Peers = require('../fixtures/peers')
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -57,7 +57,7 @@ describe('Upgrader', () => {
   })
 
   it('should ignore a missing remote peer id', async () => {
-    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
     const muxers = new Map([[Muxer.multicodec, Muxer]])
     sinon.stub(localUpgrader, 'muxers').value(muxers)
@@ -79,7 +79,7 @@ describe('Upgrader', () => {
   })
 
   it('should upgrade with valid muxers and crypto', async () => {
-    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
     const muxers = new Map([[Muxer.multicodec, Muxer]])
     sinon.stub(localUpgrader, 'muxers').value(muxers)
@@ -115,7 +115,7 @@ describe('Upgrader', () => {
   })
 
   it('should fail if crypto fails', async () => {
-    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
     const muxers = new Map([[Muxer.multicodec, Muxer]])
     sinon.stub(localUpgrader, 'muxers').value(muxers)
@@ -146,7 +146,7 @@ describe('Upgrader', () => {
   })
 
   it('should fail if muxers do not match', async () => {
-    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
     const muxersLocal = new Map([['/muxer-local', Muxer]])
     const muxersRemote = new Map([['/muxer-remote', Muxer]])
@@ -172,7 +172,7 @@ describe('Upgrader', () => {
   })
 
   it('should map getStreams and close methods', async () => {
-    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
     const muxers = new Map([[Muxer.multicodec, Muxer]])
     sinon.stub(localUpgrader, 'muxers').value(muxers)
@@ -206,7 +206,7 @@ describe('Upgrader', () => {
   })
 
   it('should call connection handlers', async () => {
-    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
     const muxers = new Map([[Muxer.multicodec, Muxer]])
     sinon.stub(localUpgrader, 'muxers').value(muxers)
@@ -240,7 +240,7 @@ describe('Upgrader', () => {
   })
 
   it('should fail to create a stream for an unsupported protocol', async () => {
-    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
     const muxers = new Map([[Muxer.multicodec, Muxer]])
     sinon.stub(localUpgrader, 'muxers').value(muxers)
@@ -345,7 +345,7 @@ describe('libp2p.upgrader', () => {
       cryptos: new Map([[mockCrypto.tag, mockCrypto]])
     })
 
-    const { inbound, outbound } = mockMultiaddrConn({ addrs, remotePeer: remotePeer.id })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: remotePeer.id })
 
     // Spy on emit for easy verification
     sinon.spy(libp2p, 'emit')
