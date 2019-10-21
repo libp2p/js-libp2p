@@ -7,7 +7,7 @@
 - [Iterable Streams](#iterable-streams)
   - [Table of Contents](#table-of-contents)
   - [Usage Guide](#usage-guide)
-    - [Wrapping Duplex Iterables](#wrapping-duplex-iterables)
+    - [Transforming Bidirectional Data](#transforming-bidirectional-data)
   - [Iterable Stream Types](#iterable-stream-types)
     - [Source](#source)
     - [Sink](#sink)
@@ -17,9 +17,9 @@
 
 ## Usage Guide
 
-### Wrapping Duplex Iterables
+### Transforming Bidirectional Data
 
-Sometimes you may need to wrap an existing duplex stream in order to perform incoming and outgoing [transforms](#transform) on data. This type of wrapping is commonly used in encryption streams. Using [it-pair][it-pair] and [it-pipe], we can do this rather easily, given an existing [duplex iterable](#duplex).
+Sometimes you may need to wrap an existing duplex stream in order to perform incoming and outgoing [transforms](#transform) on data. This type of wrapping is commonly used in stream encryption/decryption. Using [it-pair][it-pair] and [it-pipe][it-pipe], we can do this rather easily, given an existing [duplex iterable](#duplex).
 
 ```js
 const duplexPair = require('it-pair/duplex')
@@ -27,25 +27,24 @@ const pipe = require('it-pipe')
 
 // Wrapper is what we will write and read from
 // This gives us two duplex iterables that are internally connected
-const wrapper = duplexPair()
+const [internal, external] = duplexPair()
 
 // Now we can pipe our wrapper to the existing duplex iterable
 pipe(
-  wrapper[0], // Use one half of our pairs as the primary wrapper
+  external, // The external half of the pair interacts with the existing duplex
   outgoingTransform, // A transform iterable to send data through (ie: encrypting)
   existingDuplex, // The original duplex iterable we are wrapping
-  decrypt, // A transform iterable to read data through (ie: decrypting)
-  wrapper[0]
+  incomingTransform, // A transform iterable to read data through (ie: decrypting)
+  external
 )
 
 // We can now read and write from the other half of our pair
 pipe(
   ['some data'],
-  wrapper[1],
+  internal, // The internal half of the pair is what we will interact with to read/write data
   async (source) => {
     for await (const chunk of source) {
-      // Chunk will be a BufferList, we can slice it to get the underlying buffer
-      console.log('Data: %s', chunk.slice())
+      console.log('Data: %s', chunk.toString())
       // > Data: some data
     }
   }
