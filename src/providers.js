@@ -4,7 +4,7 @@ const cache = require('hashlru')
 const varint = require('varint')
 const PeerId = require('peer-id')
 const Key = require('interface-datastore').Key
-const Queue = require('p-queue')
+const { default: Queue } = require('p-queue')
 
 const c = require('./constants')
 const utils = require('./utils')
