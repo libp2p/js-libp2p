@@ -1,6 +1,6 @@
 'use strict'
 
-const Connection = require('interface-connection').Connection
+const { Connection } = require('libp2p-interfaces/src/connection')
 const pull = require('pull-stream/pull')
 
 /**
