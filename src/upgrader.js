@@ -74,70 +74,14 @@ class Upgrader {
 
     log('Successfully upgraded inbound connection')
 
-    // Create the muxer
-    const muxer = new Muxer({
-      // Run anytime a remote stream is opened
-      onStream: async muxedStream => {
-        const mss = new Multistream.Listener(muxedStream)
-        const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
-        log('inbound: incoming stream opened on %s', protocol)
-        connection.addStream(stream, protocol)
-        this._onStream({ stream, protocol })
-      },
-      // Run anytime a stream ends
-      onStreamEnd: muxedStream => {
-        connection.removeStream(muxedStream.id)
-      }
+    return this._createConnection({
+      cryptoProtocol,
+      direction: 'inbound',
+      maConn,
+      muxedConnection,
+      Muxer,
+      remotePeer
     })
-
-    // Called whenever a user requests a new stream
-    const newStream = async protocols => {
-      log('inbound: starting new stream on %s', protocols)
-      const muxedStream = muxer.newStream()
-      const mss = new Multistream.Dialer(muxedStream)
-      try {
-        const { stream, protocol } = await mss.select(protocols)
-        return { stream: { ...muxedStream, ...stream }, protocol }
-      } catch (err) {
-        log.error('could not create new stream for protocols %s', protocols, err)
-        throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
-      }
-    }
-
-    // Pipe all data through the muxer
-    pipe(muxedConnection, muxer, muxedConnection)
-
-    maConn.timeline.upgraded = Date.now()
-    const timelineProxy = new Proxy(maConn.timeline, {
-      set: (...args) => {
-        if (args[1] === 'close' && args[2]) {
-          this.onConnectionEnd(connection)
-        }
-
-        return Reflect.set(...args)
-      }
-    })
-
-    // Create the connection
-    const connection = new Connection({
-      localAddr: maConn.localAddr,
-      remoteAddr: maConn.remoteAddr,
-      localPeer: this.localPeer,
-      remotePeer,
-      stat: {
-        direction: 'inbound',
-        timeline: timelineProxy,
-        multiplexer: Muxer.multicodec,
-        encryption: cryptoProtocol
-      },
-      newStream,
-      getStreams: () => muxer.streams,
-      close: err => maConn.close(err)
-    })
-
-    this.onConnection(connection)
-
-    return connection
   }
 
   /**
@@ -178,13 +122,43 @@ class Upgrader {
 
     log('Successfully upgraded outbound connection')
 
+    return this._createConnection({
+      cryptoProtocol,
+      direction: 'outbound',
+      maConn,
+      muxedConnection,
+      Muxer,
+      remotePeer
+    })
+  }
+
+  /**
+   * A convenience method for generating a new `Connection`
+   * @private
+   * @param {object} options
+   * @param {string} cryptoProtocol The crypto protocol that was negotiated
+   * @param {string} direction One of ['inbound', 'outbound']
+   * @param {MultiaddrConnection} maConn The transport layer connection
+   * @param {*} muxedConnection A duplex connection returned from multiplexer selection
+   * @param {Muxer} Muxer The muxer to be used for muxing
+   * @param {PeerId} remotePeer The peer the connection is with
+   * @returns {Connection}
+   */
+  _createConnection ({
+    cryptoProtocol,
+    direction,
+    maConn,
+    muxedConnection,
+    Muxer,
+    remotePeer
+  }) {
     // Create the muxer
     const muxer = new Muxer({
       // Run anytime a remote stream is created
       onStream: async muxedStream => {
         const mss = new Multistream.Listener(muxedStream)
         const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
-        log('outbound: incoming stream opened on %s', protocol)
+        log('%s: incoming stream opened on %s', direction, protocol)
         connection.addStream(stream, protocol)
         this._onStream({ stream, protocol })
       },
@@ -195,7 +169,7 @@ class Upgrader {
     })
 
     const newStream = async protocols => {
-      log('outbound: starting new stream on %s', protocols)
+      log('%s: starting new stream on %s', direction, protocols)
       const muxedStream = muxer.newStream()
       const mss = new Multistream.Dialer(muxedStream)
       try {
@@ -228,7 +202,7 @@ class Upgrader {
       localPeer: this.localPeer,
       remotePeer: remotePeer,
       stat: {
-        direction: 'outbound',
+        direction,
         timeline: timelineProxy,
         multiplexer: Muxer.multicodec,
         encryption: cryptoProtocol
