@@ -19,7 +19,7 @@ const Upgrader = require('../../src/upgrader')
 const { codes } = require('../../src/errors')
 
 const mockCrypto = require('../utils/mockCrypto')
-const mockMultiaddrConnPair = require('../utils/mockMultiaddrConnPair')
+const mockMultiaddrConnPair = require('../utils/mockMultiaddrConn')
 const Peers = require('../fixtures/peers')
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
