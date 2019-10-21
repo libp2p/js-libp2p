@@ -13,14 +13,12 @@ class TransportManager {
    * @param {object} options
    * @param {Libp2p} options.libp2p The Libp2p instance. It will be passed to the transports.
    * @param {Upgrader} options.upgrader The upgrader to provide to the transports
-   * @param {function(Connection)} options.onConnection Called whenever an incoming connection is received
    */
-  constructor ({ libp2p, upgrader, onConnection }) {
+  constructor ({ libp2p, upgrader }) {
     this.libp2p = libp2p
     this.upgrader = upgrader
     this._transports = new Map()
     this._listeners = new Map()
-    this.onConnection = onConnection
   }
 
   /**
@@ -45,7 +43,9 @@ class TransportManager {
     })
 
     this._transports.set(key, transport)
-    this._listeners.set(key, [])
+    if (!this._listeners.has(key)) {
+      this._listeners.set(key, [])
+    }
   }
 
   /**
@@ -57,11 +57,13 @@ class TransportManager {
     for (const [key, listeners] of this._listeners) {
       log('closing listeners for %s', key)
       while (listeners.length) {
-        tasks.push(listeners.pop().close())
+        const listener = listeners.pop()
+        tasks.push(listener.close())
       }
     }
 
     await Promise.all(tasks)
+    log('all listeners closed')
     this._listeners.clear()
   }
 
@@ -76,8 +78,12 @@ class TransportManager {
     if (!transport) {
       throw errCode(new Error(`No transport available for address ${String(ma)}`), codes.ERR_TRANSPORT_UNAVAILABLE)
     }
-    const conn = await transport.dial(ma, options)
-    return conn
+
+    try {
+      return await transport.dial(ma, options)
+    } catch (err) {
+      throw errCode(new Error('Transport dial failed'), codes.ERR_TRANSPORT_DIAL_FAILED, err)
+    }
   }
 
   /**

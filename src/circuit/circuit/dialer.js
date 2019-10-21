@@ -6,7 +6,7 @@ const waterfall = require('async/waterfall')
 const setImmediate = require('async/setImmediate')
 const multiaddr = require('multiaddr')
 
-const Connection = require('interface-connection').Connection
+const { Connection } = require('libp2p-interfaces/src/connection')
 
 const utilsFactory = require('./utils')
 const StreamHandler = require('./stream-handler')
