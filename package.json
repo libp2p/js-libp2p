@@ -49,6 +49,8 @@
     "err-code": "^1.1.2",
     "fsm-event": "^2.1.0",
     "hashlru": "^2.3.0",
+    "it-handshake": "^1.0.0",
+    "it-length-prefixed": "jacobheun/pull-length-prefixed#feat/fromReader",
     "it-pipe": "^1.0.1",
     "latency-monitor": "~0.2.1",
     "libp2p-crypto": "^0.16.2",
