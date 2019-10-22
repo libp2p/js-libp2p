@@ -186,7 +186,7 @@ class Upgrader {
           const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
           log('%s: incoming stream opened on %s', direction, protocol)
           connection.addStream(stream, protocol)
-          this._onStream({ connection, stream, protocol })
+          this._onStream({ connection, stream, protocol, remotePeer })
         } catch (err) {
           log.error(err)
         }
@@ -254,9 +254,9 @@ class Upgrader {
    * @param {Stream} options.stream
    * @param {string} options.protocol
    */
-  _onStream ({ connection, stream, protocol }) {
+  _onStream ({ connection, stream, protocol, remotePeer }) {
     const handler = this.protocols.get(protocol)
-    handler({ connection, stream, protocol })
+    handler({ connection, stream, protocol, remotePeer })
   }
 
   /**
