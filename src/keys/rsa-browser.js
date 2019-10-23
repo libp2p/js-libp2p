@@ -129,8 +129,8 @@ RSA encryption/decryption for the browser with webcrypto workarround
 Explanation:
   - Convert JWK to PEM
   - Load PEM with nodeForge
-  - Convert msg buffer to nodeForge buffer: it's already uint8array, so do nothing
-  - Convert resulting nodeForge buffer to buffer: it returns a binary string, turn that into a uint8array
+  - Convert msg buffer to nodeForge buffer: ByteBuffer is a "binary-string backed buffer", so let's make our buffer a binary string
+  - Convert resulting nodeForge buffer to buffer: it returns a binary string, turn that into a uint8array(buffer)
 
 */
 
@@ -140,7 +140,8 @@ const jwkToPem = require('pem-jwk').jwk2pem
 function convertKey (key, pub, msg, handle) {
   const pem = jwkToPem(key)
   const fkey = pki[pub ? 'publicKeyFromPem' : 'privateKeyFromPem'](pem)
-  const fomsg = handle(Buffer.from(msg), fkey)
+  const fmsg = Buffer.from(msg).toString('binary')
+  const fomsg = handle(fmsg, fkey)
   return Buffer.from(fomsg, 'binary')
 }
 
