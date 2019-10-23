@@ -31,7 +31,7 @@ class RsaPublicKey {
     })
   }
 
-  async encrypt (bytes) {
+  encrypt (bytes) {
     return crypto.encrypt(this._key, bytes)
   }
 
@@ -68,7 +68,7 @@ class RsaPrivateKey {
     return new RsaPublicKey(this._publicKey)
   }
 
-  async decrypt (bytes) {
+  decrypt (bytes) {
     return crypto.decrypt(this._key, bytes)
   }
 
