@@ -121,8 +121,33 @@ function derivePublicFromPrivate (jwKey) {
   )
 }
 
+// bloody dark magic. webcrypto's why.
+
+/*
+
+Explanation:
+  - Convert JWK to PEM
+  - Load PEM with nodeForge
+  - Convert msg buffer to nodeForge buffer
+  - Convert resulting nodeForge buffer to buffer
+
+*/
+
+const forge = require('node-forge')
+const pki = forge.pki
+const jwkToPem = require('pem-jwk').jwk2pem
+function convertKey (key, pub, msg, handle) {
+  const pem = jwkToPem(key)
+  const fkey = pki[pub ? 'publicKeyFromPem' : 'privateKeyFromPem'](pem)
+  const fmsg = forge.util.hexToBytes(Buffer.from(msg).toString('hex'))
+  const fomsg = handle(fmsg, fkey)
+  return Buffer.from(forge.util.bytesToHex(fomsg), 'hex')
+}
+
 exports.encrypt = async function (key, msg) {
-  key = Object.assign({}, key)
+  return convertKey(key, true, msg, (msg, key) => key.encrypt(msg))
+
+  /* key = Object.assign({}, key)
   key.key_ops = ['encrypt']
 
   return webcrypto.subtle.importKey(
@@ -140,11 +165,13 @@ exports.encrypt = async function (key, msg) {
       publicKey,
       Uint8Array.from(msg)
     )
-  }).then((enc) => Buffer.from(enc))
+  }).then((enc) => Buffer.from(enc)) */
 }
 
 exports.decrypt = async function (key, msg) {
-  key = Object.assign({}, key)
+  return convertKey(key, false, msg, (msg, key) => key.decrypt(msg))
+
+  /* key = Object.assign({}, key)
   key.key_ops = ['decrypt']
 
   return webcrypto.subtle.importKey(
@@ -162,5 +189,5 @@ exports.decrypt = async function (key, msg) {
       privateKey,
       Uint8Array.from(msg)
     )
-  }).then((dec) => Buffer.from(dec))
+  }).then((dec) => Buffer.from(dec)) */
 }
