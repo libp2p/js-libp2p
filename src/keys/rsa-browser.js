@@ -121,9 +121,10 @@ function derivePublicFromPrivate (jwKey) {
   )
 }
 
-// bloody dark magic. webcrypto's why.
-
 /*
+
+RSA encryption/decryption for the browser with webcrypto workarround
+"bloody dark magic. webcrypto's why."
 
 Explanation:
   - Convert JWK to PEM
@@ -144,50 +145,10 @@ function convertKey (key, pub, msg, handle) {
   return Buffer.from(forge.util.bytesToHex(fomsg), 'hex')
 }
 
-exports.encrypt = async function (key, msg) {
+exports.encrypt = function (key, msg) {
   return convertKey(key, true, msg, (msg, key) => key.encrypt(msg))
-
-  /* key = Object.assign({}, key)
-  key.key_ops = ['encrypt']
-
-  return webcrypto.subtle.importKey(
-    'jwk',
-    key,
-    {
-      name: 'RSA-OAEP',
-      hash: { name: 'SHA-256' }
-    },
-    false,
-    ['encrypt']
-  ).then((publicKey) => {
-    return webcrypto.subtle.encrypt(
-      { name: 'RSA-OEAP' },
-      publicKey,
-      Uint8Array.from(msg)
-    )
-  }).then((enc) => Buffer.from(enc)) */
 }
 
-exports.decrypt = async function (key, msg) {
+exports.decrypt = function (key, msg) {
   return convertKey(key, false, msg, (msg, key) => key.decrypt(msg))
-
-  /* key = Object.assign({}, key)
-  key.key_ops = ['decrypt']
-
-  return webcrypto.subtle.importKey(
-    'jwk',
-    key,
-    {
-      name: 'RSA-OAEP',
-      hash: { name: 'SHA-256' }
-    },
-    false,
-    ['decrypt']
-  ).then((privateKey) => {
-    return webcrypto.subtle.decrypt(
-      { name: 'RSA-OAEP' },
-      privateKey,
-      Uint8Array.from(msg)
-    )
-  }).then((dec) => Buffer.from(dec)) */
 }
