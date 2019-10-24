@@ -59,7 +59,7 @@ We've come a long way, but this project is still in Alpha, lots of development i
 
 ## Background
 
-libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to made custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.
+libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to make custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.
 
 We are in the process of writing better documentation, blog posts, tutorials and a formal specification. Today you can find:
 
@@ -101,7 +101,7 @@ You can find multiple examples on the [examples folder](/examples) that will gui
 
 ### Creating your own libp2p bundle
 
-The libp2p module acts as a glue for every libp2p module that you can use to create your own libp2p bundle. Creating your own libp2p bundle gives you a lot of freedom when it comes to customize it with features and default setup. We recommend creating your own libp2p bundle for the app you are developing that takes in account your needs (e.g. for a browser working version of libp2p that acts as the network layer of IPFS, we have a built one that leverages the Browser transports).
+The libp2p module acts as a glue for every libp2p module that you can use to create your own libp2p bundle. Creating your own libp2p bundle gives you a lot of freedom when it comes to customize it with features and default setup. We recommend creating your own libp2p bundle for the app you are developing that takes into account your needs (e.g. for a browser working version of libp2p that acts as the network layer of IPFS, we have built one that leverages the Browser transports).
 
 **Example:**
 
@@ -432,7 +432,7 @@ Returns an object containing the following keys:
 - dataSent
 - dataReceived
 
-Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` milliseconds).
 
 Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
 
@@ -456,7 +456,7 @@ Returns an object containing the following keys:
  dataSent
  dataReceived
 
-Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` milliseconds).
 
 Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
 
@@ -481,7 +481,7 @@ Returns an object containing the following keys:
 - dataSent
 - dataReceived
 
-Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` milliseconds).
 
 Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
 
@@ -506,13 +506,13 @@ Returns an object containing the following keys:
 - dataSent
 - dataReceived
 
-Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` miliseconds).
+Each one of them contains an object that has a key for each interval (`60000`, `300000` and `900000` milliseconds).
 
 Each one of these values is [an exponential moving-average instance](https://github.com/pgte/moving-average#readme).
 
 #### Stats update interval
 
-Stats are not updated in real-time. Instead, measurements are buffered and stats are updated at an interval. The maximum interval can be defined through the `Switch` constructor option `stats.computeThrottleTimeout`, defined in miliseconds.
+Stats are not updated in real-time. Instead, measurements are buffered and stats are updated at an interval. The maximum interval can be defined through the `Switch` constructor option `stats.computeThrottleTimeout`, defined in milliseconds.
 
 ### Private Networks
 
