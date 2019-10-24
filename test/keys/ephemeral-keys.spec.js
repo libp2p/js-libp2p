@@ -61,7 +61,7 @@ describe('generateEphemeralKeyPair', () => {
     })
   })
 
-  it(`handles bad curve name`, async () => {
+  it('handles bad curve name', async () => {
     try {
       await crypto.keys.generateEphemeralKeyPair('bad name')
     } catch (err) {

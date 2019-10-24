@@ -25,7 +25,7 @@ const ErrMissingSecp256K1 = {
 }
 
 function typeToKey (type) {
-  let key = supportedKeys[type.toLowerCase()]
+  const key = supportedKeys[type.toLowerCase()]
   if (!key) {
     const supported = Object.keys(supportedKeys).join(' / ')
     throw errcode(new Error(`invalid or unsupported key type ${type}. Must be ${supported}`), 'ERR_UNSUPPORTED_KEY_TYPE')

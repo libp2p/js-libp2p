@@ -24,7 +24,7 @@ describe('Util', () => {
   })
 
   it('toBase64 zero padding', (done) => {
-    let bnpad = new BN('ff', 16)
+    const bnpad = new BN('ff', 16)
     expect(util.toBase64(bnpad, 2)).to.eql('AP8')
     done()
   })

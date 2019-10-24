@@ -14,7 +14,7 @@ function doTests (fncName, fnc, num, skipBuffersAndStrings) {
       // skip this garbage because it's a buffer or a string and we were told do do that
       return
     }
-    let args = []
+    const args = []
     for (let i = 0; i < num; i++) {
       args.push(garbage)
     }

@@ -29,7 +29,7 @@ module.exports = async (cipherType, hash, secret) => {
   }
 
   if (!hash) {
-    throw errcode(new Error(`missing hash type`), 'ERR_MISSING_HASH_TYPE')
+    throw errcode(new Error('missing hash type'), 'ERR_MISSING_HASH_TYPE')
   }
 
   const cipherKeySize = cipher.keySize
@@ -41,7 +41,7 @@ module.exports = async (cipherType, hash, secret) => {
   const m = await hmac.create(hash, secret)
   let a = await m.digest(seed)
 
-  let result = []
+  const result = []
   let j = 0
 
   while (j < resultLength) {
