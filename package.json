@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
@@ -74,6 +74,7 @@
   "homepage": "https://github.com/libp2p/js-libp2p-crypto",
   "contributors": [
     "Alan Shaw <alan.shaw@protocol.ai>",
+    "Alan Shaw <alan@tableflip.io>",
     "Alberto Elias <hi@albertoelias.me>",
     "Arve Knudsen <arve.knudsen@gmail.com>",
     "David Dias <daviddias.p@gmail.com>",
