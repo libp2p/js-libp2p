@@ -19,7 +19,7 @@ function convert (key, types) {
 }
 
 function jwk2priv (key) {
-  return forge.pki.setRsaPrivatKey(...convert(key, ['n', 'e', 'd', 'p', 'q', 'dP', 'dQ', 'qInv']))
+  return forge.pki.setRsaPrivateKey(...convert(key, ['n', 'e', 'd', 'p', 'q', 'dp', 'dq', 'qi']))
 }
 
 function jwk2privPem (key) {
