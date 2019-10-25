@@ -1,3 +1,25 @@
+<a name="0.17.1"></a>
+## [0.17.1](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.0...v0.17.1) (2019-10-25)
+
+
+### Bug Fixes
+
+* better error for missing web crypto ([a5e0560](https://github.com/libp2p/js-libp2p-crypto/commit/a5e0560))
+* browser rsa enc/dec ([b8e2414](https://github.com/libp2p/js-libp2p-crypto/commit/b8e2414))
+* jwk var naming ([8b8d0c1](https://github.com/libp2p/js-libp2p-crypto/commit/8b8d0c1))
+* lint ([2c294b5](https://github.com/libp2p/js-libp2p-crypto/commit/2c294b5))
+* padding error ([2c1bac5](https://github.com/libp2p/js-libp2p-crypto/commit/2c1bac5))
+* use direct buffers instead of converting to hex ([027a5a9](https://github.com/libp2p/js-libp2p-crypto/commit/027a5a9))
+
+
+### Features
+
+* add (rsa)pubKey.encrypt and (rsa)privKey.decrypt ([34c5f5c](https://github.com/libp2p/js-libp2p-crypto/commit/34c5f5c))
+* browser enc/dec ([9f747a1](https://github.com/libp2p/js-libp2p-crypto/commit/9f747a1))
+* use forge to convert jwk2forge ([b998f63](https://github.com/libp2p/js-libp2p-crypto/commit/b998f63))
+
+
+
 <a name="0.17.0"></a>
 # [0.17.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.16.1...v0.17.0) (2019-07-11)
 
