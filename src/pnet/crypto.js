@@ -34,7 +34,7 @@ module.exports.createBoxStream = (nonce, psk) => {
  */
 module.exports.createUnboxStream = (nonce, psk) => {
   return (source) => (async function * () {
-    let xor = xsalsa20(nonce, psk)
+    const xor = xsalsa20(nonce, psk)
     log.trace('Decryption enabled')
 
     for await (const chunk of source) {

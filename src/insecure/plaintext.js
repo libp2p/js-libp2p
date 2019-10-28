@@ -12,8 +12,7 @@ const { UnexpectedPeerError, InvalidCryptoExchangeError } = require('libp2p-inte
 
 const {
   Exchange,
-  KeyType,
-  PublicKey
+  KeyType
 } = protobuf(`
 message Exchange {
   optional bytes id = 1;
@@ -21,15 +20,15 @@ message Exchange {
 }
 
 enum KeyType {
-	RSA = 0;
-	Ed25519 = 1;
-	Secp256k1 = 2;
-	ECDSA = 3;
+  RSA = 0;
+  Ed25519 = 1;
+  Secp256k1 = 2;
+  ECDSA = 3;
 }
 
 message PublicKey {
-	required KeyType Type = 1;
-	required bytes Data = 2;
+  required KeyType Type = 1;
+  required bytes Data = 2;
 }
 `)
 
@@ -80,10 +79,10 @@ async function encrypt (localId, conn, remoteId) {
 
 module.exports = {
   protocol,
-  secureInbound: async (localId, conn, remoteId) => {
+  secureInbound: (localId, conn, remoteId) => {
     return encrypt(localId, conn, remoteId)
   },
-  secureOutbound: async (localId, conn, remoteId) =>  {
+  secureOutbound: (localId, conn, remoteId) => {
     return encrypt(localId, conn, remoteId)
   }
 }

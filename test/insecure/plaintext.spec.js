@@ -33,7 +33,7 @@ describe('plaintext', () => {
     sinon.restore()
   })
 
-  it('should verify the public key and id match', async () => {
+  it('should verify the public key and id match', () => {
     const [localConn, remoteConn] = duplexPair()
 
     // When we attempt to get the remote peer key, return the wrong peers pub key
@@ -50,7 +50,7 @@ describe('plaintext', () => {
     })
   })
 
-  it('should fail if the peer does not provide its public key', async () => {
+  it('should fail if the peer does not provide its public key', () => {
     const [localConn, remoteConn] = duplexPair()
 
     // When we attempt to get the remote peer key, return the wrong peers pub key
