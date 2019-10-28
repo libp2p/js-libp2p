@@ -60,7 +60,7 @@ module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator' }) => {
     // Close immediately for reading and writing (remote error)
     reset: () => resetController.abort(),
     sink: async source => {
-      source = abortable.multi(source, [
+      source = abortable(source, [
         { signal: abortController.signal, options: { abortMessage: 'stream aborted', abortCode: 'ERR_MPLEX_STREAM_ABORT' } },
         { signal: resetController.signal, options: { abortMessage: 'stream reset', abortCode: 'ERR_MPLEX_STREAM_RESET' } }
       ])

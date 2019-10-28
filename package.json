@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "abort-controller": "^3.0.0",
-    "abortable-iterator": "^2.1.0",
+    "abortable-iterator": "^3.0.0",
     "bl": "^4.0.0",
     "debug": "^4.1.1",
     "it-pipe": "^1.0.1",
