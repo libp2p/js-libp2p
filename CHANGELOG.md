@@ -1,3 +1,8 @@
+<a name="0.9.2"></a>
+## [0.9.2](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.1...v0.9.2) (2019-10-28)
+
+
+
 <a name="0.9.1"></a>
 ## [0.9.1](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.0...v0.9.1) (2019-09-23)
 
