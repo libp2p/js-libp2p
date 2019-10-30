@@ -241,7 +241,7 @@ class Upgrader {
   async _encryptInbound (localPeer, connection, cryptos) {
     const mss = new Multistream.Listener(connection)
     const protocols = Array.from(cryptos.keys())
-    log('selecting inbound crypto protocol', protocols)
+    log('handling inbound crypto protocol selection', protocols)
 
     try {
       const { stream, protocol } = await mss.handle(protocols)

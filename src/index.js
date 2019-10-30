@@ -90,7 +90,7 @@ class Libp2p extends EventEmitter {
     if (this._modules.connEncryption) {
       const cryptos = this._modules.connEncryption
       cryptos.forEach((crypto) => {
-        this.upgrader.cryptos.set(crypto.tag, crypto)
+        this.upgrader.cryptos.set(crypto.protocol, crypto)
       })
     }
 

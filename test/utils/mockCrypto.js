@@ -4,7 +4,7 @@ const PeerId = require('peer-id')
 const Peers = require('../fixtures/peers')
 
 module.exports = {
-  tag: '/insecure',
+  protocol: '/insecure',
   secureInbound: (localPeer, stream) => {
     return {
       conn: stream,
