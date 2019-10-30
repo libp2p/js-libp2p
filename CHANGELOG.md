@@ -1,3 +1,14 @@
+<a name="0.13.1"></a>
+## [0.13.1](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.0...v0.13.1) (2019-10-30)
+
+
+### Bug Fixes
+
+* catch inbound upgrade errors ([#96](https://github.com/libp2p/js-libp2p-websockets/issues/96)) ([5b59fc3](https://github.com/libp2p/js-libp2p-websockets/commit/5b59fc3))
+* support bufferlist usage ([#97](https://github.com/libp2p/js-libp2p-websockets/issues/97)) ([3bf66d0](https://github.com/libp2p/js-libp2p-websockets/commit/3bf66d0))
+
+
+
 <a name="0.13.0"></a>
 # [0.13.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.12.3...v0.13.0) (2019-09-30)
 
