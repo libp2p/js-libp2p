@@ -4,8 +4,9 @@ const EventEmitter = require('events')
 const os = require('os')
 const multiaddr = require('multiaddr')
 const { createServer } = require('it-ws')
-
-const log = require('debug')('libp2p:websockets:listener')
+const debug = require('debug')
+const log = debug('libp2p:websockets:listener')
+log.error = debug('libp2p:websockets:listener:error')
 
 const toConnection = require('./socket-to-conn')
 
@@ -17,7 +18,14 @@ module.exports = ({ handler, upgrader }, options = {}) => {
 
     log('new inbound connection %s', maConn.remoteAddr)
 
-    const conn = await upgrader.upgradeInbound(maConn)
+    let conn
+    try {
+      conn = await upgrader.upgradeInbound(maConn)
+    } catch (err) {
+      log.error('inbound connection failed to upgrade', err)
+      return maConn.close()
+    }
+
     log('inbound connection %s upgraded', maConn.remoteAddr)
 
     trackConn(server, maConn)
