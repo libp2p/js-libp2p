@@ -13,12 +13,12 @@ const pipe = require('it-pipe')
 const { collect } = require('streaming-iterables')
 const pSettle = require('p-settle')
 const Transport = require('libp2p-websockets')
+const Crypto = require('../../src/insecure/plaintext')
 
 const Libp2p = require('../../src')
 const Upgrader = require('../../src/upgrader')
 const { codes } = require('../../src/errors')
 
-const mockCrypto = require('../utils/mockCrypto')
 const mockMultiaddrConnPair = require('../utils/mockMultiaddrConn')
 const Peers = require('../fixtures/peers')
 const addrs = [
@@ -63,7 +63,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxers)
     sinon.stub(remoteUpgrader, 'muxers').value(muxers)
 
-    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
+    const cryptos = new Map([[Crypto.protocol, Crypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -85,7 +85,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxers)
     sinon.stub(remoteUpgrader, 'muxers').value(muxers)
 
-    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
+    const cryptos = new Map([[Crypto.protocol, Crypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -153,7 +153,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxersLocal)
     sinon.stub(remoteUpgrader, 'muxers').value(muxersRemote)
 
-    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
+    const cryptos = new Map([[Crypto.protocol, Crypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -178,7 +178,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxers)
     sinon.stub(remoteUpgrader, 'muxers').value(muxers)
 
-    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
+    const cryptos = new Map([[Crypto.protocol, Crypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -212,7 +212,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxers)
     sinon.stub(remoteUpgrader, 'muxers').value(muxers)
 
-    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
+    const cryptos = new Map([[Crypto.protocol, Crypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -246,7 +246,7 @@ describe('Upgrader', () => {
     sinon.stub(localUpgrader, 'muxers').value(muxers)
     sinon.stub(remoteUpgrader, 'muxers').value(muxers)
 
-    const cryptos = new Map([[mockCrypto.tag, mockCrypto]])
+    const cryptos = new Map([[Crypto.protocol, Crypto]])
     sinon.stub(localUpgrader, 'cryptos').value(cryptos)
     sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
 
@@ -293,13 +293,13 @@ describe('libp2p.upgrader', () => {
       modules: {
         transport: [Transport],
         streamMuxer: [Muxer],
-        connEncryption: [mockCrypto]
+        connEncryption: [Crypto]
       }
     })
 
     expect(libp2p.upgrader).to.exist()
     expect(libp2p.upgrader.muxers).to.eql(new Map([[Muxer.multicodec, Muxer]]))
-    expect(libp2p.upgrader.cryptos).to.eql(new Map([[mockCrypto.tag, mockCrypto]]))
+    expect(libp2p.upgrader.cryptos).to.eql(new Map([[Crypto.protocol, Crypto]]))
     // Ensure the transport manager also has the upgrader
     expect(libp2p.upgrader).to.equal(libp2p.transportManager.upgrader)
   })
@@ -310,7 +310,7 @@ describe('libp2p.upgrader', () => {
       modules: {
         transport: [Transport],
         streamMuxer: [Muxer],
-        connEncryption: [mockCrypto]
+        connEncryption: [Crypto]
       }
     })
 
@@ -335,14 +335,14 @@ describe('libp2p.upgrader', () => {
       modules: {
         transport: [Transport],
         streamMuxer: [Muxer],
-        connEncryption: [mockCrypto]
+        connEncryption: [Crypto]
       }
     })
 
     const remoteUpgrader = new Upgrader({
       localPeer: remotePeer.id,
       muxers: new Map([[Muxer.multicodec, Muxer]]),
-      cryptos: new Map([[mockCrypto.tag, mockCrypto]])
+      cryptos: new Map([[Crypto.protocol, Crypto]])
     })
 
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: remotePeer.id })

@@ -7,6 +7,7 @@ const { expect } = chai
 const sinon = require('sinon')
 const Transport = require('libp2p-tcp')
 const Muxer = require('libp2p-mplex')
+const Crypto = require('../../src/insecure/plaintext')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
@@ -20,7 +21,6 @@ const TransportManager = require('../../src/transport-manager')
 const { codes: ErrorCodes } = require('../../src/errors')
 
 const mockUpgrader = require('../utils/mockUpgrader')
-const mockCrypto = require('../utils/mockCrypto')
 const Peers = require('../fixtures/peers')
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -194,7 +194,7 @@ describe('libp2p.dialer', () => {
       modules: {
         transport: [Transport],
         streamMuxer: [Muxer],
-        connEncryption: [mockCrypto]
+        connEncryption: [Crypto]
       }
     })
     remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
@@ -219,7 +219,7 @@ describe('libp2p.dialer', () => {
       modules: {
         transport: [Transport],
         streamMuxer: [Muxer],
-        connEncryption: [mockCrypto]
+        connEncryption: [Crypto]
       }
     })
 

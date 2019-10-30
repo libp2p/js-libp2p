@@ -229,6 +229,7 @@ class Libp2p extends EventEmitter {
 
     try {
       await this.transportManager.close()
+      await this._switch.stop()
     } catch (err) {
       if (err) {
         log.error(err)
