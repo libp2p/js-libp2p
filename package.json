@@ -54,7 +54,7 @@
     "it-pipe": "^1.0.1",
     "latency-monitor": "~0.2.1",
     "libp2p-crypto": "^0.16.2",
-    "libp2p-interfaces": "^0.1.2",
+    "libp2p-interfaces": "^0.1.3",
     "mafmt": "^7.0.0",
     "merge-options": "^1.0.1",
     "moving-average": "^1.0.0",

@@ -171,66 +171,66 @@ describe('Dialing (direct, TCP)', () => {
     expect(dialer.queue.pending).to.equal(0)
     expect(dialer.queue.size).to.equal(0)
   })
-})
 
-describe('libp2p.dialer', () => {
-  let peerInfo
-  let remotePeerInfo
-  let libp2p
-  let remoteLibp2p
-  let remoteAddr
+  describe('libp2p.dialer', () => {
+    let peerInfo
+    let remotePeerInfo
+    let libp2p
+    let remoteLibp2p
+    let remoteAddr
 
-  before(async () => {
-    const [peerId, remotePeerId] = await Promise.all([
-      PeerId.createFromJSON(Peers[0]),
-      PeerId.createFromJSON(Peers[1])
-    ])
+    before(async () => {
+      const [peerId, remotePeerId] = await Promise.all([
+        PeerId.createFromJSON(Peers[0]),
+        PeerId.createFromJSON(Peers[1])
+      ])
 
-    peerInfo = new PeerInfo(peerId)
-    remotePeerInfo = new PeerInfo(remotePeerId)
+      peerInfo = new PeerInfo(peerId)
+      remotePeerInfo = new PeerInfo(remotePeerId)
 
-    remoteLibp2p = new Libp2p({
-      peerInfo: remotePeerInfo,
-      modules: {
-        transport: [Transport],
-        streamMuxer: [Muxer],
-        connEncryption: [Crypto]
-      }
-    })
-    remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
+      remoteLibp2p = new Libp2p({
+        peerInfo: remotePeerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+      remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
 
-    await remoteLibp2p.transportManager.listen([listenAddr])
-    remoteAddr = remoteLibp2p.transportManager.getAddrs()[0]
-  })
-
-  afterEach(async () => {
-    sinon.restore()
-    libp2p && await libp2p.stop()
-    libp2p = null
-  })
-
-  after(async () => {
-    await remoteLibp2p.stop()
-  })
-
-  it('should use the dialer for connecting', async () => {
-    libp2p = new Libp2p({
-      peerInfo,
-      modules: {
-        transport: [Transport],
-        streamMuxer: [Muxer],
-        connEncryption: [Crypto]
-      }
+      await remoteLibp2p.transportManager.listen([listenAddr])
+      remoteAddr = remoteLibp2p.transportManager.getAddrs()[0]
     })
 
-    sinon.spy(libp2p.dialer, 'connectToMultiaddr')
+    afterEach(async () => {
+      sinon.restore()
+      libp2p && await libp2p.stop()
+      libp2p = null
+    })
 
-    const connection = await libp2p.dial(remoteAddr)
-    expect(connection).to.exist()
-    const { stream, protocol } = await connection.newStream('/echo/1.0.0')
-    expect(stream).to.exist()
-    expect(protocol).to.equal('/echo/1.0.0')
-    await connection.close()
-    expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
+    after(async () => {
+      await remoteLibp2p.stop()
+    })
+
+    it('should use the dialer for connecting', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      sinon.spy(libp2p.dialer, 'connectToMultiaddr')
+
+      const connection = await libp2p.dial(remoteAddr)
+      expect(connection).to.exist()
+      const { stream, protocol } = await connection.newStream('/echo/1.0.0')
+      expect(stream).to.exist()
+      expect(protocol).to.equal('/echo/1.0.0')
+      await connection.close()
+      expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
+    })
   })
 })
