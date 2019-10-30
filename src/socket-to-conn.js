@@ -20,7 +20,12 @@ module.exports = (socket, options = {}) => {
       }
 
       try {
-        await socket.sink(source)
+        await socket.sink((async function * () {
+          for await (const chunk of source) {
+            // Convert BufferList to Buffer
+            yield Buffer.isBuffer(chunk) ? chunk : chunk.slice()
+          }
+        })())
       } catch (err) {
         if (err.type !== 'aborted') {
           log.error(err)

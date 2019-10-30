@@ -13,6 +13,7 @@ const multiaddr = require('multiaddr')
 const goodbye = require('it-goodbye')
 const { collect } = require('streaming-iterables')
 const pipe = require('it-pipe')
+const BufferList = require('bl/BufferList')
 
 const WS = require('../src')
 
@@ -295,6 +296,15 @@ describe('dial', () => {
     it('dial', async () => {
       const conn = await ws.dial(ma)
       const s = goodbye({ source: ['hey'], sink: collect })
+
+      const result = await pipe(s, conn, s)
+
+      expect(result).to.be.eql([Buffer.from('hey')])
+    })
+
+    it('dial and use BufferList', async () => {
+      const conn = await ws.dial(ma)
+      const s = goodbye({ source: [new BufferList('hey')], sink: collect })
 
       const result = await pipe(s, conn, s)
 

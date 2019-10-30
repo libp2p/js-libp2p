@@ -52,6 +52,7 @@
   "devDependencies": {
     "abort-controller": "^3.0.0",
     "aegir": "^20.3.1",
+    "bl": "^4.0.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
     "interface-transport": "^0.7.0",
