@@ -10,7 +10,7 @@ const {
   createUnboxStream,
   decodeV1PSK
 } = require('./crypto')
-const { toWriter } = require('../util')
+const handshake = require('it-handshake')
 const NONCE_LENGTH = require('./key-generator').NONCE_LENGTH
 const debug = require('debug')
 const log = debug('libp2p:pnet')
@@ -46,12 +46,12 @@ class Protector {
     log('protecting the connection')
     const localNonce = crypto.randomBytes(NONCE_LENGTH)
 
-    const { writer, sink, source } = toWriter(connection)
-    writer.push(localNonce)
+    const shake = handshake(connection)
+    shake.write(localNonce)
 
-    const result = await source.next()
+    const result = await shake.reader.next(NONCE_LENGTH)
     const remoteNonce = result.value.slice()
-    writer.end()
+    shake.rest()
 
     // Create the boxing/unboxing pipe
     log('exchanged nonces')
@@ -60,7 +60,7 @@ class Protector {
       external,
       // Encrypt all outbound traffic
       createBoxStream(localNonce, this.psk),
-      { sink, source: connection.source },
+      shake.stream,
       // Decrypt all inbound traffic
       createUnboxStream(remoteNonce, this.psk),
       external

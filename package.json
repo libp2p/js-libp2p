@@ -52,7 +52,6 @@
     "it-handshake": "^1.0.1",
     "it-length-prefixed": "jacobheun/pull-length-prefixed#feat/fromReader",
     "it-pipe": "^1.0.1",
-    "it-pushable": "^1.4.0",
     "latency-monitor": "~0.2.1",
     "libp2p-crypto": "^0.16.2",
     "libp2p-interfaces": "^0.1.3",
