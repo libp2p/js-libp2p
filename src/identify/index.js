@@ -1,13 +1,10 @@
 'use strict'
 
 const debug = require('debug')
-const pull = require('pull-stream/pull')
-const Pushable = require('pull-pushable')
-const pb = require('pull-protocol-buffers')
-const take = pull.take
-const collect = pull.collect
-const values = require('pull-stream/sources/values')
-const lp = require('pull-length-prefixed')
+const pb = require('it-protocol-buffers')
+const lp = require('it-length-prefixed')
+const pipe = require('it-pipe')
+const { collect, take } = require('streaming-iterables')
 
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
@@ -84,17 +81,18 @@ class IdentifyService {
   /**
    * @constructor
    * @param {object} options
-   * @param {Switch} options.switch
+   * @param {Dialer} options.registrar
+   * @param {PeerInfo} options.peerInfo The peer running the identify service
    */
   constructor (options) {
     /**
-     * @property {Switch}
+     * @property {Registrar}
      */
-    this.switch = options.switch
+    this.registrar = options.registrar
     /**
      * @property {PeerInfo}
      */
-    this.peerInfo = this.switch._peerInfo
+    this.peerInfo = options.peerInfo
 
     this.handleMessage = this.handleMessage.bind(this)
   }
@@ -102,52 +100,35 @@ class IdentifyService {
   /**
    * Send an Identify Push update to the list of peers
    * @param {Array<PeerInfo>} peers
-   * @param {function(Error)} callback
+   * @returns Promise<void>
    */
-  push (peers, callback) {
-    const promises = peers.map(peer => {
+  push (peers) {
+    const pushes = peers.map(async peerInfo => {
       // Don't push to peers who dont support it
-      if (!peer.protocols.has(MULTICODEC_IDENTIFY_PUSH)) {
-        return Promise.resolve()
+      if (!peerInfo.protocols.has(MULTICODEC_IDENTIFY_PUSH)) {
+        return
       }
 
-      return new Promise(resolve => {
-        this.switch.dialer.newStream(peer, MULTICODEC_IDENTIFY_PUSH, (err, stream) => {
-          if (err) {
-            // Just log errors creating new streams
-            log.error('could not create a stream to the peer', err)
-            return resolve()
-          }
+      const connection = this.registrar.getPeerConnection(peerInfo)
+      try {
+        const stream = await connection.newStream(MULTICODEC_IDENTIFY_PUSH)
 
-          const pusher = {
-            source: Pushable(),
-            sink: pull.onEnd((err) => {
-              if (err) log.error('could not push identify update to peer', err)
-              resolve()
-            })
-          }
-
-          pull(
-            stream,
-            pusher,
-            pb.encode(Message),
-            stream
-          )
-
-          // TODO: send only the things that changed
-          // We should keep a record of the previous state we sent, so we know what changed
-          pusher.source.push({
+        await pipe(
+          [{
             listenAddrs: this.peerInfo.multiaddrs.toArray().map((ma) => ma.buffer),
             protocols: Array.from(this.peerInfo.protocols)
-          })
-          pusher.source.end()
-        })
-      })
+          }],
+          pb.encode(Message),
+          stream
+        )
+      } catch (err) {
+        // Just log errors
+        log.error('could not push identify update to peer', err)
+        return
+      }
     })
 
-    Promise.all(promises)
-      .then(() => callback())
-      .catch(callback)
+    return Promise.all(pushes)
   }
 
   /**
@@ -157,74 +138,69 @@ class IdentifyService {
    *
    * @param {Connection} connection
    * @param {PeerInfo} expectedPeerInfo The PeerInfo the identify response should match
-   * @param {function(Error, PeerInfo, Multiaddr)} callback
    * @returns {void}
    */
-  identify (connection, expectedPeerInfo, callback) {
-    pull(
-      connection,
+  async identify (connection, expectedPeerInfo) {
+    const stream = await connection.newStream(MULTICODEC_IDENTIFY)
+    const data = await pipe(
+      stream,
       lp.decode(),
       take(1),
-      collect((err, data) => {
-        if (err) {
-          return callback(err)
-        }
-
-        // connection got closed graciously
-        if (data.length === 0) {
-          return callback(ERR_CONNECTION_ENDED())
-        }
-
-        let message
-        try {
-          message = Message.decode(data[0])
-        } catch (err) {
-          return callback(ERR_INVALID_MESSAGE(err))
-        }
-
-        let {
-          publicKey,
-          listenAddrs,
-          protocols,
-          observedAddr
-        } = message
-
-        PeerId.createFromPubKey(publicKey, (err, id) => {
-          if (err) {
-            return callback(err)
-          }
-
-          const peerInfo = new PeerInfo(id)
-          if (expectedPeerInfo && expectedPeerInfo.id.toB58String() !== id.toB58String()) {
-            return callback(ERR_INVALID_PEER())
-          }
-
-          // Get the observedAddr if there is one
-          observedAddr = IdentifyService.getCleanMultiaddr(observedAddr)
-
-          // Copy the listenAddrs and protocols
-          IdentifyService.updatePeerAddresses(peerInfo, listenAddrs)
-          IdentifyService.updatePeerProtocols(peerInfo, protocols)
-
-          callback(null, peerInfo, observedAddr)
-        })
-      })
+      collect
     )
+
+    if (data.length === 0) {
+      throw ERR_CONNECTION_ENDED()
+    }
+
+    let message
+    try {
+      message = Message.decode(data[0])
+    } catch (err) {
+      throw ERR_INVALID_MESSAGE(err)
+    }
+
+    let {
+      publicKey,
+      listenAddrs,
+      protocols,
+      observedAddr
+    } = message
+
+    const id = await PeerId.createFromPubKey(publicKey)
+    const peerInfo = new PeerInfo(id)
+    if (expectedPeerInfo && expectedPeerInfo.id.toB58String() !== id.toB58String()) {
+      throw ERR_INVALID_PEER()
+    }
+
+    // Get the observedAddr if there is one
+    observedAddr = IdentifyService.getCleanMultiaddr(observedAddr)
+
+    // Copy the listenAddrs and protocols
+    IdentifyService.updatePeerAddresses(peerInfo, listenAddrs)
+    IdentifyService.updatePeerProtocols(peerInfo, protocols)
+
+    return {
+      peerInfo,
+      observedAddr
+    }
   }
 
   /**
    * A handler to register with Libp2p to process identify messages.
    *
-   * @param {String} protocol
-   * @param {Connection} connection
+   * @param {object} options
+   * @param {String} options.protocol
+   * @param {*} options.stream
+   * @param {Connection} options.connection
    */
-  handleMessage (protocol, connection) {
+  handleMessage ({ connection, stream, protocol }) {
     switch (protocol) {
       case MULTICODEC_IDENTIFY:
-        this._handleIdentify(connection)
+        this._handleIdentify({ connection, stream })
         break
       case MULTICODEC_IDENTIFY_PUSH:
-        this._handlePush(connection)
+        this._handlePush({ connection, stream })
         break
       default:
         log.error('cannot handle unknown protocol %s', protocol)
@@ -235,75 +211,64 @@ class IdentifyService {
    * Sends the `Identify` response to the requesting peer over the
    * given `connection`
    * @private
-   * @param {Connection} connection
+   * @param {object} options
+   * @param {*} options.stream
+   * @param {Connection} options.connection
    */
-  _handleIdentify (connection) {
-    connection.getObservedAddrs((err, observedAddrs) => {
-      if (err) { return }
-      observedAddrs = observedAddrs[0]
+  _handleIdentify ({ connection, stream }) {
+    let publicKey = Buffer.alloc(0)
+    if (this.peerInfo.id.pubKey) {
+      publicKey = this.peerInfo.id.pubKey.bytes
+    }
 
-      let publicKey = Buffer.alloc(0)
-      if (this.peerInfo.id.pubKey) {
-        publicKey = this.peerInfo.id.pubKey.bytes
-      }
-
-      const message = Message.encode({
-        protocolVersion: PROTOCOL_VERSION,
-        agentVersion: AGENT_VERSION,
-        publicKey: publicKey,
-        listenAddrs: this.peerInfo.multiaddrs.toArray().map((ma) => ma.buffer),
-        observedAddr: observedAddrs ? observedAddrs.buffer : Buffer.alloc(0),
-        protocols: Array.from(this.peerInfo.protocols)
-      })
-
-      pull(
-        values([message]),
-        lp.encode(),
-        connection
-      )
+    const message = Message.encode({
+      protocolVersion: PROTOCOL_VERSION,
+      agentVersion: AGENT_VERSION,
+      publicKey,
+      listenAddrs: this.peerInfo.multiaddrs.toArray().map((ma) => ma.buffer),
+      observedAddr: connection.remoteAddr.buffer,
+      protocols: Array.from(this.peerInfo.protocols)
     })
+
+    pipe(
+      [message],
+      lp.encode(),
+      stream
+    )
   }
 
   /**
    * Reads the Identify Push message from the given `connection`
    * @private
-   * @param {Connection} connection
-   * @returns {void}
+   * @param {object} options
+   * @param {*} options.stream
+   * @param {Connection} options.connection
    */
-  _handlePush (connection) {
-    connection.getPeerInfo((err, peerInfo) => {
-      if (err) {
-        return log.error('could not get the PeerInfo associated with the connection')
-      }
+  async _handlePush ({ connection, stream }) {
+    const data = await pipe(
+      stream,
+      lp.decode(),
+      take(1),
+      collect
+    )
 
-      pull(
-        connection,
-        lp.decode(),
-        take(1),
-        collect((err, data) => {
-          if (err) {
-            return log.error(err)
-          }
+    let message
+    try {
+      message = Message.decode(data[0])
+    } catch (err) {
+      return log.error('received invalid message', err)
+    }
 
-          let message
-          try {
-            message = Message.decode(data[0])
-          } catch (err) {
-            return log.error('received invalid message', err)
-          }
+    // Update the listen addresses
+    const peerInfo = this.registrar.peerStore.get(connection.remotePeer.toB58String())
+    try {
+      IdentifyService.updatePeerAddresses(peerInfo, message.listenAddrs)
+    } catch (err) {
+      return log.error('received invalid listen addrs', err)
+    }
 
-          // Update the listen addresses
-          try {
-            IdentifyService.updatePeerAddresses(peerInfo, message.listenAddrs)
-          } catch (err) {
-            return log.error('received invalid listen addrs', err)
-          }
-
-          // Update the protocols
-          IdentifyService.updatePeerProtocols(peerInfo, message.protocols)
-        })
-      )
-    })
+    // Update the protocols
+    IdentifyService.updatePeerProtocols(peerInfo, message.protocols)
   }
 }
 
