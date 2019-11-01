@@ -185,7 +185,7 @@ class Upgrader {
         const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
         log('%s: incoming stream opened on %s', direction, protocol)
         connection.addStream(stream, protocol)
-        this._onStream({ stream, protocol })
+        this._onStream({ connection, stream, protocol })
       },
       // Run anytime a stream closes
       onStreamEnd: muxedStream => {
@@ -246,12 +246,13 @@ class Upgrader {
    * Routes incoming streams to the correct handler
    * @private
    * @param {object} options
+   * @param {Connection} options.connection The connection the stream belongs to
    * @param {Stream} options.stream
-   * @param {string} protocol
+   * @param {string} options.protocol
    */
-  _onStream ({ stream, protocol }) {
+  _onStream ({ connection, stream, protocol }) {
     const handler = this.protocols.get(protocol)
-    handler({ stream, protocol })
+    handler({ connection, stream, protocol })
   }
 
   /**

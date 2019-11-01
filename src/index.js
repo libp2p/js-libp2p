@@ -338,7 +338,7 @@ class Libp2p extends EventEmitter {
   /**
    * Registers the `handler` for each protocol
    * @param {string[]|string} protocols
-   * @param {function({ stream:*, protocol:string })} handler
+   * @param {function({ connection:*, stream:*, protocol:string })} handler
    */
   handle (protocols, handler) {
     protocols = Array.isArray(protocols) ? protocols : [protocols]
