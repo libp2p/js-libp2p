@@ -63,7 +63,6 @@
     "once": "^1.4.0",
     "p-queue": "^6.1.1",
     "p-settle": "^3.1.0",
-    "peer-book": "^0.9.1",
     "peer-id": "^0.13.3",
     "peer-info": "^0.17.0",
     "promisify-es6": "^1.0.3",
