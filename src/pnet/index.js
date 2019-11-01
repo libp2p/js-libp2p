@@ -58,21 +58,11 @@ class Protector {
     const [internal, external] = duplexPair()
     pipe(
       external,
-      (source) => (async function * () {
-        for await (const chunk of source) {
-          yield chunk
-        }
-      })(),
-      // Boxing Stream
+      // Encrypt all outbound traffic
       createBoxStream(localNonce, this.psk),
       { sink, source: connection.source },
-      // Unboxing Stream
+      // Decrypt all inbound traffic
       createUnboxStream(remoteNonce, this.psk),
-      (source) => (async function * () {
-        for await (const chunk of source) {
-          yield chunk
-        }
-      })(),
       external
     )
 
