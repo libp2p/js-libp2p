@@ -1,6 +1,5 @@
 'use strict'
 
-const handshake = require('it-handshake')
 const pipe = require('it-pipe')
 const assert = require('assert')
 const duplexPair = require('it-pair/duplex')

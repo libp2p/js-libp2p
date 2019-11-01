@@ -53,9 +53,7 @@ function toWriter ({ sink, source }) {
     writer,
     sink: restSink,
     // Make the source a generator so `.next` can be used
-    source: (async function * () {
-      yield * source
-    })()
+    source: source[Symbol.asyncIterator]()
   }
 }
 

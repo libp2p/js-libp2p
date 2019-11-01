@@ -40,7 +40,8 @@ class Upgrader {
     cryptos,
     muxers,
     onConnectionEnd = () => {},
-    onConnection = () => {} }) {
+    onConnection = () => {}
+  }) {
     this.localPeer = localPeer
     this.cryptos = cryptos || new Map()
     this.muxers = muxers || new Map()
