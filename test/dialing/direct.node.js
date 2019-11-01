@@ -19,6 +19,8 @@ const Libp2p = require('../../src')
 const Dialer = require('../../src/dialer')
 const TransportManager = require('../../src/transport-manager')
 const { codes: ErrorCodes } = require('../../src/errors')
+const Protector = require('../../src/pnet')
+const swarmKeyBuffer = Buffer.from(require('../fixtures/swarm.key'))
 
 const mockUpgrader = require('../utils/mockUpgrader')
 const Peers = require('../fixtures/peers')
@@ -231,6 +233,30 @@ describe('Dialing (direct, TCP)', () => {
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
       expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
+    })
+
+    it('should use the protectors when provided for connecting', async () => {
+      const protector = new Protector(swarmKeyBuffer)
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto],
+          connProtector: protector
+        }
+      })
+
+      sinon.spy(libp2p.upgrader.protector, 'protect')
+      sinon.stub(remoteLibp2p.upgrader, 'protector').value(new Protector(swarmKeyBuffer))
+
+      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
+      expect(connection).to.exist()
+      const { stream, protocol } = await connection.newStream('/echo/1.0.0')
+      expect(stream).to.exist()
+      expect(protocol).to.equal('/echo/1.0.0')
+      await connection.close()
+      expect(libp2p.upgrader.protector.protect.callCount).to.equal(1)
     })
   })
 })

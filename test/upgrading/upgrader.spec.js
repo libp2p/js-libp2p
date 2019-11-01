@@ -14,6 +14,8 @@ const { collect } = require('streaming-iterables')
 const pSettle = require('p-settle')
 const Transport = require('libp2p-websockets')
 const Crypto = require('../../src/insecure/plaintext')
+const Protector = require('../../src/pnet')
+const swarmKeyBuffer = Buffer.from(require('../fixtures/swarm.key'))
 
 const Libp2p = require('../../src')
 const Upgrader = require('../../src/upgrader')
@@ -112,6 +114,48 @@ describe('Upgrader', () => {
     )
 
     expect(result).to.eql([hello])
+  })
+
+  it('should use a private connection protector when provided', async () => {
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+
+    const muxers = new Map([[Muxer.multicodec, Muxer]])
+    sinon.stub(localUpgrader, 'muxers').value(muxers)
+    sinon.stub(remoteUpgrader, 'muxers').value(muxers)
+
+    const cryptos = new Map([[Crypto.protocol, Crypto]])
+    sinon.stub(localUpgrader, 'cryptos').value(cryptos)
+    sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
+
+    const protector = new Protector(swarmKeyBuffer)
+    sinon.stub(localUpgrader, 'protector').value(protector)
+    sinon.stub(remoteUpgrader, 'protector').value(protector)
+    sinon.spy(protector, 'protect')
+
+    const connections = await Promise.all([
+      localUpgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+
+    expect(connections).to.have.length(2)
+
+    const { stream, protocol } = await connections[0].newStream('/echo/1.0.0')
+    expect(protocol).to.equal('/echo/1.0.0')
+
+    const hello = Buffer.from('hello there!')
+    const result = await pipe(
+      [hello],
+      stream,
+      function toBuffer (source) {
+        return (async function * () {
+          for await (const val of source) yield val.slice()
+        })()
+      },
+      collect
+    )
+
+    expect(result).to.eql([hello])
+    expect(protector.protect.callCount).to.eql(2)
   })
 
   it('should fail if crypto fails', async () => {
@@ -288,18 +332,21 @@ describe('libp2p.upgrader', () => {
   })
 
   it('should create an Upgrader', () => {
+    const protector = new Protector(swarmKeyBuffer)
     libp2p = new Libp2p({
       peerInfo: peers[0],
       modules: {
         transport: [Transport],
         streamMuxer: [Muxer],
-        connEncryption: [Crypto]
+        connEncryption: [Crypto],
+        connProtector: protector
       }
     })
 
     expect(libp2p.upgrader).to.exist()
     expect(libp2p.upgrader.muxers).to.eql(new Map([[Muxer.multicodec, Muxer]]))
     expect(libp2p.upgrader.cryptos).to.eql(new Map([[Crypto.protocol, Crypto]]))
+    expect(libp2p.upgrader.protector).to.equal(protector)
     // Ensure the transport manager also has the upgrader
     expect(libp2p.upgrader).to.equal(libp2p.transportManager.upgrader)
   })

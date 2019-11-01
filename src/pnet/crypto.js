@@ -20,7 +20,7 @@ module.exports.createBoxStream = (nonce, psk) => {
   const xor = xsalsa20(nonce, psk)
   return (source) => (async function * () {
     for await (const chunk of source) {
-      yield xor.update(chunk, chunk)
+      yield Buffer.from(xor.update(chunk.slice()))
     }
   })()
 }

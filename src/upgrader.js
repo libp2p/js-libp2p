@@ -32,11 +32,19 @@ class Upgrader {
    * @param {PeerId} options.localPeer
    * @param {Map<string, Crypto>} options.cryptos
    * @param {Map<string, Muxer>} options.muxers
+   * @param {function(Connection)} options.onConnection Called when a connection is upgraded
+   * @param {function(Connection)} options.onConnectionEnd
    */
-  constructor ({ localPeer, cryptos, muxers, onConnectionEnd = () => {}, onConnection = () => {} }) {
+  constructor ({
+    localPeer,
+    cryptos,
+    muxers,
+    onConnectionEnd = () => {},
+    onConnection = () => {} }) {
     this.localPeer = localPeer
     this.cryptos = cryptos || new Map()
     this.muxers = muxers || new Map()
+    this.protector = null
     this.protocols = new Map()
     this.onConnection = onConnection
     this.onConnectionEnd = onConnectionEnd
@@ -55,13 +63,21 @@ class Upgrader {
     let Muxer
     let cryptoProtocol
 
+    log('Starting the inbound connection upgrade')
+
+    // Protect
+    let protectedConn = maConn
+    if (this.protector) {
+      protectedConn = await this.protector.protect(maConn)
+    }
+
     try {
       // Encrypt the connection
       ({
         conn: encryptedConn,
         remotePeer,
         protocol: cryptoProtocol
-      } = await this._encryptInbound(this.localPeer, maConn, this.cryptos))
+      } = await this._encryptInbound(this.localPeer, protectedConn, this.cryptos))
 
       // Multiplex the connection
       ;({ stream: muxedConnection, Muxer } = await this._multiplexInbound(encryptedConn, this.muxers))
@@ -104,13 +120,21 @@ class Upgrader {
     let cryptoProtocol
     let Muxer
 
+    log('Starting the outbound connection upgrade')
+
+    // Protect
+    let protectedConn = maConn
+    if (this.protector) {
+      protectedConn = await this.protector.protect(maConn)
+    }
+
     try {
       // Encrypt the connection
       ({
         conn: encryptedConn,
         remotePeer,
         protocol: cryptoProtocol
-      } = await this._encryptOutbound(this.localPeer, maConn, remotePeerId, this.cryptos))
+      } = await this._encryptOutbound(this.localPeer, protectedConn, remotePeerId, this.cryptos))
 
       // Multiplex the connection
       ;({ stream: muxedConnection, Muxer } = await this._multiplexOutbound(encryptedConn, this.muxers))

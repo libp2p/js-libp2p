@@ -108,7 +108,7 @@ class Libp2p extends EventEmitter {
 
     // Attach private network protector
     if (this._modules.connProtector) {
-      this._switch.protector = this._modules.connProtector
+      this.upgrader.protector = this._modules.connProtector
     } else if (process.env.LIBP2P_FORCE_PNET) {
       throw new Error('Private network is enforced, but no protector was provided')
     }

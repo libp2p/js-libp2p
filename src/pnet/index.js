@@ -11,6 +11,7 @@ const {
   createUnboxStream,
   decodeV1PSK
 } = require('./crypto')
+const { toWriter } = require('../util')
 const NONCE_LENGTH = require('./key-generator').NONCE_LENGTH
 const debug = require('debug')
 const log = debug('libp2p:pnet')
@@ -46,12 +47,12 @@ class Protector {
     log('protecting the connection')
     const localNonce = crypto.randomBytes(NONCE_LENGTH)
 
-    const shake = handshake(connection)
-    shake.write(localNonce)
+    const { writer, sink, source } = toWriter(connection)
+    writer.push(localNonce)
 
-    const result = await shake.reader.next()
+    const result = await source.next()
     const remoteNonce = result.value.slice()
-    shake.rest()
+    writer.end()
 
     // Create the boxing/unboxing pipe
     log('exchanged nonces')
@@ -65,7 +66,7 @@ class Protector {
       })(),
       // Boxing Stream
       createBoxStream(localNonce, this.psk),
-      shake.stream,
+      { sink, source: connection.source },
       // Unboxing Stream
       createUnboxStream(remoteNonce, this.psk),
       (source) => (async function * () {
