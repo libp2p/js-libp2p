@@ -29,6 +29,7 @@ const Dialer = require('./dialer')
 const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
+const Registrar = require('./registrar')
 
 const notStarted = (action, state) => {
   return errCode(
@@ -71,10 +72,13 @@ class Libp2p extends EventEmitter {
         const peerInfo = getPeerInfo(connection.remotePeer)
 
         this.peerStore.put(peerInfo)
+        this.registrar.onConnect(peerInfo, connection)
         this.emit('peer:connect', peerInfo)
       },
       onConnectionEnd: (connection) => {
         const peerInfo = getPeerInfo(connection.remotePeer)
+
+        this.registrar.onDisconnect(peerInfo)
         this.emit('peer:disconnect', peerInfo)
       }
     })
@@ -107,6 +111,10 @@ class Libp2p extends EventEmitter {
     this.dialer = new Dialer({
       transportManager: this.transportManager
     })
+
+    this.registrar = new Registrar(this.peerStore)
+    this.handle = this.handle.bind(this)
+    this.registrar.handle = this.handle
 
     // Attach private network protector
     if (this._modules.connProtector) {
