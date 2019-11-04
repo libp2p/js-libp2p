@@ -1,12 +1,17 @@
 'use strict'
 
-const pull = require('pull-stream')
-const { Connection } = require('libp2p-interfaces/src/connection')
+const pipe = require('it-pipe')
 const assert = require('assert')
-
+const duplexPair = require('it-pair/duplex')
+const crypto = require('libp2p-crypto')
 const Errors = require('./errors')
-const State = require('./state')
-const decodeV1PSK = require('./crypto').decodeV1PSK
+const {
+  createBoxStream,
+  createUnboxStream,
+  decodeV1PSK
+} = require('./crypto')
+const handshake = require('it-handshake')
+const { NONCE_LENGTH } = require('./key-generator')
 const debug = require('debug')
 const log = debug('libp2p:pnet')
 log.err = debug('libp2p:pnet:err')
@@ -27,41 +32,41 @@ class Protector {
   }
 
   /**
-   * Takes a given Connection and creates a privaste encryption stream
+   * Takes a given Connection and creates a private encryption stream
    * between its two peers from the PSK the Protector instance was
    * created with.
    *
    * @param {Connection} connection The connection to protect
-   * @param {function(Error)} callback
-   * @returns {Connection} The protected connection
+   * @returns {*} A protected duplex iterable
    */
-  protect (connection, callback) {
+  async protect (connection) {
     assert(connection, Errors.NO_HANDSHAKE_CONNECTION)
 
-    const protectedConnection = new Connection(undefined, connection)
-    const state = new State(this.psk)
-
+    // Exchange nonces
     log('protecting the connection')
+    const localNonce = crypto.randomBytes(NONCE_LENGTH)
 
-    // Run the connection through an encryptor
-    pull(
-      connection,
-      state.encrypt((err, encryptedOuterStream) => {
-        if (err) {
-          log.err('There was an error attempting to protect the connection', err)
-          return callback(err)
-        }
+    const shake = handshake(connection)
+    shake.write(localNonce)
 
-        connection.getPeerInfo(() => {
-          protectedConnection.setInnerConn(new Connection(encryptedOuterStream, connection))
-          log('the connection has been successfully wrapped by the protector')
-          callback()
-        })
-      }),
-      connection
+    const result = await shake.reader.next(NONCE_LENGTH)
+    const remoteNonce = result.value.slice()
+    shake.rest()
+
+    // Create the boxing/unboxing pipe
+    log('exchanged nonces')
+    const [internal, external] = duplexPair()
+    pipe(
+      external,
+      // Encrypt all outbound traffic
+      createBoxStream(localNonce, this.psk),
+      shake.stream,
+      // Decrypt all inbound traffic
+      createUnboxStream(remoteNonce, this.psk),
+      external
     )
 
-    return protectedConnection
+    return internal
   }
 }
 

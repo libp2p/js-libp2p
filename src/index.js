@@ -90,7 +90,7 @@ class Libp2p extends EventEmitter {
     if (this._modules.connEncryption) {
       const cryptos = this._modules.connEncryption
       cryptos.forEach((crypto) => {
-        this.upgrader.cryptos.set(crypto.tag, crypto)
+        this.upgrader.cryptos.set(crypto.protocol, crypto)
       })
     }
 
@@ -108,7 +108,7 @@ class Libp2p extends EventEmitter {
 
     // Attach private network protector
     if (this._modules.connProtector) {
-      this._switch.protector = this._modules.connProtector
+      this.upgrader.protector = this._modules.connProtector
     } else if (process.env.LIBP2P_FORCE_PNET) {
       throw new Error('Private network is enforced, but no protector was provided')
     }
@@ -229,6 +229,7 @@ class Libp2p extends EventEmitter {
 
     try {
       await this.transportManager.close()
+      await this._switch.stop()
     } catch (err) {
       if (err) {
         log.error(err)
