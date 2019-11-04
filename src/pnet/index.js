@@ -11,7 +11,7 @@ const {
   decodeV1PSK
 } = require('./crypto')
 const handshake = require('it-handshake')
-const NONCE_LENGTH = require('./key-generator').NONCE_LENGTH
+const { NONCE_LENGTH } = require('./key-generator')
 const debug = require('debug')
 const log = debug('libp2p:pnet')
 log.err = debug('libp2p:pnet:err')

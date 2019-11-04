@@ -40,7 +40,7 @@ async function encrypt (localId, conn, remoteId) {
     peerId = await PeerId.createFromPubKey(id.pubkey.Data)
   } catch (err) {
     log.error(err)
-    throw new InvalidCryptoExchangeError('Remote did not provide their public key')
+    throw new InvalidCryptoExchangeError('Remote did not provide its public key')
   }
 
   if (remoteId && !peerId.isEqual(remoteId)) {
