@@ -51,9 +51,7 @@ describe('Dialing (direct, TCP)', () => {
     remoteAddr = remoteTM.getAddrs()[0]
   })
 
-  after(async () => {
-    await remoteTM.close()
-  })
+  after(() => remoteTM.close())
 
   afterEach(() => {
     sinon.restore()
@@ -210,9 +208,7 @@ describe('Dialing (direct, TCP)', () => {
       libp2p = null
     })
 
-    after(async () => {
-      await remoteLibp2p.stop()
-    })
+    after(() => remoteLibp2p.stop())
 
     it('should use the dialer for connecting', async () => {
       libp2p = new Libp2p({

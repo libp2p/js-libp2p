@@ -1,7 +1,5 @@
 'use strict'
 
-const protobuf = require('protons')
-const protocol = '/plaintext/2.0.0'
 const handshake = require('it-handshake')
 const lp = require('it-length-prefixed')
 const PeerId = require('peer-id')
@@ -10,27 +8,8 @@ const log = debug('libp2p:plaintext')
 log.error = debug('libp2p:plaintext:error')
 const { UnexpectedPeerError, InvalidCryptoExchangeError } = require('libp2p-interfaces/src/crypto/errors')
 
-const {
-  Exchange,
-  KeyType
-} = protobuf(`
-message Exchange {
-  optional bytes id = 1;
-  optional PublicKey pubkey = 2;
-}
-
-enum KeyType {
-  RSA = 0;
-  Ed25519 = 1;
-  Secp256k1 = 2;
-  ECDSA = 3;
-}
-
-message PublicKey {
-  required KeyType Type = 1;
-  required bytes Data = 2;
-}
-`)
+const { Exchange, KeyType } = require('./proto')
+const protocol = '/plaintext/2.0.0'
 
 function lpEncodeExchange (exchange) {
   const pb = Exchange.encode(exchange)
