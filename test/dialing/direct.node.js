@@ -7,6 +7,7 @@ const { expect } = chai
 const sinon = require('sinon')
 const Transport = require('libp2p-tcp')
 const Muxer = require('libp2p-mplex')
+const Crypto = require('../../src/insecure/plaintext')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
@@ -18,9 +19,10 @@ const Libp2p = require('../../src')
 const Dialer = require('../../src/dialer')
 const TransportManager = require('../../src/transport-manager')
 const { codes: ErrorCodes } = require('../../src/errors')
+const Protector = require('../../src/pnet')
+const swarmKeyBuffer = Buffer.from(require('../fixtures/swarm.key'))
 
 const mockUpgrader = require('../utils/mockUpgrader')
-const mockCrypto = require('../utils/mockCrypto')
 const Peers = require('../fixtures/peers')
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -49,9 +51,7 @@ describe('Dialing (direct, TCP)', () => {
     remoteAddr = remoteTM.getAddrs()[0]
   })
 
-  after(async () => {
-    await remoteTM.close()
-  })
+  after(() => remoteTM.close())
 
   afterEach(() => {
     sinon.restore()
@@ -171,66 +171,88 @@ describe('Dialing (direct, TCP)', () => {
     expect(dialer.queue.pending).to.equal(0)
     expect(dialer.queue.size).to.equal(0)
   })
-})
 
-describe('libp2p.dialer', () => {
-  let peerInfo
-  let remotePeerInfo
-  let libp2p
-  let remoteLibp2p
-  let remoteAddr
+  describe('libp2p.dialer', () => {
+    let peerInfo
+    let remotePeerInfo
+    let libp2p
+    let remoteLibp2p
+    let remoteAddr
 
-  before(async () => {
-    const [peerId, remotePeerId] = await Promise.all([
-      PeerId.createFromJSON(Peers[0]),
-      PeerId.createFromJSON(Peers[1])
-    ])
+    before(async () => {
+      const [peerId, remotePeerId] = await Promise.all([
+        PeerId.createFromJSON(Peers[0]),
+        PeerId.createFromJSON(Peers[1])
+      ])
 
-    peerInfo = new PeerInfo(peerId)
-    remotePeerInfo = new PeerInfo(remotePeerId)
+      peerInfo = new PeerInfo(peerId)
+      remotePeerInfo = new PeerInfo(remotePeerId)
 
-    remoteLibp2p = new Libp2p({
-      peerInfo: remotePeerInfo,
-      modules: {
-        transport: [Transport],
-        streamMuxer: [Muxer],
-        connEncryption: [mockCrypto]
-      }
-    })
-    remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
+      remoteLibp2p = new Libp2p({
+        peerInfo: remotePeerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+      remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
 
-    await remoteLibp2p.transportManager.listen([listenAddr])
-    remoteAddr = remoteLibp2p.transportManager.getAddrs()[0]
-  })
-
-  afterEach(async () => {
-    sinon.restore()
-    libp2p && await libp2p.stop()
-    libp2p = null
-  })
-
-  after(async () => {
-    await remoteLibp2p.stop()
-  })
-
-  it('should use the dialer for connecting', async () => {
-    libp2p = new Libp2p({
-      peerInfo,
-      modules: {
-        transport: [Transport],
-        streamMuxer: [Muxer],
-        connEncryption: [mockCrypto]
-      }
+      await remoteLibp2p.transportManager.listen([listenAddr])
+      remoteAddr = remoteLibp2p.transportManager.getAddrs()[0]
     })
 
-    sinon.spy(libp2p.dialer, 'connectToMultiaddr')
+    afterEach(async () => {
+      sinon.restore()
+      libp2p && await libp2p.stop()
+      libp2p = null
+    })
 
-    const connection = await libp2p.dial(remoteAddr)
-    expect(connection).to.exist()
-    const { stream, protocol } = await connection.newStream('/echo/1.0.0')
-    expect(stream).to.exist()
-    expect(protocol).to.equal('/echo/1.0.0')
-    await connection.close()
-    expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
+    after(() => remoteLibp2p.stop())
+
+    it('should use the dialer for connecting', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      sinon.spy(libp2p.dialer, 'connectToMultiaddr')
+
+      const connection = await libp2p.dial(remoteAddr)
+      expect(connection).to.exist()
+      const { stream, protocol } = await connection.newStream('/echo/1.0.0')
+      expect(stream).to.exist()
+      expect(protocol).to.equal('/echo/1.0.0')
+      await connection.close()
+      expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
+    })
+
+    it('should use the protectors when provided for connecting', async () => {
+      const protector = new Protector(swarmKeyBuffer)
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto],
+          connProtector: protector
+        }
+      })
+
+      sinon.spy(libp2p.upgrader.protector, 'protect')
+      sinon.stub(remoteLibp2p.upgrader, 'protector').value(new Protector(swarmKeyBuffer))
+
+      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
+      expect(connection).to.exist()
+      const { stream, protocol } = await connection.newStream('/echo/1.0.0')
+      expect(stream).to.exist()
+      expect(protocol).to.equal('/echo/1.0.0')
+      await connection.close()
+      expect(libp2p.upgrader.protector.protect.callCount).to.equal(1)
+    })
   })
 })
