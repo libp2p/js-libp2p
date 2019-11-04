@@ -22,3 +22,5 @@ Let us know if you find any issue or if you want to contribute and add a new tut
 - Running libp2p in the Electron (future)
 - [The standard echo net example with libp2p](./echo)
 - [A simple chat app with libp2p](./chat)
+
+For go-libp2p examples, check https://github.com/libp2p/go-libp2p-examples#examples-and-tutorials
