@@ -181,10 +181,10 @@ class Libp2p extends EventEmitter {
 
     // Once we start, emit and dial any peers we may have already discovered
     this.state.on('STARTED', () => {
-      this.peerStore.getAllArray().forEach((peerInfo) => {
+      for (const peerInfo of this.peerStore.peers) {
         this.emit('peer:discovery', peerInfo)
         this._maybeConnect(peerInfo)
-      })
+      }
     })
 
     this._peerDiscovered = this._peerDiscovered.bind(this)
@@ -279,10 +279,11 @@ class Libp2p extends EventEmitter {
       connection = await this.dialer.connectToPeer(peer, options)
     }
 
+    const peerInfo = getPeerInfo(connection.remotePeer)
+
     // If a protocol was provided, create a new stream
     if (protocols) {
       const stream = await connection.newStream(protocols)
-      const peerInfo = getPeerInfo(connection.remotePeer)
 
       peerInfo.protocols.add(stream.protocol)
       this.peerStore.put(peerInfo)
@@ -290,6 +291,7 @@ class Libp2p extends EventEmitter {
       return stream
     }
 
+    this.peerStore.put(peerInfo)
     return connection
   }
 

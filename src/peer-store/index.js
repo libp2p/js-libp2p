@@ -4,7 +4,6 @@ const assert = require('assert')
 const debug = require('debug')
 const log = debug('libp2p:peer-store')
 log.error = debug('libp2p:peer-store:error')
-const errCode = require('err-code')
 
 const { EventEmitter } = require('events')
 
@@ -60,18 +59,43 @@ class PeerStore extends EventEmitter {
   add (peerInfo) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
 
-    this.peers.set(peerInfo.id.toB58String(), peerInfo)
+    // Create new instance and add values to it
+    const newPeerInfo = new PeerInfo(peerInfo.id)
+
+    peerInfo.multiaddrs.forEach((ma) => newPeerInfo.multiaddrs.add(ma))
+    peerInfo.protocols.forEach((p) => newPeerInfo.protocols.add(p))
+
+    const connectedMa = peerInfo.isConnected()
+    connectedMa && newPeerInfo.connect(connectedMa)
+
+    const peerProxy = new Proxy(newPeerInfo, {
+      set: (obj, prop, value) => {
+        if (prop === 'multiaddrs') {
+          this.emit('change:multiaddrs', {
+            peerInfo: obj,
+            multiaddrs: value.toArray()
+          })
+        } else if (prop === 'protocols') {
+          this.emit('change:protocols', {
+            peerInfo: obj,
+            protocols: Array.from(value)
+          })
+        }
+        return Reflect.set(...arguments)
+      }
+    })
+
+    this.peers.set(peerInfo.id.toB58String(), peerProxy)
   }
 
   /**
    * Updates an already known peer.
-   * If already exist, updates ids info if outdated.
    * @param {PeerInfo} peerInfo
    */
   update (peerInfo) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
-
-    const recorded = this.peers.get(peerInfo.id.toB58String())
+    const id = peerInfo.id.toB58String()
+    const recorded = this.peers.get(id)
 
     // pass active connection state
     const ma = peerInfo.isConnected()
@@ -81,22 +105,41 @@ class PeerStore extends EventEmitter {
 
     // Verify new multiaddrs
     // TODO: better track added and removed multiaddrs
-    if (peerInfo.multiaddrs.size || recorded.multiaddrs.size) {
-      recorded.multiaddrs = peerInfo.multiaddrs
+    const multiaddrsIntersection = [
+      ...recorded.multiaddrs.toArray()
+    ].filter((m) => peerInfo.multiaddrs.has(m))
+
+    if (multiaddrsIntersection.length !== peerInfo.multiaddrs.size ||
+      multiaddrsIntersection.length !== recorded.multiaddrs.size) {
+      // recorded.multiaddrs = peerInfo.multiaddrs
+      recorded.multiaddrs.clear()
+
+      for (const ma of peerInfo.multiaddrs.toArray()) {
+        recorded.multiaddrs.add(ma)
+      }
 
       this.emit('change:multiaddrs', {
-        peerInfo: recorded,
-        multiaddrs: Array.from(recorded.multiaddrs)
+        peerInfo: peerInfo,
+        multiaddrs: recorded.multiaddrs.toArray()
       })
     }
 
     // Update protocols
     // TODO: better track added and removed protocols
-    if (peerInfo.protocols.size || recorded.protocols.size) {
-      recorded.protocols = new Set(peerInfo.protocols)
+    const protocolsIntersection = new Set(
+      [...recorded.protocols].filter((p) => peerInfo.protocols.has(p))
+    )
+
+    if (protocolsIntersection.size !== peerInfo.protocols.size ||
+      protocolsIntersection.size !== recorded.protocols.size) {
+      recorded.protocols.clear()
+
+      for (const protocol of peerInfo.protocols) {
+        recorded.protocols.add(protocol)
+      }
 
       this.emit('change:protocols', {
-        peerInfo: recorded,
+        peerInfo: peerInfo,
         protocols: Array.from(recorded.protocols)
       })
     }
@@ -119,19 +162,11 @@ class PeerStore extends EventEmitter {
       return peerInfo
     }
 
-    throw errCode(new Error('PeerInfo was not found'), 'ERR_NO_PEER_INFO')
+    return undefined
   }
 
   /**
-   * Get an array with all peers known.
-   * @returns {Array<PeerInfo>}
-   */
-  getAllArray () {
-    return Array.from(this.peers.values())
-  }
-
-  /**
-   * Remove the info of the peer with the given id.
+   * Removes the Peer with the matching `peerId` from the PeerStore
    * @param {string} peerId b58str id
    * @returns {boolean} true if found and removed
    */
@@ -140,7 +175,7 @@ class PeerStore extends EventEmitter {
   }
 
   /**
-   * Replace the info stored of the given peer.
+   * Completely replaces the existing peers metadata with the given `peerInfo`
    * @param {PeerInfo} peerInfo
    * @returns {void}
    */
