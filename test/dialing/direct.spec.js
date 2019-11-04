@@ -9,6 +9,7 @@ const pDefer = require('p-defer')
 const delay = require('delay')
 const Transport = require('libp2p-websockets')
 const Muxer = require('libp2p-mplex')
+const Crypto = require('../../src/insecure/plaintext')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
@@ -22,7 +23,6 @@ const Libp2p = require('../../src')
 const Peers = require('../fixtures/peers')
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const mockUpgrader = require('../utils/mockUpgrader')
-const mockCrypto = require('../utils/mockCrypto')
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws')
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -162,50 +162,61 @@ describe('Dialing (direct, WebSockets)', () => {
     expect(dialer.queue.pending).to.equal(0)
     expect(dialer.queue.size).to.equal(0)
   })
-})
 
-describe.skip('libp2p.dialer', () => {
-  let peerInfo
-  let libp2p
+  describe('libp2p.dialer', () => {
+    let peerInfo
+    let libp2p
+    let remoteLibp2p
 
-  before(async () => {
-    const peerId = await PeerId.createFromJSON(Peers[0])
-    peerInfo = new PeerInfo(peerId)
-  })
-
-  afterEach(async () => {
-    sinon.restore()
-    libp2p && await libp2p.stop()
-    libp2p = null
-  })
-
-  it('should create a dialer', () => {
-    libp2p = new Libp2p({
-      peerInfo,
-      modules: {
-        transport: [Transport],
-        streamMuxer: [Muxer],
-        connEncryption: [mockCrypto]
-      }
+    before(async () => {
+      const peerId = await PeerId.createFromJSON(Peers[0])
+      peerInfo = new PeerInfo(peerId)
     })
 
-    expect(libp2p.dialer).to.exist()
-    // Ensure the dialer also has the transport manager
-    expect(libp2p.transportManager).to.equal(libp2p.dialer.transportManager)
-  })
-
-  it('should use the dialer for connecting', async () => {
-    libp2p = new Libp2p({
-      peerInfo,
-      modules: {
-        transport: [Transport],
-        streamMuxer: [Muxer],
-        connEncryption: [mockCrypto]
-      }
+    afterEach(async () => {
+      sinon.restore()
+      libp2p && await libp2p.stop()
+      libp2p = null
     })
 
-    const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
-    expect(connection).to.exist()
-    await connection.close()
+    after(async () => {
+      remoteLibp2p && await remoteLibp2p.stop()
+    })
+
+    it('should create a dialer', () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      expect(libp2p.dialer).to.exist()
+      // Ensure the dialer also has the transport manager
+      expect(libp2p.transportManager).to.equal(libp2p.dialer.transportManager)
+    })
+
+    it('should use the dialer for connecting', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      sinon.spy(libp2p.dialer, 'connectToMultiaddr')
+
+      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
+      expect(connection).to.exist()
+      const { stream, protocol } = await connection.newStream('/echo/1.0.0')
+      expect(stream).to.exist()
+      expect(protocol).to.equal('/echo/1.0.0')
+      await connection.close()
+      expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
+    })
   })
 })
