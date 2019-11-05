@@ -1,41 +1,74 @@
 'use strict'
 
+const assert = require('assert')
+
 class Topology {
   /**
    * @param {Object} props
    * @param {number} props.min minimum needed connections (default: 0)
    * @param {number} props.max maximum needed connections (default: Infinity)
-   * @param {function} props.onConnect protocol "onConnect" handler
-   * @param {function} props.onDisconnect protocol "onDisconnect" handler
    * @param {Array<string>} props.multicodecs protocol multicodecs
-   * @param {Registrar} registrar
+   * @param {Object} props.handlers
+   * @param {function} props.handlers.onConnect protocol "onConnect" handler
+   * @param {function} props.handlers.onDisconnect protocol "onDisconnect" handler
    * @constructor
    */
   constructor ({
     min = 0,
     max = Infinity,
-    onConnect,
-    onDisconnect,
     multicodecs,
-    registrar,
-    peerStore
+    handlers
   }) {
-    this.multicodecs = multicodecs
-    this.registrar = registrar
+    assert(multicodecs, 'one or more multicodec should be provided')
+    assert(handlers, 'the handlers should be provided')
+    assert(handlers.onConnect && typeof handlers.onConnect === 'function',
+      'the \'onConnect\' handler must be provided')
+    assert(handlers.onDisconnect && typeof handlers.onDisconnect === 'function',
+      'the \'onDisconnect\' handler must be provided')
+
+    this.multicodecs = Array.isArray(multicodecs) ? multicodecs : [multicodecs]
     this.min = min
     this.max = max
-    this.peers = new Map()
 
     // Handlers
-    this._onConnect = onConnect
-    this._onDisconnect = onDisconnect
+    this._onConnect = handlers.onConnect
+    this._onDisconnect = handlers.onDisconnect
+
+    this.peers = new Map()
+    this._registrar = undefined
 
     this._onProtocolChange = this._onProtocolChange.bind(this)
+  }
 
-    // Set by the registrar
-    this._peerStore = peerStore
+  set registrar (registrar) {
+    this._registrar = registrar
+    this._registrar.peerStore.on('change:protocols', this._onProtocolChange)
 
-    this._peerStore.on('change:protocols', this._onProtocolChange)
+    // Add connected peers to the topology
+    this._addConnectedPeers()
+    // TODO: remaining peers in the store
+  }
+
+  /**
+   * Add connected peers to the topology.
+   */
+  _addConnectedPeers () {
+    const knownPeers = []
+
+    for (const [, peer] of this._registrar.peerStore.peers) {
+      if (this.multicodecs.filter(multicodec => peer.protocols.has(multicodec))) {
+        knownPeers.push(peer)
+      }
+    }
+
+    for (const [id, conn] of this._registrar.connections.entries()) {
+      const targetPeer = knownPeers.find((peerInfo) => peerInfo.id.toB58String() === id)
+
+      if (targetPeer) {
+        // TODO: what should we return
+        this.tryToConnect(targetPeer, conn[0])
+      }
+    }
   }
 
   /**
@@ -85,7 +118,7 @@ class Topology {
     // New to protocol support
     for (const protocol of protocols) {
       if (this.multicodecs.includes(protocol)) {
-        this.tryToConnect(peerInfo, this.registrar.getConnection(peerInfo))
+        this.tryToConnect(peerInfo, this._registrar.getConnection(peerInfo))
         return
       }
     }

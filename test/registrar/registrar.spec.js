@@ -16,7 +16,7 @@ const multicodec = '/test/1.0.0'
 describe('registrar', () => {
   let peerStore, registrar
 
-  describe('erros', () => {
+  describe('errors', () => {
     beforeEach(() => {
       peerStore = new PeerStore()
       registrar = new Registrar({ peerStore })
@@ -27,48 +27,54 @@ describe('registrar', () => {
         registrar.register()
       } catch (err) {
         expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NO_MULTICODECS')
         return
       }
       throw new Error('should fail to register a protocol if no multicodec is provided')
     })
 
     it('should fail to register a protocol if no handlers are provided', () => {
+      const topologyProps = {
+        multicodecs: multicodec
+      }
+
       try {
-        registrar.register(multicodec)
+        registrar.register(topologyProps)
       } catch (err) {
         expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NO_HANDLERS')
         return
       }
       throw new Error('should fail to register a protocol if no handlers are provided')
     })
 
     it('should fail to register a protocol if the onConnect handler is not provided', () => {
-      const handlers = {
-        onDisconnect: () => { }
+      const topologyProps = {
+        multicodecs: multicodec,
+        handlers: {
+          onDisconnect: () => { }
+        }
       }
 
       try {
-        registrar.register(multicodec, handlers)
+        registrar.register(topologyProps)
       } catch (err) {
         expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NO_ONCONNECT_HANDLER')
         return
       }
       throw new Error('should fail to register a protocol if the onConnect handler is not provided')
     })
 
     it('should fail to register a protocol if the onDisconnect handler is not provided', () => {
-      const handlers = {
-        onConnect: () => { }
+      const topologyProps = {
+        multicodecs: multicodec,
+        handlers: {
+          onConnect: () => { }
+        }
       }
 
       try {
-        registrar.register(multicodec, handlers)
+        registrar.register(topologyProps)
       } catch (err) {
         expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NO_ONDISCONNECT_HANDLER')
         return
       }
       throw new Error('should fail to register a protocol if the onDisconnect handler is not provided')
@@ -82,23 +88,29 @@ describe('registrar', () => {
     })
 
     it('should be able to register a protocol', () => {
-      const handlers = {
-        onConnect: () => { },
-        onDisconnect: () => { }
+      const topologyProps = {
+        handlers: {
+          onConnect: () => { },
+          onDisconnect: () => { }
+        },
+        multicodecs: multicodec
       }
 
-      const identifier = registrar.register(multicodec, handlers)
+      const identifier = registrar.register(topologyProps)
 
       expect(identifier).to.exist()
     })
 
     it('should be able to unregister a protocol', () => {
-      const handlers = {
-        onConnect: () => { },
-        onDisconnect: () => { }
+      const topologyProps = {
+        handlers: {
+          onConnect: () => { },
+          onDisconnect: () => { }
+        },
+        multicodecs: multicodec
       }
 
-      const identifier = registrar.register(multicodec, handlers)
+      const identifier = registrar.register(topologyProps)
       const success = registrar.unregister(identifier)
 
       expect(success).to.eql(true)
@@ -126,22 +138,25 @@ describe('registrar', () => {
       registrar.onConnect(remotePeerInfo, conn)
       expect(registrar.connections.size).to.eql(1)
 
-      const handlers = {
-        onConnect: (peerInfo, connection) => {
-          expect(peerInfo.id.toB58String()).to.eql(remotePeerInfo.id.toB58String())
-          expect(connection.id).to.eql(conn.id)
+      const topologyProps = {
+        multicodecs: multicodec,
+        handlers: {
+          onConnect: (peerInfo, connection) => {
+            expect(peerInfo.id.toB58String()).to.eql(remotePeerInfo.id.toB58String())
+            expect(connection.id).to.eql(conn.id)
 
-          onConnectDefer.resolve()
-        },
-        onDisconnect: (peerInfo) => {
-          expect(peerInfo.id.toB58String()).to.eql(remotePeerInfo.id.toB58String())
+            onConnectDefer.resolve()
+          },
+          onDisconnect: (peerInfo) => {
+            expect(peerInfo.id.toB58String()).to.eql(remotePeerInfo.id.toB58String())
 
-          onDisconnectDefer.resolve()
+            onDisconnectDefer.resolve()
+          }
         }
       }
 
       // Register protocol
-      const identifier = registrar.register(multicodec, handlers)
+      const identifier = registrar.register(topologyProps)
       const topology = registrar.topologies.get(identifier)
 
       // Topology created
@@ -163,17 +178,20 @@ describe('registrar', () => {
       const onConnectDefer = pDefer()
       const onDisconnectDefer = pDefer()
 
-      const handlers = {
-        onConnect: () => {
-          onConnectDefer.resolve()
-        },
-        onDisconnect: () => {
-          onDisconnectDefer.resolve()
+      const topologyProps = {
+        multicodecs: multicodec,
+        handlers: {
+          onConnect: () => {
+            onConnectDefer.resolve()
+          },
+          onDisconnect: () => {
+            onDisconnectDefer.resolve()
+          }
         }
       }
 
       // Register protocol
-      const identifier = registrar.register(multicodec, handlers)
+      const identifier = registrar.register(topologyProps)
       const topology = registrar.topologies.get(identifier)
 
       // Topology created

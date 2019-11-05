@@ -78,7 +78,7 @@ class Libp2p extends EventEmitter {
       onConnectionEnd: (connection) => {
         const peerInfo = getPeerInfo(connection.remotePeer)
 
-        this.registrar.onDisconnect(peerInfo)
+        this.registrar.onDisconnect(peerInfo, connection)
         this.emit('peer:disconnect', peerInfo)
       }
     })
