@@ -9,6 +9,7 @@ const { collect, take } = require('streaming-iterables')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
+const { toBuffer } = require('../util')
 
 const Message = require('./message')
 
@@ -22,11 +23,8 @@ const {
   PROTOCOL_VERSION
 } = require('./consts')
 
-const {
-  ERR_CONNECTION_ENDED,
-  ERR_INVALID_MESSAGE,
-  ERR_INVALID_PEER
-} = require('./errors')
+const errCode = require('err-code')
+const { codes } = require('../errors')
 
 class IdentifyService {
   /**
@@ -109,9 +107,9 @@ class IdentifyService {
         return
       }
 
-      const connection = this.registrar.getPeerConnection(peerInfo)
+      const connection = this.registrar.getConnection(peerInfo)
       try {
-        const stream = await connection.newStream(MULTICODEC_IDENTIFY_PUSH)
+        const { stream } = await connection.newStream(MULTICODEC_IDENTIFY_PUSH)
 
         await pipe(
           [{
@@ -137,26 +135,27 @@ class IdentifyService {
    *
    * @param {Connection} connection
    * @param {PeerInfo} expectedPeerInfo The PeerInfo the identify response should match
-   * @returns {void}
+   * @returns {{peerInfo: PeerInfo, observedAddr: Multiaddr}}
    */
   async identify (connection, expectedPeerInfo) {
-    const stream = await connection.newStream(MULTICODEC_IDENTIFY)
-    const data = await pipe(
+    const { stream } = await connection.newStream(MULTICODEC_IDENTIFY)
+    const [data] = await pipe(
       stream,
       lp.decode(),
       take(1),
+      toBuffer,
       collect
     )
 
-    if (data.length === 0) {
-      throw ERR_CONNECTION_ENDED()
+    if (!data) {
+      throw errCode('No data could be retrieved', codes.ERR_CONNECTION_ENDED)
     }
 
     let message
     try {
-      message = Message.decode(data[0])
+      message = Message.decode(data)
     } catch (err) {
-      throw ERR_INVALID_MESSAGE(err)
+      throw errCode(err, codes.ERR_INVALID_MESSAGE)
     }
 
     let {
@@ -169,7 +168,7 @@ class IdentifyService {
     const id = await PeerId.createFromPubKey(publicKey)
     const peerInfo = new PeerInfo(id)
     if (expectedPeerInfo && expectedPeerInfo.id.toB58String() !== id.toB58String()) {
-      throw ERR_INVALID_PEER()
+      throw errCode('identified peer does not match the expected peer', codes.ERR_INVALID_PEER)
     }
 
     // Get the observedAddr if there is one
@@ -192,15 +191,14 @@ class IdentifyService {
    * @param {String} options.protocol
    * @param {*} options.stream
    * @param {Connection} options.connection
+   * @returns {Promise<void>}
    */
   handleMessage ({ connection, stream, protocol }) {
     switch (protocol) {
       case MULTICODEC_IDENTIFY:
-        this._handleIdentify({ connection, stream })
-        break
+        return this._handleIdentify({ connection, stream })
       case MULTICODEC_IDENTIFY_PUSH:
-        this._handlePush({ connection, stream })
-        break
+        return this._handlePush({ connection, stream })
       default:
         log.error('cannot handle unknown protocol %s', protocol)
     }
@@ -244,16 +242,17 @@ class IdentifyService {
    * @param {Connection} options.connection
    */
   async _handlePush ({ connection, stream }) {
-    const data = await pipe(
+    const [data] = await pipe(
       stream,
       lp.decode(),
       take(1),
+      toBuffer,
       collect
     )
 
     let message
     try {
-      message = Message.decode(data[0])
+      message = Message.decode(data)
     } catch (err) {
       return log.error('received invalid message', err)
     }
@@ -271,13 +270,13 @@ class IdentifyService {
   }
 }
 
-module.exports = IdentifyService
+module.exports.IdentifyService = IdentifyService
 /**
  * The protocols the IdentifyService supports
  * @property multicodecs
  */
 module.exports.multicodecs = {
-  identify: MULTICODEC_IDENTIFY,
-  push: MULTICODEC_IDENTIFY_PUSH
+  IDENTIFY: MULTICODEC_IDENTIFY,
+  IDENTIFY_PUSH: MULTICODEC_IDENTIFY_PUSH
 }
 module.exports.Message = Message

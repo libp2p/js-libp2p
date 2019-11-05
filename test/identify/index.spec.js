@@ -1,0 +1,153 @@
+'use strict'
+/* eslint-env mocha */
+
+const chai = require('chai')
+chai.use(require('dirty-chai'))
+const { expect } = chai
+const sinon = require('sinon')
+
+const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
+const duplexPair = require('it-pair/duplex')
+const multiaddr = require('multiaddr')
+
+const { codes: Errors } = require('../../src/errors')
+const { IdentifyService, multicodecs } = require('../../src/identify')
+const Peers = require('../fixtures/peers')
+
+describe('Identify', () => {
+  let localPeer
+  let remotePeer
+
+  before(async () => {
+    [localPeer, remotePeer] = (await Promise.all([
+      PeerId.createFromJSON(Peers[0]),
+      PeerId.createFromJSON(Peers[1])
+    ])).map(id => new PeerInfo(id))
+  })
+
+  afterEach(() => {
+    sinon.restore()
+  })
+
+  it('should be able identify another peer', async () => {
+    const localIdentify = new IdentifyService({
+      peerInfo: localPeer
+    })
+    const remoteIdentify = new IdentifyService({
+      peerInfo: remotePeer
+    })
+
+    const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
+    const localConnectionMock = { newStream: () => {} }
+    const remoteConnectionMock = { remoteAddr: observedAddr }
+
+    const [local, remote] = duplexPair()
+    sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY })
+
+    // Run identify
+    const [result] = await Promise.all([
+      localIdentify.identify(localConnectionMock, remotePeer),
+      remoteIdentify.handleMessage({
+        connection: remoteConnectionMock,
+        stream: remote,
+        protocol: multicodecs.IDENTIFY
+      })
+    ])
+
+    expect(result).to.exist()
+    expect(result.peerInfo.id.bytes).to.equal(remotePeer.id.bytes)
+    expect(result.observedAddr).to.eql(observedAddr)
+  })
+
+  it('should throw if identified peer is the wrong peer', async () => {
+    const localIdentify = new IdentifyService({
+      peerInfo: localPeer
+    })
+    const remoteIdentify = new IdentifyService({
+      peerInfo: remotePeer
+    })
+
+    const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
+    const localConnectionMock = { newStream: () => {} }
+    const remoteConnectionMock = { remoteAddr: observedAddr }
+
+    const [local, remote] = duplexPair()
+    sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY })
+
+    // Run identify
+    try {
+      await Promise.all([
+        localIdentify.identify(localConnectionMock, localPeer),
+        remoteIdentify.handleMessage({
+          connection: remoteConnectionMock,
+          stream: remote,
+          protocol: multicodecs.IDENTIFY
+        })
+      ])
+      expect.fail('should have thrown')
+    } catch (err) {
+      expect(err).to.exist()
+      expect(err.code).to.eql(Errors.ERR_INVALID_PEER)
+    }
+  })
+
+  describe('push', () => {
+    it('should be able push identify updates to another peer', async () => {
+      const localIdentify = new IdentifyService({
+        peerInfo: localPeer,
+        registrar: { getConnection: () => {} }
+      })
+      const remoteIdentify = new IdentifyService({
+        peerInfo: remotePeer,
+        registrar: {
+          peerStore: {
+            get: () => {}
+          }
+        }
+      })
+
+      // Setup peer protocols and multiaddrs
+      const localProtocols = new Set([multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH, '/echo/1.0.0'])
+      const listeningAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
+      sinon.stub(localPeer.multiaddrs, 'toArray').returns([listeningAddr])
+      sinon.stub(localPeer, 'protocols').value(localProtocols)
+      sinon.stub(remotePeer, 'protocols').value(new Set([multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH]))
+
+      const localConnectionMock = { newStream: () => {} }
+      const remoteConnectionMock = { remotePeer: localPeer.id }
+
+      const [local, remote] = duplexPair()
+      sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY_PUSH })
+      // Mock the registrar to return the local connection
+      sinon.stub(localIdentify.registrar, 'getConnection').returns(localConnectionMock)
+
+      const mockPeerInfo = {
+        multiaddrs: { add: sinon.stub(), clear: sinon.stub() },
+        protocols: { add: sinon.stub(), clear: sinon.stub() }
+      }
+      sinon.stub(remoteIdentify.registrar.peerStore, 'get').returns(mockPeerInfo)
+
+      sinon.spy(IdentifyService, 'updatePeerAddresses')
+      sinon.spy(IdentifyService, 'updatePeerProtocols')
+
+      // Run identify
+      await Promise.all([
+        localIdentify.push([remotePeer]),
+        remoteIdentify.handleMessage({
+          connection: remoteConnectionMock,
+          stream: remote,
+          protocol: multicodecs.IDENTIFY_PUSH
+        })
+      ])
+
+      expect(IdentifyService.updatePeerAddresses.callCount).to.equal(1)
+      expect(IdentifyService.updatePeerProtocols.callCount).to.equal(1)
+
+      expect(mockPeerInfo.multiaddrs.clear.callCount).to.equal(1)
+      expect(mockPeerInfo.multiaddrs.add.args).to.eql([[listeningAddr.buffer]])
+      expect(mockPeerInfo.protocols.clear.callCount).to.equal(1)
+      expect(mockPeerInfo.protocols.add.args).to.eql(Array.from(localProtocols).map(p => [p]))
+    })
+  })
+})
