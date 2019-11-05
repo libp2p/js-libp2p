@@ -100,7 +100,7 @@ class IdentifyService {
   /**
    * Send an Identify Push update to the list of peers
    * @param {Array<PeerInfo>} peers
-   * @returns Promise<void>
+   * @returns {Promise<void>}
    */
   push (peers) {
     const pushes = peers.map(async peerInfo => {
@@ -124,7 +124,6 @@ class IdentifyService {
       } catch (err) {
         // Just log errors
         log.error('could not push identify update to peer', err)
-        return
       }
     })
 
