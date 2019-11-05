@@ -8,17 +8,18 @@ const errCode = require('err-code')
 
 const { Connection } = require('libp2p-interfaces/src/connection')
 const PeerInfo = require('peer-info')
-const MulticodecTopology = require('./connection-manager/topology')
+const Toplogy = require('./connection-manager/topology')
 
 /**
  * Responsible for notifying registered protocols of events in the network.
  */
 class Registrar {
   /**
-   * @param {PeerStore} peerStore
+   * @param {Object} props
+   * @param {PeerStore} props.peerStore
    * @constructor
    */
-  constructor (peerStore) {
+  constructor ({ peerStore }) {
     this.peerStore = peerStore
 
     /**
@@ -29,11 +30,11 @@ class Registrar {
     this.connections = new Map()
 
     /**
-     * Map of topologies per multicodec
+     * Map of topologies
      *
      * @type {Map<string, object>}
      */
-    this.multicodecTopologies = new Map()
+    this.topologies = new Map()
 
     this._handle = undefined
   }
@@ -70,7 +71,7 @@ class Registrar {
   onDisconnect (peerInfo, error) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
 
-    for (const [, topology] of this.multicodecTopologies) {
+    for (const [, topology] of this.topologies) {
       topology.disconnect(peerInfo, error)
     }
 
@@ -82,7 +83,7 @@ class Registrar {
    * @param {PeerInfo} peerInfo
    * @returns {Connection}
    */
-  getPeerConnection (peerInfo) {
+  getConnection (peerInfo) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
 
     return this.connections.get(peerInfo.id.toB58String())
@@ -94,10 +95,10 @@ class Registrar {
    * @param {object} handlers
    * @param {function} handlers.onConnect
    * @param {function} handlers.onDisconnect
-   * @param {object} topology properties for topology
+   * @param {object} topologyProps properties for topology
    * @return {string} registrar identifier
    */
-  register (multicodecs, handlers, topology = {}) {
+  register (multicodecs, handlers, topologyProps = {}) {
     if (!multicodecs) {
       throw errCode(new Error('one or more multicodec should be provided'), 'ERR_NO_MULTICODECS')
     } else if (!Array.isArray(multicodecs)) {
@@ -113,35 +114,39 @@ class Registrar {
     }
 
     // Create multicodec topology
-    const multicodecTopology = new MulticodecTopology({
+    const topology = new Toplogy({
       onConnect: handlers.onConnect,
       onDisconnect: handlers.onDisconnect,
       registrar: this,
       multicodecs,
-      ...topology
+      peerStore: this.peerStore,
+      ...topologyProps
     })
 
-    multicodecTopology.peerStore = this.peerStore
-
     const id = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
-    this.multicodecTopologies.set(id, multicodecTopology)
+    this.topologies.set(id, topology)
 
-    this._addConnectedPeers(multicodecs, multicodecTopology)
+    this._addConnectedPeers(multicodecs, topology)
 
     // TODO: try to connect to peers-store peers according to current topology
 
     return id
   }
 
-  _addConnectedPeers (multicodecs, multicodecTopology) {
-    const knownPeers = this.peerStore.getAllArray()
-      .filter((peerInfo) => multicodecs.filter(multicodec => peerInfo.protocols.has(multicodec)))
+  _addConnectedPeers (multicodecs, topology) {
+    const knownPeers = []
+
+    for (const [, peer] of this.peerStore.peers) {
+      if (multicodecs.filter(multicodec => peer.protocols.has(multicodec))) {
+        knownPeers.push(peer)
+      }
+    }
 
     for (const [id, conn] of this.connections.entries()) {
       const targetPeer = knownPeers.find((peerInfo) => peerInfo.id.toB58String() === id)
 
       if (targetPeer) {
-        multicodecTopology.tryToConnect(targetPeer, conn)
+        topology.tryToConnect(targetPeer, conn)
       }
     }
   }
@@ -149,16 +154,10 @@ class Registrar {
   /**
    * Unregister topology.
    * @param {string} id registrar identifier
-   * @return {void}
+   * @return {boolean} unregistered successfully
    */
   unregister (id) {
-    const topology = this.multicodecTopologies.get(id)
-
-    if (!topology) {
-      throw errCode(new Error('no registrar found for the provided id'), 'ERR_NO_REGISTRAR')
-    }
-
-    this.multicodecTopologies.delete(id)
+    return this.topologies.delete(id)
   }
 }
 

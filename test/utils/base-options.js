@@ -2,12 +2,12 @@
 
 const Transport = require('libp2p-tcp')
 const Muxer = require('libp2p-mplex')
-const mockCrypto = require('../utils/mockCrypto')
+const Crypto = require('../../src/insecure/plaintext')
 
 module.exports = {
   modules: {
     transport: [Transport],
     streamMuxer: [Muxer],
-    connEncryption: [mockCrypto]
+    connEncryption: [Crypto]
   }
 }

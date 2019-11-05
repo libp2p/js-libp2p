@@ -4,10 +4,9 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
-
 const pDefer = require('p-defer')
-const PeerInfo = require('peer-info')
 
+const PeerInfo = require('peer-info')
 const PeerStore = require('../../src/peer-store')
 const Registrar = require('../../src/registrar')
 const { createMockConnection } = require('./utils')
@@ -20,7 +19,7 @@ describe('registrar', () => {
   describe('erros', () => {
     beforeEach(() => {
       peerStore = new PeerStore()
-      registrar = new Registrar(peerStore)
+      registrar = new Registrar({ peerStore })
     })
 
     it('should fail to register a protocol if no multicodec is provided', () => {
@@ -79,7 +78,7 @@ describe('registrar', () => {
   describe('registration', () => {
     beforeEach(() => {
       peerStore = new PeerStore()
-      registrar = new Registrar(peerStore)
+      registrar = new Registrar({ peerStore })
     })
 
     it('should be able to register a protocol', () => {
@@ -100,19 +99,15 @@ describe('registrar', () => {
       }
 
       const identifier = registrar.register(multicodec, handlers)
+      const success = registrar.unregister(identifier)
 
-      registrar.unregister(identifier)
+      expect(success).to.eql(true)
     })
 
     it('should fail to unregister if no register was made', () => {
-      try {
-        registrar.unregister('bad-identifier')
-      } catch (err) {
-        expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NO_REGISTRAR')
-        return
-      }
-      throw new Error('should fail to unregister if no register was made')
+      const success = registrar.unregister('bad-identifier')
+
+      expect(success).to.eql(false)
     })
 
     it('should call onConnect handler for connected peers after register', async () => {
@@ -147,7 +142,7 @@ describe('registrar', () => {
 
       // Register protocol
       const identifier = registrar.register(multicodec, handlers)
-      const topology = registrar.multicodecTopologies.get(identifier)
+      const topology = registrar.topologies.get(identifier)
 
       // Topology created
       expect(topology).to.exist()
@@ -179,7 +174,7 @@ describe('registrar', () => {
 
       // Register protocol
       const identifier = registrar.register(multicodec, handlers)
-      const topology = registrar.multicodecTopologies.get(identifier)
+      const topology = registrar.topologies.get(identifier)
 
       // Topology created
       expect(topology).to.exist()
@@ -188,24 +183,22 @@ describe('registrar', () => {
 
       // Setup connections before registrar
       const conn = await createMockConnection()
-      const initialRemotePeerInfo = await PeerInfo.create(conn.remotePeer)
+      const peerInfo = await PeerInfo.create(conn.remotePeer)
 
       // Add connected peer to peerStore and registrar
-      peerStore.put(initialRemotePeerInfo)
-      registrar.onConnect(initialRemotePeerInfo, conn)
+      peerStore.put(peerInfo)
+      registrar.onConnect(peerInfo, conn)
 
       // Add protocol to peer and update it
-      const withProtocolRemotePeerInfo = await PeerInfo.create(conn.remotePeer)
-      withProtocolRemotePeerInfo.protocols.add(multicodec)
-      peerStore.put(withProtocolRemotePeerInfo)
+      peerInfo.protocols.add(multicodec)
+      peerStore.put(peerInfo)
 
       await onConnectDefer.promise
       expect(topology.peers.size).to.eql(1)
 
       // Remove protocol to peer and update it
-      const withoutProtocolRemotePeerInfo = await PeerInfo.create(conn.remotePeer)
-      withoutProtocolRemotePeerInfo.protocols.delete(multicodec)
-      peerStore.put(withoutProtocolRemotePeerInfo)
+      peerInfo.protocols.delete(multicodec)
+      peerStore.put(peerInfo)
 
       await onDisconnectDefer.promise
     })

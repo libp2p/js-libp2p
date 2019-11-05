@@ -43,25 +43,15 @@ describe('registrar on dial', () => {
       peerInfo
     }))
 
-    sinon.spy(libp2p.registrar, 'onConnect')
-    sinon.spy(libp2p.registrar, 'onDisconnect')
+    sinon.spy(remoteLibp2p.registrar, 'onConnect')
 
-    const connection = await libp2p.dial(remoteAddr)
+    await libp2p.dial(remoteAddr)
+    expect(remoteLibp2p.registrar.onConnect.callCount).to.equal(1)
 
-    expect(libp2p.registrar.onConnect.callCount).to.equal(1)
-    expect(libp2p.registrar.onDisconnect.callCount).to.equal(0)
-
-    // TODO: needs crypto PR fix
-    // const libp2pConn = libp2p.registrar.getPeerConnection(remotePeerInfo)
-    const libp2pConn = libp2p.registrar.getPeerConnection(peerInfo)
+    const libp2pConn = libp2p.registrar.getConnection(remotePeerInfo)
     expect(libp2pConn).to.exist()
 
-    // TODO: needs crypto PR fix
-    // const conn = libp2p.registrar.getPeerConnection(peerInfo)
-    const remoteConn = remoteLibp2p.registrar.getPeerConnection(remotePeerInfo)
+    const remoteConn = remoteLibp2p.registrar.getConnection(peerInfo)
     expect(remoteConn).to.exist()
-
-    await connection.close()
-    expect(libp2p.registrar.onDisconnect.callCount).to.equal(1)
   })
 })

@@ -17,7 +17,8 @@ class Topology {
     onConnect,
     onDisconnect,
     multicodecs,
-    registrar
+    registrar,
+    peerStore
   }) {
     this.multicodecs = multicodecs
     this.registrar = registrar
@@ -32,14 +33,6 @@ class Topology {
     this._onProtocolChange = this._onProtocolChange.bind(this)
 
     // Set by the registrar
-    this._peerStore = null
-  }
-
-  /**
-   * Set peerstore to the topology.
-   * @param {PeerStore} peerStore
-   */
-  set peerStore (peerStore) {
     this._peerStore = peerStore
 
     this._peerStore.on('change:protocols', this._onProtocolChange)
@@ -92,7 +85,7 @@ class Topology {
     // New to protocol support
     for (const protocol of protocols) {
       if (this.multicodecs.includes(protocol)) {
-        this.tryToConnect(peerInfo, this.registrar.getPeerConnection(peerInfo))
+        this.tryToConnect(peerInfo, this.registrar.getConnection(peerInfo))
         return
       }
     }

@@ -112,7 +112,7 @@ class Libp2p extends EventEmitter {
       transportManager: this.transportManager
     })
 
-    this.registrar = new Registrar(this.peerStore)
+    this.registrar = new Registrar({ peerStore: this.peerStore })
     this.handle = this.handle.bind(this)
     this.registrar.handle = this.handle
 

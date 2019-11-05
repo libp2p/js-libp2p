@@ -148,8 +148,6 @@ class PeerStore extends EventEmitter {
     if (!recorded.id.pubKey && peerInfo.id.pubKey) {
       recorded.id.pubKey = peerInfo.id.pubKey
     }
-
-    // this.peers.set(id, recorded)
   }
 
   /**
