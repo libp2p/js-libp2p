@@ -1,6 +1,6 @@
 'use strict'
 
-const setImmediate = require('async/setImmediate')
+const nextTick = require('async/nextTick')
 const multiaddr = require('multiaddr')
 const errCode = require('err-code')
 const { default: PQueue } = require('p-queue')
@@ -83,7 +83,7 @@ class Dialer {
 
     // Perform a delayed Identify handshake
     if (this.identifyService) {
-      setImmediate(async () => {
+      nextTick(async () => {
         try {
           await this.identifyService.identify(conn, conn.remotePeer)
           // TODO: Update the PeerStore with the information from identify

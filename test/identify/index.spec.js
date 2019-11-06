@@ -34,7 +34,7 @@ describe('Identify', () => {
     sinon.restore()
   })
 
-  it('should be able identify another peer', async () => {
+  it('should be able to identify another peer', async () => {
     const localIdentify = new IdentifyService({
       peerInfo: localPeer,
       protocols,
@@ -109,7 +109,7 @@ describe('Identify', () => {
   })
 
   describe('push', () => {
-    it('should be able push identify updates to another peer', async () => {
+    it('should be able to push identify updates to another peer', async () => {
       const localIdentify = new IdentifyService({
         peerInfo: localPeer,
         registrar: { getConnection: () => {} },

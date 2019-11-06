@@ -79,7 +79,7 @@ class IdentifyService {
   /**
    * @constructor
    * @param {object} options
-   * @param {Dialer} options.registrar
+   * @param {Registrar} options.registrar
    * @param {Map<string, handler>} options.protocols A reference to the protocols we support
    * @param {PeerInfo} options.peerInfo The peer running the identify service
    */
@@ -134,7 +134,7 @@ class IdentifyService {
   /**
    * Requests the `Identify` message from peer associated with the given `connection`.
    * If the identified peer does not match the `PeerId` associated with the connection,
-   * an error will be passed to the `callback`.
+   * an error will be thrown.
    *
    * @async
    * @param {Connection} connection
@@ -152,7 +152,7 @@ class IdentifyService {
     )
 
     if (!data) {
-      throw errCode('No data could be retrieved', codes.ERR_CONNECTION_ENDED)
+      throw errCode(new Error('No data could be retrieved'), codes.ERR_CONNECTION_ENDED)
     }
 
     let message
@@ -172,7 +172,7 @@ class IdentifyService {
     const id = await PeerId.createFromPubKey(publicKey)
     const peerInfo = new PeerInfo(id)
     if (expectedPeer && expectedPeer.toB58String() !== id.toB58String()) {
-      throw errCode('identified peer does not match the expected peer', codes.ERR_INVALID_PEER)
+      throw errCode(new Error('identified peer does not match the expected peer'), codes.ERR_INVALID_PEER)
     }
 
     // Get the observedAddr if there is one
