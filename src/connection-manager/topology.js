@@ -44,45 +44,28 @@ class Topology {
     this._registrar = registrar
     this._registrar.peerStore.on('change:protocols', this._onProtocolChange)
 
-    // Add connected peers to the topology
-    this._addConnectedPeers()
-    // TODO: remaining peers in the store
+    // Update topology peers
+    this._updatePeers(this._registrar.peerStore.peers.values())
   }
 
   /**
-   * Add connected peers to the topology.
-   */
-  _addConnectedPeers () {
-    const knownPeers = []
-
-    for (const [, peer] of this._registrar.peerStore.peers) {
-      if (this.multicodecs.filter(multicodec => peer.protocols.has(multicodec))) {
-        knownPeers.push(peer)
-      }
-    }
-
-    for (const [id, conn] of this._registrar.connections.entries()) {
-      const targetPeer = knownPeers.find((peerInfo) => peerInfo.id.toB58String() === id)
-
-      if (targetPeer) {
-        // TODO: what should we return
-        this.tryToConnect(targetPeer, conn[0])
-      }
-    }
-  }
-
-  /**
-   * Try to add a connected peer to the topology, if inside the thresholds.
-   * @param {PeerInfo} peerInfo
-   * @param {Connection} connection
+   * Update topology.
+   * @param {Array<PeerInfo>} peerInfoIterable
    * @returns {void}
    */
-  tryToConnect (peerInfo, connection) {
-    // TODO: conn manager should validate if it should try to connect
-
-    this._onConnect(peerInfo, connection)
-
-    this.peers.set(peerInfo.id.toB58String(), peerInfo)
+  _updatePeers (peerInfoIterable) {
+    for (const peerInfo of peerInfoIterable) {
+      if (this.multicodecs.filter(multicodec => peerInfo.protocols.has(multicodec))) {
+        // Add the peer regardless of whether or not there is currently a connection
+        this.peers.set(peerInfo.id.toB58String(), peerInfo)
+        // If there is a connection, call _onConnect
+        const connection = this._registrar.getConnection(peerInfo)
+        connection && this._onConnect(peerInfo, connection)
+      } else {
+        // Remove any peers we might be tracking that are no longer of value to us
+        this.peers.delete(peerInfo.id.toB58String())
+      }
+    }
   }
 
   /**
@@ -105,11 +88,10 @@ class Topology {
    */
   _onProtocolChange ({ peerInfo, protocols }) {
     const existingPeer = this.peers.get(peerInfo.id.toB58String())
-
-    protocols.filter(protocol => this.multicodecs.includes(protocol))
+    const hasProtocol = protocols.filter(protocol => this.multicodecs.includes(protocol))
 
     // Not supporting the protocol anymore?
-    if (existingPeer && protocols.filter(protocol => this.multicodecs.includes(protocol)).length === 0) {
+    if (existingPeer && hasProtocol.length === 0) {
       this._onDisconnect({
         peerInfo
       })
@@ -118,7 +100,7 @@ class Topology {
     // New to protocol support
     for (const protocol of protocols) {
       if (this.multicodecs.includes(protocol)) {
-        this.tryToConnect(peerInfo, this._registrar.getConnection(peerInfo))
+        this._updatePeers([peerInfo])
         return
       }
     }
