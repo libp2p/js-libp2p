@@ -80,6 +80,7 @@ class IdentifyService {
    * @constructor
    * @param {object} options
    * @param {Dialer} options.registrar
+   * @param {Map<string, handler>} options.protocols A reference to the protocols we support
    * @param {PeerInfo} options.peerInfo The peer running the identify service
    */
   constructor (options) {
@@ -91,6 +92,8 @@ class IdentifyService {
      * @property {PeerInfo}
      */
     this.peerInfo = options.peerInfo
+
+    this._protocols = options.protocols
 
     this.handleMessage = this.handleMessage.bind(this)
   }
@@ -114,7 +117,7 @@ class IdentifyService {
         await pipe(
           [{
             listenAddrs: this.peerInfo.multiaddrs.toArray().map((ma) => ma.buffer),
-            protocols: Array.from(this.peerInfo.protocols)
+            protocols: Array.from(this._protocols.keys())
           }],
           pb.encode(Message),
           stream
@@ -134,10 +137,10 @@ class IdentifyService {
    * an error will be passed to the `callback`.
    *
    * @param {Connection} connection
-   * @param {PeerInfo} expectedPeerInfo The PeerInfo the identify response should match
+   * @param {PeerID} expectedPeer The PeerId the identify response should match
    * @returns {{peerInfo: PeerInfo, observedAddr: Multiaddr}}
    */
-  async identify (connection, expectedPeerInfo) {
+  async identify (connection, expectedPeer) {
     const { stream } = await connection.newStream(MULTICODEC_IDENTIFY)
     const [data] = await pipe(
       stream,
@@ -167,7 +170,7 @@ class IdentifyService {
 
     const id = await PeerId.createFromPubKey(publicKey)
     const peerInfo = new PeerInfo(id)
-    if (expectedPeerInfo && expectedPeerInfo.id.toB58String() !== id.toB58String()) {
+    if (expectedPeer && expectedPeer.toB58String() !== id.toB58String()) {
       throw errCode('identified peer does not match the expected peer', codes.ERR_INVALID_PEER)
     }
 
@@ -224,7 +227,7 @@ class IdentifyService {
       publicKey,
       listenAddrs: this.peerInfo.multiaddrs.toArray().map((ma) => ma.buffer),
       observedAddr: connection.remoteAddr.buffer,
-      protocols: Array.from(this.peerInfo.protocols)
+      protocols: Array.from(this._protocols.keys())
     })
 
     pipe(

@@ -18,6 +18,10 @@ const Peers = require('../fixtures/peers')
 describe('Identify', () => {
   let localPeer
   let remotePeer
+  const protocols = new Map([
+    [multicodecs.IDENTIFY, () => {}],
+    [multicodecs.IDENTIFY_PUSH, () => {}]
+  ])
 
   before(async () => {
     [localPeer, remotePeer] = (await Promise.all([
@@ -32,10 +36,12 @@ describe('Identify', () => {
 
   it('should be able identify another peer', async () => {
     const localIdentify = new IdentifyService({
-      peerInfo: localPeer
+      peerInfo: localPeer,
+      protocols
     })
     const remoteIdentify = new IdentifyService({
-      peerInfo: remotePeer
+      peerInfo: remotePeer,
+      protocols
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
@@ -47,7 +53,7 @@ describe('Identify', () => {
 
     // Run identify
     const [result] = await Promise.all([
-      localIdentify.identify(localConnectionMock, remotePeer),
+      localIdentify.identify(localConnectionMock, remotePeer.id),
       remoteIdentify.handleMessage({
         connection: remoteConnectionMock,
         stream: remote,
@@ -62,10 +68,12 @@ describe('Identify', () => {
 
   it('should throw if identified peer is the wrong peer', async () => {
     const localIdentify = new IdentifyService({
-      peerInfo: localPeer
+      peerInfo: localPeer,
+      protocols
     })
     const remoteIdentify = new IdentifyService({
-      peerInfo: remotePeer
+      peerInfo: remotePeer,
+      protocols
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
@@ -78,7 +86,7 @@ describe('Identify', () => {
     // Run identify
     try {
       await Promise.all([
-        localIdentify.identify(localConnectionMock, localPeer),
+        localIdentify.identify(localConnectionMock, localPeer.id),
         remoteIdentify.handleMessage({
           connection: remoteConnectionMock,
           stream: remote,
@@ -96,7 +104,12 @@ describe('Identify', () => {
     it('should be able push identify updates to another peer', async () => {
       const localIdentify = new IdentifyService({
         peerInfo: localPeer,
-        registrar: { getConnection: () => {} }
+        registrar: { getConnection: () => {} },
+        protocols: new Map([
+          [multicodecs.IDENTIFY],
+          [multicodecs.IDENTIFY_PUSH],
+          ['/echo/1.0.0']
+        ])
       })
       const remoteIdentify = new IdentifyService({
         peerInfo: remotePeer,

@@ -1,5 +1,6 @@
 'use strict'
 
+const setImmediate = require('async/setImmediate')
 const multiaddr = require('multiaddr')
 const errCode = require('err-code')
 const { default: PQueue } = require('p-queue')
@@ -31,6 +32,22 @@ class Dialer {
     this.concurrency = concurrency
     this.timeout = timeout
     this.queue = new PQueue({ concurrency, timeout, throwOnTimeout: true })
+
+    /**
+     * @property {IdentifyService}
+     */
+    this._identifyService = null
+  }
+
+  set identifyService (service) {
+    this._identifyService = service
+  }
+
+  /**
+   * @type {IdentifyService}
+   */
+  get identifyService () {
+    return this._identifyService
   }
 
   /**
@@ -62,6 +79,18 @@ class Dialer {
       }
       log.error('Error dialing address %s,', addr, err)
       throw err
+    }
+
+    // Perform a delayed Identify handshake
+    if (this.identifyService) {
+      setImmediate(async () => {
+        try {
+          await this.identifyService.identify(conn, conn.remotePeer)
+          // TODO: Update the PeerStore with the information from identify
+        } catch (err) {
+          log.error(err)
+        }
+      })
     }
 
     return conn

@@ -182,10 +182,14 @@ class Upgrader {
       // Run anytime a remote stream is created
       onStream: async muxedStream => {
         const mss = new Multistream.Listener(muxedStream)
-        const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
-        log('%s: incoming stream opened on %s', direction, protocol)
-        connection.addStream(stream, protocol)
-        this._onStream({ connection, stream, protocol })
+        try {
+          const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
+          log('%s: incoming stream opened on %s', direction, protocol)
+          connection.addStream(stream, protocol)
+          this._onStream({ connection, stream, protocol })
+        } catch (err) {
+          log.error(err)
+        }
       },
       // Run anytime a stream closes
       onStreamEnd: muxedStream => {

@@ -30,6 +30,10 @@ const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
 const Registrar = require('./registrar')
+const {
+  IdentifyService,
+  multicodecs: IDENTIFY_PROTOCOLS
+} = require('./identify')
 
 const notStarted = (action, state) => {
   return errCode(
@@ -100,17 +104,25 @@ class Libp2p extends EventEmitter {
       })
     }
 
+    this.dialer = new Dialer({
+      transportManager: this.transportManager
+    })
+
     // Attach stream multiplexers
     if (this._modules.streamMuxer) {
       const muxers = this._modules.streamMuxer
       muxers.forEach((muxer) => {
         this.upgrader.muxers.set(muxer.multicodec, muxer)
       })
-    }
 
-    this.dialer = new Dialer({
-      transportManager: this.transportManager
-    })
+      // Add the identify service since we can multiplex
+      this.dialer.identifyService = new IdentifyService({
+        registrar: {},
+        peerInfo: this.peerInfo,
+        protocols: this.upgrader.protocols
+      })
+      this.handle(Object.values(IDENTIFY_PROTOCOLS), this.dialer.identifyService.handleMessage)
+    }
 
     this.registrar = new Registrar({ peerStore: this.peerStore })
     this.handle = this.handle.bind(this)

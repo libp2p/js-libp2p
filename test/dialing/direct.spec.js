@@ -218,5 +218,27 @@ describe('Dialing (direct, WebSockets)', () => {
       await connection.close()
       expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
     })
+
+    it('should run identify automatically after connecting', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      sinon.spy(libp2p.dialer.identifyService, 'identify')
+
+      const connection = await libp2p.dial(remoteAddr)
+      expect(connection).to.exist()
+      // Wait for setImmediate to trigger the identify call
+      await delay(1)
+      expect(libp2p.dialer.identifyService.identify.callCount).to.equal(1)
+      const result = await libp2p.dialer.identifyService.identify.firstCall.returnValue
+      expect(result.peerInfo.id.toB58String()).to.equal(remoteAddr.getPeerId())
+      expect(multiaddr.isMultiaddr(result.observedAddr)).to.equal(true)
+    })
   })
 })
