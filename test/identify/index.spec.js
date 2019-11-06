@@ -37,7 +37,12 @@ describe('Identify', () => {
   it('should be able identify another peer', async () => {
     const localIdentify = new IdentifyService({
       peerInfo: localPeer,
-      protocols
+      protocols,
+      registrar: {
+        peerStore: {
+          update: () => {}
+        }
+      }
     })
     const remoteIdentify = new IdentifyService({
       peerInfo: remotePeer,
@@ -51,8 +56,10 @@ describe('Identify', () => {
     const [local, remote] = duplexPair()
     sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY })
 
+    sinon.spy(localIdentify.registrar.peerStore, 'update')
+
     // Run identify
-    const [result] = await Promise.all([
+    await Promise.all([
       localIdentify.identify(localConnectionMock, remotePeer.id),
       remoteIdentify.handleMessage({
         connection: remoteConnectionMock,
@@ -61,9 +68,10 @@ describe('Identify', () => {
       })
     ])
 
-    expect(result).to.exist()
-    expect(result.peerInfo.id.bytes).to.equal(remotePeer.id.bytes)
-    expect(result.observedAddr).to.eql(observedAddr)
+    expect(localIdentify.registrar.peerStore.update.callCount).to.equal(1)
+    // Validate the remote peer gets updated in the peer store
+    const call = localIdentify.registrar.peerStore.update.firstCall
+    expect(call.args[0].id.bytes).to.equal(remotePeer.id.bytes)
   })
 
   it('should throw if identified peer is the wrong peer', async () => {
@@ -115,7 +123,7 @@ describe('Identify', () => {
         peerInfo: remotePeer,
         registrar: {
           peerStore: {
-            get: () => {}
+            update: () => {}
           }
         }
       })
@@ -135,14 +143,9 @@ describe('Identify', () => {
       // Mock the registrar to return the local connection
       sinon.stub(localIdentify.registrar, 'getConnection').returns(localConnectionMock)
 
-      const mockPeerInfo = {
-        multiaddrs: { add: sinon.stub(), clear: sinon.stub() },
-        protocols: { add: sinon.stub(), clear: sinon.stub() }
-      }
-      sinon.stub(remoteIdentify.registrar.peerStore, 'get').returns(mockPeerInfo)
-
       sinon.spy(IdentifyService, 'updatePeerAddresses')
       sinon.spy(IdentifyService, 'updatePeerProtocols')
+      sinon.spy(remoteIdentify.registrar.peerStore, 'update')
 
       // Run identify
       await Promise.all([
@@ -157,10 +160,11 @@ describe('Identify', () => {
       expect(IdentifyService.updatePeerAddresses.callCount).to.equal(1)
       expect(IdentifyService.updatePeerProtocols.callCount).to.equal(1)
 
-      expect(mockPeerInfo.multiaddrs.clear.callCount).to.equal(1)
-      expect(mockPeerInfo.multiaddrs.add.args).to.eql([[listeningAddr.buffer]])
-      expect(mockPeerInfo.protocols.clear.callCount).to.equal(1)
-      expect(mockPeerInfo.protocols.add.args).to.eql(Array.from(localProtocols).map(p => [p]))
+      expect(remoteIdentify.registrar.peerStore.update.callCount).to.equal(1)
+      const [peerInfo] = remoteIdentify.registrar.peerStore.update.firstCall.args
+      expect(peerInfo.id.bytes).to.eql(localPeer.id.bytes)
+      expect(peerInfo.multiaddrs.toArray()).to.eql([listeningAddr])
+      expect(peerInfo.protocols).to.eql(localProtocols)
     })
   })
 })

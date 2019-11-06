@@ -87,6 +87,11 @@ class Libp2p extends EventEmitter {
       }
     })
 
+    // Create the Registrar
+    this.registrar = new Registrar({ peerStore: this.peerStore })
+    this.handle = this.handle.bind(this)
+    this.registrar.handle = this.handle
+
     // Setup the transport manager
     this.transportManager = new TransportManager({
       libp2p: this,
@@ -117,16 +122,12 @@ class Libp2p extends EventEmitter {
 
       // Add the identify service since we can multiplex
       this.dialer.identifyService = new IdentifyService({
-        registrar: {},
+        registrar: this.registrar,
         peerInfo: this.peerInfo,
         protocols: this.upgrader.protocols
       })
       this.handle(Object.values(IDENTIFY_PROTOCOLS), this.dialer.identifyService.handleMessage)
     }
-
-    this.registrar = new Registrar({ peerStore: this.peerStore })
-    this.handle = this.handle.bind(this)
-    this.registrar.handle = this.handle
 
     // Attach private network protector
     if (this._modules.connProtector) {

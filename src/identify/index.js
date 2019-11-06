@@ -136,9 +136,10 @@ class IdentifyService {
    * If the identified peer does not match the `PeerId` associated with the connection,
    * an error will be passed to the `callback`.
    *
+   * @async
    * @param {Connection} connection
    * @param {PeerID} expectedPeer The PeerId the identify response should match
-   * @returns {{peerInfo: PeerInfo, observedAddr: Multiaddr}}
+   * @returns {Promise<void>}
    */
   async identify (connection, expectedPeer) {
     const { stream } = await connection.newStream(MULTICODEC_IDENTIFY)
@@ -181,10 +182,9 @@ class IdentifyService {
     IdentifyService.updatePeerAddresses(peerInfo, listenAddrs)
     IdentifyService.updatePeerProtocols(peerInfo, protocols)
 
-    return {
-      peerInfo,
-      observedAddr
-    }
+    this.registrar.peerStore.update(peerInfo)
+    // TODO: Track our observed address so that we can score it
+    log('received observed address of %s', observedAddr)
   }
 
   /**
@@ -261,7 +261,8 @@ class IdentifyService {
     }
 
     // Update the listen addresses
-    const peerInfo = this.registrar.peerStore.get(connection.remotePeer.toB58String())
+    const peerInfo = new PeerInfo(connection.remotePeer)
+
     try {
       IdentifyService.updatePeerAddresses(peerInfo, message.listenAddrs)
     } catch (err) {
@@ -270,6 +271,9 @@ class IdentifyService {
 
     // Update the protocols
     IdentifyService.updatePeerProtocols(peerInfo, message.protocols)
+
+    // Update the peer in the PeerStore
+    this.registrar.peerStore.update(peerInfo)
   }
 }
 

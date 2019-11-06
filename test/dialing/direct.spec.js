@@ -230,15 +230,16 @@ describe('Dialing (direct, WebSockets)', () => {
       })
 
       sinon.spy(libp2p.dialer.identifyService, 'identify')
+      sinon.spy(libp2p.peerStore, 'update')
 
-      const connection = await libp2p.dial(remoteAddr)
+      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
       expect(connection).to.exist()
       // Wait for setImmediate to trigger the identify call
       await delay(1)
       expect(libp2p.dialer.identifyService.identify.callCount).to.equal(1)
-      const result = await libp2p.dialer.identifyService.identify.firstCall.returnValue
-      expect(result.peerInfo.id.toB58String()).to.equal(remoteAddr.getPeerId())
-      expect(multiaddr.isMultiaddr(result.observedAddr)).to.equal(true)
+      await libp2p.dialer.identifyService.identify.firstCall.returnValue
+
+      expect(libp2p.peerStore.update.callCount).to.equal(1)
     })
   })
 })
