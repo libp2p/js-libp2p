@@ -75,9 +75,7 @@ class Topology {
    * @returns {void}
    */
   disconnect (peerInfo, error) {
-    if (this.peers.delete(peerInfo.id.toB58String())) {
-      this._onDisconnect(peerInfo, error)
-    }
+    this._onDisconnect(peerInfo, error)
   }
 
   /**

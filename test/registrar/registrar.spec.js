@@ -165,7 +165,7 @@ describe('registrar', () => {
 
       registrar.onDisconnect(remotePeerInfo)
       expect(registrar.connections.size).to.eql(0)
-      expect(topology.peers.size).to.eql(0)
+      expect(topology.peers.size).to.eql(1) // topology should keep the peer
 
       // Wait for handlers to be called
       return Promise.all([
