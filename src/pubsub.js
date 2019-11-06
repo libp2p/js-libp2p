@@ -46,6 +46,12 @@ module.exports = (node, Pubsub, config) => {
       }
     },
 
+    /**
+     * Publish messages to the given topics.
+     * @param {Array<string>|string} topic
+     * @param {Buffer} data
+     * @returns {Promise<void>}
+     */
     publish: (topic, data) => {
       if (!node.isStarted() && !pubsub.started) {
         throw errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED)
@@ -60,6 +66,10 @@ module.exports = (node, Pubsub, config) => {
       return pubsub.publish(topic, data)
     },
 
+    /**
+     * Get a list of topics the node is subscribed to.
+     * @returns {Array<String>} topics
+     */
     getTopics: () => {
       if (!node.isStarted() && !pubsub.started) {
         throw errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED)
@@ -68,6 +78,11 @@ module.exports = (node, Pubsub, config) => {
       return pubsub.getTopics()
     },
 
+    /**
+     * Get a list of the peer-ids that are subscribed to one topic.
+     * @param {string} topic
+     * @returns {Array<string>}
+     */
     getPeersSubscribed: (topic) => {
       if (!node.isStarted() && !pubsub.started) {
         throw errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED)

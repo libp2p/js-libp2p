@@ -9,12 +9,11 @@ const sinon = require('sinon')
 const pWaitFor = require('p-wait-for')
 const pDefer = require('p-defer')
 const mergeOptions = require('merge-options')
-
 const multiaddr = require('multiaddr')
-const PeerInfo = require('peer-info')
 
 const { create } = require('../../src')
 const { subsystemOptions, subsystemMulticodecs } = require('./utils')
+const peerUtils = require('../utils/creators/peer')
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -25,10 +24,7 @@ describe('Pubsub subsystem operates correctly', () => {
   let remAddr
 
   beforeEach(async () => {
-    [peerInfo, remotePeerInfo] = await Promise.all([
-      PeerInfo.create(),
-      PeerInfo.create()
-    ])
+    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfoFromFixture(2)
 
     peerInfo.multiaddrs.add(listenAddr)
     remotePeerInfo.multiaddrs.add(remoteListenAddr)
@@ -44,8 +40,10 @@ describe('Pubsub subsystem operates correctly', () => {
         peerInfo: remotePeerInfo
       }))
 
-      await libp2p.start()
-      await remoteLibp2p.start()
+      await Promise.all([
+        libp2p.start(),
+        remoteLibp2p.start()
+      ])
 
       remAddr = remoteLibp2p.transportManager.getAddrs()[0]
     })

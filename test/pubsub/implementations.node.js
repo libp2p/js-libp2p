@@ -15,10 +15,10 @@ const { multicodec: floodsubMulticodec } = require('libp2p-floodsub')
 const { multicodec: gossipsubMulticodec } = require('libp2p-gossipsub')
 
 const multiaddr = require('multiaddr')
-const PeerInfo = require('peer-info')
 
 const { create } = require('../../src')
 const { baseOptions } = require('./utils')
+const peerUtils = require('../utils/creators/peer')
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -29,10 +29,7 @@ describe('Pubsub subsystem is able to use different implementations', () => {
   let remAddr
 
   beforeEach(async () => {
-    [peerInfo, remotePeerInfo] = await Promise.all([
-      PeerInfo.create(),
-      PeerInfo.create()
-    ])
+    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfoFromFixture(2)
 
     peerInfo.multiaddrs.add(listenAddr)
     remotePeerInfo.multiaddrs.add(remoteListenAddr)
@@ -79,8 +76,6 @@ describe('Pubsub subsystem is able to use different implementations', () => {
     remAddr = remoteLibp2p.transportManager.getAddrs()[0]
 
     const connection = await libp2p.dialProtocol(remAddr, multicodec)
-
-    await new Promise((resolve) => setTimeout(resolve, 1000))
     expect(connection).to.exist()
 
     libp2p.pubsub.subscribe(topic, (msg) => {
@@ -93,9 +88,8 @@ describe('Pubsub subsystem is able to use different implementations', () => {
       const subscribedPeers = remoteLibp2p.pubsub.getPeersSubscribed(topic)
       return subscribedPeers.includes(libp2pId)
     })
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    remoteLibp2p.pubsub.publish(topic, data)
 
+    remoteLibp2p.pubsub.publish(topic, data)
     await defer.promise
   }
 })

@@ -6,12 +6,11 @@ chai.use(require('dirty-chai'))
 const { expect } = chai
 
 const mergeOptions = require('merge-options')
-
 const multiaddr = require('multiaddr')
-const PeerInfo = require('peer-info')
 
 const { create } = require('../../src')
 const { baseOptions, subsystemOptions } = require('./utils')
+const peerUtils = require('../utils/creators/peer')
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
@@ -33,7 +32,7 @@ describe('Pubsub subsystem is configurable', () => {
   })
 
   it('should start and stop by default once libp2p starts', async () => {
-    const peerInfo = await PeerInfo.create()
+    const [peerInfo] = await peerUtils.createPeerInfoFromFixture(1)
     peerInfo.multiaddrs.add(listenAddr)
 
     const customOptions = mergeOptions(subsystemOptions, {
@@ -51,7 +50,7 @@ describe('Pubsub subsystem is configurable', () => {
   })
 
   it('should not start if disabled once libp2p starts', async () => {
-    const peerInfo = await PeerInfo.create()
+    const [peerInfo] = await peerUtils.createPeerInfoFromFixture(1)
     peerInfo.multiaddrs.add(listenAddr)
 
     const customOptions = mergeOptions(subsystemOptions, {
@@ -71,7 +70,7 @@ describe('Pubsub subsystem is configurable', () => {
   })
 
   it('should allow a manual start', async () => {
-    const peerInfo = await PeerInfo.create()
+    const [peerInfo] = await peerUtils.createPeerInfoFromFixture(1)
     peerInfo.multiaddrs.add(listenAddr)
 
     const customOptions = mergeOptions(subsystemOptions, {
