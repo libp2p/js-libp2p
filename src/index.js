@@ -358,6 +358,8 @@ class Libp2p extends EventEmitter {
     protocols.forEach(protocol => {
       this.upgrader.protocols.set(protocol, handler)
     })
+
+    this.dialer.identifyService.pushToPeerStore(this.peerStore)
   }
 
   /**
@@ -370,6 +372,8 @@ class Libp2p extends EventEmitter {
     protocols.forEach(protocol => {
       this.upgrader.protocols.delete(protocol)
     })
+
+    this.dialer.identifyService.pushToPeerStore(this.peerStore)
   }
 
   async _onStarting () {

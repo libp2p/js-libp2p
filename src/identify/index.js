@@ -99,18 +99,12 @@ class IdentifyService {
   }
 
   /**
-   * Send an Identify Push update to the list of peers
-   * @param {Array<PeerInfo>} peers
+   * Send an Identify Push update to the list of connections
+   * @param {Array<Connection>} connections
    * @returns {Promise<void>}
    */
-  push (peers) {
-    const pushes = peers.map(async peerInfo => {
-      // Don't push to peers who dont support it
-      if (!peerInfo.protocols.has(MULTICODEC_IDENTIFY_PUSH)) {
-        return
-      }
-
-      const connection = this.registrar.getConnection(peerInfo)
+  push (connections) {
+    const pushes = connections.map(async connection => {
       try {
         const { stream } = await connection.newStream(MULTICODEC_IDENTIFY_PUSH)
 
@@ -129,6 +123,22 @@ class IdentifyService {
     })
 
     return Promise.all(pushes)
+  }
+
+  /**
+   * Calls `push` for all peers in the `peerStore` that are connected
+   * @param {PeerStore} peerStore
+   */
+  pushToPeerStore (peerStore) {
+    const connections = []
+    let connection
+    for (const peer of peerStore.peers.values()) {
+      if (peer.protocols.has(MULTICODEC_IDENTIFY_PUSH) && (connection = this.registrar.getConnection(peer))) {
+        connections.push(connection)
+      }
+    }
+
+    this.push(connections)
   }
 
   /**

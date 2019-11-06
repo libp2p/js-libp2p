@@ -6,6 +6,7 @@ chai.use(require('dirty-chai'))
 const { expect } = chai
 const sinon = require('sinon')
 
+const delay = require('delay')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const duplexPair = require('it-pair/duplex')
@@ -14,6 +15,11 @@ const multiaddr = require('multiaddr')
 const { codes: Errors } = require('../../src/errors')
 const { IdentifyService, multicodecs } = require('../../src/identify')
 const Peers = require('../fixtures/peers')
+const Libp2p = require('../../src')
+const baseOptions = require('../utils/base-options.browser')
+
+const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
+const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 
 describe('Identify', () => {
   let localPeer
@@ -140,8 +146,6 @@ describe('Identify', () => {
 
       const [local, remote] = duplexPair()
       sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY_PUSH })
-      // Mock the registrar to return the local connection
-      sinon.stub(localIdentify.registrar, 'getConnection').returns(localConnectionMock)
 
       sinon.spy(IdentifyService, 'updatePeerAddresses')
       sinon.spy(IdentifyService, 'updatePeerProtocols')
@@ -149,7 +153,7 @@ describe('Identify', () => {
 
       // Run identify
       await Promise.all([
-        localIdentify.push([remotePeer]),
+        localIdentify.push([localConnectionMock]),
         remoteIdentify.handleMessage({
           connection: remoteConnectionMock,
           stream: remote,
@@ -165,6 +169,79 @@ describe('Identify', () => {
       expect(peerInfo.id.bytes).to.eql(localPeer.id.bytes)
       expect(peerInfo.multiaddrs.toArray()).to.eql([listeningAddr])
       expect(peerInfo.protocols).to.eql(localProtocols)
+    })
+  })
+
+  describe('libp2p.dialer.identifyService', () => {
+    let peerInfo
+    let libp2p
+    let remoteLibp2p
+
+    before(async () => {
+      const peerId = await PeerId.createFromJSON(Peers[0])
+      peerInfo = new PeerInfo(peerId)
+    })
+
+    afterEach(async () => {
+      sinon.restore()
+      libp2p && await libp2p.stop()
+      libp2p = null
+    })
+
+    after(async () => {
+      remoteLibp2p && await remoteLibp2p.stop()
+    })
+
+    it('should run identify automatically after connecting', async () => {
+      libp2p = new Libp2p({
+        ...baseOptions,
+        peerInfo
+      })
+
+      sinon.spy(libp2p.dialer.identifyService, 'identify')
+      sinon.spy(libp2p.peerStore, 'update')
+
+      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
+      expect(connection).to.exist()
+      // Wait for nextTick to trigger the identify call
+      await delay(1)
+      expect(libp2p.dialer.identifyService.identify.callCount).to.equal(1)
+      await libp2p.dialer.identifyService.identify.firstCall.returnValue
+
+      expect(libp2p.peerStore.update.callCount).to.equal(1)
+      await connection.close()
+    })
+
+    it('should push protocol updates to an already connected peer', async () => {
+      libp2p = new Libp2p({
+        ...baseOptions,
+        peerInfo
+      })
+
+      sinon.spy(libp2p.dialer.identifyService, 'identify')
+      sinon.spy(libp2p.dialer.identifyService, 'push')
+      sinon.spy(libp2p.peerStore, 'update')
+
+      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
+      expect(connection).to.exist()
+      // Wait for nextTick to trigger the identify call
+      await delay(1)
+
+      // Wait for identify to finish
+      await libp2p.dialer.identifyService.identify.firstCall.returnValue
+
+      libp2p.handle('/echo/2.0.0', () => {})
+      libp2p.unhandle('/echo/2.0.0')
+
+      // Verify the remote peer is notified of both changes
+      expect(libp2p.dialer.identifyService.push.callCount).to.equal(2)
+      for (const call of libp2p.dialer.identifyService.push.getCalls()) {
+        const [connections] = call.args
+        expect(connections.length).to.equal(1)
+        expect(connections[0].remotePeer.toB58String()).to.equal(remoteAddr.getPeerId())
+        const results = await call.returnValue
+        expect(results.length).to.equal(1)
+      }
     })
   })
 })
