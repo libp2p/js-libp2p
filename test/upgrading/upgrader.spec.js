@@ -361,16 +361,14 @@ describe('libp2p.upgrader', () => {
       }
     })
 
-    expect(libp2p.upgrader.protocols.size).to.equal(0)
+    expect(libp2p.upgrader.protocols).to.not.have.any.keys(['/echo/1.0.0', '/echo/1.0.1'])
 
     const echoHandler = () => {}
     libp2p.handle(['/echo/1.0.0', '/echo/1.0.1'], echoHandler)
-    expect(libp2p.upgrader.protocols.size).to.equal(2)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.0')).to.equal(echoHandler)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.1')).to.equal(echoHandler)
 
     libp2p.unhandle(['/echo/1.0.0'])
-    expect(libp2p.upgrader.protocols.size).to.equal(1)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.0')).to.equal(undefined)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.1')).to.equal(echoHandler)
   })
