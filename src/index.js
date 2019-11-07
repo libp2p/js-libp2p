@@ -30,6 +30,10 @@ const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
 const Registrar = require('./registrar')
+const {
+  IdentifyService,
+  multicodecs: IDENTIFY_PROTOCOLS
+} = require('./identify')
 
 const notStarted = (action, state) => {
   return errCode(
@@ -83,6 +87,11 @@ class Libp2p extends EventEmitter {
       }
     })
 
+    // Create the Registrar
+    this.registrar = new Registrar({ peerStore: this.peerStore })
+    this.handle = this.handle.bind(this)
+    this.registrar.handle = this.handle
+
     // Setup the transport manager
     this.transportManager = new TransportManager({
       libp2p: this,
@@ -100,21 +109,25 @@ class Libp2p extends EventEmitter {
       })
     }
 
+    this.dialer = new Dialer({
+      transportManager: this.transportManager
+    })
+
     // Attach stream multiplexers
     if (this._modules.streamMuxer) {
       const muxers = this._modules.streamMuxer
       muxers.forEach((muxer) => {
         this.upgrader.muxers.set(muxer.multicodec, muxer)
       })
+
+      // Add the identify service since we can multiplex
+      this.dialer.identifyService = new IdentifyService({
+        registrar: this.registrar,
+        peerInfo: this.peerInfo,
+        protocols: this.upgrader.protocols
+      })
+      this.handle(Object.values(IDENTIFY_PROTOCOLS), this.dialer.identifyService.handleMessage)
     }
-
-    this.dialer = new Dialer({
-      transportManager: this.transportManager
-    })
-
-    this.registrar = new Registrar({ peerStore: this.peerStore })
-    this.handle = this.handle.bind(this)
-    this.registrar.handle = this.handle
 
     // Attach private network protector
     if (this._modules.connProtector) {
@@ -338,13 +351,15 @@ class Libp2p extends EventEmitter {
   /**
    * Registers the `handler` for each protocol
    * @param {string[]|string} protocols
-   * @param {function({ stream:*, protocol:string })} handler
+   * @param {function({ connection:*, stream:*, protocol:string })} handler
    */
   handle (protocols, handler) {
     protocols = Array.isArray(protocols) ? protocols : [protocols]
     protocols.forEach(protocol => {
       this.upgrader.protocols.set(protocol, handler)
     })
+
+    this.dialer.identifyService.pushToPeerStore(this.peerStore)
   }
 
   /**
@@ -357,6 +372,8 @@ class Libp2p extends EventEmitter {
     protocols.forEach(protocol => {
       this.upgrader.protocols.delete(protocol)
     })
+
+    this.dialer.identifyService.pushToPeerStore(this.peerStore)
   }
 
   async _onStarting () {
