@@ -16,6 +16,7 @@ const { getPeerInfo, getPeerInfoRemote } = require('./get-peer-info')
 const { validate: validateConfig } = require('./config')
 const { codes } = require('./errors')
 
+const Circuit = require('./circuit')
 const Dialer = require('./dialer')
 const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
@@ -78,9 +79,6 @@ class Libp2p extends EventEmitter {
       libp2p: this,
       upgrader: this.upgrader
     })
-    this._modules.transport.forEach((Transport) => {
-      this.transportManager.add(Transport.prototype[Symbol.toStringTag], Transport)
-    })
 
     // Attach crypto channels
     if (this._modules.connEncryption) {
@@ -94,6 +92,12 @@ class Libp2p extends EventEmitter {
       transportManager: this.transportManager,
       peerStore: this.peerStore
     })
+
+    this._modules.transport.forEach((Transport) => {
+      this.transportManager.add(Transport.prototype[Symbol.toStringTag], Transport)
+    })
+    // TODO: enable relay if enabled
+    this.transportManager.add(Circuit.prototype[Symbol.toStringTag], Circuit)
 
     // Attach stream multiplexers
     if (this._modules.streamMuxer) {
@@ -282,7 +286,10 @@ class Libp2p extends EventEmitter {
       this.upgrader.protocols.set(protocol, handler)
     })
 
-    this.dialer.identifyService.pushToPeerStore(this.peerStore)
+    // Only push if libp2p is running
+    if (this.isStarted()) {
+      this.dialer.identifyService.pushToPeerStore(this.peerStore)
+    }
   }
 
   /**
@@ -296,7 +303,10 @@ class Libp2p extends EventEmitter {
       this.upgrader.protocols.delete(protocol)
     })
 
-    this.dialer.identifyService.pushToPeerStore(this.peerStore)
+    // Only push if libp2p is running
+    if (this.isStarted()) {
+      this.dialer.identifyService.pushToPeerStore(this.peerStore)
+    }
   }
 
   async _onStarting () {

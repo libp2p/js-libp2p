@@ -115,7 +115,8 @@ describe('libp2p.transportManager', () => {
     })
 
     expect(libp2p.transportManager).to.exist()
-    expect(libp2p.transportManager._transports.size).to.equal(1)
+    // Our transport and circuit relay
+    expect(libp2p.transportManager._transports.size).to.equal(2)
   })
 
   it('starting and stopping libp2p should start and stop TransportManager', async () => {

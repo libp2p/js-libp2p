@@ -3,7 +3,7 @@
 const setImmediate = require('async/setImmediate')
 
 const multicodec = require('./multicodec')
-const EE = require('events').EventEmitter
+const EventEmitter = require('events')
 const multiaddr = require('multiaddr')
 const mafmt = require('mafmt')
 const Stop = require('./circuit/stop')
@@ -18,64 +18,32 @@ const debug = require('debug')
 const log = debug('libp2p:circuit:listener')
 log.err = debug('libp2p:circuit:error:listener')
 
-module.exports = (swarm, options, connHandler) => {
-  const listener = new EE()
-  const utils = utilsFactory(swarm)
 
-  listener.stopHandler = new Stop(swarm)
-  listener.stopHandler.on('connection', (conn) => listener.emit('connection', conn))
-  listener.hopHandler = new Hop(swarm, options.hop)
+module.exports = ({ handler, upgrader, dialer }, options) => {
+  const listener = new EventEmitter()
+  // const utils = utilsFactory(swarm)
+
+  // listener.stopHandler = new Stop(swarm)
+  // listener.stopHandler.on('connection', (conn) => listener.emit('connection', conn))
+  // listener.hopHandler = new Hop(swarm, options.hop)
 
   /**
    * Add swarm handler and listen for incoming connections
    *
-   * @param {Multiaddr} ma
+   * @param {Multiaddr} addr
    * @param {Function} callback
    * @return {void}
    */
-  listener.listen = (ma, callback) => {
-    callback = callback || (() => {})
+  listener.listen = async (addr) => {
+    // TODO: Connect to the relay
+    // TODO: Once connected to the relay, update our multiaddrs
+    // TODO: Once disconnected from the relay, update our multiaddrs
+    // (there should probably be some delay here to avoid spamming identify push updates)
+    const connection = await dialer.connectToMultiaddr(addr, {})
 
-    swarm.handle(multicodec.relay, (_, conn) => {
-      const sh = new StreamHandler(conn)
+    // TODO: When we get a STOP connection (we're the receiver), call the `handler`
 
-      sh.read((err, msg) => {
-        if (err) {
-          log.err(err)
-          return
-        }
-
-        let request = null
-        try {
-          request = proto.CircuitRelay.decode(msg)
-        } catch (err) {
-          return utils.writeResponse(
-            sh,
-            proto.CircuitRelay.Status.MALFORMED_MESSAGE)
-        }
-
-        switch (request.type) {
-          case proto.CircuitRelay.Type.CAN_HOP:
-          case proto.CircuitRelay.Type.HOP: {
-            return listener.hopHandler.handle(request, sh)
-          }
-
-          case proto.CircuitRelay.Type.STOP: {
-            return listener.stopHandler.handle(request, sh, connHandler)
-          }
-
-          default: {
-            utils.writeResponse(
-              sh,
-              proto.CircuitRelay.Status.INVALID_MSG_TYPE)
-            return sh.close()
-          }
-        }
-      })
-    })
-
-    setImmediate(() => listener.emit('listen'))
-    callback()
+    listener.emit('listening')
   }
 
   /**

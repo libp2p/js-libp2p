@@ -1,56 +1,71 @@
 'use strict'
 
-const setImmediate = require('async/setImmediate')
-
-const EE = require('events').EventEmitter
-const { Connection } = require('libp2p-interfaces/src/connection')
-const utilsFactory = require('./utils')
-const PeerInfo = require('peer-info')
-const proto = require('../protocol').CircuitRelay
-const series = require('async/series')
+const multiaddr = require('multiaddr')
+const PeerId = require('peer-id')
+const { CircuitRelay: CircuitPB } = require('../protocol')
+const multicodec = require('../multicodec')
+const StreamHandler = require('./stream-handler')
+const { validateAddrs } = require('./utils')
 
 const debug = require('debug')
-
 const log = debug('libp2p:circuit:stop')
-log.err = debug('libp2p:circuit:error:stop')
+log.error = debug('libp2p:circuit:stop:error')
 
-class Stop extends EE {
-  constructor (swarm) {
-    super()
-    this.swarm = swarm
-    this.utils = utilsFactory(swarm)
+/**
+ * Handles incoming STOP requests
+ *
+ * @private
+ * @param {*} options
+ * @param {Connection} options.connection
+ * @param {*} options.request The CircuitRelay protobuf request (unencoded)
+ * @param {StreamHandler} options.streamHandler
+ * @returns {Promise<*>} Resolves a duplex iterable
+ */
+module.exports.handleStop = async function handleStop ({
+  connection,
+  request,
+  streamHandler
+}) {
+  // Validate the STOP request has the required input
+  try {
+    validateAddrs(request, streamHandler)
+  } catch (err) {
+    return log.error('invalid stop request via peer %s', connection.remotePeer.toB58String(), err)
   }
 
-  /**
-   * Handle the incoming STOP message
-   *
-   * @param {{}} msg  - the parsed protobuf message
-   * @param {StreamHandler} sh  - the stream handler wrapped connection
-   * @param {Function} callback  - callback
-   * @returns {undefined}
-   */
-  handle (msg, sh, callback) {
-    callback = callback || (() => {})
-
-    series([
-      (cb) => this.utils.validateAddrs(msg, sh, proto.Type.STOP, cb),
-      (cb) => this.utils.writeResponse(sh, proto.Status.Success, cb)
-    ], (err) => {
-      if (err) {
-        // we don't return the error here,
-        // since multistream select don't expect one
-        callback()
-        return log(err)
-      }
-
-      const peerInfo = new PeerInfo(this.utils.peerIdFromId(msg.srcPeer.id))
-      msg.srcPeer.addrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
-      const newConn = new Connection(sh.rest())
-      newConn.setPeerInfo(peerInfo)
-      setImmediate(() => this.emit('connection', newConn))
-      callback(newConn)
-    })
-  }
+  // The request is valid
+  log('stop request is valid')
+  streamHandler.write({
+    type: CircuitPB.Type.STATUS,
+    code: CircuitPB.Status.SUCCESS
+  })
+  return streamHandler.rest()
 }
 
-module.exports = Stop
+/**
+ * Creates a STOP request
+ * @private
+ * @param {*} options
+ * @param {Connection} options.connection
+ * @param {*} options.request The CircuitRelay protobuf request (unencoded)
+ * @returns {Promise<*>} Resolves a duplex iterable
+ */
+module.exports.stop = async function stop ({
+  connection,
+  request
+}) {
+  const { stream } = await connection.newStream([multicodec.relay])
+  log('starting stop request to %s', connection.remotePeer.toB58String())
+  const streamHandler = new StreamHandler({ stream })
+
+  streamHandler.write(request)
+  const response = await streamHandler.read()
+
+  if (response.code === CircuitPB.Status.SUCCESS) {
+    log('stop request to %s was successful', connection.remotePeer.toB58String())
+    return streamHandler.rest()
+  }
+
+  log('stop request failed with code %d', response.code)
+  streamHandler.close()
+}

@@ -229,6 +229,7 @@ describe('Identify', () => {
 
       // Wait for identify to finish
       await libp2p.dialer.identifyService.identify.firstCall.returnValue
+      sinon.stub(libp2p, 'isStarted').returns(true)
 
       libp2p.handle('/echo/2.0.0', () => {})
       libp2p.unhandle('/echo/2.0.0')

@@ -1,3 +1,181 @@
 'use strict'
 
-module.exports = require('./circuit')
+const mafmt = require('mafmt')
+const multiaddr = require('multiaddr')
+const PeerId = require('peer-id')
+const withIs = require('class-is')
+const { CircuitRelay: CircuitPB } = require('./protocol')
+
+const debug = require('debug')
+const log = debug('libp2p:circuit')
+log.error = debug('libp2p:circuit:error')
+
+const { relay: multicodec } = require('./multicodec')
+const createListener = require('./listener')
+const { handleCanHop, handleHop, hop } = require('./circuit/hop')
+const { handleStop } = require('./circuit/stop')
+const StreamHandler = require('./circuit/stream-handler')
+const toConnection = require('./stream-to-conn')
+
+class Circuit {
+  /**
+   * Creates an instance of Dialer.
+   *
+   * @constructor
+   * @param {object} options
+   * @param {Libp2p} options.libp2p
+   * @param {Upgrader} options.upgrader
+   */
+  constructor ({ libp2p, upgrader }) {
+    this._dialer = libp2p.dialer
+    this._registrar = libp2p.registrar
+    this._upgrader = upgrader
+    this._options = libp2p._config.relay
+    this.peerInfo = libp2p.peerInfo
+    this._registrar.handle(multicodec, this._onProtocol.bind(this))
+  }
+
+  async _onProtocol ({ connection, stream, protocol }) {
+    const streamHandler = new StreamHandler({ stream })
+    const request = await streamHandler.read()
+    const circuit = this
+    let virtualConnection
+
+    switch (request.type) {
+      case CircuitPB.Type.CAN_HOP: {
+        log('received CAN_HOP request from %s', connection.remotePeer.toB58String())
+        await handleCanHop({ circuit, connection, streamHandler })
+        break
+      }
+      case CircuitPB.Type.HOP: {
+        log('received HOP request from %s', connection.remotePeer.toB58String())
+        virtualConnection = await handleHop({
+          connection,
+          request,
+          streamHandler,
+          circuit
+        })
+        break
+      }
+      case CircuitPB.Type.STOP: {
+        log('received STOP request from %s', connection.remotePeer.toB58String())
+        virtualConnection = await handleStop({
+          connection,
+          request,
+          streamHandler,
+          circuit
+        })
+        break
+      }
+      default: {
+        log('Request of type %s not supported', request.type)
+        virtualConnection = null
+      }
+    }
+
+    if (virtualConnection) {
+      const remoteAddr = multiaddr(request.dstPeer.addrs[0])
+      const localAddr = multiaddr(request.srcPeer.addrs[0])
+      const maConn = toConnection({
+        stream: virtualConnection,
+        remoteAddr,
+        localAddr
+      })
+      let type = CircuitPB.Type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
+      log('new %s connection %s', type, maConn.remoteAddr)
+
+      const conn = await this._upgrader.upgradeInbound(maConn)
+      log('%s connection %s upgraded', type, maConn.remoteAddr)
+      // TODO: Call the listener handler
+    }
+  }
+
+  /**
+   * Dial a peer over a relay
+   *
+   * @param {multiaddr} ma - the multiaddr of the peer to dial
+   * @param {Object} options - dial options
+   * @param {AbortSignal} [options.signal] - An optional abort signal
+   * @returns {Connection} - the connection
+   */
+  async dial (ma, options) {
+    // Check the multiaddr to see if it contains a relay and a destination peer
+    const addrs = ma.toString().split('/p2p-circuit')
+    let relayAddr
+    let destinationAddr
+
+    relayAddr = multiaddr(addrs[0])
+    destinationAddr = multiaddr(addrs[addrs.length - 1])
+
+    const destinationPeer = PeerId.createFromCID(destinationAddr.getPeerId())
+    const relayConnection = await this._dialer.connectToMultiaddr(relayAddr, options)
+    const virtualConnection = await hop({
+      connection: relayConnection,
+      circuit: this,
+      request: {
+        type: CircuitPB.Type.HOP,
+        srcPeer: {
+          id: this.peerInfo.id.toBytes(),
+          addrs: this.peerInfo.multiaddrs.toArray().map(addr => addr.buffer)
+        },
+        dstPeer: {
+          id: destinationPeer.toBytes(),
+          addrs: [multiaddr(destinationAddr).buffer]
+        }
+      }
+    })
+
+    if (virtualConnection) {
+      const localAddr = relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerInfo.id.toB58String()}`)
+      const maConn = toConnection({
+        stream: virtualConnection,
+        remoteAddr: ma,
+        localAddr
+      })
+      log('new outbound connection %s', maConn.remoteAddr)
+
+      return await this._upgrader.upgradeOutbound(maConn)
+    } else {
+      // TODO: throw an error
+    }
+  }
+
+  /**
+   * Create a listener
+   *
+   * @param {any} options
+   * @param {Function} handler
+   * @return {listener}
+   */
+  createListener (options, handler) {
+    if (typeof options === 'function') {
+      handler = options
+      options = {}
+    }
+
+    return createListener({
+      handler,
+      upgrader: this._upgrader,
+      dialer: this._dialer
+    }, options)
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial on
+   *
+   * @param {Array<Multiaddr>} multiaddrs
+   * @returns {Array<Multiaddr>}
+   */
+  filter (multiaddrs) {
+    multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
+
+    return multiaddrs.filter((ma) => {
+      return mafmt.Circuit.matches(ma)
+    })
+  }
+}
+
+/**
+ * @type {Circuit}
+ */
+module.exports = withIs(Circuit, { className: 'Circuit', symbolName: '@libp2p/js-libp2p-circuit/circuit' })

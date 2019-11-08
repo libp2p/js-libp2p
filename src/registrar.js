@@ -100,8 +100,9 @@ class Registrar {
   getConnection (peerInfo) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
 
+    const connections = this.connections.get(peerInfo.id.toB58String())
     // TODO: what should we return
-    return this.connections.get(peerInfo.id.toB58String())[0]
+    return connections ? connections[0] : null
   }
 
   /**
