@@ -44,7 +44,7 @@ class App extends Component {
       isLoading: this.state.isLoading + 1
     })
 
-    this.ipfs.files.cat(this.state.hash, (err, data) => {
+    this.ipfs.cat(this.state.hash, (err, data) => {
       if (err) console.log('Error', err)
 
       this.setState({
