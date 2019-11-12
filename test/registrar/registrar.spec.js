@@ -7,6 +7,7 @@ const { expect } = chai
 const pDefer = require('p-defer')
 
 const PeerInfo = require('peer-info')
+const Topology = require('libp2p-interfaces/src/topology/multicodec-topology')
 const PeerStore = require('../../src/peer-store')
 const Registrar = require('../../src/registrar')
 const { createMockConnection } = require('./utils')
@@ -32,53 +33,7 @@ describe('registrar', () => {
       throw new Error('should fail to register a protocol if no multicodec is provided')
     })
 
-    it('should fail to register a protocol if no handlers are provided', () => {
-      const topologyProps = {
-        multicodecs: multicodec
-      }
-
-      try {
-        registrar.register(topologyProps)
-      } catch (err) {
-        expect(err).to.exist()
-        return
-      }
-      throw new Error('should fail to register a protocol if no handlers are provided')
-    })
-
-    it('should fail to register a protocol if the onConnect handler is not provided', () => {
-      const topologyProps = {
-        multicodecs: multicodec,
-        handlers: {
-          onDisconnect: () => { }
-        }
-      }
-
-      try {
-        registrar.register(topologyProps)
-      } catch (err) {
-        expect(err).to.exist()
-        return
-      }
-      throw new Error('should fail to register a protocol if the onConnect handler is not provided')
-    })
-
-    it('should fail to register a protocol if the onDisconnect handler is not provided', () => {
-      const topologyProps = {
-        multicodecs: multicodec,
-        handlers: {
-          onConnect: () => { }
-        }
-      }
-
-      try {
-        registrar.register(topologyProps)
-      } catch (err) {
-        expect(err).to.exist()
-        return
-      }
-      throw new Error('should fail to register a protocol if the onDisconnect handler is not provided')
-    })
+    // TODO: not valid topology
   })
 
   describe('registration', () => {
@@ -88,13 +43,13 @@ describe('registrar', () => {
     })
 
     it('should be able to register a protocol', () => {
-      const topologyProps = {
+      const topologyProps = new Topology({
+        multicodecs: multicodec,
         handlers: {
           onConnect: () => { },
           onDisconnect: () => { }
-        },
-        multicodecs: multicodec
-      }
+        }
+      })
 
       const identifier = registrar.register(topologyProps)
 
@@ -102,13 +57,13 @@ describe('registrar', () => {
     })
 
     it('should be able to unregister a protocol', () => {
-      const topologyProps = {
+      const topologyProps = new Topology({
+        multicodecs: multicodec,
         handlers: {
           onConnect: () => { },
           onDisconnect: () => { }
-        },
-        multicodecs: multicodec
-      }
+        }
+      })
 
       const identifier = registrar.register(topologyProps)
       const success = registrar.unregister(identifier)
@@ -138,7 +93,7 @@ describe('registrar', () => {
       registrar.onConnect(remotePeerInfo, conn)
       expect(registrar.connections.size).to.eql(1)
 
-      const topologyProps = {
+      const topologyProps = new Topology({
         multicodecs: multicodec,
         handlers: {
           onConnect: (peerInfo, connection) => {
@@ -153,7 +108,7 @@ describe('registrar', () => {
             onDisconnectDefer.resolve()
           }
         }
-      }
+      })
 
       // Register protocol
       const identifier = registrar.register(topologyProps)
@@ -161,11 +116,9 @@ describe('registrar', () => {
 
       // Topology created
       expect(topology).to.exist()
-      expect(topology.peers.size).to.eql(1)
 
       registrar.onDisconnect(remotePeerInfo)
       expect(registrar.connections.size).to.eql(0)
-      expect(topology.peers.size).to.eql(1) // topology should keep the peer
 
       // Wait for handlers to be called
       return Promise.all([
@@ -178,7 +131,7 @@ describe('registrar', () => {
       const onConnectDefer = pDefer()
       const onDisconnectDefer = pDefer()
 
-      const topologyProps = {
+      const topologyProps = new Topology({
         multicodecs: multicodec,
         handlers: {
           onConnect: () => {
@@ -188,7 +141,7 @@ describe('registrar', () => {
             onDisconnectDefer.resolve()
           }
         }
-      }
+      })
 
       // Register protocol
       const identifier = registrar.register(topologyProps)
@@ -196,7 +149,6 @@ describe('registrar', () => {
 
       // Topology created
       expect(topology).to.exist()
-      expect(topology.peers.size).to.eql(0)
       expect(registrar.connections.size).to.eql(0)
 
       // Setup connections before registrar
@@ -212,7 +164,6 @@ describe('registrar', () => {
       peerStore.put(peerInfo)
 
       await onConnectDefer.promise
-      expect(topology.peers.size).to.eql(1)
 
       // Remove protocol to peer and update it
       peerInfo.protocols.delete(multicodec)
