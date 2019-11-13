@@ -31,7 +31,7 @@ async function encrypt (localId, conn, remoteId) {
   log('write pubkey exchange to peer %j', remoteId)
 
   // Get the Exchange message
-  const response = (await lp.decodeFromReader(shake.reader).next()).value
+  const response = (await lp.decode.fromReader(shake.reader).next()).value
   const id = Exchange.decode(response.slice())
   log('read pubkey exchange from peer %j', remoteId)
 
