@@ -22,6 +22,7 @@ js-libp2p-floodsub
 - [Install](#install)
 - [Usage](#usage)
 - [API](#api)
+- [Events](#events)
 - [Contribute](#contribute)
 - [License](#license)
 
@@ -31,25 +32,38 @@ js-libp2p-floodsub
 > npm install libp2p-floodsub
 ```
 
-## Examples
+## Usage
 
 ```JavaScript
 const FloodSub = require('libp2p-floodsub')
 
-const fsub = new FloodSub(node)
+// registrar is provided by libp2p
+const fsub = new FloodSub(peerInfo, registrar, options)
 
-fsub.start((err) => {
-  if (err) {
-    console.log('Upsy', err)
-  }
-  fsub.on('fruit', (data) => {
-    console.log(data)
-  })
-  fsub.subscribe('fruit')
+await fsub.start()
 
-  fsub.publish('fruit', new Buffer('banana'))
+fsub.on('fruit', (data) => {
+  console.log(data)
 })
+fsub.subscribe('fruit')
+
+fsub.publish('fruit', new Buffer('banana'))
 ```
+
+## API
+
+### Create a floodsub implementation
+
+```js
+const options = {…}
+const floodsub = new Floodsub(peerInfo, registrar, options)
+```
+
+Options is an optional object with the following key-value pairs:
+
+* **`emitSelf`**: boolean identifying whether the node should emit to self on publish, in the event of the topic being subscribed (defaults to **false**).
+
+For the remaining API, see https://github.com/libp2p/js-libp2p-pubsub
 
 ## Events
 
@@ -68,28 +82,12 @@ Floodsub emits two kinds of events:
   - `changes`: an array of `{ topicID: <topic>, subscribe: <boolean> }`
      eg `[ { topicID: 'fruit', subscribe: true }, { topicID: 'vegetables': false } ]`
 
-
-## API
-
-### Create a floodsub implementation
-
-```js
-const options = {…}
-const floodsub = new Floodsub(libp2pNode, options)
-```
-
-Options is an optional object with the following key-value pairs:
-
-* **`emitSelf`**: boolean identifying whether the node should emit to self on publish, in the event of the topic being subscribed (defaults to **false**).
-
-For more, see https://libp2p.github.io/js-libp2p-floodsub
-
 ## Contribute
 
-PRs are welcome!
+Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/js-libp2p-pubsub/issues)!
 
-Small note: If editing the Readme, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
+This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
 
 ## License
 
-MIT © David Dias
+Copyright (c) Protocol Labs, Inc. under the **MIT License**. See [LICENSE file](./LICENSE) for details.

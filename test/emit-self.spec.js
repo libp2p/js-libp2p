@@ -1,100 +1,68 @@
 /* eslint-env mocha */
-/* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-spies'))
 const expect = chai.expect
-const series = require('async/series')
 
 const FloodSub = require('../src')
 
 const {
-  createNode
+  createPeerInfo, mockRegistrar
 } = require('./utils')
 
 const shouldNotHappen = (_) => expect.fail()
 
 describe('emit self', () => {
+  let floodsub
+  let peerInfo
   const topic = 'Z'
 
   describe('enabled', () => {
-    let nodeA
-    let fsA
-
-    before((done) => {
-      createNode((err, node) => {
-        if (err) {
-          return done(err)
-        }
-        nodeA = node
-        nodeA.start(done)
-      })
+    before(async () => {
+      peerInfo = await createPeerInfo()
+      floodsub = new FloodSub(peerInfo, mockRegistrar, { emitSelf: true })
     })
 
-    before((done) => {
-      fsA = new FloodSub(nodeA, { emitSelf: true })
-      fsA.start(done)
+    before(async () => {
+      await floodsub.start()
+
+      floodsub.subscribe(topic)
     })
 
-    before(() => {
-      fsA.subscribe(topic)
-    })
+    after(() => floodsub.stop())
 
-    after((done) => {
-      series([
-        (cb) => fsA.stop(cb),
-        (cb) => nodeA.stop(cb)
-      ], done)
-    })
+    it('should emit to self on publish', () => {
+      const promise = new Promise((resolve) => floodsub.once(topic, resolve))
 
-    it('should emit to self on publish', async () => {
-      const promise = new Promise((resolve) => fsA.once(topic, resolve))
+      floodsub.publish(topic, Buffer.from('hey'))
 
-      fsA.publish(topic, Buffer.from('hey'))
-
-      await promise
+      return promise
     })
   })
 
   describe('disabled', () => {
-    let nodeA
-    let fsA
-
-    before((done) => {
-      createNode((err, node) => {
-        if (err) {
-          return done(err)
-        }
-        nodeA = node
-        nodeA.start(done)
-      })
+    before(async () => {
+      peerInfo = await createPeerInfo()
+      floodsub = new FloodSub(peerInfo, mockRegistrar, { emitSelf: false })
     })
 
-    before((done) => {
-      fsA = new FloodSub(nodeA, { emitSelf: false })
-      fsA.start(done)
+    before(async () => {
+      await floodsub.start()
+
+      floodsub.subscribe(topic)
     })
 
-    before(() => {
-      fsA.subscribe(topic)
-    })
+    after(() => floodsub.stop())
 
-    after((done) => {
-      series([
-        (cb) => fsA.stop(cb),
-        (cb) => nodeA.stop(cb)
-      ], done)
-    })
+    it('should emit to self on publish', () => {
+      floodsub.once(topic, (m) => shouldNotHappen)
 
-    it('should emit to self on publish', async () => {
-      fsA.once(topic, (m) => shouldNotHappen)
-
-      fsA.publish(topic, Buffer.from('hey'))
+      floodsub.publish(topic, Buffer.from('hey'))
 
       // Wait 1 second to guarantee that self is not noticed
-      await new Promise((resolve) => setTimeout(() => resolve(), 1000))
+      return new Promise((resolve) => setTimeout(() => resolve(), 1000))
     })
   })
 })

@@ -1,18 +1,23 @@
 'use strict'
 
-const pull = require('pull-stream')
-const lp = require('pull-length-prefixed')
 const assert = require('assert')
+const debug = require('debug')
+const debugName = 'libp2p:floodsub'
+const log = debug(debugName)
+log.error = debug(`${debugName}:error`)
 
+const pipe = require('it-pipe')
+const lp = require('it-length-prefixed')
+const pMap = require('p-map')
+const TimeCache = require('time-cache')
+const nextTick = require('async.nexttick')
+
+const PeerInfo = require('peer-info')
 const BaseProtocol = require('libp2p-pubsub')
 const { message, utils } = require('libp2p-pubsub')
-const config = require('./config')
+const { multicodec } = require('./config')
 
-const multicodec = config.multicodec
 const ensureArray = utils.ensureArray
-const setImmediate = require('async/setImmediate')
-const asyncMap = require('async/map')
-const noop = () => {}
 
 /**
  * FloodSub (aka dumbsub is an implementation of pubsub focused on
@@ -21,13 +26,30 @@ const noop = () => {}
  */
 class FloodSub extends BaseProtocol {
   /**
-   * @param {Object} libp2p an instance of Libp2p
+   * @param {PeerInfo} peerInfo instance of the peer's PeerInfo
+   * @param {Object} registrar
+   * @param {function} registrar.handle
+   * @param {function} registrar.register
+   * @param {function} registrar.unregister
    * @param {Object} [options]
    * @param {boolean} options.emitSelf if publish should emit to self, if subscribed, defaults to false
    * @constructor
    */
-  constructor (libp2p, options = {}) {
-    super('libp2p:floodsub', multicodec, libp2p, options)
+  constructor (peerInfo, registrar, options = {}) {
+    assert(PeerInfo.isPeerInfo(peerInfo), 'peer info must be an instance of `peer-info`')
+
+    // registrar handling
+    assert(registrar && typeof registrar.handle === 'function', 'a handle function must be provided in registrar')
+    assert(registrar && typeof registrar.register === 'function', 'a register function must be provided in registrar')
+    assert(registrar && typeof registrar.unregister === 'function', 'a unregister function must be provided in registrar')
+
+    super({
+      debugName: debugName,
+      multicodecs: multicodec,
+      peerInfo: peerInfo,
+      registrar: registrar,
+      ...options
+    })
 
     /**
      * List of our subscriptions
@@ -36,32 +58,39 @@ class FloodSub extends BaseProtocol {
     this.subscriptions = new Set()
 
     /**
+     * Cache of seen messages
+     *
+     * @type {TimeCache}
+     */
+    this.seenCache = new TimeCache()
+
+    /**
      * Pubsub options
      */
     this._options = {
       emitSelf: false,
       ...options
     }
+
+    this._onRpc = this._onRpc.bind(this)
   }
 
   /**
-   * Dial a received peer.
+   * Peer connected successfully with pubsub protocol.
    * @override
    * @param {PeerInfo} peerInfo peer info
    * @param {Connection} conn connection to the peer
-   * @param {function} callback
+   * @returns {Promise<void>}
    */
-  _onDial (peerInfo, conn, callback) {
-    super._onDial(peerInfo, conn, (err) => {
-      if (err) return callback(err)
-      const idB58Str = peerInfo.id.toB58String()
-      const peer = this.peers.get(idB58Str)
-      if (peer && peer.isWritable) {
-        // Immediately send my own subscriptions to the newly established conn
-        peer.sendSubscriptions(this.subscriptions)
-      }
-      setImmediate(() => callback())
-    })
+  async _onPeerConnected (peerInfo, conn) {
+    await super._onPeerConnected(peerInfo, conn)
+    const idB58Str = peerInfo.id.toB58String()
+    const peer = this.peers.get(idB58Str)
+
+    if (peer && peer.isWritable) {
+      // Immediately send my own subscriptions to the newly established conn
+      peer.sendSubscriptions(this.subscriptions)
+    }
   }
 
   /**
@@ -71,19 +100,26 @@ class FloodSub extends BaseProtocol {
    * @param {string} idB58Str peer id string in base58
    * @param {Connection} conn connection
    * @param {PeerInfo} peer peer info
-   * @returns {undefined}
+   * @returns {void}
    *
    */
-  _processConnection (idB58Str, conn, peer) {
-    pull(
-      conn,
-      lp.decode(),
-      pull.map((data) => message.rpc.RPC.decode(data)),
-      pull.drain(
-        (rpc) => this._onRpc(idB58Str, rpc),
-        (err) => this._onConnectionEnd(idB58Str, peer, err)
+  async _processMessages (idB58Str, conn, peer) {
+    const onRpcFunc = this._onRpc
+    try {
+      await pipe(
+        conn,
+        lp.decode(),
+        async function (source) {
+          for await (const data of source) {
+            const rpc = Buffer.isBuffer(data) ? data : data.slice()
+
+            onRpcFunc(idB58Str, message.rpc.RPC.decode(rpc))
+          }
+        }
       )
-    )
+    } catch (err) {
+      this._onPeerDisconnected(peer, err)
+    }
   }
 
   /**
@@ -97,20 +133,19 @@ class FloodSub extends BaseProtocol {
       return
     }
 
-    this.log('rpc from', idB58Str)
+    log('rpc from', idB58Str)
     const subs = rpc.subscriptions
     const msgs = rpc.msgs
 
     if (msgs && msgs.length) {
-      rpc.msgs.forEach((msg) => this._processRpcMessage(msg))
+      msgs.forEach((msg) => this._processRpcMessage(msg))
     }
 
-    if (subs && subs.length) {
-      const peer = this.peers.get(idB58Str)
-      if (peer) {
-        peer.updateSubscriptions(subs)
-        this.emit('floodsub:subscription-change', peer.info, peer.topics, subs)
-      }
+    const peer = this.peers.get(idB58Str)
+
+    if (peer && subs && subs.length) {
+      peer.updateSubscriptions(subs)
+      this.emit('floodsub:subscription-change', peer.info, peer.topics, subs)
     }
   }
 
@@ -119,7 +154,7 @@ class FloodSub extends BaseProtocol {
    * @param {rpc.RPC.Message} message The message to process
    * @returns {void}
    */
-  _processRpcMessage (message) {
+  async _processRpcMessage (message) {
     const msg = utils.normalizeInRpcMessage(message)
     const seqno = utils.msgId(msg.from, msg.seqno)
     // 1. check if I've seen the message, if yes, ignore
@@ -128,19 +163,27 @@ class FloodSub extends BaseProtocol {
     }
 
     this.seenCache.put(seqno)
+
     // 2. validate the message (signature verification)
-    this.validate(message, (err, isValid) => {
-      if (err || !isValid) {
-        this.log('Message could not be validated, dropping it. isValid=%s', isValid, err)
-        return
-      }
+    let isValid
+    let error
 
-      // 3. if message is valid, emit to self
-      this._emitMessages(msg.topicIDs, [msg])
+    try {
+      isValid = await this.validate(message)
+    } catch (err) {
+      error = err
+    }
 
-      // 4. if message is valid, propagate msg to others
-      this._forwardMessages(msg.topicIDs, [msg])
-    })
+    if (error || !isValid) {
+      log('Message could not be validated, dropping it. isValid=%s', isValid, error)
+      return
+    }
+
+    // 3. if message is valid, emit to self
+    this._emitMessages(msg.topicIDs, [msg])
+
+    // 4. if message is valid, propagate msg to others
+    this._forwardMessages(msg.topicIDs, [msg])
   }
 
   _emitMessages (topics, messages) {
@@ -163,23 +206,19 @@ class FloodSub extends BaseProtocol {
 
       peer.sendMessages(utils.normalizeOutRpcMessages(messages))
 
-      this.log('publish msgs on topics', topics, peer.info.id.toB58String())
+      log('publish msgs on topics', topics, peer.info.id.toB58String())
     })
   }
 
   /**
    * Unmounts the floodsub protocol and shuts down every connection
    * @override
-   * @param {Function} callback
-   * @returns {undefined}
-   *
+   * @returns {Promise<void>}
    */
-  stop (callback) {
-    super.stop((err) => {
-      if (err) return callback(err)
-      this.subscriptions = new Set()
-      callback()
-    })
+  async stop () {
+    await super.stop()
+
+    this.subscriptions = new Set()
   }
 
   /**
@@ -187,22 +226,19 @@ class FloodSub extends BaseProtocol {
    * @override
    * @param {Array<string>|string} topics
    * @param {Array<any>|any} messages
-   * @param {function(Error)} callback
-   * @returns {undefined}
-   *
+   * @returns {Promise<void>}
    */
-  publish (topics, messages, callback) {
+  async publish (topics, messages) {
     assert(this.started, 'FloodSub is not started')
-    callback = callback || noop
 
-    this.log('publish', topics, messages)
+    log('publish', topics, messages)
 
     topics = ensureArray(topics)
     messages = ensureArray(messages)
 
-    const from = this.libp2p.peerInfo.id.toB58String()
+    const from = this.peerInfo.id.toB58String()
 
-    const buildMessage = (msg, cb) => {
+    const buildMessage = (msg) => {
       const seqno = utils.randomSeqno()
       this.seenCache.put(utils.msgId(from, seqno))
 
@@ -216,33 +252,29 @@ class FloodSub extends BaseProtocol {
       // Emit to self if I'm interested and it is enabled
       this._options.emitSelf && this._emitMessages(topics, [message])
 
-      this._buildMessage(message, cb)
+      return this._buildMessage(message)
     }
 
-    asyncMap(messages, buildMessage, (err, msgObjects) => {
-      if (err) return callback(err)
+    const msgObjects = await pMap(messages, buildMessage)
 
-      // send to all the other peers
-      this._forwardMessages(topics, msgObjects)
-
-      callback(null)
-    })
+    // send to all the other peers
+    this._forwardMessages(topics, msgObjects)
   }
 
   /**
    * Subscribe to the given topic(s).
    * @override
    * @param {Array<string>|string} topics
-   * @returns {undefined}
+   * @returns {void}
    */
   subscribe (topics) {
     assert(this.started, 'FloodSub is not started')
 
     topics = ensureArray(topics)
-
     topics.forEach((topic) => this.subscriptions.add(topic))
 
     this.peers.forEach((peer) => sendSubscriptionsOnceReady(peer))
+
     // make sure that FloodSub is already mounted
     function sendSubscriptionsOnceReady (peer) {
       if (peer && peer.isWritable) {
@@ -261,13 +293,10 @@ class FloodSub extends BaseProtocol {
    * Unsubscribe from the given topic(s).
    * @override
    * @param {Array<string>|string} topics
-   * @returns {undefined}
+   * @returns {void}
    */
   unsubscribe (topics) {
-    // Avoid race conditions, by quietly ignoring unsub when shutdown.
-    if (!this.started) {
-      return
-    }
+    assert(this.started, 'FloodSub is not started')
 
     topics = ensureArray(topics)
 
@@ -279,9 +308,20 @@ class FloodSub extends BaseProtocol {
       if (peer && peer.isWritable) {
         peer.sendUnsubscriptions(topics)
       } else {
-        setImmediate(checkIfReady.bind(peer))
+        nextTick(checkIfReady.bind(peer))
       }
     }
+  }
+
+  /**
+   * Get the list of topics which the peer is subscribed to.
+   * @override
+   * @returns {Array<String>}
+   */
+  getTopics () {
+    assert(this.started, 'FloodSub is not started')
+
+    return Array.from(this.subscriptions)
   }
 }
 

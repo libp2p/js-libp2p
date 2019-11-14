@@ -2,10 +2,9 @@
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const Node = require('./nodejs-bundle')
+const DuplexPair = require('it-pair/duplex')
 
-const waterfall = require('async/waterfall')
-const expect = require('chai').expect
+const { expect } = require('chai')
 
 exports.first = (map) => map.values().next().value
 
@@ -13,13 +12,58 @@ exports.expectSet = (set, subs) => {
   expect(Array.from(set.values())).to.eql(subs)
 }
 
-exports.createNode = (callback) => {
-  waterfall([
-    (cb) => PeerId.create({ bits: 1024 }, cb),
-    (id, cb) => PeerInfo.create(id, cb),
-    (peerInfo, cb) => {
-      cb(null, new Node({ peerInfo }))
+exports.createPeerInfo = async () => {
+  const peerId = await PeerId.create({ bits: 1024 })
+
+  return PeerInfo.create(peerId)
+}
+
+exports.mockRegistrar = {
+  handle: () => {},
+  register: () => {},
+  unregister: () => {}
+}
+
+exports.createMockRegistrar = (registrarRecord) => ({
+  handle: (multicodecs, handler) => {
+    const rec = registrarRecord[multicodecs[0]] || {}
+
+    registrarRecord[multicodecs[0]] = {
+      ...rec,
+      handler
+    }
+  },
+  register: ({ multicodecs, _onConnect, _onDisconnect }) => {
+    const rec = registrarRecord[multicodecs[0]] || {}
+
+    registrarRecord[multicodecs[0]] = {
+      ...rec,
+      onConnect: _onConnect,
+      onDisconnect: _onDisconnect
+    }
+
+    return multicodecs[0]
+  },
+  unregister: (id) => {
+    delete registrarRecord[id]
+  }
+})
+
+exports.ConnectionPair = () => {
+  const [d0, d1] = DuplexPair()
+
+  return [
+    {
+      stream: d0,
+      newStream: () => Promise.resolve({ stream: d0 })
     },
-    (node, cb) => node.start((err) => cb(err, node))
-  ], callback)
+    {
+      stream: d1,
+      newStream: () => Promise.resolve({ stream: d1 })
+    }
+  ]
+}
+
+exports.defOptions = {
+  emitSelf: true
 }

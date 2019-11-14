@@ -2,81 +2,78 @@
 
 const Benchmark = require('benchmark')
 const crypto = require('crypto')
-const map = require('async/map')
-const parallel = require('async/parallel')
-const series = require('async/series')
 
-const PSG = require('../src')
-const utils = require('../test/utils')
+const DuplexPair = require('it-pair/duplex')
+
+const Floodsub = require('../src')
+const { multicodec } = require('../src')
+const { createPeerInfo } = require('../test/utils')
 
 const suite = new Benchmark.Suite('pubsub')
 
 // Simple benchmark, how many messages can we send from
 // one node to another.
 
-map([0, 1], (i, cb) => {
-  utils.createNode((err, node) => {
-    if (err) {
-      return cb(err)
+;(async () => {
+  const registrarRecordA = {}
+  const registrarRecordB = {}
+
+  const registrar = (registrarRecord) => ({
+    register: (multicodec, handlers) => {
+      registrarRecord[multicodec] = handlers
+    },
+    unregister: (multicodec) => {
+      delete registrarRecord[multicodec]
+    }
+  })
+
+  const [peerInfoA, peerInfoB] = await Promise.all([
+    createPeerInfo(),
+    createPeerInfo()
+  ])
+
+  const fsA = new Floodsub(peerInfoA, registrar(registrarRecordA))
+  const fsB = new Floodsub(peerInfoB, registrar(registrarRecordB))
+
+  // Start pubsub
+  await Promise.all([
+    fsA.start(),
+    fsB.start()
+  ])
+
+  // Connect floodsub nodes
+  const onConnectA = registrarRecordA[multicodec].onConnect
+  const onConnectB = registrarRecordB[multicodec].onConnect
+
+  // Notice peers of connection
+  const [d0, d1] = DuplexPair()
+  onConnectA(peerInfoB, d0)
+  onConnectB(peerInfoA, d1)
+
+  fsA.subscribe('Z')
+  fsB.subscribe('Z')
+
+  suite.add('publish and receive', (deferred) => {
+    const onMsg = (msg) => {
+      deferred.resolve()
+      fsB.removeListener('Z', onMsg)
     }
 
-    const ps = new PSG(node)
+    fsB.on('Z', onMsg)
 
-    series([
-      (cb) => node.start(cb),
-      (cb) => ps.start(cb)
-    ], (err) => {
-      if (err) {
-        return cb(err)
-      }
-
-      cb(null, {
-        libp2p: node,
-        ps
-      })
-    })
+    fsA.publish('Z', crypto.randomBytes(1024))
+  }, {
+    defer: true
   })
-}, (err, peers) => {
-  if (err) {
-    throw err
-  }
 
-  parallel([
-    (cb) => peers[0].libp2p.dial(peers[1].libp2p.peerInfo, cb),
-    (cb) => setTimeout(() => {
-      peers[0].ps.subscribe('Z', () => {}, () => {})
-      peers[1].ps.subscribe('Z', () => {}, () => {})
-      cb(null, peers)
-    }, 200)
-  ], (err, res) => {
-    if (err) {
-      throw err
-    }
-
-    const peers = res[1]
-
-    suite.add('publish and receive', (deferred) => {
-      const onMsg = (msg) => {
-        deferred.resolve()
-        peers[1].ps.removeListener('Z', onMsg)
-      }
-
-      peers[1].ps.on('Z', onMsg)
-
-      peers[0].ps.publish('Z', crypto.randomBytes(1024))
-    }, {
-      defer: true
+  suite
+    .on('cycle', (event) => {
+      console.log(String(event.target)) // eslint-disable-line
     })
-
-    suite
-      .on('cycle', (event) => {
-        console.log(String(event.target)) // eslint-disable-line
-      })
-      .on('complete', () => {
-        process.exit()
-      })
-      .run({
-        async: true
-      })
-  })
-})
+    .on('complete', () => {
+      process.exit()
+    })
+    .run({
+      async: true
+    })
+})()

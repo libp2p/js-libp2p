@@ -6,76 +6,84 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-spies'))
 const expect = chai.expect
-const parallel = require('async/parallel')
-const series = require('async/series')
+
+const pDefer = require('p-defer')
 const times = require('lodash/times')
 
 const FloodSub = require('../src')
-const utils = require('./utils')
-const first = utils.first
-const createNode = utils.createNode
-const expectSet = utils.expectSet
+const { multicodec } = require('../src')
+const {
+  defOptions,
+  first,
+  createPeerInfo,
+  createMockRegistrar,
+  expectSet,
+  ConnectionPair
+} = require('./utils')
+
+function shouldNotHappen (_) {
+  expect.fail()
+}
 
 describe('basics between 2 nodes', () => {
   describe('fresh nodes', () => {
-    let nodeA
-    let nodeB
-    let fsA
-    let fsB
+    let peerInfoA, peerInfoB
+    let fsA, fsB
 
-    before((done) => {
-      series([
-        (cb) => createNode(cb),
-        (cb) => createNode(cb)
-      ], (err, nodes) => {
-        if (err) {
-          return done(err)
-        }
-        nodeA = nodes[0]
-        nodeB = nodes[1]
-        done()
+    const registrarRecordA = {}
+    const registrarRecordB = {}
+
+    // Mount pubsub protocol
+    before(async () => {
+      [peerInfoA, peerInfoB] = await Promise.all([
+        createPeerInfo(),
+        createPeerInfo()
+      ])
+
+      fsA = new FloodSub(peerInfoA, createMockRegistrar(registrarRecordA), defOptions)
+      fsB = new FloodSub(peerInfoB, createMockRegistrar(registrarRecordB), defOptions)
+
+      expect(fsA.peers.size).to.be.eql(0)
+      expect(fsA.subscriptions.size).to.eql(0)
+      expect(fsB.peers.size).to.be.eql(0)
+      expect(fsB.subscriptions.size).to.eql(0)
+    })
+
+    // Start pubsub
+    before(() => Promise.all([
+      fsA.start(),
+      fsB.start()
+    ]))
+
+    // Connect floodsub nodes
+    before(async () => {
+      const onConnectA = registrarRecordA[multicodec].onConnect
+      const handleB = registrarRecordB[multicodec].handler
+
+      // Notice peers of connection
+      const [c0, c1] = ConnectionPair()
+      await onConnectA(peerInfoB, c0)
+
+      await handleB({
+        protocol: multicodec,
+        stream: c1.stream,
+        remotePeer: peerInfoA.id
       })
+
+      expect(fsA.peers.size).to.be.eql(1)
+      expect(fsB.peers.size).to.be.eql(1)
     })
 
-    after((done) => {
-      parallel([
-        (cb) => nodeA.stop(cb),
-        (cb) => nodeB.stop(cb)
-      ], done)
+    after(() => {
+      return Promise.all([
+        fsA.started && fsA.stop(),
+        fsB.started && fsB.stop()
+      ])
     })
 
-    it('Mount the pubsub protocol', (done) => {
-      fsA = new FloodSub(nodeA, { emitSelf: true })
-      fsB = new FloodSub(nodeB, { emitSelf: true })
+    it('Subscribe to a topic:Z in nodeA', () => {
+      const defer = pDefer()
 
-      setTimeout(() => {
-        expect(fsA.peers.size).to.be.eql(0)
-        expect(fsA.subscriptions.size).to.eql(0)
-        expect(fsB.peers.size).to.be.eql(0)
-        expect(fsB.subscriptions.size).to.eql(0)
-        done()
-      }, 50)
-    })
-
-    it('start both FloodSubs', (done) => {
-      parallel([
-        (cb) => fsA.start(cb),
-        (cb) => fsB.start(cb)
-      ], done)
-    })
-
-    it('Dial from nodeA to nodeB', (done) => {
-      series([
-        (cb) => nodeA.dial(nodeB.peerInfo, cb),
-        (cb) => setTimeout(() => {
-          expect(fsA.peers.size).to.equal(1)
-          expect(fsB.peers.size).to.equal(1)
-          cb()
-        }, 1000)
-      ], done)
-    })
-
-    it('Subscribe to a topic:Z in nodeA', (done) => {
       fsA.subscribe('Z')
       fsB.once('floodsub:subscription-change', (changedPeerInfo, changedTopics, changedSubs) => {
         expectSet(fsA.subscriptions, ['Z'])
@@ -84,23 +92,31 @@ describe('basics between 2 nodes', () => {
         expect(changedPeerInfo.id.toB58String()).to.equal(first(fsB.peers).info.id.toB58String())
         expectSet(changedTopics, ['Z'])
         expect(changedSubs).to.be.eql([{ topicID: 'Z', subscribe: true }])
-        done()
+        defer.resolve()
       })
+
+      return defer.promise
     })
 
-    it('Publish to a topic:Z in nodeA', (done) => {
+    it('Publish to a topic:Z in nodeA', () => {
+      const defer = pDefer()
+
       fsA.once('Z', (msg) => {
         expect(msg.data.toString()).to.equal('hey')
         fsB.removeListener('Z', shouldNotHappen)
-        done()
+        defer.resolve()
       })
 
       fsB.once('Z', shouldNotHappen)
 
       fsA.publish('Z', Buffer.from('hey'))
+
+      return defer.promise
     })
 
-    it('Publish to a topic:Z in nodeB', (done) => {
+    it('Publish to a topic:Z in nodeB', () => {
+      const defer = pDefer()
+
       fsA.once('Z', (msg) => {
         fsA.once('Z', shouldNotHappen)
         expect(msg.data.toString()).to.equal('banana')
@@ -108,64 +124,74 @@ describe('basics between 2 nodes', () => {
         setTimeout(() => {
           fsA.removeListener('Z', shouldNotHappen)
           fsB.removeListener('Z', shouldNotHappen)
-          done()
+
+          defer.resolve()
         }, 100)
       })
 
       fsB.once('Z', shouldNotHappen)
 
       fsB.publish('Z', Buffer.from('banana'))
+
+      return defer.promise
     })
 
-    it('Publish 10 msg to a topic:Z in nodeB', (done) => {
+    it('Publish 10 msg to a topic:Z in nodeB', () => {
+      const defer = pDefer()
       let counter = 0
 
       fsB.once('Z', shouldNotHappen)
-
       fsA.on('Z', receivedMsg)
 
       function receivedMsg (msg) {
         expect(msg.data.toString()).to.equal('banana')
-        expect(msg.from).to.be.eql(fsB.libp2p.peerInfo.id.toB58String())
+        expect(msg.from).to.be.eql(fsB.peerInfo.id.toB58String())
         expect(Buffer.isBuffer(msg.seqno)).to.be.true()
         expect(msg.topicIDs).to.be.eql(['Z'])
 
         if (++counter === 10) {
           fsA.removeListener('Z', receivedMsg)
           fsB.removeListener('Z', shouldNotHappen)
-          done()
+
+          defer.resolve()
         }
       }
-
       times(10, () => fsB.publish('Z', Buffer.from('banana')))
+
+      return defer.promise
     })
 
-    it('Publish 10 msg to a topic:Z in nodeB as array', (done) => {
+    it('Publish 10 msg to a topic:Z in nodeB as array', () => {
+      const defer = pDefer()
       let counter = 0
 
       fsB.once('Z', shouldNotHappen)
-
       fsA.on('Z', receivedMsg)
 
       function receivedMsg (msg) {
         expect(msg.data.toString()).to.equal('banana')
-        expect(msg.from).to.be.eql(fsB.libp2p.peerInfo.id.toB58String())
+        expect(msg.from).to.be.eql(fsB.peerInfo.id.toB58String())
         expect(Buffer.isBuffer(msg.seqno)).to.be.true()
         expect(msg.topicIDs).to.be.eql(['Z'])
 
         if (++counter === 10) {
           fsA.removeListener('Z', receivedMsg)
           fsB.removeListener('Z', shouldNotHappen)
-          done()
+
+          defer.resolve()
         }
       }
 
-      let msgs = []
+      const msgs = []
       times(10, () => msgs.push(Buffer.from('banana')))
       fsB.publish('Z', msgs)
+
+      return defer.promise
     })
 
-    it('Unsubscribe from topic:Z in nodeA', (done) => {
+    it('Unsubscribe from topic:Z in nodeA', () => {
+      const defer = pDefer()
+
       fsA.unsubscribe('Z')
       expect(fsA.subscriptions.size).to.equal(0)
 
@@ -175,415 +201,99 @@ describe('basics between 2 nodes', () => {
         expect(changedPeerInfo.id.toB58String()).to.equal(first(fsB.peers).info.id.toB58String())
         expectSet(changedTopics, [])
         expect(changedSubs).to.be.eql([{ topicID: 'Z', subscribe: false }])
-        done()
+
+        defer.resolve()
       })
+
+      return defer.promise
     })
 
-    it('Publish to a topic:Z in nodeA nodeB', (done) => {
+    it('Publish to a topic:Z in nodeA nodeB', () => {
+      const defer = pDefer()
+
       fsA.once('Z', shouldNotHappen)
       fsB.once('Z', shouldNotHappen)
 
       setTimeout(() => {
         fsA.removeListener('Z', shouldNotHappen)
         fsB.removeListener('Z', shouldNotHappen)
-        done()
+        defer.resolve()
       }, 100)
 
       fsB.publish('Z', Buffer.from('banana'))
       fsA.publish('Z', Buffer.from('banana'))
-    })
 
-    it('stop both FloodSubs', (done) => {
-      parallel([
-        (cb) => fsA.stop(cb),
-        (cb) => fsB.stop(cb)
-      ], done)
+      return defer.promise
     })
   })
 
   describe('nodes send state on connection', () => {
-    let nodeA
-    let nodeB
-    let fsA
-    let fsB
+    let peerInfoA, peerInfoB
+    let fsA, fsB
 
-    before((done) => {
-      parallel([
-        (cb) => createNode(cb),
-        (cb) => createNode(cb)
-      ], (err, nodes) => {
-        expect(err).to.not.exist()
+    const registrarRecordA = {}
+    const registrarRecordB = {}
 
-        nodeA = nodes[0]
-        nodeB = nodes[1]
+    // Mount pubsub protocol
+    before(async () => {
+      [peerInfoA, peerInfoB] = await Promise.all([
+        createPeerInfo(),
+        createPeerInfo()
+      ])
 
-        fsA = new FloodSub(nodeA)
-        fsB = new FloodSub(nodeB)
-
-        parallel([
-          (cb) => fsA.start(cb),
-          (cb) => fsB.start(cb)
-        ], next)
-
-        function next () {
-          fsA.subscribe('Za')
-          fsB.subscribe('Zb')
-
-          expect(fsA.peers.size).to.equal(0)
-          expectSet(fsA.subscriptions, ['Za'])
-          expect(fsB.peers.size).to.equal(0)
-          expectSet(fsB.subscriptions, ['Zb'])
-          done()
-        }
-      })
+      fsA = new FloodSub(peerInfoA, createMockRegistrar(registrarRecordA), defOptions)
+      fsB = new FloodSub(peerInfoB, createMockRegistrar(registrarRecordB), defOptions)
     })
 
-    after((done) => {
-      parallel([
-        (cb) => nodeA.stop(cb),
-        (cb) => nodeB.stop(cb)
-      ], done)
+    // Start pubsub
+    before(() => Promise.all([
+      fsA.start(),
+      fsB.start()
+    ]))
+
+    // Make subscriptions prior to new nodes
+    before(() => {
+      fsA.subscribe('Za')
+      fsB.subscribe('Zb')
+
+      expect(fsA.peers.size).to.equal(0)
+      expectSet(fsA.subscriptions, ['Za'])
+      expect(fsB.peers.size).to.equal(0)
+      expectSet(fsB.subscriptions, ['Zb'])
     })
 
-    it('existing subscriptions are sent upon peer connection', (done) => {
-      parallel([
-        cb => fsA.once('floodsub:subscription-change', () => cb()),
-        cb => fsB.once('floodsub:subscription-change', () => cb())
-      ], () => {
-        expect(fsA.peers.size).to.equal(1)
-        expect(fsB.peers.size).to.equal(1)
-
-        expectSet(fsA.subscriptions, ['Za'])
-        expect(fsB.peers.size).to.equal(1)
-        expectSet(first(fsB.peers).topics, ['Za'])
-
-        expectSet(fsB.subscriptions, ['Zb'])
-        expect(fsA.peers.size).to.equal(1)
-        expectSet(first(fsA.peers).topics, ['Zb'])
-
-        done()
-      })
-
-      nodeA.dial(nodeB.peerInfo, (err) => {
-        expect(err).to.not.exist()
-      })
+    after(() => {
+      return Promise.all([
+        fsA.started && fsA.stop(),
+        fsB.started && fsB.stop()
+      ])
     })
 
-    it('stop both FloodSubs', (done) => {
-      parallel([
-        (cb) => fsA.stop(cb),
-        (cb) => fsB.stop(cb)
-      ], done)
-    })
-  })
+    it('existing subscriptions are sent upon peer connection', async () => {
+      const dial = async () => {
+        const onConnectA = registrarRecordA[multicodec].onConnect
+        const onConnectB = registrarRecordB[multicodec].onConnect
 
-  describe('nodes handle connection errors', () => {
-    let nodeA
-    let nodeB
-    let fsA
-    let fsB
-
-    before((done) => {
-      series([
-        (cb) => createNode(cb),
-        (cb) => createNode(cb)
-      ], (cb, nodes) => {
-        nodeA = nodes[0]
-        nodeB = nodes[1]
-
-        fsA = new FloodSub(nodeA)
-        fsB = new FloodSub(nodeB)
-
-        parallel([
-          (cb) => fsA.start(cb),
-          (cb) => fsB.start(cb)
-        ], next)
-
-        function next () {
-          fsA.subscribe('Za')
-          fsB.subscribe('Zb')
-
-          expect(fsA.peers.size).to.equal(0)
-          expectSet(fsA.subscriptions, ['Za'])
-          expect(fsB.peers.size).to.equal(0)
-          expectSet(fsB.subscriptions, ['Zb'])
-          done()
-        }
-      })
-    })
-
-    // TODO understand why this test is failing
-    it.skip('peer is removed from the state when connection ends', (done) => {
-      nodeA.dial(nodeB.peerInfo, (err) => {
-        expect(err).to.not.exist()
-        setTimeout(() => {
-          expect(first(fsA.peers)._references).to.equal(2)
-          expect(first(fsB.peers)._references).to.equal(2)
-
-          fsA.stop(() => setTimeout(() => {
-            expect(first(fsB.peers)._references).to.equal(1)
-            done()
-          }, 1000))
-        }, 1000)
-      })
-    })
-
-    it('stop one node', (done) => {
-      parallel([
-        (cb) => nodeA.stop(cb),
-        (cb) => nodeB.stop(cb)
-      ], done)
-    })
-
-    it('nodes don\'t have peers in it', (done) => {
-      setTimeout(() => {
-        expect(fsA.peers.size).to.equal(0)
-        expect(fsB.peers.size).to.equal(0)
-        done()
-      }, 1000)
-    })
-  })
-
-  describe('dial the pubsub protocol on mount', () => {
-    let nodeA
-    let nodeB
-    let fsA
-    let fsB
-
-    before((done) => {
-      series([
-        (cb) => createNode(cb),
-        (cb) => createNode(cb)
-      ], (cb, nodes) => {
-        nodeA = nodes[0]
-        nodeB = nodes[1]
-        nodeA.dial(nodeB.peerInfo, () => setTimeout(done, 1000))
-      })
-    })
-
-    after((done) => {
-      parallel([
-        (cb) => nodeA.stop(cb),
-        (cb) => nodeB.stop(cb)
-      ], done)
-    })
-
-    it('dial on floodsub on mount', (done) => {
-      fsA = new FloodSub(nodeA, { emitSelf: true })
-      fsB = new FloodSub(nodeB, { emitSelf: true })
-
-      parallel([
-        (cb) => fsA.start(cb),
-        (cb) => fsB.start(cb)
-      ], next)
-
-      function next () {
-        expect(fsA.peers.size).to.equal(1)
-        expect(fsB.peers.size).to.equal(1)
-        done()
+        // Notice peers of connection
+        const [c0, c1] = ConnectionPair()
+        await onConnectA(peerInfoB, c0)
+        await onConnectB(peerInfoA, c1)
       }
-    })
 
-    it('stop both FloodSubs', (done) => {
-      parallel([
-        (cb) => fsA.stop(cb),
-        (cb) => fsB.stop(cb)
-      ], done)
-    })
-  })
+      await Promise.all([
+        dial(),
+        new Promise((resolve) => fsA.once('floodsub:subscription-change', resolve)),
+        new Promise((resolve) => fsB.once('floodsub:subscription-change', resolve))
+      ])
 
-  describe('prevent concurrent dials', () => {
-    let sandbox
-    let nodeA
-    let nodeB
-    let fsA
-    let fsB
+      expect(fsA.peers.size).to.equal(1)
+      expect(fsB.peers.size).to.equal(1)
 
-    before((done) => {
-      sandbox = chai.spy.sandbox()
+      expectSet(fsA.subscriptions, ['Za'])
+      expectSet(first(fsB.peers).topics, ['Za'])
 
-      series([
-        (cb) => createNode(cb),
-        (cb) => createNode(cb)
-      ], (err, nodes) => {
-        if (err) return done(err)
-
-        nodeA = nodes[0]
-        nodeB = nodes[1]
-
-        // Put node B in node A's peer book
-        nodeA.peerBook.put(nodeB.peerInfo)
-
-        fsA = new FloodSub(nodeA)
-        fsB = new FloodSub(nodeB)
-
-        fsB.start(done)
-      })
-    })
-
-    after((done) => {
-      sandbox.restore()
-
-      parallel([
-        (cb) => nodeA.stop(cb),
-        (cb) => nodeB.stop(cb)
-      ], (ignoreErr) => {
-        done()
-      })
-    })
-
-    it('does not dial twice to same peer', (done) => {
-      sandbox.on(fsA, ['_onDial'])
-
-      // When node A starts, it will dial all peers in its peer book, which
-      // is just peer B
-      fsA.start(startComplete)
-
-      // Simulate a connection coming in from peer B at the same time. This
-      // causes floodsub to dial peer B
-      nodeA.emit('peer:connect', nodeB.peerInfo)
-
-      function startComplete () {
-        // Check that only one dial was made
-        setTimeout(() => {
-          expect(fsA._onDial).to.have.been.called.once()
-          done()
-        }, 1000)
-      }
-    })
-  })
-
-  describe('allow dials even after error', () => {
-    let sandbox
-    let nodeA
-    let nodeB
-    let fsA
-    let fsB
-
-    before((done) => {
-      sandbox = chai.spy.sandbox()
-
-      series([
-        (cb) => createNode(cb),
-        (cb) => createNode(cb)
-      ], (err, nodes) => {
-        if (err) return done(err)
-
-        nodeA = nodes[0]
-        nodeB = nodes[1]
-
-        // Put node B in node A's peer book
-        nodeA.peerBook.put(nodeB.peerInfo)
-
-        fsA = new FloodSub(nodeA)
-        fsB = new FloodSub(nodeB)
-
-        fsB.start(done)
-      })
-    })
-
-    after((done) => {
-      sandbox.restore()
-
-      parallel([
-        (cb) => nodeA.stop(cb),
-        (cb) => nodeB.stop(cb)
-      ], (ignoreErr) => {
-        done()
-      })
-    })
-
-    it('can dial again after error', (done) => {
-      let firstTime = true
-      const dialProtocol = fsA.libp2p.dialProtocol.bind(fsA.libp2p)
-      sandbox.on(fsA.libp2p, 'dialProtocol', (peerInfo, multicodec, cb) => {
-        // Return an error for the first dial
-        if (firstTime) {
-          firstTime = false
-          return cb(new Error('dial error'))
-        }
-
-        // Subsequent dials proceed as normal
-        dialProtocol(peerInfo, multicodec, cb)
-      })
-
-      // When node A starts, it will dial all peers in its peer book, which
-      // is just peer B
-      fsA.start(startComplete)
-
-      function startComplete () {
-        // Simulate a connection coming in from peer B. This causes floodsub
-        // to dial peer B
-        nodeA.emit('peer:connect', nodeB.peerInfo)
-
-        // Check that both dials were made
-        setTimeout(() => {
-          expect(fsA.libp2p.dialProtocol).to.have.been.called.twice()
-          done()
-        }, 1000)
-      }
-    })
-  })
-
-  describe('prevent processing dial after stop', () => {
-    let sandbox
-    let nodeA
-    let nodeB
-    let fsA
-    let fsB
-
-    before((done) => {
-      sandbox = chai.spy.sandbox()
-
-      series([
-        (cb) => createNode(cb),
-        (cb) => createNode(cb)
-      ], (err, nodes) => {
-        if (err) return done(err)
-
-        nodeA = nodes[0]
-        nodeB = nodes[1]
-
-        fsA = new FloodSub(nodeA)
-        fsB = new FloodSub(nodeB)
-
-        parallel([
-          (cb) => fsA.start(cb),
-          (cb) => fsB.start(cb)
-        ], done)
-      })
-    })
-
-    after((done) => {
-      sandbox.restore()
-
-      parallel([
-        (cb) => nodeA.stop(cb),
-        (cb) => nodeB.stop(cb)
-      ], (ignoreErr) => {
-        done()
-      })
-    })
-
-    it('does not process dial after stop', (done) => {
-      sandbox.on(fsA, ['_onDial'])
-
-      // Simulate a connection coming in from peer B at the same time. This
-      // causes floodsub to dial peer B
-      nodeA.emit('peer:connect', nodeB.peerInfo)
-
-      // Stop floodsub before the dial can complete
-      fsA.stop(() => {
-        // Check that the dial was not processed
-        setTimeout(() => {
-          expect(fsA._onDial).to.not.have.been.called()
-          done()
-        }, 1000)
-      })
+      expectSet(fsB.subscriptions, ['Zb'])
+      expectSet(first(fsA.peers).topics, ['Zb'])
     })
   })
 })
-
-function shouldNotHappen (msg) {
-  expect.fail()
-}
