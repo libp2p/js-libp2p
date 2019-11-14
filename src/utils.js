@@ -44,7 +44,7 @@ exports.anyMatch = (a, b) => {
     bHas = (val) => b.has(val)
   }
 
-  for (let val of a) {
+  for (const val of a) {
     if (bHas(val)) {
       return true
     }

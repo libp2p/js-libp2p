@@ -17,16 +17,13 @@ const { randomSeqno } = require('../src/utils')
 
 describe('message signing', () => {
   let peerId
-  before((done) => {
-    peerId = PeerId.create({
+  before(async () => {
+    peerId = await PeerId.create({
       bits: 1024
-    }, (err, id) => {
-      peerId = id
-      done(err)
     })
   })
 
-  it('should be able to sign and verify a message', (done) => {
+  it('should be able to sign and verify a message', async () => {
     const message = {
       from: peerId.id,
       data: 'hello',
@@ -35,64 +32,44 @@ describe('message signing', () => {
     }
 
     const bytesToSign = Buffer.concat([SignPrefix, Message.encode(message)])
+    const expectedSignature = await peerId.privKey.sign(bytesToSign)
 
-    peerId.privKey.sign(bytesToSign, (err, expectedSignature) => {
-      if (err) return done(err)
+    const signedMessage = await signMessage(peerId, message)
 
-      signMessage(peerId, message, (err, signedMessage) => {
-        if (err) return done(err)
+    // Check the signature and public key
+    expect(signedMessage.signature).to.eql(expectedSignature)
+    expect(signedMessage.key).to.eql(peerId.pubKey.bytes)
 
-        // Check the signature and public key
-        expect(signedMessage.signature).to.eql(expectedSignature)
-        expect(signedMessage.key).to.eql(peerId.pubKey.bytes)
-
-        // Verify the signature
-        verifySignature(signedMessage, (err, verified) => {
-          expect(err).to.not.exist()
-          expect(verified).to.eql(true)
-          done(err)
-        })
-      })
-    })
+    // Verify the signature
+    const verified = await verifySignature(signedMessage)
+    expect(verified).to.eql(true)
   })
 
-  it('should be able to extract the public key from an inlined key', (done) => {
-    const testSecp256k1 = (peerId) => {
-      const message = {
-        from: peerId.id,
-        data: 'hello',
-        seqno: randomSeqno(),
-        topicIDs: ['test-topic']
-      }
+  it('should be able to extract the public key from an inlined key', async () => {
+    const secPeerId = await PeerId.create({ keyType: 'secp256k1', bits: 256 })
 
-      const bytesToSign = Buffer.concat([SignPrefix, Message.encode(message)])
-      peerId.privKey.sign(bytesToSign, (err, expectedSignature) => {
-        if (err) return done(err)
-
-        signMessage(peerId, message, (err, signedMessage) => {
-          if (err) return done(err)
-
-          // Check the signature and public key
-          expect(signedMessage.signature).to.eql(expectedSignature)
-          signedMessage.key = undefined
-
-          // Verify the signature
-          verifySignature(signedMessage, (err, verified) => {
-            expect(err).to.not.exist()
-            expect(verified).to.eql(true)
-            done(err)
-          })
-        })
-      })
+    const message = {
+      from: secPeerId.id,
+      data: 'hello',
+      seqno: randomSeqno(),
+      topicIDs: ['test-topic']
     }
 
-    PeerId.create({ keyType: 'secp256k1', bits: 256 }, (err, peerId) => {
-      expect(err).to.not.exist()
-      testSecp256k1(peerId)
-    })
+    const bytesToSign = Buffer.concat([SignPrefix, Message.encode(message)])
+    const expectedSignature = await secPeerId.privKey.sign(bytesToSign)
+
+    const signedMessage = await signMessage(secPeerId, message)
+
+    // Check the signature and public key
+    expect(signedMessage.signature).to.eql(expectedSignature)
+    signedMessage.key = undefined
+
+    // Verify the signature
+    const verified = await verifySignature(signedMessage)
+    expect(verified).to.eql(true)
   })
 
-  it('should be able to extract the public key from the message', (done) => {
+  it('should be able to extract the public key from the message', async () => {
     const message = {
       from: peerId.id,
       data: 'hello',
@@ -101,24 +78,16 @@ describe('message signing', () => {
     }
 
     const bytesToSign = Buffer.concat([SignPrefix, Message.encode(message)])
+    const expectedSignature = await peerId.privKey.sign(bytesToSign)
 
-    peerId.privKey.sign(bytesToSign, (err, expectedSignature) => {
-      if (err) return done(err)
+    const signedMessage = await signMessage(peerId, message)
 
-      signMessage(peerId, message, (err, signedMessage) => {
-        if (err) return done(err)
+    // Check the signature and public key
+    expect(signedMessage.signature).to.eql(expectedSignature)
+    expect(signedMessage.key).to.eql(peerId.pubKey.bytes)
 
-        // Check the signature and public key
-        expect(signedMessage.signature).to.eql(expectedSignature)
-        expect(signedMessage.key).to.eql(peerId.pubKey.bytes)
-
-        // Verify the signature
-        verifySignature(signedMessage, (err, verified) => {
-          expect(err).to.not.exist()
-          expect(verified).to.eql(true)
-          done(err)
-        })
-      })
-    })
+    // Verify the signature
+    const verified = await verifySignature(signedMessage)
+    expect(verified).to.eql(true)
   })
 })

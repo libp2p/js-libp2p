@@ -17,9 +17,6 @@
     "coverage": "aegir coverage",
     "coverage-publish": "aegir coverage --provider coveralls"
   },
-  "browser": {
-    "test/utils/nodejs-bundle": "./test/utils/browser-bundle.js"
-  },
   "files": [
     "src",
     "dist"
@@ -45,35 +42,27 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-pubsub#readme",
   "devDependencies": {
-    "aegir": "^18.2.1",
+    "aegir": "^20.4.1",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "chai-spies": "^1.0.0",
     "dirty-chai": "^2.0.1",
-    "libp2p": "~0.24.4",
-    "libp2p-secio": "~0.11.1",
-    "libp2p-spdy": "~0.13.3",
-    "libp2p-tcp": "~0.13.0",
-    "libp2p-websocket-star": "~0.10.2",
-    "libp2p-websocket-star-rendezvous": "~0.3.0",
-    "lodash": "^4.17.11",
-    "multiaddr": "^6.0.6",
-    "peer-id": "~0.12.5",
-    "peer-info": "~0.15.1"
+    "it-pair": "^1.0.0",
+    "multiaddr": "^6.1.0",
+    "peer-id": "~0.13.3",
+    "peer-info": "~0.17.0"
   },
   "dependencies": {
-    "async": "^2.6.2",
     "bs58": "^4.0.1",
     "debug": "^4.1.1",
-    "err-code": "^1.1.2",
-    "length-prefixed-stream": "^2.0.0",
-    "libp2p-crypto": "~0.16.1",
+    "err-code": "^2.0.0",
+    "it-length-prefixed": "^2.0.0",
+    "it-pipe": "^1.0.1",
+    "it-pushable": "^1.3.2",
+    "libp2p-crypto": "~0.17.0",
+    "libp2p-interfaces": "~0.1.4",
     "protons": "^1.0.1",
-    "pull-length-prefixed": "^1.3.1",
-    "pull-pushable": "^2.2.0",
-    "pull-stream": "^3.6.9",
-    "sinon": "^7.3.2",
-    "time-cache": "~0.3.0"
+    "sinon": "^7.5.0"
   },
   "contributors": [
     "Cayman <caymannava@gmail.com>",

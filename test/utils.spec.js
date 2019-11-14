@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const { expect } = require('chai')
 
 const utils = require('../src/utils')
 
@@ -49,8 +49,8 @@ describe('utils', () => {
   })
 
   it('converts an IN msg.from to b58', () => {
-    let binaryId = Buffer.from('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'hex')
-    let stringId = 'QmdZEWgtaWAxBh93fELFT298La1rsZfhiC2pqwMVwy3jZM'
+    const binaryId = Buffer.from('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'hex')
+    const stringId = 'QmdZEWgtaWAxBh93fELFT298La1rsZfhiC2pqwMVwy3jZM'
     const m = [
       { from: binaryId },
       { from: stringId }
@@ -63,8 +63,8 @@ describe('utils', () => {
   })
 
   it('converts an OUT msg.from to binary', () => {
-    let binaryId = Buffer.from('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'hex')
-    let stringId = 'QmdZEWgtaWAxBh93fELFT298La1rsZfhiC2pqwMVwy3jZM'
+    const binaryId = Buffer.from('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'hex')
+    const stringId = 'QmdZEWgtaWAxBh93fELFT298La1rsZfhiC2pqwMVwy3jZM'
     const m = [
       { from: binaryId },
       { from: stringId }

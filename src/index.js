@@ -1,60 +1,66 @@
 'use strict'
 
-const EventEmitter = require('events')
-const pull = require('pull-stream/pull')
-const empty = require('pull-stream/sources/empty')
-const asyncEach = require('async/each')
-const TimeCache = require('time-cache')
+const assert = require('assert')
 const debug = require('debug')
+const EventEmitter = require('events')
 const errcode = require('err-code')
 
-const Peer = require('./peer')
+const PeerInfo = require('peer-info')
+const MulticodecTopology = require('libp2p-interfaces/src/topology/multicodec-topology')
+
 const message = require('./message')
+const Peer = require('./peer')
+const utils = require('./utils')
 const {
   signMessage,
   verifySignature
 } = require('./message/sign')
-const utils = require('./utils')
-
-const nextTick = require('async/nextTick')
 
 /**
  * PubsubBaseProtocol handles the peers and connections logic for pubsub routers
  */
 class PubsubBaseProtocol extends EventEmitter {
   /**
-   * @param {String} debugName
-   * @param {String} multicodec
-   * @param {Object} libp2p libp2p implementation
-   * @param {Object} options
-   * @param {boolean} options.signMessages if messages should be signed, defaults to true
-   * @param {boolean} options.strictSigning if message signing should be required, defaults to true
-   * @constructor
+   * @param {Object} props
+   * @param {String} props.debugName log namespace
+   * @param {Array<string>|string} props.multicodecs protocol identificers to connect
+   * @param {PeerInfo} props.peerInfo peer's peerInfo
+   * @param {Object} props.registrar registrar for libp2p protocols
+   * @param {function} props.registrar.handle
+   * @param {function} props.registrar.register
+   * @param {function} props.registrar.unregister
+   * @param {boolean} [props.signMessages] if messages should be signed, defaults to true
+   * @param {boolean} [props.strictSigning] if message signing should be required, defaults to true
+   * @abstract
    */
-  constructor (debugName, multicodec, libp2p, options) {
-    super()
+  constructor ({
+    debugName,
+    multicodecs,
+    peerInfo,
+    registrar,
+    signMessages = true,
+    strictSigning = true
+  }) {
+    assert(debugName && typeof debugName === 'string', 'a debugname `string` is required')
+    assert(multicodecs, 'multicodecs are required')
+    assert(PeerInfo.isPeerInfo(peerInfo), 'peer info must be an instance of `peer-info`')
 
-    options = {
-      signMessages: true,
-      strictSigning: true,
-      ...options
-    }
+    // registrar handling
+    assert(registrar && typeof registrar === 'object', 'a registrar object is required')
+    assert(typeof registrar.handle === 'function', 'a handle function must be provided in registrar')
+    assert(typeof registrar.register === 'function', 'a register function must be provided in registrar')
+    assert(typeof registrar.unregister === 'function', 'a unregister function must be provided in registrar')
+
+    super()
 
     this.log = debug(debugName)
     this.log.err = debug(`${debugName}:error`)
-    this.multicodec = multicodec
-    this.libp2p = libp2p
+
+    this.multicodecs = utils.ensureArray(multicodecs)
+    this.peerInfo = peerInfo
+    this.registrar = registrar
+
     this.started = false
-
-    if (options.signMessages) {
-      this.peerId = this.libp2p.peerInfo.id
-    }
-
-    /**
-     * If message signing should be required for incoming messages
-     * @type {boolean}
-     */
-    this.strictSigning = options.strictSigning
 
     /**
      * Map of topics to which peers are subscribed to
@@ -64,24 +70,125 @@ class PubsubBaseProtocol extends EventEmitter {
     this.topics = new Map()
 
     /**
-     * Cache of seen messages
-     *
-     * @type {TimeCache}
-     */
-    this.seenCache = new TimeCache()
-
-    /**
      * Map of peers.
      *
      * @type {Map<string, Peer>}
      */
     this.peers = new Map()
 
-    // Dials that are currently in progress
-    this._dials = new Set()
+    // Message signing
+    if (signMessages) {
+      this.peerId = this.peerInfo.id
+    }
 
-    this._onConnection = this._onConnection.bind(this)
-    this._dialPeer = this._dialPeer.bind(this)
+    /**
+     * If message signing should be required for incoming messages
+     * @type {boolean}
+     */
+    this.strictSigning = strictSigning
+
+    this._registrarId = undefined
+    this._onIncomingStream = this._onIncomingStream.bind(this)
+    this._onPeerConnected = this._onPeerConnected.bind(this)
+    this._onPeerDisconnected = this._onPeerDisconnected.bind(this)
+  }
+
+  /**
+   * Register the pubsub protocol onto the libp2p node.
+   * @returns {Promise<void>}
+   */
+  async start () {
+    if (this.started) {
+      return
+    }
+    this.log('starting')
+
+    // Incoming streams
+    this.registrar.handle(this.multicodecs, this._onIncomingStream)
+
+    // register protocol with topology
+    const topology = new MulticodecTopology({
+      multicodecs: this.multicodecs,
+      handlers: {
+        onConnect: this._onPeerConnected,
+        onDisconnect: this._onPeerDisconnected
+      }
+    })
+    this._registrarId = await this.registrar.register(topology)
+
+    this.log('started')
+    this.started = true
+  }
+
+  /**
+   * Unregister the pubsub protocol and the streams with other peers will be closed.
+   * @returns {Promise}
+   */
+  async stop () {
+    if (!this.started) {
+      return
+    }
+
+    // unregister protocol and handlers
+    await this.registrar.unregister(this._registrarId)
+
+    this.log('stopping')
+    this.peers.forEach((peer) => peer.close())
+
+    this.peers = new Map()
+    this.started = false
+    this.log('stopped')
+  }
+
+  /**
+   * On an incoming stream event.
+   * @private
+   * @param {Object} props
+   * @param {string} props.protocol
+   * @param {DuplexStream} props.strean
+   * @param {PeerId} props.remotePeer remote peer-id
+   */
+  async _onIncomingStream ({ protocol, stream, remotePeer }) {
+    const peerInfo = await PeerInfo.create(remotePeer)
+    peerInfo.protocols.add(protocol)
+
+    const idB58Str = peerInfo.id.toB58String()
+
+    const peer = this._addPeer(new Peer(peerInfo))
+
+    peer.attachConnection(stream)
+    this._processMessages(idB58Str, stream, peer)
+  }
+
+  /**
+   * Registrar notifies a connection successfully with pubsub protocol.
+   * @private
+   * @param {PeerInfo} peerInfo remote peer info
+   * @param {Connection} conn connection to the peer
+   */
+  async _onPeerConnected (peerInfo, conn) {
+    const idB58Str = peerInfo.id.toB58String()
+    this.log('connected', idB58Str)
+
+    const peer = this._addPeer(new Peer(peerInfo))
+    const { stream } = await conn.newStream(this.multicodecs)
+
+    peer.attachConnection(stream)
+    this._processMessages(idB58Str, stream, peer)
+  }
+
+  /**
+   * Registrar notifies a closing connection with pubsub protocol.
+   * @private
+   * @param {PeerInfo} peerInfo peer info
+   * @param {Error} err error for connection end
+   */
+  _onPeerDisconnected (peerInfo, err) {
+    const idB58Str = peerInfo.id.toB58String()
+    const peer = this.peers.get(idB58Str)
+
+    this.log('connection ended', idB58Str, err ? err.message : '')
+    this._removePeer(peer)
   }
 
   /**
@@ -92,15 +199,8 @@ class PubsubBaseProtocol extends EventEmitter {
    */
   _addPeer (peer) {
     const id = peer.info.id.toB58String()
-
-    /*
-      Always use an existing peer.
-
-      What is happening here is: "If the other peer has already dialed to me, we already have
-      an establish link between the two, what might be missing is a
-      Connection specifically between me and that Peer"
-     */
     let existing = this.peers.get(id)
+
     if (!existing) {
       this.log('new peer', id)
       this.peers.set(id, peer)
@@ -114,7 +214,7 @@ class PubsubBaseProtocol extends EventEmitter {
   }
 
   /**
-   * Remove a peer from the peers map if it has no references.
+   * Remove a peer from the peers map.
    * @private
    * @param {Peer} peer peer state
    * @returns {PeerInfo}
@@ -123,6 +223,7 @@ class PubsubBaseProtocol extends EventEmitter {
     const id = peer.info.id.toB58String()
 
     this.log('remove', id, peer._references)
+
     // Only delete when no one else is referencing this peer.
     if (--peer._references === 0) {
       this.log('delete peer', id)
@@ -133,134 +234,57 @@ class PubsubBaseProtocol extends EventEmitter {
   }
 
   /**
-   * Dial a received peer.
-   * @private
-   * @param {PeerInfo} peerInfo peer info
-   * @param {function} callback
-   * @returns {void}
+   * Validates the given message. The signature will be checked for authenticity.
+   * @param {rpc.RPC.Message} message
+   * @returns {Promise<Boolean>}
    */
-  _dialPeer (peerInfo, callback) {
-    callback = callback || function noop () { }
-    const idB58Str = peerInfo.id.toB58String()
-
-    // If already have a PubSub conn, ignore
-    const peer = this.peers.get(idB58Str)
-    if (peer && peer.isConnected) {
-      return nextTick(() => callback())
+  async validate (message) { // eslint-disable-line require-await
+    // If strict signing is on and we have no signature, abort
+    if (this.strictSigning && !message.signature) {
+      this.log('Signing required and no signature was present, dropping message:', message)
+      return false
     }
 
-    // If already dialing this peer, ignore
-    if (this._dials.has(idB58Str)) {
-      this.log('already dialing %s, ignoring dial attempt', idB58Str)
-      return nextTick(() => callback())
+    // Check the message signature if present
+    if (message.signature) {
+      return verifySignature(message)
+    } else {
+      return true
     }
-    this._dials.add(idB58Str)
-
-    this.log('dialing %s', idB58Str)
-    this.libp2p.dialProtocol(peerInfo, this.multicodec, (err, conn) => {
-      this.log('dial to %s complete', idB58Str)
-
-      // If the dial is not in the set, it means that pubsub has been
-      // stopped
-      const pubsubStopped = !this._dials.has(idB58Str)
-      this._dials.delete(idB58Str)
-
-      if (err) {
-        this.log.err(err)
-        return callback()
-      }
-
-      // pubsub has been stopped, so we should just bail out
-      if (pubsubStopped) {
-        this.log('pubsub was stopped, not processing dial to %s', idB58Str)
-        return callback()
-      }
-
-      this._onDial(peerInfo, conn, callback)
-    })
-  }
-
-  /**
-   * Dial a received peer.
-   * @private
-   * @param {PeerInfo} peerInfo peer info
-   * @param {Connection} conn connection to the peer
-   * @param {function} callback
-   */
-  _onDial (peerInfo, conn, callback) {
-    const idB58Str = peerInfo.id.toB58String()
-    this.log('connected', idB58Str)
-
-    const peer = this._addPeer(new Peer(peerInfo))
-    peer.attachConnection(conn)
-
-    nextTick(() => callback())
-  }
-
-  /**
-   * On successful connection event.
-   * @private
-   * @param {String} protocol connection protocol
-   * @param {Connection} conn connection to the peer
-   */
-  _onConnection (protocol, conn) {
-    conn.getPeerInfo((err, peerInfo) => {
-      if (err) {
-        this.log.err('Failed to identify incomming conn', err)
-        return pull(empty(), conn)
-      }
-
-      const idB58Str = peerInfo.id.toB58String()
-      const peer = this._addPeer(new Peer(peerInfo))
-
-      this._processConnection(idB58Str, conn, peer)
-    })
-  }
-
-  /**
-   * Overriding the implementation of _processConnection should keep the connection and is
-   * responsible for processing each RPC message received by other peers.
-   * @abstract
-   * @param {string} idB58Str peer id string in base58
-   * @param {Connection} conn connection
-   * @param {PeerInfo} peer peer info
-   * @returns {undefined}
-   *
-   */
-  _processConnection (idB58Str, conn, peer) {
-    throw errcode('_processConnection must be implemented by the subclass', 'ERR_NOT_IMPLEMENTED')
-  }
-
-  /**
-   * On connection end event.
-   * @private
-   * @param {string} idB58Str peer id string in base58
-   * @param {PeerInfo} peer peer info
-   * @param {Error} err error for connection end
-   */
-  _onConnectionEnd (idB58Str, peer, err) {
-    // socket hang up, means the one side canceled
-    if (err && err.message !== 'socket hang up') {
-      this.log.err(err)
-    }
-
-    this.log('connection ended', idB58Str, err ? err.message : '')
-    this._removePeer(peer)
   }
 
   /**
    * Normalizes the message and signs it, if signing is enabled
-   *
+   * @private
    * @param {Message} message
-   * @param {function(Error, Message)} callback
+   * @returns {Promise<Message>}
    */
-  _buildMessage (message, callback) {
+  _buildMessage (message) {
     const msg = utils.normalizeOutRpcMessage(message)
     if (this.peerId) {
-      signMessage(this.peerId, msg, callback)
+      return signMessage(this.peerId, msg)
     } else {
-      nextTick(callback, null, msg)
+      return message
     }
+  }
+
+  /**
+   * Get a list of the peer-ids that are subscribed to one topic.
+   * @param {string} topic
+   * @returns {Array<string>}
+   */
+  getPeersSubscribed (topic) {
+    if (!this.started) {
+      throw errcode(new Error('not started yet'), 'ERR_NOT_STARTED_YET')
+    }
+
+    if (!topic || typeof topic !== 'string') {
+      throw errcode(new Error('a string topic must be provided'), 'ERR_NOT_VALID_TOPIC')
+    }
+
+    return Array.from(this.peers.values())
+      .filter((peer) => peer.topics.has(topic))
+      .map((peer) => peer.info.id.toB58String())
   }
 
   /**
@@ -269,12 +293,11 @@ class PubsubBaseProtocol extends EventEmitter {
    * @abstract
    * @param {Array<string>|string} topics
    * @param {Array<any>|any} messages
-   * @param {function(Error)} callback
-   * @returns {undefined}
+   * @returns {Promise}
    *
    */
-  publish (topics, messages, callback) {
-    throw errcode('publish must be implemented by the subclass', 'ERR_NOT_IMPLEMENTED')
+  publish (topics, messages) {
+    throw errcode(new Error('publish must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
   }
 
   /**
@@ -282,10 +305,10 @@ class PubsubBaseProtocol extends EventEmitter {
    * For example, a Floodsub implementation might simply send a message for every peer showing interest in the topics
    * @abstract
    * @param {Array<string>|string} topics
-   * @returns {undefined}
+   * @returns {void}
    */
   subscribe (topics) {
-    throw errcode('subscribe must be implemented by the subclass', 'ERR_NOT_IMPLEMENTED')
+    throw errcode(new Error('subscribe must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
   }
 
   /**
@@ -293,97 +316,34 @@ class PubsubBaseProtocol extends EventEmitter {
    * For example, a Floodsub implementation might simply send a message for every peer revoking interest in the topics
    * @abstract
    * @param {Array<string>|string} topics
-   * @returns {undefined}
-   */
-  unsubscribe (topics) {
-    throw errcode('unsubscribe must be implemented by the subclass', 'ERR_NOT_IMPLEMENTED')
-  }
-
-  /**
-   * Mounts the pubsub protocol onto the libp2p node and sends our
-   * subscriptions to every peer conneceted
-   *
-   * @param {Function} callback
-   * @returns {undefined}
-   *
-   */
-  start (callback) {
-    if (this.started) {
-      return nextTick(() => callback(new Error('already started')))
-    }
-    this.log('starting')
-
-    this.libp2p.handle(this.multicodec, this._onConnection)
-
-    // Speed up any new peer that comes in my way
-    this.libp2p.on('peer:connect', this._dialPeer)
-
-    // Dial already connected peers
-    const peerInfos = Object.values(this.libp2p.peerBook.getAll())
-
-    asyncEach(peerInfos, (peer, cb) => this._dialPeer(peer, cb), (err) => {
-      nextTick(() => {
-        this.log('started')
-        this.started = true
-        callback(err)
-      })
-    })
-  }
-
-  /**
-   * Unmounts the pubsub protocol and shuts down every connection
-   *
-   * @param {Function} callback
-   * @returns {undefined}
-   *
-   */
-  stop (callback) {
-    if (!this.started) {
-      return nextTick(() => callback(new Error('not started yet')))
-    }
-
-    this.libp2p.unhandle(this.multicodec)
-    this.libp2p.removeListener('peer:connect', this._dialPeer)
-
-    // Prevent any dials that are in flight from being processed
-    this._dials = new Set()
-
-    this.log('stopping')
-    asyncEach(this.peers.values(), (peer, cb) => peer.close(cb), (err) => {
-      if (err) {
-        return callback(err)
-      }
-
-      this.log('stopped')
-      this.peers = new Map()
-      this.started = false
-      callback()
-    })
-  }
-
-  /**
-   * Validates the given message. The signature will be checked for authenticity.
-   * @param {rpc.RPC.Message} message
-   * @param {function(Error, Boolean)} callback
    * @returns {void}
    */
-  validate (message, callback) {
-    // If strict signing is on and we have no signature, abort
-    if (this.strictSigning && !message.signature) {
-      this.log('Signing required and no signature was present, dropping message:', message)
-      return nextTick(callback, null, false)
-    }
+  unsubscribe (topics) {
+    throw errcode(new Error('unsubscribe must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
+  }
 
-    // Check the message signature if present
-    if (message.signature) {
-      verifySignature(message, (err, valid) => {
-        if (err) return callback(err)
-        callback(null, valid)
-      })
-    } else {
-      // The message is valid
-      nextTick(callback, null, true)
-    }
+  /**
+   * Overriding the implementation of getTopics should handle the appropriate algorithms for the publish/subscriber implementation.
+   * Get the list of subscriptions the peer is subscribed to.
+   * @abstract
+   * @returns {Array<string>}
+   */
+  getTopics () {
+    throw errcode(new Error('getTopics must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
+  }
+
+  /**
+   * Overriding the implementation of _processMessages should keep the connection and is
+   * responsible for processing each RPC message received by other peers.
+   * @abstract
+   * @param {string} idB58Str peer id string in base58
+   * @param {Connection} conn connection
+   * @param {PeerInfo} peer peer info
+   * @returns {void}
+   *
+   */
+  _processMessages (idB58Str, conn, peer) {
+    throw errcode(new Error('_processMessages must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
   }
 }
 
