@@ -1,3 +1,18 @@
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.2.1...v0.3.0) (2019-11-14)
+
+
+### Code Refactoring
+
+* async ([#26](https://github.com/libp2p/js-libp2p-pubsub/issues/26)) ([c690b29](https://github.com/libp2p/js-libp2p-pubsub/commit/c690b29))
+
+
+### BREAKING CHANGES
+
+* Switch to using async/await and async iterators.
+
+
+
 <a name="0.2.1"></a>
 ## [0.2.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.2.0...v0.2.1) (2019-09-26)
 
