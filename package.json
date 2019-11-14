@@ -1,6 +1,6 @@
 {
   "name": "libp2p-pubsub",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Pubsub base protocol for libp2p pubsub routers",
   "leadMaintainer": "Vasco Santos <santos.vasco10@gmail.com>",
   "main": "src/index.js",
