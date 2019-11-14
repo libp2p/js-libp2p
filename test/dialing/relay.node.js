@@ -4,8 +4,8 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
-const sinon = require('sinon')
 
+const multiaddr = require('multiaddr')
 const { collect } = require('streaming-iterables')
 const pipe = require('it-pipe')
 const { createPeerInfoFromFixture } = require('../utils/creators/peer')
@@ -45,14 +45,21 @@ describe('Dialing (via relay, TCP)', () => {
 
   it('should be able to connect to a peer over a relay with active connections', async () => {
     const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
+    const relayIdString = relayLibp2p.peerInfo.id.toString()
 
     const dialAddr = relayAddr
-      .encapsulate(`/p2p/${relayLibp2p.peerInfo.id.toString()}`)
+      .encapsulate(`/p2p/${relayIdString}`)
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
 
     // Connect the target peer and the relay, since the relay is not active
     const destToRelayConn = await dstLibp2p.dial(relayAddr)
     expect(destToRelayConn).to.exist()
+
+    const tcpAddrs = dstLibp2p.transportManager.getAddrs()
+    await dstLibp2p.transportManager.listen([multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
+    expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
+
+    dstLibp2p.transportManager.getAddrs().forEach(addr => console.log(String(addr)))
 
     const connection = await srcLibp2p.dial(dialAddr)
     expect(connection).to.exist()
@@ -61,8 +68,8 @@ describe('Dialing (via relay, TCP)', () => {
     expect(connection.remoteAddr).to.eql(dialAddr)
     expect(connection.localAddr).to.eql(
       relayAddr // the relay address
-        .encapsulate(`/p2p/${relayLibp2p.peerInfo.id.toB58String()}`) // with its peer id
-        .encapsulate(`/p2p-circuit`) // the local peer is connected over the relay
+        .encapsulate(`/p2p/${relayIdString}`) // with its peer id
+        .encapsulate('/p2p-circuit') // the local peer is connected over the relay
         .encapsulate(`/p2p/${srcLibp2p.peerInfo.id.toB58String()}`) // and the local peer id
     )
 

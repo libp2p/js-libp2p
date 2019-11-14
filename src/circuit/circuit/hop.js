@@ -118,9 +118,8 @@ module.exports.hop = async function hop ({
 /**
  * Creates an unencoded CAN_HOP response based on the Circuits configuration
  * @private
- * @returns {*} An unencoded response (status message)
  */
-module.exports.handleCanHop = async function handleCanHop ({
+module.exports.handleCanHop = function handleCanHop ({
   connection,
   streamHandler,
   circuit

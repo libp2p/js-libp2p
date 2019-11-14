@@ -5,7 +5,7 @@ const PeerInfo = require('peer-info')
 
 const Peers = require('../../fixtures/peers')
 
- async function createPeerInfo (length) {
+async function createPeerInfo (length) {
   const peers = await Promise.all(
     Array.from({ length })
       .map((_, i) => PeerId.create())

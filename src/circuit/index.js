@@ -81,12 +81,12 @@ class Circuit {
         remoteAddr,
         localAddr
       })
-      let type = CircuitPB.Type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
+      const type = CircuitPB.Type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
       log('new %s connection %s', type, maConn.remoteAddr)
 
       const conn = await this._upgrader.upgradeInbound(maConn)
       log('%s connection %s upgraded', type, maConn.remoteAddr)
-      // TODO: Call the listener handler
+      this.handler && this.handler(conn)
     }
   }
 
@@ -101,11 +101,8 @@ class Circuit {
   async dial (ma, options) {
     // Check the multiaddr to see if it contains a relay and a destination peer
     const addrs = ma.toString().split('/p2p-circuit')
-    let relayAddr
-    let destinationAddr
-
-    relayAddr = multiaddr(addrs[0])
-    destinationAddr = multiaddr(addrs[addrs.length - 1])
+    const relayAddr = multiaddr(addrs[0])
+    const destinationAddr = multiaddr(addrs[addrs.length - 1])
 
     const destinationPeer = PeerId.createFromCID(destinationAddr.getPeerId())
     const relayConnection = await this._dialer.connectToMultiaddr(relayAddr, options)
@@ -134,7 +131,7 @@ class Circuit {
       })
       log('new outbound connection %s', maConn.remoteAddr)
 
-      return await this._upgrader.upgradeOutbound(maConn)
+      return this._upgrader.upgradeOutbound(maConn)
     } else {
       // TODO: throw an error
     }
@@ -153,11 +150,10 @@ class Circuit {
       options = {}
     }
 
-    return createListener({
-      handler,
-      upgrader: this._upgrader,
-      dialer: this._dialer
-    }, options)
+    // Called on successful HOP and STOP requests
+    this.handler = handler
+
+    return createListener(this, options)
   }
 
   /**

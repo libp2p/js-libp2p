@@ -18,7 +18,6 @@ module.exports = ({ stream, remoteAddr, localAddr }, options) => {
       try {
         await sink(source)
       } catch (err) {
-        console.log('Do we need to close here?', err)
         // If aborted we can safely ignore
         if (err.type !== 'aborted') {
           // If the source errored the socket will already have been destroyed by

@@ -6,6 +6,8 @@ const multiaddr = require('multiaddr')
 const Muxer = require('libp2p-mplex')
 const Multistream = require('multistream-select')
 const pair = require('it-pair')
+const errCode = require('err-code')
+const { codes } = require('../../src/errors')
 
 const mockMultiaddrConnPair = require('./mockMultiaddrConn')
 const peerUtils = require('./creators/peer')
@@ -88,7 +90,6 @@ module.exports.pair = function connectionPair ({ addrs, peers, protocols }) {
   return { inbound, outbound }
 }
 
-
 function createConnection ({
   direction,
   maConn,
@@ -107,9 +108,8 @@ function createConnection ({
         // Need to be able to notify a peer of this this._onStream({ connection, stream, protocol })
         const handler = protocols.get(protocol)
         handler({ connection, stream, protocol })
-        console.log('New stream!', protocol)
       } catch (err) {
-        console.error(err)
+        // Do nothing
       }
     },
     // Run anytime a stream closes

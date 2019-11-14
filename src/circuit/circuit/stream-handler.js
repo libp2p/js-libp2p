@@ -45,7 +45,6 @@ class StreamHandler {
    * Encode and write array of buffers
    *
    * @param {*} msg An unencoded CircuitRelay protobuf message
-   * @returns {Function}
    */
   write (msg) {
     log('write', msg)

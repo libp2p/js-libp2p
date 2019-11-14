@@ -1,7 +1,5 @@
 'use strict'
 
-const multiaddr = require('multiaddr')
-const PeerId = require('peer-id')
 const { CircuitRelay: CircuitPB } = require('../protocol')
 const multicodec = require('../multicodec')
 const StreamHandler = require('./stream-handler')
@@ -21,7 +19,7 @@ log.error = debug('libp2p:circuit:stop:error')
  * @param {StreamHandler} options.streamHandler
  * @returns {Promise<*>} Resolves a duplex iterable
  */
-module.exports.handleStop = async function handleStop ({
+module.exports.handleStop = function handleStop ({
   connection,
   request,
   streamHandler

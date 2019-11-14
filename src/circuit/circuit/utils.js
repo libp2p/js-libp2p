@@ -8,7 +8,6 @@ const { CircuitRelay } = require('../protocol')
  *
  * @param {StreamHandler} streamHandler
  * @param {CircuitRelay.Status} status
- * @returns {*}
  */
 function writeResponse (streamHandler, status) {
   streamHandler.write({
@@ -22,7 +21,6 @@ function writeResponse (streamHandler, status) {
  *
  * @param {*} msg A CircuitRelay unencoded protobuf message
  * @param {StreamHandler} streamHandler
- * @returns {*}
  */
 function validateAddrs (msg, streamHandler) {
   try {
