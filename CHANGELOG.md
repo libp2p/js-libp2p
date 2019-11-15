@@ -1,3 +1,13 @@
+<a name="0.3.1"></a>
+## [0.3.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.3.0...v0.3.1) (2019-11-15)
+
+
+### Bug Fixes
+
+* incoming stream conn ([#30](https://github.com/libp2p/js-libp2p-pubsub/issues/30)) ([1b2af2c](https://github.com/libp2p/js-libp2p-pubsub/commit/1b2af2c))
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.2.1...v0.3.0) (2019-11-14)
 
