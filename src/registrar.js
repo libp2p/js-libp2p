@@ -5,9 +5,9 @@ const debug = require('debug')
 const log = debug('libp2p:peer-store')
 log.error = debug('libp2p:peer-store:error')
 
+const Topology = require('libp2p-interfaces/src/topology')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const PeerInfo = require('peer-info')
-const Toplogy = require('./connection-manager/topology')
 
 /**
  * Responsible for notifying registered protocols of events in the network.
@@ -106,17 +106,16 @@ class Registrar {
 
   /**
    * Register handlers for a set of multicodecs given
-   * @param {Object} topologyProps properties for topology
-   * @param {Array<string>|string} topologyProps.multicodecs
-   * @param {Object} topologyProps.handlers
-   * @param {function} topologyProps.handlers.onConnect
-   * @param {function} topologyProps.handlers.onDisconnect
+   * @param {Topology} topology protocol topology
    * @return {string} registrar identifier
    */
-  register (topologyProps) {
-    // Create multicodec topology
+  register (topology) {
+    assert(
+      Topology.isTopology(topology),
+      'topology must be an instance of interfaces/topology')
+
+    // Create topology
     const id = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
-    const topology = new Toplogy(topologyProps)
 
     this.topologies.set(id, topology)
 
