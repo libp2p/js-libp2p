@@ -58,17 +58,14 @@ describe('Pubsub subsystem operates correctly', () => {
     })
 
     it('should get notified of connected peers on dial', async () => {
-      sinon.spy(libp2p.registrar, 'onConnect')
-      sinon.spy(remoteLibp2p.registrar, 'onConnect')
-
       const connection = await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
 
       expect(connection).to.exist()
-      expect(libp2p.pubsub._pubsub.peers.size).to.be.eql(1)
-      expect(remoteLibp2p.pubsub._pubsub.peers.size).to.be.eql(1)
 
-      expect(libp2p.registrar.onConnect.callCount).to.equal(1)
-      expect(remoteLibp2p.registrar.onConnect.callCount).to.equal(1)
+      return Promise.all([
+        pWaitFor(() => libp2p.pubsub._pubsub.peers.size === 1),
+        pWaitFor(() => remoteLibp2p.pubsub._pubsub.peers.size === 1)
+      ])
     })
 
     it('should receive pubsub messages', async () => {
@@ -140,13 +137,10 @@ describe('Pubsub subsystem operates correctly', () => {
 
       remoteLibp2p.pubsub.start()
 
-      await pWaitFor(() =>
-        libp2p.pubsub._pubsub.peers.size === 1 &&
-        remoteLibp2p.pubsub._pubsub.peers.size === 1
-      )
-
-      expect(libp2p.pubsub._pubsub.peers.size).to.be.eql(1)
-      expect(remoteLibp2p.pubsub._pubsub.peers.size).to.be.eql(1)
+      return Promise.all([
+        pWaitFor(() => libp2p.pubsub._pubsub.peers.size === 1),
+        pWaitFor(() => remoteLibp2p.pubsub._pubsub.peers.size === 1)
+      ])
     })
 
     it('should receive pubsub messages', async function () {
@@ -160,7 +154,10 @@ describe('Pubsub subsystem operates correctly', () => {
 
       remoteLibp2p.pubsub.start()
 
-      await pWaitFor(() => libp2p.pubsub._pubsub.peers.size === 1)
+      await Promise.all([
+        pWaitFor(() => libp2p.pubsub._pubsub.peers.size === 1),
+        pWaitFor(() => remoteLibp2p.pubsub._pubsub.peers.size === 1)
+      ])
 
       let subscribedTopics = libp2p.pubsub.getTopics()
       expect(subscribedTopics).to.not.include(topic)
