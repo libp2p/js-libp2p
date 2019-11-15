@@ -33,7 +33,18 @@ describe('registrar', () => {
       throw new Error('should fail to register a protocol if no multicodec is provided')
     })
 
-    // TODO: not valid topology
+    it('should fail to register a protocol if an invalid topology is provided', () => {
+      const fakeTopology = {
+        random: 1
+      }
+      try {
+        registrar.register()
+      } catch (err) {
+        expect(err).to.exist(fakeTopology)
+        return
+      }
+      throw new Error('should fail to register a protocol if an invalid topology is provided')
+    })
   })
 
   describe('registration', () => {

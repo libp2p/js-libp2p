@@ -101,8 +101,7 @@ describe('Pubsub subsystem operates correctly', () => {
     })
   })
 
-  // TODO: Needs identify push
-  describe.skip('pubsub started after connect', () => {
+  describe('pubsub started after connect', () => {
     beforeEach(async () => {
       libp2p = await create(mergeOptions(subsystemOptions, {
         peerInfo
@@ -132,7 +131,7 @@ describe('Pubsub subsystem operates correctly', () => {
       sinon.restore()
     })
 
-    it.skip('should get notified of connected peers after starting', async () => {
+    it('should get notified of connected peers after starting', async () => {
       const connection = await libp2p.dial(remAddr)
 
       expect(connection).to.exist()
@@ -141,14 +140,16 @@ describe('Pubsub subsystem operates correctly', () => {
 
       remoteLibp2p.pubsub.start()
 
-      // Wait for
-      // Validate
+      await pWaitFor(() => libp2p.pubsub._pubsub.peers.size === 1)
+
       expect(libp2p.pubsub._pubsub.peers.size).to.be.eql(1)
       expect(remoteLibp2p.pubsub._pubsub.peers.size).to.be.eql(1)
     })
 
-    it.skip('should receive pubsub messages', async () => {
+    it('should receive pubsub messages', async function () {
+      this.timeout(10e3)
       const defer = pDefer()
+      const libp2pId = libp2p.peerInfo.id.toB58String()
       const topic = 'test-topic'
       const data = 'hey!'
 
@@ -156,15 +157,26 @@ describe('Pubsub subsystem operates correctly', () => {
 
       remoteLibp2p.pubsub.start()
 
-      // TODO: wait for
+      await pWaitFor(() => libp2p.pubsub._pubsub.peers.size === 1)
 
-      libp2p.pubsub.subscribe(topic)
-      libp2p.pubsub.once(topic, (msg) => {
+      let subscribedTopics = libp2p.pubsub.getTopics()
+      expect(subscribedTopics).to.not.include(topic)
+
+      libp2p.pubsub.subscribe(topic, (msg) => {
         expect(msg.data.toString()).to.equal(data)
         defer.resolve()
       })
 
-      libp2p.pubsub.publish(topic, data)
+      subscribedTopics = libp2p.pubsub.getTopics()
+      expect(subscribedTopics).to.include(topic)
+
+      // wait for remoteLibp2p to know about libp2p subscription
+      await pWaitFor(() => {
+        const subscribedPeers = remoteLibp2p.pubsub.getPeersSubscribed(topic)
+        return subscribedPeers.includes(libp2pId)
+      })
+
+      remoteLibp2p.pubsub.publish(topic, data)
 
       await defer.promise
     })
