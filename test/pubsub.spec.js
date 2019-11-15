@@ -180,7 +180,9 @@ describe('pubsub base protocol', () => {
       await handlerB({
         protocol,
         stream: c1.stream,
-        remotePeer: peerInfoA.id
+        connection: {
+          remotePeer: peerInfoA.id
+        }
       })
 
       expect(pubsubA.peers.size).to.be.eql(1)
@@ -200,7 +202,9 @@ describe('pubsub base protocol', () => {
       await handlerB({
         protocol,
         stream: c1.stream,
-        remotePeer: peerInfoA.id
+        connection: {
+          remotePeer: peerInfoA.id
+        }
       })
 
       // Notice peers of disconnect

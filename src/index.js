@@ -146,10 +146,10 @@ class PubsubBaseProtocol extends EventEmitter {
    * @param {Object} props
    * @param {string} props.protocol
    * @param {DuplexStream} props.strean
-   * @param {PeerId} props.remotePeer remote peer-id
+   * @param {Connection} props.connection connection
    */
-  async _onIncomingStream ({ protocol, stream, remotePeer }) {
-    const peerInfo = await PeerInfo.create(remotePeer)
+  async _onIncomingStream ({ protocol, stream, connection }) {
+    const peerInfo = await PeerInfo.create(connection.remotePeer)
     peerInfo.protocols.add(protocol)
 
     const idB58Str = peerInfo.id.toB58String()
