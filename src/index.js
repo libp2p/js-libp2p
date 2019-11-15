@@ -1,7 +1,7 @@
 'use strict'
 
 const FSM = require('fsm-event')
-const EventEmitter = require('events').EventEmitter
+const { EventEmitter } = require('events')
 const debug = require('debug')
 const log = debug('libp2p')
 log.error = debug('libp2p:error')
@@ -9,7 +9,6 @@ const errCode = require('err-code')
 const promisify = require('promisify-es6')
 
 const each = require('async/each')
-const nextTick = require('async/nextTick')
 
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
@@ -65,6 +64,8 @@ class Libp2p extends EventEmitter {
     this._config = this._options.config
     this._transport = [] // Transport instances/references
     this._discovery = [] // Discovery service instances/references
+
+    this.peerStore = new PeerStore()
 
     // create the switch, and listen for errors
     this._switch = new Switch(this.peerInfo, this.peerStore, this._options.switch)
@@ -147,7 +148,7 @@ class Libp2p extends EventEmitter {
     }
 
     // start pubsub
-    if (this._modules.pubsub && this._config.pubsub.enabled !== false) {
+    if (this._modules.pubsub) {
       this.pubsub = pubsub(this, this._modules.pubsub, this._config.pubsub)
     }
 
@@ -251,6 +252,7 @@ class Libp2p extends EventEmitter {
     this.state('stop')
 
     try {
+      this.pubsub && await this.pubsub.stop()
       await this.transportManager.close()
       await this._switch.stop()
     } catch (err) {
@@ -385,10 +387,16 @@ class Libp2p extends EventEmitter {
     const multiaddrs = this.peerInfo.multiaddrs.toArray()
 
     // Start parallel tasks
+    const tasks = [
+      this.transportManager.listen(multiaddrs)
+    ]
+
+    if (this._config.pubsub.enabled) {
+      this.pubsub && this.pubsub.start()
+    }
+
     try {
-      await Promise.all([
-        this.transportManager.listen(multiaddrs)
-      ])
+      await Promise.all(tasks)
     } catch (err) {
       log.error(err)
       this.emit('error', err)
@@ -483,16 +491,15 @@ module.exports = Libp2p
  * Like `new Libp2p(options)` except it will create a `PeerInfo`
  * instance if one is not provided in options.
  * @param {object} options Libp2p configuration options
- * @param {function(Error, Libp2p)} callback
- * @returns {void}
+ * @returns {Libp2p}
  */
-module.exports.createLibp2p = promisify((options, callback) => {
+module.exports.create = async (options = {}) => {
   if (options.peerInfo) {
-    return nextTick(callback, null, new Libp2p(options))
+    return new Libp2p(options)
   }
-  PeerInfo.create((err, peerInfo) => {
-    if (err) return callback(err)
-    options.peerInfo = peerInfo
-    callback(null, new Libp2p(options))
-  })
-})
+
+  const peerInfo = await PeerInfo.create()
+
+  options.peerInfo = peerInfo
+  return new Libp2p(options)
+}
