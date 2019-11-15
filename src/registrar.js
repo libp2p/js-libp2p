@@ -6,7 +6,6 @@ const log = debug('libp2p:peer-store')
 log.error = debug('libp2p:peer-store:error')
 
 const Topology = require('libp2p-interfaces/src/topology')
-const MulticodecTopology = require('libp2p-interfaces/src/topology/multicodec-topology')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const PeerInfo = require('peer-info')
 
@@ -112,8 +111,7 @@ class Registrar {
    */
   register (topology) {
     assert(
-      Topology.isTopology(topology) ||
-      MulticodecTopology.isMulticodecTopology(topology),
+      Topology.isTopology(topology),
       'topology must be an instance of interfaces/topology')
 
     // Create topology

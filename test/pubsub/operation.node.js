@@ -140,7 +140,10 @@ describe('Pubsub subsystem operates correctly', () => {
 
       remoteLibp2p.pubsub.start()
 
-      await pWaitFor(() => libp2p.pubsub._pubsub.peers.size === 1)
+      await pWaitFor(() =>
+        libp2p.pubsub._pubsub.peers.size === 1 &&
+        remoteLibp2p.pubsub._pubsub.peers.size === 1
+      )
 
       expect(libp2p.pubsub._pubsub.peers.size).to.be.eql(1)
       expect(remoteLibp2p.pubsub._pubsub.peers.size).to.be.eql(1)
