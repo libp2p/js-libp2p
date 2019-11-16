@@ -67,7 +67,9 @@ describe('basics between 2 nodes', () => {
       await handleB({
         protocol: multicodec,
         stream: c1.stream,
-        remotePeer: peerInfoA.id
+        connection: {
+          remotePeer: peerInfoA.id
+        }
       })
 
       expect(fsA.peers.size).to.be.eql(1)
