@@ -256,7 +256,7 @@ class Libp2p extends EventEmitter {
    * @param {PeerId} peer The PeerId to close connections to
    * @returns {Promise<void>}
    */
-  async hangUp (peer) {
+  hangUp (peer) {
     return Promise.all(
       this.registrar.connections.get(peer.toB58String()).map(connection => {
         return connection.close()
@@ -374,6 +374,7 @@ class Libp2p extends EventEmitter {
    * Initializes and starts peer discovery services
    *
    * @private
+   * @returns {Promise<void>}
    */
   _setupPeerDiscovery () {
     for (const DiscoveryService of this._modules.peerDiscovery) {

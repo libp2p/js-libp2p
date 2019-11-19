@@ -11,7 +11,6 @@ const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options.browser')
 const { createPeerInfo } = require('../utils/creators/peer')
 
-
 describe('peer discovery', () => {
   let peerInfo
   let remotePeerInfo
@@ -22,7 +21,7 @@ describe('peer discovery', () => {
   })
 
   afterEach(async () => {
-    libp2p && libp2p.stop()
+    libp2p && await libp2p.stop()
   })
 
   it('should dial know peers on startup', async () => {
