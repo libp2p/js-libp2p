@@ -56,10 +56,7 @@ function getPeerInfoRemote (peer, libp2p) {
   try {
     peerInfo = getPeerInfo(peer, libp2p.peerStore)
   } catch (err) {
-    return Promise.reject(errCode(
-      new Error(`${peer} is not a valid peer type`),
-      'ERR_INVALID_PEER_TYPE'
-    ))
+    throw errCode(err, 'ERR_INVALID_PEER_TYPE')
   }
 
   // If we don't have an address for the peer, attempt to find it
@@ -67,7 +64,7 @@ function getPeerInfoRemote (peer, libp2p) {
     return libp2p.peerRouting.findPeer(peerInfo.id)
   }
 
-  return Promise.resolve(peerInfo)
+  return peerInfo
 }
 
 module.exports = {

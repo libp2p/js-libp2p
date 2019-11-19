@@ -251,18 +251,17 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Disconnects from the given peer
+   * Disconnects all connections to the given `peer`
    *
-   * @param {PeerInfo|PeerId|Multiaddr|string} peer
+   * @param {PeerId} peer The PeerId to close connections to
    * @returns {Promise<void>}
    */
   async hangUp (peer) {
-    const peerInfo = await getPeerInfoRemote(peer)
-    return Promise.all([
-      this.connections.get(peerInfo.id.toB58String()).map(connection => {
+    return Promise.all(
+      this.registrar.connections.get(peer.toB58String()).map(connection => {
         return connection.close()
       })
-    ])
+    )
   }
 
   // TODO: Update ping
@@ -273,7 +272,7 @@ class Libp2p extends EventEmitter {
   //  * @returns {Promise<Ping>}
   //  */
   // ping (peer) {
-  //   const peerInfo = await getPeerInfoRemote(peer)
+  //   const peerInfo = await getPeerInfoRemote(peer, this)
   //   return new Ping(this._switch, peerInfo)
   // }
 
