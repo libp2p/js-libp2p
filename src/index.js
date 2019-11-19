@@ -157,7 +157,7 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Starts the libp2p node and all subsystems
+   * Starts the libp2p node and all its subsystems
    *
    * @returns {Promise<void>}
    */

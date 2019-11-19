@@ -9,7 +9,7 @@ const defer = require('p-defer')
 
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options.browser')
-const { createPeerInfo } = require('../utils/creators/peer')
+const { createPeerInfoFromFixture } = require('../utils/creators/peer')
 
 describe('peer discovery', () => {
   let peerInfo
@@ -17,7 +17,7 @@ describe('peer discovery', () => {
   let libp2p
 
   before(async () => {
-    [peerInfo, remotePeerInfo] = await createPeerInfo(2)
+    [peerInfo, remotePeerInfo] = await createPeerInfoFromFixture(2)
   })
 
   afterEach(async () => {
