@@ -118,13 +118,8 @@ class Libp2p extends EventEmitter {
     }
 
     // dht provided components (peerRouting, contentRouting, dht)
-    if (this._config.dht.enabled) {
-      const DHT = this._modules.dht
-
-      this._dht = new DHT(this._switch, {
-        datastore: this.datastore,
-        ...this._config.dht
-      })
+    if (this._modules.dht) {
+      this._dht = dht(this, this._modules.dht, this._config.dht)
     }
 
     // start pubsub
@@ -136,7 +131,6 @@ class Libp2p extends EventEmitter {
     // peer and content routing will automatically get modules from _modules and _dht
     this.peerRouting = peerRouting(this)
     this.contentRouting = contentRouting(this)
-    this.dht = dht(this)
 
     this._peerDiscovered = this._peerDiscovered.bind(this)
   }
@@ -186,6 +180,7 @@ class Libp2p extends EventEmitter {
 
     try {
       this.pubsub && await this.pubsub.stop()
+      this._dht && await this._dht.stop()
       await this.transportManager.close()
     } catch (err) {
       if (err) {
@@ -311,6 +306,10 @@ class Libp2p extends EventEmitter {
 
     if (this._config.pubsub.enabled) {
       this.pubsub && this.pubsub.start()
+    }
+
+    if (this._config.dht.enabled) {
+      this._dht && this._dht.start()
     }
   }
 

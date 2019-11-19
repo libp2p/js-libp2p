@@ -1,43 +1,82 @@
 'use strict'
 
-const nextTick = require('async/nextTick')
 const errCode = require('err-code')
-const promisify = require('promisify-es6')
 
 const { messages, codes } = require('./errors')
 
-module.exports = (node) => {
+module.exports = (node, DHT, config) => {
+  const dht = new DHT({
+    dialer: {
+      dial: (peer, options) => node.dial(peer, options),
+      dialProtocol: (peer, protocols, options) => {
+        const recordedPeer = node.peerStore.get(peer.toB58String())
+
+        if (recordedPeer) {
+          peer = recordedPeer
+        }
+        return node.dialProtocol(peer, protocols, options)
+      }
+    },
+    peerInfo: node.peerInfo,
+    peerStore: node.peerStore,
+    registrar: node.registrar,
+    datastore: this.datastore,
+    ...config
+  })
+
   return {
-    put: promisify((key, value, callback) => {
-      if (!node._dht) {
-        return nextTick(callback, errCode(new Error(messages.DHT_DISABLED), codes.DHT_DISABLED))
+    /**
+     * Store the given key/value pair in the DHT.
+     * @param {Buffer} key
+     * @param {Buffer} value
+     * @param {Object} [options] - put options
+     * @param {number} [options.minPeers] - minimum number of peers required to successfully put
+     * @returns {Promise<void>}
+     */
+    put: (key, value, options) => {
+      if (!node.isStarted() || !dht.isStarted) {
+        throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
       }
 
-      node._dht.put(key, value, callback)
-    }),
-    get: promisify((key, options, callback) => {
-      if (typeof options === 'function') {
-        callback = options
-        options = {}
+      return dht.put(key, value, options)
+    },
+
+    /**
+     * Get the value to the given key.
+     * Times out after 1 minute by default.
+     * @param {Buffer} key
+     * @param {Object} [options] - get options
+     * @param {number} [options.timeout] - optional timeout (default: 60000)
+     * @returns {Promise<{from: PeerId, val: Buffer}>}
+     */
+    get: (key, options) => {
+      if (!node.isStarted() || !dht.isStarted) {
+        throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
       }
 
-      if (!node._dht) {
-        return nextTick(callback, errCode(new Error(messages.DHT_DISABLED), codes.DHT_DISABLED))
+      return dht.get(key, options)
+    },
+
+    /**
+     * Get the `n` values to the given key without sorting.
+     * @param {Buffer} key
+     * @param {number} nVals
+     * @param {Object} [options] - get options
+     * @param {number} [options.timeout] - optional timeout (default: 60000)
+     * @returns {Promise<Array<{from: PeerId, val: Buffer}>>}
+     */
+    getMany: (key, nVals, options) => {
+      if (!node.isStarted() || !dht.isStarted) {
+        throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
       }
 
-      node._dht.get(key, options, callback)
-    }),
-    getMany: promisify((key, nVals, options, callback) => {
-      if (typeof options === 'function') {
-        callback = options
-        options = {}
-      }
+      return dht.getMany(key, nVals, options)
+    },
 
-      if (!node._dht) {
-        return nextTick(callback, errCode(new Error(messages.DHT_DISABLED), codes.DHT_DISABLED))
-      }
+    _dht: dht,
 
-      node._dht.getMany(key, nVals, options, callback)
-    })
+    start: () => dht.start(),
+
+    stop: () => dht.stop()
   }
 }

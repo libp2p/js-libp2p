@@ -37,24 +37,28 @@ class PeerStore extends EventEmitter {
    * Stores the peerInfo of a new peer.
    * If already exist, its info is updated.
    * @param {PeerInfo} peerInfo
+   * @return {PeerInfo}
    */
   put (peerInfo) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
 
+    let peer
     // Already know the peer?
     if (this.peers.has(peerInfo.id.toB58String())) {
-      this.update(peerInfo)
+      peer = this.update(peerInfo)
     } else {
-      this.add(peerInfo)
+      peer = this.add(peerInfo)
 
       // Emit the new peer found
       this.emit('peer', peerInfo)
     }
+    return peer
   }
 
   /**
    * Add a new peer to the store.
    * @param {PeerInfo} peerInfo
+   * @return {PeerInfo}
    */
   add (peerInfo) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
@@ -86,11 +90,13 @@ class PeerStore extends EventEmitter {
     })
 
     this.peers.set(peerInfo.id.toB58String(), peerProxy)
+    return peerProxy
   }
 
   /**
    * Updates an already known peer.
    * @param {PeerInfo} peerInfo
+   * @return {PeerInfo}
    */
   update (peerInfo) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
@@ -148,6 +154,8 @@ class PeerStore extends EventEmitter {
     if (!recorded.id.pubKey && peerInfo.id.pubKey) {
       recorded.id.pubKey = peerInfo.id.pubKey
     }
+
+    return recorded
   }
 
   /**
@@ -163,6 +171,15 @@ class PeerStore extends EventEmitter {
     }
 
     return undefined
+  }
+
+  /**
+   * Has the info to the given id.
+   * @param {string} peerId b58str id
+   * @returns {boolean}
+   */
+  has (peerId) {
+    return this.peers.has(peerId)
   }
 
   /**
