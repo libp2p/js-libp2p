@@ -119,6 +119,12 @@ class TransportManager {
    * @param {Multiaddr[]} addrs
    */
   async listen (addrs) {
+    if (addrs.length === 0) {
+      log('no addresses were provided for listening, this node is dial only')
+      return
+    }
+
+    const couldNotListen = []
     for (const [key, transport] of this._transports.entries()) {
       const supportedAddrs = transport.filter(addrs)
       const tasks = []
@@ -133,6 +139,12 @@ class TransportManager {
         tasks.push(listener.listen(addr))
       }
 
+      // Keep track of transports we had no addresses for
+      if (tasks.length === 0) {
+        couldNotListen.push(key)
+        continue
+      }
+
       const results = await pSettle(tasks)
       // If we are listening on at least 1 address, succeed.
       // TODO: we should look at adding a retry (`p-retry`) here to better support
@@ -142,6 +154,12 @@ class TransportManager {
       if (!isListening) {
         throw errCode(new Error(`Transport (${key}) could not listen on any available address`), codes.ERR_NO_VALID_ADDRESSES)
       }
+    }
+
+    // If no transports were able to listen, throw an error. This likely
+    // means we were given addresses we do not have transports for
+    if (couldNotListen.length === this._transports.size) {
+      throw errCode(new Error(`no valid addresses were provided for transports [${couldNotListen}]`), codes.ERR_NO_VALID_ADDRESSES)
     }
   }
 
