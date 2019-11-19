@@ -7,7 +7,6 @@ const expect = chai.expect
 const base32 = require('base32.js')
 const PeerId = require('peer-id')
 const distance = require('xor-distance')
-const waterfall = require('async/waterfall')
 
 const utils = require('../src/utils')
 const createPeerInfo = require('./utils/create-peer-info')
@@ -26,16 +25,12 @@ describe('kad utils', () => {
   })
 
   describe('convertBuffer', () => {
-    it('returns the sha2-256 hash of the buffer', (done) => {
+    it('returns the sha2-256 hash of the buffer', async () => {
       const buf = Buffer.from('hello world')
+      const digest = await utils.convertBuffer(buf)
 
-      utils.convertBuffer(buf, (err, digest) => {
-        expect(err).to.not.exist()
-
-        expect(digest)
-          .to.eql(Buffer.from('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9', 'hex'))
-        done()
-      })
+      expect(digest)
+        .to.eql(Buffer.from('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9', 'hex'))
     })
   })
 
@@ -56,7 +51,7 @@ describe('kad utils', () => {
   })
 
   describe('sortClosestPeers', () => {
-    it('sorts a list of PeerInfos', (done) => {
+    it('sorts a list of PeerInfos', async () => {
       const rawIds = [
         '11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31',
         '11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a32',
@@ -75,21 +70,17 @@ describe('kad utils', () => {
         ids[0]
       ]
 
-      waterfall([
-        (cb) => utils.convertPeerId(ids[0], cb),
-        (id, cb) => utils.sortClosestPeers(input, id, cb),
-        (out, cb) => {
-          expect(
-            out.map((m) => m.toB58String())
-          ).to.eql([
-            ids[0],
-            ids[3],
-            ids[2],
-            ids[1]
-          ].map((m) => m.toB58String()))
-          done()
-        }
-      ], done)
+      const id = await utils.convertPeerId(ids[0])
+      const out = await utils.sortClosestPeers(input, id)
+
+      expect(
+        out.map((m) => m.toB58String())
+      ).to.eql([
+        ids[0],
+        ids[3],
+        ids[2],
+        ids[1]
+      ].map((m) => m.toB58String()))
     })
   })
 
@@ -110,31 +101,23 @@ describe('kad utils', () => {
   })
 
   describe('keyForPublicKey', () => {
-    it('works', (done) => {
-      createPeerInfo(1, (err, peers) => {
-        expect(err).to.not.exist()
-
-        expect(utils.keyForPublicKey(peers[0].id))
-          .to.eql(Buffer.concat([Buffer.from('/pk/'), peers[0].id.id]))
-        done()
-      })
+    it('works', async () => {
+      const peers = await createPeerInfo(1)
+      expect(utils.keyForPublicKey(peers[0].id))
+        .to.eql(Buffer.concat([Buffer.from('/pk/'), peers[0].id.id]))
     })
   })
 
   describe('fromPublicKeyKey', () => {
-    it('round trips', function (done) {
+    it('round trips', async function () {
       this.timeout(40 * 1000)
 
-      createPeerInfo(50, (err, peers) => {
-        expect(err).to.not.exist()
-
-        peers.forEach((p, i) => {
-          const id = p.id
-          expect(utils.isPublicKeyKey(utils.keyForPublicKey(id))).to.eql(true)
-          expect(utils.fromPublicKeyKey(utils.keyForPublicKey(id)).id)
-            .to.eql(id.id)
-        })
-        done()
+      const peers = await createPeerInfo(50)
+      peers.forEach((p, i) => {
+        const id = p.id
+        expect(utils.isPublicKeyKey(utils.keyForPublicKey(id))).to.eql(true)
+        expect(utils.fromPublicKeyKey(utils.keyForPublicKey(id)).id)
+          .to.eql(id.id)
       })
     })
   })

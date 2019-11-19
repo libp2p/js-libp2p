@@ -2,7 +2,6 @@
 
 const CID = require('cids')
 const PeerInfo = require('peer-info')
-const promiseToCallback = require('promise-to-callback')
 const errcode = require('err-code')
 
 const Message = require('../../message')
@@ -16,9 +15,9 @@ module.exports = (dht) => {
    *
    * @param {PeerInfo} peer
    * @param {Message} msg
-   * @returns {Promise<Message>} Resolves a `Message` response
+   * @returns {Promise<Message>}
    */
-  async function getProvidersAsync (peer, msg) {
+  return async function getProviders (peer, msg) {
     let cid
     try {
       cid = new CID(msg.key)
@@ -32,7 +31,7 @@ module.exports = (dht) => {
     const [has, peers, closer] = await Promise.all([
       dht.datastore.has(dsKey),
       dht.providers.getProviders(cid),
-      dht._betterPeersToQueryAsync(msg, peer)
+      dht._betterPeersToQuery(msg, peer)
     ])
 
     const providers = peers.map((p) => {
@@ -59,17 +58,5 @@ module.exports = (dht) => {
 
     log('got %s providers %s closerPeers', providers.length, closer.length)
     return response
-  }
-
-  /**
-   * Process `GetProviders` DHT messages.
-   *
-   * @param {PeerInfo} peer
-   * @param {Message} msg
-   * @param {function(Error, Message)} callback
-   * @returns {undefined}
-   */
-  return function getProviders (peer, msg, callback) {
-    promiseToCallback(getProvidersAsync(peer, msg))(callback)
   }
 }

@@ -7,7 +7,7 @@ const expect = chai.expect
 const Connection = require('interface-connection').Connection
 const pull = require('pull-stream')
 const lp = require('pull-length-prefixed')
-const series = require('async/series')
+const pDefer = require('p-defer')
 const PeerBook = require('peer-book')
 const Switch = require('libp2p-switch')
 const TCP = require('libp2p-tcp')
@@ -22,41 +22,32 @@ describe('Network', () => {
   let dht
   let peerInfos
 
-  before(function (done) {
+  before(async function () {
     this.timeout(10 * 1000)
-    createPeerInfo(3, (err, result) => {
-      if (err) {
-        return done(err)
-      }
+    peerInfos = await createPeerInfo(3)
 
-      peerInfos = result
-      const sw = new Switch(peerInfos[0], new PeerBook())
-      sw.transport.add('tcp', new TCP())
-      sw.connection.addStreamMuxer(Mplex)
-      sw.connection.reuse()
-      dht = new KadDHT(sw)
+    const sw = new Switch(peerInfos[0], new PeerBook())
+    sw.transport.add('tcp', new TCP())
+    sw.connection.addStreamMuxer(Mplex)
+    sw.connection.reuse()
+    dht = new KadDHT({ sw })
 
-      series([
-        (cb) => sw.start(cb),
-        (cb) => dht.start(cb)
-      ], done)
-    })
+    await sw.start()
+    await dht.start()
   })
 
-  after(function (done) {
-    this.timeout(10 * 1000)
-    series([
-      (cb) => dht.stop(cb),
-      (cb) => dht.switch.stop(cb)
-    ], done)
-  })
+  after(() => Promise.all([
+    dht.stop(),
+    dht.switch.stop()
+  ]))
 
   describe('sendRequest', () => {
-    it('send and response', (done) => {
+    it('send and response', async () => {
+      const defer = pDefer()
       let i = 0
       const finish = () => {
         if (i++ === 1) {
-          done()
+          defer.resolve()
         }
       }
 
@@ -85,19 +76,20 @@ describe('Network', () => {
         callback(null, conn)
       }
 
-      dht.network.sendRequest(peerInfos[0].id, msg, (err, response) => {
-        expect(err).to.not.exist()
-        expect(response.type).to.eql(Message.TYPES.FIND_NODE)
+      const response = await dht.network.sendRequest(peerInfos[0].id, msg)
 
-        finish()
-      })
+      expect(response.type).to.eql(Message.TYPES.FIND_NODE)
+      finish()
+
+      return defer.promise
     })
 
-    it('timeout on no message', (done) => {
+    it('timeout on no message', async () => {
+      const defer = pDefer()
       let i = 0
       const finish = () => {
         if (i++ === 1) {
-          done()
+          defer.resolve()
         }
       }
 
@@ -124,12 +116,16 @@ describe('Network', () => {
 
       dht.network.readMessageTimeout = 100
 
-      dht.network.sendRequest(peerInfos[0].id, msg, (err, response) => {
+      try {
+        await dht.network.sendRequest(peerInfos[0].id, msg)
+      } catch (err) {
         expect(err).to.exist()
         expect(err.message).to.match(/timed out/)
 
         finish()
-      })
+      }
+
+      return defer.promise
     })
   })
 })

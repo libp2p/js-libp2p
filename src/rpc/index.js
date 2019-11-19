@@ -10,36 +10,34 @@ const c = require('../constants')
 
 module.exports = (dht) => {
   const log = utils.logger(dht.peerInfo.id, 'rpc')
-
   const getMessageHandler = handlers(dht)
+
   /**
    * Process incoming DHT messages.
    *
    * @param {PeerInfo} peer
    * @param {Message} msg
-   * @param {function(Error, Message)} callback
-   * @returns {void}
+   * @returns {Promise<Message>}
    *
    * @private
    */
-  function handleMessage (peer, msg, callback) {
-    // update the peer
-    dht._add(peer, (err) => {
-      if (err) {
-        log.error('Failed to update the kbucket store')
-        log.error(err)
-      }
+  async function handleMessage (peer, msg) {
+    try {
+      await dht._add(peer)
+    } catch (err) {
+      log.error('Failed to update the kbucket store')
+      log.error(err)
+    }
 
-      // get handler & exectue it
-      const handler = getMessageHandler(msg.type)
+    // get handler & exectue it
+    const handler = getMessageHandler(msg.type)
 
-      if (!handler) {
-        log.error(`no handler found for message type: ${msg.type}`)
-        return callback()
-      }
+    if (!handler) {
+      log.error(`no handler found for message type: ${msg.type}`)
+      return
+    }
 
-      handler(peer, msg, callback)
-    })
+    return handler(peer, msg)
   }
 
   /**
@@ -47,7 +45,7 @@ module.exports = (dht) => {
    *
    * @param {string} protocol
    * @param {Connection} conn
-   * @returns {undefined}
+   * @returns {void}
    */
   return function protocolHandler (protocol, conn) {
     conn.getPeerInfo((err, peer) => {
@@ -75,7 +73,15 @@ module.exports = (dht) => {
           return msg
         }),
         pull.filter(Boolean),
-        pull.asyncMap((msg, cb) => handleMessage(peer, msg, cb)),
+        pull.asyncMap(async (msg, cb) => {
+          let response
+          try {
+            response = await handleMessage(peer, msg)
+          } catch (err) {
+            cb(err)
+          }
+          cb(null, response)
+        }),
         // Not all handlers will return a response
         pull.filter(Boolean),
         pull.map((response) => {

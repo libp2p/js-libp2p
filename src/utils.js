@@ -3,12 +3,11 @@
 const debug = require('debug')
 const multihashing = require('multihashing-async')
 const mh = require('multihashes')
-const Key = require('interface-datastore').Key
+const { Key } = require('interface-datastore')
 const base32 = require('base32.js')
 const distance = require('xor-distance')
-const map = require('async/map')
-const Record = require('libp2p-record').Record
-const setImmediate = require('async/setImmediate')
+const pMap = require('p-map')
+const { Record } = require('libp2p-record')
 const PeerId = require('peer-id')
 const errcode = require('err-code')
 
@@ -16,22 +15,20 @@ const errcode = require('err-code')
  * Creates a DHT ID by hashing a given buffer.
  *
  * @param {Buffer} buf
- * @param {function(Error, Buffer)} callback
- * @returns {void}
+ * @returns {Promise<Buffer>}
  */
-exports.convertBuffer = (buf, callback) => {
-  multihashing.digest(buf, 'sha2-256', callback)
+exports.convertBuffer = (buf) => {
+  return multihashing.digest(buf, 'sha2-256')
 }
 
 /**
  * Creates a DHT ID by hashing a Peer ID
  *
  * @param {PeerId} peer
- * @param {function(Error, Buffer)} callback
- * @returns {void}
+ * @returns {Promise<Buffer>}
  */
-exports.convertPeerId = (peer, callback) => {
-  multihashing.digest(peer.id, 'sha2-256', callback)
+exports.convertPeerId = (peer) => {
+  return multihashing.digest(peer.id, 'sha2-256')
 }
 
 /**
@@ -99,28 +96,19 @@ exports.decodeBase32 = (raw) => {
  *
  * @param {Array<PeerId>} peers
  * @param {Buffer} target
- * @param {function(Error, Array<PeerId>)} callback
- * @returns {void}
+ * @returns {Array<PeerId>}
  */
-exports.sortClosestPeers = (peers, target, callback) => {
-  map(peers, (peer, cb) => {
-    exports.convertPeerId(peer, (err, id) => {
-      if (err) {
-        return cb(err)
-      }
+exports.sortClosestPeers = async (peers, target) => {
+  const distances = await pMap(peers, async (peer) => {
+    const id = await exports.convertPeerId(peer)
 
-      cb(null, {
-        peer: peer,
-        distance: distance(id, target)
-      })
-    })
-  }, (err, distances) => {
-    if (err) {
-      return callback(err)
+    return {
+      peer: peer,
+      distance: distance(id, target)
     }
-
-    callback(null, distances.sort(exports.xorCompare).map((d) => d.peer))
   })
+
+  return distances.sort(exports.xorCompare).map((d) => d.peer)
 }
 
 /**
@@ -151,16 +139,13 @@ exports.pathSize = (resultsWanted, numPaths) => {
  *
  * @param {Buffer} key
  * @param {Buffer} value
- * @param {function(Error, Buffer)} callback
- * @returns {void}
+ * @returns {Buffer}
  */
-exports.createPutRecord = (key, value, callback) => {
+exports.createPutRecord = (key, value) => {
   const timeReceived = new Date()
   const rec = new Record(key, value, timeReceived)
 
-  setImmediate(() => {
-    callback(null, rec.serialize())
-  })
+  return rec.serialize()
 }
 
 /**

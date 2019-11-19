@@ -6,7 +6,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const PeerId = require('peer-id')
 
-const PeerQueue = require('../src/peer-queue')
+const PeerQueue = require('../src/peer-list/peer-queue')
 
 describe('PeerQueue', () => {
   it('basics', async () => {

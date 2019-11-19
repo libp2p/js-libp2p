@@ -12,14 +12,8 @@ const createPeerInfo = require('./utils/create-peer-info')
 describe('PeerList', () => {
   let peers
 
-  before((done) => {
-    createPeerInfo(3, (err, p) => {
-      if (err) {
-        return done(err)
-      }
-      peers = p
-      done()
-    })
+  before(async () => {
+    peers = await createPeerInfo(3)
   })
 
   it('basics', () => {

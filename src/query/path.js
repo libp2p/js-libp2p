@@ -1,6 +1,6 @@
 'use strict'
 
-const PeerQueue = require('../peer-queue')
+const PeerQueue = require('../peer-list/peer-queue')
 const utils = require('../utils')
 
 // TODO: Temporary until parallel dial in Switch have a proper

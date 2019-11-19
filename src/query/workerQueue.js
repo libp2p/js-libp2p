@@ -1,7 +1,6 @@
 'use strict'
 
 const queue = require('async/queue')
-const promisify = require('promisify-es6')
 const promiseToCallback = require('promise-to-callback')
 
 class WorkerQueue {
@@ -226,7 +225,7 @@ class WorkerQueue {
     }
 
     // Add the peer to the closest peers we have successfully queried
-    await promisify(cb => this.run.peersQueried.add(peer, cb))()
+    await this.run.peersQueried.add(peer)
 
     // If the query indicates that this path or the whole query is complete
     // set the path result and bail out

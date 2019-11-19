@@ -3,9 +3,8 @@
 const Heap = require('heap')
 const distance = require('xor-distance')
 const debug = require('debug')
-const promisify = require('promisify-es6')
 
-const utils = require('./utils')
+const utils = require('../utils')
 
 const log = debug('libp2p:dht:peer-queue')
 
@@ -21,7 +20,8 @@ class PeerQueue {
    * @returns {Promise<PeerQueue>}
    */
   static async fromPeerId (id) {
-    const key = await promisify(cb => utils.convertPeerId(id, cb))()
+    const key = await utils.convertPeerId(id)
+
     return new PeerQueue(key)
   }
 
@@ -32,7 +32,8 @@ class PeerQueue {
    * @returns {Promise<PeerQueue>}
    */
   static async fromKey (keyBuffer) {
-    const key = await promisify(cb => utils.convertBuffer(keyBuffer, cb))()
+    const key = await utils.convertBuffer(keyBuffer)
+
     return new PeerQueue(key)
   }
 
@@ -55,7 +56,7 @@ class PeerQueue {
    */
   async enqueue (id) {
     log('enqueue %s', id.toB58String())
-    const key = await promisify(cb => utils.convertPeerId(id, cb))()
+    const key = await utils.convertPeerId(id)
 
     const el = {
       id: id,

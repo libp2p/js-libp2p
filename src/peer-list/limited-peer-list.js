@@ -1,6 +1,6 @@
 'use strict'
 
-const PeerList = require('./peer-list')
+const PeerList = require('.')
 
 /**
  * Like PeerList but with a length restriction.

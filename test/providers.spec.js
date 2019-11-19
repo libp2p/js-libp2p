@@ -4,18 +4,17 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const promisify = require('promisify-es6')
-const Store = require('interface-datastore').MemoryDatastore
+const { MemoryDatastore } = require('interface-datastore')
 const CID = require('cids')
 const LevelStore = require('datastore-level')
 const path = require('path')
 const os = require('os')
-const multihashing = promisify(require('multihashing-async'))
+const multihashing = require('multihashing-async')
 
 const Providers = require('../src/providers')
 
-const createPeerInfo = promisify(require('./utils/create-peer-info'))
-const createValues = promisify(require('./utils/create-values'))
+const createPeerInfo = require('./utils/create-peer-info')
+const createValues = require('./utils/create-values')
 
 describe('Providers', () => {
   let infos
@@ -31,7 +30,7 @@ describe('Providers', () => {
   })
 
   it('simple add and get of providers', async () => {
-    providers = new Providers(new Store(), infos[2].id)
+    providers = new Providers(new MemoryDatastore(), infos[2].id)
 
     const cid = new CID('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
@@ -47,7 +46,7 @@ describe('Providers', () => {
   })
 
   it('duplicate add of provider is deduped', async () => {
-    providers = new Providers(new Store(), infos[2].id)
+    providers = new Providers(new MemoryDatastore(), infos[2].id)
 
     const cid = new CID('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
@@ -67,7 +66,7 @@ describe('Providers', () => {
   })
 
   it('more providers than space in the lru cache', async () => {
-    providers = new Providers(new Store(), infos[2].id, 10)
+    providers = new Providers(new MemoryDatastore(), infos[2].id, 10)
 
     const hashes = await Promise.all([...new Array(100)].map((i) => {
       return multihashing(Buffer.from(`hello ${i}`), 'sha2-256')
@@ -85,7 +84,7 @@ describe('Providers', () => {
   })
 
   it('expires', async () => {
-    providers = new Providers(new Store(), infos[2].id)
+    providers = new Providers(new MemoryDatastore(), infos[2].id)
     providers.cleanupInterval = 100
     providers.provideValidity = 200
 

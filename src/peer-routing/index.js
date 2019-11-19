@@ -1,0 +1,257 @@
+'use strict'
+
+const errcode = require('err-code')
+const pTimeout = require('p-timeout')
+
+const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
+const crypto = require('libp2p-crypto')
+
+const c = require('../constants')
+const Message = require('../message')
+const Query = require('../query')
+
+const utils = require('../utils')
+
+module.exports = (dht) => {
+  /**
+   * Look if we are connected to a peer with the given id.
+   * Returns the `PeerInfo` for it, if found, otherwise `undefined`.
+   * @param {PeerId} peer
+   * @returns {Promise<PeerInfo>}
+   */
+  const findPeerLocal = async (peer) => {
+    dht._log('findPeerLocal %s', peer.toB58String())
+    const p = await dht.routingTable.find(peer)
+
+    if (!p || !dht.peerBook.has(p)) {
+      return
+    }
+
+    return dht.peerBook.get(p)
+  }
+
+  /**
+   * Get a value via rpc call for the given parameters.
+   * @param {PeerId} peer
+   * @param {Buffer} key
+   * @returns {Promise<Message>}
+   * @private
+   */
+  const getValueSingle = async (peer, key) => { // eslint-disable-line require-await
+    const msg = new Message(Message.TYPES.GET_VALUE, key, 0)
+    return dht.network.sendRequest(peer, msg)
+  }
+
+  /**
+   * Find close peers for a given peer
+   * @param {Buffer} key
+   * @param {PeerId} peer
+   * @returns {Promise<Array<PeerInfo>>}
+   * @private
+   */
+
+  const closerPeersSingle = async (key, peer) => {
+    dht._log('closerPeersSingle %b from %s', key, peer.toB58String())
+    const msg = await dht.peerRouting._findPeerSingle(peer, new PeerId(key))
+
+    return msg.closerPeers
+      .filter((pInfo) => !dht._isSelf(pInfo.id))
+      .map((pInfo) => dht.peerBook.put(pInfo))
+  }
+
+  /**
+   * Get the public key directly from a node.
+   * @param {PeerId} peer
+   * @returns {Promise<PublicKey>}
+   * @private
+   */
+  const getPublicKeyFromNode = async (peer) => {
+    const pkKey = utils.keyForPublicKey(peer)
+    const msg = await getValueSingle(peer, pkKey)
+
+    if (!msg.record || !msg.record.value) {
+      throw errcode(`Node not responding with its public key: ${peer.toB58String()}`, 'ERR_INVALID_RECORD')
+    }
+
+    const recPeer = PeerId.createFromPubKey(msg.record.value)
+
+    // compare hashes of the pub key
+    if (!recPeer.isEqual(peer)) {
+      throw errcode('public key does not match id', 'ERR_PUBLIC_KEY_DOES_NOT_MATCH_ID')
+    }
+
+    return recPeer.pubKey
+  }
+
+  return {
+  /**
+   * Ask peer `peer` if they know where the peer with id `target` is.
+   * @param {PeerId} peer
+   * @param {PeerId} target
+   * @returns {Promise<Message>}
+   * @private
+   */
+    async _findPeerSingle (peer, target) { // eslint-disable-line require-await
+      dht._log('findPeerSingle %s', peer.toB58String())
+      const msg = new Message(Message.TYPES.FIND_NODE, target.id, 0)
+
+      return dht.network.sendRequest(peer, msg)
+    },
+
+    /**
+     * Search for a peer with the given ID.
+     * @param {PeerId} id
+     * @param {Object} options - findPeer options
+     * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
+     * @returns {Promise<PeerInfo>}
+     */
+    async findPeer (id, options = {}) {
+      options.timeout = options.timeout || c.minute
+      dht._log('findPeer %s', id.toB58String())
+
+      // Try to find locally
+      const pi = await findPeerLocal(id)
+
+      // already got it
+      if (pi != null) {
+        dht._log('found local')
+        return pi
+      }
+
+      const key = await utils.convertPeerId(id)
+      const peers = dht.routingTable.closestPeers(key, dht.kBucketSize)
+
+      if (peers.length === 0) {
+        throw errcode(new Error('Peer lookup failed'), 'ERR_LOOKUP_FAILED')
+      }
+
+      // sanity check
+      const match = peers.find((p) => p.isEqual(id))
+      if (match && dht.peerBook.has(id)) {
+        dht._log('found in peerbook')
+        return dht.peerBook.get(id)
+      }
+
+      // query the network
+      const query = new Query(dht, id.id, () => {
+        // There is no distinction between the disjoint paths,
+        // so there are no per-path variables in dht scope.
+        // Just return the actual query function.
+        return async (peer) => {
+          const msg = await this._findPeerSingle(peer, id)
+          const match = msg.closerPeers.find((p) => p.id.isEqual(id))
+
+          // found it
+          if (match) {
+            return {
+              peer: match,
+              queryComplete: true
+            }
+          }
+
+          return {
+            closerPeers: msg.closerPeers
+          }
+        }
+      })
+
+      let error, result
+      try {
+        result = await pTimeout(query.run(peers), options.timeout)
+      } catch (err) {
+        error = err
+      }
+      query.stop()
+      if (error) throw error
+
+      let success = false
+      result.paths.forEach((result) => {
+        if (result.success) {
+          success = true
+          dht.peerBook.put(result.peer)
+        }
+      })
+      dht._log('findPeer %s: %s', id.toB58String(), success)
+
+      if (!success) {
+        throw errcode(new Error('No peer found'), 'ERR_NOT_FOUND')
+      }
+      return dht.peerBook.get(id)
+    },
+
+    /**
+     * Kademlia 'node lookup' operation.
+     * @param {Buffer} key
+     * @param {Object} [options]
+     * @param {boolean} [options.shallow] shallow query (default: false)
+     * @returns {Promise<Array<PeerId>>}
+     */
+    async getClosestPeers (key, options = { shallow: false }) {
+      dht._log('getClosestPeers to %b', key)
+
+      const id = await utils.convertBuffer(key)
+      const tablePeers = dht.routingTable.closestPeers(id, dht.kBucketSize)
+
+      const q = new Query(dht, key, () => {
+        // There is no distinction between the disjoint paths,
+        // so there are no per-path variables in dht scope.
+        // Just return the actual query function.
+        return async (peer) => {
+          const closer = await closerPeersSingle(key, peer)
+
+          return {
+            closerPeers: closer,
+            pathComplete: options.shallow ? true : undefined
+          }
+        }
+      })
+
+      const res = await q.run(tablePeers)
+      if (!res || !res.finalSet) {
+        return []
+      }
+
+      const sorted = await utils.sortClosestPeers(Array.from(res.finalSet), id)
+      return sorted.slice(0, dht.kBucketSize)
+    },
+
+    /**
+     * Get the public key for the given peer id.
+     * @param {PeerId} peer
+     * @returns {Promise<PubKey>}
+     */
+    async getPublicKey (peer) {
+      dht._log('getPublicKey %s', peer.toB58String())
+
+      // local check
+      let info
+      if (dht.peerBook.has(peer)) {
+        info = dht.peerBook.get(peer)
+
+        if (info && info.id.pubKey) {
+          dht._log('getPublicKey: found local copy')
+          return info.id.pubKey
+        }
+      } else {
+        info = dht.peerBook.put(new PeerInfo(peer))
+      }
+
+      // try the node directly
+      let pk
+      try {
+        pk = await getPublicKeyFromNode(peer)
+      } catch (err) {
+        // try dht directly
+        const pkKey = utils.keyForPublicKey(peer)
+        const value = await dht.get(pkKey)
+        pk = crypto.keys.unmarshalPublicKey(value)
+      }
+
+      info.id = new PeerId(peer.id, null, pk)
+      dht.peerBook.put(info)
+
+      return pk
+    }
+  }
+}

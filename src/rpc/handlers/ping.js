@@ -10,11 +10,10 @@ module.exports = (dht) => {
    *
    * @param {PeerInfo} peer
    * @param {Message} msg
-   * @param {function(Error, Message)} callback
-   * @returns {undefined}
+   * @returns {Message}
    */
-  return function ping (peer, msg, callback) {
+  return function ping (peer, msg) {
     log('from %s', peer.id.toB58String())
-    callback(null, msg)
+    return msg
   }
 }

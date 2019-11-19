@@ -3,7 +3,6 @@
 /* eslint-disable no-console */
 
 'use strict'
-const { promisify } = require('util')
 const PeerBook = require('peer-book')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
@@ -11,12 +10,9 @@ const multihashes = require('multihashes')
 
 const RoutingTable = require('../../src/routing')
 const Message = require('../../src/message')
-const utils = require('../../src/utils')
-const testUtils = require('../../test/utils')
+const { convertBuffer } = require('../../src/utils')
+const { sortClosestPeerInfos } = require('../../test/utils')
 const DHT = require('../../src')
-
-const convertBuffer = promisify(utils.convertBuffer)
-const sortClosestPeerInfos = promisify(testUtils.sortClosestPeerInfos)
 
 const NUM_PEERS = 10e3 // Peers to create, not including us
 const LATENCY_DEAD_NODE = 120e3 // How long dead nodes should take before erroring
@@ -103,7 +99,7 @@ async function GetClosestPeersSimulation () {
   // Add random peers to our table
   const ourPeers = randomMembers(peers, randomInteger(MIN_PEERS_KNOWN, MAX_PEERS_KNOWN))
   for (const peer of ourPeers) {
-    await promisify((peer, callback) => dht._add(peer, callback))(peer)
+    await dht._add(peer)
   }
 
   dht.network.sendRequest = (to, message, callback) => {
@@ -128,15 +124,10 @@ async function GetClosestPeersSimulation () {
   }
 
   // Start the dht
-  await promisify((callback) => dht.start(callback))()
+  await dht.start()
 
   const startTime = Date.now()
-  const closestPeers = await new Promise((resolve, reject) => {
-    dht.getClosestPeers(QUERY_KEY, (err, res) => {
-      if (err) return reject(err)
-      resolve(res)
-    })
-  })
+  const closestPeers = await dht.getClosestPeers(QUERY_KEY)
   const runTime = Date.now() - startTime
 
   return { closestPeers, runTime }
@@ -187,7 +178,7 @@ async function MockNetwork (peers) {
     }
     const siblings = randomMembers(peers, randomInteger(MIN_PEERS_KNOWN, MAX_PEERS_KNOWN))
     for (const peer of siblings) {
-      await promisify((callback) => netPeer.routingTable.add(peer.id, callback))()
+      await netPeer.routingTable.add(peer.id)
     }
   }
 

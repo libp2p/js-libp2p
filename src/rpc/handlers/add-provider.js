@@ -2,7 +2,6 @@
 
 const CID = require('cids')
 const errcode = require('err-code')
-const promiseToCallback = require('promise-to-callback')
 
 const utils = require('../../utils')
 
@@ -13,14 +12,13 @@ module.exports = (dht) => {
    *
    * @param {PeerInfo} peer
    * @param {Message} msg
-   * @param {function(Error)} callback
-   * @returns {undefined}
+   * @returns {Promise<void>}
    */
-  return function addProvider (peer, msg, callback) {
+  return async function addProvider (peer, msg) { // eslint-disable-line require-await
     log('start')
 
     if (!msg.key || msg.key.length === 0) {
-      return callback(errcode(new Error('Missing key'), 'ERR_MISSING_KEY'))
+      throw errcode(new Error('Missing key'), 'ERR_MISSING_KEY')
     }
 
     let cid
@@ -28,11 +26,9 @@ module.exports = (dht) => {
       cid = new CID(msg.key)
     } catch (err) {
       const errMsg = `Invalid CID: ${err.message}`
-
-      return callback(errcode(new Error(errMsg), 'ERR_INVALID_CID'))
+      throw errcode(new Error(errMsg), 'ERR_INVALID_CID')
     }
 
-    let foundProvider = false
     msg.providerPeers.forEach((pi) => {
       // Ignore providers not from the originator
       if (!pi.id.isEqual(peer.id)) {
@@ -48,9 +44,8 @@ module.exports = (dht) => {
       log('received provider %s for %s (addrs %s)', peer.id.toB58String(), cid.toBaseEncodedString(), pi.multiaddrs.toArray().map((m) => m.toString()))
 
       if (!dht._isSelf(pi.id)) {
-        foundProvider = true
         dht.peerBook.put(pi)
-        promiseToCallback(dht.providers.addProvider(cid, pi.id))(err => callback(err))
+        return dht.providers.addProvider(cid, pi.id)
       }
     })
 
@@ -60,8 +55,6 @@ module.exports = (dht) => {
     // we can't find any valid providers in the payload.
     // https://github.com/libp2p/js-libp2p-kad-dht/pull/127
     // https://github.com/libp2p/js-libp2p-kad-dht/issues/128
-    if (!foundProvider) {
-      promiseToCallback(dht.providers.addProvider(cid, peer.id))(err => callback(err))
-    }
+    return dht.providers.addProvider(cid, peer.id)
   }
 }

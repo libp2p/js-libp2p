@@ -68,6 +68,7 @@ class Query {
     this._log(`query running with K=${this.dht.kBucketSize}, A=${this.dht.concurrency}, D=${Math.min(this.dht.disjointPaths, peers.length)}`)
     this._run.once('start', this._onStart)
     this._run.once('complete', this._onComplete)
+
     return this._run.execute(peers)
   }
 

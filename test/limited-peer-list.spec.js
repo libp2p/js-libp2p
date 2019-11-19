@@ -5,23 +5,14 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 
-const LimitedPeerList = require('../src/limited-peer-list')
-
+const LimitedPeerList = require('../src/peer-list/limited-peer-list')
 const createPeerInfo = require('./utils/create-peer-info')
 
 describe('LimitedPeerList', () => {
   let peers
 
-  before(function (done) {
-    this.timeout(10 * 1000)
-
-    createPeerInfo(5, (err, p) => {
-      if (err) {
-        return done(err)
-      }
-      peers = p
-      done()
-    })
+  before(async () => {
+    peers = await createPeerInfo(5)
   })
 
   it('basics', () => {

@@ -6,10 +6,9 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
-const map = require('async/map')
 const range = require('lodash.range')
 const random = require('lodash.random')
-const Record = require('libp2p-record').Record
+const { Record } = require('libp2p-record')
 const fs = require('fs')
 const path = require('path')
 
@@ -27,60 +26,58 @@ describe('Message', () => {
     expect(msg).to.have.property('clusterLevel', 4)
   })
 
-  it('serialize & deserialize', function (done) {
+  it('serialize & deserialize', async function () {
     this.timeout(10 * 1000)
-    map(range(5), (n, cb) => PeerId.create({ bits: 1024 }, cb), (err, peers) => {
-      expect(err).to.not.exist()
 
-      const closer = peers.slice(0, 5).map((p) => {
-        const info = new PeerInfo(p)
-        const addr = `/ip4/198.176.1.${random(198)}/tcp/1234`
-        info.multiaddrs.add(addr)
-        info.multiaddrs.add(`/ip4/100.176.1.${random(198)}`)
-        info.connect(addr)
+    const peers = await Promise.all(
+      Array.from({ length: 5 }).map(() => PeerId.create({ bits: 1024 })))
 
-        return info
-      })
+    const closer = peers.slice(0, 5).map((p) => {
+      const info = new PeerInfo(p)
+      const addr = `/ip4/198.176.1.${random(198)}/tcp/1234`
+      info.multiaddrs.add(addr)
+      info.multiaddrs.add(`/ip4/100.176.1.${random(198)}`)
+      info.connect(addr)
 
-      const provider = peers.slice(0, 5).map((p) => {
-        const info = new PeerInfo(p)
-        info.multiaddrs.add(`/ip4/98.176.1.${random(198)}/tcp/1234`)
-        info.multiaddrs.add(`/ip4/10.176.1.${random(198)}`)
+      return info
+    })
 
-        return info
-      })
+    const provider = peers.slice(0, 5).map((p) => {
+      const info = new PeerInfo(p)
+      info.multiaddrs.add(`/ip4/98.176.1.${random(198)}/tcp/1234`)
+      info.multiaddrs.add(`/ip4/10.176.1.${random(198)}`)
 
-      const msg = new Message(Message.TYPES.GET_VALUE, Buffer.from('hello'), 5)
-      const record = new Record(Buffer.from('hello'), Buffer.from('world'))
+      return info
+    })
 
-      msg.closerPeers = closer
-      msg.providerPeers = provider
-      msg.record = record
+    const msg = new Message(Message.TYPES.GET_VALUE, Buffer.from('hello'), 5)
+    const record = new Record(Buffer.from('hello'), Buffer.from('world'))
 
-      const enc = msg.serialize()
-      const dec = Message.deserialize(enc)
+    msg.closerPeers = closer
+    msg.providerPeers = provider
+    msg.record = record
 
-      expect(dec.type).to.be.eql(msg.type)
-      expect(dec.key).to.be.eql(msg.key)
-      expect(dec.clusterLevel).to.be.eql(msg.clusterLevel)
-      expect(dec.record.serialize()).to.be.eql(record.serialize())
-      expect(dec.record.key).to.eql(Buffer.from('hello'))
+    const enc = msg.serialize()
+    const dec = Message.deserialize(enc)
 
-      expect(dec.closerPeers).to.have.length(5)
-      dec.closerPeers.forEach((peer, i) => {
-        expect(peer.id.isEqual(msg.closerPeers[i].id)).to.eql(true)
-        expect(peer.multiaddrs.toArray())
-          .to.eql(msg.closerPeers[i].multiaddrs.toArray())
-      })
+    expect(dec.type).to.be.eql(msg.type)
+    expect(dec.key).to.be.eql(msg.key)
+    expect(dec.clusterLevel).to.be.eql(msg.clusterLevel)
+    expect(dec.record.serialize()).to.be.eql(record.serialize())
+    expect(dec.record.key).to.eql(Buffer.from('hello'))
 
-      expect(dec.providerPeers).to.have.length(5)
-      dec.providerPeers.forEach((peer, i) => {
-        expect(peer.id.isEqual(msg.providerPeers[i].id)).to.equal(true)
-        expect(peer.multiaddrs.toArray())
-          .to.eql(msg.providerPeers[i].multiaddrs.toArray())
-      })
+    expect(dec.closerPeers).to.have.length(5)
+    dec.closerPeers.forEach((peer, i) => {
+      expect(peer.id.isEqual(msg.closerPeers[i].id)).to.eql(true)
+      expect(peer.multiaddrs.toArray())
+        .to.eql(msg.closerPeers[i].multiaddrs.toArray())
+    })
 
-      done()
+    expect(dec.providerPeers).to.have.length(5)
+    dec.providerPeers.forEach((peer, i) => {
+      expect(peer.id.isEqual(msg.providerPeers[i].id)).to.equal(true)
+      expect(peer.multiaddrs.toArray())
+        .to.eql(msg.providerPeers[i].multiaddrs.toArray())
     })
   })
 

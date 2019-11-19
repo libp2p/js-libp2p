@@ -2,7 +2,6 @@
 
 const utils = require('../../utils')
 const errcode = require('err-code')
-const promiseToCallback = require('promise-to-callback')
 
 module.exports = (dht) => {
   const log = utils.logger(dht.peerInfo.id, 'rpc:put-value')
@@ -12,10 +11,9 @@ module.exports = (dht) => {
    *
    * @param {PeerInfo} peer
    * @param {Message} msg
-   * @param {function(Error, Message)} callback
-   * @returns {undefined}
+   * @returns {Promise<Message>}
    */
-  return function putValue (peer, msg, callback) {
+  return async function putValue (peer, msg) {
     const key = msg.key
     log('key: %b', key)
 
@@ -25,26 +23,15 @@ module.exports = (dht) => {
       const errMsg = `Empty record from: ${peer.id.toB58String()}`
 
       log.error(errMsg)
-      return callback(errcode(new Error(errMsg), 'ERR_EMPTY_RECORD'))
+      throw errcode(new Error(errMsg), 'ERR_EMPTY_RECORD')
     }
 
-    dht._verifyRecordLocally(record, (err) => {
-      if (err) {
-        log.error(err.message)
-        return callback(err)
-      }
+    await dht._verifyRecordLocally(record)
 
-      record.timeReceived = new Date()
+    record.timeReceived = new Date()
+    const recordKey = utils.bufferToKey(record.key)
+    await dht.datastore.put(recordKey, record.serialize())
 
-      const key = utils.bufferToKey(record.key)
-
-      promiseToCallback(dht.datastore.put(key, record.serialize()))(err => {
-        if (err) {
-          return callback(err)
-        }
-
-        callback(null, msg)
-      })
-    })
+    return msg
   }
 }

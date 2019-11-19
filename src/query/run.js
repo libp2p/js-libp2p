@@ -1,8 +1,7 @@
 'use strict'
 
-const PeerDistanceList = require('../peer-distance-list')
+const PeerDistanceList = require('../peer-list/peer-distance-list')
 const EventEmitter = require('events')
-const promisify = require('promisify-es6')
 
 const Path = require('./path')
 const WorkerQueue = require('./workerQueue')
@@ -158,7 +157,7 @@ class Run extends EventEmitter {
 
     // This promise is temporarily stored so that others may await its completion
     this.peersQueriedPromise = (async () => {
-      const dhtKey = await promisify(cb => utils.convertBuffer(this.query.key, cb))()
+      const dhtKey = await utils.convertBuffer(this.query.key)
       this.peersQueried = new PeerDistanceList(dhtKey, this.query.dht.kBucketSize)
     })()
 
@@ -188,7 +187,7 @@ class Run extends EventEmitter {
 
     // Check if any of the peers that are currently being queried are closer
     // to the key than the peers we've already queried
-    const someCloser = await promisify(cb => this.peersQueried.anyCloser(running, cb))()
+    const someCloser = await this.peersQueried.anyCloser(running)
 
     // Some are closer, the worker should keep going
     if (someCloser) {

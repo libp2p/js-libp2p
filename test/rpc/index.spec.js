@@ -21,15 +21,8 @@ const createPeerInfo = require('../utils/create-peer-info')
 describe('rpc', () => {
   let peerInfos
 
-  before((done) => {
-    createPeerInfo(2, (err, peers) => {
-      if (err) {
-        return done(err)
-      }
-
-      peerInfos = peers
-      done()
-    })
+  before(async () => {
+    peerInfos = await createPeerInfo(2)
   })
 
   describe('protocolHandler', () => {
@@ -38,7 +31,10 @@ describe('rpc', () => {
       sw.transport.add('tcp', new TCP())
       sw.connection.addStreamMuxer(Mplex)
       sw.connection.reuse()
-      const dht = new KadDHT(sw, { kBucketSize: 5 })
+      const dht = new KadDHT({
+        sw,
+        kBucketSize: 5
+      })
 
       dht.peerBook.put(peerInfos[1])
 
