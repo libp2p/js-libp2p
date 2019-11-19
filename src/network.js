@@ -36,9 +36,8 @@ class Network {
    */
   start () {
     if (this._running) {
-      throw errcode(new Error('Network is already running'), 'ERR_NETWORK_ALREADY_RUNNING')
+      return
     }
-
     // TODO add a way to check if switch has started or not
     if (!this.dht.isStarted) {
       throw errcode(new Error('Can not start network'), 'ERR_CANNOT_START_NETWORK')
@@ -59,7 +58,7 @@ class Network {
    */
   stop () {
     if (!this.dht.isStarted && !this.isStarted) {
-      throw errcode(new Error('Network is already stopped'), 'ERR_NETWORK_ALREADY_STOPPED')
+      return
     }
     this._running = false
     this.dht.switch.removeListener('peer-mux-established', this._onPeerConnected)

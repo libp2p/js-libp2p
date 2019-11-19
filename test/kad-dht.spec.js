@@ -109,30 +109,17 @@ describe('KadDHT', () => {
       expect(dht.randomWalk.stop.calledOnce).to.equal(true) // Should be always disabled, as it can be started using the instance
     })
 
-    // TODO: not fail!
-    it('fail when already started', async () => {
+    it('should not fail when already started', async () => {
       const dht = createDHT(peerInfos[0])
 
       await dht.start()
-      try {
-        await dht.start()
-      } catch (err) {
-        expect(err).to.exist()
-        return
-      }
-      throw new Error('should fail to start when already registered')
+      await dht.start()
     })
 
-    it('should fail to stop when was not started', () => {
+    it('should not fail to stop when was not started', () => {
       const dht = createDHT(peerInfos[0])
 
-      try {
-        dht.stop()
-      } catch (err) {
-        expect(err).to.exist()
-        return
-      }
-      throw new Error('should fail to stop when was not started')
+      dht.stop()
     })
   })
 
