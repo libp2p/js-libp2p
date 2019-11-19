@@ -210,7 +210,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
       sinon.spy(libp2p.dialer, 'connectToMultiaddr')
 
-      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
+      const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
       const { stream, protocol } = await connection.newStream('/echo/1.0.0')
       expect(stream).to.exist()
@@ -240,6 +240,23 @@ describe('Dialing (direct, WebSockets)', () => {
       await libp2p.dialer.identifyService.identify.firstCall.returnValue
 
       expect(libp2p.peerStore.update.callCount).to.equal(1)
+    })
+
+    it('should be able to use hangup to close connections', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      const connection = await libp2p.dial(remoteAddr)
+      expect(connection).to.exist()
+      expect(connection.stat.timeline.close).to.not.exist()
+      await libp2p.hangUp(connection.remotePeer)
+      expect(connection.stat.timeline.close).to.exist()
     })
   })
 })

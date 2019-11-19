@@ -231,6 +231,23 @@ describe('Dialing (direct, TCP)', () => {
       expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
     })
 
+    it('should be able to use hangup to close connections', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      const connection = await libp2p.dial(remoteAddr)
+      expect(connection).to.exist()
+      expect(connection.stat.timeline.close).to.not.exist()
+      await libp2p.hangUp(connection.remotePeer)
+      expect(connection.stat.timeline.close).to.exist()
+    })
+
     it('should use the protectors when provided for connecting', async () => {
       const protector = new Protector(swarmKeyBuffer)
       libp2p = new Libp2p({
