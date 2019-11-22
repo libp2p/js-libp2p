@@ -17,6 +17,7 @@ const pipe = require('it-pipe')
 
 const Libp2p = require('../../src')
 const Dialer = require('../../src/dialer')
+const PeerStore = require('../../src/peer-store')
 const TransportManager = require('../../src/transport-manager')
 const { codes: ErrorCodes } = require('../../src/errors')
 const Protector = require('../../src/pnet')
@@ -86,13 +87,30 @@ describe('Dialing (direct, TCP)', () => {
     expect.fail('Dial should have failed')
   })
 
-  it('should be able to connect to a given peer', async () => {
+  it('should be able to connect to a given peer info', async () => {
     const dialer = new Dialer({ transportManager: localTM })
     const peerId = await PeerId.createFromJSON(Peers[0])
     const peerInfo = new PeerInfo(peerId)
     peerInfo.multiaddrs.add(remoteAddr)
 
     const connection = await dialer.connectToPeer(peerInfo)
+    expect(connection).to.exist()
+    await connection.close()
+  })
+
+  it('should be able to connect to a given peer id', async () => {
+    const peerStore = new PeerStore()
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore
+    })
+
+    const peerId = await PeerId.createFromJSON(Peers[0])
+    const peerInfo = new PeerInfo(peerId)
+    peerInfo.multiaddrs.add(remoteAddr)
+    peerStore.put(peerInfo)
+
+    const connection = await dialer.connectToPeer(peerId)
     expect(connection).to.exist()
     await connection.close()
   })

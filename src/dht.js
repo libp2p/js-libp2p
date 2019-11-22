@@ -6,17 +6,7 @@ const { messages, codes } = require('./errors')
 
 module.exports = (node, DHT, config) => {
   const dht = new DHT({
-    dialer: {
-      dial: (peer, options) => node.dial(peer, options),
-      dialProtocol: (peer, protocols, options) => {
-        const recordedPeer = node.peerStore.get(peer.toB58String())
-
-        if (recordedPeer) {
-          peer = recordedPeer
-        }
-        return node.dialProtocol(peer, protocols, options)
-      }
-    },
+    dialer: node.dialer,
     peerInfo: node.peerInfo,
     peerStore: node.peerStore,
     registrar: node.registrar,

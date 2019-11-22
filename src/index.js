@@ -91,7 +91,8 @@ class Libp2p extends EventEmitter {
     }
 
     this.dialer = new Dialer({
-      transportManager: this.transportManager
+      transportManager: this.transportManager,
+      peerStore: this.peerStore
     })
 
     // Attach stream multiplexers
