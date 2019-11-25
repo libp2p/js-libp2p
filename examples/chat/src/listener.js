@@ -22,9 +22,6 @@ async function run() {
     console.log(peerInfo.id.toB58String())
   })
 
-  // Start listening
-  await nodeListener.start()
-
   // Handle messages for the protocol
   await nodeListener.handle('/chat/1.0.0', async ({ stream }) => {
     // Send stdin to the stream
@@ -32,6 +29,9 @@ async function run() {
     // Read the stream and output to console
     streamToConsole(stream)
   })
+
+  // Start listening
+  await nodeListener.start()
 
   // Output listen addresses to the console
   console.log('Listener ready, listening on:')
