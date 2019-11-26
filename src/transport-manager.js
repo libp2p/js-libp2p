@@ -82,7 +82,7 @@ class TransportManager {
     try {
       return await transport.dial(ma, options)
     } catch (err) {
-      throw errCode(new Error('Transport dial failed'), codes.ERR_TRANSPORT_DIAL_FAILED, err)
+      throw errCode(err, codes.ERR_TRANSPORT_DIAL_FAILED)
     }
   }
 
