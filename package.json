@@ -97,7 +97,7 @@
     "libp2p-mdns": "^0.12.3",
     "libp2p-mplex": "^0.9.1",
     "libp2p-pnet": "~0.1.0",
-    "libp2p-secio": "^0.11.1",
+    "libp2p-secio": "^0.12.1",
     "libp2p-spdy": "^0.13.2",
     "libp2p-tcp": "^0.14.1",
     "libp2p-websockets": "^0.13.1",
