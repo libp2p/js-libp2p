@@ -8,6 +8,7 @@ const AbortController = require('abort-controller')
 const debug = require('debug')
 const log = debug('libp2p:dialer')
 log.error = debug('libp2p:dialer:error')
+const PeerId = require('peer-id')
 
 const { codes } = require('./errors')
 const {
@@ -20,15 +21,18 @@ class Dialer {
    * @constructor
    * @param {object} options
    * @param {TransportManager} options.transportManager
+   * @param {Peerstore} peerStore
    * @param {number} options.concurrency Number of max concurrent dials. Defaults to `MAX_PARALLEL_DIALS`
    * @param {number} options.timeout How long a dial attempt is allowed to take. Defaults to `DIAL_TIMEOUT`
    */
   constructor ({
     transportManager,
+    peerStore,
     concurrency = MAX_PARALLEL_DIALS,
     timeout = DIAL_TIMEOUT
   }) {
     this.transportManager = transportManager
+    this.peerStore = peerStore
     this.concurrency = concurrency
     this.timeout = timeout
     this.queue = new PQueue({ concurrency, timeout, throwOnTimeout: true })
@@ -97,18 +101,22 @@ class Dialer {
   }
 
   /**
-   * Connects to a given `PeerInfo` by dialing all of its known addresses.
+   * Connects to a given `PeerInfo` or `PeerId` by dialing all of its known addresses.
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    *
    * @async
-   * @param {PeerInfo} peerInfo The remote peer to dial
+   * @param {PeerInfo|PeerId} peer The remote peer to dial
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] An AbortController signal
    * @returns {Promise<Connection>}
    */
-  async connectToPeer (peerInfo, options = {}) {
-    const addrs = peerInfo.multiaddrs.toArray()
+  async connectToPeer (peer, options = {}) {
+    if (PeerId.isPeerId(peer)) {
+      peer = this.peerStore.get(peer.toB58String())
+    }
+
+    const addrs = peer.multiaddrs.toArray()
     for (const addr of addrs) {
       try {
         return await this.connectToMultiaddr(addr, options)
