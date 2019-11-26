@@ -7,7 +7,7 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const WebSockets = require('libp2p-websockets')
 const Muxer = require('libp2p-mplex')
-const Crypto = require('./src/insecure/plaintext')
+const Crypto = require('libp2p-secio')
 const pipe = require('it-pipe')
 let libp2p
 
