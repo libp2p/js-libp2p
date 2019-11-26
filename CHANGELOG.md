@@ -1,3 +1,25 @@
+<a name="0.17.0"></a>
+# [0.17.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.16.1...v0.17.0) (2019-11-26)
+
+
+### Bug Fixes
+
+* stop and start should not fail ([#152](https://github.com/libp2p/js-libp2p-kad-dht/issues/152)) ([eee2f61](https://github.com/libp2p/js-libp2p-kad-dht/commit/eee2f61))
+
+
+### Code Refactoring
+
+* async await ([#148](https://github.com/libp2p/js-libp2p-kad-dht/issues/148)) ([c49fa92](https://github.com/libp2p/js-libp2p-kad-dht/commit/c49fa92))
+
+
+### BREAKING CHANGES
+
+* Switch to using async/await and async iterators.
+
+Co-Authored-By: Jacob Heun <jacobheun@gmail.com>
+
+
+
 <a name="0.16.1"></a>
 ## [0.16.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.16.0...v0.16.1) (2019-10-21)
 
