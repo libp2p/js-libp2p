@@ -20,11 +20,7 @@ const Message = require('../src/message')
 const createPeerInfo = require('./utils/create-peer-info')
 const createValues = require('./utils/create-values')
 const TestDHT = require('./utils/test-dht')
-const {
-  connect,
-  countDiffPeers,
-  createDHT
-} = require('./utils')
+const { countDiffPeers } = require('./utils')
 
 describe('KadDHT', () => {
   let peerInfos
@@ -43,18 +39,28 @@ describe('KadDHT', () => {
   })
 
   describe('create', () => {
-    it('simple', () => {
-      const dht = createDHT(peerInfos[0], {
+    let tdht
+
+    beforeEach(() => {
+      tdht = new TestDHT()
+    })
+
+    afterEach(() => {
+      return tdht.teardown()
+    })
+
+    it('simple', async () => {
+      const [dht] = await tdht.spawn(1, {
         kBucketSize: 5
       })
 
-      expect(dht).to.have.property('peerInfo').eql(peerInfos[0])
+      expect(dht).to.have.property('peerInfo')
       expect(dht).to.have.property('kBucketSize', 5)
       expect(dht).to.have.property('routingTable')
     })
 
-    it('with validators and selectors', () => {
-      const dht = createDHT(peerInfos[0], {
+    it('with validators and selectors', async () => {
+      const [dht] = await tdht.spawn(1, {
         validators: {
           ipns: { func: () => { } }
         },
@@ -63,7 +69,7 @@ describe('KadDHT', () => {
         }
       })
 
-      expect(dht).to.have.property('peerInfo').eql(peerInfos[0])
+      expect(dht).to.have.property('peerInfo')
       expect(dht).to.have.property('routingTable')
       expect(dht.validators).to.have.property('ipns')
       expect(dht.selectors).to.have.property('ipns')
@@ -71,8 +77,18 @@ describe('KadDHT', () => {
   })
 
   describe('start and stop', () => {
+    let tdht
+
+    beforeEach(() => {
+      tdht = new TestDHT()
+    })
+
+    afterEach(() => {
+      return tdht.teardown()
+    })
+
     it('simple with defaults', async () => {
-      const dht = createDHT(peerInfos[0])
+      const [dht] = await tdht.spawn(1)
 
       sinon.spy(dht.network, 'start')
       sinon.spy(dht.randomWalk, 'start')
@@ -90,7 +106,7 @@ describe('KadDHT', () => {
     })
 
     it('random-walk disabled', async () => {
-      const dht = createDHT(peerInfos[0], {
+      const [dht] = await tdht.spawn(1, {
         randomWalk: { enabled: false }
       })
 
@@ -110,14 +126,14 @@ describe('KadDHT', () => {
     })
 
     it('should not fail when already started', async () => {
-      const dht = createDHT(peerInfos[0])
+      const [dht] = await tdht.spawn(1)
 
       await dht.start()
       await dht.start()
     })
 
-    it('should not fail to stop when was not started', () => {
-      const dht = createDHT(peerInfos[0])
+    it('should not fail to stop when was not started', async () => {
+      const [dht] = await tdht.spawn(1)
 
       dht.stop()
     })
@@ -134,7 +150,7 @@ describe('KadDHT', () => {
       const [dhtA, dhtB] = await tdht.spawn(2)
 
       // Connect nodes
-      await connect(dhtA, dhtB)
+      await tdht.connect(dhtA, dhtB)
 
       // Exchange data through the dht
       await dhtA.put(key, value)
@@ -160,11 +176,10 @@ describe('KadDHT', () => {
       const stub = sinon.stub(dhtD, '_verifyRecordLocally').rejects(error)
 
       await Promise.all([
-        connect(dhtA, dhtB),
-        connect(dhtA, dhtC),
-        connect(dhtA, dhtD)
+        tdht.connect(dhtA, dhtB),
+        tdht.connect(dhtA, dhtC),
+        tdht.connect(dhtA, dhtD)
       ])
-
       // DHT operations
       await dhtA.put(key, value, { minPeers: 2 })
       const res = await dhtB.get(key, { timeout: 1000 })
@@ -190,9 +205,9 @@ describe('KadDHT', () => {
       const stub2 = sinon.stub(dhtC, '_verifyRecordLocally').rejects(error)
 
       await Promise.all([
-        connect(dhtA, dhtB),
-        connect(dhtA, dhtC),
-        connect(dhtA, dhtD)
+        tdht.connect(dhtA, dhtB),
+        tdht.connect(dhtA, dhtC),
+        tdht.connect(dhtA, dhtD)
       ])
 
       // DHT operations
@@ -223,8 +238,8 @@ describe('KadDHT', () => {
       const stub = sinon.stub(dhtC, '_verifyRecordLocally').rejects(error)
 
       await Promise.all([
-        connect(dhtA, dhtB),
-        connect(dhtA, dhtC)
+        tdht.connect(dhtA, dhtB),
+        tdht.connect(dhtA, dhtC)
       ])
 
       // DHT operations
@@ -248,7 +263,7 @@ describe('KadDHT', () => {
       const tdht = new TestDHT()
       const [dhtA, dhtB] = await tdht.spawn(2)
 
-      await connect(dhtA, dhtB)
+      await tdht.connect(dhtA, dhtB)
 
       // DHT operations
       await dhtA.put(key, value)
@@ -276,7 +291,7 @@ describe('KadDHT', () => {
         }
       })
 
-      await connect(dhtA, dhtB)
+      await tdht.connect(dhtA, dhtB)
 
       // DHT operations
       await dhtA.put(key, value)
@@ -295,7 +310,7 @@ describe('KadDHT', () => {
       const tdht = new TestDHT()
       const [dhtA, dhtB] = await tdht.spawn(2)
 
-      await connect(dhtA, dhtB)
+      await tdht.connect(dhtA, dhtB)
 
       try {
         await dhtA.put(key, value)
@@ -324,7 +339,7 @@ describe('KadDHT', () => {
       await dhtB.put(key, valueB)
 
       // Connect peers
-      await connect(dhtA, dhtB)
+      await tdht.connect(dhtA, dhtB)
 
       // Get values
       const resA = await dhtA.get(key, { timeout: 1000 })
@@ -352,9 +367,9 @@ describe('KadDHT', () => {
 
       // Connect all
       await Promise.all([
-        connect(dhts[0], dhts[1]),
-        connect(dhts[1], dhts[2]),
-        connect(dhts[2], dhts[3])
+        tdht.connect(dhts[0], dhts[1]),
+        tdht.connect(dhts[1], dhts[2]),
+        tdht.connect(dhts[2], dhts[3])
       ])
 
       // DHT operations
@@ -370,7 +385,8 @@ describe('KadDHT', () => {
       const value = Buffer.from('world')
       const rec = new Record(key, value)
 
-      const dht = createDHT(peerInfos[0])
+      const tdht = new TestDHT()
+      const [dht] = await tdht.spawn(1)
       await dht.start()
 
       const stubs = [
@@ -404,9 +420,9 @@ describe('KadDHT', () => {
 
       // connect peers
       await Promise.all([
-        connect(dhts[0], dhts[1]),
-        connect(dhts[1], dhts[2]),
-        connect(dhts[2], dhts[3])
+        tdht.connect(dhts[0], dhts[1]),
+        tdht.connect(dhts[1], dhts[2]),
+        tdht.connect(dhts[2], dhts[3])
       ])
 
       // provide values
@@ -448,8 +464,8 @@ describe('KadDHT', () => {
 
       // Connect
       await Promise.all([
-        connect(dhts[0], dhts[1]),
-        connect(dhts[1], dhts[2])
+        tdht.connect(dhts[0], dhts[1]),
+        tdht.connect(dhts[1], dhts[2])
       ])
 
       await Promise.all(dhts.map((dht) => dht.provide(val.cid)))
@@ -479,9 +495,9 @@ describe('KadDHT', () => {
 
       // Connect all
       await Promise.all([
-        connect(dhts[0], dhts[1]),
-        connect(dhts[1], dhts[2]),
-        connect(dhts[2], dhts[3])
+        tdht.connect(dhts[0], dhts[1]),
+        tdht.connect(dhts[1], dhts[2]),
+        tdht.connect(dhts[2], dhts[3])
       ])
 
       const ids = dhts.map((d) => d.peerInfo.id)
@@ -530,7 +546,7 @@ describe('KadDHT', () => {
         }
       }
 
-      await Promise.all(conns.map((conn) => connect(dhtsById.get(conn[0]), dhtsById.get(conn[1]))))
+      await Promise.all(conns.map((conn) => tdht.connect(dhtsById.get(conn[0]), dhtsById.get(conn[1]))))
 
       // Get the alpha (3) closest peers to the key from the origin's
       // routing table
@@ -578,7 +594,7 @@ describe('KadDHT', () => {
       const dhts = await tdht.spawn(nDHTs)
 
       await pMapSeries(dhts, async (_, index) => {
-        await connect(dhts[index], dhts[(index + 1) % dhts.length])
+        await tdht.connect(dhts[index], dhts[(index + 1) % dhts.length])
       })
 
       const res = await dhts[1].getClosestPeers(Buffer.from('foo'))
@@ -596,7 +612,7 @@ describe('KadDHT', () => {
       const dhts = await tdht.spawn(2)
 
       const ids = dhts.map((d) => d.peerInfo.id)
-      dhts[0].peerBook.put(dhts[1].peerInfo)
+      dhts[0].peerStore.put(dhts[1].peerInfo)
 
       const key = await dhts[0].getPublicKey(ids[1])
       expect(key).to.eql(dhts[1].peerInfo.id.pubKey)
@@ -616,12 +632,10 @@ describe('KadDHT', () => {
 
       const ids = dhts.map((d) => d.peerInfo.id)
 
-      await connect(dhts[0], dhts[1])
+      await tdht.connect(dhts[0], dhts[1])
 
       // remove the pub key to be sure it is fetched
-      const p = dhts[0].peerBook.get(ids[1])
-      p.id._pubKey = null
-      dhts[0].peerBook.put(p, true)
+      dhts[0].peerStore.put(dhts[1].peerInfo, true)
 
       const key = await dhts[0].getPublicKey(ids[1])
       expect(key.equals(dhts[1].peerInfo.id.pubKey)).to.eql(true)
@@ -631,20 +645,30 @@ describe('KadDHT', () => {
   })
 
   describe('internals', () => {
-    it('_nearestPeersToQuery', async () => {
-      const dht = createDHT(peerInfos[0])
+    let tdht
 
-      dht.peerBook.put(peerInfos[1])
+    beforeEach(() => {
+      tdht = new TestDHT()
+    })
+
+    afterEach(() => {
+      return tdht.teardown()
+    })
+
+    it('_nearestPeersToQuery', async () => {
+      const [dht] = await tdht.spawn(1)
+
+      dht.peerStore.put(peerInfos[1])
       await dht._add(peerInfos[1])
       const res = await dht._nearestPeersToQuery({ key: 'hello' })
       expect(res).to.be.eql([peerInfos[1]])
     })
 
     it('_betterPeersToQuery', async () => {
-      const dht = createDHT(peerInfos[0])
+      const [dht] = await tdht.spawn(1)
 
-      dht.peerBook.put(peerInfos[1])
-      dht.peerBook.put(peerInfos[2])
+      dht.peerStore.put(peerInfos[1])
+      dht.peerStore.put(peerInfos[2])
 
       await dht._add(peerInfos[1])
       await dht._add(peerInfos[2])
@@ -654,8 +678,18 @@ describe('KadDHT', () => {
     })
 
     describe('_checkLocalDatastore', () => {
+      let tdht
+
+      beforeEach(() => {
+        tdht = new TestDHT()
+      })
+
+      afterEach(() => {
+        return tdht.teardown()
+      })
+
       it('allow a peer record from store if recent', async () => {
-        const dht = createDHT(peerInfos[0])
+        const [dht] = await tdht.spawn(1)
 
         const record = new Record(
           Buffer.from('hello'),
@@ -671,7 +705,7 @@ describe('KadDHT', () => {
       })
 
       it('delete entries received from peers that have expired', async () => {
-        const dht = createDHT(peerInfos[0])
+        const [dht] = await tdht.spawn(1)
 
         const record = new Record(
           Buffer.from('hello'),
@@ -696,9 +730,10 @@ describe('KadDHT', () => {
       })
     })
 
-    it('_verifyRecordLocally', () => {
-      const dht = createDHT(peerInfos[0])
-      dht.peerBook.put(peerInfos[1])
+    it('_verifyRecordLocally', async () => {
+      const [dht] = await tdht.spawn(1)
+
+      dht.peerStore.put(peerInfos[1])
 
       const record = new Record(
         Buffer.from('hello'),
@@ -743,7 +778,7 @@ describe('KadDHT', () => {
       const [dhtA, dhtB] = await tdht.spawn(2)
       const stub = sinon.stub(dhtA, '_getValueOrPeers').rejects(error)
 
-      await connect(dhtA, dhtB)
+      await tdht.connect(dhtA, dhtB)
 
       try {
         await dhtA.get(Buffer.from('/v/hello'), { timeout: 1000 })
@@ -765,7 +800,7 @@ describe('KadDHT', () => {
       const [dhtA, dhtB] = await tdht.spawn(2)
       const stub = sinon.stub(dhtA, '_getValueOrPeers').rejects(error)
 
-      await connect(dhtA, dhtB)
+      await tdht.connect(dhtA, dhtB)
 
       try {
         await dhtA.get(Buffer.from('/v/hello'), { timeout: 1000 })
@@ -786,9 +821,9 @@ describe('KadDHT', () => {
 
       const ids = dhts.map((d) => d.peerInfo.id)
       await Promise.all([
-        connect(dhts[0], dhts[1]),
-        connect(dhts[1], dhts[2]),
-        connect(dhts[2], dhts[3])
+        tdht.connect(dhts[0], dhts[1]),
+        tdht.connect(dhts[1], dhts[2]),
+        tdht.connect(dhts[2], dhts[3])
       ])
 
       const stub = sinon.stub(dhts[0].routingTable, 'closestPeers').returns([])

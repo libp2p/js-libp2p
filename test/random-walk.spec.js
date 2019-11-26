@@ -13,7 +13,6 @@ const { AssertionError } = require('assert')
 const TestDHT = require('./utils/test-dht')
 const {
   bootstrap,
-  connect,
   waitForWellFormedTables
 } = require('./utils')
 
@@ -263,7 +262,8 @@ describe('Random Walk', () => {
   })
 
   it('manual operation', async function () {
-    this.timeout(20 * 1000)
+    const timeout = 20 * 1000
+    this.timeout(timeout)
 
     const nDHTs = 20
     const tdht = new TestDHT()
@@ -272,11 +272,11 @@ describe('Random Walk', () => {
     const dhts = await tdht.spawn(nDHTs)
 
     await Promise.all(
-      Array.from({ length: nDHTs }).map((_, i) => connect(dhts[i], dhts[(i + 1) % nDHTs]))
+      Array.from({ length: nDHTs }).map((_, i) => tdht.connect(dhts[i], dhts[(i + 1) % nDHTs]))
     )
 
     bootstrap(dhts)
-    await waitForWellFormedTables(dhts, 7, 0, 20 * 1000)
+    await waitForWellFormedTables(dhts, 7, 0, timeout)
 
     return tdht.teardown()
   })

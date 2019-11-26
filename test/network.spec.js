@@ -4,45 +4,47 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const Connection = require('interface-connection').Connection
-const pull = require('pull-stream')
-const lp = require('pull-length-prefixed')
-const pDefer = require('p-defer')
-const PeerBook = require('peer-book')
-const Switch = require('libp2p-switch')
-const TCP = require('libp2p-tcp')
-const Mplex = require('libp2p-mplex')
 
-const KadDHT = require('../src')
+const pair = require('it-pair')
+const pipe = require('it-pipe')
+const delay = require('delay')
+const lp = require('it-length-prefixed')
+const pDefer = require('p-defer')
+
 const Message = require('../src/message')
 
-const createPeerInfo = require('./utils/create-peer-info')
+const TestDHT = require('./utils/test-dht')
 
 describe('Network', () => {
   let dht
-  let peerInfos
+  let tdht
 
   before(async function () {
     this.timeout(10 * 1000)
-    peerInfos = await createPeerInfo(3)
-
-    const sw = new Switch(peerInfos[0], new PeerBook())
-    sw.transport.add('tcp', new TCP())
-    sw.connection.addStreamMuxer(Mplex)
-    sw.connection.reuse()
-    dht = new KadDHT({ sw })
-
-    await sw.start()
-    await dht.start()
+    tdht = new TestDHT()
+    ;[dht] = await tdht.spawn(1)
   })
 
-  after(() => Promise.all([
-    dht.stop(),
-    dht.switch.stop()
-  ]))
+  after(() => tdht.teardown())
 
   describe('sendRequest', () => {
-    it('send and response', async () => {
+    it('send and response echo', async () => {
+      const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
+
+      // mock dial
+      dht.dialer.connectToPeer = () => {
+        return {
+          newStream: () => {
+            return { stream: pair() } // {source, sink} streams that are internally connected
+          }
+        }
+      }
+
+      const response = await dht.network.sendRequest(dht.peerInfo.id, msg)
+      expect(response.type).to.eql(Message.TYPES.PING)
+    })
+
+    it('send and response different messages', async () => {
       const defer = pDefer()
       let i = 0
       const finish = () => {
@@ -54,29 +56,51 @@ describe('Network', () => {
       const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
 
       // mock it
-      dht.switch.dial = (peer, protocol, callback) => {
-        expect(protocol).to.eql('/ipfs/kad/1.0.0')
+      dht.dialer.connectToPeer = async () => {
         const msg = new Message(Message.TYPES.FIND_NODE, Buffer.from('world'), 0)
 
-        const rawConn = {
-          source: pull(
-            pull.values([msg.serialize()]),
-            lp.encode()
-          ),
-          sink: pull(
+        const data = []
+        await pipe(
+          [msg.serialize()],
+          lp.encode(),
+          async source => {
+            for await (const chunk of source) {
+              data.push(chunk.slice())
+            }
+          }
+        )
+
+        const source = (function * () {
+          const array = data
+
+          while (array.length) {
+            yield array.shift()
+          }
+        })()
+
+        const sink = async source => {
+          const res = []
+          await pipe(
+            source,
             lp.decode(),
-            pull.collect((err, res) => {
-              expect(err).to.not.exist()
-              expect(Message.deserialize(res[0]).type).to.eql(Message.TYPES.PING)
-              finish()
-            })
+            async source => {
+              for await (const chunk of source) {
+                res.push(chunk.slice())
+              }
+            }
           )
+          expect(Message.deserialize(res[0]).type).to.eql(Message.TYPES.PING)
+          finish()
         }
-        const conn = new Connection(rawConn)
-        callback(null, conn)
+
+        return {
+          newStream: () => {
+            return { stream: { source, sink } }
+          }
+        }
       }
 
-      const response = await dht.network.sendRequest(peerInfos[0].id, msg)
+      const response = await dht.network.sendRequest(dht.peerInfo.id, msg)
 
       expect(response.type).to.eql(Message.TYPES.FIND_NODE)
       finish()
@@ -96,28 +120,37 @@ describe('Network', () => {
       const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
 
       // mock it
-      dht.switch.dial = (peer, protocol, callback) => {
-        expect(protocol).to.eql('/ipfs/kad/1.0.0')
-        const rawConn = {
-          // hanging
-          source: (end, cb) => {},
-          sink: pull(
+      dht.dialer.connectToPeer = () => {
+        const source = (async function * () { // eslint-disable-line require-yield
+          await delay(1000)
+        })()
+
+        const sink = async source => {
+          const res = []
+          await pipe(
+            source,
             lp.decode(),
-            pull.collect((err, res) => {
-              expect(err).to.not.exist()
-              expect(Message.deserialize(res[0]).type).to.eql(Message.TYPES.PING)
-              finish()
-            })
+            async source => {
+              for await (const chunk of source) {
+                res.push(chunk.slice())
+              }
+            }
           )
+          expect(Message.deserialize(res[0]).type).to.eql(Message.TYPES.PING)
+          finish()
         }
-        const conn = new Connection(rawConn)
-        callback(null, conn)
+
+        return {
+          newStream: () => {
+            return { stream: { source, sink } }
+          }
+        }
       }
 
       dht.network.readMessageTimeout = 100
 
       try {
-        await dht.network.sendRequest(peerInfos[0].id, msg)
+        await dht.network.sendRequest(dht.peerInfo.id, msg)
       } catch (err) {
         expect(err).to.exist()
         expect(err.message).to.match(/timed out/)

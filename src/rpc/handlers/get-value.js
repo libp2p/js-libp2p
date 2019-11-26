@@ -35,8 +35,8 @@ module.exports = (dht) => {
 
       if (dht._isSelf(id)) {
         info = dht.peerInfo
-      } else if (dht.peerBook.has(id)) {
-        info = dht.peerBook.get(id)
+      } else if (dht.peerStore.has(id)) {
+        info = dht.peerStore.get(id)
       }
 
       if (info && info.id.pubKey) {

@@ -82,10 +82,10 @@ module.exports = (dht) => {
 
       provs.forEach((id) => {
         let info
-        if (dht.peerBook.has(id)) {
-          info = dht.peerBook.get(id)
+        if (dht.peerStore.has(id)) {
+          info = dht.peerStore.get(id)
         } else {
-          info = dht.peerBook.put(new PeerInfo(id))
+          info = dht.peerStore.put(new PeerInfo(id))
         }
         out.push(info)
       })
@@ -110,7 +110,7 @@ module.exports = (dht) => {
           dht._log('(%s) found %s provider entries', dht.peerInfo.id.toB58String(), provs.length)
 
           provs.forEach((prov) => {
-            pathProviders.push(dht.peerBook.put(prov))
+            pathProviders.push(dht.peerStore.put(prov))
           })
 
           // hooray we have all that we want
@@ -131,7 +131,7 @@ module.exports = (dht) => {
           providerTimeout
         )
       } catch (err) {
-        if (err !== pTimeout.TimeoutError) {
+        if (err.name !== pTimeout.TimeoutError.name) {
           throw err
         }
       } finally {

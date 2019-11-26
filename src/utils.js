@@ -11,6 +11,16 @@ const { Record } = require('libp2p-record')
 const PeerId = require('peer-id')
 const errcode = require('err-code')
 
+exports.itFilter = function (predicate) {
+  return source => (async function * () {
+    for await (const msg of source) {
+      if (predicate(msg)) {
+        yield msg
+      }
+    }
+  })()
+}
+
 /**
  * Creates a DHT ID by hashing a given buffer.
  *

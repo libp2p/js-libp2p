@@ -24,11 +24,11 @@ module.exports = (dht) => {
     dht._log('findPeerLocal %s', peer.toB58String())
     const p = await dht.routingTable.find(peer)
 
-    if (!p || !dht.peerBook.has(p)) {
+    if (!p || !dht.peerStore.has(p)) {
       return
     }
 
-    return dht.peerBook.get(p)
+    return dht.peerStore.get(p)
   }
 
   /**
@@ -57,7 +57,7 @@ module.exports = (dht) => {
 
     return msg.closerPeers
       .filter((pInfo) => !dht._isSelf(pInfo.id))
-      .map((pInfo) => dht.peerBook.put(pInfo))
+      .map((pInfo) => dht.peerStore.put(pInfo))
   }
 
   /**
@@ -128,9 +128,9 @@ module.exports = (dht) => {
 
       // sanity check
       const match = peers.find((p) => p.isEqual(id))
-      if (match && dht.peerBook.has(id)) {
-        dht._log('found in peerbook')
-        return dht.peerBook.get(id)
+      if (match && dht.peerStore.has(id)) {
+        dht._log('found in peerStore')
+        return dht.peerStore.get(id)
       }
 
       // query the network
@@ -169,7 +169,7 @@ module.exports = (dht) => {
       result.paths.forEach((result) => {
         if (result.success) {
           success = true
-          dht.peerBook.put(result.peer)
+          dht.peerStore.put(result.peer)
         }
       })
       dht._log('findPeer %s: %s', id.toB58String(), success)
@@ -177,7 +177,7 @@ module.exports = (dht) => {
       if (!success) {
         throw errcode(new Error('No peer found'), 'ERR_NOT_FOUND')
       }
-      return dht.peerBook.get(id)
+      return dht.peerStore.get(id)
     },
 
     /**
@@ -226,15 +226,15 @@ module.exports = (dht) => {
 
       // local check
       let info
-      if (dht.peerBook.has(peer)) {
-        info = dht.peerBook.get(peer)
+      if (dht.peerStore.has(peer)) {
+        info = dht.peerStore.get(peer)
 
         if (info && info.id.pubKey) {
           dht._log('getPublicKey: found local copy')
           return info.id.pubKey
         }
       } else {
-        info = dht.peerBook.put(new PeerInfo(peer))
+        info = dht.peerStore.put(new PeerInfo(peer))
       }
 
       // try the node directly
@@ -249,7 +249,7 @@ module.exports = (dht) => {
       }
 
       info.id = new PeerId(peer.id, null, pk)
-      dht.peerBook.put(info)
+      dht.peerStore.put(info)
 
       return pk
     }

@@ -4,45 +4,39 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const PeerBook = require('peer-book')
-const Switch = require('libp2p-switch')
-const TCP = require('libp2p-tcp')
-const Mplex = require('libp2p-mplex')
 const pDefer = require('p-defer')
 const delay = require('delay')
 
-const DHT = require('../src')
 const Query = require('../src/query')
-
-const createPeerInfo = require('./utils/create-peer-info')
-const createDisjointTracks = require('./utils/create-disjoint-tracks')
 const kadUtils = require('../src/utils')
 
-const createDHT = async (peerInfos) => {
-  const sw = new Switch(peerInfos[0], new PeerBook())
-  sw.transport.add('tcp', new TCP())
-  sw.connection.addStreamMuxer(Mplex)
-  sw.connection.reuse()
-  const d = new DHT({ sw })
-
-  await d.start()
-  return d
-}
+const createPeerInfo = require('./utils/create-peer-info')
+const TestDHT = require('./utils/test-dht')
+const createDisjointTracks = require('./utils/create-disjoint-tracks')
 
 describe('Query', () => {
   let peerInfos
+  let tdht
   let dht
 
   before(async () => {
     peerInfos = await createPeerInfo(40)
-    dht = await createDHT(peerInfos)
+  })
+
+  beforeEach(async () => {
+    tdht = new TestDHT()
+    ;[dht] = await tdht.spawn(1)
+  })
+
+  afterEach(() => {
+    return tdht.teardown()
   })
 
   it('simple run', async () => {
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
     let i = 0
     const queryFunc = async (p) => { // eslint-disable-line require-await
@@ -69,10 +63,10 @@ describe('Query', () => {
   })
 
   it('does not return an error if only some queries error', async () => {
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
     let i = 0
     const visited = []
@@ -103,10 +97,10 @@ describe('Query', () => {
   })
 
   it('returns an error if all queries error', async () => {
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
     const queryFunc = async (p) => { throw new Error('fail') } // eslint-disable-line require-await
     const q = new Query(dht, peer.id.id, () => queryFunc)
@@ -123,7 +117,7 @@ describe('Query', () => {
   })
 
   it('returns empty run if initial peer list is empty', async () => {
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
     const queryFunc = async (p) => {}
 
     const q = new Query(dht, peer.id.id, () => queryFunc)
@@ -135,10 +129,10 @@ describe('Query', () => {
   })
 
   it('only closerPeers', async () => {
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
     const queryFunc = async (p) => { // eslint-disable-line require-await
       return {
@@ -153,10 +147,10 @@ describe('Query', () => {
   })
 
   it('only closerPeers concurrent', async () => {
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
     //  1 -> 8
     //  2 -> 4 -> 5
@@ -201,10 +195,10 @@ describe('Query', () => {
   })
 
   it('early success', async () => {
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
     // 1 -> 2 -> 3 -> 4
     const topology = {
@@ -244,11 +238,11 @@ describe('Query', () => {
 
   it('all queries stop after shutdown', async () => {
     const deferShutdown = pDefer()
-    const dhtA = await createDHT(peerInfos)
-    const peer = peerInfos[0]
+    const [dhtA] = await tdht.spawn(1)
+    const peer = dht.peerInfo
 
     // mock this so we can dial non existing peers
-    dhtA.switch.dial = (peer, callback) => callback()
+    dhtA.dialer.dial = (peer) => {}
 
     // 1 -> 2 -> 3 -> 4
     const topology = {
@@ -301,11 +295,11 @@ describe('Query', () => {
   })
 
   it('queries run after shutdown return immediately', async () => {
-    const dhtA = await createDHT(peerInfos)
-    const peer = peerInfos[0]
+    const [dhtA] = await tdht.spawn(1)
+    const peer = dht.peerInfo
 
     // mock this so we can dial non existing peers
-    dhtA.switch.dial = (peer, callback) => callback()
+    dhtA.dialer.dial = (peer, callback) => callback()
 
     // 1 -> 2 -> 3
     const topology = {
@@ -335,11 +329,11 @@ describe('Query', () => {
   })
 
   it('disjoint path values', async () => {
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
     const values = ['v0', 'v1'].map(Buffer.from)
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
     // 1 -> 2 -> 3 (v0)
     // 4 -> 5 (v1)
@@ -390,11 +384,11 @@ describe('Query', () => {
   })
 
   it('disjoint path values with early completion', async () => {
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
     const values = ['v0', 'v1'].map(Buffer.from)
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
     // 1 -> 2 (delay) -> 3
     // 4 -> 5 [query complete]
@@ -459,11 +453,11 @@ describe('Query', () => {
   })
 
   it('disjoint path continue other paths after error on one path', async () => {
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
     const values = ['v0', 'v1'].map(Buffer.from)
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
     // 1 -> 2 (delay) -> 3 [pathComplete]
     // 4 -> 5 [error] -> 6
@@ -527,10 +521,10 @@ describe('Query', () => {
 
   it('stop after finding k closest peers', async () => {
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
-    // Sort peers by distance from peerInfos[0]
-    const peerZeroDhtKey = await kadUtils.convertPeerId(peerInfos[0].id)
+    // Sort peers by distance from dht.peerInfo
+    const peerZeroDhtKey = await kadUtils.convertPeerId(dht.peerInfo.id)
     const peerIds = peerInfos.map(pi => pi.id)
     const sorted = await kadUtils.sortClosestPeers(peerIds, peerZeroDhtKey)
 
@@ -586,7 +580,7 @@ describe('Query', () => {
       return { closerPeers }
     }
 
-    const q = new Query(dht, peerInfos[0].id.id, () => queryFunc)
+    const q = new Query(dht, dht.peerInfo.id.id, () => queryFunc)
     const res = await q.run(initial)
 
     // Should query 19 peers, then find some peers closer to the key, and
@@ -638,7 +632,7 @@ describe('Query', () => {
     } = await createDisjointTracks(samplePeerInfos, goodLength)
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
     let badEndVisited = false
     let targetVisited = false
 
@@ -668,10 +662,10 @@ describe('Query', () => {
 
   it('should discover closer peers', () => {
     const discoverDefer = pDefer()
-    const peer = peerInfos[0]
+    const peer = dht.peerInfo
 
     // mock this so we can dial non existing peers
-    dht.switch.dial = (peer, callback) => callback()
+    dht.dialer.dial = () => {}
 
     const queryFunc = async (p) => { // eslint-disable-line require-await
       return {

@@ -40,9 +40,10 @@ class KadDHT extends EventEmitter {
   /**
    * Create a new KadDHT.
    * @param {Object} props
-   * @param {Switch} props.sw libp2p-switch instance
+   * @param {Dialer} props.dialer libp2p dialer instance
    * @param {PeerInfo} props.peerInfo peer's peerInfo
-   * @param {Object} props.registrar registrar for libp2p protocols
+   * @param {PeerStore} props.peerStore libp2p peerStore
+   * @param {Object} props.registrar libp2p registrar instance
    * @param {function} props.registrar.handle
    * @param {function} props.registrar.register
    * @param {function} props.registrar.unregister
@@ -54,7 +55,10 @@ class KadDHT extends EventEmitter {
    * @param {randomWalkOptions} options.randomWalk randomWalk options
    */
   constructor ({
-    sw,
+    dialer,
+    peerInfo,
+    peerStore,
+    registrar,
     datastore = new MemoryDatastore(),
     kBucketSize = c.K,
     concurrency = c.ALPHA,
@@ -63,14 +67,31 @@ class KadDHT extends EventEmitter {
     randomWalk = {}
   }) {
     super()
-    assert(sw, 'libp2p-kad-dht requires a instance of Switch')
+    assert(dialer, 'libp2p-kad-dht requires an instance of Dialer')
 
     /**
-     * Local reference to the libp2p-switch instance
-     *
-     * @type {Switch}
+     * Local reference to the libp2p dialer instance
+     * @type {Dialer}
      */
-    this.switch = sw
+    this.dialer = dialer
+
+    /**
+     * Local peer info
+     * @type {PeerInfo}
+     */
+    this.peerInfo = peerInfo
+
+    /**
+     * Local PeerStore
+     * @type {PeerStore}
+     */
+    this.peerStore = peerStore
+
+    /**
+     * Local peer info
+     * @type {Registrar}
+     */
+    this.registrar = registrar
 
     /**
      * k-bucket size
@@ -141,6 +162,8 @@ class KadDHT extends EventEmitter {
      */
     this._queryManager = new QueryManager()
 
+    this._running = false
+
     // DHT components
     this.contentFetching = contentFetching(this)
     this.contentRouting = contentRouting(this)
@@ -153,22 +176,6 @@ class KadDHT extends EventEmitter {
    */
   get isStarted () {
     return this._running
-  }
-
-  /**
-   * Local peer (yourself)
-   * @type {PeerInfo}
-   */
-  get peerInfo () {
-    return this.switch._peerInfo
-  }
-
-  /**
-   * Peerbook
-   * @type {PeerBook}
-   */
-  get peerBook () {
-    return this.switch._peerBook
   }
 
   /**
@@ -312,10 +319,10 @@ class KadDHT extends EventEmitter {
     const ids = this.routingTable.closestPeers(key, this.kBucketSize)
 
     return ids.map((p) => {
-      if (this.peerBook.has(p)) {
-        return this.peerBook.get(p)
+      if (this.peerStore.has(p)) {
+        return this.peerStore.get(p)
       }
-      return this.peerBook.put(new PeerInfo(p))
+      return this.peerStore.put(new PeerInfo(p))
     })
   }
 
@@ -390,7 +397,7 @@ class KadDHT extends EventEmitter {
   }
 
   /**
-   * Add the peer to the routing table and update it in the peerbook.
+   * Add the peer to the routing table and update it in the peerStore.
    *
    * @param {PeerInfo} peer
    * @returns {Promise<void>}
@@ -398,7 +405,6 @@ class KadDHT extends EventEmitter {
    */
 
   async _add (peer) {
-    peer = this.peerBook.put(peer)
     await this.routingTable.add(peer.id)
   }
 
@@ -455,7 +461,7 @@ class KadDHT extends EventEmitter {
    * Query a particular peer for the value for the given key.
    * It will either return the value or a list of closer peers.
    *
-   * Note: The peerbook is updated with new addresses found for the given peer.
+   * Note: The peerStore is updated with new addresses found for the given peer.
    *
    * @param {PeerId} peer
    * @param {Buffer} key
@@ -518,3 +524,4 @@ class KadDHT extends EventEmitter {
 }
 
 module.exports = KadDHT
+module.exports.multicodec = c.PROTOCOL_DHT

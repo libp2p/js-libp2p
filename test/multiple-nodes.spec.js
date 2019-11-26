@@ -5,7 +5,6 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 
-const { connect } = require('./utils')
 const TestDHT = require('./utils/test-dht')
 
 describe('multiple nodes', () => {
@@ -14,23 +13,20 @@ describe('multiple nodes', () => {
   let dhts
 
   // spawn nodes
-  before(async function () {
+  beforeEach(async function () {
     this.timeout(10 * 1000)
 
     tdht = new TestDHT()
     dhts = await tdht.spawn(n)
-  })
 
-  // connect nodes
-  before(function () {
     // all nodes except the last one
     const range = Array.from(Array(n - 1).keys())
 
     // connect the last one with the others one by one
-    return Promise.all(range.map((i) => connect(dhts[n - 1], dhts[i])))
+    return Promise.all(range.map((i) => tdht.connect(dhts[n - 1], dhts[i])))
   })
 
-  after(function () {
+  afterEach(function () {
     this.timeout(10 * 1000)
 
     return tdht.teardown()
@@ -44,13 +40,13 @@ describe('multiple nodes', () => {
     await dhts[7].put(key, value)
 
     const res = await Promise.all([
-      dhts[0].get(key, { maxTimeout: 1000 }),
-      dhts[1].get(key, { maxTimeout: 1000 }),
-      dhts[2].get(key, { maxTimeout: 1000 }),
-      dhts[3].get(key, { maxTimeout: 1000 }),
-      dhts[4].get(key, { maxTimeout: 1000 }),
-      dhts[5].get(key, { maxTimeout: 1000 }),
-      dhts[6].get(key, { maxTimeout: 1000 })
+      dhts[0].get(key, { timeout: 1000 }),
+      dhts[1].get(key, { timeout: 1000 }),
+      dhts[2].get(key, { timeout: 1000 }),
+      dhts[3].get(key, { timeout: 1000 }),
+      dhts[4].get(key, { timeout: 1000 }),
+      dhts[5].get(key, { timeout: 1000 }),
+      dhts[6].get(key, { timeout: 1000 })
     ])
 
     expect(res[0]).to.eql(Buffer.from('world'))
@@ -70,13 +66,13 @@ describe('multiple nodes', () => {
     await dhts[1].put(key, value)
 
     const res = await Promise.all([
-      dhts[0].get(key, { maxTimeout: 1000 }),
-      dhts[2].get(key, { maxTimeout: 1000 }),
-      dhts[3].get(key, { maxTimeout: 1000 }),
-      dhts[4].get(key, { maxTimeout: 1000 }),
-      dhts[5].get(key, { maxTimeout: 1000 }),
-      dhts[6].get(key, { maxTimeout: 1000 }),
-      dhts[7].get(key, { maxTimeout: 1000 })
+      dhts[0].get(key, { timeout: 1000 }),
+      dhts[2].get(key, { timeout: 1000 }),
+      dhts[3].get(key, { timeout: 1000 }),
+      dhts[4].get(key, { timeout: 1000 }),
+      dhts[5].get(key, { timeout: 1000 }),
+      dhts[6].get(key, { timeout: 1000 }),
+      dhts[7].get(key, { timeout: 1000 })
     ])
 
     expect(res[0]).to.eql(Buffer.from('world'))
@@ -100,10 +96,10 @@ describe('multiple nodes', () => {
     await dhts[4].put(key, Buffer.from('world4'))
 
     const res = await Promise.all([
-      dhts[3].get(key, { maxTimeout: 2000 }),
-      dhts[4].get(key, { maxTimeout: 2000 }),
-      dhts[5].get(key, { maxTimeout: 2000 }),
-      dhts[6].get(key, { maxTimeout: 2000 })
+      dhts[4].get(key, { timeout: 2000 }),
+      dhts[5].get(key, { timeout: 2000 }),
+      dhts[6].get(key, { timeout: 2000 }),
+      dhts[7].get(key, { timeout: 2000 })
     ])
 
     expect(res[0]).to.eql(result)

@@ -44,7 +44,7 @@ module.exports = (dht) => {
       log('received provider %s for %s (addrs %s)', peer.id.toB58String(), cid.toBaseEncodedString(), pi.multiaddrs.toArray().map((m) => m.toString()))
 
       if (!dht._isSelf(pi.id)) {
-        dht.peerBook.put(pi)
+        dht.peerStore.put(pi)
         return dht.providers.addProvider(cid, pi.id)
       }
     })

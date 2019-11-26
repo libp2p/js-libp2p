@@ -244,7 +244,7 @@ class WorkerQueue {
         if (this.dht._isSelf(closer.id)) {
           return
         }
-        closer = this.dht.peerBook.put(closer)
+        closer = this.dht.peerStore.put(closer)
         this.dht._peerDiscovered(closer)
         await this.path.addPeerToQuery(closer.id)
       }))

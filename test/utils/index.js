@@ -3,17 +3,54 @@
 const delay = require('delay')
 const pRetry = require('p-retry')
 const pTimeout = require('p-timeout')
-const promisify = require('promisify-es6')
+const duplexPair = require('it-pair/duplex')
 
-const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
-const PeerBook = require('peer-book')
-const Mplex = require('libp2p-mplex')
-const Switch = require('libp2p-switch')
-const TCP = require('libp2p-tcp')
-
-const DHT = require('../../src')
 const { sortClosestPeers } = require('../../src/utils')
+
+const createMockRegistrar = (registrarRecord) => ({
+  handle: (multicodec, handler) => {
+    const rec = registrarRecord[multicodec] || {}
+
+    registrarRecord[multicodec] = {
+      ...rec,
+      handler
+    }
+  },
+  register: ({ multicodecs, _onConnect, _onDisconnect }) => {
+    const rec = registrarRecord[multicodecs[0]] || {}
+
+    registrarRecord[multicodecs[0]] = {
+      ...rec,
+      onConnect: _onConnect,
+      onDisconnect: _onDisconnect
+    }
+
+    return multicodecs[0]
+  },
+  unregister: (id) => {
+    delete registrarRecord[id]
+  }
+})
+
+exports.createMockRegistrar = createMockRegistrar
+
+const ConnectionPair = () => {
+  const [d0, d1] = duplexPair()
+
+  return [
+    {
+      stream: d0,
+      newStream: () => Promise.resolve({ stream: d0 })
+    },
+    {
+      stream: d1,
+      newStream: () => Promise.resolve({ stream: d1 })
+    }
+  ]
+}
+
+exports.ConnectionPair = ConnectionPair
+
 /**
  * Like `sortClosestPeers`, expect it takes and returns `PeerInfo`s
  *
@@ -29,51 +66,6 @@ exports.sortClosestPeerInfos = async (peers, target) => {
       return peerInfo.id.isEqual(peerId)
     })
   })
-}
-
-const createDHT = (peerInfo, props = {}) => {
-  const sw = new Switch(peerInfo, new PeerBook())
-  sw.transport.add('tcp', new TCP())
-  sw.connection.addStreamMuxer(Mplex)
-  sw.connection.reuse()
-  return new DHT({ sw, ...props })
-}
-
-exports.createDHT = createDHT
-
-exports.createAndStartDHT = async (peerInfo, props) => {
-  const dht = createDHT(peerInfo, props)
-  await dht.start()
-  return dht
-}
-
-// connect two dhts
-const connectNoSync = async (a, b) => {
-  const publicPeerId = new PeerId(b.peerInfo.id.id, null, b.peerInfo.id.pubKey)
-  const target = new PeerInfo(publicPeerId)
-  target.multiaddrs = b.peerInfo.multiaddrs
-  await promisify(cb => a.switch.dial(target, cb))()
-}
-
-const find = (a, b) => {
-  return pRetry(async () => {
-    const match = await a.routingTable.find(b.peerInfo.id)
-
-    if (!match) {
-      await delay(100)
-      throw new Error('not found')
-    }
-
-    return match
-  }, { retries: 50 })
-}
-
-// connect two dhts and wait for them to have each other
-// in their routing table
-exports.connect = async (a, b) => {
-  await connectNoSync(a, b)
-  await find(a, b)
-  await find(b, a)
 }
 
 exports.bootstrap = (dhts) => {

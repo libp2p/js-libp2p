@@ -38,7 +38,6 @@ class Path {
 
   /**
    * Add a peer to the set of peers that are used to intialize the path.
-   *
    * @param {PeerId} peer
    */
   addInitialPeer (peer) {

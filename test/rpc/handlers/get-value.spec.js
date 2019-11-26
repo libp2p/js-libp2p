@@ -87,6 +87,7 @@ describe('rpc - handlers - GetValue', () => {
 
       const msg = new Message(T, key, 0)
 
+      dht.peerStore.put(other)
       await dht._add(other)
       const response = await handler(dht)(peers[0], msg)
       expect(response.record).to.exist()

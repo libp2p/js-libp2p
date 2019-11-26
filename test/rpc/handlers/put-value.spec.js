@@ -5,7 +5,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const Record = require('libp2p-record').Record
+const { Record } = require('libp2p-record')
 const delay = require('delay')
 
 const Message = require('../../../src/message')
