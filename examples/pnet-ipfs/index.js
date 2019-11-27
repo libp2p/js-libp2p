@@ -3,7 +3,7 @@
 
 const IPFS = require('ipfs')
 const assert = require('assert').strict
-const writeKey = require('libp2p-pnet').generate
+const { generate: writeKey } = require('libp2p/src/pnet')
 const path = require('path')
 const fs = require('fs')
 const privateLibp2pBundle = require('./libp2p-bundle')
@@ -117,7 +117,7 @@ const connectAndTalk = async () => {
   // Add some data to node 1
   let addedCID
   try {
-    addedCID = await node1.files.add(dataToAdd)
+    addedCID = await node1.add(dataToAdd)
   } catch (err) {
     return doStop(err)
   }
@@ -126,7 +126,7 @@ const connectAndTalk = async () => {
   // Retrieve the data from node 2
   let cattedData
   try {
-    cattedData = await node2.files.cat(addedCID[0].path)
+    cattedData = await node2.cat(addedCID[0].path)
   } catch (err) {
     return doStop(err)
   }

@@ -1,8 +1,8 @@
 # `js-libp2p` Examples and Tutorials
 
-In this folder, you can find a variety of examples to help you get started in using js-libp2p, in Node.js and in the Browser. Every example as a specific purpose and some of each incorporate a full tutorial that you can follow through, helping you expand your knowledge about libp2p and p2p networks in general.
+In this folder, you can find a variety of examples to help you get started in using js-libp2p, in Node.js and in the Browser. Every example has a specific purpose and some incorporate a full tutorial that you can follow through, helping you expand your knowledge about libp2p and p2p networks in general.
 
-Let us know if you find any issue or if you want to contribute and add a new tutorial, feel welcome to submit a PR, thank you!
+Let us know if you find any issues, or if you want to contribute and add a new tutorial, feel free to submit a PR, thank you!
 
 ## Understanding how libp2p works
 
@@ -22,3 +22,5 @@ Let us know if you find any issue or if you want to contribute and add a new tut
 - Running libp2p in the Electron (future)
 - [The standard echo net example with libp2p](./echo)
 - [A simple chat app with libp2p](./chat)
+
+For go-libp2p examples, check out https://github.com/libp2p/go-libp2p-examples#examples-and-tutorials
