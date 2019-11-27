@@ -1,8 +1,6 @@
 'use strict'
 /* eslint-disable no-console */
 
-const pipe = require('it-pipe')
-const lp = require('it-length-prefixed')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const Node = require('./libp2p-bundle.js')
