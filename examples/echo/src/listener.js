@@ -8,39 +8,34 @@
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const Node = require('./libp2p-bundle')
-const pull = require('pull-stream')
-const series = require('async/series')
+const pipe = require('it-pipe')
 
-let listenerId
-let listenerNode
+async function run() {
+  const listenerId = await PeerId.createFromJSON(require('./id-l'))
 
-series([
-  (cb) => {
-    PeerId.createFromJSON(require('./id-l'), (err, id) => {
-      if (err) { return cb(err) }
-      listenerId = id
-      cb()
-    })
-  },
-  (cb) => {
-    const listenerPeerInfo = new PeerInfo(listenerId)
-    listenerPeerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/10333')
-    listenerNode = new Node({
-      peerInfo: listenerPeerInfo
-    })
+  // Listener libp2p node
+  const listenerPeerInfo = new PeerInfo(listenerId)
+  listenerPeerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/10333')
+  const listenerNode = new Node({
+    peerInfo: listenerPeerInfo
+  })
 
-    listenerNode.on('peer:connect', (peerInfo) => {
-      console.log('received dial to me from:', peerInfo.id.toB58String())
-    })
+  // Log a message when we receive a connection
+  listenerNode.on('peer:connect', (peerInfo) => {
+    console.log('received dial to me from:', peerInfo.id.toB58String())
+  })
 
-    listenerNode.handle('/echo/1.0.0', (protocol, conn) => pull(conn, conn))
-    listenerNode.start(cb)
-  }
-], (err) => {
-  if (err) { throw err }
+  // Handle incoming connections for the protocol by piping from the stream
+  // back to itself (an echo)
+  await listenerNode.handle('/echo/1.0.0', ({ stream }) => pipe(stream.source, stream.sink))
+
+  // Start listening
+  await listenerNode.start()
 
   console.log('Listener ready, listening on:')
   listenerNode.peerInfo.multiaddrs.forEach((ma) => {
     console.log(ma.toString() + '/p2p/' + listenerId.toB58String())
   })
-})
+}
+
+run()
