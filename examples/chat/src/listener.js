@@ -4,53 +4,38 @@
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const Node = require('./libp2p-bundle.js')
-const pull = require('pull-stream')
-const Pushable = require('pull-pushable')
-const p = Pushable()
+const { stdinToStream, streamToConsole } = require('./stream')
 
-PeerId.createFromJSON(require('./peer-id-listener'), (err, idListener) => {
-  if (err) {
-    throw err
-  }
+async function run() {
+  // Create a new libp2p node with the given multi-address
+  const idListener = await PeerId.createFromJSON(require('./peer-id-listener'))
   const peerListener = new PeerInfo(idListener)
   peerListener.multiaddrs.add('/ip4/0.0.0.0/tcp/10333')
   const nodeListener = new Node({
     peerInfo: peerListener
   })
 
-  nodeListener.start((err) => {
-    if (err) {
-      throw err
-    }
-
-    nodeListener.on('peer:connect', (peerInfo) => {
-      console.log(peerInfo.id.toB58String())
-    })
-
-    nodeListener.handle('/chat/1.0.0', (protocol, conn) => {
-      pull(
-        p,
-        conn
-      )
-
-      pull(
-        conn,
-        pull.map((data) => {
-          return data.toString('utf8').replace('\n', '')
-        }),
-        pull.drain(console.log)
-      )
-
-      process.stdin.setEncoding('utf8')
-      process.openStdin().on('data', (chunk) => {
-        var data = chunk.toString()
-        p.push(data)
-      })
-    })
-
-    console.log('Listener ready, listening on:')
-    peerListener.multiaddrs.forEach((ma) => {
-      console.log(ma.toString() + '/p2p/' + idListener.toB58String())
-    })
+  // Log a message when a remote peer connects to us
+  nodeListener.on('peer:connect', (peerInfo) => {
+    console.log(peerInfo.id.toB58String())
   })
-})
+
+  // Handle messages for the protocol
+  await nodeListener.handle('/chat/1.0.0', async ({ stream }) => {
+    // Send stdin to the stream
+    stdinToStream(stream)
+    // Read the stream and output to console
+    streamToConsole(stream)
+  })
+
+  // Start listening
+  await nodeListener.start()
+
+  // Output listen addresses to the console
+  console.log('Listener ready, listening on:')
+  peerListener.multiaddrs.forEach((ma) => {
+    console.log(ma.toString() + '/p2p/' + idListener.toB58String())
+  })
+}
+
+run()
