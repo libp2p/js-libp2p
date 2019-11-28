@@ -28,15 +28,15 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^20.0.0",
+    "aegir": "^20.4.1",
     "chai": "^4.2.0"
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "mafmt": "^6.0.7",
-    "multiaddr": "^6.0.6",
-    "peer-id": "^0.13.2",
-    "peer-info": "^0.16.0"
+    "mafmt": "^7.0.0",
+    "multiaddr": "^7.2.1",
+    "peer-id": "^0.13.5",
+    "peer-info": "^0.17.0"
   },
   "pre-push": [
     "lint",

@@ -47,7 +47,7 @@ class Bootstrap extends EventEmitter {
    */
   _discoverBootstrapPeers () {
     this._list.forEach(async (candidate) => {
-      if (!mafmt.IPFS.matches(candidate)) {
+      if (!mafmt.P2P.matches(candidate)) {
         return log.error('Invalid multiaddr')
       }
 
