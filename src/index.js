@@ -168,7 +168,6 @@ class Libp2p extends EventEmitter {
       await this.stop()
       throw err
     }
-    this._isStarted = true
   }
 
   /**
@@ -317,8 +316,13 @@ class Libp2p extends EventEmitter {
       this.pubsub && this.pubsub.start()
     }
 
+    // DHT subsystem
     if (this._config.dht.enabled) {
       this._dht && this._dht.start()
+
+      // TODO: this should be modified once random-walk is used as
+      // the other discovery modules
+      this._dht._dht.on('peer', this._peerDiscovered)
     }
   }
 
@@ -327,6 +331,11 @@ class Libp2p extends EventEmitter {
    * @private
    */
   _onDidStart () {
+    this._isStarted = true
+
+    // Peer discovery
+    this._setupPeerDiscovery()
+
     // Once we start, emit and dial any peers we may have already discovered
     for (const peerInfo of this.peerStore.peers.values()) {
       this.emit('peer:discovery', peerInfo)
@@ -385,7 +394,7 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<void>}
    */
   _setupPeerDiscovery () {
-    for (const DiscoveryService of this._modules.peerDiscovery) {
+    for (const DiscoveryService of this._modules.peerDiscovery || []) {
       let config = {
         enabled: true // on by default
       }
