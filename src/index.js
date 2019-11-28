@@ -160,7 +160,6 @@ class Libp2p extends EventEmitter {
     log('libp2p is starting')
     try {
       await this._onStarting()
-      this._isStarted = true
       await this._onDidStart()
       log('libp2p has started')
     } catch (err) {
@@ -332,10 +331,10 @@ class Libp2p extends EventEmitter {
    * @private
    */
   _onDidStart () {
+    this._isStarted = true
+
     // Peer discovery
-    if (this._modules.peerDiscovery) {
-      this._setupPeerDiscovery()
-    }
+    this._setupPeerDiscovery()
 
     // Once we start, emit and dial any peers we may have already discovered
     for (const peerInfo of this.peerStore.peers.values()) {
@@ -395,7 +394,7 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<void>}
    */
   _setupPeerDiscovery () {
-    for (const DiscoveryService of this._modules.peerDiscovery) {
+    for (const DiscoveryService of this._modules.peerDiscovery || []) {
       let config = {
         enabled: true // on by default
       }
