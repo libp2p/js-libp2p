@@ -4,6 +4,8 @@ const abortable = require('abortable-iterator')
 const AbortController = require('abort-controller')
 const log = require('debug')('libp2p:mplex:stream')
 const pushable = require('it-pushable')
+const BufferList = require('bl/BufferList')
+const { MAX_MSG_SIZE } = require('./restrict-size')
 const { InitiatorMessageTypes, ReceiverMessageTypes } = require('./message-types')
 
 /**
@@ -12,10 +14,11 @@ const { InitiatorMessageTypes, ReceiverMessageTypes } = require('./message-types
  * @param {string} options.name
  * @param {function(*)} options.send Called to send data through the stream
  * @param {function(Error)} [options.onEnd] Called whenever the stream ends
- * @param {string} options.type One of ['initiator','receiver']. Defaults to 'initiator'
+ * @param {string} [options.type] One of ['initiator','receiver']. Defaults to 'initiator'
+ * @param {number} [options.maxMsgSize] Max size of an mplex message in bytes. Writes > size are automatically split. Defaults to 1MB
  * @returns {*} A muxed stream
  */
-module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator' }) => {
+module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator', maxMsgSize = MAX_MSG_SIZE }) => {
   const abortController = new AbortController()
   const resetController = new AbortController()
   const Types = type === 'initiator' ? InitiatorMessageTypes : ReceiverMessageTypes
@@ -70,8 +73,16 @@ module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator' }) => {
       }
 
       try {
-        for await (const data of source) {
-          send({ id, type: Types.MESSAGE, data })
+        for await (let data of source) {
+          while (data.length) {
+            if (data.length <= maxMsgSize) {
+              send({ id, type: Types.MESSAGE, data })
+              break
+            }
+            data = BufferList.isBufferList(data) ? data : new BufferList(data)
+            send({ id, type: Types.MESSAGE, data: data.shallowSlice(0, maxMsgSize) })
+            data.consume(maxMsgSize)
+          }
         }
       } catch (err) {
         // Send no more data if this stream was remotely reset

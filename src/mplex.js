@@ -123,7 +123,7 @@ class Mplex {
       registry.delete(id)
       this.onStreamEnd && this.onStreamEnd(stream)
     }
-    const stream = createStream({ id, name, send, type, onEnd })
+    const stream = createStream({ id, name, send, type, onEnd, maxMsgSize: this._options.maxMsgSize })
     registry.set(id, stream)
     return stream
   }
@@ -176,12 +176,7 @@ class Mplex {
       for (const s of receivers.values()) s.abort(err)
     }
     const source = pushable({ onEnd, writev: true })
-    const encodedSource = pipe(
-      source,
-      restrictSize(this._options.maxMsgSize),
-      Coder.encode
-    )
-    return Object.assign(encodedSource, {
+    return Object.assign(Coder.encode(source), {
       push: source.push,
       end: source.end,
       return: source.return

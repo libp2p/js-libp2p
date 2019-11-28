@@ -8,7 +8,7 @@ chai.use(dirtyChai)
 const pipe = require('it-pipe')
 const randomBytes = require('random-bytes')
 const randomInt = require('random-int')
-const { tap, take, collect, consume } = require('streaming-iterables')
+const { tap, take, collect, consume, map } = require('streaming-iterables')
 const defer = require('p-defer')
 
 const createStream = require('../src/stream')
@@ -28,6 +28,17 @@ const infiniteRandom = {
   [Symbol.iterator]: function * () {
     while (true) yield randomBytes(randomInt(1, 128))
   }
+}
+
+const msgToBuffer = msg => Buffer.from(JSON.stringify(msg))
+
+const bufferToMessage = buf => {
+  const msg = JSON.parse(buf)
+  // JSON.stringify(Buffer) encodes as {"type":"Buffer","data":[1,2,3]}
+  if (msg.data && msg.data.type === 'Buffer') {
+    msg.data = Buffer.from(msg.data.data)
+  }
+  return msg
 }
 
 describe('stream', () => {
@@ -197,11 +208,12 @@ describe('stream', () => {
     // echo back (on the other side this will be { type: MESSAGE, data: msg })
     pipe(
       receiver,
-      tap(msg => {
+      map(msg => {
         // when the initiator sends a CLOSE message, we call close
         if (msg.type === MessageTypes.CLOSE_INITIATOR) {
           receiver.close()
         }
+        return msgToBuffer(msg)
       }),
       receiver
     )
@@ -214,6 +226,9 @@ describe('stream', () => {
         // when the receiver sends a CLOSE message, we call close
         if (msg.type === MessageTypes.CLOSE_RECEIVER) {
           initiator.close()
+        }
+        if (msg.data) {
+          msg.data = bufferToMessage(msg.data)
         }
       }),
       collect
@@ -253,11 +268,12 @@ describe('stream', () => {
     // echo back (on the other side this will be { type: MESSAGE, data: msg })
     pipe(
       receiver,
-      tap(msg => {
+      map(msg => {
         // when the initiator sends a RESET message, we call reset
         if (msg.type === MessageTypes.RESET_INITIATOR) {
           receiver.reset()
         }
+        return msgToBuffer(msg)
       }),
       receiver
     )
@@ -274,9 +290,14 @@ describe('stream', () => {
       await pipe(
         input,
         tap(msg => generatedMsgs.push(msg)),
-        tap(msg => { if (i++ >= maxMsgs) initiator.abort(error) }),
+        tap(() => { if (i++ >= maxMsgs) initiator.abort(error) }),
         initiator,
-        tap(msg => msgs.push(msg)),
+        tap(msg => {
+          if (msg.data) {
+            msg.data = bufferToMessage(msg.data)
+          }
+          msgs.push(msg)
+        }),
         consume
       )
     } catch (err) {
@@ -311,7 +332,10 @@ describe('stream', () => {
     // echo back (on the other side this will be { type: MESSAGE, data: msg })
     pipe(
       receiver,
-      tap(msg => { if (i++ >= maxMsgs) receiver.abort(error) }),
+      map(msg => {
+        if (i++ >= maxMsgs) receiver.abort(error)
+        return msgToBuffer(msg)
+      }),
       receiver
     )
 
@@ -329,6 +353,9 @@ describe('stream', () => {
           // when the receiver sends a RESET message, we call reset
           if (msg.type === MessageTypes.RESET_RECEIVER) {
             initiator.reset()
+          }
+          if (msg.data) {
+            msg.data = bufferToMessage(msg.data)
           }
         }),
         consume
@@ -365,11 +392,12 @@ describe('stream', () => {
     // echo back (on the other side this will be { type: MESSAGE, data: msg })
     pipe(
       receiver,
-      tap(msg => {
+      map(msg => {
         // when the initiator sends a RESET message, we call reset
         if (msg.type === MessageTypes.RESET_INITIATOR) {
           receiver.reset()
         }
+        return msgToBuffer(msg)
       }),
       receiver
     )
@@ -388,7 +416,12 @@ describe('stream', () => {
         tap(msg => generatedMsgs.push(msg)),
         tap(msg => { if (i++ >= maxMsgs) throw error }),
         initiator,
-        tap(msg => msgs.push(msg)),
+        tap(msg => {
+          if (msg.data) {
+            msg.data = bufferToMessage(msg.data)
+          }
+          msgs.push(msg)
+        }),
         consume
       )
     } catch (err) {
@@ -425,7 +458,10 @@ describe('stream', () => {
     // echo back (on the other side this will be { type: MESSAGE, data: msg })
     pipe(
       receiver,
-      tap(msg => { if (i++ >= maxMsgs) throw error }),
+      map(msg => {
+        if (i++ >= maxMsgs) throw error
+        return msgToBuffer(msg)
+      }),
       receiver
     )
 
@@ -443,6 +479,9 @@ describe('stream', () => {
           // when the receiver sends a RESET message, we call reset
           if (msg.type === MessageTypes.RESET_RECEIVER) {
             initiator.reset()
+          }
+          if (msg.data) {
+            msg.data = bufferToMessage(msg.data)
           }
         }),
         consume
@@ -502,5 +541,29 @@ describe('stream', () => {
       return expect(err.message).to.equal(error.message)
     }
     throw new Error('did not call onEnd with error')
+  })
+
+  it('should split writes larger than max message size', async () => {
+    const send = msg => {
+      if (msg.type === MessageTypes.CLOSE_INITIATOR) {
+        stream.source.end()
+      } else if (msg.type === MessageTypes.MESSAGE_INITIATOR) {
+        stream.source.push(msg)
+      }
+    }
+
+    const id = randomInt(1000)
+    const name = id.toString()
+    const maxMsgSize = 5
+    const stream = createStream({ id, name, send, maxMsgSize })
+
+    const bigMessage = await randomBytes(12)
+    const dataMessages = await pipe([bigMessage], stream, collect)
+
+    expect(dataMessages.length).to.equal(3)
+    expect(dataMessages[0].data.length).to.equal(maxMsgSize)
+    expect(dataMessages[1].data.length).to.equal(maxMsgSize)
+    expect(dataMessages[2].data.length).to.equal(2)
+    expect(Buffer.concat(dataMessages.map(m => m.data.slice()))).to.deep.equal(bigMessage)
   })
 })

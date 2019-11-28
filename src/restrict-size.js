@@ -30,3 +30,5 @@ module.exports = max => {
     })()
   }
 }
+
+module.exports.MAX_MSG_SIZE = MAX_MSG_SIZE
