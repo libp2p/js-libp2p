@@ -36,8 +36,8 @@ describe('Listening', () => {
 
     await libp2p.start()
 
-    const addrs = libp2p.peerInfo.multiaddrs.toArray().sort((a, b) => a < b ? -1 : 1)
-    
+    const addrs = libp2p.peerInfo.multiaddrs.toArray()
+
     // Should get something like:
     //   /ip4/127.0.0.1/tcp/50866
     //   /ip4/192.168.1.2/tcp/50866
@@ -48,7 +48,7 @@ describe('Listening', () => {
     expect(opts[1].family).to.equal('ipv4')
     expect(opts[0].transport).to.equal('tcp')
     expect(opts[1].transport).to.equal('tcp')
-    expect(opts[0].host).to.equal('127.0.0.1')
+    expect(opts[0].host).to.match(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/)
     expect(opts[1].host).to.match(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/)
     expect(opts[0].port).to.be.gt(0)
     expect(opts[1].port).to.be.gt(0)
