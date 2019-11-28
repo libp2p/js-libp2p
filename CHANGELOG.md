@@ -1,3 +1,13 @@
+<a name="0.3.2"></a>
+## [0.3.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.3.1...v0.3.2) (2019-11-28)
+
+
+### Bug Fixes
+
+* reduce seqno to 8 bytes ([#31](https://github.com/libp2p/js-libp2p-pubsub/issues/31)) ([d26a19c](https://github.com/libp2p/js-libp2p-pubsub/commit/d26a19c))
+
+
+
 <a name="0.3.1"></a>
 ## [0.3.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.3.0...v0.3.1) (2019-11-15)
 
