@@ -186,6 +186,7 @@ class Libp2p extends EventEmitter {
       this.pubsub && await this.pubsub.stop()
       this._dht && await this._dht.stop()
       await this.transportManager.close()
+      await this.registrar.close()
     } catch (err) {
       if (err) {
         log.error(err)

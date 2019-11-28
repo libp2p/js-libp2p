@@ -47,6 +47,23 @@ class Registrar {
   }
 
   /**
+   * Cleans up the registrar
+   * @async
+   */
+  async close () {
+    // Close all connections we're tracking
+    const tasks = []
+    for (const connectionList of this.connections.values()) {
+      for (const connection of connectionList) {
+        tasks.push(connection.close())
+      }
+    }
+
+    await tasks
+    this.connections.clear()
+  }
+
+  /**
    * Add a new connected peer to the record
    * TODO: this should live in the ConnectionManager
    * @param {PeerInfo} peerInfo
