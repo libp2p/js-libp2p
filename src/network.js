@@ -186,9 +186,6 @@ async function writeReadMessage (stream, msg) {
     [msg],
     lp.encode(),
     stream,
-    utils.itFilter(
-      (msg) => msg.length < c.maxMessageSize
-    ),
     lp.decode(),
     async source => {
       for await (const chunk of source) {

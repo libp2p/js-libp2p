@@ -7,7 +7,6 @@ const PeerInfo = require('peer-info')
 const Message = require('../message')
 const handlers = require('./handlers')
 const utils = require('../utils')
-const c = require('../constants')
 
 module.exports = (dht) => {
   const log = utils.logger(dht.peerInfo.id, 'rpc')
@@ -63,16 +62,13 @@ module.exports = (dht) => {
       lp.decode(),
       source => (async function * () {
         for await (const msg of source) {
-          // Check message size
-          if (msg.length < c.maxMessageSize) {
-            // handle the message
-            const desMessage = Message.deserialize(msg.slice())
-            const res = await handleMessage(peerInfo, desMessage)
+          // handle the message
+          const desMessage = Message.deserialize(msg.slice())
+          const res = await handleMessage(peerInfo, desMessage)
 
-            // Not all handlers will return a response
-            if (res) {
-              yield res.serialize()
-            }
+          // Not all handlers will return a response
+          if (res) {
+            yield res.serialize()
           }
         }
       })(),
