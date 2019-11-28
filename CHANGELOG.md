@@ -1,3 +1,13 @@
+<a name="0.10.3"></a>
+## [0.10.3](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.10.2...v0.10.3) (2019-11-28)
+
+
+### Bug Fixes
+
+* validate list ([#97](https://github.com/libp2p/js-libp2p-bootstrap/issues/97)) ([5041f28](https://github.com/libp2p/js-libp2p-bootstrap/commit/5041f28))
+
+
+
 <a name="0.10.2"></a>
 ## [0.10.2](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.10.1...v0.10.2) (2019-08-01)
 
