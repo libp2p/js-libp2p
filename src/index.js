@@ -301,9 +301,17 @@ class Libp2p extends EventEmitter {
   }
 
   async _onStarting () {
+    // Listen on the addresses supplied in the peerInfo
     const multiaddrs = this.peerInfo.multiaddrs.toArray()
 
     await this.transportManager.listen(multiaddrs)
+
+    // The addresses may change once the listener starts
+    // eg /ip4/0.0.0.0/tcp/0 => /ip4/192.168.1.0/tcp/58751
+    this.peerInfo.multiaddrs.clear()
+    for (const ma of this.transportManager.getAddrs()) {
+      this.peerInfo.multiaddrs.add(ma)
+    }
 
     if (this._config.pubsub.enabled) {
       this.pubsub && this.pubsub.start()
