@@ -10,8 +10,8 @@ describe('utils', () => {
     const first = utils.randomSeqno()
     const second = utils.randomSeqno()
 
-    expect(first).to.have.length(20)
-    expect(second).to.have.length(20)
+    expect(first).to.have.length(8)
+    expect(second).to.have.length(8)
     expect(first).to.not.eql(second)
   })
 

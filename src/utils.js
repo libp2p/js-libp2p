@@ -12,7 +12,7 @@ exports = module.exports
  * @private
  */
 exports.randomSeqno = () => {
-  return crypto.randomBytes(20)
+  return crypto.randomBytes(8)
 }
 
 /**
