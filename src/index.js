@@ -1,10 +1,11 @@
 'use strict'
 
+const assert = require('assert')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
 const mafmt = require('mafmt')
-const EventEmitter = require('events').EventEmitter
+const { EventEmitter } = require('events')
 const debug = require('debug')
 
 const log = debug('libp2p:bootstrap')
@@ -19,11 +20,13 @@ class Bootstrap extends EventEmitter {
    *
    * @param {Object} options
    * @param {Array<string>} options.list - the list of peer addresses in multi-address format
-   * @param {number} options.interval - the interval between emitting addresses (in milli-seconds)
+   * @param {number} [options.interval] - the interval between emitting addresses in milliseconds (default: 10000)
    *
    */
-  constructor (options) {
+  constructor (options = {}) {
+    assert(options.list && options.list.length, 'Bootstrap requires a list of peer addresses')
     super()
+
     this._list = options.list
     this._interval = options.interval || 10000
     this._timer = null

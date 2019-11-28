@@ -1,13 +1,26 @@
-/* eslint-env mocha */
 'use strict'
+/* eslint-env mocha */
+
+const chai = require('chai')
+chai.use(require('dirty-chai'))
+const { expect } = chai
 
 const Bootstrap = require('../src')
 const peerList = require('./default-peers')
 const partialValidPeerList = require('./some-invalid-peers')
-const { expect } = require('chai')
 const mafmt = require('mafmt')
 
 describe('bootstrap', () => {
+  it('should throw if no peer list is provided', () => {
+    try {
+      const b = new Bootstrap() // eslint-disable-line no-unused-vars
+    } catch (err) {
+      expect(err).to.exist()
+      return
+    }
+    throw new Error('should throw if no peer list is provided')
+  })
+
   it('find the other peer', function () {
     this.timeout(5 * 1000)
     const r = new Bootstrap({
