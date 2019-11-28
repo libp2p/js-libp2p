@@ -1,3 +1,13 @@
+<a name="0.17.1"></a>
+## [0.17.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.17.0...v0.17.1) (2019-11-28)
+
+
+### Bug Fixes
+
+* remove extraneous message size filter ([#156](https://github.com/libp2p/js-libp2p-kad-dht/issues/156)) ([58b6b36](https://github.com/libp2p/js-libp2p-kad-dht/commit/58b6b36))
+
+
+
 <a name="0.17.0"></a>
 # [0.17.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.16.1...v0.17.0) (2019-11-26)
 
