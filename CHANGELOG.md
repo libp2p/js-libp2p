@@ -1,3 +1,13 @@
+<a name="0.9.3"></a>
+## [0.9.3](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.2...v0.9.3) (2019-11-28)
+
+
+### Features
+
+* message splitting ([#100](https://github.com/libp2p/js-libp2p-mplex/issues/100)) ([fba56a5](https://github.com/libp2p/js-libp2p-mplex/commit/fba56a5))
+
+
+
 <a name="0.9.2"></a>
 ## [0.9.2](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.1...v0.9.2) (2019-10-28)
 
