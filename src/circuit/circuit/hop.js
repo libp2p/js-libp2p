@@ -7,13 +7,15 @@ const { validateAddrs } = require('./utils')
 const StreamHandler = require('./stream-handler')
 const { CircuitRelay: CircuitPB } = require('../protocol')
 const pipe = require('it-pipe')
+const errCode = require('err-code')
+const { codes: Errors } = require('../../errors')
 
 const { stop } = require('./stop')
 
 const multicodec = require('./../multicodec')
 
 const log = debug('libp2p:circuit:hop')
-log.err = debug('libp2p:circuit:hop:error')
+log.error = debug('libp2p:circuit:hop:error')
 
 module.exports.handleHop = async function handleHop ({
   connection,
@@ -112,7 +114,8 @@ module.exports.hop = async function hop ({
   }
 
   log('hop request failed with code %d, closing stream', response.code)
-  return streamHandler.close()
+  streamHandler.close()
+  throw errCode(new Error(`HOP request failed with code ${response.code}`), Errors.ERR_HOP_REQUEST_FAILED)
 }
 
 /**

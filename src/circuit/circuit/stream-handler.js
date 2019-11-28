@@ -32,7 +32,7 @@ class StreamHandler {
     const msg = await this.decoder.next()
     if (msg.value) {
       const value = CircuitPB.decode(msg.value.slice())
-      log('read', value)
+      log('read message type', value.type)
       return value
     }
 
@@ -47,7 +47,7 @@ class StreamHandler {
    * @param {*} msg An unencoded CircuitRelay protobuf message
    */
   write (msg) {
-    log('write', msg)
+    log('write message type %s', msg.type)
     this.shake.write(lp.encode.single(CircuitPB.encode(msg)))
   }
 

@@ -8,11 +8,10 @@ const log = debug('libp2p:circuit:listener')
 log.err = debug('libp2p:circuit:error:listener')
 
 /**
- * @param {object} properties
- * @param {Dialer} properties.dialer
- * @param {object} properties.options
+ * @param {*} circuit
+ * @returns {Listener} a transport listener
  */
-module.exports = (circuit, options) => {
+module.exports = (circuit) => {
   const listener = new EventEmitter()
   const listeningAddrs = new Map()
 
@@ -24,12 +23,10 @@ module.exports = (circuit, options) => {
    * @return {void}
    */
   listener.listen = async (addr) => {
-    let [addrString] = String(addr).split('/p2p-circuit').slice(-1)
+    const [addrString] = String(addr).split('/p2p-circuit').slice(-1)
 
     const relayConn = await circuit._dialer.connectToMultiaddr(multiaddr(addrString))
-    const relayedAddr = relayConn.remoteAddr.encapsulate(`/p2p-circuit`)
-
-    console.log('Relayed addr %s', String(relayedAddr))
+    const relayedAddr = relayConn.remoteAddr.encapsulate('/p2p-circuit')
 
     listeningAddrs.set(relayConn.remotePeer.toB58String(), relayedAddr)
     listener.emit('listening')

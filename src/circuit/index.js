@@ -3,6 +3,7 @@
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
 const withIs = require('class-is')
 const { CircuitRelay: CircuitPB } = require('./protocol')
 
@@ -103,26 +104,33 @@ class Circuit {
     const addrs = ma.toString().split('/p2p-circuit')
     const relayAddr = multiaddr(addrs[0])
     const destinationAddr = multiaddr(addrs[addrs.length - 1])
-
+    const relayPeer = PeerId.createFromCID(relayAddr.getPeerId())
     const destinationPeer = PeerId.createFromCID(destinationAddr.getPeerId())
-    const relayConnection = await this._dialer.connectToMultiaddr(relayAddr, options)
-    const virtualConnection = await hop({
-      connection: relayConnection,
-      circuit: this,
-      request: {
-        type: CircuitPB.Type.HOP,
-        srcPeer: {
-          id: this.peerInfo.id.toBytes(),
-          addrs: this.peerInfo.multiaddrs.toArray().map(addr => addr.buffer)
-        },
-        dstPeer: {
-          id: destinationPeer.toBytes(),
-          addrs: [multiaddr(destinationAddr).buffer]
-        }
-      }
-    })
 
-    if (virtualConnection) {
+    let disconnectOnFailure = false
+    let relayConnection = this._registrar.getConnection(new PeerInfo(relayPeer))
+    if (!relayConnection) {
+      relayConnection = await this._dialer.connectToMultiaddr(relayAddr, options)
+      disconnectOnFailure = true
+    }
+
+    try {
+      const virtualConnection = await hop({
+        connection: relayConnection,
+        circuit: this,
+        request: {
+          type: CircuitPB.Type.HOP,
+          srcPeer: {
+            id: this.peerInfo.id.toBytes(),
+            addrs: this.peerInfo.multiaddrs.toArray().map(addr => addr.buffer)
+          },
+          dstPeer: {
+            id: destinationPeer.toBytes(),
+            addrs: [multiaddr(destinationAddr).buffer]
+          }
+        }
+      })
+
       const localAddr = relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerInfo.id.toB58String()}`)
       const maConn = toConnection({
         stream: virtualConnection,
@@ -132,8 +140,10 @@ class Circuit {
       log('new outbound connection %s', maConn.remoteAddr)
 
       return this._upgrader.upgradeOutbound(maConn)
-    } else {
-      // TODO: throw an error
+    } catch (err) {
+      log.error('Circuit relay dial failed', err)
+      disconnectOnFailure && await relayConnection.close()
+      throw err
     }
   }
 

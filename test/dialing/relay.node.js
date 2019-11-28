@@ -4,6 +4,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
+const sinon = require('sinon')
 
 const multiaddr = require('multiaddr')
 const { collect } = require('streaming-iterables')
@@ -11,6 +12,7 @@ const pipe = require('it-pipe')
 const { createPeerInfoFromFixture } = require('../utils/creators/peer')
 const baseOptions = require('../utils/base-options')
 const Libp2p = require('../../src')
+const { codes: Errors } = require('../../src/errors')
 
 describe('Dialing (via relay, TCP)', () => {
   let srcLibp2p
@@ -51,15 +53,9 @@ describe('Dialing (via relay, TCP)', () => {
       .encapsulate(`/p2p/${relayIdString}`)
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
 
-    // Connect the target peer and the relay, since the relay is not active
-    const destToRelayConn = await dstLibp2p.dial(relayAddr)
-    expect(destToRelayConn).to.exist()
-
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
     await dstLibp2p.transportManager.listen([multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
-
-    dstLibp2p.transportManager.getAddrs().forEach(addr => console.log(String(addr)))
 
     const connection = await srcLibp2p.dial(dialAddr)
     expect(connection).to.exist()
@@ -81,5 +77,98 @@ describe('Dialing (via relay, TCP)', () => {
       collect
     )
     expect(output.slice()).to.eql(input)
+  })
+
+  it('should fail to connect to a peer over a relay with inactive connections', async () => {
+    const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
+    const relayIdString = relayLibp2p.peerInfo.id.toString()
+
+    const dialAddr = relayAddr
+      .encapsulate(`/p2p/${relayIdString}`)
+      .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
+
+    try {
+      await srcLibp2p.dial(dialAddr)
+      expect.fail('Dial should have failed')
+    } catch (err) {
+      expect(err).to.exist()
+      expect(err).to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
+    }
+  })
+
+  it('should not stay connected to a relay when not already connected and HOP fails', async () => {
+    const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
+    const relayIdString = relayLibp2p.peerInfo.id.toString()
+
+    const dialAddr = relayAddr
+      .encapsulate(`/p2p/${relayIdString}`)
+      .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
+
+    try {
+      await srcLibp2p.dial(dialAddr)
+      expect.fail('Dial should have failed')
+    } catch (err) {
+      expect(err).to.exist()
+      expect(err).to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
+    }
+
+    // We should not be connected to the relay, because we weren't before the dial
+    const srcToRelayConn = srcLibp2p.registrar.getConnection(relayLibp2p.peerInfo)
+    expect(srcToRelayConn).to.not.exist()
+  })
+
+  it('dialer should stay connected to an already connected relay on hop failure', async () => {
+    const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
+    const relayIdString = relayLibp2p.peerInfo.id.toString()
+
+    const dialAddr = relayAddr
+      .encapsulate(`/p2p/${relayIdString}`)
+      .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
+
+    // Connect to the relay first
+    await srcLibp2p.dial(relayAddr)
+
+    try {
+      await srcLibp2p.dial(dialAddr)
+      expect.fail('Dial should have failed')
+    } catch (err) {
+      expect(err).to.exist()
+      expect(err).to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
+    }
+
+    const srcToRelayConn = srcLibp2p.registrar.getConnection(relayLibp2p.peerInfo)
+    expect(srcToRelayConn).to.exist()
+    expect(srcToRelayConn.stat.status).to.equal('open')
+  })
+
+  it('destination peer should stay connected to an already connected relay on hop failure', async () => {
+    const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
+    const relayIdString = relayLibp2p.peerInfo.id.toString()
+
+    const dialAddr = relayAddr
+      .encapsulate(`/p2p/${relayIdString}`)
+      .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
+
+    // Connect the destination peer and the relay
+    const tcpAddrs = dstLibp2p.transportManager.getAddrs()
+    await dstLibp2p.transportManager.listen([multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
+    expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
+
+    // Tamper with the our multiaddrs for the circuit message
+    sinon.stub(srcLibp2p.peerInfo.multiaddrs, 'toArray').returns([{
+      buffer: Buffer.from('an invalid multiaddr')
+    }])
+
+    try {
+      await srcLibp2p.dial(dialAddr)
+      expect.fail('Dial should have failed')
+    } catch (err) {
+      expect(err).to.exist()
+      expect(err).to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
+    }
+
+    const dstToRelayConn = dstLibp2p.registrar.getConnection(relayLibp2p.peerInfo)
+    expect(dstToRelayConn).to.exist()
+    expect(dstToRelayConn.stat.status).to.equal('open')
   })
 })
