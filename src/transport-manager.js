@@ -64,7 +64,9 @@ class TransportManager {
 
     await Promise.all(tasks)
     log('all listeners closed')
-    this._listeners.clear()
+    for (const key of this._listeners.keys()) {
+      this._listeners.set(key, [])
+    }
   }
 
   /**
