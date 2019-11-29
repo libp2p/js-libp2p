@@ -80,6 +80,7 @@
     "abortable-iterator": "^2.1.0",
     "aegir": "^20.0.0",
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "chai-checkmark": "^1.0.1",
     "cids": "^0.7.1",
     "delay": "^4.3.0",

@@ -3,6 +3,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-as-promised'))
 const { expect } = chai
 const sinon = require('sinon')
 
@@ -87,13 +88,9 @@ describe('Dialing (via relay, TCP)', () => {
       .encapsulate(`/p2p/${relayIdString}`)
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
 
-    try {
-      await srcLibp2p.dial(dialAddr)
-      expect.fail('Dial should have failed')
-    } catch (err) {
-      expect(err).to.exist()
-      expect(err).to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
-    }
+    await expect(srcLibp2p.dial(dialAddr))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
   })
 
   it('should not stay connected to a relay when not already connected and HOP fails', async () => {
@@ -104,13 +101,9 @@ describe('Dialing (via relay, TCP)', () => {
       .encapsulate(`/p2p/${relayIdString}`)
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
 
-    try {
-      await srcLibp2p.dial(dialAddr)
-      expect.fail('Dial should have failed')
-    } catch (err) {
-      expect(err).to.exist()
-      expect(err).to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
-    }
+    await expect(srcLibp2p.dial(dialAddr))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
 
     // We should not be connected to the relay, because we weren't before the dial
     const srcToRelayConn = srcLibp2p.registrar.getConnection(relayLibp2p.peerInfo)
@@ -125,16 +118,11 @@ describe('Dialing (via relay, TCP)', () => {
       .encapsulate(`/p2p/${relayIdString}`)
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
 
-    // Connect to the relay first
     await srcLibp2p.dial(relayAddr)
 
-    try {
-      await srcLibp2p.dial(dialAddr)
-      expect.fail('Dial should have failed')
-    } catch (err) {
-      expect(err).to.exist()
-      expect(err).to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
-    }
+    await expect(srcLibp2p.dial(dialAddr))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
 
     const srcToRelayConn = srcLibp2p.registrar.getConnection(relayLibp2p.peerInfo)
     expect(srcToRelayConn).to.exist()
@@ -159,13 +147,9 @@ describe('Dialing (via relay, TCP)', () => {
       buffer: Buffer.from('an invalid multiaddr')
     }])
 
-    try {
-      await srcLibp2p.dial(dialAddr)
-      expect.fail('Dial should have failed')
-    } catch (err) {
-      expect(err).to.exist()
-      expect(err).to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
-    }
+    await expect(srcLibp2p.dial(dialAddr))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
 
     const dstToRelayConn = dstLibp2p.registrar.getConnection(relayLibp2p.peerInfo)
     expect(dstToRelayConn).to.exist()
