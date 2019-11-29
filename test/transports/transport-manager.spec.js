@@ -3,6 +3,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-as-promised'))
 const { expect } = chai
 const sinon = require('sinon')
 
@@ -39,21 +40,25 @@ describe('Transport Manager (WebSockets)', () => {
     await tm.remove(Transport.prototype[Symbol.toStringTag])
   })
 
-  it('should not be able to add a transport without a key', () => {
-    expect(() => {
+  it('should not be able to add a transport without a key', async () => {
+    // Chai as promised conflicts with normal `throws` validation,
+    // so wrap the call in an async function
+    await expect((async () => { // eslint-disable-line
       tm.add(undefined, Transport)
-    }).to.throw().that.satisfies((err) => {
-      return err.code === ErrorCodes.ERR_INVALID_KEY
-    })
+    })())
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_INVALID_KEY)
   })
 
-  it('should not be able to add a transport twice', () => {
+  it('should not be able to add a transport twice', async () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
-    expect(() => {
+    // Chai as promised conflicts with normal `throws` validation,
+    // so wrap the call in an async function
+    await expect((async () => { // eslint-disable-line
       tm.add(Transport.prototype[Symbol.toStringTag], Transport)
-    }).to.throw().that.satisfies((err) => {
-      return err.code === ErrorCodes.ERR_DUPLICATE_TRANSPORT
-    })
+    })())
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_DUPLICATE_TRANSPORT)
   })
 
   it('should be able to dial', async () => {
@@ -67,27 +72,18 @@ describe('Transport Manager (WebSockets)', () => {
   it('should fail to dial an unsupported address', async () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
     const addr = multiaddr('/ip4/127.0.0.1/tcp/0')
-    try {
-      await tm.dial(addr)
-    } catch (err) {
-      expect(err).to.satisfy((err) => err.code === ErrorCodes.ERR_TRANSPORT_UNAVAILABLE)
-      return
-    }
-
-    expect.fail('Dial attempt should have failed')
+    await expect(tm.dial(addr))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_TRANSPORT_UNAVAILABLE)
   })
 
   it('should fail to listen with no valid address', async () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
     const addrs = [multiaddr('/ip4/127.0.0.1/tcp/0')]
-    try {
-      await tm.listen(addrs)
-    } catch (err) {
-      expect(err).to.satisfy((err) => err.code === ErrorCodes.ERR_NO_VALID_ADDRESSES)
-      return
-    }
 
-    expect.fail('should have failed')
+    await expect(tm.listen(addrs))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })
 })
 
@@ -115,7 +111,8 @@ describe('libp2p.transportManager', () => {
     })
 
     expect(libp2p.transportManager).to.exist()
-    expect(libp2p.transportManager._transports.size).to.equal(1)
+    // Our transport and circuit relay
+    expect(libp2p.transportManager._transports.size).to.equal(2)
   })
 
   it('starting and stopping libp2p should start and stop TransportManager', async () => {

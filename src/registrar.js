@@ -47,6 +47,23 @@ class Registrar {
   }
 
   /**
+   * Cleans up the registrar
+   * @async
+   */
+  async close () {
+    // Close all connections we're tracking
+    const tasks = []
+    for (const connectionList of this.connections.values()) {
+      for (const connection of connectionList) {
+        tasks.push(connection.close())
+      }
+    }
+
+    await tasks
+    this.connections.clear()
+  }
+
+  /**
    * Add a new connected peer to the record
    * TODO: this should live in the ConnectionManager
    * @param {PeerInfo} peerInfo
@@ -100,8 +117,9 @@ class Registrar {
   getConnection (peerInfo) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
 
+    const connections = this.connections.get(peerInfo.id.toB58String())
     // TODO: what should we return
-    return this.connections.get(peerInfo.id.toB58String())[0]
+    return connections ? connections[0] : null
   }
 
   /**

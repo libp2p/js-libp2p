@@ -64,7 +64,9 @@ class TransportManager {
 
     await Promise.all(tasks)
     log('all listeners closed')
-    this._listeners.clear()
+    for (const key of this._listeners.keys()) {
+      this._listeners.set(key, [])
+    }
   }
 
   /**
@@ -82,6 +84,7 @@ class TransportManager {
     try {
       return await transport.dial(ma, options)
     } catch (err) {
+      if (err.code) throw err
       throw errCode(err, codes.ERR_TRANSPORT_DIAL_FAILED)
     }
   }
