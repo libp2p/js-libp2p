@@ -26,7 +26,6 @@ describe('Dialing (via relay, TCP)', () => {
     ;[srcLibp2p, relayLibp2p, dstLibp2p] = peerInfos.map((peerInfo, index) => {
       const opts = baseOptions
       index === 1 && (opts.config.relay.hop.enabled = true)
-      peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
       return new Libp2p({
         ...opts,
         peerInfo
@@ -38,7 +37,12 @@ describe('Dialing (via relay, TCP)', () => {
 
   beforeEach(() => {
     // Start each node
-    return Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(libp2p => libp2p.start()))
+    return Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(libp2p => {
+      // Reset multiaddrs and start
+      libp2p.peerInfo.multiaddrs.clear()
+      libp2p.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
+      libp2p.start()
+    }))
   })
 
   afterEach(() => {
