@@ -13,10 +13,11 @@ const AbortController = require('abort-controller')
  */
 module.exports = function mockMultiaddrConnPair ({ addrs, remotePeer }) {
   const controller = new AbortController()
+  const [localAddr, remoteAddr] = addrs
 
   const [inbound, outbound] = duplexPair()
-  outbound.localAddr = addrs[0]
-  outbound.remoteAddr = addrs[1].encapsulate(`/p2p/${remotePeer.toB58String()}`)
+  outbound.localAddr = localAddr
+  outbound.remoteAddr = remoteAddr.encapsulate(`/p2p/${remotePeer.toB58String()}`)
   outbound.timeline = {
     open: Date.now()
   }
@@ -25,8 +26,8 @@ module.exports = function mockMultiaddrConnPair ({ addrs, remotePeer }) {
     controller.abort()
   }
 
-  inbound.localAddr = addrs[1]
-  inbound.remoteAddr = addrs[0]
+  inbound.localAddr = remoteAddr
+  inbound.remoteAddr = localAddr
   inbound.timeline = {
     open: Date.now()
   }

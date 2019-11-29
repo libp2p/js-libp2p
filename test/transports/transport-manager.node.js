@@ -38,11 +38,12 @@ describe('Transport Manager (TCP)', () => {
   it('should be able to listen', async () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
     await tm.listen(addrs)
-    expect(tm._listeners.size).to.equal(1)
+    expect(tm._listeners).to.have.key(Transport.prototype[Symbol.toStringTag])
+    expect(tm._listeners.get(Transport.prototype[Symbol.toStringTag])).to.have.length(addrs.length)
     // Ephemeral ip addresses may result in multiple listeners
     expect(tm.getAddrs().length).to.equal(addrs.length)
     await tm.close()
-    expect(tm._listeners.size).to.equal(0)
+    expect(tm._listeners.get(Transport.prototype[Symbol.toStringTag])).to.have.length(0)
   })
 
   it('should be able to dial', async () => {

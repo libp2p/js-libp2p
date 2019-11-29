@@ -3,6 +3,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-as-promised'))
 const { expect } = chai
 const sinon = require('sinon')
 const pDefer = require('p-defer')
@@ -67,14 +68,9 @@ describe('Dialing (direct, WebSockets)', () => {
   it('should fail to connect to an unsupported multiaddr', async () => {
     const dialer = new Dialer({ transportManager: localTM })
 
-    try {
-      await dialer.connectToMultiaddr(unsupportedAddr)
-    } catch (err) {
-      expect(err).to.satisfy((err) => err.code === ErrorCodes.ERR_TRANSPORT_DIAL_FAILED)
-      return
-    }
-
-    expect.fail('Dial should have failed')
+    await expect(dialer.connectToMultiaddr(unsupportedAddr))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_TRANSPORT_DIAL_FAILED)
   })
 
   it('should be able to connect to a given peer', async () => {
@@ -94,14 +90,9 @@ describe('Dialing (direct, WebSockets)', () => {
     const peerInfo = new PeerInfo(peerId)
     peerInfo.multiaddrs.add(unsupportedAddr)
 
-    try {
-      await dialer.connectToPeer(peerInfo)
-    } catch (err) {
-      expect(err).to.satisfy((err) => err.code === ErrorCodes.ERR_CONNECTION_FAILED)
-      return
-    }
-
-    expect.fail('Dial should have failed')
+    await expect(dialer.connectToPeer(peerInfo))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_CONNECTION_FAILED)
   })
 
   it('should abort dials on queue task timeout', async () => {
@@ -117,14 +108,9 @@ describe('Dialing (direct, WebSockets)', () => {
       expect(options.signal.aborted).to.equal(true)
     })
 
-    try {
-      await dialer.connectToMultiaddr(remoteAddr)
-    } catch (err) {
-      expect(err).to.satisfy((err) => err.code === ErrorCodes.ERR_TIMEOUT)
-      return
-    }
-
-    expect.fail('Dial should have failed')
+    await expect(dialer.connectToMultiaddr(remoteAddr))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
   })
 
   it('should dial to the max concurrency', async () => {

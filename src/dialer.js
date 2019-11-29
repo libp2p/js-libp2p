@@ -90,7 +90,6 @@ class Dialer {
       nextTick(async () => {
         try {
           await this.identifyService.identify(conn, conn.remotePeer)
-          // TODO: Update the PeerStore with the information from identify
         } catch (err) {
           log.error(err)
         }

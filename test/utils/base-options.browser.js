@@ -9,5 +9,13 @@ module.exports = {
     transport: [Transport],
     streamMuxer: [Muxer],
     connEncryption: [Crypto]
+  },
+  config: {
+    relay: {
+      enabled: true,
+      hop: {
+        enabled: false
+      }
+    }
   }
 }

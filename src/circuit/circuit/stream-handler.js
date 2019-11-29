@@ -1,139 +1,79 @@
 'use strict'
 
-const values = require('pull-stream/sources/values')
-const collect = require('pull-stream/sinks/collect')
-const empty = require('pull-stream/sources/empty')
-const pull = require('pull-stream/pull')
-const lp = require('pull-length-prefixed')
-const handshake = require('pull-handshake')
+const lp = require('it-length-prefixed')
+const handshake = require('it-handshake')
+const { CircuitRelay: CircuitPB } = require('../protocol')
 
 const debug = require('debug')
 const log = debug('libp2p:circuit:stream-handler')
-log.err = debug('libp2p:circuit:error:stream-handler')
+log.error = debug('libp2p:circuit:stream-handler:error')
 
 class StreamHandler {
   /**
    * Create a stream handler for connection
    *
-   * @param {Connection} conn - connection to read/write
-   * @param {Function|undefined} cb - handshake callback called on error
-   * @param {Number} timeout - handshake timeout
-   * @param {Number} maxLength - max bytes length of message
+   * @param {object} options
+   * @param {*} options.stream - A duplex iterable
+   * @param {Number} options.maxLength - max bytes length of message
    */
-  constructor (conn, cb, timeout, maxLength) {
-    this.conn = conn
-    this.stream = null
-    this.shake = null
-    this.timeout = cb || 1000 * 60
-    this.maxLength = maxLength || 4096
+  constructor ({ stream, maxLength = 4096 }) {
+    this.stream = stream
 
-    if (typeof cb === 'function') {
-      this.timeout = timeout || 1000 * 60
-    }
-
-    this.stream = handshake({ timeout: this.timeout }, cb)
-    this.shake = this.stream.handshake
-
-    pull(this.stream, conn, this.stream)
-  }
-
-  isValid () {
-    return this.conn && this.shake && this.stream
+    this.shake = handshake(this.stream)
+    this.decoder = lp.decode.fromReader(this.shake.reader, { maxDataLength: maxLength })
   }
 
   /**
    * Read and decode message
-   *
-   * @param {Function} cb
-   * @returns {void|Function}
+   * @async
+   * @returns {void}
    */
-  read (cb) {
-    if (!this.isValid()) {
-      return cb(new Error('handler is not in a valid state'))
+  async read () {
+    const msg = await this.decoder.next()
+    if (msg.value) {
+      const value = CircuitPB.decode(msg.value.slice())
+      log('read message type', value.type)
+      return value
     }
 
-    lp.decodeFromReader(
-      this.shake,
-      { maxLength: this.maxLength },
-      (err, msg) => {
-        if (err) {
-          log.err(err)
-          // this.shake.abort(err)
-          return cb(err)
-        }
-
-        return cb(null, msg)
-      })
+    log('read received no value, closing stream')
+    // End the stream, we didn't get data
+    this.close()
   }
 
   /**
    * Encode and write array of buffers
    *
-   * @param {Buffer[]} msg
-   * @param {Function} [cb]
-   * @returns {Function}
+   * @param {*} msg An unencoded CircuitRelay protobuf message
    */
-  write (msg, cb) {
-    cb = cb || (() => {})
-
-    if (!this.isValid()) {
-      return cb(new Error('handler is not in a valid state'))
-    }
-
-    pull(
-      values([msg]),
-      lp.encode(),
-      collect((err, encoded) => {
-        if (err) {
-          log.err(err)
-          this.shake.abort(err)
-          return cb(err)
-        }
-
-        encoded.forEach((e) => this.shake.write(e))
-        cb()
-      })
-    )
-  }
-
-  /**
-   * Get the raw Connection
-   *
-   * @returns {null|Connection|*}
-   */
-  getRawConn () {
-    return this.conn
+  write (msg) {
+    log('write message type %s', msg.type)
+    this.shake.write(lp.encode.single(CircuitPB.encode(msg)))
   }
 
   /**
    * Return the handshake rest stream and invalidate handler
    *
-   * @return {*|{source, sink}}
+   * @return {*} A duplex iterable
    */
   rest () {
-    const rest = this.shake.rest()
+    this.shake.rest()
+    return this.shake.stream
+  }
 
-    this.conn = null
-    this.stream = null
-    this.shake = null
-    return rest
+  end (msg) {
+    this.write(msg)
+    this.close()
   }
 
   /**
    * Close the stream
    *
-   * @returns {undefined}
+   * @returns {void}
    */
   close () {
-    if (!this.isValid()) {
-      return
-    }
-
-    // close stream
-    pull(
-      empty(),
-      this.rest()
-    )
+    log('closing the stream')
+    this.rest().sink([])
   }
 }
 
