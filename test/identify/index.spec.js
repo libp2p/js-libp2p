@@ -3,6 +3,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-as-promised'))
 const { expect } = chai
 const sinon = require('sinon')
 
@@ -98,20 +99,18 @@ describe('Identify', () => {
     sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY })
 
     // Run identify
-    try {
-      await Promise.all([
-        localIdentify.identify(localConnectionMock, localPeer.id),
-        remoteIdentify.handleMessage({
-          connection: remoteConnectionMock,
-          stream: remote,
-          protocol: multicodecs.IDENTIFY
-        })
-      ])
-      expect.fail('should have thrown')
-    } catch (err) {
-      expect(err).to.exist()
-      expect(err.code).to.eql(Errors.ERR_INVALID_PEER)
-    }
+    const identifyPromise = Promise.all([
+      localIdentify.identify(localConnectionMock, localPeer.id),
+      remoteIdentify.handleMessage({
+        connection: remoteConnectionMock,
+        stream: remote,
+        protocol: multicodecs.IDENTIFY
+      })
+    ])
+
+    await expect(identifyPromise)
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', Errors.ERR_INVALID_PEER)
   })
 
   describe('push', () => {
@@ -229,6 +228,7 @@ describe('Identify', () => {
 
       // Wait for identify to finish
       await libp2p.dialer.identifyService.identify.firstCall.returnValue
+      sinon.stub(libp2p, 'isStarted').returns(true)
 
       libp2p.handle('/echo/2.0.0', () => {})
       libp2p.unhandle('/echo/2.0.0')

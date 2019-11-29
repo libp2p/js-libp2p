@@ -23,6 +23,15 @@ const before = async () => {
       transport: [WebSockets],
       streamMuxer: [Muxer],
       connEncryption: [Crypto]
+    },
+    config: {
+      relay: {
+        enabled: true,
+        hop: {
+          enabled: true,
+          active: false
+        }
+      }
     }
   })
   // Add the echo protocol
