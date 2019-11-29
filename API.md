@@ -53,7 +53,7 @@ const options = {}
 const libp2p = await Libp2p.create(options)
 ```
 
-Note: It is important pointing out that with `create`, the `PeerInfo` option is not required and will be generated if it is not provided.
+Note: The `PeerInfo` option is not required and will be generated if it is not provided.
 
 As an alternative, it is possible to create a Libp2p instance with the constructor:
 
@@ -66,13 +66,13 @@ const Libp2p = require('libp2p')
 const options = {}
 
 // create libp2p
-const libp2p = new Libp2p (options)
+const libp2p = new Libp2p(options)
 ```
 
 Required keys in the `options` object:
 
 - `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node.
-- `modules.transport`: An array that must include at least 1 transport, such as `libp2p-tcp`.
+- `modules.transport`: An array that must include at least 1 transport, such as [`libp2p-tcp`](https://github.com/libp2p/js-libp2p-tcp).
 
 ## Libp2p Instance Methods 
 
@@ -138,7 +138,7 @@ Dials to another peer in the network and establishes the connection.
 |------|------|-------------|
 | peer | [PeerInfo](https://github.com/libp2p/js-peer-info), [PeerId](https://github.com/libp2p/js-peer-id), [multiaddr](https://github.com/multiformats/js-multiaddr), `string` | peer to dial |
 | [options] | `Object` | dial options |
-| [options.signal] | `AbortSignal` | abort signal |
+| [options.signal] | [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) | An `AbortSignal` instance obtained from an [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) that can be used to abort the connection before it completes |
 
 #### Returns
 
@@ -164,9 +164,9 @@ Dials to another peer in the network and selects a protocol to communicate with 
 | Name | Type | Description |
 |------|------|-------------|
 | peer | [PeerInfo](https://github.com/libp2p/js-peer-info), [PeerId](https://github.com/libp2p/js-peer-id), [multiaddr](https://github.com/multiformats/js-multiaddr), `string` | peer to dial |
-| protocols | `String|Array<String>` | Strings that identifies the protocols (e.g '/ipfs/bitswap/1.1.0') |
+| protocols | `String|Array<String>` |  A list of protocols (or single protocol) to negotiate with. Protocols are attempted in order until a match is made. (e.g '/ipfs/bitswap/1.1.0') |
 | [options] | `Object` | dial options |
-| [options.signal] | `AbortSignal` | abort signal |
+| [options.signal] | [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) | An `AbortSignal` instance obtained from an [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) that can be used to abort the connection before it completes |
 
 #### Returns
 
@@ -495,7 +495,7 @@ await libp2p.pubsub.publish(topic, data)
 
 Subscribes the given handler to a pubsub topic.
 
-`libp2p.pubsub.subscribe(topic)`
+`libp2p.pubsub.subscribe(topic, handler)`
 
 #### Parameters
 
@@ -525,7 +525,7 @@ libp2p.pubsub.subscribe(topic, handler)
 
 Unsubscribes the given handler from a pubsub topic. If no handler is provided, all handlers for the topic are removed.
 
-`libp2p.pubsub.unsubscribe(topic)`
+`libp2p.pubsub.unsubscribe(topic, handler)`
 
 #### Parameters
 
