@@ -1,16 +1,15 @@
 'use strict'
 
-const tryEach = require('async/tryEach')
-const parallel = require('async/parallel')
+const all = require('async-iterator-all')
+const pAny = require('p-any')
 const errCode = require('err-code')
-const promisify = require('promisify-es6')
 
 module.exports = (node) => {
   const routers = node._modules.contentRouting || []
 
   // If we have the dht, make it first
   if (node._dht) {
-    routers.unshift(node._dht)
+    routers.unshift(node._dht._dht)
   }
 
   return {
@@ -19,66 +18,45 @@ module.exports = (node) => {
      * Once a content router succeeds, iteration will stop.
      *
      * @param {CID} key The CID key of the content to find
-     * @param {object} options
-     * @param {number} options.maxTimeout How long the query should run
-     * @param {number} options.maxNumProviders - maximum number of providers to find
-     * @param {function(Error, Result<Array>)} callback
-     * @returns {void}
+     * @param {object} [options]
+     * @param {number} [options.timeout] How long the query should run
+     * @param {number} [options.maxNumProviders] - maximum number of providers to find
+     * @returns {AsyncIterable<PeerInfo>}
      */
-    findProviders: promisify((key, options, callback) => {
-      if (typeof options === 'function') {
-        callback = options
-        options = {}
-      } else if (typeof options === 'number') { // This can be deprecated in a future release
-        options = {
-          maxTimeout: options
-        }
-      }
-
+    async * findProviders (key, options) {
       if (!routers.length) {
-        return callback(errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE'))
+        throw errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE')
       }
 
-      const tasks = routers.map((router) => {
-        return (cb) => router.findProviders(key, options, (err, results) => {
-          if (err) {
-            return cb(err)
-          }
+      const result = await pAny(
+        routers.map(async (router) => {
+          const provs = await all(router.findProviders(key, options))
 
-          // If we don't have any results, we need to provide an error to keep trying
-          if (!results || Object.keys(results).length === 0) {
-            return cb(errCode(new Error('not found'), 'NOT_FOUND'), null)
+          if (!provs || !provs.length) {
+            throw errCode(new Error('not found'), 'NOT_FOUND')
           }
-
-          cb(null, results)
+          return provs
         })
-      })
+      )
 
-      tryEach(tasks, (err, results) => {
-        if (err && err.code !== 'NOT_FOUND') {
-          return callback(err)
-        }
-        results = results || []
-        callback(null, results)
-      })
-    }),
+      for (const pInfo of result) {
+        yield pInfo
+      }
+    },
 
     /**
      * Iterates over all content routers in parallel to notify it is
      * a provider of the given key.
      *
      * @param {CID} key The CID key of the content to find
-     * @param {function(Error)} callback
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    provide: promisify((key, callback) => {
+    async provide (key) { // eslint-disable-line require-await
       if (!routers.length) {
-        return callback(errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE'))
+        throw errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE')
       }
 
-      parallel(routers.map((router) => {
-        return (cb) => router.provide(key, cb)
-      }), callback)
-    })
+      return Promise.all(routers.map((router) => router.provide(key)))
+    }
   }
 }

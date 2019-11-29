@@ -13,7 +13,7 @@ const MulticastDNS = require('libp2p-mdns')
 
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options.browser')
-const { createPeerInfoFromFixture } = require('../utils/creators/peer')
+const { createPeerInfo } = require('../utils/creators/peer')
 
 describe('peer discovery', () => {
   let peerInfo
@@ -21,7 +21,7 @@ describe('peer discovery', () => {
   let libp2p
 
   before(async () => {
-    [peerInfo, remotePeerInfo] = await createPeerInfoFromFixture(2)
+    [peerInfo, remotePeerInfo] = await createPeerInfo({ number: 2 })
   })
 
   afterEach(async () => {

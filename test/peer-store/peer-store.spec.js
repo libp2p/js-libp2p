@@ -34,7 +34,7 @@ describe('peer-store', () => {
     sinon.spy(peerStore, 'add')
     sinon.spy(peerStore, 'update')
 
-    const [peerInfo] = await peerUtils.createPeerInfo(1)
+    const [peerInfo] = await peerUtils.createPeerInfo()
 
     peerStore.on('peer', (peer) => {
       expect(peer).to.exist()
@@ -51,7 +51,7 @@ describe('peer-store', () => {
   })
 
   it('should update peer when it is already in the store', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo(1)
+    const [peerInfo] = await peerUtils.createPeerInfo()
 
     // Put the peer in the store
     peerStore.put(peerInfo)
@@ -82,7 +82,7 @@ describe('peer-store', () => {
 
   it('should emit the "change:multiaddrs" event when a peer has new multiaddrs', async () => {
     const defer = pDefer()
-    const [createdPeerInfo] = await peerUtils.createPeerInfo(1)
+    const [createdPeerInfo] = await peerUtils.createPeerInfo()
 
     // Put the peer in the store
     peerStore.put(createdPeerInfo)
@@ -110,7 +110,7 @@ describe('peer-store', () => {
 
   it('should emit the "change:protocols" event when a peer has new protocols', async () => {
     const defer = pDefer()
-    const [createdPeerInfo] = await peerUtils.createPeerInfo(1)
+    const [createdPeerInfo] = await peerUtils.createPeerInfo()
 
     // Put the peer in the store
     peerStore.put(createdPeerInfo)
@@ -137,7 +137,7 @@ describe('peer-store', () => {
   })
 
   it('should be able to retrieve a peer from store through its b58str id', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo(1)
+    const [peerInfo] = await peerUtils.createPeerInfo()
     const id = peerInfo.id.toB58String()
 
     let retrievedPeer = peerStore.get(id)
@@ -154,7 +154,7 @@ describe('peer-store', () => {
   })
 
   it('should be able to remove a peer from store through its b58str id', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo(1)
+    const [peerInfo] = await peerUtils.createPeerInfo()
     const id = peerInfo.id.toB58String()
 
     let removed = peerStore.remove(id)
@@ -177,7 +177,7 @@ describe('peer-store on dial', () => {
   let remoteLibp2p
 
   before(async () => {
-    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfoFromFixture(2)
+    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
     remoteLibp2p = new Libp2p(mergeOptions(baseOptions, {
       peerInfo: remotePeerInfo
     }))

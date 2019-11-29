@@ -29,7 +29,7 @@ describe('Pubsub subsystem is able to use different implementations', () => {
   let remAddr
 
   beforeEach(async () => {
-    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfoFromFixture(2)
+    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
 
     peerInfo.multiaddrs.add(listenAddr)
     remotePeerInfo.multiaddrs.add(remoteListenAddr)

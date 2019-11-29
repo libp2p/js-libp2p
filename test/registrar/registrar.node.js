@@ -23,7 +23,7 @@ describe('registrar on dial', () => {
   let remoteAddr
 
   before(async () => {
-    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfoFromFixture(2)
+    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
     remoteLibp2p = new Libp2p(mergeOptions(baseOptions, {
       peerInfo: remotePeerInfo
     }))
