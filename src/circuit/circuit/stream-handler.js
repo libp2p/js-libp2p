@@ -52,15 +52,6 @@ class StreamHandler {
   }
 
   /**
-   * Get the raw Connection
-   *
-   * @returns {*} A duplex iterable
-   */
-  getRawConn () {
-    return this.stream
-  }
-
-  /**
    * Return the handshake rest stream and invalidate handler
    *
    * @return {*} A duplex iterable

@@ -5,9 +5,7 @@ const log = require('debug')('libp2p:circuit:stream')
 
 // Convert a duplex iterable into a MultiaddrConnection
 // https://github.com/libp2p/interface-transport#multiaddrconnection
-module.exports = ({ stream, remoteAddr, localAddr }, options) => {
-  options = options || {}
-
+module.exports = ({ stream, remoteAddr, localAddr }, options = {}) => {
   const { sink, source } = stream
   const maConn = {
     async sink (source) {

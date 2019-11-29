@@ -19,7 +19,6 @@ module.exports = (circuit) => {
    * Add swarm handler and listen for incoming connections
    *
    * @param {Multiaddr} addr
-   * @param {Function} callback
    * @return {void}
    */
   listener.listen = async (addr) => {
@@ -53,8 +52,7 @@ module.exports = (circuit) => {
    *    the encapsulated transport address. This is useful when for example, a peer should only
    *    be dialed over TCP rather than any other transport
    *
-   * @param {Function} callback
-   * @return {void}
+   * @return {Multiaddr[]}
    */
   listener.getAddrs = () => {
     const addrs = []

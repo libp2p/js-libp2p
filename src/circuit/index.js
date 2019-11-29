@@ -20,7 +20,7 @@ const toConnection = require('./stream-to-conn')
 
 class Circuit {
   /**
-   * Creates an instance of Dialer.
+   * Creates an instance of Circuit.
    *
    * @constructor
    * @param {object} options
@@ -70,7 +70,6 @@ class Circuit {
       }
       default: {
         log('Request of type %s not supported', request.type)
-        virtualConnection = null
       }
     }
 

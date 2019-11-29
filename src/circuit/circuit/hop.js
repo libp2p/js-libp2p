@@ -32,6 +32,13 @@ module.exports.handleHop = async function handleHop ({
     })
   }
 
+  // Validate the HOP request has the required input
+  try {
+    validateAddrs(request, streamHandler)
+  } catch (err) {
+    return log.error('invalid hop request via peer %s', connection.remotePeer.toB58String(), err)
+  }
+
   // Get the connection to the destination (stop) peer
   const destinationPeer = new PeerId(request.dstPeer.id)
 
@@ -45,13 +52,6 @@ module.exports.handleHop = async function handleHop ({
   }
 
   // TODO: Handle being an active relay
-
-  // Validate the HOP request has the required input
-  try {
-    validateAddrs(request, streamHandler)
-  } catch (err) {
-    return log.error('invalid hop request via peer %s', connection.remotePeer.toB58String(), err)
-  }
 
   // Handle the incoming HOP request by performing a STOP request
   const stopRequest = {
@@ -68,7 +68,7 @@ module.exports.handleHop = async function handleHop ({
       circuit
     })
   } catch (err) {
-    log.error(err)
+    return log.error(err)
   }
 
   log('hop request from %s is valid', connection.remotePeer.toB58String())
