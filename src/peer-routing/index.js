@@ -185,9 +185,9 @@ module.exports = (dht) => {
      * @param {Buffer} key
      * @param {Object} [options]
      * @param {boolean} [options.shallow] shallow query (default: false)
-     * @returns {Promise<Array<PeerId>>}
+     * @returns {AsyncIterable<PeerId>}
      */
-    async getClosestPeers (key, options = { shallow: false }) {
+    async * getClosestPeers (key, options = { shallow: false }) {
       dht._log('getClosestPeers to %b', key)
 
       const id = await utils.convertBuffer(key)
@@ -213,7 +213,10 @@ module.exports = (dht) => {
       }
 
       const sorted = await utils.sortClosestPeers(Array.from(res.finalSet), id)
-      return sorted.slice(0, dht.kBucketSize)
+
+      for (const pId of sorted.slice(0, dht.kBucketSize)) {
+        yield pId
+      }
     },
 
     /**

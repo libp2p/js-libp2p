@@ -9,6 +9,7 @@ const sinon = require('sinon')
 const { Record } = require('libp2p-record')
 const errcode = require('err-code')
 
+const all = require('async-iterator-all')
 const pMapSeries = require('p-map-series')
 const pEachSeries = require('p-each-series')
 const delay = require('delay')
@@ -446,7 +447,7 @@ describe('KadDHT', () => {
       await pEachSeries(values, async (v) => {
         n = (n + 1) % 3
 
-        const provs = await dhts[n].findProviders(v.cid, { timeout: 5000 })
+        const provs = await all(dhts[n].findProviders(v.cid, { timeout: 5000 }))
 
         expect(provs).to.have.length(1)
         expect(provs[0].id.id).to.be.eql(ids[3].id)
@@ -470,8 +471,8 @@ describe('KadDHT', () => {
 
       await Promise.all(dhts.map((dht) => dht.provide(val.cid)))
 
-      const res0 = await dhts[0].findProviders(val.cid)
-      const res1 = await dhts[0].findProviders(val.cid, { maxNumProviders: 2 })
+      const res0 = await all(dhts[0].findProviders(val.cid))
+      const res1 = await all(dhts[0].findProviders(val.cid, { maxNumProviders: 2 }))
 
       // find providers find all the 3 providers
       expect(res0).to.exist()
@@ -564,7 +565,7 @@ describe('KadDHT', () => {
       const otherIds = ids.slice(0, guyIndex).concat(ids.slice(guyIndex + 1))
 
       // Make the query
-      const out = await guy.getClosestPeers(val)
+      const out = await all(guy.getClosestPeers(val))
       const actualClosest = await kadUtils.sortClosestPeers(otherIds, rtval)
 
       // Expect that the response includes nodes that are were not
@@ -597,7 +598,7 @@ describe('KadDHT', () => {
         await tdht.connect(dhts[index], dhts[(index + 1) % dhts.length])
       })
 
-      const res = await dhts[1].getClosestPeers(Buffer.from('foo'))
+      const res = await all(dhts[1].getClosestPeers(Buffer.from('foo')))
       expect(res).to.have.length(c.K)
 
       return tdht.teardown()

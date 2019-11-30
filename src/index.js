@@ -257,10 +257,12 @@ class KadDHT extends EventEmitter {
    * @param {Object} options - findProviders options
    * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
    * @param {number} options.maxNumProviders - maximum number of providers to find
-   * @returns {Promise<PeerInfo>}
+   * @returns {AsyncIterable<PeerInfo>}
    */
-  async findProviders (key, options = {}) { // eslint-disable-line require-await
-    return this.contentRouting.findProviders(key, options)
+  async * findProviders (key, options = {}) {
+    for await (const pInfo of this.contentRouting.findProviders(key, options)) {
+      yield pInfo
+    }
   }
 
   // ----------- Peer Routing -----------
@@ -282,10 +284,12 @@ class KadDHT extends EventEmitter {
    * @param {Buffer} key
    * @param {Object} [options]
    * @param {boolean} [options.shallow] shallow query (default: false)
-   * @returns {Promise<Array<PeerId>>}
+   * @returns {AsyncIterable<PeerId>}
    */
-  async getClosestPeers (key, options = { shallow: false }) { // eslint-disable-line require-await
-    return this.peerRouting.getClosestPeers(key, options)
+  async * getClosestPeers (key, options = { shallow: false }) {
+    for await (const pId of this.peerRouting.getClosestPeers(key, options)) {
+      yield pId
+    }
   }
 
   /**

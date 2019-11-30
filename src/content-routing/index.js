@@ -40,19 +40,18 @@ module.exports = (dht) => {
       // Add peer as provider
       await dht.providers.addProvider(key, dht.peerInfo.id)
 
-      // Notify closest peers
-      const peers = await dht.getClosestPeers(key.buffer)
       const msg = new Message(Message.TYPES.ADD_PROVIDER, key.buffer, 0)
       msg.providerPeers = [dht.peerInfo]
 
-      await Promise.all(peers.map(async (peer) => {
+      // Notify closest peers
+      for await (const peer of dht.getClosestPeers(key.buffer)) {
         dht._log('putProvider %s to %s', key.toBaseEncodedString(), peer.toB58String())
         try {
           await dht.network.sendMessage(peer, msg)
         } catch (err) {
           errors.push(err)
         }
-      }))
+      }
 
       if (errors.length) {
         // TODO:
@@ -69,9 +68,9 @@ module.exports = (dht) => {
      * @param {Object} options - findProviders options
      * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
      * @param {number} options.maxNumProviders - maximum number of providers to find
-     * @returns {Promise<PeerInfo>}
+     * @returns {AsyncIterable<PeerInfo>}
      */
-    async findProviders (key, options = {}) {
+    async * findProviders (key, options = {}) {
       const providerTimeout = options.timeout || c.minute
       const n = options.maxNumProviders || c.K
 
@@ -149,7 +148,9 @@ module.exports = (dht) => {
         throw errcode(new Error('no providers found'), 'ERR_NOT_FOUND')
       }
 
-      return out.toArray()
+      for (const pInfo of out.toArray()) {
+        yield pInfo
+      }
     }
   }
 }

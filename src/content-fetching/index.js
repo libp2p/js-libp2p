@@ -1,8 +1,6 @@
 'use strict'
 
 const errcode = require('err-code')
-
-const pFilter = require('p-filter')
 const pTimeout = require('p-timeout')
 
 const libp2pRecord = require('libp2p-record')
@@ -108,22 +106,24 @@ module.exports = (dht) => {
       await putLocal(key, record)
 
       // put record to the closest peers
-      const peers = await dht.getClosestPeers(key, { shallow: true })
-      const results = await pFilter(peers, async (peer) => {
+      let counterAll = 0
+      let counterSuccess = 0
+
+      for await (const peer of dht.getClosestPeers(key, { shallow: true })) {
         try {
+          counterAll += 1
           await dht._putValueToPeer(key, record, peer)
-          return true
+          counterSuccess += 1
         } catch (err) {
           dht._log.error('Failed to put to peer (%b): %s', peer.id, err)
-          return false
         }
-      })
+      }
 
       // verify if we were able to put to enough peers
-      const minPeers = options.minPeers || peers.length // Ensure we have a default `minPeers`
+      const minPeers = options.minPeers || counterAll // Ensure we have a default `minPeers`
 
-      if (minPeers > results.length) {
-        const error = errcode(new Error(`Failed to put value to enough peers: ${results.length}/${minPeers}`), 'ERR_NOT_ENOUGH_PUT_PEERS')
+      if (minPeers > counterSuccess) {
+        const error = errcode(new Error(`Failed to put value to enough peers: ${counterSuccess}/${minPeers}`), 'ERR_NOT_ENOUGH_PUT_PEERS')
         dht._log.error(error)
         throw error
       }
