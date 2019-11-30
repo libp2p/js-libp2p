@@ -1,3 +1,18 @@
+<a name="0.18.0"></a>
+# [0.18.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.17.1...v0.18.0) (2019-11-30)
+
+
+### Features
+
+* find providers and closest peers return async iterable ([#157](https://github.com/libp2p/js-libp2p-kad-dht/issues/157)) ([f0e6800](https://github.com/libp2p/js-libp2p-kad-dht/commit/f0e6800))
+
+
+### BREAKING CHANGES
+
+* API for find providers and closest peers return async iterable instead of an array of PeerInfo
+
+
+
 <a name="0.17.1"></a>
 ## [0.17.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.17.0...v0.17.1) (2019-11-28)
 
