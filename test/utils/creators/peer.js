@@ -46,7 +46,7 @@ async function createPeer ({ number = 1, fixture = true, started = true, config 
  * @param {boolean} [properties.fixture] use fixture for peer-id generation (default: true)
  * @return {Promise<Array<PeerInfo>>}
  */
-async function createPeerInfo ({ number = 1, fixture } = {}) {
+async function createPeerInfo ({ number = 1, fixture = true } = {}) {
   const peerIds = await createPeerId({ number, fixture })
 
   return pTimes(number, (i) => PeerInfo.create(peerIds[i]))
