@@ -216,7 +216,7 @@ describe('pubsub base protocol', () => {
     })
   })
 
-  describe('getPeersSubscribed', () => {
+  describe('getSubscribers', () => {
     let peerInfo
     let pubsub
 
@@ -236,7 +236,7 @@ describe('pubsub base protocol', () => {
       const topic = 'topic-test'
 
       try {
-        pubsub.getPeersSubscribed(topic)
+        pubsub.getSubscribers(topic)
       } catch (err) {
         expect(err).to.exist()
         expect(err.code).to.eql('ERR_NOT_STARTED_YET')
@@ -250,7 +250,7 @@ describe('pubsub base protocol', () => {
       await pubsub.start()
 
       try {
-        pubsub.getPeersSubscribed()
+        pubsub.getSubscribers()
       } catch (err) {
         expect(err).to.exist()
         expect(err.code).to.eql('ERR_NOT_VALID_TOPIC')
@@ -265,7 +265,7 @@ describe('pubsub base protocol', () => {
       // start pubsub
       await pubsub.start()
 
-      let peersSubscribed = pubsub.getPeersSubscribed(topic)
+      let peersSubscribed = pubsub.getSubscribers(topic)
       expect(peersSubscribed).to.be.empty()
 
       // Set mock peer subscribed
@@ -275,7 +275,7 @@ describe('pubsub base protocol', () => {
       peer.topics.add(topic)
       pubsub.peers.set(id, peer)
 
-      peersSubscribed = pubsub.getPeersSubscribed(topic)
+      peersSubscribed = pubsub.getSubscribers(topic)
 
       expect(peersSubscribed).to.not.be.empty()
       expect(peersSubscribed[0]).to.eql(id)

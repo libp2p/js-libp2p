@@ -273,7 +273,7 @@ class PubsubBaseProtocol extends EventEmitter {
    * @param {string} topic
    * @returns {Array<string>}
    */
-  getPeersSubscribed (topic) {
+  getSubscribers (topic) {
     if (!this.started) {
       throw errcode(new Error('not started yet'), 'ERR_NOT_STARTED_YET')
     }
