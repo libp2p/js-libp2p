@@ -13,9 +13,9 @@
   * [`peerRouting.findPeer`](#peerRouting.findPeer)
   * [`contentRouting.findProviders`](#contentRouting.findProviders)
   * [`contentRouting.provide`](#contentRouting.provide)
-  * [`_dht.put`](#_dht.put)
-  * [`_dht.get`](#_dht.get)
-  * [`_dht.getMany`](#_dht.getMany)
+  * [`contentRouting.put`](#contentRouting.put)
+  * [`contentRouting.get`](#contentRouting.get)
+  * [`contentRouting.getMany`](#contentRouting.getMany)
   * [`pubsub.getPeersSubscribed`](#pubsub.getPeersSubscribed)
   * [`pubsub.getTopics`](#pubsub.getTopics)
   * [`pubsub.publish`](#pubsub.publish)
@@ -55,6 +55,7 @@ const libp2p = await Libp2p.create(options)
 
 Note: The `PeerInfo` option is not required and will be generated if it is not provided.
 
+<details><summary>Alternative</summary>
 As an alternative, it is possible to create a Libp2p instance with the constructor:
 
 #### Example
@@ -71,8 +72,10 @@ const libp2p = new Libp2p(options)
 
 Required keys in the `options` object:
 
-- `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node.
+- `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node (optional when using `.create`).
 - `modules.transport`: An array that must include at least 1 compliant transport. See [modules that implement the transport interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport#modules-that-implement-the-interface).
+
+</details>
 
 ## Libp2p Instance Methods 
 
@@ -151,11 +154,19 @@ Dials to another peer in the network and establishes the connection.
 ```js
 // ...
 const conn = await libp2p.dial(remotePeerInfo)
+
+// create a new stream within the connection
+const { stream, protocol } = await conn.newStream(['/echo/1.1.0', '/echo/1.0.0'])
+
+// protocol negotiated: 'echo/1.0.0' means that the other party only supports the older version
+
+// ...
+await conn.close()
 ```
 
 ### dialProtocol
 
-Dials to another peer in the network and selects a protocol to communicate with that peer.
+Dials to another peer in the network and selects a protocol to communicate with that peer. The stream between both parties is returned, together with the negotiated protocol.
 
 `dialProtocol(peer, protocols, options)`
 
@@ -172,13 +183,18 @@ Dials to another peer in the network and selects a protocol to communicate with 
 
 | Type | Description |
 |------|-------------|
-| `Promise<Connection>` | Promise resolves with the [Connection](https://github.com/libp2p/js-interfaces/tree/master/src/connection) instance |
+| `Promise<{ stream:*, protocol:string }>` | Promise resolves with a [duplex stream](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9#duplex-it) and the protocol used |
 
 #### Example
 
 ```js
 // ...
+const pipe = require('it-pipe')
+
 const { stream, protocol } = await libp2p.dialProtocol(remotePeerInfo, protocols)
+
+// Use this new stream like any other duplex stream
+pipe([1, 2, 3], stream, consume)
 ```
 
 ### hangUp
@@ -211,6 +227,8 @@ await libp2p.hangUp(remotePeerInfo)
 Sets up [multistream-select routing](https://github.com/multiformats/multistream-select) of protocols to their application handlers. Whenever a stream is opened on one of the provided protocols, the handler will be called. `handle` must be called in order to register a handler and support for a given protocol. This also informs other peers of the protocols you support.
 
 `libp2p.handle(protocols, handler)`
+
+In the event of a new handler for the same protocol being added, the first one is discarded.
 
 #### Parameters
 
@@ -297,13 +315,15 @@ Once a content router succeeds, the iteration will stop. If the DHT is enabled, 
 
 | Type | Description |
 |------|-------------|
-| `Promise<Array<PeerInfo>>` |  array of [`PeerInfo`](https://github.com/libp2p/js-peer-info) |
+| `AsyncIterator<PeerInfo>` |  Async iterator for [`PeerInfo`](https://github.com/libp2p/js-peer-info) |
 
 #### Example
 
 ```js
-// ...
-const providers = await libp2p.contentRouting.findProviders(cid)
+// Iterate over the providers found for the given cid
+for await (const provider of libp2p.contentRouting.findProviders(cid)) {
+  console.log(provider)
+}
 ```
 
 ### contentRouting.provide
@@ -331,11 +351,11 @@ Iterates over all content routers in parallel, in order to notify it is a provid
 await libp2p.contentRouting.provide(cid)
 ```
 
-### _dht.put
+### contentRouting.put
 
 Writes a value to a key in the DHT.
 
-`libp2p._dht.put(key, value, options)`
+`libp2p.contentRouting.put(key, value, options)`
 
 #### Parameters
 
@@ -359,14 +379,14 @@ Writes a value to a key in the DHT.
 const key = '/key'
 const value = Buffer.from('oh hello there')
 
-await libp2p._dht.put(key, value)
+await libp2p.contentRouting.put(key, value)
 ```
 
-### _dht.get
+### contentRouting.get
 
 Queries the DHT for a value stored for a given key.
 
-`libp2p._dht.get(key, options)`
+`libp2p.contentRouting.get(key, options)`
 
 #### Parameters
 
@@ -388,14 +408,14 @@ Queries the DHT for a value stored for a given key.
 // ...
 
 const key = '/key'
-const value = await libp2p._dht.get(key)
+const value = await libp2p.contentRouting.get(key)
 ```
 
-### _dht.getMany
+### contentRouting.getMany
 
 Queries the DHT for the n values stored for the given key (without sorting).
 
-`libp2p._dht.getMany(key, nvals, options)`
+`libp2p.contentRouting.getMany(key, nvals, options)`
 
 #### Parameters
 
@@ -418,7 +438,7 @@ Queries the DHT for the n values stored for the given key (without sorting).
 // ...
 
 const key = '/key'
-const { from, val } = await libp2p._dht.get(key)
+const { from, val } = await libp2p.contentRouting.get(key)
 ```
 
 ### pubsub.getPeersSubscribed
@@ -442,7 +462,7 @@ Gets a list of the peer-ids that are subscribed to one topic.
 #### Example
 
 ```js
-const peerIds = libp2p.pubsub.getPeersSubscribed(topic)
+const peerIds = libp2p.pubsub.getSubscribers(topic)
 ```
 
 ### pubsub.getTopics
@@ -502,7 +522,7 @@ Subscribes the given handler to a pubsub topic.
 | Name | Type | Description |
 |------|------|-------------|
 | topic | `string` | topic to subscribe |
-| handler | `function(<Object>)` | handler for new data on topic |
+| handler | `function({ from: String, data: Buffer, seqno: Buffer, topicIDs: Array<String>, signature: Buffer, key: Buffer })` | handler for new data on topic |
 
 #### Returns
 
