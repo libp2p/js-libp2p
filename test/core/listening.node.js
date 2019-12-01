@@ -18,7 +18,7 @@ describe('Listening', () => {
   let libp2p
 
   before(async () => {
-    [peerInfo] = await peerUtils.createPeerInfoFromFixture(1)
+    [peerInfo] = await peerUtils.createPeerInfo()
     peerInfo.multiaddrs.add(listenAddr)
   })
 
