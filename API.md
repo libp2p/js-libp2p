@@ -72,7 +72,7 @@ const libp2p = new Libp2p(options)
 Required keys in the `options` object:
 
 - `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node.
-- `modules.transport`: An array that must include at least 1 transport, such as [`libp2p-tcp`](https://github.com/libp2p/js-libp2p-tcp).
+- `modules.transport`: An array that must include at least 1 compliant transport. See [modules that implement the transport interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport#modules-that-implement-the-interface).
 
 ## Libp2p Instance Methods 
 
@@ -178,12 +178,12 @@ Dials to another peer in the network and selects a protocol to communicate with 
 
 ```js
 // ...
-const conn = await libp2p.dialProtocol(remotePeerInfo, protocols)
+const { stream, protocol } = await libp2p.dialProtocol(remotePeerInfo, protocols)
 ```
 
 ### hangUp
 
-Closes an open connection with a peer, graciously.
+Attempts to gracefully close an open connection to the given peer. If the connection is not closed in the grace period, it will be forcefully closed.
 
 `hangUp(peer)`
 
@@ -208,7 +208,7 @@ await libp2p.hangUp(remotePeerInfo)
 
 ### handle
 
-Registers a given handler for the given protocols.
+Sets up [multistream-select routing](https://github.com/multiformats/multistream-select) of protocols to their application handlers. Whenever a stream is opened on one of the provided protocols, the handler will be called. `handle` must be called in order to register a handler and support for a given protocol. This also informs other peers of the protocols you support.
 
 `libp2p.handle(protocols, handler)`
 
@@ -247,12 +247,12 @@ Unregisters all handlers with the given protocols
 
 ```js
 // ...
-libp2p.unhandle('/echo/1.0.0')
+libp2p.unhandle(['/echo/1.0.0'])
 ```
 
 ### peerRouting.findPeer
 
-Iterates over all peer routers in series to find the given peer.
+Iterates over all peer routers in series to find the given peer. If the DHT is enabled, it will be tried first.
 
 `libp2p.peerRouting.findPeer(peerId, options)`
 
@@ -280,7 +280,7 @@ const peerInfo = await libp2p.peerRouting.findPeer(peerId, options)
 ### contentRouting.findProviders
 
 Iterates over all content routers in series to find providers of the given key.
-Once a content router succeeds, the iteration will stop.
+Once a content router succeeds, the iteration will stop. If the DHT is enabled, it will be queried first.
 
 `libp2p.contentRouting.findProviders(cid, options)`
 
