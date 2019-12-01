@@ -1,3 +1,18 @@
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.3.2...v0.4.0) (2019-12-01)
+
+
+### Chores
+
+* getSubscribers ([#32](https://github.com/libp2p/js-libp2p-pubsub/issues/32)) ([b76451e](https://github.com/libp2p/js-libp2p-pubsub/commit/b76451e))
+
+
+### BREAKING CHANGES
+
+* getPeersSubscribed renamed to getSubscribers to remove redundant wording
+
+
+
 <a name="0.3.2"></a>
 ## [0.3.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.3.1...v0.3.2) (2019-11-28)
 
