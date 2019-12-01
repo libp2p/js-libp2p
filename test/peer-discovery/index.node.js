@@ -15,14 +15,14 @@ const multiaddr = require('multiaddr')
 
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options')
-const { createPeerInfoFromFixture } = require('../utils/creators/peer')
+const { createPeerInfo } = require('../utils/creators/peer')
 
 describe('peer discovery scenarios', () => {
   let peerInfo, remotePeerInfo1, remotePeerInfo2
   let libp2p
 
   before(async () => {
-    [peerInfo, remotePeerInfo1, remotePeerInfo2] = await createPeerInfoFromFixture(3)
+    [peerInfo, remotePeerInfo1, remotePeerInfo2] = await createPeerInfo({ number: 3 })
 
     peerInfo.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
     remotePeerInfo1.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/0'))

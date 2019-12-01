@@ -10,7 +10,6 @@ const multiaddr = require('multiaddr')
 
 const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
-const dht = require('./dht')
 const pubsub = require('./pubsub')
 const { getPeerInfo, getPeerInfoRemote } = require('./get-peer-info')
 const { validate: validateConfig } = require('./config')
@@ -124,7 +123,15 @@ class Libp2p extends EventEmitter {
 
     // dht provided components (peerRouting, contentRouting, dht)
     if (this._modules.dht) {
-      this._dht = dht(this, this._modules.dht, this._config.dht)
+      const DHT = this._modules.dht
+      this._dht = new DHT({
+        dialer: this.dialer,
+        peerInfo: this.peerInfo,
+        peerStore: this.peerStore,
+        registrar: this.registrar,
+        datastore: this.datastore,
+        ...this._config.dht
+      })
     }
 
     // start pubsub
@@ -333,7 +340,7 @@ class Libp2p extends EventEmitter {
 
       // TODO: this should be modified once random-walk is used as
       // the other discovery modules
-      this._dht._dht.on('peer', this._peerDiscovered)
+      this._dht.on('peer', this._peerDiscovered)
     }
   }
 
