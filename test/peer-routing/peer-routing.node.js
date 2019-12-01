@@ -57,7 +57,7 @@ describe('peer-routing', () => {
     it('should use the nodes dht', () => {
       const deferred = pDefer()
 
-      sinon.stub(nodes[0]._dht._dht, 'findPeer').callsFake(() => {
+      sinon.stub(nodes[0]._dht, 'findPeer').callsFake(() => {
         deferred.resolve()
         return nodes[1].peerInfo
       })
@@ -192,7 +192,7 @@ describe('peer-routing', () => {
     it('should only use the dht if it finds the peer', async () => {
       const dhtDeferred = pDefer()
 
-      sinon.stub(node._dht._dht, 'findPeer').callsFake(() => {
+      sinon.stub(node._dht, 'findPeer').callsFake(() => {
         dhtDeferred.resolve()
         return node.peerInfo
       })
@@ -207,7 +207,7 @@ describe('peer-routing', () => {
     it('should use the delegate if the dht fails to find the peer', async () => {
       const results = [true]
 
-      sinon.stub(node._dht._dht, 'findPeer').callsFake(() => {})
+      sinon.stub(node._dht, 'findPeer').callsFake(() => {})
       sinon.stub(delegate, 'findPeer').callsFake(() => {
         return results
       })

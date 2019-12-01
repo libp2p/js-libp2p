@@ -69,7 +69,7 @@ describe('content-routing', () => {
     it('should use the nodes dht to provide', () => {
       const deferred = pDefer()
 
-      sinon.stub(nodes[0]._dht._dht, 'provide').callsFake(() => {
+      sinon.stub(nodes[0]._dht, 'provide').callsFake(() => {
         deferred.resolve()
       })
 
@@ -80,14 +80,12 @@ describe('content-routing', () => {
     it('should use the nodes dht to find providers', async () => {
       const deferred = pDefer()
 
-      sinon.stub(nodes[0]._dht._dht, 'findProviders').callsFake(function * () {
+      sinon.stub(nodes[0]._dht, 'findProviders').callsFake(function * () {
         deferred.resolve()
         yield
       })
 
-      for await (const _ of nodes[0].contentRouting.findProviders()) { // eslint-disable-line no-unused-vars
-        break
-      }
+      await nodes[0].contentRouting.findProviders().next()
 
       return deferred.promise
     })
@@ -147,9 +145,7 @@ describe('content-routing', () => {
         yield
       })
 
-      for await (const _ of node.contentRouting.findProviders()) { // eslint-disable-line no-unused-vars
-        break
-      }
+      await node.contentRouting.findProviders().next()
 
       return deferred.promise
     })
@@ -270,7 +266,7 @@ describe('content-routing', () => {
       const dhtDeferred = pDefer()
       const delegatedDeferred = pDefer()
 
-      sinon.stub(node._dht._dht, 'provide').callsFake(() => {
+      sinon.stub(node._dht, 'provide').callsFake(() => {
         dhtDeferred.resolve()
       })
 
@@ -289,7 +285,7 @@ describe('content-routing', () => {
     it('should only use the dht if it finds providers', async () => {
       const results = [true]
 
-      sinon.stub(node._dht._dht, 'findProviders').callsFake(function * () {
+      sinon.stub(node._dht, 'findProviders').callsFake(function * () {
         yield results[0]
       })
 
@@ -309,7 +305,7 @@ describe('content-routing', () => {
     it('should use the delegate if the dht fails to find providers', async () => {
       const results = [true]
 
-      sinon.stub(node._dht._dht, 'findProviders').callsFake(function * () {})
+      sinon.stub(node._dht, 'findProviders').callsFake(function * () {})
 
       sinon.stub(delegate, 'findProviders').callsFake(function * () {
         yield results[0]

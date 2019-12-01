@@ -57,8 +57,8 @@ describe('DHT subsystem operates correctly', () => {
       expect(connection).to.exist()
 
       return Promise.all([
-        pWaitFor(() => libp2p._dht._dht.routingTable.size === 1),
-        pWaitFor(() => remoteLibp2p._dht._dht.routingTable.size === 1)
+        pWaitFor(() => libp2p._dht.routingTable.size === 1),
+        pWaitFor(() => remoteLibp2p._dht.routingTable.size === 1)
       ])
     })
 
@@ -69,8 +69,8 @@ describe('DHT subsystem operates correctly', () => {
       await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
 
       await Promise.all([
-        pWaitFor(() => libp2p._dht._dht.routingTable.size === 1),
-        pWaitFor(() => remoteLibp2p._dht._dht.routingTable.size === 1)
+        pWaitFor(() => libp2p._dht.routingTable.size === 1),
+        pWaitFor(() => remoteLibp2p._dht.routingTable.size === 1)
       ])
 
       await libp2p.contentRouting.put(key, value)
@@ -110,11 +110,11 @@ describe('DHT subsystem operates correctly', () => {
       const connection = await libp2p.dial(remAddr)
 
       expect(connection).to.exist()
-      expect(libp2p._dht._dht.routingTable.size).to.be.eql(0)
-      expect(remoteLibp2p._dht._dht.routingTable.size).to.be.eql(0)
+      expect(libp2p._dht.routingTable.size).to.be.eql(0)
+      expect(remoteLibp2p._dht.routingTable.size).to.be.eql(0)
 
       await remoteLibp2p._dht.start()
-      return pWaitFor(() => libp2p._dht._dht.routingTable.size === 1)
+      return pWaitFor(() => libp2p._dht.routingTable.size === 1)
     })
 
     it('should put on a peer and get from the other', async () => {
@@ -124,7 +124,7 @@ describe('DHT subsystem operates correctly', () => {
       const value = Buffer.from('world')
 
       await remoteLibp2p._dht.start()
-      await pWaitFor(() => libp2p._dht._dht.routingTable.size === 1)
+      await pWaitFor(() => libp2p._dht.routingTable.size === 1)
 
       await libp2p.contentRouting.put(key, value)
 

@@ -9,7 +9,7 @@ const pAny = require('p-any')
 
 module.exports = (node) => {
   const routers = node._modules.contentRouting || []
-  const dht = get(node, '_dht._dht')
+  const dht = get(node, '_dht')
 
   // If we have the dht, make it first
   if (dht) {

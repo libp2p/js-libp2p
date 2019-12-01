@@ -8,7 +8,7 @@ module.exports = (node) => {
 
   // If we have the dht, make it first
   if (node._dht) {
-    routers.unshift(node._dht._dht)
+    routers.unshift(node._dht)
   }
 
   return {

@@ -1,19 +1,8 @@
 'use strict'
 
 const KadDht = require('libp2p-kad-dht')
-const Crypto = require('../../src/insecure/plaintext')
-const Muxer = require('libp2p-mplex')
-const Transport = require('libp2p-tcp')
-
 const mergeOptions = require('merge-options')
-
-const baseOptions = {
-  modules: {
-    transport: [Transport],
-    streamMuxer: [Muxer],
-    connEncryption: [Crypto]
-  }
-}
+const baseOptions = require('../utils/base-options')
 
 module.exports.baseOptions = baseOptions
 
