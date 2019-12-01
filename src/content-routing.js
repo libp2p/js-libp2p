@@ -1,15 +1,19 @@
 'use strict'
 
-const all = require('async-iterator-all')
-const pAny = require('p-any')
 const errCode = require('err-code')
+const { messages, codes } = require('./errors')
+
+const all = require('async-iterator-all')
+const get = require('dlv')
+const pAny = require('p-any')
 
 module.exports = (node) => {
   const routers = node._modules.contentRouting || []
+  const dht = get(node, '_dht._dht')
 
   // If we have the dht, make it first
-  if (node._dht) {
-    routers.unshift(node._dht._dht)
+  if (dht) {
+    routers.unshift(dht)
   }
 
   return {
@@ -57,6 +61,54 @@ module.exports = (node) => {
       }
 
       return Promise.all(routers.map((router) => router.provide(key)))
+    },
+
+    /**
+     * Store the given key/value pair in the DHT.
+     * @param {Buffer} key
+     * @param {Buffer} value
+     * @param {Object} [options] - put options
+     * @param {number} [options.minPeers] - minimum number of peers required to successfully put
+     * @returns {Promise<void>}
+     */
+    async put (key, value, options) { // eslint-disable-line require-await
+      if (!node.isStarted() || !dht.isStarted) {
+        throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
+      }
+
+      return dht.put(key, value, options)
+    },
+
+    /**
+     * Get the value to the given key.
+     * Times out after 1 minute by default.
+     * @param {Buffer} key
+     * @param {Object} [options] - get options
+     * @param {number} [options.timeout] - optional timeout (default: 60000)
+     * @returns {Promise<{from: PeerId, val: Buffer}>}
+     */
+    async get (key, options) { // eslint-disable-line require-await
+      if (!node.isStarted() || !dht.isStarted) {
+        throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
+      }
+
+      return dht.get(key, options)
+    },
+
+    /**
+     * Get the `n` values to the given key without sorting.
+     * @param {Buffer} key
+     * @param {number} nVals
+     * @param {Object} [options] - get options
+     * @param {number} [options.timeout] - optional timeout (default: 60000)
+     * @returns {Promise<Array<{from: PeerId, val: Buffer}>>}
+     */
+    async getMany (key, nVals, options) { // eslint-disable-line require-await
+      if (!node.isStarted() || !dht.isStarted) {
+        throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
+      }
+
+      return dht.getMany(key, nVals, options)
     }
   }
 }

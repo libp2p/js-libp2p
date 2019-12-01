@@ -47,6 +47,7 @@
     "bignumber.js": "^9.0.0",
     "class-is": "^1.1.0",
     "debug": "^4.1.1",
+    "dlv": "^1.1.3",
     "err-code": "^1.1.2",
     "fsm-event": "^2.1.0",
     "hashlru": "^2.3.0",

@@ -9,9 +9,9 @@ const pWaitFor = require('p-wait-for')
 const mergeOptions = require('merge-options')
 const multiaddr = require('multiaddr')
 
-const { create } = require('../../src')
+const { create } = require('../../../src')
 const { subsystemOptions, subsystemMulticodecs } = require('./utils')
-const peerUtils = require('../utils/creators/peer')
+const peerUtils = require('../../utils/creators/peer')
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
@@ -73,9 +73,9 @@ describe('DHT subsystem operates correctly', () => {
         pWaitFor(() => remoteLibp2p._dht._dht.routingTable.size === 1)
       ])
 
-      await libp2p._dht.put(key, value)
+      await libp2p.contentRouting.put(key, value)
 
-      const fetchedValue = await remoteLibp2p._dht.get(key)
+      const fetchedValue = await remoteLibp2p.contentRouting.get(key)
       expect(fetchedValue).to.eql(value)
     })
   })
@@ -126,9 +126,9 @@ describe('DHT subsystem operates correctly', () => {
       await remoteLibp2p._dht.start()
       await pWaitFor(() => libp2p._dht._dht.routingTable.size === 1)
 
-      await libp2p._dht.put(key, value)
+      await libp2p.contentRouting.put(key, value)
 
-      const fetchedValue = await remoteLibp2p._dht.get(key)
+      const fetchedValue = await remoteLibp2p.contentRouting.get(key)
       expect(fetchedValue).to.eql(value)
     })
   })
