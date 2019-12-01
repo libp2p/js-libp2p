@@ -10,7 +10,7 @@ const sinon = require('sinon')
 const multiaddr = require('multiaddr')
 const { collect } = require('streaming-iterables')
 const pipe = require('it-pipe')
-const { createPeerInfoFromFixture } = require('../utils/creators/peer')
+const { createPeerInfo } = require('../utils/creators/peer')
 const baseOptions = require('../utils/base-options')
 const Libp2p = require('../../src')
 const { codes: Errors } = require('../../src/errors')
@@ -21,7 +21,7 @@ describe('Dialing (via relay, TCP)', () => {
   let dstLibp2p
 
   before(async () => {
-    const peerInfos = await createPeerInfoFromFixture(3)
+    const peerInfos = await createPeerInfo({ number: 3 })
     // Create 3 nodes, and turn HOP on for the relay
     ;[srcLibp2p, relayLibp2p, dstLibp2p] = peerInfos.map((peerInfo, index) => {
       const opts = baseOptions

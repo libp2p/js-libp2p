@@ -8,9 +8,9 @@ const { expect } = chai
 const mergeOptions = require('merge-options')
 const multiaddr = require('multiaddr')
 
-const { create } = require('../../src')
+const { create } = require('../../../src')
 const { baseOptions, subsystemOptions } = require('./utils')
-const peerUtils = require('../utils/creators/peer')
+const peerUtils = require('../../utils/creators/peer')
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
@@ -32,7 +32,7 @@ describe('DHT subsystem is configurable', () => {
   })
 
   it('should start and stop by default once libp2p starts', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfoFromFixture(1)
+    const [peerInfo] = await peerUtils.createPeerInfo(1)
     peerInfo.multiaddrs.add(listenAddr)
 
     const customOptions = mergeOptions(subsystemOptions, {
@@ -40,17 +40,17 @@ describe('DHT subsystem is configurable', () => {
     })
 
     libp2p = await create(customOptions)
-    expect(libp2p._dht._dht.isStarted).to.equal(false)
+    expect(libp2p._dht.isStarted).to.equal(false)
 
     await libp2p.start()
-    expect(libp2p._dht._dht.isStarted).to.equal(true)
+    expect(libp2p._dht.isStarted).to.equal(true)
 
     await libp2p.stop()
-    expect(libp2p._dht._dht.isStarted).to.equal(false)
+    expect(libp2p._dht.isStarted).to.equal(false)
   })
 
   it('should not start if disabled once libp2p starts', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfoFromFixture(1)
+    const [peerInfo] = await peerUtils.createPeerInfo(1)
     peerInfo.multiaddrs.add(listenAddr)
 
     const customOptions = mergeOptions(subsystemOptions, {
@@ -63,14 +63,14 @@ describe('DHT subsystem is configurable', () => {
     })
 
     libp2p = await create(customOptions)
-    expect(libp2p._dht._dht.isStarted).to.equal(false)
+    expect(libp2p._dht.isStarted).to.equal(false)
 
     await libp2p.start()
-    expect(libp2p._dht._dht.isStarted).to.equal(false)
+    expect(libp2p._dht.isStarted).to.equal(false)
   })
 
   it('should allow a manual start', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfoFromFixture(1)
+    const [peerInfo] = await peerUtils.createPeerInfo(1)
     peerInfo.multiaddrs.add(listenAddr)
 
     const customOptions = mergeOptions(subsystemOptions, {
@@ -84,9 +84,9 @@ describe('DHT subsystem is configurable', () => {
 
     libp2p = await create(customOptions)
     await libp2p.start()
-    expect(libp2p._dht._dht.isStarted).to.equal(false)
+    expect(libp2p._dht.isStarted).to.equal(false)
 
     await libp2p._dht.start()
-    expect(libp2p._dht._dht.isStarted).to.equal(true)
+    expect(libp2p._dht.isStarted).to.equal(true)
   })
 })
