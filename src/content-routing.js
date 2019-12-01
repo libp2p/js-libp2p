@@ -4,12 +4,11 @@ const errCode = require('err-code')
 const { messages, codes } = require('./errors')
 
 const all = require('async-iterator-all')
-const get = require('dlv')
 const pAny = require('p-any')
 
 module.exports = (node) => {
   const routers = node._modules.contentRouting || []
-  const dht = get(node, '_dht')
+  const dht = node._dht
 
   // If we have the dht, make it first
   if (dht) {
