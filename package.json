@@ -44,7 +44,7 @@
     "interface-datastore": "^0.7.0",
     "libp2p-crypto": "^0.16.2",
     "merge-options": "^1.0.1",
-    "node-forge": "^0.8.5",
+    "node-forge": "^0.9.1",
     "sanitize-filename": "^1.6.1"
   },
   "devDependencies": {
