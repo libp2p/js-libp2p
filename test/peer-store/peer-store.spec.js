@@ -138,7 +138,7 @@ describe('peer-store', () => {
 
   it('should be able to retrieve a peer from store through its b58str id', async () => {
     const [peerInfo] = await peerUtils.createPeerInfo()
-    const id = peerInfo.id.toB58String()
+    const id = peerInfo.id
 
     let retrievedPeer = peerStore.get(id)
     expect(retrievedPeer).to.not.exist()
@@ -155,7 +155,7 @@ describe('peer-store', () => {
 
   it('should be able to remove a peer from store through its b58str id', async () => {
     const [peerInfo] = await peerUtils.createPeerInfo()
-    const id = peerInfo.id.toB58String()
+    const id = peerInfo.id
 
     let removed = peerStore.remove(id)
     expect(removed).to.eql(false)
