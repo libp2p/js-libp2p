@@ -7,6 +7,7 @@ log.error = debug('libp2p:peer-store:error')
 
 const { EventEmitter } = require('events')
 
+const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 
 /**
@@ -160,10 +161,15 @@ class PeerStore extends EventEmitter {
 
   /**
    * Get the info to the given id.
-   * @param {string} peerId b58str id
+   * @param {PeerId|string} peerId b58str id
    * @returns {PeerInfo}
    */
   get (peerId) {
+    // TODO: deprecate this and just accept `PeerId` instances
+    if (PeerId.isPeerId(peerId)) {
+      peerId = peerId.toB58String()
+    }
+
     const peerInfo = this.peers.get(peerId)
 
     if (peerInfo) {
@@ -175,19 +181,29 @@ class PeerStore extends EventEmitter {
 
   /**
    * Has the info to the given id.
-   * @param {string} peerId b58str id
+   * @param {PeerId|string} peerId b58str id
    * @returns {boolean}
    */
   has (peerId) {
+    // TODO: deprecate this and just accept `PeerId` instances
+    if (PeerId.isPeerId(peerId)) {
+      peerId = peerId.toB58String()
+    }
+
     return this.peers.has(peerId)
   }
 
   /**
    * Removes the Peer with the matching `peerId` from the PeerStore
-   * @param {string} peerId b58str id
+   * @param {PeerId|string} peerId b58str id
    * @returns {boolean} true if found and removed
    */
   remove (peerId) {
+    // TODO: deprecate this and just accept `PeerId` instances
+    if (PeerId.isPeerId(peerId)) {
+      peerId = peerId.toB58String()
+    }
+
     return this.peers.delete(peerId)
   }
 
