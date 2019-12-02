@@ -1,3 +1,18 @@
+<a name="0.20.0"></a>
+# [0.20.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.19.0...v0.20.0) (2019-12-02)
+
+
+### Chores
+
+* update dependencies ([#91](https://github.com/libp2p/js-libp2p-floodsub/issues/91)) ([1bc2c77](https://github.com/libp2p/js-libp2p-floodsub/commit/1bc2c77))
+
+
+### BREAKING CHANGES
+
+* getPeersSubscribed from parent class renamed to getSubscribers to remove redundant wordin
+
+
+
 <a name="0.19.0"></a>
 # [0.19.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.18.0...v0.19.0) (2019-11-14)
 
