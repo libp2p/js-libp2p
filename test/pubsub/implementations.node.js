@@ -85,7 +85,7 @@ describe('Pubsub subsystem is able to use different implementations', () => {
 
     // wait for remoteLibp2p to know about libp2p subscription
     await pWaitFor(() => {
-      const subscribedPeers = remoteLibp2p.pubsub.getPeersSubscribed(topic)
+      const subscribedPeers = remoteLibp2p.pubsub.getSubscribers(topic)
       return subscribedPeers.includes(libp2pId)
     })
 
