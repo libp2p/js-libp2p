@@ -48,6 +48,7 @@ describe('peer discovery scenarios', () => {
       },
       config: {
         peerDiscovery: {
+          autoDial: false,
           bootstrap: {
             enabled: true,
             list: bootstrappers
@@ -84,6 +85,7 @@ describe('peer discovery scenarios', () => {
       },
       config: {
         peerDiscovery: {
+          autoDial: false,
           mdns: {
             enabled: true,
             interval: 200, // discover quickly
@@ -132,11 +134,14 @@ describe('peer discovery scenarios', () => {
         dht: KadDht
       },
       config: {
+        peerDiscovery: {
+          autoDial: false
+        },
         dht: {
           randomWalk: {
             enabled: true,
             delay: 100, // start the first query quickly
-            interval: 99e3, // We dont need to run this again
+            interval: 1000,
             timeout: 3000
           },
           enabled: true
