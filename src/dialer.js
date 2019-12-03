@@ -134,30 +134,3 @@ class Dialer {
 }
 
 module.exports = Dialer
-
-// class ActionLimiter {
-//   constructor(actions, options = {}) {
-//     this.actions = actions
-//     this.limit = options.limit || 4
-//     this.controller = options.controller || new AbortController()
-//   }
-//   async abort () {
-//     this.controller.abort()
-//   }
-//   async run () {
-//     const limit = pLimit(this.limit)
-//     let result
-//     try {
-//       result = await pAny(this.actions.map(action => limit(action)))
-//     } catch (err) {
-//       console.log(err)
-//       if (!err.code) err.code = codes.ERR_CONNECTION_FAILED
-//       log.error(err)
-//       throw err
-//     } finally {
-//       console.log('RES', result)
-//       this.controller.abort()
-//     }
-//     return result
-//   }
-// }
