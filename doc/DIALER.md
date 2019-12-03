@@ -9,6 +9,7 @@
 * As tokens are limited, DialRequests should be given a prioritized list of Multiaddrs to minimize the potential request time.
 * Once a single Multiaddr Dial has succeeded, all pending dials in that Dial Request should be aborted. All tokens should be immediately released to the Dialer.
 * If all Multiaddr Dials fail, or the DIAL_TIMEOUT max is reached for the entire DialRequest, all in progress dials for that DialRequest should be aborted. All tokens should immediately be released to the Dialer.
+* If a Multiaddr Dial fails and there are no more dials to use its token, that token should be immediately released to the Dialer.
 
 ## Multiaddr Confidence
 

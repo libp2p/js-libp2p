@@ -1,19 +1,20 @@
 'use strict'
 
-const nextTick = require('async/nextTick')
 const multiaddr = require('multiaddr')
 const errCode = require('err-code')
-const { default: PQueue } = require('p-queue')
 const AbortController = require('abort-controller')
+const delay = require('delay')
 const debug = require('debug')
 const log = debug('libp2p:dialer')
 log.error = debug('libp2p:dialer:error')
-const PeerId = require('peer-id')
+const { DialRequest } = require('./dialer/dial-request')
+const { anySignal } = require('./util')
 
 const { codes } = require('./errors')
 const {
+  DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS,
-  DIAL_TIMEOUT
+  PER_PEER_LIMIT
 } = require('./constants')
 
 class Dialer {
@@ -29,74 +30,76 @@ class Dialer {
     transportManager,
     peerStore,
     concurrency = MAX_PARALLEL_DIALS,
-    timeout = DIAL_TIMEOUT
+    timeout = DIAL_TIMEOUT,
+    perPeerLimit = PER_PEER_LIMIT
   }) {
     this.transportManager = transportManager
     this.peerStore = peerStore
     this.concurrency = concurrency
     this.timeout = timeout
-    this.queue = new PQueue({ concurrency, timeout, throwOnTimeout: true })
+    this.perPeerLimit = perPeerLimit
+    this.tokens = [...new Array(concurrency)].map((_, index) => index)
 
-    /**
-     * @property {IdentifyService}
-     */
-    this._identifyService = null
-  }
-
-  set identifyService (service) {
-    this._identifyService = service
-  }
-
-  /**
-   * @type {IdentifyService}
-   */
-  get identifyService () {
-    return this._identifyService
+    this.releaseToken = this.releaseToken.bind(this)
   }
 
   /**
    * Connects to a given `Multiaddr`. `addr` should include the id of the peer being
    * dialed, it will be used for encryption verification.
    *
-   * @async
    * @param {Multiaddr} addr The address to dial
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] An AbortController signal
    * @returns {Promise<Connection>}
    */
-  async connectToMultiaddr (addr, options = {}) {
+  connectToMultiaddr (addr, options = {}) {
     addr = multiaddr(addr)
-    let conn
-    let controller
 
-    if (!options.signal) {
-      controller = new AbortController()
-      options.signal = controller.signal
-    }
+    return this.connectToMultiaddrs([addr], options)
+  }
+
+  /**
+   * Connects to the first success of a given list of `Multiaddr`. `addrs` should
+   * include the id of the peer being dialed, it will be used for encryption verification.
+   *
+   * @param {Array<Multiaddr>} addrs
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal] An AbortController signal
+   * @returns {Promise<Connection>}
+   */
+  async connectToMultiaddrs (addrs, options = {}) {
+    const dialAction = (addr, options) => this.transportManager.dial(addr, options)
+    const dialRequest = new DialRequest({
+      addrs,
+      dialAction,
+      dialer: this
+    })
+
+    // Combine the timeout signal and options.signal, if provided
+    const timeoutController = new AbortController()
+    const signals = [timeoutController.signal]
+    options.signal && signals.push(options.signal)
+    const signal = anySignal(signals)
+    const timeoutPromise = delay.reject(this.timeout, {
+      value: errCode(new Error('Dial timed out'), codes.ERR_TIMEOUT)
+    })
 
     try {
-      conn = await this.queue.add(() => this.transportManager.dial(addr, options))
+      // Race the dial request and the timeout
+      const dialResult = await Promise.race([
+        dialRequest.run({
+          ...options,
+          signal
+        }),
+        timeoutPromise
+      ])
+      timeoutPromise.clear()
+      return dialResult
     } catch (err) {
-      if (err.name === 'TimeoutError') {
-        controller.abort()
-        err.code = codes.ERR_TIMEOUT
-      }
-      log.error('Error dialing address %s,', addr, err)
+      log.error(err)
+      timeoutController.abort()
       throw err
     }
-
-    // Perform a delayed Identify handshake
-    if (this.identifyService) {
-      nextTick(async () => {
-        try {
-          await this.identifyService.identify(conn, conn.remotePeer)
-        } catch (err) {
-          log.error(err)
-        }
-      })
-    }
-
-    return conn
   }
 
   /**
@@ -104,31 +107,57 @@ class Dialer {
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    *
-   * @async
-   * @param {PeerInfo|PeerId} peer The remote peer to dial
+   * @param {PeerId} peerId The remote peer id to dial
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] An AbortController signal
    * @returns {Promise<Connection>}
    */
-  async connectToPeer (peer, options = {}) {
-    if (PeerId.isPeerId(peer)) {
-      peer = this.peerStore.get(peer.toB58String())
-    }
+  connectToPeer (peerId, options = {}) {
+    const addrs = this.peerStore.multiaddrsForPeer(peerId)
 
-    const addrs = peer.multiaddrs.toArray()
-    for (const addr of addrs) {
-      try {
-        return await this.connectToMultiaddr(addr, options)
-      } catch (_) {
-        // The error is already logged, just move to the next addr
-        continue
-      }
-    }
+    // TODO: ensure the peer id is on the multiaddr
 
-    const err = errCode(new Error('Could not dial peer, all addresses failed'), codes.ERR_CONNECTION_FAILED)
-    log.error(err)
-    throw err
+    return this.connectToMultiaddrs(addrs, options)
+  }
+
+  getTokens (num) {
+    const total = Math.min(num, this.perPeerLimit, this.tokens.length)
+    const tokens = this.tokens.splice(0, total)
+    log('%d tokens request, returning %d, %d remaining', num, total, this.tokens.length)
+    return tokens
+  }
+
+  releaseToken (token) {
+    log('token %d released', token)
+    this.tokens.push(token)
   }
 }
 
 module.exports = Dialer
+
+// class ActionLimiter {
+//   constructor(actions, options = {}) {
+//     this.actions = actions
+//     this.limit = options.limit || 4
+//     this.controller = options.controller || new AbortController()
+//   }
+//   async abort () {
+//     this.controller.abort()
+//   }
+//   async run () {
+//     const limit = pLimit(this.limit)
+//     let result
+//     try {
+//       result = await pAny(this.actions.map(action => limit(action)))
+//     } catch (err) {
+//       console.log(err)
+//       if (!err.code) err.code = codes.ERR_CONNECTION_FAILED
+//       log.error(err)
+//       throw err
+//     } finally {
+//       console.log('RES', result)
+//       this.controller.abort()
+//     }
+//     return result
+//   }
+// }
