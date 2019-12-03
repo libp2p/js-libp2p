@@ -166,7 +166,7 @@ describe('registrar', () => {
 
       // Remove protocol to peer and update it
       peerInfo.protocols.delete(multicodec)
-      peerStore.put(peerInfo)
+      peerStore.replace(peerInfo)
 
       await onDisconnectDefer.promise
     })

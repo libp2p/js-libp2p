@@ -111,9 +111,11 @@ describe('peer discovery scenarios', () => {
       }
     })
 
-    await remoteLibp2p1.start()
-    await remoteLibp2p2.start()
-    await libp2p.start()
+    await Promise.all([
+      remoteLibp2p1.start(),
+      remoteLibp2p2.start(),
+      libp2p.start()
+    ])
 
     await deferred.promise
 
@@ -133,8 +135,8 @@ describe('peer discovery scenarios', () => {
         dht: {
           randomWalk: {
             enabled: true,
-            delay: 100,
-            interval: 200, // start the query sooner
+            delay: 100, // start the first query quickly
+            interval: 99e3, // We dont need to run this again
             timeout: 3000
           },
           enabled: true
@@ -153,9 +155,11 @@ describe('peer discovery scenarios', () => {
       }
     })
 
-    await remoteLibp2p1.start()
-    await remoteLibp2p2.start()
-    await libp2p.start()
+    await Promise.all([
+      remoteLibp2p1.start(),
+      remoteLibp2p2.start(),
+      libp2p.start()
+    ])
 
     // Topology:
     // A -> B
@@ -166,7 +170,9 @@ describe('peer discovery scenarios', () => {
     ])
 
     await deferred.promise
-    await remoteLibp2p1.stop()
-    await remoteLibp2p2.stop()
+    return Promise.all([
+      remoteLibp2p1.stop(),
+      remoteLibp2p2.stop()
+    ])
   })
 })
