@@ -89,7 +89,7 @@ describe('Pubsub subsystem operates correctly', () => {
 
       // wait for remoteLibp2p to know about libp2p subscription
       await pWaitFor(() => {
-        const subscribedPeers = remoteLibp2p.pubsub.getPeersSubscribed(topic)
+        const subscribedPeers = remoteLibp2p.pubsub.getSubscribers(topic)
         return subscribedPeers.includes(libp2pId)
       })
       remoteLibp2p.pubsub.publish(topic, data)
@@ -172,7 +172,7 @@ describe('Pubsub subsystem operates correctly', () => {
 
       // wait for remoteLibp2p to know about libp2p subscription
       await pWaitFor(() => {
-        const subscribedPeers = remoteLibp2p.pubsub.getPeersSubscribed(topic)
+        const subscribedPeers = remoteLibp2p.pubsub.getSubscribers(topic)
         return subscribedPeers.includes(libp2pId)
       })
 

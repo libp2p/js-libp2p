@@ -83,12 +83,12 @@ module.exports = (node, Pubsub, config) => {
      * @param {string} topic
      * @returns {Array<string>}
      */
-    getPeersSubscribed: (topic) => {
+    getSubscribers: (topic) => {
       if (!node.isStarted() && !pubsub.started) {
         throw errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED)
       }
 
-      return pubsub.getPeersSubscribed(topic)
+      return pubsub.getSubscribers(topic)
     },
 
     setMaxListeners (n) {
