@@ -34,6 +34,12 @@ Creates an instance of Libp2p.
 | Name | Type | Description |
 |------|------|-------------|
 | options | `Object` | libp2p options |
+| options.modules | `Array<Object>` | libp2p modules to use |
+| [options.config] | `Object` | libp2p modules configuration and core configuration |
+| [options.datastore] | `Object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) (in memory datastore will be used if not provided) |
+| [options.peerInfo] | [PeerInfo](https://github.com/libp2p/js-peer-info) | peerInfo instance (it will be created if not provided) |
+
+For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
 
 #### Returns
 
@@ -74,6 +80,39 @@ Required keys in the `options` object:
 
 - `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node (optional when using `.create`).
 - `modules.transport`: An array that must include at least 1 compliant transport. See [modules that implement the transport interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport#modules-that-implement-the-interface).
+
+</details>
+
+Once you have a libp2p instance, you are able to listen to several events it emmits, so that you can be noticed of relevant network events.
+
+<details><summary>Events</summary>
+
+#### An error has occurred
+
+`libp2p.on('error', (err) => {})`
+
+- `err`: instance of `Error`
+
+#### A peer has been discovered
+
+`libp2p.on('peer:discovery', (peer) => {})`
+
+If `autoDial` option is `true`, applications should **not** attempt to connect to the peer
+unless they are performing a specific action. See [peer discovery and auto dial](./PEER_DISCOVERY.md) for more information.
+
+- `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
+
+#### We have a new connection to a peer
+
+`libp2p.on('peer:connect', (peer) => {})`
+
+- `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
+
+#### We have closed a connection to a peer
+
+`libp2p.on('peer:disconnect', (peer) => {})`
+
+- `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
 
 </details>
 
