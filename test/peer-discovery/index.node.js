@@ -157,8 +157,7 @@ describe('peer discovery scenarios', () => {
 
     await Promise.all([
       remoteLibp2p1.start(),
-      remoteLibp2p2.start(),
-      libp2p.start()
+      remoteLibp2p2.start()
     ])
 
     // Topology:
@@ -168,6 +167,8 @@ describe('peer discovery scenarios', () => {
       libp2p.dial(remotePeerInfo1),
       remoteLibp2p2.dial(remotePeerInfo1)
     ])
+
+    libp2p.start()
 
     await deferred.promise
     return Promise.all([
