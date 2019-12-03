@@ -57,6 +57,12 @@ class Libp2p extends EventEmitter {
         const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer))
         this.registrar.onConnect(peerInfo, connection)
         this.emit('peer:connect', peerInfo)
+
+        // Run identify for every connection
+        if (this.identifyService) {
+          this.identifyService.identify(connection, connection.remotePeer)
+            .catch(log.error)
+        }
       },
       onConnectionEnd: (connection) => {
         const peerInfo = getPeerInfo(connection.remotePeer)
@@ -104,12 +110,12 @@ class Libp2p extends EventEmitter {
       })
 
       // Add the identify service since we can multiplex
-      this.dialer.identifyService = new IdentifyService({
+      this.identifyService = new IdentifyService({
         registrar: this.registrar,
         peerInfo: this.peerInfo,
         protocols: this.upgrader.protocols
       })
-      this.handle(Object.values(IDENTIFY_PROTOCOLS), this.dialer.identifyService.handleMessage)
+      this.handle(Object.values(IDENTIFY_PROTOCOLS), this.identifyService.handleMessage)
     }
 
     // Attach private network protector
@@ -236,7 +242,7 @@ class Libp2p extends EventEmitter {
       connection = await this.dialer.connectToMultiaddr(peer, options)
     } else {
       peer = await getPeerInfoRemote(peer, this)
-      connection = await this.dialer.connectToPeer(peer, options)
+      connection = await this.dialer.connectToPeer(peer.id, options)
     }
 
     const peerInfo = getPeerInfo(connection.remotePeer)
@@ -293,8 +299,8 @@ class Libp2p extends EventEmitter {
     })
 
     // Only push if libp2p is running
-    if (this.isStarted()) {
-      this.dialer.identifyService.pushToPeerStore(this.peerStore)
+    if (this.isStarted() && this.identifyService) {
+      this.identifyService.pushToPeerStore(this.peerStore)
     }
   }
 
@@ -310,8 +316,8 @@ class Libp2p extends EventEmitter {
     })
 
     // Only push if libp2p is running
-    if (this.isStarted()) {
-      this.dialer.identifyService.pushToPeerStore(this.peerStore)
+    if (this.isStarted() && this.identifyService) {
+      this.identifyService.pushToPeerStore(this.peerStore)
     }
   }
 
