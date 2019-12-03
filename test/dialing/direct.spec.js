@@ -216,7 +216,8 @@ describe('Dialing (direct, WebSockets)', () => {
       })
 
       sinon.spy(libp2p.dialer.identifyService, 'identify')
-      sinon.spy(libp2p.peerStore, 'update')
+      sinon.spy(libp2p.peerStore, 'replace')
+      sinon.spy(libp2p.upgrader, 'onConnection')
 
       const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
       expect(connection).to.exist()
@@ -225,7 +226,7 @@ describe('Dialing (direct, WebSockets)', () => {
       expect(libp2p.dialer.identifyService.identify.callCount).to.equal(1)
       await libp2p.dialer.identifyService.identify.firstCall.returnValue
 
-      expect(libp2p.peerStore.update.callCount).to.equal(1)
+      expect(libp2p.peerStore.replace.callCount).to.equal(1)
     })
 
     it('should be able to use hangup to close connections', async () => {

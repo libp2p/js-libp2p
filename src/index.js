@@ -54,9 +54,7 @@ class Libp2p extends EventEmitter {
     this.upgrader = new Upgrader({
       localPeer: this.peerInfo.id,
       onConnection: (connection) => {
-        const peerInfo = getPeerInfo(connection.remotePeer)
-
-        this.peerStore.put(peerInfo)
+        const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer))
         this.registrar.onConnect(peerInfo, connection)
         this.emit('peer:connect', peerInfo)
       },
@@ -144,7 +142,7 @@ class Libp2p extends EventEmitter {
     this.peerRouting = peerRouting(this)
     this.contentRouting = contentRouting(this)
 
-    this._peerDiscovered = this._peerDiscovered.bind(this)
+    this._onDiscoveryPeer = this._onDiscoveryPeer.bind(this)
   }
 
   /**
@@ -340,7 +338,7 @@ class Libp2p extends EventEmitter {
 
       // TODO: this should be modified once random-walk is used as
       // the other discovery modules
-      this._dht.on('peer', this._peerDiscovered)
+      this._dht.on('peer', this._onDiscoveryPeer)
     }
   }
 
@@ -350,6 +348,11 @@ class Libp2p extends EventEmitter {
    */
   _onDidStart () {
     this._isStarted = true
+
+    this.peerStore.on('peer', peerInfo => {
+      this.emit('peer:discovery', peerInfo)
+      this._maybeConnect(peerInfo)
+    })
 
     // Peer discovery
     this._setupPeerDiscovery()
@@ -362,24 +365,17 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Handles discovered peers. Each discovered peer will be emitted via
-   * the `peer:discovery` event. If auto dial is enabled for libp2p
-   * and the current connection count is under the low watermark, the
-   * peer will be dialed.
+   * Called whenever peer discovery services emit `peer` events.
+   * Known peers may be emitted.
    * @private
    * @param {PeerInfo} peerInfo
    */
-  _peerDiscovered (peerInfo) {
-    if (peerInfo.id.toB58String() === this.peerInfo.id.toB58String()) {
+  _onDiscoveryPeer (peerInfo) {
+    if (peerInfo.id.toString() === this.peerInfo.id.toString()) {
       log.error(new Error(codes.ERR_DISCOVERED_SELF))
       return
     }
-    peerInfo = this.peerStore.put(peerInfo)
-
-    if (!this.isStarted()) return
-
-    this.emit('peer:discovery', peerInfo)
-    this._maybeConnect(peerInfo)
+    this.peerStore.put(peerInfo)
   }
 
   /**
@@ -432,7 +428,7 @@ class Libp2p extends EventEmitter {
           discoveryService = DiscoveryService
         }
 
-        discoveryService.on('peer', this._peerDiscovered)
+        discoveryService.on('peer', this._onDiscoveryPeer)
         this._discovery.push(discoveryService)
       }
     }

@@ -45,7 +45,7 @@ class PeerStore extends EventEmitter {
 
     let peer
     // Already know the peer?
-    if (this.peers.has(peerInfo.id.toB58String())) {
+    if (this.has(peerInfo.id)) {
       peer = this.update(peerInfo)
     } else {
       peer = this.add(peerInfo)
@@ -118,15 +118,12 @@ class PeerStore extends EventEmitter {
 
     if (multiaddrsIntersection.length !== peerInfo.multiaddrs.size ||
       multiaddrsIntersection.length !== recorded.multiaddrs.size) {
-      // recorded.multiaddrs = peerInfo.multiaddrs
-      recorded.multiaddrs.clear()
-
       for (const ma of peerInfo.multiaddrs.toArray()) {
         recorded.multiaddrs.add(ma)
       }
 
       this.emit('change:multiaddrs', {
-        peerInfo: peerInfo,
+        peerInfo: recorded,
         multiaddrs: recorded.multiaddrs.toArray()
       })
     }
@@ -139,14 +136,12 @@ class PeerStore extends EventEmitter {
 
     if (protocolsIntersection.size !== peerInfo.protocols.size ||
       protocolsIntersection.size !== recorded.protocols.size) {
-      recorded.protocols.clear()
-
       for (const protocol of peerInfo.protocols) {
         recorded.protocols.add(protocol)
       }
 
       this.emit('change:protocols', {
-        peerInfo: peerInfo,
+        peerInfo: recorded,
         protocols: Array.from(recorded.protocols)
       })
     }
@@ -170,13 +165,7 @@ class PeerStore extends EventEmitter {
       peerId = peerId.toB58String()
     }
 
-    const peerInfo = this.peers.get(peerId)
-
-    if (peerInfo) {
-      return peerInfo
-    }
-
-    return undefined
+    return this.peers.get(peerId)
   }
 
   /**
@@ -217,6 +206,16 @@ class PeerStore extends EventEmitter {
 
     this.remove(peerInfo.id.toB58String())
     this.add(peerInfo)
+
+    // This should be cleaned up in PeerStore v2
+    this.emit('change:multiaddrs', {
+      peerInfo,
+      multiaddrs: peerInfo.multiaddrs.toArray()
+    })
+    this.emit('change:protocols', {
+      peerInfo,
+      protocols: Array.from(peerInfo.protocols)
+    })
   }
 }
 
