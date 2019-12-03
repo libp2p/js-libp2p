@@ -48,6 +48,7 @@ describe('peer discovery scenarios', () => {
       },
       config: {
         peerDiscovery: {
+          autoDial: false,
           bootstrap: {
             enabled: true,
             list: bootstrappers
@@ -84,6 +85,7 @@ describe('peer discovery scenarios', () => {
       },
       config: {
         peerDiscovery: {
+          autoDial: false,
           mdns: {
             enabled: true,
             interval: 200, // discover quickly
@@ -111,9 +113,11 @@ describe('peer discovery scenarios', () => {
       }
     })
 
-    await remoteLibp2p1.start()
-    await remoteLibp2p2.start()
-    await libp2p.start()
+    await Promise.all([
+      remoteLibp2p1.start(),
+      remoteLibp2p2.start(),
+      libp2p.start()
+    ])
 
     await deferred.promise
 
@@ -130,11 +134,14 @@ describe('peer discovery scenarios', () => {
         dht: KadDht
       },
       config: {
+        peerDiscovery: {
+          autoDial: false
+        },
         dht: {
           randomWalk: {
             enabled: true,
-            delay: 100,
-            interval: 200, // start the query sooner
+            delay: 100, // start the first query quickly
+            interval: 1000,
             timeout: 3000
           },
           enabled: true
@@ -153,9 +160,10 @@ describe('peer discovery scenarios', () => {
       }
     })
 
-    await remoteLibp2p1.start()
-    await remoteLibp2p2.start()
-    await libp2p.start()
+    await Promise.all([
+      remoteLibp2p1.start(),
+      remoteLibp2p2.start()
+    ])
 
     // Topology:
     // A -> B
@@ -165,8 +173,12 @@ describe('peer discovery scenarios', () => {
       remoteLibp2p2.dial(remotePeerInfo1)
     ])
 
+    libp2p.start()
+
     await deferred.promise
-    await remoteLibp2p1.stop()
-    await remoteLibp2p2.stop()
+    return Promise.all([
+      remoteLibp2p1.stop(),
+      remoteLibp2p2.stop()
+    ])
   })
 })

@@ -56,7 +56,6 @@ describe('peer-store', () => {
     // Put the peer in the store
     peerStore.put(peerInfo)
 
-    sinon.spy(peerStore, 'put')
     sinon.spy(peerStore, 'add')
     sinon.spy(peerStore, 'update')
 
@@ -75,7 +74,6 @@ describe('peer-store', () => {
 
     peerStore.put(peerInfo)
 
-    expect(peerStore.put.callCount).to.equal(1)
     expect(peerStore.add.callCount).to.equal(0)
     expect(peerStore.update.callCount).to.equal(1)
   })
