@@ -217,6 +217,16 @@ class PeerStore extends EventEmitter {
       protocols: Array.from(peerInfo.protocols)
     })
   }
+
+  /**
+   * Returns the known multiaddrs for a given `PeerId`
+   * @param {PeerId} peerId
+   * @returns {Array<Multiaddr>}
+   */
+  multiaddrsForPeer (peerId) {
+    const peerInfo = this.get(peerId.toB58String())
+    return peerInfo.multiaddrs.toArray()
+  }
 }
 
 module.exports = PeerStore

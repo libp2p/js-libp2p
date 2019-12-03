@@ -10,6 +10,7 @@ const sinon = require('sinon')
 const multiaddr = require('multiaddr')
 const { collect } = require('streaming-iterables')
 const pipe = require('it-pipe')
+const AggregateError = require('aggregate-error')
 const { createPeerInfo } = require('../utils/creators/peer')
 const baseOptions = require('../utils/base-options')
 const Libp2p = require('../../src')
@@ -93,8 +94,8 @@ describe('Dialing (via relay, TCP)', () => {
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
 
     await expect(srcLibp2p.dial(dialAddr))
-      .to.eventually.be.rejected()
-      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
+      .to.eventually.be.rejectedWith(AggregateError)
+      .and.to.have.nested.property('._errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
   })
 
   it('should not stay connected to a relay when not already connected and HOP fails', async () => {
@@ -106,8 +107,8 @@ describe('Dialing (via relay, TCP)', () => {
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toString()}`)
 
     await expect(srcLibp2p.dial(dialAddr))
-      .to.eventually.be.rejected()
-      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
+      .to.eventually.be.rejectedWith(AggregateError)
+      .and.to.have.nested.property('._errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
 
     // We should not be connected to the relay, because we weren't before the dial
     const srcToRelayConn = srcLibp2p.registrar.getConnection(relayLibp2p.peerInfo)
@@ -125,8 +126,8 @@ describe('Dialing (via relay, TCP)', () => {
     await srcLibp2p.dial(relayAddr)
 
     await expect(srcLibp2p.dial(dialAddr))
-      .to.eventually.be.rejected()
-      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
+      .to.eventually.be.rejectedWith(AggregateError)
+      .and.to.have.nested.property('._errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
 
     const srcToRelayConn = srcLibp2p.registrar.getConnection(relayLibp2p.peerInfo)
     expect(srcToRelayConn).to.exist()
@@ -152,8 +153,8 @@ describe('Dialing (via relay, TCP)', () => {
     }])
 
     await expect(srcLibp2p.dial(dialAddr))
-      .to.eventually.be.rejected()
-      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
+      .to.eventually.be.rejectedWith(AggregateError)
+      .and.to.have.nested.property('._errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
 
     const dstToRelayConn = dstLibp2p.registrar.getConnection(relayLibp2p.peerInfo)
     expect(dstToRelayConn).to.exist()

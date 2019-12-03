@@ -197,15 +197,15 @@ describe('Identify', () => {
         peerInfo
       })
 
-      sinon.spy(libp2p.dialer.identifyService, 'identify')
+      sinon.spy(libp2p.identifyService, 'identify')
       sinon.spy(libp2p.peerStore, 'replace')
 
       const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
       expect(connection).to.exist()
       // Wait for nextTick to trigger the identify call
       await delay(1)
-      expect(libp2p.dialer.identifyService.identify.callCount).to.equal(1)
-      await libp2p.dialer.identifyService.identify.firstCall.returnValue
+      expect(libp2p.identifyService.identify.callCount).to.equal(1)
+      await libp2p.identifyService.identify.firstCall.returnValue
 
       expect(libp2p.peerStore.replace.callCount).to.equal(1)
       await connection.close()
@@ -217,8 +217,8 @@ describe('Identify', () => {
         peerInfo
       })
 
-      sinon.spy(libp2p.dialer.identifyService, 'identify')
-      sinon.spy(libp2p.dialer.identifyService, 'push')
+      sinon.spy(libp2p.identifyService, 'identify')
+      sinon.spy(libp2p.identifyService, 'push')
       sinon.spy(libp2p.peerStore, 'update')
 
       const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
@@ -227,15 +227,15 @@ describe('Identify', () => {
       await delay(1)
 
       // Wait for identify to finish
-      await libp2p.dialer.identifyService.identify.firstCall.returnValue
+      await libp2p.identifyService.identify.firstCall.returnValue
       sinon.stub(libp2p, 'isStarted').returns(true)
 
       libp2p.handle('/echo/2.0.0', () => {})
       libp2p.unhandle('/echo/2.0.0')
 
       // Verify the remote peer is notified of both changes
-      expect(libp2p.dialer.identifyService.push.callCount).to.equal(2)
-      for (const call of libp2p.dialer.identifyService.push.getCalls()) {
+      expect(libp2p.identifyService.push.callCount).to.equal(2)
+      for (const call of libp2p.identifyService.push.getCalls()) {
         const [connections] = call.args
         expect(connections.length).to.equal(1)
         expect(connections[0].remotePeer.toB58String()).to.equal(remoteAddr.getPeerId())
