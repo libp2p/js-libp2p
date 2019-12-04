@@ -45,6 +45,7 @@ class DialRequest {
     const th = new FIFO()
     tokens.forEach(t => th.push(t))
     const dialAbortControllers = this.addrs.map(() => new AbortController())
+    let completedDials = 0
 
     try {
       return await pAny(this.addrs.map(async (addr, i) => {
@@ -56,9 +57,17 @@ class DialRequest {
           // Remove the successful AbortController so it is no aborted
           dialAbortControllers.splice(i, 1)
         } catch (err) {
-          th.push(token) // return to token holder on error so another ma can be attempted
           throw err
+        } finally {
+          completedDials++
+          // If we have more dials to make, recycle the token, otherwise release it
+          if (completedDials < this.addrs.length) {
+            th.push(token)
+          } else {
+            this.dialer.releaseToken(tokens.splice(tokens.indexOf(token), 1)[0])
+          }
         }
+
         return conn
       }))
     } finally {
