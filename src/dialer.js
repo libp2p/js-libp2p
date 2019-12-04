@@ -39,8 +39,6 @@ class Dialer {
     this.timeout = timeout
     this.perPeerLimit = perPeerLimit
     this.tokens = [...new Array(concurrency)].map((_, index) => index)
-
-    this.releaseToken = this.releaseToken.bind(this)
   }
 
   /**
@@ -68,7 +66,10 @@ class Dialer {
    * @returns {Promise<Connection>}
    */
   async connectToMultiaddrs (addrs, options = {}) {
-    const dialAction = (addr, options) => this.transportManager.dial(addr, options)
+    const dialAction = (addr, options) => {
+      if (options.signal.aborted) throw errCode(new Error('already aborted'), 'ERR_ALREADY_ABORTED')
+      return this.transportManager.dial(addr, options)
+    }
     const dialRequest = new DialRequest({
       addrs,
       dialAction,
