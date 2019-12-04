@@ -42,30 +42,17 @@ class Dialer {
   }
 
   /**
-   * Connects to a given `Multiaddr`. `addr` should include the id of the peer being
-   * dialed, it will be used for encryption verification.
-   *
-   * @param {Multiaddr} addr The address to dial
-   * @param {object} [options]
-   * @param {AbortSignal} [options.signal] An AbortController signal
-   * @returns {Promise<Connection>}
-   */
-  connectToMultiaddr (addr, options = {}) {
-    addr = multiaddr(addr)
-
-    return this.connectToMultiaddrs([addr], options)
-  }
-
-  /**
    * Connects to the first success of a given list of `Multiaddr`. `addrs` should
    * include the id of the peer being dialed, it will be used for encryption verification.
    *
-   * @param {Array<Multiaddr>} addrs
+   * @param {Array<Multiaddr>|Multiaddr} addrs
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] An AbortController signal
    * @returns {Promise<Connection>}
    */
-  async connectToMultiaddrs (addrs, options = {}) {
+  async connectToMultiaddr (addrs, options = {}) {
+    if (!Array.isArray(addrs)) addrs = [multiaddr(addrs)]
+
     const dialAction = (addr, options) => {
       if (options.signal.aborted) throw errCode(new Error('already aborted'), 'ERR_ALREADY_ABORTED')
       return this.transportManager.dial(addr, options)
@@ -112,7 +99,7 @@ class Dialer {
 
     // TODO: ensure the peer id is on the multiaddr
 
-    return this.connectToMultiaddrs(addrs, options)
+    return this.connectToMultiaddr(addrs, options)
   }
 
   getTokens (num) {
