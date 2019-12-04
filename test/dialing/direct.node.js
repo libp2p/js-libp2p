@@ -175,8 +175,9 @@ describe('Dialing (direct, TCP)', () => {
 
     // Let the call stack run
     await delay(0)
-    // All dials should have executed
-    expect(localTM.dial.callCount).to.equal(3)
+
+    // Only two dials should be executed, as the first dial will succeed
+    expect(localTM.dial.callCount).to.equal(2)
     expect(dialer.tokens).to.have.length(2)
   })
 
