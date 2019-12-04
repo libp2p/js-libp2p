@@ -49,7 +49,7 @@ class DialRequest {
     // For every token, run a multiaddr dial
     // If there are tokens left, release them
     // If there are multiaddrs left, wait for tokens to finish
-    const th = new TokenHolder(tokens, this.dialer.releaseToken)
+    const th = new TokenHolder(tokens, t => this.dialer.releaseToken(t))
 
     // Create the dial functions
     const dials = this.addrs.map(addr => {
@@ -76,7 +76,7 @@ class DialRequest {
    * @param {Multiaddr} addr
    * @param {object} options
    * @param {AbortSignal} options.signal An AbortController signal
-   * @param {number} options.timeout The max dial time for each request
+   * @param {number} options.timeout The max dial time for each request in ms
    * @returns {{abort: function(), promise: Promise<Connection>}} An AbortableDial
    */
   _abortableDial (addr, options) {
