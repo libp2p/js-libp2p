@@ -165,7 +165,7 @@ describe('Dialing (direct, TCP)', () => {
     })
 
     // Perform 3 multiaddr dials
-    dialer.connectToMultiaddrs([remoteAddr, remoteAddr, remoteAddr])
+    dialer.connectToMultiaddr([remoteAddr, remoteAddr, remoteAddr])
 
     // Let the call stack run
     await delay(0)
@@ -252,7 +252,7 @@ describe('Dialing (direct, TCP)', () => {
         }
       })
 
-      sinon.spy(libp2p.dialer, 'connectToMultiaddrs')
+      sinon.spy(libp2p.dialer, 'connectToMultiaddr')
       const remotePeer = new PeerInfo(remoteLibp2p.peerInfo.id)
       remotePeer.multiaddrs.add(remoteAddr)
 
@@ -262,7 +262,7 @@ describe('Dialing (direct, TCP)', () => {
       expect(stream).to.exist()
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
-      expect(libp2p.dialer.connectToMultiaddrs.callCount).to.equal(1)
+      expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
     })
 
     it('should be able to use hangup to close connections', async () => {
