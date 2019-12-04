@@ -14,7 +14,7 @@ const { codes } = require('./errors')
 const {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS,
-  PER_PEER_LIMIT
+  MAX_PER_PEER_DIALS
 } = require('./constants')
 
 class Dialer {
@@ -31,7 +31,7 @@ class Dialer {
     peerStore,
     concurrency = MAX_PARALLEL_DIALS,
     timeout = DIAL_TIMEOUT,
-    perPeerLimit = PER_PEER_LIMIT
+    perPeerLimit = MAX_PER_PEER_DIALS
   }) {
     this.transportManager = transportManager
     this.peerStore = peerStore
