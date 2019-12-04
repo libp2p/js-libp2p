@@ -10,19 +10,19 @@
   * [Peer Routing](#peer-routing)
   * [DHT](#dht)
   * [Pubsub](#pubsub)
-* [Libp2p node](#libp2p-node)
+* [Customizing Libp2p](#customizing-libp2p)
+  * [Examples](#examples)
 * [Configuration examples](#configuration-examples)
 
 ## Overview
 
 libp2p is a modular networking stack. It's designed to be able to suit a variety of project needs. The configuration of libp2p is a key part of its structure. It enables you to bring exactly what you need, and only what you need. This document is a guide on how to configure libp2p for your particular project. Check out the [Configuration examples](#configuration-examples) section if you're just looking to leverage an existing configuration.
 
-`js-libp2p` acts as the composer for this modular p2p networking stack using libp2p compatible modules as its building blocks.
 Regardless of how you configure libp2p, the top level [API](./API.md) will always remain the same. **Note**: if some modules are not configured, like Content Routing, using those methods will throw errors.
 
 ## Modules
 
-For getting an instance of `js-libp2p` compliant with all types of networking requirements, it is possible to specify the following building blocks:
+`js-libp2p` acts as the composer for this modular p2p networking stack using libp2p compatible modules as its subsystems. For getting an instance of `js-libp2p` compliant with all types of networking requirements, it is possible to specify the following subsystems:
 
 - Transports
 - Multiplexers
@@ -33,11 +33,11 @@ For getting an instance of `js-libp2p` compliant with all types of networking re
 - DHT implementation
 - Pubsub router
 
-The libp2p ecosystem contains at least one module for each of these building blocks. This way, the user should install and import the modules that are relevant for their requirements. Moreover, thanks to the existing interfaces it is easy to create a libp2p compatible module and use it.
+The libp2p ecosystem contains at least one module for each of these subsystems. This way, the user should install and import the modules that are relevant for their requirements. Moreover, thanks to the existing interfaces it is easy to create a libp2p compatible module and use it.
 
 After selecting the modules to use, it is also possible to configure each one according to your needs.
 
-Bear in mind that only a **transport** is required, being all the other building blocks optional.
+Bear in mind that only a **transport** is required, being all the other subsystems optional.
 
 ### Transport
 
@@ -62,7 +62,7 @@ If you want to know more about libp2p transports, you should read the following 
 
 > Libp2p peers will need to communicate with each other through several protocols during their life. Stream multiplexing allows multiple independent logical streams to share a common underlying transport medium, instead of creating a new connection with the same peer per needed protocol.
 
-The stream multiplxers available are:
+Some available stream multiplxers are:
 
 - [libp2p/js-libp2p-mplex](https://github.com/libp2p/js-libp2p-mplex)
 
@@ -78,7 +78,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 > A connection encryption mechanism should be used, in order to ensure all exchanged data between two peers is encrypted.
 
-The connection encryption protocols available are:
+Some available connection encryption protocols:
 
 - [libp2p/js-libp2p-secio](https://github.com/libp2p/js-libp2p-secio)
 
@@ -93,7 +93,7 @@ If you want to know more about libp2p connection encryption, you should read the
 
 > In a p2p network, peer discovery is critical to a functioning system.
 
-The peer discovery modules available are:
+Some available peer discovery modules are:
 
 - [js-libp2p-mdns](https://github.com/libp2p/js-libp2p-mdns)
 - [js-libp2p-bootstrap](https://github.com/libp2p/js-libp2p-bootstrap)
@@ -110,7 +110,7 @@ If you want to know more about libp2p peer discovery, you should read the follow
 
 > Content routing provides a way to find where content lives in the network. It works in two steps: 1) Peers provide (announce) to the network that they are holders of specific content and 2) Peers issue queries to find where that content lives. A Content Routing mechanism could be as complex as a DHT or as simple as a registry somewhere in the network.
 
-The content routing modules available are:
+Some available content routing modules are:
 
 - [js-libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
 - [js-libp2p-delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
@@ -125,7 +125,7 @@ If you want to know more about libp2p content routing, you should read the follo
 
 > Peer Routing offers a way to find other peers in the network by issuing queries using a Peer Routing algorithm, which may be iterative or recursive. If the algorithm is unable to find the target peer, it will return the peers that are "closest" to the target peer, using a distance metric defined by the algorithm.
 
-The peer routing modules available are:
+Some available peer routing modules are:
 
 - [js-libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
 - [js-libp2p-delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
@@ -142,7 +142,7 @@ If you want to know more about libp2p peer routing, you should read the followin
 
 The DHT implementation currently available is [libp2p/js-libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht). This implementation is largely based on the Kademlia whitepaper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
 
-If this DHT implementation does not fulfill your needs, we recommend that you create a **Peer Routing** or **Content Routing** module, according to your needs. The reason behind this recommendation is that we aim to move the DHT implementation to the Peer Routing and Content Routing modules.
+If this DHT implementation does not fulfill your needs and you want to create or use your own implementation, please get in touch with us through a github issue. We plan to work on improving the ability to bring your own DHT in a future release.
 
 If you want to know more about libp2p DHT, you should read the following content:
 
@@ -153,7 +153,7 @@ If you want to know more about libp2p DHT, you should read the following content
 
 > Publish/Subscribe is a system where peers congregate around topics they are interested in. Peers interested in a topic are said to be subscribed to that topic and should receive the data published on it from other peers.
 
-The pubsub routers available are:
+Some available pubsub routers are:
 
 - [libp2p/js-libp2p-floodsub](https://github.com/libp2p/js-libp2p-floodsub)
 - [ChainSafe/gossipsub-js](https://github.com/ChainSafe/gossipsub-js)
@@ -182,9 +182,17 @@ const modules = {
 }
 ```
 
-Moreover, the majority of the modules can be customized via option parameters. This way, it is also possible to provide this options through a config object. This config object should have the property name of each building block to configure, the same way as the modules specification.
+Moreover, the majority of the modules can be customized via option parameters. This way, it is also possible to provide this options through a `config` object. This config object should have the property name of each building block to configure, the same way as the modules specification.
 
-**Example:**
+Besides the `modules` and `config`, libp2p allows other internal options and configurations:
+- `datastore`: an instance of [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore/) modules.
+  - This is used in modules such as the DHT. If it is not provided, `js-libp2p` will use an in memory datastore.
+- `peerInfo`: a previously created instance of [libp2p/js-peer-info](https://github.com/libp2p/js-peer-info).
+  - This is particularly useful if you want to reuse the same `peer-id`, as well as for modules like `libp2p-delegated-content-routing`, which need a `peer-id` in their instantiation.
+
+### Examples
+
+**1) Basic setup**
 
 ```js
 // Creating a libp2p node with:
@@ -203,8 +211,6 @@ const SECIO = require('libp2p-secio')
 const MulticastDNS = require('libp2p-mdns')
 const DHT = require('libp2p-kad-dht')
 const GossipSub = require('libp2p-gossipsub')
-const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
-const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 
 const node = await Libp2p.create({
   modules: {
@@ -212,52 +218,66 @@ const node = await Libp2p.create({
       TCP,
       new WS() // It can take instances too!
     ],
-    streamMuxer: [
-      MPLEX
-    ],
-    connEncryption: [
-      SECIO
-    ],
-    // contentRouting: [
-    //   new DelegatedContentRouter(peerId)
-    // ],
-    // peerRouting: [
-    //   new DelegatedPeerRouter()
-    // ],
-    peerDiscovery: [
-      MulticastDNS
-    ],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO],
+    peerDiscovery: [MulticastDNS],
     dht: DHT,
     pubsub: GossipSub
+  }
+})
+```
+
+**2) Customizing Peer Discovery**
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+const MulticastDNS = require('libp2p-mdns')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO],
+    peerDiscovery: [MulticastDNS]
   },
   config: {
     peerDiscovery: {
       autoDial: true,             // Auto connect to discovered peers (limited by ConnectionManager minPeers)
-      mdns: {                     // mdns options
-        interval: 1000,           // ms
+      // The `tag` property will be searched when creating the instance of your Peer Discovery service. 
+      // The associated object, will be passed to the service when it is instantiated.
+      [MulticastDNS.tag]: {
+        interval: 1000,
         enabled: true
       }
       // .. other discovery module options.
-    },
-    // relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
-    //   enabled: true,
-    //   hop: {
-    //     enabled: false,
-    //     active: false
-    //   }
-    // },
-    dht: {
-      kBucketSize: 20,
+    }
+  }
+})
+```
+
+**3) Customizing Pubsub**
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+const GossipSub = require('libp2p-gossipsub')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO],
+    pubsub: GossipSub
+  },
+  config: {
+    pubsub: {                     // The pubsub options (and defaults) can be found in the pubsub router documentation
       enabled: true,
-      randomWalk: {
-        enabled: true,            // Allows to disable discovery (enabled by default)
-        interval: 300e3,
-        timeout: 10e3
-      }
-    },
-    pubsub: {
-      enabled: true,
-      emitSelf: true,             // whether the node should emit to self on publish, in the event of the topic being subscribed
+      emitSelf: true,             // whether the node should emit to self on publish
       signMessages: true,         // if messages should be signed
       strictSigning: true         // if message signing should be required
     }
@@ -265,12 +285,89 @@ const node = await Libp2p.create({
 })
 ```
 
-Besides the `modules` and `config`, libp2p allows other internal options and configurations:
+**4) Customizing DHT**
 
-- `datastore`: an instance of [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore/) modules.
-  - This is used in modules such as the DHT. If it is not provided, `js-libp2p` will use an in memory datastore.
-- `peerInfo`: a previously created instance of [libp2p/js-peer-info](https://github.com/libp2p/js-peer-info).
-  - This is particularly useful if you want to reuse the same `peer-id`, as well as for modules like `libp2p-delegated-content-routing`, which need a `peer-id` in their instantiation.
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+const DHT = require('libp2p-kad-dht')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO],
+    dht: DHT
+  },
+  config: {
+    dht: {                        // The DHT options (and defaults) can be found in its documentation
+      kBucketSize: 20,
+      enabled: true,
+      randomWalk: {
+        enabled: true,            // Allows to disable discovery (enabled by default)
+        interval: 300e3,
+        timeout: 10e3
+      }
+    }
+  }
+})
+```
+
+**5) Setup with Content and Peer Routing**
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
+const DelegatedContentRouter = require('libp2p-delegated-content-routing')
+const PeerInfo = require('peer-info')
+
+// create a peerInfo
+const peerInfo = await PeerInfo.create()
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO],
+    contentRouting: [
+      new DelegatedContentRouter(peerInfo.id)
+    ],
+    peerRouting: [
+      new DelegatedPeerRouter()
+    ],
+  },
+  peerInfo
+})
+```
+
+**6) Setup with Relay**
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO]
+  },
+  relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
+    enabled: true,
+    hop: {
+      enabled: true,
+      active: true
+    }
+  },
+})
+```
 
 ## Configuration examples
 
