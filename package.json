@@ -66,6 +66,7 @@
     "multistream-select": "^0.15.0",
     "once": "^1.4.0",
     "p-any": "^2.1.0",
+    "p-fifo": "^1.0.0",
     "p-map": "^3.0.0",
     "p-queue": "^6.1.1",
     "p-settle": "^3.1.0",
