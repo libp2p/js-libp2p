@@ -53,7 +53,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
   it('should limit the number of tokens it provides', () => {
     const dialer = new Dialer({ transportManager: localTM })
-    const maxPerPeer = Constants.PER_PEER_LIMIT
+    const maxPerPeer = Constants.MAX_PER_PEER_DIALS
     expect(dialer.tokens).to.have.length(Constants.MAX_PARALLEL_DIALS)
     const tokens = dialer.getTokens(maxPerPeer + 1)
     expect(tokens).to.have.length(maxPerPeer)
@@ -163,8 +163,9 @@ describe('Dialing (direct, WebSockets)', () => {
 
     // Let the call stack run
     await delay(0)
-    // All dials should have executed
-    expect(localTM.dial.callCount).to.equal(3)
+
+    // Only two dials will be run, as the first two succeeded
+    expect(localTM.dial.callCount).to.equal(2)
     expect(dialer.tokens).to.have.length(2)
   })
 
