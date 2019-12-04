@@ -3,7 +3,6 @@
 const multiaddr = require('multiaddr')
 const errCode = require('err-code')
 const AbortController = require('abort-controller')
-const delay = require('delay')
 const anySignal = require('any-signal')
 const debug = require('debug')
 const log = debug('libp2p:dialer')
@@ -77,7 +76,7 @@ class Dialer {
     } catch (err) {
       // Error is a timeout
       if (timeoutController.signal.aborted) {
-        err = errCode(err, codes.ERR_TIMEOUT)
+        err.code = codes.ERR_TIMEOUT
       }
       log.error(err)
       throw err
