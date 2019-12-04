@@ -1,7 +1,6 @@
 'use strict'
 
 const AbortController = require('abort-controller')
-const AggregateError = require('aggregate-error')
 const anySignal = require('any-signal')
 const debug = require('debug')
 const errCode = require('err-code')
@@ -56,8 +55,6 @@ class DialRequest {
           conn = await this.dialAction(addr, { ...options, signal: anySignal([signal, options.signal]) })
           // Remove the successful AbortController so it is not aborted
           dialAbortControllers.splice(i, 1)
-        } catch (err) {
-          throw err
         } finally {
           completedDials++
           // If we have more dials to make, recycle the token, otherwise release it
