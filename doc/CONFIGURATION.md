@@ -123,7 +123,7 @@ If you want to know more about libp2p content routing, you should read the follo
 
 ### Peer Routing
 
-> Peer Routing offers a way to find other peers in the network by intentionally issuing queries, iterative or recursive, until a Peer is found or the closest Peers, given the Peer Routing algorithm strategy, are found.
+> Peer Routing offers a way to find other peers in the network by issuing queries using a Peer Routing algorithm, which may be iterative or recursive. If the algorithm is unable to find the target peer, it will return the peers that are "closest" to the target peer, using a distance metric defined by the algorithm.
 
 The peer routing modules available are:
 
