@@ -72,6 +72,7 @@ class Dialer {
     try {
       const dialResult = await dialRequest.run({ ...options, signal })
       clearTimeout(timeoutId)
+      log('dial succeeded to %s', dialResult.remoteAddr)
       return dialResult
     } catch (err) {
       // Error is a timeout
