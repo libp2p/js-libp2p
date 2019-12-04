@@ -15,10 +15,10 @@
 
 ## Overview
 
-Considering libp2p's modular nature, it can be composed by a set of building blocks that enable users to create any type of p2p systems without needing to implement its network layer. Taking into account that each p2p system has its own needs and requirements, libp2p can be configured accordingly.
+libp2p is a modular networking stack. It's designed to be able to suit a variety of project needs. The configuration of libp2p is a key part of its structure. It enables you to bring exactly what you need, and only what you need. This document is a guide on how to configure libp2p for your particular project. Check out the [Configuration examples](#configuration-examples) section if you're just looking to leverage an existing configuration.
 
 `js-libp2p` acts as the composer for this modular p2p networking stack using libp2p compatible modules as its building blocks.
-While libp2p building blocks may vary, `js-libp2p` top level API will be consistent.
+Regardless of how you configure libp2p, the top level [API](./API.md) will always remain the same. **Note**: if some modules are not configured, like Content Routing, using those methods will throw errors.
 
 ## Modules
 
@@ -43,18 +43,17 @@ Bear in mind that only a **transport** is required, being all the other building
 
 > In a p2p system, we need to interact with other peers in the network. Transports are used to establish connections between peers. The libp2p transports to use should be decided according to the environment where your node will live, as well as other requirements that you might have.
 
-The available transports are:
+Some available transports are:
 
 - [libp2p/js-libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp)
 - [libp2p/js-libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star)
 - [libp2p/js-libp2p-webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct)
-- [libp2p/js-libp2p-websocket-star](https://github.com/libp2p/js-libp2p-websocket-star) (Work in Progress)
 - [libp2p/js-libp2p-websockets](https://github.com/libp2p/js-libp2p-websockets)
 - [libp2p/js-libp2p-utp](https://github.com/libp2p/js-libp2p-utp) (Work in Progress)
 
-If none of the available transports fulfills your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [interface-transport](https://github.com/libp2p/js-interfaces/tree/master/src/transport).
+If none of the available transports fulfills your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport).
 
-If you want to get to know more about libp2p transports, you should read the following content:
+If you want to know more about libp2p transports, you should read the following content:
 
 - https://docs.libp2p.io/concepts/transport
 - https://github.com/libp2p/specs/tree/master/connections
@@ -66,11 +65,10 @@ If you want to get to know more about libp2p transports, you should read the fol
 The stream multiplxers available are:
 
 - [libp2p/js-libp2p-mplex](https://github.com/libp2p/js-libp2p-mplex)
-- [libp2p/js-libp2p-spdy](https://github.com/libp2p/js-libp2p-spdy) (might get deprecated soon)
 
-If none of the available stream multiplexers fulfills your needs, you can create a libp2p compatible stream multiplexer. A libp2p multiplexer just needs to be compliant with the [interface-stream-muxer](https://github.com/libp2p/js-interfaces/tree/master/src/stream-muxer).
+If none of the available stream multiplexers fulfills your needs, you can create a libp2p compatible stream multiplexer. A libp2p multiplexer just needs to be compliant with the [Stream Muxer Interface](https://github.com/libp2p/js-interfaces/tree/master/src/stream-muxer).
 
-If you want to get to know more about libp2p stream multiplexing, you should read the following content:
+If you want to know more about libp2p stream multiplexing, you should read the following content:
 
 - https://docs.libp2p.io/concepts/stream-multiplexing
 - https://github.com/libp2p/specs/tree/master/connections
@@ -84,16 +82,16 @@ The connection encryption protocols available are:
 
 - [libp2p/js-libp2p-secio](https://github.com/libp2p/js-libp2p-secio)
 
-If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [interface-crypto](https://github.com/libp2p/js-interfaces/tree/master/src/crypto).
+If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Crypto Interface](https://github.com/libp2p/js-interfaces/tree/master/src/crypto).
 
-If you want to get to know more about libp2p connection encryption, you should read the following content:
+If you want to know more about libp2p connection encryption, you should read the following content:
 
 - https://docs.libp2p.io/concepts/secure-comms
 - https://github.com/libp2p/specs/tree/master/connections
 
 ### Peer Discovery
 
-> In a p2p network, peers must be able to discover other peers in the network.
+> In a p2p network, peer discovery is critical to a functioning system.
 
 The peer discovery modules available are:
 
@@ -101,26 +99,25 @@ The peer discovery modules available are:
 - [js-libp2p-bootstrap](https://github.com/libp2p/js-libp2p-bootstrap)
 - [js-libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
 - [js-libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star)
-- [js-libp2p-websocket-star](https://github.com/libp2p/js-libp2p-websocket-star) (Work in Progress)
 
-If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [interface-peer-discovery](https://github.com/libp2p/js-interfaces/tree/master/src/peer-discovery).
+If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-interfaces/tree/master/src/peer-discovery).
 
-If you want to get to know more about libp2p peer discovery, you should read the following content:
+If you want to know more about libp2p peer discovery, you should read the following content:
 
 - https://github.com/libp2p/specs/blob/master/discovery/mdns.md
 
 ### Content Routing
 
-> Content routing provides a way to find where content lives in the network. It works in two steps: 1) Peers provide (announce) to the network that they are holders of specific content and 2) Peers issue queries to find where that content lives. A Content Routing mechanism could be as complex as a DHT or a simple registry somewhere in the network.
+> Content routing provides a way to find where content lives in the network. It works in two steps: 1) Peers provide (announce) to the network that they are holders of specific content and 2) Peers issue queries to find where that content lives. A Content Routing mechanism could be as complex as a DHT or as simple as a registry somewhere in the network.
 
 The content routing modules available are:
 
 - [js-libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
 - [js-libp2p-delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
 
-If none of the available content routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [interface-content-routing](https://github.com/libp2p/js-interfaces/tree/master/src/content-routing). **(WIP: This module is not yet implemented)**
+If none of the available content routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-interfaces/tree/master/src/content-routing). **(WIP: This module is not yet implemented)**
 
-If you want to get to know more about libp2p content routing, you should read the following content:
+If you want to know more about libp2p content routing, you should read the following content:
 
 - https://docs.libp2p.io/concepts/content-routing
 
@@ -133,9 +130,9 @@ The peer routing modules available are:
 - [js-libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
 - [js-libp2p-delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
 
-If none of the available content routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [interface-peer-routing](https://github.com/libp2p/js-interfaces/tree/master/src/peer-routing). **(WIP: This module is not yet implemented)**
+If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-interfaces/tree/master/src/peer-routing). **(WIP: This module is not yet implemented)**
 
-If you want to get to know more about libp2p peer routing, you should read the following content:
+If you want to know more about libp2p peer routing, you should read the following content:
 
 - https://docs.libp2p.io/concepts/peer-routing
 
@@ -147,7 +144,7 @@ The DHT implementation currently available is [libp2p/js-libp2p-kad-dht](https:/
 
 If this DHT implementation does not fulfill your needs, we recommend that you create a **Peer Routing** or **Content Routing** module, according to your needs. The reason behind this recommendation is that we aim to move the DHT implementation to the Peer Routing and Content Routing modules.
 
-If you want to get to know more about libp2p DHT, you should read the following content:
+If you want to know more about libp2p DHT, you should read the following content:
 
 - https://docs.libp2p.io/concepts/protocols/#kad-dht
 - https://github.com/libp2p/specs/pull/108
@@ -163,14 +160,14 @@ The pubsub routers available are:
 
 If none of the available pubsub routers fulfills your needs, you can create a libp2p compatible one. A libp2p pubsub router just needs to be created on top of [libp2p/js-libp2p-pubsub](https://github.com/libp2p/js-libp2p-pubsub), which ensures `js-libp2p` API expectations.
 
-If you want to get to know more about libp2p pubsub, you should read the following content:
+If you want to know more about libp2p pubsub, you should read the following content:
 
 - https://docs.libp2p.io/concepts/publish-subscribe
 - https://github.com/libp2p/specs/tree/master/pubsub
 
-## Libp2p node
+## Customizing libp2p
 
-When [creating a libp2p node](./API.md#create), the modules needed should be specified in the following way:
+When [creating a libp2p node](./API.md#create), the modules needed should be specified as follows:
 
 ```js
 const modules = {
@@ -277,13 +274,12 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
 
 ## Configuration examples
 
-With libp2p modular nature, libp2p can be found being used in different projects, with completelly different requirements and runtime environments. As a consequence, we recommend creating your own libp2p configuration according to the needs of the system you are developing.
+As libp2p is designed to be a modular networking library, its usage will vary based on individual project needs. We've included links to some existing project configurations for your reference, in case you wish to replicate their configuration:
 
-Here follows a list of configurations being used for `js-libp2p` in other projects:
 
 - [libp2p-ipfs-nodejs](https://github.com/ipfs/js-ipfs/tree/master/src/core/runtime/libp2p-nodejs.js) - libp2p configuration used by js-ipfs when running in Node.js
 - [libp2p-ipfs-browser](https://github.com/ipfs/js-ipfs/tree/master/src/core/runtime/libp2p-browser.js) - libp2p configuration used by js-ipfs when running in a Browser (that supports WebRTC)
 
-If you have developed a project using `js-libp2p`, please consider submitting it to this list so that it can be found easily by the users of libp2p.
+If you have developed a project using `js-libp2p`, please consider submitting your configuration to this list so that it can be found easily by other users.
 
-The `js-libp2p` examples and tests directories are also a good source of help for finding the configurations that suit your needs.
+The [examples](../examples) are also a good source of help for finding a configuration that suits your needs.
