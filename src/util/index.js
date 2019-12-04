@@ -1,7 +1,5 @@
 'use strict'
 
-const AbortController = require('abort-controller')
-
 /**
  * Converts BufferList messages to Buffers
  * @param {*} source
