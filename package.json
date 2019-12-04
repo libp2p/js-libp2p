@@ -43,6 +43,7 @@
   "dependencies": {
     "abort-controller": "^3.0.0",
     "aggregate-error": "^3.0.1",
+    "any-signal": "^1.0.0",
     "async": "^2.6.2",
     "async-iterator-all": "^1.0.0",
     "bignumber.js": "^9.0.0",

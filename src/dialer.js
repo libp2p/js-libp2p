@@ -4,11 +4,11 @@ const multiaddr = require('multiaddr')
 const errCode = require('err-code')
 const AbortController = require('abort-controller')
 const delay = require('delay')
+const anySignal = require('any-signal')
 const debug = require('debug')
 const log = debug('libp2p:dialer')
 log.error = debug('libp2p:dialer:error')
 const { DialRequest } = require('./dialer/dial-request')
-const { anySignal } = require('./util')
 
 const { codes } = require('./errors')
 const {
