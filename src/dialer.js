@@ -109,6 +109,8 @@ class Dialer {
   }
 
   releaseToken (token) {
+    // Guard against duplicate releases
+    if (this.tokens.indexOf(token) > -1) return
     log('token %d released', token)
     this.tokens.push(token)
   }
