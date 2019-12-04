@@ -2,7 +2,7 @@
 
 **Synopsis**
 * All Dial Requests in js-libp2p must request a token(s) from the Dialer.
-  * The number of tokens requested should be between 1 and the PER_PEER_LIMIT max set in the Dialer.
+  * The number of tokens requested should be between 1 and the MAX_PER_PEER_DIALS max set in the Dialer.
   * If the number of available tokens is less than requested, the Dialer may return less than requested.
 * The number of tokens a DialRequest obtains reflects the maximum number of parallel Multiaddr Dials it can make.
 * If no tokens are available a DialRequest should immediately end and throw. This deviates from the existing queue system to avoid queue congestion and provide more visibility to users.
@@ -24,11 +24,11 @@ An effective dialing system should involve the inclusion of a Confidence system 
 
 ## Notes
 
-* A DialRequest gets a set of tokens from the Dialer, up to the PER_PEER_LIMIT max.
+* A DialRequest gets a set of tokens from the Dialer, up to the MAX_PER_PEER_DIALS max.
 * A DialRequest SHOULD release its tokens after the DIAL_TIMEOUT has expired. This ensures that a peer with a large set of hanging addresses, does not block future dials.
 * Upon releasing the tokens, the Dialer may allocate them to another DialRequest.
 * A DialRequest SHOULD fail if no dial tokens are available. The DialRequest MAY proceed without tokens, but this should be reserved for High Priority actions and should be rare.
-* A DialRequest MUST NOT request more tokens than it has addresses to dial. Example: If the PER_PEER_LIMIT max is 4 and a DialRequest has 1 address, it should only request 1 token.
+* A DialRequest MUST NOT request more tokens than it has addresses to dial. Example: If the MAX_PER_PEER_DIALS max is 4 and a DialRequest has 1 address, it should only request 1 token.
 * A DialRequest MUST execute parallel dials for each of its addresses up the total number of tokens it has.
 * On a successful dial, the DialRequest MUST abort any other in progress dials, return the successful connection and release all tokens.
 * A new DialRequest SHOULD be given a descending list of prioritized Multiaddrs, based on their confidence. Having higher confidence Multiaddrs first can help minimize the time a DialRequest is active.
