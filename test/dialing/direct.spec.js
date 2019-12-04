@@ -16,6 +16,7 @@ const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const AggregateError = require('aggregate-error')
+const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 
 const { codes: ErrorCodes } = require('../../src/errors')
 const Constants = require('../../src/constants')
@@ -130,6 +131,7 @@ describe('Dialing (direct, WebSockets)', () => {
       expect(addr.toString()).to.eql(remoteAddr.toString())
       await delay(60)
       expect(options.signal.aborted).to.equal(true)
+      throw new AbortError()
     })
 
     await expect(dialer.connectToMultiaddr(remoteAddr))
