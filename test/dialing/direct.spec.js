@@ -68,6 +68,16 @@ describe('Dialing (direct, WebSockets)', () => {
     expect(tokens.length).to.equal(0)
   })
 
+  it('should NOT be able to return a token twice', () => {
+    const dialer = new Dialer({ transportManager: localTM })
+    const tokens = dialer.getTokens(1)
+    expect(tokens).to.have.length(1)
+    expect(dialer.tokens).to.have.length(Constants.MAX_PARALLEL_DIALS - 1)
+    dialer.releaseToken(tokens[0])
+    dialer.releaseToken(tokens[0])
+    expect(dialer.tokens).to.have.length(Constants.MAX_PARALLEL_DIALS)
+  })
+
   it('should be able to connect to a remote node via its multiaddr', async () => {
     const dialer = new Dialer({ transportManager: localTM })
 
