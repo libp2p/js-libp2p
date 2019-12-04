@@ -27,6 +27,7 @@ const Protector = require('../../src/pnet')
 const swarmKeyBuffer = Buffer.from(require('../fixtures/swarm.key'))
 
 const mockUpgrader = require('../utils/mockUpgrader')
+const createMockConnection = require('../utils/mockConnection')
 const Peers = require('../fixtures/peers')
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -160,9 +161,7 @@ describe('Dialing (direct, TCP)', () => {
     expect(dialer.tokens).to.have.length(2)
 
     const deferredDial = pDefer()
-    sinon.stub(localTM, 'dial').callsFake(async () => {
-      await deferredDial.promise
-    })
+    sinon.stub(localTM, 'dial').callsFake(() => deferredDial.promise)
 
     // Perform 3 multiaddr dials
     dialer.connectToMultiaddr([remoteAddr, remoteAddr, remoteAddr])
@@ -173,7 +172,7 @@ describe('Dialing (direct, TCP)', () => {
     // We should have 2 in progress, and 1 waiting
     expect(dialer.tokens).to.have.length(0)
 
-    deferredDial.resolve()
+    deferredDial.resolve(await createMockConnection())
 
     // Let the call stack run
     await delay(0)

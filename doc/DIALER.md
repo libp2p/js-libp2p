@@ -5,7 +5,7 @@
   * The number of tokens requested should be between 1 and the MAX_PER_PEER_DIALS max set in the Dialer.
   * If the number of available tokens is less than requested, the Dialer may return less than requested.
 * The number of tokens a DialRequest obtains reflects the maximum number of parallel Multiaddr Dials it can make.
-* If no tokens are available a DialRequest should immediately end and throw. This deviates from the existing queue system to avoid queue congestion.
+* If no tokens are available a DialRequest should immediately end and throw.
 * As tokens are limited, DialRequests should be given a prioritized list of Multiaddrs to minimize the potential request time.
 * Once a Multiaddr Dial has succeeded, all pending dials in that Dial Request should be aborted.
 * If DIAL_TIMEOUT time has elapsed before any one Multiaddr Dial succeeds, all remaining dials in the DialRequest should be aborted.
