@@ -54,7 +54,7 @@ class DialRequest {
         try {
           const signal = dialAbortControllers[i].signal
           conn = await this.dialAction(addr, { ...options, signal: anySignal([signal, options.signal]) })
-          // Remove the successful AbortController so it is no aborted
+          // Remove the successful AbortController so it is not aborted
           dialAbortControllers.splice(i, 1)
         } catch (err) {
           throw err

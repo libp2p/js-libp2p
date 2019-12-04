@@ -81,24 +81,18 @@ class Dialer {
     const signals = [timeoutController.signal]
     options.signal && signals.push(options.signal)
     const signal = anySignal(signals)
-    const timeoutPromise = delay.reject(this.timeout, {
-      value: errCode(new Error('Dial timed out'), codes.ERR_TIMEOUT)
-    })
+    const timeoutId = setTimeout(() => timeoutController.abort(), this.timeout)
 
     try {
-      // Race the dial request and the timeout
-      const dialResult = await Promise.race([
-        dialRequest.run({
-          ...options,
-          signal
-        }),
-        timeoutPromise
-      ])
-      timeoutPromise.clear()
+      const dialResult = await dialRequest.run({ ...options, signal })
+      clearTimeout(timeoutId)
       return dialResult
     } catch (err) {
+      // Error is a timeout
+      if (timeoutController.signal.aborted) {
+        err = errCode(err, codes.ERR_TIMEOUT)
+      }
       log.error(err)
-      timeoutController.abort()
       throw err
     }
   }

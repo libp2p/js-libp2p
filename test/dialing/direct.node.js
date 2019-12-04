@@ -16,6 +16,7 @@ const delay = require('delay')
 const pDefer = require('p-defer')
 const pipe = require('it-pipe')
 const AggregateError = require('aggregate-error')
+const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 
 const Libp2p = require('../../src')
 const Dialer = require('../../src/dialer')
@@ -142,6 +143,7 @@ describe('Dialing (direct, TCP)', () => {
       expect(addr.toString()).to.eql(remoteAddr.toString())
       await delay(60)
       expect(options.signal.aborted).to.equal(true)
+      throw new AbortError()
     })
 
     await expect(dialer.connectToMultiaddr(remoteAddr))
