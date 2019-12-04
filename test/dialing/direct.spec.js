@@ -153,7 +153,7 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     // Perform 3 multiaddr dials
-    dialer.connectToMultiaddrs([remoteAddr, remoteAddr, remoteAddr])
+    dialer.connectToMultiaddr([remoteAddr, remoteAddr, remoteAddr])
 
     // Let the call stack run
     await delay(0)
