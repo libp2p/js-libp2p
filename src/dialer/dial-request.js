@@ -41,14 +41,14 @@ class DialRequest {
       throw errCode(new Error('No dial tokens available'), 'ERR_NO_DIAL_TOKENS')
     }
 
-    const th = new FIFO()
-    tokens.forEach(t => th.push(t))
+    const tokenHolder = new FIFO()
+    tokens.forEach(token => tokenHolder.push(token))
     const dialAbortControllers = this.addrs.map(() => new AbortController())
     let completedDials = 0
 
     try {
       return await pAny(this.addrs.map(async (addr, i) => {
-        const token = await th.shift() // get token
+        const token = await tokenHolder.shift() // get token
         let conn
         try {
           const signal = dialAbortControllers[i].signal
@@ -59,7 +59,7 @@ class DialRequest {
           completedDials++
           // If we have more dials to make, recycle the token, otherwise release it
           if (completedDials < this.addrs.length) {
-            th.push(token)
+            tokenHolder.push(token)
           } else {
             this.dialer.releaseToken(tokens.splice(tokens.indexOf(token), 1)[0])
           }
@@ -69,7 +69,7 @@ class DialRequest {
       }))
     } finally {
       dialAbortControllers.map(c => c.abort()) // success/failure happened, abort everything else
-      tokens.forEach(t => this.dialer.releaseToken(t)) // release tokens back to the dialer
+      tokens.forEach(token => this.dialer.releaseToken(token)) // release tokens back to the dialer
     }
   }
 }
