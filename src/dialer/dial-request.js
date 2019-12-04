@@ -3,12 +3,12 @@
 const AbortController = require('abort-controller')
 const AggregateError = require('aggregate-error')
 const pDefer = require('p-defer')
+const anySignal = require('any-signal')
 const debug = require('debug')
 const log = debug('libp2p:dialer:request')
 log.error = debug('libp2p:dialer:request:error')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 
-const { anySignal } = require('../util')
 const { TokenHolder } = require('./token-holder')
 
 class DialRequest {
