@@ -7,14 +7,14 @@ const anySignal = require('any-signal')
 const debug = require('debug')
 const log = debug('libp2p:dialer')
 log.error = debug('libp2p:dialer:error')
-const { DialRequest } = require('./dialer/dial-request')
+const { DialRequest } = require('./dial-request')
 
-const { codes } = require('./errors')
+const { codes } = require('../errors')
 const {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS,
   MAX_PER_PEER_DIALS
-} = require('./constants')
+} = require('../constants')
 
 class Dialer {
   /**
