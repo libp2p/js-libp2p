@@ -51,7 +51,7 @@ Would you like to contribute to the libp2p project and don't know how? Well, the
 - Join an IPFS All Hands, introduce yourself and let us know where you would like to contribute - https://github.com/ipfs/team-mgmt#all-hands-call
 - Hack with IPFS and show us what you made! The All Hands call is also the perfect venue for demos, join in and show us what you built
 - Join the discussion at http://discuss.libp2p.io/ and help users finding their answers.
-- Join the [⚡️IPFS Core Implementations Weekly Sync 🙌🏽 ](https://github.com/ipfs/team-mgmt/issues/992) and be part of the Sprint action!
+- Join the [⚡️libp2p Weekly Sync 🙌🏽](https://github.com/libp2p/team-mgmt/issues/16) and be part of the Sprint action!
 
 # ⁉️ Do you have questions?
 
