@@ -27,6 +27,7 @@ const Libp2p = require('../../src')
 const Peers = require('../fixtures/peers')
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const mockUpgrader = require('../utils/mockUpgrader')
+const createMockConnection = require('../utils/mockConnection')
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws')
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -158,9 +159,7 @@ describe('Dialing (direct, WebSockets)', () => {
     expect(dialer.tokens).to.have.length(2)
 
     const deferredDial = pDefer()
-    sinon.stub(localTM, 'dial').callsFake(async () => {
-      await deferredDial.promise
-    })
+    sinon.stub(localTM, 'dial').callsFake(() => deferredDial.promise)
 
     // Perform 3 multiaddr dials
     dialer.connectToMultiaddr([remoteAddr, remoteAddr, remoteAddr])
@@ -171,7 +170,7 @@ describe('Dialing (direct, WebSockets)', () => {
     // We should have 2 in progress, and 1 waiting
     expect(dialer.tokens).to.have.length(0)
 
-    deferredDial.resolve()
+    deferredDial.resolve(await createMockConnection())
 
     // Let the call stack run
     await delay(0)
