@@ -91,7 +91,11 @@ module.exports = (dht) => {
 
       // All done
       if (out.length >= n) {
-        return out.toArray()
+        // yield values
+        for (const pInfo of out.toArray()) {
+          yield pInfo
+        }
+        return
       }
 
       // need more, query the network
