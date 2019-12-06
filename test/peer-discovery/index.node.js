@@ -142,7 +142,7 @@ describe('peer discovery scenarios', () => {
             enabled: true,
             delay: 1000, // start the first query quickly
             interval: 10000,
-            timeout: 3000
+            timeout: 1000
           },
           enabled: true
         }
