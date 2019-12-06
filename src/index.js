@@ -194,8 +194,15 @@ class Libp2p extends EventEmitter {
     log('libp2p is stopping')
 
     try {
-      this.pubsub && await this.pubsub.stop()
-      this._dht && await this._dht.stop()
+      await Promise.all([
+        this.pubsub && this.pubsub.stop(),
+        this._dht && this._dht.stop()
+      ])
+
+      for (const dial of this.dialer.pendingDials.values()) {
+        dial.abort()
+      }
+
       await this.transportManager.close()
       await this.registrar.close()
     } catch (err) {

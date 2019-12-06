@@ -38,6 +38,7 @@ class Dialer {
     this.timeout = timeout
     this.perPeerLimit = perPeerLimit
     this.tokens = [...new Array(concurrency)].map((_, index) => index)
+    this.pendingDials = new Set()
   }
 
   /**
@@ -69,6 +70,12 @@ class Dialer {
     const signal = anySignal(signals)
     const timeoutId = setTimeout(() => timeoutController.abort(), this.timeout)
 
+    const dial = {
+      dialRequest,
+      controller: timeoutController
+    }
+    this.pendingDials.add(dial)
+
     try {
       const dialResult = await dialRequest.run({ ...options, signal })
       clearTimeout(timeoutId)
@@ -81,6 +88,8 @@ class Dialer {
       }
       log.error(err)
       throw err
+    } finally {
+      this.pendingDials.delete(dial)
     }
   }
 
