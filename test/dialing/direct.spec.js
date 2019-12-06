@@ -169,6 +169,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     // We should have 2 in progress, and 1 waiting
     expect(dialer.tokens).to.have.length(0)
+    expect(dialer.pendingDials.size).to.equal(1) // 1 dial request
 
     deferredDial.resolve(await createMockConnection())
 
@@ -178,6 +179,7 @@ describe('Dialing (direct, WebSockets)', () => {
     // Only two dials will be run, as the first two succeeded
     expect(localTM.dial.callCount).to.equal(2)
     expect(dialer.tokens).to.have.length(2)
+    expect(dialer.pendingDials.size).to.equal(0)
   })
 
   describe('libp2p.dialer', () => {
@@ -277,6 +279,24 @@ describe('Dialing (direct, WebSockets)', () => {
       expect(connection.stat.timeline.close).to.not.exist()
       await libp2p.hangUp(connection.remotePeer)
       expect(connection.stat.timeline.close).to.exist()
+    })
+
+    it('should abort pending dials on stop', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+      const abort = sinon.stub()
+      const dials = [{ abort }, { abort }, { abort }]
+      sinon.stub(libp2p.dialer, 'pendingDials').value(new Set(dials))
+
+      await libp2p.stop()
+
+      expect(abort).to.have.property('callCount', 3)
     })
   })
 })
