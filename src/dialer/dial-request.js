@@ -14,7 +14,7 @@ class DialRequest {
    *
    * @param {object} options
    * @param {Multiaddr[]} options.addrs
-   * @param {TransportManager} options.transportManager
+   * @param {function(Multiaddr):Promise<Connection>} options.dialAction
    * @param {Dialer} options.dialer
    */
   constructor ({
@@ -31,7 +31,6 @@ class DialRequest {
    * @async
    * @param {object} options
    * @param {AbortSignal} options.signal An AbortController signal
-   * @param {number} options.timeout The max dial time for each request
    * @returns {Connection}
    */
   async run (options) {
