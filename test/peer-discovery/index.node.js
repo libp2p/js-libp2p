@@ -140,8 +140,8 @@ describe('peer discovery scenarios', () => {
         dht: {
           randomWalk: {
             enabled: true,
-            delay: 100, // start the first query quickly
-            interval: 1000,
+            delay: 1000, // start the first query quickly
+            interval: 10000,
             timeout: 3000
           },
           enabled: true
