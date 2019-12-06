@@ -1,3 +1,18 @@
+<a name="0.14.2"></a>
+## [0.14.2](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.1...v0.14.2) (2019-12-06)
+
+
+### Bug Fixes
+
+* **log:** log the bound port and host ([#117](https://github.com/libp2p/js-libp2p-tcp/issues/117)) ([7702646](https://github.com/libp2p/js-libp2p-tcp/commit/7702646))
+
+
+### Features
+
+* add path multiaddr support ([#118](https://github.com/libp2p/js-libp2p-tcp/issues/118)) ([d76a1f2](https://github.com/libp2p/js-libp2p-tcp/commit/d76a1f2))
+
+
+
 <a name="0.14.1"></a>
 ## [0.14.1](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.0...v0.14.1) (2019-09-20)
 
