@@ -11,18 +11,18 @@ const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 const AbortController = require('abort-controller')
 const AggregateError = require('aggregate-error')
 const pDefer = require('p-defer')
-const delay = require('delay')
 
 const { DialRequest } = require('../../src/dialer/dial-request')
 const createMockConnection = require('../utils/mockConnection')
+const error = new Error('dial failes')
 
 describe('Dial Request', () => {
   it('should end when a single multiaddr dials succeeds', async () => {
     const mockConnection = await createMockConnection()
     const actions = {
-      [1]: () => Promise.reject(),
-      [2]: () => Promise.resolve(mockConnection),
-      [3]: () => Promise.reject()
+      1: () => Promise.reject(error),
+      2: () => Promise.resolve(mockConnection),
+      3: () => Promise.reject(error)
     }
     const dialAction = (num) => actions[num]()
     const tokens = ['a', 'b']
@@ -52,9 +52,9 @@ describe('Dial Request', () => {
 
   it('should throw an AggregateError if all dials fail', async () => {
     const actions = {
-      [1]: () => Promise.reject(),
-      [2]: () => Promise.reject(),
-      [3]: () => Promise.reject()
+      1: () => Promise.reject(error),
+      2: () => Promise.reject(error),
+      3: () => Promise.reject(error)
     }
     const dialAction = (num) => actions[num]()
     const addrs = Object.keys(actions)
@@ -92,7 +92,7 @@ describe('Dial Request', () => {
   })
 
   it('should handle a large number of addrs', async () => {
-    const reject = sinon.stub().callsFake(() => Promise.reject())
+    const reject = sinon.stub().callsFake(() => Promise.reject(error))
     const actions = {}
     const addrs = [...new Array(25)].map((_, index) => index + 1)
     addrs.forEach(addr => {
@@ -138,9 +138,9 @@ describe('Dial Request', () => {
     }
 
     const actions = {
-      [1]: deferToAbort,
-      [2]: deferToAbort,
-      [3]: deferToAbort
+      1: deferToAbort,
+      2: deferToAbort,
+      3: deferToAbort
     }
     const dialAction = (num, opts) => actions[num](opts)
     const addrs = Object.keys(actions)
