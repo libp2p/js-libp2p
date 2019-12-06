@@ -16,7 +16,7 @@
   * [`contentRouting.put`](#contentRouting.put)
   * [`contentRouting.get`](#contentRouting.get)
   * [`contentRouting.getMany`](#contentRouting.getMany)
-  * [`pubsub.getPeersSubscribed`](#pubsub.getPeersSubscribed)
+  * [`pubsub.getSubscribers`](#pubsub.getSubscribers)
   * [`pubsub.getTopics`](#pubsub.getTopics)
   * [`pubsub.publish`](#pubsub.publish)
   * [`pubsub.subscribe`](#pubsub.subscribe)
@@ -480,11 +480,11 @@ const key = '/key'
 const { from, val } = await libp2p.contentRouting.get(key)
 ```
 
-### pubsub.getPeersSubscribed
+### pubsub.getSubscribers
 
 Gets a list of the peer-ids that are subscribed to one topic.
 
-`libp2p.pubsub.getPeersSubscribed(topic)`
+`libp2p.pubsub.getSubscribers(topic)`
 
 #### Parameters
 
