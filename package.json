@@ -11,8 +11,8 @@
   "scripts": {
     "lint": "aegir lint",
     "build": "aegir build",
-    "test": "aegir test -t node -t browser",
-    "test:node": "aegir test -t node",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "aegir test -t node -f test/**/*.node.js test/**/*.spec.js",
     "test:browser": "aegir test -t browser",
     "release": "aegir release -t node -t browser",
     "release-minor": "aegir release --type minor -t node -t browser",
