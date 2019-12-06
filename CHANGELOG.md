@@ -1,3 +1,13 @@
+<a name="0.18.2"></a>
+## [0.18.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.18.1...v0.18.2) (2019-12-06)
+
+
+### Bug Fixes
+
+* get many should not fail if found locally ([#161](https://github.com/libp2p/js-libp2p-kad-dht/issues/161)) ([091db13](https://github.com/libp2p/js-libp2p-kad-dht/commit/091db13))
+
+
+
 <a name="0.18.1"></a>
 ## [0.18.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.18.0...v0.18.1) (2019-12-05)
 
