@@ -11,6 +11,15 @@ const { CLOSE_TIMEOUT } = require('./constants')
 module.exports = (socket, options) => {
   options = options || {}
 
+  // Check if we are connected on a unix path
+  if (options.listeningAddr && options.listeningAddr.getPath()) {
+    options.remoteAddr = options.listeningAddr
+  }
+
+  if (options.remoteAddr && options.remoteAddr.getPath()) {
+    options.localAddr = options.remoteAddr
+  }
+
   const { sink, source } = toIterable.duplex(socket)
   const maConn = {
     async sink (source) {
@@ -40,7 +49,7 @@ module.exports = (socket, options) => {
 
     conn: socket,
 
-    localAddr: toMultiaddr(socket.localAddress, socket.localPort),
+    localAddr: options.localAddr || toMultiaddr(socket.localAddress, socket.localPort),
 
     // If the remote address was passed, use it - it may have the peer ID encapsulated
     remoteAddr: options.remoteAddr || toMultiaddr(socket.remoteAddress, socket.remotePort),

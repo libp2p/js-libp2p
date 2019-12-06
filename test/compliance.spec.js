@@ -2,7 +2,7 @@
 'use strict'
 
 const sinon = require('sinon')
-const tests = require('interface-transport')
+const tests = require('libp2p-interfaces/src/transport/tests')
 const multiaddr = require('multiaddr')
 const net = require('net')
 const TCP = require('../src')

@@ -7,6 +7,7 @@ const errCode = require('err-code')
 const log = require('debug')('libp2p:tcp')
 const toConnection = require('./socket-to-conn')
 const createListener = require('./listener')
+const { multiaddrToNetConfig } = require('./utils')
 const { AbortError } = require('abortable-iterator')
 const { CODE_CIRCUIT, CODE_P2P } = require('./constants')
 const assert = require('assert')
@@ -56,9 +57,9 @@ class TCP {
 
     return new Promise((resolve, reject) => {
       const start = Date.now()
-      const cOpts = ma.toOptions()
+      const cOpts = multiaddrToNetConfig(ma)
 
-      log('dialing %s:%s', cOpts.host, cOpts.port)
+      log('dialing %j', cOpts)
       const rawSocket = net.connect(cOpts)
 
       const onError = err => {
@@ -74,12 +75,12 @@ class TCP {
       }
 
       const onConnect = () => {
-        log('connection opened %s:%s', cOpts.host, cOpts.port)
+        log('connection opened %j', cOpts)
         done()
       }
 
       const onAbort = () => {
-        log('connection aborted %s:%s', cOpts.host, cOpts.port)
+        log('connection aborted %j', cOpts)
         rawSocket.destroy()
         done(new AbortError())
       }
