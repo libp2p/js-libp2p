@@ -11,7 +11,11 @@ const pAny = require('p-any')
 
 class DialRequest {
   /**
-   *
+   * Manages running the `dialAction` on multiple provided `addrs` in parallel
+   * up to a maximum determined by the number of tokens returned
+   * from `dialer.getTokens`. Once a DialRequest is created, it can be
+   * started using `DialRequest.run(options)`. Once a single dial has succeeded,
+   * all other dials in the request will be cancelled.
    * @param {object} options
    * @param {Multiaddr[]} options.addrs
    * @param {function(Multiaddr):Promise<Connection>} options.dialAction
