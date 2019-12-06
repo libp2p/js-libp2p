@@ -29,7 +29,9 @@ describe('peer discovery scenarios', () => {
     remotePeerInfo2.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
   })
 
-  afterEach(async () => {
+  afterEach(async function () {
+    // Increase timeout until abort support for dht queries is in place
+    this.timeout(10e3)
     libp2p && await libp2p.stop()
   })
 
