@@ -214,7 +214,10 @@ module.exports = (dht) => {
         const errMsg = 'Failed to lookup key! No peers from routing table!'
 
         dht._log.error(errMsg)
-        throw errcode(new Error(errMsg), 'ERR_NO_PEERS_IN_ROUTING_TABLE')
+        if (vals.length === 0) {
+          throw errcode(new Error(errMsg), 'ERR_NO_PEERS_IN_ROUTING_TABLE')
+        }
+        return vals
       }
 
       // we have peers, lets do the actual query to them

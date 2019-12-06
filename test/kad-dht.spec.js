@@ -141,6 +141,24 @@ describe('KadDHT', () => {
   })
 
   describe('content fetching', () => {
+    it('put - get same node', async function () {
+      this.timeout(10 * 1000)
+
+      const tdht = new TestDHT()
+      const key = Buffer.from('/v/hello')
+      const value = Buffer.from('world')
+
+      const [dht] = await tdht.spawn(2)
+
+      // Exchange data through the dht
+      await dht.put(key, value)
+
+      const res = await dht.get(Buffer.from('/v/hello'), { timeout: 1000 })
+      expect(res).to.eql(value)
+
+      return tdht.teardown()
+    })
+
     it('put - get', async function () {
       this.timeout(10 * 1000)
 
