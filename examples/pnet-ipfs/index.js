@@ -6,7 +6,7 @@ const assert = require('assert').strict
 const { generate: writeKey } = require('libp2p/src/pnet')
 const path = require('path')
 const fs = require('fs')
-const privateLibp2pBundle = require('./libp2p-bundle')
+const privateLibp2p = require('./libp2p-node')
 const { mkdirp } = require('./utils')
 
 // Create two separate repo paths so we can run two nodes and check their output
@@ -34,7 +34,7 @@ fs.writeFileSync(swarmKey2Path, swarmKey)
 // Create the first ipfs node
 const node1 = new IPFS({
   repo: repo1,
-  libp2p: privateLibp2pBundle(swarmKey1Path),
+  libp2p: privateLibp2p(swarmKey1Path),
   config: {
     Addresses: {
       // Set the swarm address so we dont get port collision on the nodes
@@ -46,7 +46,7 @@ const node1 = new IPFS({
 // Create the second ipfs node
 const node2 = new IPFS({
   repo: repo2,
-  libp2p: privateLibp2pBundle(swarmKey2Path),
+  libp2p: privateLibp2p(swarmKey2Path),
   config: {
     Addresses: {
       // Set the swarm address so we dont get port collision on the nodes

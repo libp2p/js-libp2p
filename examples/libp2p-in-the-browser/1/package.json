@@ -18,15 +18,13 @@
   "dependencies": {
     "detect-dom-ready": "^1.0.2",
     "libp2p": "../../../",
-    "libp2p-bootstrap": "~0.9.7",
-    "libp2p-gossipsub": "~0.0.4",
-    "libp2p-kad-dht": "^0.15.3",
-    "libp2p-mplex": "~0.8.5",
-    "libp2p-secio": "~0.11.1",
-    "libp2p-spdy": "~0.13.3",
-    "libp2p-webrtc-star": "~0.15.8",
-    "libp2p-websocket-star": "~0.10.2",
-    "libp2p-websockets": "~0.12.2",
-    "peer-info": "~0.15.1"
+    "libp2p-bootstrap": "^0.10.3",
+    "libp2p-gossipsub": "^0.2.0",
+    "libp2p-kad-dht": "^0.18.2",
+    "libp2p-mplex": "^0.9.1",
+    "libp2p-secio": "^0.12.1",
+    "libp2p-webrtc-star": "~0.17.0",
+    "libp2p-websockets": "^0.13.1",
+    "peer-info": "^0.17.0"
   }
 }

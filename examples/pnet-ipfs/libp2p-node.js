@@ -5,40 +5,37 @@ const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const fs = require('fs')
-const Protector = require('libp2p/src/pnet')
+const Protector = require('../../src/pnet')
 
 /**
- * Options for the libp2p bundle
- * @typedef {Object} libp2pBundle~options
- * @property {PeerInfo} peerInfo - The PeerInfo of the IPFS node
- * @property {PeerBook} peerBook - The PeerBook of the IPFS node
- * @property {Object} config - The config of the IPFS node
- * @property {Object} options - The options given to the IPFS node
+ * Options for the libp2p configuration
+ * @typedef {Object} libp2p~options
+ * @property {PeerInfo} peerInfo - The PeerInfo of the libp2p node
+ * @property {Object} config - The config of the libp2p node
+ * @property {Object} options - The options given to the libp2p node
  */
 
 /**
- * privateLibp2pBundle returns a libp2p bundle function that will use the swarm
+ * privateLibp2p returns a libp2p node function that will use the swarm
  * key at the given `swarmKeyPath` to create the Protector
  *
  * @param {string} swarmKeyPath The path to our swarm key
- * @returns {libp2pBundle} Returns a libp2pBundle function for use in IPFS creation
+ * @returns {libp2p} Returns a libp2p function for use in IPFS creation
  */
-const privateLibp2pBundle = (swarmKeyPath) => {
+const privateLibp2p = (swarmKeyPath) => {
   /**
-   * This is the bundle we will use to create our fully customized libp2p bundle.
+   * This is the configuration we will use to create our fully customized libp2p node.
    *
-   * @param {libp2pBundle~options} opts The options to use when generating the libp2p node
+   * @param {libp2p~options} opts The options to use when generating the libp2p node
    * @returns {Libp2p} Our new libp2p node
    */
-  const libp2pBundle = (opts) => {
+  const libp2p = (opts) => {
     // Set convenience variables to clearly showcase some of the useful things that are available
     const peerInfo = opts.peerInfo
-    const peerBook = opts.peerBook
 
     // Build and return our libp2p node
     return new Libp2p({
       peerInfo,
-      peerBook,
       modules: {
         transport: [TCP], // We're only using the TCP transport for this example
         streamMuxer: [MPLEX], // We're only using mplex muxing
@@ -54,7 +51,7 @@ const privateLibp2pBundle = (swarmKeyPath) => {
     })
   }
 
-  return libp2pBundle
+  return libp2p
 }
 
-module.exports = privateLibp2pBundle
+module.exports = privateLibp2p

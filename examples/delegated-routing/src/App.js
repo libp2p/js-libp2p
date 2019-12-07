@@ -3,12 +3,11 @@
 
 import React from 'react'
 import Ipfs from 'ipfs'
-import libp2pBundle from './libp2p-bundle'
-const Component = React.Component
+import libp2pConfig from './libp2p-configuration'
 
-const BootstrapNode = '/ip4/127.0.0.1/tcp/8081/ws/p2p/QmdoG8DpzYUZMVP5dGmgmigZwR1RE8Cf6SxMPg1SBXJAQ8'
+const BootstrapNode = '/ip4/127.0.0.1/tcp/4004/ws/ipfs/QmPHafDaco9vynQ93MHv5cRSW6UCECycCGdTRafL8X5WEj'
 
-class App extends Component {
+class App extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
@@ -38,34 +37,30 @@ class App extends Component {
     })
   }
 
-  handleHashSubmit (event) {
+  async handleHashSubmit (event) {
     event.preventDefault()
     this.setState({
       isLoading: this.state.isLoading + 1
     })
 
-    this.ipfs.cat(this.state.hash, (err, data) => {
-      if (err) console.log('Error', err)
+    const data = await this.ipfs.cat(this.state.hash)
 
-      this.setState({
-        response: data.toString(),
-        isLoading: this.state.isLoading - 1
-      })
+    this.setState({
+      response: data.toString(),
+      isLoading: this.state.isLoading - 1
     })
   }
-  handlePeerSubmit (event) {
+  async handlePeerSubmit (event) {
     event.preventDefault()
     this.setState({
       isLoading: this.state.isLoading + 1
     })
 
-    this.ipfs.dht.findpeer(this.state.peer, (err, results) => {
-      if (err) console.log('Error', err)
+    const results = await this.ipfs.dht.findpeer(this.state.peer)
 
-      this.setState({
-        response: JSON.stringify(results, null, 2),
-        isLoading: this.state.isLoading - 1
-      })
+    this.setState({
+      response: JSON.stringify(results, null, 2),
+      isLoading: this.state.isLoading - 1
     })
   }
 
@@ -90,25 +85,22 @@ class App extends Component {
       preload: {
         enabled: false
       },
-      libp2p: libp2pBundle
+      libp2p: libp2pConfig
     })
-    this.ipfs.on('ready', () => {
+
+    this.ipfs.on('ready', async () => {
       if (this.peerInterval) {
         clearInterval(this.peerInterval)
       }
 
-      this.ipfs.swarm.connect(BootstrapNode, (err) => {
-        if (err) {
-          console.log('Error connecting to the node', err)
-        }
-        console.log('Connected!')
-      })
 
-      this.peerInterval = setInterval(() => {
-        this.ipfs.swarm.peers((err, peers) => {
-          if (err) console.log(err)
-          if (peers) this.setState({peers: peers.length})
-        })
+      await this.ipfs.swarm.connect(BootstrapNode)
+      console.log('Connected!')
+
+      this.peerInterval = setInterval(async () => {
+        const peers = await this.ipfs.swarm.peers()
+
+        if (peers) this.setState({peers: peers.length})
       }, 2500)
     })
   }
