@@ -21,7 +21,8 @@ jobs:
     - stage: check
       script:
         # - npx aegir build --bundlesize
-        - npx aegir dep-check -- -i wrtc -i electron-webrtc
+        # Remove pull libs once ping is async
+        - npx aegir dep-check -- -i wrtc -i electron-webrtc -i pull-handshake -i pull-stream
         - npm run lint
 
     - stage: test
