@@ -22,7 +22,7 @@ jobs:
       script:
         # - npx aegir build --bundlesize
         # Remove pull libs once ping is async
-        - npx aegir dep-check -- -i wrtc -i electron-webrtc -i pull-handshake -i pull-stream
+        - npx aegir dep-check -- -i pull-handshake -i pull-stream
         - npm run lint
 
     - stage: test
