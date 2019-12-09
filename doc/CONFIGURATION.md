@@ -37,7 +37,7 @@ The libp2p ecosystem contains at least one module for each of these subsystems. 
 
 After selecting the modules to use, it is also possible to configure each one according to your needs.
 
-Bear in mind that only a **transport** is required, while all the other subsystems are optional.
+Bear in mind that only a **transport** and a **connection encryption** are required, while all the other subsystems are optional.
 
 ### Transport
 
@@ -78,7 +78,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 ### Connection Encryption
 
-> A connection encryption mechanism should be used, in order to ensure all exchanged data between two peers is encrypted.
+> A connection encryption mechanism must be used, in order to ensure all exchanged data between two peers is encrypted.
 
 Some available connection encryption protocols:
 
