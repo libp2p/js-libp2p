@@ -33,11 +33,11 @@ Regardless of how you configure libp2p, the top level [API](./API.md) will alway
 - DHT implementation
 - Pubsub router
 
-The libp2p ecosystem contains at least one module for each of these subsystems. This way, the user should install and import the modules that are relevant for their requirements. Moreover, thanks to the existing interfaces it is easy to create a libp2p compatible module and use it.
+The libp2p ecosystem contains at least one module for each of these subsystems. The user should install and import the modules that are relevant for their requirements. Moreover, thanks to the existing interfaces it is easy to create a libp2p compatible module and use it.
 
 After selecting the modules to use, it is also possible to configure each one according to your needs.
 
-Bear in mind that only a **transport** is required, being all the other subsystems optional.
+Bear in mind that only a **transport** is required, while all the other subsystems are optional.
 
 ### Transport
 
@@ -45,11 +45,13 @@ Bear in mind that only a **transport** is required, being all the other subsyste
 
 Some available transports are:
 
-- [libp2p/js-libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp)
+- [libp2p/js-libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp) 
 - [libp2p/js-libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star)
 - [libp2p/js-libp2p-webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct)
 - [libp2p/js-libp2p-websockets](https://github.com/libp2p/js-libp2p-websockets)
 - [libp2p/js-libp2p-utp](https://github.com/libp2p/js-libp2p-utp) (Work in Progress)
+
+You should take into consideration that `js-libp2p-tcp` and `js-libp2p-utp` are not available in a **browser** environment.
 
 If none of the available transports fulfills your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport).
 
@@ -62,7 +64,7 @@ If you want to know more about libp2p transports, you should read the following 
 
 > Libp2p peers will need to communicate with each other through several protocols during their life. Stream multiplexing allows multiple independent logical streams to share a common underlying transport medium, instead of creating a new connection with the same peer per needed protocol.
 
-Some available stream multiplxers are:
+Some available stream multiplexers are:
 
 - [libp2p/js-libp2p-mplex](https://github.com/libp2p/js-libp2p-mplex)
 
