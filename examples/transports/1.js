@@ -1,39 +1,33 @@
 /* eslint-disable no-console */
 'use strict'
 
-const libp2p = require('../../')
+const Libp2p = require('../..')
 const TCP = require('libp2p-tcp')
+const SECIO = require('libp2p-secio')
 const PeerInfo = require('peer-info')
-const waterfall = require('async/waterfall')
-const defaultsDeep = require('@nodeutils/defaults-deep')
 
-class MyBundle extends libp2p {
-  constructor (_options) {
-    const defaults = {
-      modules: {
-        transport: [
-          TCP
-        ]
-      }
+const createNode = async (peerInfo) => {
+  // To signall the addresses we want to be available, we use
+  // the multiaddr format, a self describable address
+  peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
+
+  const node = await Libp2p.create({
+    peerInfo,
+    modules: {
+      transport: [TCP],
+      connEncryption: [SECIO]
     }
+  })
 
-    super(defaultsDeep(_options, defaults))
-  }
+  await node.start()
+  return node
 }
 
-let node
-
-waterfall([
-  (cb) => PeerInfo.create(cb),
-  (peerInfo, cb) => {
-    peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-    node = new MyBundle({ peerInfo: peerInfo })
-    node.start(cb)
-  }
-], (err) => {
-  if (err) { throw err }
+;(async () => {
+  const peerInfo = await PeerInfo.create()
+  const node = await createNode(peerInfo)
 
   console.log('node has started (true/false):', node.isStarted())
   console.log('listening on:')
   node.peerInfo.multiaddrs.forEach((ma) => console.log(ma.toString()))
-})
+})();
