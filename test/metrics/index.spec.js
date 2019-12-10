@@ -11,11 +11,12 @@ const { randomBytes } = require('libp2p-crypto')
 const duplexPair = require('it-pair/duplex')
 const pipe = require('it-pipe')
 const concat = require('it-concat')
+const pushable = require('it-pushable')
 const { consume } = require('streaming-iterables')
 const delay = require('delay')
 
 const Metrics = require('../../src/metrics')
-const { createPeerId } = require('../utils/creators/peer')
+const { createPeerId, createPeer } = require('../utils/creators/peer')
 
 describe('Metrics', () => {
   let peerId
@@ -152,5 +153,56 @@ describe('Metrics', () => {
       expect(stats.snapshot['dataReceived'].toNumber()).to.equal(bytes.length)
       expect(stats.snapshot['dataSent'].toNumber()).to.equal(bytes.length)
     }
+  })
+
+  it('should be able to replace an existing peer', async () => {
+    const [local, remote] = duplexPair()
+    const metrics = new Metrics({
+      computeThrottleMaxQueueSize: 1, // compute after every message
+      movingAverageIntervals: [10, 100, 1000]
+    })
+    metrics.start()
+
+    // Echo back remotes
+    pipe(remote, remote)
+
+    let idString = 'a temporary id'
+    let mockPeer = {
+      toString: () => idString
+    }
+    metrics.trackStream({
+      stream: local,
+      remotePeer: mockPeer
+    })
+
+    const bytes = randomBytes(1024)
+    const input = pushable()
+
+    const deferredPromise = pipe(input, local, consume)
+
+    input.push(bytes)
+
+    await delay(0)
+
+    metrics.updatePlaceholder(idString, peerId)
+    mockPeer.toString = peerId.toString.bind(peerId)
+
+    input.push(bytes)
+    input.end()
+
+    await deferredPromise
+    await delay(0)
+
+    expect(metrics.peers).to.eql([peerId.toString()])
+    // Verify global metrics
+    const globalStats = metrics.global
+    expect(globalStats.snapshot['dataReceived'].toNumber()).to.equal(bytes.length * 2)
+    expect(globalStats.snapshot['dataSent'].toNumber()).to.equal(bytes.length * 2)
+
+    // Verify individual metrics
+    const stats = metrics.forPeer(peerId)
+
+    expect(stats.snapshot['dataReceived'].toNumber()).to.equal(bytes.length * 2)
+    expect(stats.snapshot['dataSent'].toNumber()).to.equal(bytes.length * 2)
   })
 })

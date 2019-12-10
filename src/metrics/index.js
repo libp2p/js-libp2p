@@ -154,14 +154,16 @@ class Metrics {
   }
 
   /**
-   * Replaces the `placeholder` peer key with the given `peerId`.
+   * Replaces the `PeerId` like `placeholder` with the given `peerId`.
    * If stats are already being tracked for the given `peerId`, the
    * placeholder stats will be merged with the existing stats.
-   * @param {string} placeholder
+   *
+   *
+   * @param {{ toString: function() }} placeholder A peerId like placeholder
    * @param {PeerId} peerId
    */
   updatePlaceholder (placeholder, peerId) {
-    const placeholderStats = this._peerStats.get(placeholder)
+    const placeholderStats = this.forPeer(placeholder)
     const peerIdString = peerId.toString()
     const existingStats = this.forPeer(peerId)
     let mergedStats = placeholderStats
@@ -174,7 +176,7 @@ class Metrics {
       this._oldPeers.delete(peerIdString)
     }
 
-    this._peerStats.delete(placeholder)
+    this._peerStats.delete(placeholder.toString())
     this._peerStats.set(peerIdString, mergedStats)
     mergedStats.start()
   }
