@@ -1,28 +1,21 @@
 'use strict'
 
 const PeerInfo = require('peer-info')
-const Node = require('./browser-bundle')
+const Node = require('./browser-node')
 
-function createNode (callback) {
-  PeerInfo.create((err, peerInfo) => {
-    if (err) {
-      return callback(err)
-    }
+async function createNode() {
+  const peerInfo = await PeerInfo.create()
 
-    const peerIdStr = peerInfo.id.toB58String()
-    const webrtcAddr = `/dns4/star-signal.cloud.ipfs.team/tcp/443/wss/p2p-webrtc-star/p2p/${peerIdStr}`
-    const wsAddr = `/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star`
+  const peerIdStr = peerInfo.id.toB58String()
+  const webrtcAddr = `/dns4/star-signal.cloud.ipfs.team/tcp/443/wss/p2p-webrtc-star/p2p/${peerIdStr}`
+  peerInfo.multiaddrs.add(webrtcAddr)
 
-    peerInfo.multiaddrs.add(webrtcAddr)
-    peerInfo.multiaddrs.add(wsAddr)
-
-    const node = new Node({
-      peerInfo
-    })
-
-    node.idStr = peerIdStr
-    callback(null, node)
+  const node = new Node({
+    peerInfo
   })
+  node.idStr = peerIdStr
+
+  return node
 }
 
 module.exports = createNode
