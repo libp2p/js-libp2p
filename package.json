@@ -43,7 +43,7 @@
   "dependencies": {
     "abort-controller": "^3.0.0",
     "aggregate-error": "^3.0.1",
-    "any-signal": "^1.0.0",
+    "any-signal": "^1.1.0",
     "async": "^2.6.2",
     "async-iterator-all": "^1.0.0",
     "bignumber.js": "^9.0.0",
@@ -78,6 +78,7 @@
     "pull-handshake": "^1.1.4",
     "pull-stream": "^3.6.9",
     "retimer": "^2.0.0",
+    "timeout-abort-controller": "^1.0.0",
     "xsalsa20": "^1.0.2"
   },
   "devDependencies": {

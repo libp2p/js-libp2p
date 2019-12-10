@@ -2,7 +2,7 @@
 
 const multiaddr = require('multiaddr')
 const errCode = require('err-code')
-const AbortController = require('abort-controller')
+const TimeoutController = require('timeout-abort-controller')
 const anySignal = require('any-signal')
 const debug = require('debug')
 const log = debug('libp2p:dialer')
@@ -38,7 +38,21 @@ class Dialer {
     this.timeout = timeout
     this.perPeerLimit = perPeerLimit
     this.tokens = [...new Array(concurrency)].map((_, index) => index)
-    this.pendingDials = new Set()
+    this._pendingDials = new Set()
+  }
+
+  /**
+   * Clears any pending dials
+   */
+  destroy () {
+    for (const dial of this._pendingDials.values()) {
+      try {
+        dial.controller.abort()
+      } catch (err) {
+        log.error(err)
+      }
+    }
+    this._pendingDials.clear()
   }
 
   /**
@@ -64,21 +78,20 @@ class Dialer {
     })
 
     // Combine the timeout signal and options.signal, if provided
-    const timeoutController = new AbortController()
+    const timeoutController = new TimeoutController(this.timeout)
     const signals = [timeoutController.signal]
     options.signal && signals.push(options.signal)
     const signal = anySignal(signals)
-    const timeoutId = setTimeout(() => timeoutController.abort(), this.timeout)
 
     const dial = {
       dialRequest,
       controller: timeoutController
     }
-    this.pendingDials.add(dial)
+    this._pendingDials.add(dial)
 
     try {
       const dialResult = await dialRequest.run({ ...options, signal })
-      clearTimeout(timeoutId)
+      timeoutController.clear()
       log('dial succeeded to %s', dialResult.remoteAddr)
       return dialResult
     } catch (err) {
@@ -89,7 +102,7 @@ class Dialer {
       log.error(err)
       throw err
     } finally {
-      this.pendingDials.delete(dial)
+      this._pendingDials.delete(dial)
     }
   }
 

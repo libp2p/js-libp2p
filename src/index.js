@@ -199,9 +199,7 @@ class Libp2p extends EventEmitter {
         this._dht && this._dht.stop()
       ])
 
-      for (const dial of this.dialer.pendingDials.values()) {
-        dial.abort()
-      }
+      this.dialer.destroy()
 
       await this.transportManager.close()
       await this.registrar.close()
