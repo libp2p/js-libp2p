@@ -130,30 +130,26 @@ class Metrics {
   onMessage ({ remotePeer, protocol, direction, dataLength }) {
     if (!this._running) return
 
-    try {
-      const key = directionToEvent[direction]
+    const key = directionToEvent[direction]
 
-      let peerStats = this.forPeer(remotePeer)
-      if (!peerStats) {
-        peerStats = new Stats(initialCounters, this._options)
-        this._peerStats.set(remotePeer.toString(), peerStats)
-      }
+    let peerStats = this.forPeer(remotePeer)
+    if (!peerStats) {
+      peerStats = new Stats(initialCounters, this._options)
+      this._peerStats.set(remotePeer.toString(), peerStats)
+    }
 
-      // Protocol specific stats
-      if (protocol) {
-        let protocolStats = this.forProtocol(protocol)
-        if (!protocolStats) {
-          protocolStats = new Stats(initialCounters, this._options)
-          this._protocolStats.set(protocol, protocolStats)
-        }
-        protocolStats.push(key, dataLength)
-      // General stats
-      } else {
-        peerStats.push(key, dataLength)
-        this._globalStats.push(key, dataLength)
+    // Protocol specific stats
+    if (protocol) {
+      let protocolStats = this.forProtocol(protocol)
+      if (!protocolStats) {
+        protocolStats = new Stats(initialCounters, this._options)
+        this._protocolStats.set(protocol, protocolStats)
       }
-    } catch (err) {
-      console.log(err)
+      protocolStats.push(key, dataLength)
+    // General stats
+    } else {
+      peerStats.push(key, dataLength)
+      this._globalStats.push(key, dataLength)
     }
   }
 
@@ -210,7 +206,7 @@ class Metrics {
     })()
 
     const _sink = stream.sink
-    stream.sink = async source => {
+    stream.sink = source => {
       pipe(
         source,
         source => (async function * () {

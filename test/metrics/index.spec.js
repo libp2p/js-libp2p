@@ -14,7 +14,6 @@ const concat = require('it-concat')
 const pushable = require('it-pushable')
 const { consume } = require('streaming-iterables')
 const delay = require('delay')
-const multiaddr = require('multiaddr')
 
 const { MULTIADDRS_WEBSOCKETS: remoteAddrs } = require('../fixtures/browser')
 const Metrics = require('../../src/metrics')
@@ -26,7 +25,7 @@ describe('Metrics', () => {
   let peerId2
 
   before(async () => {
-    ;[peerId, peerId2] = await createPeerId({ number: 2, fixture: true })
+    [peerId, peerId2] = await createPeerId({ number: 2, fixture: true })
   })
 
   it('should not track data if not started', async () => {
@@ -38,7 +37,7 @@ describe('Metrics', () => {
 
     metrics.trackStream({
       stream: local,
-      remotePeer: peerId,
+      remotePeer: peerId
     })
 
     // Echo back
@@ -60,8 +59,8 @@ describe('Metrics', () => {
     expect(metrics.forPeer(peerId)).to.equal(undefined)
     expect(metrics.peers).to.eql([])
     const globalStats = metrics.global
-    expect(globalStats.snapshot['dataReceived'].toNumber()).to.equal(0)
-    expect(globalStats.snapshot['dataSent'].toNumber()).to.equal(0)
+    expect(globalStats.snapshot.dataReceived.toNumber()).to.equal(0)
+    expect(globalStats.snapshot.dataSent.toNumber()).to.equal(0)
   })
 
   it('should be able to track a duplex stream', async () => {
@@ -73,7 +72,7 @@ describe('Metrics', () => {
 
     metrics.trackStream({
       stream: local,
-      remotePeer: peerId,
+      remotePeer: peerId
     })
     metrics.start()
 
@@ -103,12 +102,12 @@ describe('Metrics', () => {
 
     const stats = metrics.forPeer(peerId)
     expect(metrics.peers).to.eql([peerId.toString()])
-    expect(stats.snapshot['dataReceived'].toNumber()).to.equal(results.length)
-    expect(stats.snapshot['dataSent'].toNumber()).to.equal(results.length)
+    expect(stats.snapshot.dataReceived.toNumber()).to.equal(results.length)
+    expect(stats.snapshot.dataSent.toNumber()).to.equal(results.length)
 
     const globalStats = metrics.global
-    expect(globalStats.snapshot['dataReceived'].toNumber()).to.equal(results.length)
-    expect(globalStats.snapshot['dataSent'].toNumber()).to.equal(results.length)
+    expect(globalStats.snapshot.dataReceived.toNumber()).to.equal(results.length)
+    expect(globalStats.snapshot.dataSent.toNumber()).to.equal(results.length)
   })
 
   it('should properly track global stats', async () => {
@@ -126,11 +125,11 @@ describe('Metrics', () => {
 
     metrics.trackStream({
       stream: local,
-      remotePeer: peerId,
+      remotePeer: peerId
     })
     metrics.trackStream({
       stream: local2,
-      remotePeer: peerId2,
+      remotePeer: peerId2
     })
 
     const bytes = randomBytes(1024)
@@ -146,15 +145,15 @@ describe('Metrics', () => {
     expect(metrics.peers).to.eql([peerId.toString(), peerId2.toString()])
     // Verify global metrics
     const globalStats = metrics.global
-    expect(globalStats.snapshot['dataReceived'].toNumber()).to.equal(bytes.length * 2)
-    expect(globalStats.snapshot['dataSent'].toNumber()).to.equal(bytes.length * 2)
+    expect(globalStats.snapshot.dataReceived.toNumber()).to.equal(bytes.length * 2)
+    expect(globalStats.snapshot.dataSent.toNumber()).to.equal(bytes.length * 2)
 
     // Verify individual metrics
     for (const peer of [peerId, peerId2]) {
       const stats = metrics.forPeer(peer)
 
-      expect(stats.snapshot['dataReceived'].toNumber()).to.equal(bytes.length)
-      expect(stats.snapshot['dataSent'].toNumber()).to.equal(bytes.length)
+      expect(stats.snapshot.dataReceived.toNumber()).to.equal(bytes.length)
+      expect(stats.snapshot.dataSent.toNumber()).to.equal(bytes.length)
     }
   })
 
@@ -169,9 +168,8 @@ describe('Metrics', () => {
     // Echo back remotes
     pipe(remote, remote)
 
-    let idString = 'a temporary id'
-    let mockPeer = {
-      toString: () => idString
+    const mockPeer = {
+      toString: () => 'a temporary id'
     }
     metrics.trackStream({
       stream: local,
@@ -187,7 +185,7 @@ describe('Metrics', () => {
 
     await delay(0)
 
-    metrics.updatePlaceholder(idString, peerId)
+    metrics.updatePlaceholder(mockPeer.toString(), peerId)
     mockPeer.toString = peerId.toString.bind(peerId)
 
     input.push(bytes)
@@ -199,14 +197,14 @@ describe('Metrics', () => {
     expect(metrics.peers).to.eql([peerId.toString()])
     // Verify global metrics
     const globalStats = metrics.global
-    expect(globalStats.snapshot['dataReceived'].toNumber()).to.equal(bytes.length * 2)
-    expect(globalStats.snapshot['dataSent'].toNumber()).to.equal(bytes.length * 2)
+    expect(globalStats.snapshot.dataReceived.toNumber()).to.equal(bytes.length * 2)
+    expect(globalStats.snapshot.dataSent.toNumber()).to.equal(bytes.length * 2)
 
     // Verify individual metrics
     const stats = metrics.forPeer(peerId)
 
-    expect(stats.snapshot['dataReceived'].toNumber()).to.equal(bytes.length * 2)
-    expect(stats.snapshot['dataSent'].toNumber()).to.equal(bytes.length * 2)
+    expect(stats.snapshot.dataReceived.toNumber()).to.equal(bytes.length * 2)
+    expect(stats.snapshot.dataSent.toNumber()).to.equal(bytes.length * 2)
   })
 
   describe('libp2p.metrics', () => {
@@ -217,7 +215,7 @@ describe('Metrics', () => {
     })
 
     it('should disable metrics by default', async () => {
-      ;[libp2p] = await createPeer({
+      [libp2p] = await createPeer({
         config: {
           modules: baseOptions.modules
         }

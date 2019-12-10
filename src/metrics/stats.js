@@ -92,8 +92,8 @@ class Stats extends EventEmitter {
     const snapshot = this.snapshot
     const movingAverages = this.movingAverages
     const data = {
-      dataReceived: snapshot['dataReceived'].toString(),
-      dataSent: snapshot['dataSent'].toString(),
+      dataReceived: snapshot.dataReceived.toString(),
+      dataSent: snapshot.dataSent.toString(),
       movingAverages: {}
     }
 
