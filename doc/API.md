@@ -10,6 +10,7 @@
   * [`hangUp`](#hangUp)
   * [`handle`](#handle)
   * [`unhandle`](#unhandle)
+  * [`ping`](#ping)
   * [`peerRouting.findPeer`](#peerRouting.findPeer)
   * [`contentRouting.findProviders`](#contentRouting.findProviders)
   * [`contentRouting.provide`](#contentRouting.provide)
@@ -305,6 +306,31 @@ Unregisters all handlers with the given protocols
 ```js
 // ...
 libp2p.unhandle(['/echo/1.0.0'])
+```
+
+### ping
+
+Pings a given peer and get the operation's latency.
+
+`libp2p.ping(peer)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peer | `PeerInfo|PeerId|Multiaddr|string` | peer to ping |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<number>` | Latency of the operation in ms |
+
+#### Example
+
+```js
+// ...
+const latency = await libp2p.ping(otherPeerId)
 ```
 
 ### peerRouting.findPeer

@@ -292,7 +292,7 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<number>}
    */
   async ping (peer) {
-    const peerInfo = await getPeerInfoRemote(peer, this)
+    const peerInfo = await getPeerInfo(peer, this.peerStore)
 
     return ping(this, peerInfo)
   }
