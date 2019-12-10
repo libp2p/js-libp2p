@@ -10,8 +10,7 @@ const Libp2p = require('../../../src')
 const Peers = require('../../fixtures/peers')
 const defaultOptions = require('../base-options.browser')
 
-const tcpListenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
-const wsListenAddr = multiaddr('/ip4/127.0.0.1/tcp/0/ws')
+const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 /**
  * Create libp2p nodes.
@@ -32,8 +31,7 @@ async function createPeer ({ number = 1, fixture = true, started = true, config 
 
   if (started) {
     await Promise.all(peers.map((p) => {
-      p.peerInfo.multiaddrs.add(tcpListenAddr)
-      p.peerInfo.multiaddrs.add(wsListenAddr)
+      p.peerInfo.multiaddrs.add(listenAddr)
       return p.start()
     }))
   }
