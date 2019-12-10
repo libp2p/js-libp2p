@@ -1,82 +1,91 @@
 'use strict'
 
-const EventEmitter = require('events').EventEmitter
-const pull = require('pull-stream/pull')
-const empty = require('pull-stream/sources/empty')
-const handshake = require('pull-handshake')
-const constants = require('./constants')
-const util = require('./util')
-const rnd = util.rnd
 const debug = require('debug')
 const log = debug('libp2p-ping')
 log.error = debug('libp2p-ping:error')
+const errCode = require('err-code')
 
-const PROTOCOL = constants.PROTOCOL
-const PING_LENGTH = constants.PING_LENGTH
+const { EventEmitter } = require('events')
+const handshake = require('it-handshake')
+const pipe = require('it-pipe')
 
+const { PROTOCOL, PING_LENGTH } = require('./constants')
+const { rnd } = require('./util')
+
+/**
+ * Responsible for keeping a ping flow of messages with a given peer.
+ * @fires Ping#ping emitted when a ping message was answered with the operation time (in ms)
+ * @fires Ping#error
+ */
 class Ping extends EventEmitter {
-  constructor (swarm, peer) {
+  /**
+   * @param {Libp2p} node
+   * @param {PeerInfo} peer
+   * @constructor
+   */
+  constructor (node, peer) {
     super()
 
     this._stopped = false
+    this.handshake = undefined
     this.peer = peer
-    this.swarm = swarm
+    this.node = node
   }
 
-  start () {
+  /**
+   * Start the ping messages exchange.
+   * @returns {Promise<void>}
+   */
+  async start () {
     log('dialing %s to %s', PROTOCOL, this.peer.id.toB58String())
 
-    this.swarm.dial(this.peer, PROTOCOL, (err, conn) => {
-      if (err) {
+    const { stream } = await this.node.dialProtocol(this.peer, PROTOCOL)
+    this.handshake = handshake(stream)
+    const shakeStream = this.handshake.stream
+
+    // recursive message exchange
+    const next = async () => {
+      const start = new Date()
+      const buf = rnd(PING_LENGTH)
+
+      this.handshake.write(buf)
+
+      const bufBack = await this.handshake.read()
+      const end = new Date()
+
+      if (!buf.equals(Buffer.isBuffer(bufBack) ? bufBack : bufBack.slice())) {
+        const err = errCode(new Error('Received wrong ping ack'), 'ERR_WRONG_PING_ACK')
+
         return this.emit('error', err)
       }
+      this.emit('ping', end - start)
 
-      const stream = handshake({ timeout: 0 })
-      this.shake = stream.handshake
-
-      pull(
-        stream,
-        conn,
-        stream
-      )
-
-      // write and wait to see ping back
-      const self = this
-      function next () {
-        const start = new Date()
-        const buf = rnd(PING_LENGTH)
-        self.shake.write(buf)
-        self.shake.read(PING_LENGTH, (err, bufBack) => {
-          const end = new Date()
-          if (err || !buf.equals(bufBack)) {
-            const err = new Error('Received wrong ping ack')
-            return self.emit('error', err)
-          }
-
-          self.emit('ping', end - start)
-
-          if (self._stopped) {
-            return
-          }
-          next()
-        })
+      if (this._stopped) {
+        return
       }
-
       next()
-    })
+    }
+
+    pipe(
+      shakeStream,
+      stream,
+      shakeStream
+    )
+
+    next()
   }
 
+  /**
+   * Stop the ping messages exchange.
+   * @returns {void}
+   */
   stop () {
     if (this._stopped || !this.shake) {
       return
     }
 
     this._stopped = true
-
-    pull(
-      empty(),
-      this.shake.rest()
-    )
+    this.shake.rest().sink([])
   }
 }
 

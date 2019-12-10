@@ -1,48 +1,46 @@
 'use strict'
 
-const pull = require('pull-stream/pull')
-const handshake = require('pull-handshake')
-const constants = require('./constants')
-const PROTOCOL = constants.PROTOCOL
-const PING_LENGTH = constants.PING_LENGTH
+const pipe = require('it-pipe')
+const handshake = require('it-handshake')
+const { PROTOCOL } = require('./constants')
 
 const debug = require('debug')
 const log = debug('libp2p-ping')
 log.error = debug('libp2p-ping:error')
 
-function mount (swarm) {
-  swarm.handle(PROTOCOL, (protocol, conn) => {
-    const stream = handshake({ timeout: 0 })
-    const shake = stream.handshake
+/**
+ * Subscribe ping protocol handler.
+ * @param {Libp2p} node
+ */
+function mount (node) {
+  node.handle(PROTOCOL, ({ stream }) => {
+    const shake = handshake(stream)
+    const shakeStream = shake.stream
 
     // receive and echo back
-    function next () {
-      shake.read(PING_LENGTH, (err, buf) => {
-        if (err === true) {
-          // stream closed
-          return
-        }
-        if (err) {
-          return log.error(err)
-        }
+    const next = async () => {
+      const buf = await shake.read()
 
-        shake.write(buf)
-        return next()
-      })
+      shake.write(buf)
+      return next()
     }
 
-    pull(
-      conn,
+    pipe(
       stream,
-      conn
+      shakeStream,
+      stream
     )
 
     next()
   })
 }
 
-function unmount (swarm) {
-  swarm.unhandle(PROTOCOL)
+/**
+ * Unsubscribe ping protocol handler.
+ * @param {Libp2p} node
+ */
+function unmount (node) {
+  node.unhandle(PROTOCOL)
 }
 
 exports = module.exports
