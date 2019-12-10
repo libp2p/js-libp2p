@@ -234,7 +234,7 @@ class Metrics {
     other.stop()
 
     // Merge queues
-    target._queue = [...target.queue, other._queue]
+    target._queue = [...target._queue, ...other._queue]
 
     // TODO: how to merge moving averages?
     return target

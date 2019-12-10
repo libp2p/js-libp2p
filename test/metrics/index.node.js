@@ -12,9 +12,9 @@ const pipe = require('it-pipe')
 const concat = require('it-concat')
 const delay = require('delay')
 
-const { MULTIADDRS_WEBSOCKETS: remoteAddrs } = require('../fixtures/browser')
 const { createPeer } = require('../utils/creators/peer')
-const baseOptions = require('../utils/base-options.browser')
+const Libp2p = require('../../src')
+const baseOptions = require('../utils/base-options')
 
 describe('libp2p.metrics', () => {
   let libp2p
@@ -38,7 +38,7 @@ describe('libp2p.metrics', () => {
     config.metrics = {
       enabled: true
     }
-    ;[libp2p] = await createPeer({ config })
+    libp2p = await Libp2p.create(config)
 
     expect(libp2p.metrics).to.exist()
     sinon.spy(libp2p.metrics, 'start')
@@ -58,10 +58,12 @@ describe('libp2p.metrics', () => {
       computeThrottleMaxQueueSize: 1, // compute after every message
       movingAverageIntervals: [10]
     }
-    ;[libp2p] = await createPeer({ config })
+    let remoteLibp2p
+    ;[libp2p, remoteLibp2p] = await createPeer({ number: 2, config })
 
-    await libp2p.start()
-    const connection = await libp2p.dial(remoteAddrs[0])
+    remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
+
+    const connection = await libp2p.dial(remoteLibp2p.peerInfo)
     const { stream } = await connection.newStream('/echo/1.0.0')
 
     const bytes = randomBytes(512)
@@ -83,6 +85,6 @@ describe('libp2p.metrics', () => {
     // A lot more traffic will be sent over the wire for the peer
     const peerStats = libp2p.metrics.forPeer(connection.remotePeer).toJSON()
     expect(Number(peerStats.dataReceived)).to.be.at.least(bytes.length)
-    await libp2p.stop()
+    await remoteLibp2p.stop()
   })
 })
