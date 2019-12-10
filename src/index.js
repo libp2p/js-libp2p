@@ -222,7 +222,7 @@ class KadDHT extends EventEmitter {
    * @param {Buffer} key
    * @param {Object} [options] - get options
    * @param {number} [options.timeout] - optional timeout (default: 60000)
-   * @returns {Promise<{from: PeerId, val: Buffer}>}
+   * @returns {Promise<Buffer>}
    */
   async get (key, options = {}) { // eslint-disable-line require-await
     return this.contentFetching.get(key, options)

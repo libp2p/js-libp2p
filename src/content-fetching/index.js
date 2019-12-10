@@ -136,7 +136,7 @@ module.exports = (dht) => {
      * @param {Buffer} key
      * @param {Object} [options] - get options
      * @param {number} [options.timeout] - optional timeout (default: 60000)
-     * @returns {Promise<{from: PeerId, val: Buffer}>}
+     * @returns {Promise<Buffer>}
      */
     async get (key, options = {}) {
       options.timeout = options.timeout || c.minute
