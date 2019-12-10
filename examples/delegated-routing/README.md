@@ -10,7 +10,7 @@ especially useful when your libp2p node will have limited resources, making runn
 also highly useful if your node is generating content, but can't reliably be on the network. You can use delegate nodes
 to provide content on your behalf.
 
-The starting [Libp2p Bundle](./src/libp2p-bundle.js) in this example starts by disabling the DHT and adding the Delegated Peer and Content Routers.
+The starting [Libp2p Configuration](./src/libp2p-configuration.js) in this example starts by disabling the DHT and adding the Delegated Peer and Content Routers.
 Once you've completed the example, you should try enabled the DHT and see what kind of results you get! You can also enable the
 various Peer Discovery modules and see the impact it has on your Peer count.
 
@@ -23,7 +23,9 @@ various Peer Discovery modules and see the impact it has on your Peer count.
 2. Run the IPFS daemon: `ipfs daemon`
 3. The daemon will output a line about its API address, like `API server listening on /ip4/127.0.0.1/tcp/8080`
 4. In another window output the addresses of the node: `ipfs id`. Make note of the websocket address, it will contain `/ws/` in the address.
-5. In `./src/libp2p-bundle.js` check if the host and port of your node are correct, according to the previous step. If they are different, replace them.
+  - If there is no websocket address, you will need to add it in the ipfs config file (`~/.ipfs/config`)
+  - Add to Swarm Addresses something like: `"/ip4/127.0.0.1/tcp/4010/ws"`
+5. In `./src/libp2p-configuration.js` check if the host and port of your node are correct, according to the previous step. If they are different, replace them.
 6. In `./src/App.js` replace `BootstrapNode` with your nodes Websocket address from step 4.
 7. Start this example:
 
