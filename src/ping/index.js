@@ -1,7 +1,62 @@
 'use strict'
 
-const handler = require('./handler')
+const debug = require('debug')
+const log = debug('libp2p-ping')
+log.error = debug('libp2p-ping:error')
+const errCode = require('err-code')
 
-exports = module.exports = require('./ping')
-exports.mount = handler.mount
-exports.unmount = handler.unmount
+const crypto = require('libp2p-crypto')
+const pipe = require('it-pipe')
+const { toBuffer } = require('it-buffer')
+const { collect } = require('streaming-iterables')
+
+const { PROTOCOL, PING_LENGTH } = require('./constants')
+
+/**
+ * Ping a given peer and wait for its response, getting the operation latency.
+ * @param {Libp2p} node
+ * @param {PeerInfo} peer
+ * @returns {Promise<Number>}
+ */
+async function ping (node, peer) {
+  log('dialing %s to %s', PROTOCOL, peer.id.toB58String())
+
+  const { stream } = await node.dialProtocol(peer, PROTOCOL)
+
+  const start = new Date()
+  const data = crypto.randomBytes(PING_LENGTH)
+
+  const [result] = await pipe(
+    [data],
+    stream,
+    toBuffer,
+    collect
+  )
+  const end = Date.now()
+
+  if (!data.equals(result)) {
+    throw errCode(new Error('Received wrong ping ack'), 'ERR_WRONG_PING_ACK')
+  }
+
+  return end - start
+}
+
+/**
+ * Subscribe ping protocol handler.
+ * @param {Libp2p} node
+ */
+function mount (node) {
+  node.handle(PROTOCOL, ({ stream }) => pipe(stream, stream))
+}
+
+/**
+ * Unsubscribe ping protocol handler.
+ * @param {Libp2p} node
+ */
+function unmount (node) {
+  node.unhandle(PROTOCOL)
+}
+
+exports = module.exports = ping
+exports.mount = mount
+exports.unmount = unmount

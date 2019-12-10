@@ -9,7 +9,7 @@ const { collect, take } = require('streaming-iterables')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
-const { toBuffer } = require('../util')
+const { toBuffer } = require('it-buffer')
 
 const Message = require('./message')
 
