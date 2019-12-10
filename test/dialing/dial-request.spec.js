@@ -11,6 +11,7 @@ const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 const AbortController = require('abort-controller')
 const AggregateError = require('aggregate-error')
 const pDefer = require('p-defer')
+const delay = require('delay')
 
 const { DialRequest } = require('../../src/dialer/dial-request')
 const createMockConnection = require('../utils/mockConnection')
@@ -48,6 +49,54 @@ describe('Dial Request', () => {
     expect(actions[2]).to.have.property('callCount', 1)
     expect(actions[3]).to.have.property('callCount', 0)
     expect(dialer.releaseToken).to.have.property('callCount', tokens.length)
+  })
+
+  it('should release tokens when all addr dials have started', async () => {
+    const mockConnection = await createMockConnection()
+    const deferred = pDefer()
+    const actions = {
+      1: async () => {
+        await delay(0)
+        return Promise.reject(error)
+      },
+      2: async () => {
+        await delay(0)
+        return Promise.reject(error)
+      },
+      3: () => deferred.promise
+    }
+    const dialAction = (num) => actions[num]()
+    const tokens = ['a', 'b']
+    const controller = new AbortController()
+    const dialer = {
+      getTokens: () => [...tokens],
+      releaseToken: () => {}
+    }
+
+    const dialRequest = new DialRequest({
+      addrs: Object.keys(actions),
+      dialer,
+      dialAction
+    })
+
+    sinon.spy(actions, 1)
+    sinon.spy(actions, 2)
+    sinon.spy(actions, 3)
+    sinon.spy(dialer, 'releaseToken')
+    dialRequest.run({ signal: controller.signal })
+    // Let the first dials run
+    await delay(10)
+
+    // Only 1 dial should remain, so 1 token should have been released
+    expect(actions[1]).to.have.property('callCount', 1)
+    expect(actions[2]).to.have.property('callCount', 1)
+    expect(actions[3]).to.have.property('callCount', 1)
+    expect(dialer.releaseToken).to.have.property('callCount', 1)
+
+    // Finish the dial
+    deferred.resolve(mockConnection)
+    await delay(0)
+    expect(dialer.releaseToken).to.have.property('callCount', 2)
   })
 
   it('should throw an AggregateError if all dials fail', async () => {
