@@ -82,6 +82,7 @@ describe('Dialing (via relay, TCP)', () => {
       echoStream,
       collect
     )
+    console.log(connection.stat.bandwidthData)
     expect(output.slice()).to.eql(input)
   })
 
