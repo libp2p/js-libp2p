@@ -53,16 +53,11 @@ describe('Dial Request', () => {
 
   it('should release tokens when all addr dials have started', async () => {
     const mockConnection = await createMockConnection()
+    const firstDials = pDefer()
     const deferred = pDefer()
     const actions = {
-      1: async () => {
-        await delay(0)
-        return Promise.reject(error)
-      },
-      2: async () => {
-        await delay(0)
-        return Promise.reject(error)
-      },
+      1: () => firstDials.promise,
+      2: () => firstDials.promise,
       3: () => deferred.promise
     }
     const dialAction = (num) => actions[num]()
@@ -85,7 +80,11 @@ describe('Dial Request', () => {
     sinon.spy(dialer, 'releaseToken')
     dialRequest.run({ signal: controller.signal })
     // Let the first dials run
-    await delay(100)
+    await delay(0)
+
+    // Finish the first 2 dials
+    firstDials.reject(error)
+    await delay(0)
 
     // Only 1 dial should remain, so 1 token should have been released
     expect(actions[1]).to.have.property('callCount', 1)
@@ -93,7 +92,7 @@ describe('Dial Request', () => {
     expect(actions[3]).to.have.property('callCount', 1)
     expect(dialer.releaseToken).to.have.property('callCount', 1)
 
-    // Finish the dial
+    // Finish the dial and release the 2nd token
     deferred.resolve(mockConnection)
     await delay(0)
     expect(dialer.releaseToken).to.have.property('callCount', 2)
