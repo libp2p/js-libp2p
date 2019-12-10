@@ -21,7 +21,7 @@ const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
 const Registrar = require('./registrar')
-const Ping = require('./ping')
+const ping = require('./ping')
 const {
   IdentifyService,
   multicodecs: IDENTIFY_PROTOCOLS
@@ -150,7 +150,7 @@ class Libp2p extends EventEmitter {
     this.contentRouting = contentRouting(this)
 
     // Mount default protocols
-    Ping.mount(this)
+    ping.mount(this)
 
     this._onDiscoveryPeer = this._onDiscoveryPeer.bind(this)
   }
@@ -208,7 +208,7 @@ class Libp2p extends EventEmitter {
       await this.transportManager.close()
       await this.registrar.close()
 
-      Ping.unmount(this)
+      ping.unmount(this)
     } catch (err) {
       if (err) {
         log.error(err)
@@ -287,20 +287,14 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Ping options
-   * @typedef {class} Ping
-   * @property {function} start start ping message exchange
-   * @property {function} stop stop ping message exchange
-   */
-
-  /**
    * Pings the given peer
    * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to ping
-   * @returns {Promise<Ping>}
+   * @returns {Promise<number>}
    */
   async ping (peer) {
     const peerInfo = await getPeerInfoRemote(peer, this)
-    return new Ping(this, peerInfo)
+
+    return ping(this, peerInfo)
   }
 
   /**
