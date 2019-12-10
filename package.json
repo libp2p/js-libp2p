@@ -50,6 +50,7 @@
     "err-code": "^1.1.2",
     "hashlru": "^2.3.0",
     "it-all": "^1.0.1",
+    "it-buffer": "^0.1.1",
     "it-handshake": "^1.0.1",
     "it-length-prefixed": "^3.0.0",
     "it-pipe": "^1.1.0",
