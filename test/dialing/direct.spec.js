@@ -169,7 +169,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     // We should have 2 in progress, and 1 waiting
     expect(dialer.tokens).to.have.length(0)
-    expect(dialer.pendingDials.size).to.equal(1) // 1 dial request
+    expect(dialer._pendingDials.size).to.equal(1) // 1 dial request
 
     deferredDial.resolve(await createMockConnection())
 
@@ -179,7 +179,45 @@ describe('Dialing (direct, WebSockets)', () => {
     // Only two dials will be run, as the first two succeeded
     expect(localTM.dial.callCount).to.equal(2)
     expect(dialer.tokens).to.have.length(2)
-    expect(dialer.pendingDials.size).to.equal(0)
+    expect(dialer._pendingDials.size).to.equal(0)
+  })
+
+  it('.destroy should abort pending dials', async () => {
+    const dialer = new Dialer({
+      transportManager: localTM,
+      concurrency: 2
+    })
+
+    expect(dialer.tokens).to.have.length(2)
+
+    sinon.stub(localTM, 'dial').callsFake((_, options) => {
+      const deferredDial = pDefer()
+      const onAbort = () => {
+        options.signal.removeEventListener('abort', onAbort)
+        deferredDial.reject(new AbortError())
+      }
+      options.signal.addEventListener('abort', onAbort)
+      return deferredDial.promise
+    })
+
+    // Perform 3 multiaddr dials
+    const dialPromise = dialer.connectToMultiaddr([remoteAddr, remoteAddr, remoteAddr])
+
+    // Let the call stack run
+    await delay(0)
+
+    // We should have 2 in progress, and 1 waiting
+    expect(dialer.tokens).to.have.length(0)
+    expect(dialer._pendingDials.size).to.equal(1) // 1 dial request
+
+    try {
+      dialer.destroy()
+      await dialPromise
+      expect.fail('should have failed')
+    } catch (err) {
+      expect(err).to.be.an.instanceof(AggregateError)
+      expect(dialer._pendingDials.size).to.equal(0) // 1 dial request
+    }
   })
 
   describe('libp2p.dialer', () => {
@@ -290,13 +328,12 @@ describe('Dialing (direct, WebSockets)', () => {
           connEncryption: [Crypto]
         }
       })
-      const abort = sinon.stub()
-      const dials = [{ abort }, { abort }, { abort }]
-      sinon.stub(libp2p.dialer, 'pendingDials').value(new Set(dials))
+
+      sinon.spy(libp2p.dialer, 'destroy')
 
       await libp2p.stop()
 
-      expect(abort).to.have.property('callCount', 3)
+      expect(libp2p.dialer.destroy).to.have.property('callCount', 1)
     })
   })
 })
