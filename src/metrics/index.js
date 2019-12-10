@@ -50,10 +50,10 @@ class Metrics {
   stop () {
     this._running = false
     this._globalStats.stop()
-    for (const stats of this._peerStats) {
+    for (const stats of this._peerStats.values()) {
       stats.stop()
     }
-    for (const stats of this._protocolStats) {
+    for (const stats of this._protocolStats.values()) {
       stats.stop()
     }
   }
@@ -130,39 +130,44 @@ class Metrics {
   onMessage ({ remotePeer, protocol, direction, dataLength }) {
     if (!this._running) return
 
-    const key = directionToEvent[direction]
+    try {
+      const key = directionToEvent[direction]
 
-    let peerStats = this.forPeer(remotePeer)
-    if (!peerStats) {
-      peerStats = new Stats(initialCounters, this._options)
-      this._peerStats.set(remotePeer.toString(), peerStats)
-    }
-
-    // Protocol specific stats
-    if (protocol) {
-      let protocolStats = this.forProtocol(protocol)
-      if (!protocolStat) {
-        protocolStats = new Stats(initialCounters, this._options)
-        this._protocolStats.set(protocol, protocolStats)
+      let peerStats = this.forPeer(remotePeer)
+      if (!peerStats) {
+        peerStats = new Stats(initialCounters, this._options)
+        this._peerStats.set(remotePeer.toString(), peerStats)
       }
-      protocolStats.push(key, dataLength)
-    // General stats
-    } else {
-      peerStats.push(key, dataLength)
-      this._globalStats.push(key, dataLength)
+
+      // Protocol specific stats
+      if (protocol) {
+        let protocolStats = this.forProtocol(protocol)
+        if (!protocolStats) {
+          protocolStats = new Stats(initialCounters, this._options)
+          this._protocolStats.set(protocol, protocolStats)
+        }
+        protocolStats.push(key, dataLength)
+      // General stats
+      } else {
+        peerStats.push(key, dataLength)
+        this._globalStats.push(key, dataLength)
+      }
+    } catch (err) {
+      console.log(err)
     }
   }
 
   /**
-   * Replaces the `PeerId` like `placeholder` with the given `peerId`.
+   * Replaces the `PeerId` string with the given `peerId`.
    * If stats are already being tracked for the given `peerId`, the
    * placeholder stats will be merged with the existing stats.
    *
    *
-   * @param {{ toString: function() }} placeholder A peerId like placeholder
+   * @param {string} placeholder A peerId string
    * @param {PeerId} peerId
    */
   updatePlaceholder (placeholder, peerId) {
+    if (!this._running) return
     const placeholderStats = this.forPeer(placeholder)
     const peerIdString = peerId.toString()
     const existingStats = this.forPeer(peerId)
@@ -218,7 +223,7 @@ class Metrics {
       )
     }
 
-    return remotePeer
+    return stream
   }
 
   /**

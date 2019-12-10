@@ -30,6 +30,7 @@ class Upgrader {
   /**
    * @param {object} options
    * @param {PeerId} options.localPeer
+   * @param {Metrics} options.metrics
    * @param {Map<string, Crypto>} options.cryptos
    * @param {Map<string, Muxer>} options.muxers
    * @param {function(Connection)} options.onConnection Called when a connection is upgraded
@@ -37,12 +38,14 @@ class Upgrader {
    */
   constructor ({
     localPeer,
+    metrics,
     cryptos,
     muxers,
     onConnectionEnd = () => {},
     onConnection = () => {}
   }) {
     this.localPeer = localPeer
+    this.metrics = metrics
     this.cryptos = cryptos || new Map()
     this.muxers = muxers || new Map()
     this.protector = null
@@ -63,6 +66,15 @@ class Upgrader {
     let muxedConnection
     let Muxer
     let cryptoProtocol
+    let placeholderPeer
+
+    if (this.metrics) {
+      const idString = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
+      placeholderPeer = {
+        toString: () => idString
+      }
+      maConn = this.metrics.trackStream({ stream: maConn, remotePeer: placeholderPeer })
+    }
 
     log('Starting the inbound connection upgrade')
 
@@ -87,6 +99,11 @@ class Upgrader {
       await maConn.close(err)
       // TODO: We shouldn't throw here, as there isn't anything to catch the failure
       throw err
+    }
+
+    if (this.metrics) {
+      this.metrics.updatePlaceholder(placeholderPeer.toString(), remotePeer)
+      placeholderPeer.toString = remotePeer.toString.bind(remotePeer)
     }
 
     log('Successfully upgraded inbound connection')
@@ -120,6 +137,15 @@ class Upgrader {
     let muxedConnection
     let cryptoProtocol
     let Muxer
+    let placeholderPeer
+
+    if (this.metrics) {
+      const idString = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
+      placeholderPeer = {
+        toString: () => idString
+      }
+      maConn = this.metrics.trackStream({ stream: maConn, remotePeer: placeholderPeer })
+    }
 
     log('Starting the outbound connection upgrade')
 
@@ -143,6 +169,11 @@ class Upgrader {
       log.error('Failed to upgrade outbound connection', err)
       await maConn.close(err)
       throw err
+    }
+
+    if (this.metrics) {
+      this.metrics.updatePlaceholder(placeholderPeer.toString(), remotePeer)
+      placeholderPeer.toString = remotePeer.toString.bind(remotePeer)
     }
 
     log('Successfully upgraded outbound connection')
@@ -185,6 +216,7 @@ class Upgrader {
         try {
           const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
           log('%s: incoming stream opened on %s', direction, protocol)
+          if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
           connection.addStream(stream, protocol)
           this._onStream({ connection, stream, protocol })
         } catch (err) {
@@ -203,6 +235,7 @@ class Upgrader {
       const mss = new Multistream.Dialer(muxedStream)
       try {
         const { stream, protocol } = await mss.select(protocols)
+        if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
         return { stream: { ...muxedStream, ...stream }, protocol }
       } catch (err) {
         log.error('could not create new stream', err)

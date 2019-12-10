@@ -7,7 +7,7 @@ const DefaultConfig = {
     minPeers: 25
   },
   metrics: {
-    enabled: true
+    enabled: false
   },
   config: {
     dht: {
