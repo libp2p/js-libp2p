@@ -7,6 +7,7 @@ log.error = debug('libp2p:peer-store:error')
 
 const { EventEmitter } = require('events')
 
+const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 
 /**
@@ -44,7 +45,7 @@ class PeerStore extends EventEmitter {
 
     let peer
     // Already know the peer?
-    if (this.peers.has(peerInfo.id.toB58String())) {
+    if (this.has(peerInfo.id)) {
       peer = this.update(peerInfo)
     } else {
       peer = this.add(peerInfo)
@@ -117,15 +118,12 @@ class PeerStore extends EventEmitter {
 
     if (multiaddrsIntersection.length !== peerInfo.multiaddrs.size ||
       multiaddrsIntersection.length !== recorded.multiaddrs.size) {
-      // recorded.multiaddrs = peerInfo.multiaddrs
-      recorded.multiaddrs.clear()
-
       for (const ma of peerInfo.multiaddrs.toArray()) {
         recorded.multiaddrs.add(ma)
       }
 
       this.emit('change:multiaddrs', {
-        peerInfo: peerInfo,
+        peerInfo: recorded,
         multiaddrs: recorded.multiaddrs.toArray()
       })
     }
@@ -138,14 +136,12 @@ class PeerStore extends EventEmitter {
 
     if (protocolsIntersection.size !== peerInfo.protocols.size ||
       protocolsIntersection.size !== recorded.protocols.size) {
-      recorded.protocols.clear()
-
       for (const protocol of peerInfo.protocols) {
         recorded.protocols.add(protocol)
       }
 
       this.emit('change:protocols', {
-        peerInfo: peerInfo,
+        peerInfo: recorded,
         protocols: Array.from(recorded.protocols)
       })
     }
@@ -160,34 +156,43 @@ class PeerStore extends EventEmitter {
 
   /**
    * Get the info to the given id.
-   * @param {string} peerId b58str id
+   * @param {PeerId|string} peerId b58str id
    * @returns {PeerInfo}
    */
   get (peerId) {
-    const peerInfo = this.peers.get(peerId)
-
-    if (peerInfo) {
-      return peerInfo
+    // TODO: deprecate this and just accept `PeerId` instances
+    if (PeerId.isPeerId(peerId)) {
+      peerId = peerId.toB58String()
     }
 
-    return undefined
+    return this.peers.get(peerId)
   }
 
   /**
    * Has the info to the given id.
-   * @param {string} peerId b58str id
+   * @param {PeerId|string} peerId b58str id
    * @returns {boolean}
    */
   has (peerId) {
+    // TODO: deprecate this and just accept `PeerId` instances
+    if (PeerId.isPeerId(peerId)) {
+      peerId = peerId.toB58String()
+    }
+
     return this.peers.has(peerId)
   }
 
   /**
    * Removes the Peer with the matching `peerId` from the PeerStore
-   * @param {string} peerId b58str id
+   * @param {PeerId|string} peerId b58str id
    * @returns {boolean} true if found and removed
    */
   remove (peerId) {
+    // TODO: deprecate this and just accept `PeerId` instances
+    if (PeerId.isPeerId(peerId)) {
+      peerId = peerId.toB58String()
+    }
+
     return this.peers.delete(peerId)
   }
 
@@ -201,6 +206,26 @@ class PeerStore extends EventEmitter {
 
     this.remove(peerInfo.id.toB58String())
     this.add(peerInfo)
+
+    // This should be cleaned up in PeerStore v2
+    this.emit('change:multiaddrs', {
+      peerInfo,
+      multiaddrs: peerInfo.multiaddrs.toArray()
+    })
+    this.emit('change:protocols', {
+      peerInfo,
+      protocols: Array.from(peerInfo.protocols)
+    })
+  }
+
+  /**
+   * Returns the known multiaddrs for a given `PeerId`
+   * @param {PeerId} peerId
+   * @returns {Array<Multiaddr>}
+   */
+  multiaddrsForPeer (peerId) {
+    const peerInfo = this.get(peerId.toB58String())
+    return peerInfo.multiaddrs.toArray()
   }
 }
 

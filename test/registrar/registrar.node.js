@@ -23,7 +23,7 @@ describe('registrar on dial', () => {
   let remoteAddr
 
   before(async () => {
-    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfoFromFixture(2)
+    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
     remoteLibp2p = new Libp2p(mergeOptions(baseOptions, {
       peerInfo: remotePeerInfo
     }))
@@ -53,5 +53,20 @@ describe('registrar on dial', () => {
 
     const remoteConn = remoteLibp2p.registrar.getConnection(peerInfo)
     expect(remoteConn).to.exist()
+  })
+
+  it('should be closed on libp2p stop', async () => {
+    libp2p = new Libp2p(mergeOptions(baseOptions, {
+      peerInfo
+    }))
+
+    await libp2p.dial(remoteAddr)
+    expect(libp2p.registrar.connections.size).to.equal(1)
+
+    sinon.spy(libp2p.registrar, 'close')
+
+    await libp2p.stop()
+    expect(libp2p.registrar.close.callCount).to.equal(1)
+    expect(libp2p.registrar.connections.size).to.equal(0)
   })
 })

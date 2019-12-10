@@ -10,17 +10,18 @@ const multiaddr = require('multiaddr')
 
 const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
-const dht = require('./dht')
 const pubsub = require('./pubsub')
 const { getPeerInfo, getPeerInfoRemote } = require('./get-peer-info')
 const { validate: validateConfig } = require('./config')
 const { codes } = require('./errors')
 
+const Circuit = require('./circuit')
 const Dialer = require('./dialer')
 const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
 const Registrar = require('./registrar')
+const ping = require('./ping')
 const {
   IdentifyService,
   multicodecs: IDENTIFY_PROTOCOLS
@@ -54,11 +55,15 @@ class Libp2p extends EventEmitter {
     this.upgrader = new Upgrader({
       localPeer: this.peerInfo.id,
       onConnection: (connection) => {
-        const peerInfo = getPeerInfo(connection.remotePeer)
-
-        this.peerStore.put(peerInfo)
+        const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer))
         this.registrar.onConnect(peerInfo, connection)
         this.emit('peer:connect', peerInfo)
+
+        // Run identify for every connection
+        if (this.identifyService) {
+          this.identifyService.identify(connection, connection.remotePeer)
+            .catch(log.error)
+        }
       },
       onConnectionEnd: (connection) => {
         const peerInfo = getPeerInfo(connection.remotePeer)
@@ -78,9 +83,6 @@ class Libp2p extends EventEmitter {
       libp2p: this,
       upgrader: this.upgrader
     })
-    this._modules.transport.forEach((Transport) => {
-      this.transportManager.add(Transport.prototype[Symbol.toStringTag], Transport)
-    })
 
     // Attach crypto channels
     if (this._modules.connEncryption) {
@@ -95,6 +97,12 @@ class Libp2p extends EventEmitter {
       peerStore: this.peerStore
     })
 
+    this._modules.transport.forEach((Transport) => {
+      this.transportManager.add(Transport.prototype[Symbol.toStringTag], Transport)
+    })
+    // TODO: enable relay if enabled
+    this.transportManager.add(Circuit.prototype[Symbol.toStringTag], Circuit)
+
     // Attach stream multiplexers
     if (this._modules.streamMuxer) {
       const muxers = this._modules.streamMuxer
@@ -103,12 +111,12 @@ class Libp2p extends EventEmitter {
       })
 
       // Add the identify service since we can multiplex
-      this.dialer.identifyService = new IdentifyService({
+      this.identifyService = new IdentifyService({
         registrar: this.registrar,
         peerInfo: this.peerInfo,
         protocols: this.upgrader.protocols
       })
-      this.handle(Object.values(IDENTIFY_PROTOCOLS), this.dialer.identifyService.handleMessage)
+      this.handle(Object.values(IDENTIFY_PROTOCOLS), this.identifyService.handleMessage)
     }
 
     // Attach private network protector
@@ -120,7 +128,15 @@ class Libp2p extends EventEmitter {
 
     // dht provided components (peerRouting, contentRouting, dht)
     if (this._modules.dht) {
-      this._dht = dht(this, this._modules.dht, this._config.dht)
+      const DHT = this._modules.dht
+      this._dht = new DHT({
+        dialer: this.dialer,
+        peerInfo: this.peerInfo,
+        peerStore: this.peerStore,
+        registrar: this.registrar,
+        datastore: this.datastore,
+        ...this._config.dht
+      })
     }
 
     // start pubsub
@@ -133,7 +149,10 @@ class Libp2p extends EventEmitter {
     this.peerRouting = peerRouting(this)
     this.contentRouting = contentRouting(this)
 
-    this._peerDiscovered = this._peerDiscovered.bind(this)
+    // Mount default protocols
+    ping.mount(this)
+
+    this._onDiscoveryPeer = this._onDiscoveryPeer.bind(this)
   }
 
   /**
@@ -168,7 +187,6 @@ class Libp2p extends EventEmitter {
       await this.stop()
       throw err
     }
-    this._isStarted = true
   }
 
   /**
@@ -180,9 +198,17 @@ class Libp2p extends EventEmitter {
     log('libp2p is stopping')
 
     try {
-      this.pubsub && await this.pubsub.stop()
-      this._dht && await this._dht.stop()
+      await Promise.all([
+        this.pubsub && this.pubsub.stop(),
+        this._dht && this._dht.stop()
+      ])
+
+      this.dialer.destroy()
+
       await this.transportManager.close()
+      await this.registrar.close()
+
+      ping.unmount(this)
     } catch (err) {
       if (err) {
         log.error(err)
@@ -227,7 +253,7 @@ class Libp2p extends EventEmitter {
       connection = await this.dialer.connectToMultiaddr(peer, options)
     } else {
       peer = await getPeerInfoRemote(peer, this)
-      connection = await this.dialer.connectToPeer(peer, options)
+      connection = await this.dialer.connectToPeer(peer.id, options)
     }
 
     const peerInfo = getPeerInfo(connection.remotePeer)
@@ -260,17 +286,16 @@ class Libp2p extends EventEmitter {
     )
   }
 
-  // TODO: Update ping
-  // /**
-  //  * Pings the provided peer
-  //  *
-  //  * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to ping
-  //  * @returns {Promise<Ping>}
-  //  */
-  // ping (peer) {
-  //   const peerInfo = await getPeerInfoRemote(peer, this)
-  //   return new Ping(this._switch, peerInfo)
-  // }
+  /**
+   * Pings the given peer
+   * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to ping
+   * @returns {Promise<number>}
+   */
+  async ping (peer) {
+    const peerInfo = await getPeerInfo(peer, this.peerStore)
+
+    return ping(this, peerInfo)
+  }
 
   /**
    * Registers the `handler` for each protocol
@@ -283,7 +308,10 @@ class Libp2p extends EventEmitter {
       this.upgrader.protocols.set(protocol, handler)
     })
 
-    this.dialer.identifyService.pushToPeerStore(this.peerStore)
+    // Only push if libp2p is running
+    if (this.isStarted() && this.identifyService) {
+      this.identifyService.pushToPeerStore(this.peerStore)
+    }
   }
 
   /**
@@ -297,20 +325,36 @@ class Libp2p extends EventEmitter {
       this.upgrader.protocols.delete(protocol)
     })
 
-    this.dialer.identifyService.pushToPeerStore(this.peerStore)
+    // Only push if libp2p is running
+    if (this.isStarted() && this.identifyService) {
+      this.identifyService.pushToPeerStore(this.peerStore)
+    }
   }
 
   async _onStarting () {
+    // Listen on the addresses supplied in the peerInfo
     const multiaddrs = this.peerInfo.multiaddrs.toArray()
 
     await this.transportManager.listen(multiaddrs)
+
+    // The addresses may change once the listener starts
+    // eg /ip4/0.0.0.0/tcp/0 => /ip4/192.168.1.0/tcp/58751
+    this.peerInfo.multiaddrs.clear()
+    for (const ma of this.transportManager.getAddrs()) {
+      this.peerInfo.multiaddrs.add(ma)
+    }
 
     if (this._config.pubsub.enabled) {
       this.pubsub && this.pubsub.start()
     }
 
+    // DHT subsystem
     if (this._config.dht.enabled) {
       this._dht && this._dht.start()
+
+      // TODO: this should be modified once random-walk is used as
+      // the other discovery modules
+      this._dht.on('peer', this._onDiscoveryPeer)
     }
   }
 
@@ -319,6 +363,16 @@ class Libp2p extends EventEmitter {
    * @private
    */
   _onDidStart () {
+    this._isStarted = true
+
+    this.peerStore.on('peer', peerInfo => {
+      this.emit('peer:discovery', peerInfo)
+      this._maybeConnect(peerInfo)
+    })
+
+    // Peer discovery
+    this._setupPeerDiscovery()
+
     // Once we start, emit and dial any peers we may have already discovered
     for (const peerInfo of this.peerStore.peers.values()) {
       this.emit('peer:discovery', peerInfo)
@@ -327,24 +381,17 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Handles discovered peers. Each discovered peer will be emitted via
-   * the `peer:discovery` event. If auto dial is enabled for libp2p
-   * and the current connection count is under the low watermark, the
-   * peer will be dialed.
+   * Called whenever peer discovery services emit `peer` events.
+   * Known peers may be emitted.
    * @private
    * @param {PeerInfo} peerInfo
    */
-  _peerDiscovered (peerInfo) {
-    if (peerInfo.id.toB58String() === this.peerInfo.id.toB58String()) {
+  _onDiscoveryPeer (peerInfo) {
+    if (peerInfo.id.toString() === this.peerInfo.id.toString()) {
       log.error(new Error(codes.ERR_DISCOVERED_SELF))
       return
     }
-    peerInfo = this.peerStore.put(peerInfo)
-
-    if (!this.isStarted()) return
-
-    this.emit('peer:discovery', peerInfo)
-    this._maybeConnect(peerInfo)
+    this.peerStore.put(peerInfo)
   }
 
   /**
@@ -377,7 +424,7 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<void>}
    */
   _setupPeerDiscovery () {
-    for (const DiscoveryService of this._modules.peerDiscovery) {
+    for (const DiscoveryService of this._modules.peerDiscovery || []) {
       let config = {
         enabled: true // on by default
       }
@@ -397,7 +444,7 @@ class Libp2p extends EventEmitter {
           discoveryService = DiscoveryService
         }
 
-        discoveryService.on('peer', this._peerDiscovered)
+        discoveryService.on('peer', this._onDiscoveryPeer)
         this._discovery.push(discoveryService)
       }
     }

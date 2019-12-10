@@ -32,7 +32,7 @@ describe('Pubsub subsystem is configurable', () => {
   })
 
   it('should start and stop by default once libp2p starts', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfoFromFixture(1)
+    const [peerInfo] = await peerUtils.createPeerInfo()
     peerInfo.multiaddrs.add(listenAddr)
 
     const customOptions = mergeOptions(subsystemOptions, {
@@ -50,7 +50,7 @@ describe('Pubsub subsystem is configurable', () => {
   })
 
   it('should not start if disabled once libp2p starts', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfoFromFixture(1)
+    const [peerInfo] = await peerUtils.createPeerInfo()
     peerInfo.multiaddrs.add(listenAddr)
 
     const customOptions = mergeOptions(subsystemOptions, {
@@ -70,7 +70,7 @@ describe('Pubsub subsystem is configurable', () => {
   })
 
   it('should allow a manual start', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfoFromFixture(1)
+    const [peerInfo] = await peerUtils.createPeerInfo()
     peerInfo.multiaddrs.add(listenAddr)
 
     const customOptions = mergeOptions(subsystemOptions, {

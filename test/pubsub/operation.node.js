@@ -24,7 +24,7 @@ describe('Pubsub subsystem operates correctly', () => {
   let remAddr
 
   beforeEach(async () => {
-    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfoFromFixture(2)
+    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
 
     peerInfo.multiaddrs.add(listenAddr)
     remotePeerInfo.multiaddrs.add(remoteListenAddr)
@@ -89,7 +89,7 @@ describe('Pubsub subsystem operates correctly', () => {
 
       // wait for remoteLibp2p to know about libp2p subscription
       await pWaitFor(() => {
-        const subscribedPeers = remoteLibp2p.pubsub.getPeersSubscribed(topic)
+        const subscribedPeers = remoteLibp2p.pubsub.getSubscribers(topic)
         return subscribedPeers.includes(libp2pId)
       })
       remoteLibp2p.pubsub.publish(topic, data)
@@ -172,7 +172,7 @@ describe('Pubsub subsystem operates correctly', () => {
 
       // wait for remoteLibp2p to know about libp2p subscription
       await pWaitFor(() => {
-        const subscribedPeers = remoteLibp2p.pubsub.getPeersSubscribed(topic)
+        const subscribedPeers = remoteLibp2p.pubsub.getSubscribers(topic)
         return subscribedPeers.includes(libp2pId)
       })
 

@@ -9,7 +9,7 @@ const { collect, take } = require('streaming-iterables')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
-const { toBuffer } = require('../util')
+const { toBuffer } = require('it-buffer')
 
 const Message = require('./message')
 
@@ -148,10 +148,9 @@ class IdentifyService {
    *
    * @async
    * @param {Connection} connection
-   * @param {PeerID} expectedPeer The PeerId the identify response should match
    * @returns {Promise<void>}
    */
-  async identify (connection, expectedPeer) {
+  async identify (connection) {
     const { stream } = await connection.newStream(MULTICODEC_IDENTIFY)
     const [data] = await pipe(
       stream,
@@ -181,7 +180,7 @@ class IdentifyService {
 
     const id = await PeerId.createFromPubKey(publicKey)
     const peerInfo = new PeerInfo(id)
-    if (expectedPeer && expectedPeer.toB58String() !== id.toB58String()) {
+    if (connection.remotePeer.toString() !== id.toString()) {
       throw errCode(new Error('identified peer does not match the expected peer'), codes.ERR_INVALID_PEER)
     }
 
@@ -192,7 +191,7 @@ class IdentifyService {
     IdentifyService.updatePeerAddresses(peerInfo, listenAddrs)
     IdentifyService.updatePeerProtocols(peerInfo, protocols)
 
-    this.registrar.peerStore.update(peerInfo)
+    this.registrar.peerStore.replace(peerInfo)
     // TODO: Track our observed address so that we can score it
     log('received observed address of %s', observedAddr)
   }
@@ -283,7 +282,7 @@ class IdentifyService {
     IdentifyService.updatePeerProtocols(peerInfo, message.protocols)
 
     // Update the peer in the PeerStore
-    this.registrar.peerStore.update(peerInfo)
+    this.registrar.peerStore.replace(peerInfo)
   }
 }
 

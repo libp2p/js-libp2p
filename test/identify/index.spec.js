@@ -3,6 +3,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-as-promised'))
 const { expect } = chai
 const sinon = require('sinon')
 
@@ -46,7 +47,7 @@ describe('Identify', () => {
       protocols,
       registrar: {
         peerStore: {
-          update: () => {}
+          replace: () => {}
         }
       }
     })
@@ -56,17 +57,17 @@ describe('Identify', () => {
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
-    const localConnectionMock = { newStream: () => {} }
+    const localConnectionMock = { newStream: () => {}, remotePeer: remotePeer.id }
     const remoteConnectionMock = { remoteAddr: observedAddr }
 
     const [local, remote] = duplexPair()
     sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY })
 
-    sinon.spy(localIdentify.registrar.peerStore, 'update')
+    sinon.spy(localIdentify.registrar.peerStore, 'replace')
 
     // Run identify
     await Promise.all([
-      localIdentify.identify(localConnectionMock, remotePeer.id),
+      localIdentify.identify(localConnectionMock),
       remoteIdentify.handleMessage({
         connection: remoteConnectionMock,
         stream: remote,
@@ -74,9 +75,9 @@ describe('Identify', () => {
       })
     ])
 
-    expect(localIdentify.registrar.peerStore.update.callCount).to.equal(1)
+    expect(localIdentify.registrar.peerStore.replace.callCount).to.equal(1)
     // Validate the remote peer gets updated in the peer store
-    const call = localIdentify.registrar.peerStore.update.firstCall
+    const call = localIdentify.registrar.peerStore.replace.firstCall
     expect(call.args[0].id.bytes).to.equal(remotePeer.id.bytes)
   })
 
@@ -91,27 +92,25 @@ describe('Identify', () => {
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
-    const localConnectionMock = { newStream: () => {} }
+    const localConnectionMock = { newStream: () => {}, remotePeer }
     const remoteConnectionMock = { remoteAddr: observedAddr }
 
     const [local, remote] = duplexPair()
     sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY })
 
     // Run identify
-    try {
-      await Promise.all([
-        localIdentify.identify(localConnectionMock, localPeer.id),
-        remoteIdentify.handleMessage({
-          connection: remoteConnectionMock,
-          stream: remote,
-          protocol: multicodecs.IDENTIFY
-        })
-      ])
-      expect.fail('should have thrown')
-    } catch (err) {
-      expect(err).to.exist()
-      expect(err.code).to.eql(Errors.ERR_INVALID_PEER)
-    }
+    const identifyPromise = Promise.all([
+      localIdentify.identify(localConnectionMock, localPeer.id),
+      remoteIdentify.handleMessage({
+        connection: remoteConnectionMock,
+        stream: remote,
+        protocol: multicodecs.IDENTIFY
+      })
+    ])
+
+    await expect(identifyPromise)
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', Errors.ERR_INVALID_PEER)
   })
 
   describe('push', () => {
@@ -129,7 +128,7 @@ describe('Identify', () => {
         peerInfo: remotePeer,
         registrar: {
           peerStore: {
-            update: () => {}
+            replace: () => {}
           }
         }
       })
@@ -149,7 +148,7 @@ describe('Identify', () => {
 
       sinon.spy(IdentifyService, 'updatePeerAddresses')
       sinon.spy(IdentifyService, 'updatePeerProtocols')
-      sinon.spy(remoteIdentify.registrar.peerStore, 'update')
+      sinon.spy(remoteIdentify.registrar.peerStore, 'replace')
 
       // Run identify
       await Promise.all([
@@ -164,8 +163,8 @@ describe('Identify', () => {
       expect(IdentifyService.updatePeerAddresses.callCount).to.equal(1)
       expect(IdentifyService.updatePeerProtocols.callCount).to.equal(1)
 
-      expect(remoteIdentify.registrar.peerStore.update.callCount).to.equal(1)
-      const [peerInfo] = remoteIdentify.registrar.peerStore.update.firstCall.args
+      expect(remoteIdentify.registrar.peerStore.replace.callCount).to.equal(1)
+      const [peerInfo] = remoteIdentify.registrar.peerStore.replace.firstCall.args
       expect(peerInfo.id.bytes).to.eql(localPeer.id.bytes)
       expect(peerInfo.multiaddrs.toArray()).to.eql([listeningAddr])
       expect(peerInfo.protocols).to.eql(localProtocols)
@@ -198,17 +197,17 @@ describe('Identify', () => {
         peerInfo
       })
 
-      sinon.spy(libp2p.dialer.identifyService, 'identify')
-      sinon.spy(libp2p.peerStore, 'update')
+      sinon.spy(libp2p.identifyService, 'identify')
+      sinon.spy(libp2p.peerStore, 'replace')
 
       const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
       expect(connection).to.exist()
       // Wait for nextTick to trigger the identify call
       await delay(1)
-      expect(libp2p.dialer.identifyService.identify.callCount).to.equal(1)
-      await libp2p.dialer.identifyService.identify.firstCall.returnValue
+      expect(libp2p.identifyService.identify.callCount).to.equal(1)
+      await libp2p.identifyService.identify.firstCall.returnValue
 
-      expect(libp2p.peerStore.update.callCount).to.equal(1)
+      expect(libp2p.peerStore.replace.callCount).to.equal(1)
       await connection.close()
     })
 
@@ -218,8 +217,8 @@ describe('Identify', () => {
         peerInfo
       })
 
-      sinon.spy(libp2p.dialer.identifyService, 'identify')
-      sinon.spy(libp2p.dialer.identifyService, 'push')
+      sinon.spy(libp2p.identifyService, 'identify')
+      sinon.spy(libp2p.identifyService, 'push')
       sinon.spy(libp2p.peerStore, 'update')
 
       const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
@@ -228,14 +227,15 @@ describe('Identify', () => {
       await delay(1)
 
       // Wait for identify to finish
-      await libp2p.dialer.identifyService.identify.firstCall.returnValue
+      await libp2p.identifyService.identify.firstCall.returnValue
+      sinon.stub(libp2p, 'isStarted').returns(true)
 
       libp2p.handle('/echo/2.0.0', () => {})
       libp2p.unhandle('/echo/2.0.0')
 
       // Verify the remote peer is notified of both changes
-      expect(libp2p.dialer.identifyService.push.callCount).to.equal(2)
-      for (const call of libp2p.dialer.identifyService.push.getCalls()) {
+      expect(libp2p.identifyService.push.callCount).to.equal(2)
+      for (const call of libp2p.identifyService.push.getCalls()) {
         const [connections] = call.args
         expect(connections.length).to.equal(1)
         expect(connections[0].remotePeer.toB58String()).to.equal(remoteAddr.getPeerId())
