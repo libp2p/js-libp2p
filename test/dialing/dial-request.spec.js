@@ -85,7 +85,7 @@ describe('Dial Request', () => {
     sinon.spy(dialer, 'releaseToken')
     dialRequest.run({ signal: controller.signal })
     // Let the first dials run
-    await delay(10)
+    await delay(100)
 
     // Only 1 dial should remain, so 1 token should have been released
     expect(actions[1]).to.have.property('callCount', 1)
