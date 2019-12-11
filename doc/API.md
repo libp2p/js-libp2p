@@ -21,6 +21,13 @@
   * [`pubsub.getTopics`](#pubsub.getTopics)
   * [`pubsub.publish`](#pubsub.publish)
   * [`pubsub.subscribe`](#pubsub.subscribe)
+  * [`metrics.global`](#metrics.global)
+  * [`metrics.peers`](#metrics.peers)
+  * [`metrics.protocols`](#metrics.protocols)
+  * [`metrics.forPeer`](#metrics.forPeer)
+  * [`metrics.forProtocol`](#metrics.forProtocol)
+* [Types](#types)
+  * [`Stats`](#stats)
 
 ## Static Functions
 
@@ -117,7 +124,7 @@ unless they are performing a specific action. See [peer discovery and auto dial]
 
 </details>
 
-## Libp2p Instance Methods 
+## Libp2p Instance Methods
 
 ### start
 
@@ -635,3 +642,103 @@ const handler = (msg) => {
 
 libp2p.pubsub.unsubscribe(topic, handler)
 ```
+
+### metrics.global
+
+A [`Stats`](#stats) object of tracking the global bandwidth of the libp2p node.
+
+#### Example
+
+```js
+const peerIdStrings = libp2p.metrics.peers
+```
+
+### metrics.peers
+
+An array of `PeerId` strings of each peer currently being tracked.
+
+#### Example
+
+```js
+const peerIdStrings = libp2p.metrics.peers
+```
+
+### metrics.protocols
+
+An array of protocol strings that are currently being tracked.
+
+#### Example
+
+```js
+const protocols = libp2p.metrics.protocols
+```
+
+### metrics.forPeer
+
+Returns the [`Stats`](#stats) object for a given `PeerId` if it is being tracked.
+
+`libp2p.metrics.forPeer(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `PeerId` | The peer to get stats for |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| [`Stats`](#stats) | The bandwidth stats of the peer |
+
+#### Example
+
+```js
+const peerStats = libp2p.metrics.forPeer(peerInfo)
+console.log(peerStats.toJSON())
+```
+
+### metrics.forProtocol
+
+Returns the [`Stats`](#stats) object for a given protocol if it is being tracked.
+
+`libp2p.metrics.forProtocol(protocol)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| protocol | `string` | The protocol to get stats for |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| [`Stats`](#stats) | The bandwidth stats of the protocol across all peers |
+
+#### Example
+
+```js
+const peerStats = libp2p.metrics.forProtocol('/meshsub/1.0.0')
+console.log(peerStats.toJSON())
+```
+
+## Types
+
+### Stats
+
+- `Stats`
+  - `toJSON<function()>`: Returns a JSON snapshot of the stats.
+    - `dataReceived<string>`: The stringified value of total incoming data for this stat.
+    - `dataSent<string>`: The stringified value of total outgoing data for this stat.
+    - `movingAverages<object>`: The properties are dependent on the configuration of the moving averages interval. Defaults are listed here.
+      - `['60000']<Number>`: The calculated moving average at a 1 minute interval.
+      - `['300000']<Number>`: The calculated moving average at a 5 minute interval.
+      - `['900000']<Number>`: The calculated moving average at a 15 minute interval.
+  - `snapshot<object>`: A getter that returns a clone of the raw stats.
+    - `dataReceived<BigNumber>`: A [`BigNumber`](https://github.com/MikeMcl/bignumber.js/) of the amount of incoming data
+    - `dataSent<BigNumber>`: A [`BigNumber`](https://github.com/MikeMcl/bignumber.js/) of the amount of outgoing data
+  - `movingAverages<object>`: A getter that returns a clone of the raw [moving averages](https://www.npmjs.com/package/moving-averages) stats. **Note**: The properties of this are dependent on configuration. The defaults are shown here.
+    - `['60000']<MovingAverage>`: The [MovingAverage](https://www.npmjs.com/package/moving-averages) at a 1 minute interval.
+    - `['300000']<MovingAverage>`: The [MovingAverage](https://www.npmjs.com/package/moving-averages) at a 5 minute interval.
+    - `['900000']<MovingAverage>`: The [MovingAverage](https://www.npmjs.com/package/moving-averages) at a 15 minute interval.

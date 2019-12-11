@@ -82,6 +82,7 @@ describe('Dialing (via relay, TCP)', () => {
       echoStream,
       collect
     )
+
     expect(output.slice()).to.eql(input)
   })
 
