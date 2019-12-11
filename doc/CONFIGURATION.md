@@ -1,18 +1,25 @@
 # Configuration
 
-* [Overview](#overview)
-* [Modules](#modules)
-  * [Transport](#transport)
-  * [Stream Multiplexing](#stream-multiplexing)
-  * [Connection Encryption](#connection-encryption)
-  * [Peer Discovery](#peer-discovery)
-  * [Content Routing](#content-routing)
-  * [Peer Routing](#peer-routing)
-  * [DHT](#dht)
-  * [Pubsub](#pubsub)
-* [Customizing Libp2p](#customizing-libp2p)
-  * [Examples](#examples)
-* [Configuration examples](#configuration-examples)
+- [Configuration](#configuration)
+  - [Overview](#overview)
+  - [Modules](#modules)
+    - [Transport](#transport)
+    - [Stream Multiplexing](#stream-multiplexing)
+    - [Connection Encryption](#connection-encryption)
+    - [Peer Discovery](#peer-discovery)
+    - [Content Routing](#content-routing)
+    - [Peer Routing](#peer-routing)
+    - [DHT](#dht)
+    - [Pubsub](#pubsub)
+  - [Customizing libp2p](#customizing-libp2p)
+    - [Examples](#examples)
+      - [Basic setup](#basic-setup)
+      - [Customizing Peer Discovery](#customizing-peer-discovery)
+      - [Customizing Pubsub](#customizing-pubsub)
+      - [Customizing DHT](#customizing-dht)
+      - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
+      - [Setup with Relay](#setup-with-relay)
+  - [Configuration examples](#configuration-examples)
 
 ## Overview
 
@@ -45,7 +52,7 @@ Bear in mind that only a **transport** and **connection encryption** are require
 
 Some available transports are:
 
-- [libp2p/js-libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp) 
+- [libp2p/js-libp2p-tcp](https://github.com/libp2p/js-libp2p-tcp)
 - [libp2p/js-libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star)
 - [libp2p/js-libp2p-webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct)
 - [libp2p/js-libp2p-websockets](https://github.com/libp2p/js-libp2p-websockets)
@@ -151,7 +158,7 @@ If you want to know more about libp2p DHT, you should read the following content
 - https://docs.libp2p.io/concepts/protocols/#kad-dht
 - https://github.com/libp2p/specs/pull/108
 
-#### Pubsub
+### Pubsub
 
 > Publish/Subscribe is a system where peers congregate around topics they are interested in. Peers interested in a topic are said to be subscribed to that topic and should receive the data published on it from other peers.
 
@@ -194,7 +201,7 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
 
 ### Examples
 
-**1) Basic setup**
+#### Basic setup
 
 ```js
 // Creating a libp2p node with:
@@ -229,7 +236,7 @@ const node = await Libp2p.create({
 })
 ```
 
-**2) Customizing Peer Discovery**
+#### Customizing Peer Discovery
 
 ```js
 const Libp2p = require('libp2p')
@@ -248,7 +255,7 @@ const node = await Libp2p.create({
   config: {
     peerDiscovery: {
       autoDial: true,             // Auto connect to discovered peers (limited by ConnectionManager minPeers)
-      // The `tag` property will be searched when creating the instance of your Peer Discovery service. 
+      // The `tag` property will be searched when creating the instance of your Peer Discovery service.
       // The associated object, will be passed to the service when it is instantiated.
       [MulticastDNS.tag]: {
         interval: 1000,
@@ -260,7 +267,7 @@ const node = await Libp2p.create({
 })
 ```
 
-**3) Customizing Pubsub**
+#### Customizing Pubsub
 
 ```js
 const Libp2p = require('libp2p')
@@ -287,7 +294,7 @@ const node = await Libp2p.create({
 })
 ```
 
-**4) Customizing DHT**
+#### Customizing DHT
 
 ```js
 const Libp2p = require('libp2p')
@@ -317,7 +324,7 @@ const node = await Libp2p.create({
 })
 ```
 
-**5) Setup with Content and Peer Routing**
+#### Setup with Content and Peer Routing
 
 ```js
 const Libp2p = require('libp2p')
@@ -347,7 +354,7 @@ const node = await Libp2p.create({
 })
 ```
 
-**6) Setup with Relay**
+#### Setup with Relay
 
 ```js
 const Libp2p = require('libp2p')
