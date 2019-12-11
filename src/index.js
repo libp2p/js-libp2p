@@ -437,7 +437,7 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<void>}
    */
   _setupPeerDiscovery () {
-    for (const DiscoveryService of this._modules.peerDiscovery || []) {
+    const setupService = (DiscoveryService) => {
       let config = {
         enabled: true // on by default
       }
@@ -448,7 +448,8 @@ class Libp2p extends EventEmitter {
         config = { ...config, ...this._config.peerDiscovery[DiscoveryService.tag] }
       }
 
-      if (config.enabled) {
+      if (config.enabled &&
+        !this._discovery.filter((service) => service.tag === DiscoveryService.tag).length) { // not already added
         let discoveryService
 
         if (typeof DiscoveryService === 'function') {
@@ -459,6 +460,18 @@ class Libp2p extends EventEmitter {
 
         discoveryService.on('peer', this._onDiscoveryPeer)
         this._discovery.push(discoveryService)
+      }
+    }
+
+    // Discovery modules
+    for (const DiscoveryService of this._modules.peerDiscovery || []) {
+      setupService(DiscoveryService)
+    }
+
+    // Transport modules with discovery
+    for (const Transport of this.transportManager.getTransports()) {
+      if (Transport.discovery) {
+        setupService(Transport.discovery)
       }
     }
 

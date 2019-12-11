@@ -104,6 +104,14 @@ class TransportManager {
   }
 
   /**
+   * Returns all the transports instances.
+   * @returns {Iterator<Transport>}
+   */
+  getTransports () {
+    return this._transports.values()
+  }
+
+  /**
    * Finds a transport that matches the given Multiaddr
    * @param {Multiaddr} ma
    * @returns {Transport|null}
