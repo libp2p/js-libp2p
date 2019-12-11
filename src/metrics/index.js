@@ -143,6 +143,10 @@ class Metrics {
       this._peerStats.set(remotePeer.toString(), peerStats)
     }
 
+    // Peer and global stats
+    peerStats.push(key, dataLength)
+    this._globalStats.push(key, dataLength)
+
     // Protocol specific stats
     if (protocol) {
       let protocolStats = this.forProtocol(protocol)
@@ -151,10 +155,6 @@ class Metrics {
         this._protocolStats.set(protocol, protocolStats)
       }
       protocolStats.push(key, dataLength)
-    // General stats
-    } else {
-      peerStats.push(key, dataLength)
-      this._globalStats.push(key, dataLength)
     }
   }
 

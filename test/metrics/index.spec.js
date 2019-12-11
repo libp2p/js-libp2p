@@ -5,6 +5,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-as-promised'))
 const { expect } = chai
+const sinon = require('sinon')
 
 const { randomBytes } = require('libp2p-crypto')
 const duplexPair = require('it-pair/duplex')
@@ -15,6 +16,7 @@ const { consume } = require('streaming-iterables')
 const delay = require('delay')
 
 const Metrics = require('../../src/metrics')
+const Stats = require('../../src/metrics/stats')
 const { createPeerId } = require('../utils/creators/peer')
 
 describe('Metrics', () => {
@@ -23,6 +25,10 @@ describe('Metrics', () => {
 
   before(async () => {
     [peerId, peerId2] = await createPeerId({ number: 2 })
+  })
+
+  afterEach(() => {
+    sinon.restore()
   })
 
   it('should not track data if not started', async () => {
@@ -114,6 +120,7 @@ describe('Metrics', () => {
       computeThrottleMaxQueueSize: 1, // compute after every message
       movingAverageIntervals: [10, 100, 1000]
     })
+    const protocol = '/echo/1.0.0'
     metrics.start()
 
     // Echo back remotes
@@ -122,11 +129,13 @@ describe('Metrics', () => {
 
     metrics.trackStream({
       stream: local,
-      remotePeer: peerId
+      remotePeer: peerId,
+      protocol
     })
     metrics.trackStream({
       stream: local2,
-      remotePeer: peerId2
+      remotePeer: peerId2,
+      protocol
     })
 
     const bytes = randomBytes(1024)
@@ -152,6 +161,12 @@ describe('Metrics', () => {
       expect(stats.snapshot.dataReceived.toNumber()).to.equal(bytes.length)
       expect(stats.snapshot.dataSent.toNumber()).to.equal(bytes.length)
     }
+
+    // Verify protocol metrics
+    const protocolStats = metrics.forProtocol(protocol)
+    expect(metrics.protocols).to.eql([protocol])
+    expect(protocolStats.snapshot.dataReceived.toNumber()).to.equal(bytes.length * 2)
+    expect(protocolStats.snapshot.dataSent.toNumber()).to.equal(bytes.length * 2)
   })
 
   it('should be able to replace an existing peer', async () => {
@@ -202,5 +217,43 @@ describe('Metrics', () => {
 
     expect(stats.snapshot.dataReceived.toNumber()).to.equal(bytes.length * 2)
     expect(stats.snapshot.dataSent.toNumber()).to.equal(bytes.length * 2)
+  })
+
+  it('should only keep track of a set number of disconnected peers', () => {
+    const spies = []
+    const trackedPeers = new Map([...new Array(50)].map((_, index) => {
+      const stat = new Stats([], { movingAverageIntervals: [] })
+      spies.push(sinon.spy(stat, 'stop'))
+      return [String(index), stat]
+    }))
+
+    const metrics = new Metrics({
+      maxOldPeersRetention: 5 // Only keep track of 5
+    })
+
+    // Clone so trackedPeers isn't modified
+    metrics._peerStats = new Map(trackedPeers)
+
+    // Disconnect every peer
+    for (const id of trackedPeers.keys()) {
+      metrics.onPeerDisconnected({
+        toString: () => id
+      })
+    }
+
+    // Verify only the last 5 have been retained
+    expect(metrics.peers).to.have.length(0)
+    const retainedPeers = []
+    for (const id of trackedPeers.keys()) {
+      const stat = metrics.forPeer(id)
+      if (stat) retainedPeers.push(id)
+    }
+    expect(retainedPeers).to.eql(['45', '46', '47', '48', '49'])
+
+    // Verify all stats were stopped
+    expect(spies).to.have.length(50)
+    for (const spy of spies) {
+      expect(spy).to.have.property('callCount', 1)
+    }
   })
 })
