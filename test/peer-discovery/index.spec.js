@@ -61,7 +61,7 @@ describe('peer discovery', () => {
       await libp2p.start()
       const discoverySpy = sinon.spy()
       libp2p.on('peer:discovery', discoverySpy)
-      libp2p._discovery[0].emit('peer', libp2p.peerInfo)
+      libp2p._discovery.get('mdns').emit('peer', libp2p.peerInfo)
 
       expect(discoverySpy.called).to.eql(false)
     })
@@ -91,7 +91,8 @@ describe('peer discovery', () => {
 
       await libp2p.start()
 
-      expect(libp2p._discovery).to.have.lengthOf(1)
+      expect(libp2p._discovery.size).to.eql(1)
+      expect(libp2p._discovery.has('webRTCStar')).to.eql(true)
     })
 
     it('should not add discovery module if present in transports but disabled', async () => {
@@ -111,7 +112,7 @@ describe('peer discovery', () => {
 
       await libp2p.start()
 
-      expect(libp2p._discovery).to.have.lengthOf(0)
+      expect(libp2p._discovery.size).to.eql(0)
     })
   })
 })

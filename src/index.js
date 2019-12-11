@@ -48,7 +48,7 @@ class Libp2p extends EventEmitter {
     this._modules = this._options.modules
     this._config = this._options.config
     this._transport = [] // Transport instances/references
-    this._discovery = [] // Discovery service instances/references
+    this._discovery = new Map() // Discovery service instances/references
 
     this.peerStore = new PeerStore()
 
@@ -449,7 +449,7 @@ class Libp2p extends EventEmitter {
       }
 
       if (config.enabled &&
-        !this._discovery.filter((service) => service.tag === DiscoveryService.tag).length) { // not already added
+        !this._discovery.has(DiscoveryService.tag)) { // not already added
         let discoveryService
 
         if (typeof DiscoveryService === 'function') {
@@ -459,7 +459,7 @@ class Libp2p extends EventEmitter {
         }
 
         discoveryService.on('peer', this._onDiscoveryPeer)
-        this._discovery.push(discoveryService)
+        this._discovery.set(DiscoveryService.tag, discoveryService)
       }
     }
 
@@ -475,7 +475,7 @@ class Libp2p extends EventEmitter {
       }
     }
 
-    return this._discovery.map(d => d.start())
+    return Array.from(this._discovery.values()).map(d => d.start())
   }
 }
 
