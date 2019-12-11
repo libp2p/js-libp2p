@@ -2,6 +2,7 @@
 
 const mergeOptions = require('merge-options')
 const pipe = require('it-pipe')
+const { tap } = require('streaming-iterables')
 const oldPeerLRU = require('./old-peers')
 const { METRICS: defaultOptions } = require('../constants')
 const Stats = require('./stats')
@@ -210,23 +211,23 @@ class Metrics {
   trackStream ({ stream, remotePeer, protocol }) {
     const metrics = this
     const _source = stream.source
-    stream.source = (async function * () {
-      for await (const chunk of _source) {
-        metrics._onMessage({ remotePeer, protocol, direction: 'in', dataLength: chunk.length })
-        yield chunk
-      }
-    })()
+    stream.source = tap(chunk => metrics._onMessage({
+      remotePeer,
+      protocol,
+      direction: 'in',
+      dataLength: chunk.length
+    }))(_source)
 
     const _sink = stream.sink
     stream.sink = source => {
       pipe(
         source,
-        source => (async function * () {
-          for await (const chunk of source) {
-            metrics._onMessage({ remotePeer, protocol, direction: 'out', dataLength: chunk.length })
-            yield chunk
-          }
-        })(),
+        tap(chunk => metrics._onMessage({
+          remotePeer,
+          protocol,
+          direction: 'out',
+          dataLength: chunk.length
+        })),
         _sink
       )
     }
