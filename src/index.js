@@ -475,7 +475,7 @@ class Libp2p extends EventEmitter {
       }
     }
 
-    return Array.from(this._discovery.values()).map(d => d.start())
+    return Promise.all(Array.from(this._discovery.values(), d => d.start()))
   }
 }
 
