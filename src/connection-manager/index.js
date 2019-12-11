@@ -46,6 +46,7 @@ class ConnectionManager extends EventEmitter {
     this._peerValues = new Map()
     this._connections = new Map()
     this._timer = null
+    this._checkMetrics = this._checkMetrics.bind(this)
   }
 
   /**
@@ -59,10 +60,12 @@ class ConnectionManager extends EventEmitter {
 
     // latency monitor
     this._latencyMonitor = new LatencyMonitor({
+      latencyCheckIntervalMs: this._options.pollInterval,
       dataEmitIntervalMs: this._options.pollInterval
     })
     this._onLatencyMeasure = this._onLatencyMeasure.bind(this)
     this._latencyMonitor.on('data', this._onLatencyMeasure)
+    debug('started')
   }
 
   /**
@@ -70,8 +73,8 @@ class ConnectionManager extends EventEmitter {
    */
   stop () {
     this._timer && this._timer.clear()
-
-    this._latencyMonitor.removeListener('data', this._onLatencyMeasure)
+    this._latencyMonitor && this._latencyMonitor.removeListener('data', this._onLatencyMeasure)
+    debug('stopped')
   }
 
   /**
@@ -104,6 +107,7 @@ class ConnectionManager extends EventEmitter {
     const total = received + sent
     this._checkLimit('maxData', total)
     debug('metrics update', total)
+    this._timer.reschedule(this._options.pollInterval)
   }
 
   /**

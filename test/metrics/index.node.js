@@ -33,9 +33,16 @@ describe('libp2p.metrics', () => {
   })
 
   it('should start/stop metrics on startup/shutdown when enabled', async () => {
-    const config = { ...baseOptions }
-    config.metrics = {
-      enabled: true
+    const config = {
+      ...baseOptions,
+      connectionManager: {
+        movingAverageIntervals: [10]
+      },
+      metrics: {
+        enabled: true,
+        computeThrottleMaxQueueSize: 1, // compute after every message
+        movingAverageIntervals: [10]
+      }
     }
     ;[libp2p] = await createPeer({ started: false, config })
 
@@ -51,11 +58,16 @@ describe('libp2p.metrics', () => {
   })
 
   it('should record metrics on connections and streams when enabled', async () => {
-    const config = { ...baseOptions }
-    config.metrics = {
-      enabled: true,
-      computeThrottleMaxQueueSize: 1, // compute after every message
-      movingAverageIntervals: [10]
+    const config = {
+      ...baseOptions,
+      connectionManager: {
+        movingAverageIntervals: [10]
+      },
+      metrics: {
+        enabled: true,
+        computeThrottleMaxQueueSize: 1, // compute after every message
+        movingAverageIntervals: [10]
+      }
     }
     let remoteLibp2p
     ;[libp2p, remoteLibp2p] = await createPeer({ number: 2, config })
@@ -88,11 +100,16 @@ describe('libp2p.metrics', () => {
   })
 
   it('should move disconnected peers to the old peers list', async () => {
-    const config = { ...baseOptions }
-    config.metrics = {
-      enabled: true,
-      computeThrottleMaxQueueSize: 1, // compute after every message
-      movingAverageIntervals: [10]
+    const config = {
+      ...baseOptions,
+      connectionManager: {
+        movingAverageIntervals: [10]
+      },
+      metrics: {
+        enabled: true,
+        computeThrottleMaxQueueSize: 1, // compute after every message
+        movingAverageIntervals: [10]
+      }
     }
     let remoteLibp2p
     ;[libp2p, remoteLibp2p] = await createPeer({ number: 2, config })

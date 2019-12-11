@@ -212,6 +212,7 @@ class Libp2p extends EventEmitter {
     log('libp2p is stopping')
 
     try {
+      this.connectionManager.stop()
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
         this._dht && this._dht.stop(),
@@ -223,7 +224,6 @@ class Libp2p extends EventEmitter {
 
       ping.unmount(this)
       this.dialer.destroy()
-      this.connectionManager.start()
     } catch (err) {
       if (err) {
         log.error(err)
@@ -296,7 +296,7 @@ class Libp2p extends EventEmitter {
    */
   hangUp (peer) {
     return Promise.all(
-      this.registrar.connections.get(peer.toB58String()).map(connection => {
+      this.registrar.connections.get(peer.toString()).map(connection => {
         return connection.close()
       })
     )
