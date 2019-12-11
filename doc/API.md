@@ -643,6 +643,36 @@ const handler = (msg) => {
 libp2p.pubsub.unsubscribe(topic, handler)
 ```
 
+### connectionManager.setPeerValue
+
+Enables users to change the value of certain peers in a range of 0 to 1. Peers with the lowest values will have their Connections pruned first, if any Connection Manager limits are exceeded. See [./CONFIGURATION.md#configuring-connection-manager](./CONFIGURATION.md#configuring-connection-manager) for details on how to configure these limits.
+
+`libp2p.connectionManager.setPeerValue(peerId, value)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `PeerId` | The peer to set the value for |
+| value | `number` | The value of the peer from 0 to 1 |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `void` |  |
+
+#### Example
+
+```js
+const topic = 'topic'
+const handler = (msg) => {
+  // msg.data - pubsub data received
+}
+
+libp2p.pubsub.unsubscribe(topic, handler)
+```
+
 ### metrics.global
 
 A [`Stats`](#stats) object of tracking the global bandwidth of the libp2p node.
