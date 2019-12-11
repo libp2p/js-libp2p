@@ -84,6 +84,31 @@ class Stats extends EventEmitter {
   }
 
   /**
+   * Returns a plain JSON object of the stats
+   *
+   * @returns {*}
+   */
+  toJSON () {
+    const snapshot = this.snapshot
+    const movingAverages = this.movingAverages
+    const data = {
+      dataReceived: snapshot.dataReceived.toString(),
+      dataSent: snapshot.dataSent.toString(),
+      movingAverages: {}
+    }
+
+    const counters = Object.keys(movingAverages)
+    for (const key of counters) {
+      data.movingAverages[key] = {}
+      for (const interval of Object.keys(movingAverages[key])) {
+        data.movingAverages[key][interval] = movingAverages[key][interval].movingAverage()
+      }
+    }
+
+    return data
+  }
+
+  /**
    * Pushes the given operation data to the queue, along with the
    * current Timestamp, then resets the update timer.
    *
@@ -151,7 +176,7 @@ class Stats extends EventEmitter {
   }
 
   /**
-   * For each key in the stats, the frequncy and moving averages
+   * For each key in the stats, the frequency and moving averages
    * will be updated via Stats._updateFrequencyFor based on the time
    * difference between calls to this method.
    *

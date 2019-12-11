@@ -9,5 +9,15 @@ module.exports = {
   MAX_PER_PEER_DIALS: 4, // Allowed parallel dials per DialRequest
   QUARTER_HOUR: 15 * 60e3,
   PRIORITY_HIGH: 10,
-  PRIORITY_LOW: 20
+  PRIORITY_LOW: 20,
+  METRICS: {
+    computeThrottleMaxQueueSize: 1000,
+    computeThrottleTimeout: 2000,
+    movingAverageIntervals: [
+      60 * 1000, // 1 minute
+      5 * 60 * 1000, // 5 minutes
+      15 * 60 * 1000 // 15 minutes
+    ],
+    maxOldPeersRetention: 50
+  }
 }

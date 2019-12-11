@@ -18,7 +18,7 @@ const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
  * @param {Object} [properties.config]
  * @param {number} [properties.number] number of peers (default: 1).
  * @param {boolean} [properties.fixture] use fixture for peer-id generation (default: true)
- * @param {boolean} [properties.started] nodes should start (defaul: true)
+ * @param {boolean} [properties.started] nodes should start (default: true)
  * @return {Promise<Array<Libp2p>>}
  */
 async function createPeer ({ number = 1, fixture = true, started = true, config = defaultOptions } = {}) {
