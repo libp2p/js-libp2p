@@ -8,12 +8,14 @@
     "Lead Maintainer"
   ],
   "rows": [
-    "Libp2p",
+    "libp2p",
     ["libp2p/js-libp2p", "libp2p"],
     ["libp2p/js-libp2p-daemon", "libp2p-daemon"],
+    ["libp2p/js-libp2p-daemon-client", "libp2p-daemon-client"],
     ["libp2p/js-interfaces", "libp2p-interfaces"],
+    ["libp2p/interop", "interop-libp2p"],
 
-    "Transport",
+    "transports",
     ["libp2p/js-libp2p-tcp", "libp2p-tcp"],
     ["libp2p/js-libp2p-utp", "libp2p-utp"],
     ["libp2p/js-libp2p-webrtc-direct", "libp2p-webrtc-direct"],
@@ -21,14 +23,14 @@
     ["libp2p/js-libp2p-websockets", "libp2p-websockets"],
     ["libp2p/js-libp2p-websocket-star", "libp2p-websocket-star"],
 
-    "Crypto Channels",
+    "secure channels",
     ["libp2p/js-libp2p-secio", "libp2p-secio"],
 
-    "Stream Muxers",
+    "stream multiplexers",
     ["libp2p/js-libp2p-mplex", "libp2p-mplex"],
     ["libp2p/js-libp2p-spdy", "libp2p-spdy"],
 
-    "Discovery",
+    "peer discovery",
     ["libp2p/js-libp2p-bootstrap", "libp2p-bootstrap"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
     ["libp2p/js-libp2p-mdns", "libp2p-mdns"],
@@ -36,29 +38,29 @@
     ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
     ["libp2p/js-libp2p-websocket-star", "libp2p-websocket-star"],
 
-    "Content Routing",
+    "content routing",
     ["libp2p/js-libp2p-delegated-content-routing", "libp2p-delegated-content-routing"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
 
-    "Peer Routing",
+    "peer routing",
     ["libp2p/js-libp2p-delegated-peer-routing", "libp2p-delegated-peer-routing"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
 
-    "Utilities",
+    "utilities",
     ["libp2p/js-libp2p-crypto", "libp2p-crypto"],
     ["libp2p/js-libp2p-crypto-secp256k1", "libp2p-crypto-secp256k1"],
 
-    "Data Types",
+    "data types",
     ["libp2p/js-peer-book", "peer-book"],
     ["libp2p/js-peer-id", "peer-id"],
     ["libp2p/js-peer-info", "peer-info"],
 
-    "PubSub",
+    "pubsub",
     ["libp2p/js-libp2p-pubsub", "libp2p-pubsub"],
     ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"],
     ["ChainSafe/gossipsub-js", "libp2p-gossipsub"],
 
-    "Extensions",
+    "extensions",
     ["libp2p/js-libp2p-nat-mgnr", "libp2p-nat-mgnr"],
     ["libp2p/js-libp2p-utils", "libp2p-utils"]
   ]
