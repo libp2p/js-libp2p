@@ -110,7 +110,7 @@ Some available peer discovery modules are:
 - [js-libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
 - [js-libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star)
 
-Take into consideration that `peer-discovery` services within transports (such as `js-libp2p-webrtc-star`) are automatically gathered from the `transport` and do not need to be added in the discovery modules. However, these transports can also be configured and disabled as the other ones.
+**Note**: `peer-discovery` services within transports (such as `js-libp2p-webrtc-star`) are automatically gathered from the `transport`, via it's `discovery` property. As such, they do not need to be added in the discovery modules. However, these transports can also be configured and disabled as the other ones.
 
 If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-interfaces/tree/master/src/peer-discovery).
 
