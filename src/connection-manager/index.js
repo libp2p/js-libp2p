@@ -134,6 +134,7 @@ class ConnectionManager {
   /**
    * If the event loop is slow, maybe close a connection
    * @private
+   * @param {*} summary The LatencyMonitor summary
    */
   _onLatencyMeasure (summary) {
     this._checkLimit('maxEventLoopDelay', summary.avgMs)
@@ -142,6 +143,8 @@ class ConnectionManager {
   /**
    * If the `value` of `name` has exceeded its limit, maybe close a connection
    * @private
+   * @param {string} name The name of the field to check limits for
+   * @param {number} value The current value of the field
    */
   _checkLimit (name, value) {
     const limit = this._options[name]
