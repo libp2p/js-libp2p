@@ -19,6 +19,7 @@
       - [Customizing DHT](#customizing-dht)
       - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
       - [Setup with Relay](#setup-with-relay)
+      - [Configuring Metrics](#configuring-metrics)
   - [Configuration examples](#configuration-examples)
 
 ## Overview
@@ -368,13 +369,45 @@ const node = await Libp2p.create({
     streamMuxer: [MPLEX],
     connEncryption: [SECIO]
   },
-  relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
-    enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
-    hop: {
-      enabled: true,         // Allows you to be a relay for other peers
-      active: true           // You will attempt to dial destination peers if you are not connected to them
+  config: {
+    relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
+      enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
+      hop: {
+        enabled: true,         // Allows you to be a relay for other peers
+        active: true           // You will attempt to dial destination peers if you are not connected to them
+      }
     }
+  }
+})
+```
+
+#### Configuring Metrics
+
+Metrics are disabled in libp2p by default. You can enable and configure them as follows. Aside from enabled being `false` by default, the configuration options listed here are the current defaults.
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO]
   },
+  metrics: {
+    enabled: true,
+    computeThrottleMaxQueueSize: 1000,  // How many messages a stat will queue before processing
+    computeThrottleTimeout: 2000,       // Time in milliseconds a stat will wait, after the last item was added, before processing
+    movingAverageIntervals: [           // The moving averages that will be computed
+      60 * 1000, // 1 minute
+      5 * 60 * 1000, // 5 minutes
+      15 * 60 * 1000 // 15 minutes
+    ],
+    maxOldPeersRetention: 50            // How many disconnected peers we will retain stats for
+  }
 })
 ```
 
