@@ -15,6 +15,7 @@ const { getPeerInfo, getPeerInfoRemote } = require('./get-peer-info')
 const { validate: validateConfig } = require('./config')
 const { codes } = require('./errors')
 
+const ConnectionManager = require('./connection-manager')
 const Circuit = require('./circuit')
 const Dialer = require('./dialer')
 const Metrics = require('./metrics')
@@ -87,6 +88,9 @@ class Libp2p extends EventEmitter {
     this.registrar = new Registrar({ peerStore: this.peerStore })
     this.handle = this.handle.bind(this)
     this.registrar.handle = this.handle
+
+    // Create the Connection Manager
+    this.connectionManager = new ConnectionManager(this, this._options.connectionManager)
 
     // Setup the transport manager
     this.transportManager = new TransportManager({
@@ -219,12 +223,14 @@ class Libp2p extends EventEmitter {
 
       ping.unmount(this)
       this.dialer.destroy()
+      this.connectionManager.start()
     } catch (err) {
       if (err) {
         log.error(err)
         this.emit('error', err)
       }
     }
+    this._isStarted = false
     log('libp2p has stopped')
   }
 
@@ -377,6 +383,8 @@ class Libp2p extends EventEmitter {
    */
   _onDidStart () {
     this._isStarted = true
+
+    this.connectionManager.start()
 
     this.peerStore.on('peer', peerInfo => {
       this.emit('peer:discovery', peerInfo)
