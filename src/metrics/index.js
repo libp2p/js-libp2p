@@ -32,7 +32,7 @@ class Metrics {
     this._protocolStats = new Map()
     this._oldPeers = oldPeerLRU(this._options.maxOldPeersRetention)
     this._running = false
-    this.onMessage = this.onMessage.bind(this)
+    this._onMessage = this._onMessage.bind(this)
   }
 
   /**
@@ -127,7 +127,20 @@ class Metrics {
     }
   }
 
-  onMessage ({ remotePeer, protocol, direction, dataLength }) {
+  /**
+   * Takes the metadata for a message and tracks it in the
+   * appropriate categories. If the protocol is present, protocol
+   * stats will also be tracked.
+   *
+   * @private
+   * @param {object} params
+   * @param {PeerId} params.remotePeer Remote peer
+   * @param {string} [params.protocol] Protocol string the stream is running
+   * @param {string} params.direction One of ['in','out']
+   * @param {number} params.dataLength Size of the message
+   * @returns {void}
+   */
+  _onMessage ({ remotePeer, protocol, direction, dataLength }) {
     if (!this._running) return
 
     const key = directionToEvent[direction]
@@ -157,7 +170,6 @@ class Metrics {
    * Replaces the `PeerId` string with the given `peerId`.
    * If stats are already being tracked for the given `peerId`, the
    * placeholder stats will be merged with the existing stats.
-   *
    *
    * @param {string} placeholder A peerId string
    * @param {PeerId} peerId
@@ -200,7 +212,7 @@ class Metrics {
     const _source = stream.source
     stream.source = (async function * () {
       for await (const chunk of _source) {
-        metrics.onMessage({ remotePeer, protocol, direction: 'in', dataLength: chunk.length })
+        metrics._onMessage({ remotePeer, protocol, direction: 'in', dataLength: chunk.length })
         yield chunk
       }
     })()
@@ -211,7 +223,7 @@ class Metrics {
         source,
         source => (async function * () {
           for await (const chunk of source) {
-            metrics.onMessage({ remotePeer, protocol, direction: 'out', dataLength: chunk.length })
+            metrics._onMessage({ remotePeer, protocol, direction: 'out', dataLength: chunk.length })
             yield chunk
           }
         })(),
