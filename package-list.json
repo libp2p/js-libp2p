@@ -11,7 +11,7 @@
     "Libp2p",
     ["libp2p/js-libp2p", "libp2p"],
     ["libp2p/js-libp2p-daemon", "libp2p-daemon"],
-    ["libp2p/js-interfaces", "Interfaces for libp2p modules"],
+    ["libp2p/js-interfaces", "libp2p-interfaces"],
 
     "Transport",
     ["libp2p/js-libp2p-tcp", "libp2p-tcp"],
