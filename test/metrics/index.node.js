@@ -86,4 +86,42 @@ describe('libp2p.metrics', () => {
     expect(Number(peerStats.dataReceived)).to.be.at.least(bytes.length)
     await remoteLibp2p.stop()
   })
+
+  it('should move disconnected peers to the old peers list', async () => {
+    const config = { ...baseOptions }
+    config.metrics = {
+      enabled: true,
+      computeThrottleMaxQueueSize: 1, // compute after every message
+      movingAverageIntervals: [10]
+    }
+    let remoteLibp2p
+    ;[libp2p, remoteLibp2p] = await createPeer({ number: 2, config })
+
+    remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
+
+    const connection = await libp2p.dial(remoteLibp2p.peerInfo)
+    const { stream } = await connection.newStream('/echo/1.0.0')
+
+    const bytes = randomBytes(512)
+    await pipe(
+      [bytes],
+      stream,
+      concat
+    )
+
+    sinon.spy(libp2p.metrics, 'onPeerDisconnected')
+    await libp2p.hangUp(connection.remotePeer)
+
+    // Flush call stack
+    await delay(0)
+
+    expect(libp2p.metrics.onPeerDisconnected).to.have.property('callCount', 1)
+    expect(libp2p.metrics.peers).to.have.length(0)
+
+    // forPeer should still give us the old peer stats,
+    // even though its not in the active peer list
+    const peerStats = libp2p.metrics.forPeer(connection.remotePeer).toJSON()
+    expect(Number(peerStats.dataReceived)).to.be.at.least(bytes.length)
+    await remoteLibp2p.stop()
+  })
 })

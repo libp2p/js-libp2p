@@ -100,6 +100,7 @@ class Registrar {
 
     if (storedConn && storedConn.length > 1) {
       storedConn = storedConn.filter((conn) => conn.id === connection.id)
+      this.connections.set(id, storedConn)
     } else if (storedConn) {
       for (const [, topology] of this.topologies) {
         topology.disconnect(peerInfo, error)

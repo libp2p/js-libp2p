@@ -76,15 +76,6 @@ class Metrics {
   }
 
   /**
-   * Returns a list of `PeerId` strings currently in the
-   * LRU, disconnected peer cache.
-   * @returns {Array<string>}
-   */
-  get oldPeers () {
-    return Array.from(this._oldPeers.keys())
-  }
-
-  /**
    * Returns the `Stats` object for the given `PeerId` whether it
    * is a live peer, or in the disconnected peer LRU cache.
    * @param {PeerId} peerId
