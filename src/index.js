@@ -48,7 +48,7 @@ class Libp2p extends EventEmitter {
     this._modules = this._options.modules
     this._config = this._options.config
     this._transport = [] // Transport instances/references
-    this._discovery = [] // Discovery service instances/references
+    this._discovery = new Map() // Discovery service instances/references
 
     this.peerStore = new PeerStore()
 
@@ -437,7 +437,7 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<void>}
    */
   _setupPeerDiscovery () {
-    for (const DiscoveryService of this._modules.peerDiscovery || []) {
+    const setupService = (DiscoveryService) => {
       let config = {
         enabled: true // on by default
       }
@@ -448,7 +448,8 @@ class Libp2p extends EventEmitter {
         config = { ...config, ...this._config.peerDiscovery[DiscoveryService.tag] }
       }
 
-      if (config.enabled) {
+      if (config.enabled &&
+        !this._discovery.has(DiscoveryService.tag)) { // not already added
         let discoveryService
 
         if (typeof DiscoveryService === 'function') {
@@ -458,11 +459,23 @@ class Libp2p extends EventEmitter {
         }
 
         discoveryService.on('peer', this._onDiscoveryPeer)
-        this._discovery.push(discoveryService)
+        this._discovery.set(DiscoveryService.tag, discoveryService)
       }
     }
 
-    return this._discovery.map(d => d.start())
+    // Discovery modules
+    for (const DiscoveryService of this._modules.peerDiscovery || []) {
+      setupService(DiscoveryService)
+    }
+
+    // Transport modules with discovery
+    for (const Transport of this.transportManager.getTransports()) {
+      if (Transport.discovery) {
+        setupService(Transport.discovery)
+      }
+    }
+
+    return Promise.all(Array.from(this._discovery.values(), d => d.start()))
   }
 }
 
