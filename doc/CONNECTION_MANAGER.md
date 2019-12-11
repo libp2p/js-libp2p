@@ -1,10 +1,10 @@
 # Connection Manager
 
-The Connection Manager works with the Registrar to keep connections across libp2p within acceptable, configurable ranges. By default Connection Manager will monitor:
+The Connection Manager works with the Registrar to keep connections across libp2p within acceptable ranges, which can be configured. By default Connection Manager will monitor:
 - The total number of open connections
 - The latency/delay of the event loop
 
-If Metrics are enabled for libp2p, see [./CONFIGURATION.md](./CONFIGURATION.md) on how to configure metrics, the Connection Manager can be used to prune connections when certain limits are exceeded.
+If Metrics are enabled for libp2p, see [./CONFIGURATION.md#configuring-metrics](./CONFIGURATION.md#configuring-metrics) on how to configure metrics, the Connection Manager can be used to prune connections when certain limits are exceeded.
 
 The following is a list of available options for setting limits for the Connection Manager to enforce.
 
