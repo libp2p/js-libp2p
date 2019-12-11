@@ -9,7 +9,7 @@ const sinon = require('sinon')
 
 const { createPeer } = require('../utils/creators/peer')
 const mockConnection = require('../utils/mockConnection')
-const baseOptions = require('../utils/base-options')
+const baseOptions = require('../utils/base-options.browser')
 
 describe('Connection Manager', () => {
   let libp2p
@@ -60,8 +60,11 @@ describe('Connection Manager', () => {
         connectionManager: {
           maxConnections: max
         }
-      }
+      },
+      started: false
     })
+
+    await libp2p.start()
 
     sinon.spy(libp2p.connectionManager, '_maybeDisconnectOne')
 
@@ -95,8 +98,11 @@ describe('Connection Manager', () => {
         connectionManager: {
           maxConnections: max
         }
-      }
+      },
+      started: false
     })
+
+    await libp2p.start()
 
     sinon.spy(libp2p.connectionManager, '_maybeDisconnectOne')
 
@@ -110,5 +116,19 @@ describe('Connection Manager', () => {
 
     expect(libp2p.connectionManager._maybeDisconnectOne).to.have.property('callCount', 1)
     expect(spy).to.have.property('callCount', 1)
+  })
+
+  it('should fail if the connection manager has mismatched connection limit options', async () => {
+    await expect(createPeer({
+      config: {
+        modules: baseOptions.modules,
+        connectionManager: {
+          maxConnections: 5,
+          minConnections: 6
+        }
+      },
+      started: false
+    })).to.eventually.rejected()
+      .and.to.have.property('code', 'ERR_ASSERTION')
   })
 })

@@ -1,5 +1,6 @@
 'use strict'
 
+const assert = require('assert')
 const mergeOptions = require('merge-options')
 const LatencyMonitor = require('latency-monitor').default
 const debug = require('debug')('libp2p:connection-manager')
@@ -37,6 +38,10 @@ class ConnectionManager {
     this._registrar = libp2p.registrar
     this._peerId = libp2p.peerInfo.id.toString()
     this._options = mergeOptions(defaultOptions, options)
+    assert(
+      this._options.maxConnections > this._options.minConnections,
+      'Connection Manager maxConnections must be greater than minConnections'
+    )
 
     debug('options: %j', this._options)
 
@@ -49,8 +54,8 @@ class ConnectionManager {
   }
 
   /**
-   * Starts the Connection Manager. Metrics must be set in order
-   * for monitoring to start.
+   * Starts the Connection Manager. If Metrics are not enabled on libp2p
+   * only event loop and connection limits will be monitored.
    */
   start () {
     if (this._metrics) {
