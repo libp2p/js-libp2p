@@ -91,7 +91,6 @@ class Dialer {
 
     try {
       const dialResult = await dialRequest.run({ ...options, signal })
-      timeoutController.clear()
       log('dial succeeded to %s', dialResult.remoteAddr)
       return dialResult
     } catch (err) {
@@ -102,6 +101,7 @@ class Dialer {
       log.error(err)
       throw err
     } finally {
+      timeoutController.clear()
       this._pendingDials.delete(dial)
     }
   }

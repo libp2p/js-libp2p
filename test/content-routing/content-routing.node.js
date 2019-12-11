@@ -29,7 +29,7 @@ describe('content-routing', () => {
 
     it('.findProviders should return an error', async () => {
       try {
-        for await (const _ of node.contentRouting.findProviders('a cid')) {} // eslint-disable-line no-unused-vars
+        for await (const _ of node.contentRouting.findProviders('a cid')) {} // eslint-disable-line
         throw new Error('.findProviders should return an error')
       } catch (err) {
         expect(err).to.exist()
@@ -222,7 +222,7 @@ describe('content-routing', () => {
         ])
 
       try {
-        for await (const _ of node.contentRouting.findProviders(cid)) { } // eslint-disable-line no-unused-vars
+        for await (const _ of node.contentRouting.findProviders(cid)) { } // eslint-disable-line
         throw new Error('should handle errors when finding providers')
       } catch (err) {
         expect(err).to.exist()

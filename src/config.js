@@ -6,6 +6,9 @@ const DefaultConfig = {
   connectionManager: {
     minPeers: 25
   },
+  metrics: {
+    enabled: false
+  },
   config: {
     dht: {
       enabled: false,

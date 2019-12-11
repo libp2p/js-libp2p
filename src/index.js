@@ -17,6 +17,7 @@ const { codes } = require('./errors')
 
 const Circuit = require('./circuit')
 const Dialer = require('./dialer')
+const Metrics = require('./metrics')
 const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
@@ -51,9 +52,14 @@ class Libp2p extends EventEmitter {
 
     this.peerStore = new PeerStore()
 
+    if (this._options.metrics.enabled) {
+      this.metrics = new Metrics(this._options.metrics)
+    }
+
     // Setup the Upgrader
     this.upgrader = new Upgrader({
       localPeer: this.peerInfo.id,
+      metrics: this.metrics,
       onConnection: (connection) => {
         const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer))
         this.registrar.onConnect(peerInfo, connection)
@@ -67,9 +73,13 @@ class Libp2p extends EventEmitter {
       },
       onConnectionEnd: (connection) => {
         const peerInfo = getPeerInfo(connection.remotePeer)
-
         this.registrar.onDisconnect(peerInfo, connection)
-        this.emit('peer:disconnect', peerInfo)
+
+        // If there are no connections to the peer, disconnect
+        if (!this.registrar.getConnection(peerInfo)) {
+          this.emit('peer:disconnect', peerInfo)
+          this.metrics && this.metrics.onPeerDisconnected(peerInfo.id)
+        }
       }
     })
 
@@ -200,15 +210,15 @@ class Libp2p extends EventEmitter {
     try {
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
-        this._dht && this._dht.stop()
+        this._dht && this._dht.stop(),
+        this.metrics && this.metrics.stop()
       ])
-
-      this.dialer.destroy()
 
       await this.transportManager.close()
       await this.registrar.close()
 
       ping.unmount(this)
+      this.dialer.destroy()
     } catch (err) {
       if (err) {
         log.error(err)
@@ -356,6 +366,9 @@ class Libp2p extends EventEmitter {
       // the other discovery modules
       this._dht.on('peer', this._onDiscoveryPeer)
     }
+
+    // Start metrics if present
+    this.metrics && this.metrics.start()
   }
 
   /**
@@ -403,13 +416,13 @@ class Libp2p extends EventEmitter {
    */
   async _maybeConnect (peerInfo) {
     // If auto dialing is on and we have no connection to the peer, check if we should dial
-    if (this._config.peerDiscovery.autoDial === true && !this.registrar.connections.get(peerInfo)) {
+    if (this._config.peerDiscovery.autoDial === true && !this.registrar.getConnection(peerInfo)) {
       const minPeers = this._options.connectionManager.minPeers || 0
       // TODO: This does not account for multiple connections to a peer
       if (minPeers > this.registrar.connections.size) {
         log('connecting to discovered peer')
         try {
-          await this.dialer.connectToPeer(peerInfo)
+          await this.dialer.connectToPeer(peerInfo.id)
         } catch (err) {
           log.error('could not connect to discovered peer', err)
         }
