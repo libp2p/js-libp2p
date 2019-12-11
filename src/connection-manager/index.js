@@ -1,13 +1,13 @@
 'use strict'
 
-const EventEmitter = require('events')
+const mergeOptions = require('merge-options')
 const LatencyMonitor = require('latency-monitor').default
 const debug = require('debug')('libp2p:connection-manager')
 const retimer = require('retimer')
 
 const defaultOptions = {
-  maxPeers: Infinity,
-  minPeers: 0,
+  maxConnections: Infinity,
+  minConnections: 0,
   maxData: Infinity,
   maxSentData: Infinity,
   maxReceivedData: Infinity,
@@ -17,7 +17,7 @@ const defaultOptions = {
   defaultPeerValue: 1
 }
 
-class ConnectionManager extends EventEmitter {
+class ConnectionManager {
   /**
    * @constructor
    * @param {Libp2p} libp2p
@@ -33,11 +33,10 @@ class ConnectionManager extends EventEmitter {
    * @param {Number} options.defaultPeerValue The value of the peer. Default=1
    */
   constructor (libp2p, options) {
-    super()
     this._libp2p = libp2p
     this._registrar = libp2p.registrar
     this._peerId = libp2p.peerInfo.id.toString()
-    this._options = Object.assign({}, defaultOptions, options)
+    this._options = mergeOptions(defaultOptions, options)
 
     debug('options: %j', this._options)
 
@@ -87,8 +86,8 @@ class ConnectionManager extends EventEmitter {
     if (value < 0 || value > 1) {
       throw new Error('value should be a number between 0 and 1')
     }
-    if (peerId.toB58String) {
-      peerId = peerId.toB58String()
+    if (peerId.toString) {
+      peerId = peerId.toString()
     }
     this._peerValues.set(peerId, value)
   }
@@ -115,7 +114,11 @@ class ConnectionManager extends EventEmitter {
    * @param {Connection} connection
    */
   onConnect (connection) {
+    const peerId = connection.remotePeer.toString()
     this._connections.set(connection.id, connection)
+    if (!this._peerValues.has(peerId)) {
+      this._peerValues.set(peerId, this._options.defaultPeerValue)
+    }
     this._checkLimit('maxConnections', this._connections.size)
   }
 
@@ -125,6 +128,7 @@ class ConnectionManager extends EventEmitter {
    */
   onDisconnect (connection) {
     this._connections.delete(connection.id)
+    this._peerValues.delete(connection.remotePeer.toString())
   }
 
   /**
@@ -144,7 +148,6 @@ class ConnectionManager extends EventEmitter {
     debug('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
       debug('%s: limit exceeded: %s, %d', this._peerId, name, value)
-      this.emit('limit:exceeded', name, value)
       this._maybeDisconnectOne()
     }
   }

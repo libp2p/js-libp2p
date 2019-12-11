@@ -64,6 +64,7 @@ class Libp2p extends EventEmitter {
       onConnection: (connection) => {
         const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer))
         this.registrar.onConnect(peerInfo, connection)
+        this.connectionManager.onConnect(connection)
         this.emit('peer:connect', peerInfo)
 
         // Run identify for every connection
@@ -75,6 +76,7 @@ class Libp2p extends EventEmitter {
       onConnectionEnd: (connection) => {
         const peerInfo = getPeerInfo(connection.remotePeer)
         this.registrar.onDisconnect(peerInfo, connection)
+        this.connectionManager.onDisconnect(connection)
 
         // If there are no connections to the peer, disconnect
         if (!this.registrar.getConnection(peerInfo)) {
