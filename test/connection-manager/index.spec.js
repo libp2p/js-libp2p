@@ -128,7 +128,6 @@ describe('Connection Manager', () => {
         }
       },
       started: false
-    })).to.eventually.rejected()
-      .and.to.have.property('code', 'ERR_ASSERTION')
+    })).to.eventually.rejected('maxConnections must be greater')
   })
 })
