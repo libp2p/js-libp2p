@@ -369,10 +369,10 @@ const node = await Libp2p.create({
     connEncryption: [SECIO]
   },
   relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
-    enabled: true,
+    enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
     hop: {
-      enabled: true,
-      active: true
+      enabled: true,         // Allows you to be a relay for other peers
+      active: true           // You will attempt to dial destination peers if you are not connected to them
     }
   },
 })
