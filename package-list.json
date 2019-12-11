@@ -9,14 +9,11 @@
   ],
   "rows": [
     "Libp2p",
-    ["libp2p/interface-libp2p", "interface-libp2p"],
     ["libp2p/js-libp2p", "libp2p"],
-
-    "Connection",
-    ["libp2p/interface-connection", "interface-connection"],
+    ["libp2p/js-libp2p-daemon", "libp2p-daemon"],
+    ["libp2p/js-interfaces", "Interfaces for libp2p modules"],
 
     "Transport",
-    ["libp2p/interface-transport", "interface-transport"],
     ["libp2p/js-libp2p-tcp", "libp2p-tcp"],
     ["libp2p/js-libp2p-utp", "libp2p-utp"],
     ["libp2p/js-libp2p-webrtc-direct", "libp2p-webrtc-direct"],
@@ -28,12 +25,10 @@
     ["libp2p/js-libp2p-secio", "libp2p-secio"],
 
     "Stream Muxers",
-    ["libp2p/interface-stream-muxer", "interface-stream-muxer"],
     ["libp2p/js-libp2p-mplex", "libp2p-mplex"],
     ["libp2p/js-libp2p-spdy", "libp2p-spdy"],
 
     "Discovery",
-    ["libp2p/interface-peer-discovery", "interface-peer-discovery"],
     ["libp2p/js-libp2p-bootstrap", "libp2p-bootstrap"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
     ["libp2p/js-libp2p-mdns", "libp2p-mdns"],
@@ -42,12 +37,10 @@
     ["libp2p/js-libp2p-websocket-star", "libp2p-websocket-star"],
 
     "Content Routing",
-    ["libp2p/interface-content-routing", "interface-content-routing"],
     ["libp2p/js-libp2p-delegated-content-routing", "libp2p-delegated-content-routing"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
 
     "Peer Routing",
-    ["libp2p/interface-peer-routing", "interface-peer-routing"],
     ["libp2p/js-libp2p-delegated-peer-routing", "libp2p-delegated-peer-routing"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
 
@@ -60,7 +53,13 @@
     ["libp2p/js-peer-id", "peer-id"],
     ["libp2p/js-peer-info", "peer-info"],
 
+    "PubSub",
+    ["libp2p/js-libp2p-pubsub", "libp2p-pubsub"],
+    ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"],
+    ["ChainSafe/gossipsub-js", "js-libp2p-gossipsub"],
+
     "Extensions",
-    ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"]
+    ["libp2p/js-libp2p-nat-mgnr", "libp2p-nat-mgnr"],
+    ["libp2p/js-libp2p-utils", "libp2p-utils"]
   ]
 }
