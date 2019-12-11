@@ -13,7 +13,6 @@ const concat = require('it-concat')
 const delay = require('delay')
 
 const { createPeer } = require('../utils/creators/peer')
-const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options')
 
 describe('libp2p.metrics', () => {
@@ -38,7 +37,7 @@ describe('libp2p.metrics', () => {
     config.metrics = {
       enabled: true
     }
-    libp2p = await Libp2p.create(config)
+    ;[libp2p] = await createPeer({ started: false, config })
 
     expect(libp2p.metrics).to.exist()
     sinon.spy(libp2p.metrics, 'start')
