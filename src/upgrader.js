@@ -8,6 +8,7 @@ const { Connection } = require('libp2p-interfaces/src/connection')
 const PeerId = require('peer-id')
 const pipe = require('it-pipe')
 const errCode = require('err-code')
+const mutableProxy = require('mutable-proxy')
 
 const { codes } = require('./errors')
 
@@ -66,14 +67,14 @@ class Upgrader {
     let muxedConnection
     let Muxer
     let cryptoProtocol
-    let placeholderPeer
+    let setPeer
+    let proxyPeer
 
     if (this.metrics) {
+      ;({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
       const idString = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
-      placeholderPeer = {
-        toString: () => idString
-      }
-      maConn = this.metrics.trackStream({ stream: maConn, remotePeer: placeholderPeer })
+      setPeer({ toString: () => idString })
+      maConn = this.metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
     }
 
     log('Starting the inbound connection upgrade')
@@ -102,8 +103,8 @@ class Upgrader {
     }
 
     if (this.metrics) {
-      this.metrics.updatePlaceholder(placeholderPeer.toString(), remotePeer)
-      placeholderPeer.toString = remotePeer.toString.bind(remotePeer)
+      this.metrics.updatePlaceholder(proxyPeer, remotePeer)
+      setPeer(remotePeer)
     }
 
     log('Successfully upgraded inbound connection')
@@ -137,14 +138,14 @@ class Upgrader {
     let muxedConnection
     let cryptoProtocol
     let Muxer
-    let placeholderPeer
+    let setPeer
+    let proxyPeer
 
     if (this.metrics) {
+      ;({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
       const idString = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
-      placeholderPeer = {
-        toString: () => idString
-      }
-      maConn = this.metrics.trackStream({ stream: maConn, remotePeer: placeholderPeer })
+      setPeer({ toString: () => idString })
+      maConn = this.metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
     }
 
     log('Starting the outbound connection upgrade')
@@ -172,8 +173,8 @@ class Upgrader {
     }
 
     if (this.metrics) {
-      this.metrics.updatePlaceholder(placeholderPeer.toString(), remotePeer)
-      placeholderPeer.toString = remotePeer.toString.bind(remotePeer)
+      this.metrics.updatePlaceholder(proxyPeer, remotePeer)
+      setPeer(remotePeer)
     }
 
     log('Successfully upgraded outbound connection')

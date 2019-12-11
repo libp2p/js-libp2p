@@ -63,6 +63,7 @@
     "moving-average": "^1.0.0",
     "multiaddr": "^7.2.1",
     "multistream-select": "^0.15.0",
+    "mutable-proxy": "^1.0.0",
     "p-any": "^2.1.0",
     "p-fifo": "^1.0.0",
     "p-settle": "^3.1.0",
