@@ -171,7 +171,6 @@ class Metrics {
    * Replaces the `PeerId` string with the given `peerId`.
    * If stats are already being tracked for the given `peerId`, the
    * placeholder stats will be merged with the existing stats.
-   *
    * @param {string} placeholder A peerId string
    * @param {PeerId} peerId
    */
@@ -198,7 +197,7 @@ class Metrics {
   /**
    * Tracks data running through a given Duplex Iterable `stream`. If
    * the `peerId` is not provided, a placeholder string will be created and
-   * returned. This allow lazy tracking of a peer when the peer is not yet known.
+   * returned. This allows lazy tracking of a peer when the peer is not yet known.
    * When the `PeerId` is known, `Metrics.updatePlaceholder` should be called
    * with the placeholder string returned from here, and the known `PeerId`.
    *

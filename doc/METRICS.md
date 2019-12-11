@@ -28,7 +28,6 @@
 * Global stats tracking doesn't account for any per peer cleanup. (If we haven't talked with a peer in days or weeks, should we keep that info? There are memory implications in doing so.)
   * The current implementation uses an LRU cache of 50 old peers. So we will only retain the 50 most recently disconnected peers.
 * Total bandwidth - cumulative protocol bandwidth = crypto negotiation + cumulative multiselect negotiation
-* Stats to this point has been a push based system, it should be moved to poll. This would help avoid unnecessary events and allow users to better customize their metrics collection.
 * RemotePeer can't be reliably determined until crypto has been completed.
 * Metrics tracking per connection would provide better visibility into multiple connections to a single peer. Is this needed? Ideally we should be converging to a single connection. Converge on lowest hash?
 

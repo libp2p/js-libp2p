@@ -22,7 +22,7 @@ describe('Metrics', () => {
   let peerId2
 
   before(async () => {
-    [peerId, peerId2] = await createPeerId({ number: 2, fixture: true })
+    [peerId, peerId2] = await createPeerId({ number: 2 })
   })
 
   it('should not track data if not started', async () => {
