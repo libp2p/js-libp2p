@@ -1,3 +1,32 @@
+<a name="0.27.0-pre.0"></a>
+# [0.27.0-pre.0](https://github.com/libp2p/js-libp2p/compare/v0.26.2...v0.27.0-pre.0) (2019-12-12)
+
+
+### Bug Fixes
+
+* clean up peer discovery flow ([#494](https://github.com/libp2p/js-libp2p/issues/494)) ([f3eb1f1](https://github.com/libp2p/js-libp2p/commit/f3eb1f1))
+* clean up pending dials abort per feedback ([7c3371b](https://github.com/libp2p/js-libp2p/commit/7c3371b))
+* correct release readme ([c4bc00b](https://github.com/libp2p/js-libp2p/commit/c4bc00b))
+* examples readme typos ([#481](https://github.com/libp2p/js-libp2p/issues/481)) ([35ac02d](https://github.com/libp2p/js-libp2p/commit/35ac02d))
+* performance bottleneck in stat.js ([#463](https://github.com/libp2p/js-libp2p/issues/463)) ([93a1e42](https://github.com/libp2p/js-libp2p/commit/93a1e42))
+* release tokens as soon as they are available ([43440aa](https://github.com/libp2p/js-libp2p/commit/43440aa))
+* replace peerInfo addresses with listen addresses ([#485](https://github.com/libp2p/js-libp2p/issues/485)) ([acbbc0f](https://github.com/libp2p/js-libp2p/commit/acbbc0f))
+* token release logic ([1838a64](https://github.com/libp2p/js-libp2p/commit/1838a64))
+
+
+### Features
+
+* abort all pending dials on stop ([754fbc2](https://github.com/libp2p/js-libp2p/commit/754fbc2))
+* add early token recycling in ([24c6037](https://github.com/libp2p/js-libp2p/commit/24c6037))
+* add token based dialer ([f8540fa](https://github.com/libp2p/js-libp2p/commit/f8540fa))
+* discovery modules ([#486](https://github.com/libp2p/js-libp2p/issues/486)) ([997ee16](https://github.com/libp2p/js-libp2p/commit/997ee16))
+* discovery modules from transports should be added ([#510](https://github.com/libp2p/js-libp2p/issues/510)) ([af96dcc](https://github.com/libp2p/js-libp2p/commit/af96dcc))
+* peer store ([#470](https://github.com/libp2p/js-libp2p/issues/470)) ([f3e276e](https://github.com/libp2p/js-libp2p/commit/f3e276e))
+* registrar ([#471](https://github.com/libp2p/js-libp2p/issues/471)) ([797d8f0](https://github.com/libp2p/js-libp2p/commit/797d8f0))
+* support peer-id instances in peer store operations ([#491](https://github.com/libp2p/js-libp2p/issues/491)) ([11ed6bd](https://github.com/libp2p/js-libp2p/commit/11ed6bd))
+
+
+
 <a name="0.26.2"></a>
 ## [0.26.2](https://github.com/libp2p/js-libp2p/compare/v0.26.1...v0.26.2) (2019-09-24)
 
