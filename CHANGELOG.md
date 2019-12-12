@@ -1,3 +1,13 @@
+<a name="0.18.3"></a>
+## [0.18.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.18.2...v0.18.3) (2019-12-12)
+
+
+### Bug Fixes
+
+* dont use peer ids in sets ([#165](https://github.com/libp2p/js-libp2p-kad-dht/issues/165)) ([e12e540](https://github.com/libp2p/js-libp2p-kad-dht/commit/e12e540))
+
+
+
 <a name="0.18.2"></a>
 ## [0.18.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.18.1...v0.18.2) (2019-12-06)
 
