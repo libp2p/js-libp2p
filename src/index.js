@@ -15,6 +15,7 @@ const { getPeerInfo, getPeerInfoRemote } = require('./get-peer-info')
 const { validate: validateConfig } = require('./config')
 const { codes } = require('./errors')
 
+const ConnectionManager = require('./connection-manager')
 const Circuit = require('./circuit')
 const Dialer = require('./dialer')
 const Metrics = require('./metrics')
@@ -63,6 +64,7 @@ class Libp2p extends EventEmitter {
       onConnection: (connection) => {
         const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer))
         this.registrar.onConnect(peerInfo, connection)
+        this.connectionManager.onConnect(connection)
         this.emit('peer:connect', peerInfo)
 
         // Run identify for every connection
@@ -74,6 +76,7 @@ class Libp2p extends EventEmitter {
       onConnectionEnd: (connection) => {
         const peerInfo = getPeerInfo(connection.remotePeer)
         this.registrar.onDisconnect(peerInfo, connection)
+        this.connectionManager.onDisconnect(connection)
 
         // If there are no connections to the peer, disconnect
         if (!this.registrar.getConnection(peerInfo)) {
@@ -87,6 +90,9 @@ class Libp2p extends EventEmitter {
     this.registrar = new Registrar({ peerStore: this.peerStore })
     this.handle = this.handle.bind(this)
     this.registrar.handle = this.handle
+
+    // Create the Connection Manager
+    this.connectionManager = new ConnectionManager(this, this._options.connectionManager)
 
     // Setup the transport manager
     this.transportManager = new TransportManager({
@@ -208,6 +214,7 @@ class Libp2p extends EventEmitter {
     log('libp2p is stopping')
 
     try {
+      this.connectionManager.stop()
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
         this._dht && this._dht.stop(),
@@ -225,6 +232,7 @@ class Libp2p extends EventEmitter {
         this.emit('error', err)
       }
     }
+    this._isStarted = false
     log('libp2p has stopped')
   }
 
@@ -290,7 +298,7 @@ class Libp2p extends EventEmitter {
    */
   hangUp (peer) {
     return Promise.all(
-      this.registrar.connections.get(peer.toB58String()).map(connection => {
+      this.registrar.connections.get(peer.toString()).map(connection => {
         return connection.close()
       })
     )
@@ -377,6 +385,8 @@ class Libp2p extends EventEmitter {
    */
   _onDidStart () {
     this._isStarted = true
+
+    this.connectionManager.start()
 
     this.peerStore.on('peer', peerInfo => {
       this.emit('peer:discovery', peerInfo)

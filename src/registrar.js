@@ -74,7 +74,7 @@ class Registrar {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
     assert(Connection.isConnection(conn), 'conn must be an instance of interface-connection')
 
-    const id = peerInfo.id.toB58String()
+    const id = peerInfo.id.toString()
     const storedConn = this.connections.get(id)
 
     if (storedConn) {
@@ -95,7 +95,7 @@ class Registrar {
   onDisconnect (peerInfo, connection, error) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
 
-    const id = peerInfo.id.toB58String()
+    const id = peerInfo.id.toString()
     let storedConn = this.connections.get(id)
 
     if (storedConn && storedConn.length > 1) {
@@ -106,7 +106,7 @@ class Registrar {
         topology.disconnect(peerInfo, error)
       }
 
-      this.connections.delete(peerInfo.id.toB58String())
+      this.connections.delete(peerInfo.id.toString())
     }
   }
 
@@ -118,7 +118,7 @@ class Registrar {
   getConnection (peerInfo) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
 
-    const connections = this.connections.get(peerInfo.id.toB58String())
+    const connections = this.connections.get(peerInfo.id.toString())
     // TODO: what should we return
     return connections ? connections[0] : null
   }
