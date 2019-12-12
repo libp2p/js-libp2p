@@ -51,8 +51,6 @@ class Libp2p extends EventEmitter {
     this._transport = [] // Transport instances/references
     this._discovery = new Map() // Discovery service instances/references
 
-    this.peerStore = new PeerStore()
-
     if (this._options.metrics.enabled) {
       this.metrics = new Metrics(this._options.metrics)
     }
