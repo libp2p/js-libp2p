@@ -15,10 +15,12 @@
     - [Examples](#examples)
       - [Basic setup](#basic-setup)
       - [Customizing Peer Discovery](#customizing-peer-discovery)
+      - [Setup webrtc transport and discovery](#setup-webrtc-transport-and-discovery)
       - [Customizing Pubsub](#customizing-pubsub)
       - [Customizing DHT](#customizing-dht)
       - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
       - [Setup with Relay](#setup-with-relay)
+      - [Configuring Connection Manager](#configuring-connection-manager)
       - [Configuring Metrics](#configuring-metrics)
   - [Configuration examples](#configuration-examples)
 
@@ -408,6 +410,37 @@ const node = await Libp2p.create({
         active: true           // You will attempt to dial destination peers if you are not connected to them
       }
     }
+  }
+})
+```
+
+#### Configuring Connection Manager
+
+The Connection Manager prunes Connections in libp2p whenever certain limits are exceeded. If Metrics are enabled, you can also configure the Connection Manager to monitor the bandwidth of libp2p and prune connections as needed. You can read more about what Connection Manager does at [./CONNECTION_MANAGER.md](./CONNECTION_MANAGER.md). The configuration values below show the defaults for Connection Manager. See [./CONNECTION_MANAGER.md](./CONNECTION_MANAGER.md#options) for a full description of the parameters.
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO]
+  },
+  connectionManager: {
+    maxConnections: Infinity,
+    minConnections: 0,
+    pollInterval: 2000,
+    defaultPeerValue: 1,
+    // The below values will only be taken into account when Metrics are enabled
+    maxData: Infinity,
+    maxSentData: Infinity,
+    maxReceivedData: Infinity,
+    maxEventLoopDelay: Infinity,
+    movingAverageInterval: 60000
   }
 })
 ```
