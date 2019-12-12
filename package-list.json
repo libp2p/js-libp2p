@@ -51,7 +51,6 @@
     ["libp2p/js-libp2p-crypto-secp256k1", "libp2p-crypto-secp256k1"],
 
     "data types",
-    ["libp2p/js-peer-book", "peer-book"],
     ["libp2p/js-peer-id", "peer-id"],
     ["libp2p/js-peer-info", "peer-info"],
 
