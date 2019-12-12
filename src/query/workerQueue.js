@@ -128,7 +128,7 @@ class WorkerQueue {
 
     // The paths must be disjoint, meaning that no two paths in the Query may
     // traverse the same peer
-    if (this.run.peersSeen.has(peer)) {
+    if (this.run.peersSeen.has(peer.toB58String())) {
       return
     }
 
@@ -158,10 +158,10 @@ class WorkerQueue {
     }
 
     // Check if another path has queried this peer in the mean time
-    if (this.run.peersSeen.has(peer)) {
+    if (this.run.peersSeen.has(peer.toB58String())) {
       return
     }
-    this.run.peersSeen.add(peer)
+    this.run.peersSeen.add(peer.toB58String())
 
     // Execute the query on the next peer
     this.log('queue:work')

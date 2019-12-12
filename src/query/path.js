@@ -73,7 +73,7 @@ class Path {
 
     // The paths must be disjoint, meaning that no two paths in the Query may
     // traverse the same peer
-    if (this.run.peersSeen.has(peer)) {
+    if (this.run.peersSeen.has(peer.toB58String())) {
       return
     }
 
