@@ -92,7 +92,7 @@ Required keys in the `options` object:
 
 </details>
 
-Once you have a libp2p instance, you are able to listen to several events it emmits, so that you can be noticed of relevant network events.
+Once you have a libp2p instance, you are able to listen to several events it emits, so that you can be noticed of relevant network events.
 
 <details><summary>Events</summary>
 
