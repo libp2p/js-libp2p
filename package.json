@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.26.2",
+  "version": "0.27.0-pre.0",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -116,6 +116,7 @@
     "Chris Dostert <chrisdostert@users.noreply.github.com>",
     "Daijiro Wachi <daijiro.wachi@gmail.com>",
     "David Dias <daviddias.p@gmail.com>",
+    "Didrik Nordström <didrik.nordstrom@gmail.com>",
     "Diogo Silva <fsdiogo@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "Elven <mon.samuel@qq.com>",
@@ -152,10 +153,12 @@
     "Yusef Napora <yusef@napora.org>",
     "Zane Starr <zcstarr@gmail.com>",
     "a1300 <a1300@users.noreply.github.com>",
+    "dirkmc <dirkmdev@gmail.com>",
     "ebinks <elizabethjbinks@gmail.com>",
     "greenkeeperio-bot <support@greenkeeper.io>",
     "isan_rivkin <isanrivkin@gmail.com>",
     "mayerwin <mayerwin@users.noreply.github.com>",
+    "phillmac <phillmac@users.noreply.github.com>",
     "swedneck <40505480+swedneck@users.noreply.github.com>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
   ]
