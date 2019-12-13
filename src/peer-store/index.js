@@ -36,11 +36,15 @@ class PeerStore extends EventEmitter {
 
   /**
    * Stores the peerInfo of a new peer.
-   * If already exist, its info is updated.
+   * If already exist, its info is updated. If `silent` is set to
+   * true, no 'peer' event will be emitted. This can be useful if you
+   * are already in the process of dialing the peer. The peer is technically
+   * known, but may not have been added to the PeerStore yet.
    * @param {PeerInfo} peerInfo
+   * @param {boolean} [silent] (Default=false)
    * @return {PeerInfo}
    */
-  put (peerInfo) {
+  put (peerInfo, silent = false) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
 
     let peer
@@ -50,8 +54,8 @@ class PeerStore extends EventEmitter {
     } else {
       peer = this.add(peerInfo)
 
-      // Emit the new peer found
-      this.emit('peer', peerInfo)
+      // Emit the peer if silent = false
+      !silent && this.emit('peer', peerInfo)
     }
     return peer
   }
@@ -219,13 +223,12 @@ class PeerStore extends EventEmitter {
   }
 
   /**
-   * Returns the known multiaddrs for a given `PeerId`
-   * @param {PeerId} peerId
+   * Returns the known multiaddrs for a given `PeerInfo`
+   * @param {PeerInfo} peer
    * @returns {Array<Multiaddr>}
    */
-  multiaddrsForPeer (peerId) {
-    const peerInfo = this.get(peerId.toB58String())
-    return peerInfo.multiaddrs.toArray()
+  multiaddrsForPeer (peer) {
+    return this.put(peer, true).multiaddrs.toArray()
   }
 }
 

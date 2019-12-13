@@ -6,12 +6,11 @@ const log = debug('libp2p')
 log.error = debug('libp2p:error')
 
 const PeerInfo = require('peer-info')
-const multiaddr = require('multiaddr')
 
 const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
 const pubsub = require('./pubsub')
-const { getPeerInfo, getPeerInfoRemote } = require('./get-peer-info')
+const { getPeerInfo } = require('./get-peer-info')
 const { validate: validateConfig } = require('./config')
 const { codes } = require('./errors')
 
@@ -60,7 +59,7 @@ class Libp2p extends EventEmitter {
       localPeer: this.peerInfo.id,
       metrics: this.metrics,
       onConnection: (connection) => {
-        const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer))
+        const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer), true)
         this.registrar.onConnect(peerInfo, connection)
         this.connectionManager.onConnect(connection)
         this.emit('peer:connect', peerInfo)
@@ -72,7 +71,7 @@ class Libp2p extends EventEmitter {
         }
       },
       onConnectionEnd: (connection) => {
-        const peerInfo = getPeerInfo(connection.remotePeer)
+        const peerInfo = Dialer.getDialable(connection.remotePeer)
         this.registrar.onDisconnect(peerInfo, connection)
         this.connectionManager.onDisconnect(connection)
 
@@ -264,27 +263,22 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<Connection|*>}
    */
   async dialProtocol (peer, protocols, options) {
+    const dialable = Dialer.getDialable(peer)
     let connection
-    if (multiaddr.isMultiaddr(peer)) {
-      connection = await this.dialer.connectToMultiaddr(peer, options)
-    } else {
-      peer = await getPeerInfoRemote(peer, this)
-      connection = await this.dialer.connectToPeer(peer.id, options)
+    if (PeerInfo.isPeerInfo(dialable)) {
+      this.peerStore.put(dialable, true)
+      connection = this.registrar.getConnection(dialable)
     }
 
-    const peerInfo = getPeerInfo(connection.remotePeer)
+    if (!connection) {
+      connection = await this.dialer.connectToPeer(dialable, options)
+    }
 
     // If a protocol was provided, create a new stream
     if (protocols) {
-      const stream = await connection.newStream(protocols)
-
-      peerInfo.protocols.add(stream.protocol)
-      this.peerStore.put(peerInfo)
-
-      return stream
+      return connection.newStream(protocols)
     }
 
-    this.peerStore.put(peerInfo)
     return connection
   }
 
@@ -426,11 +420,10 @@ class Libp2p extends EventEmitter {
     // If auto dialing is on and we have no connection to the peer, check if we should dial
     if (this._config.peerDiscovery.autoDial === true && !this.registrar.getConnection(peerInfo)) {
       const minPeers = this._options.connectionManager.minPeers || 0
-      // TODO: This does not account for multiple connections to a peer
-      if (minPeers > this.registrar.connections.size) {
-        log('connecting to discovered peer')
+      if (minPeers > this.connectionManager._connections.size) {
+        log('connecting to discovered peer %s', peerInfo.id.toString(), this.connectionManager._connections.size)
         try {
-          await this.dialer.connectToPeer(peerInfo.id)
+          await this.dialer.connectToPeer(peerInfo)
         } catch (err) {
           log.error('could not connect to discovered peer', err)
         }

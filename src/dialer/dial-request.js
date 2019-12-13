@@ -29,6 +29,7 @@ class DialRequest {
     this.addrs = addrs
     this.dialer = dialer
     this.dialAction = dialAction
+    this.id = Math.random().toFixed(5)
   }
 
   /**
@@ -49,6 +50,7 @@ class DialRequest {
     const dialAbortControllers = this.addrs.map(() => new AbortController())
     let completedDials = 0
 
+    log('%s starting dial to %d addresses', this.id, this.addrs.length)
     try {
       return await pAny(this.addrs.map(async (addr, i) => {
         const token = await tokenHolder.shift() // get token
@@ -68,6 +70,7 @@ class DialRequest {
           }
         }
 
+        log('%s returning connection', this.id)
         return conn
       }))
     } finally {

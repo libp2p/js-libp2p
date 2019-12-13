@@ -4,6 +4,8 @@ const multiaddr = require('multiaddr')
 const errCode = require('err-code')
 const TimeoutController = require('timeout-abort-controller')
 const anySignal = require('any-signal')
+const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
 const debug = require('debug')
 const log = debug('libp2p:dialer')
 log.error = debug('libp2p:dialer:error')
@@ -38,7 +40,7 @@ class Dialer {
     this.timeout = timeout
     this.perPeerLimit = perPeerLimit
     this.tokens = [...new Array(concurrency)].map((_, index) => index)
-    this._pendingDials = new Set()
+    this._pendingDials = new Map()
   }
 
   /**
@@ -56,23 +58,68 @@ class Dialer {
   }
 
   /**
-   * Connects to the first success of a given list of `Multiaddr`. `addrs` should
-   * include the id of the peer being dialed, it will be used for encryption verification.
+   * Connects to a given `PeerId` or `Multiaddr` by dialing all of its known addresses.
+   * The dial to the first address that is successfully able to upgrade a connection
+   * will be used.
    *
-   * @param {Array<Multiaddr>|Multiaddr} addrs
+   * @param {PeerInfo|Multiaddr} peer The peer to dial
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] An AbortController signal
    * @returns {Promise<Connection>}
    */
-  async connectToMultiaddr (addrs, options = {}) {
-    if (!Array.isArray(addrs)) addrs = [multiaddr(addrs)]
+  async connectToPeer (peer, options = {}) {
+    const dialTarget = this._createDialTarget(peer)
+    if (dialTarget.addrs.length === 0) {
+      throw errCode(new Error('The dial request has no addresses'), 'ERR_NO_DIAL_MULTIADDRS')
+    }
+    const pendingDial = this._pendingDials.get(dialTarget.id) || this._createPendingDial(dialTarget, options)
 
+    try {
+      const connection = await pendingDial.promise
+      log('dial succeeded to %s', dialTarget.id)
+      return connection
+    } catch (err) {
+      // Error is a timeout
+      if (pendingDial.controller.signal.aborted) {
+        err.code = codes.ERR_TIMEOUT
+      }
+      log.error(err)
+      throw err
+    } finally {
+      pendingDial.destroy()
+    }
+  }
+
+  /**
+   * Creates a DialTarget. The DialTarget is used to create and track
+   * the DialRequest to a given peer.
+   * @param {PeerInfo|Multiaddr} peer A PeerId or Multiaddr
+   * @returns {{ id: string, addrs: Multiaddr[] }}
+   */
+  _createDialTarget (peer) {
+    const dialable = Dialer.getDialable(peer)
+    if (multiaddr.isMultiaddr(dialable)) {
+      return {
+        id: dialable.toString(),
+        addrs: [dialable]
+      }
+    }
+    // Check the peerstore first, and then fallback to the instance
+    const addrs = this.peerStore.multiaddrsForPeer(dialable)
+    return {
+      id: dialable.id.toString(),
+      addrs
+    }
+  }
+
+  _createPendingDial (dialTarget, options) {
     const dialAction = (addr, options) => {
       if (options.signal.aborted) throw errCode(new Error('already aborted'), 'ERR_ALREADY_ABORTED')
       return this.transportManager.dial(addr, options)
     }
+
     const dialRequest = new DialRequest({
-      addrs,
+      addrs: dialTarget.addrs,
       dialAction,
       dialer: this
     })
@@ -83,45 +130,17 @@ class Dialer {
     options.signal && signals.push(options.signal)
     const signal = anySignal(signals)
 
-    const dial = {
+    const pendingDial = {
       dialRequest,
-      controller: timeoutController
-    }
-    this._pendingDials.add(dial)
-
-    try {
-      const dialResult = await dialRequest.run({ ...options, signal })
-      log('dial succeeded to %s', dialResult.remoteAddr)
-      return dialResult
-    } catch (err) {
-      // Error is a timeout
-      if (timeoutController.signal.aborted) {
-        err.code = codes.ERR_TIMEOUT
+      controller: timeoutController,
+      promise: dialRequest.run({ ...options, signal }),
+      destroy: () => {
+        timeoutController.clear()
+        this._pendingDials.delete(dialTarget.id)
       }
-      log.error(err)
-      throw err
-    } finally {
-      timeoutController.clear()
-      this._pendingDials.delete(dial)
     }
-  }
-
-  /**
-   * Connects to a given `PeerInfo` or `PeerId` by dialing all of its known addresses.
-   * The dial to the first address that is successfully able to upgrade a connection
-   * will be used.
-   *
-   * @param {PeerId} peerId The remote peer id to dial
-   * @param {object} [options]
-   * @param {AbortSignal} [options.signal] An AbortController signal
-   * @returns {Promise<Connection>}
-   */
-  connectToPeer (peerId, options = {}) {
-    const addrs = this.peerStore.multiaddrsForPeer(peerId)
-
-    // TODO: ensure the peer id is on the multiaddr
-
-    return this.connectToMultiaddr(addrs, options)
+    this._pendingDials.set(dialTarget.id, pendingDial)
+    return pendingDial
   }
 
   getTokens (num) {
@@ -136,6 +155,37 @@ class Dialer {
     if (this.tokens.indexOf(token) > -1) return
     log('token %d released', token)
     this.tokens.push(token)
+  }
+
+  /**
+   * Converts the given `peer` into a `PeerInfo` or `Multiaddr`.
+   * @static
+   * @param {PeerInfo|PeerId|Multiaddr|string} peer
+   * @returns {PeerInfo|Multiaddr}
+   */
+  static getDialable (peer) {
+    if (PeerInfo.isPeerInfo(peer)) return peer
+    if (typeof peer === 'string') {
+      peer = multiaddr(peer)
+    }
+
+    let addr
+    if (multiaddr.isMultiaddr(peer)) {
+      addr = peer
+      try {
+        peer = PeerId.createFromCID(peer.getPeerId())
+      } catch (err) {
+        // Couldn't get the PeerId, just use the address
+        return peer
+      }
+    }
+
+    if (PeerId.isPeerId(peer)) {
+      peer = new PeerInfo(peer)
+    }
+
+    addr && peer.multiaddrs.add(addr)
+    return peer
   }
 }
 
