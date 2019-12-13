@@ -134,6 +134,8 @@ describe('Upgrader', () => {
     ])
 
     expect(connections).to.have.length(2)
+
+    await expect(connections[0].newStream('/echo/1.0.0')).to.be.rejected()
   })
 
   it('should use a private connection protector when provided', async () => {

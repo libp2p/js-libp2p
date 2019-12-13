@@ -216,6 +216,18 @@ class Upgrader {
     Muxer,
     remotePeer
   }) {
+    const _timeline = maConn.timeline
+    maConn.timeline = new Proxy(_timeline, {
+      set: (...args) => {
+        if (args[1] === 'close' && args[2] && !_timeline.close) {
+          connection.stat.status = 'closed'
+          this.onConnectionEnd(connection)
+        }
+
+        return Reflect.set(...args)
+      }
+    })
+
     if (!Muxer) {
       // Create the connection
       maConn.timeline.upgraded = Date.now()
@@ -230,8 +242,12 @@ class Upgrader {
           timeline: maConn.timeline,
           encryption: cryptoProtocol
         },
-        newStream: () => { throw new Error('connection is not multiplexed') },
-        getStreams: () => { throw new Error('connection is not multiplexed') },
+        newStream: () => {
+          throw errCode(new Error('connection is not multiplexed'), 'ERR_CONNECTION_NOT_MULTIPLEXED')
+        },
+        getStreams: () => {
+          throw errCode(new Error('connection is not multiplexed'), 'ERR_CONNECTION_NOT_MULTIPLEXED')
+        },
         close: err => maConn.close(err)
       })
 
@@ -279,17 +295,6 @@ class Upgrader {
     pipe(upgradedConn, muxer, upgradedConn)
 
     maConn.timeline.upgraded = Date.now()
-    const _timeline = maConn.timeline
-    maConn.timeline = new Proxy(_timeline, {
-      set: (...args) => {
-        if (args[1] === 'close' && args[2] && !_timeline.close) {
-          connection.stat.status = 'closed'
-          this.onConnectionEnd(connection)
-        }
-
-        return Reflect.set(...args)
-      }
-    })
 
     // Create the connection
     const connection = new Connection({
