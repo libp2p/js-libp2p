@@ -91,10 +91,17 @@ class Dialer {
   }
 
   /**
+   * @typedef DialTarget
+   * @property {string} id
+   * @property {Multiaddr[]} addrs
+   */
+
+  /**
    * Creates a DialTarget. The DialTarget is used to create and track
    * the DialRequest to a given peer.
+   * @private
    * @param {PeerInfo|Multiaddr} peer A PeerId or Multiaddr
-   * @returns {{ id: string, addrs: Multiaddr[] }}
+   * @returns {DialTarget}
    */
   _createDialTarget (peer) {
     const dialable = Dialer.getDialable(peer)
@@ -112,6 +119,22 @@ class Dialer {
     }
   }
 
+  /**
+   * @typedef PendingDial
+   * @property {DialRequest} dialRequest
+   * @property {TimeoutController} controller
+   * @property {Promise} promise
+   * @property {function():void} destroy
+   */
+
+  /**
+   * Creates a PendingDial that wraps the underlying DialRequest
+   * @private
+   * @param {DialTarget} dialTarget
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal] An AbortController signal
+   * @returns {PendingDial}
+   */
   _createPendingDial (dialTarget, options) {
     const dialAction = (addr, options) => {
       if (options.signal.aborted) throw errCode(new Error('already aborted'), 'ERR_ALREADY_ABORTED')

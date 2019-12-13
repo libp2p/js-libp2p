@@ -421,7 +421,7 @@ class Libp2p extends EventEmitter {
     if (this._config.peerDiscovery.autoDial === true && !this.registrar.getConnection(peerInfo)) {
       const minPeers = this._options.connectionManager.minPeers || 0
       if (minPeers > this.connectionManager._connections.size) {
-        log('connecting to discovered peer %s', peerInfo.id.toString(), this.connectionManager._connections.size)
+        log('connecting to discovered peer %s', peerInfo.id.toString())
         try {
           await this.dialer.connectToPeer(peerInfo)
         } catch (err) {
