@@ -22,6 +22,7 @@
   * [`pubsub.publish`](#pubsubpublish)
   * [`pubsub.subscribe`](#pubsubsubscribe)
   * [`pubsub.unsubscribe`](#pubsubunsubscribe)
+  * [`connectionManager.setPeerValue`](#connectionmanagersetpeervalue)
   * [`metrics.global`](#metricsglobal)
   * [`metrics.peers`](#metricspeers)
   * [`metrics.protocols`](#metricsprotocols)
@@ -666,12 +667,8 @@ Enables users to change the value of certain peers in a range of 0 to 1. Peers w
 #### Example
 
 ```js
-const topic = 'topic'
-const handler = (msg) => {
-  // msg.data - pubsub data received
-}
-
-libp2p.pubsub.unsubscribe(topic, handler)
+libp2p.connectionManager.setPeerValue(highPriorityPeerId, 1)
+libp2p.connectionManager.setPeerValue(lowPriorityPeerId, 0)
 ```
 
 ### metrics.global
