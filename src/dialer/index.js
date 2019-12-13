@@ -111,7 +111,6 @@ class Dialer {
         addrs: [dialable]
       }
     }
-    // Check the peerstore first, and then fallback to the instance
     const addrs = this.peerStore.multiaddrsForPeer(dialable)
     return {
       id: dialable.id.toString(),
