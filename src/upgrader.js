@@ -64,7 +64,7 @@ class Upgrader {
   async upgradeInbound (maConn) {
     let encryptedConn
     let remotePeer
-    let muxedConnection
+    let upgradedConn
     let Muxer
     let cryptoProtocol
     let setPeer
@@ -94,7 +94,11 @@ class Upgrader {
       } = await this._encryptInbound(this.localPeer, protectedConn, this.cryptos))
 
       // Multiplex the connection
-      ;({ stream: muxedConnection, Muxer } = await this._multiplexInbound(encryptedConn, this.muxers))
+      if (this.muxers.size) {
+        ({ stream: upgradedConn, Muxer } = await this._multiplexInbound(encryptedConn, this.muxers))
+      } else {
+        upgradedConn = encryptedConn
+      }
     } catch (err) {
       log.error('Failed to upgrade inbound connection', err)
       await maConn.close(err)
@@ -112,7 +116,7 @@ class Upgrader {
       cryptoProtocol,
       direction: 'inbound',
       maConn,
-      muxedConnection,
+      upgradedConn,
       Muxer,
       remotePeer
     })
@@ -134,7 +138,7 @@ class Upgrader {
 
     let encryptedConn
     let remotePeer
-    let muxedConnection
+    let upgradedConn
     let cryptoProtocol
     let Muxer
     let setPeer
@@ -164,7 +168,11 @@ class Upgrader {
       } = await this._encryptOutbound(this.localPeer, protectedConn, remotePeerId, this.cryptos))
 
       // Multiplex the connection
-      ;({ stream: muxedConnection, Muxer } = await this._multiplexOutbound(encryptedConn, this.muxers))
+      if (this.muxers.size) {
+        ({ stream: upgradedConn, Muxer } = await this._multiplexOutbound(encryptedConn, this.muxers))
+      } else {
+        upgradedConn = encryptedConn
+      }
     } catch (err) {
       log.error('Failed to upgrade outbound connection', err)
       await maConn.close(err)
@@ -182,7 +190,7 @@ class Upgrader {
       cryptoProtocol,
       direction: 'outbound',
       maConn,
-      muxedConnection,
+      upgradedConn,
       Muxer,
       remotePeer
     })
@@ -195,7 +203,7 @@ class Upgrader {
    * @param {string} cryptoProtocol The crypto protocol that was negotiated
    * @param {string} direction One of ['inbound', 'outbound']
    * @param {MultiaddrConnection} maConn The transport layer connection
-   * @param {*} muxedConnection A duplex connection returned from multiplexer selection
+   * @param {*} upgradedConn A duplex connection returned from multiplexer selection
    * @param {Muxer} Muxer The muxer to be used for muxing
    * @param {PeerId} remotePeer The peer the connection is with
    * @returns {Connection}
@@ -204,10 +212,34 @@ class Upgrader {
     cryptoProtocol,
     direction,
     maConn,
-    muxedConnection,
+    upgradedConn,
     Muxer,
     remotePeer
   }) {
+    if (!Muxer) {
+      // Create the connection
+      maConn.timeline.upgraded = Date.now()
+
+      const connection = new Connection({
+        localAddr: maConn.localAddr,
+        remoteAddr: maConn.remoteAddr,
+        localPeer: this.localPeer,
+        remotePeer: remotePeer,
+        stat: {
+          direction,
+          timeline: maConn.timeline,
+          encryption: cryptoProtocol
+        },
+        newStream: () => { throw new Error('connection is not multiplexed') },
+        getStreams: () => { throw new Error('connection is not multiplexed') },
+        close: err => maConn.close(err)
+      })
+
+      this.onConnection(connection)
+
+      return connection
+    }
+
     // Create the muxer
     const muxer = new Muxer({
       // Run anytime a remote stream is created
@@ -244,7 +276,7 @@ class Upgrader {
     }
 
     // Pipe all data through the muxer
-    pipe(muxedConnection, muxer, muxedConnection)
+    pipe(upgradedConn, muxer, upgradedConn)
 
     maConn.timeline.upgraded = Date.now()
     const _timeline = maConn.timeline
