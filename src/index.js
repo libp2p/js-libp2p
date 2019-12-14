@@ -64,6 +64,13 @@ class Libp2p extends EventEmitter {
         this.connectionManager.onConnect(connection)
         this.emit('peer:connect', peerInfo)
 
+        log(
+          'Connect= %s:%s > Total Connections: %d; Peers Connected: %d',
+          this.peerInfo.id.toB58String().slice(0, 8),
+          connection.remotePeer.toB58String().slice(0,8),
+          this.connectionManager._connections.size,
+          this.registrar.connections.size
+        )
         // Run identify for every connection
         if (this.identifyService) {
           this.identifyService.identify(connection, connection.remotePeer)
@@ -75,6 +82,13 @@ class Libp2p extends EventEmitter {
         this.registrar.onDisconnect(peerInfo, connection)
         this.connectionManager.onDisconnect(connection)
 
+        log(
+          'Disconnect= %s:%s > Total Connections: %d; Peers Connected: %d',
+          this.peerInfo.id.toB58String().slice(0, 8),
+          connection.remotePeer.toB58String().slice(0,8),
+          this.connectionManager._connections.size,
+          this.registrar.connections.size
+        )
         // If there are no connections to the peer, disconnect
         if (!this.registrar.getConnection(peerInfo)) {
           this.emit('peer:disconnect', peerInfo)

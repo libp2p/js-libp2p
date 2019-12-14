@@ -251,7 +251,7 @@ class Upgrader {
     maConn.timeline = new Proxy(_timeline, {
       set: (...args) => {
         if (args[1] === 'close' && args[2] && !_timeline.close) {
-          connection.close()
+          connection.stat.status = 'closed'
           this.onConnectionEnd(connection)
         }
 
