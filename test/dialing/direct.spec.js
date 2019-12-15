@@ -28,6 +28,7 @@ const Peers = require('../fixtures/peers')
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const mockUpgrader = require('../utils/mockUpgrader')
 const createMockConnection = require('../utils/mockConnection')
+const { createPeerId } = require('../utils/creators/peer')
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws')
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -80,17 +81,27 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   it('should be able to connect to a remote node via its multiaddr', async () => {
-    const dialer = new Dialer({ transportManager: localTM })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore: {
+        multiaddrsForPeer: () => [remoteAddr]
+      }
+    })
 
-    const connection = await dialer.connectToMultiaddr(remoteAddr)
+    const connection = await dialer.connectToPeer(remoteAddr)
     expect(connection).to.exist()
     await connection.close()
   })
 
   it('should be able to connect to a remote node via its stringified multiaddr', async () => {
-    const dialer = new Dialer({ transportManager: localTM })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore: {
+        multiaddrsForPeer: () => [remoteAddr]
+      }
+    })
 
-    const connection = await dialer.connectToMultiaddr(remoteAddr.toString())
+    const connection = await dialer.connectToPeer(remoteAddr.toString())
     expect(connection).to.exist()
     await connection.close()
   })
@@ -98,7 +109,7 @@ describe('Dialing (direct, WebSockets)', () => {
   it('should fail to connect to an unsupported multiaddr', async () => {
     const dialer = new Dialer({ transportManager: localTM })
 
-    await expect(dialer.connectToMultiaddr(unsupportedAddr))
+    await expect(dialer.connectToPeer(unsupportedAddr))
       .to.eventually.be.rejectedWith(AggregateError)
       .and.to.have.nested.property('._errors[0].code', ErrorCodes.ERR_TRANSPORT_DIAL_FAILED)
   })
@@ -134,7 +145,10 @@ describe('Dialing (direct, WebSockets)', () => {
   it('should abort dials on queue task timeout', async () => {
     const dialer = new Dialer({
       transportManager: localTM,
-      timeout: 50
+      timeout: 50,
+      peerStore: {
+        multiaddrsForPeer: () => [remoteAddr]
+      }
     })
     sinon.stub(localTM, 'dial').callsFake(async (addr, options) => {
       expect(options.signal).to.exist()
@@ -145,7 +159,7 @@ describe('Dialing (direct, WebSockets)', () => {
       throw new AbortError()
     })
 
-    await expect(dialer.connectToMultiaddr(remoteAddr))
+    await expect(dialer.connectToPeer(remoteAddr))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
   })
@@ -153,7 +167,10 @@ describe('Dialing (direct, WebSockets)', () => {
   it('should dial to the max concurrency', async () => {
     const dialer = new Dialer({
       transportManager: localTM,
-      concurrency: 2
+      concurrency: 2,
+      peerStore: {
+        multiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
+      }
     })
 
     expect(dialer.tokens).to.have.length(2)
@@ -161,8 +178,9 @@ describe('Dialing (direct, WebSockets)', () => {
     const deferredDial = pDefer()
     sinon.stub(localTM, 'dial').callsFake(() => deferredDial.promise)
 
+    const [peerId] = await createPeerId()
     // Perform 3 multiaddr dials
-    dialer.connectToMultiaddr([remoteAddr, remoteAddr, remoteAddr])
+    dialer.connectToPeer(peerId)
 
     // Let the call stack run
     await delay(0)
@@ -185,7 +203,10 @@ describe('Dialing (direct, WebSockets)', () => {
   it('.destroy should abort pending dials', async () => {
     const dialer = new Dialer({
       transportManager: localTM,
-      concurrency: 2
+      concurrency: 2,
+      peerStore: {
+        multiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
+      }
     })
 
     expect(dialer.tokens).to.have.length(2)
@@ -201,7 +222,8 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     // Perform 3 multiaddr dials
-    const dialPromise = dialer.connectToMultiaddr([remoteAddr, remoteAddr, remoteAddr])
+    const [peerId] = await createPeerId()
+    const dialPromise = dialer.connectToPeer(peerId)
 
     // Let the call stack run
     await delay(0)
@@ -265,7 +287,8 @@ describe('Dialing (direct, WebSockets)', () => {
         }
       })
 
-      sinon.spy(libp2p.dialer, 'connectToMultiaddr')
+      sinon.spy(libp2p.dialer, 'connectToPeer')
+      sinon.spy(libp2p.peerStore, 'put')
 
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
@@ -273,7 +296,8 @@ describe('Dialing (direct, WebSockets)', () => {
       expect(stream).to.exist()
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
-      expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
+      expect(libp2p.dialer.connectToPeer.callCount).to.equal(1)
+      expect(libp2p.peerStore.put.callCount).to.be.at.least(1)
     })
 
     it('should run identify automatically after connecting', async () => {
@@ -290,7 +314,7 @@ describe('Dialing (direct, WebSockets)', () => {
       sinon.spy(libp2p.peerStore, 'replace')
       sinon.spy(libp2p.upgrader, 'onConnection')
 
-      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
+      const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
 
       // Wait for onConnection to be called

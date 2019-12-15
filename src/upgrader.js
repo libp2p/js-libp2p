@@ -98,7 +98,6 @@ class Upgrader {
     } catch (err) {
       log.error('Failed to upgrade inbound connection', err)
       await maConn.close(err)
-      // TODO: We shouldn't throw here, as there isn't anything to catch the failure
       throw err
     }
 
@@ -248,9 +247,11 @@ class Upgrader {
     pipe(muxedConnection, muxer, muxedConnection)
 
     maConn.timeline.upgraded = Date.now()
-    const timelineProxy = new Proxy(maConn.timeline, {
+    const _timeline = maConn.timeline
+    maConn.timeline = new Proxy(_timeline, {
       set: (...args) => {
-        if (args[1] === 'close' && args[2]) {
+        if (args[1] === 'close' && args[2] && !_timeline.close) {
+          connection.stat.status = 'closed'
           this.onConnectionEnd(connection)
         }
 
@@ -266,7 +267,7 @@ class Upgrader {
       remotePeer: remotePeer,
       stat: {
         direction,
-        timeline: timelineProxy,
+        timeline: maConn.timeline,
         multiplexer: Muxer.multicodec,
         encryption: cryptoProtocol
       },

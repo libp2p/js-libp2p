@@ -200,7 +200,7 @@ describe('Identify', () => {
       sinon.spy(libp2p.identifyService, 'identify')
       sinon.spy(libp2p.peerStore, 'replace')
 
-      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
+      const connection = await libp2p.dialer.connectToPeer(remoteAddr)
       expect(connection).to.exist()
       // Wait for nextTick to trigger the identify call
       await delay(1)
@@ -221,7 +221,7 @@ describe('Identify', () => {
       sinon.spy(libp2p.identifyService, 'push')
       sinon.spy(libp2p.peerStore, 'update')
 
-      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
+      const connection = await libp2p.dialer.connectToPeer(remoteAddr)
       expect(connection).to.exist()
       // Wait for nextTick to trigger the identify call
       await delay(1)

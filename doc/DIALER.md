@@ -1,6 +1,7 @@
 # js-libp2p Dialer
 
 **Synopsis**
+* Parallel dials to the same peer will yield the same connection/error when the first dial settles.
 * All Dial Requests in js-libp2p must request a token(s) from the Dialer.
   * The number of tokens requested should be between 1 and the MAX_PER_PEER_DIALS max set in the Dialer.
   * If the number of available tokens is less than requested, the Dialer may return less than requested.

@@ -7,18 +7,12 @@ const { expect } = chai
 const sinon = require('sinon')
 
 const pDefer = require('p-defer')
-const mergeOptions = require('merge-options')
 
-const Libp2p = require('../../src')
 const PeerStore = require('../../src/peer-store')
 const multiaddr = require('multiaddr')
-
-const baseOptions = require('../utils/base-options')
 const peerUtils = require('../utils/creators/peer')
-const mockConnection = require('../utils/mockConnection')
 
 const addr = multiaddr('/ip4/127.0.0.1/tcp/8000')
-const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('peer-store', () => {
   let peerStore
@@ -165,51 +159,6 @@ describe('peer-store', () => {
     removed = peerStore.remove(id)
     expect(removed).to.eql(true)
     expect(peerStore.peers.size).to.equal(0)
-  })
-})
-
-describe('peer-store on dial', () => {
-  let peerInfo
-  let remotePeerInfo
-  let libp2p
-  let remoteLibp2p
-
-  before(async () => {
-    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
-    remoteLibp2p = new Libp2p(mergeOptions(baseOptions, {
-      peerInfo: remotePeerInfo
-    }))
-  })
-
-  after(async () => {
-    sinon.restore()
-    await remoteLibp2p.stop()
-    libp2p && await libp2p.stop()
-  })
-
-  it('should put the remote peerInfo after dial and emit event', async () => {
-    const remoteId = remotePeerInfo.id.toB58String()
-
-    libp2p = new Libp2p(mergeOptions(baseOptions, {
-      peerInfo
-    }))
-
-    sinon.spy(libp2p.peerStore, 'put')
-    sinon.spy(libp2p.peerStore, 'add')
-    sinon.spy(libp2p.peerStore, 'update')
-    sinon.stub(libp2p.dialer, 'connectToMultiaddr').returns(mockConnection({
-      remotePeer: remotePeerInfo.id
-    }))
-
-    const connection = await libp2p.dial(listenAddr)
-    await connection.close()
-
-    expect(libp2p.peerStore.put.callCount).to.equal(1)
-    expect(libp2p.peerStore.add.callCount).to.equal(1)
-    expect(libp2p.peerStore.update.callCount).to.equal(0)
-
-    const storedPeer = libp2p.peerStore.get(remoteId)
-    expect(storedPeer).to.exist()
   })
 })
 
