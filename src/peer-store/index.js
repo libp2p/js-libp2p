@@ -41,10 +41,11 @@ class PeerStore extends EventEmitter {
    * are already in the process of dialing the peer. The peer is technically
    * known, but may not have been added to the PeerStore yet.
    * @param {PeerInfo} peerInfo
-   * @param {boolean} [silent] (Default=false)
+   * @param {object} [options]
+   * @param {boolean} [options.silent] (Default=false)
    * @return {PeerInfo}
    */
-  put (peerInfo, silent = false) {
+  put (peerInfo, options = { silent: false }) {
     assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
 
     let peer
@@ -55,7 +56,7 @@ class PeerStore extends EventEmitter {
       peer = this.add(peerInfo)
 
       // Emit the peer if silent = false
-      !silent && this.emit('peer', peerInfo)
+      !options.silent && this.emit('peer', peerInfo)
     }
     return peer
   }

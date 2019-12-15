@@ -59,7 +59,7 @@ class Libp2p extends EventEmitter {
       localPeer: this.peerInfo.id,
       metrics: this.metrics,
       onConnection: (connection) => {
-        const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer), true)
+        const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer), { silent: true })
         this.registrar.onConnect(peerInfo, connection)
         this.connectionManager.onConnect(connection)
         this.emit('peer:connect', peerInfo)
@@ -266,7 +266,7 @@ class Libp2p extends EventEmitter {
     const dialable = Dialer.getDialable(peer)
     let connection
     if (PeerInfo.isPeerInfo(dialable)) {
-      this.peerStore.put(dialable, true)
+      this.peerStore.put(dialable, { silent: true })
       connection = this.registrar.getConnection(dialable)
     }
 
