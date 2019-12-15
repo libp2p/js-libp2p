@@ -14,8 +14,10 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const delay = require('delay')
 const pDefer = require('p-defer')
+const pSettle = require('p-settle')
 const pipe = require('it-pipe')
 const AggregateError = require('aggregate-error')
+const { Connection } = require('libp2p-interfaces/src/connection')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 
 const Libp2p = require('../../src')
@@ -29,6 +31,7 @@ const swarmKeyBuffer = Buffer.from(require('../fixtures/swarm.key'))
 const mockUpgrader = require('../utils/mockUpgrader')
 const createMockConnection = require('../utils/mockConnection')
 const Peers = require('../fixtures/peers')
+const { createPeerInfo } = require('../utils/creators/peer')
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws')
@@ -65,7 +68,7 @@ describe('Dialing (direct, TCP)', () => {
   it('should be able to connect to a remote node via its multiaddr', async () => {
     const dialer = new Dialer({ transportManager: localTM })
 
-    const connection = await dialer.connectToMultiaddr(remoteAddr)
+    const connection = await dialer.connectToPeer(remoteAddr)
     expect(connection).to.exist()
     await connection.close()
   })
@@ -73,7 +76,8 @@ describe('Dialing (direct, TCP)', () => {
   it('should be able to connect to a remote node via its stringified multiaddr', async () => {
     const dialer = new Dialer({ transportManager: localTM })
 
-    const connection = await dialer.connectToMultiaddr(remoteAddr.toString())
+    const dialable = Dialer.getDialable(remoteAddr.toString())
+    const connection = await dialer.connectToPeer(dialable)
     expect(connection).to.exist()
     await connection.close()
   })
@@ -81,7 +85,7 @@ describe('Dialing (direct, TCP)', () => {
   it('should fail to connect to an unsupported multiaddr', async () => {
     const dialer = new Dialer({ transportManager: localTM })
 
-    await expect(dialer.connectToMultiaddr(unsupportedAddr))
+    await expect(dialer.connectToPeer(unsupportedAddr))
       .to.eventually.be.rejectedWith(AggregateError)
       .and.to.have.nested.property('._errors[0].code', ErrorCodes.ERR_TRANSPORT_UNAVAILABLE)
   })
@@ -113,7 +117,7 @@ describe('Dialing (direct, TCP)', () => {
     peerInfo.multiaddrs.add(remoteAddr)
     peerStore.put(peerInfo)
 
-    const connection = await dialer.connectToPeer(peerId)
+    const connection = await dialer.connectToPeer(peerInfo)
     expect(connection).to.exist()
     await connection.close()
   })
@@ -147,15 +151,23 @@ describe('Dialing (direct, TCP)', () => {
       throw new AbortError()
     })
 
-    await expect(dialer.connectToMultiaddr(remoteAddr))
+    await expect(dialer.connectToPeer(remoteAddr))
       .to.eventually.be.rejectedWith(Error)
       .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
   })
 
   it('should dial to the max concurrency', async () => {
+    const addrs = [
+      '/ip4/0.0.0.0/tcp/8000',
+      '/ip4/0.0.0.0/tcp/8001',
+      '/ip4/0.0.0.0/tcp/8002'
+    ]
     const dialer = new Dialer({
       transportManager: localTM,
-      concurrency: 2
+      concurrency: 2,
+      peerStore: {
+        multiaddrsForPeer: () => addrs
+      }
     })
 
     expect(dialer.tokens).to.have.length(2)
@@ -163,8 +175,10 @@ describe('Dialing (direct, TCP)', () => {
     const deferredDial = pDefer()
     sinon.stub(localTM, 'dial').callsFake(() => deferredDial.promise)
 
+    const [peerInfo] = await createPeerInfo()
+
     // Perform 3 multiaddr dials
-    dialer.connectToMultiaddr([remoteAddr, remoteAddr, remoteAddr])
+    dialer.connectToPeer(peerInfo)
 
     // Let the call stack run
     await delay(0)
@@ -206,9 +220,10 @@ describe('Dialing (direct, TCP)', () => {
           connEncryption: [Crypto]
         }
       })
+      remoteLibp2p.peerInfo.multiaddrs.add(listenAddr)
       remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
 
-      await remoteLibp2p.transportManager.listen([listenAddr])
+      await remoteLibp2p.start()
       remoteAddr = remoteLibp2p.transportManager.getAddrs()[0]
     })
 
@@ -230,7 +245,7 @@ describe('Dialing (direct, TCP)', () => {
         }
       })
 
-      sinon.spy(libp2p.dialer, 'connectToMultiaddr')
+      sinon.spy(libp2p.dialer, 'connectToPeer')
 
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
@@ -238,7 +253,7 @@ describe('Dialing (direct, TCP)', () => {
       expect(stream).to.exist()
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
-      expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
+      expect(libp2p.dialer.connectToPeer.callCount).to.equal(1)
     })
 
     it('should use the dialer for connecting to a peer', async () => {
@@ -251,7 +266,7 @@ describe('Dialing (direct, TCP)', () => {
         }
       })
 
-      sinon.spy(libp2p.dialer, 'connectToMultiaddr')
+      sinon.spy(libp2p.dialer, 'connectToPeer')
       const remotePeer = new PeerInfo(remoteLibp2p.peerInfo.id)
       remotePeer.multiaddrs.add(remoteAddr)
 
@@ -261,7 +276,7 @@ describe('Dialing (direct, TCP)', () => {
       expect(stream).to.exist()
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
-      expect(libp2p.dialer.connectToMultiaddr.callCount).to.equal(1)
+      expect(libp2p.dialer.connectToPeer.callCount).to.equal(1)
     })
 
     it('should be able to use hangup to close connections', async () => {
@@ -296,13 +311,103 @@ describe('Dialing (direct, TCP)', () => {
       sinon.spy(libp2p.upgrader.protector, 'protect')
       sinon.stub(remoteLibp2p.upgrader, 'protector').value(new Protector(swarmKeyBuffer))
 
-      const connection = await libp2p.dialer.connectToMultiaddr(remoteAddr)
+      const connection = await libp2p.dialer.connectToPeer(remoteAddr)
       expect(connection).to.exist()
       const { stream, protocol } = await connection.newStream('/echo/1.0.0')
       expect(stream).to.exist()
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
       expect(libp2p.upgrader.protector.protect.callCount).to.equal(1)
+    })
+
+    it('should coalesce parallel dials to the same peer (no id in multiaddr)', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+      const dials = 10
+
+      const dialResults = await Promise.all([...new Array(dials)].map((_, index) => {
+        if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerInfo)
+        return libp2p.dial(remoteLibp2p.peerInfo.multiaddrs.toArray()[0])
+      }))
+
+      // All should succeed and we should have ten results
+      expect(dialResults).to.have.length(10)
+      for (const connection of dialResults) {
+        expect(Connection.isConnection(connection)).to.equal(true)
+      }
+
+      // We will have two connections, since the multiaddr dial doesn't have a peer id
+      expect(libp2p.connectionManager._connections.size).to.equal(2)
+      expect(remoteLibp2p.connectionManager._connections.size).to.equal(2)
+    })
+
+    it('should coalesce parallel dials to the same peer (id in multiaddr)', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+      const dials = 10
+
+      const fullAddress = remoteAddr.encapsulate(`/p2p/${remoteLibp2p.peerInfo.id.toString()}`)
+      const dialResults = await Promise.all([...new Array(dials)].map((_, index) => {
+        if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerInfo)
+        return libp2p.dial(fullAddress)
+      }))
+
+      // All should succeed and we should have ten results
+      expect(dialResults).to.have.length(10)
+      for (const connection of dialResults) {
+        expect(Connection.isConnection(connection)).to.equal(true)
+      }
+
+      // 1 connection, because we know the peer in the multiaddr
+      expect(libp2p.connectionManager._connections.size).to.equal(1)
+      expect(remoteLibp2p.connectionManager._connections.size).to.equal(1)
+    })
+
+    it('should coalesce parallel dials to the same error on failure', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+      const dials = 10
+      const error = new Error('Boom')
+      sinon.stub(libp2p.transportManager, 'dial').callsFake(() => Promise.reject(error))
+
+      const fullAddress = remoteAddr.encapsulate(`/p2p/${remoteLibp2p.peerInfo.id.toString()}`)
+      const dialResults = await pSettle([...new Array(dials)].map((_, index) => {
+        if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerInfo)
+        return libp2p.dial(fullAddress)
+      }))
+
+      // All should succeed and we should have ten results
+      expect(dialResults).to.have.length(10)
+      for (const result of dialResults) {
+        expect(result).to.have.property('isRejected', true)
+        expect(result.reason).to.be.an.instanceof(AggregateError)
+        // All errors should be the exact same as `error`
+        for (const err of result.reason) {
+          expect(err).to.equal(error)
+        }
+      }
+
+      // 1 connection, because we know the peer in the multiaddr
+      expect(libp2p.connectionManager._connections.size).to.equal(0)
+      expect(remoteLibp2p.connectionManager._connections.size).to.equal(0)
     })
   })
 })

@@ -24,7 +24,7 @@ module.exports = (circuit) => {
   listener.listen = async (addr) => {
     const [addrString] = String(addr).split('/p2p-circuit').slice(-1)
 
-    const relayConn = await circuit._dialer.connectToMultiaddr(multiaddr(addrString))
+    const relayConn = await circuit._dialer.connectToPeer(multiaddr(addrString))
     const relayedAddr = relayConn.remoteAddr.encapsulate('/p2p-circuit')
 
     listeningAddrs.set(relayConn.remotePeer.toB58String(), relayedAddr)

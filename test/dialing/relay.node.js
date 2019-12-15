@@ -42,13 +42,19 @@ describe('Dialing (via relay, TCP)', () => {
       // Reset multiaddrs and start
       libp2p.peerInfo.multiaddrs.clear()
       libp2p.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-      libp2p.start()
+      return libp2p.start()
     }))
   })
 
   afterEach(() => {
     // Stop each node
-    return Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(libp2p => libp2p.stop()))
+    return Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(async libp2p => {
+      await libp2p.stop()
+      // Clear the peer stores
+      for (const peerId of libp2p.peerStore.peers.keys()) {
+        libp2p.peerStore.remove(peerId)
+      }
+    }))
   })
 
   it('should be able to connect to a peer over a relay with active connections', async () => {

@@ -109,7 +109,7 @@ class Circuit {
     let disconnectOnFailure = false
     let relayConnection = this._registrar.getConnection(new PeerInfo(relayPeer))
     if (!relayConnection) {
-      relayConnection = await this._dialer.connectToMultiaddr(relayAddr, options)
+      relayConnection = await this._dialer.connectToPeer(relayAddr, options)
       disconnectOnFailure = true
     }
 
