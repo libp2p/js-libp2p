@@ -136,6 +136,13 @@ describe('Upgrader', () => {
     expect(connections).to.have.length(2)
 
     await expect(connections[0].newStream('/echo/1.0.0')).to.be.rejected()
+
+    // Verify the MultiaddrConnection close method is called
+    sinon.spy(inbound, 'close')
+    sinon.spy(outbound, 'close')
+    await Promise.all(connections.map(conn => conn.close()))
+    expect(inbound.close.callCount).to.equal(1)
+    expect(outbound.close.callCount).to.equal(1)
   })
 
   it('should use a private connection protector when provided', async () => {

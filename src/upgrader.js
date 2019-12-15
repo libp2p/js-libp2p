@@ -203,7 +203,7 @@ class Upgrader {
    * @param {string} cryptoProtocol The crypto protocol that was negotiated
    * @param {string} direction One of ['inbound', 'outbound']
    * @param {MultiaddrConnection} maConn The transport layer connection
-   * @param {*} upgradedConn A duplex connection returned from multiplexer selection
+   * @param {*} upgradedConn A duplex connection returned from multiplexer and/or crypto selection
    * @param {Muxer} Muxer The muxer to be used for muxing
    * @param {PeerId} remotePeer The peer the connection is with
    * @returns {Connection}
@@ -216,6 +216,48 @@ class Upgrader {
     Muxer,
     remotePeer
   }) {
+    let muxer, newStream
+
+    if (Muxer) {
+      // Create the muxer
+      muxer = new Muxer({
+        // Run anytime a remote stream is created
+        onStream: async muxedStream => {
+          const mss = new Multistream.Listener(muxedStream)
+          try {
+            const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
+            log('%s: incoming stream opened on %s', direction, protocol)
+            if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
+            connection.addStream(stream, protocol)
+            this._onStream({ connection, stream, protocol })
+          } catch (err) {
+            log.error(err)
+          }
+        },
+        // Run anytime a stream closes
+        onStreamEnd: muxedStream => {
+          connection.removeStream(muxedStream.id)
+        }
+      })
+
+      newStream = async protocols => {
+        log('%s: starting new stream on %s', direction, protocols)
+        const muxedStream = muxer.newStream()
+        const mss = new Multistream.Dialer(muxedStream)
+        try {
+          const { stream, protocol } = await mss.select(protocols)
+          if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
+          return { stream: { ...muxedStream, ...stream }, protocol }
+        } catch (err) {
+          log.error('could not create new stream', err)
+          throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
+        }
+      }
+
+      // Pipe all data through the muxer
+      pipe(upgradedConn, muxer, upgradedConn)
+    }
+
     const _timeline = maConn.timeline
     maConn.timeline = new Proxy(_timeline, {
       set: (...args) => {
@@ -227,74 +269,11 @@ class Upgrader {
         return Reflect.set(...args)
       }
     })
-
-    if (!Muxer) {
-      // Create the connection
-      maConn.timeline.upgraded = Date.now()
-
-      const connection = new Connection({
-        localAddr: maConn.localAddr,
-        remoteAddr: maConn.remoteAddr,
-        localPeer: this.localPeer,
-        remotePeer: remotePeer,
-        stat: {
-          direction,
-          timeline: maConn.timeline,
-          encryption: cryptoProtocol
-        },
-        newStream: () => {
-          throw errCode(new Error('connection is not multiplexed'), 'ERR_CONNECTION_NOT_MULTIPLEXED')
-        },
-        getStreams: () => {
-          throw errCode(new Error('connection is not multiplexed'), 'ERR_CONNECTION_NOT_MULTIPLEXED')
-        },
-        close: err => maConn.close(err)
-      })
-
-      this.onConnection(connection)
-
-      return connection
-    }
-
-    // Create the muxer
-    const muxer = new Muxer({
-      // Run anytime a remote stream is created
-      onStream: async muxedStream => {
-        const mss = new Multistream.Listener(muxedStream)
-        try {
-          const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
-          log('%s: incoming stream opened on %s', direction, protocol)
-          if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
-          connection.addStream(stream, protocol)
-          this._onStream({ connection, stream, protocol })
-        } catch (err) {
-          log.error(err)
-        }
-      },
-      // Run anytime a stream closes
-      onStreamEnd: muxedStream => {
-        connection.removeStream(muxedStream.id)
-      }
-    })
-
-    const newStream = async protocols => {
-      log('%s: starting new stream on %s', direction, protocols)
-      const muxedStream = muxer.newStream()
-      const mss = new Multistream.Dialer(muxedStream)
-      try {
-        const { stream, protocol } = await mss.select(protocols)
-        if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
-        return { stream: { ...muxedStream, ...stream }, protocol }
-      } catch (err) {
-        log.error('could not create new stream', err)
-        throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
-      }
-    }
-
-    // Pipe all data through the muxer
-    pipe(upgradedConn, muxer, upgradedConn)
-
     maConn.timeline.upgraded = Date.now()
+
+    const errConnectionNotMultiplexed = () => {
+      throw errCode(new Error('connection is not multiplexed'), 'ERR_CONNECTION_NOT_MULTIPLEXED')
+    }
 
     // Create the connection
     const connection = new Connection({
@@ -305,11 +284,11 @@ class Upgrader {
       stat: {
         direction,
         timeline: maConn.timeline,
-        multiplexer: Muxer.multicodec,
+        multiplexer: Muxer && Muxer.multicodec,
         encryption: cryptoProtocol
       },
-      newStream,
-      getStreams: () => muxer.streams,
+      newStream: newStream || errConnectionNotMultiplexed,
+      getStreams: () => muxer ? muxer.streams : errConnectionNotMultiplexed,
       close: err => maConn.close(err)
     })
 
