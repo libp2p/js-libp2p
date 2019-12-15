@@ -1,3 +1,13 @@
+<a name="0.27.0-pre.1"></a>
+# [0.27.0-pre.1](https://github.com/libp2p/js-libp2p/compare/v0.27.0-pre.0...v0.27.0-pre.1) (2019-12-15)
+
+
+### Features
+
+* coalescing dial support ([#518](https://github.com/libp2p/js-libp2p/issues/518)) ([4a871bb](https://github.com/libp2p/js-libp2p/commit/4a871bb))
+
+
+
 <a name="0.27.0-pre.0"></a>
 # [0.27.0-pre.0](https://github.com/libp2p/js-libp2p/compare/v0.26.2...v0.27.0-pre.0) (2019-12-12)
 
