@@ -27,6 +27,8 @@ npm install libp2p
 
 ## Configuring libp2p
 
+If you're new to libp2p, we recommend configuring your node in stages, as this can make troubleshooting configuration issues much easier. In this guide, we'll do just that. If you're more experienced with libp2p, you may wish to jump to the [Configuration readme](./CONFIGURATION.md).
+
 ### Basic setup
 
 Now that we have libp2p installed, let's configure the absolute minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. Let's start by setting up a Transport.
@@ -43,7 +45,7 @@ Start by installing `libp2p-websockets`:
 npm install libp2p-websockets
 ```
 
-Now that we have the module installed, let's configure libp2p to use the Transport. `Libp2p.create` takes a single configuration object as it's only parameter. We can add the Transport by passing it into the `modules.transport` array:
+Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](./API.md#create) method, which takes a single configuration object as it's only parameter. We can add the Transport by passing it into the `modules.transport` array:
 
 ```js
 const Libp2p = require('libp2p')
