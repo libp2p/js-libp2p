@@ -107,7 +107,10 @@ class Libp2p extends EventEmitter {
 
     this.dialer = new Dialer({
       transportManager: this.transportManager,
-      peerStore: this.peerStore
+      peerStore: this.peerStore,
+      concurrency: this._options.dialer.maxParallelDials,
+      perPeerLimit: this._options.dialer.maxDialsPerPeer,
+      timeout: this._options.dialer.dialTimeout
     })
 
     this._modules.transport.forEach((Transport) => {

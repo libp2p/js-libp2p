@@ -1,10 +1,16 @@
 'use strict'
 
 const mergeOptions = require('merge-options')
+const Constants = require('./constants')
 
 const DefaultConfig = {
   connectionManager: {
     minPeers: 25
+  },
+  dialer: {
+    maxParallelDials: Constants.MAX_PARALLEL_DIALS,
+    maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
+    dialTimeout: Constants.DIAL_TIMEOUT
   },
   metrics: {
     enabled: false

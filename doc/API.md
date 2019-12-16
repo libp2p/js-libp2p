@@ -46,7 +46,10 @@ Creates an instance of Libp2p.
 | options | `Object` | libp2p options |
 | options.modules | `Array<Object>` | libp2p modules to use |
 | [options.config] | `Object` | libp2p modules configuration and core configuration |
+| [options.connectionManager] | `Object` | libp2p Connection Manager configuration |
 | [options.datastore] | `Object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) (in memory datastore will be used if not provided) |
+| [options.dialer] | `Object` | libp2p Dialer configuration
+| [options.metrics] | `Object` | libp2p Metrics configuration
 | [options.peerInfo] | [PeerInfo](https://github.com/libp2p/js-peer-info) | peerInfo instance (it will be created if not provided) |
 
 For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
