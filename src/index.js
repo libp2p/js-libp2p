@@ -297,7 +297,7 @@ class Libp2p extends EventEmitter {
   /**
    * Disconnects all connections to the given `peer`
    *
-   * @param {PeerInfo|PeerId|multiaddr|string} peer The the to close connections to
+   * @param {PeerInfo|PeerId|multiaddr|string} peer the peer to close connections to
    * @returns {Promise<void>}
    */
   hangUp (peer) {
