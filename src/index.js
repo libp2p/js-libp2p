@@ -288,12 +288,13 @@ class Libp2p extends EventEmitter {
   /**
    * Disconnects all connections to the given `peer`
    *
-   * @param {PeerId} peer The PeerId to close connections to
+   * @param {PeerInfo|PeerId|multiaddr|string} peer The the to close connections to
    * @returns {Promise<void>}
    */
   hangUp (peer) {
+    const peerInfo = getPeerInfo(peer, this.peerStore)
     return Promise.all(
-      this.registrar.connections.get(peer.toString()).map(connection => {
+      this.registrar.connections.get(peerInfo.id.toString()).map(connection => {
         return connection.close()
       })
     )
