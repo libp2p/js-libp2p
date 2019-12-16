@@ -1,8 +1,8 @@
-# GETTING STARTED
+# Getting Started
 
 Welcome to libp2p, this guide will walk you through setting up a fully functional libp2p node 🚀
 
-- [GETTING STARTED](#getting-started)
+- [Getting Started](#getting-started)
   - [Install](#install)
   - [Configuring libp2p](#configuring-libp2p)
     - [Basic setup](#basic-setup)
