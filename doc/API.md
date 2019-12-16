@@ -181,6 +181,29 @@ const libp2p = await Libp2p.create(options)
 await libp2p.stop()
 ```
 
+### connections
+
+A Getter that returns a Map of the current Connections libp2p has to other peers.
+
+`libp2p.connections`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Map<string, Array<Connection>>` | A map of [`PeerId`][peer-id] strings to [`Connection`][connection] Arrays |
+
+#### Example
+
+```js
+for (const [peerId, connections] of libp2p.connections) {
+  for (const connection of connections) {
+    console.log(peerId, connection.remoteAddr.toString())
+    // Logs the PeerId string and the observed remote multiaddr of each Connection
+  }
+}
+```
+
 ### dial
 
 Dials to another peer in the network and establishes the connection.
@@ -191,7 +214,7 @@ Dials to another peer in the network and establishes the connection.
 
 | Name | Type | Description |
 |------|------|-------------|
-| peer | [PeerInfo](https://github.com/libp2p/js-peer-info), [PeerId](https://github.com/libp2p/js-peer-id), [multiaddr](https://github.com/multiformats/js-multiaddr), `string` | peer to dial |
+| peer | [PeerInfo](https://github.com/libp2p/js-peer-info), [PeerId][peer-id], [multiaddr](https://github.com/multiformats/js-multiaddr), `string` | peer to dial |
 | [options] | `Object` | dial options |
 | [options.signal] | [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) | An `AbortSignal` instance obtained from an [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) that can be used to abort the connection before it completes |
 
@@ -199,7 +222,7 @@ Dials to another peer in the network and establishes the connection.
 
 | Type | Description |
 |------|-------------|
-| `Promise<Connection>` | Promise resolves with the [Connection](https://github.com/libp2p/js-interfaces/tree/master/src/connection) instance |
+| `Promise<Connection>` | Promise resolves with the [Connection][connection] instance |
 
 #### Example
 
@@ -226,7 +249,7 @@ Dials to another peer in the network and selects a protocol to communicate with 
 
 | Name | Type | Description |
 |------|------|-------------|
-| peer | [PeerInfo](https://github.com/libp2p/js-peer-info), [PeerId](https://github.com/libp2p/js-peer-id), [multiaddr](https://github.com/multiformats/js-multiaddr), `string` | peer to dial |
+| peer | [PeerInfo](https://github.com/libp2p/js-peer-info), [PeerId][peer-id], [multiaddr](https://github.com/multiformats/js-multiaddr), `string` | peer to dial |
 | protocols | `String|Array<String>` |  A list of protocols (or single protocol) to negotiate with. Protocols are attempted in order until a match is made. (e.g '/ipfs/bitswap/1.1.0') |
 | [options] | `Object` | dial options |
 | [options.signal] | [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) | An `AbortSignal` instance obtained from an [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) that can be used to abort the connection before it completes |
@@ -259,7 +282,7 @@ Attempts to gracefully close an open connection to the given peer. If the connec
 
 | Name | Type | Description |
 |------|------|-------------|
-| peer | [PeerInfo](https://github.com/libp2p/js-peer-info), [PeerId](https://github.com/libp2p/js-peer-id), [multiaddr](https://github.com/multiformats/js-multiaddr), `string` | peer to hang up |
+| peer | [PeerInfo](https://github.com/libp2p/js-peer-info), [PeerId][peer-id], [multiaddr](https://github.com/multiformats/js-multiaddr), `string` | peer to hang up |
 
 #### Returns
 
@@ -355,7 +378,7 @@ Iterates over all peer routers in series to find the given peer. If the DHT is e
 
 | Name | Type | Description |
 |------|------|-------------|
-| peerId | [`PeerId`](https://github.com/libp2p/js-peer-id) | ID of the peer to find |
+| peerId | [`PeerId`][peer-id] | ID of the peer to find |
 | options | `Object` | operation options |
 | options.timeout | `number` | maximum time the query should run |
 
@@ -773,3 +796,6 @@ console.log(peerStats.toJSON())
     - `['60000']<MovingAverage>`: The [MovingAverage](https://www.npmjs.com/package/moving-averages) at a 1 minute interval.
     - `['300000']<MovingAverage>`: The [MovingAverage](https://www.npmjs.com/package/moving-averages) at a 5 minute interval.
     - `['900000']<MovingAverage>`: The [MovingAverage](https://www.npmjs.com/package/moving-averages) at a 15 minute interval.
+
+[connection]: https://github.com/libp2p/js-interfaces/tree/master/src/connection
+[peer-id]: https://github.com/libp2p/js-peer-id
