@@ -14,6 +14,7 @@ message CircuitRelay {
     HOP_CANT_OPEN_DST_STREAM   = 262;
     HOP_CANT_SPEAK_RELAY       = 270;
     HOP_CANT_RELAY_TO_SELF     = 280;
+    HOP_RELAY_REFUSED          = 290;
     STOP_SRC_ADDR_TOO_LONG     = 320;
     STOP_DST_ADDR_TOO_LONG     = 321;
     STOP_SRC_MULTIADDR_INVALID = 350;
@@ -23,9 +24,9 @@ message CircuitRelay {
   }
 
   enum Type { // RPC identifier, either HOP, STOP or STATUS
-    HOP = 1;
-    STOP = 2;
-    STATUS = 3;
+    HOP     = 1;
+    STOP    = 2;
+    STATUS  = 3;
     CAN_HOP = 4;
   }
 

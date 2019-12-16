@@ -143,9 +143,7 @@ class Dialer {
       relay = null
     }
 
-    if (!cb) {
-      cb = () => {}
-    }
+    cb = cb || (() => { })
 
     dstMa = multiaddr(dstMa)
     // if no relay provided, dial on all available relays until one succeeds
