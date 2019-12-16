@@ -241,6 +241,15 @@ class Libp2p extends EventEmitter {
   }
 
   /**
+   * Gets a Map of the current connections. The keys are the stringified
+   * `PeerId` of the peer. The value is an array of Connections to that peer.
+   * @returns {Map<string, Connection[]>}
+   */
+  get connections () {
+    return this.registrar.connections
+  }
+
+  /**
    * Dials to the provided peer. If successful, the `PeerInfo` of the
    * peer will be added to the nodes `peerStore`
    *
