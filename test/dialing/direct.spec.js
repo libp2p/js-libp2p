@@ -273,8 +273,33 @@ describe('Dialing (direct, WebSockets)', () => {
       })
 
       expect(libp2p.dialer).to.exist()
+      expect(libp2p.dialer.concurrency).to.equal(Constants.MAX_PARALLEL_DIALS)
+      expect(libp2p.dialer.perPeerLimit).to.equal(Constants.MAX_PER_PEER_DIALS)
+      expect(libp2p.dialer.timeout).to.equal(Constants.DIAL_TIMEOUT)
       // Ensure the dialer also has the transport manager
       expect(libp2p.transportManager).to.equal(libp2p.dialer.transportManager)
+    })
+
+    it('should be able to override dialer options', async () => {
+      const config = {
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        },
+        dialer: {
+          maxParallelDials: 10,
+          maxDialsPerPeer: 1,
+          dialTimeout: 1e3 // 30 second dial timeout per peer
+        }
+      }
+      libp2p = await Libp2p.create(config)
+
+      expect(libp2p.dialer).to.exist()
+      expect(libp2p.dialer.concurrency).to.equal(config.dialer.maxParallelDials)
+      expect(libp2p.dialer.perPeerLimit).to.equal(config.dialer.maxDialsPerPeer)
+      expect(libp2p.dialer.timeout).to.equal(config.dialer.dialTimeout)
     })
 
     it('should use the dialer for connecting', async () => {

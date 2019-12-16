@@ -20,6 +20,7 @@
       - [Customizing DHT](#customizing-dht)
       - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
       - [Setup with Relay](#setup-with-relay)
+      - [Configuring Dialing](#configuring-dialing)
       - [Configuring Connection Manager](#configuring-connection-manager)
       - [Configuring Metrics](#configuring-metrics)
   - [Configuration examples](#configuration-examples)
@@ -412,6 +413,29 @@ const node = await Libp2p.create({
     }
   }
 })
+```
+
+#### Configuring Dialing
+
+Dialing in libp2p can be configured to limit the rate of dialing, and how long dials are allowed to take. The below configuration example shows the default values for the dialer.
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO]
+  },
+  dialer: {
+    maxParallelDials: 100, // How many multiaddrs we can dial in parallel
+    maxDialsPerPeer: 4, // How many multiaddrs we can dial per peer, in parallel
+    dialTimeout: 30e3 // 30 second dial timeout per peer
+  }
 ```
 
 #### Configuring Connection Manager
