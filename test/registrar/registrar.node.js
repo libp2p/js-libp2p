@@ -61,12 +61,12 @@ describe('registrar on dial', () => {
     }))
 
     await libp2p.dial(remoteAddr)
-    expect(libp2p.registrar.connections.size).to.equal(1)
+    expect(libp2p.connections.size).to.equal(1)
 
     sinon.spy(libp2p.registrar, 'close')
 
     await libp2p.stop()
     expect(libp2p.registrar.close.callCount).to.equal(1)
-    expect(libp2p.registrar.connections.size).to.equal(0)
+    expect(libp2p.connections.size).to.equal(0)
   })
 })

@@ -296,6 +296,23 @@ describe('Dialing (direct, TCP)', () => {
       expect(connection.stat.timeline.close).to.exist()
     })
 
+    it('should be able to use hangup by address string to close connections', async () => {
+      libp2p = new Libp2p({
+        peerInfo,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      const connection = await libp2p.dial(`${remoteAddr.toString()}/p2p/${remotePeerInfo.id.toString()}`)
+      expect(connection).to.exist()
+      expect(connection.stat.timeline.close).to.not.exist()
+      await libp2p.hangUp(connection.remotePeer)
+      expect(connection.stat.timeline.close).to.exist()
+    })
+
     it('should use the protectors when provided for connecting', async () => {
       const protector = new Protector(swarmKeyBuffer)
       libp2p = new Libp2p({

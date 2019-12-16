@@ -241,6 +241,15 @@ class Libp2p extends EventEmitter {
   }
 
   /**
+   * Gets a Map of the current connections. The keys are the stringified
+   * `PeerId` of the peer. The value is an array of Connections to that peer.
+   * @returns {Map<string, Connection[]>}
+   */
+  get connections () {
+    return this.registrar.connections
+  }
+
+  /**
    * Dials to the provided peer. If successful, the `PeerInfo` of the
    * peer will be added to the nodes `peerStore`
    *
@@ -288,12 +297,13 @@ class Libp2p extends EventEmitter {
   /**
    * Disconnects all connections to the given `peer`
    *
-   * @param {PeerId} peer The PeerId to close connections to
+   * @param {PeerInfo|PeerId|multiaddr|string} peer the peer to close connections to
    * @returns {Promise<void>}
    */
   hangUp (peer) {
+    const peerInfo = getPeerInfo(peer, this.peerStore)
     return Promise.all(
-      this.registrar.connections.get(peer.toString()).map(connection => {
+      this.registrar.connections.get(peerInfo.id.toString()).map(connection => {
         return connection.close()
       })
     )
