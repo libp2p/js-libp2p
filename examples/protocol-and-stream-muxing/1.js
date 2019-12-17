@@ -7,8 +7,6 @@ const SECIO = require('libp2p-secio')
 const PeerInfo = require('peer-info')
 
 const pipe = require('it-pipe')
-const { map } = require('streaming-iterables')
-const { toBuffer } = require('it-buffer')
 
 const createNode = async () => {
   const peerInfo = await PeerInfo.create()
@@ -18,8 +16,8 @@ const createNode = async () => {
     peerInfo,
     modules: {
       transport: [TCP],
-      streamMuxer: [MPLEX], // TODO: should not need this
-      connEncryption: [SECIO] // TODO: should not need this
+      streamMuxer: [MPLEX],
+      connEncryption: [SECIO]
     }
   })
 
@@ -38,13 +36,11 @@ const createNode = async () => {
   node2.handle('/your-protocol', ({ stream }) => {
     pipe(
       stream,
-      toBuffer,
-      map(String),
-      source => (async function () {
+      async function (source) {
         for await (const msg of source) {
-          console.log(msg)
+          console.log(msg.toString())
         }
-      })()
+      }
     )
   })
 
@@ -53,13 +49,11 @@ const createNode = async () => {
   node2.handle('/another-protocol/1.0.1', ({ stream }) => {
     pipe(
       stream,
-      toBuffer,
-      map(String),
-      source => (async function () {
+      async function (source) {
         for await (const msg of source) {
-          console.log(msg)
+          console.log(msg.toString())
         }
-      })()
+      }
     )
   })
   */

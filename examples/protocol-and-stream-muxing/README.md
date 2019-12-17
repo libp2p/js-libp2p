@@ -53,13 +53,11 @@ You might have seen this in the [Transports](../transports) examples. However, w
 node2.handle('/another-protocol/1.0.1', ({ stream }) => {
   pipe(
     stream,
-    toBuffer,
-    map(String),
-    source => (async function () {
+    async function (source) {
       for await (const msg of source) {
-        console.log(msg)
+        console.log(msg.toString())
       }
-    })()
+    }
   )
 })
 // ...
@@ -83,13 +81,11 @@ node2.handle(['/another-protocol/1.0.0', '/another-protocol/2.0.0'], ({ protocol
 
   pipe(
     stream,
-    toBuffer,
-    map(String),
-    source => (async function () {
+    async function (source) {
       for await (const msg of source) {
-        console.log(msg)
+        console.log(msg.toString())
       }
-    })()
+    }
   )
 })
 ```
@@ -126,12 +122,11 @@ With this, we can dial as many times as we want to a peer and always reuse the s
 node2.handle(['/a', '/b'], ({ protocol, stream }) => {
   pipe(
     stream,
-    toBuffer,
-    source => (async function () {
+    async function (source) {
       for await (const msg of source) {
         console.log(`from: ${protocol}, msg: ${msg.toString()}`)
       }
-    })()
+    }
   )
 })
 
