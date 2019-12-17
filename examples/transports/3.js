@@ -42,7 +42,6 @@ function printAddrs(node, number) {
 function print ({ stream }) {
   pipe(
     stream,
-    toBuffer,
     source => (async function () {
       for await (const msg of source) {
         console.log(msg.toString())
