@@ -119,12 +119,11 @@ Then,
   node2.handle('/print', ({ stream }) => {
     pipe(
       stream,
-      toBuffer,
-      source => (async function () {
+      async function (source) {
         for await (const msg of source) {
           console.log(msg.toString())
         }
-      })(),
+      }
     )
   })
 
@@ -243,12 +242,11 @@ try {
 function print ({ stream }) {
   pipe(
     stream,
-    toBuffer,
-    source => (async function () {
+    async function (source) {
       for await (const msg of source) {
         console.log(msg.toString())
       }
-    })(),
+    }
   )
 }
 ```

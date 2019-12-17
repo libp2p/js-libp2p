@@ -9,7 +9,6 @@ const MPLEX = require('libp2p-mplex')
 const PeerInfo = require('peer-info')
 
 const pipe = require('it-pipe')
-const { toBuffer } = require('it-buffer')
 
 const createNode = async (peerInfo, multiaddrs = []) => {
   if (!Array.isArray(multiaddrs)) {
@@ -42,11 +41,11 @@ function printAddrs(node, number) {
 function print ({ stream }) {
   pipe(
     stream,
-    source => (async function () {
+    async function (source) {
       for await (const msg of source) {
         console.log(msg.toString())
       }
-    })(),
+    }
   )
 }
 

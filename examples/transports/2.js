@@ -8,7 +8,7 @@ const MPLEX = require('libp2p-mplex')
 const PeerInfo = require('peer-info')
 
 const pipe = require('it-pipe')
-const { toBuffer } = require('it-buffer')
+const concat = require('it-concat')
 
 const createNode = async (peerInfo) => {
   // To signall the addresses we want to be available, we use
@@ -46,16 +46,12 @@ function printAddrs (node, number) {
   printAddrs(node1, '1')
   printAddrs(node2, '2')
 
-  node2.handle('/print', ({ stream }) => {
-    pipe(
+  node2.handle('/print', async ({ stream }) => {
+    const result = await pipe(
       stream,
-      toBuffer,
-      source => (async function () {
-        for await (const msg of source) {
-          console.log(msg.toString())
-        }
-      })(),
+      concat
     )
+    console.log(result.toString())
   })
 
   const { stream } = await node1.dialProtocol(node2.peerInfo, '/print')
