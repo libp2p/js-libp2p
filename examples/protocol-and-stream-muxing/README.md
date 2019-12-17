@@ -100,9 +100,9 @@ Try all of this out by executing [1.js](./1.js).
 
 The examples above would require a node to create a whole new connection for every time it dials in one of the protocols, this is a waste of resources and also it might be simply not possible (e.g lack of file descriptors, not enough ports being open, etc). What we really want is to dial a connection once and then multiplex several virtual connections (stream) over a single connection, this is where _stream multiplexing_ comes into play.
 
-Stream multiplexing is a old concept, in fact it happens in many of the layers of the [OSI System](https://en.wikipedia.org/wiki/OSI_model). In libp2p, we make this feature to our avail by letting the user pick which module for stream multiplexing to use.
+Stream multiplexing is an old concept, in fact it happens in many of the layers of the [OSI System](https://en.wikipedia.org/wiki/OSI_model). In libp2p, we make this feature to our avail by letting the user pick which module for stream multiplexing to use.
 
-Currently, we have [libp2p-mplex](https://github.com/libp2p/js-libp2p-mplex) and pluging it in is as easy as adding another transport. Let's revisit our libp2p configuration.
+Currently, we have [libp2p-mplex](https://github.com/libp2p/js-libp2p-mplex) and pluging it in is as easy as adding a transport. Let's revisit our libp2p configuration.
 
 ```JavaScript
 const Libp2p = require('libp2p')
