@@ -50,6 +50,8 @@ const createNode = async () => {
   const cid = new CID('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL')
   await node1.contentRouting.provide(cid)
 
+  console.log('Node %s is providing %s', node1.peerInfo.id.toB58String(), cid.toBaseEncodedString())
+
   // wait for propagation
   await delay(300)
 

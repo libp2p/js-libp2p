@@ -27,8 +27,7 @@ const node = await Libp2p.create({
   config: {
     dht: {
       // dht must be enabled
-      enabled: true,
-      kBucketSize: 20
+      enabled: true
     }
   }
 })
