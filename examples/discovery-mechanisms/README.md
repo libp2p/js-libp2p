@@ -26,7 +26,7 @@ const node = Libp2p.create({
   config: {
     peerDiscovery: {
       bootstrap: {
-        interval: 2000,
+        interval: 60e3,
         enabled: true,
         list: bootstrapers
       }
@@ -54,9 +54,6 @@ const bootstrapers = [
 Now, once we create and start the node, we can listen for events such as `peer:discovery` and `peer:connect`, these events tell us when we found a peer, independently of the discovery mechanism used and when we actually dialed to that peer.
 
 ```JavaScript
-const peerInfo = await PeerInfo.create()
-peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-
 const node = await Libp2p.create({
   peerInfo,
   modules: {
@@ -76,21 +73,14 @@ const node = await Libp2p.create({
   }
 })
 
-await node.start()
+node.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
 
 // Emitted when a peer has been found
 node.on('peer:discovery', (peer) => {
   console.log('Discovered:', peer.id.toB58String())
-  // Note how we need to dial, even if just to warm up the Connection (by not
-  // picking any protocol) in order to get a full Connection. The Peer Discovery
-  // doesn't make any decisions for you.
-  node.dial(peer, () => {})
 })
 
-// Once the dial is complete, this event is emitted.
-node.on('peer:connect', (peer) => {
-  console.log('Connection established to:', peer.id.toB58String())
-})
+await node.start()
 ```
 
 From running [1.js](./1.js), you should see the following:
@@ -128,10 +118,9 @@ const createNode = () => {
     },
     config: {
       peerDiscovery: {
-        bootstrap: {
-          interval: 2000,
-          enabled: true,
-          list: bootstrapers
+        mdns: {
+          interval: 20e3,
+          enabled: true
         }
       }
     }

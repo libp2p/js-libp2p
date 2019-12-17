@@ -5,7 +5,6 @@ const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
-const PeerInfo = require('peer-info')
 const Bootstrap = require('libp2p-bootstrap')
 
 // Find this list at: https://github.com/ipfs/js-ipfs/blob/master/src/core/runtime/config-nodejs.json
@@ -22,11 +21,7 @@ const bootstrapers = [
 ]
 
 ;(async () => {
-  const peerInfo = await PeerInfo.create()
-  peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-
   const node = await Libp2p.create({
-    peerInfo,
     modules: {
       transport: [TCP],
       streamMuxer: [Mplex],
@@ -36,13 +31,15 @@ const bootstrapers = [
     config: {
       peerDiscovery: {
         bootstrap: {
-          interval: 2000,
+          interval: 60e3,
           enabled: true,
           list: bootstrapers
         }
       }
     }
   })
+
+  node.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
 
   node.on('peer:discovery', (peer) => {
     // No need to dial, autoDial is on
