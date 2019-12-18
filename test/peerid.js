@@ -10,6 +10,7 @@ const multihash = require('multihashes')
 const crypto = require('libp2p-crypto')
 const rsaUtils = require('libp2p-crypto/src/keys/rsa-utils')
 const rsaClass = require('libp2p-crypto/src/keys/rsa-class')
+const promisify = require('promisify-es6')
 
 const sample = {
   id: '122019318b6e5e0cf93a2314bf01269a2cc23cd3dcd452d742cdb9379d8646f6e4a9',
@@ -23,7 +24,7 @@ describe('peer ID', () => {
 
   before(async () => {
     const encoded = Buffer.from(sample.privKey, 'base64')
-    peer = await PeerId.createFromPrivKey(encoded)
+    peer = await promisify(PeerId.createFromPrivKey)(encoded)
   })
 
   it('decoded public key', async () => {
@@ -34,14 +35,18 @@ describe('peer ID', () => {
 
     // get protobuf version of the private key
     const privateKeyProtobuf = peer.marshalPrivKey()
-    const key = await crypto.keys.unmarshalPrivateKey(privateKeyProtobuf)
+    const key = await promisify(crypto.keys.unmarshalPrivateKey, {
+      context: crypto.keys
+    })(privateKeyProtobuf)
     expect(key).to.exist()
   })
 
   it('encoded public key with DER', async () => {
     const jwk = rsaUtils.pkixToJwk(publicKeyDer)
     const rsa = new rsaClass.RsaPublicKey(jwk)
-    const keyId = await rsa.hash()
+    const keyId = await promisify(rsa.hash, {
+      context: rsa
+    })()
     const kids = multihash.toB58String(keyId)
     expect(kids).to.equal(peer.toB58String())
   })
@@ -55,7 +60,9 @@ describe('peer ID', () => {
       kid: '2011-04-29'
     }
     const rsa = new rsaClass.RsaPublicKey(jwk)
-    const keyId = await rsa.hash()
+    const keyId = await promisify(rsa.hash, {
+      context: rsa
+    })()
     const kids = multihash.toB58String(keyId)
     expect(kids).to.equal(peer.toB58String())
   })
@@ -63,7 +70,9 @@ describe('peer ID', () => {
   it('decoded private key', async () => {
     // get protobuf version of the private key
     const privateKeyProtobuf = peer.marshalPrivKey()
-    const key = await crypto.keys.unmarshalPrivateKey(privateKeyProtobuf)
+    const key = await promisify(crypto.keys.unmarshalPrivateKey, {
+      context: crypto.keys
+    })(privateKeyProtobuf)
     expect(key).to.exist()
   })
 })
