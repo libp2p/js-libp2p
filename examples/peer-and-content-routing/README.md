@@ -10,31 +10,27 @@ Content Routing is the category of modules that offer a way to find where conten
 
 This example builds on top of the [Protocol and Stream Muxing](../protocol-and-stream-muxing). We need to install `libp2p-kad-dht`, go ahead and `npm install libp2p-kad-dht`. If you want to see the final version, open [1.js](./1.js).
 
-First, let's update our bundle to support Peer Routing and Content Routing.
+First, let's update our config to support Peer Routing and Content Routing.
 
 ```JavaScript
-class MyBundle extends libp2p {
-  constructor (_options) {
-    const defaults = {
-      modules: {
-        transport: [ TCP ],
-        streamMuxer: [ Mplex ],
-        connEncryption: [ SECIO ],
-        // we add the DHT module that will enable Peer and Content Routing
-        dht: KadDHT
-      },
-      config: {
-        dht: {
-          // dht must be enabled
-          enabled: true,
-          kBucketSize: 20
-        }
-      }
-    }
+const Libp2p = require('libp2p')
+const KadDHT = require('libp2p-kad-dht')
 
-    super(defaultsDeep(_options, defaults))
+const node = await Libp2p.create({
+  modules: {
+    transport: [ TCP ],
+    streamMuxer: [ Mplex ],
+    connEncryption: [ SECIO ],
+    // we add the DHT module that will enable Peer and Content Routing
+    dht: KadDHT
+  },
+  config: {
+    dht: {
+      // dht must be enabled
+      enabled: true
+    }
   }
-}
+})
 ```
 
 Once that is done, we can use the createNode function we developed in the previous example to create 3 nodes. Connect node 1 to node 2 and node 2 to node 3. We will use node 2 as a way to find the whereabouts of node 3
@@ -44,22 +40,18 @@ const node1 = nodes[0]
 const node2 = nodes[1]
 const node3 = nodes[2]
 
-parallel([
-  (cb) => node1.dial(node2.peerInfo, cb),
-  (cb) => node2.dial(node3.peerInfo, cb),
-  // Set up of the cons might take time
-  (cb) => setTimeout(cb, 100)
-], (err) => {
-  if (err) { throw err }
+await Promise.all([
+  node1.dial(node2.peerInfo),
+  node2.dial(node3.peerInfo)
+])
 
-  //
-  node1.peerRouting.findPeer(node3.peerInfo.id, (err, peer) => {
-    if (err) { throw err }
+// Set up of the cons might take time
+await delay(100)
 
-    console.log('Found it, multiaddrs are:')
-    peer.multiaddrs.forEach((ma) => console.log(ma.toString()))
-  })
-})
+const peer = await node1.peerRouting.findPeer(node3.peerInfo.id)
+
+console.log('Found it, multiaddrs are:')
+peer.multiaddrs.forEach((ma) => console.log(ma.toString()))
 ```
 
 You should see the output being something like:
@@ -82,17 +74,12 @@ You can find this example completed in [2.js](./2.js), however as you will see i
 Instead of calling `peerRouting.findPeer`, we will use `contentRouting.provide` and `contentRouting.findProviders`.
 
 ```JavaScript
-node1.contentRouting.provide(cid, (err) => {
-  if (err) { throw err }
+await node1.contentRouting.provide(cid)
+console.log('Node %s is providing %s', node1.peerInfo.id.toB58String(), cid.toBaseEncodedString())
 
-  console.log('Node %s is providing %s', node1.peerInfo.id.toB58String(), cid.toBaseEncodedString())
+const provs = await all(node3.contentRouting.findProviders(cid, { timeout: 5000 }))
 
-  node3.contentRouting.findProviders(cid, 5000, (err, providers) => {
-    if (err) { throw err }
-
-    console.log('Found provider:', providers[0].id.toB58String())
-  })
-})
+console.log('Found provider:', providers[0].id.toB58String())
 ```
 
 The output of your program should look like:
