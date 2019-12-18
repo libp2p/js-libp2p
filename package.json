@@ -1,6 +1,6 @@
 {
   "name": "libp2p-keychain",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Key management and cryptographically protected messages",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
