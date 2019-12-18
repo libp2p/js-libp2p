@@ -41,9 +41,9 @@
   "homepage": "https://github.com/libp2p/js-libp2p-keychain#readme",
   "dependencies": {
     "err-code": "^2.0.0",
-    "interface-datastore": "^0.7.0",
-    "libp2p-crypto": "^0.16.2",
-    "merge-options": "^1.0.1",
+    "interface-datastore": "^0.8.0",
+    "libp2p-crypto": "^0.17.1",
+    "merge-options": "^2.0.0",
     "node-forge": "^0.9.1",
     "sanitize-filename": "^1.6.1"
   },
@@ -52,13 +52,13 @@
     "chai": "^4.2.0",
     "chai-string": "^1.5.0",
     "datastore-fs": "^0.9.0",
-    "datastore-level": "^0.12.1",
+    "datastore-level": "^0.14.0",
     "dirty-chai": "^2.0.1",
-    "level": "^5.0.1",
+    "level": "^6.0.0",
     "multihashes": "^0.4.15",
-    "peer-id": "^0.12.2",
+    "peer-id": "^0.13.5",
     "promisify-es6": "^1.0.3",
-    "rimraf": "^2.6.3"
+    "rimraf": "^3.0.0"
   },
   "contributors": [
     "Alan Shaw <alan.shaw@protocol.ai>",

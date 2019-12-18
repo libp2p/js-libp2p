@@ -9,7 +9,6 @@ chai.use(require('dirty-chai'))
 chai.use(require('chai-string'))
 const Keychain = require('../')
 const PeerId = require('peer-id')
-const promisify = require('promisify-es6')
 
 module.exports = (datastore1, datastore2) => {
   describe('keychain', () => {
@@ -269,7 +268,7 @@ module.exports = (datastore1, datastore2) => {
 
       before(async function () {
         const encoded = Buffer.from(alicePrivKey, 'base64')
-        alice = await promisify(PeerId.createFromPrivKey)(encoded)
+        alice = await PeerId.createFromPrivKey(encoded)
       })
 
       it('private key can be imported', async () => {

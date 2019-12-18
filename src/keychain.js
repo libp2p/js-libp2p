@@ -5,7 +5,6 @@ const sanitize = require('sanitize-filename')
 const mergeOptions = require('merge-options')
 const crypto = require('libp2p-crypto')
 const DS = require('interface-datastore')
-const promisify = require('promisify-es6')
 const CMS = require('./cms')
 const errcode = require('err-code')
 
@@ -206,16 +205,9 @@ class Keychain {
 
     let keyInfo
     try {
-      const keypair = await promisify(crypto.keys.generateKeyPair, {
-        context: crypto.keys
-      })(type, size)
-
-      const kid = await promisify(keypair.id, {
-        context: keypair
-      })()
-      const pem = await promisify(keypair.export, {
-        context: keypair
-      })(this._())
+      const keypair = await crypto.keys.generateKeyPair(type, size)
+      const kid = await keypair.id()
+      const pem = await keypair.export(this._())
       keyInfo = {
         name: name,
         id: kid
@@ -367,12 +359,8 @@ class Keychain {
     try {
       const res = await this.store.get(dsname)
       const pem = res.toString()
-      const privateKey = await promisify(crypto.keys.import, {
-        context: crypto.keys
-      })(pem, this._())
-      return promisify(privateKey.export, {
-        context: privateKey
-      })(password)
+      const privateKey = await crypto.keys.import(pem, this._())
+      return privateKey.export(password)
     } catch (err) {
       return throwDelayed(err)
     }
@@ -400,21 +388,15 @@ class Keychain {
 
     let privateKey
     try {
-      privateKey = await promisify(crypto.keys.import, {
-        context: crypto.keys
-      })(pem, password)
+      privateKey = await crypto.keys.import(pem, password)
     } catch (err) {
       return throwDelayed(errcode(new Error('Cannot read the key, most likely the password is wrong'), 'ERR_CANNOT_READ_KEY'))
     }
 
     let kid
     try {
-      kid = await promisify(privateKey.id, {
-        context: privateKey
-      })()
-      pem = await promisify(privateKey.export, {
-        context: privateKey
-      })(this._())
+      kid = await privateKey.id()
+      pem = await privateKey.export(this._())
     } catch (err) {
       return throwDelayed(err)
     }
@@ -446,12 +428,8 @@ class Keychain {
     if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
 
     try {
-      const kid = await promisify(privateKey.id, {
-        context: privateKey
-      })()
-      const pem = await promisify(privateKey.export, {
-        context: privateKey
-      })(this._())
+      const kid = await privateKey.id()
+      const pem = await privateKey.export(this._())
       const keyInfo = {
         name: name,
         id: kid
