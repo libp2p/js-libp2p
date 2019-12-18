@@ -1,5 +1,5 @@
-# Private Networking with IPFS
-This example shows how to set up a private network of IPFS nodes.
+# Private Networking
+This example shows how to set up a private network of libp2p nodes.
 
 ## Setup
 Install dependencies:
