@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "bundle": "browserify src/index.js > public/bundle.js",
-    "serve": "static public -p 9090 -H '{\"Cache-Control\": \"no-cache, must-revalidate\"}'",
+    "serve": "static public -p 8080 -H '{\"Cache-Control\": \"no-cache, must-revalidate\"}'",
     "start": "npm run bundle && npm run serve"
   },
   "license": "MIT",

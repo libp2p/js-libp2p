@@ -7,7 +7,7 @@ async function createNode() {
   const peerInfo = await PeerInfo.create()
 
   const peerIdStr = peerInfo.id.toB58String()
-  const webrtcAddr = `/dns4/star-signal.cloud.ipfs.team/tcp/443/wss/p2p-webrtc-star/p2p/${peerIdStr}`
+  const webrtcAddr = `/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star/p2p/${peerIdStr}`
   peerInfo.multiaddrs.add(webrtcAddr)
 
   const node = new Node({
