@@ -16,7 +16,7 @@ generate(otherSwarmKey)
 
 ;(async () => {
   const node1 = await privateLibp2pNode(swarmKey)
-  const node2 = await privateLibp2pNode(otherSwarmKey)
+  const node2 = await privateLibp2pNode(swarmKey)
   // const node2 = await privateLibp2pNode(otherSwarmKey)
 
   await Promise.all([
