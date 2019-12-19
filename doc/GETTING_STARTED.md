@@ -1,25 +1,21 @@
-# GETTING STARTED
+# Getting Started
 
-Welcome to libp2p, let's get you setup your first and fully functional libp2p node 🚀
+Welcome to libp2p, this guide will walk you through setting up a fully functional libp2p node 🚀
 
 - [Getting Started](#getting-started)
   - [Install](#install)
-  - [Usage](#usage)
+  - [Configuring libp2p](#configuring-libp2p)
     - [Basic setup](#basic-setup)
-      - [Transport](#transport)
+      - [Transports](#transports)
       - [Connection Encryption](#connection-encryption)
-      - [Overview](#overview)
+      - [Running Libp2p](#running-libp2p)
     - [Custom setup](#custom-setup)
       - [Multiplexing](#multiplexing)
       - [Peer Discovery](#peer-discovery)
       - [Peer Routing](#peer-routing)
       - [Content Routing](#content-routing)
-      - [Pubsub](#pubsub)
+    - [Pubsub](#pubsub)
   - [What is next](#what-is-next)
-
-libp2p is a composable and modular networking stack, which empowers its users to just take the modules they need. All the flexibility it provides, in order to fulfil every network requirement comes with a cost. For getting a libp2p node running, users are faced with a large number of possible configuration setups, which involves a considerable number of concepts that they might not be familiar with.
-
-This document intends to help in the first contact with `js-libp2p`.
 
 ## Install
 
@@ -29,86 +25,84 @@ The first step is to install libp2p in your project:
 npm install libp2p
 ```
 
-## Usage
+## Configuring libp2p
 
-Configuring libp2p should not be a single step, but a continuous task. This includes configuring libp2p to achieve all the project requirements, as well as possible optimizations. Regardless of how you configure libp2p, the top level API will always remain the same.
-
-For creating a `js-libp2p` node you should use [Libp2p.create](./API.md#create). As stated in the API docs, we need to provide the [libp2p configuration](./CONFIGURATION.md) as a parameter. If you did not read the configuration document yet, it is worth you read it before continuing.
+If you're new to libp2p, we recommend configuring your node in stages, as this can make troubleshooting configuration issues much easier. In this guide, we'll do just that. If you're more experienced with libp2p, you may wish to jump to the [Configuration readme](./CONFIGURATION.md).
 
 ### Basic setup
 
-The first step should be to just get a `js-libp2p` node running. The required modules for this are the **transport** and **connEncryption**. They must be provided via a `modules` property into the `Libp2p.create` options parameter.
+Now that we have libp2p installed, let's configure the absolute minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. Let's start by setting up a Transport.
 
 #### Transports
 
-Libp2p uses transports to establish connections between peers over the network. In other words, it can use one or more transports to dial and listen for connections.
+Libp2p uses Transports to establish connections between peers over the network. You can configure 1 Transport, or as many as you like. Supporting more Transports will improve the ability for other nodes on the network to communicate with you.
 
-These transports should be decided according to the runtime where you expect the application to run. Looking at the [available transports](./CONFIGURATION.md#transport), you might start by using `libp2p-tcp` if you are in a node.js environment, or `libp2p-websockets` and `libp2p-webrtc-star` in a browser environment (examples).
+You should select Transports according to the runtime where your application will run. You can see a list of some of the available Transports in the [configuration readme](./CONFIGURATION.md#transport). We are going to install `libp2p-websockets`, as it can be used in both Node.js and the browser.
 
-Taking into account a context where we are in a node.js environment, but have a requirement to just use `websockets`, we should go with `libp2p-websockets`. Start by installing that libp2p module:
+Start by installing `libp2p-websockets`:
 
 ```sh
 npm install libp2p-websockets
 ```
 
-and finally add it into the `modules.transport`, as an array:
+Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](./API.md#create) method, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `modules.transport` array:
 
 ```js
 const Libp2p = require('libp2p')
-const WEBSOCKETS = require('libp2p-websockets')
+const WebSockets = require('libp2p-websockets')
 
 const node = await Libp2p.create({
   modules: {
-    transport: [WEBSOCKETS]
+    transport: [WebSockets]
   }
 })
 ```
 
-As other transports are being developed over time, you might reavaluate this choice later and add new transports that might suit better your requirements. You might want to remove the transports you had before, or just add new transports in order to be able to establish connections with peers only supporting those.
+As new Transports are created, you may wish to reevaluate your needs and select the latest Transports that best suit your requirements. You may wish to remove the Transports you had before, or simply append the new Transports to `modules.transport` in order to establish connections with peers that support either.
 
 #### Connection Encryption
 
-Libp2p does not make assumptions and allows developers to pick just the modules they need. However, it requires that all connections are encrypted to ensure that all exchanged data is properly protected.
+Encryption is an important part of communicating on the libp2p network. Every connection must be encrypted to help ensure security for everyone. As such, Connection Encryption (Crypto) is a required component of libp2p.
 
-Looking at the [available connection encryption](./CONFIGURATION.md#connection-encryption) protocols, you can start by using `libp2p-secio` and revisit this choice later on, as you get to know more about libp2p, as well as new other protocols for securing connections appear. You can install `libp2p-secio` and add it to your libp2p node as follows:
+There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [available Connection Encryption](./CONFIGURATION.md#connection-encryption) section of the configuration readme. For now, we are going to configure our node to use the `libp2p-secio` module.
 
 ```sh
 npm install libp2p-secio
 ```
 
+With `libp2p-secio` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
+
 ```js
 const Libp2p = require('libp2p')
+const WebSockets = require('libp2p-websockets')
 const SECIO = require('libp2p-secio')
 
 const node = await Libp2p.create({
   modules: {
+    transport: [WebSockets],
     connEncryption: [SECIO]
   }
 })
 ```
 
-#### Overview
+#### Running Libp2p
 
-With the configuration achieved from the previous steps, you are now able to start your libp2p node, and even connect to other peers if the addresses of them are known to you. Now is a good time to revisit the [API](./API.md) document, more specifically [API#start](./API.md#start), [API#stop](./API.md#stop) and [API#dial](./API.md#dial). You can check the following example starting and stopping the node.
+Now that you have configured a [`Transport`][transport] and [`Crypto`][crypto] module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
 
 ```js
 const Libp2p = require('libp2p')
-const WEBSOCKETS = require('libp2p-websockets')
+const WebSockets = require('libp2p-websockets')
 const SECIO = require('libp2p-secio')
 
 const node = await Libp2p.create({
   modules: {
-    transport: [WEBSOCKETS],
+    transport: [WebSockets],
     connEncryption: [SECIO]
   }
 })
 
 // start libp2p
 await node.start()
-
-// connect to a known peer through its multiaddr
-// const ma = '/ip4/104.236.176.52/tcp/9000/ws/p2p/QmSoLnSGccFuZQJzRadHn95W2CrSFmZuTdDWP8HXaHca9z'
-// await node.dial(ma)
 
 // stop libp2p
 await node.stop()
@@ -128,7 +122,7 @@ In this context, your node will not be efficient if you open multiple connection
 
 Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) protocols, we are only able to use `libp2p-mplex` for the time being. Bear in mind that future libp2p transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
 
-You can install `libp2p-mplex` and add it to your libp2p node as follows in the next example. You should revisit the [API](./API.md) document, more specifically [API#dial](./API.md#dial) and [API#handle](./API.md#handle). 
+You can install `libp2p-mplex` and add it to your libp2p node as follows in the next example. You should revisit the [API](./API.md) document, more specifically [API#dial](./API.md#dial) and [API#handle](./API.md#handle).
 
 We will also install the next dependencies for easily work with [async iterable duplex streams](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9).
 
@@ -433,3 +427,7 @@ setInterval(async () => {
 There are a lot of other concepts within `libp2p`, mostly regarding performance improvement through connection management configuration, metrics, create your own modules, among other.
 
 We will not cover this in the **Getting Started** guide, but feel free to open issues if you need any help.
+
+
+[transport]: https://github.com/libp2p/js-interfaces/tree/master/src/transport
+[crypto]: https://github.com/libp2p/js-interfaces/tree/master/src/crypto
