@@ -45,7 +45,7 @@ Start by installing `libp2p-websockets`:
 npm install libp2p-websockets
 ```
 
-Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](./API.md#create) method, which takes a single configuration object as it's only parameter. We can add the Transport by passing it into the `modules.transport` array:
+Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](./API.md#create) method, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `modules.transport` array:
 
 ```js
 const Libp2p = require('libp2p')
@@ -70,7 +70,7 @@ There are a growing number of Crypto modules being developed for libp2p. As thos
 npm install libp2p-secio
 ```
 
-With `libp2p-secio` installed, we can add it to our existing configuration by important it and adding it to the `modules.connEncryption` array:
+With `libp2p-secio` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
 
 ```js
 const Libp2p = require('libp2p')
