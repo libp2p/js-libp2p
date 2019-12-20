@@ -1,3 +1,13 @@
+<a name="0.14.3"></a>
+## [0.14.3](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.2...v0.14.3) (2019-12-20)
+
+
+### Bug Fixes
+
+* transport should not handle connection if upgradeInbound throws ([#119](https://github.com/libp2p/js-libp2p-tcp/issues/119)) ([21f8747](https://github.com/libp2p/js-libp2p-tcp/commit/21f8747))
+
+
+
 <a name="0.14.2"></a>
 ## [0.14.2](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.1...v0.14.2) (2019-12-06)
 
