@@ -2,7 +2,10 @@
 
 const net = require('net')
 const EventEmitter = require('events')
-const log = require('debug')('libp2p:tcp:listener')
+const debug = require('debug')
+const log = debug('libp2p:tcp:listener')
+log.error = debug('libp2p:tcp:listener:error')
+
 const toConnection = require('./socket-to-conn')
 const { CODE_P2P } = require('./constants')
 const {
@@ -20,7 +23,14 @@ module.exports = ({ handler, upgrader }, options) => {
     const maConn = toConnection(socket, { listeningAddr })
     log('new inbound connection %s', maConn.remoteAddr)
 
-    const conn = await upgrader.upgradeInbound(maConn)
+    let conn
+    try {
+      conn = await upgrader.upgradeInbound(maConn)
+    } catch (err) {
+      log.error('inbound connection failed to upgrade', err)
+      return maConn.close()
+    }
+
     log('inbound connection %s upgraded', maConn.remoteAddr)
 
     trackConn(server, maConn)
