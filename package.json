@@ -42,7 +42,7 @@
     "class-is": "^1.1.0",
     "debug": "^4.1.1",
     "err-code": "^2.0.0",
-    "it-ws": "vasco-santos/it-ws#v2.1.1-rc.0",
+    "it-ws": "vasco-santos/it-ws#v2.1.1-rc.1",
     "libp2p-utils": "~0.1.0",
     "mafmt": "^7.0.0",
     "multiaddr": "^7.1.0",
@@ -55,7 +55,7 @@
     "bl": "^4.0.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
-    "interface-transport": "^0.7.0",
+    "libp2p-interfaces": "^0.2.0",
     "it-goodbye": "^2.0.1",
     "it-pipe": "^1.0.1",
     "streaming-iterables": "^4.1.0"

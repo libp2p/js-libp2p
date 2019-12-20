@@ -12,7 +12,7 @@ log.error = debug('libp2p:websockets:socket:error')
 
 // Convert a stream into a MultiaddrConnection
 // https://github.com/libp2p/interface-transport#multiaddrconnection
-module.exports = (socket, options = {}) => {
+module.exports = (stream, options = {}) => {
   const maConn = {
     async sink (source) {
       if (options.signal) {
@@ -20,7 +20,7 @@ module.exports = (socket, options = {}) => {
       }
 
       try {
-        await socket.sink((async function * () {
+        await stream.sink((async function * () {
           for await (const chunk of source) {
             // Convert BufferList to Buffer
             yield Buffer.isBuffer(chunk) ? chunk : chunk.slice()
@@ -33,15 +33,15 @@ module.exports = (socket, options = {}) => {
       }
     },
 
-    source: options.signal ? abortable(socket.source, options.signal) : socket.source,
+    source: options.signal ? abortable(stream.source, options.signal) : stream.source,
 
-    conn: socket,
+    conn: stream,
 
-    localAddr: options.localAddr || (socket.localAddress && socket.localPort
-      ? toMultiaddr(socket.localAddress, socket.localPort) : undefined),
+    localAddr: options.localAddr || (stream.localAddress && stream.localPort
+      ? toMultiaddr(stream.localAddress, stream.localPort) : undefined),
 
     // If the remote address was passed, use it - it may have the peer ID encapsulated
-    remoteAddr: options.remoteAddr || toMultiaddr(socket.remoteAddress, socket.remotePort),
+    remoteAddr: options.remoteAddr || toMultiaddr(stream.remoteAddress, stream.remotePort),
 
     timeline: { open: Date.now() },
 
@@ -49,18 +49,27 @@ module.exports = (socket, options = {}) => {
       const start = Date.now()
 
       try {
-        await pTimeout(socket.close(), CLOSE_TIMEOUT)
+        await pTimeout(stream.close(), CLOSE_TIMEOUT)
       } catch (err) {
         const { host, port } = maConn.remoteAddr.toOptions()
-        log('timeout closing socket to %s:%s after %dms, destroying it manually',
+        log('timeout closing stream to %s:%s after %dms, destroying it manually',
           host, port, Date.now() - start)
 
-        socket.destroy()
+        stream.destroy()
       } finally {
         maConn.timeline.close = Date.now()
       }
     }
   }
+
+  stream.socket.once && stream.socket.once('close', () => {
+    // In instances where `close` was not explicitly called,
+    // such as an iterable stream ending, ensure we have set the close
+    // timeline
+    if (!maConn.timeline.close) {
+      maConn.timeline.close = Date.now()
+    }
+  })
 
   return maConn
 }
