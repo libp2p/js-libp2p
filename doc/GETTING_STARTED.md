@@ -8,9 +8,9 @@ Welcome to libp2p, this guide will walk you through setting up a fully functiona
     - [Basic setup](#basic-setup)
       - [Transports](#transports)
       - [Connection Encryption](#connection-encryption)
+      - [Multiplexing](#multiplexing)
       - [Running Libp2p](#running-libp2p)
     - [Custom setup](#custom-setup)
-      - [Multiplexing](#multiplexing)
       - [Peer Discovery](#peer-discovery)
       - [Peer Routing](#peer-routing)
       - [Content Routing](#content-routing)
@@ -31,7 +31,7 @@ If you're new to libp2p, we recommend configuring your node in stages, as this c
 
 ### Basic setup
 
-Now that we have libp2p installed, let's configure the absolute minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. Let's start by setting up a Transport.
+Now that we have libp2p installed, let's configure the absolute minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. Moreover, we recommend that a basic setup should also have a [**Stream Multiplexer**](streamMuxer) configured. Let's start by setting up a Transport.
 
 #### Transports
 
@@ -84,35 +84,6 @@ const node = await Libp2p.create({
   }
 })
 ```
-
-#### Running Libp2p
-
-Now that you have configured a [`Transport`][transport] and [`Crypto`][crypto] module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
-
-```js
-const Libp2p = require('libp2p')
-const WebSockets = require('libp2p-websockets')
-const SECIO = require('libp2p-secio')
-
-const node = await Libp2p.create({
-  modules: {
-    transport: [WebSockets],
-    connEncryption: [SECIO]
-  }
-})
-
-// start libp2p
-await node.start()
-
-// stop libp2p
-await node.stop()
-```
-
-If you are not familiar with multiaddrs, you should read the [multiformats/js-multiaddr](https://github.com/multiformats/js-multiaddr) README.
-
-### Custom setup
-
-After having your libp2p node running, it is time to configure all its features according to your project needs.
 
 #### Multiplexing
 
@@ -196,6 +167,37 @@ await node.stop()
 Protocols design is similar to an http api, where each protocol has an handler, receives a message and returns a response.
 
 Note that there are a lot of useful modules for working with async iterables, you can find them on [alanshaw/it-awesome](https://github.com/alanshaw/it-awesome). For example, we could use [alanshaw/paramap-it](https://github.com/alanshaw/paramap-it) to simplify the transform function above.
+
+#### Running Libp2p
+
+Now that you have configured a [`Transport`][transport], [`Crypto`][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
+
+```js
+const Libp2p = require('libp2p')
+const WebSockets = require('libp2p-websockets')
+const SECIO = require('libp2p-secio')
+const MPLEX = require('libp2p-mplex')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [WebSockets],
+    connEncryption: [SECIO],
+    streamMuxer: [MPLEX]
+  }
+})
+
+// start libp2p
+await node.start()
+
+// stop libp2p
+await node.stop()
+```
+
+If you are not familiar with multiaddrs, you should read the [multiformats/js-multiaddr](https://github.com/multiformats/js-multiaddr) README.
+
+### Custom setup
+
+After having your libp2p node running, it is time to configure all its features according to your project needs.
 
 #### Peer Discovery
 
@@ -431,3 +433,4 @@ We will not cover this in the **Getting Started** guide, but feel free to open i
 
 [transport]: https://github.com/libp2p/js-interfaces/tree/master/src/transport
 [crypto]: https://github.com/libp2p/js-interfaces/tree/master/src/crypto
+[streamMuxer]: https://github.com/libp2p/js-interfaces/tree/master/src/stream-muxer
