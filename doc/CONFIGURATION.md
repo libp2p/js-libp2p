@@ -23,6 +23,7 @@
       - [Configuring Dialing](#configuring-dialing)
       - [Configuring Connection Manager](#configuring-connection-manager)
       - [Configuring Metrics](#configuring-metrics)
+      - [Customizing Transports](#customizing-transports)
   - [Configuration examples](#configuration-examples)
 
 ## Overview
@@ -495,6 +496,34 @@ const node = await Libp2p.create({
       15 * 60 * 1000 // 15 minutes
     ],
     maxOldPeersRetention: 50            // How many disconnected peers we will retain stats for
+  }
+})
+```
+
+#### Customizing Transports
+
+Some Transports can be passed additional options when they are created. For example, `libp2p-webrtc-star` accepts an optional, custom `wrtc` implementation. In addition to libp2p passing itself and an `Upgrader` to handle connection upgrading, libp2p will also pass the options, if they are provided, from `config.transport`.
+
+```js
+const Libp2p = require('libp2p')
+const WebRTCStar = require('libp2p-webrtc-star')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+const wrtc = require('wrtc')
+
+const transportKey = WebRTCStar.prototype[Symbol.toStringTag]
+const node = await Libp2p.create({
+  modules: {
+    transport: [WebRTCStar],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO]
+  },
+  config: {
+    transport: {
+      [transportKey]: {
+        wrtc // You can use `wrtc` when running in Node.js
+      }
+    }
   }
 })
 ```

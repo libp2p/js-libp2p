@@ -114,7 +114,9 @@ class Libp2p extends EventEmitter {
     })
 
     this._modules.transport.forEach((Transport) => {
-      this.transportManager.add(Transport.prototype[Symbol.toStringTag], Transport)
+      const key = Transport.prototype[Symbol.toStringTag]
+      const transportOptions = this._config.transport[key]
+      this.transportManager.add(key, Transport, transportOptions)
     })
     // TODO: enable relay if enabled
     this.transportManager.add(Circuit.prototype[Symbol.toStringTag], Circuit)
