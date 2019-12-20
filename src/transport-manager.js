@@ -29,7 +29,7 @@ class TransportManager {
    * @param {*} transportOptions Additional options to pass to the transport
    * @returns {void}
    */
-  add (key, Transport, transportOptions={}) {
+  add (key, Transport, transportOptions = {}) {
     log('adding %s', key)
     if (!key) {
       throw errCode(new Error(`Transport must have a valid key, was given '${key}'`), codes.ERR_INVALID_KEY)
