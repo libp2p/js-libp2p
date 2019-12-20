@@ -115,6 +115,35 @@ describe('libp2p.transportManager', () => {
     expect(libp2p.transportManager._transports.size).to.equal(2)
   })
 
+  it('should be able to customize a transport', () => {
+    const spy = sinon.spy()
+    const key = spy.prototype[Symbol.toStringTag] = 'TransportSpy'
+    const customOptions = {
+      another: 'value'
+    }
+    libp2p = new Libp2p({
+      peerInfo,
+      modules: {
+        transport: [spy]
+      },
+      config: {
+        transport: {
+          [key]: customOptions
+        }
+      }
+    })
+
+    expect(libp2p.transportManager).to.exist()
+    // Our transport and circuit relay
+    expect(libp2p.transportManager._transports.size).to.equal(2)
+    expect(spy).to.have.property('callCount', 1)
+    expect(spy.getCall(0)).to.have.deep.property('args', [{
+      ...customOptions,
+      libp2p,
+      upgrader: libp2p.upgrader
+    }])
+  })
+
   it('starting and stopping libp2p should start and stop TransportManager', async () => {
     libp2p = new Libp2p({
       peerInfo,
