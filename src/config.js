@@ -41,7 +41,8 @@ const DefaultConfig = {
         enabled: false,
         active: false
       }
-    }
+    },
+    transport: {}
   }
 }
 

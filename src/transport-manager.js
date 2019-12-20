@@ -26,9 +26,10 @@ class TransportManager {
    *
    * @param {String} key
    * @param {Transport} Transport
+   * @param {*} transportOptions Additional options to pass to the transport
    * @returns {void}
    */
-  add (key, Transport) {
+  add (key, Transport, transportOptions = {}) {
     log('adding %s', key)
     if (!key) {
       throw errCode(new Error(`Transport must have a valid key, was given '${key}'`), codes.ERR_INVALID_KEY)
@@ -38,6 +39,7 @@ class TransportManager {
     }
 
     const transport = new Transport({
+      ...transportOptions,
       libp2p: this.libp2p,
       upgrader: this.upgrader
     })
