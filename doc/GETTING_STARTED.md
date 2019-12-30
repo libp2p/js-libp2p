@@ -60,6 +60,13 @@ const node = await Libp2p.create({
 
 As new Transports are created, you may wish to reevaluate your needs and select the latest Transports that best suit your requirements. You may wish to remove the Transports you had before, or simply append the new Transports to `modules.transport` in order to establish connections with peers that support either.
 
+<details><summary>Read More</summary>
+If you want to know more about libp2p transports, you should read the following content:
+
+- https://docs.libp2p.io/concepts/transport
+- https://github.com/libp2p/specs/tree/master/connections
+</details>
+
 #### Connection Encryption
 
 Encryption is an important part of communicating on the libp2p network. Every connection must be encrypted to help ensure security for everyone. As such, Connection Encryption (Crypto) is a required component of libp2p.
@@ -84,6 +91,13 @@ const node = await Libp2p.create({
   }
 })
 ```
+
+<details><summary>Read More</summary>
+If you want to know more about libp2p connection encryption, you should read the following content:
+
+- https://docs.libp2p.io/concepts/secure-comms
+- https://github.com/libp2p/specs/tree/master/connections
+</details>
 
 #### Multiplexing
 
@@ -167,6 +181,14 @@ await node.stop()
 Protocols design is similar to an http api, where each protocol has an handler, receives a message and returns a response.
 
 Note that there are a lot of useful modules for working with async iterables, you can find them on [alanshaw/it-awesome](https://github.com/alanshaw/it-awesome). For example, we could use [alanshaw/paramap-it](https://github.com/alanshaw/paramap-it) to simplify the transform function above.
+
+<details><summary>Read More</summary>
+If you want to know more about libp2p stream multiplexing, you should read the following content:
+
+- https://docs.libp2p.io/concepts/stream-multiplexing
+- https://github.com/libp2p/specs/tree/master/connections
+- https://github.com/libp2p/specs/tree/master/mplex
+</details>
 
 #### Running Libp2p
 
@@ -267,6 +289,12 @@ node.on('peer:discovery', (peer) => {
 await node.start()
 ```
 
+<details><summary>Read More</summary>
+If you want to know more about libp2p peer discovery, you should read the following content:
+
+- https://github.com/libp2p/specs/blob/master/discovery/mdns.md
+</details>
+
 #### Peer Routing
 
 Peer Routing offers a way to find other peers in the network by issuing queries using a Peer Routing algorithm, through their peer ids.
@@ -317,6 +345,12 @@ const peerInfo = await libp2p.peerRouting.findPeer(peerId)
 ```
 
 You can find out more about peer routing on the example provided on [./CONFIGURATION.md#setup-with-content-and-peer-routing](./CONFIGURATION.md#setup-with-content-and-peer-routing).
+
+<details><summary>Read More</summary>
+If you want to know more about libp2p peer routing, you should read the following content:
+
+- https://docs.libp2p.io/concepts/peer-routing
+</details>
 
 #### Content Routing
 
@@ -374,6 +408,12 @@ for await (const provider of libp2p.contentRouting.findProviders(cid2)) {
 
 If you are not familiar with `CIDs`, you should have a look at [multiformats/js-cid](https://github.com/multiformats/js-cid). Moreover, you can find out more about peer routing on the example provided on [./CONFIGURATION.md#setup-with-content-and-peer-routing](./CONFIGURATION.md#setup-with-content-and-peer-routing).
 
+<details><summary>Read More</summary>
+If you want to know more about libp2p content routing, you should read the following content:
+
+- https://docs.libp2p.io/concepts/content-routing
+</details>
+
 ### Pubsub
 
 If you are looking for real time message exchange between peers, pubsub may be what you are looking for. Publish/Subscribe is a system where peers congregate around topics they are interested in. Peers interested in a topic are said to be subscribed to that topic and should receive the data published on it from other peers.
@@ -421,8 +461,14 @@ node.pubsub.subscribe(topic, (msg) => {
 setInterval(async () => {
   await node.pubsub.publish(topic, Buffer.from('heartbeat data'))
 }, 1000)
-
 ```
+
+<details><summary>Read More</summary>
+If you want to know more about libp2p pubsub, you should read the following content:
+
+- https://docs.libp2p.io/concepts/publish-subscribe
+- https://github.com/libp2p/specs/tree/master/pubsub
+</details>
 
 ## What is next
 

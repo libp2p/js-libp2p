@@ -49,6 +49,7 @@ We've come a long way, but this project is still in Alpha, lots of development i
 - [Usage](#usage)
   - [Configuration](#configuration)
   - [API](#api)
+  - [Getting Started](#getting-started)
   - [Tutorials and Examples](#tutorials-and-examples)
 - [Development](#development)
   - [Tests](#tests)
@@ -88,6 +89,10 @@ For all the information on how you can configure libp2p see [CONFIGURATION.md](.
 ### API
 
 The specification is available on [API.md](./doc/API.md).
+
+### Getting started
+
+If you are starting your journey with `js-libp2p`, you should start by going through [GETTING_STARTED.md](./doc/GETTING_STARTED.md).
 
 ### Tutorials and Examples
 
