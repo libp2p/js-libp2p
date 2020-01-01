@@ -47,7 +47,7 @@
     "buffer-split": "^1.0.0",
     "err-code": "^1.1.2",
     "multihashes": "~0.4.15",
-    "multihashing-async": "~0.7.0",
+    "multihashing-async": "^0.8.0",
     "protons": "^1.0.1"
   },
   "contributors": [
