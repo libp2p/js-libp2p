@@ -41,6 +41,10 @@ const bootstrapers = [
 
   node.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
 
+  node.on('peer:connect', (peer) => {
+    console.log('Connection established to:', peer.id.toB58String())	// Emitted when a peer has been found
+  })
+
   node.on('peer:discovery', (peer) => {
     // No need to dial, autoDial is on
     console.log('Discovered:', peer.id.toB58String())
