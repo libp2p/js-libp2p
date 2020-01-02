@@ -6,23 +6,30 @@ The feature of agreeing on a protocol over an established connection is what we 
 
 # 1. Handle multiple protocols
 
-Let's see _protocol multiplexing_ in action! You will need the following modules for this example: `libp2p`, `libp2p-tcp`, `peer-info`, `async` and `pull-stream`. This example reuses the base left by the [Transports](../transports) example. You can see the complete solution at [1.js](./1.js).
+Let's see _protocol multiplexing_ in action! You will need the following modules for this example: `libp2p`, `libp2p-tcp`, `peer-info`, `it-pipe`, `it-buffer` and `streaming-iterables`. This example reuses the base left by the [Transports](../transports) example. You can see the complete solution at [1.js](./1.js).
 
 After creating the nodes, we need to tell libp2p which protocols to handle.
 
 ```JavaScript
+const pipe = require('it-pipe')
+const { map } = require('streaming-iterables')
+const { toBuffer } = require('it-buffer')
+
 // ...
 const node1 = nodes[0]
 const node2 = nodes[1]
 
-// Here we are telling libp2p that is someone dials this node to talk with the `/your-protocol`
-// multicodec, the protocol identifier, please call this callback and give it the connection
+// Here we are telling libp2p that if someone dials this node to talk with the `/your-protocol`
+// multicodec, the protocol identifier, please call this handler and give it the stream
 // so that incomming data can be handled
-node2.handle('/your-protocol', (protocol, conn) => {
-  pull(
-    conn,
-    pull.map((v) => v.toString()),
-    pull.log()
+node2.handle('/your-protocol', ({ stream }) => {
+  pipe(
+    stream,
+    source => (async function () {
+      for await (const msg of source) {
+        console.log(msg.toString())
+      }
+    })()
   )
 })
 ```
@@ -30,53 +37,54 @@ node2.handle('/your-protocol', (protocol, conn) => {
 After the protocol is _handled_, now we can dial to it.
 
 ```JavaScript
-node1.dialProtocol(node2.peerInfo, '/your-protocol', (err, conn) => {
-  if (err) { throw err }
-  pull(pull.values(['my own protocol, wow!']), conn)
-})
+const { stream } = await node1.dialProtocol(node2.peerInfo, ['/your-protocol'])
+
+await pipe(
+  ['my own protocol, wow!'],
+  stream
+)
 ```
 
 You might have seen this in the [Transports](../transports) examples. However, what it was not explained is that you can do more than exact string matching, for example, you can use semver.
 
 ```JavaScript
-node2.handle('/another-protocol/1.0.1', (protocol, conn) => {
-  pull(
-    conn,
-    pull.map((v) => v.toString()),
-    pull.log()
+node2.handle('/another-protocol/1.0.1', ({ stream }) => {
+  pipe(
+    stream,
+    async function (source) {
+      for await (const msg of source) {
+        console.log(msg.toString())
+      }
+    }
   )
 })
 // ...
-node1.dialProtocol(node2.peerInfo, '/another-protocol/1.0.0', (err, conn) => {
-  if (err) { throw err }
-  pull(pull.values(['semver me please']), conn)
-})
+const { stream } = await node1.dialProtocol(node2.peerInfo, ['/another-protocol/1.0.0'])
+
+await pipe(
+  ['my own protocol, wow!'],
+  stream
+)
 ```
 
 This feature is super power for network protocols. It works in the same way as versioning your RPC/REST API, but for anything that goes in the wire. We had to use this feature to upgrade protocols within the IPFS Stack (i.e Bitswap) and we successfully managed to do so without any network splits.
 
-There is still one last feature, you can create your custom match functions.
+There is still one last feature, you can provide multiple protocols for the same handler. If you have a backwards incompatible change, but it only requires minor changes to the code, you may prefer to do protocol checking instead of having multiple handlers
 
 ```JavaScript
-node2.handle('/custom-match-func', (protocol, conn) => {
-  pull(
-    conn,
-    pull.map((v) => v.toString()),
-    pull.log()
-  )
-}, (myProtocol, requestedProtocol, callback) => {
-  // This is all custom. I'm checking the base path matches, think of this
-  // as a HTTP routing table.
-  if (myProtocol.indexOf(requestedProtocol)) {
-    callback(null, true)
-  } else {
-    callback(null, false)
+node2.handle(['/another-protocol/1.0.0', '/another-protocol/2.0.0'], ({ protocol, stream }) => {
+  if (protocol === '/another-protocol/2.0.0') {
+    // handle backwards compatibility
   }
-})
-// ...
-node1.dialProtocol(node2.peerInfo, '/custom-match-func/some-query', (err, conn) => {
-  if (err) { throw err }
-  pull(pull.values(['do I fall into your criteria?']), conn)
+
+  pipe(
+    stream,
+    async function (source) {
+      for await (const msg of source) {
+        console.log(msg.toString())
+      }
+    }
+  )
 })
 ```
 
@@ -84,77 +92,68 @@ Try all of this out by executing [1.js](./1.js).
 
 # 2. Reuse existing connection
 
-The example above would require a node to create a whole new connection for every time it dials in one of the protocols, this is a waste of resources and also it might be simply not possible (e.g lack of file descriptors, not enough ports being open, etc). What we really want is to dial a connection once and then multiplex several virtual connections (stream) over a single connection, this is where _stream multiplexing_ comes into play.
+The examples above would require a node to create a whole new connection for every time it dials in one of the protocols, this is a waste of resources and also it might be simply not possible (e.g lack of file descriptors, not enough ports being open, etc). What we really want is to dial a connection once and then multiplex several virtual connections (stream) over a single connection, this is where _stream multiplexing_ comes into play.
 
-Stream multiplexing is a old concept, in fact it happens in many of the layers of the [OSI System](https://en.wikipedia.org/wiki/OSI_model), in libp2p we make this feature to our avail by letting the user pick which module for stream multiplexing to use.
+Stream multiplexing is an old concept, in fact it happens in many of the layers of the [OSI System](https://en.wikipedia.org/wiki/OSI_model). In libp2p, we make this feature to our avail by letting the user pick which module for stream multiplexing to use.
 
-Currently, we have two available [libp2p-spdy](https://github.com/libp2p/js-libp2p-spdy) and [libp2p-mplex](https://github.com/libp2p/js-libp2p-mplex) and pluging them in is as easy as adding another transport. Let's revisit our libp2p bundle.
+Currently, we have [libp2p-mplex](https://github.com/libp2p/js-libp2p-mplex) and pluging it in is as easy as adding a transport. Let's revisit our libp2p configuration.
 
 ```JavaScript
-const SPDY = require('libp2p-spdy')
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
 //...
-class MyBundle extends libp2p {
-  constructor (_options) {
-    const defaults = {
-      modules: {
-        transport: [ TCP ],
-        // Here we are adding the SPDY muxer to our libp2p bundle.
-      // Thanks to protocol muxing, a libp2p bundle can support multiple Stream Muxers at the same
-      // time and pick the right one when dialing to a node
-        streamMuxer: [ SPDY ]
-      }
-    }
 
-    super(defaultsDeep(_options, defaults))
-  }
+const createNode = () => {
+  return Libp2p.create({
+    modules: {
+      transport: [ TCP ],
+      streamMuxer: [ Mplex ]
+    }
+  })
 }
 ```
 
 With this, we can dial as many times as we want to a peer and always reuse the same established underlying connection.
 
 ```JavaScript
-node2.handle('/a', (protocol, conn) => {
-  pull(
-    conn,
-    pull.map((v) => v.toString()),
-    pull.log()
+node2.handle(['/a', '/b'], ({ protocol, stream }) => {
+  pipe(
+    stream,
+    async function (source) {
+      for await (const msg of source) {
+        console.log(`from: ${protocol}, msg: ${msg.toString()}`)
+      }
+    }
   )
 })
 
-node2.handle('/b', (protocol, conn) => {
-  pull(
-    conn,
-    pull.map((v) => v.toString()),
-    pull.log()
-  )
-})
+const { stream } = await node1.dialProtocol(node2.peerInfo, ['/a'])
+await pipe(
+  ['protocol (a)'],
+  stream
+)
 
-series([
-  (cb) => node1.dialProtocol(node2.peerInfo, '/a', (err, conn) => {
-    if (err) { throw err }
-    pull(pull.values(['protocol (a)']), conn)
-    cb()
-  }),
-  (cb) => node1.dialProtocol(node2.peerInfo, '/b', (err, conn) => {
-    if (err) { throw err }
-    pull(pull.values(['protocol (b)']), conn)
-    cb()
-  }),
-  (cb) => node1.dialProtocol(node2.peerInfo, '/b', (err, conn) => {
-    if (err) { throw err }
-    pull(pull.values(['another conn on protocol (b)']), conn)
-    cb()
-  })
-])
+const { stream: stream2 } = await node1.dialProtocol(node2.peerInfo, ['/b'])
+await pipe(
+  ['protocol (b)'],
+  stream2
+)
+
+const { stream: stream3 } = await node1.dialProtocol(node2.peerInfo, ['/b'])
+await pipe(
+  ['another stream on protocol (b)'],
+  stream3
+)
 ```
 
 By running [2.js](./2.js) you should see the following result:
 
 ```
 > node 2.js
-protocol (a)
-protocol (b)
-another protocol (b)
+from: /a, msg: protocol (a)
+from: /b, msg: protocol (b)
+from: /b, msg: another stream on protocol (b)
 ```
 
 # 3. Bidirectional connections
@@ -168,8 +167,5 @@ You can see this working on example [3.js](./3.js). The result should look like 
 ```Bash
 > node 3.js
 from 1 to 2
-Addresses by which both peers are connected
-node 1 to node 2: /ip4/127.0.0.1/tcp/50629/p2p/QmZwMKTo6wG4Te9A6M2eJnWDpR8uhsGed4YRegnV5DcKiv
-node 2 to node 1: /ip4/127.0.0.1/tcp/50630/p2p/QmRgormJQeDyXhDKma11eUtksoh8vWmeBoxghVt4meauW9
 from 2 to 1
 ```

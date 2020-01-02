@@ -1,83 +1,63 @@
 'use strict'
 
-const libp2p = require('../../')
+const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
-const SPDY = require('libp2p-spdy')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
 const PeerInfo = require('peer-info')
-const waterfall = require('async/waterfall')
-const parallel = require('async/parallel')
-const series = require('async/series')
-const pull = require('pull-stream')
-const defaultsDeep = require('@nodeutils/defaults-deep')
 
-class MyBundle extends libp2p {
-  constructor (_options) {
-    const defaults = {
-      modules: {
-        transport: [ TCP ],
-        streamMuxer: [ SPDY ]
-      }
+const pipe = require('it-pipe')
+
+const createNode = async () => {
+  const peerInfo = await PeerInfo.create()
+  peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
+
+  const node = await Libp2p.create({
+    peerInfo,
+    modules: {
+      transport: [TCP],
+      streamMuxer: [MPLEX],
+      connEncryption: [SECIO]
     }
-
-    super(defaultsDeep(_options, defaults))
-  }
-}
-
-function createNode (callback) {
-  let node
-
-  waterfall([
-    (cb) => PeerInfo.create(cb),
-    (peerInfo, cb) => {
-      peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-      node = new MyBundle({
-        peerInfo
-      })
-      node.start(cb)
-    }
-  ], (err) => callback(err, node))
-}
-
-parallel([
-  (cb) => createNode(cb),
-  (cb) => createNode(cb)
-], (err, nodes) => {
-  if (err) { throw err }
-
-  const node1 = nodes[0]
-  const node2 = nodes[1]
-
-  node2.handle('/a', (protocol, conn) => {
-    pull(
-      conn,
-      pull.map((v) => v.toString()),
-      pull.log()
-    )
   })
 
-  node2.handle('/b', (protocol, conn) => {
-    pull(
-      conn,
-      pull.map((v) => v.toString()),
-      pull.log()
-    )
-  })
+  await node.start()
 
-  series([
-    (cb) => node1.dialProtocol(node2.peerInfo, '/a', (err, conn) => {
-      if (err) { throw err }
-      pull(pull.values(['protocol (a)']), conn)
-      cb()
-    }),
-    (cb) => node1.dialProtocol(node2.peerInfo, '/b', (err, conn) => {
-      if (err) { throw err }
-      pull(pull.values(['protocol (b)']), conn)
-      cb()
-    }),
-    (cb) => node1.dialProtocol(node2.peerInfo, '/b', (err, conn) => {
-      if (err) { throw err }
-      pull(pull.values(['another conn on protocol (b)']), conn)
-      cb()
-    })
+  return node
+}
+
+;(async () => {
+  const [node1, node2] = await Promise.all([
+    createNode(),
+    createNode()
   ])
-})
+
+  node2.handle(['/a', '/b'], ({ protocol, stream }) => {
+    pipe(
+      stream,
+      async function (source) {
+        for await (const msg of source) {
+          console.log(`from: ${protocol}, msg: ${msg.toString()}`)
+        }
+      }
+    )
+  })
+
+  const { stream: stream1 } = await node1.dialProtocol(node2.peerInfo, ['/a'])
+  await pipe(
+    ['protocol (a)'],
+    stream1
+  )
+
+  const { stream: stream2 } = await node1.dialProtocol(node2.peerInfo, ['/b'])
+  await pipe(
+    ['protocol (b)'],
+    stream2
+  )
+
+  const { stream: stream3 } = await node1.dialProtocol(node2.peerInfo, ['/b'])
+  await pipe(
+    ['another stream on protocol (b)'],
+    stream3
+  )
+})();

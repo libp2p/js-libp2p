@@ -1,102 +1,79 @@
 'use strict'
 
-const libp2p = require('../../')
+const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
 const PeerInfo = require('peer-info')
-const waterfall = require('async/waterfall')
-const parallel = require('async/parallel')
-const pull = require('pull-stream')
-const defaultsDeep = require('@nodeutils/defaults-deep')
 
-class MyBundle extends libp2p {
-  constructor (_options) {
-    const defaults = {
-      modules: {
-        transport: [ TCP ]
-      }
+const pipe = require('it-pipe')
+
+const createNode = async () => {
+  const peerInfo = await PeerInfo.create()
+  peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
+
+  const node = await Libp2p.create({
+    peerInfo,
+    modules: {
+      transport: [TCP],
+      streamMuxer: [MPLEX],
+      connEncryption: [SECIO]
     }
+  })
 
-    super(defaultsDeep(_options, defaults))
-  }
+  await node.start()
+
+  return node
 }
 
-function createNode (callback) {
-  let node
-
-  waterfall([
-    (cb) => PeerInfo.create(cb),
-    (peerInfo, cb) => {
-      peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-      node = new MyBundle({
-        peerInfo
-      })
-      node.start(cb)
-    }
-  ], (err) => callback(err, node))
-}
-
-parallel([
-  (cb) => createNode(cb),
-  (cb) => createNode(cb)
-], (err, nodes) => {
-  if (err) { throw err }
-
-  const node1 = nodes[0]
-  const node2 = nodes[1]
+;(async () => {
+  const [node1, node2] = await Promise.all([
+    createNode(),
+    createNode()
+  ])
 
   // exact matching
-  node2.handle('/your-protocol', (protocol, conn) => {
-    pull(
-      conn,
-      pull.map((v) => v.toString()),
-      pull.log()
+  node2.handle('/your-protocol', ({ stream }) => {
+    pipe(
+      stream,
+      async function (source) {
+        for await (const msg of source) {
+          console.log(msg.toString())
+        }
+      }
     )
   })
 
-  // semver matching
+  // multiple protocols
   /*
-  node2.handle('/another-protocol/1.0.1', (protocol, conn) => {
-    pull(
-      conn,
-      pull.map((v) => v.toString()),
-      pull.log()
-    )
-  })
-  */
-
-  // custom func matching
-  /*
-  node2.handle('/custom-match-func', (protocol, conn) => {
-    pull(
-      conn,
-      pull.map((v) => v.toString()),
-      pull.log()
-    )
-  }, (myProtocol, requestedProtocol, callback) => {
-    if (myProtocol.indexOf(requestedProtocol)) {
-      callback(null, true)
-    } else {
-      callback(null, false)
+  node2.handle(['/another-protocol/1.0.0', '/another-protocol/2.0.0'], ({ protocol, stream }) => {
+    if (protocol === '/another-protocol/2.0.0') {
+      // handle backwards compatibility
     }
+
+    pipe(
+      stream,
+      async function (source) {
+        for await (const msg of source) {
+          console.log(msg.toString())
+        }
+      }
+    )
   })
   */
 
-  node1.dialProtocol(node2.peerInfo, '/your-protocol', (err, conn) => {
-    if (err) { throw err }
-    pull(pull.values(['my own protocol, wow!']), conn)
-  })
+  const { stream } = await node1.dialProtocol(node2.peerInfo, ['/your-protocol'])
+  await pipe(
+    ['my own protocol, wow!'],
+    stream
+  )
 
   /*
-  node1.dialProtocol(node2.peerInfo, '/another-protocol/1.0.0', (err, conn) => {
-    if (err) { throw err }
-    pull(pull.values(['semver me please']), conn)
-  })
-  */
+  const { stream } = node1.dialProtocol(node2.peerInfo, ['/another-protocol/1.0.0'])
 
-  /*
-  node1.dialProtocol(node2.peerInfo, '/custom-match-func/some-query', (err, conn) => {
-    if (err) { throw err }
-    pull(pull.values(['do I fall into your criteria?']), conn)
-  })
+  await pipe(
+    ['my own protocol, wow!'],
+    stream
+  )
   */
-})
+})();
