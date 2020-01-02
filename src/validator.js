@@ -24,9 +24,9 @@ const verifyRecord = (validators, record) => {
   const validator = validators[parts[1].toString()]
 
   if (!validator) {
-    const errMsg = `Invalid record keytype`
+    const errMsg = 'Invalid record keytype'
 
-    throw errcode(errMsg, 'ERR_INVALID_RECORD_KEY_TYPE')
+    throw errcode(new Error(errMsg), 'ERR_INVALID_RECORD_KEY_TYPE')
   }
 
   return validator.func(key, record.value)
