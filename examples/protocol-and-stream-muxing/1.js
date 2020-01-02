@@ -44,9 +44,13 @@ const createNode = async () => {
     )
   })
 
-  // semver matching
+  // multiple protocols
   /*
-  node2.handle('/another-protocol/1.0.1', ({ stream }) => {
+  node2.handle(['/another-protocol/1.0.0', '/another-protocol/2.0.0'], ({ protocol, stream }) => {
+    if (protocol === '/another-protocol/2.0.0') {
+      // handle backwards compatibility
+    }
+
     pipe(
       stream,
       async function (source) {

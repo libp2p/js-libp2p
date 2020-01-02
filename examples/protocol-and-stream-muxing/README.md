@@ -25,11 +25,9 @@ const node2 = nodes[1]
 node2.handle('/your-protocol', ({ stream }) => {
   pipe(
     stream,
-    toBuffer,
-    map(String),
     source => (async function () {
       for await (const msg of source) {
-        console.log(msg)
+        console.log(msg.toString())
       }
     })()
   )
