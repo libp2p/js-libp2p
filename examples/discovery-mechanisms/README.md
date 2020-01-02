@@ -65,7 +65,7 @@ const node = await Libp2p.create({
   config: {
     peerDiscovery: {
       bootstrap: {
-        interval: 2000,
+        interval: 60e3,
         enabled: true,
         list: bootstrapers
       }
