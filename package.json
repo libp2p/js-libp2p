@@ -86,6 +86,7 @@
     "it-concat": "^1.0.0",
     "it-pair": "^1.0.0",
     "it-pushable": "^1.4.0",
+    "interop-libp2p": "libp2p/interop#chore/add-release-scripts",
     "libp2p-bootstrap": "^0.10.3",
     "libp2p-delegated-content-routing": "^0.4.1",
     "libp2p-delegated-peer-routing": "^0.4.0",
