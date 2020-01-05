@@ -13,7 +13,7 @@ For this demo, we will connect to IPFS default bootstrapper nodes and so, we wil
 First, we create our libp2p bundle.
 
 ```JavaScript
-const Bootstrap = require('libp2p-railing')
+const Bootstrap = require('libp2p-bootstrap')
 class MyBundle extends libp2p {
   constructor (peerInfo) {
     const defaults = {
