@@ -1,14 +1,11 @@
 /* eslint-disable no-console */
 'use strict'
 
-const libp2p = require('../../')
+const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
-const PeerInfo = require('peer-info')
 const Bootstrap = require('libp2p-bootstrap')
-const waterfall = require('async/waterfall')
-const defaultsDeep = require('@nodeutils/defaults-deep')
 
 // Find this list at: https://github.com/ipfs/js-ipfs/blob/master/src/core/runtime/config-nodejs.json
 const bootstrapers = [
@@ -23,51 +20,35 @@ const bootstrapers = [
   '/ip4/104.236.151.122/tcp/4001/p2p/QmSoLju6m7xTh3DuokvT3886QRYqxAzb1kShaanJgW36yx'
 ]
 
-class MyBundle extends libp2p {
-  constructor (_options) {
-    const defaults = {
-      modules: {
-        transport: [ TCP ],
-        streamMuxer: [ Mplex ],
-        connEncryption: [ SECIO ],
-        peerDiscovery: [ Bootstrap ]
-      },
-      config: {
-        peerDiscovery: {
-          autoDial: true,
-          bootstrap: {
-            interval: 20e3,
-            enabled: true,
-            list: bootstrapers
-          }
+;(async () => {
+  const node = await Libp2p.create({
+    modules: {
+      transport: [TCP],
+      streamMuxer: [Mplex],
+      connEncryption: [SECIO],
+      peerDiscovery: [Bootstrap]
+    },
+    config: {
+      peerDiscovery: {
+        bootstrap: {
+          interval: 60e3,
+          enabled: true,
+          list: bootstrapers
         }
       }
     }
+  })
 
-    super(defaultsDeep(_options, defaults))
-  }
-}
+  node.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
 
-let node
-
-waterfall([
-  (cb) => PeerInfo.create(cb),
-  (peerInfo, cb) => {
-    peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-    node = new MyBundle({
-      peerInfo
-    })
-    node.start(cb)
-  }
-], (err) => {
-  if (err) { throw err }
+  node.on('peer:connect', (peer) => {
+    console.log('Connection established to:', peer.id.toB58String())	// Emitted when a peer has been found
+  })
 
   node.on('peer:discovery', (peer) => {
     // No need to dial, autoDial is on
     console.log('Discovered:', peer.id.toB58String())
   })
 
-  node.on('peer:connect', (peer) => {
-    console.log('Connection established to:', peer.id.toB58String())
-  })
-})
+  await node.start()
+})();

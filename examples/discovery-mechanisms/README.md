@@ -10,36 +10,32 @@ These mechanisms save configuration and enable a node to operate without any exp
 
 For this demo, we will connect to IPFS default bootstrapper nodes and so, we will need to support the same set of features those nodes have, that are: TCP, mplex and SECIO. You can see the complete example at [1.js](./1.js).
 
-First, we create our libp2p bundle.
+First, we create our libp2p node.
 
 ```JavaScript
-const Bootstrap = require('libp2p-railing')
-class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const defaults = {
-      modules: {
-        transport: [ TCP ],
-        streamMuxer: [ Mplex ],
-        connEncryption: [ SECIO ],
-        peerDiscovery: [ Bootstrap ]
-      },
-      config: {
-        peerDiscovery: {
-          bootstrap: {
-            interval: 2000,
-            enabled: true,
-            list: bootstrapers
-          }
-        }
+const Libp2p = require('libp2p')
+const Bootstrap = require('libp2p-bootstrap')
+
+const node = Libp2p.create({
+  modules: {
+    transport: [ TCP ],
+    streamMuxer: [ Mplex ],
+    connEncryption: [ SECIO ],
+    peerDiscovery: [ Bootstrap ]
+  },
+  config: {
+    peerDiscovery: {
+      bootstrap: {
+        interval: 60e3,
+        enabled: true,
+        list: bootstrapers
       }
     }
-
-    super(defaultsDeep(_options, defaults))
   }
-}
+})
 ```
 
-In this bundle, we use a `bootstrappers` array listing peers to connect _on boot_. Here is the list used by js-ipfs and go-ipfs.
+In this configuration, we use a `bootstrappers` array listing peers to connect _on boot_. Here is the list used by js-ipfs and go-ipfs.
 
 ```JavaScript
 const bootstrapers = [
@@ -58,34 +54,37 @@ const bootstrapers = [
 Now, once we create and start the node, we can listen for events such as `peer:discovery` and `peer:connect`, these events tell us when we found a peer, independently of the discovery mechanism used and when we actually dialed to that peer.
 
 ```JavaScript
-let node
-
-waterfall([
-  (cb) => PeerInfo.create(cb),
-  (peerInfo, cb) => {
-    peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-    node = new MyBundle({
-      peerInfo
-    })
-    node.start(cb)
+const node = await Libp2p.create({
+  peerInfo,
+  modules: {
+    transport: [ TCP ],
+    streamMuxer: [ Mplex ],
+    connEncryption: [ SECIO ],
+    peerDiscovery: [ Bootstrap ]
+  },
+  config: {
+    peerDiscovery: {
+      bootstrap: {
+        interval: 60e3,
+        enabled: true,
+        list: bootstrapers
+      }
+    }
   }
-], (err) => {
-  if (err) { throw err }
-
-  // Emitted when a peer has been found
-  node.on('peer:discovery', (peer) => {
-    console.log('Discovered:', peer.id.toB58String())
-    // Note how we need to dial, even if just to warm up the Connection (by not
-    // picking any protocol) in order to get a full Connection. The Peer Discovery
-    // doesn't make any decisions for you.
-    node.dial(peer, () => {})
-  })
-
-  // Once the dial is complete, this event is emitted.
-  node.on('peer:connect', (peer) => {
-    console.log('Connection established to:', peer.id.toB58String())
-  })
 })
+
+node.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
+
+node.on('peer:connect', (peer) => {
+  console.log('Connection established to:', peer.id.toB58String())	// Emitted when a peer has been found
+})
+
+// Emitted when a peer has been found
+node.on('peer:discovery', (peer) => {
+  console.log('Discovered:', peer.id.toB58String())
+})
+
+await node.start()
 ```
 
 From running [1.js](./1.js), you should see the following:
@@ -101,74 +100,54 @@ Discovered: QmSoLV4Bbm51jM9C4gDYZQ9Cy3U6aXMJDAbzgu2fzaDs64
 Discovered: QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd
 Discovered: QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3
 Discovered: QmSoLju6m7xTh3DuokvT3886QRYqxAzb1kShaanJgW36yx
-Connection established to: QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3
-Connection established to: QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd
-Connection established to: QmSoLV4Bbm51jM9C4gDYZQ9Cy3U6aXMJDAbzgu2fzaDs64
-Connection established to: QmSoLueR4xBeUbY9WZ9xGUUxunbKWcrNFTDAadQJmocnWm
-Connection established to: QmSoLPppuBtQSGwKDZT2M73ULpjvfd3aZ6ha4oFGL1KrGM
-Connection established to: QmSoLju6m7xTh3DuokvT3886QRYqxAzb1kShaanJgW36yx
-Connection established to: QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ
-Connection established to: QmSoLnSGccFuZQJzRadHn95W2CrSFmZuTdDWP8HXaHca9z
-Connection established to: QmSoLSafTMBsPKadTEgaXctDQVcqN88CNLHXMkTNwMKPnu
 ```
 
 ## 2. MulticastDNS to find other peers in the network
 
 For this example, we need `libp2p-mdns`, go ahead and `npm install` it. You can find the complete solution at [2.js](./2.js).
 
-Update your libp2p bundle to include MulticastDNS.
+Update your libp2p configuration to include MulticastDNS.
 
 ```JavaScript
-class MyBundle extends libp2p {
-  constructor (peerInfo) {
-    const defaults = {
-      modules: {
-        transport: [ TCP ],
-        streamMuxer: [ Mplex ],
-        connEncryption: [ SECIO ],
-        peerDiscovery: [ MulticastDNS ]
-      },
-      config: {
-        peerDiscovery: {
-          mdns: {
-            // Run at 1s so we can observe more quickly, default is 10s
-            interval: 1000,
-            enabled: true
-          }
+const Libp2p = require('libp2p')
+const MulticastDNS = require('libp2p-mdns')
+
+const createNode = () => {
+  return Libp2p.create({
+    modules: {
+      transport: [ TCP ],
+      streamMuxer: [ Mplex ],
+      connEncryption: [ SECIO ],
+      peerDiscovery: [ MulticastDNS ]
+    },
+    config: {
+      peerDiscovery: {
+        mdns: {
+          interval: 20e3,
+          enabled: true
         }
       }
     }
-
-    super(defaultsDeep(_options, defaults))
-  }
+  })
 }
 ```
 
 To observe it working, spawn two nodes.
 
 ```JavaScript
-parallel([
-  (cb) => createNode(cb),
-  (cb) => createNode(cb)
-], (err, nodes) => {
-  if (err) { throw err }
+const [node1, node2] = await Promise.all([
+  createNode(),
+  createNode()
+])
 
-  const node1 = nodes[0]
-  const node2 = nodes[1]
-
-  node1.on('peer:discovery', (peer) => console.log('Discovered:', peer.id.toB58String()))
-  node2.on('peer:discovery', (peer) => console.log('Discovered:', peer.id.toB58String()))
-})
+node1.on('peer:discovery', (peer) => console.log('Discovered:', peer.id.toB58String()))
+node2.on('peer:discovery', (peer) => console.log('Discovered:', peer.id.toB58String()))
 ```
 
-If you run this example, you will see a continuous stream of each peer discovering each other.
+If you run this example, you will see the other peers being discovered.
 
 ```bash
 > node 2.js
-Discovered: QmSSbQpuKrxkoXHm1v4Pi35hPN5hUHMZoBoawEs2Nhvi8m
-Discovered: QmRcXXhtG8vTqwVBRonKWtV4ovDoC1Fe56WYtcrw694eiJ
-Discovered: QmSSbQpuKrxkoXHm1v4Pi35hPN5hUHMZoBoawEs2Nhvi8m
-Discovered: QmRcXXhtG8vTqwVBRonKWtV4ovDoC1Fe56WYtcrw694eiJ
 Discovered: QmSSbQpuKrxkoXHm1v4Pi35hPN5hUHMZoBoawEs2Nhvi8m
 Discovered: QmRcXXhtG8vTqwVBRonKWtV4ovDoC1Fe56WYtcrw694eiJ
 ```
