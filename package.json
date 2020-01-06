@@ -28,7 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "bs58": "^4.0.1",
-    "multihashing-async": "^0.7.0",
+    "multihashing-async": "^0.8.0",
     "nodeify": "^1.0.1",
     "safe-buffer": "^5.1.2",
     "secp256k1": "^3.6.2"
