@@ -37,7 +37,7 @@ class ConnectionManager {
     this._libp2p = libp2p
     this._registrar = libp2p.registrar
     this._peerId = libp2p.peerInfo.id.toString()
-    this._options = mergeOptions(defaultOptions, options)
+    this._options = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, options)
     assert(
       this._options.maxConnections > this._options.minConnections,
       'Connection Manager maxConnections must be greater than minConnections'

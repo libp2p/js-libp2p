@@ -59,7 +59,7 @@
     "libp2p-crypto": "^0.17.1",
     "libp2p-interfaces": "^0.1.5",
     "mafmt": "^7.0.0",
-    "merge-options": "^1.0.1",
+    "merge-options": "^2.0.0",
     "moving-average": "^1.0.0",
     "multiaddr": "^7.2.1",
     "multistream-select": "^0.15.0",
