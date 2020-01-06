@@ -1,3 +1,8 @@
+<a name="0.4.1"></a>
+## [0.4.1](https://github.com/libp2p/js-libp2p-crypto-secp256k1/compare/v0.4.0...v0.4.1) (2020-01-06)
+
+
+
 <a name="0.4.0"></a>
 # [0.4.0](https://github.com/libp2p/js-libp2p-crypto-secp256k1/compare/v0.3.1...v0.4.0) (2019-07-10)
 
