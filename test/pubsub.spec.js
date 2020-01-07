@@ -189,6 +189,27 @@ describe('pubsub base protocol', () => {
       expect(pubsubB.peers.size).to.be.eql(1)
     })
 
+    it('should handle newStream errors in onConnect', async () => {
+      const onConnectA = registrarRecordA[protocol].onConnect
+      const handlerB = registrarRecordB[protocol].handler
+
+      // Notice peers of connection
+      const [c0, c1] = ConnectionPair()
+      const error = new Error('new stream error')
+      sinon.stub(c0, 'newStream').throws(error)
+
+      await onConnectA(peerInfoB, c0)
+      await handlerB({
+        protocol,
+        stream: c1.stream,
+        connection: {
+          remotePeer: peerInfoA.id
+        }
+      })
+
+      expect(c0.newStream).to.have.property('callCount', 1)
+    })
+
     it('should handle onDisconnect as expected', async () => {
       const onConnectA = registrarRecordA[protocol].onConnect
       const onDisconnectA = registrarRecordA[protocol].onDisconnect
@@ -213,6 +234,17 @@ describe('pubsub base protocol', () => {
 
       expect(pubsubA.peers.size).to.be.eql(0)
       expect(pubsubB.peers.size).to.be.eql(0)
+    })
+
+    it('should handle onDisconnect for unknown peers', () => {
+      const onDisconnectA = registrarRecordA[protocol].onDisconnect
+
+      expect(pubsubA.peers.size).to.be.eql(0)
+
+      // Notice peers of disconnect
+      onDisconnectA(peerInfoB)
+
+      expect(pubsubA.peers.size).to.be.eql(0)
     })
   })
 

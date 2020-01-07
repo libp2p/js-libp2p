@@ -171,10 +171,13 @@ class PubsubBaseProtocol extends EventEmitter {
     this.log('connected', idB58Str)
 
     const peer = this._addPeer(new Peer(peerInfo))
-    const { stream } = await conn.newStream(this.multicodecs)
-
-    peer.attachConnection(stream)
-    this._processMessages(idB58Str, stream, peer)
+    try {
+      const { stream } = await conn.newStream(this.multicodecs)
+      peer.attachConnection(stream)
+      this._processMessages(idB58Str, stream, peer)
+    } catch (err) {
+      this.log.err(err)
+    }
   }
 
   /**
@@ -220,6 +223,7 @@ class PubsubBaseProtocol extends EventEmitter {
    * @returns {PeerInfo}
    */
   _removePeer (peer) {
+    if (!peer) return
     const id = peer.info.id.toB58String()
 
     this.log('remove', id, peer._references)
