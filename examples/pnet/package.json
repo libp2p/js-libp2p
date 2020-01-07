@@ -11,10 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ipfs": "^0.38.0",
-    "libp2p": "^0.26.2",
-    "libp2p-mplex": "^0.8.5",
-    "libp2p-secio": "^0.11.1",
-    "libp2p-tcp": "^0.13.2"
+    "libp2p": "../..",
+    "libp2p-mplex": "^0.9.3",
+    "libp2p-secio": "^0.12.1",
+    "libp2p-tcp": "^0.14.2"
   }
 }
