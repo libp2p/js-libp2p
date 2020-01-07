@@ -171,7 +171,7 @@ Get the list of topics which the peer is subscribed to.
 
 Get a list of the [PeerId](https://github.com/libp2p/js-peer-id) strings that are subscribed to one topic.
 
-#### `pubsub.getPeersSubscribed(topic)`
+#### `pubsub.getSubscribers(topic)`
 
 ##### Parameters
 
