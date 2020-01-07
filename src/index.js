@@ -218,7 +218,14 @@ class Libp2p extends EventEmitter {
     log('libp2p is stopping')
 
     try {
+      for (const service of this._discovery.values()) {
+        service.removeListener('peer', this._onDiscoveryPeer)
+      }
+
+      await Promise.all(Array.from(this._discovery.values(), s => s.stop()))
+
       this.connectionManager.stop()
+
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
         this._dht && this._dht.stop(),
