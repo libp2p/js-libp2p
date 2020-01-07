@@ -1,70 +1,62 @@
 /* eslint-disable no-console */
 'use strict'
 
-const libp2p = require('../../')
+const Libp2p = require('../..')
 const TCP = require('libp2p-tcp')
 const WebSockets = require('libp2p-websockets')
+const SECIO = require('libp2p-secio')
+const MPLEX = require('libp2p-mplex')
 const PeerInfo = require('peer-info')
-const waterfall = require('async/waterfall')
-const defaultsDeep = require('@nodeutils/defaults-deep')
-const parallel = require('async/parallel')
-const pull = require('pull-stream')
 
-class MyBundle extends libp2p {
-  constructor (_options) {
-    const defaults = {
-      modules: {
-        transport: [
-          TCP,
-          WebSockets
-        ]
-      }
-    }
+const pipe = require('it-pipe')
 
-    super(defaultsDeep(_options, defaults))
-  }
-}
-
-function createNode (addrs, callback) {
-  if (!Array.isArray(addrs)) {
-    addrs = [addrs]
+const createNode = async (peerInfo, transports, multiaddrs = []) => {
+  if (!Array.isArray(multiaddrs)) {
+    multiaddrs = [multiaddrs]
   }
 
-  let node
+  multiaddrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
 
-  waterfall([
-    (cb) => PeerInfo.create(cb),
-    (peerInfo, cb) => {
-      addrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
-      node = new MyBundle({ peerInfo: peerInfo })
-      node.start(cb)
+  const node = await Libp2p.create({
+    peerInfo,
+    modules: {
+      transport: transports,
+      connEncryption: [SECIO],
+      streamMuxer: [MPLEX]
     }
-  ], (err) => callback(err, node))
+  })
+
+  await node.start()
+  return node
 }
 
-function printAddrs (node, number) {
+function printAddrs(node, number) {
   console.log('node %s is listening on:', number)
   node.peerInfo.multiaddrs.forEach((ma) => console.log(ma.toString()))
 }
 
-function print (protocol, conn) {
-  pull(
-    conn,
-    pull.map((v) => v.toString()),
-    pull.log()
+function print ({ stream }) {
+  pipe(
+    stream,
+    async function (source) {
+      for await (const msg of source) {
+        console.log(msg.toString())
+      }
+    }
   )
 }
 
-parallel([
-  (cb) => createNode('/ip4/0.0.0.0/tcp/0', cb),
-  (cb) => createNode(['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws'], cb),
-  (cb) => createNode('/ip4/127.0.0.1/tcp/20000/ws', cb)
-], (err, nodes) => {
-  if (err) { throw err }
-
-  const node1 = nodes[0]
-  const node2 = nodes[1]
-  const node3 = nodes[2]
+;(async () => {
+  const [peerInfo1, peerInfo2, peerInfo3] = await Promise.all([
+    PeerInfo.create(),
+    PeerInfo.create(),
+    PeerInfo.create()
+  ])
+  const [node1, node2, node3] = await Promise.all([
+    createNode(peerInfo1, [TCP], '/ip4/0.0.0.0/tcp/0'),
+    createNode(peerInfo2, [TCP, WebSockets], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
+    createNode(peerInfo3, [WebSockets], '/ip4/127.0.0.1/tcp/20000/ws')
+  ])
 
   printAddrs(node1, '1')
   printAddrs(node2, '2')
@@ -74,21 +66,24 @@ parallel([
   node2.handle('/print', print)
   node3.handle('/print', print)
 
-  node1.dialProtocol(node2.peerInfo, '/print', (err, conn) => {
-    if (err) { throw err }
+  // node 1 (TCP) dials to node 2 (TCP+WebSockets)
+  const { stream } = await node1.dialProtocol(node2.peerInfo, '/print')
+  await pipe(
+    ['node 1 dialed to node 2 successfully'],
+    stream
+  )
 
-    pull(pull.values(['node 1 dialed to node 2 successfully']), conn)
-  })
+  // node 2 (TCP+WebSockets) dials to node 2 (WebSockets)
+  const { stream: stream2 } = await node2.dialProtocol(node3.peerInfo, '/print')
+  await pipe(
+    ['node 2 dialed to node 3 successfully'],
+    stream2
+  )
 
-  node2.dialProtocol(node3.peerInfo, '/print', (err, conn) => {
-    if (err) { throw err }
-
-    pull(pull.values(['node 2 dialed to node 3 successfully']), conn)
-  })
-
-  node3.dialProtocol(node1.peerInfo, '/print', (err, conn) => {
-    if (err) {
-      console.log('node 3 failed to dial to node 1 with:', err.message)
-    }
-  })
-})
+  // node 3 (listening WebSockets) can dial node 1 (TCP)
+  try {
+    await node3.dialProtocol(node1.peerInfo, '/print')
+  } catch (err) {
+    console.log('node 3 failed to dial to node 1 with:', err.message)
+  }
+})();
