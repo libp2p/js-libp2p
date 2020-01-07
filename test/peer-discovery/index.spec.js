@@ -82,7 +82,7 @@ describe('peer discovery', () => {
         modules: {
           peerDiscovery: [mockDiscovery]
         }
-      }))      
+      }))
 
       await libp2p.start()
       expect(startSpy).to.have.property('callCount', 1)
