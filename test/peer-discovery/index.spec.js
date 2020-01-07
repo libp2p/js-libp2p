@@ -65,6 +65,32 @@ describe('peer discovery', () => {
 
       expect(discoverySpy.called).to.eql(false)
     })
+
+    it('should stop discovery on libp2p start/stop', async () => {
+      const mockDiscovery = {
+        tag: 'mock',
+        start: () => {},
+        stop: () => {},
+        on: () => {},
+        removeListener: () => {}
+      }
+      const startSpy = sinon.spy(mockDiscovery, 'start')
+      const stopSpy = sinon.spy(mockDiscovery, 'stop')
+
+      libp2p = new Libp2p(mergeOptions(baseOptions, {
+        peerInfo,
+        modules: {
+          peerDiscovery: [mockDiscovery]
+        }
+      }))      
+
+      await libp2p.start()
+      expect(startSpy).to.have.property('callCount', 1)
+      expect(stopSpy).to.have.property('callCount', 0)
+      await libp2p.stop()
+      expect(startSpy).to.have.property('callCount', 1)
+      expect(stopSpy).to.have.property('callCount', 1)
+    })
   })
 
   describe('discovery modules from transports', () => {
