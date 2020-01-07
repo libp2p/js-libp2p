@@ -1,3 +1,21 @@
+<a name="0.27.0-pre.2"></a>
+# [0.27.0-pre.2](https://github.com/libp2p/js-libp2p/compare/v0.27.0-pre.1...v0.27.0-pre.2) (2020-01-07)
+
+
+### Bug Fixes
+
+* conn mngr min/max connection values ([#528](https://github.com/libp2p/js-libp2p/issues/528)) ([a1717da](https://github.com/libp2p/js-libp2p/commit/a1717da))
+* make dialer configurable ([#521](https://github.com/libp2p/js-libp2p/issues/521)) ([24c3ce6](https://github.com/libp2p/js-libp2p/commit/24c3ce6))
+* upgrader should not need muxers ([#517](https://github.com/libp2p/js-libp2p/issues/517)) ([56a1825](https://github.com/libp2p/js-libp2p/commit/56a1825))
+
+
+### Features
+
+* add libp2p.connections getter ([#522](https://github.com/libp2p/js-libp2p/issues/522)) ([6ca19c5](https://github.com/libp2p/js-libp2p/commit/6ca19c5))
+* allow transport options to be passed on creation ([#524](https://github.com/libp2p/js-libp2p/issues/524)) ([0d4b2bd](https://github.com/libp2p/js-libp2p/commit/0d4b2bd))
+
+
+
 <a name="0.27.0-pre.1"></a>
 # [0.27.0-pre.1](https://github.com/libp2p/js-libp2p/compare/v0.27.0-pre.0...v0.27.0-pre.1) (2019-12-15)
 
