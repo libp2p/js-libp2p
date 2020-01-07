@@ -10,7 +10,7 @@ const PeerInfo = require('peer-info')
 
 const pipe = require('it-pipe')
 
-const createNode = async (peerInfo, multiaddrs = []) => {
+const createNode = async (peerInfo, transports, multiaddrs = []) => {
   if (!Array.isArray(multiaddrs)) {
     multiaddrs = [multiaddrs]
   }
@@ -20,10 +20,7 @@ const createNode = async (peerInfo, multiaddrs = []) => {
   const node = await Libp2p.create({
     peerInfo,
     modules: {
-      transport: [
-        TCP,
-        WebSockets
-      ],
+      transport: transports,
       connEncryption: [SECIO],
       streamMuxer: [MPLEX]
     }
@@ -56,9 +53,9 @@ function print ({ stream }) {
     PeerInfo.create()
   ])
   const [node1, node2, node3] = await Promise.all([
-    createNode(peerInfo1, '/ip4/0.0.0.0/tcp/0'),
-    createNode(peerInfo2, ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
-    createNode(peerInfo3, '/ip4/127.0.0.1/tcp/20000/ws')
+    createNode(peerInfo1, [TCP], '/ip4/0.0.0.0/tcp/0'),
+    createNode(peerInfo2, [TCP, WebSockets], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
+    createNode(peerInfo3, [WebSockets], '/ip4/127.0.0.1/tcp/20000/ws')
   ])
 
   printAddrs(node1, '1')
@@ -84,9 +81,9 @@ function print ({ stream }) {
   )
 
   // node 3 (listening WebSockets) can dial node 1 (TCP)
-  const { stream: stream3 } = await node3.dialProtocol(node1.peerInfo, '/print')
-  await pipe(
-    ['node 3 dialed to node 1 successfully'],
-    stream3
-  )
+  try {
+    await node3.dialProtocol(node1.peerInfo, '/print')
+  } catch (err) {
+    console.log('node 3 failed to dial to node 1 with:', err.message)
+  }
 })();

@@ -164,10 +164,9 @@ In this example, we will need to also install `libp2p-websockets`, go ahead and 
 We want to create 3 nodes, one with TCP, one with TCP+WebSockets and one with just WebSockets. We need to update our `createNode` function to contemplate WebSockets as well. Moreover, let's upgrade our function to enable us to pick the addrs in which a node will start a listener:
 
 ```JavaScript
-const WebSockets = require('libp2p-websockets')
 // ...
 
-const createNode = async (peerInfo, multiaddrs = []) => {
+const createNode = async (peerInfo, transports, multiaddrs = []) => {
   if (!Array.isArray(multiaddrs)) {
     multiaddrs = [multiaddrs]
   }
@@ -177,10 +176,7 @@ const createNode = async (peerInfo, multiaddrs = []) => {
   const node = await Libp2p.create({
     peerInfo,
     modules: {
-      transport: [
-        TCP,
-        WebSockets
-      ],
+      transport: transports,
       connEncryption: [ SECIO ]
     }
   })
@@ -195,15 +191,18 @@ As a rule, a libp2p node will only be capable of using a transport if: a) it has
 Let's update our flow to create nodes and see how they behave when dialing to each other:
 
 ```JavaScript
+const WebSockets = require('libp2p-websockets')
+const TCP = require('libp2p-tcp')
+
 const [peerInfo1, peerInfo2, peerInfo3] = await Promise.all([
   PeerInfo.create(),
   PeerInfo.create(),
   PeerInfo.create()
 ])
 const [node1, node2, node3] = await Promise.all([
-  createNode(peerInfo1, '/ip4/0.0.0.0/tcp/0'),
-  createNode(peerInfo2, ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
-  createNode(peerInfo3, '/ip4/127.0.0.1/tcp/20000/ws')
+  createNode(peerInfo1, [TCP], '/ip4/0.0.0.0/tcp/0'),
+  createNode(peerInfo2, [TCP, WebSockets], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
+  createNode(peerInfo3, [WebSockets], '/ip4/127.0.0.1/tcp/20000/ws')
 ])
 
 printAddrs(node1, '1')
@@ -266,7 +265,8 @@ node 3 is listening on:
 /ip4/127.0.0.1/tcp/20000/ws/p2p/QmVq1PWh3VSDYdFqYMtqp4YQyXcrH27N7968tGdM1VQPj1
 node 1 dialed to node 2 successfully
 node 2 dialed to node 3 successfully
-node 3 dialed to node 3 successfully
+node 3 failed to dial to node 1 with:
+    Error: No transport available for address /ip4/127.0.0.1/tcp/51482
 ```
 
 As expected, we created 3 nodes, node 1 with TCP, node 2 with TCP+WebSockets and node 3 with just WebSockets. node 1 -> node 2 and node 2 -> node 3 managed to dial correctly because they shared a common transport, however, node 3 -> node 1 failed because they didn't share any.
