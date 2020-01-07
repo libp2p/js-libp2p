@@ -16,6 +16,8 @@ generate(otherSwarmKey)
 
 ;(async () => {
   const node1 = await privateLibp2pNode(swarmKey)
+
+  // TASK: switch the commented out line below so we're using a different key, to see the nodes fail to connect	
   const node2 = await privateLibp2pNode(swarmKey)
   // const node2 = await privateLibp2pNode(otherSwarmKey)
 
