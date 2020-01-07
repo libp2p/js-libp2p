@@ -1,3 +1,13 @@
+<a name="0.4.1"></a>
+## [0.4.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.4.0...v0.4.1) (2020-01-07)
+
+
+### Bug Fixes
+
+* catch newStream errors ([#34](https://github.com/libp2p/js-libp2p-pubsub/issues/34)) ([57453d4](https://github.com/libp2p/js-libp2p-pubsub/commit/57453d4))
+
+
+
 <a name="0.4.0"></a>
 # [0.4.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.3.2...v0.4.0) (2019-12-01)
 
