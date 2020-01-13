@@ -27,7 +27,8 @@ module.exports.createMockConnection = async (properties = {}) => {
       },
       direction: 'outbound',
       encryption: '/secio/1.0.0',
-      multiplexer: '/mplex/6.7.0'
+      multiplexer: '/mplex/6.7.0',
+      status: 'open'
     },
     newStream: (protocols) => {
       const id = streamId++
