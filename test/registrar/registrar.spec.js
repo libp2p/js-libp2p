@@ -11,6 +11,7 @@ const Topology = require('libp2p-interfaces/src/topology/multicodec-topology')
 const PeerStore = require('../../src/peer-store')
 const Registrar = require('../../src/registrar')
 const { createMockConnection } = require('./utils')
+const peerUtils = require('../utils/creators/peer')
 
 const multicodec = '/test/1.0.0'
 
@@ -169,6 +170,45 @@ describe('registrar', () => {
       peerStore.replace(peerInfo)
 
       await onDisconnectDefer.promise
+    })
+
+    it('should filter connections on disconnect, removing the closed one', async () => {
+      const onDisconnectDefer = pDefer()
+
+      const topologyProps = new Topology({
+        multicodecs: multicodec,
+        handlers: {
+          onConnect: () => {},
+          onDisconnect: () => {
+            onDisconnectDefer.resolve()
+          }
+        }
+      })
+
+      // Register protocol
+      registrar.register(topologyProps)
+
+      // Setup connections before registrar
+      const [localPeer, remotePeer] = await peerUtils.createPeerInfo({ number: 2 })
+
+      const conn1 = await createMockConnection({ localPeer: localPeer.id, remotePeer: remotePeer.id })
+      const conn2 = await createMockConnection({ localPeer: localPeer.id, remotePeer: remotePeer.id })
+      const peerInfo = await PeerInfo.create(remotePeer.id)
+      const id = peerInfo.id.toString()
+
+      // Add connection to registrar
+      peerStore.put(peerInfo)
+      registrar.onConnect(peerInfo, conn1)
+      registrar.onConnect(peerInfo, conn2)
+
+      expect(registrar.connections.get(id).length).to.eql(2)
+
+      conn2._stat.status = 'closed'
+      registrar.onDisconnect(peerInfo, conn2)
+
+      const peerConnections = registrar.connections.get(id)
+      expect(peerConnections.length).to.eql(1)
+      expect(peerConnections[0]._stat.status).to.eql('open')
     })
   })
 })
