@@ -99,7 +99,7 @@ class Registrar {
     let storedConn = this.connections.get(id)
 
     if (storedConn && storedConn.length > 1) {
-      storedConn = storedConn.filter((conn) => conn.id === connection.id)
+      storedConn = storedConn.filter((conn) => conn.id !== connection.id)
       this.connections.set(id, storedConn)
     } else if (storedConn) {
       for (const [, topology] of this.topologies) {
