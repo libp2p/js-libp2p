@@ -28,6 +28,7 @@
   * [`metrics.protocols`](#metricsprotocols)
   * [`metrics.forPeer`](#metricsforpeer)
   * [`metrics.forProtocol`](#metricsforprotocol)
+* [Events](#events)
 * [Types](#types)
   * [`Stats`](#stats)
 
@@ -93,39 +94,6 @@ Required keys in the `options` object:
 
 - `peerInfo`: instance of [PeerInfo][] that contains the [PeerId][], Keys and [multiaddrs][multiaddr] of the libp2p Node (optional when using `.create`).
 - `modules.transport`: An array that must include at least 1 compliant transport. See [modules that implement the transport interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport#modules-that-implement-the-interface).
-
-</details>
-
-Once you have a libp2p instance, you are able to listen to several events it emits, so that you can be noticed of relevant network events.
-
-<details><summary>Events</summary>
-
-#### An error has occurred
-
-`libp2p.on('error', (err) => {})`
-
-- `err`: instance of `Error`
-
-#### A peer has been discovered
-
-`libp2p.on('peer:discovery', (peer) => {})`
-
-If `autoDial` option is `true`, applications should **not** attempt to connect to the peer
-unless they are performing a specific action. See [peer discovery and auto dial](./PEER_DISCOVERY.md) for more information.
-
-- `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
-
-#### We have a new connection to a peer
-
-`libp2p.on('peer:connect', (peer) => {})`
-
-- `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
-
-#### We have closed a connection to a peer
-
-`libp2p.on('peer:disconnect', (peer) => {})`
-
-- `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
 
 </details>
 
@@ -776,6 +744,37 @@ Returns the [`Stats`](#stats) object for a given protocol if it is being tracked
 const peerStats = libp2p.metrics.forProtocol('/meshsub/1.0.0')
 console.log(peerStats.toJSON())
 ```
+
+## Events
+
+Once you have a libp2p instance, you are able to listen to several events it emits, so that you can be noticed of relevant network events.
+
+#### An error has occurred
+
+`libp2p.on('error', (err) => {})`
+
+- `err`: instance of `Error`
+
+#### A peer has been discovered
+
+`libp2p.on('peer:discovery', (peer) => {})`
+
+If `autoDial` option is `true`, applications should **not** attempt to connect to the peer
+unless they are performing a specific action. See [peer discovery and auto dial](./PEER_DISCOVERY.md) for more information.
+
+- `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
+
+#### We have a new connection to a peer
+
+`libp2p.on('peer:connect', (peer) => {})`
+
+- `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
+
+#### We have closed a connection to a peer
+
+`libp2p.on('peer:disconnect', (peer) => {})`
+
+- `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
 
 ## Types
 

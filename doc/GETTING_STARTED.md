@@ -175,7 +175,7 @@ Looking at the [available peer discovery](./CONFIGURATION.md#peer-discovery) pro
 - If your application is browser based you can use the transport `js-libp2p-webrtc-star`, which includes a rendezvous based peer sharing mechanism.
 - A random walk approach can be used via `js-libp2p-kad-dht`, to crawl the network and find new peers along the way.
 
-Reviewing the events specification on [Libp2p.create](./API.md#create), each time a peer is discovered a `peer:discovery` event will be emitted by the node.
+Reviewing the events specification on [Events](./API.md#events), each time a peer is discovered a `peer:discovery` event will be emitted by the node.
 
 We will consider in this guide that we already know some peers and also that we are creating an application that might be used by people within the same office network. Accordingly, we will install `libp2p-bootstrap` and `libp2p-mdns`
 
