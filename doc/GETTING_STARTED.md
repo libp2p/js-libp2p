@@ -101,9 +101,9 @@ If you want to know more about libp2p connection encryption, you should read the
 
 #### Multiplexing
 
-With libp2p you are able to create your own protocols so that peers can communicate in a meaningful way to your application. Each protocol works as an independent logical stream and you can use a stream multiplexer, in order to share a common underlying transport medium between streams (single connection). As an example, you can create a chat protocol on top of libp2p and use it to exchange chat messages.
+While multiplexers are not strictly required, they are highly recommended as they improve the effectiveness and efficiency of connections for the various protocols libp2p runs. Including a multiplexer will allow libp2p to run several of its internal protocols, like Identify, as well as allowing your application to easily run any number of protocols over a single connection.
 
-Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) protocols, we are only able to use `libp2p-mplex` for the time being. Bear in mind that future libp2p transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
+Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) modules, js-libp2p currently only supports `libp2p-mplex`, so we will use that here. Bear in mind that future libp2p transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
 
 You can install `libp2p-mplex` and add it to your libp2p node as follows in the next example.
 
@@ -126,7 +126,7 @@ const node = await Libp2p.create({
 })
 ```
 
-Protocols design is similar to an http api, where each protocol has an handler, receives a message and returns a response. If you want to create your own protocol, start by having a look at the [Protocol and Stream Muxing Example](../examples/protocol-and-stream-muxing).
+Protocol design is similar to an http api, where each protocol has a registered handler that receives and responds to requests. If you want to create your own protocol, start by having a look at the [Protocol and Stream Muxing Example](../examples/protocol-and-stream-muxing).
 
 <details><summary>Read More</summary>
 If you want to know more about libp2p stream multiplexing, you should read the following content:
@@ -165,17 +165,17 @@ If you are not familiar with multiaddrs, you should read the [multiformats/js-mu
 
 ### Custom setup
 
-After having your libp2p node running, it is time to configure all its features according to your project needs.
+Once your libp2p node is running, it is time to get it connected to the public network. We can do this via peer discovery.
 
 #### Peer Discovery
 
-In a P2P context, peer discovery is critical to a functioning system. It is not pratical to connect to all the peers we know manually, nor to get to know most of the peers' addresses in advance.
+Peer discovery is an important part of creating a well connected libp2p node. A static list of peers will often be used to join the network, but it's useful to couple other discovery mechanisms to ensure you're able to discover other peers that are important to your application.
 
 Looking at the [available peer discovery](./CONFIGURATION.md#peer-discovery) protocols, there are several options to be considered:
 - If you already know the addresses of some other network peers, you should consider using `libp2p-bootstrap` as this is the easiest way of getting your peer into the network.
-- If it is likely that you will have other peers on your network, `libp2p-mdns` is a must. It allows peers to discover each other when on the same local network with zero configuration. mDNS uses a multicast system of DNS records.
-- In the event of working on a browser runtime, you must go with `js-libp2p-webrtc-star`.
-- if you need to crawl the network and discover a large number of peers, `js-libp2p-kad-dht`.
+- If it is likely that you will have other peers on your local network, `libp2p-mdns` is a must if you're not using the browser. It allows peers to discover each other when on the same local network with zero configuration. mDNS uses a multicast system of DNS records.
+- If your application is browser based you can use the transport `js-libp2p-webrtc-star`, which includes a rendezvous based peer sharing mechanism.
+- A random walk approach can be used via `js-libp2p-kad-dht`, to crawl the network and find new peers along the way.
 
 Reviewing the events specification on [Libp2p.create](./API.md#create), each time a peer is discovered a `peer:discovery` event will be emitted by the node.
 
@@ -245,9 +245,9 @@ If you want to know more about libp2p peer discovery, you should read the follow
 
 Peer Routing offers a way to find other peers in the network by issuing queries using a Peer Routing algorithm, through their peer ids.
 
-Looking at the [available peer routing](./CONFIGURATION.md#peer-routing) protocols, we might choose `libp2p-kad-dht` or `libp2p-delegated-peer-routing`. If your runtime is a browser or a low power device, you might prefer to use `libp2p-delegated-peer-routing` as you are able to delegate other peer to issue the queries for you. However, you need to know a peer able to do that. Otherwise, you should use `libp2p-kad-dht`.
+Looking at the [available peer routing](./CONFIGURATION.md#peer-routing) modules, we might choose `libp2p-kad-dht` or `libp2p-delegated-peer-routing`. If your runtime is a browser or a low power device, you might prefer to use `libp2p-delegated-peer-routing` as you are able to delegate to another peer to issue the queries for you. However, you need to know a peer able to do that. Otherwise, you should use `libp2p-kad-dht`.
 
-In this context, we will install the dht. You should revisit the [API](./API.md) document, more specifically [API#peerRouting.findPeer](./API.md#peerRoutingfindPeer).
+In this guide, we will install `libp2p-kad-dht`. You should revisit the [API](./API.md) document, more specifically [API#peerRouting.findPeer](./API.md#peerRoutingfindPeer).
 
 ```sh
 npm install libp2p-kad-dht
@@ -300,11 +300,11 @@ If you want to know more about libp2p peer routing, you should read the followin
 
 #### Content Routing
 
-Content routing provides a way to find where content lives in the network. It works in two steps: 1) Peers provide (announce) to the network that they are holders of specific content and 2) Peers issue queries to find where that content lives. A Content Routing mechanism could be as complex as a DHT or as simple as a registry somewhere in the network.
+Content routing provides a way to find and announce where content lives in the network. It works in two steps: 1) Peers announce to the network that they are a provider of a certain piece of content and 2) Peers issue queries to find where that content lives. A Content Routing mechanism could be as complex as a DHT or as simple as a registry somewhere in the network.
 
-Looking at the [available content routing](./CONFIGURATION.md#content-routing) protocols, we might choose `libp2p-kad-dht` or `libp2p-delegated-content-routing`. If of your runtime is a browser or a low power device, you might prefer to use `libp2p-delegated-peer-routing` as you are able to delegate other peer to issue the queries for you. However, you need to know a peer able to do that. Otherwise, you should use `libp2p-kad-dht`.
+Looking at the [available content routing](./CONFIGURATION.md#content-routing) modules, we might choose `libp2p-kad-dht` or `libp2p-delegated-content-routing`. If your runtime is a browser or a low power device, you might prefer to use `libp2p-delegated-content-routing` as you are able to delegate to another peer to issue the queries for you. However, you need to know a peer able to do that. Otherwise, you should use `libp2p-kad-dht`.
 
-In this context, we will install the dht. You should revisit the [API](./API.md) document, more specifically [API#contentrouting.findProviders](./API.md#contentroutingfindproviders), [API#contentrouting.provide](./API.md#contentroutingprovide), [API#contentrouting.put](./API.md#contentroutingput), [API#contentrouting.get](./API.md#contentroutingget) and [API#contentrouting.contentrouting.getMany](./API.md#contentroutingcontentroutinggetmany).
+In this guide, we will install `libp2p-kad-dht`. If you'd like to review the available content routing methods, you should revisit the [API](./API.md) document, more specifically [API#contentrouting.findProviders](./API.md#contentroutingfindproviders), [API#contentrouting.provide](./API.md#contentroutingprovide), [API#contentrouting.put](./API.md#contentroutingput), [API#contentrouting.get](./API.md#contentroutingget) and [API#contentrouting.contentrouting.getMany](./API.md#contentroutingcontentroutinggetmany).
 
 ```sh
 npm install libp2p-kad-dht
@@ -362,9 +362,9 @@ If you want to know more about libp2p content routing, you should read the follo
 
 ### Pubsub
 
-If you are looking for real time message exchange between peers, pubsub may be what you are looking for. Publish/Subscribe is a system where peers congregate around topics they are interested in. Peers interested in a topic are said to be subscribed to that topic and should receive the data published on it from other peers.
+If you are looking for real time message exchange between multiple peers, pubsub may be what you are looking for. Publish/Subscribe is a system where peers congregate around topics they are interested in. Peers interested in a topic will subscribe to that topic and receive the data published on it from other peers.
 
-Looking at the [available pubsub routers](./CONFIGURATION.md#pubsub), you might choose `libp2p-gossipsub` first, and consider other options later on. You should revisit the [API](./API.md) document, more specifically [API#pubsub.getSubscribers](./API.md#pubsubgetsubscribers), [API#pubsub.getTopics](./API.md#pubsubgettopics), [API#pubsub.publish](./API.md#pubsubpublish) and [API#pubsub.subscribe](./API.md#pubsubsubscribe).
+You can see the [available pubsub routers](./CONFIGURATION.md#pubsub) in the configuration readme. In this guide we will use `libp2p-gossipsub` as it is a more efficient alternative to `libp2p-floodsub`. You can revisit the [API](./API.md) document to familiarize yourself with the available methods, more specifically [API#pubsub.getSubscribers](./API.md#pubsubgetsubscribers), [API#pubsub.getTopics](./API.md#pubsubgettopics), [API#pubsub.publish](./API.md#pubsubpublish) and [API#pubsub.subscribe](./API.md#pubsubsubscribe).
 
 ```sh
 npm install libp2p-gossipsub
