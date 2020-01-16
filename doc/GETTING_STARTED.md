@@ -37,7 +37,7 @@ Now that we have libp2p installed, let's configure the absolute minimum needed t
 
 Libp2p uses Transports to establish connections between peers over the network. You can configure 1 Transport, or as many as you like. Supporting more Transports will improve the ability for other nodes on the network to communicate with you.
 
-You should select Transports according to the runtime where your application will run. You can see a list of some of the available Transports in the [configuration readme](./CONFIGURATION.md#transport). We are going to install `libp2p-websockets`, as it can be used in both Node.js and the browser.
+You should select Transports according to the runtime of your application (Node.js / browser). You can see a list of some of the available Transports in the [configuration readme](./CONFIGURATION.md#transport). We are going to install `libp2p-websockets`, as it can be used in both Node.js and the browser.
 
 Start by installing `libp2p-websockets`:
 
