@@ -161,8 +161,6 @@ await node.start()
 await node.stop()
 ```
 
-If you are not familiar with multiaddrs, you should read the [multiformats/js-multiaddr](https://github.com/multiformats/js-multiaddr) README.
-
 ### Custom setup
 
 Once your libp2p node is running, it is time to get it connected to the public network. We can do this via peer discovery.
@@ -189,7 +187,7 @@ We can provide specific configurations for each protocol within a `config.peerDi
 
 ```js
 const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
+const WebSockets = require('libp2p-websockets')
 const SECIO = require('libp2p-secio')
 const MPLEX = require('libp2p-mplex')
 
@@ -198,13 +196,13 @@ const MulticastDNS = require('libp2p-mdns')
 
 // Known peers addresses
 const bootstrappers = [
-  '/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
-  '/ip4/104.236.176.52/tcp/4001/p2p/QmSoLnSGccFuZQJzRadHn95W2CrSFmZuTdDWP8HXaHca9z'
+  '/dns4/ams-1.bootstrap.libp2p.io/tcp/443/wss/ipfs/QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd',
+  '/dns4/lon-1.bootstrap.libp2p.io/tcp/443/wss/ipfs/QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3'
 ]
 
 const node = await Libp2p.create({
   modules: {
-    transport: [TCP],
+    transport: [WebSockets],
     connEncryption: [SECIO],
     streamMuxer: [MPLEX],
     peerDiscovery: [Bootstrap, MulticastDNS]
@@ -253,18 +251,18 @@ In this guide, we will install `libp2p-kad-dht`. You should revisit the [API](./
 npm install libp2p-kad-dht
 ```
 
-`js-libp2p` configuration is not well defined yet regarding peer routing. Therefore, the `dht` should be plugged through a `modules.dht` property, while the `libp2p-delegated-peer-routing` should be plugged into `modules.peerRouting` array.
+`libp2p-kad-dht` is not divided into Peer Routing and Content Routing components. Therefore, the `dht` should be plugged through a `modules.dht` property, while the `libp2p-delegated-peer-routing` should be plugged into `modules.peerRouting` array.
 
 ```js
 const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
+const WebSockets = require('libp2p-websockets')
 const MPLEX = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const DHT = require('libp2p-kad-dht')
 
 const node = await Libp2p.create({
   modules: {
-    transport: [TCP],
+    transport: [WebSockets],
     streamMuxer: [MPLEX],
     connEncryption: [SECIO],
     dht: DHT
@@ -310,18 +308,20 @@ In this guide, we will install `libp2p-kad-dht`. If you'd like to review the ava
 npm install libp2p-kad-dht
 ```
 
-`js-libp2p` configuration is not well defined yet regarding content routing routing. Therefore, the `dht` should be plugged through a `modules.dht` property, while the `libp2p-delegated-content-routing` should be plugged into `modules.contentRouting` array.
+`libp2p-kad-dht` is not divided into Peer Routing and Content Routing components. Therefore, the `dht` should be plugged through a `modules.dht` property, while the `libp2p-delegated-content-routing` should be plugged into `modules.contentRouting` array.
 
 ```js
 const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
+const WebSockets = require('libp2p-websockets')
 const MPLEX = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const DHT = require('libp2p-kad-dht')
 
+const CID = require('cids')
+
 const node = await Libp2p.create({
   modules: {
-    transport: [TCP],
+    transport: [WebSockets],
     streamMuxer: [MPLEX],
     connEncryption: [SECIO],
     dht: DHT
@@ -341,11 +341,11 @@ const node = await Libp2p.create({
 // start libp2p
 await node.start()
 
-// provide cid
-await libp2p.contentRouting.provide(cid)
+// previously known cid
+const cid = new CID('QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG')
 
 // get providers for a cid
-for await (const provider of libp2p.contentRouting.findProviders(cid2)) {
+for await (const provider of libp2p.contentRouting.findProviders(cid)) {
   console.log(provider)
 }
 
@@ -372,14 +372,14 @@ npm install libp2p-gossipsub
 
 ```js
 const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
+const WebSockets = require('libp2p-websockets')
 const MPLEX = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const GossipSub = require('libp2p-gossipsub')
 
 const node = await Libp2p.create({
   modules: {
-    transport: [TCP],
+    transport: [WebSockets],
     streamMuxer: [MPLEX],
     connEncryption: [SECIO],
     pubsub: GossipSub
