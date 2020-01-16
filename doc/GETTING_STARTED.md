@@ -101,19 +101,14 @@ If you want to know more about libp2p connection encryption, you should read the
 
 #### Multiplexing
 
-More than connecting with other peers, you want to have them communicating in a meaningful way to your application. With libp2p you are able to create your own protocols so that you can integrate your business logic into the network. As an example, you can create a chat protocol on top of libp2p and use it to exchange chat messages.
-
-In this context, your node will not be efficient if you open multiple connections with a single peer to use different protocols. Therefore, each protocol works as an independent logical stream and you can use a stream multiplexer, in order to share a common underlying transport medium between streams (single connection).
+With libp2p you are able to create your own protocols so that peers can communicate in a meaningful way to your application. Each protocol works as an independent logical stream and you can use a stream multiplexer, in order to share a common underlying transport medium between streams (single connection). As an example, you can create a chat protocol on top of libp2p and use it to exchange chat messages.
 
 Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) protocols, we are only able to use `libp2p-mplex` for the time being. Bear in mind that future libp2p transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
 
-You can install `libp2p-mplex` and add it to your libp2p node as follows in the next example. You should revisit the [API](./API.md) document, more specifically [API#dial](./API.md#dial) and [API#handle](./API.md#handle).
-
-We will also install the next dependencies for easily work with [async iterable duplex streams](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9).
+You can install `libp2p-mplex` and add it to your libp2p node as follows in the next example.
 
 ```sh
 npm install libp2p-mplex
-npm install it-pipe it-buffer streaming-iterables
 ```
 
 ```js
@@ -122,10 +117,6 @@ const WEBSOCKETS = require('libp2p-websockets')
 const SECIO = require('libp2p-secio')
 const MPLEX = require('libp2p-mplex')
 
-const pipe = require('it-pipe')
-const { collect } = require('streaming-iterables')
-const { toBuffer } = require('it-buffer')
-
 const node = await Libp2p.create({
   modules: {
     transport: [WEBSOCKETS],
@@ -133,54 +124,9 @@ const node = await Libp2p.create({
     streamMuxer: [MPLEX]
   }
 })
-
-// start libp2p
-await node.start()
-
-// register protocol /double/1.0.0
-// this protocol expects to receive numbers from
-// other peers, double them and send them back
-libp2p.handle('/double/1.0.0', ({ stream }) => {
-  // Receive data from the stream
-  // Make intended operations
-  // Send the result back to the stream
-  pipe(
-    stream,
-    toBuffer, // guarantee that we receive a buffer
-    function transform (source) {
-      return (async function * () {
-        for await (const val of source) {
-          // Needs to convert from buffer
-          yield Number(val.toString()) * 2
-        }
-      })()
-    },
-    stream
-  )
-})
-
-// connect to a known peer through its multiaddr
-const ma = '/ip4/104.236.176.52/tcp/9000/ws/p2p/QmSoLnSGccFuZQJzRadHn95W2CrSFmZuTdDWP8HXaHca9z'
-const conn = await node.dial(ma)
-
-// the node should also support this protocol
-// otherwise this will throw an error
-const { stream } = await conn.newStream(['/double/1.0.0'])
-
-const response = await pipe(
-  [1, 2, 3],
-  stream,
-  collect
-)
-// response: [2, 4, 6]
-
-// stop libp2p
-await node.stop()
 ```
 
-Protocols design is similar to an http api, where each protocol has an handler, receives a message and returns a response.
-
-Note that there are a lot of useful modules for working with async iterables, you can find them on [alanshaw/it-awesome](https://github.com/alanshaw/it-awesome). For example, we could use [alanshaw/paramap-it](https://github.com/alanshaw/paramap-it) to simplify the transform function above.
+Protocols design is similar to an http api, where each protocol has an handler, receives a message and returns a response. If you want to create your own protocol, start by having a look at the [Protocol and Stream Muxing Example](../examples/protocol-and-stream-muxing).
 
 <details><summary>Read More</summary>
 If you want to know more about libp2p stream multiplexing, you should read the following content:
