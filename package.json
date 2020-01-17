@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto",
-  "version": "0.17.1",
+  "version": "0.17.2",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -85,6 +85,7 @@
     "Alan Shaw <alan@tableflip.io>",
     "Alberto Elias <hi@albertoelias.me>",
     "Arve Knudsen <arve.knudsen@gmail.com>",
+    "Carson Farmer <carson.farmer@gmail.com>",
     "David Dias <daviddias.p@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
