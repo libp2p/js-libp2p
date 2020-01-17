@@ -1,3 +1,13 @@
+<a name="0.17.2"></a>
+## [0.17.2](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.1...v0.17.2) (2020-01-17)
+
+
+### Features
+
+* add typescript types + linting/tests ([#161](https://github.com/libp2p/js-libp2p-crypto/issues/161)) ([e01977c](https://github.com/libp2p/js-libp2p-crypto/commit/e01977c))
+
+
+
 <a name="0.17.1"></a>
 ## [0.17.1](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.0...v0.17.1) (2019-10-25)
 
