@@ -110,7 +110,6 @@ class RsaPrivateKey {
    *
    * @param {string} password - The password to read the encrypted PEM
    * @param {string} [format] - Defaults to 'pkcs-8'.
-   * @returns {KeyInfo}
    */
   async export (password, format = 'pkcs-8') { // eslint-disable-line require-await
     let pem = null

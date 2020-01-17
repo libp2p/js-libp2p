@@ -10,8 +10,14 @@ const crypto = require('../src')
 const fixtures = require('./fixtures/go-key-rsa')
 const { expectErrCode } = require('./util')
 
+/** @typedef {import("libp2p-crypto").PrivateKey} PrivateKey */
+
 describe('libp2p-crypto', function () {
   this.timeout(20 * 1000)
+  // @ts-check
+  /**
+   * @type {PrivateKey}
+   */
   let key
   before(async () => {
     key = await crypto.keys.generateKeyPair('RSA', 512)
@@ -109,9 +115,9 @@ describe('libp2p-crypto', function () {
   })
 
   describe('randomBytes', () => {
-    it('throws with no number passed', () => {
+    it('throws with invalid number passed', () => {
       expect(() => {
-        crypto.randomBytes()
+        crypto.randomBytes(-1)
       }).to.throw()
     })
 

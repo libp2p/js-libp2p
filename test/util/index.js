@@ -1,8 +1,13 @@
+/* eslint-disable valid-jsdoc */
 'use strict'
 
 const chai = require('chai')
 const expect = chai.expect
 
+// @ts-check
+/**
+ * @type {function(any, string): void}
+ */
 const expectErrCode = async (p, code) => {
   try {
     await p

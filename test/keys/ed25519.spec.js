@@ -12,8 +12,14 @@ const fixtures = require('../fixtures/go-key-ed25519')
 
 const testGarbage = require('../helpers/test-garbage-error-handling')
 
+/** @typedef {import("libp2p-crypto").PrivateKey} PrivateKey */
+
 describe('ed25519', function () {
   this.timeout(20 * 1000)
+  // @ts-check
+  /**
+   * @type {PrivateKey}
+   */
   let key
   before(async () => {
     key = await crypto.keys.generateKeyPair('Ed25519', 512)
@@ -118,11 +124,15 @@ describe('ed25519', function () {
 
   describe('throws error instead of crashing', () => {
     const key = crypto.keys.unmarshalPublicKey(fixtures.verify.publicKey)
-    testGarbage.doTests('key.verify', key.verify.bind(key), 2)
-    testGarbage.doTests('crypto.keys.unmarshalPrivateKey', crypto.keys.unmarshalPrivateKey.bind(crypto.keys))
+    testGarbage.doTests('key.verify', key.verify.bind(key), 2, null)
+    testGarbage.doTests('crypto.keys.unmarshalPrivateKey', crypto.keys.unmarshalPrivateKey.bind(crypto.keys), null, null)
   })
 
   describe('go interop', () => {
+    // @ts-check
+    /**
+     * @type {PrivateKey}
+     */
     let privateKey
 
     before(async () => {

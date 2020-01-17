@@ -3,7 +3,10 @@
 const crypto = require('crypto')
 const errcode = require('err-code')
 const randomBytes = require('../random-bytes')
-
+// @ts-check
+/**
+ * @type {PrivateKey}
+ */
 let keypair
 try {
   if (process.env.LP2P_FORCE_CRYPTO_LIB === 'keypair') {

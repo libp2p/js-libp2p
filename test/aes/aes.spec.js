@@ -1,4 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 8] */
+/* eslint-disable valid-jsdoc */
 /* eslint-env mocha */
 'use strict'
 
@@ -16,6 +17,8 @@ const bytes = {
   16: 'AES-128',
   32: 'AES-256'
 }
+
+/** @typedef {import("libp2p-crypto").aes.Cipher} Cipher */
 
 describe('AES-CTR', () => {
   Object.keys(bytes).forEach((byte) => {
@@ -93,6 +96,10 @@ describe('AES-CTR', () => {
   })
 })
 
+// @ts-check
+/**
+ * @type {function(Cipher): void}
+ */
 async function encryptAndDecrypt (cipher) {
   const data = Buffer.alloc(100)
   data.fill(Math.ceil(Math.random() * 100))

@@ -12,7 +12,8 @@ const crypto = require('../../src')
 
 describe('without libp2p-crypto-secp256k1 module present', () => {
   before(() => {
-    sinon.replace(crypto.keys.supportedKeys, 'secp256k1', null)
+    const empty = null
+    sinon.replace(crypto.keys.supportedKeys, 'secp256k1', empty)
   })
 
   after(() => {

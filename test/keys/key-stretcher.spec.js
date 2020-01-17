@@ -15,6 +15,10 @@ describe('keyStretcher', () => {
     const ciphers = ['AES-128', 'AES-256', 'Blowfish']
     const hashes = ['SHA1', 'SHA256', 'SHA512']
     let res
+    // @ts-check
+    /**
+     * @type {Buffer}
+     */
     let secret
 
     before(async () => {

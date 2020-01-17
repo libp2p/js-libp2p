@@ -11,6 +11,10 @@ const fixtures = require('../fixtures/go-elliptic-key')
 const crypto = require('../../src')
 
 const curves = ['P-256', 'P-384'] // 'P-521' fails in tests :( no clue why
+// @ts-check
+/**
+ * @type {Record<string, number>}
+ */
 const lengths = {
   'P-256': 65,
   'P-384': 97,
