@@ -1,3 +1,13 @@
+<a name="0.13.1"></a>
+## [0.13.1](https://github.com/libp2p/js-libp2p-mdns/compare/v0.13.0...v0.13.1) (2020-01-17)
+
+
+### Bug Fixes
+
+* do not emit empty peer info objects ([#85](https://github.com/libp2p/js-libp2p-mdns/issues/85)) ([a88483c](https://github.com/libp2p/js-libp2p-mdns/commit/a88483c))
+
+
+
 <a name="0.13.0"></a>
 # [0.13.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.12.3...v0.13.0) (2019-09-27)
 
