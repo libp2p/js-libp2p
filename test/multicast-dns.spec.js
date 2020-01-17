@@ -160,4 +160,35 @@ describe('MulticastDNS', () => {
     await mdns.start()
     await mdns.stop()
   })
+
+  it('should not emit undefined peer ids', async () => {
+    const mdns = new MulticastDNS({ peerInfo: pA, port: 50004 })
+    await mdns.start()
+
+    return new Promise((resolve, reject) => {
+      mdns.on('peer', (peerInfo) => {
+        if (!peerInfo) {
+          reject(new Error('peerInfo was not set'))
+        }
+      })
+
+      mdns.mdns.on('response', () => {
+        // query.gotResponse is async - we'll bail from that method when
+        // comparing the senders PeerId to our own but it'll happen later
+        // so allow enough time for the test to have failed if we emit
+        // empty PeerInfo objects
+        setTimeout(() => {
+          resolve()
+        }, 100)
+      })
+
+      // this will cause us to respond to ourselves
+      mdns.mdns.query({
+        questions: [{
+          name: 'localhost',
+          type: 'A'
+        }]
+      })
+    })
+  })
 })

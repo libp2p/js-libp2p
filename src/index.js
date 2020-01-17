@@ -56,7 +56,10 @@ class MulticastDNS extends EventEmitter {
   async _onMdnsResponse (event) {
     try {
       const foundPeer = await query.gotResponse(event, this.peerInfo, this.serviceTag)
-      this.emit('peer', foundPeer)
+
+      if (foundPeer) {
+        this.emit('peer', foundPeer)
+      }
     } catch (err) {
       log('Error processing peer response', err)
     }
