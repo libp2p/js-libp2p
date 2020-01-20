@@ -3,6 +3,7 @@ docs
 **/*.log
 test/repo-tests*
 **/bundle.js
+.cache
 
 # Logs
 logs

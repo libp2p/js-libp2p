@@ -1,10 +1,10 @@
 # libp2p running in the Browser
 
-One of the primary goals with libp2p P2P was to get it fully working in the browser and interopable with the versions running in Go and in Node.js.
+One of the primary goals with libp2p is to get it fully working in the browser and interopable with the versions running in Go and in Node.js.
 
 # 0. Use a signalling server
 
-In this example we are using the `libp2p-webrtc-star` transport. Nodes using this transport need to connect to a known point in the network, a rendezvous point, where they can learn about other nodes (Discovery) and exchange their SDP offers (signaling data).
+In this example we are using the `libp2p-webrtc-star` transport. Nodes using this transport need to connect to a known point in the network, a rendezvous point, where they can learn about other nodes (Peer Discovery) and exchange their SDP offers (signaling data).
 
 You can connect to a public signaling server (if you know one), or you can setup your own server as described at [libp2p/js-libp2p-webrtc-star#rendezvous-server-aka-signalling-server](https://github.com/libp2p/js-libp2p-webrtc-star#rendezvous-server-aka-signalling-server), which we will be using for this example.
 
