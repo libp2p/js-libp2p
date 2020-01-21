@@ -218,6 +218,7 @@ class Upgrader {
   }) {
     let muxer
     let newStream
+    // eslint-disable-next-line prefer-const
     let connection
 
     if (Muxer) {
