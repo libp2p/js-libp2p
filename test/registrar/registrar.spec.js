@@ -194,7 +194,7 @@ describe('registrar', () => {
       const conn1 = await createMockConnection({ localPeer: localPeer.id, remotePeer: remotePeer.id })
       const conn2 = await createMockConnection({ localPeer: localPeer.id, remotePeer: remotePeer.id })
       const peerInfo = await PeerInfo.create(remotePeer.id)
-      const id = peerInfo.id.toString()
+      const id = peerInfo.id.toB58String()
 
       // Add connection to registrar
       peerStore.put(peerInfo)

@@ -314,7 +314,7 @@ class Libp2p extends EventEmitter {
   hangUp (peer) {
     const peerInfo = getPeerInfo(peer, this.peerStore)
     return Promise.all(
-      this.registrar.connections.get(peerInfo.id.toString()).map(connection => {
+      this.registrar.connections.get(peerInfo.id.toB58String()).map(connection => {
         return connection.close()
       })
     )
@@ -426,7 +426,7 @@ class Libp2p extends EventEmitter {
    * @param {PeerInfo} peerInfo
    */
   _onDiscoveryPeer (peerInfo) {
-    if (peerInfo.id.toString() === this.peerInfo.id.toString()) {
+    if (peerInfo.id.toB58String() === this.peerInfo.id.toB58String()) {
       log.error(new Error(codes.ERR_DISCOVERED_SELF))
       return
     }
@@ -445,7 +445,7 @@ class Libp2p extends EventEmitter {
     if (this._config.peerDiscovery.autoDial === true && !this.registrar.getConnection(peerInfo)) {
       const minPeers = this._options.connectionManager.minPeers || 0
       if (minPeers > this.connectionManager._connections.size) {
-        log('connecting to discovered peer %s', peerInfo.id.toString())
+        log('connecting to discovered peer %s', peerInfo.id.toB58String())
         try {
           await this.dialer.connectToPeer(peerInfo)
         } catch (err) {

@@ -104,7 +104,7 @@ describe('Metrics', () => {
     expect(results.length).to.eql(bytes.length * 10)
 
     const stats = metrics.forPeer(peerId)
-    expect(metrics.peers).to.eql([peerId.toString()])
+    expect(metrics.peers).to.eql([peerId.toB58String()])
     expect(stats.snapshot.dataReceived.toNumber()).to.equal(results.length)
     expect(stats.snapshot.dataSent.toNumber()).to.equal(results.length)
 
@@ -148,7 +148,7 @@ describe('Metrics', () => {
     // Flush the call stack
     await delay(0)
 
-    expect(metrics.peers).to.eql([peerId.toString(), peerId2.toString()])
+    expect(metrics.peers).to.eql([peerId.toB58String(), peerId2.toB58String()])
     // Verify global metrics
     const globalStats = metrics.global
     expect(globalStats.snapshot.dataReceived.toNumber()).to.equal(bytes.length * 2)
@@ -181,7 +181,7 @@ describe('Metrics', () => {
     pipe(remote, remote)
 
     const mockPeer = {
-      toString: () => 'a temporary id'
+      toB58String: () => 'a temporary id'
     }
     metrics.trackStream({
       stream: local,
@@ -197,8 +197,8 @@ describe('Metrics', () => {
 
     await delay(0)
 
-    metrics.updatePlaceholder(mockPeer.toString(), peerId)
-    mockPeer.toString = peerId.toString.bind(peerId)
+    metrics.updatePlaceholder(mockPeer, peerId)
+    mockPeer.toB58String = peerId.toB58String.bind(peerId)
 
     input.push(bytes)
     input.end()
@@ -206,7 +206,7 @@ describe('Metrics', () => {
     await deferredPromise
     await delay(0)
 
-    expect(metrics.peers).to.eql([peerId.toString()])
+    expect(metrics.peers).to.eql([peerId.toB58String()])
     // Verify global metrics
     const globalStats = metrics.global
     expect(globalStats.snapshot.dataReceived.toNumber()).to.equal(bytes.length * 2)
@@ -237,7 +237,7 @@ describe('Metrics', () => {
     // Disconnect every peer
     for (const id of trackedPeers.keys()) {
       metrics.onPeerDisconnected({
-        toString: () => id
+        toB58String: () => id
       })
     }
 
@@ -245,7 +245,9 @@ describe('Metrics', () => {
     expect(metrics.peers).to.have.length(0)
     const retainedPeers = []
     for (const id of trackedPeers.keys()) {
-      const stat = metrics.forPeer(id)
+      const stat = metrics.forPeer({
+        toB58String: () => id
+      })
       if (stat) retainedPeers.push(id)
     }
     expect(retainedPeers).to.eql(['45', '46', '47', '48', '49'])

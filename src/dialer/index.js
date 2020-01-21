@@ -113,7 +113,7 @@ class Dialer {
     }
     const addrs = this.peerStore.multiaddrsForPeer(dialable)
     return {
-      id: dialable.id.toString(),
+      id: dialable.id.toB58String(),
       addrs
     }
   }
