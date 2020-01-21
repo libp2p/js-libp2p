@@ -57,7 +57,7 @@
     "it-protocol-buffers": "^0.2.0",
     "latency-monitor": "~0.2.1",
     "libp2p-crypto": "^0.17.1",
-    "libp2p-interfaces": "^0.1.5",
+    "libp2p-interfaces": "^0.2.3",
     "mafmt": "^7.0.0",
     "merge-options": "^2.0.0",
     "moving-average": "^1.0.0",
@@ -77,7 +77,7 @@
   "devDependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
     "abortable-iterator": "^2.1.0",
-    "aegir": "^20.4.1",
+    "aegir": "^20.5.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "cids": "^0.7.1",
@@ -102,7 +102,7 @@
     "p-defer": "^3.0.0",
     "p-times": "^2.1.0",
     "p-wait-for": "^3.1.0",
-    "sinon": "^7.2.7",
+    "sinon": "^8.1.0",
     "streaming-iterables": "^4.1.0",
     "wrtc": "^0.4.1"
   },
