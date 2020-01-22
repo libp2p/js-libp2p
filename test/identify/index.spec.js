@@ -84,7 +84,12 @@ describe('Identify', () => {
   it('should throw if identified peer is the wrong peer', async () => {
     const localIdentify = new IdentifyService({
       peerInfo: localPeer,
-      protocols
+      protocols,
+      registrar: {
+        peerStore: {
+          replace: () => {}
+        }
+      }
     })
     const remoteIdentify = new IdentifyService({
       peerInfo: remotePeer,
@@ -92,7 +97,7 @@ describe('Identify', () => {
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
-    const localConnectionMock = { newStream: () => {}, remotePeer }
+    const localConnectionMock = { newStream: () => {}, remotePeer: localPeer.id }
     const remoteConnectionMock = { remoteAddr: observedAddr }
 
     const [local, remote] = duplexPair()

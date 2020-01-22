@@ -82,7 +82,7 @@ class Metrics {
    * @returns {Stats}
    */
   forPeer (peerId) {
-    const idString = peerId.toString()
+    const idString = peerId.toB58String()
     return this._peerStats.get(idString) || this._oldPeers.get(idString)
   }
 
@@ -110,7 +110,7 @@ class Metrics {
    * @param {PeerId} peerId
    */
   onPeerDisconnected (peerId) {
-    const idString = peerId.toString()
+    const idString = peerId.toB58String()
     const peerStats = this._peerStats.get(idString)
     if (peerStats) {
       peerStats.stop()
@@ -140,7 +140,7 @@ class Metrics {
     let peerStats = this.forPeer(remotePeer)
     if (!peerStats) {
       peerStats = new Stats(initialCounters, this._options)
-      this._peerStats.set(remotePeer.toString(), peerStats)
+      this._peerStats.set(remotePeer.toB58String(), peerStats)
     }
 
     // Peer and global stats
@@ -162,13 +162,13 @@ class Metrics {
    * Replaces the `PeerId` string with the given `peerId`.
    * If stats are already being tracked for the given `peerId`, the
    * placeholder stats will be merged with the existing stats.
-   * @param {string} placeholder A peerId string
+   * @param {PeerId} placeholder A peerId string
    * @param {PeerId} peerId
    */
   updatePlaceholder (placeholder, peerId) {
     if (!this._running) return
     const placeholderStats = this.forPeer(placeholder)
-    const peerIdString = peerId.toString()
+    const peerIdString = peerId.toB58String()
     const existingStats = this.forPeer(peerId)
     let mergedStats = placeholderStats
 
@@ -180,7 +180,7 @@ class Metrics {
       this._oldPeers.delete(peerIdString)
     }
 
-    this._peerStats.delete(placeholder.toString())
+    this._peerStats.delete(placeholder.toB58String())
     this._peerStats.set(peerIdString, mergedStats)
     mergedStats.start()
   }

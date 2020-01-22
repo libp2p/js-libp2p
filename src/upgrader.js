@@ -73,7 +73,7 @@ class Upgrader {
     if (this.metrics) {
       ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
       const idString = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
-      setPeer({ toString: () => idString })
+      setPeer({ toB58String: () => idString })
       maConn = this.metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
     }
 
@@ -147,7 +147,7 @@ class Upgrader {
     if (this.metrics) {
       ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
       const idString = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
-      setPeer({ toString: () => idString })
+      setPeer({ toB58String: () => idString })
       maConn = this.metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
     }
 

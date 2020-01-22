@@ -306,7 +306,7 @@ describe('Dialing (direct, TCP)', () => {
         }
       })
 
-      const connection = await libp2p.dial(`${remoteAddr.toString()}/p2p/${remotePeerInfo.id.toString()}`)
+      const connection = await libp2p.dial(`${remoteAddr.toString()}/p2p/${remotePeerInfo.id.toB58String()}`)
       expect(connection).to.exist()
       expect(connection.stat.timeline.close).to.not.exist()
       await libp2p.hangUp(connection.remotePeer)
@@ -375,7 +375,7 @@ describe('Dialing (direct, TCP)', () => {
       })
       const dials = 10
 
-      const fullAddress = remoteAddr.encapsulate(`/p2p/${remoteLibp2p.peerInfo.id.toString()}`)
+      const fullAddress = remoteAddr.encapsulate(`/p2p/${remoteLibp2p.peerInfo.id.toB58String()}`)
       const dialResults = await Promise.all([...new Array(dials)].map((_, index) => {
         if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerInfo)
         return libp2p.dial(fullAddress)
@@ -405,7 +405,7 @@ describe('Dialing (direct, TCP)', () => {
       const error = new Error('Boom')
       sinon.stub(libp2p.transportManager, 'dial').callsFake(() => Promise.reject(error))
 
-      const fullAddress = remoteAddr.encapsulate(`/p2p/${remoteLibp2p.peerInfo.id.toString()}`)
+      const fullAddress = remoteAddr.encapsulate(`/p2p/${remoteLibp2p.peerInfo.id.toB58String()}`)
       const dialResults = await pSettle([...new Array(dials)].map((_, index) => {
         if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerInfo)
         return libp2p.dial(fullAddress)
