@@ -20,7 +20,7 @@
     "libp2p-bootstrap": "^0.10.3",
     "libp2p-mplex": "^0.9.3",
     "libp2p-secio": "^0.12.2",
-    "libp2p-webrtc-star": "libp2p/js-libp2p-webrtc-star#fix/remoteAddr",
+    "libp2p-webrtc-star": "^0.17.2",
     "libp2p-websockets": "^0.13.2"
   },
   "devDependencies": {

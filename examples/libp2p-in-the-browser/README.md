@@ -15,7 +15,7 @@ npm install
 
 This example uses the `libp2p-webrtc-star` module, which enables libp2p browser nodes to establish direct connections to one another via a central signaling server. For this example, we are using the signaling server that ships with `libp2p-webrtc-star`.
 
-You can start the server by running `npm run server`. This will start a signaling server locally on port `9090`. If you'd like to run a signaling server ourside of this example, you can see instructions on how to do so in the [`libp2p-webrtc-star` README](https://github.com/libp2p/js-libp2p-webrtc-star).
+You can start the server by running `npm run server`. This will start a signaling server locally on port `9090`. If you'd like to run a signaling server outside of this example, you can see instructions on how to do so in the [`libp2p-webrtc-star` README](https://github.com/libp2p/js-libp2p-webrtc-star).
 
 When you run the server, you should see output that looks something like this:
 
