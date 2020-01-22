@@ -36,7 +36,7 @@ class ConnectionManager {
   constructor (libp2p, options) {
     this._libp2p = libp2p
     this._registrar = libp2p.registrar
-    this._peerId = libp2p.peerInfo.id.toString()
+    this._peerId = libp2p.peerInfo.id.toB58String()
     this._options = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, options)
     assert(
       this._options.maxConnections > this._options.minConnections,
@@ -91,8 +91,8 @@ class ConnectionManager {
     if (value < 0 || value > 1) {
       throw new Error('value should be a number between 0 and 1')
     }
-    if (peerId.toString) {
-      peerId = peerId.toString()
+    if (peerId.toB58String) {
+      peerId = peerId.toB58String()
     }
     this._peerValues.set(peerId, value)
   }
@@ -119,7 +119,7 @@ class ConnectionManager {
    * @param {Connection} connection
    */
   onConnect (connection) {
-    const peerId = connection.remotePeer.toString()
+    const peerId = connection.remotePeer.toB58String()
     this._connections.set(connection.id, connection)
     if (!this._peerValues.has(peerId)) {
       this._peerValues.set(peerId, this._options.defaultPeerValue)
@@ -133,7 +133,7 @@ class ConnectionManager {
    */
   onDisconnect (connection) {
     this._connections.delete(connection.id)
-    this._peerValues.delete(connection.remotePeer.toString())
+    this._peerValues.delete(connection.remotePeer.toB58String())
   }
 
   /**
@@ -175,7 +175,7 @@ class ConnectionManager {
         debug('%s: lowest value peer is %s', this._peerId, peerId)
         debug('%s: closing a connection to %j', this._peerId, peerId)
         for (const connection of this._connections.values()) {
-          if (connection.remotePeer.toString() === peerId) {
+          if (connection.remotePeer.toB58String() === peerId) {
             connection.close()
             break
           }

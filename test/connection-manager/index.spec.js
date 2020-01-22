@@ -75,7 +75,7 @@ describe('Connection Manager', () => {
       const spy = sinon.spy(connection, 'close')
       // The connections have the same remote id, give them random ones
       // so that we can verify the correct connection was closed
-      sinon.stub(connection.remotePeer, 'toString').returns(index)
+      sinon.stub(connection.remotePeer, 'toB58String').returns(index)
       const value = Math.random()
       spies.set(value, spy)
       libp2p.connectionManager.setPeerValue(connection.remotePeer, value)

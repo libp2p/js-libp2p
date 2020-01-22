@@ -180,7 +180,7 @@ class IdentifyService {
 
     const id = await PeerId.createFromPubKey(publicKey)
     const peerInfo = new PeerInfo(id)
-    if (connection.remotePeer.toString() !== id.toString()) {
+    if (connection.remotePeer.toB58String() !== id.toB58String()) {
       throw errCode(new Error('identified peer does not match the expected peer'), codes.ERR_INVALID_PEER)
     }
 
