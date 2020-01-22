@@ -1,6 +1,6 @@
 # Getting Started
 
-Welcome to libp2p, this guide will walk you through setting up a fully functional libp2p node 🚀
+Welcome to libp2p! This guide will walk you through setting up a fully functional libp2p node 🚀
 
 - [Getting Started](#getting-started)
   - [Install](#install)
@@ -12,9 +12,7 @@ Welcome to libp2p, this guide will walk you through setting up a fully functiona
       - [Running Libp2p](#running-libp2p)
     - [Custom setup](#custom-setup)
       - [Peer Discovery](#peer-discovery)
-      - [Peer Routing](#peer-routing)
-      - [Content Routing](#content-routing)
-    - [Pubsub](#pubsub)
+      - [Pubsub](#pubsub)
   - [What is next](#what-is-next)
 
 ## Install
@@ -31,13 +29,13 @@ If you're new to libp2p, we recommend configuring your node in stages, as this c
 
 ### Basic setup
 
-Now that we have libp2p installed, let's configure the absolute minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. Moreover, we recommend that a basic setup should also have a [**Stream Multiplexer**](streamMuxer) configured. Let's start by setting up a Transport.
+Now that we have libp2p installed, let's configure the minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. However, we recommend that a basic setup should also have a [**Stream Multiplexer**](streamMuxer) configured, which we will explain shortly. Let's start by setting up a Transport.
 
 #### Transports
 
-Libp2p uses Transports to establish connections between peers over the network. You can configure 1 Transport, or as many as you like. Supporting more Transports will improve the ability for other nodes on the network to communicate with you.
+Libp2p uses Transports to establish connections between peers over the network. You can configure any number of Transports, but you only need 1 to start with. Supporting more Transports will improve the ability of your node to speak to a larger number of nodes on the network.
 
-You should select Transports according to the runtime of your application (Node.js / browser). You can see a list of some of the available Transports in the [configuration readme](./CONFIGURATION.md#transport). We are going to install `libp2p-websockets`, as it can be used in both Node.js and the browser.
+You should select Transports according to the runtime of your application; Node.js or the browser. You can see a list of some of the available Transports in the [configuration readme](./CONFIGURATION.md#transport). For this guide let's install `libp2p-websockets`, as it can be used in both Node.js and the browser.
 
 Start by installing `libp2p-websockets`:
 
@@ -58,7 +56,7 @@ const node = await Libp2p.create({
 })
 ```
 
-As new Transports are created, you may wish to reevaluate your needs and select the latest Transports that best suit your requirements. You may wish to remove the Transports you had before, or simply append the new Transports to `modules.transport` in order to establish connections with peers that support either.
+As new Transports are created, you can reevaluate the needs of your appliction and select the Transports that best suit your requirements. You may wish to remove the Transports you had before, or simply append the new Transports to `modules.transport` in order to establish connections with peers that support either.
 
 <details><summary>Read More</summary>
 If you want to know more about libp2p transports, you should read the following content:
@@ -71,7 +69,7 @@ If you want to know more about libp2p transports, you should read the following 
 
 Encryption is an important part of communicating on the libp2p network. Every connection must be encrypted to help ensure security for everyone. As such, Connection Encryption (Crypto) is a required component of libp2p.
 
-There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [available Connection Encryption](./CONFIGURATION.md#connection-encryption) section of the configuration readme. For now, we are going to configure our node to use the `libp2p-secio` module.
+There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [available Connection Encryption](./CONFIGURATION.md#connection-encryption) section of the configuration readme. For now, we are going to configure our node to use the `libp2p-secio` module, which is widely supported across the various libp2p implementations.
 
 ```sh
 npm install libp2p-secio
@@ -101,9 +99,9 @@ If you want to know more about libp2p connection encryption, you should read the
 
 #### Multiplexing
 
-While multiplexers are not strictly required, they are highly recommended as they improve the effectiveness and efficiency of connections for the various protocols libp2p runs. Including a multiplexer will allow libp2p to run several of its internal protocols, like Identify, as well as allowing your application to easily run any number of protocols over a single connection.
+While multiplexers are not strictly required, they are highly recommended as they improve the effectiveness and efficiency of connections for the various protocols libp2p runs. Adding a multiplexer to your configuration will allow libp2p to run several of its internal protocols, like Identify, as well as allow your application to easily run any number of protocols over a single connection.
 
-Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) modules, js-libp2p currently only supports `libp2p-mplex`, so we will use that here. Bear in mind that future libp2p transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
+Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) modules, js-libp2p currently only supports `libp2p-mplex`, so we will use that here. Bear in mind that future libp2p Transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
 
 You can install `libp2p-mplex` and add it to your libp2p node as follows in the next example.
 
@@ -113,20 +111,18 @@ npm install libp2p-mplex
 
 ```js
 const Libp2p = require('libp2p')
-const WEBSOCKETS = require('libp2p-websockets')
+const WebSockets = require('libp2p-websockets')
 const SECIO = require('libp2p-secio')
 const MPLEX = require('libp2p-mplex')
 
 const node = await Libp2p.create({
   modules: {
-    transport: [WEBSOCKETS],
+    transport: [WebSockets],
     connEncryption: [SECIO],
     streamMuxer: [MPLEX]
   }
 })
 ```
-
-Protocol design is similar to an http api, where each protocol has a registered handler that receives and responds to requests. If you want to create your own protocol, start by having a look at the [Protocol and Stream Muxing Example](../examples/protocol-and-stream-muxing).
 
 <details><summary>Read More</summary>
 If you want to know more about libp2p stream multiplexing, you should read the following content:
@@ -138,7 +134,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 #### Running Libp2p
 
-Now that you have configured a [`Transport`][transport], [`Crypto`][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
+Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
 
 ```js
 const Libp2p = require('libp2p')
@@ -156,9 +152,11 @@ const node = await Libp2p.create({
 
 // start libp2p
 await node.start()
+console.log('libp2p has started')
 
 // stop libp2p
 await node.stop()
+console.log('libp2p has stopped')
 ```
 
 ### Custom setup
@@ -169,21 +167,23 @@ Once your libp2p node is running, it is time to get it connected to the public n
 
 Peer discovery is an important part of creating a well connected libp2p node. A static list of peers will often be used to join the network, but it's useful to couple other discovery mechanisms to ensure you're able to discover other peers that are important to your application.
 
+For each discovered peer libp2p will emit a `peer:discovery` event which includes metadata about that peer. You can read the [Events](./API.md#events) in the API doc to learn more.
+
 Looking at the [available peer discovery](./CONFIGURATION.md#peer-discovery) protocols, there are several options to be considered:
 - If you already know the addresses of some other network peers, you should consider using `libp2p-bootstrap` as this is the easiest way of getting your peer into the network.
-- If it is likely that you will have other peers on your local network, `libp2p-mdns` is a must if you're not using the browser. It allows peers to discover each other when on the same local network with zero configuration. mDNS uses a multicast system of DNS records.
-- If your application is browser based you can use the transport `js-libp2p-webrtc-star`, which includes a rendezvous based peer sharing mechanism.
-- A random walk approach can be used via `js-libp2p-kad-dht`, to crawl the network and find new peers along the way.
+- If it is likely that you will have other peers on your local network, `libp2p-mdns` is a must if you're node is not running in the browser. It allows peers to discover each other when on the same local network.
+- If your application is browser based you can use the `libp2p-webrtc-star` Transport, which includes a rendezvous based peer sharing service.
+- A random walk approach can be used via `libp2p-kad-dht`, to crawl the network and find new peers along the way.
 
-Reviewing the events specification on [Events](./API.md#events), each time a peer is discovered a `peer:discovery` event will be emitted by the node.
+For this guide we will configure `libp2p-bootstrap` as this is useful for joining the public network.
 
-We will consider in this guide that we already know some peers and also that we are creating an application that might be used by people within the same office network. Accordingly, we will install `libp2p-bootstrap` and `libp2p-mdns`
+Let's install `libp2p-bootstrap`.
 
 ```sh
-npm install libp2p-bootstrap libp2p-mdns
+npm install libp2p-bootstrap
 ```
 
-We can provide specific configurations for each protocol within a `config.peerDiscovery` property in the options.
+We can provide specific configurations for each protocol within a `config.peerDiscovery` property in the options as shown below.
 
 ```js
 const Libp2p = require('libp2p')
@@ -191,11 +191,10 @@ const WebSockets = require('libp2p-websockets')
 const SECIO = require('libp2p-secio')
 const MPLEX = require('libp2p-mplex')
 
-const Bootstrap = require('libp2p-bootstap')
-const MulticastDNS = require('libp2p-mdns')
+const Bootstrap = require('libp2p-bootstrap')
 
 // Known peers addresses
-const bootstrappers = [
+const bootstrapMultiaddrs = [
   '/dns4/ams-1.bootstrap.libp2p.io/tcp/443/wss/ipfs/QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd',
   '/dns4/lon-1.bootstrap.libp2p.io/tcp/443/wss/ipfs/QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3'
 ]
@@ -205,29 +204,28 @@ const node = await Libp2p.create({
     transport: [WebSockets],
     connEncryption: [SECIO],
     streamMuxer: [MPLEX],
-    peerDiscovery: [Bootstrap, MulticastDNS]
+    peerDiscovery: [Bootstrap]
   },
   config: {
     peerDiscovery: {
       autoDial: true, // Auto connect to discovered peers (limited by ConnectionManager minPeers)
       // The `tag` property will be searched when creating the instance of your Peer Discovery service.
       // The associated object, will be passed to the service when it is instantiated.
-      [MulticastDNS.tag]: {
-        interval: 1000,
-        enabled: true
-      },
       [Bootstrap.tag]: {
-        interval: 20000,
         enabled: true,
-        list: bootstrapers // provide array of peers
+        list: bootstrapMultiaddrs // provide array of multiaddrs
       }
     }
   }
 })
 
 node.on('peer:discovery', (peer) => {
-  console.log(peer) // Log discovered peer
+  console.log('Discovered %s', peer.id.toB58String()) // Log discovered peer
 })
+
+node.on('peer:connect', (peer) => {
+    console.log('Connected to %s', peer.id.toB58String()) // Log connected peer
+  })
 
 // start libp2p
 await node.start()
@@ -239,188 +237,9 @@ If you want to know more about libp2p peer discovery, you should read the follow
 - https://github.com/libp2p/specs/blob/master/discovery/mdns.md
 </details>
 
-#### Peer Routing
-
-Peer Routing offers a way to find other peers in the network by issuing queries using a Peer Routing algorithm, through their peer ids.
-
-Looking at the [available peer routing](./CONFIGURATION.md#peer-routing) modules, we might choose `libp2p-kad-dht` or `libp2p-delegated-peer-routing`. If your runtime is a browser or a low power device, you might prefer to use `libp2p-delegated-peer-routing` as you are able to delegate to another peer to issue the queries for you. However, you need to know a peer able to do that. Otherwise, you should use `libp2p-kad-dht`.
-
-In this guide, we will install `libp2p-kad-dht`. You should revisit the [API](./API.md) document, more specifically [API#peerRouting.findPeer](./API.md#peerRoutingfindPeer).
-
-```sh
-npm install libp2p-kad-dht
-```
-
-`libp2p-kad-dht` is not divided into Peer Routing and Content Routing components. Therefore, the `dht` should be plugged through a `modules.dht` property, while the `libp2p-delegated-peer-routing` should be plugged into `modules.peerRouting` array.
-
-```js
-const Libp2p = require('libp2p')
-const WebSockets = require('libp2p-websockets')
-const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
-const DHT = require('libp2p-kad-dht')
-
-const node = await Libp2p.create({
-  modules: {
-    transport: [WebSockets],
-    streamMuxer: [MPLEX],
-    connEncryption: [SECIO],
-    dht: DHT
-  },
-  config: {
-    dht: { // The DHT options (and defaults) can be found in its documentation
-      enabled: true,
-      randomWalk: {
-        enabled: false, // dht discovery (enabled by default)
-        interval: 300e3,
-        timeout: 10e3
-      }
-    }
-  }
-})
-
-// start libp2p
-await node.start()
-
-// Find peer
-const peerInfo = await libp2p.peerRouting.findPeer(peerId)
-
-// ...
-```
-
-You can find out more about peer routing on the example provided on [./CONFIGURATION.md#setup-with-content-and-peer-routing](./CONFIGURATION.md#setup-with-content-and-peer-routing).
-
-<details><summary>Read More</summary>
-If you want to know more about libp2p peer routing, you should read the following content:
-
-- https://docs.libp2p.io/concepts/peer-routing
-</details>
-
-#### Content Routing
-
-Content routing provides a way to find and announce where content lives in the network. It works in two steps: 1) Peers announce to the network that they are a provider of a certain piece of content and 2) Peers issue queries to find where that content lives. A Content Routing mechanism could be as complex as a DHT or as simple as a registry somewhere in the network.
-
-Looking at the [available content routing](./CONFIGURATION.md#content-routing) modules, we might choose `libp2p-kad-dht` or `libp2p-delegated-content-routing`. If your runtime is a browser or a low power device, you might prefer to use `libp2p-delegated-content-routing` as you are able to delegate to another peer to issue the queries for you. However, you need to know a peer able to do that. Otherwise, you should use `libp2p-kad-dht`.
-
-In this guide, we will install `libp2p-kad-dht`. If you'd like to review the available content routing methods, you should revisit the [API](./API.md) document, more specifically [API#contentrouting.findProviders](./API.md#contentroutingfindproviders), [API#contentrouting.provide](./API.md#contentroutingprovide), [API#contentrouting.put](./API.md#contentroutingput), [API#contentrouting.get](./API.md#contentroutingget) and [API#contentrouting.contentrouting.getMany](./API.md#contentroutingcontentroutinggetmany).
-
-```sh
-npm install libp2p-kad-dht
-```
-
-`libp2p-kad-dht` is not divided into Peer Routing and Content Routing components. Therefore, the `dht` should be plugged through a `modules.dht` property, while the `libp2p-delegated-content-routing` should be plugged into `modules.contentRouting` array.
-
-```js
-const Libp2p = require('libp2p')
-const WebSockets = require('libp2p-websockets')
-const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
-const DHT = require('libp2p-kad-dht')
-
-const CID = require('cids')
-
-const node = await Libp2p.create({
-  modules: {
-    transport: [WebSockets],
-    streamMuxer: [MPLEX],
-    connEncryption: [SECIO],
-    dht: DHT
-  },
-  config: {
-    dht: { // The DHT options (and defaults) can be found in its documentation
-      enabled: true,
-      randomWalk: {
-        enabled: false, // dht discovery (enabled by default)
-        interval: 300e3,
-        timeout: 10e3
-      }
-    }
-  }
-})
-
-// start libp2p
-await node.start()
-
-// previously known cid
-const cid = new CID('QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG')
-
-// get providers for a cid
-for await (const provider of libp2p.contentRouting.findProviders(cid)) {
-  console.log(provider)
-}
-
-// ...
-```
-
-If you are not familiar with `CIDs`, you should have a look at [multiformats/js-cid](https://github.com/multiformats/js-cid). Moreover, you can find out more about peer routing on the example provided on [./CONFIGURATION.md#setup-with-content-and-peer-routing](./CONFIGURATION.md#setup-with-content-and-peer-routing).
-
-<details><summary>Read More</summary>
-If you want to know more about libp2p content routing, you should read the following content:
-
-- https://docs.libp2p.io/concepts/content-routing
-</details>
-
-### Pubsub
-
-If you are looking for real time message exchange between multiple peers, pubsub may be what you are looking for. Publish/Subscribe is a system where peers congregate around topics they are interested in. Peers interested in a topic will subscribe to that topic and receive the data published on it from other peers.
-
-You can see the [available pubsub routers](./CONFIGURATION.md#pubsub) in the configuration readme. In this guide we will use `libp2p-gossipsub` as it is a more efficient alternative to `libp2p-floodsub`. You can revisit the [API](./API.md) document to familiarize yourself with the available methods, more specifically [API#pubsub.getSubscribers](./API.md#pubsubgetsubscribers), [API#pubsub.getTopics](./API.md#pubsubgettopics), [API#pubsub.publish](./API.md#pubsubpublish) and [API#pubsub.subscribe](./API.md#pubsubsubscribe).
-
-```sh
-npm install libp2p-gossipsub
-```
-
-```js
-const Libp2p = require('libp2p')
-const WebSockets = require('libp2p-websockets')
-const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
-const GossipSub = require('libp2p-gossipsub')
-
-const node = await Libp2p.create({
-  modules: {
-    transport: [WebSockets],
-    streamMuxer: [MPLEX],
-    connEncryption: [SECIO],
-    pubsub: GossipSub
-  },
-  config: {
-    pubsub: {                     // The pubsub options (and defaults) can be found in the pubsub router documentation
-      enabled: true,
-      emitSelf: true,             // whether the node should emit to self on publish
-      signMessages: true,         // if messages should be signed
-      strictSigning: true         // if message signing should be required
-    }
-  }
-})
-
-// start libp2p
-await node.start()
-
-const topic = 'heartbeat'
-
-// log all heartbeat measures
-node.pubsub.subscribe(topic, (msg) => {
-  console.log(msg.data.toString())
-})
-
-setInterval(async () => {
-  await node.pubsub.publish(topic, Buffer.from('heartbeat data'))
-}, 1000)
-```
-
-<details><summary>Read More</summary>
-If you want to know more about libp2p pubsub, you should read the following content:
-
-- https://docs.libp2p.io/concepts/publish-subscribe
-- https://github.com/libp2p/specs/tree/master/pubsub
-</details>
-
 ## What is next
 
-There are a lot of other concepts within `libp2p`, mostly regarding performance improvement through connection management configuration, metrics, create your own modules, among other.
-
-We will not cover this in the **Getting Started** guide, but feel free to open issues if you need any help.
+There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](./CONFIGURATION.md) and the [examples folder](../examples). If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
 
 
 [transport]: https://github.com/libp2p/js-interfaces/tree/master/src/transport
