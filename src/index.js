@@ -342,7 +342,7 @@ class PubsubBaseProtocol extends EventEmitter {
    * @abstract
    * @param {string} idB58Str peer id string in base58
    * @param {Connection} conn connection
-   * @param {PeerInfo} peer peer info
+   * @param {Peer} peer A Pubsub Peer
    * @returns {void}
    *
    */
