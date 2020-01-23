@@ -129,7 +129,7 @@ If you want to know more about libp2p peer discovery, you should read the follow
 Some available content routing modules are:
 
 - [js-libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
-- [js-libp2p-delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
+- [js-libp2p-delegated-content-routing](https://github.com/libp2p/js-libp2p-delegated-content-routing)
 
 If none of the available content routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-interfaces/tree/master/src/content-routing). **(WIP: This module is not yet implemented)**
 
