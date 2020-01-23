@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Add the signaling server address, along with our PeerId to our multiaddrs list
   // libp2p will automatically attempt to dial to the signaling server so that it can
   // receive inbound connections from other peers
-  const webrtcAddr = `/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star/p2p/${libp2p.peerInfo.id.toString()}`
+  const webrtcAddr = '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star'
   libp2p.peerInfo.multiaddrs.add(webrtcAddr)
 
   // Listen for new peers
