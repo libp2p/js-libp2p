@@ -56,7 +56,7 @@ const node = await Libp2p.create({
 })
 ```
 
-As new Transports are created, you can reevaluate the needs of your appliction and select the Transports that best suit your requirements. You may wish to remove the Transports you had before, or simply append the new Transports to `modules.transport` in order to establish connections with peers that support either.
+There are multiple libp2p transports available, you should evaluate the needs of your application and select the Transport(s) that best suit your requirements. You can add as many transports as you like to `modules.transport` in order to establish connections with as many peers as possible.
 
 <details><summary>Read More</summary>
 If you want to know more about libp2p transports, you should read the following content:
@@ -69,7 +69,7 @@ If you want to know more about libp2p transports, you should read the following 
 
 Encryption is an important part of communicating on the libp2p network. Every connection must be encrypted to help ensure security for everyone. As such, Connection Encryption (Crypto) is a required component of libp2p.
 
-There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [available Connection Encryption](./CONFIGURATION.md#connection-encryption) section of the configuration readme. For now, we are going to configure our node to use the `libp2p-secio` module, which is widely supported across the various libp2p implementations.
+There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [Connection Encryption section of the configuration readme](./CONFIGURATION.md#connection-encryption). For now, we are going to configure our node to use the `libp2p-secio` module, which is widely supported across the various libp2p implementations.
 
 ```sh
 npm install libp2p-secio
@@ -195,8 +195,8 @@ const Bootstrap = require('libp2p-bootstrap')
 
 // Known peers addresses
 const bootstrapMultiaddrs = [
-  '/dns4/ams-1.bootstrap.libp2p.io/tcp/443/wss/ipfs/QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd',
-  '/dns4/lon-1.bootstrap.libp2p.io/tcp/443/wss/ipfs/QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3'
+  '/dns4/ams-1.bootstrap.libp2p.io/tcp/443/wss/p2p/QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd',
+  '/dns4/lon-1.bootstrap.libp2p.io/tcp/443/wss/p2p/QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3'
 ]
 
 const node = await Libp2p.create({

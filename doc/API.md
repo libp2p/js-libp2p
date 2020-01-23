@@ -747,7 +747,7 @@ console.log(peerStats.toJSON())
 
 ## Events
 
-Once you have a libp2p instance, you are able to listen to several events it emits, so that you can be noticed of relevant network events.
+Once you have a libp2p instance, you can listen to several events it emits, so that you can be notified of relevant network events.
 
 #### An error has occurred
 
@@ -770,7 +770,7 @@ unless they are performing a specific action. See [peer discovery and auto dial]
 
 - `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
 
-#### We have closed a connection to a peer
+#### An existing connection to a peer has been closed
 
 `libp2p.on('peer:disconnect', (peer) => {})`
 

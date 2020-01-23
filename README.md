@@ -92,7 +92,7 @@ The specification is available on [API.md](./doc/API.md).
 
 ### Getting started
 
-If you are starting your journey with `js-libp2p`, you should start by going through [GETTING_STARTED.md](./doc/GETTING_STARTED.md).
+If you are starting your journey with `js-libp2p`, read the [GETTING_STARTED.md](./doc/GETTING_STARTED.md) guide.
 
 ### Tutorials and Examples
 
