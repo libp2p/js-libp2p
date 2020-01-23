@@ -764,13 +764,17 @@ unless they are performing a specific action. See [peer discovery and auto dial]
 
 - `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
 
-#### We have a new connection to a peer
+#### A new connection to a peer has been opened
+
+This event will be triggered anytime a new Connection is established to another peer.
 
 `libp2p.on('peer:connect', (peer) => {})`
 
 - `peer`: instance of [PeerInfo][https://github.com/libp2p/js-peer-info]
 
 #### An existing connection to a peer has been closed
+
+This event will be triggered anytime we are disconnected from another peer, regardless of the circumstances of that disconnection. If we happen to have multiple connections to a peer, this event will **only** be triggered when the last connection is closed.
 
 `libp2p.on('peer:disconnect', (peer) => {})`
 
