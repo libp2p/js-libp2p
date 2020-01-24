@@ -216,7 +216,10 @@ class Upgrader {
     Muxer,
     remotePeer
   }) {
-    let muxer, newStream
+    let muxer
+    let newStream
+    // eslint-disable-next-line prefer-const
+    let connection
 
     if (Muxer) {
       // Create the muxer
@@ -261,7 +264,7 @@ class Upgrader {
     const _timeline = maConn.timeline
     maConn.timeline = new Proxy(_timeline, {
       set: (...args) => {
-        if (args[1] === 'close' && args[2] && !_timeline.close) {
+        if (connection && args[1] === 'close' && args[2] && !_timeline.close) {
           connection.stat.status = 'closed'
           this.onConnectionEnd(connection)
         }
@@ -276,7 +279,7 @@ class Upgrader {
     }
 
     // Create the connection
-    const connection = new Connection({
+    connection = new Connection({
       localAddr: maConn.localAddr,
       remoteAddr: maConn.remoteAddr,
       localPeer: this.localPeer,
