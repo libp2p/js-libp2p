@@ -41,16 +41,13 @@ describe('Listening', () => {
     // Should get something like:
     //   /ip4/127.0.0.1/tcp/50866
     //   /ip4/192.168.1.2/tcp/50866
-    expect(addrs.length).to.equal(2)
-
-    const opts = [addrs[0].toOptions(), addrs[1].toOptions()]
-    expect(opts[0].family).to.equal('ipv4')
-    expect(opts[1].family).to.equal('ipv4')
-    expect(opts[0].transport).to.equal('tcp')
-    expect(opts[1].transport).to.equal('tcp')
-    expect(opts[0].host).to.match(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/)
-    expect(opts[1].host).to.match(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/)
-    expect(opts[0].port).to.be.gt(0)
-    expect(opts[1].port).to.be.gt(0)
+    expect(addrs.length).to.be.at.least(2)
+    for (const addr of addrs) {
+      const opts = addr.toOptions()
+      expect(opts.family).to.equal('ipv4')
+      expect(opts.transport).to.equal('tcp')
+      expect(opts.host).to.match(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/)
+      expect(opts.port).to.be.gt(0)
+    }
   })
 })
