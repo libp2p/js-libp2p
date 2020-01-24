@@ -1,3 +1,15 @@
+<a name="0.27.0-rc.0"></a>
+# [0.27.0-rc.0](https://github.com/libp2p/js-libp2p/compare/v0.27.0-pre.2...v0.27.0-rc.0) (2020-01-24)
+
+
+### Bug Fixes
+
+* registrar should filter the disconnected conn ([#532](https://github.com/libp2p/js-libp2p/issues/532)) ([83409de](https://github.com/libp2p/js-libp2p/commit/83409de))
+* stop discoveries ([#530](https://github.com/libp2p/js-libp2p/issues/530)) ([c44e6e3](https://github.com/libp2p/js-libp2p/commit/c44e6e3))
+* use toB58String everywhere to be consistent ([#537](https://github.com/libp2p/js-libp2p/issues/537)) ([31d1b23](https://github.com/libp2p/js-libp2p/commit/31d1b23))
+
+
+
 <a name="0.27.0-pre.2"></a>
 # [0.27.0-pre.2](https://github.com/libp2p/js-libp2p/compare/v0.27.0-pre.1...v0.27.0-pre.2) (2020-01-07)
 
