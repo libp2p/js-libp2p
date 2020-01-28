@@ -1,3 +1,41 @@
+<a name="0.27.0"></a>
+# [0.27.0](https://github.com/libp2p/js-libp2p/compare/v0.26.2...v0.27.0) (2020-01-28)
+
+
+### Bug Fixes
+
+* clean up peer discovery flow ([#494](https://github.com/libp2p/js-libp2p/issues/494)) ([12fc069](https://github.com/libp2p/js-libp2p/commit/12fc069))
+* clean up pending dials abort per feedback ([633b0c2](https://github.com/libp2p/js-libp2p/commit/633b0c2))
+* conn mngr min/max connection values ([#528](https://github.com/libp2p/js-libp2p/issues/528)) ([ba4681b](https://github.com/libp2p/js-libp2p/commit/ba4681b))
+* correct release readme ([ce8e60b](https://github.com/libp2p/js-libp2p/commit/ce8e60b))
+* examples readme typos ([#481](https://github.com/libp2p/js-libp2p/issues/481)) ([35ac02d](https://github.com/libp2p/js-libp2p/commit/35ac02d))
+* make dialer configurable ([#521](https://github.com/libp2p/js-libp2p/issues/521)) ([4ca481b](https://github.com/libp2p/js-libp2p/commit/4ca481b))
+* performance bottleneck in stat.js ([#463](https://github.com/libp2p/js-libp2p/issues/463)) ([93a1e42](https://github.com/libp2p/js-libp2p/commit/93a1e42))
+* registrar should filter the disconnected conn ([#532](https://github.com/libp2p/js-libp2p/issues/532)) ([bb2e56e](https://github.com/libp2p/js-libp2p/commit/bb2e56e))
+* release tokens as soon as they are available ([2570a1b](https://github.com/libp2p/js-libp2p/commit/2570a1b))
+* replace peerInfo addresses with listen addresses ([#485](https://github.com/libp2p/js-libp2p/issues/485)) ([1999606](https://github.com/libp2p/js-libp2p/commit/1999606))
+* stop discoveries ([#530](https://github.com/libp2p/js-libp2p/issues/530)) ([4222c49](https://github.com/libp2p/js-libp2p/commit/4222c49))
+* token release logic ([90ecc57](https://github.com/libp2p/js-libp2p/commit/90ecc57))
+* upgrader should not need muxers ([#517](https://github.com/libp2p/js-libp2p/issues/517)) ([5d7ee50](https://github.com/libp2p/js-libp2p/commit/5d7ee50))
+* use toB58String everywhere to be consistent ([#537](https://github.com/libp2p/js-libp2p/issues/537)) ([c1038be](https://github.com/libp2p/js-libp2p/commit/c1038be))
+
+
+### Features
+
+* abort all pending dials on stop ([ba02764](https://github.com/libp2p/js-libp2p/commit/ba02764))
+* add early token recycling in ([a5b54a7](https://github.com/libp2p/js-libp2p/commit/a5b54a7))
+* add libp2p.connections getter ([#522](https://github.com/libp2p/js-libp2p/issues/522)) ([6445fda](https://github.com/libp2p/js-libp2p/commit/6445fda))
+* add token based dialer ([e445a17](https://github.com/libp2p/js-libp2p/commit/e445a17))
+* allow transport options to be passed on creation ([#524](https://github.com/libp2p/js-libp2p/issues/524)) ([c339be1](https://github.com/libp2p/js-libp2p/commit/c339be1))
+* coalescing dial support ([#518](https://github.com/libp2p/js-libp2p/issues/518)) ([15f7c2a](https://github.com/libp2p/js-libp2p/commit/15f7c2a))
+* discovery modules ([#486](https://github.com/libp2p/js-libp2p/issues/486)) ([18a062e](https://github.com/libp2p/js-libp2p/commit/18a062e))
+* discovery modules from transports should be added ([#510](https://github.com/libp2p/js-libp2p/issues/510)) ([f1eb373](https://github.com/libp2p/js-libp2p/commit/f1eb373))
+* peer store ([#470](https://github.com/libp2p/js-libp2p/issues/470)) ([582094a](https://github.com/libp2p/js-libp2p/commit/582094a))
+* registrar ([#471](https://github.com/libp2p/js-libp2p/issues/471)) ([9d52b80](https://github.com/libp2p/js-libp2p/commit/9d52b80))
+* support peer-id instances in peer store operations ([#491](https://github.com/libp2p/js-libp2p/issues/491)) ([8da9fc9](https://github.com/libp2p/js-libp2p/commit/8da9fc9))
+
+
+
 <a name="0.27.0-rc.0"></a>
 # [0.27.0-rc.0](https://github.com/libp2p/js-libp2p/compare/v0.27.0-pre.2...v0.27.0-rc.0) (2020-01-24)
 
