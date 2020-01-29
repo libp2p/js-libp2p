@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="https://travis-ci.com/libp2p/js-libp2p"><img src="https://travis-ci.com/libp2p/js-libp2p" /></a>
+  <a href="https://travis-ci.com/libp2p/js-libp2p"><img src="https://travis-ci.com/libp2p/libp2p.svg?branch=master" /></a>
   <a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/ipfs/js-ipfs-multipart/master.svg?style=flat-square"></a>
   <a href="https://bundlephobia.com/result?p=ipfsd-ctl"><img src="https://flat.badgen.net/bundlephobia/minzip/ipfsd-ctl"></a>
   <br>
