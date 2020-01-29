@@ -30,8 +30,8 @@
 
 We've come a long way, but this project is still in Alpha, lots of development is happening, API might change, beware of the Dragons 🐉..
 
-The documentation in the master branch may contain changes from pre-release.
-If you are looking for the documentation of the latest release, then [**head here**](https://www.npmjs.com/package/libp2p)
+The documentation in the master branch may contain changes from a pre-release.
+If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
 
 **Want to get started?** Check our [examples folder](/examples).
 
