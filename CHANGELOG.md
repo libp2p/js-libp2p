@@ -1,3 +1,8 @@
+<a name="0.13.2"></a>
+## [0.13.2](https://github.com/libp2p/js-libp2p-mdns/compare/v0.13.1...v0.13.2) (2020-02-02)
+
+
+
 <a name="0.13.1"></a>
 ## [0.13.1](https://github.com/libp2p/js-libp2p-mdns/compare/v0.13.0...v0.13.1) (2020-01-17)
 
