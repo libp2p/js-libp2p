@@ -1,3 +1,8 @@
+<a name="0.4.2"></a>
+## [0.4.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.4.1...v0.4.2) (2020-02-02)
+
+
+
 <a name="0.4.1"></a>
 ## [0.4.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.4.0...v0.4.1) (2020-01-07)
 
