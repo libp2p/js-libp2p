@@ -48,21 +48,21 @@
     "chai-spies": "^1.0.0",
     "dirty-chai": "^2.0.1",
     "it-pair": "^1.0.0",
-    "multiaddr": "^6.1.0",
+    "multiaddr": "^7.2.1",
     "peer-id": "~0.13.3",
-    "peer-info": "~0.17.0"
+    "peer-info": "~0.17.0",
+    "sinon": "^8.1.1"
   },
   "dependencies": {
     "bs58": "^4.0.1",
     "debug": "^4.1.1",
     "err-code": "^2.0.0",
-    "it-length-prefixed": "^2.0.0",
+    "it-length-prefixed": "^3.0.0",
     "it-pipe": "^1.0.1",
     "it-pushable": "^1.3.2",
     "libp2p-crypto": "~0.17.0",
-    "libp2p-interfaces": "~0.1.4",
-    "protons": "^1.0.1",
-    "sinon": "^7.5.0"
+    "libp2p-interfaces": "^0.2.3",
+    "protons": "^1.0.1"
   },
   "contributors": [
     "Cayman <caymannava@gmail.com>",
