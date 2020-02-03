@@ -44,7 +44,7 @@ jobs:
       script:
         - cd node_modules/interop-libp2p
         - npm install
-        - LIBP2P_JS=./../../../../../src/index.js npx aegir test -t node --bail
+        - LIBP2P_JS=${TRAVIS_BUILD_DIR}/src/index.js npx aegir test -t node --bail
 
 notifications:
   email: false
