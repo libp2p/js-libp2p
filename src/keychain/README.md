@@ -28,12 +28,6 @@
 
 ## Table of Contents
 
-## Install
-
-```sh
-npm install --save libp2p-keychain
-```
-
 ### Usage
 
 ```js
