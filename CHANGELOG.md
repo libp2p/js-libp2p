@@ -1,3 +1,13 @@
+<a name="0.27.1"></a>
+## [0.27.1](https://github.com/libp2p/js-libp2p/compare/v0.27.0...v0.27.1) (2020-02-03)
+
+
+### Bug Fixes
+
+* stop stream after first pong received ([#545](https://github.com/libp2p/js-libp2p/issues/545)) ([be8fc9d](https://github.com/libp2p/js-libp2p/commit/be8fc9d))
+
+
+
 <a name="0.27.0"></a>
 # [0.27.0](https://github.com/libp2p/js-libp2p/compare/v0.26.2...v0.27.0) (2020-01-28)
 
