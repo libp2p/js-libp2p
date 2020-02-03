@@ -8,7 +8,7 @@ const errCode = require('err-code')
 const crypto = require('libp2p-crypto')
 const pipe = require('it-pipe')
 const { toBuffer } = require('it-buffer')
-const { collect } = require('streaming-iterables')
+const { collect, take } = require('streaming-iterables')
 
 const { PROTOCOL, PING_LENGTH } = require('./constants')
 
@@ -29,6 +29,7 @@ async function ping (node, peer) {
   const [result] = await pipe(
     [data],
     stream,
+    stream => take(1, stream),
     toBuffer,
     collect
   )
