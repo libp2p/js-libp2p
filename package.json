@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.27.0",
+  "version": "0.27.1",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -112,6 +112,7 @@
     "Alan Shaw <alan@tableflip.io>",
     "Alex Potsides <alex@achingbrain.net>",
     "Andrew Nesbitt <andrewnez@gmail.com>",
+    "Cayman <caymannava@gmail.com>",
     "Chris Bratlien <chrisbratlien@gmail.com>",
     "Chris Dostert <chrisdostert@users.noreply.github.com>",
     "Daijiro Wachi <daijiro.wachi@gmail.com>",
@@ -159,6 +160,7 @@
     "isan_rivkin <isanrivkin@gmail.com>",
     "mayerwin <mayerwin@users.noreply.github.com>",
     "phillmac <phillmac@users.noreply.github.com>",
+    "shresthagrawal <34920931+shresthagrawal@users.noreply.github.com>",
     "swedneck <40505480+swedneck@users.noreply.github.com>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
   ]
