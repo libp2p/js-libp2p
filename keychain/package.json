@@ -1,0 +1,77 @@
+{
+  "name": "libp2p-keychain",
+  "version": "0.6.0",
+  "description": "Key management and cryptographically protected messages",
+  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "aegir lint",
+    "build": "aegir build",
+    "coverage": "nyc --reporter=text --reporter=lcov npm run test:node",
+    "test": "aegir test -t node -t browser",
+    "test:node": "aegir test -t node",
+    "test:browser": "aegir test -t browser",
+    "release": "aegir release",
+    "release-minor": "aegir release --type minor",
+    "release-major": "aegir release --type major"
+  },
+  "pre-push": [
+    "lint"
+  ],
+  "engines": {
+    "node": ">=10.0.0",
+    "npm": ">=3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-keychain.git"
+  },
+  "keywords": [
+    "IPFS",
+    "libp2p",
+    "keys",
+    "encryption",
+    "secure",
+    "crypto"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-keychain/issues"
+  },
+  "homepage": "https://github.com/libp2p/js-libp2p-keychain#readme",
+  "dependencies": {
+    "err-code": "^2.0.0",
+    "interface-datastore": "^0.8.0",
+    "libp2p-crypto": "^0.17.1",
+    "merge-options": "^2.0.0",
+    "node-forge": "^0.9.1",
+    "sanitize-filename": "^1.6.1"
+  },
+  "devDependencies": {
+    "aegir": "^20.0.0",
+    "chai": "^4.2.0",
+    "chai-string": "^1.5.0",
+    "datastore-fs": "^0.9.0",
+    "datastore-level": "^0.14.0",
+    "dirty-chai": "^2.0.1",
+    "level": "^6.0.0",
+    "multihashes": "^0.4.15",
+    "peer-id": "^0.13.5",
+    "promisify-es6": "^1.0.3",
+    "rimraf": "^3.0.0"
+  },
+  "contributors": [
+    "Alan Shaw <alan.shaw@protocol.ai>",
+    "Alberto Elias <hi@albertoelias.me>",
+    "Alex Potsides <alex@achingbrain.net>",
+    "David Dias <daviddias.p@gmail.com>",
+    "Hugo Dias <mail@hugodias.me>",
+    "Jacob Heun <jacobheun@gmail.com>",
+    "Maciej Krüger <mkg20001@gmail.com>",
+    "Masahiro Saito <camelmasa@gmail.com>",
+    "Richard Schneider <makaretu@gmail.com>",
+    "Vasco Santos <vasco.santos@moxy.studio>",
+    "Vasco Santos <vasco.santos@ua.pt>",
+    "Victor Bjelkholm <victorbjelkholm@gmail.com>"
+  ]
+}
