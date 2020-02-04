@@ -50,7 +50,7 @@
     "it-pipe": "^1.1.0",
     "k-bucket": "^5.0.0",
     "libp2p-crypto": "~0.17.1",
-    "libp2p-interfaces": "^0.1.5",
+    "libp2p-interfaces": "^0.2.3",
     "libp2p-record": "~0.7.0",
     "multihashes": "~0.4.15",
     "multihashing-async": "~0.8.0",
