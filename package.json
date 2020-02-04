@@ -72,7 +72,7 @@
     "async-iterator-all": "^1.0.0",
     "chai": "^4.2.0",
     "chai-checkmark": "^1.0.1",
-    "datastore-level": "~0.12.1",
+    "datastore-level": "~0.14.1",
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
     "it-pair": "^1.0.0",
