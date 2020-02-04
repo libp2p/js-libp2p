@@ -47,7 +47,7 @@
     "bignumber.js": "^9.0.0",
     "class-is": "^1.1.0",
     "debug": "^4.1.1",
-    "err-code": "^1.1.2",
+    "err-code": "^2.0.0",
     "hashlru": "^2.3.0",
     "it-all": "^1.0.1",
     "it-buffer": "^0.1.1",
