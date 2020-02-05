@@ -231,7 +231,7 @@ class Upgrader {
             const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
             log('%s: incoming stream opened on %s', direction, protocol)
             if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
-            connection.addStream(stream, protocol)
+            connection.addStream(muxedStream, { protocol })
             this._onStream({ connection, stream, protocol })
           } catch (err) {
             log.error(err)
