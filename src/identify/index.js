@@ -154,14 +154,13 @@ class IdentifyService {
   async identify (connection) {
     const { stream } = await connection.newStream(MULTICODEC_IDENTIFY)
     const [data] = await pipe(
+      [],
       stream,
       lp.decode(),
       take(1),
       toBuffer,
       collect
     )
-    // close the stream, no need to wait
-    stream.sink([])
 
     if (!data) {
       throw errCode(new Error('No data could be retrieved'), codes.ERR_CONNECTION_ENDED)
@@ -259,14 +258,13 @@ class IdentifyService {
    */
   async _handlePush ({ connection, stream }) {
     const [data] = await pipe(
+      [],
       stream,
       lp.decode(),
       take(1),
       toBuffer,
       collect
     )
-    // close the stream, but no need to wait
-    stream.sink([])
 
     let message
     try {
