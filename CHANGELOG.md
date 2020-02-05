@@ -1,3 +1,13 @@
+<a name="0.27.2"></a>
+## [0.27.2](https://github.com/libp2p/js-libp2p/compare/v0.27.1...v0.27.2) (2020-02-05)
+
+
+### Bug Fixes
+
+* ensure identify streams are closed ([#551](https://github.com/libp2p/js-libp2p/issues/551)) ([f662fdc](https://github.com/libp2p/js-libp2p/commit/f662fdc))
+
+
+
 <a name="0.27.1"></a>
 ## [0.27.1](https://github.com/libp2p/js-libp2p/compare/v0.27.0...v0.27.1) (2020-02-03)
 
