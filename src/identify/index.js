@@ -4,7 +4,7 @@ const debug = require('debug')
 const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
 const pipe = require('it-pipe')
-const { collect, take } = require('streaming-iterables')
+const { collect, take, consume } = require('streaming-iterables')
 
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
@@ -114,7 +114,8 @@ class IdentifyService {
             protocols: Array.from(this._protocols.keys())
           }],
           pb.encode(Message),
-          stream
+          stream,
+          consume
         )
       } catch (err) {
         // Just log errors
@@ -153,6 +154,7 @@ class IdentifyService {
   async identify (connection) {
     const { stream } = await connection.newStream(MULTICODEC_IDENTIFY)
     const [data] = await pipe(
+      [],
       stream,
       lp.decode(),
       take(1),
@@ -242,7 +244,8 @@ class IdentifyService {
     pipe(
       [message],
       lp.encode(),
-      stream
+      stream,
+      consume
     )
   }
 
@@ -255,6 +258,7 @@ class IdentifyService {
    */
   async _handlePush ({ connection, stream }) {
     const [data] = await pipe(
+      [],
       stream,
       lp.decode(),
       take(1),

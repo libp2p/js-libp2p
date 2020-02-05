@@ -12,6 +12,7 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const duplexPair = require('it-pair/duplex')
 const multiaddr = require('multiaddr')
+const pWaitFor = require('p-wait-for')
 
 const { codes: Errors } = require('../../src/errors')
 const { IdentifyService, multicodecs } = require('../../src/identify')
@@ -203,16 +204,17 @@ describe('Identify', () => {
       })
 
       sinon.spy(libp2p.identifyService, 'identify')
-      sinon.spy(libp2p.peerStore, 'replace')
+      const peerStoreSpy = sinon.spy(libp2p.peerStore, 'replace')
 
       const connection = await libp2p.dialer.connectToPeer(remoteAddr)
       expect(connection).to.exist()
-      // Wait for nextTick to trigger the identify call
-      await delay(1)
-      expect(libp2p.identifyService.identify.callCount).to.equal(1)
-      await libp2p.identifyService.identify.firstCall.returnValue
 
-      expect(libp2p.peerStore.replace.callCount).to.equal(1)
+      // Wait for peer store to be updated
+      await pWaitFor(() => peerStoreSpy.callCount === 1)
+      expect(libp2p.identifyService.identify.callCount).to.equal(1)
+
+      // The connection should have no open streams
+      expect(connection.streams).to.have.length(0)
       await connection.close()
     })
 
@@ -247,6 +249,9 @@ describe('Identify', () => {
         const results = await call.returnValue
         expect(results.length).to.equal(1)
       }
+
+      // Verify the streams close
+      await pWaitFor(() => connection.streams.length === 0)
     })
   })
 })
