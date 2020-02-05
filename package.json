@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.27.1",
+  "version": "0.27.2",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -155,6 +155,7 @@
     "Yusef Napora <yusef@napora.org>",
     "Zane Starr <zcstarr@gmail.com>",
     "a1300 <a1300@users.noreply.github.com>",
+    "dependabot-preview[bot] <27856297+dependabot-preview[bot]@users.noreply.github.com>",
     "dirkmc <dirkmdev@gmail.com>",
     "ebinks <elizabethjbinks@gmail.com>",
     "greenkeeperio-bot <support@greenkeeper.io>",
