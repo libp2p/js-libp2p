@@ -4,7 +4,7 @@ const debug = require('debug')
 const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
 const pipe = require('it-pipe')
-const { collect, take } = require('streaming-iterables')
+const { collect, take, consume } = require('streaming-iterables')
 
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
@@ -114,7 +114,8 @@ class IdentifyService {
             protocols: Array.from(this._protocols.keys())
           }],
           pb.encode(Message),
-          stream
+          stream,
+          consume
         )
       } catch (err) {
         // Just log errors
@@ -159,6 +160,8 @@ class IdentifyService {
       toBuffer,
       collect
     )
+    // close the stream, no need to wait
+    stream.sink([])
 
     if (!data) {
       throw errCode(new Error('No data could be retrieved'), codes.ERR_CONNECTION_ENDED)
@@ -242,7 +245,8 @@ class IdentifyService {
     pipe(
       [message],
       lp.encode(),
-      stream
+      stream,
+      consume
     )
   }
 
@@ -261,6 +265,8 @@ class IdentifyService {
       toBuffer,
       collect
     )
+    // close the stream, but no need to wait
+    stream.sink([])
 
     let message
     try {
