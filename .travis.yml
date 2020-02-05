@@ -39,5 +39,12 @@ jobs:
       script:
         - npx aegir test -t browser -t webworker -- --browsers FirefoxHeadless
 
+    - stage: test
+      name: interop
+      script:
+        - cd node_modules/interop-libp2p
+        - npm install
+        - LIBP2P_JS=${TRAVIS_BUILD_DIR}/src/index.js npx aegir test -t node --bail
+
 notifications:
   email: false
