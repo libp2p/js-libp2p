@@ -250,8 +250,8 @@ describe('Identify', () => {
         expect(results.length).to.equal(1)
       }
 
-      // The connection should have no open streams
-      expect(connection.streams).to.have.length(0)
+      // Verify the streams close
+      await pWaitFor(() => connection.streams.length === 0)
     })
   })
 })
