@@ -34,7 +34,7 @@
     "secp256k1": "^3.6.2"
   },
   "devDependencies": {
-    "aegir": "^19.0.5",
+    "aegir": "^20.6.0",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
