@@ -59,7 +59,7 @@
   "dependencies": {
     "async.nexttick": "^0.5.2",
     "debug": "^4.1.1",
-    "it-length-prefixed": "^2.0.0",
+    "it-length-prefixed": "^3.0.0",
     "it-pipe": "^1.0.1",
     "libp2p-pubsub": "~0.4.0",
     "p-map": "^3.0.0",
