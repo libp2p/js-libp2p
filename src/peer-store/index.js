@@ -132,19 +132,16 @@ class PeerStore extends EventEmitter {
         multiaddrs: recorded.multiaddrs.toArray()
       })
     }
-
-    // Update protocols
-    // TODO: better track added and removed protocols
-    const protocolsIntersection = new Set(
-      [...recorded.protocols].filter((p) => peerInfo.protocols.has(p))
-    )
-
-    if (protocolsIntersection.size !== peerInfo.protocols.size ||
-      protocolsIntersection.size !== recorded.protocols.size) {
-      for (const protocol of peerInfo.protocols) {
+    
+    let isProtocolsChanged = false
+    for (const protocol of peerInfo.protocols) {
+      if (!recorded.protocols.has(protocol)) {
+        isProtocolsChanged = true
         recorded.protocols.add(protocol)
       }
+    }
 
+    if (isProtocolsChanged) {
       this.emit('change:protocols', {
         peerInfo: recorded,
         protocols: Array.from(recorded.protocols)
