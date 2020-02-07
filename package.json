@@ -42,7 +42,7 @@
     "class-is": "^1.1.0",
     "debug": "^4.1.1",
     "err-code": "^2.0.0",
-    "it-ws": "vasco-santos/it-ws#v2.1.1-rc.1",
+    "it-ws": "^3.0.0",
     "libp2p-utils": "~0.1.0",
     "mafmt": "^7.0.0",
     "multiaddr": "^7.1.0",
