@@ -123,11 +123,10 @@ describe('Dialing (via relay, TCP)', () => {
   })
 
   it('dialer should stay connected to an already connected relay on hop failure', async () => {
-    const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
     const relayIdString = relayLibp2p.peerInfo.id.toB58String()
+    const relayAddr = relayLibp2p.transportManager.getAddrs()[0].encapsulate(`/p2p/${relayIdString}`)
 
     const dialAddr = relayAddr
-      .encapsulate(`/p2p/${relayIdString}`)
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toB58String()}`)
 
     await srcLibp2p.dial(relayAddr)
@@ -142,16 +141,15 @@ describe('Dialing (via relay, TCP)', () => {
   })
 
   it('destination peer should stay connected to an already connected relay on hop failure', async () => {
-    const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
     const relayIdString = relayLibp2p.peerInfo.id.toB58String()
+    const relayAddr = relayLibp2p.transportManager.getAddrs()[0].encapsulate(`/p2p/${relayIdString}`)
 
     const dialAddr = relayAddr
-      .encapsulate(`/p2p/${relayIdString}`)
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerInfo.id.toB58String()}`)
 
     // Connect the destination peer and the relay
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
-    await dstLibp2p.transportManager.listen([multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
+    await dstLibp2p.transportManager.listen([multiaddr(`/p2p-circuit${relayAddr}`)])
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
     // Tamper with the our multiaddrs for the circuit message

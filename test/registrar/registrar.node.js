@@ -29,7 +29,7 @@ describe('registrar on dial', () => {
     }))
 
     await remoteLibp2p.transportManager.listen([listenAddr])
-    remoteAddr = remoteLibp2p.transportManager.getAddrs()[0]
+    remoteAddr = remoteLibp2p.transportManager.getAddrs()[0].encapsulate(`/p2p/${remotePeerInfo.id.toB58String()}`)
   })
 
   after(async () => {

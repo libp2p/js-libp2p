@@ -58,7 +58,7 @@ describe('Pubsub subsystem operates correctly', () => {
     })
 
     it('should get notified of connected peers on dial', async () => {
-      const connection = await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
+      const connection = await libp2p.dialProtocol(remotePeerInfo, subsystemMulticodecs)
 
       expect(connection).to.exist()
 
@@ -74,7 +74,7 @@ describe('Pubsub subsystem operates correctly', () => {
       const data = 'hey!'
       const libp2pId = libp2p.peerInfo.id.toB58String()
 
-      await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
+      await libp2p.dialProtocol(remotePeerInfo, subsystemMulticodecs)
 
       let subscribedTopics = libp2p.pubsub.getTopics()
       expect(subscribedTopics).to.not.include(topic)
@@ -129,7 +129,7 @@ describe('Pubsub subsystem operates correctly', () => {
     })
 
     it('should get notified of connected peers after starting', async () => {
-      const connection = await libp2p.dial(remAddr)
+      const connection = await libp2p.dial(remotePeerInfo)
 
       expect(connection).to.exist()
       expect(libp2p.pubsub._pubsub.peers.size).to.be.eql(0)
@@ -150,7 +150,7 @@ describe('Pubsub subsystem operates correctly', () => {
       const topic = 'test-topic'
       const data = 'hey!'
 
-      await libp2p.dial(remAddr)
+      await libp2p.dial(remotePeerInfo)
 
       remoteLibp2p.pubsub.start()
 

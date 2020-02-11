@@ -43,7 +43,7 @@ describe('DHT subsystem operates correctly', () => {
         remoteLibp2p.start()
       ])
 
-      remAddr = remoteLibp2p.transportManager.getAddrs()[0]
+      remAddr = libp2p.peerStore.multiaddrsForPeer(remotePeerInfo)[0]
     })
 
     afterEach(() => Promise.all([
@@ -98,7 +98,7 @@ describe('DHT subsystem operates correctly', () => {
       await libp2p.start()
       await remoteLibp2p.start()
 
-      remAddr = remoteLibp2p.transportManager.getAddrs()[0]
+      remAddr = libp2p.peerStore.multiaddrsForPeer(remotePeerInfo)[0]
     })
 
     afterEach(() => Promise.all([

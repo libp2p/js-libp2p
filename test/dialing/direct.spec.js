@@ -21,6 +21,7 @@ const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 const { codes: ErrorCodes } = require('../../src/errors')
 const Constants = require('../../src/constants')
 const Dialer = require('../../src/dialer')
+const PeerStore = require('../../src/peer-store')
 const TransportManager = require('../../src/transport-manager')
 const Libp2p = require('../../src')
 
@@ -29,13 +30,15 @@ const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const mockUpgrader = require('../utils/mockUpgrader')
 const createMockConnection = require('../utils/mockConnection')
 const { createPeerId } = require('../utils/creators/peer')
-const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws')
+const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 
 describe('Dialing (direct, WebSockets)', () => {
   let localTM
+  let peerStore
 
   before(() => {
+    peerStore = new PeerStore()
     localTM = new TransportManager({
       libp2p: {},
       upgrader: mockUpgrader,
@@ -49,13 +52,13 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   it('should have appropriate defaults', () => {
-    const dialer = new Dialer({ transportManager: localTM })
+    const dialer = new Dialer({ transportManager: localTM, peerStore })
     expect(dialer.concurrency).to.equal(Constants.MAX_PARALLEL_DIALS)
     expect(dialer.timeout).to.equal(Constants.DIAL_TIMEOUT)
   })
 
   it('should limit the number of tokens it provides', () => {
-    const dialer = new Dialer({ transportManager: localTM })
+    const dialer = new Dialer({ transportManager: localTM, peerStore })
     const maxPerPeer = Constants.MAX_PER_PEER_DIALS
     expect(dialer.tokens).to.have.length(Constants.MAX_PARALLEL_DIALS)
     const tokens = dialer.getTokens(maxPerPeer + 1)
@@ -64,14 +67,14 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   it('should not return tokens if non are left', () => {
-    const dialer = new Dialer({ transportManager: localTM })
+    const dialer = new Dialer({ transportManager: localTM, peerStore })
     sinon.stub(dialer, 'tokens').value([])
     const tokens = dialer.getTokens(1)
     expect(tokens.length).to.equal(0)
   })
 
   it('should NOT be able to return a token twice', () => {
-    const dialer = new Dialer({ transportManager: localTM })
+    const dialer = new Dialer({ transportManager: localTM, peerStore })
     const tokens = dialer.getTokens(1)
     expect(tokens).to.have.length(1)
     expect(dialer.tokens).to.have.length(Constants.MAX_PARALLEL_DIALS - 1)
@@ -107,7 +110,7 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   it('should fail to connect to an unsupported multiaddr', async () => {
-    const dialer = new Dialer({ transportManager: localTM })
+    const dialer = new Dialer({ transportManager: localTM, peerStore })
 
     await expect(dialer.connectToPeer(unsupportedAddr))
       .to.eventually.be.rejectedWith(AggregateError)
