@@ -26,7 +26,6 @@ const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 describe('Pubsub subsystem is able to use different implementations', () => {
   let peerInfo, remotePeerInfo
   let libp2p, remoteLibp2p
-  let remAddr
 
   beforeEach(async () => {
     [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })

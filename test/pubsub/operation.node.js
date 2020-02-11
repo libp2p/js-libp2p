@@ -21,7 +21,6 @@ const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 describe('Pubsub subsystem operates correctly', () => {
   let peerInfo, remotePeerInfo
   let libp2p, remoteLibp2p
-  let remAddr
 
   beforeEach(async () => {
     [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
@@ -44,8 +43,6 @@ describe('Pubsub subsystem operates correctly', () => {
         libp2p.start(),
         remoteLibp2p.start()
       ])
-
-      remAddr = remoteLibp2p.transportManager.getAddrs()[0]
     })
 
     afterEach(() => Promise.all([
@@ -115,8 +112,6 @@ describe('Pubsub subsystem operates correctly', () => {
 
       await libp2p.start()
       await remoteLibp2p.start()
-
-      remAddr = remoteLibp2p.transportManager.getAddrs()[0]
     })
 
     afterEach(() => Promise.all([
