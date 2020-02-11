@@ -1,3 +1,13 @@
+<a name="0.27.3"></a>
+## [0.27.3](https://github.com/libp2p/js-libp2p/compare/v0.27.2...v0.27.3) (2020-02-11)
+
+
+### Bug Fixes
+
+* dont allow multiaddr dials without a peer id ([#558](https://github.com/libp2p/js-libp2p/issues/558)) ([a317a8b](https://github.com/libp2p/js-libp2p/commit/a317a8b))
+
+
+
 <a name="0.27.2"></a>
 ## [0.27.2](https://github.com/libp2p/js-libp2p/compare/v0.27.1...v0.27.2) (2020-02-05)
 
