@@ -224,12 +224,16 @@ class PeerStore extends EventEmitter {
   }
 
   /**
-   * Returns the known multiaddrs for a given `PeerInfo`
+   * Returns the known multiaddrs for a given `PeerInfo`. All returned multiaddrs
+   * will include the encapsulated `PeerId` of the peer.
    * @param {PeerInfo} peer
    * @returns {Array<Multiaddr>}
    */
   multiaddrsForPeer (peer) {
-    return this.put(peer, true).multiaddrs.toArray()
+    return this.put(peer, true).multiaddrs.toArray().map(addr => {
+      if (addr.getPeerId()) return addr
+      return addr.encapsulate(`/p2p/${peer.id.toB58String()}`)
+    })
   }
 }
 

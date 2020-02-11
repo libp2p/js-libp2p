@@ -26,7 +26,6 @@ const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 describe('Pubsub subsystem is able to use different implementations', () => {
   let peerInfo, remotePeerInfo
   let libp2p, remoteLibp2p
-  let remAddr
 
   beforeEach(async () => {
     [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
@@ -73,9 +72,8 @@ describe('Pubsub subsystem is able to use different implementations', () => {
     ])
 
     const libp2pId = libp2p.peerInfo.id.toB58String()
-    remAddr = remoteLibp2p.transportManager.getAddrs()[0]
 
-    const connection = await libp2p.dialProtocol(remAddr, multicodec)
+    const connection = await libp2p.dialProtocol(remotePeerInfo, multicodec)
     expect(connection).to.exist()
 
     libp2p.pubsub.subscribe(topic, (msg) => {

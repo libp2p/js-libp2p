@@ -70,7 +70,7 @@ class Dialer {
   async connectToPeer (peer, options = {}) {
     const dialTarget = this._createDialTarget(peer)
     if (dialTarget.addrs.length === 0) {
-      throw errCode(new Error('The dial request has no addresses'), 'ERR_NO_DIAL_MULTIADDRS')
+      throw errCode(new Error('The dial request has no addresses'), codes.ERR_NO_VALID_ADDRESSES)
     }
     const pendingDial = this._pendingDials.get(dialTarget.id) || this._createPendingDial(dialTarget, options)
 
@@ -136,7 +136,7 @@ class Dialer {
    */
   _createPendingDial (dialTarget, options) {
     const dialAction = (addr, options) => {
-      if (options.signal.aborted) throw errCode(new Error('already aborted'), 'ERR_ALREADY_ABORTED')
+      if (options.signal.aborted) throw errCode(new Error('already aborted'), codes.ERR_ALREADY_ABORTED)
       return this.transportManager.dial(addr, options)
     }
 
@@ -197,8 +197,7 @@ class Dialer {
       try {
         peer = PeerId.createFromCID(peer.getPeerId())
       } catch (err) {
-        // Couldn't get the PeerId, just use the address
-        return peer
+        throw errCode(new Error('The multiaddr did not contain a valid peer id'), codes.ERR_INVALID_PEER)
       }
     }
 
