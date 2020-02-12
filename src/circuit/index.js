@@ -10,13 +10,13 @@ const { CircuitRelay: CircuitPB } = require('./protocol')
 const debug = require('debug')
 const log = debug('libp2p:circuit')
 log.error = debug('libp2p:circuit:error')
+const toConnection = require('libp2p-utils/src/stream-to-ma-conn')
 
 const { relay: multicodec } = require('./multicodec')
 const createListener = require('./listener')
 const { handleCanHop, handleHop, hop } = require('./circuit/hop')
 const { handleStop } = require('./circuit/stop')
 const StreamHandler = require('./circuit/stream-handler')
-const toConnection = require('./stream-to-conn')
 
 class Circuit {
   /**
