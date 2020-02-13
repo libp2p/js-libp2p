@@ -1,7 +1,6 @@
 'use strict'
 
 const protons = require('protons')
-const assert = require('assert')
 
 const pb = protons(require('./record.proto')).Record
 const utils = require('./utils')
@@ -13,12 +12,12 @@ class Record {
    * @param {Date} [recvtime]
    */
   constructor (key, value, recvtime) {
-    if (key) {
-      assert(Buffer.isBuffer(key), 'key must be a Buffer')
+    if (key && !Buffer.isBuffer(key)) {
+      throw new Error('key must be a Buffer')
     }
 
-    if (value) {
-      assert(Buffer.isBuffer(value), 'value must be a buffer')
+    if (value && !Buffer.isBuffer(value)) {
+      throw new Error('value must be a buffer')
     }
 
     this.key = key
