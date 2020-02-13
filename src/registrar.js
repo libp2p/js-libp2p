@@ -1,7 +1,7 @@
 'use strict'
 
-const assert = require('assert')
 const debug = require('debug')
+const errcode = require('err-code')
 const log = debug('libp2p:peer-store')
 log.error = debug('libp2p:peer-store:error')
 
@@ -71,8 +71,14 @@ class Registrar {
    * @returns {void}
    */
   onConnect (peerInfo, conn) {
-    assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
-    assert(Connection.isConnection(conn), 'conn must be an instance of interface-connection')
+    if (!PeerInfo.isPeerInfo(peerInfo)) {
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
+
+    }
+
+    if (!Connection.isConnection(conn)) {
+      throw errcode(new Error('conn must be an instance of interface-connection'), 'ERR_INVALID_PARAMETERS')
+    }
 
     const id = peerInfo.id.toB58String()
     const storedConn = this.connections.get(id)
@@ -93,7 +99,9 @@ class Registrar {
    * @returns {void}
    */
   onDisconnect (peerInfo, connection, error) {
-    assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
+    if (!PeerInfo.isPeerInfo(peerInfo)) {
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
+    }
 
     const id = peerInfo.id.toB58String()
     let storedConn = this.connections.get(id)
@@ -116,7 +124,9 @@ class Registrar {
    * @returns {Connection}
    */
   getConnection (peerInfo) {
-    assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
+    if (!PeerInfo.isPeerInfo(peerInfo)) {
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
+    }
 
     const connections = this.connections.get(peerInfo.id.toB58String())
     // Return the first, open connection
@@ -132,9 +142,9 @@ class Registrar {
    * @return {string} registrar identifier
    */
   register (topology) {
-    assert(
-      Topology.isTopology(topology),
-      'topology must be an instance of interfaces/topology')
+    if (!Topology.isTopology(topology)) {
+      throw errcode(new Error('topology must be an instance of interfaces/topology'), 'ERR_INVALID_PARAMETERS')
+    }
 
     // Create topology
     const id = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()

@@ -1,6 +1,6 @@
 'use strict'
 
-const assert = require('assert')
+const errcode = require('err-code')
 const mergeOptions = require('merge-options')
 const LatencyMonitor = require('latency-monitor').default
 const debug = require('debug')('libp2p:connection-manager')
@@ -38,10 +38,9 @@ class ConnectionManager {
     this._registrar = libp2p.registrar
     this._peerId = libp2p.peerInfo.id.toB58String()
     this._options = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, options)
-    assert(
-      this._options.maxConnections > this._options.minConnections,
-      'Connection Manager maxConnections must be greater than minConnections'
-    )
+    if (this._options.maxConnections < this._options.minConnections) {
+      throw errcode(new Error('Connection Manager maxConnections must be greater than minConnections'), 'ERR_INVALID_PARAMETERS')
+    }
 
     debug('options: %j', this._options)
 
