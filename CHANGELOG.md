@@ -1,3 +1,13 @@
+<a name="0.7.2"></a>
+## [0.7.2](https://github.com/libp2p/js-libp2p-record/compare/v0.7.1...v0.7.2) (2020-02-13)
+
+
+### Bug Fixes
+
+* remove use of assert module ([#18](https://github.com/libp2p/js-libp2p-record/issues/18)) ([57e24a7](https://github.com/libp2p/js-libp2p-record/commit/57e24a7))
+
+
+
 <a name="0.7.1"></a>
 ## [0.7.1](https://github.com/libp2p/js-libp2p-record/compare/v0.7.0...v0.7.1) (2020-01-03)
 
