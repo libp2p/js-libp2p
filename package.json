@@ -34,6 +34,7 @@
     "dirty-chai": "^2.0.1"
   },
   "dependencies": {
+    "err-code": "^2.0.0",
     "ip-address": "^6.1.0",
     "multiaddr": "^7.1.0"
   },

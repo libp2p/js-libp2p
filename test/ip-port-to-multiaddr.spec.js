@@ -5,7 +5,9 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
+
 const toMultiaddr = require('../src/ip-port-to-multiaddr')
+const { Errors } = require('../src/ip-port-to-multiaddr')
 
 describe('IP and port to Multiaddr', () => {
   it('creates multiaddr from valid IPv4 IP and port', () => {
@@ -33,18 +35,18 @@ describe('IP and port to Multiaddr', () => {
   })
 
   it('throws for missing IP address', () => {
-    expect(() => toMultiaddr()).to.throw('invalid ip')
+    expect(() => toMultiaddr()).to.throw('invalid ip provided').with.property('code', Errors.ERR_INVALID_IP_PARAMETER)
   })
 
   it('throws for invalid IP address', () => {
     const ip = 'aewmrn4awoew'
     const port = '234'
-    expect(() => toMultiaddr(ip, port)).to.throw('invalid ip')
+    expect(() => toMultiaddr(ip, port)).to.throw('invalid ip:port for creating a multiaddr').with.property('code', Errors.ERR_INVALID_IP)
   })
 
   it('throws for invalid port', () => {
     const ip = '127.0.0.1'
     const port = 'garbage'
-    expect(() => toMultiaddr(ip, port)).to.throw('invalid port')
+    expect(() => toMultiaddr(ip, port)).to.throw('invalid port provided').with.property('code', Errors.ERR_INVALID_PORT_PARAMETER)
   })
 })

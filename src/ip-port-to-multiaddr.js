@@ -1,17 +1,24 @@
 'use strict'
 
 const multiaddr = require('multiaddr')
+const errCode = require('err-code')
 const { Address4, Address6 } = require('ip-address')
+
+const errors = {
+  ERR_INVALID_IP_PARAMETER: 'ERR_INVALID_IP_PARAMETER',
+  ERR_INVALID_PORT_PARAMETER: 'ERR_INVALID_PORT_PARAMETER',
+  ERR_INVALID_IP: 'ERR_INVALID_IP'
+}
 
 module.exports = (ip, port) => {
   if (typeof ip !== 'string') {
-    throw new Error('invalid ip')
+    throw errCode(new Error(`invalid ip provided: ${ip}`), errors.ERR_INVALID_IP_PARAMETER)
   }
 
   port = parseInt(port)
 
   if (isNaN(port)) {
-    throw new Error('invalid port')
+    throw errCode(new Error(`invalid port provided: ${port}`), errors.ERR_INVALID_PORT_PARAMETER)
   }
 
   if (new Address4(ip).isValid()) {
@@ -26,5 +33,7 @@ module.exports = (ip, port) => {
       : multiaddr(`/ip6/${ip}/tcp/${port}`)
   }
 
-  throw new Error('invalid ip')
+  throw errCode(new Error(`invalid ip:port for creating a multiaddr: ${ip}:${port}`), errors.ERR_INVALID_IP)
 }
+
+module.exports.Errors = errors
