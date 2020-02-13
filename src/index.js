@@ -1,6 +1,5 @@
 'use strict'
 
-const assert = require('assert')
 const { EventEmitter } = require('events')
 const errcode = require('err-code')
 
@@ -67,7 +66,10 @@ class KadDHT extends EventEmitter {
     randomWalk = {}
   }) {
     super()
-    assert(dialer, 'libp2p-kad-dht requires an instance of Dialer')
+
+    if (!dialer) {
+      throw new Error('libp2p-kad-dht requires an instance of Dialer')
+    }
 
     /**
      * Local reference to the libp2p dialer instance

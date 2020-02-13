@@ -8,7 +8,6 @@ const expect = chai.expect
 const sinon = require('sinon')
 const RandomWalk = require('../src/random-walk')
 const { defaultRandomWalk } = require('../src/constants')
-const { AssertionError } = require('assert')
 
 const TestDHT = require('./utils/test-dht')
 const {
@@ -35,7 +34,7 @@ describe('Random Walk', () => {
 
   describe('configuration', () => {
     it('should use require a dht', () => {
-      expect(() => new RandomWalk()).to.throw(AssertionError)
+      expect(() => new RandomWalk()).to.throw()
     })
 
     it('should use defaults', () => {

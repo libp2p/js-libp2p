@@ -3,7 +3,6 @@
 const crypto = require('libp2p-crypto')
 const multihashing = require('multihashing-async')
 const PeerId = require('peer-id')
-const assert = require('assert')
 const AbortController = require('abort-controller')
 const errcode = require('err-code')
 const times = require('p-times')
@@ -23,7 +22,9 @@ class RandomWalk {
    * @param {DHT} options.dht
    */
   constructor (dht, options) {
-    assert(dht, 'Random Walk needs an instance of the Kademlia DHT')
+    if (!dht) {
+      throw new Error('Random Walk needs an instance of the Kademlia DHT')
+    }
 
     this._kadDHT = dht
     this._options = {

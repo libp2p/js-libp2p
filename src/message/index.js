@@ -1,6 +1,5 @@
 'use strict'
 
-const assert = require('assert')
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const protons = require('protons')
@@ -21,8 +20,8 @@ class Message {
    * @param {number} level
    */
   constructor (type, key, level) {
-    if (key) {
-      assert(Buffer.isBuffer(key))
+    if (key && !Buffer.isBuffer(key)) {
+      throw new Error('Key must be a buffer')
     }
 
     this.type = type
