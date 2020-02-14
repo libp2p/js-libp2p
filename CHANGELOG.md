@@ -1,3 +1,13 @@
+<a name="0.20.2"></a>
+## [0.20.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.20.1...v0.20.2) (2020-02-14)
+
+
+### Bug Fixes
+
+* remove use of assert module ([#95](https://github.com/libp2p/js-libp2p-floodsub/issues/95)) ([8fe6d18](https://github.com/libp2p/js-libp2p-floodsub/commit/8fe6d18))
+
+
+
 <a name="0.20.1"></a>
 ## [0.20.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.20.0...v0.20.1) (2020-02-06)
 
