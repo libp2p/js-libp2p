@@ -1,3 +1,13 @@
+<a name="0.18.5"></a>
+## [0.18.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.18.4...v0.18.5) (2020-02-14)
+
+
+### Bug Fixes
+
+* remove use of assert module ([#173](https://github.com/libp2p/js-libp2p-kad-dht/issues/173)) ([de85eb6](https://github.com/libp2p/js-libp2p-kad-dht/commit/de85eb6))
+
+
+
 <a name="0.18.4"></a>
 ## [0.18.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.18.3...v0.18.4) (2020-02-05)
 
