@@ -1,3 +1,13 @@
+<a name="0.13.4"></a>
+## [0.13.4](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.3...v0.13.4) (2020-02-14)
+
+
+### Bug Fixes
+
+* remove use of assert module ([#101](https://github.com/libp2p/js-libp2p-websockets/issues/101)) ([89d3723](https://github.com/libp2p/js-libp2p-websockets/commit/89d3723))
+
+
+
 <a name="0.13.3"></a>
 ## [0.13.3](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.2...v0.13.3) (2020-02-07)
 
