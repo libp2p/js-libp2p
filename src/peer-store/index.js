@@ -9,6 +9,9 @@ const { EventEmitter } = require('events')
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
+const {
+  ERR_INVALID_PARAMETERS
+} = require('../errors')
 
 /**
  * Responsible for managing known peers, as well as their addresses and metadata
@@ -47,7 +50,7 @@ class PeerStore extends EventEmitter {
    */
   put (peerInfo, options = { silent: false }) {
     if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
     }
 
     let peer
@@ -70,7 +73,7 @@ class PeerStore extends EventEmitter {
    */
   add (peerInfo) {
     if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
     }
 
     // Create new instance and add values to it
@@ -110,7 +113,7 @@ class PeerStore extends EventEmitter {
    */
   update (peerInfo) {
     if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
     }
 
     const id = peerInfo.id.toB58String()
@@ -215,7 +218,7 @@ class PeerStore extends EventEmitter {
    */
   replace (peerInfo) {
     if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
     }
 
     this.remove(peerInfo.id.toB58String())

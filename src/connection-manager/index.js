@@ -6,6 +6,10 @@ const LatencyMonitor = require('latency-monitor').default
 const debug = require('debug')('libp2p:connection-manager')
 const retimer = require('retimer')
 
+const {
+  ERR_INVALID_PARAMETERS
+} = require('../errors')
+
 const defaultOptions = {
   maxConnections: Infinity,
   minConnections: 0,
@@ -39,7 +43,7 @@ class ConnectionManager {
     this._peerId = libp2p.peerInfo.id.toB58String()
     this._options = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, options)
     if (this._options.maxConnections < this._options.minConnections) {
-      throw errcode(new Error('Connection Manager maxConnections must be greater than minConnections'), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error('Connection Manager maxConnections must be greater than minConnections'), ERR_INVALID_PARAMETERS)
     }
 
     debug('options: %j', this._options)

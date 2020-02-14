@@ -5,6 +5,9 @@ const errcode = require('err-code')
 const log = debug('libp2p:peer-store')
 log.error = debug('libp2p:peer-store:error')
 
+const {
+  ERR_INVALID_PARAMETERS
+} = require('./errors')
 const Topology = require('libp2p-interfaces/src/topology')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const PeerInfo = require('peer-info')
@@ -72,11 +75,11 @@ class Registrar {
    */
   onConnect (peerInfo, conn) {
     if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
     }
 
     if (!Connection.isConnection(conn)) {
-      throw errcode(new Error('conn must be an instance of interface-connection'), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error('conn must be an instance of interface-connection'), ERR_INVALID_PARAMETERS)
     }
 
     const id = peerInfo.id.toB58String()
@@ -99,7 +102,7 @@ class Registrar {
    */
   onDisconnect (peerInfo, connection, error) {
     if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
     }
 
     const id = peerInfo.id.toB58String()
@@ -124,7 +127,7 @@ class Registrar {
    */
   getConnection (peerInfo) {
     if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
     }
 
     const connections = this.connections.get(peerInfo.id.toB58String())
@@ -142,7 +145,7 @@ class Registrar {
    */
   register (topology) {
     if (!Topology.isTopology(topology)) {
-      throw errcode(new Error('topology must be an instance of interfaces/topology'), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error('topology must be an instance of interfaces/topology'), ERR_INVALID_PARAMETERS)
     }
 
     // Create topology

@@ -6,6 +6,9 @@ const duplexPair = require('it-pair/duplex')
 const crypto = require('libp2p-crypto')
 const Errors = require('./errors')
 const {
+  ERR_INVALID_PARAMETERS
+} = require('../errors')
+const {
   createBoxStream,
   createUnboxStream,
   decodeV1PSK
@@ -41,7 +44,7 @@ class Protector {
    */
   async protect (connection) {
     if (!connection) {
-      throw errcode(new Error(Errors.NO_HANDSHAKE_CONNECTION), 'ERR_INVALID_PARAMETERS')
+      throw errcode(new Error(Errors.NO_HANDSHAKE_CONNECTION), ERR_INVALID_PARAMETERS)
     }
 
     // Exchange nonces
