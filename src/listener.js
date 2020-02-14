@@ -20,15 +20,15 @@ module.exports = ({ handler, upgrader }, options) => {
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => log('socket error', err))
 
-    const maConn = toConnection(socket, { listeningAddr })
-    log('new inbound connection %s', maConn.remoteAddr)
-
+    let maConn
     let conn
     try {
+      maConn = toConnection(socket, { listeningAddr })
+      log('new inbound connection %s', maConn.remoteAddr)
       conn = await upgrader.upgradeInbound(maConn)
     } catch (err) {
-      log.error('inbound connection failed to upgrade', err)
-      return maConn.close()
+      log.error('inbound connection failed', err)
+      return maConn && maConn.close()
     }
 
     log('inbound connection %s upgraded', maConn.remoteAddr)
