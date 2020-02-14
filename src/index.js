@@ -7,7 +7,6 @@ const toUri = require('multiaddr-to-uri')
 const { AbortError } = require('abortable-iterator')
 
 const log = require('debug')('libp2p:websockets')
-const assert = require('assert')
 
 const createListener = require('./listener')
 const toConnection = require('./socket-to-conn')
@@ -23,7 +22,9 @@ class WebSockets {
    * @param {Upgrader} options.upgrader
    */
   constructor ({ upgrader }) {
-    assert(upgrader, 'An upgrader must be provided. See https://github.com/libp2p/interface-transport#upgrader.')
+    if (!upgrader) {
+      throw new Error('An upgrader must be provided. See https://github.com/libp2p/interface-transport#upgrader.')
+    }
     this._upgrader = upgrader
   }
 
