@@ -1,3 +1,13 @@
+<a name="0.4.3"></a>
+## [0.4.3](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.4.1...v0.4.3) (2020-02-14)
+
+
+### Bug Fixes
+
+* remove use of assert module ([#37](https://github.com/libp2p/js-libp2p-pubsub/issues/37)) ([d452054](https://github.com/libp2p/js-libp2p-pubsub/commit/d452054))
+
+
+
 <a name="0.4.2"></a>
 ## [0.4.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.4.1...v0.4.2) (2020-02-02)
 
