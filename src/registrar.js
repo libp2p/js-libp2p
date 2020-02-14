@@ -73,7 +73,6 @@ class Registrar {
   onConnect (peerInfo, conn) {
     if (!PeerInfo.isPeerInfo(peerInfo)) {
       throw errcode(new Error('peerInfo must be an instance of peer-info'), 'ERR_INVALID_PARAMETERS')
-
     }
 
     if (!Connection.isConnection(conn)) {
