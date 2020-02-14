@@ -1,6 +1,6 @@
 'use strict'
 
-const assert = require('assert')
+const errcode = require('err-code')
 const debug = require('debug')
 const log = debug('libp2p:peer-store')
 log.error = debug('libp2p:peer-store:error')
@@ -9,6 +9,9 @@ const { EventEmitter } = require('events')
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
+const {
+  ERR_INVALID_PARAMETERS
+} = require('../errors')
 
 /**
  * Responsible for managing known peers, as well as their addresses and metadata
@@ -46,7 +49,9 @@ class PeerStore extends EventEmitter {
    * @return {PeerInfo}
    */
   put (peerInfo, options = { silent: false }) {
-    assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
+    if (!PeerInfo.isPeerInfo(peerInfo)) {
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
+    }
 
     let peer
     // Already know the peer?
@@ -67,7 +72,9 @@ class PeerStore extends EventEmitter {
    * @return {PeerInfo}
    */
   add (peerInfo) {
-    assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
+    if (!PeerInfo.isPeerInfo(peerInfo)) {
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
+    }
 
     // Create new instance and add values to it
     const newPeerInfo = new PeerInfo(peerInfo.id)
@@ -105,7 +112,10 @@ class PeerStore extends EventEmitter {
    * @return {PeerInfo}
    */
   update (peerInfo) {
-    assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
+    if (!PeerInfo.isPeerInfo(peerInfo)) {
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
+    }
+
     const id = peerInfo.id.toB58String()
     const recorded = this.peers.get(id)
 
@@ -207,7 +217,9 @@ class PeerStore extends EventEmitter {
    * @returns {void}
    */
   replace (peerInfo) {
-    assert(PeerInfo.isPeerInfo(peerInfo), 'peerInfo must be an instance of peer-info')
+    if (!PeerInfo.isPeerInfo(peerInfo)) {
+      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
+    }
 
     this.remove(peerInfo.id.toB58String())
     this.add(peerInfo)

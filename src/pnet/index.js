@@ -1,10 +1,13 @@
 'use strict'
 
 const pipe = require('it-pipe')
-const assert = require('assert')
+const errcode = require('err-code')
 const duplexPair = require('it-pair/duplex')
 const crypto = require('libp2p-crypto')
 const Errors = require('./errors')
+const {
+  ERR_INVALID_PARAMETERS
+} = require('../errors')
 const {
   createBoxStream,
   createUnboxStream,
@@ -40,7 +43,9 @@ class Protector {
    * @returns {*} A protected duplex iterable
    */
   async protect (connection) {
-    assert(connection, Errors.NO_HANDSHAKE_CONNECTION)
+    if (!connection) {
+      throw errcode(new Error(Errors.NO_HANDSHAKE_CONNECTION), ERR_INVALID_PARAMETERS)
+    }
 
     // Exchange nonces
     log('protecting the connection')
