@@ -1,6 +1,5 @@
 'use strict'
 
-const assert = require('assert')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
@@ -24,7 +23,9 @@ class Bootstrap extends EventEmitter {
    *
    */
   constructor (options = {}) {
-    assert(options.list && options.list.length, 'Bootstrap requires a list of peer addresses')
+    if (!options.list || !options.list.length) {
+      throw new Error('Bootstrap requires a list of peer addresses')
+    }
     super()
 
     this._list = options.list
