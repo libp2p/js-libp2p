@@ -1,6 +1,5 @@
 'use strict'
 
-const assert = require('assert')
 const debug = require('debug')
 const EventEmitter = require('events')
 const errcode = require('err-code')
@@ -15,6 +14,25 @@ const {
   signMessage,
   verifySignature
 } = require('./message/sign')
+
+function validateRegistrar (registrar) {
+  // registrar handling
+  if (typeof registrar !== 'object') {
+    throw new Error('a registrar object is required')
+  }
+
+  if (typeof registrar.handle !== 'function') {
+    throw new Error('a handle function must be provided in registrar')
+  }
+
+  if (typeof registrar.register !== 'function') {
+    throw new Error('a register function must be provided in registrar')
+  }
+
+  if (typeof registrar.unregister !== 'function') {
+    throw new Error('a unregister function must be provided in registrar')
+  }
+}
 
 /**
  * PubsubBaseProtocol handles the peers and connections logic for pubsub routers
@@ -41,15 +59,19 @@ class PubsubBaseProtocol extends EventEmitter {
     signMessages = true,
     strictSigning = true
   }) {
-    assert(debugName && typeof debugName === 'string', 'a debugname `string` is required')
-    assert(multicodecs, 'multicodecs are required')
-    assert(PeerInfo.isPeerInfo(peerInfo), 'peer info must be an instance of `peer-info`')
+    if (typeof debugName !== 'string') {
+      throw new Error('a debugname `string` is required')
+    }
 
-    // registrar handling
-    assert(registrar && typeof registrar === 'object', 'a registrar object is required')
-    assert(typeof registrar.handle === 'function', 'a handle function must be provided in registrar')
-    assert(typeof registrar.register === 'function', 'a register function must be provided in registrar')
-    assert(typeof registrar.unregister === 'function', 'a unregister function must be provided in registrar')
+    if (!multicodecs) {
+      throw new Error('multicodecs are required')
+    }
+
+    if (!PeerInfo.isPeerInfo(peerInfo)) {
+      throw new Error('peer info must be an instance of `peer-info`')
+    }
+
+    validateRegistrar(registrar)
 
     super()
 
