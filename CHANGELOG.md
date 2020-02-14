@@ -1,3 +1,13 @@
+<a name="0.10.4"></a>
+## [0.10.4](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.10.3...v0.10.4) (2020-02-14)
+
+
+### Bug Fixes
+
+* remove use of assert module ([#99](https://github.com/libp2p/js-libp2p-bootstrap/issues/99)) ([29b8aa6](https://github.com/libp2p/js-libp2p-bootstrap/commit/29b8aa6))
+
+
+
 <a name="0.10.3"></a>
 ## [0.10.3](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.10.2...v0.10.3) (2019-11-28)
 
