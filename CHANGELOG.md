@@ -1,3 +1,13 @@
+<a name="0.13.3"></a>
+## [0.13.3](https://github.com/libp2p/js-libp2p-mdns/compare/v0.13.2...v0.13.3) (2020-02-17)
+
+
+### Bug Fixes
+
+* remove use of assert module ([#87](https://github.com/libp2p/js-libp2p-mdns/issues/87)) ([e362b04](https://github.com/libp2p/js-libp2p-mdns/commit/e362b04))
+
+
+
 <a name="0.13.2"></a>
 ## [0.13.2](https://github.com/libp2p/js-libp2p-mdns/compare/v0.13.1...v0.13.2) (2020-02-02)
 
