@@ -1,14 +1,16 @@
 'use strict'
 
 const OS = require('os')
-const assert = require('assert')
 const MDNS = require('multicast-dns')
 const log = require('debug')('libp2p:mdns:compat:responder')
 const { SERVICE_TAG_LOCAL } = require('./constants')
 
 class Responder {
   constructor (peerInfo) {
-    assert(peerInfo, 'missing peerInfo parameter')
+    if (!peerInfo) {
+      throw new Error('missing peerInfo parameter')
+    }
+
     this._peerInfo = peerInfo
     this._peerIdStr = peerInfo.id.toB58String()
     this._onQuery = this._onQuery.bind(this)

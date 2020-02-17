@@ -1,6 +1,5 @@
 'use strict'
 
-const assert = require('assert')
 const EE = require('events')
 const MDNS = require('multicast-dns')
 const Multiaddr = require('multiaddr')
@@ -14,7 +13,9 @@ const { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } = require('./constants
 class Querier extends EE {
   constructor (peerId, options) {
     super()
-    assert(peerId, 'missing peerId parameter')
+    if (!peerId) {
+      throw new Error('missing peerId parameter')
+    }
     options = options || {}
     this._peerIdStr = peerId.toB58String()
     // Re-query every 60s, in leu of network change detection

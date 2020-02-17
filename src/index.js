@@ -2,7 +2,6 @@
 
 const multicastDNS = require('multicast-dns')
 const EventEmitter = require('events').EventEmitter
-const assert = require('assert')
 const debug = require('debug')
 const log = debug('libp2p:mdns')
 const query = require('./query')
@@ -11,7 +10,9 @@ const GoMulticastDNS = require('./compat')
 class MulticastDNS extends EventEmitter {
   constructor (options = {}) {
     super()
-    assert(options.peerInfo, 'needs a PeerInfo to work')
+    if (!options.peerInfo) {
+      throw new Error('needs a PeerInfo to work')
+    }
 
     this.broadcast = options.broadcast !== false
     this.interval = options.interval || (1e3 * 10)
