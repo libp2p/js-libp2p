@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-mdns",
   "devDependencies": {
-    "aegir": "^20.3.1",
+    "aegir": "^21.0.2",
     "chai": "^4.2.0",
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
