@@ -58,6 +58,7 @@
     "latency-monitor": "~0.2.1",
     "libp2p-crypto": "^0.17.1",
     "libp2p-interfaces": "^0.2.3",
+    "libp2p-utils": "^0.1.2",
     "mafmt": "^7.0.0",
     "merge-options": "^2.0.0",
     "moving-average": "^1.0.0",
