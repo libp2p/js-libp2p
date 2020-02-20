@@ -48,7 +48,7 @@
     "sanitize-filename": "^1.6.1"
   },
   "devDependencies": {
-    "aegir": "^20.0.0",
+    "aegir": "^21.2.0",
     "chai": "^4.2.0",
     "chai-string": "^1.5.0",
     "datastore-fs": "^0.9.0",
