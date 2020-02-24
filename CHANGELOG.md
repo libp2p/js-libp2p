@@ -1,3 +1,14 @@
+<a name="0.14.4"></a>
+## [0.14.4](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.3...v0.14.4) (2020-02-24)
+
+
+### Bug Fixes
+
+* catch thrown maConn errors in listener ([#122](https://github.com/libp2p/js-libp2p-tcp/issues/122)) ([86db568](https://github.com/libp2p/js-libp2p-tcp/commit/86db568)), closes [#121](https://github.com/libp2p/js-libp2p-tcp/issues/121)
+* remove use of assert module ([#123](https://github.com/libp2p/js-libp2p-tcp/issues/123)) ([6272876](https://github.com/libp2p/js-libp2p-tcp/commit/6272876))
+
+
+
 <a name="0.14.3"></a>
 ## [0.14.3](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.2...v0.14.3) (2019-12-20)
 
