@@ -1,3 +1,13 @@
+<a name="0.13.5"></a>
+## [0.13.5](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.4...v0.13.5) (2020-02-26)
+
+
+### Bug Fixes
+
+* catch thrown maConn errors in listener ([8bfb19a](https://github.com/libp2p/js-libp2p-websockets/commit/8bfb19a))
+
+
+
 <a name="0.13.4"></a>
 ## [0.13.4](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.3...v0.13.4) (2020-02-14)
 
