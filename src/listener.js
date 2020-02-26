@@ -14,16 +14,15 @@ module.exports = ({ handler, upgrader }, options = {}) => {
   const listener = new EventEmitter()
 
   const server = createServer(options, async (stream) => {
-    const maConn = toConnection(stream)
+    let maConn, conn
 
-    log('new inbound connection %s', maConn.remoteAddr)
-
-    let conn
     try {
+      maConn = toConnection(stream)
+      log('new inbound connection %s', maConn.remoteAddr)
       conn = await upgrader.upgradeInbound(maConn)
     } catch (err) {
       log.error('inbound connection failed to upgrade', err)
-      return maConn.close()
+      return maConn && maConn.close()
     }
 
     log('inbound connection %s upgraded', maConn.remoteAddr)
