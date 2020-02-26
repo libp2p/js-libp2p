@@ -1,3 +1,19 @@
+<a name="0.17.3"></a>
+## [0.17.3](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.2...v0.17.3) (2020-02-26)
+
+
+### Performance Improvements
+
+* remove asn1.js and use node-forge ([#166](https://github.com/libp2p/js-libp2p-crypto/issues/166)) ([00477e3](https://github.com/libp2p/js-libp2p-crypto/commit/00477e3))
+* remove jwk2privPem and jwk2pubPem ([#162](https://github.com/libp2p/js-libp2p-crypto/issues/162)) ([cc20949](https://github.com/libp2p/js-libp2p-crypto/commit/cc20949))
+
+
+### BREAKING CHANGES
+
+* removes unused jwk2pem methods `jwk2pubPem` and `jwk2privPem`. These methods are not being used in any js libp2p modules, so only users referencing these directly will be impacted.
+
+
+
 <a name="0.17.2"></a>
 ## [0.17.2](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.1...v0.17.2) (2020-01-17)
 
