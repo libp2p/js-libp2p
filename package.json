@@ -38,7 +38,6 @@
   "license": "MIT",
   "dependencies": {
     "asmcrypto.js": "^2.3.2",
-    "asn1.js": "^5.2.0",
     "bn.js": "^5.0.0",
     "browserify-aes": "^1.2.0",
     "bs58": "^4.0.1",

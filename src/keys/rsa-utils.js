@@ -1,68 +1,27 @@
 'use strict'
 
-const asn1 = require('asn1.js')
-
-const util = require('./../util')
-const toBase64 = util.toBase64
-const toBn = util.toBn
-
-const RSAPrivateKey = asn1.define('RSAPrivateKey', function () {
-  this.seq().obj(
-    this.key('version').int(),
-    this.key('modulus').int(),
-    this.key('publicExponent').int(),
-    this.key('privateExponent').int(),
-    this.key('prime1').int(),
-    this.key('prime2').int(),
-    this.key('exponent1').int(),
-    this.key('exponent2').int(),
-    this.key('coefficient').int()
-  )
-})
-
-const AlgorithmIdentifier = asn1.define('AlgorithmIdentifier', function () {
-  this.seq().obj(
-    this.key('algorithm').objid({
-      '1.2.840.113549.1.1.1': 'rsa'
-    }),
-    this.key('none').optional().null_(),
-    this.key('curve').optional().objid(),
-    this.key('params').optional().seq().obj(
-      this.key('p').int(),
-      this.key('q').int(),
-      this.key('g').int()
-    )
-  )
-})
-
-const PublicKey = asn1.define('RSAPublicKey', function () {
-  this.seq().obj(
-    this.key('algorithm').use(AlgorithmIdentifier),
-    this.key('subjectPublicKey').bitstr()
-  )
-})
-
-const RSAPublicKey = asn1.define('RSAPublicKey', function () {
-  this.seq().obj(
-    this.key('modulus').int(),
-    this.key('publicExponent').int()
-  )
-})
+const { Buffer } = require('buffer')
+require('node-forge/lib/asn1')
+require('node-forge/lib/rsa')
+const forge = require('node-forge/lib/forge')
+const { bigIntegerToUintBase64url, base64urlToBigInteger } = require('./../util')
 
 // Convert a PKCS#1 in ASN1 DER format to a JWK key
 exports.pkcs1ToJwk = function (bytes) {
-  const asn1 = RSAPrivateKey.decode(bytes, 'der')
+  const asn1 = forge.asn1.fromDer(bytes.toString('binary'))
+  const privateKey = forge.pki.privateKeyFromAsn1(asn1)
 
+  // https://tools.ietf.org/html/rfc7518#section-6.3.1
   return {
     kty: 'RSA',
-    n: toBase64(asn1.modulus),
-    e: toBase64(asn1.publicExponent),
-    d: toBase64(asn1.privateExponent),
-    p: toBase64(asn1.prime1),
-    q: toBase64(asn1.prime2),
-    dp: toBase64(asn1.exponent1),
-    dq: toBase64(asn1.exponent2),
-    qi: toBase64(asn1.coefficient),
+    n: bigIntegerToUintBase64url(privateKey.n),
+    e: bigIntegerToUintBase64url(privateKey.e),
+    d: bigIntegerToUintBase64url(privateKey.d),
+    p: bigIntegerToUintBase64url(privateKey.p),
+    q: bigIntegerToUintBase64url(privateKey.q),
+    dp: bigIntegerToUintBase64url(privateKey.dP),
+    dq: bigIntegerToUintBase64url(privateKey.dQ),
+    qi: bigIntegerToUintBase64url(privateKey.qInv),
     alg: 'RS256',
     kid: '2011-04-29'
   }
@@ -70,28 +29,29 @@ exports.pkcs1ToJwk = function (bytes) {
 
 // Convert a JWK key into PKCS#1 in ASN1 DER format
 exports.jwkToPkcs1 = function (jwk) {
-  return RSAPrivateKey.encode({
-    version: 0,
-    modulus: toBn(jwk.n),
-    publicExponent: toBn(jwk.e),
-    privateExponent: toBn(jwk.d),
-    prime1: toBn(jwk.p),
-    prime2: toBn(jwk.q),
-    exponent1: toBn(jwk.dp),
-    exponent2: toBn(jwk.dq),
-    coefficient: toBn(jwk.qi)
-  }, 'der')
+  const asn1 = forge.pki.privateKeyToAsn1({
+    n: base64urlToBigInteger(jwk.n),
+    e: base64urlToBigInteger(jwk.e),
+    d: base64urlToBigInteger(jwk.d),
+    p: base64urlToBigInteger(jwk.p),
+    q: base64urlToBigInteger(jwk.q),
+    dP: base64urlToBigInteger(jwk.dp),
+    dQ: base64urlToBigInteger(jwk.dq),
+    qInv: base64urlToBigInteger(jwk.qi)
+  })
+
+  return Buffer.from(forge.asn1.toDer(asn1).getBytes(), 'binary')
 }
 
 // Convert a PKCIX in ASN1 DER format to a JWK key
 exports.pkixToJwk = function (bytes) {
-  const ndata = PublicKey.decode(bytes, 'der')
-  const asn1 = RSAPublicKey.decode(ndata.subjectPublicKey.data, 'der')
+  const asn1 = forge.asn1.fromDer(bytes.toString('binary'))
+  const publicKey = forge.pki.publicKeyFromAsn1(asn1)
 
   return {
     kty: 'RSA',
-    n: toBase64(asn1.modulus),
-    e: toBase64(asn1.publicExponent),
+    n: bigIntegerToUintBase64url(publicKey.n),
+    e: bigIntegerToUintBase64url(publicKey.e),
     alg: 'RS256',
     kid: '2011-04-29'
   }
@@ -99,16 +59,10 @@ exports.pkixToJwk = function (bytes) {
 
 // Convert a JWK key to PKCIX in ASN1 DER format
 exports.jwkToPkix = function (jwk) {
-  return PublicKey.encode({
-    algorithm: {
-      algorithm: 'rsa',
-      none: null
-    },
-    subjectPublicKey: {
-      data: RSAPublicKey.encode({
-        modulus: toBn(jwk.n),
-        publicExponent: toBn(jwk.e)
-      }, 'der')
-    }
-  }, 'der')
+  const asn1 = forge.pki.publicKeyToAsn1({
+    n: base64urlToBigInteger(jwk.n),
+    e: base64urlToBigInteger(jwk.e)
+  })
+
+  return Buffer.from(forge.asn1.toDer(asn1).getBytes(), 'binary')
 }
