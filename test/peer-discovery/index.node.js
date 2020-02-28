@@ -139,17 +139,21 @@ describe('peer discovery scenarios', () => {
         },
         dht: {
           randomWalk: {
-            enabled: true,
+            enabled: false,
             delay: 1000, // start the first query quickly
             interval: 10000,
-            timeout: 1000
+            timeout: 5000
           },
           enabled: true
         }
       }
     })
 
-    libp2p = new Libp2p(getConfig(peerInfo))
+    const localConfig = getConfig(peerInfo)
+    // Only run random walk on our local node
+    localConfig.config.dht.randomWalk.enabled = true
+    libp2p = new Libp2p(localConfig)
+
     const remoteLibp2p1 = new Libp2p(getConfig(remotePeerInfo1))
     const remoteLibp2p2 = new Libp2p(getConfig(remotePeerInfo2))
 
@@ -161,6 +165,7 @@ describe('peer discovery scenarios', () => {
     })
 
     await Promise.all([
+      libp2p.start(),
       remoteLibp2p1.start(),
       remoteLibp2p2.start()
     ])
@@ -172,8 +177,6 @@ describe('peer discovery scenarios', () => {
       libp2p.dial(remotePeerInfo1),
       remoteLibp2p2.dial(remotePeerInfo1)
     ])
-
-    libp2p.start()
 
     await deferred.promise
     return Promise.all([
