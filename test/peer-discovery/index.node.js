@@ -142,7 +142,7 @@ describe('peer discovery scenarios', () => {
             enabled: true,
             delay: 1000, // start the first query quickly
             interval: 10000,
-            timeout: 1000
+            timeout: 5000
           },
           enabled: true
         }
@@ -161,6 +161,7 @@ describe('peer discovery scenarios', () => {
     })
 
     await Promise.all([
+      libp2p.start(),
       remoteLibp2p1.start(),
       remoteLibp2p2.start()
     ])
@@ -172,8 +173,6 @@ describe('peer discovery scenarios', () => {
       libp2p.dial(remotePeerInfo1),
       remoteLibp2p2.dial(remotePeerInfo1)
     ])
-
-    libp2p.start()
 
     await deferred.promise
     return Promise.all([
