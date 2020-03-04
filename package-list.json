@@ -17,11 +17,9 @@
 
     "transports",
     ["libp2p/js-libp2p-tcp", "libp2p-tcp"],
-    ["libp2p/js-libp2p-utp", "libp2p-utp"],
     ["libp2p/js-libp2p-webrtc-direct", "libp2p-webrtc-direct"],
     ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
     ["libp2p/js-libp2p-websockets", "libp2p-websockets"],
-    ["libp2p/js-libp2p-websocket-star", "libp2p-websocket-star"],
 
     "secure channels",
     ["libp2p/js-libp2p-secio", "libp2p-secio"],
@@ -34,9 +32,7 @@
     ["libp2p/js-libp2p-bootstrap", "libp2p-bootstrap"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
     ["libp2p/js-libp2p-mdns", "libp2p-mdns"],
-    ["libp2p/js-libp2p-rendezvous", "libp2p-rendezvous"],
     ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
-    ["libp2p/js-libp2p-websocket-star", "libp2p-websocket-star"],
 
     "content routing",
     ["libp2p/js-libp2p-delegated-content-routing", "libp2p-delegated-content-routing"],
