@@ -2,6 +2,7 @@ import 'babel-polyfill'
 import Libp2p from 'libp2p'
 import Websockets from 'libp2p-websockets'
 import WebRTCStar from 'libp2p-webrtc-star'
+import Stardust from 'libp2p-stardust'
 import Secio from 'libp2p-secio'
 import Mplex from 'libp2p-mplex'
 import Boostrap from 'libp2p-bootstrap'
@@ -10,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Create our libp2p node
   const libp2p = await Libp2p.create({
     modules: {
-      transport: [Websockets, WebRTCStar],
+      transport: [Websockets, WebRTCStar, Stardust],
       connEncryption: [Secio],
       streamMuxer: [Mplex],
       peerDiscovery: [Boostrap]
@@ -48,6 +49,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // receive inbound connections from other peers
   const webrtcAddr = '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star'
   libp2p.peerInfo.multiaddrs.add(webrtcAddr)
+
+  // const stardustServerId = 'QmRGWToWJE1JoR6m62W7Cb4Pfg7S3iqHJcLjwaJBHPyp9o'
+  // const stardustAddr = `/ip4/0.0.0.0/tcp/5892/ws/p2p-stardust/p2p/${stardustServerId}`
+  // libp2p.peerInfo.multiaddrs.add(stardustAddr)
 
   // Listen for new peers
   libp2p.on('peer:discovery', (peerInfo) => {

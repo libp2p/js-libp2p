@@ -9,7 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel index.html",
-    "server": "star-signal"
+    "server-ws": "star-signal",
+    "server-stardust": "stardust-server"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
     "libp2p-bootstrap": "^0.10.3",
     "libp2p-mplex": "^0.9.3",
     "libp2p-secio": "^0.12.2",
+    "libp2p-stardust": "libp2p/js-libp2p-stardust#refactor/async-await",
     "libp2p-webrtc-star": "^0.17.3",
     "libp2p-websockets": "^0.13.2"
   },

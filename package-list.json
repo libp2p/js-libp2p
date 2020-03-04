@@ -16,6 +16,7 @@
     ["libp2p/interop", "interop-libp2p"],
 
     "transports",
+    ["libp2p/js-libp2p-stardust", "libp2p-stardust"],
     ["libp2p/js-libp2p-tcp", "libp2p-tcp"],
     ["libp2p/js-libp2p-webrtc-direct", "libp2p-webrtc-direct"],
     ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
@@ -32,6 +33,7 @@
     ["libp2p/js-libp2p-bootstrap", "libp2p-bootstrap"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
     ["libp2p/js-libp2p-mdns", "libp2p-mdns"],
+    ["libp2p/js-libp2p-stardust", "libp2p-stardust"],
     ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
 
     "content routing",
