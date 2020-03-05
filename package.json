@@ -55,7 +55,7 @@
     "multihashes": "~0.4.15",
     "multihashing-async": "~0.8.0",
     "p-filter": "^2.1.0",
-    "p-map": "^3.0.0",
+    "p-map": "^4.0.0",
     "p-queue": "^6.2.1",
     "p-timeout": "^3.2.0",
     "p-times": "^2.1.0",
