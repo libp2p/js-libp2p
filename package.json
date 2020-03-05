@@ -67,7 +67,7 @@
     "mutable-proxy": "^1.0.0",
     "p-any": "^3.0.0",
     "p-fifo": "^1.0.0",
-    "p-settle": "^3.1.0",
+    "p-settle": "^4.0.0",
     "peer-id": "^0.13.4",
     "peer-info": "^0.17.0",
     "protons": "^1.0.1",
