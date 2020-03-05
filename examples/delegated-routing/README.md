@@ -1,3 +1,7 @@
+❗❗Outdated: This example is still not refactored with the `0.27.*` release. 
+WIP on [libp2p/js-libp2p#507](https://github.com/libp2p/js-libp2p/pull/507)
+======
+
 # Delegated Routing with Libp2p and IPFS
 
 This example shows how to use delegated peer and content routing. The [Peer and Content Routing Example](../peer-and-content-routing) focuses
