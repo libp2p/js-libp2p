@@ -76,7 +76,7 @@ Once you have started the signaling server, you need to make a few modifications
 
 ```js
 // const stardustServerId = 'QmRGWToWJE1JoR6m62W7Cb4Pfg7S3iqHJcLjwaJBHPyp9o'
-// const stardustAddr = `/ip4/0.0.0.0/tcp/5892/ws/p2p-stardust/p2p/${stardustServerId}`
+// const stardustAddr = `/ip4/0.0.0.0/tcp/5892/ws/p2p-stardust/p2p/${stardustServerId}/p2p/${libp2p.peerInfo.id.toB58String()}`
 // libp2p.peerInfo.multiaddrs.add(stardustAddr)
 ```
 

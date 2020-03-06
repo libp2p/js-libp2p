@@ -47,12 +47,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Add the signaling server address, along with our PeerId to our multiaddrs list
   // libp2p will automatically attempt to dial to the signaling server so that it can
   // receive inbound connections from other peers
-  const webrtcAddr = '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star'
-  libp2p.peerInfo.multiaddrs.add(webrtcAddr)
+  // const webrtcAddr = '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star'
+  // libp2p.peerInfo.multiaddrs.add(webrtcAddr)
 
-  // const stardustServerId = 'QmRGWToWJE1JoR6m62W7Cb4Pfg7S3iqHJcLjwaJBHPyp9o'
-  // const stardustAddr = `/ip4/0.0.0.0/tcp/5892/ws/p2p-stardust/p2p/${stardustServerId}`
-  // libp2p.peerInfo.multiaddrs.add(stardustAddr)
+  const stardustServerId = 'QmQuyn6HEZrEC1Ex3SehY7f2sECrc7mM2KMAfTc2SDJD4X'
+  const stardustAddr = `/ip4/0.0.0.0/tcp/5892/ws/p2p-stardust/p2p/${stardustServerId}/p2p/${libp2p.peerInfo.id.toB58String()}`
+  libp2p.peerInfo.multiaddrs.add(stardustAddr)
 
   // Listen for new peers
   libp2p.on('peer:discovery', (peerInfo) => {
