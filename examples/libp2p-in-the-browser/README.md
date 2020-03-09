@@ -28,7 +28,7 @@ $ npm run server-ws
 Listening on: http://0.0.0.0:9090
 ```
 
-Despite being `libp2p-webrtc-star` being used, we have this example set up in a way that you can also use `libp2p-stardust` (you can remove `libp2p-webrtc-star` and just use it, but the more transports you support, the more likely you are to connect/discover other peers).
+Although `libp2p-webrtc-star` is being used by default, we have this example set up in a way that you can also use `libp2p-stardust` (you can replace `libp2p-webrtc-star` with it, but it's recommended to use multiple transports if you want to increase the potential peers you can communicate with).
 
 You can start the **stardust** server by running `npm run server-stardust`. This will start a signaling server locally on port `5892`. If you'd like to run a signaling server outside of this example, you can see instructions on how to do so in the [`libp2p-stardust` README](https://github.com/libp2p/js-libp2p-stardust).
 
