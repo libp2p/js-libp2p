@@ -15,28 +15,28 @@ npm install
 
 This example uses the `libp2p-webrtc-star` module, which enables libp2p browser nodes to establish direct connections to one another via a central signaling server. For this example, we are using the signaling server that ships with `libp2p-webrtc-star`.
 
-You can start the **websocket** server by running `npm run server-ws`. This will start a signaling server locally on port `9090`. If you'd like to run a signaling server outside of this example, you can see instructions on how to do so in the [`libp2p-webrtc-star` README](https://github.com/libp2p/js-libp2p-webrtc-star).
+You can start the **webrtc-star** server by running `npm run webrtc-star`. This will start a signaling server locally on port `9090`. If you'd like to run a signaling server outside of this example, you can see instructions on how to do so in the [`libp2p-webrtc-star` README](https://github.com/libp2p/js-libp2p-webrtc-star).
 
 When you run the server, you should see output that looks something like this:
 
 ```log
-$ npm run server-ws
+$ npm run webrtc-star
 
 > libp2p-in-browser@1.0.0 server
-> star-signal
+> webrtc-star
 
 Listening on: http://0.0.0.0:9090
 ```
 
 Although `libp2p-webrtc-star` is being used by default, we have this example set up in a way that you can also use `libp2p-stardust` (you can replace `libp2p-webrtc-star` with it, but it's recommended to use multiple transports if you want to increase the potential peers you can communicate with).
 
-You can start the **stardust** server by running `npm run server-stardust`. This will start a signaling server locally on port `5892`. If you'd like to run a signaling server outside of this example, you can see instructions on how to do so in the [`libp2p-stardust` README](https://github.com/libp2p/js-libp2p-stardust).
+You can start the **stardust** server by running `npm run stardust`. This will start a signaling server locally on port `5892`. If you'd like to run a signaling server outside of this example, you can see instructions on how to do so in the [`libp2p-stardust` README](https://github.com/libp2p/js-libp2p-stardust).
 
 ```log
-$ npm run server-ws
+$ npm run stardust
 
 > libp2p-in-browser@1.0.0 server
-> stardust-server
+> stardust
 
 server peerID:  QmRGWToWJE1JoR6m62W7Cb4Pfg7S3iqHJcLjwaJBHPyp9o
 listening on: /ip6/::/tcp/5892/ws

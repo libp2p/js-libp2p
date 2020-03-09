@@ -9,8 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel index.html",
-    "server-ws": "star-signal",
-    "server-stardust": "stardust-server"
+    "webrtc-star": "star-signal",
+    "stardust": "stardust-server"
   },
   "keywords": [],
   "author": "",
