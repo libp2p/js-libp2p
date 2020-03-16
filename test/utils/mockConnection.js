@@ -31,7 +31,7 @@ module.exports = async (properties = {}) => {
         upgraded: Date.now()
       },
       direction: 'outbound',
-      encryption: '/noise/1.0.0',
+      encryption: '/noise',
       multiplexer: '/mplex/6.7.0'
     },
     newStream: (protocols) => {
