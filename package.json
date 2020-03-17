@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto-secp256k1",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Support for secp256k1 keys in libp2p-crypto",
   "leadMaintainer": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "main": "src/index.js",
@@ -51,17 +51,16 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-crypto-secp256k1",
   "contributors": [
+    "David Dias <daviddias.p@gmail.com>",
+    "Jacob Heun <jacobheun@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Hugo Dias <hugomrdias@gmail.com>",
+    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
+    "Yusef Napora <yusef@napora.org>",
     "Alan Shaw <alan.shaw@protocol.ai>",
     "Alberto Elias <hi@albertoelias.me>",
     "Alex Potsides <alex@achingbrain.net>",
     "Arve Knudsen <arve.knudsen@gmail.com>",
-    "David Dias <daviddias.p@gmail.com>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "Hugo Dias <hugomrdias@gmail.com>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "Vasco Santos <vasco.santos@ua.pt>",
-    "Victor Bjelkholm <victorbjelkholm@gmail.com>",
-    "Yusef Napora <yusef@napora.org>",
-    "dignifiedquire <dignifiedquire@users.noreply.github.com>"
+    "Vasco Santos <vasco.santos@ua.pt>"
   ]
 }
