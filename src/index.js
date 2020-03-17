@@ -1,7 +1,7 @@
 'use strict'
 
-const bs58 = require('bs58')
-const multihashing = require('multihashing-async')
+const multibase = require('multibase')
+const sha = require('multihashing-async/src/sha')
 
 module.exports = (keysProtobuf, randomBytes, crypto) => {
   crypto = crypto || require('./crypto')(randomBytes)
@@ -32,7 +32,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
     }
 
     hash () {
-      return multihashing(this.bytes, 'sha2-256')
+      return sha.multihashing(this.bytes, 'sha2-256')
     }
   }
 
@@ -68,7 +68,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
     }
 
     hash () {
-      return multihashing(this.bytes, 'sha2-256')
+      return sha.multihashing(this.bytes, 'sha2-256')
     }
 
     /**
@@ -83,8 +83,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
      */
     async id () {
       const hash = await this.public.hash()
-
-      return bs58.encode(hash)
+      return multibase.encode('base58btc', hash).toString().slice(1)
     }
   }
 

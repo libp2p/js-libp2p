@@ -4,9 +4,6 @@
   "description": "Support for secp256k1 keys in libp2p-crypto",
   "leadMaintainer": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "main": "src/index.js",
-  "browser": {
-    "secp256k1": "secp256k1/js"
-  },
   "scripts": {
     "lint": "aegir lint",
     "build": "aegir build",
@@ -27,18 +24,19 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "bs58": "^4.0.1",
-    "multihashing-async": "^0.8.0",
-    "nodeify": "^1.0.1",
-    "safe-buffer": "^5.1.2",
-    "secp256k1": "^3.6.2"
+    "buffer": "^5.5.0",
+    "is-typedarray": "^1.0.0",
+    "multibase": "^0.6.0",
+    "multihashing-async": "^0.8.1",
+    "secp256k1": "^4.0.0"
   },
   "devDependencies": {
     "aegir": "^21.0.2",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
-    "libp2p-crypto": "~0.17.2"
+    "libp2p-crypto": "~0.17.2",
+    "protons": "^1.1.0"
   },
   "engines": {
     "node": ">=6.0.0",

@@ -32,6 +32,7 @@ build
 node_modules
 
 dist
+docs
 package-lock.json
 yarn.lock
 .vscode

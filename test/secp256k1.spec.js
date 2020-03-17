@@ -1,14 +1,14 @@
 /* eslint-env mocha */
 'use strict'
 
+const { Buffer } = require('buffer')
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
-
-const libp2pCrypto = require('libp2p-crypto')
-const keysPBM = libp2pCrypto.keys.keysPBM
-const randomBytes = libp2pCrypto.randomBytes
+const protobuf = require('protons')
+const keysPBM = protobuf(require('libp2p-crypto/src/keys/keys.proto'))
+const randomBytes = require('libp2p-crypto/src/random-bytes')
 const crypto = require('../src/crypto')(randomBytes)
 
 describe('secp256k1 keys', () => {
@@ -136,7 +136,7 @@ describe('handles generation of invalid key', () => {
     try {
       await secp256k1.generateKeyPair()
     } catch (err) {
-      return expect(err.message).to.equal('Invalid private key')
+      return expect(err.message).to.equal('Expected private key to be an Uint8Array with length 32')
     }
     throw new Error('Expected error to be thrown')
   })
@@ -182,7 +182,7 @@ describe('crypto functions', () => {
     try {
       await crypto.hashAndSign(Buffer.from('42'), Buffer.from('Hello'))
     } catch (err) {
-      return expect(err.message).to.equal('private key length is invalid')
+      return expect(err.message).to.equal('Expected private key to be an Uint8Array with length 32')
     }
     throw new Error('Expected error to be thrown')
   })
@@ -202,7 +202,7 @@ describe('crypto functions', () => {
     try {
       await crypto.hashAndVerify(pubKey, Buffer.from('invalid-sig'), Buffer.from('hello'))
     } catch (err) {
-      return expect(err.message).to.equal('couldn\'t parse DER signature')
+      return expect(err.message).to.equal('Signature could not be parsed')
     }
     throw new Error('Expected error to be thrown')
   })
@@ -211,7 +211,7 @@ describe('crypto functions', () => {
     try {
       await crypto.hashAndSign(Buffer.from('42'), Buffer.from('Hello'))
     } catch (err) {
-      return expect(err.message).to.equal('private key length is invalid')
+      return expect(err.message).to.equal('Expected private key to be an Uint8Array with length 32')
     }
     throw new Error('Expected error to be thrown')
   })
