@@ -1,3 +1,13 @@
+<a name="0.4.2"></a>
+## [0.4.2](https://github.com/libp2p/js-libp2p-crypto-secp256k1/compare/v0.4.1...v0.4.2) (2020-03-17)
+
+
+### Bug Fixes
+
+* add buffer and update deps ([#25](https://github.com/libp2p/js-libp2p-crypto-secp256k1/issues/25)) ([35f196e](https://github.com/libp2p/js-libp2p-crypto-secp256k1/commit/35f196e))
+
+
+
 <a name="0.4.1"></a>
 ## [0.4.1](https://github.com/libp2p/js-libp2p-crypto-secp256k1/compare/v0.4.0...v0.4.1) (2020-01-06)
 
