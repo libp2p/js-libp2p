@@ -1,5 +1,6 @@
 'use strict'
 
+const { Buffer } = require('buffer')
 const varint = require('varint')
 const BufferList = require('bl/BufferList')
 
