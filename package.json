@@ -1,6 +1,6 @@
 {
   "name": "libp2p-mplex",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -59,20 +59,19 @@
     "varint": "^5.0.0"
   },
   "contributors": [
-    "Alan Shaw <alan.shaw@protocol.ai>",
     "David Dias <daviddias.p@gmail.com>",
-    "Dmitriy Ryajov <dryajov@gmail.com>",
-    "Francisco Baio Dias <xicombd@gmail.com>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Vasco Santos <vasco.santos@moxy.studio>",
     "Jacob Heun <jacobheun@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Alan Shaw <alan.shaw@protocol.ai>",
+    "Victor Bjelkholm <victorbjelkholm@gmail.com>",
+    "Francisco Baio Dias <xicombd@gmail.com>",
+    "Stephen Whitmore <stephen.whitmore@gmail.com>",
+    "Dmitriy Ryajov <dryajov@gmail.com>",
+    "Hugo Dias <hugomrdias@gmail.com>",
     "Pedro Teixeira <pedro@protocol.ai>",
     "Pius Nyakoojo <piusnyakoojo@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
-    "Stephen Whitmore <stephen.whitmore@gmail.com>",
-    "Steven Allen <steven@stebalien.com>",
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "Vasco Santos <vasco.santos@ua.pt>",
-    "Victor Bjelkholm <victorbjelkholm@gmail.com>",
-    "greenkeeperio-bot <support@greenkeeper.io>"
+    "Steven Allen <steven@stebalien.com>"
   ]
 }
