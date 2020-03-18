@@ -1,3 +1,13 @@
+<a name="0.9.5"></a>
+## [0.9.5](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.4...v0.9.5) (2020-03-18)
+
+
+### Bug Fixes
+
+* add buffer ([#106](https://github.com/libp2p/js-libp2p-mplex/issues/106)) ([71f3e5b](https://github.com/libp2p/js-libp2p-mplex/commit/71f3e5b))
+
+
+
 <a name="0.9.4"></a>
 ## [0.9.4](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.3...v0.9.4) (2020-02-13)
 
