@@ -22,6 +22,8 @@ class Registrar {
    * @constructor
    */
   constructor ({ peerStore }) {
+    // Used on topology to listen for protocol changes
+    // TODO: should we only provide the protobook?
     this.peerStore = peerStore
 
     /**

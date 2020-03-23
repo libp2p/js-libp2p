@@ -30,11 +30,17 @@ class PeerStore extends EventEmitter {
      */
     this.peers = new Map()
 
-    // TODO: Track ourselves. We should split `peerInfo` up into its pieces so we get better
-    // control and observability. This will be the initial step for removing PeerInfo
-    // https://github.com/libp2p/go-libp2p-core/blob/master/peerstore/peerstore.go
-    // this.addressBook = new Map()
-    // this.protoBook = new Map()
+    /**
+     * Map known peers to their known multiaddrs.
+     * @type {Map<string, Array<Multiaddr>}
+     */
+    this.addressBook = new Map()
+
+    /**
+     * Map known peers to their known supported protocols.
+     * @type {Map<string, Array<string>}
+     */
+    this.protoBook = new Map()
   }
 
   /**
@@ -82,8 +88,8 @@ class PeerStore extends EventEmitter {
     peerInfo.multiaddrs.forEach((ma) => newPeerInfo.multiaddrs.add(ma))
     peerInfo.protocols.forEach((p) => newPeerInfo.protocols.add(p))
 
-    const connectedMa = peerInfo.isConnected()
-    connectedMa && newPeerInfo.connect(connectedMa)
+    // const connectedMa = peerInfo.isConnected()
+    // connectedMa && newPeerInfo.connect(connectedMa)
 
     const peerProxy = new Proxy(newPeerInfo, {
       set: (obj, prop, value) => {
@@ -120,10 +126,10 @@ class PeerStore extends EventEmitter {
     const recorded = this.peers.get(id)
 
     // pass active connection state
-    const ma = peerInfo.isConnected()
-    if (ma) {
-      recorded.connect(ma)
-    }
+    // const ma = peerInfo.isConnected()
+    // if (ma) {
+    //   recorded.connect(ma)
+    // }
 
     // Verify new multiaddrs
     // TODO: better track added and removed multiaddrs
@@ -229,6 +235,7 @@ class PeerStore extends EventEmitter {
       peerInfo,
       multiaddrs: peerInfo.multiaddrs.toArray()
     })
+
     this.emit('change:protocols', {
       peerInfo,
       protocols: Array.from(peerInfo.protocols)
