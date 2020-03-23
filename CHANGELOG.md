@@ -1,3 +1,13 @@
+<a name="0.17.4"></a>
+## [0.17.4](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.3...v0.17.4) (2020-03-23)
+
+
+### Bug Fixes
+
+* add buffer, cleanup, reduce size ([#170](https://github.com/libp2p/js-libp2p-crypto/issues/170)) ([c956d1a](https://github.com/libp2p/js-libp2p-crypto/commit/c956d1a))
+
+
+
 <a name="0.17.3"></a>
 ## [0.17.3](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.2...v0.17.3) (2020-02-26)
 
