@@ -39,6 +39,7 @@
   "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",
   "dependencies": {
     "abortable-iterator": "^3.0.0",
+    "buffer": "^5.5.0",
     "class-is": "^1.1.0",
     "debug": "^4.1.1",
     "err-code": "^2.0.0",
@@ -55,9 +56,9 @@
     "bl": "^4.0.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
-    "libp2p-interfaces": "^0.2.0",
     "it-goodbye": "^2.0.1",
     "it-pipe": "^1.0.1",
+    "libp2p-interfaces": "^0.2.0",
     "streaming-iterables": "^4.1.0"
   },
   "contributors": [

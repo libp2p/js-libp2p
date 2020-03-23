@@ -1,5 +1,6 @@
 'use strict'
 
+const { Buffer } = require('buffer')
 const abortable = require('abortable-iterator')
 const { CLOSE_TIMEOUT } = require('./constants')
 const toMultiaddr = require('libp2p-utils/src/ip-port-to-multiaddr')
