@@ -1,5 +1,5 @@
 'use strict'
-
+const { Buffer } = require('buffer')
 module.exports = {
   private: {
     hash: Buffer.from([

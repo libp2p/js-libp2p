@@ -1,5 +1,6 @@
 'use strict'
 
+const { Buffer } = require('buffer')
 module.exports = {
   // protobuf marshaled key pair generated with libp2p-crypto-secp256k1
   // and marshaled with libp2p-crypto.marshalPublicKey / marshalPrivateKey

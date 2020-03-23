@@ -1,9 +1,9 @@
 'use strict'
 
+const { Buffer } = require('buffer')
 const protobuf = require('protons')
 const keysPBM = protobuf(require('./keys.proto'))
 require('node-forge/lib/asn1')
-require('node-forge/lib/rsa')
 require('node-forge/lib/pbe')
 const forge = require('node-forge/lib/forge')
 const errcode = require('err-code')

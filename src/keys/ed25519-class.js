@@ -1,8 +1,9 @@
 'use strict'
 
-const multihashing = require('multihashing-async')
+const { Buffer } = require('buffer')
+const sha = require('multihashing-async/src/sha')
 const protobuf = require('protons')
-const bs58 = require('bs58')
+const multibase = require('multibase')
 const errcode = require('err-code')
 
 const crypto = require('./ed25519')
@@ -33,7 +34,7 @@ class Ed25519PublicKey {
   }
 
   async hash () { // eslint-disable-line require-await
-    return multihashing(this.bytes, 'sha2-256')
+    return sha.multihashing(this.bytes, 'sha2-256')
   }
 }
 
@@ -69,7 +70,7 @@ class Ed25519PrivateKey {
   }
 
   async hash () { // eslint-disable-line require-await
-    return multihashing(this.bytes, 'sha2-256')
+    return sha.multihashing(this.bytes, 'sha2-256')
   }
 
   /**
@@ -83,7 +84,7 @@ class Ed25519PrivateKey {
    */
   async id () {
     const hash = await this.public.hash()
-    return bs58.encode(hash)
+    return multibase.encode('base58btc', hash).toString().slice(1)
   }
 }
 
@@ -100,13 +101,13 @@ function unmarshalEd25519PublicKey (bytes) {
 }
 
 async function generateKeyPair () {
-  const { secretKey, publicKey } = await crypto.generateKey()
-  return new Ed25519PrivateKey(secretKey, publicKey)
+  const { privateKey, publicKey } = await crypto.generateKey()
+  return new Ed25519PrivateKey(privateKey, publicKey)
 }
 
 async function generateKeyPairFromSeed (seed) {
-  const { secretKey, publicKey } = await crypto.generateKeyFromSeed(seed)
-  return new Ed25519PrivateKey(secretKey, publicKey)
+  const { privateKey, publicKey } = await crypto.generateKeyFromSeed(seed)
+  return new Ed25519PrivateKey(privateKey, publicKey)
 }
 
 function ensureKey (key, length) {

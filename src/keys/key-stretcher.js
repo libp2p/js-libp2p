@@ -1,5 +1,5 @@
 'use strict'
-
+const { Buffer } = require('buffer')
 const errcode = require('err-code')
 const hmac = require('../hmac')
 

@@ -1,14 +1,14 @@
 'use strict'
 
-const multihashing = require('multihashing-async')
+const sha = require('multihashing-async/src/sha')
 const protobuf = require('protons')
-const bs58 = require('bs58')
+const multibase = require('multibase')
 const errcode = require('err-code')
 
 const crypto = require('./rsa')
 const pbm = protobuf(require('./keys.proto'))
 require('node-forge/lib/sha512')
-require('node-forge/lib/pbe')
+require('node-forge/lib/ed25519')
 const forge = require('node-forge/lib/forge')
 
 class RsaPublicKey {
@@ -40,7 +40,7 @@ class RsaPublicKey {
   }
 
   async hash () { // eslint-disable-line require-await
-    return multihashing(this.bytes, 'sha2-256')
+    return sha.multihashing(this.bytes, 'sha2-256')
   }
 }
 
@@ -88,7 +88,7 @@ class RsaPrivateKey {
   }
 
   async hash () { // eslint-disable-line require-await
-    return multihashing(this.bytes, 'sha2-256')
+    return sha.multihashing(this.bytes, 'sha2-256')
   }
 
   /**
@@ -102,7 +102,7 @@ class RsaPrivateKey {
    */
   async id () {
     const hash = await this.public.hash()
-    return bs58.encode(hash)
+    return multibase.encode('base58btc', hash).toString().slice(1)
   }
 
   /**

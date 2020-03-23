@@ -1,4 +1,5 @@
 'use strict'
+const { Buffer } = require('buffer')
 
 module.exports = {
   // These were generated in a gore (https://github.com/motemen/gore) repl session:

@@ -1,5 +1,5 @@
 'use strict'
-
+const { Buffer } = require('buffer')
 module.exports = [{
   cipher: 'AES-256',
   hash: 'SHA256',

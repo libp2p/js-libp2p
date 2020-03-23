@@ -1,5 +1,6 @@
 'use strict'
 
+const { Buffer } = require('buffer')
 const webcrypto = require('../webcrypto')
 const randomBytes = require('../random-bytes')
 

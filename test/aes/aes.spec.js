@@ -2,7 +2,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-env mocha */
 'use strict'
-
+const { Buffer } = require('buffer')
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect

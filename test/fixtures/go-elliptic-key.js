@@ -1,4 +1,5 @@
 'use strict'
+const { Buffer } = require('buffer')
 
 module.exports = {
   curve: 'P-256',

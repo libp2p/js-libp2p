@@ -1,5 +1,5 @@
 'use strict'
-
+const { Buffer } = require('buffer')
 const webcrypto = require('../webcrypto')
 const lengths = require('./lengths')
 
