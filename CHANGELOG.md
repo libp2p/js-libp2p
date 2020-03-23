@@ -1,3 +1,13 @@
+<a name="0.13.6"></a>
+## [0.13.6](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.5...v0.13.6) (2020-03-23)
+
+
+### Bug Fixes
+
+* add buffer ([#112](https://github.com/libp2p/js-libp2p-websockets/issues/112)) ([8065e07](https://github.com/libp2p/js-libp2p-websockets/commit/8065e07))
+
+
+
 <a name="0.13.5"></a>
 ## [0.13.5](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.4...v0.13.5) (2020-02-26)
 
