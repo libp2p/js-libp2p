@@ -10,16 +10,16 @@ const mockUpgrader = {
 }
 let listener
 
-function boot (done) {
+async function boot () {
   const ws = new WS({ upgrader: mockUpgrader })
   const ma = multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
   listener = ws.createListener(conn => pipe(conn, conn))
-  listener.listen(ma).then(() => done()).catch(done)
+  await listener.listen(ma)
   listener.on('error', console.error)
 }
 
-function shutdown (done) {
-  listener.close().then(done).catch(done)
+function shutdown () {
+  return listener.close()
 }
 
 module.exports = {
