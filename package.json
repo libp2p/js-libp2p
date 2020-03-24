@@ -42,7 +42,7 @@
     "iso-random-stream": "^1.1.0",
     "keypair": "^1.0.1",
     "libp2p-crypto-secp256k1": "^0.4.2",
-    "multibase": "^0.6.0",
+    "multibase": "^0.7.0",
     "multihashing-async": "^0.8.1",
     "node-forge": "~0.9.1",
     "pem-jwk": "^2.0.0",
