@@ -9,7 +9,7 @@ const { expect } = chai
 const sinon = require('sinon')
 
 const multiaddr = require('multiaddr')
-const { collect } = require('../utils')
+const { collect } = require('../../src/utils')
 const pipe = require('it-pipe')
 const AggregateError = require('aggregate-error')
 const { createPeerInfo } = require('../utils/creators/peer')
