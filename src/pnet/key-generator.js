@@ -1,6 +1,6 @@
 'use strict'
 
-const crypto = require('crypto')
+const randomBytes = require('iso-random-stream/src/random')
 const KEY_LENGTH = 32
 
 /**
@@ -9,7 +9,7 @@ const KEY_LENGTH = 32
  * @returns {void}
  */
 function generate (writer) {
-  const psk = crypto.randomBytes(KEY_LENGTH).toString('hex')
+  const psk = randomBytes(KEY_LENGTH).toString('hex')
   writer.write('/key/swarm/psk/1.0.0/\n/base16/\n' + psk)
 }
 

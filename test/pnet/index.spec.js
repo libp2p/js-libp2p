@@ -1,13 +1,14 @@
 /* eslint-env mocha */
 'use strict'
 
+const { Buffer } = require('buffer')
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 chai.use(dirtyChai)
 const expect = chai.expect
 const duplexPair = require('it-pair/duplex')
 const pipe = require('it-pipe')
-const { collect } = require('streaming-iterables')
+const { collect } = require('../../src/utils')
 
 const Protector = require('../../src/pnet')
 const Errors = Protector.errors

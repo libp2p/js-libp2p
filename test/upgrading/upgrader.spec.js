@@ -1,6 +1,7 @@
 'use strict'
 /* eslint-env mocha */
 
+const { Buffer } = require('buffer')
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
@@ -10,7 +11,7 @@ const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const pipe = require('it-pipe')
-const { collect } = require('streaming-iterables')
+const { collect } = require('../../src/utils')
 const pSettle = require('p-settle')
 const Transport = require('libp2p-websockets')
 const Crypto = require('libp2p-secio')

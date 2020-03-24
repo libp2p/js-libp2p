@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 'use strict'
 
+const { Buffer } = require('buffer')
 const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
@@ -31,7 +32,7 @@ const createNode = async () => {
 
   const [node1, node2] = await Promise.all([
     createNode(),
-    createNode(),
+    createNode()
   ])
 
   await node1.dial(node2.peerInfo)
@@ -48,4 +49,4 @@ const createNode = async () => {
   setInterval(() => {
     node2.pubsub.publish(topic, Buffer.from('Bird bird bird, bird is the word!'))
   }, 1000)
-})();
+})()

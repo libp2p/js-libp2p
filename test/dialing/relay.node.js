@@ -1,6 +1,7 @@
 'use strict'
 /* eslint-env mocha */
 
+const { Buffer } = require('buffer')
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-as-promised'))
@@ -8,7 +9,7 @@ const { expect } = chai
 const sinon = require('sinon')
 
 const multiaddr = require('multiaddr')
-const { collect } = require('streaming-iterables')
+const { collect } = require('../utils')
 const pipe = require('it-pipe')
 const AggregateError = require('aggregate-error')
 const { createPeerInfo } = require('../utils/creators/peer')

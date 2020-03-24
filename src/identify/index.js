@@ -1,10 +1,11 @@
 'use strict'
 
+const { Buffer } = require('buffer')
 const debug = require('debug')
 const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
 const pipe = require('it-pipe')
-const { collect, take, consume } = require('streaming-iterables')
+const { collect, take, consume } = require('../../src/utils')
 
 const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')

@@ -12,7 +12,7 @@ const duplexPair = require('it-pair/duplex')
 const pipe = require('it-pipe')
 const concat = require('it-concat')
 const pushable = require('it-pushable')
-const { consume } = require('streaming-iterables')
+const { consume } = require('../../src/utils')
 const delay = require('delay')
 
 const Metrics = require('../../src/metrics')
