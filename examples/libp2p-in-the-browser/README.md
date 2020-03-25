@@ -44,7 +44,23 @@ listening on: /ip6/::/tcp/5892/ws
 
 Please note that you will need to use the server `peerID` in this case.
 
-## Running the examples with webrtc-star
+## Setup the example with stardust
+
+Once you have started the signaling server, you need to make a few modifications to the `index.js` file. You will find the following lines:
+
+```js
+// const stardustServerId = 'QmRGWToWJE1JoR6m62W7Cb4Pfg7S3iqHJcLjwaJBHPyp9o'
+// const stardustAddr = `/ip4/0.0.0.0/tcp/5892/ws/p2p-stardust/p2p/${stardustServerId}/p2p/${libp2p.peerInfo.id.toB58String()}`
+// libp2p.peerInfo.multiaddrs.add(stardustAddr)
+```
+
+You will just need to uncomment the lines above and replace the `stardustServerId` value for your server peerID. Moreover, if you want to only use `stardust`, you can comment the `webrtcAddr` definition above `stardust`.
+
+## Setup the example with webrtc-star
+
+You don't need further configuration to have `webrtc-star` running.
+
+## Run the example
 
 Once you have started the signaling server, you can run the Parcel server.
 
@@ -67,39 +83,5 @@ Server running at http://localhost:1234
 This will compile the code and start a server listening on port [http://localhost:1234](http://localhost:1234). Now open your browser to `http://localhost:1234`. You should see a log of your node's Peer ID, the discovered peers from the Bootstrap module, and connections to those peers as they are created.
 
 Now, if you open a second browser tab to `http://localhost:1234`, you should discover your node from the previous tab. This is due to the fact that the `libp2p-webrtc-star` transport also acts as a Peer Discovery interface. Your node will be notified of any peer that connects to the same signaling server you are connected to. Once libp2p discovers this new peer, it will attempt to establish a direct WebRTC connection.
-
-**Note**: In the example we assign libp2p to `window.libp2p`, in case you would like to play around with the API directly in the browser. You can of course make changes to `index.js` and Parcel will automatically rebuild and reload the browser tabs.
-
-## Running the examples with stardust
-
-Once you have started the signaling server, you need to make a few modifications to the `index.js` file. You will find the following lines:
-
-```js
-// const stardustServerId = 'QmRGWToWJE1JoR6m62W7Cb4Pfg7S3iqHJcLjwaJBHPyp9o'
-// const stardustAddr = `/ip4/0.0.0.0/tcp/5892/ws/p2p-stardust/p2p/${stardustServerId}/p2p/${libp2p.peerInfo.id.toB58String()}`
-// libp2p.peerInfo.multiaddrs.add(stardustAddr)
-```
-
-You will just need to uncomment the lines above and replace the `stardustServerId` value for your server peerID. Moreover, if you want to only use `stardust`, you can comment the `webrtcAddr` definition above `stardust`.
-
-```
-npm start
-```
-
-The output should look something like this:
-
-```log
-$ npm start
-
-> libp2p-in-browser@1.0.0 start
-> parcel index.html
-
-Server running at http://localhost:1234
-✨  Built in 1000ms.
-```
-
-This will compile the code and start a server listening on port [http://localhost:1234](http://localhost:1234). Now open your browser to `http://localhost:1234`. You should see a log of your node's Peer ID, the discovered peers from the Bootstrap module, and connections to those peers as they are created.
-
-Now, if you open a second browser tab to `http://localhost:1234`, you should discover your node from the previous tab. This is due to the fact that the `libp2p-stardust` transport also acts as a Peer Discovery interface. Your node will be notified of any peer that connects to the same signaling server you are connected to. Once libp2p discovers this new peer, it will attempt to establish a direct WebRTC connection.
 
 **Note**: In the example we assign libp2p to `window.libp2p`, in case you would like to play around with the API directly in the browser. You can of course make changes to `index.js` and Parcel will automatically rebuild and reload the browser tabs.
