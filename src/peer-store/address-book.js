@@ -8,6 +8,8 @@ log.error = debug('libp2p:peer-store:address-book:error')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 
+const Book = require('./book')
+
 const {
   ERR_INVALID_PARAMETERS
 } = require('../errors')
@@ -16,7 +18,7 @@ const {
  * The AddressBook is responsible for keeping the known multiaddrs
  * of a peer.
  */
-class AddressBook {
+class AddressBook extends Book {
   /**
    * MultiaddrInfo object
    * @typedef {Object} multiaddrInfo
@@ -30,6 +32,7 @@ class AddressBook {
   * @param {EventEmitter} peerStore
   */
   constructor (peerStore) {
+    super(peerStore, 'change:multiaddrs', 'multiaddrs')
     /**
      * PeerStore Event emitter, used by the AddressBook to emit:
      * "peer" - emitted when a peer is discovered by the node.
@@ -41,7 +44,7 @@ class AddressBook {
      * Map known peers to their known multiaddrs.
      * @type {Map<string, Array<multiaddrInfo>}
      */
-    this.addressBook = new Map()
+    this.data = new Map()
   }
 
   /**
@@ -50,7 +53,7 @@ class AddressBook {
    * @param {Array<Multiaddr>|Multiaddr} addresses
    * @param {Object} [options]
    * @param {boolean} [options.replace = true] wether addresses received replace stored ones or a unique union is performed.
-   * @returns {Array<Multiaddr>}
+   * @returns {Array<multiaddrInfo>}
    */
   set (peerId, addresses, { replace = true } = {}) {
     if (!PeerId.isPeerId(peerId)) {
@@ -89,11 +92,11 @@ class AddressBook {
    * If the peer is not known, it is set with the given addresses.
    * @param {PeerId} peerId
    * @param {Array<multiaddrInfo>} multiaddrInfos
-   * @returns {Array<string>}
+   * @returns {Array<multiaddrInfo>}
    */
   _replace (peerId, multiaddrInfos) {
     const id = peerId.toString()
-    const rec = this.addressBook.get(id)
+    const rec = this.data.get(id)
 
     // Already know the peer
     if (rec && rec.length === multiaddrInfos.length) {
@@ -106,7 +109,7 @@ class AddressBook {
       }
     }
 
-    this.addressBook.set(id, multiaddrInfos)
+    this.data.set(id, multiaddrInfos)
 
     this._ps.emit('peer', peerId)
     this._ps.emit('change:multiaddrs', {
@@ -122,11 +125,11 @@ class AddressBook {
    * If the peer is not known, it is set with the given addresses.
    * @param {PeerId} peerId
    * @param {Array<multiaddrInfo>} multiaddrInfos
-   * @returns {Array<string>}
+   * @returns {Array<multiaddrInfo>}
    */
   _add (peerId, multiaddrInfos) {
     const id = peerId.toString()
-    const rec = this.addressBook.get(id) || []
+    const rec = this.data.get(id) || []
 
     // Add recorded uniquely to the new array
     rec.forEach((mi) => {
@@ -137,11 +140,11 @@ class AddressBook {
 
     // If the recorded length is equal to the new after the uniquely union
     // The content is the same, no need to update.
-    if (rec.length === multiaddrInfos) {
+    if (rec.length === multiaddrInfos.length) {
       return [...multiaddrInfos]
     }
 
-    this.addressBook.set(id, multiaddrInfos)
+    this.data.set(id, multiaddrInfos)
     this._ps.emit('change:multiaddrs', {
       peerId,
       multiaddrs: multiaddrInfos.map((mi) => mi.multiaddr)
@@ -157,25 +160,6 @@ class AddressBook {
   }
 
   /**
-   * Get known addresses of a provided peer.
-   * @param {PeerId} peerId
-   * @returns {Array<Multiaddr>}
-   */
-  get (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    const record = this.addressBook.get(peerId.toString())
-
-    if (!record) {
-      return undefined
-    }
-
-    return record.map((multiaddrInfo) => multiaddrInfo.multiaddr)
-  }
-
-  /**
    * Get the known multiaddrs for a given peer. All returned multiaddrs
    * will include the encapsulated `PeerId` of the peer.
    * @param {PeerId} peerId
@@ -186,7 +170,7 @@ class AddressBook {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    const record = this.addressBook.get(peerId.toString())
+    const record = this.data.get(peerId.toString())
 
     if (!record) {
       return undefined
@@ -198,71 +182,6 @@ class AddressBook {
       if (addr.getPeerId()) return addr
       return addr.encapsulate(`/p2p/${peerId.toB58String()}`)
     })
-  }
-
-  /**
-   * Has known addresses of a provided peer.
-   * @param {PeerId} peerId
-   * @returns {boolean}
-   */
-  has (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    return this.addressBook.has(peerId.toString())
-  }
-
-  /**
-   * Deletes the provided peer from the book.
-   * If addresses are provided, just remove the provided addresses and keep the peer.
-   * @param {PeerId} peerId
-   * @param {Array<multiaddr>|multiaddr} [addresses]
-   * @returns {boolean}
-   */
-  delete (peerId, addresses) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    if (addresses) {
-      return this._remove(peerId, addresses)
-    }
-
-    this._ps('change:multiaddrs', {
-      peerId,
-      multiaddrs: []
-    })
-
-    return this.addressBook.delete(peerId.toString())
-  }
-
-  /**
-   * Removes the given multiaddrs from the provided peer.
-   * @param {PeerId} peerId
-   * @param {Array<multiaddr>|multiaddr} addresses
-   * @returns {boolean}
-   */
-  _remove (peerId, addresses) {
-    if (!Array.isArray(addresses)) {
-      addresses = [addresses]
-    }
-
-    const record = this.addressBook.get(peerId.toString())
-
-    if (!record) {
-      return false
-    }
-
-    record.filter((mi) => addresses.includes(mi.multiaddr))
-    // TODO: should we keep it if empty?
-
-    this._ps('change:multiaddrs', {
-      peerId,
-      multiaddrs: record.map((multiaddrInfo) => multiaddrInfo.multiaddr)
-    })
-
-    return true
   }
 }
 

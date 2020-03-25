@@ -7,6 +7,8 @@ log.error = debug('libp2p:peer-store:proto-book:error')
 
 const PeerId = require('peer-id')
 
+const Book = require('./book')
+
 const {
   ERR_INVALID_PARAMETERS
 } = require('../errors')
@@ -16,12 +18,14 @@ const {
  * protocols of a peer.
  * @fires ProtoBook#change:protocols
  */
-class ProtoBook {
+class ProtoBook extends Book {
   /**
   * @constructor
   * @param {EventEmitter} peerStore
   */
   constructor (peerStore) {
+    super(peerStore, 'change:protocols', 'protocols')
+
     /**
      * PeerStore Event emitter, used by the ProtoBook to emit:
      * "change:protocols" - emitted when the known protocols of a peer change.
@@ -32,12 +36,13 @@ class ProtoBook {
      * Map known peers to their known protocols.
      * @type {Map<string, Set<string>}
      */
-    this.protoBook = new Map()
+    this.data = new Map()
   }
 
   /**
    * Set known protocols of a provided peer.
    * If the peer was not known before, it will be added.
+   * @override
    * @param {PeerId} peerId
    * @param {Array<string>|string} protocols
    * @param {Object} [options]
@@ -58,10 +63,10 @@ class ProtoBook {
     }
 
     if (replace) {
-      return this._replace(PeerId, protocols)
+      return this._replace(peerId, protocols)
     }
 
-    return this._add(PeerId, protocols)
+    return this._add(peerId, protocols)
   }
 
   /**
@@ -73,7 +78,7 @@ class ProtoBook {
    */
   _replace (peerId, protocols) {
     const id = peerId.toString()
-    const recSet = this.protoBook.get(id)
+    const recSet = this.data.get(id)
     const newSet = new Set(protocols)
 
     const isSetEqual = (a, b) => a.size === b.size && [...a].every(value => b.has(value))
@@ -84,7 +89,7 @@ class ProtoBook {
       return protocols
     }
 
-    this.protoBook.set(id, newSet)
+    this.data.set(id, newSet)
     this._ps.emit('change:protocols', {
       peerId,
       protocols
@@ -102,7 +107,7 @@ class ProtoBook {
    */
   _add (peerId, protocols) {
     const id = peerId.toString()
-    const recSet = this.protoBook.get(id) || new Set()
+    const recSet = this.data.get(id) || new Set()
     const newSet = new Set([...recSet, ...protocols])
 
     // Any new protocol added?
@@ -112,28 +117,13 @@ class ProtoBook {
 
     protocols = [...newSet]
 
-    this.protoBook.set(id, newSet)
+    this.data.set(id, newSet)
     this._ps.emit('change:protocols', {
       peerId,
       protocols
     })
 
     return protocols
-  }
-
-  /**
-   * Get known supported protocols of a provided peer.
-   * @param {PeerId} peerId
-   * @returns {Array<string>}
-   */
-  get (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    const recSet = this.protoBook.get(peerId.toString())
-
-    return recSet ? [...recSet] : undefined
   }
 
   /**
@@ -147,86 +137,21 @@ class ProtoBook {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
+    if (!protocols) {
+      throw errcode(new Error('protocols must be provided'), ERR_INVALID_PARAMETERS)
+    }
+
     if (!Array.isArray(protocols)) {
       protocols = [protocols]
     }
 
-    const recSet = this.protoBook.get(peerId.toString())
+    const recSet = this.data.get(peerId.toString())
 
     if (!recSet) {
       return false
     }
 
     return [...recSet].filter((p) => protocols.includes(p)).length === protocols.length
-  }
-
-  /**
-   * Has known protocols of a provided peer.
-   * @param {PeerId} peerId
-   * @returns {boolean}
-   */
-  has (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    return this.protoBook.has(peerId.toString())
-  }
-
-  /**
-   * Deletes the provided peer from the book.
-   * If protocols are provided, just remove the provided protocols and keep the peer.
-   * @param {PeerId} peerId
-   * @param {Array<string>|string} [protocols]
-   * @returns {boolean}
-   */
-  delete (peerId, protocols) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    if (protocols) {
-      return this._remove(peerId, protocols)
-    }
-
-    if (!this.protoBook.delete(peerId.toString())) {
-      return false
-    }
-
-    this._ps.emit('change:protocols', {
-      peerId,
-      protocols: []
-    })
-
-    return true
-  }
-
-  /**
-   * Removes the given protocols from the provided peer.
-   * @param {PeerId} peerId
-   * @param {Array<string>|string} protocols
-   * @returns {boolean}
-   */
-  _remove (peerId, protocols) {
-    if (!Array.isArray(protocols)) {
-      protocols = [protocols]
-    }
-
-    const recSet = this.protoBook.get(peerId.toString())
-
-    if (!recSet) {
-      return false
-    }
-
-    protocols.forEach((p) => recSet.delete(p))
-    // TODO: should we keep it if empty?
-
-    this._ps.emit('change:protocols', {
-      peerId,
-      protocols: [...recSet]
-    })
-
-    return true
   }
 }
 
