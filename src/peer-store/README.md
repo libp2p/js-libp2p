@@ -2,7 +2,9 @@
 
 Libp2p's Peerstore is responsible for keeping an updated register with the relevant information of the known peers. It should gather environment changes and be able to take decisions and notice interested parties of relevant changes. The Peerstore comprises four main components: `addressBook`, `keyBook`, `protocolBook` and `metadataBook`. These book components have similar characteristics with the `Javascript Map` implementation.
 
-The PeerStore needs to manage the high level operations on its inner books, have a job runner to trigger other books runners for data trimming or computations. Moreover, the peerStore should be responsible for noticing interested parties of relevant events, through its Event Emitter.
+The PeerStore needs to manage the high level operations on its inner books. Moreover, the peerStore should be responsible for notifying interested parties of relevant events, through its Event Emitter.
+
+(Future considerations: Peerstore should manage a job runner to trigger books runners for data trimming or computations)
 
 ## Peers Environment
 
@@ -10,18 +12,20 @@ The PeerStore needs to manage the high level operations on its inner books, have
 
 Several libp2p subsystems will perform operations, which will gather relevant information about peers. Some operations might not have this as an end goal, but can also gather important data.
 
-In a libp2p node life, it will discover peers the existance of peers through its discovery protocols. In a typical discovery protocol, an address of the peer is discovered combined with its peer id. Once this happens, the `PeerStore` should collect this information for future (or immediate) usage by other subsystems. When the information is stored, the `PeerStore` should inform interested parties of the peer discovered (`peer` event).
+In a libp2p node's life, it will discover peers through its discovery protocols. In a typical discovery protocol, addresses of the peer are discovered along with its peer id. Once this happens, the `PeerStore` should collect this information for future (or immediate) usage by other subsystems. When the information is stored, the `PeerStore` should inform interested parties of the peer discovered (`peer` event).
 
 Taking into account a different scenario, a peer might perform/receive a dial request to/from a unkwown peer. In such a scenario, the `PeerStore` must store the peer's multiaddr once a connection is established. 
 
 (NOTE: this should be removed later)
 (currently we silently put it to the peerStore, without emitting events, as this logic exists in the `onConnected` callback from the upgrader. This way, we are never emitting the `peer` event when inbound connections happen, or a unkwown peer is dialed. Should we differentiate this?)
 
-After a connection is established with a peer, the Identify Service will act on this connection. A stream is created and peers exchange their information (listenMuldiaddrs and running protocols). Once this information is obtained, the PeerStore can collect the new data. In this specific case, we have a guarantee that this data is complete and updated, so the data stored in the PeerStore should be replaced (older and outdated data should disappear). However, if the recorded `multiaddrs` or `protocols` have changed, interested parties must be informed via `change:multiaddrs` or `change:protocols` events.
+After a connection is established with a peer, the Identify protocol will run automatically. A stream is created and peers exchange their information (Multiaddrs, running protocols and their public key). Once this information is obtained, it should be added to the PeerStore. In this specific case, as we are speaking to the source of truth, we should ensure the PeerStore is prioritizing these records. If the recorded `multiaddrs` or `protocols` have changed, interested parties must be informed via the `change:multiaddrs` or `change:protocols` events respectively.
 
-In the background, the Identify Service is also waiting for new protocols to be started by the peer. If a new protocol is started, the `identify-push` message is sent to all the connected peers, so that their PeerStore can be updated with the new protocol and relevant parties are noticed. As the `identify-push` also sends complete and updated information, the data in the PeerStore is replaced.
+In the background, the Identify Service is also waiting for protocol change notifications of peers via the IdentifyPush protocol. Peers may leverage the `identify-push` message to communicate protocol changes to all connected peers, so that their PeerStore can be updated with the updated protocols. As the `identify-push` also sends complete and updated information, the data in the PeerStore can be replaced.
 
-On different context, it is also possible to gather relevant information for the peers. For instance, in `dht` operations, nodes can exchanges data of peers they know as part of the `dht` operation. In this case, we can get information from a peer that we already know. As a consequence, the `PeerStore` should act accordingly and not replace the data it owns, but just try to merge it the discovered data is new. For example, discovered a new address of a peer.
+While it is currently not supported in js-libp2p, future iterations may also support the [IdentifyDelta protocol](https://github.com/libp2p/specs/pull/176).
+
+It is also possible to gather relevant information for peers from other protocols / subsystems. For instance, in `DHT` operations, nodes can exchange peer data as part of the `DHT` operation. In this case, we can learn additional information about a peer we already know. In this scenario the `PeerStore` should not replace the existing data it has, just add it.
 
 #### Act
 
@@ -101,7 +105,7 @@ Get an array of all the peers, as well as their information. The information int
 
 ## Address Book
 
-The `addressBook` keeps the known multiaddrs of a peer. The multiaddrs of each peer are not a constant and the Address book must have this into consideration.
+The `addressBook` keeps the known multiaddrs of a peer. The multiaddrs of each peer may change over time and the Address Book must account for this.
 
 `Map<string, multiaddrInfo>`
 
@@ -124,7 +128,7 @@ A `peerId.toString()` identifier mapping to a `multiaddrInfo` object, which shou
 - `addressBook.delete()`
 - `addressBook.peers()`
 
-It is important pointing out that the API methods which return arrays of data (`set`, `get`, `getMultiaddrsForPeer`) shuld return the `multiaddr` property of the `multiaddrInfo` and not the entire `multiaddrInfo` as the remaining data should be used internally. Should we consider having two datastructure instead?
+It is important pointing out that the API methods which return arrays of data (`set`, `get`, `getMultiaddrsForPeer`) should return the `multiaddr` property of the `multiaddrInfo` and not the entire `multiaddrInfo` as the remaining data should be used internally. Should we consider having two datastructure instead?
 
 Further API methods will probably be added in the context of multiaddr `ttl` and multiaddr confidence.
 
