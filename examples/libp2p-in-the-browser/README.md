@@ -36,7 +36,7 @@ You can start the **stardust** server by running `npm run stardust`. This will s
 $ npm run stardust
 
 > libp2p-in-browser@1.0.0 server
-> stardust
+> stardust-server
 
 server peerID:  QmRGWToWJE1JoR6m62W7Cb4Pfg7S3iqHJcLjwaJBHPyp9o
 listening on: /ip6/::/tcp/5892/ws
@@ -80,7 +80,7 @@ Once you have started the signaling server, you need to make a few modifications
 // libp2p.peerInfo.multiaddrs.add(stardustAddr)
 ```
 
-You will just need to uncomment the lines above and replace the `stardustServerId` value for your server peerID. Moreover, if you want to only use `stardust`, you can comment the `webrtcAddr` definition above `stardust`.
+You will just need to uncomment the lines above and replace the `stardustServerId` value for your server peerID. Moreover, if you want to only use `stardust`, you can comment the `webrtcAddr` definition above `stardust`. Once you save the file parcel should automatically reload the browser tabs.
 
 ```
 npm start
