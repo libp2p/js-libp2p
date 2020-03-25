@@ -74,8 +74,8 @@ describe('DHT subsystem operates correctly', () => {
       ])
 
       await libp2p.contentRouting.put(key, value)
-
       const fetchedValue = await remoteLibp2p.contentRouting.get(key)
+
       expect(fetchedValue).to.eql(value)
     })
   })

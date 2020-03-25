@@ -5,11 +5,10 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 
-const { EventEmitter } = require('events')
 const pDefer = require('p-defer')
 const multiaddr = require('multiaddr')
 
-const AddressBook = require('../../src/peer-store/address-book')
+const PeerStore = require('../../src/peer-store')
 
 const peerUtils = require('../utils/creators/peer')
 const {
@@ -30,15 +29,15 @@ describe('addressBook', () => {
   })
 
   describe('addressBook.set', () => {
-    let ee, ab
+    let peerStore, ab
 
     beforeEach(() => {
-      ee = new EventEmitter()
-      ab = new AddressBook(ee)
+      peerStore = new PeerStore()
+      ab = peerStore.addressBook
     })
 
     afterEach(() => {
-      ee.removeAllListeners()
+      peerStore.removeAllListeners()
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
@@ -63,7 +62,7 @@ describe('addressBook', () => {
       const defer = pDefer()
       const supportedMultiaddrs = [addr1, addr2]
 
-      ee.once('change:multiaddrs', ({ peerId, multiaddrs }) => {
+      peerStore.once('change:multiaddrs', ({ peerId, multiaddrs }) => {
         expect(peerId).to.exist()
         expect(multiaddrs).to.eql(supportedMultiaddrs)
         defer.resolve()
@@ -84,7 +83,7 @@ describe('addressBook', () => {
       const supportedMultiaddrsB = [addr2]
 
       let changeCounter = 0
-      ee.on('change:multiaddrs', () => {
+      peerStore.on('change:multiaddrs', () => {
         changeCounter++
         if (changeCounter > 1) {
           defer.resolve()
@@ -109,7 +108,7 @@ describe('addressBook', () => {
       const supportedMultiaddrs = [addr1, addr2]
 
       let changeCounter = 0
-      ee.on('change:multiaddrs', () => {
+      peerStore.on('change:multiaddrs', () => {
         changeCounter++
         if (changeCounter > 1) {
           defer.reject()
@@ -132,15 +131,15 @@ describe('addressBook', () => {
   })
 
   describe('addressBook.add', () => {
-    let ee, ab
+    let peerStore, ab
 
     beforeEach(() => {
-      ee = new EventEmitter()
-      ab = new AddressBook(ee)
+      peerStore = new PeerStore()
+      ab = peerStore.addressBook
     })
 
     afterEach(() => {
-      ee.removeAllListeners()
+      peerStore.removeAllListeners()
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
@@ -169,7 +168,7 @@ describe('addressBook', () => {
       const finalMultiaddrs = supportedMultiaddrsA.concat(supportedMultiaddrsB)
 
       let changeTrigger = 2
-      ee.on('change:multiaddrs', ({ multiaddrs }) => {
+      peerStore.on('change:multiaddrs', ({ multiaddrs }) => {
         changeTrigger--
         if (changeTrigger === 0 && arraysAreEqual(multiaddrs, finalMultiaddrs)) {
           defer.resolve()
@@ -199,7 +198,7 @@ describe('addressBook', () => {
       const finalMultiaddrs = supportedMultiaddrsA.concat(supportedMultiaddrsB)
 
       let changeCounter = 0
-      ee.on('change:multiaddrs', () => {
+      peerStore.on('change:multiaddrs', () => {
         changeCounter++
         if (changeCounter > 1) {
           defer.resolve()
@@ -225,7 +224,7 @@ describe('addressBook', () => {
       const supportedMultiaddrsB = [addr2]
 
       let changeCounter = 0
-      ee.on('change:multiaddrs', () => {
+      peerStore.on('change:multiaddrs', () => {
         changeCounter++
         if (changeCounter > 1) {
           defer.reject()
@@ -248,11 +247,11 @@ describe('addressBook', () => {
   })
 
   describe('addressBook.get', () => {
-    let ee, ab
+    let peerStore, ab
 
     beforeEach(() => {
-      ee = new EventEmitter()
-      ab = new AddressBook(ee)
+      peerStore = new PeerStore()
+      ab = peerStore.addressBook
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
@@ -279,11 +278,11 @@ describe('addressBook', () => {
   })
 
   describe('addressBook.getMultiaddrsForPeer', () => {
-    let ee, ab
+    let peerStore, ab
 
     beforeEach(() => {
-      ee = new EventEmitter()
-      ab = new AddressBook(ee)
+      peerStore = new PeerStore()
+      ab = peerStore.addressBook
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
@@ -311,11 +310,11 @@ describe('addressBook', () => {
   })
 
   describe('addressBook.delete', () => {
-    let ee, ab
+    let peerStore, ab
 
     beforeEach(() => {
-      ee = new EventEmitter()
-      ab = new AddressBook(ee)
+      peerStore = new PeerStore()
+      ab = peerStore.addressBook
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
@@ -327,7 +326,7 @@ describe('addressBook', () => {
     it('returns false if no records exist for the peer and no event is emitted', () => {
       const defer = pDefer()
 
-      ee.on('change:multiaddrs', () => {
+      peerStore.on('change:multiaddrs', () => {
         defer.reject()
       })
 
@@ -350,7 +349,7 @@ describe('addressBook', () => {
       ab.set(peerId, supportedMultiaddrs)
 
       // Listen after set
-      ee.on('change:multiaddrs', ({ multiaddrs }) => {
+      peerStore.on('change:multiaddrs', ({ multiaddrs }) => {
         expect(multiaddrs.length).to.eql(0)
         defer.resolve()
       })

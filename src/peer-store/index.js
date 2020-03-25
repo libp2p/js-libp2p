@@ -43,97 +43,13 @@ class PeerStore extends EventEmitter {
      * ProtoBook containing a map of peerIdStr to supported protocols.
      */
     this.protoBook = new ProtoBook(this)
-  }
 
-  // TODO: Temporary adapter for modules using PeerStore
-  // This should be removed under a breaking change
-  /**
-   * Stores the peerInfo of a new peer on each book.
-   * @param {PeerInfo} peerInfo
-   * @param {object} [options]
-   * @param {boolean} [options.replace = true]
-   * @return {PeerInfo}
-   */
-  put (peerInfo, options) {
-    const multiaddrs = peerInfo.multiaddrs.toArray()
-    const protocols = Array.from(peerInfo.protocols || new Set())
-
-    this.addressBook.set(peerInfo.id, multiaddrs, options)
-    this.protoBook.set(peerInfo.id, protocols, options)
-
-    const peer = this.find(peerInfo.id)
-    const pInfo = new PeerInfo(peerInfo.id)
-
-    if (!peer) {
-      return pInfo
-    }
-
-    peer.protocols.forEach((p) => pInfo.protocols.add(p))
-    peer.multiaddrInfos.forEach((mi) => pInfo.multiaddrs.add(mi.multiaddr))
-
-    return pInfo
-  }
-
-  // TODO: Temporary adapter for modules using PeerStore
-  // This should be removed under a breaking change
-  /**
-   * Get the info of the given id.
-   * @param {peerId} peerId
-   * @returns {PeerInfo}
-   */
-  get (peerId) {
-    const peer = this.find(peerId)
-
-    const pInfo = new PeerInfo(peerId)
-    peer.protocols.forEach((p) => pInfo.protocols.add(p))
-    peer.multiaddrInfos.forEach((mi) => pInfo.multiaddrs.add(mi.multiaddr))
-
-    return pInfo
-  }
-
-  // TODO: Temporary adapter for modules using PeerStore
-  // This should be removed under a breaking change
-  /**
-   * Has the info to the given id.
-   * @param {PeerId} peerId
-   * @returns {boolean}
-   */
-  has (peerId) {
-    return Boolean(this.find(peerId))
-  }
-
-  // TODO: Temporary adapter for modules using PeerStore
-  // This should be removed under a breaking change
-  /**
-   * Removes the peer provided.
-   * @param {PeerId} peerId
-   * @returns {boolean} true if found and removed
-   */
-  remove (peerId) {
-    return this.delete(peerId)
-  }
-
-  // TODO: Temporary adapter for modules using PeerStore
-  // This should be removed under a breaking change
-  /**
-   * Completely replaces the existing peers metadata with the given `peerInfo`
-   * @param {PeerInfo} peerInfo
-   * @returns {void}
-   */
-  replace (peerInfo) {
-    this.put(peerInfo)
-  }
-
-  // TODO: Temporary adapter for modules using PeerStore
-  // This should be removed under a breaking change
-  /**
-   * Returns the known multiaddrs for a given `PeerInfo`. All returned multiaddrs
-   * will include the encapsulated `PeerId` of the peer.
-   * @param {PeerInfo} peerInfo
-   * @returns {Array<Multiaddr>}
-   */
-  multiaddrsForPeer (peerInfo) {
-    return this.addressBook.getMultiaddrsForPeer(peerInfo.id)
+    /**
+     * TODO: this should only exist until we have the key-book
+     * Map known peers to their peer-id.
+     * @type {Map<string, Array<PeerId>}
+     */
+    this.peerIds = new Map()
   }
 
   /**
@@ -195,15 +111,16 @@ class PeerStore extends EventEmitter {
   }
 
   /**
-   * Find the stored information of a given peer.
+   * Get the stored information of a given peer.
    * @param {PeerId} peerId
    * @returns {peerInfo}
    */
-  find (peerId) {
+  get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
+    const id = this.peerIds.get(peerId.toString())
     const multiaddrInfos = this.addressBook.get(peerId)
     const protocols = this.protoBook.get(peerId)
 
@@ -212,6 +129,7 @@ class PeerStore extends EventEmitter {
     }
 
     return {
+      id: id || peerId,
       multiaddrInfos: multiaddrInfos || [],
       protocols: protocols || []
     }

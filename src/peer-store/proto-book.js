@@ -22,7 +22,7 @@ const {
 class ProtoBook extends Book {
   /**
   * @constructor
-  * @param {EventEmitter} peerStore
+  * @param {PeerStore} peerStore
   */
   constructor (peerStore) {
     /**
@@ -71,6 +71,7 @@ class ProtoBook extends Book {
     }
 
     this.data.set(id, newSet)
+    this._setPeerId(peerId)
     log(`stored provided protocols for ${id}`)
 
     // TODO: Remove peerInfo and its usage on peer-info deprecate
@@ -118,6 +119,7 @@ class ProtoBook extends Book {
     protocols = [...newSet]
 
     this.data.set(id, newSet)
+    this._setPeerId(peerId)
     log(`added provided protocols for ${id}`)
 
     // TODO: Remove peerInfo and its usage on peer-info deprecate
@@ -131,6 +133,12 @@ class ProtoBook extends Book {
     })
 
     return this
+  }
+
+  _setPeerId (peerId) {
+    if (!this._ps.peerIds.get(peerId)) {
+      this._ps.peerIds.set(peerId.toString(), peerId)
+    }
   }
 }
 

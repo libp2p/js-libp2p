@@ -28,7 +28,7 @@ class AddressBook extends Book {
 
   /**
   * @constructor
-  * @param {EventEmitter} peerStore
+  * @param {PeerStore} peerStore
   */
   constructor (peerStore) {
     /**
@@ -80,6 +80,7 @@ class AddressBook extends Book {
     }
 
     this.data.set(id, multiaddrInfos)
+    this._setPeerId(peerId)
     log(`stored provided multiaddrs for ${id}`)
 
     // TODO: Remove peerInfo and its usage on peer-info deprecate
@@ -133,6 +134,7 @@ class AddressBook extends Book {
       return this
     }
 
+    this._setPeerId(peerId)
     this.data.set(id, multiaddrInfos)
 
     log(`added provided multiaddrs for ${id}`)
@@ -181,6 +183,12 @@ class AddressBook extends Book {
     })
 
     return multiaddrInfos
+  }
+
+  _setPeerId (peerId) {
+    if (!this._ps.peerIds.get(peerId)) {
+      this._ps.peerIds.set(peerId.toString(), peerId)
+    }
   }
 
   /**
