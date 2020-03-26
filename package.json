@@ -81,7 +81,7 @@
     "aegir": "^21.3.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "cids": "^0.7.1",
+    "cids": "^0.8.0",
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
     "interop-libp2p": "~0.0.1",
