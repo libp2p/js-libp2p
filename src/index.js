@@ -478,7 +478,7 @@ class Libp2p extends EventEmitter {
         let discoveryService
 
         if (typeof DiscoveryService === 'function') {
-          discoveryService = new DiscoveryService(Object.assign({}, config, { peerInfo: this.peerInfo }))
+          discoveryService = new DiscoveryService(Object.assign({}, config, { peerInfo: this.peerInfo, libp2p: this }))
         } else {
           discoveryService = DiscoveryService
         }
