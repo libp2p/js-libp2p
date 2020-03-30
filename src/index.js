@@ -504,7 +504,7 @@ class Libp2p extends EventEmitter {
   }
 }
 
-module.exports = Libp2p
+module.exports.default = Libp2p
 /**
  * Like `new Libp2p(options)` except it will create a `PeerInfo`
  * instance if one is not provided in options.
