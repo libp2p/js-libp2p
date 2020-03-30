@@ -10,7 +10,6 @@ const {
 } = require('./errors')
 const Topology = require('libp2p-interfaces/src/topology')
 const { Connection } = require('libp2p-interfaces/src/connection')
-const PeerInfo = require('peer-info')
 
 /**
  * Responsible for notifying registered protocols of events in the network.
@@ -23,7 +22,6 @@ class Registrar {
    */
   constructor ({ peerStore }) {
     // Used on topology to listen for protocol changes
-    // TODO: should we only provide the protobook?
     this.peerStore = peerStore
 
     /**
@@ -76,9 +74,11 @@ class Registrar {
    * @returns {void}
    */
   onConnect (peerInfo, conn) {
-    if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
-    }
+    // TODO: This is not a `peer-info` instance anymore, but an object with the data.
+    // This can be modified to `peer-id` though, once `peer-info` is deprecated.
+    // if (!PeerInfo.isPeerInfo(peerInfo)) {
+    //   throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
+    // }
 
     if (!Connection.isConnection(conn)) {
       throw errcode(new Error('conn must be an instance of interface-connection'), ERR_INVALID_PARAMETERS)
@@ -103,9 +103,11 @@ class Registrar {
    * @returns {void}
    */
   onDisconnect (peerInfo, connection, error) {
-    if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
-    }
+    // TODO: This is not a `peer-info` instance anymore, but an object with the data.
+    // This can be modified to `peer-id` though, once `peer-info` is deprecated.
+    // if (!PeerInfo.isPeerInfo(peerInfo)) {
+    //   throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
+    // }
 
     const id = peerInfo.id.toB58String()
     let storedConn = this.connections.get(id)
@@ -128,9 +130,11 @@ class Registrar {
    * @returns {Connection}
    */
   getConnection (peerInfo) {
-    if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
-    }
+    // TODO: This is not a `peer-info` instance anymore, but an object with the data.
+    // This can be modified to `peer-id` though, once `peer-info` is deprecated.
+    // if (!PeerInfo.isPeerInfo(peerInfo)) {
+    //   throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
+    // }
 
     const connections = this.connections.get(peerInfo.id.toB58String())
     // Return the first, open connection

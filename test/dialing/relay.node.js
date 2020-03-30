@@ -11,6 +11,8 @@ const multiaddr = require('multiaddr')
 const { collect } = require('streaming-iterables')
 const pipe = require('it-pipe')
 const AggregateError = require('aggregate-error')
+const PeerId = require('peer-id')
+
 const { createPeerInfo } = require('../utils/creators/peer')
 const baseOptions = require('../utils/base-options')
 const Libp2p = require('../../src')
@@ -51,8 +53,9 @@ describe('Dialing (via relay, TCP)', () => {
     return Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(async libp2p => {
       await libp2p.stop()
       // Clear the peer stores
-      for (const peerId of libp2p.peerStore.peers.keys()) {
-        libp2p.peerStore.remove(peerId)
+      for (const peerIdStr of libp2p.peerStore.peers.keys()) {
+        const peerId = PeerId.createFromCID(peerIdStr)
+        libp2p.peerStore.delete(peerId)
       }
     }))
   })

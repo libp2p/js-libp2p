@@ -7,6 +7,7 @@ log.error = debug('libp2p:peer-store:address-book:error')
 
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
 
 const Book = require('./book')
 
@@ -52,15 +53,17 @@ class AddressBook extends Book {
    * @param {PeerId} peerId
    * @param {Array<Multiaddr>|Multiaddr} addresses
    * @param {Object} [options]
-   * @param {boolean} [options.replace = true] wether addresses received replace stored ones or a unique union is performed.
+   * @param {boolean} [options.replace = true] whether addresses received replace stored ones or a unique union is performed.
    * @returns {Array<multiaddrInfo>}
    */
   set (peerId, addresses, { replace = true } = {}) {
     if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
     if (!addresses) {
+      log.error('addresses must be provided to store data')
       throw errcode(new Error('addresses must be provided'), ERR_INVALID_PARAMETERS)
     }
 
@@ -72,6 +75,7 @@ class AddressBook extends Book {
     const multiaddrInfos = []
     addresses.forEach((addr) => {
       if (!multiaddr.isMultiaddr(addr)) {
+        log.error(`multiaddr ${addr} must be an instance of multiaddr`)
         throw errcode(new Error(`multiaddr ${addr} must be an instance of multiaddr`), ERR_INVALID_PARAMETERS)
       }
 
@@ -88,7 +92,7 @@ class AddressBook extends Book {
   }
 
   /**
-   * Replace known addresses to a provided peer.
+   * Replace known addresses of a provided peer.
    * If the peer is not known, it is set with the given addresses.
    * @param {PeerId} peerId
    * @param {Array<multiaddrInfo>} multiaddrInfos
@@ -98,22 +102,39 @@ class AddressBook extends Book {
     const id = peerId.toString()
     const rec = this.data.get(id)
 
-    // Already know the peer
+    // Not replace multiaddrs
+    if (!multiaddrInfos.length) {
+      return rec ? [...rec] : []
+    }
+
+    // Already knows the peer
     if (rec && rec.length === multiaddrInfos.length) {
       const intersection = rec.filter((mi) => multiaddrInfos.some((newMi) => mi.multiaddr === newMi.multiaddr))
 
-      // New addresses equal the old ones?
+      // Are new addresses equal to the old ones?
       // If yes, no changes needed!
       if (intersection.length === rec.length) {
+        log(`the addresses provided to store are equal to the already stored for ${id}`)
         return [...multiaddrInfos]
       }
     }
 
     this.data.set(id, multiaddrInfos)
+    log(`stored provided multiaddrs for ${id}`)
 
-    this._ps.emit('peer', peerId)
+    // TODO: Remove peerInfo and its usage on peer-info deprecate
+    const peerInfo = new PeerInfo(peerId)
+    multiaddrInfos.forEach((mi) => peerInfo.multiaddrs.add(mi.multiaddr))
+
+    // Notify the existance of a new peer
+    if (!rec) {
+      // this._ps.emit('peer', peerId)
+      this._ps.emit('peer', peerInfo)
+    }
+
     this._ps.emit('change:multiaddrs', {
       peerId,
+      peerInfo,
       multiaddrs: multiaddrInfos.map((mi) => mi.multiaddr)
     })
 
@@ -129,31 +150,40 @@ class AddressBook extends Book {
    */
   _add (peerId, multiaddrInfos) {
     const id = peerId.toString()
-    const rec = this.data.get(id) || []
+    const rec = this.data.get(id)
 
-    // Add recorded uniquely to the new array
-    rec.forEach((mi) => {
+    // Add recorded uniquely to the new array (Union)
+    rec && rec.forEach((mi) => {
       if (!multiaddrInfos.find(r => r.multiaddr === mi.multiaddr)) {
         multiaddrInfos.push(mi)
       }
     })
 
-    // If the recorded length is equal to the new after the uniquely union
+    // If the recorded length is equal to the new after the unique union
     // The content is the same, no need to update.
-    if (rec.length === multiaddrInfos.length) {
+    if (rec && rec.length === multiaddrInfos.length) {
+      log(`the addresses provided to store are already stored for ${id}`)
       return [...multiaddrInfos]
     }
 
     this.data.set(id, multiaddrInfos)
+
+    log(`added provided multiaddrs for ${id}`)
+
+    // TODO: Remove peerInfo and its usage on peer-info deprecate
+    const peerInfo = new PeerInfo(peerId)
+    multiaddrInfos.forEach((mi) => peerInfo.multiaddrs.add(mi.multiaddr))
+
     this._ps.emit('change:multiaddrs', {
       peerId,
+      peerInfo,
       multiaddrs: multiaddrInfos.map((mi) => mi.multiaddr)
     })
 
     // Notify the existance of a new peer
-    // TODO: do we need this?
     if (!rec) {
-      this._ps.emit('peer', peerId)
+      // this._ps.emit('peer', peerId)
+      this._ps.emit('peer', peerInfo)
     }
 
     return [...multiaddrInfos]
@@ -179,7 +209,9 @@ class AddressBook extends Book {
     return record.map((multiaddrInfo) => {
       const addr = multiaddrInfo.multiaddr
 
-      if (addr.getPeerId()) return addr
+      const idString = addr.getPeerId()
+      if (idString && idString === peerId.toB58String()) return addr
+
       return addr.encapsulate(`/p2p/${peerId.toB58String()}`)
     })
   }

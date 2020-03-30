@@ -38,7 +38,7 @@ function getPeerInfo (peer, peerStore) {
 
   addr && peer.multiaddrs.add(addr)
 
-  return peerStore ? peerStore.put(peer) : peer
+  return peerStore ? peerStore.put(peer, { replace: false }) : peer
 }
 
 /**

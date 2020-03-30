@@ -17,6 +17,17 @@
   * [`contentRouting.put`](#contentroutingput)
   * [`contentRouting.get`](#contentroutingget)
   * [`contentRouting.getMany`](#contentroutinggetmany)
+  * [`peerStore.addressBook.delete`](#peerstoreaddressbookdelete)
+  * [`peerStore.addressBook.get`](#peerstoreaddressbookget)
+  * [`peerStore.addressBook.getMultiaddrsForPeer`](#peerstoreaddressbookgetmultiaddrsforpeer)
+  * [`peerStore.addressBook.set`](#peerstoreaddressbookset)
+  * [`peerStore.protoBook.delete`](#peerstoreprotobookdelete)
+  * [`peerStore.protoBook.get`](#peerstoreprotobookget)
+  * [`peerStore.protoBook.set`](#peerstoreprotobookset)
+  * [`peerStore.protoBook.supports`](#peerstoreprotobooksupports)
+  * [`peerStore.delete`](#peerstoredelete)
+  * [`peerStore.find`](#peerstorefind)
+  * [`peerStore.peers`](#peerstorepeers)
   * [`pubsub.getSubscribers`](#pubsubgetsubscribers)
   * [`pubsub.getTopics`](#pubsubgettopics)
   * [`pubsub.publish`](#pubsubpublish)
@@ -505,6 +516,345 @@ Queries the DHT for the n values stored for the given key (without sorting).
 
 const key = '/key'
 const { from, val } = await libp2p.contentRouting.get(key)
+```
+
+### peerStore.addressBook.delete
+
+Delete the provided peer from the book.
+
+`peerStore.addressBook.delete(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `peerid` | peerId to remove |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | true if found and removed |
+
+#### Example
+
+```js
+peerStore.addressBook.delete(peerId)
+// false
+peerStore.addressBook.set(peerId, discoveredMultiaddr)
+peerStore.addressBook.delete(peerId)
+// true
+```
+
+### peerStore.addressBook.get
+
+Get the known `multiaddrInfos` of a provided peer.
+
+`peerStore.addressBook.get(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `peerid` | peerId to get |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<multiaddrInfo>` | Array of peer's multiaddr with their relevant information |
+
+#### Example
+
+```js
+peerStore.addressBook.get(peerId)
+// undefined
+peerStore.addressBook.set(peerId, discoveredMultiaddr)
+peerStore.addressBook.get(peerId)
+// [
+// {
+//   multiaddr: /ip4/140.10.2.1/tcp/8000,
+//   ...
+// },
+// {
+//   multiaddr: /ip4/140.10.2.1/ws/8001
+//   ...
+// },
+// ]
+```
+
+## peerStore.addressBook.getMultiaddrsForPeer
+
+Get the known `multiaddr` of a provided peer. All returned multiaddrs will include the encapsulated `PeerId` of the peer.
+
+`peerStore.addressBook.getMultiaddrsForPeer(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `peerid` | peerId to get |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<multiaddr>` | Array of peer's multiaddr |
+
+#### Example
+
+```js
+peerStore.addressBook.getMultiaddrsForPeer(peerId)
+// undefined
+peerStore.addressBook.set(peerId, discoveredMultiaddr)
+peerStore.addressBook.getMultiaddrsForPeer(peerId)
+// [
+// /ip4/140.10.2.1/tcp/8000/p2p/QmW8rAgaaA6sRydK1k6vonShQME47aDxaFidbtMevWs73t
+// /ip4/140.10.2.1/ws/8001/p2p/QmW8rAgaaA6sRydK1k6vonShQME47aDxaFidbtMevWs73t
+// ]
+```
+
+### peerStore.addressBook.set
+
+Set known `multiaddrs` of a given peer.
+
+`peerStore.addressBook.set(peerId, multiaddrs, options)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `peerid` | peerId to set |
+| multiaddrs | `multiaddr|Array<multiaddr>` | multiaddrs to store |
+| [options] | `object` | options to set |
+| [options.replace] | `Object` | replace stored data (if exists) or unique union (default: true) |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<multiaddrInfo>` | Array of peer's multiaddr with their relevant information |
+
+#### Example
+
+```js
+peerStore.addressBook.set(peerId, discoveredMultiaddr)
+// [
+// {
+//   multiaddr: /ip4/140.10.2.1/tcp/8000,
+//   ...
+// },
+// {
+//   multiaddr: /ip4/140.10.2.1/ws/8001
+//   ...
+// },
+// ]
+```
+
+### peerStore.protoBook.delete
+
+Delete the provided peer from the book.
+
+`peerStore.protoBook.delete(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `peerid` | peerId to remove |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | true if found and removed |
+
+#### Example
+
+```js
+peerStore.protoBook.delete(peerId)
+// false
+peerStore.protoBook.set(peerId, supportedProtocols)
+peerStore.protoBook.delete(peerId)
+// true
+```
+
+### peerStore.protoBook.get
+
+Get the known `protocols` of a provided peer.
+
+`peerStore.protoBook.get(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `peerid` | peerId to get |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<string>` | Array of peer's supported protocols |
+
+#### Example
+
+```js
+peerStore.protoBook.get(peerId)
+// undefined
+peerStore.protoBook.set(peerId, supportedProtocols)
+peerStore.protoBook.get(peerId)
+// [ '/proto/1.0.0', '/proto/1.1.0' ]
+```
+
+### peerStore.protoBook.set
+
+Set known `protocols` of a given peer.
+
+`peerStore.protoBook.set(peerId, protocols, options)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `peerid` | peerId to set |
+| protocols | `string|Array<string>` | protocols to store |
+| [options] | `object` | options to set |
+| [options.replace] | `Object` | replace stored data (if exists) or unique union (default: true) |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<string>` | Array of peer's supported protocols |
+
+#### Example
+
+```js
+peerStore.protoBook.set(peerId, supportedProtocols)
+// [ '/proto/1.0.0', '/proto/1.1.0' ]
+```
+
+### peerStore.protoBook.supports
+
+Verify if the provided peer supports the given `protocols`.
+
+`peerStore.protoBook.supports(peerId, protocols)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `peerid` | peerId to get |
+| protocols | `string|Array<string>` | protocols to verify |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | true if found and removed |
+
+#### Example
+
+```js
+const supportedProtocols = [ '/proto/1.0.0', '/proto/1.1.0' ]
+peerStore.protoBook.supports(peerId, supportedProtocols)
+// false
+peerStore.protoBook.supports(peerId, supportedProtocols[0])
+// false
+peerStore.protoBook.set(peerId, supportedProtocols)
+peerStore.protoBook.supports(peerId, supportedProtocols)
+// true
+peerStore.protoBook.supports(peerId, supportedProtocols[0])
+// true
+```
+
+### peerStore.delete
+
+Delete the provided peer from every book.
+
+`peerStore.delete(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `peerid` | peerId to remove |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | true if found and removed |
+
+#### Example
+
+```js
+peerStore.delete(peerId)
+// false
+peerStore.addressBook.set(peerId, discoveredMultiaddrs)
+peerStore.protoBook.set(peerId, supportedProtocols)
+peerStore.delete(peerId)
+// true
+peerStore.delete(peerId2)
+// false
+peerStore.addressBook.set(peerId2, discoveredMultiaddrs)
+peerStore.delete(peerId2)
+// true
+```
+
+### peerStore.find
+
+Find the stored information of a given peer.
+
+`peerStore.find(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `peerid` | peerId to find |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `peerInfo` | Peer information of the provided peer |
+
+#### Example
+
+```js
+peerStore.find(peerId)
+// false
+peerStore.addressBook.set(peerId, discoveredMultiaddrs)
+peerStore.protoBook.set(peerId, supportedProtocols)
+peerStore.find(peerId)
+// {
+//   multiaddrInfos: [...],
+//   protocols: [...]
+// }
+```
+
+### peerStore.peers
+
+Get all the stored information of every peer.
+
+`peerStore.peers()`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Map<string, PeerInfo>` | Peer information of every peer |
+
+TODO: change when `peer-info` is deprecated (breaking change)
+
+#### Example
+
+```js
+for (peer of peerStore.peers().values()) {
+  // peerInfo instance
+}
 ```
 
 ### pubsub.getSubscribers

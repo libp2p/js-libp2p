@@ -8,12 +8,11 @@ const sinon = require('sinon')
 
 const { EventEmitter } = require('events')
 const pDefer = require('p-defer')
-
 const multiaddr = require('multiaddr')
-const PeerId = require('peer-id')
 
 const AddressBook = require('../../src/peer-store/address-book')
 
+const peerUtils = require('../utils/creators/peer')
 const {
   ERR_INVALID_PARAMETERS
 } = require('../../src/errors')
@@ -25,13 +24,14 @@ const addr3 = multiaddr('/ip4/127.0.0.1/tcp/8002')
 const arraysAreEqual = (a, b) => a.length === b.length && a.sort().every((item, index) => b[index] === item)
 
 describe('addressBook', () => {
-  describe('addressBook.set', () => {
-    let peerId
-    let ee, ab
+  let peerId
 
-    before(async () => {
-      peerId = await PeerId.create()
-    })
+  before(async () => {
+    [peerId] = await peerUtils.createPeerId()
+  })
+
+  describe('addressBook.set', () => {
+    let ee, ab
 
     beforeEach(() => {
       ee = new EventEmitter()
@@ -225,12 +225,7 @@ describe('addressBook', () => {
   })
 
   describe('addressBook.get', () => {
-    let peerId
     let ee, ab
-
-    before(async () => {
-      peerId = await PeerId.create()
-    })
 
     beforeEach(() => {
       ee = new EventEmitter()
@@ -261,12 +256,7 @@ describe('addressBook', () => {
   })
 
   describe('addressBook.getMultiaddrsForPeer', () => {
-    let peerId
     let ee, ab
-
-    before(async () => {
-      peerId = await PeerId.create()
-    })
 
     beforeEach(() => {
       ee = new EventEmitter()
@@ -298,12 +288,7 @@ describe('addressBook', () => {
   })
 
   describe('addressBook.delete', () => {
-    let peerId
     let ee, ab
-
-    before(async () => {
-      peerId = await PeerId.create()
-    })
 
     beforeEach(() => {
       ee = new EventEmitter()

@@ -99,7 +99,10 @@ describe('Dialing (direct, TCP)', () => {
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore: {
-        multiaddrsForPeer: () => [remoteAddr]
+        addressBook: {
+          set: () => {},
+          getMultiaddrsForPeer: () => [remoteAddr]
+        }
       }
     })
     const peerId = await PeerId.createFromJSON(Peers[0])
@@ -131,7 +134,10 @@ describe('Dialing (direct, TCP)', () => {
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore: {
-        multiaddrsForPeer: () => [unsupportedAddr]
+        addressBook: {
+          set: () => {},
+          getMultiaddrsForPeer: () => [unsupportedAddr]
+        }
       }
     })
     const peerId = await PeerId.createFromJSON(Peers[0])
@@ -172,7 +178,10 @@ describe('Dialing (direct, TCP)', () => {
       transportManager: localTM,
       concurrency: 2,
       peerStore: {
-        multiaddrsForPeer: () => addrs
+        addressBook: {
+          set: () => {},
+          getMultiaddrsForPeer: () => addrs
+        }
       }
     })
 

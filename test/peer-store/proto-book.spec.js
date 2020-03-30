@@ -9,10 +9,9 @@ const sinon = require('sinon')
 const { EventEmitter } = require('events')
 const pDefer = require('p-defer')
 
-const PeerId = require('peer-id')
-
 const ProtoBook = require('../../src/peer-store/proto-book')
 
+const peerUtils = require('../utils/creators/peer')
 const {
   ERR_INVALID_PARAMETERS
 } = require('../../src/errors')
@@ -20,13 +19,14 @@ const {
 const arraysAreEqual = (a, b) => a.length === b.length && a.sort().every((item, index) => b[index] === item)
 
 describe('protoBook', () => {
-  describe('protoBook.set', () => {
-    let peerId
-    let ee, pb
+  let peerId
 
-    before(async () => {
-      peerId = await PeerId.create()
-    })
+  before(async () => {
+    [peerId] = await peerUtils.createPeerId()
+  })
+
+  describe('protoBook.set', () => {
+    let ee, pb
 
     beforeEach(() => {
       ee = new EventEmitter()
@@ -209,12 +209,7 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.get', () => {
-    let peerId
     let ee, pb
-
-    before(async () => {
-      peerId = await PeerId.create()
-    })
 
     beforeEach(() => {
       ee = new EventEmitter()
@@ -244,12 +239,7 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.supports', () => {
-    let peerId
     let ee, pb
-
-    before(async () => {
-      peerId = await PeerId.create()
-    })
 
     beforeEach(() => {
       ee = new EventEmitter()
@@ -296,12 +286,7 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.delete', () => {
-    let peerId
     let ee, pb
-
-    before(async () => {
-      peerId = await PeerId.create()
-    })
 
     beforeEach(() => {
       ee = new EventEmitter()

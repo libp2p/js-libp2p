@@ -2,6 +2,7 @@
 
 const errcode = require('err-code')
 const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
 
 const {
   ERR_INVALID_PARAMETERS
@@ -63,8 +64,12 @@ class Book {
       return false
     }
 
+    // TODO: Remove peerInfo and its usage on peer-info deprecate
+    const peerInfo = new PeerInfo(peerId)
+
     this.eventEmitter.emit(this.eventName, {
       peerId,
+      peerInfo,
       [this.eventProperty]: []
     })
 
