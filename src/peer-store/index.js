@@ -243,7 +243,8 @@ class PeerStore extends EventEmitter {
    */
   multiaddrsForPeer (peer) {
     return this.put(peer, true).multiaddrs.toArray().map(addr => {
-      if (addr.getPeerId()) return addr
+      const idString = addr.getPeerId()
+      if (idString && idString === peer.id.toB58String()) return addr
       return addr.encapsulate(`/p2p/${peer.id.toB58String()}`)
     })
   }
