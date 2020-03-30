@@ -504,14 +504,13 @@ class Libp2p extends EventEmitter {
   }
 }
 
-module.exports = Libp2p
 /**
  * Like `new Libp2p(options)` except it will create a `PeerInfo`
  * instance if one is not provided in options.
  * @param {object} options Libp2p configuration options
  * @returns {Libp2p}
  */
-module.exports.create = async (options = {}) => {
+Libp2p.create = async function create (options = {}) {
   if (options.peerInfo) {
     return new Libp2p(options)
   }
@@ -521,3 +520,5 @@ module.exports.create = async (options = {}) => {
   options.peerInfo = peerInfo
   return new Libp2p(options)
 }
+
+module.exports = Libp2p
