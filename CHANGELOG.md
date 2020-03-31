@@ -1,3 +1,16 @@
+<a name="0.27.4"></a>
+## [0.27.4](https://github.com/libp2p/js-libp2p/compare/v0.27.3...v0.27.4) (2020-03-31)
+
+
+### Bug Fixes
+
+* only use a single export ([#596](https://github.com/libp2p/js-libp2p/issues/596)) ([3072875](https://github.com/libp2p/js-libp2p/commit/3072875))
+* pass libp2p to discovery services ([#597](https://github.com/libp2p/js-libp2p/issues/597)) ([9e35fbc](https://github.com/libp2p/js-libp2p/commit/9e35fbc))
+* **test:** improve flakey random walk discovery test ([#574](https://github.com/libp2p/js-libp2p/issues/574)) ([f4ec355](https://github.com/libp2p/js-libp2p/commit/f4ec355))
+* remove use of assert module ([#561](https://github.com/libp2p/js-libp2p/issues/561)) ([a8984c6](https://github.com/libp2p/js-libp2p/commit/a8984c6))
+
+
+
 <a name="0.27.3"></a>
 ## [0.27.3](https://github.com/libp2p/js-libp2p/compare/v0.27.2...v0.27.3) (2020-02-11)
 
