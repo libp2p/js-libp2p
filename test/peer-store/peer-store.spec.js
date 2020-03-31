@@ -161,19 +161,22 @@ describe('peer-store', () => {
     expect(peerStore.peers.size).to.equal(0)
   })
 
-  it('should be able to remove a peer from store through its b58str id', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo()
+  it('should be able to get the multiaddrs for a peer', async () => {
+    const [peerInfo, relayInfo] = await peerUtils.createPeerInfo({ number: 2 })
     const id = peerInfo.id
     const ma1 = multiaddr('/ip4/127.0.0.1/tcp/4001')
     const ma2 = multiaddr('/ip4/127.0.0.1/tcp/4002/ws')
+    const ma3 = multiaddr(`/ip4/127.0.0.1/tcp/4003/ws/p2p/${relayInfo.id.toB58String()}/p2p-circuit`)
 
     peerInfo.multiaddrs.add(ma1)
     peerInfo.multiaddrs.add(ma2)
+    peerInfo.multiaddrs.add(ma3)
 
     const multiaddrs = peerStore.multiaddrsForPeer(peerInfo)
     const expectedAddrs = [
       ma1.encapsulate(`/p2p/${id.toB58String()}`),
-      ma2.encapsulate(`/p2p/${id.toB58String()}`)
+      ma2.encapsulate(`/p2p/${id.toB58String()}`),
+      ma3.encapsulate(`/p2p/${id.toB58String()}`)
     ]
 
     expect(multiaddrs).to.eql(expectedAddrs)
