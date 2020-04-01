@@ -54,7 +54,7 @@
     "@types/chai-string": "^1.4.2",
     "@types/dirty-chai": "^2.0.2",
     "@types/mocha": "^7.0.1",
-    "@types/sinon": "^7.5.1",
+    "@types/sinon": "^9.0.0",
     "aegir": "^21.0.2",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
