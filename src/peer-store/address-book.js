@@ -109,7 +109,7 @@ class AddressBook extends Book {
 
     // Already knows the peer
     if (rec && rec.length === multiaddrInfos.length) {
-      const intersection = rec.filter((mi) => multiaddrInfos.some((newMi) => mi.multiaddr === newMi.multiaddr))
+      const intersection = rec.filter((mi) => multiaddrInfos.some((newMi) => mi.multiaddr.equals(newMi.multiaddr)))
 
       // Are new addresses equal to the old ones?
       // If yes, no changes needed!
@@ -154,7 +154,7 @@ class AddressBook extends Book {
 
     // Add recorded uniquely to the new array (Union)
     rec && rec.forEach((mi) => {
-      if (!multiaddrInfos.find(r => r.multiaddr === mi.multiaddr)) {
+      if (!multiaddrInfos.find(r => r.multiaddr.equals(mi.multiaddr))) {
         multiaddrInfos.push(mi)
       }
     })

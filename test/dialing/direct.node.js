@@ -123,7 +123,7 @@ describe('Dialing (direct, TCP)', () => {
     const peerId = await PeerId.createFromJSON(Peers[0])
     const peerInfo = new PeerInfo(peerId)
     peerInfo.multiaddrs.add(remoteAddr)
-    peerStore.put(peerInfo)
+    peerStore.addressBook.set(peerInfo.id, peerInfo.multiaddrs.toArray())
 
     const connection = await dialer.connectToPeer(peerInfo)
     expect(connection).to.exist()
