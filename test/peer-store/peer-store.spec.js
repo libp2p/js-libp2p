@@ -58,7 +58,7 @@ describe('peer-store', () => {
 
       // Add peer0 with { addr1, addr2 } and { proto1 }
       peerStore.addressBook.set(peerIds[0], [addr1, addr2])
-      peerStore.protoBook.set(peerIds[0], proto1)
+      peerStore.protoBook.set(peerIds[0], [proto1])
 
       // Add peer1 with { addr3 } and { proto2, proto3 }
       peerStore.addressBook.set(peerIds[1], [addr3])
@@ -73,9 +73,9 @@ describe('peer-store', () => {
 
       expect(peers.size).to.equal(3)
       expect(Array.from(peers.keys())).to.have.members([
-        peerIds[0].toString(),
-        peerIds[1].toString(),
-        peerIds[2].toString()
+        peerIds[0].toB58String(),
+        peerIds[1].toB58String(),
+        peerIds[2].toB58String()
       ])
     })
 

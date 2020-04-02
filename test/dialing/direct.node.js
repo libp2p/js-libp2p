@@ -100,7 +100,7 @@ describe('Dialing (direct, TCP)', () => {
       transportManager: localTM,
       peerStore: {
         addressBook: {
-          set: () => {},
+          add: () => {},
           getMultiaddrsForPeer: () => [remoteAddr]
         }
       }
@@ -135,7 +135,7 @@ describe('Dialing (direct, TCP)', () => {
       transportManager: localTM,
       peerStore: {
         addressBook: {
-          set: () => {},
+          add: () => {},
           getMultiaddrsForPeer: () => [unsupportedAddr]
         }
       }
@@ -179,7 +179,7 @@ describe('Dialing (direct, TCP)', () => {
       concurrency: 2,
       peerStore: {
         addressBook: {
-          set: () => {},
+          add: () => {},
           getMultiaddrsForPeer: () => addrs
         }
       }

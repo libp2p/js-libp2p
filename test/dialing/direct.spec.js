@@ -88,7 +88,7 @@ describe('Dialing (direct, WebSockets)', () => {
       transportManager: localTM,
       peerStore: {
         addressBook: {
-          set: () => {},
+          add: () => {},
           getMultiaddrsForPeer: () => [remoteAddr]
         }
       }
@@ -104,7 +104,7 @@ describe('Dialing (direct, WebSockets)', () => {
       transportManager: localTM,
       peerStore: {
         addressBook: {
-          set: () => {},
+          add: () => {},
           getMultiaddrsForPeer: () => [remoteAddr]
         }
       }
@@ -128,7 +128,7 @@ describe('Dialing (direct, WebSockets)', () => {
       transportManager: localTM,
       peerStore: {
         addressBook: {
-          set: () => {},
+          add: () => {},
           getMultiaddrsForPeer: () => [remoteAddr]
         }
       }
@@ -163,7 +163,7 @@ describe('Dialing (direct, WebSockets)', () => {
       timeout: 50,
       peerStore: {
         addressBook: {
-          set: () => {},
+          add: () => {},
           getMultiaddrsForPeer: () => [remoteAddr]
         }
       }
@@ -337,7 +337,7 @@ describe('Dialing (direct, WebSockets)', () => {
       })
 
       sinon.spy(libp2p.dialer, 'connectToPeer')
-      sinon.spy(libp2p.peerStore.addressBook, 'set')
+      sinon.spy(libp2p.peerStore.addressBook, 'add')
 
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
@@ -346,7 +346,7 @@ describe('Dialing (direct, WebSockets)', () => {
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
       expect(libp2p.dialer.connectToPeer.callCount).to.equal(1)
-      expect(libp2p.peerStore.addressBook.set.callCount).to.be.at.least(1)
+      expect(libp2p.peerStore.addressBook.add.callCount).to.be.at.least(1)
     })
 
     it('should run identify automatically after connecting', async () => {

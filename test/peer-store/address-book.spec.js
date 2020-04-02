@@ -4,7 +4,6 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
-const sinon = require('sinon')
 
 const { EventEmitter } = require('events')
 const pDefer = require('p-defer')
@@ -62,9 +61,6 @@ describe('addressBook', () => {
 
     it('replaces the stored content by default and emit change event', () => {
       const defer = pDefer()
-      sinon.spy(ab, '_replace')
-      sinon.spy(ab, '_add')
-
       const supportedMultiaddrs = [addr1, addr2]
 
       ee.once('change:multiaddrs', ({ peerId, multiaddrs }) => {
@@ -73,51 +69,15 @@ describe('addressBook', () => {
         defer.resolve()
       })
 
-      const multiaddrInfos = ab.set(peerId, supportedMultiaddrs)
+      ab.set(peerId, supportedMultiaddrs)
+      const multiaddrInfos = ab.get(peerId)
       const multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
-
-      expect(ab._replace.callCount).to.equal(1)
-      expect(ab._add.callCount).to.equal(0)
       expect(multiaddrs).to.have.deep.members(supportedMultiaddrs)
 
       return defer.promise
     })
 
-    it('adds the new content if replace is disabled and emit change event', () => {
-      const defer = pDefer()
-      sinon.spy(ab, '_replace')
-      sinon.spy(ab, '_add')
-
-      const supportedMultiaddrsA = [addr1, addr2]
-      const supportedMultiaddrsB = [addr3]
-      const finalMultiaddrs = supportedMultiaddrsA.concat(supportedMultiaddrsB)
-
-      let changeTrigger = 2
-      ee.on('change:multiaddrs', ({ multiaddrs }) => {
-        changeTrigger--
-        if (changeTrigger === 0 && arraysAreEqual(multiaddrs, finalMultiaddrs)) {
-          defer.resolve()
-        }
-      })
-
-      // Replace
-      let multiaddrInfos = ab.set(peerId, supportedMultiaddrsA)
-      let multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
-      expect(ab._replace.callCount).to.equal(1)
-      expect(ab._add.callCount).to.equal(0)
-      expect(multiaddrs).to.have.deep.members(supportedMultiaddrsA)
-
-      // Add
-      multiaddrInfos = ab.set(peerId, supportedMultiaddrsB, { replace: false })
-      multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
-      expect(ab._replace.callCount).to.equal(1)
-      expect(ab._add.callCount).to.equal(1)
-      expect(multiaddrs).to.have.deep.members(finalMultiaddrs)
-
-      return defer.promise
-    })
-
-    it('emits on set (replace) if not storing the exact same content', async () => {
+    it('emits on set if not storing the exact same content', async () => {
       const defer = pDefer()
 
       const supportedMultiaddrsA = [addr1, addr2]
@@ -135,14 +95,15 @@ describe('addressBook', () => {
       ab.set(peerId, supportedMultiaddrsA)
 
       // set 2 (same content)
-      const multiaddrInfos = ab.set(peerId, supportedMultiaddrsB)
+      ab.set(peerId, supportedMultiaddrsB)
+      const multiaddrInfos = ab.get(peerId)
       const multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
       expect(multiaddrs).to.have.deep.members(supportedMultiaddrsB)
 
       await defer.promise
     })
 
-    it('does not emit on set (replace) if it is storing the exact same content', async () => {
+    it('does not emit on set if it is storing the exact same content', async () => {
       const defer = pDefer()
 
       const supportedMultiaddrs = [addr1, addr2]
@@ -168,8 +129,69 @@ describe('addressBook', () => {
 
       await defer.promise
     })
+  })
 
-    it('emits on set (add) if the content to add not exists', async () => {
+  describe('addressBook.add', () => {
+    let ee, ab
+
+    beforeEach(() => {
+      ee = new EventEmitter()
+      ab = new AddressBook(ee)
+    })
+
+    afterEach(() => {
+      ee.removeAllListeners()
+    })
+
+    it('throwns invalid parameters error if invalid PeerId is provided', () => {
+      expect(() => {
+        ab.add('invalid peerId')
+      }).to.throw(ERR_INVALID_PARAMETERS)
+    })
+
+    it('throwns invalid parameters error if no addresses provided', () => {
+      expect(() => {
+        ab.add(peerId)
+      }).to.throw(ERR_INVALID_PARAMETERS)
+    })
+
+    it('throwns invalid parameters error if invalid multiaddrs are provided', () => {
+      expect(() => {
+        ab.add(peerId, 'invalid multiaddr')
+      }).to.throw(ERR_INVALID_PARAMETERS)
+    })
+
+    it('adds the new content and emits change event', () => {
+      const defer = pDefer()
+
+      const supportedMultiaddrsA = [addr1, addr2]
+      const supportedMultiaddrsB = [addr3]
+      const finalMultiaddrs = supportedMultiaddrsA.concat(supportedMultiaddrsB)
+
+      let changeTrigger = 2
+      ee.on('change:multiaddrs', ({ multiaddrs }) => {
+        changeTrigger--
+        if (changeTrigger === 0 && arraysAreEqual(multiaddrs, finalMultiaddrs)) {
+          defer.resolve()
+        }
+      })
+
+      // Replace
+      ab.set(peerId, supportedMultiaddrsA)
+      let multiaddrInfos = ab.get(peerId)
+      let multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
+      expect(multiaddrs).to.have.deep.members(supportedMultiaddrsA)
+
+      // Add
+      ab.add(peerId, supportedMultiaddrsB)
+      multiaddrInfos = ab.get(peerId)
+      multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
+      expect(multiaddrs).to.have.deep.members(finalMultiaddrs)
+
+      return defer.promise
+    })
+
+    it('emits on add if the content to add not exists', async () => {
       const defer = pDefer()
 
       const supportedMultiaddrsA = [addr1]
@@ -188,14 +210,15 @@ describe('addressBook', () => {
       ab.set(peerId, supportedMultiaddrsA)
 
       // set 2 (content already existing)
-      const multiaddrInfos = ab.set(peerId, supportedMultiaddrsB, { replace: false })
+      ab.add(peerId, supportedMultiaddrsB)
+      const multiaddrInfos = ab.get(peerId)
       const multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
       expect(multiaddrs).to.have.deep.members(finalMultiaddrs)
 
       await defer.promise
     })
 
-    it('does not emit on set (merge) if the content to add already exists', async () => {
+    it('does not emit on add if the content to add already exists', async () => {
       const defer = pDefer()
 
       const supportedMultiaddrsA = [addr1, addr2]
@@ -213,7 +236,7 @@ describe('addressBook', () => {
       ab.set(peerId, supportedMultiaddrsA)
 
       // set 2 (content already existing)
-      ab.set(peerId, supportedMultiaddrsB, { replace: false })
+      ab.add(peerId, supportedMultiaddrsB)
 
       // Wait 50ms for incorrect second event
       setTimeout(() => {

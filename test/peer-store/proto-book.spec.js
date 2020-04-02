@@ -4,7 +4,6 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
-const sinon = require('sinon')
 
 const { EventEmitter } = require('events')
 const pDefer = require('p-defer')
@@ -51,9 +50,6 @@ describe('protoBook', () => {
 
     it('replaces the stored content by default and emit change event', () => {
       const defer = pDefer()
-      sinon.spy(pb, '_replace')
-      sinon.spy(pb, '_add')
-
       const supportedProtocols = ['protocol1', 'protocol2']
 
       ee.once('change:protocols', ({ peerId, protocols }) => {
@@ -62,48 +58,14 @@ describe('protoBook', () => {
         defer.resolve()
       })
 
-      const protocols = pb.set(peerId, supportedProtocols)
-
-      expect(pb._replace.callCount).to.equal(1)
-      expect(pb._add.callCount).to.equal(0)
+      pb.set(peerId, supportedProtocols)
+      const protocols = pb.get(peerId)
       expect(protocols).to.have.deep.members(supportedProtocols)
 
       return defer.promise
     })
 
-    it('adds the new content if replace is disabled and emit change event', () => {
-      const defer = pDefer()
-      sinon.spy(pb, '_replace')
-      sinon.spy(pb, '_add')
-
-      const supportedProtocolsA = ['protocol1', 'protocol2']
-      const supportedProtocolsB = ['protocol3']
-      const finalProtocols = supportedProtocolsA.concat(supportedProtocolsB)
-
-      let changeTrigger = 2
-      ee.on('change:protocols', ({ protocols }) => {
-        changeTrigger--
-        if (changeTrigger === 0 && arraysAreEqual(protocols, finalProtocols)) {
-          defer.resolve()
-        }
-      })
-
-      // Replace
-      let protocols = pb.set(peerId, supportedProtocolsA)
-      expect(pb._replace.callCount).to.equal(1)
-      expect(pb._add.callCount).to.equal(0)
-      expect(protocols).to.have.deep.members(supportedProtocolsA)
-
-      // Add
-      protocols = pb.set(peerId, supportedProtocolsB, { replace: false })
-      expect(pb._replace.callCount).to.equal(1)
-      expect(pb._add.callCount).to.equal(1)
-      expect(protocols).to.have.deep.members(finalProtocols)
-
-      return defer.promise
-    })
-
-    it('emits on set (replace) if not storing the exact same content', () => {
+    it('emits on set if not storing the exact same content', () => {
       const defer = pDefer()
 
       const supportedProtocolsA = ['protocol1', 'protocol2']
@@ -121,13 +83,14 @@ describe('protoBook', () => {
       pb.set(peerId, supportedProtocolsA)
 
       // set 2 (same content)
-      const protocols = pb.set(peerId, supportedProtocolsB)
+      pb.set(peerId, supportedProtocolsB)
+      const protocols = pb.get(peerId)
       expect(protocols).to.have.deep.members(supportedProtocolsB)
 
       return defer.promise
     })
 
-    it('does not emit on set (replace) if it is storing the exact same content', () => {
+    it('does not emit on set if it is storing the exact same content', () => {
       const defer = pDefer()
 
       const supportedProtocols = ['protocol1', 'protocol2']
@@ -153,8 +116,61 @@ describe('protoBook', () => {
 
       return defer.promise
     })
+  })
 
-    it('emits on set (add) if the content to add not exists', () => {
+  describe('protoBook.add', () => {
+    let ee, pb
+
+    beforeEach(() => {
+      ee = new EventEmitter()
+      pb = new ProtoBook(ee)
+    })
+
+    afterEach(() => {
+      ee.removeAllListeners()
+    })
+
+    it('throwns invalid parameters error if invalid PeerId is provided', () => {
+      expect(() => {
+        pb.add('invalid peerId')
+      }).to.throw(ERR_INVALID_PARAMETERS)
+    })
+
+    it('throwns invalid parameters error if no protocols provided', () => {
+      expect(() => {
+        pb.add(peerId)
+      }).to.throw(ERR_INVALID_PARAMETERS)
+    })
+
+    it('adds the new content and emits change event', () => {
+      const defer = pDefer()
+
+      const supportedProtocolsA = ['protocol1', 'protocol2']
+      const supportedProtocolsB = ['protocol3']
+      const finalProtocols = supportedProtocolsA.concat(supportedProtocolsB)
+
+      let changeTrigger = 2
+      ee.on('change:protocols', ({ protocols }) => {
+        changeTrigger--
+        if (changeTrigger === 0 && arraysAreEqual(protocols, finalProtocols)) {
+          defer.resolve()
+        }
+      })
+
+      // Replace
+      pb.set(peerId, supportedProtocolsA)
+      let protocols = pb.get(peerId)
+      expect(protocols).to.have.deep.members(supportedProtocolsA)
+
+      // Add
+      pb.add(peerId, supportedProtocolsB)
+      protocols = pb.get(peerId)
+      expect(protocols).to.have.deep.members(finalProtocols)
+
+      return defer.promise
+    })
+
+    it('emits on add if the content to add not exists', () => {
       const defer = pDefer()
 
       const supportedProtocolsA = ['protocol1']
@@ -173,13 +189,14 @@ describe('protoBook', () => {
       pb.set(peerId, supportedProtocolsA)
 
       // set 2 (content already existing)
-      const protocols = pb.set(peerId, supportedProtocolsB, { replace: false })
+      pb.add(peerId, supportedProtocolsB)
+      const protocols = pb.get(peerId)
       expect(protocols).to.have.deep.members(finalProtocols)
 
       return defer.promise
     })
 
-    it('does not emit on set (merge) if the content to add already exists', () => {
+    it('does not emit on add if the content to add already exists', () => {
       const defer = pDefer()
 
       const supportedProtocolsA = ['protocol1', 'protocol2']
@@ -197,7 +214,7 @@ describe('protoBook', () => {
       pb.set(peerId, supportedProtocolsA)
 
       // set 2 (content already existing)
-      pb.set(peerId, supportedProtocolsB, { replace: false })
+      pb.add(peerId, supportedProtocolsB)
 
       // Wait 50ms for incorrect second event
       setTimeout(() => {
@@ -235,53 +252,6 @@ describe('protoBook', () => {
 
       const protocols = pb.get(peerId)
       expect(protocols).to.have.deep.members(supportedProtocols)
-    })
-  })
-
-  describe('protoBook.supports', () => {
-    let ee, pb
-
-    beforeEach(() => {
-      ee = new EventEmitter()
-      pb = new ProtoBook(ee)
-    })
-
-    it('throwns invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
-        pb.supports('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
-    })
-
-    it('throwns invalid parameters error if no protocols provided', () => {
-      expect(() => {
-        pb.supports(peerId)
-      }).to.throw(ERR_INVALID_PARAMETERS)
-    })
-
-    it('returns false if no records exist for the peer', () => {
-      const supportedProtocols = ['protocol1']
-      const supports = pb.supports(peerId, supportedProtocols[0])
-
-      expect(supports).to.equal(false)
-    })
-
-    it('returns true if the protocol is supported', () => {
-      const supportedProtocols = ['protocol1', 'protocol2']
-
-      pb.set(peerId, supportedProtocols)
-
-      const supports = pb.supports(peerId, supportedProtocols[1])
-      expect(supports).to.equal(true)
-    })
-
-    it('returns false if part of the protocols is supported', () => {
-      const supportedProtocols = ['protocol1', 'protocol2']
-      const otherProtocols = ['protocol3', 'protocol4']
-
-      pb.set(peerId, supportedProtocols)
-
-      const supports = pb.supports(peerId, [supportedProtocols[0], ...otherProtocols])
-      expect(supports).to.equal(false)
     })
   })
 

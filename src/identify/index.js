@@ -206,9 +206,6 @@ class IdentifyService {
       protocols: Array.from(this._protocols.keys())
     })
 
-    // TODO: should we add to peerStore.addressBook.set() here?
-    // We can have an inbound connection from an unkwown peer
-
     pipe(
       [message],
       lp.encode(),

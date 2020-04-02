@@ -111,7 +111,7 @@ class Dialer {
       }
     }
 
-    dialable.multiaddrs && this.peerStore.addressBook.set(dialable.id, Array.from(dialable.multiaddrs), { replace: false })
+    dialable.multiaddrs && this.peerStore.addressBook.add(dialable.id, Array.from(dialable.multiaddrs))
     const addrs = this.peerStore.addressBook.getMultiaddrsForPeer(dialable.id)
 
     return {

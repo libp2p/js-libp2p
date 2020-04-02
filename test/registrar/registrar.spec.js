@@ -165,8 +165,8 @@ describe('registrar', () => {
 
       // Add protocol to peer and update it
       peerInfo.protocols.add(multicodec)
-      peerStore.addressBook.set(peerInfo.id, peerInfo.multiaddrs.toArray(), { replace: false })
-      peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols), { replace: false })
+      peerStore.addressBook.add(peerInfo.id, peerInfo.multiaddrs.toArray())
+      peerStore.protoBook.add(peerInfo.id, Array.from(peerInfo.protocols))
 
       await onConnectDefer.promise
 

@@ -22,10 +22,8 @@ const {
 class AddressBook extends Book {
   /**
    * MultiaddrInfo object
-   * @typedef {Object} multiaddrInfo
+   * @typedef {Object} MultiaddrInfo
    * @property {Multiaddr} multiaddr peer multiaddr.
-   * @property {number} validity NOT USED YET
-   * @property {number} confidence NOT USED YET
    */
 
   /**
@@ -33,78 +31,40 @@ class AddressBook extends Book {
   * @param {EventEmitter} peerStore
   */
   constructor (peerStore) {
-    super(peerStore, 'change:multiaddrs', 'multiaddrs')
     /**
      * PeerStore Event emitter, used by the AddressBook to emit:
      * "peer" - emitted when a peer is discovered by the node.
      * "change:multiaddrs" - emitted when the known multiaddrs of a peer change.
      */
-    this._ps = peerStore
+    super(peerStore, 'change:multiaddrs', 'multiaddrs')
 
     /**
      * Map known peers to their known multiaddrs.
-     * @type {Map<string, Array<multiaddrInfo>}
+     * @type {Map<string, Array<MultiaddrInfo>>}
      */
     this.data = new Map()
   }
 
   /**
    * Set known addresses of a provided peer.
+   * @override
    * @param {PeerId} peerId
-   * @param {Array<Multiaddr>|Multiaddr} addresses
-   * @param {Object} [options]
-   * @param {boolean} [options.replace = true] whether addresses received replace stored ones or a unique union is performed.
-   * @returns {Array<multiaddrInfo>}
+   * @param {Array<Multiaddr>} addresses
+   * @returns {Map<string, Array<MultiaddrInfo>>}
    */
-  set (peerId, addresses, { replace = true } = {}) {
+  set (peerId, addresses) {
     if (!PeerId.isPeerId(peerId)) {
       log.error('peerId must be an instance of peer-id to store data')
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    if (!addresses) {
-      log.error('addresses must be provided to store data')
-      throw errcode(new Error('addresses must be provided'), ERR_INVALID_PARAMETERS)
-    }
-
-    if (!Array.isArray(addresses)) {
-      addresses = [addresses]
-    }
-
-    // create multiaddrInfo for each address
-    const multiaddrInfos = []
-    addresses.forEach((addr) => {
-      if (!multiaddr.isMultiaddr(addr)) {
-        log.error(`multiaddr ${addr} must be an instance of multiaddr`)
-        throw errcode(new Error(`multiaddr ${addr} must be an instance of multiaddr`), ERR_INVALID_PARAMETERS)
-      }
-
-      multiaddrInfos.push({
-        multiaddr: addr
-      })
-    })
-
-    if (replace) {
-      return this._replace(peerId, multiaddrInfos)
-    }
-
-    return this._add(peerId, multiaddrInfos)
-  }
-
-  /**
-   * Replace known addresses of a provided peer.
-   * If the peer is not known, it is set with the given addresses.
-   * @param {PeerId} peerId
-   * @param {Array<multiaddrInfo>} multiaddrInfos
-   * @returns {Array<multiaddrInfo>}
-   */
-  _replace (peerId, multiaddrInfos) {
-    const id = peerId.toString()
+    const multiaddrInfos = this._toMultiaddrInfos(addresses)
+    const id = peerId.toB58String()
     const rec = this.data.get(id)
 
     // Not replace multiaddrs
     if (!multiaddrInfos.length) {
-      return rec ? [...rec] : []
+      return this.data
     }
 
     // Already knows the peer
@@ -115,7 +75,7 @@ class AddressBook extends Book {
       // If yes, no changes needed!
       if (intersection.length === rec.length) {
         log(`the addresses provided to store are equal to the already stored for ${id}`)
-        return [...multiaddrInfos]
+        return this.data
       }
     }
 
@@ -138,18 +98,25 @@ class AddressBook extends Book {
       multiaddrs: multiaddrInfos.map((mi) => mi.multiaddr)
     })
 
-    return [...multiaddrInfos]
+    return this.data
   }
 
   /**
-   * Add new known addresses to a provided peer.
+   * Add known addresses of a provided peer.
    * If the peer is not known, it is set with the given addresses.
+   * @override
    * @param {PeerId} peerId
-   * @param {Array<multiaddrInfo>} multiaddrInfos
-   * @returns {Array<multiaddrInfo>}
+   * @param {Array<Multiaddr>} addresses
+   * @returns {Map<string, Array<MultiaddrInfo>>}
    */
-  _add (peerId, multiaddrInfos) {
-    const id = peerId.toString()
+  add (peerId, addresses) {
+    if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
+      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+    }
+
+    const multiaddrInfos = this._toMultiaddrInfos(addresses)
+    const id = peerId.toB58String()
     const rec = this.data.get(id)
 
     // Add recorded uniquely to the new array (Union)
@@ -163,7 +130,7 @@ class AddressBook extends Book {
     // The content is the same, no need to update.
     if (rec && rec.length === multiaddrInfos.length) {
       log(`the addresses provided to store are already stored for ${id}`)
-      return [...multiaddrInfos]
+      return this.data
     }
 
     this.data.set(id, multiaddrInfos)
@@ -186,7 +153,34 @@ class AddressBook extends Book {
       this._ps.emit('peer', peerInfo)
     }
 
-    return [...multiaddrInfos]
+    return this.data
+  }
+
+  /**
+   * Transforms received multiaddrs into MultiaddrInfo.
+   * @param {Array<Multiaddr>} addresses
+   * @returns {Array<MultiaddrInfo>}
+   */
+  _toMultiaddrInfos (addresses) {
+    if (!addresses) {
+      log.error('addresses must be provided to store data')
+      throw errcode(new Error('addresses must be provided'), ERR_INVALID_PARAMETERS)
+    }
+
+    // create MultiaddrInfo for each address
+    const multiaddrInfos = []
+    addresses.forEach((addr) => {
+      if (!multiaddr.isMultiaddr(addr)) {
+        log.error(`multiaddr ${addr} must be an instance of multiaddr`)
+        throw errcode(new Error(`multiaddr ${addr} must be an instance of multiaddr`), ERR_INVALID_PARAMETERS)
+      }
+
+      multiaddrInfos.push({
+        multiaddr: addr
+      })
+    })
+
+    return multiaddrInfos
   }
 
   /**
@@ -200,7 +194,7 @@ class AddressBook extends Book {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    const record = this.data.get(peerId.toString())
+    const record = this.data.get(peerId.toB58String())
 
     if (!record) {
       return undefined

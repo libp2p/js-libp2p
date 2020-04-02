@@ -292,7 +292,7 @@ class Libp2p extends EventEmitter {
       // TODO Inconsistency from: getDialable adds a set, while regular peerInfo uses a Multiaddr set
       // This should be handled on `peer-info` removal
       const multiaddrs = dialable.multiaddrs.toArray ? dialable.multiaddrs.toArray() : Array.from(dialable.multiaddrs)
-      this.peerStore.addressBook.set(dialable.id, multiaddrs, { replace: false })
+      this.peerStore.addressBook.add(dialable.id, multiaddrs)
 
       connection = this.registrar.getConnection(dialable)
     }
@@ -436,8 +436,8 @@ class Libp2p extends EventEmitter {
     }
 
     // TODO: once we deprecate peer-info, we should only set if we have data
-    this.peerStore.addressBook.set(peerInfo.id, peerInfo.multiaddrs.toArray(), { replace: false })
-    this.peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols), { replace: false })
+    this.peerStore.addressBook.add(peerInfo.id, peerInfo.multiaddrs.toArray())
+    this.peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols))
   }
 
   /**

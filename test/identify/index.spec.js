@@ -220,14 +220,15 @@ describe('Identify', () => {
       })
 
       sinon.spy(libp2p.identifyService, 'identify')
-      const peerStoreSpy = sinon.spy(libp2p.peerStore.addressBook, 'set')
+      const peerStoreSpySet = sinon.spy(libp2p.peerStore.addressBook, 'set')
+      const peerStoreSpyAdd = sinon.spy(libp2p.peerStore.addressBook, 'add')
 
       const connection = await libp2p.dialer.connectToPeer(remoteAddr)
       expect(connection).to.exist()
 
       // Wait for peer store to be updated
       // Dialer._createDialTarget (add), Identify (replace)
-      await pWaitFor(() => peerStoreSpy.callCount === 2)
+      await pWaitFor(() => peerStoreSpySet.callCount === 1 && peerStoreSpyAdd.callCount === 1)
       expect(libp2p.identifyService.identify.callCount).to.equal(1)
 
       // The connection should have no open streams

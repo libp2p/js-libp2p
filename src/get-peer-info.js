@@ -39,8 +39,8 @@ function getPeerInfo (peer, peerStore) {
   addr && peer.multiaddrs.add(addr)
 
   if (peerStore) {
-    peerStore.addressBook.set(peer.id, peer.multiaddrs.toArray(), { replace: false })
-    peerStore.protoBook.set(peer.id, Array.from(peer.protocols), { replace: false })
+    peerStore.addressBook.add(peer.id, peer.multiaddrs.toArray())
+    peerStore.protoBook.add(peer.id, Array.from(peer.protocols))
   }
 
   return peer

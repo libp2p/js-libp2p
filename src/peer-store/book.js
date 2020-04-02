@@ -12,8 +12,8 @@ const {
  * The Book is the skeleton for the PeerStore books.
  */
 class Book {
-  constructor (eventEmitter, eventName, eventProperty) {
-    this.eventEmitter = eventEmitter
+  constructor (peerStore, eventName, eventProperty) {
+    this._ps = peerStore
     this.eventName = eventName
     this.eventProperty = eventProperty
 
@@ -28,10 +28,17 @@ class Book {
    * Set known data of a provided peer.
    * @param {PeerId} peerId
    * @param {Array<Data>|Data} data
-   * @param {Object} [options]
-   * @param {boolean} [options.replace = true] wether data received replace stored the one or a unique union is performed.
    */
-  set (peerId, data, options) {
+  set (peerId, data) {
+    throw errcode(new Error('set must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
+  }
+
+  /**
+   * Add known data of a provided peer.
+   * @param {PeerId} peerId
+   * @param {Array<Data>|Data} data
+   */
+  add (peerId, data) {
     throw errcode(new Error('set must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
   }
 
@@ -45,7 +52,7 @@ class Book {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    const rec = this.data.get(peerId.toString())
+    const rec = this.data.get(peerId.toB58String())
 
     return rec ? [...rec] : undefined
   }
@@ -60,14 +67,14 @@ class Book {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    if (!this.data.delete(peerId.toString())) {
+    if (!this.data.delete(peerId.toB58String())) {
       return false
     }
 
     // TODO: Remove peerInfo and its usage on peer-info deprecate
     const peerInfo = new PeerInfo(peerId)
 
-    this.eventEmitter.emit(this.eventName, {
+    this._ps.emit(this.eventName, {
       peerId,
       peerInfo,
       [this.eventProperty]: []

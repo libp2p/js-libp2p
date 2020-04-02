@@ -17,16 +17,17 @@
   * [`contentRouting.put`](#contentroutingput)
   * [`contentRouting.get`](#contentroutingget)
   * [`contentRouting.getMany`](#contentroutinggetmany)
+  * [`peerStore.addressBook.add`](#peerstoreaddressbookadd)
   * [`peerStore.addressBook.delete`](#peerstoreaddressbookdelete)
   * [`peerStore.addressBook.get`](#peerstoreaddressbookget)
   * [`peerStore.addressBook.getMultiaddrsForPeer`](#peerstoreaddressbookgetmultiaddrsforpeer)
   * [`peerStore.addressBook.set`](#peerstoreaddressbookset)
+  * [`peerStore.protoBook.add`](#peerstoreprotobookadd)
   * [`peerStore.protoBook.delete`](#peerstoreprotobookdelete)
   * [`peerStore.protoBook.get`](#peerstoreprotobookget)
   * [`peerStore.protoBook.set`](#peerstoreprotobookset)
-  * [`peerStore.protoBook.supports`](#peerstoreprotobooksupports)
   * [`peerStore.delete`](#peerstoredelete)
-  * [`peerStore.find`](#peerstorefind)
+  * [`peerStore.get`](#peerstoreget)
   * [`peerStore.peers`](#peerstorepeers)
   * [`pubsub.getSubscribers`](#pubsubgetsubscribers)
   * [`pubsub.getTopics`](#pubsubgettopics)
@@ -55,13 +56,13 @@ Creates an instance of Libp2p.
 
 | Name | Type | Description |
 |------|------|-------------|
-| options | `Object` | libp2p options |
-| options.modules | `Array<Object>` | libp2p modules to use |
-| [options.config] | `Object` | libp2p modules configuration and core configuration |
-| [options.connectionManager] | `Object` | libp2p Connection Manager configuration |
-| [options.datastore] | `Object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) (in memory datastore will be used if not provided) |
-| [options.dialer] | `Object` | libp2p Dialer configuration
-| [options.metrics] | `Object` | libp2p Metrics configuration
+| options | `object` | libp2p options |
+| options.modules | `Array<object>` | libp2p modules to use |
+| [options.config] | `object` | libp2p modules configuration and core configuration |
+| [options.connectionManager] | `object` | libp2p Connection Manager configuration |
+| [options.datastore] | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) (in memory datastore will be used if not provided) |
+| [options.dialer] | `object` | libp2p Dialer configuration
+| [options.metrics] | `object` | libp2p Metrics configuration
 | [options.peerInfo] | [`PeerInfo`][peer-info] | peerInfo instance (it will be created if not provided) |
 
 For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
@@ -192,7 +193,7 @@ for (const [peerId, connections] of libp2p.connections) {
 | Name | Type | Description |
 |------|------|-------------|
 | peer | [`PeerInfo`][peer-info]\|[`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | The peer to dial. If a [`Multiaddr`][multiaddr] or its string is provided, it **must** include the peer id |
-| [options] | `Object` | dial options |
+| [options] | `object` | dial options |
 | [options.signal] | [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) | An `AbortSignal` instance obtained from an [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) that can be used to abort the connection before it completes |
 
 #### Returns
@@ -227,8 +228,8 @@ Dials to another peer in the network and selects a protocol to communicate with 
 | Name | Type | Description |
 |------|------|-------------|
 | peer | [`PeerInfo`][peer-info]\|[`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | The peer to dial. If a [`Multiaddr`][multiaddr] or its string is provided, it **must** include the peer id |
-| protocols | `String|Array<String>` |  A list of protocols (or single protocol) to negotiate with. Protocols are attempted in order until a match is made. (e.g '/ipfs/bitswap/1.1.0') |
-| [options] | `Object` | dial options |
+| protocols | `string|Array<string>` |  A list of protocols (or single protocol) to negotiate with. Protocols are attempted in order until a match is made. (e.g '/ipfs/bitswap/1.1.0') |
+| [options] | `object` | dial options |
 | [options.signal] | [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) | An `AbortSignal` instance obtained from an [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) that can be used to abort the connection before it completes |
 
 #### Returns
@@ -286,7 +287,7 @@ In the event of a new handler for the same protocol being added, the first one i
 
 | Name | Type | Description |
 |------|------|-------------|
-| protocols | `Array<String>|String` | protocols to register |
+| protocols | `Array<string>|string` | protocols to register |
 | handler | `function({ connection:*, stream:*, protocol:string })` | handler to call |
 
 
@@ -311,7 +312,7 @@ Unregisters all handlers with the given protocols
 
 | Name | Type | Description |
 |------|------|-------------|
-| protocols | `Array<String>|String` | protocols to unregister |
+| protocols | `Array<string>|string` | protocols to unregister |
 
 #### Example
 
@@ -356,7 +357,7 @@ Iterates over all peer routers in series to find the given peer. If the DHT is e
 | Name | Type | Description |
 |------|------|-------------|
 | peerId | [`PeerId`][peer-id] | ID of the peer to find |
-| options | `Object` | operation options |
+| options | `object` | operation options |
 | options.timeout | `number` | maximum time the query should run |
 
 #### Returns
@@ -384,7 +385,7 @@ Once a content router succeeds, the iteration will stop. If the DHT is enabled, 
 | Name | Type | Description |
 |------|------|-------------|
 | cid | [`CID`][cid] | cid to find |
-| options | `Object` | operation options |
+| options | `object` | operation options |
 | options.timeout | `number` | maximum time the query should run |
 | options.maxNumProviders | `number` | maximum number of providers to find |
 
@@ -438,9 +439,9 @@ Writes a value to a key in the DHT.
 
 | Name | Type | Description |
 |------|------|-------------|
-| key | `String` | key to add to the dht |
+| key | `string` | key to add to the dht |
 | value | `Buffer` | value to add to the dht |
-| [options] | `Object` | put options |
+| [options] | `object` | put options |
 | [options.minPeers] | `number` | minimum number of peers required to successfully put (default: closestPeers.length) |
 
 #### Returns
@@ -469,8 +470,8 @@ Queries the DHT for a value stored for a given key.
 
 | Name | Type | Description |
 |------|------|-------------|
-| key | `String` | key to get from the dht |
-| [options] | `Object` | get options |
+| key | `string` | key to get from the dht |
+| [options] | `object` | get options |
 | [options.timeout] | `number` | maximum time the query should run |
 
 #### Returns
@@ -498,9 +499,9 @@ Queries the DHT for the n values stored for the given key (without sorting).
 
 | Name | Type | Description |
 |------|------|-------------|
-| key | `String` | key to get from the dht |
+| key | `string` | key to get from the dht |
 | nvals | `number` | number of values aimed |
-| [options] | `Object` | get options |
+| [options] | `object` | get options |
 | [options.timeout] | `number` | maximum time the query should run |
 
 #### Returns
@@ -518,6 +519,31 @@ const key = '/key'
 const { from, val } = await libp2p.contentRouting.get(key)
 ```
 
+### peerStore.addressBook.Add
+
+Adds known `multiaddrs` of a given peer. If the peer is not known, it will be set with the provided multiaddrs.
+
+`peerStore.addressBook.add(peerId, multiaddrs)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to set |
+| multiaddrs | |`Array<Multiaddr>` | [`Multiaddrs`][multiaddr] to add |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Map<string, MultiaddrInfo>` | Map of known peers' string identifier with their relevant information [`MultiaddrInfo`](multiaddr-info) |
+
+#### Example
+
+```js
+peerStore.addressBook.add(peerId, multiaddr)
+```
+
 ### peerStore.addressBook.delete
 
 Delete the provided peer from the book.
@@ -528,7 +554,7 @@ Delete the provided peer from the book.
 
 | Name | Type | Description |
 |------|------|-------------|
-| peerId | `peerid` | peerId to remove |
+| peerId | [`PeerId`][peer-id] | peerId to remove |
 
 #### Returns
 
@@ -541,14 +567,14 @@ Delete the provided peer from the book.
 ```js
 peerStore.addressBook.delete(peerId)
 // false
-peerStore.addressBook.set(peerId, discoveredMultiaddr)
+peerStore.addressBook.set(peerId, multiaddr)
 peerStore.addressBook.delete(peerId)
 // true
 ```
 
 ### peerStore.addressBook.get
 
-Get the known `multiaddrInfos` of a provided peer.
+Get the known [`MultiaddrInfos`](multiaddr-info) of a provided peer.
 
 `peerStore.addressBook.get(peerId)`
 
@@ -556,20 +582,20 @@ Get the known `multiaddrInfos` of a provided peer.
 
 | Name | Type | Description |
 |------|------|-------------|
-| peerId | `peerid` | peerId to get |
+| peerId | [`PeerId`][peer-id] | peerId to get |
 
 #### Returns
 
 | Type | Description |
 |------|-------------|
-| `Array<multiaddrInfo>` | Array of peer's multiaddr with their relevant information |
+| `Array<MultiaddrInfo>` | Array of peer's multiaddr with their relevant information [`MultiaddrInfo`](multiaddr-info) |
 
 #### Example
 
 ```js
 peerStore.addressBook.get(peerId)
 // undefined
-peerStore.addressBook.set(peerId, discoveredMultiaddr)
+peerStore.addressBook.set(peerId, multiaddr)
 peerStore.addressBook.get(peerId)
 // [
 // {
@@ -585,7 +611,7 @@ peerStore.addressBook.get(peerId)
 
 ## peerStore.addressBook.getMultiaddrsForPeer
 
-Get the known `multiaddr` of a provided peer. All returned multiaddrs will include the encapsulated `PeerId` of the peer.
+Get the known `Multiaddr` of a provided peer. All returned multiaddrs will include the encapsulated `PeerId` of the peer.
 
 `peerStore.addressBook.getMultiaddrsForPeer(peerId)`
 
@@ -593,20 +619,20 @@ Get the known `multiaddr` of a provided peer. All returned multiaddrs will inclu
 
 | Name | Type | Description |
 |------|------|-------------|
-| peerId | `peerid` | peerId to get |
+| peerId | [`PeerId`][peer-id] | peerId to get |
 
 #### Returns
 
 | Type | Description |
 |------|-------------|
-| `Array<multiaddr>` | Array of peer's multiaddr |
+| `Array<Multiaddr>` | Array of peer's multiaddr |
 
 #### Example
 
 ```js
 peerStore.addressBook.getMultiaddrsForPeer(peerId)
 // undefined
-peerStore.addressBook.set(peerId, discoveredMultiaddr)
+peerStore.addressBook.set(peerId, multiaddr)
 peerStore.addressBook.getMultiaddrsForPeer(peerId)
 // [
 // /ip4/140.10.2.1/tcp/8000/p2p/QmW8rAgaaA6sRydK1k6vonShQME47aDxaFidbtMevWs73t
@@ -618,37 +644,50 @@ peerStore.addressBook.getMultiaddrsForPeer(peerId)
 
 Set known `multiaddrs` of a given peer.
 
-`peerStore.addressBook.set(peerId, multiaddrs, options)`
+`peerStore.addressBook.set(peerId, multiaddrs)`
 
 #### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| peerId | `peerid` | peerId to set |
-| multiaddrs | `multiaddr|Array<multiaddr>` | multiaddrs to store |
-| [options] | `object` | options to set |
-| [options.replace] | `Object` | replace stored data (if exists) or unique union (default: true) |
+| peerId | [`PeerId`][peer-id] | peerId to set |
+| multiaddrs | |`Array<Multiaddr>` | [`Multiaddrs`][multiaddr] to store |
 
 #### Returns
 
 | Type | Description |
 |------|-------------|
-| `Array<multiaddrInfo>` | Array of peer's multiaddr with their relevant information |
+| `Map<string, MultiaddrInfo>` | Map of known peers' string identifier with their relevant information [`MultiaddrInfo`](multiaddr-info) |
 
 #### Example
 
 ```js
-peerStore.addressBook.set(peerId, discoveredMultiaddr)
-// [
-// {
-//   multiaddr: /ip4/140.10.2.1/tcp/8000,
-//   ...
-// },
-// {
-//   multiaddr: /ip4/140.10.2.1/ws/8001
-//   ...
-// },
-// ]
+peerStore.addressBook.add(peerId, multiaddr)
+```
+
+### peerStore.protoBook.add
+
+Add known `protocols` of a given peer.
+
+`peerStore.protoBook.add(peerId, protocols)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to set |
+| protocols | `Array<string>` | protocols to add |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Map<string, string>` | Map of known peers' string identifier with their supported protocols |
+
+#### Example
+
+```js
+peerStore.protoBook.add(peerId, protocols)
 ```
 
 ### peerStore.protoBook.delete
@@ -661,7 +700,7 @@ Delete the provided peer from the book.
 
 | Name | Type | Description |
 |------|------|-------------|
-| peerId | `peerid` | peerId to remove |
+| peerId | [`PeerId`][peer-id] | peerId to remove |
 
 #### Returns
 
@@ -674,7 +713,7 @@ Delete the provided peer from the book.
 ```js
 peerStore.protoBook.delete(peerId)
 // false
-peerStore.protoBook.set(peerId, supportedProtocols)
+peerStore.protoBook.set(peerId, protocols)
 peerStore.protoBook.delete(peerId)
 // true
 ```
@@ -689,7 +728,7 @@ Get the known `protocols` of a provided peer.
 
 | Name | Type | Description |
 |------|------|-------------|
-| peerId | `peerid` | peerId to get |
+| peerId | [`PeerId`][peer-id] | peerId to get |
 
 #### Returns
 
@@ -702,7 +741,7 @@ Get the known `protocols` of a provided peer.
 ```js
 peerStore.protoBook.get(peerId)
 // undefined
-peerStore.protoBook.set(peerId, supportedProtocols)
+peerStore.protoBook.set(peerId, [ '/proto/1.0.0', '/proto/1.1.0' ])
 peerStore.protoBook.get(peerId)
 // [ '/proto/1.0.0', '/proto/1.1.0' ]
 ```
@@ -711,62 +750,25 @@ peerStore.protoBook.get(peerId)
 
 Set known `protocols` of a given peer.
 
-`peerStore.protoBook.set(peerId, protocols, options)`
+`peerStore.protoBook.set(peerId, protocols)`
 
 #### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| peerId | `peerid` | peerId to set |
-| protocols | `string|Array<string>` | protocols to store |
-| [options] | `object` | options to set |
-| [options.replace] | `Object` | replace stored data (if exists) or unique union (default: true) |
+| peerId | [`PeerId`][peer-id] | peerId to set |
+| protocols | `Array<string>` | protocols to store |
 
 #### Returns
 
 | Type | Description |
 |------|-------------|
-| `Array<string>` | Array of peer's supported protocols |
+| `Map<string, string>` | Map of known peers' string identifier with their supported protocols |
 
 #### Example
 
 ```js
-peerStore.protoBook.set(peerId, supportedProtocols)
-// [ '/proto/1.0.0', '/proto/1.1.0' ]
-```
-
-### peerStore.protoBook.supports
-
-Verify if the provided peer supports the given `protocols`.
-
-`peerStore.protoBook.supports(peerId, protocols)`
-
-#### Parameters
-
-| Name | Type | Description |
-|------|------|-------------|
-| peerId | `peerid` | peerId to get |
-| protocols | `string|Array<string>` | protocols to verify |
-
-#### Returns
-
-| Type | Description |
-|------|-------------|
-| `boolean` | true if found and removed |
-
-#### Example
-
-```js
-const supportedProtocols = [ '/proto/1.0.0', '/proto/1.1.0' ]
-peerStore.protoBook.supports(peerId, supportedProtocols)
-// false
-peerStore.protoBook.supports(peerId, supportedProtocols[0])
-// false
-peerStore.protoBook.set(peerId, supportedProtocols)
-peerStore.protoBook.supports(peerId, supportedProtocols)
-// true
-peerStore.protoBook.supports(peerId, supportedProtocols[0])
-// true
+peerStore.protoBook.set(peerId, protocols)
 ```
 
 ### peerStore.delete
@@ -779,7 +781,7 @@ Delete the provided peer from every book.
 
 | Name | Type | Description |
 |------|------|-------------|
-| peerId | `peerid` | peerId to remove |
+| peerId | [`PeerId`][peer-id] | peerId to remove |
 
 #### Returns
 
@@ -792,45 +794,47 @@ Delete the provided peer from every book.
 ```js
 peerStore.delete(peerId)
 // false
-peerStore.addressBook.set(peerId, discoveredMultiaddrs)
-peerStore.protoBook.set(peerId, supportedProtocols)
+peerStore.addressBook.set(peerId, multiaddrs)
+peerStore.protoBook.set(peerId, protocols)
 peerStore.delete(peerId)
 // true
 peerStore.delete(peerId2)
 // false
-peerStore.addressBook.set(peerId2, discoveredMultiaddrs)
+peerStore.addressBook.set(peerId2, multiaddrs)
 peerStore.delete(peerId2)
 // true
 ```
 
-### peerStore.find
+### peerStore.get
 
-Find the stored information of a given peer.
+Get the stored information of a given peer.
 
-`peerStore.find(peerId)`
+`peerStore.get(peerId)`
 
 #### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| peerId | `peerid` | peerId to find |
+| peerId | [`PeerId`][peer-id] | peerId to get |
 
 #### Returns
 
 | Type | Description |
 |------|-------------|
-| `peerInfo` | Peer information of the provided peer |
+| [`PeerInfo`][peer-info] | Peer information of the provided peer |
+
+TODO: change when `peer-info` is deprecated to new pointer
 
 #### Example
 
 ```js
-peerStore.find(peerId)
+peerStore.get(peerId)
 // false
-peerStore.addressBook.set(peerId, discoveredMultiaddrs)
-peerStore.protoBook.set(peerId, supportedProtocols)
-peerStore.find(peerId)
+peerStore.addressBook.set(peerId, multiaddrs)
+peerStore.protoBook.set(peerId, protocols)
+peerStore.get(peerId)
 // {
-//   multiaddrInfos: [...],
+//   MultiaddrInfos: [...],
 //   protocols: [...]
 // }
 ```
@@ -839,7 +843,7 @@ peerStore.find(peerId)
 
 Get all the stored information of every peer.
 
-`peerStore.peers()`
+`peerStore.peers`
 
 #### Returns
 
@@ -847,12 +851,12 @@ Get all the stored information of every peer.
 |------|-------------|
 | `Map<string, PeerInfo>` | Peer information of every peer |
 
-TODO: change when `peer-info` is deprecated (breaking change)
+TODO: change when `peer-info` is deprecated to new pointer (breaking change)
 
 #### Example
 
 ```js
-for (peer of peerStore.peers().values()) {
+for (let [peerIdString, peerInfo] of peerStore.peers.entries()) {
   // peerInfo instance
 }
 ```
@@ -873,7 +877,7 @@ Gets a list of the peer-ids that are subscribed to one topic.
 
 | Type | Description |
 |------|-------------|
-| `Array<String>` | peer-id subscribed to the topic |
+| `Array<string>` | peer-id subscribed to the topic |
 
 #### Example
 
@@ -891,7 +895,7 @@ Gets a list of topics the node is subscribed to.
 
 | Type | Description |
 |------|-------------|
-| `Array<String>` | topics the node is subscribed to |
+| `Array<string>` | topics the node is subscribed to |
 
 #### Example
 
@@ -938,7 +942,7 @@ Subscribes the given handler to a pubsub topic.
 | Name | Type | Description |
 |------|------|-------------|
 | topic | `string` | topic to subscribe |
-| handler | `function({ from: String, data: Buffer, seqno: Buffer, topicIDs: Array<String>, signature: Buffer, key: Buffer })` | handler for new data on topic |
+| handler | `function({ from: string, data: Buffer, seqno: Buffer, topicIDs: Array<string>, signature: Buffer, key: Buffer })` | handler for new data on topic |
 
 #### Returns
 
@@ -968,7 +972,7 @@ Unsubscribes the given handler from a pubsub topic. If no handler is provided, a
 | Name | Type | Description |
 |------|------|-------------|
 | topic | `string` | topic to unsubscribe |
-| handler | `function(<Object>)` | handler subscribed |
+| handler | `function(<object>)` | handler subscribed |
 
 #### Returns
 
@@ -1137,9 +1141,9 @@ This event will be triggered anytime we are disconnected from another peer, rega
     - `dataReceived<string>`: The stringified value of total incoming data for this stat.
     - `dataSent<string>`: The stringified value of total outgoing data for this stat.
     - `movingAverages<object>`: The properties are dependent on the configuration of the moving averages interval. Defaults are listed here.
-      - `['60000']<Number>`: The calculated moving average at a 1 minute interval.
-      - `['300000']<Number>`: The calculated moving average at a 5 minute interval.
-      - `['900000']<Number>`: The calculated moving average at a 15 minute interval.
+      - `['60000']<number>`: The calculated moving average at a 1 minute interval.
+      - `['300000']<number>`: The calculated moving average at a 5 minute interval.
+      - `['900000']<number>`: The calculated moving average at a 15 minute interval.
   - `snapshot<object>`: A getter that returns a clone of the raw stats.
     - `dataReceived<BigNumber>`: A [`BigNumber`](https://github.com/MikeMcl/bignumber.js/) of the amount of incoming data
     - `dataSent<BigNumber>`: A [`BigNumber`](https://github.com/MikeMcl/bignumber.js/) of the amount of outgoing data
@@ -1148,6 +1152,7 @@ This event will be triggered anytime we are disconnected from another peer, rega
     - `['300000']<MovingAverage>`: The [MovingAverage](https://www.npmjs.com/package/moving-averages) at a 5 minute interval.
     - `['900000']<MovingAverage>`: The [MovingAverage](https://www.npmjs.com/package/moving-averages) at a 15 minute interval.
 
+[multiaddr-info]: https://github.com/libp2p/js-libp2p/tree/master/src/peer-store/address-book.js
 [cid]: https://github.com/multiformats/js-cid
 [connection]: https://github.com/libp2p/js-interfaces/tree/master/src/connection
 [multiaddr]: https://github.com/multiformats/js-multiaddr
