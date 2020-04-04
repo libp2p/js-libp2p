@@ -399,7 +399,7 @@ class Libp2p extends EventEmitter {
    * Called when libp2p has started and before it returns
    * @private
    */
-  _onDidStart () {
+  async _onDidStart () {
     this._isStarted = true
 
     this.connectionManager.start()
@@ -410,7 +410,7 @@ class Libp2p extends EventEmitter {
     })
 
     // Peer discovery
-    this._setupPeerDiscovery()
+    await this._setupPeerDiscovery()
 
     // Once we start, emit and dial any peers we may have already discovered
     for (const peerInfo of this.peerStore.peers.values()) {
