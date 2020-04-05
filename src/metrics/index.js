@@ -110,12 +110,11 @@ class Metrics {
    * @param {PeerId} peerId
    */
   onPeerDisconnected (peerId) {
-    const idString = peerId.toB58String()
-    const peerStats = this._peerStats.get(idString)
+    const peerStats = this._peerStats.get(peerId)
     if (peerStats) {
       peerStats.stop()
-      this._peerStats.delete(idString)
-      this._oldPeers.set(idString, peerStats)
+      this._peerStats.delete(peerId)
+      this._oldPeers.set(peerId, peerStats)
     }
   }
 
