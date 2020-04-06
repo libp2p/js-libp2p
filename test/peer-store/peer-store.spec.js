@@ -23,7 +23,7 @@ describe('peer-store', () => {
   let peerIds
   before(async () => {
     peerIds = await peerUtils.createPeerId({
-      number: 3
+      number: 4
     })
   })
 
@@ -64,18 +64,23 @@ describe('peer-store', () => {
       peerStore.addressBook.set(peerIds[1], [addr3])
       peerStore.protoBook.set(peerIds[1], [proto2, proto3])
 
-      // Add peer2 { addr4 }
+      // Add peer2 with { addr4 }
       peerStore.addressBook.set(peerIds[2], [addr4])
+
+      // Add peer3 with { addr4 } and { proto2 }
+      peerStore.addressBook.set(peerIds[3], [addr4])
+      peerStore.protoBook.set(peerIds[3], [proto2])
     })
 
     it('has peers', () => {
       const peers = peerStore.peers
 
-      expect(peers.size).to.equal(3)
+      expect(peers.size).to.equal(4)
       expect(Array.from(peers.keys())).to.have.members([
         peerIds[0].toB58String(),
         peerIds[1].toB58String(),
-        peerIds[2].toB58String()
+        peerIds[2].toB58String(),
+        peerIds[3].toB58String()
       ])
     })
 
@@ -84,8 +89,8 @@ describe('peer-store', () => {
       expect(deleted).to.equal(true)
 
       const peers = peerStore.peers
-      expect(peers.size).to.equal(2)
-      expect(Array.from(peers.keys())).to.not.have.members([peerIds[0].toString()])
+      expect(peers.size).to.equal(3)
+      expect(Array.from(peers.keys())).to.not.have.members([peerIds[0].toB58String()])
     })
 
     it('returns true on deleting a stored peer which is only on one book', () => {
@@ -93,7 +98,7 @@ describe('peer-store', () => {
       expect(deleted).to.equal(true)
 
       const peers = peerStore.peers
-      expect(peers.size).to.equal(2)
+      expect(peers.size).to.equal(3)
     })
 
     it('finds the stored information of a peer in all its books', () => {
@@ -112,6 +117,34 @@ describe('peer-store', () => {
 
       const peerMultiaddrs = peerInfo.multiaddrInfos.map((mi) => mi.multiaddr)
       expect(peerMultiaddrs).to.have.members([addr4])
+    })
+
+    it('can find all the peers supporting a protocol', () => {
+      const peerSupporting2 = []
+
+      for (const [, peerInfo] of peerStore.peers.entries()) {
+        if (peerInfo.protocols.has(proto2)) {
+          peerSupporting2.push(peerInfo)
+        }
+      }
+
+      expect(peerSupporting2.length).to.eql(2)
+      expect(peerSupporting2[0].id.toB58String()).to.eql(peerIds[1].toB58String())
+      expect(peerSupporting2[1].id.toB58String()).to.eql(peerIds[3].toB58String())
+    })
+
+    it('can find all the peers listening on a given address', () => {
+      const peerListenint4 = []
+
+      for (const [, peerInfo] of peerStore.peers.entries()) {
+        if (peerInfo.multiaddrs.has(addr4)) {
+          peerListenint4.push(peerInfo)
+        }
+      }
+
+      expect(peerListenint4.length).to.eql(2)
+      expect(peerListenint4[0].id.toB58String()).to.eql(peerIds[2].toB58String())
+      expect(peerListenint4[1].id.toB58String()).to.eql(peerIds[3].toB58String())
     })
   })
 })
