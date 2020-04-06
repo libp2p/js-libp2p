@@ -4,7 +4,7 @@ const multibase = require('multibase')
 const sha = require('multihashing-async/src/sha')
 
 module.exports = (keysProtobuf, randomBytes, crypto) => {
-  crypto = crypto || require('./crypto')(randomBytes)
+  crypto = crypto || require('./secp256k1')(randomBytes)
 
   class Secp256k1PublicKey {
     constructor (key) {
