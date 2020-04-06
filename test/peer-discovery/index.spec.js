@@ -9,12 +9,12 @@ const sinon = require('sinon')
 const defer = require('p-defer')
 const mergeOptions = require('merge-options')
 
-const MulticastDNS = require('libp2p-mdns')
 const WebRTCStar = require('libp2p-webrtc-star')
 
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options.browser')
 const { createPeerInfo } = require('../utils/creators/peer')
+const { EventEmitter } = require('events')
 
 describe('peer discovery', () => {
   describe('basic functions', () => {
@@ -51,17 +51,22 @@ describe('peer discovery', () => {
     })
 
     it('should ignore self on discovery', async () => {
+      const mockDiscovery = new EventEmitter()
+      mockDiscovery.tag = 'mock'
+      mockDiscovery.start = () => {}
+      mockDiscovery.stop = () => {}
+
       libp2p = new Libp2p(mergeOptions(baseOptions, {
         peerInfo,
         modules: {
-          peerDiscovery: [MulticastDNS]
+          peerDiscovery: [mockDiscovery]
         }
       }))
 
       await libp2p.start()
       const discoverySpy = sinon.spy()
       libp2p.on('peer:discovery', discoverySpy)
-      libp2p._discovery.get('mdns').emit('peer', libp2p.peerInfo)
+      libp2p._discovery.get('mock').emit('peer', libp2p.peerInfo)
 
       expect(discoverySpy.called).to.eql(false)
     })
