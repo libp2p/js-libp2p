@@ -171,9 +171,7 @@ main()
 
 The [`generateKeyPair`](#generatekeypairtype-bits), [`marshalPublicKey`](#marshalpublickeykey-type), and [`marshalPrivateKey`](#marshalprivatekeykey-type) functions accept a string `type` argument.
 
-Currently the `'RSA'` and `'ed25519'` types are supported, although ed25519 keys support only signing and verification of messages.  For encryption / decryption support, RSA keys should be used.
-
-Installing the [libp2p-crypto-secp256k1](https://github.com/libp2p/js-libp2p-crypto-secp256k1) module adds support for the `'secp256k1'` type, which supports ECDSA signatures using the secp256k1 elliptic curve popularized by Bitcoin.  This module is not installed by default, and should be explicitly depended on if your project requires secp256k1 support.
+Currently the `'RSA'`, `'ed25519'`, and `secp256k1` types are supported, although ed25519 and secp256k1 keys support only signing and verification of messages.  For encryption / decryption support, RSA keys should be used.
 
 ### `crypto.keys.generateKeyPair(type, bits)`
 
@@ -232,7 +230,7 @@ Resolves to an object of the form:
 
 ### `crypto.keys.marshalPublicKey(key, [type])`
 
-- `key: keys.rsa.RsaPublicKey | keys.ed25519.Ed25519PublicKey | require('libp2p-crypto-secp256k1').Secp256k1PublicKey`
+- `key: keys.rsa.RsaPublicKey | keys.ed25519.Ed25519PublicKey | keys.secp256k1.Secp256k1PublicKey`
 - `type: String`, see [Supported Key Types](#supported-key-types) above.  Defaults to 'rsa'.
 
 Returns `Buffer`
@@ -249,7 +247,7 @@ Converts a protobuf serialized public key into its representative object.
 
 ### `crypto.keys.marshalPrivateKey(key, [type])`
 
-- `key: keys.rsa.RsaPrivateKey | keys.ed25519.Ed25519PrivateKey | require('libp2p-crypto-secp256k1').Secp256k1PrivateKey`
+- `key: keys.rsa.RsaPrivateKey | keys.ed25519.Ed25519PrivateKey | keys.secp256k1.Secp256k1PrivateKey`
 - `type: String`, see [Supported Key Types](#supported-key-types) above.
 
 Returns `Buffer`
