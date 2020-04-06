@@ -458,10 +458,10 @@ class Libp2p extends EventEmitter {
   /**
    * Initializes and starts peer discovery services
    *
+   * @async
    * @private
-   * @returns {Promise<void>}
    */
-  _setupPeerDiscovery () {
+  async _setupPeerDiscovery () {
     const setupService = (DiscoveryService) => {
       let config = {
         enabled: true // on by default
@@ -500,7 +500,7 @@ class Libp2p extends EventEmitter {
       }
     }
 
-    return Promise.all(Array.from(this._discovery.values(), d => d.start()))
+    await Promise.all(Array.from(this._discovery.values(), d => d.start()))
   }
 }
 
