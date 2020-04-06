@@ -1,3 +1,13 @@
+<a name="0.27.5"></a>
+## [0.27.5](https://github.com/libp2p/js-libp2p/compare/v0.27.4...v0.27.5) (2020-04-06)
+
+
+### Bug Fixes
+
+* await peer discovery start in libp2p start ([#600](https://github.com/libp2p/js-libp2p/issues/600)) ([bd7fd0f](https://github.com/libp2p/js-libp2p/commit/bd7fd0f))
+
+
+
 <a name="0.27.4"></a>
 ## [0.27.4](https://github.com/libp2p/js-libp2p/compare/v0.27.3...v0.27.4) (2020-03-31)
 
