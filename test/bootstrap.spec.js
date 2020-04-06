@@ -5,10 +5,12 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 
+const mafmt = require('mafmt')
+const PeerId = require('peer-id')
+
 const Bootstrap = require('../src')
 const peerList = require('./default-peers')
 const partialValidPeerList = require('./some-invalid-peers')
-const mafmt = require('mafmt')
 
 describe('bootstrap', () => {
   it('should throw if no peer list is provided', () => {
@@ -42,10 +44,11 @@ describe('bootstrap', () => {
     })
 
     const p = new Promise((resolve) => {
-      r.once('peer', (peer) => {
-        const peerList = peer.multiaddrs.toArray()
-        expect(peerList.length).to.eq(1)
-        expect(mafmt.IPFS.matches(peerList[0].toString())).equals(true)
+      r.once('peer', ({ id, multiaddrs }) => {
+        expect(id).to.exist()
+        expect(PeerId.isPeerId(id)).to.eql(true)
+        expect(multiaddrs.length).to.eq(1)
+        expect(mafmt.IPFS.matches(multiaddrs[0].toString())).equals(true)
         resolve()
       })
     })
