@@ -1,3 +1,37 @@
+<a name="0.17.6"></a>
+## [0.17.6](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.5...v0.17.6) (2020-04-07)
+
+
+### Bug Fixes
+
+* add buffer and update deps ([#25](https://github.com/libp2p/js-libp2p-crypto/issues/25)) ([35f196e](https://github.com/libp2p/js-libp2p-crypto/commit/35f196e))
+* **unmarshal:** provide only one arg to callback ([#17](https://github.com/libp2p/js-libp2p-crypto/issues/17)) ([3bb8451](https://github.com/libp2p/js-libp2p-crypto/commit/3bb8451))
+* circular circular dep -> DI ([0dcf1a6](https://github.com/libp2p/js-libp2p-crypto/commit/0dcf1a6))
+* update deps and repo setup ([cfdcbe0](https://github.com/libp2p/js-libp2p-crypto/commit/cfdcbe0))
+
+
+### Features
+
+* add `id()` method to Secp256k1PrivateKey ([f4dbd62](https://github.com/libp2p/js-libp2p-crypto/commit/f4dbd62))
+* initial implementation ([4c36aeb](https://github.com/libp2p/js-libp2p-crypto/commit/4c36aeb))
+* next libp2p-crypto ([#4](https://github.com/libp2p/js-libp2p-crypto/issues/4)) ([4ee48a7](https://github.com/libp2p/js-libp2p-crypto/commit/4ee48a7))
+* use async await ([#18](https://github.com/libp2p/js-libp2p-crypto/issues/18)) ([1974eb9](https://github.com/libp2p/js-libp2p-crypto/commit/1974eb9))
+
+
+### BREAKING CHANGES
+
+* Callback support has been dropped in favor of async/await.
+
+* feat: use async/await
+
+This PR changes this module to remove callbacks and use async/await. The API is unchanged aside from the obvious removal of the `callback` parameter.
+
+refs https://github.com/ipfs/js-ipfs/issues/1670
+
+* fix: use latest multihashing-async as it is all promises now
+
+
+
 <a name="0.17.5"></a>
 ## [0.17.5](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.4...v0.17.5) (2020-03-24)
 
