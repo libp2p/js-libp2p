@@ -7,13 +7,13 @@ chai.use(require('chai-spies'))
 const expect = chai.expect
 
 const PubsubBaseProtocol = require('../src')
-const { createPeerInfo, mockRegistrar } = require('./utils')
+const { createPeerId, mockRegistrar } = require('./utils')
 
 describe('should validate instance parameters', () => {
-  let peerInfo
+  let peerId
 
   before(async () => {
-    peerInfo = await createPeerInfo()
+    peerId = await createPeerId()
   })
 
   it('should throw if no debugName is provided', () => {
@@ -30,7 +30,7 @@ describe('should validate instance parameters', () => {
     }).to.throw()
   })
 
-  it('should throw if no peerInfo is provided', () => {
+  it('should throw if no peerId is provided', () => {
     expect(() => {
       new PubsubBaseProtocol({ // eslint-disable-line no-new
         debugName: 'pubsub',
@@ -39,12 +39,12 @@ describe('should validate instance parameters', () => {
     }).to.throw()
   })
 
-  it('should throw if an invalid peerInfo is provided', () => {
+  it('should throw if an invalid peerId is provided', () => {
     expect(() => {
       new PubsubBaseProtocol({ // eslint-disable-line no-new
         debugName: 'pubsub',
         multicodecs: '/pubsub/1.0.0',
-        peerInfo: 'fake-peer-info'
+        peerId: 'fake-peer-id'
       })
     }).to.throw()
   })
@@ -54,7 +54,7 @@ describe('should validate instance parameters', () => {
       new PubsubBaseProtocol({ // eslint-disable-line no-new
         debugName: 'pubsub',
         multicodecs: '/pubsub/1.0.0',
-        peerInfo: peerInfo
+        peerId: peerId
       })
     }).to.throw()
   })
@@ -64,7 +64,7 @@ describe('should validate instance parameters', () => {
       new PubsubBaseProtocol({ // eslint-disable-line no-new
         debugName: 'pubsub',
         multicodecs: '/pubsub/1.0.0',
-        peerInfo: peerInfo,
+        peerId: peerId,
         registrar: mockRegistrar
       })
     }).not.to.throw()

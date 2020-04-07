@@ -5,23 +5,22 @@ const pipe = require('it-pipe')
 const DuplexPair = require('it-pair/duplex')
 
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 
 const PubsubBaseProtocol = require('../../src')
 const { message } = require('../../src')
 
-exports.createPeerInfo = async () => {
+exports.createPeerId = async () => {
   const peerId = await PeerId.create({ bits: 1024 })
 
-  return PeerInfo.create(peerId)
+  return peerId
 }
 
 class PubsubImplementation extends PubsubBaseProtocol {
-  constructor (protocol, peerInfo, registrar) {
+  constructor (protocol, peerId, registrar) {
     super({
       debugName: 'libp2p:pubsub',
       multicodecs: protocol,
-      peerInfo: peerInfo,
+      peerId: peerId,
       registrar: registrar
     })
   }
