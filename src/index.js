@@ -49,6 +49,10 @@ class Bootstrap extends EventEmitter {
    * Emit each address in the list as a PeerInfo.
    */
   _discoverBootstrapPeers () {
+    if (!this._timer) {
+      return
+    }
+
     this._list.forEach((candidate) => {
       if (!mafmt.P2P.matches(candidate)) {
         return log.error('Invalid multiaddr')
@@ -73,10 +77,8 @@ class Bootstrap extends EventEmitter {
    * Stop emitting events.
    */
   stop () {
-    if (this._timer) {
-      clearInterval(this._timer)
-      this._timer = null
-    }
+    clearInterval(this._timer)
+    this._timer = null
   }
 }
 
