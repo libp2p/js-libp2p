@@ -38,7 +38,12 @@ function getPeerInfo (peer, peerStore) {
 
   addr && peer.multiaddrs.add(addr)
 
-  return peerStore ? peerStore.put(peer) : peer
+  if (peerStore) {
+    peerStore.addressBook.add(peer.id, peer.multiaddrs.toArray())
+    peerStore.protoBook.add(peer.id, Array.from(peer.protocols))
+  }
+
+  return peer
 }
 
 /**

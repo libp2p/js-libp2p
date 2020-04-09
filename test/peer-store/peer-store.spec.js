@@ -4,185 +4,147 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
-const sinon = require('sinon')
-
-const pDefer = require('p-defer')
 
 const PeerStore = require('../../src/peer-store')
 const multiaddr = require('multiaddr')
+
 const peerUtils = require('../utils/creators/peer')
 
-const addr = multiaddr('/ip4/127.0.0.1/tcp/8000')
+const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
+const addr2 = multiaddr('/ip4/127.0.0.1/tcp/8001')
+const addr3 = multiaddr('/ip4/127.0.0.1/tcp/8002')
+const addr4 = multiaddr('/ip4/127.0.0.1/tcp/8003')
+
+const proto1 = '/protocol1'
+const proto2 = '/protocol2'
+const proto3 = '/protocol3'
 
 describe('peer-store', () => {
-  let peerStore
-
-  beforeEach(() => {
-    peerStore = new PeerStore()
+  let peerIds
+  before(async () => {
+    peerIds = await peerUtils.createPeerId({
+      number: 4
+    })
   })
 
-  it('should add a new peer and emit it when it does not exist', async () => {
-    const defer = pDefer()
+  describe('empty books', () => {
+    let peerStore
 
-    sinon.spy(peerStore, 'put')
-    sinon.spy(peerStore, 'add')
-    sinon.spy(peerStore, 'update')
-
-    const [peerInfo] = await peerUtils.createPeerInfo()
-
-    peerStore.on('peer', (peer) => {
-      expect(peer).to.exist()
-      defer.resolve()
+    beforeEach(() => {
+      peerStore = new PeerStore()
     })
-    peerStore.put(peerInfo)
 
-    // Wait for peerStore to emit the peer
-    await defer.promise
+    it('has an empty map of peers', () => {
+      const peers = peerStore.peers
+      expect(peers.size).to.equal(0)
+    })
 
-    expect(peerStore.put.callCount).to.equal(1)
-    expect(peerStore.add.callCount).to.equal(1)
-    expect(peerStore.update.callCount).to.equal(0)
+    it('returns false on trying to delete a non existant peerId', () => {
+      const deleted = peerStore.delete(peerIds[0])
+      expect(deleted).to.equal(false)
+    })
+
+    it('returns undefined on trying to find a non existant peerId', () => {
+      const peerInfo = peerStore.find(peerIds[0])
+      expect(peerInfo).to.not.exist()
+    })
   })
 
-  it('should update peer when it is already in the store', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo()
+  describe('previously populated books', () => {
+    let peerStore
 
-    // Put the peer in the store
-    peerStore.put(peerInfo)
+    beforeEach(() => {
+      peerStore = new PeerStore()
 
-    sinon.spy(peerStore, 'add')
-    sinon.spy(peerStore, 'update')
+      // Add peer0 with { addr1, addr2 } and { proto1 }
+      peerStore.addressBook.set(peerIds[0], [addr1, addr2])
+      peerStore.protoBook.set(peerIds[0], [proto1])
 
-    // When updating, peer event must not be emitted
-    peerStore.on('peer', () => {
-      throw new Error('should not emit twice')
+      // Add peer1 with { addr3 } and { proto2, proto3 }
+      peerStore.addressBook.set(peerIds[1], [addr3])
+      peerStore.protoBook.set(peerIds[1], [proto2, proto3])
+
+      // Add peer2 with { addr4 }
+      peerStore.addressBook.set(peerIds[2], [addr4])
+
+      // Add peer3 with { addr4 } and { proto2 }
+      peerStore.addressBook.set(peerIds[3], [addr4])
+      peerStore.protoBook.set(peerIds[3], [proto2])
     })
-    // If no multiaddrs change, the event should not be emitted
-    peerStore.on('change:multiaddrs', () => {
-      throw new Error('should not emit change:multiaddrs')
+
+    it('has peers', () => {
+      const peers = peerStore.peers
+
+      expect(peers.size).to.equal(4)
+      expect(Array.from(peers.keys())).to.have.members([
+        peerIds[0].toB58String(),
+        peerIds[1].toB58String(),
+        peerIds[2].toB58String(),
+        peerIds[3].toB58String()
+      ])
     })
-    // If no protocols change, the event should not be emitted
-    peerStore.on('change:protocols', () => {
-      throw new Error('should not emit change:protocols')
+
+    it('returns true on deleting a stored peer', () => {
+      const deleted = peerStore.delete(peerIds[0])
+      expect(deleted).to.equal(true)
+
+      const peers = peerStore.peers
+      expect(peers.size).to.equal(3)
+      expect(Array.from(peers.keys())).to.not.have.members([peerIds[0].toB58String()])
     })
 
-    peerStore.put(peerInfo)
+    it('returns true on deleting a stored peer which is only on one book', () => {
+      const deleted = peerStore.delete(peerIds[2])
+      expect(deleted).to.equal(true)
 
-    expect(peerStore.add.callCount).to.equal(0)
-    expect(peerStore.update.callCount).to.equal(1)
-  })
+      const peers = peerStore.peers
+      expect(peers.size).to.equal(3)
+    })
 
-  it('should emit the "change:multiaddrs" event when a peer has new multiaddrs', async () => {
-    const defer = pDefer()
-    const [createdPeerInfo] = await peerUtils.createPeerInfo()
-
-    // Put the peer in the store
-    peerStore.put(createdPeerInfo)
-
-    // When updating, "change:multiaddrs" event must not be emitted
-    peerStore.on('change:multiaddrs', ({ peerInfo, multiaddrs }) => {
+    it('finds the stored information of a peer in all its books', () => {
+      const peerInfo = peerStore.find(peerIds[0])
       expect(peerInfo).to.exist()
-      expect(peerInfo.id).to.eql(createdPeerInfo.id)
-      expect(peerInfo.protocols).to.eql(createdPeerInfo.protocols)
-      expect(multiaddrs).to.exist()
-      expect(multiaddrs).to.eql(createdPeerInfo.multiaddrs.toArray())
-      defer.resolve()
-    })
-    // If no protocols change, the event should not be emitted
-    peerStore.on('change:protocols', () => {
-      throw new Error('should not emit change:protocols')
+      expect(peerInfo.protocols).to.have.members([proto1])
+
+      const peerMultiaddrs = peerInfo.multiaddrInfos.map((mi) => mi.multiaddr)
+      expect(peerMultiaddrs).to.have.members([addr1, addr2])
     })
 
-    createdPeerInfo.multiaddrs.add(addr)
-    peerStore.put(createdPeerInfo)
-
-    // Wait for peerStore to emit the event
-    await defer.promise
-  })
-
-  it('should emit the "change:protocols" event when a peer has new protocols', async () => {
-    const defer = pDefer()
-    const [createdPeerInfo] = await peerUtils.createPeerInfo()
-
-    // Put the peer in the store
-    peerStore.put(createdPeerInfo)
-
-    // If no multiaddrs change, the event should not be emitted
-    peerStore.on('change:multiaddrs', () => {
-      throw new Error('should not emit change:multiaddrs')
-    })
-    // When updating, "change:protocols" event must be emitted
-    peerStore.on('change:protocols', ({ peerInfo, protocols }) => {
+    it('finds the stored information of a peer that is not present in all its books', () => {
+      const peerInfo = peerStore.find(peerIds[2])
       expect(peerInfo).to.exist()
-      expect(peerInfo.id).to.eql(createdPeerInfo.id)
-      expect(peerInfo.multiaddrs).to.eql(createdPeerInfo.multiaddrs)
-      expect(protocols).to.exist()
-      expect(protocols).to.eql(Array.from(createdPeerInfo.protocols))
-      defer.resolve()
+      expect(peerInfo.protocols.length).to.eql(0)
+
+      const peerMultiaddrs = peerInfo.multiaddrInfos.map((mi) => mi.multiaddr)
+      expect(peerMultiaddrs).to.have.members([addr4])
     })
 
-    createdPeerInfo.protocols.add('/new-protocol/1.0.0')
-    peerStore.put(createdPeerInfo)
+    it('can find all the peers supporting a protocol', () => {
+      const peerSupporting2 = []
 
-    // Wait for peerStore to emit the event
-    await defer.promise
+      for (const [, peerInfo] of peerStore.peers.entries()) {
+        if (peerInfo.protocols.has(proto2)) {
+          peerSupporting2.push(peerInfo)
+        }
+      }
+
+      expect(peerSupporting2.length).to.eql(2)
+      expect(peerSupporting2[0].id.toB58String()).to.eql(peerIds[1].toB58String())
+      expect(peerSupporting2[1].id.toB58String()).to.eql(peerIds[3].toB58String())
+    })
+
+    it('can find all the peers listening on a given address', () => {
+      const peerListenint4 = []
+
+      for (const [, peerInfo] of peerStore.peers.entries()) {
+        if (peerInfo.multiaddrs.has(addr4)) {
+          peerListenint4.push(peerInfo)
+        }
+      }
+
+      expect(peerListenint4.length).to.eql(2)
+      expect(peerListenint4[0].id.toB58String()).to.eql(peerIds[2].toB58String())
+      expect(peerListenint4[1].id.toB58String()).to.eql(peerIds[3].toB58String())
+    })
   })
-
-  it('should be able to retrieve a peer from store through its b58str id', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo()
-    const id = peerInfo.id
-
-    let retrievedPeer = peerStore.get(id)
-    expect(retrievedPeer).to.not.exist()
-
-    // Put the peer in the store
-    peerStore.put(peerInfo)
-
-    retrievedPeer = peerStore.get(id)
-    expect(retrievedPeer).to.exist()
-    expect(retrievedPeer.id).to.equal(peerInfo.id)
-    expect(retrievedPeer.multiaddrs).to.eql(peerInfo.multiaddrs)
-    expect(retrievedPeer.protocols).to.eql(peerInfo.protocols)
-  })
-
-  it('should be able to remove a peer from store through its b58str id', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo()
-    const id = peerInfo.id
-
-    let removed = peerStore.remove(id)
-    expect(removed).to.eql(false)
-
-    // Put the peer in the store
-    peerStore.put(peerInfo)
-    expect(peerStore.peers.size).to.equal(1)
-
-    removed = peerStore.remove(id)
-    expect(removed).to.eql(true)
-    expect(peerStore.peers.size).to.equal(0)
-  })
-
-  it('should be able to get the multiaddrs for a peer', async () => {
-    const [peerInfo, relayInfo] = await peerUtils.createPeerInfo({ number: 2 })
-    const id = peerInfo.id
-    const ma1 = multiaddr('/ip4/127.0.0.1/tcp/4001')
-    const ma2 = multiaddr('/ip4/127.0.0.1/tcp/4002/ws')
-    const ma3 = multiaddr(`/ip4/127.0.0.1/tcp/4003/ws/p2p/${relayInfo.id.toB58String()}/p2p-circuit`)
-
-    peerInfo.multiaddrs.add(ma1)
-    peerInfo.multiaddrs.add(ma2)
-    peerInfo.multiaddrs.add(ma3)
-
-    const multiaddrs = peerStore.multiaddrsForPeer(peerInfo)
-    const expectedAddrs = [
-      ma1.encapsulate(`/p2p/${id.toB58String()}`),
-      ma2.encapsulate(`/p2p/${id.toB58String()}`),
-      ma3.encapsulate(`/p2p/${id.toB58String()}`)
-    ]
-
-    expect(multiaddrs).to.eql(expectedAddrs)
-  })
-})
-
-describe('peer-store on discovery', () => {
-  // TODO: implement with discovery
 })
