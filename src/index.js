@@ -59,7 +59,7 @@ class Libp2p extends EventEmitter {
       localPeer: this.peerInfo.id,
       metrics: this.metrics,
       onConnection: (connection) => {
-        const peerInfo = this.peerStore.put(new PeerInfo(connection.remotePeer), { silent: true })
+        const peerInfo = new PeerInfo(connection.remotePeer)
         this.registrar.onConnect(peerInfo, connection)
         this.connectionManager.onConnect(connection)
         this.emit('peer:connect', peerInfo)
@@ -289,7 +289,11 @@ class Libp2p extends EventEmitter {
     const dialable = Dialer.getDialable(peer)
     let connection
     if (PeerInfo.isPeerInfo(dialable)) {
-      this.peerStore.put(dialable, { silent: true })
+      // TODO Inconsistency from: getDialable adds a set, while regular peerInfo uses a Multiaddr set
+      // This should be handled on `peer-info` removal
+      const multiaddrs = dialable.multiaddrs.toArray ? dialable.multiaddrs.toArray() : Array.from(dialable.multiaddrs)
+      this.peerStore.addressBook.add(dialable.id, multiaddrs)
+
       connection = this.registrar.getConnection(dialable)
     }
 
@@ -328,7 +332,7 @@ class Libp2p extends EventEmitter {
   async ping (peer) {
     const peerInfo = await getPeerInfo(peer, this.peerStore)
 
-    return ping(this, peerInfo)
+    return ping(this, peerInfo.id)
   }
 
   /**
@@ -430,7 +434,10 @@ class Libp2p extends EventEmitter {
       log.error(new Error(codes.ERR_DISCOVERED_SELF))
       return
     }
-    this.peerStore.put(peerInfo)
+
+    // TODO: once we deprecate peer-info, we should only set if we have data
+    this.peerStore.addressBook.add(peerInfo.id, peerInfo.multiaddrs.toArray())
+    this.peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols))
   }
 
   /**

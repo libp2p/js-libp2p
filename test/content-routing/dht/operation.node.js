@@ -43,7 +43,8 @@ describe('DHT subsystem operates correctly', () => {
         remoteLibp2p.start()
       ])
 
-      remAddr = libp2p.peerStore.multiaddrsForPeer(remotePeerInfo)[0]
+      libp2p.peerStore.addressBook.set(remotePeerInfo.id, [remoteListenAddr])
+      remAddr = libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerInfo.id)[0]
     })
 
     afterEach(() => Promise.all([
@@ -67,7 +68,6 @@ describe('DHT subsystem operates correctly', () => {
       const value = Buffer.from('world')
 
       await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
-
       await Promise.all([
         pWaitFor(() => libp2p._dht.routingTable.size === 1),
         pWaitFor(() => remoteLibp2p._dht.routingTable.size === 1)
@@ -98,7 +98,8 @@ describe('DHT subsystem operates correctly', () => {
       await libp2p.start()
       await remoteLibp2p.start()
 
-      remAddr = libp2p.peerStore.multiaddrsForPeer(remotePeerInfo)[0]
+      libp2p.peerStore.addressBook.set(remotePeerInfo.id, [remoteListenAddr])
+      remAddr = libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerInfo.id)[0]
     })
 
     afterEach(() => Promise.all([

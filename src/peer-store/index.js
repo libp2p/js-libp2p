@@ -9,244 +9,212 @@ const { EventEmitter } = require('events')
 
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
+
+const AddressBook = require('./address-book')
+const ProtoBook = require('./proto-book')
+
 const {
   ERR_INVALID_PARAMETERS
 } = require('../errors')
 
 /**
- * Responsible for managing known peers, as well as their addresses and metadata
- * @fires PeerStore#peer Emitted when a peer is connected to this node
- * @fires PeerStore#change:protocols
- * @fires PeerStore#change:multiaddrs
+ * Responsible for managing known peers, as well as their addresses, protocols and metadata.
+ * @fires PeerStore#peer Emitted when a new peer is added.
+ * @fires PeerStore#change:protocols Emitted when a known peer supports a different set of protocols.
+ * @fires PeerStore#change:multiaddrs Emitted when a known peer has a different set of multiaddrs.
  */
 class PeerStore extends EventEmitter {
+  /**
+   * PeerInfo object
+   * @typedef {Object} peerInfo
+   * @property {Array<multiaddrInfo>} multiaddrsInfos peer's information of the multiaddrs.
+   * @property {Array<string>} protocols peer's supported protocols.
+   */
+
   constructor () {
     super()
 
     /**
-     * Map of peers
-     *
-     * @type {Map<string, PeerInfo>}
+     * AddressBook containing a map of peerIdStr to multiaddrsInfo
      */
-    this.peers = new Map()
+    this.addressBook = new AddressBook(this)
 
-    // TODO: Track ourselves. We should split `peerInfo` up into its pieces so we get better
-    // control and observability. This will be the initial step for removing PeerInfo
-    // https://github.com/libp2p/go-libp2p-core/blob/master/peerstore/peerstore.go
-    // this.addressBook = new Map()
-    // this.protoBook = new Map()
+    /**
+     * ProtoBook containing a map of peerIdStr to supported protocols.
+     */
+    this.protoBook = new ProtoBook(this)
   }
 
+  // TODO: Temporary adapter for modules using PeerStore
+  // This should be removed under a breaking change
   /**
-   * Stores the peerInfo of a new peer.
-   * If already exist, its info is updated. If `silent` is set to
-   * true, no 'peer' event will be emitted. This can be useful if you
-   * are already in the process of dialing the peer. The peer is technically
-   * known, but may not have been added to the PeerStore yet.
+   * Stores the peerInfo of a new peer on each book.
    * @param {PeerInfo} peerInfo
    * @param {object} [options]
-   * @param {boolean} [options.silent] (Default=false)
+   * @param {boolean} [options.replace = true]
    * @return {PeerInfo}
    */
-  put (peerInfo, options = { silent: false }) {
-    if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
+  put (peerInfo, options) {
+    const multiaddrs = peerInfo.multiaddrs.toArray()
+    const protocols = Array.from(peerInfo.protocols || new Set())
+
+    this.addressBook.set(peerInfo.id, multiaddrs, options)
+    this.protoBook.set(peerInfo.id, protocols, options)
+
+    const peer = this.find(peerInfo.id)
+    const pInfo = new PeerInfo(peerInfo.id)
+
+    if (!peer) {
+      return pInfo
     }
 
-    let peer
-    // Already know the peer?
-    if (this.has(peerInfo.id)) {
-      peer = this.update(peerInfo)
-    } else {
-      peer = this.add(peerInfo)
+    peer.protocols.forEach((p) => pInfo.protocols.add(p))
+    peer.multiaddrInfos.forEach((mi) => pInfo.multiaddrs.add(mi.multiaddr))
 
-      // Emit the peer if silent = false
-      !options.silent && this.emit('peer', peerInfo)
-    }
-    return peer
+    return pInfo
   }
 
+  // TODO: Temporary adapter for modules using PeerStore
+  // This should be removed under a breaking change
   /**
-   * Add a new peer to the store.
-   * @param {PeerInfo} peerInfo
-   * @return {PeerInfo}
-   */
-  add (peerInfo) {
-    if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
-    }
-
-    // Create new instance and add values to it
-    const newPeerInfo = new PeerInfo(peerInfo.id)
-
-    peerInfo.multiaddrs.forEach((ma) => newPeerInfo.multiaddrs.add(ma))
-    peerInfo.protocols.forEach((p) => newPeerInfo.protocols.add(p))
-
-    const connectedMa = peerInfo.isConnected()
-    connectedMa && newPeerInfo.connect(connectedMa)
-
-    const peerProxy = new Proxy(newPeerInfo, {
-      set: (obj, prop, value) => {
-        if (prop === 'multiaddrs') {
-          this.emit('change:multiaddrs', {
-            peerInfo: obj,
-            multiaddrs: value.toArray()
-          })
-        } else if (prop === 'protocols') {
-          this.emit('change:protocols', {
-            peerInfo: obj,
-            protocols: Array.from(value)
-          })
-        }
-        return Reflect.set(...arguments)
-      }
-    })
-
-    this.peers.set(peerInfo.id.toB58String(), peerProxy)
-    return peerProxy
-  }
-
-  /**
-   * Updates an already known peer.
-   * @param {PeerInfo} peerInfo
-   * @return {PeerInfo}
-   */
-  update (peerInfo) {
-    if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
-    }
-
-    const id = peerInfo.id.toB58String()
-    const recorded = this.peers.get(id)
-
-    // pass active connection state
-    const ma = peerInfo.isConnected()
-    if (ma) {
-      recorded.connect(ma)
-    }
-
-    // Verify new multiaddrs
-    // TODO: better track added and removed multiaddrs
-    const multiaddrsIntersection = [
-      ...recorded.multiaddrs.toArray()
-    ].filter((m) => peerInfo.multiaddrs.has(m))
-
-    if (multiaddrsIntersection.length !== peerInfo.multiaddrs.size ||
-      multiaddrsIntersection.length !== recorded.multiaddrs.size) {
-      for (const ma of peerInfo.multiaddrs.toArray()) {
-        recorded.multiaddrs.add(ma)
-      }
-
-      this.emit('change:multiaddrs', {
-        peerInfo: recorded,
-        multiaddrs: recorded.multiaddrs.toArray()
-      })
-    }
-
-    // Update protocols
-    // TODO: better track added and removed protocols
-    const protocolsIntersection = new Set(
-      [...recorded.protocols].filter((p) => peerInfo.protocols.has(p))
-    )
-
-    if (protocolsIntersection.size !== peerInfo.protocols.size ||
-      protocolsIntersection.size !== recorded.protocols.size) {
-      for (const protocol of peerInfo.protocols) {
-        recorded.protocols.add(protocol)
-      }
-
-      this.emit('change:protocols', {
-        peerInfo: recorded,
-        protocols: Array.from(recorded.protocols)
-      })
-    }
-
-    // Add the public key if missing
-    if (!recorded.id.pubKey && peerInfo.id.pubKey) {
-      recorded.id.pubKey = peerInfo.id.pubKey
-    }
-
-    return recorded
-  }
-
-  /**
-   * Get the info to the given id.
-   * @param {PeerId|string} peerId b58str id
+   * Get the info of the given id.
+   * @param {peerId} peerId
    * @returns {PeerInfo}
    */
   get (peerId) {
-    // TODO: deprecate this and just accept `PeerId` instances
-    if (PeerId.isPeerId(peerId)) {
-      peerId = peerId.toB58String()
-    }
+    const peer = this.find(peerId)
 
-    return this.peers.get(peerId)
+    const pInfo = new PeerInfo(peerId)
+    peer.protocols.forEach((p) => pInfo.protocols.add(p))
+    peer.multiaddrInfos.forEach((mi) => pInfo.multiaddrs.add(mi.multiaddr))
+
+    return pInfo
   }
 
+  // TODO: Temporary adapter for modules using PeerStore
+  // This should be removed under a breaking change
   /**
    * Has the info to the given id.
-   * @param {PeerId|string} peerId b58str id
+   * @param {PeerId} peerId
    * @returns {boolean}
    */
   has (peerId) {
-    // TODO: deprecate this and just accept `PeerId` instances
-    if (PeerId.isPeerId(peerId)) {
-      peerId = peerId.toB58String()
-    }
-
-    return this.peers.has(peerId)
+    return Boolean(this.find(peerId))
   }
 
+  // TODO: Temporary adapter for modules using PeerStore
+  // This should be removed under a breaking change
   /**
-   * Removes the Peer with the matching `peerId` from the PeerStore
-   * @param {PeerId|string} peerId b58str id
+   * Removes the peer provided.
+   * @param {PeerId} peerId
    * @returns {boolean} true if found and removed
    */
   remove (peerId) {
-    // TODO: deprecate this and just accept `PeerId` instances
-    if (PeerId.isPeerId(peerId)) {
-      peerId = peerId.toB58String()
-    }
-
-    return this.peers.delete(peerId)
+    return this.delete(peerId)
   }
 
+  // TODO: Temporary adapter for modules using PeerStore
+  // This should be removed under a breaking change
   /**
    * Completely replaces the existing peers metadata with the given `peerInfo`
    * @param {PeerInfo} peerInfo
    * @returns {void}
    */
   replace (peerInfo) {
-    if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
-    }
-
-    this.remove(peerInfo.id.toB58String())
-    this.add(peerInfo)
-
-    // This should be cleaned up in PeerStore v2
-    this.emit('change:multiaddrs', {
-      peerInfo,
-      multiaddrs: peerInfo.multiaddrs.toArray()
-    })
-    this.emit('change:protocols', {
-      peerInfo,
-      protocols: Array.from(peerInfo.protocols)
-    })
+    this.put(peerInfo)
   }
 
+  // TODO: Temporary adapter for modules using PeerStore
+  // This should be removed under a breaking change
   /**
    * Returns the known multiaddrs for a given `PeerInfo`. All returned multiaddrs
    * will include the encapsulated `PeerId` of the peer.
-   * @param {PeerInfo} peer
+   * @param {PeerInfo} peerInfo
    * @returns {Array<Multiaddr>}
    */
-  multiaddrsForPeer (peer) {
-    return this.put(peer, true).multiaddrs.toArray().map(addr => {
-      const idString = addr.getPeerId()
-      if (idString && idString === peer.id.toB58String()) return addr
-      return addr.encapsulate(`/p2p/${peer.id.toB58String()}`)
-    })
+  multiaddrsForPeer (peerInfo) {
+    return this.addressBook.getMultiaddrsForPeer(peerInfo.id)
+  }
+
+  /**
+   * Get all the stored information of every peer.
+   * @returns {Map<string, peerInfo>}
+   */
+  get peers () {
+    const peerInfos = new Map()
+
+    // AddressBook
+    for (const [idStr, multiaddrInfos] of this.addressBook.data.entries()) {
+      // TODO: Remove peerInfo and its usage on peer-info deprecate
+      const peerInfo = new PeerInfo(PeerId.createFromCID(idStr))
+
+      multiaddrInfos.forEach((mi) => peerInfo.multiaddrs.add((mi.multiaddr)))
+
+      const protocols = this.protoBook.data.get(idStr) || []
+      protocols.forEach((p) => peerInfo.protocols.add(p))
+
+      peerInfos.set(idStr, peerInfo)
+      // TODO
+      // peerInfos.set(idStr, {
+      //   id: PeerId.createFromCID(idStr),
+      //   multiaddrInfos,
+      //   protocols: this.protoBook.data.get(idStr) || []
+      // })
+    }
+
+    // ProtoBook
+    for (const [idStr, protocols] of this.protoBook.data.entries()) {
+      // TODO: Remove peerInfo and its usage on peer-info deprecate
+      const peerInfo = peerInfos.get(idStr)
+
+      if (!peerInfo) {
+        const peerInfo = new PeerInfo(PeerId.createFromCID(idStr))
+
+        protocols.forEach((p) => peerInfo.protocols.add(p))
+        peerInfos.set(idStr, peerInfo)
+        // peerInfos.set(idStr, {
+        //   id: PeerId.createFromCID(idStr),
+        //   multiaddrInfos: [],
+        //   protocols: protocols
+        // })
+      }
+    }
+
+    return peerInfos
+  }
+
+  /**
+   * Delete the information of the given peer in every book.
+   * @param {PeerId} peerId
+   * @returns {boolean} true if found and removed
+   */
+  delete (peerId) {
+    const addressesDeleted = this.addressBook.delete(peerId)
+    const protocolsDeleted = this.protoBook.delete(peerId)
+    return addressesDeleted || protocolsDeleted
+  }
+
+  /**
+   * Find the stored information of a given peer.
+   * @param {PeerId} peerId
+   * @returns {peerInfo}
+   */
+  find (peerId) {
+    if (!PeerId.isPeerId(peerId)) {
+      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+    }
+
+    const multiaddrInfos = this.addressBook.get(peerId)
+    const protocols = this.protoBook.get(peerId)
+
+    if (!multiaddrInfos && !protocols) {
+      return undefined
+    }
+
+    return {
+      multiaddrInfos: multiaddrInfos || [],
+      protocols: protocols || []
+    }
   }
 }
 

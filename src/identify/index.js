@@ -6,7 +6,6 @@ const lp = require('it-length-prefixed')
 const pipe = require('it-pipe')
 const { collect, take, consume } = require('streaming-iterables')
 
-const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
 const { toBuffer } = require('it-buffer')
@@ -27,39 +26,6 @@ const errCode = require('err-code')
 const { codes } = require('../errors')
 
 class IdentifyService {
-  /**
-   * Replaces the multiaddrs on the given `peerInfo`,
-   * with the provided `multiaddrs`
-   * @param {PeerInfo} peerInfo
-   * @param {Array<Multiaddr>|Array<Buffer>} multiaddrs
-   */
-  static updatePeerAddresses (peerInfo, multiaddrs) {
-    if (multiaddrs && multiaddrs.length > 0) {
-      peerInfo.multiaddrs.clear()
-      multiaddrs.forEach(ma => {
-        try {
-          peerInfo.multiaddrs.add(ma)
-        } catch (err) {
-          log.error('could not add multiaddr', err)
-        }
-      })
-    }
-  }
-
-  /**
-   * Replaces the protocols on the given `peerInfo`,
-   * with the provided `protocols`
-   * @static
-   * @param {PeerInfo} peerInfo
-   * @param {Array<string>} protocols
-   */
-  static updatePeerProtocols (peerInfo, protocols) {
-    if (protocols && protocols.length > 0) {
-      peerInfo.protocols.clear()
-      protocols.forEach(proto => peerInfo.protocols.add(proto))
-    }
-  }
-
   /**
    * Takes the `addr` and converts it to a Multiaddr if possible
    * @param {Buffer|String} addr
@@ -181,7 +147,7 @@ class IdentifyService {
     } = message
 
     const id = await PeerId.createFromPubKey(publicKey)
-    const peerInfo = new PeerInfo(id)
+
     if (connection.remotePeer.toB58String() !== id.toB58String()) {
       throw errCode(new Error('identified peer does not match the expected peer'), codes.ERR_INVALID_PEER)
     }
@@ -189,11 +155,10 @@ class IdentifyService {
     // Get the observedAddr if there is one
     observedAddr = IdentifyService.getCleanMultiaddr(observedAddr)
 
-    // Copy the listenAddrs and protocols
-    IdentifyService.updatePeerAddresses(peerInfo, listenAddrs)
-    IdentifyService.updatePeerProtocols(peerInfo, protocols)
+    // Update peers data in PeerStore
+    this.registrar.peerStore.addressBook.set(id, listenAddrs.map((addr) => multiaddr(addr)))
+    this.registrar.peerStore.protoBook.set(id, protocols)
 
-    this.registrar.peerStore.replace(peerInfo)
     // TODO: Track our observed address so that we can score it
     log('received observed address of %s', observedAddr)
   }
@@ -273,20 +238,16 @@ class IdentifyService {
       return log.error('received invalid message', err)
     }
 
-    // Update the listen addresses
-    const peerInfo = new PeerInfo(connection.remotePeer)
-
+    // Update peers data in PeerStore
+    const id = connection.remotePeer
     try {
-      IdentifyService.updatePeerAddresses(peerInfo, message.listenAddrs)
+      this.registrar.peerStore.addressBook.set(id, message.listenAddrs.map((addr) => multiaddr(addr)))
     } catch (err) {
       return log.error('received invalid listen addrs', err)
     }
 
     // Update the protocols
-    IdentifyService.updatePeerProtocols(peerInfo, message.protocols)
-
-    // Update the peer in the PeerStore
-    this.registrar.peerStore.replace(peerInfo)
+    this.registrar.peerStore.protoBook.set(id, message.protocols)
   }
 }
 

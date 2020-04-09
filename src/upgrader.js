@@ -317,7 +317,7 @@ class Upgrader {
    * Attempts to encrypt the incoming `connection` with the provided `cryptos`.
    * @private
    * @async
-   * @param {PeerId} localPeer The initiators PeerInfo
+   * @param {PeerId} localPeer The initiators PeerId
    * @param {*} connection
    * @param {Map<string, Crypto>} cryptos
    * @returns {CryptoResult} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
@@ -346,7 +346,7 @@ class Upgrader {
    * The first `Crypto` module to succeed will be used
    * @private
    * @async
-   * @param {PeerId} localPeer The initiators PeerInfo
+   * @param {PeerId} localPeer The initiators PeerId
    * @param {*} connection
    * @param {PeerId} remotePeerId
    * @param {Map<string, Crypto>} cryptos
