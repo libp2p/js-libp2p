@@ -5,7 +5,6 @@ const errCode = require('err-code')
 const TimeoutController = require('timeout-abort-controller')
 const anySignal = require('any-signal')
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const debug = require('debug')
 const log = debug('libp2p:dialer')
 log.error = debug('libp2p:dialer:error')
@@ -62,13 +61,13 @@ class Dialer {
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    *
-   * @param {PeerInfo|Multiaddr} peer The peer to dial
+   * @param {PeerId|Multiaddr} peerId The peer to dial
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] An AbortController signal
    * @returns {Promise<Connection>}
    */
-  async connectToPeer (peer, options = {}) {
-    const dialTarget = this._createDialTarget(peer)
+  async connectToPeer (peerId, options = {}) {
+    const dialTarget = this._createDialTarget(peerId)
     if (dialTarget.addrs.length === 0) {
       throw errCode(new Error('The dial request has no addresses'), codes.ERR_NO_VALID_ADDRESSES)
     }
@@ -100,7 +99,7 @@ class Dialer {
    * Creates a DialTarget. The DialTarget is used to create and track
    * the DialRequest to a given peer.
    * @private
-   * @param {PeerInfo|Multiaddr} peer A PeerId or Multiaddr
+   * @param {PeerId|Multiaddr} peer A PeerId or Multiaddr
    * @returns {DialTarget}
    */
   _createDialTarget (peer) {
@@ -111,7 +110,10 @@ class Dialer {
         addrs: [dialable]
       }
     }
-    const addrs = this.peerStore.multiaddrsForPeer(dialable)
+
+    dialable.multiaddrs && this.peerStore.addressBook.add(dialable.id, Array.from(dialable.multiaddrs))
+    const addrs = this.peerStore.addressBook.getMultiaddrsForPeer(dialable.id)
+
     return {
       id: dialable.id.toB58String(),
       addrs
@@ -180,20 +182,26 @@ class Dialer {
   }
 
   /**
+   * PeerInfo object
+   * @typedef {Object} peerInfo
+   * @property {Multiaddr} multiaddr peer multiaddr.
+   * @property {PeerId} id peer id.
+   */
+
+  /**
    * Converts the given `peer` into a `PeerInfo` or `Multiaddr`.
    * @static
-   * @param {PeerInfo|PeerId|Multiaddr|string} peer
-   * @returns {PeerInfo|Multiaddr}
+   * @param {PeerId|Multiaddr|string} peer
+   * @returns {peerInfo|Multiaddr}
    */
   static getDialable (peer) {
-    if (PeerInfo.isPeerInfo(peer)) return peer
     if (typeof peer === 'string') {
       peer = multiaddr(peer)
     }
 
-    let addr
+    let addrs
     if (multiaddr.isMultiaddr(peer)) {
-      addr = peer
+      addrs = new Set([peer]) // TODO: after peer-info removal, a Set should not be needed
       try {
         peer = PeerId.createFromCID(peer.getPeerId())
       } catch (err) {
@@ -202,10 +210,12 @@ class Dialer {
     }
 
     if (PeerId.isPeerId(peer)) {
-      peer = new PeerInfo(peer)
+      peer = {
+        id: peer,
+        multiaddrs: addrs
+      }
     }
 
-    addr && peer.multiaddrs.add(addr)
     return peer
   }
 }

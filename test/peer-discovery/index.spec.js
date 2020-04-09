@@ -35,7 +35,9 @@ describe('peer discovery', () => {
         ...baseOptions,
         peerInfo
       })
-      libp2p.peerStore.add(remotePeerInfo)
+      libp2p.peerStore.addressBook.set(remotePeerInfo.id, remotePeerInfo.multiaddrs.toArray())
+      libp2p.peerStore.protoBook.set(remotePeerInfo.id, Array.from(remotePeerInfo.protocols))
+
       const deferred = defer()
       sinon.stub(libp2p.dialer, 'connectToPeer').callsFake((remotePeerInfo) => {
         expect(remotePeerInfo).to.equal(remotePeerInfo)
@@ -46,7 +48,9 @@ describe('peer discovery', () => {
 
       libp2p.start()
       await deferred.promise
-      expect(spy.getCall(0).args).to.eql([remotePeerInfo])
+
+      expect(spy.calledOnce).to.eql(true)
+      expect(spy.getCall(0).args[0].id.toString()).to.eql(remotePeerInfo.id.toString())
     })
 
     it('should stop discovery on libp2p start/stop', async () => {
