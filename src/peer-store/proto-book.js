@@ -44,7 +44,7 @@ class ProtoBook extends Book {
    * @override
    * @param {PeerId} peerId
    * @param {Array<string>} protocols
-   * @returns {Map<string, Set<string>>}
+   * @returns {ProtoBook}
    */
   set (peerId, protocols) {
     if (!PeerId.isPeerId(peerId)) {
@@ -67,7 +67,7 @@ class ProtoBook extends Book {
     // If yes, no changes needed!
     if (recSet && isSetEqual(recSet, newSet)) {
       log(`the protocols provided to store are equal to the already stored for ${id}`)
-      return this.data
+      return this
     }
 
     this.data.set(id, newSet)
@@ -83,7 +83,7 @@ class ProtoBook extends Book {
       protocols
     })
 
-    return this.data
+    return this
   }
 
   /**
@@ -92,7 +92,7 @@ class ProtoBook extends Book {
    * @override
    * @param {PeerId} peerId
    * @param {Array<string>} protocols
-   * @returns {Map<string, Set<string>>}
+   * @returns {ProtoBook}
    */
   add (peerId, protocols) {
     if (!PeerId.isPeerId(peerId)) {
@@ -112,7 +112,7 @@ class ProtoBook extends Book {
     // Any new protocol added?
     if (recSet.size === newSet.size) {
       log(`the protocols provided to store are already stored for ${id}`)
-      return this.data
+      return this
     }
 
     protocols = [...newSet]
@@ -130,7 +130,7 @@ class ProtoBook extends Book {
       protocols
     })
 
-    return this.data
+    return this
   }
 }
 

@@ -26,7 +26,7 @@ It is also possible to gather relevant information for peers from other protocol
 
 When the PeerStore data is updated, this information might be important for different parties.
 
-Every time a peer needs to dial another peer, it is essential that it knows the multiaddrs used by the peer, in order to perform a successful dial to it. The same is true for pinging a peer. While the `AddressBook` is going to keep its data updated, it will also emit `change:multiaddrs` events so that subsystems/users interested in knowing these changes can be notifyied instead of pooling the `AddressBook`.
+Every time a peer needs to dial another peer, it is essential that it knows the multiaddrs used by the peer, in order to perform a successful dial to it. The same is true for pinging a peer. While the `AddressBook` is going to keep its data updated, it will also emit `change:multiaddrs` events so that subsystems/users interested in knowing these changes can be notified instead of polling the `AddressBook`.
 
 Everytime a peer starts/stops supporting a protocol, libp2p subsystems or users might need to act accordingly. `js-libp2p` registrar orchestrates known peers, established connections and protocol topologies. This way, once a protocol is supported for a peer, the topology of that protocol should be informed that a new peer may be used and the subsystem can decide if it should open a new stream with that peer or not. For these situations, the `ProtoBook` will emit `change:protocols` events whenever supported protocols of a peer change.
 
@@ -34,36 +34,7 @@ Everytime a peer starts/stops supporting a protocol, libp2p subsystems or users 
 
 The PeerStore wraps four main components: `addressBook`, `keyBook`, `protocolBook` and `metadataBook`. Moreover, it provides a high level API for those components, as well as data events.
 
-### API
-
-For the complete API documentation, you should check the [API.md](../../doc/API.md).
-
-Access to its underlying books:
-
-- `peerStore.protoBook.*`
-- `peerStore.addressBook.*`
-
-High level operations:
-
-- [`peerStore.delete(peerId)`](../../doc/API.md#peerstoredelete)
-
-Deletes the provided peer from every book.
-
-- [`peerStore.get(peerId)`](../../doc/API.md#peerstoreget)
-
-Gets the stored information of a given peer.
-
-- [`peerStore.peers()`](../../doc/API.md#peerstorepeers)
-
-Gets an array of all the peers, as well as their information.
-
-### Events
-
-- `peer` - emitted when a new peer is added.
-- `change:multiaadrs` - emitted when a known peer has a different set of multiaddrs.
-- `change:protocols` - emitted when a known peer supports a different set of protocols.
-
-### Components API
+### Components
 
 #### Address Book
 
@@ -75,22 +46,9 @@ A `peerId.toString()` identifier mapping to a `multiaddrInfo` object, which shou
 
 ```js
 {
-  multiaddr: ,
+  multiaddr: <Multiaddr>
 }
 ```
-
-**Note:** except for multiaddr naming, the other properties are placeholders for now and might not be as described in the future milestones.
-
-- `addressBook.data`
-- [`addressBook.add()`](../../doc/API.md#peerstoreaddressbookadd)
-- [`addressBook.delete()`](../../doc/API.md#peerstoreaddressbookdelete)
-- [`addressBook.get()`](../../doc/API.md#peerstoreaddressbookget)
-- [`addressBook.getMultiaddrsForPeer()`](../../doc/API.md#peerstoreaddressbookgetmultiaddrsforpeer)
-- [`addressBook.set()`](../../doc/API.md#peerstoreaddressbookset)
-
-(Future considerations: Further API methods will probably be added in the context of multiaddr validity and multiaddr confidence.)
-
-**Not Yet Implemented**: Multiaddr Confidence
 
 #### Key Book
 
@@ -106,15 +64,24 @@ The `protoBook` holds the identifiers of the protocols supported by each peer. T
 
 A `peerId.toString()` identifier mapping to a `Set` of protocol identifier strings.
 
-- `protoBook.data`
-- [`protoBook.add()`](../../doc/API.md#peerstoreprotobookadd)
-- [`protoBook.delete()`](../../doc/API.md#peerstoreprotobookdelete)
-- [`protoBook.get()`](../../doc/API.md#peerstoreprotobookget)
-- [`protoBook.set()`](../../doc/API.md#peerstoreprotobookset)
-
 #### Metadata Book
 
 **Not Yet Implemented**
+
+### API
+
+For the complete API documentation, you should check the [API.md](../../doc/API.md).
+
+Access to its underlying books:
+
+- `peerStore.protoBook.*`
+- `peerStore.addressBook.*`
+
+### Events
+
+- `peer` - emitted when a new peer is added.
+- `change:multiaadrs` - emitted when a known peer has a different set of multiaddrs.
+- `change:protocols` - emitted when a known peer supports a different set of protocols.
 
 ## Future Considerations
 

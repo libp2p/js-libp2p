@@ -519,7 +519,7 @@ const key = '/key'
 const { from, val } = await libp2p.contentRouting.get(key)
 ```
 
-### peerStore.addressBook.Add
+### peerStore.addressBook.add
 
 Adds known `multiaddrs` of a given peer. If the peer is not known, it will be set with the provided multiaddrs.
 
@@ -536,7 +536,7 @@ Adds known `multiaddrs` of a given peer. If the peer is not known, it will be se
 
 | Type | Description |
 |------|-------------|
-| `Map<string, MultiaddrInfo>` | Map of known peers' string identifier with their relevant information [`MultiaddrInfo`](multiaddr-info) |
+| `AddressBook` | Returns the Address Book component |
 
 #### Example
 
@@ -574,7 +574,7 @@ peerStore.addressBook.delete(peerId)
 
 ### peerStore.addressBook.get
 
-Get the known [`MultiaddrInfos`](multiaddr-info) of a provided peer.
+Get the known [`MultiaddrInfos`][multiaddr-info] of a provided peer.
 
 `peerStore.addressBook.get(peerId)`
 
@@ -588,7 +588,7 @@ Get the known [`MultiaddrInfos`](multiaddr-info) of a provided peer.
 
 | Type | Description |
 |------|-------------|
-| `Array<MultiaddrInfo>` | Array of peer's multiaddr with their relevant information [`MultiaddrInfo`](multiaddr-info) |
+| `Array<MultiaddrInfo>` | Array of peer's multiaddr with their relevant information [`MultiaddrInfo`][multiaddr-info] |
 
 #### Example
 
@@ -657,7 +657,7 @@ Set known `multiaddrs` of a given peer.
 
 | Type | Description |
 |------|-------------|
-| `Map<string, MultiaddrInfo>` | Map of known peers' string identifier with their relevant information [`MultiaddrInfo`](multiaddr-info) |
+| `AddressBook` | Returns the Address Book component |
 
 #### Example
 
@@ -682,7 +682,7 @@ Add known `protocols` of a given peer.
 
 | Type | Description |
 |------|-------------|
-| `Map<string, string>` | Map of known peers' string identifier with their supported protocols |
+| `ProtoBook` | Returns the Proto Book component |
 
 #### Example
 
@@ -763,7 +763,7 @@ Set known `protocols` of a given peer.
 
 | Type | Description |
 |------|-------------|
-| `Map<string, string>` | Map of known peers' string identifier with their supported protocols |
+| `ProtoBook` | Returns the Proto Book component |
 
 #### Example
 

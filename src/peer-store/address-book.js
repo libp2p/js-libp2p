@@ -50,7 +50,7 @@ class AddressBook extends Book {
    * @override
    * @param {PeerId} peerId
    * @param {Array<Multiaddr>} addresses
-   * @returns {Map<string, Array<MultiaddrInfo>>}
+   * @returns {AddressBook}
    */
   set (peerId, addresses) {
     if (!PeerId.isPeerId(peerId)) {
@@ -64,7 +64,7 @@ class AddressBook extends Book {
 
     // Not replace multiaddrs
     if (!multiaddrInfos.length) {
-      return this.data
+      return this
     }
 
     // Already knows the peer
@@ -75,7 +75,7 @@ class AddressBook extends Book {
       // If yes, no changes needed!
       if (intersection.length === rec.length) {
         log(`the addresses provided to store are equal to the already stored for ${id}`)
-        return this.data
+        return this
       }
     }
 
@@ -98,7 +98,7 @@ class AddressBook extends Book {
       multiaddrs: multiaddrInfos.map((mi) => mi.multiaddr)
     })
 
-    return this.data
+    return this
   }
 
   /**
@@ -107,7 +107,7 @@ class AddressBook extends Book {
    * @override
    * @param {PeerId} peerId
    * @param {Array<Multiaddr>} addresses
-   * @returns {Map<string, Array<MultiaddrInfo>>}
+   * @returns {AddressBook}
    */
   add (peerId, addresses) {
     if (!PeerId.isPeerId(peerId)) {
@@ -130,7 +130,7 @@ class AddressBook extends Book {
     // The content is the same, no need to update.
     if (rec && rec.length === multiaddrInfos.length) {
       log(`the addresses provided to store are already stored for ${id}`)
-      return this.data
+      return this
     }
 
     this.data.set(id, multiaddrInfos)
@@ -153,7 +153,7 @@ class AddressBook extends Book {
       this._ps.emit('peer', peerInfo)
     }
 
-    return this.data
+    return this
   }
 
   /**
