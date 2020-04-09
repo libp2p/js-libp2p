@@ -89,7 +89,9 @@ describe('registrar', () => {
       remotePeerInfo.protocols.add(multicodec)
 
       // Add connected peer to peerStore and registrar
-      peerStore.put(remotePeerInfo)
+      peerStore.addressBook.set(remotePeerInfo.id, remotePeerInfo.multiaddrs.toArray())
+      peerStore.protoBook.set(remotePeerInfo.id, Array.from(remotePeerInfo.protocols))
+
       registrar.onConnect(remotePeerInfo, conn)
       expect(registrar.connections.size).to.eql(1)
 
@@ -156,18 +158,23 @@ describe('registrar', () => {
       const peerInfo = await PeerInfo.create(conn.remotePeer)
 
       // Add connected peer to peerStore and registrar
-      peerStore.put(peerInfo)
+      peerStore.addressBook.set(peerInfo.id, peerInfo.multiaddrs.toArray())
+      peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols))
+
       registrar.onConnect(peerInfo, conn)
 
       // Add protocol to peer and update it
       peerInfo.protocols.add(multicodec)
-      peerStore.put(peerInfo)
+      peerStore.addressBook.add(peerInfo.id, peerInfo.multiaddrs.toArray())
+      peerStore.protoBook.add(peerInfo.id, Array.from(peerInfo.protocols))
 
       await onConnectDefer.promise
 
       // Remove protocol to peer and update it
       peerInfo.protocols.delete(multicodec)
-      peerStore.replace(peerInfo)
+
+      peerStore.addressBook.set(peerInfo.id, peerInfo.multiaddrs.toArray())
+      peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols))
 
       await onDisconnectDefer.promise
     })
@@ -197,7 +204,8 @@ describe('registrar', () => {
       const id = peerInfo.id.toB58String()
 
       // Add connection to registrar
-      peerStore.put(peerInfo)
+      peerStore.addressBook.set(peerInfo.id, peerInfo.multiaddrs.toArray())
+      peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols))
       registrar.onConnect(peerInfo, conn1)
       registrar.onConnect(peerInfo, conn2)
 

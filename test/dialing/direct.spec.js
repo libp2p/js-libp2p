@@ -87,7 +87,10 @@ describe('Dialing (direct, WebSockets)', () => {
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore: {
-        multiaddrsForPeer: () => [remoteAddr]
+        addressBook: {
+          add: () => {},
+          getMultiaddrsForPeer: () => [remoteAddr]
+        }
       }
     })
 
@@ -100,7 +103,10 @@ describe('Dialing (direct, WebSockets)', () => {
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore: {
-        multiaddrsForPeer: () => [remoteAddr]
+        addressBook: {
+          add: () => {},
+          getMultiaddrsForPeer: () => [remoteAddr]
+        }
       }
     })
 
@@ -121,7 +127,10 @@ describe('Dialing (direct, WebSockets)', () => {
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore: {
-        multiaddrsForPeer: () => [remoteAddr]
+        addressBook: {
+          add: () => {},
+          getMultiaddrsForPeer: () => [remoteAddr]
+        }
       }
     })
     const peerId = await PeerId.createFromJSON(Peers[0])
@@ -135,7 +144,10 @@ describe('Dialing (direct, WebSockets)', () => {
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore: {
-        multiaddrsForPeer: () => [unsupportedAddr]
+        addressBook: {
+          set: () => {},
+          getMultiaddrsForPeer: () => [unsupportedAddr]
+        }
       }
     })
     const peerId = await PeerId.createFromJSON(Peers[0])
@@ -150,7 +162,10 @@ describe('Dialing (direct, WebSockets)', () => {
       transportManager: localTM,
       timeout: 50,
       peerStore: {
-        multiaddrsForPeer: () => [remoteAddr]
+        addressBook: {
+          add: () => {},
+          getMultiaddrsForPeer: () => [remoteAddr]
+        }
       }
     })
     sinon.stub(localTM, 'dial').callsFake(async (addr, options) => {
@@ -172,7 +187,10 @@ describe('Dialing (direct, WebSockets)', () => {
       transportManager: localTM,
       concurrency: 2,
       peerStore: {
-        multiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
+        addressBook: {
+          set: () => {},
+          getMultiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
+        }
       }
     })
 
@@ -208,7 +226,10 @@ describe('Dialing (direct, WebSockets)', () => {
       transportManager: localTM,
       concurrency: 2,
       peerStore: {
-        multiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
+        addressBook: {
+          set: () => {},
+          getMultiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
+        }
       }
     })
 
@@ -316,7 +337,7 @@ describe('Dialing (direct, WebSockets)', () => {
       })
 
       sinon.spy(libp2p.dialer, 'connectToPeer')
-      sinon.spy(libp2p.peerStore, 'put')
+      sinon.spy(libp2p.peerStore.addressBook, 'add')
 
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
@@ -325,7 +346,7 @@ describe('Dialing (direct, WebSockets)', () => {
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
       expect(libp2p.dialer.connectToPeer.callCount).to.equal(1)
-      expect(libp2p.peerStore.put.callCount).to.be.at.least(1)
+      expect(libp2p.peerStore.addressBook.add.callCount).to.be.at.least(1)
     })
 
     it('should run identify automatically after connecting', async () => {
@@ -339,11 +360,13 @@ describe('Dialing (direct, WebSockets)', () => {
       })
 
       sinon.spy(libp2p.identifyService, 'identify')
-      sinon.spy(libp2p.peerStore, 'replace')
       sinon.spy(libp2p.upgrader, 'onConnection')
 
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
+
+      sinon.spy(libp2p.peerStore.addressBook, 'set')
+      sinon.spy(libp2p.peerStore.protoBook, 'set')
 
       // Wait for onConnection to be called
       await pWaitFor(() => libp2p.upgrader.onConnection.callCount === 1)
@@ -351,7 +374,8 @@ describe('Dialing (direct, WebSockets)', () => {
       expect(libp2p.identifyService.identify.callCount).to.equal(1)
       await libp2p.identifyService.identify.firstCall.returnValue
 
-      expect(libp2p.peerStore.replace.callCount).to.equal(1)
+      expect(libp2p.peerStore.addressBook.set.callCount).to.equal(1)
+      expect(libp2p.peerStore.protoBook.set.callCount).to.equal(1)
     })
 
     it('should be able to use hangup to close connections', async () => {
