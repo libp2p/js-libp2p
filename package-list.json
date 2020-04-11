@@ -26,7 +26,6 @@
 
     "stream multiplexers",
     ["libp2p/js-libp2p-mplex", "libp2p-mplex"],
-    ["libp2p/js-libp2p-spdy", "libp2p-spdy"],
 
     "peer discovery",
     ["libp2p/js-libp2p-bootstrap", "libp2p-bootstrap"],
