@@ -123,7 +123,7 @@ describe('peer-store', () => {
       const peerSupporting2 = []
 
       for (const [, peerInfo] of peerStore.peers.entries()) {
-        if (peerInfo.protocols.has(proto2)) {
+        if (peerInfo.protocols.includes(proto2)) {
           peerSupporting2.push(peerInfo)
         }
       }
@@ -137,7 +137,9 @@ describe('peer-store', () => {
       const peerListenint4 = []
 
       for (const [, peerInfo] of peerStore.peers.entries()) {
-        if (peerInfo.multiaddrs.has(addr4)) {
+        const multiaddrs = peerInfo.multiaddrInfos.map((mi) => mi.multiaddr)
+
+        if (multiaddrs.includes(addr4)) {
           peerListenint4.push(peerInfo)
         }
       }

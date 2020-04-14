@@ -3,7 +3,6 @@
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const withIs = require('class-is')
 const { CircuitRelay: CircuitPB } = require('./protocol')
 
@@ -32,7 +31,8 @@ class Circuit {
     this._registrar = libp2p.registrar
     this._upgrader = upgrader
     this._options = libp2p._config.relay
-    this.peerInfo = libp2p.peerInfo
+    this.addresses = libp2p.addresses
+    this.peerId = libp2p.peerId
     this._registrar.handle(multicodec, this._onProtocol.bind(this))
   }
 
@@ -107,7 +107,7 @@ class Circuit {
     const destinationPeer = PeerId.createFromCID(destinationAddr.getPeerId())
 
     let disconnectOnFailure = false
-    let relayConnection = this._registrar.getConnection(new PeerInfo(relayPeer))
+    let relayConnection = this._registrar.getConnection(relayPeer)
     if (!relayConnection) {
       relayConnection = await this._dialer.connectToPeer(relayAddr, options)
       disconnectOnFailure = true
@@ -120,8 +120,8 @@ class Circuit {
         request: {
           type: CircuitPB.Type.HOP,
           srcPeer: {
-            id: this.peerInfo.id.toBytes(),
-            addrs: this.peerInfo.multiaddrs.toArray().map(addr => addr.buffer)
+            id: this.peerId.toBytes(),
+            addrs: this.addresses.listen.map(addr => addr.buffer)
           },
           dstPeer: {
             id: destinationPeer.toBytes(),
@@ -130,7 +130,7 @@ class Circuit {
         }
       })
 
-      const localAddr = relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerInfo.id.toB58String()}`)
+      const localAddr = relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toB58String()}`)
       const maConn = toConnection({
         stream: virtualConnection,
         remoteAddr: ma,

@@ -6,7 +6,6 @@ chai.use(require('dirty-chai'))
 const { expect } = chai
 const pDefer = require('p-defer')
 
-const PeerInfo = require('peer-info')
 const Topology = require('libp2p-interfaces/src/topology/multicodec-topology')
 const PeerStore = require('../../src/peer-store')
 const Registrar = require('../../src/registrar')
@@ -83,29 +82,25 @@ describe('registrar', () => {
 
       // Setup connections before registrar
       const conn = await createMockConnection()
-      const remotePeerInfo = await PeerInfo.create(conn.remotePeer)
+      const remotePeerId = conn.remotePeer
 
-      // Add protocol to peer
-      remotePeerInfo.protocols.add(multicodec)
+      // Add connected peer with protocol to peerStore and registrar
+      peerStore.protoBook.add(remotePeerId, [multicodec])
 
-      // Add connected peer to peerStore and registrar
-      peerStore.addressBook.set(remotePeerInfo.id, remotePeerInfo.multiaddrs.toArray())
-      peerStore.protoBook.set(remotePeerInfo.id, Array.from(remotePeerInfo.protocols))
-
-      registrar.onConnect(remotePeerInfo, conn)
+      registrar.onConnect(remotePeerId, conn)
       expect(registrar.connections.size).to.eql(1)
 
       const topologyProps = new Topology({
         multicodecs: multicodec,
         handlers: {
-          onConnect: (peerInfo, connection) => {
-            expect(peerInfo.id.toB58String()).to.eql(remotePeerInfo.id.toB58String())
+          onConnect: (peerId, connection) => {
+            expect(peerId.toB58String()).to.eql(remotePeerId.toB58String())
             expect(connection.id).to.eql(conn.id)
 
             onConnectDefer.resolve()
           },
-          onDisconnect: (peerInfo) => {
-            expect(peerInfo.id.toB58String()).to.eql(remotePeerInfo.id.toB58String())
+          onDisconnect: (peerId) => {
+            expect(peerId.toB58String()).to.eql(remotePeerId.toB58String())
 
             onDisconnectDefer.resolve()
           }
@@ -119,7 +114,7 @@ describe('registrar', () => {
       // Topology created
       expect(topology).to.exist()
 
-      registrar.onDisconnect(remotePeerInfo)
+      registrar.onDisconnect(remotePeerId)
       expect(registrar.connections.size).to.eql(0)
 
       // Wait for handlers to be called
@@ -155,26 +150,19 @@ describe('registrar', () => {
 
       // Setup connections before registrar
       const conn = await createMockConnection()
-      const peerInfo = await PeerInfo.create(conn.remotePeer)
+      const remotePeerId = conn.remotePeer
 
       // Add connected peer to peerStore and registrar
-      peerStore.addressBook.set(peerInfo.id, peerInfo.multiaddrs.toArray())
-      peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols))
-
-      registrar.onConnect(peerInfo, conn)
+      peerStore.protoBook.set(remotePeerId, [])
+      registrar.onConnect(remotePeerId, conn)
 
       // Add protocol to peer and update it
-      peerInfo.protocols.add(multicodec)
-      peerStore.addressBook.add(peerInfo.id, peerInfo.multiaddrs.toArray())
-      peerStore.protoBook.add(peerInfo.id, Array.from(peerInfo.protocols))
+      peerStore.protoBook.add(remotePeerId, [multicodec])
 
       await onConnectDefer.promise
 
       // Remove protocol to peer and update it
-      peerInfo.protocols.delete(multicodec)
-
-      peerStore.addressBook.set(peerInfo.id, peerInfo.multiaddrs.toArray())
-      peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols))
+      peerStore.protoBook.set(remotePeerId, [])
 
       await onDisconnectDefer.promise
     })
@@ -196,23 +184,21 @@ describe('registrar', () => {
       registrar.register(topologyProps)
 
       // Setup connections before registrar
-      const [localPeer, remotePeer] = await peerUtils.createPeerInfo({ number: 2 })
+      const [localPeer, remotePeer] = await peerUtils.createPeerId({ number: 2 })
 
-      const conn1 = await createMockConnection({ localPeer: localPeer.id, remotePeer: remotePeer.id })
-      const conn2 = await createMockConnection({ localPeer: localPeer.id, remotePeer: remotePeer.id })
-      const peerInfo = await PeerInfo.create(remotePeer.id)
-      const id = peerInfo.id.toB58String()
+      const conn1 = await createMockConnection({ localPeer, remotePeer })
+      const conn2 = await createMockConnection({ localPeer, remotePeer })
+
+      const id = remotePeer.toB58String()
 
       // Add connection to registrar
-      peerStore.addressBook.set(peerInfo.id, peerInfo.multiaddrs.toArray())
-      peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols))
-      registrar.onConnect(peerInfo, conn1)
-      registrar.onConnect(peerInfo, conn2)
+      registrar.onConnect(remotePeer, conn1)
+      registrar.onConnect(remotePeer, conn2)
 
       expect(registrar.connections.get(id).length).to.eql(2)
 
       conn2._stat.status = 'closed'
-      registrar.onDisconnect(peerInfo, conn2)
+      registrar.onDisconnect(remotePeer, conn2)
 
       const peerConnections = registrar.connections.get(id)
       expect(peerConnections.length).to.eql(1)

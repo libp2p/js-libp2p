@@ -44,7 +44,7 @@ describe('peer-routing', () => {
 
       // Ring dial
       await Promise.all(
-        nodes.map((peer, i) => peer.dial(nodes[(i + 1) % number].peerInfo))
+        nodes.map((peer, i) => peer.dial(nodes[(i + 1) % number].peerId))
       )
     })
 
@@ -59,7 +59,7 @@ describe('peer-routing', () => {
 
       sinon.stub(nodes[0]._dht, 'findPeer').callsFake(() => {
         deferred.resolve()
-        return nodes[1].peerInfo
+        return nodes[1].peerId
       })
 
       nodes[0].peerRouting.findPeer()
@@ -104,7 +104,7 @@ describe('peer-routing', () => {
 
       sinon.stub(delegate, 'findPeer').callsFake(() => {
         deferred.resolve()
-        return 'fake peer-info'
+        return 'fake peer-id'
       })
 
       await node.peerRouting.findPeer()
@@ -121,9 +121,9 @@ describe('peer-routing', () => {
           'X-Chunked-Output', '1'
         ])
 
-      const peerInfo = await node.peerRouting.findPeer(peerKey)
+      const peerData = await node.peerRouting.findPeer(peerKey)
 
-      expect(peerInfo.id.toB58String()).to.equal(peerKey)
+      expect(peerData.id).to.equal(peerKey)
       expect(mockApi.isDone()).to.equal(true)
     })
 
@@ -188,7 +188,7 @@ describe('peer-routing', () => {
 
       sinon.stub(node._dht, 'findPeer').callsFake(() => {
         dhtDeferred.resolve()
-        return node.peerInfo
+        return { id: node.peerId }
       })
       sinon.stub(delegate, 'findPeer').callsFake(() => {
         throw new Error('the delegate should not have been called')

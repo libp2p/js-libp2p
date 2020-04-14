@@ -7,7 +7,6 @@ log.error = debug('libp2p:peer-store:address-book:error')
 
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 
 const Book = require('./book')
 
@@ -83,19 +82,13 @@ class AddressBook extends Book {
     this._setPeerId(peerId)
     log(`stored provided multiaddrs for ${id}`)
 
-    // TODO: Remove peerInfo and its usage on peer-info deprecate
-    const peerInfo = new PeerInfo(peerId)
-    multiaddrInfos.forEach((mi) => peerInfo.multiaddrs.add(mi.multiaddr))
-
     // Notify the existance of a new peer
     if (!rec) {
-      // this._ps.emit('peer', peerId)
-      this._ps.emit('peer', peerInfo)
+      this._ps.emit('peer', peerId)
     }
 
     this._ps.emit('change:multiaddrs', {
       peerId,
-      peerInfo,
       multiaddrs: multiaddrInfos.map((mi) => mi.multiaddr)
     })
 
@@ -139,20 +132,14 @@ class AddressBook extends Book {
 
     log(`added provided multiaddrs for ${id}`)
 
-    // TODO: Remove peerInfo and its usage on peer-info deprecate
-    const peerInfo = new PeerInfo(peerId)
-    multiaddrInfos.forEach((mi) => peerInfo.multiaddrs.add(mi.multiaddr))
-
     this._ps.emit('change:multiaddrs', {
       peerId,
-      peerInfo,
       multiaddrs: multiaddrInfos.map((mi) => mi.multiaddr)
     })
 
     // Notify the existance of a new peer
     if (!rec) {
-      // this._ps.emit('peer', peerId)
-      this._ps.emit('peer', peerInfo)
+      this._ps.emit('peer', peerId)
     }
 
     return this
