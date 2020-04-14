@@ -5,7 +5,7 @@ const errCode = require('err-code')
 const { messages, codes } = require('./errors')
 
 module.exports = (node, Pubsub, config) => {
-  const pubsub = new Pubsub(node.peerInfo, node.registrar, config)
+  const pubsub = new Pubsub(node.peerId, node.registrar, config)
 
   return {
     /**

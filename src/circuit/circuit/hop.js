@@ -1,7 +1,9 @@
 'use strict'
 
 const debug = require('debug')
-const PeerInfo = require('peer-info')
+const log = debug('libp2p:circuit:hop')
+log.error = debug('libp2p:circuit:hop:error')
+
 const PeerId = require('peer-id')
 const { validateAddrs } = require('./utils')
 const StreamHandler = require('./stream-handler')
@@ -13,9 +15,6 @@ const { codes: Errors } = require('../../errors')
 const { stop } = require('./stop')
 
 const multicodec = require('./../multicodec')
-
-const log = debug('libp2p:circuit:hop')
-log.error = debug('libp2p:circuit:hop:error')
 
 module.exports.handleHop = async function handleHop ({
   connection,
@@ -42,7 +41,7 @@ module.exports.handleHop = async function handleHop ({
   // Get the connection to the destination (stop) peer
   const destinationPeer = new PeerId(request.dstPeer.id)
 
-  const destinationConnection = circuit._registrar.getConnection(new PeerInfo(destinationPeer))
+  const destinationConnection = circuit._registrar.getConnection(destinationPeer)
   if (!destinationConnection && !circuit._options.hop.active) {
     log('HOP request received but we are not connected to the destination peer')
     return streamHandler.end({

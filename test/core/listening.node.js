@@ -14,12 +14,11 @@ const peerUtils = require('../utils/creators/peer')
 const listenAddr = multiaddr('/ip4/0.0.0.0/tcp/0')
 
 describe('Listening', () => {
-  let peerInfo
+  let peerId
   let libp2p
 
   before(async () => {
-    [peerInfo] = await peerUtils.createPeerInfo()
-    peerInfo.multiaddrs.add(listenAddr)
+    [peerId] = await peerUtils.createPeerId()
   })
 
   after(async () => {
@@ -28,7 +27,10 @@ describe('Listening', () => {
 
   it('should replace wildcard host and port with actual host and port on startup', async () => {
     libp2p = await create({
-      peerInfo,
+      peerId,
+      addresses: {
+        listen: [listenAddr]
+      },
       modules: {
         transport: [Transport]
       }
@@ -36,7 +38,7 @@ describe('Listening', () => {
 
     await libp2p.start()
 
-    const addrs = libp2p.peerInfo.multiaddrs.toArray()
+    const addrs = libp2p.addresses.listen
 
     // Should get something like:
     //   /ip4/127.0.0.1/tcp/50866

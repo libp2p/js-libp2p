@@ -16,18 +16,16 @@ const multiaddr = require('multiaddr')
 
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options')
-const { createPeerInfo } = require('../utils/creators/peer')
+const { createPeerId } = require('../utils/creators/peer')
+
+const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('peer discovery scenarios', () => {
-  let peerInfo, remotePeerInfo1, remotePeerInfo2
+  let peerId, remotePeerId1, remotePeerId2
   let libp2p
 
   before(async () => {
-    [peerInfo, remotePeerInfo1, remotePeerInfo2] = await createPeerInfo({ number: 3 })
-
-    peerInfo.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-    remotePeerInfo1.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
-    remotePeerInfo2.multiaddrs.add(multiaddr('/ip4/127.0.0.1/tcp/0'))
+    [peerId, remotePeerId1, remotePeerId2] = await createPeerId({ number: 3 })
   })
 
   afterEach(async () => {
@@ -53,12 +51,15 @@ describe('peer discovery scenarios', () => {
     const deferred = defer()
 
     const bootstrappers = [
-      ...remotePeerInfo1.multiaddrs.toArray().map((ma) => `${ma}/p2p/${remotePeerInfo1.id.toB58String()}`),
-      ...remotePeerInfo2.multiaddrs.toArray().map((ma) => `${ma}/p2p/${remotePeerInfo2.id.toB58String()}`)
+      `${listenAddr}/p2p/${remotePeerId1.toB58String()}`,
+      `${listenAddr}/p2p/${remotePeerId2.toB58String()}`
     ]
 
     libp2p = new Libp2p(mergeOptions(baseOptions, {
-      peerInfo,
+      peerId,
+      addresses: {
+        listen: [listenAddr]
+      },
       modules: {
         peerDiscovery: [Bootstrap]
       },
@@ -74,12 +75,12 @@ describe('peer discovery scenarios', () => {
     }))
 
     const expectedPeers = new Set([
-      remotePeerInfo1.id.toB58String(),
-      remotePeerInfo2.id.toB58String()
+      remotePeerId1.toB58String(),
+      remotePeerId2.toB58String()
     ])
 
-    libp2p.on('peer:discovery', (peerInfo) => {
-      expectedPeers.delete(peerInfo.id.toB58String())
+    libp2p.on('peer:discovery', (peerId) => {
+      expectedPeers.delete(peerId.toB58String())
       if (expectedPeers.size === 0) {
         libp2p.removeAllListeners('peer:discovery')
         deferred.resolve()
@@ -94,8 +95,11 @@ describe('peer discovery scenarios', () => {
   it('MulticastDNS should discover all peers on the local network', async () => {
     const deferred = defer()
 
-    const getConfig = (peerInfo) => mergeOptions(baseOptions, {
-      peerInfo,
+    const getConfig = (peerId) => mergeOptions(baseOptions, {
+      peerId,
+      addresses: {
+        listen: [listenAddr]
+      },
       modules: {
         peerDiscovery: [MulticastDNS]
       },
@@ -112,17 +116,17 @@ describe('peer discovery scenarios', () => {
       }
     })
 
-    libp2p = new Libp2p(getConfig(peerInfo))
-    const remoteLibp2p1 = new Libp2p(getConfig(remotePeerInfo1))
-    const remoteLibp2p2 = new Libp2p(getConfig(remotePeerInfo2))
+    libp2p = new Libp2p(getConfig(peerId))
+    const remoteLibp2p1 = new Libp2p(getConfig(remotePeerId1))
+    const remoteLibp2p2 = new Libp2p(getConfig(remotePeerId2))
 
     const expectedPeers = new Set([
-      remotePeerInfo1.id.toB58String(),
-      remotePeerInfo2.id.toB58String()
+      remotePeerId1.toB58String(),
+      remotePeerId2.toB58String()
     ])
 
-    libp2p.on('peer:discovery', (peerInfo) => {
-      expectedPeers.delete(peerInfo.id.toB58String())
+    libp2p.on('peer:discovery', (peerId) => {
+      expectedPeers.delete(peerId.toB58String())
       if (expectedPeers.size === 0) {
         libp2p.removeAllListeners('peer:discovery')
         deferred.resolve()
@@ -144,8 +148,11 @@ describe('peer discovery scenarios', () => {
   it('kad-dht should discover other peers', async () => {
     const deferred = defer()
 
-    const getConfig = (peerInfo) => mergeOptions(baseOptions, {
-      peerInfo,
+    const getConfig = (peerId) => mergeOptions(baseOptions, {
+      peerId,
+      addresses: {
+        listen: [listenAddr]
+      },
       modules: {
         dht: KadDht
       },
@@ -165,16 +172,16 @@ describe('peer discovery scenarios', () => {
       }
     })
 
-    const localConfig = getConfig(peerInfo)
+    const localConfig = getConfig(peerId)
     // Only run random walk on our local node
     localConfig.config.dht.randomWalk.enabled = true
     libp2p = new Libp2p(localConfig)
 
-    const remoteLibp2p1 = new Libp2p(getConfig(remotePeerInfo1))
-    const remoteLibp2p2 = new Libp2p(getConfig(remotePeerInfo2))
+    const remoteLibp2p1 = new Libp2p(getConfig(remotePeerId1))
+    const remoteLibp2p2 = new Libp2p(getConfig(remotePeerId2))
 
-    libp2p.on('peer:discovery', (peerInfo) => {
-      if (peerInfo.id.toB58String() === remotePeerInfo2.id.toB58String()) {
+    libp2p.on('peer:discovery', (peerId) => {
+      if (peerId.toB58String() === remotePeerId1.toB58String()) {
         libp2p.removeAllListeners('peer:discovery')
         deferred.resolve()
       }
@@ -186,12 +193,15 @@ describe('peer discovery scenarios', () => {
       remoteLibp2p2.start()
     ])
 
+    libp2p.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.addresses.listen)
+    remoteLibp2p2.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.addresses.listen)
+
     // Topology:
     // A -> B
     // C -> B
     await Promise.all([
-      libp2p.dial(remotePeerInfo1),
-      remoteLibp2p2.dial(remotePeerInfo1)
+      libp2p.dial(remotePeerId1),
+      remoteLibp2p2.dial(remotePeerId1)
     ])
 
     await deferred.promise

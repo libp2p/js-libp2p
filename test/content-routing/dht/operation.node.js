@@ -18,25 +18,28 @@ const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
 
 describe('DHT subsystem operates correctly', () => {
-  let peerInfo, remotePeerInfo
+  let peerId, remotePeerId
   let libp2p, remoteLibp2p
   let remAddr
 
   beforeEach(async () => {
-    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
-
-    peerInfo.multiaddrs.add(listenAddr)
-    remotePeerInfo.multiaddrs.add(remoteListenAddr)
+    [peerId, remotePeerId] = await peerUtils.createPeerId({ number: 2 })
   })
 
   describe('dht started before connect', () => {
     beforeEach(async () => {
       libp2p = await create(mergeOptions(subsystemOptions, {
-        peerInfo
+        peerId,
+        addresses: {
+          listen: [listenAddr]
+        }
       }))
 
       remoteLibp2p = await create(mergeOptions(subsystemOptions, {
-        peerInfo: remotePeerInfo
+        peerId: remotePeerId,
+        addresses: {
+          listen: [remoteListenAddr]
+        }
       }))
 
       await Promise.all([
@@ -44,8 +47,8 @@ describe('DHT subsystem operates correctly', () => {
         remoteLibp2p.start()
       ])
 
-      libp2p.peerStore.addressBook.set(remotePeerInfo.id, [remoteListenAddr])
-      remAddr = libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerInfo.id)[0]
+      libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
+      remAddr = libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId)[0]
     })
 
     afterEach(() => Promise.all([
@@ -84,11 +87,17 @@ describe('DHT subsystem operates correctly', () => {
   describe('dht started after connect', () => {
     beforeEach(async () => {
       libp2p = await create(mergeOptions(subsystemOptions, {
-        peerInfo
+        peerId,
+        addresses: {
+          listen: [listenAddr]
+        }
       }))
 
       remoteLibp2p = await create(mergeOptions(subsystemOptions, {
-        peerInfo: remotePeerInfo,
+        peerId: remotePeerId,
+        addresses: {
+          listen: [remoteListenAddr]
+        },
         config: {
           dht: {
             enabled: false
@@ -99,8 +108,8 @@ describe('DHT subsystem operates correctly', () => {
       await libp2p.start()
       await remoteLibp2p.start()
 
-      libp2p.peerStore.addressBook.set(remotePeerInfo.id, [remoteListenAddr])
-      remAddr = libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerInfo.id)[0]
+      libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
+      remAddr = libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId)[0]
     })
 
     afterEach(() => Promise.all([

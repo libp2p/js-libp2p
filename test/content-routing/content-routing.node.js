@@ -56,7 +56,7 @@ describe('content-routing', () => {
 
       // Ring dial
       await Promise.all(
-        nodes.map((peer, i) => peer.dial(nodes[(i + 1) % number].peerInfo))
+        nodes.map((peer, i) => peer.dial(nodes[(i + 1) % number].peerId))
       )
     })
 
@@ -96,9 +96,9 @@ describe('content-routing', () => {
     let delegate
 
     beforeEach(async () => {
-      const [peerInfo] = await peerUtils.createPeerInfo({ fixture: false })
+      const [peerId] = await peerUtils.createPeerId({ fixture: false })
 
-      delegate = new DelegatedContentRouter(peerInfo.id, {
+      delegate = new DelegatedContentRouter(peerId, {
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
@@ -227,9 +227,9 @@ describe('content-routing', () => {
     let delegate
 
     beforeEach(async () => {
-      const [peerInfo] = await peerUtils.createPeerInfo({ fixture: false })
+      const [peerId] = await peerUtils.createPeerId({ fixture: false })
 
-      delegate = new DelegatedContentRouter(peerInfo.id, {
+      delegate = new DelegatedContentRouter(peerId, {
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197

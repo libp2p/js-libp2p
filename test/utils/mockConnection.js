@@ -16,13 +16,13 @@ module.exports = async (properties = {}) => {
   const localAddr = multiaddr('/ip4/127.0.0.1/tcp/8080')
   const remoteAddr = multiaddr('/ip4/127.0.0.1/tcp/8081')
 
-  const [localPeer, remotePeer] = await peerUtils.createPeerInfo({ number: 2 })
+  const [localPeer, remotePeer] = await peerUtils.createPeerId({ number: 2 })
   const openStreams = []
   let streamId = 0
 
   return new Connection({
-    localPeer: localPeer.id,
-    remotePeer: remotePeer.id,
+    localPeer: localPeer,
+    remotePeer: remotePeer,
     localAddr,
     remoteAddr,
     stat: {

@@ -32,11 +32,13 @@ describe('DHT subsystem is configurable', () => {
   })
 
   it('should start and stop by default once libp2p starts', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo(1)
-    peerInfo.multiaddrs.add(listenAddr)
+    const [peerId] = await peerUtils.createPeerId(1)
 
     const customOptions = mergeOptions(subsystemOptions, {
-      peerInfo
+      peerId,
+      addresses: {
+        listen: [listenAddr]
+      }
     })
 
     libp2p = await create(customOptions)
@@ -50,11 +52,13 @@ describe('DHT subsystem is configurable', () => {
   })
 
   it('should not start if disabled once libp2p starts', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo(1)
-    peerInfo.multiaddrs.add(listenAddr)
+    const [peerId] = await peerUtils.createPeerId(1)
 
     const customOptions = mergeOptions(subsystemOptions, {
-      peerInfo,
+      peerId,
+      addresses: {
+        listen: [listenAddr]
+      },
       config: {
         dht: {
           enabled: false
@@ -70,11 +74,13 @@ describe('DHT subsystem is configurable', () => {
   })
 
   it('should allow a manual start', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo(1)
-    peerInfo.multiaddrs.add(listenAddr)
+    const [peerId] = await peerUtils.createPeerId(1)
 
     const customOptions = mergeOptions(subsystemOptions, {
-      peerInfo,
+      peerId,
+      addresses: {
+        listen: [listenAddr]
+      },
       config: {
         dht: {
           enabled: false
