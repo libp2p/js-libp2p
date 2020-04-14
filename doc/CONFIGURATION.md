@@ -113,6 +113,7 @@ Some available peer discovery modules are:
 - [js-libp2p-bootstrap](https://github.com/libp2p/js-libp2p-bootstrap)
 - [js-libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
 - [js-libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star)
+- [discv5](https://github.com/chainsafe/discv5)
 
 **Note**: `peer-discovery` services within transports (such as `js-libp2p-webrtc-star`) are automatically gathered from the `transport`, via it's `discovery` property. As such, they do not need to be added in the discovery modules. However, these transports can also be configured and disabled as the other ones.
 
