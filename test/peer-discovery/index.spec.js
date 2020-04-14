@@ -9,20 +9,21 @@ const sinon = require('sinon')
 const defer = require('p-defer')
 const mergeOptions = require('merge-options')
 
+const multiaddr = require('multiaddr')
 const WebRTCStar = require('libp2p-webrtc-star')
 
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options.browser')
-const { createPeerInfo } = require('../utils/creators/peer')
+const { createPeerId } = require('../utils/creators/peer')
 
 describe('peer discovery', () => {
   describe('basic functions', () => {
-    let peerInfo
-    let remotePeerInfo
+    let peerId
+    let remotePeerId
     let libp2p
 
     before(async () => {
-      [peerInfo, remotePeerInfo] = await createPeerInfo({ number: 2 })
+      [peerId, remotePeerId] = await createPeerId({ number: 2 })
     })
 
     afterEach(async () => {
@@ -33,14 +34,14 @@ describe('peer discovery', () => {
     it('should dial know peers on startup', async () => {
       libp2p = new Libp2p({
         ...baseOptions,
-        peerInfo
+        peerId
       })
-      libp2p.peerStore.addressBook.set(remotePeerInfo.id, remotePeerInfo.multiaddrs.toArray())
-      libp2p.peerStore.protoBook.set(remotePeerInfo.id, Array.from(remotePeerInfo.protocols))
+
+      libp2p.peerStore.addressBook.set(remotePeerId, [multiaddr('/ip4/165.1.1.1/tcp/80')])
 
       const deferred = defer()
-      sinon.stub(libp2p.dialer, 'connectToPeer').callsFake((remotePeerInfo) => {
-        expect(remotePeerInfo).to.equal(remotePeerInfo)
+      sinon.stub(libp2p.dialer, 'connectToPeer').callsFake((remotePeerId) => {
+        expect(remotePeerId).to.equal(remotePeerId)
         deferred.resolve()
       })
       const spy = sinon.spy()
@@ -50,7 +51,7 @@ describe('peer discovery', () => {
       await deferred.promise
 
       expect(spy.calledOnce).to.eql(true)
-      expect(spy.getCall(0).args[0].id.toString()).to.eql(remotePeerInfo.id.toString())
+      expect(spy.getCall(0).args[0].toString()).to.eql(remotePeerId.toString())
     })
 
     it('should stop discovery on libp2p start/stop', async () => {
@@ -65,7 +66,7 @@ describe('peer discovery', () => {
       const stopSpy = sinon.spy(mockDiscovery, 'stop')
 
       libp2p = new Libp2p(mergeOptions(baseOptions, {
-        peerInfo,
+        peerId,
         modules: {
           peerDiscovery: [mockDiscovery]
         }
@@ -81,15 +82,15 @@ describe('peer discovery', () => {
   })
 
   describe('discovery modules from transports', () => {
-    let peerInfo, libp2p
+    let peerId, libp2p
 
     before(async () => {
-      [peerInfo] = await createPeerInfo()
+      [peerId] = await createPeerId()
     })
 
     it('should add discovery module if present in transports and enabled', async () => {
       libp2p = new Libp2p(mergeOptions(baseOptions, {
-        peerInfo,
+        peerId,
         modules: {
           transport: [WebRTCStar]
         },
@@ -110,7 +111,7 @@ describe('peer discovery', () => {
 
     it('should not add discovery module if present in transports but disabled', async () => {
       libp2p = new Libp2p(mergeOptions(baseOptions, {
-        peerInfo,
+        peerId,
         modules: {
           transport: [WebRTCStar]
         },

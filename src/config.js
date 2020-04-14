@@ -4,6 +4,9 @@ const mergeOptions = require('merge-options')
 const Constants = require('./constants')
 
 const DefaultConfig = {
+  addresses: {
+    listen: []
+  },
   connectionManager: {
     minPeers: 25
   },

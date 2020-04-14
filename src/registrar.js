@@ -5,6 +5,8 @@ const errcode = require('err-code')
 const log = debug('libp2p:peer-store')
 log.error = debug('libp2p:peer-store:error')
 
+const PeerId = require('peer-id')
+
 const {
   ERR_INVALID_PARAMETERS
 } = require('./errors')
@@ -69,22 +71,20 @@ class Registrar {
   /**
    * Add a new connected peer to the record
    * TODO: this should live in the ConnectionManager
-   * @param {PeerInfo} peerInfo
+   * @param {PeerId} peerId
    * @param {Connection} conn
    * @returns {void}
    */
-  onConnect (peerInfo, conn) {
-    // TODO: This is not a `peer-info` instance anymore, but an object with the data.
-    // This can be modified to `peer-id` though, once `peer-info` is deprecated.
-    // if (!PeerInfo.isPeerInfo(peerInfo)) {
-    //   throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
-    // }
+  onConnect (peerId, conn) {
+    if (!PeerId.isPeerId(peerId)) {
+      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+    }
 
     if (!Connection.isConnection(conn)) {
       throw errcode(new Error('conn must be an instance of interface-connection'), ERR_INVALID_PARAMETERS)
     }
 
-    const id = peerInfo.id.toB58String()
+    const id = peerId.toB58String()
     const storedConn = this.connections.get(id)
 
     if (storedConn) {
@@ -97,19 +97,17 @@ class Registrar {
   /**
    * Remove a disconnected peer from the record
    * TODO: this should live in the ConnectionManager
-   * @param {PeerInfo} peerInfo
+   * @param {PeerId} peerId
    * @param {Connection} connection
    * @param {Error} [error]
    * @returns {void}
    */
-  onDisconnect (peerInfo, connection, error) {
-    // TODO: This is not a `peer-info` instance anymore, but an object with the data.
-    // This can be modified to `peer-id` though, once `peer-info` is deprecated.
-    // if (!PeerInfo.isPeerInfo(peerInfo)) {
-    //   throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
-    // }
+  onDisconnect (peerId, connection, error) {
+    if (!PeerId.isPeerId(peerId)) {
+      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+    }
 
-    const id = peerInfo.id.toB58String()
+    const id = peerId.toB58String()
     let storedConn = this.connections.get(id)
 
     if (storedConn && storedConn.length > 1) {
@@ -117,26 +115,24 @@ class Registrar {
       this.connections.set(id, storedConn)
     } else if (storedConn) {
       for (const [, topology] of this.topologies) {
-        topology.disconnect(peerInfo, error)
+        topology.disconnect(peerId, error)
       }
 
-      this.connections.delete(peerInfo.id.toB58String())
+      this.connections.delete(id)
     }
   }
 
   /**
    * Get a connection with a peer.
-   * @param {PeerInfo} peerInfo
+   * @param {PeerId} peerId
    * @returns {Connection}
    */
-  getConnection (peerInfo) {
-    // TODO: This is not a `peer-info` instance anymore, but an object with the data.
-    // This can be modified to `peer-id` though, once `peer-info` is deprecated.
-    // if (!PeerInfo.isPeerInfo(peerInfo)) {
-    //   throw errcode(new Error('peerInfo must be an instance of peer-info'), ERR_INVALID_PARAMETERS)
-    // }
+  getConnection (peerId) {
+    if (!PeerId.isPeerId(peerId)) {
+      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+    }
 
-    const connections = this.connections.get(peerInfo.id.toB58String())
+    const connections = this.connections.get(peerId.toB58String())
     // Return the first, open connection
     if (connections) {
       return connections.find(connection => connection.stat.status === 'open')

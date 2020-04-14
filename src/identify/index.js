@@ -48,7 +48,8 @@ class IdentifyService {
    * @param {object} options
    * @param {Registrar} options.registrar
    * @param {Map<string, handler>} options.protocols A reference to the protocols we support
-   * @param {PeerInfo} options.peerInfo The peer running the identify service
+   * @param {PeerId} options.peerId The peer running the identify service
+   * @param {{ listen: Array<Multiaddr>}} options.addresses The peer aaddresses
    */
   constructor (options) {
     /**
@@ -56,9 +57,11 @@ class IdentifyService {
      */
     this.registrar = options.registrar
     /**
-     * @property {PeerInfo}
+     * @property {PeerId}
      */
-    this.peerInfo = options.peerInfo
+    this.peerId = options.peerId
+
+    this.addresses = options.addresses || {}
 
     this._protocols = options.protocols
 
@@ -77,7 +80,7 @@ class IdentifyService {
 
         await pipe(
           [{
-            listenAddrs: this.peerInfo.multiaddrs.toArray().map((ma) => ma.buffer),
+            listenAddrs: this.addresses.listen.map((ma) => ma.buffer),
             protocols: Array.from(this._protocols.keys())
           }],
           pb.encode(Message),
@@ -101,7 +104,7 @@ class IdentifyService {
     const connections = []
     let connection
     for (const peer of peerStore.peers.values()) {
-      if (peer.protocols.has(MULTICODEC_IDENTIFY_PUSH) && (connection = this.registrar.getConnection(peer))) {
+      if (peer.protocols.includes(MULTICODEC_IDENTIFY_PUSH) && (connection = this.registrar.getConnection(peer.id))) {
         connections.push(connection)
       }
     }
@@ -194,15 +197,15 @@ class IdentifyService {
    */
   _handleIdentify ({ connection, stream }) {
     let publicKey = Buffer.alloc(0)
-    if (this.peerInfo.id.pubKey) {
-      publicKey = this.peerInfo.id.pubKey.bytes
+    if (this.peerId.pubKey) {
+      publicKey = this.peerId.pubKey.bytes
     }
 
     const message = Message.encode({
       protocolVersion: PROTOCOL_VERSION,
       agentVersion: AGENT_VERSION,
       publicKey,
-      listenAddrs: this.peerInfo.multiaddrs.toArray().map((ma) => ma.buffer),
+      listenAddrs: this.addresses.listen.map((ma) => ma.buffer),
       observedAddr: connection.remoteAddr.buffer,
       protocols: Array.from(this._protocols.keys())
     })

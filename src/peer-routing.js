@@ -18,7 +18,7 @@ module.exports = (node) => {
      * @param {String} id The id of the peer to find
      * @param {object} [options]
      * @param {number} [options.timeout] How long the query should run
-     * @returns {Promise<PeerInfo>}
+     * @returns {Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>}
      */
     findPeer: async (id, options) => { // eslint-disable-line require-await
       if (!routers.length) {

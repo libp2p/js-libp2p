@@ -14,7 +14,6 @@ const Muxer = require('libp2p-mplex')
 const Crypto = require('libp2p-secio')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const AggregateError = require('aggregate-error')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 
@@ -267,13 +266,12 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   describe('libp2p.dialer', () => {
-    let peerInfo
+    let peerId
     let libp2p
     let remoteLibp2p
 
     before(async () => {
-      const peerId = await PeerId.createFromJSON(Peers[0])
-      peerInfo = new PeerInfo(peerId)
+      peerId = await PeerId.createFromJSON(Peers[0])
     })
 
     afterEach(async () => {
@@ -288,7 +286,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     it('should create a dialer', () => {
       libp2p = new Libp2p({
-        peerInfo,
+        peerId,
         modules: {
           transport: [Transport],
           streamMuxer: [Muxer],
@@ -306,7 +304,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     it('should be able to override dialer options', async () => {
       const config = {
-        peerInfo,
+        peerId,
         modules: {
           transport: [Transport],
           streamMuxer: [Muxer],
@@ -328,7 +326,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     it('should use the dialer for connecting', async () => {
       libp2p = new Libp2p({
-        peerInfo,
+        peerId,
         modules: {
           transport: [Transport],
           streamMuxer: [Muxer],
@@ -351,7 +349,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     it('should run identify automatically after connecting', async () => {
       libp2p = new Libp2p({
-        peerInfo,
+        peerId,
         modules: {
           transport: [Transport],
           streamMuxer: [Muxer],
@@ -380,7 +378,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     it('should be able to use hangup to close connections', async () => {
       libp2p = new Libp2p({
-        peerInfo,
+        peerId,
         modules: {
           transport: [Transport],
           streamMuxer: [Muxer],
@@ -410,7 +408,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     it('should abort pending dials on stop', async () => {
       libp2p = new Libp2p({
-        peerInfo,
+        peerId,
         modules: {
           transport: [Transport],
           streamMuxer: [Muxer],

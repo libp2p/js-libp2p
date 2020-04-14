@@ -19,30 +19,35 @@ const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('Pubsub subsystem operates correctly', () => {
-  let peerInfo, remotePeerInfo
+  let peerId, remotePeerId
   let libp2p, remoteLibp2p
 
   beforeEach(async () => {
-    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
-
-    peerInfo.multiaddrs.add(listenAddr)
-    remotePeerInfo.multiaddrs.add(remoteListenAddr)
+    [peerId, remotePeerId] = await peerUtils.createPeerId({ number: 2 })
   })
 
   describe('pubsub started before connect', () => {
     beforeEach(async () => {
       libp2p = await create(mergeOptions(subsystemOptions, {
-        peerInfo
+        peerId,
+        addresses: {
+          listen: [listenAddr]
+        }
       }))
 
       remoteLibp2p = await create(mergeOptions(subsystemOptions, {
-        peerInfo: remotePeerInfo
+        peerId: remotePeerId,
+        addresses: {
+          listen: [remoteListenAddr]
+        }
       }))
 
       await Promise.all([
         libp2p.start(),
         remoteLibp2p.start()
       ])
+
+      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.addresses.listen)
     })
 
     afterEach(() => Promise.all([
@@ -55,7 +60,7 @@ describe('Pubsub subsystem operates correctly', () => {
     })
 
     it('should get notified of connected peers on dial', async () => {
-      const connection = await libp2p.dialProtocol(remotePeerInfo, subsystemMulticodecs)
+      const connection = await libp2p.dialProtocol(remotePeerId, subsystemMulticodecs)
 
       expect(connection).to.exist()
 
@@ -69,9 +74,9 @@ describe('Pubsub subsystem operates correctly', () => {
       const defer = pDefer()
       const topic = 'test-topic'
       const data = 'hey!'
-      const libp2pId = libp2p.peerInfo.id.toB58String()
+      const libp2pId = libp2p.peerId.toB58String()
 
-      await libp2p.dialProtocol(remotePeerInfo, subsystemMulticodecs)
+      await libp2p.dialProtocol(remotePeerId, subsystemMulticodecs)
 
       let subscribedTopics = libp2p.pubsub.getTopics()
       expect(subscribedTopics).to.not.include(topic)
@@ -98,11 +103,17 @@ describe('Pubsub subsystem operates correctly', () => {
   describe('pubsub started after connect', () => {
     beforeEach(async () => {
       libp2p = await create(mergeOptions(subsystemOptions, {
-        peerInfo
+        peerId,
+        addresses: {
+          listen: [listenAddr]
+        }
       }))
 
       remoteLibp2p = await create(mergeOptions(subsystemOptions, {
-        peerInfo: remotePeerInfo,
+        peerId: remotePeerId,
+        addresses: {
+          listen: [remoteListenAddr]
+        },
         config: {
           pubsub: {
             enabled: false
@@ -112,6 +123,8 @@ describe('Pubsub subsystem operates correctly', () => {
 
       await libp2p.start()
       await remoteLibp2p.start()
+
+      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.addresses.listen)
     })
 
     afterEach(() => Promise.all([
@@ -124,7 +137,7 @@ describe('Pubsub subsystem operates correctly', () => {
     })
 
     it('should get notified of connected peers after starting', async () => {
-      const connection = await libp2p.dial(remotePeerInfo)
+      const connection = await libp2p.dial(remotePeerId)
 
       expect(connection).to.exist()
       expect(libp2p.pubsub._pubsub.peers.size).to.be.eql(0)
@@ -141,11 +154,11 @@ describe('Pubsub subsystem operates correctly', () => {
     it('should receive pubsub messages', async function () {
       this.timeout(10e3)
       const defer = pDefer()
-      const libp2pId = libp2p.peerInfo.id.toB58String()
+      const libp2pId = libp2p.peerId.toB58String()
       const topic = 'test-topic'
       const data = 'hey!'
 
-      await libp2p.dial(remotePeerInfo)
+      await libp2p.dial(remotePeerId)
 
       remoteLibp2p.pubsub.start()
 

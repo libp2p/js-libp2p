@@ -40,7 +40,7 @@ class ConnectionManager {
   constructor (libp2p, options) {
     this._libp2p = libp2p
     this._registrar = libp2p.registrar
-    this._peerId = libp2p.peerInfo.id.toB58String()
+    this._peerId = libp2p.peerId.toB58String()
     this._options = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, options)
     if (this._options.maxConnections < this._options.minConnections) {
       throw errcode(new Error('Connection Manager maxConnections must be greater than minConnections'), ERR_INVALID_PARAMETERS)

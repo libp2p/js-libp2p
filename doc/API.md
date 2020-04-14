@@ -60,12 +60,13 @@ Creates an instance of Libp2p.
 |------|------|-------------|
 | options | `object` | libp2p options |
 | options.modules | `Array<object>` | libp2p modules to use |
+| [options.addresses] | `{ listen: Array<Multiaddr> }` | Addresses to use for transport listening and to announce to the network |
 | [options.config] | `object` | libp2p modules configuration and core configuration |
 | [options.connectionManager] | `object` | libp2p Connection Manager configuration |
 | [options.datastore] | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) (in memory datastore will be used if not provided) |
 | [options.dialer] | `object` | libp2p Dialer configuration
 | [options.metrics] | `object` | libp2p Metrics configuration
-| [options.peerInfo] | [`PeerInfo`][peer-info] | peerInfo instance (it will be created if not provided) |
+| [options.peerId] | [`PeerId`][peer-id] | peerId instance (it will be created if not provided) |
 
 For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
 
@@ -87,7 +88,7 @@ const options = {}
 const libp2p = await Libp2p.create(options)
 ```
 
-Note: The [`PeerInfo`][peer-info] option is not required and will be generated if it is not provided.
+Note: The [`PeerId`][peer-id] option is not required and will be generated if it is not provided.
 
 <details><summary>Alternative</summary>
 As an alternative, it is possible to create a Libp2p instance with the constructor:
@@ -106,7 +107,7 @@ const libp2p = new Libp2p(options)
 
 Required keys in the `options` object:
 
-- `peerInfo`: instance of [`PeerInfo`][peer-info] that contains the [`PeerId`][peer-id], Keys and [multiaddrs][multiaddr] of the libp2p Node (optional when using `.create`).
+- `peerId`: instance of [`PeerId`][peer-id] that contains the peer Keys (optional when using `.create`).
 - `modules.transport`: An array that must include at least 1 compliant transport. See [modules that implement the transport interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport#modules-that-implement-the-interface).
 
 </details>
@@ -163,6 +164,10 @@ const libp2p = await Libp2p.create(options)
 await libp2p.stop()
 ```
 
+### addresses
+
+TODO with `address-manager`.
+
 ### connections
 
 A Getter that returns a Map of the current Connections libp2p has to other peers.
@@ -194,9 +199,11 @@ for (const [peerId, connections] of libp2p.connections) {
 
 | Name | Type | Description |
 |------|------|-------------|
-| peer | [`PeerInfo`][peer-info]\|[`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | The peer to dial. If a [`Multiaddr`][multiaddr] or its string is provided, it **must** include the peer id |
+| peer | [`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | The peer to dial. |
 | [options] | `object` | dial options |
 | [options.signal] | [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) | An `AbortSignal` instance obtained from an [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) that can be used to abort the connection before it completes |
+
+**Note:** If a [`Multiaddr`][multiaddr] or its string is provided, it **must** include the peer id. Moreover, if a [`PeerId`][peer-id] is given, the peer will need to have known multiaddrs for it in the PeerStore.
 
 #### Returns
 
@@ -208,7 +215,7 @@ for (const [peerId, connections] of libp2p.connections) {
 
 ```js
 // ...
-const conn = await libp2p.dial(remotePeerInfo)
+const conn = await libp2p.dial(remotePeerId)
 
 // create a new stream within the connection
 const { stream, protocol } = await conn.newStream(['/echo/1.1.0', '/echo/1.0.0'])
@@ -229,10 +236,12 @@ Dials to another peer in the network and selects a protocol to communicate with 
 
 | Name | Type | Description |
 |------|------|-------------|
-| peer | [`PeerInfo`][peer-info]\|[`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | The peer to dial. If a [`Multiaddr`][multiaddr] or its string is provided, it **must** include the peer id |
+| peer | [`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | The peer to dial. |
 | protocols | `string|Array<string>` |  A list of protocols (or single protocol) to negotiate with. Protocols are attempted in order until a match is made. (e.g '/ipfs/bitswap/1.1.0') |
 | [options] | `object` | dial options |
 | [options.signal] | [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) | An `AbortSignal` instance obtained from an [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) that can be used to abort the connection before it completes |
+
+**Note:** If a [`Multiaddr`][multiaddr] or its string is provided, it **must** include the peer id. Moreover, if a [`PeerId`][peer-id] is given, the peer will need to have known multiaddrs for it in the PeerStore.
 
 #### Returns
 
@@ -246,7 +255,7 @@ Dials to another peer in the network and selects a protocol to communicate with 
 // ...
 const pipe = require('it-pipe')
 
-const { stream, protocol } = await libp2p.dialProtocol(remotePeerInfo, protocols)
+const { stream, protocol } = await libp2p.dialProtocol(remotePeerId, protocols)
 
 // Use this new stream like any other duplex stream
 pipe([1, 2, 3], stream, consume)
@@ -262,7 +271,7 @@ Attempts to gracefully close an open connection to the given peer. If the connec
 
 | Name | Type | Description |
 |------|------|-------------|
-| peer | [`PeerInfo`][peer-info]\|[`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | peer to hang up |
+| peer | [`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | peer to hang up |
 
 #### Returns
 
@@ -274,7 +283,7 @@ Attempts to gracefully close an open connection to the given peer. If the connec
 
 ```js
 // ...
-await libp2p.hangUp(remotePeerInfo)
+await libp2p.hangUp(remotePeerId)
 ```
 
 ### handle
@@ -333,7 +342,7 @@ Pings a given peer and get the operation's latency.
 
 | Name | Type | Description |
 |------|------|-------------|
-| peer | [`PeerInfo`][peer-info]\|[`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | peer to ping |
+| peer | [`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | peer to ping |
 
 #### Returns
 
@@ -366,13 +375,13 @@ Iterates over all peer routers in series to find the given peer. If the DHT is e
 
 | Type | Description |
 |------|-------------|
-| `Promise<PeerInfo>` | Peer info of a known peer |
+| `Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>` | Peer data of a known peer |
 
 #### Example
 
 ```js
 // ...
-const peerInfo = await libp2p.peerRouting.findPeer(peerId, options)
+const peerData = await libp2p.peerRouting.findPeer(peerId, options)
 ```
 
 ### contentRouting.findProviders
@@ -395,14 +404,14 @@ Once a content router succeeds, the iteration will stop. If the DHT is enabled, 
 
 | Type | Description |
 |------|-------------|
-| `AsyncIterator<PeerInfo>` |  Async iterator for [`PeerInfo`][peer-info] |
+| `AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }` |  Async iterator for peer data |
 
 #### Example
 
 ```js
 // Iterate over the providers found for the given cid
 for await (const provider of libp2p.contentRouting.findProviders(cid)) {
-  console.log(provider)
+  console.log(provider.id, provider.addrs)
 }
 ```
 
@@ -809,7 +818,7 @@ peerStore.delete(peerId2)
 
 ### peerStore.get
 
-Get the stored information of a given peer.
+Get the stored information of a given peer, namely its [`PeerId`][peer-id], known [`MultiaddrInfos`][multiaddr-info] and supported protocols.
 
 `peerStore.get(peerId)`
 
@@ -823,9 +832,7 @@ Get the stored information of a given peer.
 
 | Type | Description |
 |------|-------------|
-| [`PeerInfo`][peer-info] | Peer information of the provided peer |
-
-TODO: change when `peer-info` is deprecated to new pointer
+| `{ id: PeerId, multiaddrInfos: Array<MultiaddrInfo>, protocols: Array<string> }` | Peer information of the provided peer |
 
 #### Example
 
@@ -836,6 +843,7 @@ peerStore.addressBook.set(peerId, multiaddrs)
 peerStore.protoBook.set(peerId, protocols)
 peerStore.get(peerId)
 // {
+//   id: {},
 //   MultiaddrInfos: [...],
 //   protocols: [...]
 // }
@@ -851,15 +859,13 @@ Get all the stored information of every peer.
 
 | Type | Description |
 |------|-------------|
-| `Map<string, PeerInfo>` | Peer information of every peer |
-
-TODO: change when `peer-info` is deprecated to new pointer (breaking change)
+| `Map<string, { id: PeerId, multiaddrInfos: Array<MultiaddrInfo>, protocols: Array<string> }>` | Peer data of every peer known |
 
 #### Example
 
 ```js
-for (let [peerIdString, peerInfo] of peerStore.peers.entries()) {
-  // peerInfo instance
+for (let [peerIdString, peerData] of peerStore.peers.entries()) {
+  // peerData
 }
 ```
 
@@ -1070,7 +1076,7 @@ Returns the [`Stats`](#stats) object for a given [`PeerId`][peer-id] if it is be
 #### Example
 
 ```js
-const peerStats = libp2p.metrics.forPeer(peerInfo)
+const peerStats = libp2p.metrics.forPeer(peerId)
 console.log(peerStats.toJSON())
 ```
 
@@ -1118,7 +1124,7 @@ Once you have a libp2p instance, you can listen to several events it emits, so t
 If `autoDial` option is `true`, applications should **not** attempt to connect to the peer
 unless they are performing a specific action. See [peer discovery and auto dial](./PEER_DISCOVERY.md) for more information.
 
-- `peer`: instance of [`PeerInfo`][peer-info]
+- `peer`: instance of [`PeerId`][peer-id]
 
 #### A new connection to a peer has been opened
 
@@ -1126,7 +1132,7 @@ This event will be triggered anytime a new Connection is established to another 
 
 `libp2p.on('peer:connect', (peer) => {})`
 
-- `peer`: instance of [`PeerInfo`][peer-info]
+- `peer`: instance of [`PeerId`][peer-id]
 
 #### An existing connection to a peer has been closed
 
@@ -1134,7 +1140,7 @@ This event will be triggered anytime we are disconnected from another peer, rega
 
 `libp2p.on('peer:disconnect', (peer) => {})`
 
-- `peer`: instance of [`PeerInfo`][peer-info]
+- `peer`: instance of [`PeerId`][peer-id]
 
 ### libp2p.peerStore
 
@@ -1183,4 +1189,3 @@ This event will be triggered anytime we are disconnected from another peer, rega
 [connection]: https://github.com/libp2p/js-interfaces/tree/master/src/connection
 [multiaddr]: https://github.com/multiformats/js-multiaddr
 [peer-id]: https://github.com/libp2p/js-peer-id
-[peer-info]: https://github.com/libp2p/js-peer-info
