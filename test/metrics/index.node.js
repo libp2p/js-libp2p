@@ -74,7 +74,7 @@ describe('libp2p.metrics', () => {
 
     remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
 
-    const connection = await libp2p.dial(remoteLibp2p.peerInfo)
+    const connection = await libp2p.dial(remoteLibp2p.peerId)
     const { stream } = await connection.newStream('/echo/1.0.0')
 
     const bytes = randomBytes(512)
@@ -109,6 +109,11 @@ describe('libp2p.metrics', () => {
         enabled: true,
         computeThrottleMaxQueueSize: 1, // compute after every message
         movingAverageIntervals: [10]
+      },
+      config: {
+        peerDiscovery: {
+          autoDial: false
+        }
       }
     }
     let remoteLibp2p
@@ -116,7 +121,7 @@ describe('libp2p.metrics', () => {
 
     remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
 
-    const connection = await libp2p.dial(remoteLibp2p.peerInfo)
+    const connection = await libp2p.dial(remoteLibp2p.peerId)
     const { stream } = await connection.newStream('/echo/1.0.0')
 
     const bytes = randomBytes(512)

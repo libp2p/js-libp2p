@@ -9,7 +9,6 @@ const sinon = require('sinon')
 
 const delay = require('delay')
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const duplexPair = require('it-pair/duplex')
 const multiaddr = require('multiaddr')
 const pWaitFor = require('p-wait-for')
@@ -35,7 +34,7 @@ describe('Identify', () => {
     [localPeer, remotePeer] = (await Promise.all([
       PeerId.createFromJSON(Peers[0]),
       PeerId.createFromJSON(Peers[1])
-    ])).map(id => new PeerInfo(id))
+    ]))
   })
 
   afterEach(() => {
@@ -44,7 +43,10 @@ describe('Identify', () => {
 
   it('should be able to identify another peer', async () => {
     const localIdentify = new IdentifyService({
-      peerInfo: localPeer,
+      peerId: localPeer,
+      addresses: {
+        listen: []
+      },
       protocols,
       registrar: {
         peerStore: {
@@ -58,12 +60,15 @@ describe('Identify', () => {
       }
     })
     const remoteIdentify = new IdentifyService({
-      peerInfo: remotePeer,
+      peerId: remotePeer,
+      addresses: {
+        listen: []
+      },
       protocols
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
-    const localConnectionMock = { newStream: () => {}, remotePeer: remotePeer.id }
+    const localConnectionMock = { newStream: () => {}, remotePeer }
     const remoteConnectionMock = { remoteAddr: observedAddr }
 
     const [local, remote] = duplexPair()
@@ -86,12 +91,15 @@ describe('Identify', () => {
     expect(localIdentify.registrar.peerStore.protoBook.set.callCount).to.equal(1)
     // Validate the remote peer gets updated in the peer store
     const call = localIdentify.registrar.peerStore.addressBook.set.firstCall
-    expect(call.args[0].id.bytes).to.equal(remotePeer.id.bytes)
+    expect(call.args[0].id.bytes).to.equal(remotePeer.bytes)
   })
 
   it('should throw if identified peer is the wrong peer', async () => {
     const localIdentify = new IdentifyService({
-      peerInfo: localPeer,
+      peerId: localPeer,
+      addresses: {
+        listen: []
+      },
       protocols,
       registrar: {
         peerStore: {
@@ -105,12 +113,15 @@ describe('Identify', () => {
       }
     })
     const remoteIdentify = new IdentifyService({
-      peerInfo: remotePeer,
+      peerId: remotePeer,
+      addresses: {
+        listen: []
+      },
       protocols
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
-    const localConnectionMock = { newStream: () => {}, remotePeer: localPeer.id }
+    const localConnectionMock = { newStream: () => {}, remotePeer: localPeer }
     const remoteConnectionMock = { remoteAddr: observedAddr }
 
     const [local, remote] = duplexPair()
@@ -118,7 +129,7 @@ describe('Identify', () => {
 
     // Run identify
     const identifyPromise = Promise.all([
-      localIdentify.identify(localConnectionMock, localPeer.id),
+      localIdentify.identify(localConnectionMock, localPeer),
       remoteIdentify.handleMessage({
         connection: remoteConnectionMock,
         stream: remote,
@@ -133,8 +144,12 @@ describe('Identify', () => {
 
   describe('push', () => {
     it('should be able to push identify updates to another peer', async () => {
+      const listeningAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
       const localIdentify = new IdentifyService({
-        peerInfo: localPeer,
+        peerId: localPeer,
+        addresses: {
+          listen: [listeningAddr]
+        },
         registrar: { getConnection: () => {} },
         protocols: new Map([
           [multicodecs.IDENTIFY],
@@ -143,7 +158,10 @@ describe('Identify', () => {
         ])
       })
       const remoteIdentify = new IdentifyService({
-        peerInfo: remotePeer,
+        peerId: remotePeer,
+        addresses: {
+          listen: []
+        },
         registrar: {
           peerStore: {
             addressBook: {
@@ -158,13 +176,8 @@ describe('Identify', () => {
 
       // Setup peer protocols and multiaddrs
       const localProtocols = new Set([multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH, '/echo/1.0.0'])
-      const listeningAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
-      sinon.stub(localPeer.multiaddrs, 'toArray').returns([listeningAddr])
-      sinon.stub(localPeer, 'protocols').value(localProtocols)
-      sinon.stub(remotePeer, 'protocols').value(new Set([multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH]))
-
       const localConnectionMock = { newStream: () => {} }
-      const remoteConnectionMock = { remotePeer: localPeer.id }
+      const remoteConnectionMock = { remotePeer: localPeer }
 
       const [local, remote] = duplexPair()
       sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY_PUSH })
@@ -185,22 +198,21 @@ describe('Identify', () => {
       expect(remoteIdentify.registrar.peerStore.addressBook.set.callCount).to.equal(1)
       expect(remoteIdentify.registrar.peerStore.protoBook.set.callCount).to.equal(1)
       const [peerId, multiaddrs] = remoteIdentify.registrar.peerStore.addressBook.set.firstCall.args
-      expect(peerId.bytes).to.eql(localPeer.id.bytes)
+      expect(peerId.bytes).to.eql(localPeer.bytes)
       expect(multiaddrs).to.eql([listeningAddr])
       const [peerId2, protocols] = remoteIdentify.registrar.peerStore.protoBook.set.firstCall.args
-      expect(peerId2.bytes).to.eql(localPeer.id.bytes)
+      expect(peerId2.bytes).to.eql(localPeer.bytes)
       expect(protocols).to.eql(Array.from(localProtocols))
     })
   })
 
   describe('libp2p.dialer.identifyService', () => {
-    let peerInfo
+    let peerId
     let libp2p
     let remoteLibp2p
 
     before(async () => {
-      const peerId = await PeerId.createFromJSON(Peers[0])
-      peerInfo = new PeerInfo(peerId)
+      peerId = await PeerId.createFromJSON(Peers[0])
     })
 
     afterEach(async () => {
@@ -216,7 +228,7 @@ describe('Identify', () => {
     it('should run identify automatically after connecting', async () => {
       libp2p = new Libp2p({
         ...baseOptions,
-        peerInfo
+        peerId
       })
 
       sinon.spy(libp2p.identifyService, 'identify')
@@ -239,7 +251,7 @@ describe('Identify', () => {
     it('should push protocol updates to an already connected peer', async () => {
       libp2p = new Libp2p({
         ...baseOptions,
-        peerInfo
+        peerId
       })
 
       sinon.spy(libp2p.identifyService, 'identify')

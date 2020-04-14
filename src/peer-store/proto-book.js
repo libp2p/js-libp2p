@@ -6,7 +6,6 @@ const log = debug('libp2p:peer-store:proto-book')
 log.error = debug('libp2p:peer-store:proto-book:error')
 
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 
 const Book = require('./book')
 
@@ -74,13 +73,8 @@ class ProtoBook extends Book {
     this._setPeerId(peerId)
     log(`stored provided protocols for ${id}`)
 
-    // TODO: Remove peerInfo and its usage on peer-info deprecate
-    const peerInfo = new PeerInfo(peerId)
-    protocols.forEach((p) => peerInfo.protocols.add(p))
-
     this._ps.emit('change:protocols', {
       peerId,
-      peerInfo,
       protocols
     })
 
@@ -122,13 +116,8 @@ class ProtoBook extends Book {
     this._setPeerId(peerId)
     log(`added provided protocols for ${id}`)
 
-    // TODO: Remove peerInfo and its usage on peer-info deprecate
-    const peerInfo = new PeerInfo(peerId)
-    protocols.forEach((p) => peerInfo.protocols.add(p))
-
     this._ps.emit('change:protocols', {
       peerId,
-      peerInfo,
       protocols
     })
 

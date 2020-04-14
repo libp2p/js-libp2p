@@ -4,11 +4,12 @@ const multiaddr = require('multiaddr')
 const errCode = require('err-code')
 const TimeoutController = require('timeout-abort-controller')
 const anySignal = require('any-signal')
-const PeerId = require('peer-id')
 const debug = require('debug')
 const log = debug('libp2p:dialer')
 log.error = debug('libp2p:dialer:error')
+
 const { DialRequest } = require('./dial-request')
+const getPeerId = require('../get-peer-id')
 
 const { codes } = require('../errors')
 const {
@@ -57,18 +58,19 @@ class Dialer {
   }
 
   /**
-   * Connects to a given `PeerId` or `Multiaddr` by dialing all of its known addresses.
+   * Connects to a given `peer` by dialing all of its known addresses.
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    *
-   * @param {PeerId|Multiaddr} peerId The peer to dial
+   * @param {PeerId|Multiaddr|string} peer The peer to dial
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] An AbortController signal
    * @returns {Promise<Connection>}
    */
-  async connectToPeer (peerId, options = {}) {
-    const dialTarget = this._createDialTarget(peerId)
-    if (dialTarget.addrs.length === 0) {
+  async connectToPeer (peer, options = {}) {
+    const dialTarget = this._createDialTarget(peer)
+
+    if (!dialTarget.addrs.length) {
       throw errCode(new Error('The dial request has no addresses'), codes.ERR_NO_VALID_ADDRESSES)
     }
     const pendingDial = this._pendingDials.get(dialTarget.id) || this._createPendingDial(dialTarget, options)
@@ -98,24 +100,24 @@ class Dialer {
   /**
    * Creates a DialTarget. The DialTarget is used to create and track
    * the DialRequest to a given peer.
+   * If a multiaddr is received it should be the first address attempted.
    * @private
-   * @param {PeerId|Multiaddr} peer A PeerId or Multiaddr
+   * @param {PeerId|Multiaddr|string} peer A PeerId or Multiaddr
    * @returns {DialTarget}
    */
   _createDialTarget (peer) {
-    const dialable = Dialer.getDialable(peer)
-    if (multiaddr.isMultiaddr(dialable)) {
-      return {
-        id: dialable.toString(),
-        addrs: [dialable]
-      }
+    const peerId = getPeerId(peer, this.peerStore)
+    let addrs = this.peerStore.addressBook.getMultiaddrsForPeer(peerId)
+
+    // If received a multiaddr to dial, it should be the first to use
+    // But, if we know other multiaddrs for the peer, we should try them too.
+    if (multiaddr.isMultiaddr(peer)) {
+      addrs = addrs.filter((addr) => !peer.equals(addr))
+      addrs.unshift(peer)
     }
 
-    dialable.multiaddrs && this.peerStore.addressBook.add(dialable.id, Array.from(dialable.multiaddrs))
-    const addrs = this.peerStore.addressBook.getMultiaddrsForPeer(dialable.id)
-
     return {
-      id: dialable.id.toB58String(),
+      id: peerId.toB58String(),
       addrs
     }
   }
@@ -179,44 +181,6 @@ class Dialer {
     if (this.tokens.indexOf(token) > -1) return
     log('token %d released', token)
     this.tokens.push(token)
-  }
-
-  /**
-   * PeerInfo object
-   * @typedef {Object} peerInfo
-   * @property {Multiaddr} multiaddr peer multiaddr.
-   * @property {PeerId} id peer id.
-   */
-
-  /**
-   * Converts the given `peer` into a `PeerInfo` or `Multiaddr`.
-   * @static
-   * @param {PeerId|Multiaddr|string} peer
-   * @returns {peerInfo|Multiaddr}
-   */
-  static getDialable (peer) {
-    if (typeof peer === 'string') {
-      peer = multiaddr(peer)
-    }
-
-    let addrs
-    if (multiaddr.isMultiaddr(peer)) {
-      addrs = new Set([peer]) // TODO: after peer-info removal, a Set should not be needed
-      try {
-        peer = PeerId.createFromCID(peer.getPeerId())
-      } catch (err) {
-        throw errCode(new Error('The multiaddr did not contain a valid peer id'), codes.ERR_INVALID_PEER)
-      }
-    }
-
-    if (PeerId.isPeerId(peer)) {
-      peer = {
-        id: peer,
-        multiaddrs: addrs
-      }
-    }
-
-    return peer
   }
 }
 

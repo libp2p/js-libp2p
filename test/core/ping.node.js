@@ -20,16 +20,19 @@ describe('ping', () => {
       number: 2,
       config: baseOptions
     })
+
+    nodes[0].peerStore.addressBook.set(nodes[1].peerId, nodes[1].addresses.listen)
+    nodes[1].peerStore.addressBook.set(nodes[0].peerId, nodes[0].addresses.listen)
   })
 
   it('ping once from peer0 to peer1', async () => {
-    const latency = await nodes[0].ping(nodes[1].peerInfo)
+    const latency = await nodes[0].ping(nodes[1].peerId)
 
     expect(latency).to.be.a('Number')
   })
 
   it('ping several times for getting an average', async () => {
-    const latencies = await pTimes(5, () => nodes[1].ping(nodes[0].peerInfo))
+    const latencies = await pTimes(5, () => nodes[1].ping(nodes[0].peerId))
 
     const averageLatency = latencies.reduce((p, c) => p + c, 0) / latencies.length
     expect(averageLatency).to.be.a('Number')
@@ -66,7 +69,7 @@ describe('ping', () => {
       )
     })
 
-    const latency = await nodes[0].ping(nodes[1].peerInfo)
+    const latency = await nodes[0].ping(nodes[1].peerId)
 
     expect(latency).to.be.a('Number')
   })

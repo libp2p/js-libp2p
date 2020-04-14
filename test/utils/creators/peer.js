@@ -4,7 +4,6 @@ const pTimes = require('p-times')
 
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 
 const Libp2p = require('../../../src')
 const Peers = require('../../fixtures/peers')
@@ -19,37 +18,36 @@ const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
  * @param {number} [properties.number] number of peers (default: 1).
  * @param {boolean} [properties.fixture] use fixture for peer-id generation (default: true)
  * @param {boolean} [properties.started] nodes should start (default: true)
+ * @param {boolean} [properties.populateAddressBooks] nodes addressBooks should be populated with other peers (default: true)
  * @return {Promise<Array<Libp2p>>}
  */
-async function createPeer ({ number = 1, fixture = true, started = true, config = defaultOptions } = {}) {
-  const peerInfos = await createPeerInfo({ number, fixture })
+async function createPeer ({ number = 1, fixture = true, started = true, populateAddressBooks = true, config = defaultOptions } = {}) {
+  const peerIds = await createPeerId({ number, fixture })
 
+  const addresses = started ? { listen: [listenAddr] } : {}
   const peers = await pTimes(number, (i) => Libp2p.create({
-    peerInfo: peerInfos[i],
+    peerId: peerIds[i],
+    addresses,
     ...config
   }))
 
   if (started) {
-    await Promise.all(peers.map((p) => {
-      p.peerInfo.multiaddrs.add(listenAddr)
-      return p.start()
-    }))
+    await Promise.all(peers.map((p) => p.start()))
+
+    populateAddressBooks && _populateAddressBooks(peers)
   }
 
   return peers
 }
 
-/**
- * Create Peer-ids.
- * @param {Object} [properties]
- * @param {number} [properties.number] number of peers (default: 1).
- * @param {boolean} [properties.fixture] use fixture for peer-id generation (default: true)
- * @return {Promise<Array<PeerInfo>>}
- */
-async function createPeerInfo ({ number = 1, fixture = true } = {}) {
-  const peerIds = await createPeerId({ number, fixture })
-
-  return pTimes(number, (i) => PeerInfo.create(peerIds[i]))
+function _populateAddressBooks (peers) {
+  for (let i = 0; i < peers.length; i++) {
+    for (let j = 0; j < peers.length; j++) {
+      if (i !== j) {
+        peers[i].peerStore.addressBook.set(peers[j].peerId, peers[j].addresses.listen)
+      }
+    }
+  }
 }
 
 /**
@@ -67,5 +65,4 @@ function createPeerId ({ number = 1, fixture = true } = {}) {
 }
 
 module.exports.createPeer = createPeer
-module.exports.createPeerInfo = createPeerInfo
 module.exports.createPeerId = createPeerId
