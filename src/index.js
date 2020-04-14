@@ -6,12 +6,12 @@ const globalThis = require('ipfs-utils/src/globalthis')
 const log = debug('libp2p')
 log.error = debug('libp2p:error')
 
-const PeerInfo = require('peer-info')
+const PeerId = require('peer-id')
 
 const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
 const pubsub = require('./pubsub')
-const { getPeerInfo } = require('./get-peer-info')
+const getPeerId = require('./get-peer-id')
 const { validate: validateConfig } = require('./config')
 const { codes } = require('./errors')
 
@@ -43,8 +43,11 @@ class Libp2p extends EventEmitter {
     this._options = validateConfig(_options)
 
     this.datastore = this._options.datastore
-    this.peerInfo = this._options.peerInfo
+    this.peerId = this._options.peerId
     this.peerStore = new PeerStore()
+
+    // Addresses {listen, announce, noAnnounce}
+    this.addresses = this._options.addresses
 
     this._modules = this._options.modules
     this._config = this._options.config
@@ -57,29 +60,31 @@ class Libp2p extends EventEmitter {
 
     // Setup the Upgrader
     this.upgrader = new Upgrader({
-      localPeer: this.peerInfo.id,
+      localPeer: this.peerId,
       metrics: this.metrics,
       onConnection: (connection) => {
-        const peerInfo = new PeerInfo(connection.remotePeer)
-        this.registrar.onConnect(peerInfo, connection)
+        const peerId = connection.remotePeer
+
+        this.registrar.onConnect(peerId, connection)
         this.connectionManager.onConnect(connection)
-        this.emit('peer:connect', peerInfo)
+        this.emit('peer:connect', peerId)
 
         // Run identify for every connection
         if (this.identifyService) {
-          this.identifyService.identify(connection, connection.remotePeer)
+          this.identifyService.identify(connection, peerId)
             .catch(log.error)
         }
       },
       onConnectionEnd: (connection) => {
-        const peerInfo = Dialer.getDialable(connection.remotePeer)
-        this.registrar.onDisconnect(peerInfo, connection)
+        const peerId = connection.remotePeer
+
+        this.registrar.onDisconnect(peerId, connection)
         this.connectionManager.onDisconnect(connection)
 
         // If there are no connections to the peer, disconnect
-        if (!this.registrar.getConnection(peerInfo)) {
-          this.emit('peer:disconnect', peerInfo)
-          this.metrics && this.metrics.onPeerDisconnected(peerInfo.id)
+        if (!this.registrar.getConnection(peerId)) {
+          this.emit('peer:disconnect', peerId)
+          this.metrics && this.metrics.onPeerDisconnected(peerId)
         }
       }
     })
@@ -134,7 +139,8 @@ class Libp2p extends EventEmitter {
       // Add the identify service since we can multiplex
       this.identifyService = new IdentifyService({
         registrar: this.registrar,
-        peerInfo: this.peerInfo,
+        peerId: this.peerId,
+        addresses: this.addresses,
         protocols: this.upgrader.protocols
       })
       this.handle(Object.values(IDENTIFY_PROTOCOLS), this.identifyService.handleMessage)
@@ -152,7 +158,7 @@ class Libp2p extends EventEmitter {
       const DHT = this._modules.dht
       this._dht = new DHT({
         dialer: this.dialer,
-        peerInfo: this.peerInfo,
+        peerId: this.peerId,
         peerStore: this.peerStore,
         registrar: this.registrar,
         datastore: this.datastore,
@@ -264,10 +270,9 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Dials to the provided peer. If successful, the `PeerInfo` of the
+   * Dials to the provided peer. If successful, the known `PeerData` of the
    * peer will be added to the nodes `peerStore`
-   *
-   * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to dial
+   * @param {PeerId|Multiaddr|string} peer The peer to dial
    * @param {object} options
    * @param {AbortSignal} [options.signal]
    * @returns {Promise<Connection>}
@@ -278,30 +283,21 @@ class Libp2p extends EventEmitter {
 
   /**
    * Dials to the provided peer and handshakes with the given protocol.
-   * If successful, the `PeerInfo` of the peer will be added to the nodes `peerStore`,
-   * and the `Connection` will be sent in the callback
-   *
+   * If successful, the known `PeerData` of the peer will be added to the nodes `peerStore`,
+   * and the `Connection` will be returned
    * @async
-   * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to dial
+   * @param {PeerId|Multiaddr|string} peer The peer to dial
    * @param {string[]|string} protocols
    * @param {object} options
    * @param {AbortSignal} [options.signal]
    * @returns {Promise<Connection|*>}
    */
   async dialProtocol (peer, protocols, options) {
-    const dialable = Dialer.getDialable(peer)
-    let connection
-    if (PeerInfo.isPeerInfo(dialable)) {
-      // TODO Inconsistency from: getDialable adds a set, while regular peerInfo uses a Multiaddr set
-      // This should be handled on `peer-info` removal
-      const multiaddrs = dialable.multiaddrs.toArray ? dialable.multiaddrs.toArray() : Array.from(dialable.multiaddrs)
-      this.peerStore.addressBook.add(dialable.id, multiaddrs)
-
-      connection = this.registrar.getConnection(dialable)
-    }
+    const peerId = getPeerId(peer, this.peerStore)
+    let connection = this.registrar.getConnection(peerId)
 
     if (!connection) {
-      connection = await this.dialer.connectToPeer(dialable, options)
+      connection = await this.dialer.connectToPeer(peer, options)
     }
 
     // If a protocol was provided, create a new stream
@@ -314,14 +310,13 @@ class Libp2p extends EventEmitter {
 
   /**
    * Disconnects all connections to the given `peer`
-   *
-   * @param {PeerInfo|PeerId|multiaddr|string} peer the peer to close connections to
+   * @param {PeerId|multiaddr|string} peer the peer to close connections to
    * @returns {Promise<void>}
    */
   async hangUp (peer) {
-    const peerInfo = getPeerInfo(peer, this.peerStore)
+    const peerId = getPeerId(peer)
 
-    const connections = this.registrar.connections.get(peerInfo.id.toB58String())
+    const connections = this.registrar.connections.get(peerId.toB58String())
 
     if (!connections) {
       return
@@ -335,14 +330,14 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Pings the given peer
-   * @param {PeerInfo|PeerId|Multiaddr|string} peer The peer to ping
+   * Pings the given peer in order to obtain the operation latency.
+   * @param {PeerId|Multiaddr|string} peer The peer to ping
    * @returns {Promise<number>}
    */
-  async ping (peer) {
-    const peerInfo = await getPeerInfo(peer, this.peerStore)
+  ping (peer) {
+    const peerId = getPeerId(peer)
 
-    return ping(this, peerInfo.id)
+    return ping(this, peerId)
   }
 
   /**
@@ -380,17 +375,14 @@ class Libp2p extends EventEmitter {
   }
 
   async _onStarting () {
-    // Listen on the addresses supplied in the peerInfo
-    const multiaddrs = this.peerInfo.multiaddrs.toArray()
+    // Listen on the addresses provided
+    const multiaddrs = this.addresses.listen
 
     await this.transportManager.listen(multiaddrs)
 
     // The addresses may change once the listener starts
     // eg /ip4/0.0.0.0/tcp/0 => /ip4/192.168.1.0/tcp/58751
-    this.peerInfo.multiaddrs.clear()
-    for (const ma of this.transportManager.getAddrs()) {
-      this.peerInfo.multiaddrs.add(ma)
-    }
+    this.addresses.listen = this.transportManager.getAddrs()
 
     if (this._config.pubsub.enabled) {
       this.pubsub && this.pubsub.start()
@@ -418,18 +410,18 @@ class Libp2p extends EventEmitter {
 
     this.connectionManager.start()
 
-    this.peerStore.on('peer', peerInfo => {
-      this.emit('peer:discovery', peerInfo)
-      this._maybeConnect(peerInfo)
+    this.peerStore.on('peer', peerId => {
+      this.emit('peer:discovery', peerId)
+      this._maybeConnect(peerId)
     })
 
     // Peer discovery
     await this._setupPeerDiscovery()
 
     // Once we start, emit and dial any peers we may have already discovered
-    for (const peerInfo of this.peerStore.peers.values()) {
-      this.emit('peer:discovery', peerInfo)
-      this._maybeConnect(peerInfo)
+    for (const peerData of this.peerStore.peers.values()) {
+      this.emit('peer:discovery', peerData.id)
+      this._maybeConnect(peerData.id)
     }
   }
 
@@ -437,34 +429,33 @@ class Libp2p extends EventEmitter {
    * Called whenever peer discovery services emit `peer` events.
    * Known peers may be emitted.
    * @private
-   * @param {PeerInfo} peerInfo
+   * @param {PeerDara} peerData
    */
-  _onDiscoveryPeer (peerInfo) {
-    if (peerInfo.id.toB58String() === this.peerInfo.id.toB58String()) {
+  _onDiscoveryPeer (peerData) {
+    if (peerData.id.toB58String() === this.peerId.toB58String()) {
       log.error(new Error(codes.ERR_DISCOVERED_SELF))
       return
     }
 
-    // TODO: once we deprecate peer-info, we should only set if we have data
-    this.peerStore.addressBook.add(peerInfo.id, peerInfo.multiaddrs.toArray())
-    this.peerStore.protoBook.set(peerInfo.id, Array.from(peerInfo.protocols))
+    peerData.multiaddrs && this.peerStore.addressBook.add(peerData.id, peerData.multiaddrs)
+    peerData.protocols && this.peerStore.protoBook.set(peerData.id, peerData.protocols)
   }
 
   /**
-   * Will dial to the given `peerInfo` if the current number of
+   * Will dial to the given `peerId` if the current number of
    * connected peers is less than the configured `ConnectionManager`
    * minPeers.
    * @private
-   * @param {PeerInfo} peerInfo
+   * @param {PeerId} peerId
    */
-  async _maybeConnect (peerInfo) {
+  async _maybeConnect (peerId) {
     // If auto dialing is on and we have no connection to the peer, check if we should dial
-    if (this._config.peerDiscovery.autoDial === true && !this.registrar.getConnection(peerInfo)) {
+    if (this._config.peerDiscovery.autoDial === true && !this.registrar.getConnection(peerId)) {
       const minPeers = this._options.connectionManager.minPeers || 0
       if (minPeers > this.connectionManager._connections.size) {
-        log('connecting to discovered peer %s', peerInfo.id.toB58String())
+        log('connecting to discovered peer %s', peerId.toB58String())
         try {
-          await this.dialer.connectToPeer(peerInfo)
+          await this.dialer.connectToPeer(peerId)
         } catch (err) {
           log.error('could not connect to discovered peer', err)
         }
@@ -495,7 +486,11 @@ class Libp2p extends EventEmitter {
         let discoveryService
 
         if (typeof DiscoveryService === 'function') {
-          discoveryService = new DiscoveryService(Object.assign({}, config, { peerInfo: this.peerInfo, libp2p: this }))
+          discoveryService = new DiscoveryService(Object.assign({}, config, {
+            peerId: this.peerId,
+            multiaddrs: this.addresses.listen,
+            libp2p: this
+          }))
         } else {
           discoveryService = DiscoveryService
         }
@@ -522,19 +517,19 @@ class Libp2p extends EventEmitter {
 }
 
 /**
- * Like `new Libp2p(options)` except it will create a `PeerInfo`
+ * Like `new Libp2p(options)` except it will create a `PeerId`
  * instance if one is not provided in options.
  * @param {object} options Libp2p configuration options
  * @returns {Libp2p}
  */
 Libp2p.create = async function create (options = {}) {
-  if (options.peerInfo) {
+  if (options.peerId) {
     return new Libp2p(options)
   }
 
-  const peerInfo = await PeerInfo.create()
+  const peerId = await PeerId.create()
 
-  options.peerInfo = peerInfo
+  options.peerId = peerId
   return new Libp2p(options)
 }
 

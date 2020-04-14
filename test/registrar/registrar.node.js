@@ -16,20 +16,20 @@ const peerUtils = require('../utils/creators/peer')
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('registrar on dial', () => {
-  let peerInfo
-  let remotePeerInfo
+  let peerId
+  let remotePeerId
   let libp2p
   let remoteLibp2p
   let remoteAddr
 
   before(async () => {
-    [peerInfo, remotePeerInfo] = await peerUtils.createPeerInfo({ number: 2 })
+    [peerId, remotePeerId] = await peerUtils.createPeerId({ number: 2 })
     remoteLibp2p = new Libp2p(mergeOptions(baseOptions, {
-      peerInfo: remotePeerInfo
+      peerId: remotePeerId
     }))
 
     await remoteLibp2p.transportManager.listen([listenAddr])
-    remoteAddr = remoteLibp2p.transportManager.getAddrs()[0].encapsulate(`/p2p/${remotePeerInfo.id.toB58String()}`)
+    remoteAddr = remoteLibp2p.transportManager.getAddrs()[0].encapsulate(`/p2p/${remotePeerId.toB58String()}`)
   })
 
   after(async () => {
@@ -40,7 +40,7 @@ describe('registrar on dial', () => {
 
   it('should inform registrar of a new connection', async () => {
     libp2p = new Libp2p(mergeOptions(baseOptions, {
-      peerInfo
+      peerId
     }))
 
     sinon.spy(remoteLibp2p.registrar, 'onConnect')
@@ -48,16 +48,16 @@ describe('registrar on dial', () => {
     await libp2p.dial(remoteAddr)
     expect(remoteLibp2p.registrar.onConnect.callCount).to.equal(1)
 
-    const libp2pConn = libp2p.registrar.getConnection(remotePeerInfo)
+    const libp2pConn = libp2p.registrar.getConnection(remotePeerId)
     expect(libp2pConn).to.exist()
 
-    const remoteConn = remoteLibp2p.registrar.getConnection(peerInfo)
+    const remoteConn = remoteLibp2p.registrar.getConnection(peerId)
     expect(remoteConn).to.exist()
   })
 
   it('should be closed on libp2p stop', async () => {
     libp2p = new Libp2p(mergeOptions(baseOptions, {
-      peerInfo
+      peerId
     }))
 
     await libp2p.dial(remoteAddr)

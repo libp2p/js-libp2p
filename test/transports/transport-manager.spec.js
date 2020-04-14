@@ -16,7 +16,6 @@ const { codes: ErrorCodes } = require('../../src/errors')
 const Libp2p = require('../../src')
 const Peers = require('../fixtures/peers')
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 
 describe('Transport Manager (WebSockets)', () => {
   let tm
@@ -88,12 +87,11 @@ describe('Transport Manager (WebSockets)', () => {
 })
 
 describe('libp2p.transportManager', () => {
-  let peerInfo
+  let peerId
   let libp2p
 
   before(async () => {
-    const peerId = await PeerId.createFromJSON(Peers[0])
-    peerInfo = new PeerInfo(peerId)
+    peerId = await PeerId.createFromJSON(Peers[0])
   })
 
   afterEach(async () => {
@@ -104,7 +102,7 @@ describe('libp2p.transportManager', () => {
 
   it('should create a TransportManager', () => {
     libp2p = new Libp2p({
-      peerInfo,
+      peerId,
       modules: {
         transport: [Transport]
       }
@@ -122,7 +120,7 @@ describe('libp2p.transportManager', () => {
       another: 'value'
     }
     libp2p = new Libp2p({
-      peerInfo,
+      peerId,
       modules: {
         transport: [spy]
       },
@@ -146,7 +144,7 @@ describe('libp2p.transportManager', () => {
 
   it('starting and stopping libp2p should start and stop TransportManager', async () => {
     libp2p = new Libp2p({
-      peerInfo,
+      peerId,
       modules: {
         transport: [Transport]
       }

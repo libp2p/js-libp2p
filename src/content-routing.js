@@ -24,7 +24,7 @@ module.exports = (node) => {
      * @param {object} [options]
      * @param {number} [options.timeout] How long the query should run
      * @param {number} [options.maxNumProviders] - maximum number of providers to find
-     * @returns {AsyncIterable<PeerInfo>}
+     * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
      */
     async * findProviders (key, options) {
       if (!routers.length) {
@@ -42,8 +42,8 @@ module.exports = (node) => {
         })
       )
 
-      for (const pInfo of result) {
-        yield pInfo
+      for (const peerData of result) {
+        yield peerData
       }
     },
 
