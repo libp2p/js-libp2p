@@ -22,7 +22,7 @@ module.exports = (circuit) => {
    * @return {void}
    */
   listener.listen = async (addr) => {
-    const [addrString] = String(addr).split('/p2p-circuit').slice(-1)
+    const addrString = String(addr).split('/p2p-circuit').find(a => a !== '')
 
     const relayConn = await circuit._dialer.connectToPeer(multiaddr(addrString))
     const relayedAddr = relayConn.remoteAddr.encapsulate('/p2p-circuit')

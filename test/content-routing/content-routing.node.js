@@ -155,10 +155,7 @@ describe('content-routing', () => {
       const mockApi = nock('http://0.0.0.0:60197')
         // mock the refs call
         .post('/api/v0/refs')
-        .query({
-          recursive: false,
-          arg: cid.toBaseEncodedString()
-        })
+        .query(true)
         .reply(200, null, [
           'Content-Type', 'application/json',
           'X-Chunked-Output', '1'
@@ -174,10 +171,7 @@ describe('content-routing', () => {
       const mockApi = nock('http://0.0.0.0:60197')
         // mock the refs call
         .post('/api/v0/refs')
-        .query({
-          recursive: false,
-          arg: cid.toBaseEncodedString()
-        })
+        .query(true)
         .reply(502, 'Bad Gateway', ['Content-Type', 'application/json'])
 
       await expect(node.contentRouting.provide(cid))
@@ -192,9 +186,7 @@ describe('content-routing', () => {
 
       const mockApi = nock('http://0.0.0.0:60197')
         .post('/api/v0/dht/findprovs')
-        .query({
-          arg: cid.toBaseEncodedString()
-        })
+        .query(true)
         .reply(200, `{"Extra":"","ID":"QmWKqWXCtRXEeCQTo3FoZ7g4AfnGiauYYiczvNxFCHicbB","Responses":[{"Addrs":["/ip4/0.0.0.0/tcp/0"],"ID":"${provider}"}],"Type":4}\n`, [
           'Content-Type', 'application/json',
           'X-Chunked-Output', '1'
@@ -214,9 +206,7 @@ describe('content-routing', () => {
       const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
       const mockApi = nock('http://0.0.0.0:60197')
         .post('/api/v0/dht/findprovs')
-        .query({
-          arg: cid.toBaseEncodedString()
-        })
+        .query(true)
         .reply(502, 'Bad Gateway', [
           'X-Chunked-Output', '1'
         ])

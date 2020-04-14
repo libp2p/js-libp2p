@@ -149,7 +149,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     // Connect the destination peer and the relay
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
-    await dstLibp2p.transportManager.listen([multiaddr(`/p2p-circuit${relayAddr}`)])
+    await dstLibp2p.transportManager.listen([multiaddr(`${relayAddr}/p2p-circuit`)])
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
     // Tamper with the our multiaddrs for the circuit message

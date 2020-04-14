@@ -115,9 +115,7 @@ describe('peer-routing', () => {
       const peerKey = 'QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL'
       const mockApi = nock('http://0.0.0.0:60197')
         .post('/api/v0/dht/findpeer')
-        .query({
-          arg: peerKey
-        })
+        .query(true)
         .reply(200, `{"Extra":"","ID":"some other id","Responses":null,"Type":0}\n{"Extra":"","ID":"","Responses":[{"Addrs":["/ip4/127.0.0.1/tcp/4001"],"ID":"${peerKey}"}],"Type":2}\n`, [
           'Content-Type', 'application/json',
           'X-Chunked-Output', '1'
@@ -133,9 +131,7 @@ describe('peer-routing', () => {
       const peerKey = 'key of a peer not on the network'
       const mockApi = nock('http://0.0.0.0:60197')
         .post('/api/v0/dht/findpeer')
-        .query({
-          arg: peerKey
-        })
+        .query(true)
         .reply(200, '{"Extra":"","ID":"some other id","Responses":null,"Type":6}\n{"Extra":"","ID":"yet another id","Responses":null,"Type":0}\n{"Extra":"routing:not found","ID":"","Responses":null,"Type":3}\n', [
           'Content-Type', 'application/json',
           'X-Chunked-Output', '1'
@@ -151,9 +147,7 @@ describe('peer-routing', () => {
       const peerKey = 'key of a peer not on the network'
       const mockApi = nock('http://0.0.0.0:60197')
         .post('/api/v0/dht/findpeer')
-        .query({
-          arg: peerKey
-        })
+        .query(true)
         .reply(502)
 
       await expect(node.peerRouting.findPeer(peerKey))
