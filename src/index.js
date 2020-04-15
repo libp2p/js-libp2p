@@ -313,8 +313,15 @@ class Libp2p extends EventEmitter {
    */
   hangUp (peer) {
     const peerInfo = getPeerInfo(peer, this.peerStore)
+
+    let connections = this.registrar.connections.get(peerInfo.id.toB58String())
+
+    if (!connections) {
+      return Promise.resolve()
+    }
+
     return Promise.all(
-      this.registrar.connections.get(peerInfo.id.toB58String()).map(connection => {
+      connections.map(connection => {
         return connection.close()
       })
     )
