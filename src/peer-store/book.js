@@ -82,6 +82,12 @@ class Book {
 
     return true
   }
+
+  _setPeerId (peerId) {
+    if (!this._ps.peerIds.get(peerId)) {
+      this._ps.peerIds.set(peerId.toB58String(), peerId)
+    }
+  }
 }
 
 module.exports = Book

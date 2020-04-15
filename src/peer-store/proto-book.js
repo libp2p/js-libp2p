@@ -134,12 +134,6 @@ class ProtoBook extends Book {
 
     return this
   }
-
-  _setPeerId (peerId) {
-    if (!this._ps.peerIds.get(peerId)) {
-      this._ps.peerIds.set(peerId.toString(), peerId)
-    }
-  }
 }
 
 module.exports = ProtoBook

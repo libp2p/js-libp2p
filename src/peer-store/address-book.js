@@ -185,12 +185,6 @@ class AddressBook extends Book {
     return multiaddrInfos
   }
 
-  _setPeerId (peerId) {
-    if (!this._ps.peerIds.get(peerId)) {
-      this._ps.peerIds.set(peerId.toString(), peerId)
-    }
-  }
-
   /**
    * Get the known multiaddrs for a given peer. All returned multiaddrs
    * will include the encapsulated `PeerId` of the peer.

@@ -120,7 +120,7 @@ class PeerStore extends EventEmitter {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    const id = this.peerIds.get(peerId.toString())
+    const id = this.peerIds.get(peerId.toB58String())
     const multiaddrInfos = this.addressBook.get(peerId)
     const protocols = this.protoBook.get(peerId)
 
