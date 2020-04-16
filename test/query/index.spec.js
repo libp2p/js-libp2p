@@ -8,7 +8,7 @@ chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const sinon = require('sinon')
 const delay = require('delay')
-const PeerBook = require('peer-book')
+const PeerStore = require('libp2p/src/peer-store')
 
 const Query = require('../../src/query')
 const Path = require('../../src/query/path')
@@ -46,7 +46,7 @@ describe('Query', () => {
     })
 
     before('create a dht', () => {
-      const peerStore = new PeerBook()
+      const peerStore = new PeerStore()
       dht = new DHT({
         dialer: {},
         peerStore,

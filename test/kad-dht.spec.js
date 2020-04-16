@@ -648,7 +648,7 @@ describe('KadDHT', () => {
       const dhts = await tdht.spawn(2)
 
       const ids = dhts.map((d) => d.peerInfo.id)
-      dhts[0].peerStore.put(dhts[1].peerInfo)
+      dhts[0].peerStore.addressBook.add(dhts[1].peerInfo.id, dhts[1].peerInfo.multiaddrs.toArray())
 
       const key = await dhts[0].getPublicKey(ids[1])
       expect(key).to.eql(dhts[1].peerInfo.id.pubKey)
@@ -671,7 +671,7 @@ describe('KadDHT', () => {
       await tdht.connect(dhts[0], dhts[1])
 
       // remove the pub key to be sure it is fetched
-      dhts[0].peerStore.put(dhts[1].peerInfo, true)
+      dhts[0].peerStore.addressBook.add(dhts[1].peerInfo.id, dhts[1].peerInfo.multiaddrs.toArray())
 
       const key = await dhts[0].getPublicKey(ids[1])
       expect(key.equals(dhts[1].peerInfo.id.pubKey)).to.eql(true)
@@ -694,7 +694,7 @@ describe('KadDHT', () => {
     it('_nearestPeersToQuery', async () => {
       const [dht] = await tdht.spawn(1)
 
-      dht.peerStore.put(peerInfos[1])
+      dht.peerStore.addressBook.add(peerInfos[1].id, peerInfos[1].multiaddrs.toArray())
       await dht._add(peerInfos[1])
       const res = await dht._nearestPeersToQuery({ key: 'hello' })
       expect(res).to.be.eql([peerInfos[1]])
@@ -703,8 +703,8 @@ describe('KadDHT', () => {
     it('_betterPeersToQuery', async () => {
       const [dht] = await tdht.spawn(1)
 
-      dht.peerStore.put(peerInfos[1])
-      dht.peerStore.put(peerInfos[2])
+      dht.peerStore.addressBook.add(peerInfos[1].id, peerInfos[1].multiaddrs.toArray())
+      dht.peerStore.addressBook.add(peerInfos[2].id, peerInfos[2].multiaddrs.toArray())
 
       await dht._add(peerInfos[1])
       await dht._add(peerInfos[2])
@@ -769,7 +769,7 @@ describe('KadDHT', () => {
     it('_verifyRecordLocally', async () => {
       const [dht] = await tdht.spawn(1)
 
-      dht.peerStore.put(peerInfos[1])
+      dht.peerStore.addressBook.add(peerInfos[1].id, peerInfos[1].multiaddrs.toArray())
 
       const record = new Record(
         Buffer.from('hello'),

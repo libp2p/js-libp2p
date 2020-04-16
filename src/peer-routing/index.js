@@ -4,7 +4,6 @@ const errcode = require('err-code')
 const pTimeout = require('p-timeout')
 
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const crypto = require('libp2p-crypto')
 
 const c = require('../constants')
@@ -24,11 +23,7 @@ module.exports = (dht) => {
     dht._log('findPeerLocal %s', peer.toB58String())
     const p = await dht.routingTable.find(peer)
 
-    if (!p || !dht.peerStore.has(p)) {
-      return
-    }
-
-    return dht.peerStore.get(p)
+    return p && dht.peerStore.get(p)
   }
 
   /**
@@ -57,7 +52,12 @@ module.exports = (dht) => {
 
     return msg.closerPeers
       .filter((pInfo) => !dht._isSelf(pInfo.id))
-      .map((pInfo) => dht.peerStore.put(pInfo))
+      .map((pInfo) => {
+        // Add known address to peer store
+        dht.peerStore.addressBook.add(pInfo.id, pInfo.multiaddrs.toArray())
+
+        return pInfo
+      })
   }
 
   /**
@@ -128,9 +128,13 @@ module.exports = (dht) => {
 
       // sanity check
       const match = peers.find((p) => p.isEqual(id))
-      if (match && dht.peerStore.has(id)) {
-        dht._log('found in peerStore')
-        return dht.peerStore.get(id)
+      if (match) {
+        const peer = dht.peerStore.get(id)
+
+        if (peer) {
+          dht._log('found in peerStore')
+          return peer
+        }
       }
 
       // query the network
@@ -169,7 +173,7 @@ module.exports = (dht) => {
       result.paths.forEach((result) => {
         if (result.success) {
           success = true
-          dht.peerStore.put(result.peer)
+          dht.peerStore.addressBook.add(result.peer.id, result.peer.multiaddrs.toArray())
         }
       })
       dht._log('findPeer %s: %s', id.toB58String(), success)
@@ -228,16 +232,10 @@ module.exports = (dht) => {
       dht._log('getPublicKey %s', peer.toB58String())
 
       // local check
-      let info
-      if (dht.peerStore.has(peer)) {
-        info = dht.peerStore.get(peer)
-
-        if (info && info.id.pubKey) {
-          dht._log('getPublicKey: found local copy')
-          return info.id.pubKey
-        }
-      } else {
-        info = dht.peerStore.put(new PeerInfo(peer))
+      const info = dht.peerStore.get(peer)
+      if (info && info.id.pubKey) {
+        dht._log('getPublicKey: found local copy')
+        return info.id.pubKey
       }
 
       // try the node directly
@@ -252,7 +250,7 @@ module.exports = (dht) => {
       }
 
       info.id = new PeerId(peer.id, null, pk)
-      dht.peerStore.put(info)
+      dht.peerStore.addressBook.add(info.id, info.multiaddrs.toArray())
 
       return pk
     }

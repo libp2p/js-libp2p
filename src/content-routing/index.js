@@ -80,12 +80,7 @@ module.exports = (dht) => {
       const provs = await dht.providers.getProviders(key)
 
       provs.forEach((id) => {
-        let info
-        if (dht.peerStore.has(id)) {
-          info = dht.peerStore.get(id)
-        } else {
-          info = dht.peerStore.put(new PeerInfo(id))
-        }
+        const info = dht.peerStore.get(id) || new PeerInfo(id)
         out.push(info)
       })
 
@@ -113,7 +108,7 @@ module.exports = (dht) => {
           dht._log('(%s) found %s provider entries', dht.peerInfo.id.toB58String(), provs.length)
 
           provs.forEach((prov) => {
-            pathProviders.push(dht.peerStore.put(prov))
+            pathProviders.push(prov)
           })
 
           // hooray we have all that we want

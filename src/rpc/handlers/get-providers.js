@@ -34,13 +34,7 @@ module.exports = (dht) => {
       dht._betterPeersToQuery(msg, peer)
     ])
 
-    const providers = peers.map((p) => {
-      if (dht.peerStore.has(p)) {
-        return dht.peerStore.get(p)
-      }
-
-      return dht.peerStore.put(new PeerInfo(p))
-    })
+    const providers = peers.map((p) => new PeerInfo(p))
 
     if (has) {
       providers.push(dht.peerInfo)

@@ -29,7 +29,7 @@ describe('rpc', () => {
     const defer = pDefer()
     const [dht] = await tdht.spawn(1)
 
-    dht.peerStore.put(peerInfos[1])
+    dht.peerStore.addressBook.set(peerInfos[1].id, peerInfos[1].multiaddrs.toArray())
 
     const msg = new Message(Message.TYPES.GET_VALUE, Buffer.from('hello'), 5)
 

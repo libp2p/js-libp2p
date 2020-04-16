@@ -3,7 +3,7 @@
 /* eslint-disable no-console */
 
 'use strict'
-const PeerBook = require('peer-book')
+const PeerStore = require('libp2p/src/peer-store')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multihashes = require('multihashes')
@@ -85,7 +85,7 @@ async function setup () {
 async function GetClosestPeersSimulation () {
   const dht = new DHT({
     _peerInfo: ourPeerInfo,
-    _peerBook: new PeerBook(),
+    _peerBook: new PeerStore(),
     handle: () => {},
     on: () => {}
   }, {

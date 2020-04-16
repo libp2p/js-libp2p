@@ -321,14 +321,18 @@ class KadDHT extends EventEmitter {
    */
   async _nearestPeersToQuery (msg) {
     const key = await utils.convertBuffer(msg.key)
-
     const ids = this.routingTable.closestPeers(key, this.kBucketSize)
 
     return ids.map((p) => {
-      if (this.peerStore.has(p)) {
-        return this.peerStore.get(p)
+      const peer = this.peerStore.get(p)
+      const peerInfo = new PeerInfo(p)
+
+      if (peer) {
+        peer.protocols.forEach((p) => peerInfo.protocols.add(p))
+        peer.multiaddrInfos.forEach((mi) => peerInfo.multiaddrs.add(mi.multiaddr))
       }
-      return this.peerStore.put(new PeerInfo(p))
+
+      return peerInfo
     })
   }
 

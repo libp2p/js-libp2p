@@ -83,7 +83,7 @@ describe('rpc - handlers - AddProvider', () => {
     const bookEntry = dht.peerStore.get(provider.id)
 
     // Favour peerInfo from payload over peerInfo from sender
-    expect(bookEntry.multiaddrs.toArray()).to.eql(
+    expect(bookEntry.multiaddrInfos.map((mi) => mi.multiaddr)).to.eql(
       provider.multiaddrs.toArray()
     )
   })
@@ -100,7 +100,7 @@ describe('rpc - handlers - AddProvider', () => {
 
     const provs = await dht.providers.getProviders(cid)
 
-    expect(dht.peerStore.has(provider.id)).to.equal(false)
+    expect(dht.peerStore.get(provider.id)).to.equal(undefined)
     expect(provs).to.have.length(1)
     expect(provs[0].id).to.eql(provider.id.id)
   })

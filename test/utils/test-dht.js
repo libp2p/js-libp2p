@@ -1,6 +1,6 @@
 'use strict'
 
-const PeerBook = require('peer-book')
+const PeerStore = require('libp2p/src/peer-store')
 const pRetry = require('p-retry')
 const delay = require('delay')
 
@@ -27,7 +27,7 @@ class TestDHT {
 
   async _spawnOne (index, options = {}) {
     const regRecord = {}
-    const peerStore = new PeerBook()
+    const peerStore = new PeerStore()
 
     // Disable random walk by default for more controlled testing
     options = {

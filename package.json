@@ -76,6 +76,7 @@
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
     "it-pair": "^1.0.0",
+    "libp2p": "libp2p/js-libp2p#chore/deprecate-old-peer-store-api",
     "lodash": "^4.17.11",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
@@ -83,7 +84,6 @@
     "p-each-series": "^2.1.0",
     "p-map-series": "^2.1.0",
     "p-retry": "^4.2.0",
-    "peer-book": "~0.9.2",
     "sinon": "^9.0.0"
   },
   "contributors": [
