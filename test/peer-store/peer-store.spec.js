@@ -45,7 +45,7 @@ describe('peer-store', () => {
     })
 
     it('returns undefined on trying to find a non existant peerId', () => {
-      const peerInfo = peerStore.find(peerIds[0])
+      const peerInfo = peerStore.get(peerIds[0])
       expect(peerInfo).to.not.exist()
     })
   })
@@ -101,8 +101,8 @@ describe('peer-store', () => {
       expect(peers.size).to.equal(3)
     })
 
-    it('finds the stored information of a peer in all its books', () => {
-      const peerInfo = peerStore.find(peerIds[0])
+    it('gets the stored information of a peer in all its books', () => {
+      const peerInfo = peerStore.get(peerIds[0])
       expect(peerInfo).to.exist()
       expect(peerInfo.protocols).to.have.members([proto1])
 
@@ -110,8 +110,8 @@ describe('peer-store', () => {
       expect(peerMultiaddrs).to.have.members([addr1, addr2])
     })
 
-    it('finds the stored information of a peer that is not present in all its books', () => {
-      const peerInfo = peerStore.find(peerIds[2])
+    it('gets the stored information of a peer that is not present in all its books', () => {
+      const peerInfo = peerStore.get(peerIds[2])
       expect(peerInfo).to.exist()
       expect(peerInfo.protocols.length).to.eql(0)
 

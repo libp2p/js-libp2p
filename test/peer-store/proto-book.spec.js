@@ -5,10 +5,9 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 
-const { EventEmitter } = require('events')
 const pDefer = require('p-defer')
 
-const ProtoBook = require('../../src/peer-store/proto-book')
+const PeerStore = require('../../src/peer-store')
 
 const peerUtils = require('../utils/creators/peer')
 const {
@@ -25,15 +24,15 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.set', () => {
-    let ee, pb
+    let peerStore, pb
 
     beforeEach(() => {
-      ee = new EventEmitter()
-      pb = new ProtoBook(ee)
+      peerStore = new PeerStore()
+      pb = peerStore.protoBook
     })
 
     afterEach(() => {
-      ee.removeAllListeners()
+      peerStore.removeAllListeners()
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
@@ -52,7 +51,7 @@ describe('protoBook', () => {
       const defer = pDefer()
       const supportedProtocols = ['protocol1', 'protocol2']
 
-      ee.once('change:protocols', ({ peerId, protocols }) => {
+      peerStore.once('change:protocols', ({ peerId, protocols }) => {
         expect(peerId).to.exist()
         expect(protocols).to.have.deep.members(supportedProtocols)
         defer.resolve()
@@ -72,7 +71,7 @@ describe('protoBook', () => {
       const supportedProtocolsB = ['protocol2']
 
       let changeCounter = 0
-      ee.on('change:protocols', () => {
+      peerStore.on('change:protocols', () => {
         changeCounter++
         if (changeCounter > 1) {
           defer.resolve()
@@ -96,7 +95,7 @@ describe('protoBook', () => {
       const supportedProtocols = ['protocol1', 'protocol2']
 
       let changeCounter = 0
-      ee.on('change:protocols', () => {
+      peerStore.on('change:protocols', () => {
         changeCounter++
         if (changeCounter > 1) {
           defer.reject()
@@ -119,15 +118,15 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.add', () => {
-    let ee, pb
+    let peerStore, pb
 
     beforeEach(() => {
-      ee = new EventEmitter()
-      pb = new ProtoBook(ee)
+      peerStore = new PeerStore()
+      pb = peerStore.protoBook
     })
 
     afterEach(() => {
-      ee.removeAllListeners()
+      peerStore.removeAllListeners()
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
@@ -150,7 +149,7 @@ describe('protoBook', () => {
       const finalProtocols = supportedProtocolsA.concat(supportedProtocolsB)
 
       let changeTrigger = 2
-      ee.on('change:protocols', ({ protocols }) => {
+      peerStore.on('change:protocols', ({ protocols }) => {
         changeTrigger--
         if (changeTrigger === 0 && arraysAreEqual(protocols, finalProtocols)) {
           defer.resolve()
@@ -178,7 +177,7 @@ describe('protoBook', () => {
       const finalProtocols = supportedProtocolsA.concat(supportedProtocolsB)
 
       let changeCounter = 0
-      ee.on('change:protocols', () => {
+      peerStore.on('change:protocols', () => {
         changeCounter++
         if (changeCounter > 1) {
           defer.resolve()
@@ -203,7 +202,7 @@ describe('protoBook', () => {
       const supportedProtocolsB = ['protocol2']
 
       let changeCounter = 0
-      ee.on('change:protocols', () => {
+      peerStore.on('change:protocols', () => {
         changeCounter++
         if (changeCounter > 1) {
           defer.reject()
@@ -226,11 +225,11 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.get', () => {
-    let ee, pb
+    let peerStore, pb
 
     beforeEach(() => {
-      ee = new EventEmitter()
-      pb = new ProtoBook(ee)
+      peerStore = new PeerStore()
+      pb = peerStore.protoBook
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
@@ -256,11 +255,11 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.delete', () => {
-    let ee, pb
+    let peerStore, pb
 
     beforeEach(() => {
-      ee = new EventEmitter()
-      pb = new ProtoBook(ee)
+      peerStore = new PeerStore()
+      pb = peerStore.protoBook
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
@@ -272,7 +271,7 @@ describe('protoBook', () => {
     it('returns false if no records exist for the peer and no event is emitted', () => {
       const defer = pDefer()
 
-      ee.on('change:protocols', () => {
+      peerStore.on('change:protocols', () => {
         defer.reject()
       })
 
@@ -295,7 +294,7 @@ describe('protoBook', () => {
       pb.set(peerId, supportedProtocols)
 
       // Listen after set
-      ee.on('change:protocols', ({ protocols }) => {
+      peerStore.on('change:protocols', ({ protocols }) => {
         expect(protocols.length).to.eql(0)
         defer.resolve()
       })
