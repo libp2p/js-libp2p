@@ -41,6 +41,8 @@
   * [`metrics.forPeer`](#metricsforpeer)
   * [`metrics.forProtocol`](#metricsforprotocol)
 * [Events](#events)
+  * [`libp2p`](#libp2p)
+  * [`libp2p.peerStore`](#libp2ppeerStore)
 * [Types](#types)
   * [`Stats`](#stats)
 
@@ -1099,7 +1101,9 @@ console.log(peerStats.toJSON())
 
 ## Events
 
-Once you have a libp2p instance, you can listen to several events it emits, so that you can be notified of relevant network events.
+Once you have a libp2p instance, you can listen to several events it emits, so that you can be notified of relevant network events. 
+
+### libp2p
 
 #### An error has occurred
 
@@ -1131,6 +1135,28 @@ This event will be triggered anytime we are disconnected from another peer, rega
 `libp2p.on('peer:disconnect', (peer) => {})`
 
 - `peer`: instance of [`PeerInfo`][peer-info]
+
+### libp2p.peerStore
+
+#### A new peer is added to the peerStore
+
+`libp2p.peerStore.on('peer', (peerId) => {})`
+
+- `peerId`: instance of [`PeerId`][peer-id]
+
+#### Known multiaddrs for a peer change
+
+`libp2p.peerStore.on('change:multiaddrs', ({ peerId, multiaddrs}) => {})`
+
+- `peerId`: instance of [`PeerId`][peer-id]
+- `multiaddrs`: array of known [`multiaddr`][multiaddr] for the peer
+
+#### Known protocols for a peer change
+
+`libp2p.peerStore.on('change:protocols', ({ peerId, protocols}) => {})`
+
+- `peerId`: instance of [`PeerId`][peer-id]
+- `protocols`: array of known, supported protocols for the peer (string identifiers)
 
 ## Types
 
