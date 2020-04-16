@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.27.5",
+  "version": "0.27.6",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -147,6 +147,7 @@
     "ebinks <elizabethjbinks@gmail.com>",
     "Chris Bratlien <chrisbratlien@gmail.com>",
     "isan_rivkin <isanrivkin@gmail.com>",
+    "robertkiel <robert.kiel@validitylabs.org>",
     "Irakli Gozalishvili <rfobic@gmail.com>"
   ]
 }
