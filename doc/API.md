@@ -41,8 +41,8 @@
   * [`metrics.forPeer`](#metricsforpeer)
   * [`metrics.forProtocol`](#metricsforprotocol)
 * [Events](#events)
-  * [`libp2p`](#eventslibp2p)
-  * [`libp2p.peerStore`](#eventslibp2ppeerStore)
+  * [`libp2p`](#libp2p)
+  * [`libp2p.peerStore`](#libp2ppeerStore)
 * [Types](#types)
   * [`Stats`](#stats)
 
@@ -1144,19 +1144,19 @@ This event will be triggered anytime we are disconnected from another peer, rega
 
 - `peerId`: instance of [`PeerId`][peer-id]
 
-#### Knownw multiaddrs for a peer change
+#### Known multiaddrs for a peer change
 
 `libp2p.peerStore.on('change:multiaddrs', ({ peerId, multiaddrs}) => {})`
 
 - `peerId`: instance of [`PeerId`][peer-id]
-- `multiaddrs`: array of known [`multiaddr`][multiaddr] for a the peer
+- `multiaddrs`: array of known [`multiaddr`][multiaddr] for the peer
 
-#### Knownw protocols for a peer change
+#### Known protocols for a peer change
 
 `libp2p.peerStore.on('change:protocols', ({ peerId, protocols}) => {})`
 
 - `peerId`: instance of [`PeerId`][peer-id]
-- `protocols`: array of known supported protocols for the peer (string identifiers)
+- `protocols`: array of known, supported protocols for the peer (string identifiers)
 
 ## Types
 
