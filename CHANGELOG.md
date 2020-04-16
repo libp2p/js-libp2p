@@ -1,3 +1,18 @@
+<a name="0.19.0-pre.0"></a>
+# [0.19.0-pre.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.18.6...v0.19.0-pre.0) (2020-04-16)
+
+
+### Chores
+
+* use new peer store api ([#179](https://github.com/libp2p/js-libp2p-kad-dht/issues/179)) ([194c701](https://github.com/libp2p/js-libp2p-kad-dht/commit/194c701))
+
+
+### BREAKING CHANGES
+
+* uses new peer-store api
+
+
+
 <a name="0.18.6"></a>
 ## [0.18.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.18.5...v0.18.6) (2020-03-26)
 
