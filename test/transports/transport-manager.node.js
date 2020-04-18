@@ -4,6 +4,8 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
+
+const AddressManager = require('../../src/address-manager')
 const TransportManager = require('../../src/transport-manager')
 const Transport = require('libp2p-tcp')
 const multiaddr = require('multiaddr')
@@ -18,7 +20,9 @@ describe('Transport Manager (TCP)', () => {
 
   before(() => {
     tm = new TransportManager({
-      libp2p: {},
+      libp2p: {
+        addressManager: new AddressManager({ listen: addrs })
+      },
       upgrader: mockUpgrader,
       onConnection: () => {}
     })
@@ -37,7 +41,7 @@ describe('Transport Manager (TCP)', () => {
 
   it('should be able to listen', async () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
-    await tm.listen(addrs)
+    await tm.listen()
     expect(tm._listeners).to.have.key(Transport.prototype[Symbol.toStringTag])
     expect(tm._listeners.get(Transport.prototype[Symbol.toStringTag])).to.have.length(addrs.length)
     // Ephemeral ip addresses may result in multiple listeners
@@ -48,7 +52,7 @@ describe('Transport Manager (TCP)', () => {
 
   it('should be able to dial', async () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
-    await tm.listen(addrs)
+    await tm.listen()
     const addr = tm.getAddrs().shift()
     const connection = await tm.dial(addr)
     expect(connection).to.exist()

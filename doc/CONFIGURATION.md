@@ -207,6 +207,8 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
 - `peerInfo`: a previously created instance of [libp2p/js-peer-info](https://github.com/libp2p/js-peer-info).
   - This is particularly useful if you want to reuse the same `peer-id`, as well as for modules like `libp2p-delegated-content-routing`, which need a `peer-id` in their instantiation.
 
+TODO: Add listen/announce addresses and remove peerInfo!!
+
 ### Examples
 
 #### Basic setup
