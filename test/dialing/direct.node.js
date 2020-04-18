@@ -21,6 +21,7 @@ const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 
 const Libp2p = require('../../src')
 const Dialer = require('../../src/dialer')
+const AddressManager = require('../../src/address-manager')
 const PeerStore = require('../../src/peer-store')
 const TransportManager = require('../../src/transport-manager')
 const { codes: ErrorCodes } = require('../../src/errors')
@@ -46,7 +47,9 @@ describe('Dialing (direct, TCP)', () => {
       PeerId.createFromJSON(Peers[0])
     ])
     remoteTM = new TransportManager({
-      libp2p: {},
+      libp2p: {
+        addressManager: new AddressManager({ listen: [listenAddr] })
+      },
       upgrader: mockUpgrader
     })
     remoteTM.add(Transport.prototype[Symbol.toStringTag], Transport)
@@ -278,7 +281,7 @@ describe('Dialing (direct, TCP)', () => {
       })
 
       sinon.spy(libp2p.dialer, 'connectToPeer')
-      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.addresses.listen)
+      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getAdvertisingMultiaddrs())
 
       const connection = await libp2p.dial(remotePeerId)
       expect(connection).to.exist()
@@ -360,7 +363,7 @@ describe('Dialing (direct, TCP)', () => {
 
       const fullAddress = remoteAddr.encapsulate(`/p2p/${remoteLibp2p.peerId.toB58String()}`)
 
-      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.addresses.listen)
+      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getAdvertisingMultiaddrs())
       const dialResults = await Promise.all([...new Array(dials)].map((_, index) => {
         if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerId)
         return libp2p.dial(fullAddress)
@@ -390,7 +393,7 @@ describe('Dialing (direct, TCP)', () => {
       const error = new Error('Boom')
       sinon.stub(libp2p.transportManager, 'dial').callsFake(() => Promise.reject(error))
 
-      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.addresses.listen)
+      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getAdvertisingMultiaddrs())
       const dialResults = await pSettle([...new Array(dials)].map((_, index) => {
         if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerId)
         return libp2p.dial(remoteAddr)

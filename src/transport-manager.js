@@ -127,11 +127,13 @@ class TransportManager {
   }
 
   /**
-   * Starts listeners for each given Multiaddr.
+   * Starts listeners for each listen Multiaddr.
+   * Update listen multiaddrs of the Address Manager after the operation.
    * @async
-   * @param {Multiaddr[]} addrs
    */
-  async listen (addrs) {
+  async listen () {
+    const addrs = this.libp2p.addressManager.getListenMultiaddrs()
+
     if (addrs.length === 0) {
       log('no addresses were provided for listening, this node is dial only')
       return

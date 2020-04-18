@@ -44,28 +44,28 @@ describe('Identify', () => {
 
   it('should be able to identify another peer', async () => {
     const localIdentify = new IdentifyService({
-      peerId: localPeer,
-      addresses: {
-        listen: []
-      },
-      protocols,
-      connectionManager: new EventEmitter(),
-      peerStore: {
-        addressBook: {
-          set: () => { }
+      libp2p: {
+        peerId: localPeer,
+        connectionManager: new EventEmitter(),
+        peerStore: {
+          addressBook: {
+            set: () => { }
+          },
+          protoBook: {
+            set: () => { }
+          }
         },
-        protoBook: {
-          set: () => { }
-        }
-      }
+        getAdvertisingMultiaddrs: () => []
+      },
+      protocols
     })
     const remoteIdentify = new IdentifyService({
-      peerId: remotePeer,
-      addresses: {
-        listen: []
+      libp2p: {
+        peerId: remotePeer,
+        connectionManager: new EventEmitter(),
+        getAdvertisingMultiaddrs: () => []
       },
-      protocols,
-      connectionManager: new EventEmitter()
+      protocols
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
@@ -97,28 +97,28 @@ describe('Identify', () => {
 
   it('should throw if identified peer is the wrong peer', async () => {
     const localIdentify = new IdentifyService({
-      peerId: localPeer,
-      addresses: {
-        listen: []
-      },
-      protocols,
-      connectionManager: new EventEmitter(),
-      peerStore: {
-        addressBook: {
-          set: () => { }
+      libp2p: {
+        peerId: localPeer,
+        connectionManager: new EventEmitter(),
+        peerStore: {
+          addressBook: {
+            set: () => { }
+          },
+          protoBook: {
+            set: () => { }
+          }
         },
-        protoBook: {
-          set: () => { }
-        }
-      }
+        getAdvertisingMultiaddrs: () => []
+      },
+      protocols
     })
     const remoteIdentify = new IdentifyService({
-      peerId: remotePeer,
-      addresses: {
-        listen: []
+      libp2p: {
+        peerId: remotePeer,
+        connectionManager: new EventEmitter(),
+        getAdvertisingMultiaddrs: () => []
       },
-      protocols,
-      connectionManager: new EventEmitter()
+      protocols
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
@@ -150,11 +150,11 @@ describe('Identify', () => {
       connectionManager.getConnection = () => {}
 
       const localIdentify = new IdentifyService({
-        peerId: localPeer,
-        addresses: {
-          listen: [listeningAddr]
+        libp2p: {
+          peerId: localPeer,
+          connectionManager: new EventEmitter(),
+          getAdvertisingMultiaddrs: () => [listeningAddr]
         },
-        connectionManager,
         protocols: new Map([
           [multicodecs.IDENTIFY],
           [multicodecs.IDENTIFY_PUSH],
@@ -162,18 +162,18 @@ describe('Identify', () => {
         ])
       })
       const remoteIdentify = new IdentifyService({
-        peerId: remotePeer,
-        addresses: {
-          listen: []
-        },
-        connectionManager,
-        peerStore: {
-          addressBook: {
-            set: () => { }
+        libp2p: {
+          peerId: remotePeer,
+          connectionManager,
+          peerStore: {
+            addressBook: {
+              set: () => { }
+            },
+            protoBook: {
+              set: () => { }
+            }
           },
-          protoBook: {
-            set: () => { }
-          }
+          getAdvertisingMultiaddrs: () => []
         }
       })
 
