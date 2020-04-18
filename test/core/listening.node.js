@@ -38,7 +38,7 @@ describe('Listening', () => {
 
     await libp2p.start()
 
-    const addrs = libp2p.addresses.listen
+    const addrs = libp2p.transportManager.getAddrs()
 
     // Should get something like:
     //   /ip4/127.0.0.1/tcp/50866

@@ -6,6 +6,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-as-promised'))
 const { expect } = chai
+const sinon = require('sinon')
 
 const multiaddr = require('multiaddr')
 const { collect } = require('streaming-iterables')
@@ -25,7 +26,7 @@ describe('Dialing (via relay, TCP)', () => {
   let relayLibp2p
   let dstLibp2p
 
-  before(async () => {
+  beforeEach(async () => {
     const peerIds = await createPeerId({ number: 3 })
     // Create 3 nodes, and turn HOP on for the relay
     ;[srcLibp2p, relayLibp2p, dstLibp2p] = peerIds.map((peerId, index) => {
@@ -69,7 +70,9 @@ describe('Dialing (via relay, TCP)', () => {
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerId.toB58String()}`)
 
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
-    await dstLibp2p.transportManager.listen([multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
+    sinon.stub(dstLibp2p.addressManager, 'listen').value([multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
+
+    await dstLibp2p.transportManager.listen()
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
     const connection = await srcLibp2p.dial(dialAddr)
@@ -152,13 +155,15 @@ describe('Dialing (via relay, TCP)', () => {
 
     // Connect the destination peer and the relay
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
-    await dstLibp2p.transportManager.listen([multiaddr(`${relayAddr}/p2p-circuit`)])
+    sinon.stub(dstLibp2p.addressManager, 'getListenMultiaddrs').returns([multiaddr(`${relayAddr}/p2p-circuit`)])
+
+    await dstLibp2p.transportManager.listen()
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
     // Tamper with the our multiaddrs for the circuit message
-    srcLibp2p.addresses.listen = [{
+    sinon.stub(srcLibp2p.addressManager, 'getListenMultiaddrs').returns([{
       buffer: Buffer.from('an invalid multiaddr')
-    }]
+    }])
 
     await expect(srcLibp2p.dial(dialAddr))
       .to.eventually.be.rejectedWith(AggregateError)
