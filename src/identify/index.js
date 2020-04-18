@@ -46,22 +46,20 @@ class IdentifyService {
   /**
    * @constructor
    * @param {object} options
-   * @param {PeerStore} options.peerStore
-   * @param {ConnectionManager} options.connectionManager
+   * @param {Libp2p} options.libp2p
    * @param {Map<string, handler>} options.protocols A reference to the protocols we support
-   * @param {PeerId} options.peerId The peer running the identify service
-   * @param {{ listen: Array<Multiaddr>}} options.addresses The peer addresses
    */
   constructor (options) {
     /**
      * @property {PeerStore}
      */
-    this.peerStore = options.peerStore
+    this.peerStore = options.libp2p.peerStore
 
     /**
      * @property {ConnectionManager}
      */
-    this.connectionManager = options.connectionManager
+    this.connectionManager = options.libp2p.connectionManager
+
     this.connectionManager.on('peer:connect', (connection) => {
       const peerId = connection.remotePeer
 
@@ -71,9 +69,12 @@ class IdentifyService {
     /**
      * @property {PeerId}
      */
-    this.peerId = options.peerId
+    this.peerId = options.libp2p.peerId
 
-    this.addresses = options.addresses || {}
+    /**
+     * @property {AddressManager}
+     */
+    this._libp2p = options.libp2p
 
     this._protocols = options.protocols
 
@@ -92,7 +93,7 @@ class IdentifyService {
 
         await pipe(
           [{
-            listenAddrs: this.addresses.listen.map((ma) => ma.buffer),
+            listenAddrs: this._libp2p.getAdvertisingMultiaddrs().map((ma) => ma.buffer),
             protocols: Array.from(this._protocols.keys())
           }],
           pb.encode(Message),
@@ -217,7 +218,7 @@ class IdentifyService {
       protocolVersion: PROTOCOL_VERSION,
       agentVersion: AGENT_VERSION,
       publicKey,
-      listenAddrs: this.addresses.listen.map((ma) => ma.buffer),
+      listenAddrs: this._libp2p.getAdvertisingMultiaddrs().map((ma) => ma.buffer),
       observedAddr: connection.remoteAddr.buffer,
       protocols: Array.from(this._protocols.keys())
     })

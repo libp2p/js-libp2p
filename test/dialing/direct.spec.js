@@ -395,7 +395,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     it('should be able to use hangup when no connection exists', async () => {
       libp2p = new Libp2p({
-        peerInfo,
+        peerId,
         modules: {
           transport: [Transport],
           streamMuxer: [Muxer],

@@ -33,7 +33,7 @@ describe('peer discovery scenarios', () => {
   })
   it('should ignore self on discovery', async () => {
     libp2p = new Libp2p(mergeOptions(baseOptions, {
-      peerInfo,
+      peerId,
       modules: {
         peerDiscovery: [MulticastDNS]
       }
@@ -42,7 +42,7 @@ describe('peer discovery scenarios', () => {
     await libp2p.start()
     const discoverySpy = sinon.spy()
     libp2p.on('peer:discovery', discoverySpy)
-    libp2p._discovery.get('mdns').emit('peer', libp2p.peerInfo)
+    libp2p._discovery.get('mdns').emit('peer', { id: libp2p.peerId })
 
     expect(discoverySpy.called).to.eql(false)
   })
@@ -193,8 +193,8 @@ describe('peer discovery scenarios', () => {
       remoteLibp2p2.start()
     ])
 
-    libp2p.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.addresses.listen)
-    remoteLibp2p2.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.addresses.listen)
+    libp2p.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.getAdvertisingMultiaddrs())
+    remoteLibp2p2.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.getAdvertisingMultiaddrs())
 
     // Topology:
     // A -> B

@@ -21,13 +21,14 @@ const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
  * @param {boolean} [properties.populateAddressBooks] nodes addressBooks should be populated with other peers (default: true)
  * @return {Promise<Array<Libp2p>>}
  */
-async function createPeer ({ number = 1, fixture = true, started = true, populateAddressBooks = true, config = defaultOptions } = {}) {
+async function createPeer ({ number = 1, fixture = true, started = true, populateAddressBooks = true, config = {} } = {}) {
   const peerIds = await createPeerId({ number, fixture })
 
   const addresses = started ? { listen: [listenAddr] } : {}
   const peers = await pTimes(number, (i) => Libp2p.create({
     peerId: peerIds[i],
     addresses,
+    ...defaultOptions,
     ...config
   }))
 
@@ -44,7 +45,7 @@ function _populateAddressBooks (peers) {
   for (let i = 0; i < peers.length; i++) {
     for (let j = 0; j < peers.length; j++) {
       if (i !== j) {
-        peers[i].peerStore.addressBook.set(peers[j].peerId, peers[j].addresses.listen)
+        peers[i].peerStore.addressBook.set(peers[j].peerId, peers[j].getAdvertisingMultiaddrs())
       }
     }
   }
