@@ -7,7 +7,7 @@ chai.use(require('chai-as-promised'))
 const { expect } = chai
 const sinon = require('sinon')
 
-const { createPeer } = require('../utils/creators/peer')
+const peerUtils = require('../utils/creators/peer')
 const mockConnection = require('../utils/mockConnection')
 const baseOptions = require('../utils/base-options.browser')
 
@@ -20,7 +20,7 @@ describe('Connection Manager', () => {
   })
 
   it('should be able to create without metrics', async () => {
-    [libp2p] = await createPeer({
+    [libp2p] = await peerUtils.createPeer({
       config: {
         modules: baseOptions.modules
       },
@@ -35,7 +35,7 @@ describe('Connection Manager', () => {
   })
 
   it('should be able to create with metrics', async () => {
-    [libp2p] = await createPeer({
+    [libp2p] = await peerUtils.createPeer({
       config: {
         modules: baseOptions.modules,
         metrics: {
@@ -49,12 +49,12 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
     expect(spy).to.have.property('callCount', 1)
-    expect(libp2p.connectionManager._metrics).to.exist()
+    expect(libp2p.connectionManager._libp2p.metrics).to.exist()
   })
 
   it('should close lowest value peer connection when the maximum has been reached', async () => {
     const max = 5
-    ;[libp2p] = await createPeer({
+    ;[libp2p] = await peerUtils.createPeer({
       config: {
         modules: baseOptions.modules,
         connectionManager: {
@@ -92,7 +92,7 @@ describe('Connection Manager', () => {
 
   it('should close connection when the maximum has been reached even without peer values', async () => {
     const max = 5
-    ;[libp2p] = await createPeer({
+    ;[libp2p] = await peerUtils.createPeer({
       config: {
         modules: baseOptions.modules,
         connectionManager: {
@@ -110,7 +110,7 @@ describe('Connection Manager', () => {
     const spy = sinon.spy()
     await Promise.all([...new Array(max + 1)].map(async () => {
       const connection = await mockConnection()
-      sinon.stub(connection, 'close').callsFake(() => spy())
+      sinon.stub(connection, 'close').callsFake(() => spy()) // eslint-disable-line
       libp2p.connectionManager.onConnect(connection)
     }))
 
@@ -119,7 +119,7 @@ describe('Connection Manager', () => {
   })
 
   it('should fail if the connection manager has mismatched connection limit options', async () => {
-    await expect(createPeer({
+    await expect(peerUtils.createPeer({
       config: {
         modules: baseOptions.modules,
         connectionManager: {

@@ -29,6 +29,7 @@ class Circuit {
   constructor ({ libp2p, upgrader }) {
     this._dialer = libp2p.dialer
     this._registrar = libp2p.registrar
+    this._connectionManager = libp2p.connectionManager
     this._upgrader = upgrader
     this._options = libp2p._config.relay
     this.addresses = libp2p.addresses
@@ -107,7 +108,7 @@ class Circuit {
     const destinationPeer = PeerId.createFromCID(destinationAddr.getPeerId())
 
     let disconnectOnFailure = false
-    let relayConnection = this._registrar.getConnection(relayPeer)
+    let relayConnection = this._connectionManager.get(relayPeer)
     if (!relayConnection) {
       relayConnection = await this._dialer.connectToPeer(relayAddr, options)
       disconnectOnFailure = true
