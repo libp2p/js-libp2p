@@ -11,6 +11,9 @@
   * [`handle`](#handle)
   * [`unhandle`](#unhandle)
   * [`ping`](#ping)
+  * [`addressManager.listen`](#addressManagerlisten)
+  * [`addressManager.announce`](#addressManagerannounce)
+  * [`addressManager.noAnnounce`](#addressManagernoannounce)
   * [`contentRouting.findProviders`](#contentroutingfindproviders)
   * [`contentRouting.provide`](#contentroutingprovide)
   * [`contentRouting.put`](#contentroutingput)
@@ -360,31 +363,42 @@ Pings a given peer and get the operation's latency.
 const latency = await libp2p.ping(otherPeerId)
 ```
 
-### peerRouting.findPeer
+### addressManager.listen
 
-Iterates over all peer routers in series to find the given peer. If the DHT is enabled, it will be tried first.
+Getter for getting the addresses that the peer is using for listening on libp2p transports.
 
-`libp2p.peerRouting.findPeer(peerId, options)`
-
-#### Parameters
-
-| Name | Type | Description |
-|------|------|-------------|
-| peerId | [`PeerId`][peer-id] | ID of the peer to find |
-| options | `object` | operation options |
-| options.timeout | `number` | maximum time the query should run |
-
-#### Returns
-
-| Type | Description |
-|------|-------------|
-| `Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>` | Peer data of a known peer |
+`libp2p.addressManager.listen`
 
 #### Example
 
 ```js
 // ...
-const peer = await libp2p.peerRouting.findPeer(peerId, options)
+const listenAddresses = libp2p.addressManager.listen
+// [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
+```
+
+### addressManager.announce
+
+Getter for getting the addresses that the peer is announcing to other peers in the network.
+
+`libp2p.addressManager.announce`
+
+```js
+// ...
+const announceAddresses = libp2p.addressManager.announce
+// [ <Multiaddr 047f00000106f9ba - /dns4/peer.io/...> ]
+```
+
+### addressManager.noAnnounce
+
+Getter for getting the addresses that the peer is not announcing in the network.
+
+`libp2p.addressManager.noAnnounce`
+
+```js
+// ...
+const noAnnounceAddresses = libp2p.addressManager.noAnnounce
+// [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
 ```
 
 ### contentRouting.findProviders
@@ -531,6 +545,33 @@ Queries the DHT for the n values stored for the given key (without sorting).
 
 const key = '/key'
 const { from, val } = await libp2p.contentRouting.get(key)
+```
+
+### peerRouting.findPeer
+
+Iterates over all peer routers in series to find the given peer. If the DHT is enabled, it will be tried first.
+
+`libp2p.peerRouting.findPeer(peerId, options)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | ID of the peer to find |
+| options | `object` | operation options |
+| options.timeout | `number` | maximum time the query should run |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>` | Peer data of a known peer |
+
+#### Example
+
+```js
+// ...
+const peer = await libp2p.peerRouting.findPeer(peerId, options)
 ```
 
 ### peerStore.addressBook.add

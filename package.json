@@ -94,7 +94,7 @@
     "libp2p-floodsub": "^0.21.0",
     "libp2p-gossipsub": "^0.4.0",
     "libp2p-kad-dht": "^0.19.1",
-    "libp2p-mdns": "^0.14.0",
+    "libp2p-mdns": "libp2p/js-libp2p-mdns#chore/use-address-manager",
     "libp2p-mplex": "^0.9.1",
     "libp2p-secio": "^0.12.1",
     "libp2p-tcp": "^0.14.1",

@@ -14,6 +14,7 @@ const getPeer = require('./get-peer')
 const { validate: validateConfig } = require('./config')
 const { codes } = require('./errors')
 
+const AddressManager = require('./address-manager')
 const ConnectionManager = require('./connection-manager')
 const Circuit = require('./circuit')
 const Dialer = require('./dialer')
@@ -47,6 +48,7 @@ class Libp2p extends EventEmitter {
 
     // Addresses {listen, announce, noAnnounce}
     this.addresses = this._options.addresses
+    this.addressManager = new AddressManager(this._options.addresses)
 
     this._modules = this._options.modules
     this._config = this._options.config
@@ -122,10 +124,7 @@ class Libp2p extends EventEmitter {
 
       // Add the identify service since we can multiplex
       this.identifyService = new IdentifyService({
-        peerStore: this.peerStore,
-        connectionManager: this.connectionManager,
-        peerId: this.peerId,
-        addresses: this.addresses,
+        libp2p: this,
         protocols: this.upgrader.protocols
       })
       this.handle(Object.values(IDENTIFY_PROTOCOLS), this.identifyService.handleMessage)
@@ -189,6 +188,8 @@ class Libp2p extends EventEmitter {
    */
   async start () {
     log('libp2p is starting')
+    // TODO: consider validate listen addresses on start?
+    // depend on transports?
     try {
       await this._onStarting()
       await this._onDidStart()
@@ -293,6 +294,54 @@ class Libp2p extends EventEmitter {
   }
 
   /**
+   * Get peer advertising multiaddrs by concating the addresses used
+   * by transports to listen with the announce addresses.
+   * Duplicated addresses and noAnnounce addresses are filtered out.
+   * This takes into account random ports on matching noAnnounce addresses.
+   * @return {Array<Multiaddr>}
+   */
+  getAdvertisingMultiaddrs () {
+    // Filter noAnnounce multiaddrs
+    const filterMa = this.addressManager.getNoAnnounceMultiaddrs()
+
+    // Special filter for noAnnounce addresses using a random port
+    // eg /ip4/0.0.0.0/tcp/0 => /ip4/192.168.1.0/tcp/58751
+    const filterSpecial = filterMa
+      .map((ma) => ({
+        protos: ma.protos(),
+        ...ma.toOptions()
+      }))
+      .filter((op) => op.port === 0)
+
+    // Create advertising list
+    return this.transportManager.getAddrs()
+      .concat(this.addressManager.getAnnounceMultiaddrs())
+      .filter((ma, index, array) => {
+        // Filter out if repeated
+        if (array.findIndex((otherMa) => otherMa.equals(ma)) !== index) {
+          return false
+        }
+
+        // Filter out if in noAnnounceMultiaddrs
+        if (filterMa.find((fm) => fm.equals(ma))) {
+          return false
+        }
+
+        // Filter out if in the special filter
+        const options = ma.toOptions()
+        if (filterSpecial.find((op) =>
+          op.family === options.family &&
+          op.host === options.host &&
+          op.transport === options.transport &&
+          op.protos.length === ma.protos().length
+        )) {
+          return false
+        }
+        return true
+      })
+  }
+
+  /**
    * Disconnects all connections to the given `peer`
    * @param {PeerId|multiaddr|string} peer the peer to close connections to
    * @returns {Promise<void>}
@@ -353,14 +402,8 @@ class Libp2p extends EventEmitter {
   }
 
   async _onStarting () {
-    // Listen on the addresses provided
-    const multiaddrs = this.addresses.listen
-
-    await this.transportManager.listen(multiaddrs)
-
-    // The addresses may change once the listener starts
-    // eg /ip4/0.0.0.0/tcp/0 => /ip4/192.168.1.0/tcp/58751
-    this.addresses.listen = this.transportManager.getAddrs()
+    // Listen on the provided transports
+    await this.transportManager.listen()
 
     if (this._config.pubsub.enabled) {
       this.pubsub && this.pubsub.start()
@@ -466,7 +509,6 @@ class Libp2p extends EventEmitter {
         if (typeof DiscoveryService === 'function') {
           discoveryService = new DiscoveryService(Object.assign({}, config, {
             peerId: this.peerId,
-            multiaddrs: this.addresses.listen,
             libp2p: this
           }))
         } else {

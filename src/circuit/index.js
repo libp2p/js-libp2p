@@ -32,7 +32,7 @@ class Circuit {
     this._connectionManager = libp2p.connectionManager
     this._upgrader = upgrader
     this._options = libp2p._config.relay
-    this.addresses = libp2p.addresses
+    this.addressManager = libp2p.addressManager
     this.peerId = libp2p.peerId
     this._registrar.handle(multicodec, this._onProtocol.bind(this))
   }
@@ -122,7 +122,7 @@ class Circuit {
           type: CircuitPB.Type.HOP,
           srcPeer: {
             id: this.peerId.toBytes(),
-            addrs: this.addresses.listen.map(addr => addr.buffer)
+            addrs: this.addressManager.getListenMultiaddrs().map(addr => addr.buffer)
           },
           dstPeer: {
             id: destinationPeer.toBytes(),

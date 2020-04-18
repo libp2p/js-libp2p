@@ -75,7 +75,7 @@ describe('Pubsub subsystem is able to use different implementations', () => {
     ])
 
     const libp2pId = libp2p.peerId.toB58String()
-    libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.addresses.listen)
+    libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getAdvertisingMultiaddrs())
 
     const connection = await libp2p.dialProtocol(remotePeerId, multicodec)
     expect(connection).to.exist()

@@ -9,6 +9,7 @@ const sinon = require('sinon')
 
 const multiaddr = require('multiaddr')
 const Transport = require('libp2p-websockets')
+const AddressManager = require('../../src/address-manager')
 const TransportManager = require('../../src/transport-manager')
 const mockUpgrader = require('../utils/mockUpgrader')
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
@@ -17,12 +18,16 @@ const Libp2p = require('../../src')
 const Peers = require('../fixtures/peers')
 const PeerId = require('peer-id')
 
+const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+
 describe('Transport Manager (WebSockets)', () => {
   let tm
 
   before(() => {
     tm = new TransportManager({
-      libp2p: {},
+      libp2p: {
+        addressManager: new AddressManager({ listen: [listenAddr] })
+      },
       upgrader: mockUpgrader,
       onConnection: () => {}
     })
@@ -78,9 +83,8 @@ describe('Transport Manager (WebSockets)', () => {
 
   it('should fail to listen with no valid address', async () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
-    const addrs = [multiaddr('/ip4/127.0.0.1/tcp/0')]
 
-    await expect(tm.listen(addrs))
+    await expect(tm.listen())
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })

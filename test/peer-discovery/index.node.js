@@ -177,8 +177,8 @@ describe('peer discovery scenarios', () => {
       remoteLibp2p2.start()
     ])
 
-    libp2p.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.addresses.listen)
-    remoteLibp2p2.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.addresses.listen)
+    libp2p.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.getAdvertisingMultiaddrs())
+    remoteLibp2p2.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.getAdvertisingMultiaddrs())
 
     // Topology:
     // A -> B

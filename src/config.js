@@ -5,7 +5,9 @@ const Constants = require('./constants')
 
 const DefaultConfig = {
   addresses: {
-    listen: []
+    listen: [],
+    announce: [],
+    noAnnounce: []
   },
   connectionManager: {
     minPeers: 25
