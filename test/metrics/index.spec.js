@@ -7,6 +7,8 @@ chai.use(require('chai-as-promised'))
 const { expect } = chai
 const sinon = require('sinon')
 
+const { EventEmitter } = require('events')
+
 const { randomBytes } = require('libp2p-crypto')
 const duplexPair = require('it-pair/duplex')
 const pipe = require('it-pipe')
@@ -35,7 +37,8 @@ describe('Metrics', () => {
     const [local, remote] = duplexPair()
     const metrics = new Metrics({
       computeThrottleMaxQueueSize: 1, // compute after every message
-      movingAverageIntervals: [10, 100, 1000]
+      movingAverageIntervals: [10, 100, 1000],
+      connectionManager: new EventEmitter()
     })
 
     metrics.trackStream({
@@ -70,7 +73,8 @@ describe('Metrics', () => {
     const [local, remote] = duplexPair()
     const metrics = new Metrics({
       computeThrottleMaxQueueSize: 1, // compute after every message
-      movingAverageIntervals: [10, 100, 1000]
+      movingAverageIntervals: [10, 100, 1000],
+      connectionManager: new EventEmitter()
     })
 
     metrics.trackStream({
@@ -118,7 +122,8 @@ describe('Metrics', () => {
     const [local2, remote2] = duplexPair()
     const metrics = new Metrics({
       computeThrottleMaxQueueSize: 1, // compute after every message
-      movingAverageIntervals: [10, 100, 1000]
+      movingAverageIntervals: [10, 100, 1000],
+      connectionManager: new EventEmitter()
     })
     const protocol = '/echo/1.0.0'
     metrics.start()
@@ -173,7 +178,8 @@ describe('Metrics', () => {
     const [local, remote] = duplexPair()
     const metrics = new Metrics({
       computeThrottleMaxQueueSize: 1, // compute after every message
-      movingAverageIntervals: [10, 100, 1000]
+      movingAverageIntervals: [10, 100, 1000],
+      connectionManager: new EventEmitter()
     })
     metrics.start()
 
@@ -228,7 +234,8 @@ describe('Metrics', () => {
     }))
 
     const metrics = new Metrics({
-      maxOldPeersRetention: 5 // Only keep track of 5
+      maxOldPeersRetention: 5, // Only keep track of 5
+      connectionManager: new EventEmitter()
     })
 
     // Clone so trackedPeers isn't modified

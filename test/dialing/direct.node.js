@@ -373,8 +373,8 @@ describe('Dialing (direct, TCP)', () => {
       }
 
       // 1 connection, because we know the peer in the multiaddr
-      expect(libp2p.connectionManager._connections.size).to.equal(1)
-      expect(remoteLibp2p.connectionManager._connections.size).to.equal(1)
+      expect(libp2p.connectionManager.size).to.equal(1)
+      expect(remoteLibp2p.connectionManager.size).to.equal(1)
     })
 
     it('should coalesce parallel dials to the same error on failure', async () => {
@@ -408,8 +408,8 @@ describe('Dialing (direct, TCP)', () => {
       }
 
       // 1 connection, because we know the peer in the multiaddr
-      expect(libp2p.connectionManager._connections.size).to.equal(0)
-      expect(remoteLibp2p.connectionManager._connections.size).to.equal(0)
+      expect(libp2p.connectionManager.size).to.equal(0)
+      expect(remoteLibp2p.connectionManager.size).to.equal(0)
     })
   })
 })

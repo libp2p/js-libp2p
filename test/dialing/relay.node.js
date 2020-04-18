@@ -120,7 +120,7 @@ describe('Dialing (via relay, TCP)', () => {
       .and.to.have.nested.property('._errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
 
     // We should not be connected to the relay, because we weren't before the dial
-    const srcToRelayConn = srcLibp2p.registrar.getConnection(relayLibp2p.peerId)
+    const srcToRelayConn = srcLibp2p.connectionManager.get(relayLibp2p.peerId)
     expect(srcToRelayConn).to.not.exist()
   })
 
@@ -137,7 +137,7 @@ describe('Dialing (via relay, TCP)', () => {
       .to.eventually.be.rejectedWith(AggregateError)
       .and.to.have.nested.property('._errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
 
-    const srcToRelayConn = srcLibp2p.registrar.getConnection(relayLibp2p.peerId)
+    const srcToRelayConn = srcLibp2p.connectionManager.get(relayLibp2p.peerId)
     expect(srcToRelayConn).to.exist()
     expect(srcToRelayConn.stat.status).to.equal('open')
   })
@@ -163,7 +163,7 @@ describe('Dialing (via relay, TCP)', () => {
       .to.eventually.be.rejectedWith(AggregateError)
       .and.to.have.nested.property('._errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
 
-    const dstToRelayConn = dstLibp2p.registrar.getConnection(relayLibp2p.peerId)
+    const dstToRelayConn = dstLibp2p.connectionManager.get(relayLibp2p.peerId)
     expect(dstToRelayConn).to.exist()
     expect(dstToRelayConn.stat.status).to.equal('open')
   })

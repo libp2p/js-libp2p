@@ -420,24 +420,24 @@ describe('libp2p.upgrader', () => {
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
     // Spy on emit for easy verification
-    sinon.spy(libp2p, 'emit')
+    sinon.spy(libp2p.connectionManager, 'emit')
 
     // Upgrade and check the connect event
     const connections = await Promise.all([
       libp2p.upgrader.upgradeOutbound(outbound),
       remoteUpgrader.upgradeInbound(inbound)
     ])
-    expect(libp2p.emit.callCount).to.equal(1)
+    expect(libp2p.connectionManager.emit.callCount).to.equal(1)
 
-    let [event, peerId] = libp2p.emit.getCall(0).args
+    let [event, connection] = libp2p.connectionManager.emit.getCall(0).args
     expect(event).to.equal('peer:connect')
-    expect(peerId.isEqual(remotePeer)).to.equal(true)
+    expect(connection.remotePeer.isEqual(remotePeer)).to.equal(true)
 
     // Close and check the disconnect event
     await Promise.all(connections.map(conn => conn.close()))
-    expect(libp2p.emit.callCount).to.equal(2)
-    ;([event, peerId] = libp2p.emit.getCall(1).args)
+    expect(libp2p.connectionManager.emit.callCount).to.equal(2)
+    ;([event, connection] = libp2p.connectionManager.emit.getCall(1).args)
     expect(event).to.equal('peer:disconnect')
-    expect(peerId.isEqual(remotePeer)).to.equal(true)
+    expect(connection.remotePeer.isEqual(remotePeer)).to.equal(true)
   })
 })

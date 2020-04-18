@@ -6,21 +6,26 @@ chai.use(require('dirty-chai'))
 const { expect } = chai
 const pDefer = require('p-defer')
 
+const { EventEmitter } = require('events')
+
 const Topology = require('libp2p-interfaces/src/topology/multicodec-topology')
 const PeerStore = require('../../src/peer-store')
 const Registrar = require('../../src/registrar')
-const { createMockConnection } = require('./utils')
+
+const createMockConnection = require('../utils/mockConnection')
 const peerUtils = require('../utils/creators/peer')
+const baseOptions = require('../utils/base-options.browser')
 
 const multicodec = '/test/1.0.0'
 
 describe('registrar', () => {
-  let peerStore, registrar
+  let peerStore
+  let registrar
 
   describe('errors', () => {
     beforeEach(() => {
       peerStore = new PeerStore()
-      registrar = new Registrar({ peerStore })
+      registrar = new Registrar({ peerStore, connectionManager: new EventEmitter() })
     })
 
     it('should fail to register a protocol if no multicodec is provided', () => {
@@ -36,10 +41,18 @@ describe('registrar', () => {
   })
 
   describe('registration', () => {
-    beforeEach(() => {
-      peerStore = new PeerStore()
-      registrar = new Registrar({ peerStore })
+    let libp2p
+
+    beforeEach(async () => {
+      [libp2p] = await peerUtils.createPeer({
+        config: {
+          modules: baseOptions.modules
+        },
+        started: false
+      })
     })
+
+    afterEach(() => libp2p.stop())
 
     it('should be able to register a protocol', () => {
       const topologyProps = new Topology({
@@ -50,7 +63,7 @@ describe('registrar', () => {
         }
       })
 
-      const identifier = registrar.register(topologyProps)
+      const identifier = libp2p.registrar.register(topologyProps)
 
       expect(identifier).to.exist()
     })
@@ -64,14 +77,14 @@ describe('registrar', () => {
         }
       })
 
-      const identifier = registrar.register(topologyProps)
-      const success = registrar.unregister(identifier)
+      const identifier = libp2p.registrar.register(topologyProps)
+      const success = libp2p.registrar.unregister(identifier)
 
       expect(success).to.eql(true)
     })
 
     it('should fail to unregister if no register was made', () => {
-      const success = registrar.unregister('bad-identifier')
+      const success = libp2p.registrar.unregister('bad-identifier')
 
       expect(success).to.eql(false)
     })
@@ -85,10 +98,10 @@ describe('registrar', () => {
       const remotePeerId = conn.remotePeer
 
       // Add connected peer with protocol to peerStore and registrar
-      peerStore.protoBook.add(remotePeerId, [multicodec])
+      libp2p.peerStore.protoBook.add(remotePeerId, [multicodec])
 
-      registrar.onConnect(remotePeerId, conn)
-      expect(registrar.connections.size).to.eql(1)
+      libp2p.connectionManager.onConnect(conn)
+      expect(libp2p.connectionManager.size).to.eql(1)
 
       const topologyProps = new Topology({
         multicodecs: multicodec,
@@ -108,14 +121,16 @@ describe('registrar', () => {
       })
 
       // Register protocol
-      const identifier = registrar.register(topologyProps)
-      const topology = registrar.topologies.get(identifier)
+      const identifier = libp2p.registrar.register(topologyProps)
+      const topology = libp2p.registrar.topologies.get(identifier)
 
       // Topology created
       expect(topology).to.exist()
 
-      registrar.onDisconnect(remotePeerId)
-      expect(registrar.connections.size).to.eql(0)
+      await conn.close()
+
+      libp2p.connectionManager.onDisconnect(conn)
+      expect(libp2p.connectionManager.size).to.eql(0)
 
       // Wait for handlers to be called
       return Promise.all([
@@ -141,68 +156,30 @@ describe('registrar', () => {
       })
 
       // Register protocol
-      const identifier = registrar.register(topologyProps)
-      const topology = registrar.topologies.get(identifier)
+      const identifier = libp2p.registrar.register(topologyProps)
+      const topology = libp2p.registrar.topologies.get(identifier)
 
       // Topology created
       expect(topology).to.exist()
-      expect(registrar.connections.size).to.eql(0)
+      expect(libp2p.connectionManager.size).to.eql(0)
 
       // Setup connections before registrar
       const conn = await createMockConnection()
       const remotePeerId = conn.remotePeer
 
       // Add connected peer to peerStore and registrar
-      peerStore.protoBook.set(remotePeerId, [])
-      registrar.onConnect(remotePeerId, conn)
+      libp2p.peerStore.protoBook.set(remotePeerId, [])
+      libp2p.connectionManager.onConnect(conn)
 
       // Add protocol to peer and update it
-      peerStore.protoBook.add(remotePeerId, [multicodec])
+      libp2p.peerStore.protoBook.add(remotePeerId, [multicodec])
 
       await onConnectDefer.promise
 
       // Remove protocol to peer and update it
-      peerStore.protoBook.set(remotePeerId, [])
+      libp2p.peerStore.protoBook.set(remotePeerId, [])
 
       await onDisconnectDefer.promise
-    })
-
-    it('should filter connections on disconnect, removing the closed one', async () => {
-      const onDisconnectDefer = pDefer()
-
-      const topologyProps = new Topology({
-        multicodecs: multicodec,
-        handlers: {
-          onConnect: () => {},
-          onDisconnect: () => {
-            onDisconnectDefer.resolve()
-          }
-        }
-      })
-
-      // Register protocol
-      registrar.register(topologyProps)
-
-      // Setup connections before registrar
-      const [localPeer, remotePeer] = await peerUtils.createPeerId({ number: 2 })
-
-      const conn1 = await createMockConnection({ localPeer, remotePeer })
-      const conn2 = await createMockConnection({ localPeer, remotePeer })
-
-      const id = remotePeer.toB58String()
-
-      // Add connection to registrar
-      registrar.onConnect(remotePeer, conn1)
-      registrar.onConnect(remotePeer, conn2)
-
-      expect(registrar.connections.get(id).length).to.eql(2)
-
-      conn2._stat.status = 'closed'
-      registrar.onDisconnect(remotePeer, conn2)
-
-      const peerConnections = registrar.connections.get(id)
-      expect(peerConnections.length).to.eql(1)
-      expect(peerConnections[0]._stat.status).to.eql('open')
     })
   })
 })
