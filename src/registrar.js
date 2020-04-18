@@ -5,13 +5,10 @@ const errcode = require('err-code')
 const log = debug('libp2p:peer-store')
 log.error = debug('libp2p:peer-store:error')
 
-const PeerId = require('peer-id')
-
 const {
   ERR_INVALID_PARAMETERS
 } = require('./errors')
 const Topology = require('libp2p-interfaces/src/topology')
-const { Connection } = require('libp2p-interfaces/src/connection')
 
 /**
  * Responsible for notifying registered protocols of events in the network.
@@ -20,18 +17,14 @@ class Registrar {
   /**
    * @param {Object} props
    * @param {PeerStore} props.peerStore
+   * @param {connectionManager} props.connectionManager
    * @constructor
    */
-  constructor ({ peerStore }) {
+  constructor ({ peerStore, connectionManager }) {
     // Used on topology to listen for protocol changes
     this.peerStore = peerStore
 
-    /**
-     * Map of connections per peer
-     * TODO: this should be handled by connectionManager
-     * @type {Map<string, Array<conn>>}
-     */
-    this.connections = new Map()
+    this.connectionManager = connectionManager
 
     /**
      * Map of topologies
@@ -41,6 +34,9 @@ class Registrar {
     this.topologies = new Map()
 
     this._handle = undefined
+
+    this._onDisconnect = this._onDisconnect.bind(this)
+    this.connectionManager.on('peer:disconnect', this._onDisconnect)
   }
 
   get handle () {
@@ -52,92 +48,12 @@ class Registrar {
   }
 
   /**
-   * Cleans up the registrar
-   * @async
-   */
-  async close () {
-    // Close all connections we're tracking
-    const tasks = []
-    for (const connectionList of this.connections.values()) {
-      for (const connection of connectionList) {
-        tasks.push(connection.close())
-      }
-    }
-
-    await tasks
-    this.connections.clear()
-  }
-
-  /**
-   * Add a new connected peer to the record
-   * TODO: this should live in the ConnectionManager
-   * @param {PeerId} peerId
-   * @param {Connection} conn
-   * @returns {void}
-   */
-  onConnect (peerId, conn) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    if (!Connection.isConnection(conn)) {
-      throw errcode(new Error('conn must be an instance of interface-connection'), ERR_INVALID_PARAMETERS)
-    }
-
-    const id = peerId.toB58String()
-    const storedConn = this.connections.get(id)
-
-    if (storedConn) {
-      storedConn.push(conn)
-    } else {
-      this.connections.set(id, [conn])
-    }
-  }
-
-  /**
-   * Remove a disconnected peer from the record
-   * TODO: this should live in the ConnectionManager
-   * @param {PeerId} peerId
-   * @param {Connection} connection
-   * @param {Error} [error]
-   * @returns {void}
-   */
-  onDisconnect (peerId, connection, error) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    const id = peerId.toB58String()
-    let storedConn = this.connections.get(id)
-
-    if (storedConn && storedConn.length > 1) {
-      storedConn = storedConn.filter((conn) => conn.id !== connection.id)
-      this.connections.set(id, storedConn)
-    } else if (storedConn) {
-      for (const [, topology] of this.topologies) {
-        topology.disconnect(peerId, error)
-      }
-
-      this.connections.delete(id)
-    }
-  }
-
-  /**
    * Get a connection with a peer.
    * @param {PeerId} peerId
    * @returns {Connection}
    */
   getConnection (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    const connections = this.connections.get(peerId.toB58String())
-    // Return the first, open connection
-    if (connections) {
-      return connections.find(connection => connection.stat.status === 'open')
-    }
-    return null
+    return this.connectionManager.get(peerId)
   }
 
   /**
@@ -168,6 +84,18 @@ class Registrar {
    */
   unregister (id) {
     return this.topologies.delete(id)
+  }
+
+  /**
+   * Remove a disconnected peer from the record
+   * @param {Connection} connection
+   * @param {Error} [error]
+   * @returns {void}
+   */
+  _onDisconnect (connection, error) {
+    for (const [, topology] of this.topologies) {
+      topology.disconnect(connection.remotePeer, error)
+    }
   }
 }
 

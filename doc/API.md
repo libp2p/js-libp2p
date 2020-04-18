@@ -11,12 +11,12 @@
   * [`handle`](#handle)
   * [`unhandle`](#unhandle)
   * [`ping`](#ping)
-  * [`peerRouting.findPeer`](#peerroutingfindpeer)
   * [`contentRouting.findProviders`](#contentroutingfindproviders)
   * [`contentRouting.provide`](#contentroutingprovide)
   * [`contentRouting.put`](#contentroutingput)
   * [`contentRouting.get`](#contentroutingget)
   * [`contentRouting.getMany`](#contentroutinggetmany)
+  * [`peerRouting.findPeer`](#peerroutingfindpeer)
   * [`peerStore.addressBook.add`](#peerstoreaddressbookadd)
   * [`peerStore.addressBook.delete`](#peerstoreaddressbookdelete)
   * [`peerStore.addressBook.get`](#peerstoreaddressbookget)
@@ -34,7 +34,9 @@
   * [`pubsub.publish`](#pubsubpublish)
   * [`pubsub.subscribe`](#pubsubsubscribe)
   * [`pubsub.unsubscribe`](#pubsubunsubscribe)
+  * [`connectionManager.get`](#connectionmanagerget)
   * [`connectionManager.setPeerValue`](#connectionmanagersetpeervalue)
+  * [`connectionManager.size`](#connectionmanagersize)
   * [`metrics.global`](#metricsglobal)
   * [`metrics.peers`](#metricspeers)
   * [`metrics.protocols`](#metricsprotocols)
@@ -42,6 +44,7 @@
   * [`metrics.forProtocol`](#metricsforprotocol)
 * [Events](#events)
   * [`libp2p`](#libp2p)
+  * [`libp2p.connectionManager`](#libp2pconnectionmanager)
   * [`libp2p.peerStore`](#libp2ppeerStore)
 * [Types](#types)
   * [`Stats`](#stats)
@@ -999,6 +1002,28 @@ const handler = (msg) => {
 libp2p.pubsub.unsubscribe(topic, handler)
 ```
 
+### connectionManager.get
+
+Get a connection with a given peer, if it exists.
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | The peer to find |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| [`Connection`][connection] | Connection with the given peer |
+
+#### Example
+
+```js
+libp2p.connectionManager.get(peerId)
+```
+
 ### connectionManager.setPeerValue
 
 Enables users to change the value of certain peers in a range of 0 to 1. Peers with the lowest values will have their Connections pruned first, if any Connection Manager limits are exceeded. See [./CONFIGURATION.md#configuring-connection-manager](./CONFIGURATION.md#configuring-connection-manager) for details on how to configure these limits.
@@ -1023,6 +1048,17 @@ Enables users to change the value of certain peers in a range of 0 to 1. Peers w
 ```js
 libp2p.connectionManager.setPeerValue(highPriorityPeerId, 1)
 libp2p.connectionManager.setPeerValue(lowPriorityPeerId, 0)
+```
+
+### connectionManager.size
+
+Getter for obtaining the current number of open connections.
+
+#### Example
+
+```js
+libp2p.connectionManager.size
+// 10
 ```
 
 ### metrics.global
@@ -1126,21 +1162,23 @@ unless they are performing a specific action. See [peer discovery and auto dial]
 
 - `peer`: instance of [`PeerId`][peer-id]
 
+### libp2p.connectionManager
+
 #### A new connection to a peer has been opened
 
 This event will be triggered anytime a new Connection is established to another peer.
 
-`libp2p.on('peer:connect', (peer) => {})`
+`libp2p.on('peer:connect', (connection) => {})`
 
-- `peer`: instance of [`PeerId`][peer-id]
+- `connection`: instance of [`Connection`][connection]
 
 #### An existing connection to a peer has been closed
 
 This event will be triggered anytime we are disconnected from another peer, regardless of the circumstances of that disconnection. If we happen to have multiple connections to a peer, this event will **only** be triggered when the last connection is closed.
 
-`libp2p.on('peer:disconnect', (peer) => {})`
+`libp2p.on('peer:disconnect', (connection) => {})`
 
-- `peer`: instance of [`PeerId`][peer-id]
+- `connection`: instance of [`Connection`][connection]
 
 ### libp2p.peerStore
 
