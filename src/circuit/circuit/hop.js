@@ -41,7 +41,7 @@ module.exports.handleHop = async function handleHop ({
   // Get the connection to the destination (stop) peer
   const destinationPeer = new PeerId(request.dstPeer.id)
 
-  const destinationConnection = circuit._registrar.getConnection(destinationPeer)
+  const destinationConnection = circuit._connectionManager.get(destinationPeer)
   if (!destinationConnection && !circuit._options.hop.active) {
     log('HOP request received but we are not connected to the destination peer')
     return streamHandler.end({

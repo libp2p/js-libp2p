@@ -21,6 +21,7 @@ class Metrics {
   /**
    *
    * @param {object} options
+   * @param {ConnectionManager} options.connectionManager
    * @param {number} options.computeThrottleMaxQueueSize
    * @param {number} options.computeThrottleTimeout
    * @param {Array<number>} options.movingAverageIntervals
@@ -34,6 +35,10 @@ class Metrics {
     this._oldPeers = oldPeerLRU(this._options.maxOldPeersRetention)
     this._running = false
     this._onMessage = this._onMessage.bind(this)
+    this._connectionManager = options.connectionManager
+    this._connectionManager.on('peer:disconnect', (connection) => {
+      this.onPeerDisconnected(connection.remotePeer)
+    })
   }
 
   /**
