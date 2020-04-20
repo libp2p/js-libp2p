@@ -305,8 +305,11 @@ class KadDHT extends EventEmitter {
 
   // ----------- Discovery -----------
 
-  _peerDiscovered (peerInfo) {
-    this.emit('peer', peerInfo)
+  _peerDiscovered (peerId, multiaddrs) {
+    this.emit('peer', {
+      id: peerId,
+      multiaddrs
+    })
   }
 
   // ----------- Internals -----------

@@ -244,7 +244,7 @@ class WorkerQueue {
         if (this.dht._isSelf(closer.id)) {
           return
         }
-        this.dht._peerDiscovered(closer)
+        this.dht._peerDiscovered(closer.id, closer.multiaddrs.toArray())
         await this.path.addPeerToQuery(closer.id)
       }))
     }
