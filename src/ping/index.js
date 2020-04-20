@@ -8,7 +8,7 @@ const errCode = require('err-code')
 const crypto = require('libp2p-crypto')
 const pipe = require('it-pipe')
 const { toBuffer } = require('it-buffer')
-const { collect, take } = require('../utils')
+const { collect, take } = require('streaming-iterables')
 
 const { PROTOCOL, PING_LENGTH } = require('./constants')
 

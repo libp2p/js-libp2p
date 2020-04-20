@@ -1,5 +1,9 @@
 'use strict'
 
+/**
+ * This code is based on `latency-monitor` (https://github.com/mlucool/latency-monitor) by `mlucool` (https://github.com/mlucool), available under Apache License 2.0 (https://github.com/mlucool/latency-monitor/blob/master/LICENSE)
+ */
+
 /* global window */
 const globalThis = require('ipfs-utils/src/globalthis')
 const EventEmitter = require('events')

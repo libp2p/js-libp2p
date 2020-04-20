@@ -2,7 +2,7 @@
 
 const mergeOptions = require('merge-options')
 const pipe = require('it-pipe')
-const { tap } = require('../utils')
+const { tap } = require('streaming-iterables')
 const oldPeerLRU = require('./old-peers')
 const { METRICS: defaultOptions } = require('../constants')
 const Stats = require('./stats')

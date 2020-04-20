@@ -8,7 +8,7 @@ chai.use(dirtyChai)
 const expect = chai.expect
 const duplexPair = require('it-pair/duplex')
 const pipe = require('it-pipe')
-const { collect } = require('../../src/utils')
+const { collect } = require('streaming-iterables')
 
 const Protector = require('../../src/pnet')
 const Errors = Protector.errors

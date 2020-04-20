@@ -51,7 +51,6 @@
     "events": "^3.1.0",
     "hashlru": "^2.3.0",
     "ipfs-utils": "^1.0.0",
-    "iso-random-stream": "^1.1.1",
     "it-all": "^1.0.1",
     "it-buffer": "^0.1.2",
     "it-handshake": "^1.0.1",
@@ -73,6 +72,7 @@
     "peer-id": "^0.13.4",
     "peer-info": "^0.17.0",
     "protons": "^1.0.1",
+    "streaming-iterables": "^4.1.0",
     "retimer": "^2.0.0",
     "timeout-abort-controller": "^1.0.0",
     "xsalsa20": "^1.0.2"
@@ -107,7 +107,6 @@
     "p-times": "^2.1.0",
     "p-wait-for": "^3.1.0",
     "sinon": "^9.0.0",
-    "streaming-iterables": "^4.1.0",
     "wrtc": "^0.4.1"
   },
   "contributors": [
