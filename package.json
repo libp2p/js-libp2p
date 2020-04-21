@@ -31,7 +31,7 @@
     "aegir": "^21.2.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
-    "libp2p-interfaces": "libp2p/js-interfaces#v0.3.x"
+    "libp2p-interfaces": "^0.3.0"
   },
   "dependencies": {
     "debug": "^4.1.1",
