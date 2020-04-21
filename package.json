@@ -30,14 +30,14 @@
   "devDependencies": {
     "aegir": "^21.2.0",
     "chai": "^4.2.0",
-    "dirty-chai": "^2.0.1"
+    "dirty-chai": "^2.0.1",
+    "libp2p-interfaces": "^0.3.0"
   },
   "dependencies": {
     "debug": "^4.1.1",
     "mafmt": "^7.0.0",
     "multiaddr": "^7.2.1",
-    "peer-id": "^0.13.5",
-    "peer-info": "^0.17.0"
+    "peer-id": "^0.13.5"
   },
   "pre-push": [
     "lint",
