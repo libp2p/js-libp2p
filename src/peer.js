@@ -16,7 +16,7 @@ class Peer extends EventEmitter {
    * @param {PeerId} id
    * @param {Array<string>} protocols
    */
-  constructor (id, protocols) {
+  constructor ({ id, protocols }) {
     super()
 
     /**

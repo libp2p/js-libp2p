@@ -79,7 +79,6 @@ class PubsubBaseProtocol extends EventEmitter {
     this.log.err = debug(`${debugName}:error`)
 
     this.multicodecs = utils.ensureArray(multicodecs)
-    this.signMessages = peerId
     this.registrar = registrar
 
     this.started = false
@@ -174,7 +173,10 @@ class PubsubBaseProtocol extends EventEmitter {
     const peerId = connection.remotePeer
     const idB58Str = peerId.toB58String()
 
-    const peer = this._addPeer(new Peer(peerId, [protocol]))
+    const peer = this._addPeer(new Peer({
+      id: peerId,
+      protocols: [protocol]
+    }))
 
     peer.attachConnection(stream)
     this._processMessages(idB58Str, stream, peer)
@@ -190,7 +192,11 @@ class PubsubBaseProtocol extends EventEmitter {
     const idB58Str = peerId.toB58String()
     this.log('connected', idB58Str)
 
-    const peer = this._addPeer(new Peer(peerId, this.multicodecs))
+    const peer = this._addPeer(new Peer({
+      id: peerId,
+      protocols: this.multicodecs
+    }))
+
     try {
       const { stream } = await conn.newStream(this.multicodecs)
       peer.attachConnection(stream)

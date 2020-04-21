@@ -301,7 +301,7 @@ describe('pubsub base protocol', () => {
       expect(peersSubscribed).to.be.empty()
 
       // Set mock peer subscribed
-      const peer = new Peer(peerId)
+      const peer = new Peer({ id: peerId })
       const id = peer.id.toB58String()
 
       peer.topics.add(topic)
