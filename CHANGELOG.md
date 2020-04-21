@@ -1,3 +1,18 @@
+<a name="0.11.0"></a>
+# [0.11.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.10.4...v0.11.0) (2020-04-21)
+
+
+### Chores
+
+* peer-discovery not using peer-info ([8a99f1b](https://github.com/libp2p/js-libp2p-bootstrap/commit/8a99f1b))
+
+
+### BREAKING CHANGES
+
+* peer event emits an object with id and multiaddr instead of a peer-info
+
+
+
 <a name="0.10.4"></a>
 ## [0.10.4](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.10.3...v0.10.4) (2020-02-14)
 
