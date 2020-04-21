@@ -1,6 +1,6 @@
 {
   "name": "libp2p-bootstrap",
-  "version": "0.10.4",
+  "version": "0.11.0",
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -44,23 +44,21 @@
     "test"
   ],
   "contributors": [
-    "Abraham Elmahrek <abe@apache.org>",
-    "Alan Shaw <alan.shaw@protocol.ai>",
-    "Alex Potsides <alex@achingbrain.net>",
     "David Dias <daviddias.p@gmail.com>",
-    "Dmitriy Ryajov <dryajov@gmail.com>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "Greenkeeper <support@greenkeeper.io>",
-    "Hugo Dias <mail@hugodias.me>",
-    "Kevin Kwok <antimatter15@gmail.com>",
-    "Nuno Nogueira <nunofmn@gmail.com>",
-    "Richard Littauer <richard.littauer@gmail.com>",
     "Vasco Santos <vasco.santos@moxy.studio>",
-    "Vasco Santos <vasco.santos@ua.pt>",
-    "Victor Bjelkholm <victorbjelkholm@gmail.com>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Alan Shaw <alan.shaw@protocol.ai>",
+    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Zane Starr <zcstarr@gmail.com>",
     "dirkmc <dirkmdev@gmail.com>",
     "victorbjelkholm <victor@protocol.ai>",
-    "ころ <koropicot@gmail.com>"
+    "Abraham Elmahrek <abe@apache.org>",
+    "ころ <koropicot@gmail.com>",
+    "Alex Potsides <alex@achingbrain.net>",
+    "Dmitriy Ryajov <dryajov@gmail.com>",
+    "Hugo Dias <mail@hugodias.me>",
+    "Kevin Kwok <antimatter15@gmail.com>",
+    "Nuno Nogueira <nunofmn@gmail.com>",
+    "Richard Littauer <richard.littauer@gmail.com>"
   ]
 }
