@@ -11,7 +11,7 @@ const PubsubBaseProtocol = require('../src')
 const Peer = require('../src/peer')
 const { randomSeqno } = require('../src/utils')
 const {
-  createPeerInfo,
+  createPeerId,
   createMockRegistrar,
   mockRegistrar,
   PubsubImplementation,
@@ -24,7 +24,7 @@ describe('pubsub base protocol', () => {
     let sinonMockRegistrar
 
     beforeEach(async () => {
-      const peerInfo = await createPeerInfo()
+      const peerId = await createPeerId()
       sinonMockRegistrar = {
         handle: sinon.stub(),
         register: sinon.stub(),
@@ -34,7 +34,7 @@ describe('pubsub base protocol', () => {
       pubsub = new PubsubBaseProtocol({
         debugName: 'pubsub',
         multicodecs: '/pubsub/1.0.0',
-        peerInfo: peerInfo,
+        peerId: peerId,
         registrar: sinonMockRegistrar
       })
 
@@ -72,15 +72,15 @@ describe('pubsub base protocol', () => {
   })
 
   describe('should handle message creation and signing', () => {
-    let peerInfo
+    let peerId
     let pubsub
 
     before(async () => {
-      peerInfo = await createPeerInfo()
+      peerId = await createPeerId()
       pubsub = new PubsubBaseProtocol({
         debugName: 'pubsub',
         multicodecs: '/pubsub/1.0.0',
-        peerInfo: peerInfo,
+        peerId: peerId,
         registrar: mockRegistrar
       })
     })
@@ -91,7 +91,7 @@ describe('pubsub base protocol', () => {
 
     it('_buildMessage normalizes and signs messages', async () => {
       const message = {
-        from: peerInfo.id.id,
+        from: peerId.id,
         data: 'hello',
         seqno: randomSeqno(),
         topicIDs: ['test-topic']
@@ -105,7 +105,7 @@ describe('pubsub base protocol', () => {
 
     it('validate with strict signing off will validate a present signature', async () => {
       const message = {
-        from: peerInfo.id.id,
+        from: peerId.id,
         data: 'hello',
         seqno: randomSeqno(),
         topicIDs: ['test-topic']
@@ -121,7 +121,7 @@ describe('pubsub base protocol', () => {
 
     it('validate with strict signing requires a signature', async () => {
       const message = {
-        from: peerInfo.id.id,
+        from: peerId.id,
         data: 'hello',
         seqno: randomSeqno(),
         topicIDs: ['test-topic']
@@ -136,17 +136,17 @@ describe('pubsub base protocol', () => {
   describe('should be able to register two nodes', () => {
     const protocol = '/pubsub/1.0.0'
     let pubsubA, pubsubB
-    let peerInfoA, peerInfoB
+    let peerIdA, peerIdB
     const registrarRecordA = {}
     const registrarRecordB = {}
 
     // mount pubsub
     beforeEach(async () => {
-      peerInfoA = await createPeerInfo()
-      peerInfoB = await createPeerInfo()
+      peerIdA = await createPeerId()
+      peerIdB = await createPeerId()
 
-      pubsubA = new PubsubImplementation(protocol, peerInfoA, createMockRegistrar(registrarRecordA))
-      pubsubB = new PubsubImplementation(protocol, peerInfoB, createMockRegistrar(registrarRecordB))
+      pubsubA = new PubsubImplementation(protocol, peerIdA, createMockRegistrar(registrarRecordA))
+      pubsubB = new PubsubImplementation(protocol, peerIdB, createMockRegistrar(registrarRecordB))
     })
 
     // start pubsub
@@ -176,12 +176,12 @@ describe('pubsub base protocol', () => {
       // Notice peers of connection
       const [c0, c1] = ConnectionPair()
 
-      await onConnectA(peerInfoB, c0)
+      await onConnectA(peerIdB, c0)
       await handlerB({
         protocol,
         stream: c1.stream,
         connection: {
-          remotePeer: peerInfoA.id
+          remotePeer: peerIdA
         }
       })
 
@@ -198,12 +198,12 @@ describe('pubsub base protocol', () => {
       const error = new Error('new stream error')
       sinon.stub(c0, 'newStream').throws(error)
 
-      await onConnectA(peerInfoB, c0)
+      await onConnectA(peerIdB, c0)
       await handlerB({
         protocol,
         stream: c1.stream,
         connection: {
-          remotePeer: peerInfoA.id
+          remotePeer: peerIdA
         }
       })
 
@@ -219,18 +219,18 @@ describe('pubsub base protocol', () => {
       // Notice peers of connection
       const [c0, c1] = ConnectionPair()
 
-      await onConnectA(peerInfoB, c0)
+      await onConnectA(peerIdB, c0)
       await handlerB({
         protocol,
         stream: c1.stream,
         connection: {
-          remotePeer: peerInfoA.id
+          remotePeer: peerIdA
         }
       })
 
       // Notice peers of disconnect
-      onDisconnectA(peerInfoB)
-      onDisconnectB(peerInfoA)
+      onDisconnectA(peerIdB)
+      onDisconnectB(peerIdA)
 
       expect(pubsubA.peers.size).to.be.eql(0)
       expect(pubsubB.peers.size).to.be.eql(0)
@@ -242,22 +242,22 @@ describe('pubsub base protocol', () => {
       expect(pubsubA.peers.size).to.be.eql(0)
 
       // Notice peers of disconnect
-      onDisconnectA(peerInfoB)
+      onDisconnectA(peerIdB)
 
       expect(pubsubA.peers.size).to.be.eql(0)
     })
   })
 
   describe('getSubscribers', () => {
-    let peerInfo
+    let peerId
     let pubsub
 
     beforeEach(async () => {
-      peerInfo = await createPeerInfo()
+      peerId = await createPeerId()
       pubsub = new PubsubBaseProtocol({
         debugName: 'pubsub',
         multicodecs: '/pubsub/1.0.0',
-        peerInfo: peerInfo,
+        peerId: peerId,
         registrar: mockRegistrar
       })
     })
@@ -301,8 +301,8 @@ describe('pubsub base protocol', () => {
       expect(peersSubscribed).to.be.empty()
 
       // Set mock peer subscribed
-      const peer = new Peer(peerInfo)
-      const id = peer.info.id.toB58String()
+      const peer = new Peer({ id: peerId })
+      const id = peer.id.toB58String()
 
       peer.topics.add(topic)
       pubsub.peers.set(id, peer)

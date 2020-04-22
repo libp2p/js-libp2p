@@ -50,11 +50,11 @@ TODO: add explanation for registrar!
 const Pubsub = require('libp2p-pubsub')
 
 class PubsubImplementation extends Pubsub {
-  constructor({ peerInfo, registrar, ...options })
+  constructor({ peerId, registrar, ...options })
     super({
       debugName: 'libp2p:pubsub',
       multicodecs: '/pubsub-implementation/1.0.0',
-      peerInfo: peerInfo,
+      peerId: peerId,
       registrar: registrar,
       signMessages: options.signMessages,
       strictSigning: options.strictSigning
