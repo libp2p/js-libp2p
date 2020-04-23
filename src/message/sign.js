@@ -1,5 +1,5 @@
 'use strict'
-
+const { Buffer } = require('buffer')
 const PeerId = require('peer-id')
 const { Message } = require('./index')
 const SignPrefix = Buffer.from('libp2p-pubsub:')

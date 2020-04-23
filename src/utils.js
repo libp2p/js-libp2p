@@ -1,7 +1,8 @@
 'use strict'
 
+const { Buffer } = require('buffer')
 const crypto = require('libp2p-crypto')
-const bs58 = require('bs58')
+const multibase = require('multibase')
 
 exports = module.exports
 
@@ -77,7 +78,7 @@ exports.ensureArray = (maybeArray) => {
 exports.normalizeInRpcMessage = (message) => {
   const m = Object.assign({}, message)
   if (Buffer.isBuffer(message.from)) {
-    m.from = bs58.encode(message.from)
+    m.from = multibase.encode('base58btc', message.from).toString().slice(1)
   }
   return m
 }
@@ -97,7 +98,7 @@ exports.normalizeInRpcMessages = (messages) => {
 exports.normalizeOutRpcMessage = (message) => {
   const m = Object.assign({}, message)
   if (typeof message.from === 'string' || message.from instanceof String) {
-    m.from = bs58.decode(message.from)
+    m.from = multibase.decode('z' + message.from)
   }
   return m
 }

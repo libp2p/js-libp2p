@@ -2,7 +2,7 @@
 'use strict'
 
 const { expect } = require('chai')
-
+const { Buffer } = require('buffer')
 const utils = require('../src/utils')
 
 describe('utils', () => {

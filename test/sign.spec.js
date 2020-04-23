@@ -2,6 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
+const { Buffer } = require('buffer')
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
