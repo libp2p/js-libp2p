@@ -1,3 +1,18 @@
+<a name="0.21.0"></a>
+# [0.21.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.20.2...v0.21.0) (2020-04-23)
+
+
+### Chores
+
+* remove peer-info usage ([#102](https://github.com/libp2p/js-libp2p-floodsub/issues/102)) ([cb3497c](https://github.com/libp2p/js-libp2p-floodsub/commit/cb3497c))
+
+
+### BREAKING CHANGES
+
+* using new topology api with peer-id instead of peer-info and new pubsub internal peer data structure
+
+
+
 <a name="0.20.2"></a>
 ## [0.20.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.20.1...v0.20.2) (2020-02-14)
 
