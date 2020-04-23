@@ -5,7 +5,9 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
-const PeerInfo = require('peer-info')
+
+const multiaddr = require('multiaddr')
+const PeerId = require('peer-id')
 const MDNS = require('multicast-dns')
 const delay = require('delay')
 const pDefer = require('p-defer')
@@ -16,20 +18,16 @@ const { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } = require('../../src/c
 describe('Responder', () => {
   let responder, mdns
   const peerAddrs = [
-    '/ip4/127.0.0.1/tcp/20001',
-    '/ip4/127.0.0.1/tcp/20002'
+    multiaddr('/ip4/127.0.0.1/tcp/20001'),
+    multiaddr('/ip4/127.0.0.1/tcp/20002')
   ]
-  let peerInfos
+  let peerIds
 
   before(async () => {
-    peerInfos = await Promise.all([
-      PeerInfo.create(),
-      PeerInfo.create()
+    peerIds = await Promise.all([
+      PeerId.create(),
+      PeerId.create()
     ])
-
-    peerInfos.forEach((peer, index) => {
-      peer.multiaddrs.add(peerAddrs[index])
-    })
   })
 
   afterEach(() => {
@@ -40,15 +38,21 @@ describe('Responder', () => {
   })
 
   it('should start and stop', async () => {
-    const responder = new Responder(peerInfos[0])
+    const responder = new Responder({
+      peerId: peerIds[0],
+      multiaddrs: [peerAddrs[0]]
+    })
 
     await responder.start()
     await responder.stop()
   })
 
   it('should not respond to a query if no TCP addresses', async () => {
-    const peerInfo = await PeerInfo.create()
-    responder = new Responder(peerInfo)
+    const peerId = await PeerId.create()
+    responder = new Responder({
+      peerId,
+      multiaddrs: []
+    })
     mdns = MDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
 
     await responder.start()
@@ -56,7 +60,7 @@ describe('Responder', () => {
     let response
 
     mdns.on('response', event => {
-      if (isResponseFrom(event, peerInfo)) {
+      if (isResponseFrom(event, peerId)) {
         response = event
       }
     })
@@ -74,7 +78,10 @@ describe('Responder', () => {
   })
 
   it('should not respond to a query with non matching service tag', async () => {
-    responder = new Responder(peerInfos[0])
+    responder = new Responder({
+      peerId: peerIds[0],
+      multiaddrs: [peerAddrs[0]]
+    })
     mdns = MDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
 
     await responder.start()
@@ -82,7 +89,7 @@ describe('Responder', () => {
     let response
 
     mdns.on('response', event => {
-      if (isResponseFrom(event, peerInfos[0])) {
+      if (isResponseFrom(event, peerIds[0])) {
         response = event
       }
     })
@@ -102,14 +109,17 @@ describe('Responder', () => {
   })
 
   it('should respond correctly', async () => {
-    responder = new Responder(peerInfos[0])
+    responder = new Responder({
+      peerId: peerIds[0],
+      multiaddrs: [peerAddrs[0]]
+    })
     mdns = MDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
 
     await responder.start()
     const defer = pDefer()
 
     mdns.on('response', event => {
-      if (!isResponseFrom(event, peerInfos[0])) return
+      if (!isResponseFrom(event, peerIds[0])) return
 
       const srvRecord = event.answers.find(a => a.type === 'SRV')
       if (!srvRecord) return defer.reject(new Error('Missing SRV record'))
@@ -121,7 +131,7 @@ describe('Responder', () => {
         .filter(a => ['A', 'AAAA'].includes(a.type))
         .map(a => `/${protos[a.type]}/${a.data}/tcp/${port}`)
 
-      if (!addrs.includes(peerAddrs[0])) {
+      if (!addrs.includes(peerAddrs[0].toString())) {
         return defer.reject(new Error('Missing peer address in response: ' + peerAddrs[0]))
       }
 
@@ -140,7 +150,7 @@ describe('Responder', () => {
   })
 })
 
-function isResponseFrom (res, fromPeerInfo) {
+function isResponseFrom (res, fromPeerId) {
   const answers = res.answers || []
   const ptrRecord = answers.find(a => a.type === 'PTR' && a.name === SERVICE_TAG_LOCAL)
   if (!ptrRecord) return false // Ignore irrelevant
@@ -156,7 +166,7 @@ function isResponseFrom (res, fromPeerInfo) {
   }
 
   // Ignore response from someone else
-  if (fromPeerInfo.id.toB58String() !== peerIdStr) return false
+  if (fromPeerId.toB58String() !== peerIdStr) return false
 
   return true
 }

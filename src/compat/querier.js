@@ -3,7 +3,6 @@
 const EE = require('events')
 const MDNS = require('multicast-dns')
 const Multiaddr = require('multiaddr')
-const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
 const debug = require('debug')
 const log = debug('libp2p:mdns:compat:querier')
@@ -11,22 +10,24 @@ log.error = debug('libp2p:mdns:compat:querier:error')
 const { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } = require('./constants')
 
 class Querier extends EE {
-  constructor (peerId, options) {
+  constructor ({ peerId, queryInterval = 60000, queryPeriod }) {
     super()
+
     if (!peerId) {
       throw new Error('missing peerId parameter')
     }
-    options = options || {}
+
     this._peerIdStr = peerId.toB58String()
-    // Re-query every 60s, in leu of network change detection
-    options.queryInterval = options.queryInterval || 60000
-    // Time for which the MDNS server will stay alive waiting for responses
-    // Must be less than options.queryInterval!
-    options.queryPeriod = Math.min(
-      options.queryInterval,
-      options.queryPeriod == null ? 5000 : options.queryPeriod
-    )
-    this._options = options
+    this._options = {
+      // Re-query in leu of network change detection (every 60s by default)
+      queryInterval: queryInterval,
+      // Time for which the MDNS server will stay alive waiting for responses
+      // Must be less than options.queryInterval!
+      queryPeriod: Math.min(
+        queryInterval,
+        queryPeriod == null ? 5000 : queryPeriod
+      )
+    }
     this._onResponse = this._onResponse.bind(this)
   }
 
@@ -57,7 +58,7 @@ class Querier extends EE {
     })
   }
 
-  async _onResponse (event, info) {
+  _onResponse (event, info) {
     const answers = event.answers || []
     const ptrRecord = answers.find(a => a.type === 'PTR' && a.name === SERVICE_TAG_LOCAL)
 
@@ -87,13 +88,6 @@ class Querier extends EE {
       return log('failed to create peer ID from TXT record data', peerIdStr, err)
     }
 
-    let peerInfo
-    try {
-      peerInfo = await PeerInfo.create(peerId)
-    } catch (err) {
-      return log.error('failed to create peer info from peer ID', peerId, err)
-    }
-
     const srvRecord = answers.find(a => a.type === 'SRV')
     if (!srvRecord) return log('missing SRV record in response')
 
@@ -115,8 +109,10 @@ class Querier extends EE {
         return addrs
       }, [])
 
-    multiaddrs.forEach(addr => peerInfo.multiaddrs.add(addr))
-    this.emit('peer', peerInfo)
+    this.emit('peer', {
+      id: peerId,
+      multiaddrs
+    })
   }
 
   stop () {

@@ -6,13 +6,14 @@ const log = require('debug')('libp2p:mdns:compat:responder')
 const { SERVICE_TAG_LOCAL } = require('./constants')
 
 class Responder {
-  constructor (peerInfo) {
-    if (!peerInfo) {
-      throw new Error('missing peerInfo parameter')
+  constructor ({ peerId, multiaddrs }) {
+    if (!peerId) {
+      throw new Error('missing peerId parameter')
     }
 
-    this._peerInfo = peerInfo
-    this._peerIdStr = peerInfo.id.toB58String()
+    this._peerId = peerId
+    this._peerIdStr = peerId.toB58String()
+    this._multiaddrs = multiaddrs
     this._onQuery = this._onQuery.bind(this)
   }
 
@@ -22,7 +23,7 @@ class Responder {
   }
 
   _onQuery (event, info) {
-    const addresses = this._peerInfo.multiaddrs.toArray().map(ma => ma.toOptions())
+    const addresses = this._multiaddrs.map(ma => ma.toOptions())
     // Only announce TCP for now
     if (!addresses.length) return
 

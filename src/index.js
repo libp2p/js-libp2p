@@ -1,7 +1,7 @@
 'use strict'
 
 const multicastDNS = require('multicast-dns')
-const EventEmitter = require('events').EventEmitter
+const { EventEmitter } = require('events')
 const debug = require('debug')
 const log = debug('libp2p:mdns')
 const query = require('./query')
@@ -10,20 +10,24 @@ const GoMulticastDNS = require('./compat')
 class MulticastDNS extends EventEmitter {
   constructor (options = {}) {
     super()
-    if (!options.peerInfo) {
-      throw new Error('needs a PeerInfo to work')
+
+    if (!options.peerId) {
+      throw new Error('needs own PeerId to work')
     }
 
     this.broadcast = options.broadcast !== false
     this.interval = options.interval || (1e3 * 10)
     this.serviceTag = options.serviceTag || 'ipfs.local'
     this.port = options.port || 5353
-    this.peerInfo = options.peerInfo
+    this.peerId = options.peerId
+    this.peerMultiaddrs = options.multiaddrs || []
     this._queryInterval = null
     this._onPeer = this._onPeer.bind(this)
 
     if (options.compat !== false) {
-      this._goMdns = new GoMulticastDNS(options.peerInfo, {
+      this._goMdns = new GoMulticastDNS({
+        multiaddrs: this.peerMultiaddrs,
+        peerId: options.peerId,
         queryPeriod: options.compatQueryPeriod,
         queryInterval: options.compatQueryInterval
       })
@@ -51,12 +55,12 @@ class MulticastDNS extends EventEmitter {
   }
 
   _onMdnsQuery (event) {
-    query.gotQuery(event, this.mdns, this.peerInfo, this.serviceTag, this.broadcast)
+    query.gotQuery(event, this.mdns, this.peerId, this.peerMultiaddrs, this.serviceTag, this.broadcast)
   }
 
-  async _onMdnsResponse (event) {
+  _onMdnsResponse (event) {
     try {
-      const foundPeer = await query.gotResponse(event, this.peerInfo, this.serviceTag)
+      const foundPeer = query.gotResponse(event, this.peerId, this.serviceTag)
 
       if (foundPeer) {
         this.emit('peer', foundPeer)
@@ -66,8 +70,8 @@ class MulticastDNS extends EventEmitter {
     }
   }
 
-  _onPeer (peerInfo) {
-    this.emit('peer', peerInfo)
+  _onPeer (peerData) {
+    this.emit('peer', peerData)
   }
 
   /**

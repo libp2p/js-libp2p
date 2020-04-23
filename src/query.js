@@ -1,6 +1,5 @@
 'use strict'
 
-const Peer = require('peer-info')
 const os = require('os')
 const debug = require('debug')
 const log = debug('libp2p:mdns')
@@ -26,7 +25,7 @@ module.exports = {
     return setInterval(query, interval)
   },
 
-  gotResponse: async function (rsp, peerInfo, serviceTag) {
+  gotResponse: function (rsp, localPeerId, serviceTag) {
     if (!rsp.answers) { return }
 
     const answers = {
@@ -57,33 +56,37 @@ module.exports = {
     const multiaddrs = []
 
     answers.a.forEach((a) => {
-      multiaddrs.push(new Multiaddr('/ip4/' + a.data + '/tcp/' + port))
-    })
-    answers.aaaa.forEach((a) => {
-      multiaddrs.push(new Multiaddr('/ip6/' + a.data + '/tcp/' + port))
+      const ma = new Multiaddr('/ip4/' + a.data + '/tcp/' + port)
+
+      if (!multiaddrs.some((m) => m.equals(ma))) {
+        multiaddrs.push(ma)
+      }
     })
 
-    if (peerInfo.id.toB58String() === b58Id) {
+    answers.aaaa.forEach((a) => {
+      const ma = new Multiaddr('/ip6/' + a.data + '/tcp/' + port)
+
+      if (!multiaddrs.some((m) => m.equals(ma))) {
+        multiaddrs.push(ma)
+      }
+    })
+
+    if (localPeerId.toB58String() === b58Id) {
       return // replied to myself, ignore
     }
 
     log('peer found -', b58Id)
 
-    const peerId = Id.createFromB58String(b58Id)
-
-    try {
-      const peerFound = await Peer.create(peerId)
-      multiaddrs.forEach((addr) => peerFound.multiaddrs.add(addr))
-      return peerFound
-    } catch (err) {
-      log.error('Error creating PeerInfo from new found peer', err)
+    return {
+      id: Id.createFromB58String(b58Id),
+      multiaddrs
     }
   },
 
-  gotQuery: function (qry, mdns, peerInfo, serviceTag, broadcast) {
+  gotQuery: function (qry, mdns, peerId, multiaddrs, serviceTag, broadcast) {
     if (!broadcast) { return }
 
-    const addresses = peerInfo.multiaddrs.toArray().map(ma => ma.toOptions())
+    const addresses = multiaddrs.map(ma => ma.toOptions())
     // Only announce TCP for now
     if (addresses.length === 0) { return }
 
@@ -95,14 +98,14 @@ module.exports = {
         type: 'PTR',
         class: 'IN',
         ttl: 120,
-        data: peerInfo.id.toB58String() + '.' + serviceTag
+        data: peerId.toB58String() + '.' + serviceTag
       })
 
       // Only announce TCP multiaddrs for now
       const port = addresses[0].port
 
       answers.push({
-        name: peerInfo.id.toB58String() + '.' + serviceTag,
+        name: peerId.toB58String() + '.' + serviceTag,
         type: 'SRV',
         class: 'IN',
         ttl: 120,
@@ -115,11 +118,11 @@ module.exports = {
       })
 
       answers.push({
-        name: peerInfo.id.toB58String() + '.' + serviceTag,
+        name: peerId.toB58String() + '.' + serviceTag,
         type: 'TXT',
         class: 'IN',
         ttl: 120,
-        data: peerInfo.id.toB58String()
+        data: peerId.toB58String()
       })
 
       addresses.forEach((addr) => {

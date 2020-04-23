@@ -5,7 +5,7 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
-const PeerInfo = require('peer-info')
+const PeerId = require('peer-id')
 const MDNS = require('multicast-dns')
 const OS = require('os')
 const delay = require('delay')
@@ -19,17 +19,13 @@ describe('Querier', () => {
     '/ip4/127.0.0.1/tcp/20001',
     '/ip4/127.0.0.1/tcp/20002'
   ]
-  let peerInfos
+  let peerIds
 
   before(async () => {
-    peerInfos = await Promise.all([
-      PeerInfo.create(),
-      PeerInfo.create()
+    peerIds = await Promise.all([
+      PeerId.create(),
+      PeerId.create()
     ])
-
-    peerInfos.forEach((peer, index) => {
-      peer.multiaddrs.add(peerAddrs[index])
-    })
   })
 
   afterEach(() => {
@@ -40,14 +36,14 @@ describe('Querier', () => {
   })
 
   it('should start and stop', async () => {
-    const querier = new Querier(peerInfos[0].id)
+    const querier = new Querier({ peerId: peerIds[0] })
 
     await querier.start()
     await querier.stop()
   })
 
   it('should query on interval', async () => {
-    querier = new Querier(peerInfos[0].id, { queryPeriod: 0, queryInterval: 10 })
+    querier = new Querier({ peerId: peerIds[0], queryPeriod: 0, queryInterval: 10 })
     mdns = MDNS()
 
     let queryCount = 0
@@ -66,7 +62,7 @@ describe('Querier', () => {
 
   it('should not emit peer for responses with non matching service tags', () => {
     return ensureNoPeer(event => {
-      const peerServiceTagLocal = `${peerInfos[1].id.toB58String()}.${SERVICE_TAG_LOCAL}`
+      const peerServiceTagLocal = `${peerIds[1].toB58String()}.${SERVICE_TAG_LOCAL}`
       const bogusServiceTagLocal = '_ifps-discovery._udp'
 
       return [{
@@ -81,7 +77,7 @@ describe('Querier', () => {
 
   it('should not emit peer for responses with missing TXT record', () => {
     return ensureNoPeer(event => {
-      const peerServiceTagLocal = `${peerInfos[1].id.toB58String()}.${SERVICE_TAG_LOCAL}`
+      const peerServiceTagLocal = `${peerIds[1].toB58String()}.${SERVICE_TAG_LOCAL}`
 
       return [{
         name: SERVICE_TAG_LOCAL,
@@ -95,7 +91,7 @@ describe('Querier', () => {
 
   it('should not emit peer for responses with missing peer ID in TXT record', () => {
     return ensureNoPeer(event => {
-      const peerServiceTagLocal = `${peerInfos[1].id.toB58String()}.${SERVICE_TAG_LOCAL}`
+      const peerServiceTagLocal = `${peerIds[1].toB58String()}.${SERVICE_TAG_LOCAL}`
 
       return [{
         name: SERVICE_TAG_LOCAL,
@@ -115,7 +111,7 @@ describe('Querier', () => {
 
   it('should not emit peer for responses to self', () => {
     return ensureNoPeer(event => {
-      const peerServiceTagLocal = `${peerInfos[1].id.toB58String()}.${SERVICE_TAG_LOCAL}`
+      const peerServiceTagLocal = `${peerIds[1].toB58String()}.${SERVICE_TAG_LOCAL}`
 
       return [{
         name: SERVICE_TAG_LOCAL,
@@ -128,7 +124,7 @@ describe('Querier', () => {
         type: 'TXT',
         class: 'IN',
         ttl: 120,
-        data: peerInfos[0].id.toB58String()
+        data: peerIds[0].toB58String()
       }]
     })
   })
@@ -136,7 +132,7 @@ describe('Querier', () => {
   // TODO: unskip when https://github.com/libp2p/js-peer-id/issues/83 is resolved
   it.skip('should not emit peer for responses with invalid peer ID in TXT record', () => {
     return ensureNoPeer(event => {
-      const peerServiceTagLocal = `${peerInfos[1].id.toB58String()}.${SERVICE_TAG_LOCAL}`
+      const peerServiceTagLocal = `${peerIds[1].toB58String()}.${SERVICE_TAG_LOCAL}`
 
       return [{
         name: SERVICE_TAG_LOCAL,
@@ -156,7 +152,7 @@ describe('Querier', () => {
 
   it('should not emit peer for responses with missing SRV record', () => {
     return ensureNoPeer(event => {
-      const peerServiceTagLocal = `${peerInfos[1].id.toB58String()}.${SERVICE_TAG_LOCAL}`
+      const peerServiceTagLocal = `${peerIds[1].toB58String()}.${SERVICE_TAG_LOCAL}`
 
       return [{
         name: SERVICE_TAG_LOCAL,
@@ -169,14 +165,14 @@ describe('Querier', () => {
         type: 'TXT',
         class: 'IN',
         ttl: 120,
-        data: peerInfos[1].id.toB58String()
+        data: peerIds[1].toB58String()
       }]
     })
   })
 
   it('should emit peer for responses even if no multiaddrs', () => {
     return ensurePeer(event => {
-      const peerServiceTagLocal = `${peerInfos[1].id.toB58String()}.${SERVICE_TAG_LOCAL}`
+      const peerServiceTagLocal = `${peerIds[1].toB58String()}.${SERVICE_TAG_LOCAL}`
 
       return [{
         name: SERVICE_TAG_LOCAL,
@@ -189,7 +185,7 @@ describe('Querier', () => {
         type: 'TXT',
         class: 'IN',
         ttl: 120,
-        data: peerInfos[1].id.toB58String()
+        data: peerIds[1].toB58String()
       }, {
         name: peerServiceTagLocal,
         type: 'SRV',
@@ -207,7 +203,7 @@ describe('Querier', () => {
 
   it('should emit peer for responses with valid multiaddrs', () => {
     return ensurePeer(event => {
-      const peerServiceTagLocal = `${peerInfos[1].id.toB58String()}.${SERVICE_TAG_LOCAL}`
+      const peerServiceTagLocal = `${peerIds[1].toB58String()}.${SERVICE_TAG_LOCAL}`
 
       return [{
         name: SERVICE_TAG_LOCAL,
@@ -220,7 +216,7 @@ describe('Querier', () => {
         type: 'TXT',
         class: 'IN',
         ttl: 120,
-        data: peerInfos[1].id.toB58String()
+        data: peerIds[1].toB58String()
       }, {
         name: peerServiceTagLocal,
         type: 'SRV',
@@ -243,11 +239,11 @@ describe('Querier', () => {
   })
 
   /**
-   * Ensure peerInfos[1] are emitted from `querier`
+   * Ensure peerIds[1] are emitted from `querier`
    * @param {Function} getResponse Given a query, construct a response to test the querier
    */
   async function ensurePeer (getResponse) {
-    querier = new Querier(peerInfos[0].id)
+    querier = new Querier({ peerId: peerIds[0] })
     mdns = MDNS()
 
     mdns.on('query', (event, info) => {
@@ -256,25 +252,25 @@ describe('Querier', () => {
       mdns.respond(getResponse(event, info), info)
     })
 
-    let peerInfo
+    let peerId
 
-    querier.on('peer', info => {
+    querier.on('peer', ({ id }) => {
       // Ignore non-test peers
-      if (!info.id.isEqual(peerInfos[1].id)) return
-      peerInfo = info
+      if (!id.isEqual(peerIds[1])) return
+      peerId = id
     })
 
     await querier.start()
     await delay(100)
-    if (!peerInfo) throw new Error('Missing peer')
+    if (!peerId) throw new Error('Missing peer')
   }
 
   /**
-   * Ensure none of peerInfos are emitted from `querier`
+   * Ensure none of peerIds are emitted from `querier`
    * @param {Function} getResponse Given a query, construct a response to test the querier
    */
   async function ensureNoPeer (getResponse) {
-    querier = new Querier(peerInfos[0].id)
+    querier = new Querier({ peerId: peerIds[0] })
     mdns = MDNS()
 
     mdns.on('query', (event, info) => {
@@ -283,18 +279,18 @@ describe('Querier', () => {
       mdns.respond(getResponse(event, info), info)
     })
 
-    let peerInfo
+    let peerId
 
-    querier.on('peer', info => {
+    querier.on('peer', ({ id }) => {
       // Ignore non-test peers
-      if (!info.id.isEqual(peerInfos[0].id) && !info.id.isEqual(peerInfos[1].id)) return
-      peerInfo = info
+      if (!id.isEqual(peerIds[0]) && !id.isEqual(peerIds[1])) return
+      peerId = id
     })
 
     await querier.start()
     await delay(100)
 
-    if (!peerInfo) return
-    throw Object.assign(new Error('Unexpected peer'), { peerInfo })
+    if (!peerId) return
+    throw Object.assign(new Error('Unexpected peer'), { peerId })
   }
 })

@@ -23,8 +23,8 @@ const MDNS = require('libp2p-mdns')
 
 const mdns = new MDNS(options)
 
-mdns.on('peer', (peerInfo) => {
-  console.log('Found a peer in the local network', peerInfo.id.toB58String())
+mdns.on('peer', (peerData) => {
+  console.log('Found a peer in the local network', peerData.id.toB58String(), peerData.multiaddrs)
 })
 
 // Broadcast for 20 seconds
@@ -33,7 +33,8 @@ setTimeout(() => mdns.stop(), 20 * 1000)
 ```
 
 - options
-  - `peerInfo` - PeerInfo to announce
+  - `peerId` - PeerId to announce
+  - `multiaddrs` - multiaddrs to announce
   - `broadcast` - (true/false) announce our presence through mDNS, default `false`
   - `interval` - query interval, default 10 * 1000 (10 seconds)
   - `serviceTag` - name of the service announce , default 'ipfs.local`
