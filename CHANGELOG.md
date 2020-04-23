@@ -1,3 +1,28 @@
+<a name="0.14.0"></a>
+# [0.14.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.13.3...v0.14.0) (2020-04-23)
+
+
+### Chores
+
+* peer-discovery not using peer-info ([#90](https://github.com/libp2p/js-libp2p-mdns/issues/90)) ([fca175e](https://github.com/libp2p/js-libp2p-mdns/commit/fca175e))
+
+
+### BREAKING CHANGES
+
+* peer event emitted with id and multiaddrs properties instead of peer-info
+
+* chore: add tests for peer-discovery interface
+
+* chore: apply suggestions from code review
+
+Co-Authored-By: Jacob Heun <jacobheun@gmail.com>
+
+* chore: update readme with peerData and peerId
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+
+
+
 <a name="0.13.3"></a>
 ## [0.13.3](https://github.com/libp2p/js-libp2p-mdns/compare/v0.13.2...v0.13.3) (2020-02-17)
 
