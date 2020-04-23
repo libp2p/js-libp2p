@@ -9,14 +9,17 @@ const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 
 const Book = require('./book')
+const Protobuf = require('./pb/address-book.proto')
 
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
 
 /**
  * The AddressBook is responsible for keeping the known multiaddrs
  * of a peer.
+ * This data will be persisted in the PeerStore datastore as follows:
+ * /peers/addrs/<b32 peer id no padding>
  */
 class AddressBook extends Book {
   /**
@@ -35,7 +38,20 @@ class AddressBook extends Book {
      * "peer" - emitted when a peer is discovered by the node.
      * "change:multiaddrs" - emitted when the known multiaddrs of a peer change.
      */
-    super(peerStore, 'change:multiaddrs', 'multiaddrs')
+    super({
+      peerStore,
+      eventName: 'change:multiaddrs',
+      eventProperty: 'multiaddrs',
+      protoBuf: Protobuf,
+      dsPrefix: '/peers/addrs/',
+      eventTransformer: (data) => data.map((address) => address.multiaddr),
+      dsSetTransformer: (data) => ({
+        addrs: data.map((address) => address.multiaddr.buffer)
+      }),
+      dsGetTransformer: (data) => data.addrs.map((a) => ({
+        multiaddr: multiaddr(a)
+      }))
+    })
 
     /**
      * Map known peers to their known Addresses.
@@ -78,19 +94,13 @@ class AddressBook extends Book {
       }
     }
 
-    this.data.set(id, addresses)
-    this._setPeerId(peerId)
+    this._setData(peerId, addresses)
     log(`stored provided multiaddrs for ${id}`)
 
     // Notify the existance of a new peer
     if (!rec) {
       this._ps.emit('peer', peerId)
     }
-
-    this._ps.emit('change:multiaddrs', {
-      peerId,
-      multiaddrs: addresses.map((mi) => mi.multiaddr)
-    })
 
     return this
   }
@@ -127,15 +137,8 @@ class AddressBook extends Book {
       return this
     }
 
-    this._setPeerId(peerId)
-    this.data.set(id, addresses)
-
+    this._setData(peerId, addresses)
     log(`added provided multiaddrs for ${id}`)
-
-    this._ps.emit('change:multiaddrs', {
-      peerId,
-      multiaddrs: addresses.map((mi) => mi.multiaddr)
-    })
 
     // Notify the existance of a new peer
     if (!rec) {
@@ -147,6 +150,7 @@ class AddressBook extends Book {
 
   /**
    * Transforms received multiaddrs into Address.
+   * @private
    * @param {Array<Multiaddr>} multiaddrs
    * @returns {Array<Address>}
    */

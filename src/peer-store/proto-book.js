@@ -8,15 +8,17 @@ log.error = debug('libp2p:peer-store:proto-book:error')
 const PeerId = require('peer-id')
 
 const Book = require('./book')
+const Protobuf = require('./pb/proto-book.proto')
 
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
 
 /**
  * The ProtoBook is responsible for keeping the known supported
  * protocols of a peer.
- * @fires ProtoBook#change:protocols
+ * This data will be persisted in the PeerStore datastore as follows:
+ * /peers/protos/<b32 peer id no padding>
  */
 class ProtoBook extends Book {
   /**
@@ -28,7 +30,18 @@ class ProtoBook extends Book {
      * PeerStore Event emitter, used by the ProtoBook to emit:
      * "change:protocols" - emitted when the known protocols of a peer change.
      */
-    super(peerStore, 'change:protocols', 'protocols')
+    super({
+      peerStore,
+      eventName: 'change:protocols',
+      eventProperty: 'protocols',
+      protoBuf: Protobuf,
+      dsPrefix: '/peers/protos/',
+      eventTransformer: (data) => Array.from(data),
+      dsSetTransformer: (data) => ({
+        protocols: Array.from(data)
+      }),
+      dsGetTransformer: (data) => new Set(data.protocols)
+    })
 
     /**
      * Map known peers to their known protocols.
@@ -69,14 +82,8 @@ class ProtoBook extends Book {
       return this
     }
 
-    this.data.set(id, newSet)
-    this._setPeerId(peerId)
+    this._setData(peerId, newSet)
     log(`stored provided protocols for ${id}`)
-
-    this._ps.emit('change:protocols', {
-      peerId,
-      protocols
-    })
 
     return this
   }
@@ -110,16 +117,8 @@ class ProtoBook extends Book {
       return this
     }
 
-    protocols = [...newSet]
-
-    this.data.set(id, newSet)
-    this._setPeerId(peerId)
+    this._setData(peerId, newSet)
     log(`added provided protocols for ${id}`)
-
-    this._ps.emit('change:protocols', {
-      peerId,
-      protocols
-    })
 
     return this
   }
