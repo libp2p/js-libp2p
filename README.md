@@ -38,7 +38,7 @@ js-libp2p-floodsub
 const FloodSub = require('libp2p-floodsub')
 
 // registrar is provided by libp2p
-const fsub = new FloodSub(peerInfo, registrar, options)
+const fsub = new FloodSub(peerId, registrar, options)
 
 await fsub.start()
 
@@ -56,7 +56,7 @@ fsub.publish('fruit', new Buffer('banana'))
 
 ```js
 const options = {…}
-const floodsub = new Floodsub(peerInfo, registrar, options)
+const floodsub = new Floodsub(peerId, registrar, options)
 ```
 
 Options is an optional object with the following key-value pairs:
@@ -75,9 +75,9 @@ Floodsub emits two kinds of events:
   - `data`: a Buffer containing the data that was published to the topic
 2. `floodsub:subscription-change` when the local peer receives an update to the subscriptions of a remote peer.
   ```Javascript
-    fsub.on('floodsub:subscription-change', (peerInfo, topics, changes) => { ... })
+    fsub.on('floodsub:subscription-change', (peerId, topics, changes) => { ... })
   ```
-  - `peerInfo`: a [PeerInfo](https://github.com/libp2p/js-peer-info) object
+  - `peerId`: a [PeerId](https://github.com/libp2p/js-peer-id) object
   - `topics`: the topics that the peer is now subscribed to
   - `changes`: an array of `{ topicID: <topic>, subscribe: <boolean> }`
      eg `[ { topicID: 'fruit', subscribe: true }, { topicID: 'vegetables': false } ]`

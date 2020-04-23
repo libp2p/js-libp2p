@@ -9,20 +9,20 @@ const expect = chai.expect
 const FloodSub = require('../src')
 
 const {
-  createPeerInfo, mockRegistrar
+  createPeerId, mockRegistrar
 } = require('./utils')
 
 const shouldNotHappen = (_) => expect.fail()
 
 describe('emit self', () => {
   let floodsub
-  let peerInfo
+  let peerId
   const topic = 'Z'
 
   describe('enabled', () => {
     before(async () => {
-      peerInfo = await createPeerInfo()
-      floodsub = new FloodSub(peerInfo, mockRegistrar, { emitSelf: true })
+      peerId = await createPeerId()
+      floodsub = new FloodSub(peerId, mockRegistrar, { emitSelf: true })
     })
 
     before(async () => {
@@ -44,8 +44,8 @@ describe('emit self', () => {
 
   describe('disabled', () => {
     before(async () => {
-      peerInfo = await createPeerInfo()
-      floodsub = new FloodSub(peerInfo, mockRegistrar, { emitSelf: false })
+      peerId = await createPeerId()
+      floodsub = new FloodSub(peerId, mockRegistrar, { emitSelf: false })
     })
 
     before(async () => {

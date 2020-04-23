@@ -52,8 +52,6 @@
     "lodash": "^4.17.15",
     "multiaddr": "^7.1.0",
     "p-defer": "^3.0.0",
-    "peer-id": "~0.13.3",
-    "peer-info": "~0.17.0",
     "sinon": "^9.0.1"
   },
   "dependencies": {
@@ -61,8 +59,9 @@
     "debug": "^4.1.1",
     "it-length-prefixed": "^3.0.0",
     "it-pipe": "^1.0.1",
-    "libp2p-pubsub": "~0.4.0",
+    "libp2p-pubsub": "^0.5.0",
     "p-map": "^3.0.0",
+    "peer-id": "~0.13.3",
     "protons": "^1.0.1",
     "time-cache": "^0.3.0"
   },

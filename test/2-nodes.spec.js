@@ -15,7 +15,7 @@ const { multicodec } = require('../src')
 const {
   defOptions,
   first,
-  createPeerInfo,
+  createPeerId,
   createMockRegistrar,
   expectSet,
   ConnectionPair
@@ -27,7 +27,7 @@ function shouldNotHappen (_) {
 
 describe('basics between 2 nodes', () => {
   describe('fresh nodes', () => {
-    let peerInfoA, peerInfoB
+    let peerIdA, peerIdB
     let fsA, fsB
 
     const registrarRecordA = {}
@@ -35,13 +35,13 @@ describe('basics between 2 nodes', () => {
 
     // Mount pubsub protocol
     before(async () => {
-      [peerInfoA, peerInfoB] = await Promise.all([
-        createPeerInfo(),
-        createPeerInfo()
+      [peerIdA, peerIdB] = await Promise.all([
+        createPeerId(),
+        createPeerId()
       ])
 
-      fsA = new FloodSub(peerInfoA, createMockRegistrar(registrarRecordA), defOptions)
-      fsB = new FloodSub(peerInfoB, createMockRegistrar(registrarRecordB), defOptions)
+      fsA = new FloodSub(peerIdA, createMockRegistrar(registrarRecordA), defOptions)
+      fsB = new FloodSub(peerIdB, createMockRegistrar(registrarRecordB), defOptions)
 
       expect(fsA.peers.size).to.be.eql(0)
       expect(fsA.subscriptions.size).to.eql(0)
@@ -62,13 +62,13 @@ describe('basics between 2 nodes', () => {
 
       // Notice peers of connection
       const [c0, c1] = ConnectionPair()
-      await onConnectA(peerInfoB, c0)
+      await onConnectA(peerIdB, c0)
 
       await handleB({
         protocol: multicodec,
         stream: c1.stream,
         connection: {
-          remotePeer: peerInfoA.id
+          remotePeer: peerIdA
         }
       })
 
@@ -87,11 +87,11 @@ describe('basics between 2 nodes', () => {
       const defer = pDefer()
 
       fsA.subscribe('Z')
-      fsB.once('floodsub:subscription-change', (changedPeerInfo, changedTopics, changedSubs) => {
+      fsB.once('floodsub:subscription-change', (changedPeerId, changedTopics, changedSubs) => {
         expectSet(fsA.subscriptions, ['Z'])
         expect(fsB.peers.size).to.equal(1)
         expectSet(first(fsB.peers).topics, ['Z'])
-        expect(changedPeerInfo.id.toB58String()).to.equal(first(fsB.peers).info.id.toB58String())
+        expect(changedPeerId.toB58String()).to.equal(first(fsB.peers).id.toB58String())
         expectSet(changedTopics, ['Z'])
         expect(changedSubs).to.be.eql([{ topicID: 'Z', subscribe: true }])
         defer.resolve()
@@ -147,7 +147,7 @@ describe('basics between 2 nodes', () => {
 
       function receivedMsg (msg) {
         expect(msg.data.toString()).to.equal('banana')
-        expect(msg.from).to.be.eql(fsB.peerInfo.id.toB58String())
+        expect(msg.from).to.be.eql(fsB.peerId.toB58String())
         expect(Buffer.isBuffer(msg.seqno)).to.be.true()
         expect(msg.topicIDs).to.be.eql(['Z'])
 
@@ -172,7 +172,7 @@ describe('basics between 2 nodes', () => {
 
       function receivedMsg (msg) {
         expect(msg.data.toString()).to.equal('banana')
-        expect(msg.from).to.be.eql(fsB.peerInfo.id.toB58String())
+        expect(msg.from).to.be.eql(fsB.peerId.toB58String())
         expect(Buffer.isBuffer(msg.seqno)).to.be.true()
         expect(msg.topicIDs).to.be.eql(['Z'])
 
@@ -197,10 +197,10 @@ describe('basics between 2 nodes', () => {
       fsA.unsubscribe('Z')
       expect(fsA.subscriptions.size).to.equal(0)
 
-      fsB.once('floodsub:subscription-change', (changedPeerInfo, changedTopics, changedSubs) => {
+      fsB.once('floodsub:subscription-change', (changedPeerId, changedTopics, changedSubs) => {
         expect(fsB.peers.size).to.equal(1)
         expectSet(first(fsB.peers).topics, [])
-        expect(changedPeerInfo.id.toB58String()).to.equal(first(fsB.peers).info.id.toB58String())
+        expect(changedPeerId.toB58String()).to.equal(first(fsB.peers).id.toB58String())
         expectSet(changedTopics, [])
         expect(changedSubs).to.be.eql([{ topicID: 'Z', subscribe: false }])
 
@@ -230,7 +230,7 @@ describe('basics between 2 nodes', () => {
   })
 
   describe('nodes send state on connection', () => {
-    let peerInfoA, peerInfoB
+    let peerIdA, peerIdB
     let fsA, fsB
 
     const registrarRecordA = {}
@@ -238,13 +238,13 @@ describe('basics between 2 nodes', () => {
 
     // Mount pubsub protocol
     before(async () => {
-      [peerInfoA, peerInfoB] = await Promise.all([
-        createPeerInfo(),
-        createPeerInfo()
+      [peerIdA, peerIdB] = await Promise.all([
+        createPeerId(),
+        createPeerId()
       ])
 
-      fsA = new FloodSub(peerInfoA, createMockRegistrar(registrarRecordA), defOptions)
-      fsB = new FloodSub(peerInfoB, createMockRegistrar(registrarRecordB), defOptions)
+      fsA = new FloodSub(peerIdA, createMockRegistrar(registrarRecordA), defOptions)
+      fsB = new FloodSub(peerIdB, createMockRegistrar(registrarRecordB), defOptions)
     })
 
     // Start pubsub
@@ -278,8 +278,8 @@ describe('basics between 2 nodes', () => {
 
         // Notice peers of connection
         const [c0, c1] = ConnectionPair()
-        await onConnectA(peerInfoB, c0)
-        await onConnectB(peerInfoA, c1)
+        await onConnectA(peerIdB, c0)
+        await onConnectB(peerIdA, c1)
       }
 
       await Promise.all([

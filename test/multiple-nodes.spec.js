@@ -11,15 +11,15 @@ const pDefer = require('p-defer')
 const FloodSub = require('../src')
 const { multicodec } = require('../src')
 const {
-  createPeerInfo,
+  createPeerId,
   createMockRegistrar,
   first,
   expectSet,
   ConnectionPair
 } = require('./utils')
 
-async function spawnPubSubNode (peerInfo, reg) {
-  const ps = new FloodSub(peerInfo, reg, { emitSelf: true })
+async function spawnPubSubNode (peerId, reg) {
+  const ps = new FloodSub(peerId, reg, { emitSelf: true })
 
   await ps.start()
   return ps
@@ -32,23 +32,23 @@ describe('multiple nodes (more than 2)', () => {
       // ◉────◉────◉
       // a    b    c
       let psA, psB, psC
-      let peerInfoA, peerInfoB, peerInfoC
+      let peerIdA, peerIdB, peerIdC
 
       const registrarRecordA = {}
       const registrarRecordB = {}
       const registrarRecordC = {}
 
       before(async () => {
-        [peerInfoA, peerInfoB, peerInfoC] = await Promise.all([
-          createPeerInfo(),
-          createPeerInfo(),
-          createPeerInfo()
+        [peerIdA, peerIdB, peerIdC] = await Promise.all([
+          createPeerId(),
+          createPeerId(),
+          createPeerId()
         ]);
 
         [psA, psB, psC] = await Promise.all([
-          spawnPubSubNode(peerInfoA, createMockRegistrar(registrarRecordA)),
-          spawnPubSubNode(peerInfoB, createMockRegistrar(registrarRecordB)),
-          spawnPubSubNode(peerInfoC, createMockRegistrar(registrarRecordC))
+          spawnPubSubNode(peerIdA, createMockRegistrar(registrarRecordA)),
+          spawnPubSubNode(peerIdB, createMockRegistrar(registrarRecordB)),
+          spawnPubSubNode(peerIdC, createMockRegistrar(registrarRecordC))
         ])
       })
 
@@ -60,12 +60,12 @@ describe('multiple nodes (more than 2)', () => {
 
         // Notice peers of connection
         const [d0, d1] = ConnectionPair()
-        await onConnectA(peerInfoB, d0)
-        await onConnectB(peerInfoA, d1)
+        await onConnectA(peerIdB, d0)
+        await onConnectB(peerIdA, d1)
 
         const [d2, d3] = ConnectionPair()
-        await onConnectB(peerInfoC, d2)
-        await onConnectC(peerInfoB, d3)
+        await onConnectB(peerIdC, d2)
+        await onConnectC(peerIdB, d3)
       })
 
       after(() => Promise.all([
@@ -82,7 +82,7 @@ describe('multiple nodes (more than 2)', () => {
 
         psB.once('floodsub:subscription-change', () => {
           expect(psB.peers.size).to.equal(2)
-          const aPeerId = psA.peerInfo.id.toB58String()
+          const aPeerId = psA.peerId.toB58String()
           const topics = psB.peers.get(aPeerId).topics
           expectSet(topics, ['Z'])
 
@@ -234,7 +234,7 @@ describe('multiple nodes (more than 2)', () => {
       // ◉─┘       └─◉
       // a
       let psA, psB, psC, psD, psE
-      let peerInfoA, peerInfoB, peerInfoC, peerInfoD, peerInfoE
+      let peerIdA, peerIdB, peerIdC, peerIdD, peerIdE
 
       const registrarRecordA = {}
       const registrarRecordB = {}
@@ -243,20 +243,20 @@ describe('multiple nodes (more than 2)', () => {
       const registrarRecordE = {}
 
       before(async () => {
-        [peerInfoA, peerInfoB, peerInfoC, peerInfoD, peerInfoE] = await Promise.all([
-          createPeerInfo(),
-          createPeerInfo(),
-          createPeerInfo(),
-          createPeerInfo(),
-          createPeerInfo()
+        [peerIdA, peerIdB, peerIdC, peerIdD, peerIdE] = await Promise.all([
+          createPeerId(),
+          createPeerId(),
+          createPeerId(),
+          createPeerId(),
+          createPeerId()
         ]);
 
         [psA, psB, psC, psD, psE] = await Promise.all([
-          spawnPubSubNode(peerInfoA, createMockRegistrar(registrarRecordA)),
-          spawnPubSubNode(peerInfoB, createMockRegistrar(registrarRecordB)),
-          spawnPubSubNode(peerInfoC, createMockRegistrar(registrarRecordC)),
-          spawnPubSubNode(peerInfoD, createMockRegistrar(registrarRecordD)),
-          spawnPubSubNode(peerInfoE, createMockRegistrar(registrarRecordE))
+          spawnPubSubNode(peerIdA, createMockRegistrar(registrarRecordA)),
+          spawnPubSubNode(peerIdB, createMockRegistrar(registrarRecordB)),
+          spawnPubSubNode(peerIdC, createMockRegistrar(registrarRecordC)),
+          spawnPubSubNode(peerIdD, createMockRegistrar(registrarRecordD)),
+          spawnPubSubNode(peerIdE, createMockRegistrar(registrarRecordE))
         ])
       })
 
@@ -270,20 +270,20 @@ describe('multiple nodes (more than 2)', () => {
 
         // Notice peers of connection
         const [d0, d1] = ConnectionPair() // A <-> B
-        await onConnectA(peerInfoB, d0)
-        await onConnectB(peerInfoA, d1)
+        await onConnectA(peerIdB, d0)
+        await onConnectB(peerIdA, d1)
 
         const [d2, d3] = ConnectionPair() // B <-> C
-        await onConnectB(peerInfoC, d2)
-        await onConnectC(peerInfoB, d3)
+        await onConnectB(peerIdC, d2)
+        await onConnectC(peerIdB, d3)
 
         const [d4, d5] = ConnectionPair() // C <-> D
-        await onConnectC(peerInfoD, d4)
-        await onConnectD(peerInfoC, d5)
+        await onConnectC(peerIdD, d4)
+        await onConnectD(peerIdC, d5)
 
         const [d6, d7] = ConnectionPair() // C <-> D
-        await onConnectD(peerInfoE, d6)
-        await onConnectE(peerInfoD, d7)
+        await onConnectD(peerIdE, d6)
+        await onConnectE(peerIdD, d7)
       })
 
       after(() => Promise.all([

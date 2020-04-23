@@ -1,7 +1,6 @@
 'use strict'
 
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const DuplexPair = require('it-pair/duplex')
 
 const { expect } = require('chai')
@@ -12,10 +11,10 @@ exports.expectSet = (set, subs) => {
   expect(Array.from(set.values())).to.eql(subs)
 }
 
-exports.createPeerInfo = async () => {
+exports.createPeerId = async () => {
   const peerId = await PeerId.create({ bits: 1024 })
 
-  return PeerInfo.create(peerId)
+  return peerId
 }
 
 exports.mockRegistrar = {

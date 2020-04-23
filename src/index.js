@@ -11,7 +11,7 @@ const pMap = require('p-map')
 const TimeCache = require('time-cache')
 const nextTick = require('async.nexttick')
 
-const PeerInfo = require('peer-info')
+const PeerId = require('peer-id')
 const BaseProtocol = require('libp2p-pubsub')
 const { message, utils } = require('libp2p-pubsub')
 const { multicodec } = require('./config')
@@ -43,7 +43,7 @@ function validateRegistrar (registrar) {
  */
 class FloodSub extends BaseProtocol {
   /**
-   * @param {PeerInfo} peerInfo instance of the peer's PeerInfo
+   * @param {PeerId} peerId instance of the peer's PeerId
    * @param {Object} registrar
    * @param {function} registrar.handle
    * @param {function} registrar.register
@@ -52,9 +52,9 @@ class FloodSub extends BaseProtocol {
    * @param {boolean} options.emitSelf if publish should emit to self, if subscribed, defaults to false
    * @constructor
    */
-  constructor (peerInfo, registrar, options = {}) {
-    if (!PeerInfo.isPeerInfo(peerInfo)) {
-      throw new Error('peer info must be an instance of `peer-info`')
+  constructor (peerId, registrar, options = {}) {
+    if (!PeerId.isPeerId(peerId)) {
+      throw new Error('peerId must be an instance of `peer-id`')
     }
 
     validateRegistrar(registrar)
@@ -62,7 +62,7 @@ class FloodSub extends BaseProtocol {
     super({
       debugName: debugName,
       multicodecs: multicodec,
-      peerInfo: peerInfo,
+      peerId: peerId,
       registrar: registrar,
       ...options
     })
@@ -94,13 +94,13 @@ class FloodSub extends BaseProtocol {
   /**
    * Peer connected successfully with pubsub protocol.
    * @override
-   * @param {PeerInfo} peerInfo peer info
+   * @param {PeerId} peerId peer id
    * @param {Connection} conn connection to the peer
    * @returns {Promise<void>}
    */
-  async _onPeerConnected (peerInfo, conn) {
-    await super._onPeerConnected(peerInfo, conn)
-    const idB58Str = peerInfo.id.toB58String()
+  async _onPeerConnected (peerId, conn) {
+    await super._onPeerConnected(peerId, conn)
+    const idB58Str = peerId.toB58String()
     const peer = this.peers.get(idB58Str)
 
     if (peer && peer.isWritable) {
@@ -115,7 +115,7 @@ class FloodSub extends BaseProtocol {
    * @override
    * @param {string} idB58Str peer id string in base58
    * @param {Connection} conn connection
-   * @param {PeerInfo} peer peer info
+   * @param {Peer} peer peer
    * @returns {void}
    *
    */
@@ -134,7 +134,7 @@ class FloodSub extends BaseProtocol {
         }
       )
     } catch (err) {
-      this._onPeerDisconnected(peer, err)
+      this._onPeerDisconnected(peer.id, err)
     }
   }
 
@@ -161,7 +161,7 @@ class FloodSub extends BaseProtocol {
 
     if (peer && subs && subs.length) {
       peer.updateSubscriptions(subs)
-      this.emit('floodsub:subscription-change', peer.info, peer.topics, subs)
+      this.emit('floodsub:subscription-change', peer.id, peer.topics, subs)
     }
   }
 
@@ -222,7 +222,7 @@ class FloodSub extends BaseProtocol {
 
       peer.sendMessages(utils.normalizeOutRpcMessages(messages))
 
-      log('publish msgs on topics', topics, peer.info.id.toB58String())
+      log('publish msgs on topics', topics, peer.id.toB58String())
     })
   }
 
@@ -254,7 +254,7 @@ class FloodSub extends BaseProtocol {
     topics = ensureArray(topics)
     messages = ensureArray(messages)
 
-    const from = this.peerInfo.id.toB58String()
+    const from = this.peerId.toB58String()
 
     const buildMessage = (msg) => {
       const seqno = utils.randomSeqno()

@@ -8,7 +8,7 @@ const expect = chai.expect
 const sinon = require('sinon')
 
 const Floodsub = require('../src')
-const { createPeerInfo, mockRegistrar } = require('./utils')
+const { createPeerId, mockRegistrar } = require('./utils')
 const { utils } = require('libp2p-pubsub')
 
 const defOptions = {
@@ -17,13 +17,13 @@ const defOptions = {
 
 describe('pubsub', () => {
   let floodsub
-  let peerInfo
+  let peerId
 
   before(async () => {
     expect(Floodsub.multicodec).to.exist()
 
-    peerInfo = await createPeerInfo()
-    floodsub = new Floodsub(peerInfo, mockRegistrar, defOptions)
+    peerId = await createPeerId()
+    floodsub = new Floodsub(peerId, mockRegistrar, defOptions)
   })
 
   beforeEach(() => {
@@ -49,7 +49,7 @@ describe('pubsub', () => {
       const [topics, messages] = floodsub._emitMessages.getCall(0).args
       expect(topics).to.eql([topic])
       expect(messages).to.eql([{
-        from: peerInfo.id.toB58String(),
+        from: peerId.toB58String(),
         data: message,
         seqno: utils.randomSeqno.getCall(0).returnValue,
         topicIDs: topics
@@ -68,7 +68,7 @@ describe('pubsub', () => {
       const [topics, messages] = floodsub._forwardMessages.getCall(0).args
 
       const expected = await floodsub._buildMessage({
-        from: peerInfo.id.toB58String(),
+        from: peerId.toB58String(),
         data: message,
         seqno: utils.randomSeqno.getCall(0).returnValue,
         topicIDs: topics
@@ -91,7 +91,7 @@ describe('pubsub', () => {
       const rpc = {
         subscriptions: [],
         msgs: [{
-          from: peerInfo.id.id,
+          from: peerId.id,
           data: Buffer.from('an unsigned message'),
           seqno: utils.randomSeqno(),
           topicIDs: [topic]
@@ -121,7 +121,7 @@ describe('pubsub', () => {
       const rpc = {
         subscriptions: [],
         msgs: [{
-          from: peerInfo.id.id,
+          from: peerId.id,
           data: Buffer.from('an unsigned message'),
           seqno: utils.randomSeqno(),
           topicIDs: [topic]
