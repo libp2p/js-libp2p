@@ -1,6 +1,6 @@
 {
   "name": "libp2p-pubsub",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Pubsub base protocol for libp2p pubsub routers",
   "leadMaintainer": "Vasco Santos <santos.vasco10@gmail.com>",
   "main": "src/index.js",
@@ -68,8 +68,9 @@
     "Jacob Heun <jacobheun@gmail.com>",
     "Mikerah <mikerahqc@protonmail.com>",
     "Topper Bowers <topper@toppingdesign.com>",
+    "Alan Shaw <alan.shaw@protocol.ai>",
     "Cayman <caymannava@gmail.com>",
     "Alex Potsides <alex@achingbrain.net>",
-    "Alan Shaw <alan.shaw@protocol.ai>"
+    "Hugo Dias <hugomrdias@gmail.com>"
   ]
 }
