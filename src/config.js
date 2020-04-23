@@ -20,6 +20,9 @@ const DefaultConfig = {
   metrics: {
     enabled: false
   },
+  peerStore: {
+    persistence: true
+  },
   config: {
     dht: {
       enabled: false,
