@@ -5,7 +5,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-spies'))
 const expect = chai.expect
-
+const { Buffer } = require('buffer')
 const FloodSub = require('../src')
 
 const {

@@ -6,7 +6,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const sinon = require('sinon')
-
+const { Buffer } = require('buffer')
 const Floodsub = require('../src')
 const { createPeerId, mockRegistrar } = require('./utils')
 const { utils } = require('libp2p-pubsub')

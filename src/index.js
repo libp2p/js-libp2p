@@ -10,7 +10,7 @@ const lp = require('it-length-prefixed')
 const pMap = require('p-map')
 const TimeCache = require('time-cache')
 const nextTick = require('async.nexttick')
-
+const { Buffer } = require('buffer')
 const PeerId = require('peer-id')
 const BaseProtocol = require('libp2p-pubsub')
 const { message, utils } = require('libp2p-pubsub')
