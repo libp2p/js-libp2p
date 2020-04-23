@@ -1,3 +1,13 @@
+<a name="0.5.1"></a>
+## [0.5.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.5.0...v0.5.1) (2020-04-23)
+
+
+### Bug Fixes
+
+* remove node globals ([#42](https://github.com/libp2p/js-libp2p-pubsub/issues/42)) ([636041b](https://github.com/libp2p/js-libp2p-pubsub/commit/636041b))
+
+
+
 <a name="0.5.0"></a>
 # [0.5.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.4.3...v0.5.0) (2020-04-22)
 
