@@ -12,7 +12,7 @@ const PeerStore = require('../../src/peer-store')
 
 const peerUtils = require('../utils/creators/peer')
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../../src/errors')
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
@@ -41,21 +41,33 @@ describe('addressBook', () => {
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
+      try {
         ab.set('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+      } catch (err) {
+        expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
+        return
+      }
+      throw new Error('invalid peerId should throw error')
     })
 
     it('throwns invalid parameters error if no addresses provided', () => {
-      expect(() => {
+      try {
         ab.set(peerId)
-      }).to.throw(ERR_INVALID_PARAMETERS)
+      } catch (err) {
+        expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
+        return
+      }
+      throw new Error('no addresses should throw error')
     })
 
     it('throwns invalid parameters error if invalid multiaddrs are provided', () => {
-      expect(() => {
-        ab.set(peerId, 'invalid multiaddr')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+      try {
+        ab.set(peerId, ['invalid multiaddr'])
+      } catch (err) {
+        expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
+        return
+      }
+      throw new Error('invalid multiaddrs should throw error')
     })
 
     it('replaces the stored content by default and emit change event', () => {
@@ -143,21 +155,33 @@ describe('addressBook', () => {
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
+      try {
         ab.add('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+      } catch (err) {
+        expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
+        return
+      }
+      throw new Error('invalid peerId should throw error')
     })
 
     it('throwns invalid parameters error if no addresses provided', () => {
-      expect(() => {
+      try {
         ab.add(peerId)
-      }).to.throw(ERR_INVALID_PARAMETERS)
+      } catch (err) {
+        expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
+        return
+      }
+      throw new Error('no addresses provided should throw error')
     })
 
     it('throwns invalid parameters error if invalid multiaddrs are provided', () => {
-      expect(() => {
-        ab.add(peerId, 'invalid multiaddr')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+      try {
+        ab.add(peerId, ['invalid multiaddr'])
+      } catch (err) {
+        expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
+        return
+      }
+      throw new Error('invalid multiaddr should throw error')
     })
 
     it('adds the new content and emits change event', () => {
@@ -255,9 +279,13 @@ describe('addressBook', () => {
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
+      try {
         ab.get('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+      } catch (err) {
+        expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
+        return
+      }
+      throw new Error('invalid peerId should throw error')
     })
 
     it('returns undefined if no multiaddrs are known for the provided peer', () => {
@@ -286,9 +314,13 @@ describe('addressBook', () => {
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
+      try {
         ab.getMultiaddrsForPeer('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+      } catch (err) {
+        expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
+        return
+      }
+      throw new Error('invalid peerId should throw error')
     })
 
     it('returns undefined if no multiaddrs are known for the provided peer', () => {
@@ -318,9 +350,13 @@ describe('addressBook', () => {
     })
 
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
+      try {
         ab.delete('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+      } catch (err) {
+        expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
+        return
+      }
+      throw new Error('invalid peerId should throw error')
     })
 
     it('returns false if no records exist for the peer and no event is emitted', () => {

@@ -6,6 +6,7 @@ const globalThis = require('ipfs-utils/src/globalthis')
 const log = debug('libp2p')
 log.error = debug('libp2p:error')
 
+const { MemoryDatastore } = require('interface-datastore')
 const PeerId = require('peer-id')
 
 const peerRouting = require('./peer-routing')
@@ -43,9 +44,12 @@ class Libp2p extends EventEmitter {
     // and add default values where appropriate
     this._options = validateConfig(_options)
 
-    this.datastore = this._options.datastore
     this.peerId = this._options.peerId
-    this.peerStore = new PeerStore()
+    this.datastore = this._options.datastore || new MemoryDatastore()
+    this.peerStore = new PeerStore({
+      datastore: this.datastore,
+      ...this._options.peerStore
+    })
 
     // Addresses {listen, announce, noAnnounce}
     this.addresses = this._options.addresses
@@ -392,6 +396,9 @@ class Libp2p extends EventEmitter {
   async _onStarting () {
     // Listen on the provided transports
     await this.transportManager.listen()
+
+    // Start PeerStore
+    await this.peerStore.load()
 
     if (this._config.pubsub.enabled) {
       this.pubsub && this.pubsub.start()
