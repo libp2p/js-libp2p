@@ -83,7 +83,51 @@ Access to its underlying books:
 - `change:multiaadrs` - emitted when a known peer has a different set of multiaddrs.
 - `change:protocols` - emitted when a known peer supports a different set of protocols.
 
+## Data Persistence
+
+The data stored in the PeerStore will be persisted by default. Keeping a record of the peers already discovered by the peer, as well as their known data aims to improve the efficiency of peers joining the network after being offline.
+
+---
+TODO: Discuss if we should make it persisted by default now. Taking into consideration that we will use a MemoryDatastore by default, unless the user configures a datastore to use, it will be worthless. It might make sense to make it disabled by default until we work on improving configuration and provide good defauls for each environment.
+---
+
+The libp2p node will need to receive a [datastore](https://github.com/ipfs/interface-datastore), in order to store this data in a persistent way. Otherwise, it will be stored on a [memory datastore](https://github.com/ipfs/interface-datastore/blob/master/src/memory.js).
+
+A [datastore](https://github.com/ipfs/interface-datastore) stores its data in a key-value fashion. As a result, we need coherent keys so that we do not overwrite data.
+
+Taking into account that a datastore allows queries using a key prefix, we can find all the information if we define a consistent namespace that allow us to find the content without having any information. The namespaces were defined as follows:
+
+**AddressBook**
+
+All the knownw peer addresses are stored with a key pattern as follows:
+
+`/peers/addrs/<b32 peer id no padding>`
+
+**ProtoBook**
+
+All the knownw peer protocols are stored with a key pattern as follows:
+
+`/peers/protos/<b32 peer id no padding>`
+
+**KeyBook**
+
+_NOT_YET_IMPLEMENTED_
+
+All public and private keys are stored under the following pattern:
+
+` /peers/keys/<b32 peer id no padding>/{pub, priv}`
+
+**MetadataBook**
+
+_NOT_YET_IMPLEMENTED_
+
+Metadata is stored under the following key pattern:
+
+`/peers/metadata/<b32 peer id no padding>/<key>`
+
 ## Future Considerations
 
 - If multiaddr TTLs are added, the PeerStore may schedule jobs to delete all addresses that exceed the TTL to prevent AddressBook bloating
 - Further API methods will probably need to be added in the context of multiaddr validity and confidence.
+- When improving libp2p configuration for specific runtimes, we should take into account the PeerStore recommended datastore.
+- When improving libp2p configuration, we should think about a possible way of allowing the configuration of Bootstrap to be influenced by the persisted peers, as a way to decrease the load on Bootstrap nodes.
