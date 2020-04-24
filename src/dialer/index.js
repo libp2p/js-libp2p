@@ -9,7 +9,7 @@ const log = debug('libp2p:dialer')
 log.error = debug('libp2p:dialer:error')
 
 const { DialRequest } = require('./dial-request')
-const getPeerId = require('../get-peer-id')
+const getPeer = require('../get-peer')
 
 const { codes } = require('../errors')
 const {
@@ -106,8 +106,13 @@ class Dialer {
    * @returns {DialTarget}
    */
   _createDialTarget (peer) {
-    const peerId = getPeerId(peer, this.peerStore)
-    let addrs = this.peerStore.addressBook.getMultiaddrsForPeer(peerId)
+    const { id, multiaddrs } = getPeer(peer)
+
+    if (multiaddrs) {
+      this.peerStore.addressBook.add(id, multiaddrs)
+    }
+
+    let addrs = this.peerStore.addressBook.getMultiaddrsForPeer(id)
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.
@@ -117,7 +122,7 @@ class Dialer {
     }
 
     return {
-      id: peerId.toB58String(),
+      id: id.toB58String(),
       addrs
     }
   }

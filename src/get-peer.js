@@ -7,13 +7,13 @@ const errCode = require('err-code')
 const { codes } = require('./errors')
 
 /**
- * Converts the given `peer` to a `PeerId` instance.
+ * Converts the given `peer` to a `Peer` object.
  * If a multiaddr is received, the addressBook is updated.
  * @param {PeerId|Multiaddr|string} peer
  * @param {PeerStore} peerStore
- * @returns {PeerId}
+ * @returns {{ id: PeerId, multiaddrs: Array<Multiaddr> }}
  */
-function getPeerId (peer, peerStore) {
+function getPeer (peer) {
   if (typeof peer === 'string') {
     peer = multiaddr(peer)
   }
@@ -31,11 +31,10 @@ function getPeerId (peer, peerStore) {
     }
   }
 
-  if (addr && peerStore) {
-    peerStore.addressBook.add(peer, [addr])
+  return {
+    id: peer,
+    multiaddrs: addr ? [addr] : undefined
   }
-
-  return peer
 }
 
-module.exports = getPeerId
+module.exports = getPeer
