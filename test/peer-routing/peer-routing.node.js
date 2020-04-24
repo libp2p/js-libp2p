@@ -121,9 +121,9 @@ describe('peer-routing', () => {
           'X-Chunked-Output', '1'
         ])
 
-      const peerData = await node.peerRouting.findPeer(peerKey)
+      const peer = await node.peerRouting.findPeer(peerKey)
 
-      expect(peerData.id).to.equal(peerKey)
+      expect(peer.id).to.equal(peerKey)
       expect(mockApi.isDone()).to.equal(true)
     })
 

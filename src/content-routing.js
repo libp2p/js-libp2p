@@ -42,8 +42,8 @@ module.exports = (node) => {
         })
       )
 
-      for (const peerData of result) {
-        yield peerData
+      for (const peer of result) {
+        yield peer
       }
     },
 

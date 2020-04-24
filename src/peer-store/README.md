@@ -40,9 +40,9 @@ The PeerStore wraps four main components: `addressBook`, `keyBook`, `protocolBoo
 
 The `addressBook` keeps the known multiaddrs of a peer. The multiaddrs of each peer may change over time and the Address Book must account for this.
 
-`Map<string, multiaddrInfo>`
+`Map<string, Address>`
 
-A `peerId.toString()` identifier mapping to a `multiaddrInfo` object, which should have the following structure:
+A `peerId.toString()` identifier mapping to a `Address` object, which should have the following structure:
 
 ```js
 {

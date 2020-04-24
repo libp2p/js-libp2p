@@ -381,7 +381,7 @@ Iterates over all peer routers in series to find the given peer. If the DHT is e
 
 ```js
 // ...
-const peerData = await libp2p.peerRouting.findPeer(peerId, options)
+const peer = await libp2p.peerRouting.findPeer(peerId, options)
 ```
 
 ### contentRouting.findProviders
@@ -585,7 +585,7 @@ peerStore.addressBook.delete(peerId)
 
 ### peerStore.addressBook.get
 
-Get the known [`MultiaddrInfos`][multiaddr-info] of a provided peer.
+Get the known [`Addresses`][address] of a provided peer.
 
 `peerStore.addressBook.get(peerId)`
 
@@ -599,7 +599,7 @@ Get the known [`MultiaddrInfos`][multiaddr-info] of a provided peer.
 
 | Type | Description |
 |------|-------------|
-| `Array<MultiaddrInfo>` | Array of peer's multiaddr with their relevant information [`MultiaddrInfo`][multiaddr-info] |
+| `Array<Address>` | Array of peer's [`Addresses`][address] containing the multiaddr and its metadata |
 
 #### Example
 
@@ -818,7 +818,7 @@ peerStore.delete(peerId2)
 
 ### peerStore.get
 
-Get the stored information of a given peer, namely its [`PeerId`][peer-id], known [`MultiaddrInfos`][multiaddr-info] and supported protocols.
+Get the stored information of a given peer, namely its [`PeerId`][peer-id], known [`Addresses`][address] and supported protocols.
 
 `peerStore.get(peerId)`
 
@@ -832,7 +832,7 @@ Get the stored information of a given peer, namely its [`PeerId`][peer-id], know
 
 | Type | Description |
 |------|-------------|
-| `{ id: PeerId, multiaddrInfos: Array<MultiaddrInfo>, protocols: Array<string> }` | Peer information of the provided peer |
+| `{ id: PeerId, addresses: Array<Address>, protocols: Array<string> }` | Peer information of the provided peer |
 
 #### Example
 
@@ -844,7 +844,7 @@ peerStore.protoBook.set(peerId, protocols)
 peerStore.get(peerId)
 // {
 //   id: {},
-//   MultiaddrInfos: [...],
+//   addresses: [...],
 //   protocols: [...]
 // }
 ```
@@ -859,13 +859,13 @@ Get all the stored information of every peer.
 
 | Type | Description |
 |------|-------------|
-| `Map<string, { id: PeerId, multiaddrInfos: Array<MultiaddrInfo>, protocols: Array<string> }>` | Peer data of every peer known |
+| `Map<string, { id: PeerId, addresses: Array<Address>, protocols: Array<string> }>` | Peer data of every peer known |
 
 #### Example
 
 ```js
-for (let [peerIdString, peerData] of peerStore.peers.entries()) {
-  // peerData
+for (let [peerIdString, peer] of peerStore.peers.entries()) {
+  // peer { id, addresses, protocols }
 }
 ```
 
@@ -1184,7 +1184,7 @@ This event will be triggered anytime we are disconnected from another peer, rega
     - `['300000']<MovingAverage>`: The [MovingAverage](https://www.npmjs.com/package/moving-averages) at a 5 minute interval.
     - `['900000']<MovingAverage>`: The [MovingAverage](https://www.npmjs.com/package/moving-averages) at a 15 minute interval.
 
-[multiaddr-info]: https://github.com/libp2p/js-libp2p/tree/master/src/peer-store/address-book.js
+[address]: https://github.com/libp2p/js-libp2p/tree/master/src/peer-store/address-book.js
 [cid]: https://github.com/multiformats/js-cid
 [connection]: https://github.com/libp2p/js-interfaces/tree/master/src/connection
 [multiaddr]: https://github.com/multiformats/js-multiaddr
