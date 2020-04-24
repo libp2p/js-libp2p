@@ -1,3 +1,18 @@
+<a name="0.19.0"></a>
+# [0.19.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.0-pre.0...v0.19.0) (2020-04-24)
+
+
+### Chores
+
+* peer-discovery not using peer-info ([#180](https://github.com/libp2p/js-libp2p-kad-dht/issues/180)) ([f0fb212](https://github.com/libp2p/js-libp2p-kad-dht/commit/f0fb212))
+
+
+### BREAKING CHANGES
+
+* peer event emitted with id and multiaddrs properties instead of peer-info
+
+
+
 <a name="0.19.0-pre.0"></a>
 # [0.19.0-pre.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.18.6...v0.19.0-pre.0) (2020-04-16)
 
