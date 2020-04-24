@@ -10,16 +10,16 @@ const handler = require('../../../src/rpc/handlers/ping')
 
 const T = Message.TYPES.PING
 
-const createPeerInfo = require('../../utils/create-peer-info')
+const createPeerId = require('../../utils/create-peer-id')
 const TestDHT = require('../../utils/test-dht')
 
 describe('rpc - handlers - Ping', () => {
-  let peers
+  let peerIds
   let tdht
   let dht
 
   before(async () => {
-    peers = await createPeerInfo(2)
+    peerIds = await createPeerId(2)
   })
 
   beforeEach(async () => {
@@ -33,7 +33,7 @@ describe('rpc - handlers - Ping', () => {
 
   it('replies with the same message', async () => {
     const msg = new Message(T, Buffer.from('hello'), 5)
-    const response = await handler(dht)(peers[0], msg)
+    const response = await handler(dht)(peerIds[0], msg)
 
     expect(response).to.be.eql(msg)
   })

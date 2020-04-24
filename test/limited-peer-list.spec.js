@@ -6,29 +6,34 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 
 const LimitedPeerList = require('../src/peer-list/limited-peer-list')
-const createPeerInfo = require('./utils/create-peer-info')
+const createPeerId = require('./utils/create-peer-id')
 
 describe('LimitedPeerList', () => {
   let peers
 
   before(async () => {
-    peers = await createPeerInfo(5)
+    peers = await createPeerId(5)
   })
 
   it('basics', () => {
     const l = new LimitedPeerList(4)
 
-    expect(l.push(peers[0])).to.eql(true)
-    expect(l.push(peers[0])).to.eql(false)
-    expect(l.push(peers[1])).to.eql(true)
-    expect(l.push(peers[2])).to.eql(true)
-    expect(l.push(peers[3])).to.eql(true)
-    expect(l.push(peers[4])).to.eql(false)
+    expect(l.push({ id: peers[0] })).to.eql(true)
+    expect(l.push({ id: peers[0] })).to.eql(false)
+    expect(l.push({ id: peers[1] })).to.eql(true)
+    expect(l.push({ id: peers[2] })).to.eql(true)
+    expect(l.push({ id: peers[3] })).to.eql(true)
+    expect(l.push({ id: peers[4] })).to.eql(false)
 
     expect(l).to.have.length(4)
-    expect(l.pop()).to.eql(peers[3])
+    expect(l.pop()).to.eql({ id: peers[3] })
     expect(l).to.have.length(3)
-    expect(l.push(peers[4])).to.eql(true)
-    expect(l.toArray()).to.eql([peers[0], peers[1], peers[2], peers[4]])
+    expect(l.push({ id: peers[4] })).to.eql(true)
+    expect(l.toArray()).to.eql([
+      { id: peers[0] },
+      { id: peers[1] },
+      { id: peers[2] },
+      { id: peers[4] }
+    ])
   })
 })

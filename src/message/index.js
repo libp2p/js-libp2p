@@ -1,7 +1,7 @@
 'use strict'
 
-const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
+const multiaddr = require('multiaddr')
 const protons = require('protons')
 const { Record } = require('libp2p-record')
 
@@ -97,25 +97,18 @@ Message.TYPES = MESSAGE_TYPE
 Message.CONNECTION_TYPES = CONNECTION_TYPE
 
 function toPbPeer (peer) {
-  const res = {
+  return {
     id: peer.id.id,
-    addrs: peer.multiaddrs.toArray().map((m) => m.buffer)
+    addrs: (peer.multiaddrs || []).map((m) => m.buffer),
+    connection: CONNECTION_TYPE.CONNECTED
   }
-
-  if (peer.isConnected()) {
-    res.connection = CONNECTION_TYPE.CONNECTED
-  } else {
-    res.connection = CONNECTION_TYPE.NOT_CONNECTED
-  }
-
-  return res
 }
 
 function fromPbPeer (peer) {
-  const info = new PeerInfo(new PeerId(peer.id))
-  peer.addrs.forEach((a) => info.multiaddrs.add(a))
-
-  return info
+  return {
+    id: new PeerId(peer.id),
+    multiaddrs: peer.addrs.map((a) => multiaddr(a))
+  }
 }
 
 module.exports = Message

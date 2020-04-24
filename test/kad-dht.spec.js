@@ -6,6 +6,8 @@ chai.use(require('dirty-chai'))
 chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const sinon = require('sinon')
+
+const multiaddr = require('multiaddr')
 const { Record } = require('libp2p-record')
 const errcode = require('err-code')
 
@@ -18,24 +20,24 @@ const kadUtils = require('../src/utils')
 const c = require('../src/constants')
 const Message = require('../src/message')
 
-const createPeerInfo = require('./utils/create-peer-info')
+const createPeerId = require('./utils/create-peer-id')
 const createValues = require('./utils/create-values')
 const TestDHT = require('./utils/test-dht')
 const { countDiffPeers } = require('./utils')
 
 describe('KadDHT', () => {
-  let peerInfos
+  let peerIds
   let values
 
   before(async function () {
     this.timeout(10 * 1000)
 
     const res = await Promise.all([
-      createPeerInfo(3),
+      createPeerId(3),
       createValues(20)
     ])
 
-    peerInfos = res[0]
+    peerIds = res[0]
     values = res[1]
   })
 
@@ -55,7 +57,7 @@ describe('KadDHT', () => {
         kBucketSize: 5
       })
 
-      expect(dht).to.have.property('peerInfo')
+      expect(dht).to.have.property('peerId')
       expect(dht).to.have.property('kBucketSize', 5)
       expect(dht).to.have.property('routingTable')
     })
@@ -70,7 +72,7 @@ describe('KadDHT', () => {
         }
       })
 
-      expect(dht).to.have.property('peerInfo')
+      expect(dht).to.have.property('peerId')
       expect(dht).to.have.property('routingTable')
       expect(dht.validators).to.have.property('ipns')
       expect(dht.selectors).to.have.property('ipns')
@@ -369,7 +371,7 @@ describe('KadDHT', () => {
       expect(resB).to.eql(valueA)
 
       expect(dhtASpy.callCount).to.eql(1)
-      expect(dhtASpy.getCall(0).args[2].isEqual(dhtB.peerInfo.id)).to.eql(true) // inform B
+      expect(dhtASpy.getCall(0).args[2].isEqual(dhtB.peerId)).to.eql(true) // inform B
 
       return tdht.teardown()
     })
@@ -410,7 +412,7 @@ describe('KadDHT', () => {
 
       const stubs = [
         // Simulate returning a peer id to query
-        sinon.stub(dht.routingTable, 'closestPeers').returns([peerInfos[1].id]),
+        sinon.stub(dht.routingTable, 'closestPeers').returns([peerIds[1]]),
         // Simulate going out to the network and returning the record
         sinon.stub(dht, '_getValueOrPeers').callsFake(async () => ({ record: rec })) // eslint-disable-line require-await
       ]
@@ -433,7 +435,7 @@ describe('KadDHT', () => {
       const tdht = new TestDHT()
       const dhts = await tdht.spawn(4)
 
-      const ids = dhts.map((d) => d.peerInfo.id)
+      const ids = dhts.map((d) => d.peerId)
       const idsB58 = ids.map(id => id.toB58String())
       sinon.spy(dhts[3].network, 'sendMessage')
 
@@ -509,7 +511,7 @@ describe('KadDHT', () => {
       const tdht = new TestDHT()
       const [dht] = await tdht.spawn(1)
 
-      sinon.stub(dht.providers, 'getProviders').returns([dht.peerInfo.id])
+      sinon.stub(dht.providers, 'getProviders').returns([dht.peerId])
 
       // Find provider
       const res = await all(dht.findProviders(val.cid, { maxNumProviders: 1 }))
@@ -536,7 +538,7 @@ describe('KadDHT', () => {
         tdht.connect(dhts[2], dhts[3])
       ])
 
-      const ids = dhts.map((d) => d.peerInfo.id)
+      const ids = dhts.map((d) => d.peerId)
       const res = await dhts[0].findPeer(ids[3], { timeout: 1000 })
       expect(res.id.isEqual(ids[3])).to.eql(true)
 
@@ -551,7 +553,7 @@ describe('KadDHT', () => {
       const tdht = new TestDHT()
       const dhts = await tdht.spawn(nDHTs)
 
-      const dhtsById = new Map(dhts.map((d) => [d.peerInfo.id, d]))
+      const dhtsById = new Map(dhts.map((d) => [d.peerId, d]))
       const ids = [...dhtsById.keys()]
 
       // The origin node for the FIND_PEER query
@@ -596,7 +598,7 @@ describe('KadDHT', () => {
         rtableSet[p.toB58String()] = true
       })
 
-      const guyIndex = ids.findIndex(i => i.id.equals(guy.peerInfo.id.id))
+      const guyIndex = ids.findIndex(i => i.id.equals(guy.peerId.id))
       const otherIds = ids.slice(0, guyIndex).concat(ids.slice(guyIndex + 1))
 
       // Make the query
@@ -647,14 +649,12 @@ describe('KadDHT', () => {
       const tdht = new TestDHT()
       const dhts = await tdht.spawn(2)
 
-      const ids = dhts.map((d) => d.peerInfo.id)
-      dhts[0].peerStore.addressBook.add(dhts[1].peerInfo.id, dhts[1].peerInfo.multiaddrs.toArray())
+      const ids = dhts.map((d) => d.peerId)
+      dhts[0].peerStore.addressBook.add(dhts[1].peerId, [multiaddr('/ip4/160.1.1.1/tcp/80')])
 
       const key = await dhts[0].getPublicKey(ids[1])
-      expect(key).to.eql(dhts[1].peerInfo.id.pubKey)
+      expect(key).to.eql(dhts[1].peerId.pubKey)
 
-      // TODO: Switch not closing well, but it will be removed
-      // (invalid transition: STOPPED -> done)
       await delay(100)
 
       return tdht.teardown()
@@ -666,15 +666,14 @@ describe('KadDHT', () => {
       const tdht = new TestDHT()
       const dhts = await tdht.spawn(2)
 
-      const ids = dhts.map((d) => d.peerInfo.id)
+      const ids = dhts.map((d) => d.peerId)
 
       await tdht.connect(dhts[0], dhts[1])
 
-      // remove the pub key to be sure it is fetched
-      dhts[0].peerStore.addressBook.add(dhts[1].peerInfo.id, dhts[1].peerInfo.multiaddrs.toArray())
+      dhts[0].peerStore.addressBook.add(dhts[1].peerId, [multiaddr('/ip4/160.1.1.1/tcp/80')])
 
       const key = await dhts[0].getPublicKey(ids[1])
-      expect(key.equals(dhts[1].peerInfo.id.pubKey)).to.eql(true)
+      expect(key.equals(dhts[1].peerId.pubKey)).to.eql(true)
 
       return tdht.teardown()
     })
@@ -694,23 +693,22 @@ describe('KadDHT', () => {
     it('_nearestPeersToQuery', async () => {
       const [dht] = await tdht.spawn(1)
 
-      dht.peerStore.addressBook.add(peerInfos[1].id, peerInfos[1].multiaddrs.toArray())
-      await dht._add(peerInfos[1])
+      await dht._add(peerIds[1])
       const res = await dht._nearestPeersToQuery({ key: 'hello' })
-      expect(res).to.be.eql([peerInfos[1]])
+      expect(res).to.be.eql([{
+        id: peerIds[1],
+        multiaddrs: []
+      }])
     })
 
     it('_betterPeersToQuery', async () => {
       const [dht] = await tdht.spawn(1)
 
-      dht.peerStore.addressBook.add(peerInfos[1].id, peerInfos[1].multiaddrs.toArray())
-      dht.peerStore.addressBook.add(peerInfos[2].id, peerInfos[2].multiaddrs.toArray())
+      await dht._add(peerIds[1])
+      await dht._add(peerIds[2])
+      const res = await dht._betterPeersToQuery({ key: 'hello' }, peerIds[1])
 
-      await dht._add(peerInfos[1])
-      await dht._add(peerInfos[2])
-      const res = await dht._betterPeersToQuery({ key: 'hello' }, peerInfos[1])
-
-      expect(res).to.be.eql([peerInfos[2]])
+      expect(res[0].id).to.be.eql(peerIds[2])
     })
 
     describe('_checkLocalDatastore', () => {
@@ -768,9 +766,6 @@ describe('KadDHT', () => {
 
     it('_verifyRecordLocally', async () => {
       const [dht] = await tdht.spawn(1)
-
-      dht.peerStore.addressBook.add(peerInfos[1].id, peerInfos[1].multiaddrs.toArray())
-
       const record = new Record(
         Buffer.from('hello'),
         Buffer.from('world')
@@ -855,7 +850,7 @@ describe('KadDHT', () => {
       const tdht = new TestDHT()
       const dhts = await tdht.spawn(4)
 
-      const ids = dhts.map((d) => d.peerInfo.id)
+      const ids = dhts.map((d) => d.peerId)
       await Promise.all([
         tdht.connect(dhts[0], dhts[1]),
         tdht.connect(dhts[1], dhts[2]),

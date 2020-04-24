@@ -8,16 +8,16 @@ const Message = require('../../message')
 const utils = require('../../utils')
 
 module.exports = (dht) => {
-  const log = utils.logger(dht.peerInfo.id, 'rpc:get-value')
+  const log = utils.logger(dht.peerId, 'rpc:get-value')
 
   /**
    * Process `GetValue` DHT messages.
    *
-   * @param {PeerInfo} peer
+   * @param {PeerId} peerId
    * @param {Message} msg
    * @returns {Promise<Message>}
    */
-  return async function getValue (peer, msg) {
+  return async function getValue (peerId, msg) {
     const key = msg.key
 
     log('key: %b', key)
@@ -30,25 +30,26 @@ module.exports = (dht) => {
 
     if (utils.isPublicKeyKey(key)) {
       log('is public key')
-      const id = utils.fromPublicKeyKey(key)
-      let info
+      const idFromKey = utils.fromPublicKeyKey(key)
+      let id
 
-      if (dht._isSelf(id)) {
-        info = dht.peerInfo
+      if (dht._isSelf(idFromKey)) {
+        id = dht.peerId
       } else {
-        info = dht.peerStore.get(id)
+        const peerData = dht.peerStore.get(idFromKey)
+        id = peerData && peerData.id
       }
 
-      if (info && info.id.pubKey) {
+      if (id && id.pubKey) {
         log('returning found public key')
-        response.record = new Record(key, info.id.pubKey.bytes)
+        response.record = new Record(key, id.pubKey.bytes)
         return response
       }
     }
 
     const [record, closer] = await Promise.all([
       dht._checkLocalDatastore(key),
-      dht._betterPeersToQuery(msg, peer)
+      dht._betterPeersToQuery(msg, peerId)
     ])
 
     if (record) {

@@ -40,7 +40,7 @@ describe('Network', () => {
         }
       }
 
-      const response = await dht.network.sendRequest(dht.peerInfo.id, msg)
+      const response = await dht.network.sendRequest(dht.peerId, msg)
       expect(response.type).to.eql(Message.TYPES.PING)
     })
 
@@ -100,7 +100,7 @@ describe('Network', () => {
         }
       }
 
-      const response = await dht.network.sendRequest(dht.peerInfo.id, msg)
+      const response = await dht.network.sendRequest(dht.peerId, msg)
 
       expect(response.type).to.eql(Message.TYPES.FIND_NODE)
       finish()
@@ -150,7 +150,7 @@ describe('Network', () => {
       dht.network.readMessageTimeout = 100
 
       try {
-        await dht.network.sendRequest(dht.peerInfo.id, msg)
+        await dht.network.sendRequest(dht.peerId, msg)
       } catch (err) {
         expect(err).to.exist()
         expect(err.message).to.match(/timed out/)

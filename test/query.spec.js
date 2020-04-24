@@ -10,17 +10,17 @@ const delay = require('delay')
 const Query = require('../src/query')
 const kadUtils = require('../src/utils')
 
-const createPeerInfo = require('./utils/create-peer-info')
+const createPeerId = require('./utils/create-peer-id')
 const TestDHT = require('./utils/test-dht')
 const createDisjointTracks = require('./utils/create-disjoint-tracks')
 
 describe('Query', () => {
-  let peerInfos
+  let peerIds
   let tdht
   let dht
 
   before(async () => {
-    peerInfos = await createPeerInfo(40)
+    peerIds = await createPeerId(40)
   })
 
   beforeEach(async () => {
@@ -33,7 +33,7 @@ describe('Query', () => {
   })
 
   it('simple run', async () => {
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
@@ -41,21 +41,21 @@ describe('Query', () => {
     let i = 0
     const queryFunc = async (p) => { // eslint-disable-line require-await
       if (i++ === 1) {
-        expect(p.id).to.eql(peerInfos[2].id.id)
+        expect(p.id).to.eql(peerIds[2].id)
 
         return {
           value: Buffer.from('cool'),
           pathComplete: true
         }
       }
-      expect(p.id).to.eql(peerInfos[1].id.id)
+      expect(p.id).to.eql(peerIds[1].id)
       return {
-        closerPeers: [peerInfos[2]]
+        closerPeers: [{ id: peerIds[2] }]
       }
     }
 
-    const q = new Query(dht, peer.id.id, () => queryFunc)
-    const res = await q.run([peerInfos[1].id])
+    const q = new Query(dht, peerId.id, () => queryFunc)
+    const res = await q.run([peerIds[1]])
 
     expect(res.paths[0].value).to.eql(Buffer.from('cool'))
     expect(res.paths[0].success).to.eql(true)
@@ -63,7 +63,7 @@ describe('Query', () => {
   })
 
   it('does not return an error if only some queries error', async () => {
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
@@ -78,35 +78,35 @@ describe('Query', () => {
       }
 
       return {
-        closerPeers: [peerInfos[2]]
+        closerPeers: [{ id: peerIds[2] }]
       }
     }
 
-    const q = new Query(dht, peer.id.id, () => queryFunc)
-    const res = await q.run([peerInfos[1].id])
+    const q = new Query(dht, peerId.id, () => queryFunc)
+    const res = await q.run([peerIds[1]])
 
     // Should have visited
-    // - the initial peer passed to the query: peerInfos[1]
-    // - the peer returned in closerPeers: peerInfos[2]
-    expect(visited).to.eql([peerInfos[1].id, peerInfos[2].id])
+    // - the initial peer passed to the query: peerIds[1]
+    // - the peer returned in closerPeers: peerIds[2]
+    expect(visited).to.eql([peerIds[1], peerIds[2]])
 
     // The final set should only contain peers that were successfully queried
     // (ie no errors)
     expect(res.finalSet.size).to.eql(1)
-    expect(res.finalSet.has(peerInfos[1].id)).to.equal(true)
+    expect(res.finalSet.has(peerIds[1])).to.equal(true)
   })
 
   it('returns an error if all queries error', async () => {
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
 
     const queryFunc = async (p) => { throw new Error('fail') } // eslint-disable-line require-await
-    const q = new Query(dht, peer.id.id, () => queryFunc)
+    const q = new Query(dht, peerId.id, () => queryFunc)
 
     try {
-      await q.run([peerInfos[1].id])
+      await q.run([peerIds[1]])
     } catch (err) {
       expect(err).to.exist()
       expect(err.message).to.eql('fail')
@@ -117,10 +117,10 @@ describe('Query', () => {
   })
 
   it('returns empty run if initial peer list is empty', async () => {
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
     const queryFunc = async (p) => {}
 
-    const q = new Query(dht, peer.id.id, () => queryFunc)
+    const q = new Query(dht, peerId.id, () => queryFunc)
     const res = await q.run([])
 
     // Should not visit any peers
@@ -129,25 +129,25 @@ describe('Query', () => {
   })
 
   it('only closerPeers', async () => {
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
 
     const queryFunc = async (p) => { // eslint-disable-line require-await
       return {
-        closerPeers: [peerInfos[2]]
+        closerPeers: [{ id: peerIds[2] }]
       }
     }
 
-    const q = new Query(dht, peer.id.id, () => queryFunc)
-    const res = await q.run([peerInfos[1].id])
+    const q = new Query(dht, peerId.id, () => queryFunc)
+    const res = await q.run([peerIds[1]])
 
     expect(res.finalSet.size).to.eql(2)
   })
 
   it('only closerPeers concurrent', async () => {
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
@@ -157,26 +157,25 @@ describe('Query', () => {
     //       6 -> 7
     //  3 -> 9 -> 10
     const topology = {
-      [peerInfos[1].id.toB58String()]: [
-        peerInfos[8]
+      [peerIds[1].toB58String()]: [
+        { id: peerIds[8] }
       ],
 
-      [peerInfos[2].id.toB58String()]: [
-        peerInfos[4],
-        peerInfos[6]
+      [peerIds[2].toB58String()]: [
+        { id: peerIds[4] },
+        { id: peerIds[6] }
       ],
-      [peerInfos[4].id.toB58String()]: [
-        peerInfos[5]
+      [peerIds[4].toB58String()]: [
+        { id: peerIds[5] }
       ],
-      [peerInfos[6].id.toB58String()]: [
-        peerInfos[7]
+      [peerIds[6].toB58String()]: [
+        { id: peerIds[7] }
       ],
-
-      [peerInfos[3].id.toB58String()]: [
-        peerInfos[9]
+      [peerIds[3].toB58String()]: [
+        { id: peerIds[9] }
       ],
-      [peerInfos[9].id.toB58String()]: [
-        peerInfos[10]
+      [peerIds[9].toB58String()]: [
+        { id: peerIds[10] }
       ]
     }
 
@@ -187,32 +186,32 @@ describe('Query', () => {
       }
     }
 
-    const q = new Query(dht, peer.id.id, () => queryFunc)
-    const res = await q.run([peerInfos[1].id, peerInfos[2].id, peerInfos[3].id])
+    const q = new Query(dht, peerId.id, () => queryFunc)
+    const res = await q.run([peerIds[1], peerIds[2], peerIds[3]])
 
     // Should visit all peers
     expect(res.finalSet.size).to.eql(10)
   })
 
   it('early success', async () => {
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
 
     // 1 -> 2 -> 3 -> 4
     const topology = {
-      [peerInfos[1].id.toB58String()]: {
-        closer: [peerInfos[2]]
+      [peerIds[1].toB58String()]: {
+        closer: [{ id: peerIds[2] }]
       },
       // Should stop here because pathComplete is true
-      [peerInfos[2].id.toB58String()]: {
-        closer: [peerInfos[3]],
+      [peerIds[2].toB58String()]: {
+        closer: [{ id: peerIds[3] }],
         pathComplete: true
       },
       // Should not reach here because previous query returns pathComplete
-      [peerInfos[3].id.toB58String()]: {
-        closer: [peerInfos[4]]
+      [peerIds[3].toB58String()]: {
+        closer: [{ id: peerIds[4] }]
       }
     }
 
@@ -225,8 +224,8 @@ describe('Query', () => {
       }
     }
 
-    const q = new Query(dht, peer.id.id, () => queryFunc)
-    const res = await q.run([peerInfos[1].id])
+    const q = new Query(dht, peerId.id, () => queryFunc)
+    const res = await q.run([peerIds[1]])
 
     // Should complete successfully
     expect(res.paths.length).to.eql(1)
@@ -239,22 +238,22 @@ describe('Query', () => {
   it('all queries stop after shutdown', async () => {
     const deferShutdown = pDefer()
     const [dhtA] = await tdht.spawn(1)
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
 
     // mock this so we can dial non existing peers
     dhtA.dialer.dial = (peer) => {}
 
     // 1 -> 2 -> 3 -> 4
     const topology = {
-      [peerInfos[1].id.toB58String()]: {
-        closer: [peerInfos[2]]
+      [peerIds[1].toB58String()]: {
+        closer: [{ id: peerIds[2] }]
       },
-      [peerInfos[2].id.toB58String()]: {
-        closer: [peerInfos[3]]
+      [peerIds[2].toB58String()]: {
+        closer: [{ id: peerIds[3] }]
       },
       // Should not reach here because query gets shut down
-      [peerInfos[3].id.toB58String()]: {
-        closer: [peerInfos[4]]
+      [peerIds[3].toB58String()]: {
+        closer: [{ id: peerIds[4] }]
       }
     }
 
@@ -272,8 +271,8 @@ describe('Query', () => {
         }
       }
 
-      // Shut down after visiting peerInfos[2]
-      if (p.toB58String() === peerInfos[2].id.toB58String()) {
+      // Shut down after visiting peerIds[2]
+      if (p.toB58String() === peerIds[2].toB58String()) {
         await dhtA.stop()
         setTimeout(checkExpectations, 100)
         return getResult()
@@ -281,12 +280,12 @@ describe('Query', () => {
       return getResult()
     }
 
-    const q = new Query(dhtA, peer.id.id, () => queryFunc)
-    await q.run([peerInfos[1].id])
+    const q = new Query(dhtA, peerId.id, () => queryFunc)
+    await q.run([peerIds[1]])
 
     function checkExpectations () {
       // Should only visit peers up to the point where we shut down
-      expect(visited).to.eql([peerInfos[1].id, peerInfos[2].id])
+      expect(visited).to.eql([peerIds[1], peerIds[2]])
 
       deferShutdown.resolve()
     }
@@ -296,18 +295,18 @@ describe('Query', () => {
 
   it('queries run after shutdown return immediately', async () => {
     const [dhtA] = await tdht.spawn(1)
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
 
     // mock this so we can dial non existing peers
     dhtA.dialer.dial = (peer, callback) => callback()
 
     // 1 -> 2 -> 3
     const topology = {
-      [peerInfos[1].id.toB58String()]: {
-        closer: [peerInfos[2]]
+      [peerIds[1].toB58String()]: {
+        closer: [{ id: peerIds[2] }]
       },
-      [peerInfos[2].id.toB58String()]: {
-        closer: [peerInfos[3]]
+      [peerIds[2].toB58String()]: {
+        closer: [{ id: peerIds[3] }]
       }
     }
 
@@ -318,10 +317,10 @@ describe('Query', () => {
       }
     }
 
-    const q = new Query(dhtA, peer.id.id, () => queryFunc)
+    const q = new Query(dhtA, peerId.id, () => queryFunc)
 
     await dhtA.stop()
-    const res = await q.run([peerInfos[1].id])
+    const res = await q.run([peerIds[1]])
 
     // Should not visit any peers
     expect(res.paths.length).to.eql(0)
@@ -329,7 +328,7 @@ describe('Query', () => {
   })
 
   it('disjoint path values', async () => {
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
     const values = ['v0', 'v1'].map(Buffer.from)
 
     // mock this so we can dial non existing peers
@@ -339,24 +338,24 @@ describe('Query', () => {
     // 4 -> 5 (v1)
     const topology = {
       // Top level node
-      [peerInfos[1].id.toB58String()]: {
-        closer: [peerInfos[2]]
+      [peerIds[1].toB58String()]: {
+        closer: [{ id: peerIds[2] }]
       },
-      [peerInfos[2].id.toB58String()]: {
-        closer: [peerInfos[3]]
+      [peerIds[2].toB58String()]: {
+        closer: [{ id: peerIds[3] }]
       },
       // v0
-      [peerInfos[3].id.toB58String()]: {
+      [peerIds[3].toB58String()]: {
         value: values[0],
         pathComplete: true
       },
 
       // Top level node
-      [peerInfos[4].id.toB58String()]: {
-        closer: [peerInfos[5]]
+      [peerIds[4].toB58String()]: {
+        closer: [{ id: peerIds[5] }]
       },
       // v1
-      [peerInfos[5].id.toB58String()]: {
+      [peerIds[5].toB58String()]: {
         value: values[1],
         pathComplete: true
       }
@@ -372,8 +371,8 @@ describe('Query', () => {
       }
     }
 
-    const q = new Query(dht, peer.id.id, () => queryFunc)
-    const res = await q.run([peerInfos[1].id, peerInfos[4].id])
+    const q = new Query(dht, peerId.id, () => queryFunc)
+    const res = await q.run([peerIds[1], peerIds[4]])
 
     // We should get back the values from both paths
     expect(res.paths.length).to.eql(2)
@@ -384,7 +383,7 @@ describe('Query', () => {
   })
 
   it('disjoint path values with early completion', async () => {
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
     const values = ['v0', 'v1'].map(Buffer.from)
 
     // mock this so we can dial non existing peers
@@ -394,29 +393,29 @@ describe('Query', () => {
     // 4 -> 5 [query complete]
     const topology = {
       // Top level node
-      [peerInfos[1].id.toB58String()]: {
-        closer: [peerInfos[2]]
+      [peerIds[1].toB58String()]: {
+        closer: [{ id: peerIds[2] }]
       },
       // This query has a delay which means it only returns after the other
       // path has already indicated the query is complete, so its result
       // should be ignored
-      [peerInfos[2].id.toB58String()]: {
+      [peerIds[2].toB58String()]: {
         delay: 100,
-        closer: [peerInfos[3]]
+        closer: [{ id: peerIds[3] }]
       },
       // Query has stopped by the time we reach here, should be ignored
-      [peerInfos[3].id.toB58String()]: {
+      [peerIds[3].toB58String()]: {
         value: values[0],
         pathComplete: true
       },
 
       // Top level node
-      [peerInfos[4].id.toB58String()]: {
-        closer: [peerInfos[5]]
+      [peerIds[4].toB58String()]: {
+        closer: [{ id: peerIds[5] }]
       },
       // This peer indicates that the query is complete
-      [peerInfos[5].id.toB58String()]: {
-        closer: [peerInfos[2]],
+      [peerIds[5].toB58String()]: {
+        closer: [{ id: peerIds[2] }],
         value: values[1],
         queryComplete: true
       }
@@ -436,8 +435,8 @@ describe('Query', () => {
       }
     }
 
-    const q = new Query(dht, peer.id.id, () => queryFunc)
-    const res = await q.run([peerInfos[1].id, peerInfos[4].id])
+    const q = new Query(dht, peerId.id, () => queryFunc)
+    const res = await q.run([peerIds[1], peerIds[4]])
 
     // We should only get back the value from the path 4 -> 5
     expect(res.paths.length).to.eql(1)
@@ -447,13 +446,13 @@ describe('Query', () => {
     // Wait a little bit to make sure we don't continue down another path
     // after finding a successful path
     await delay(300)
-    if (visited.indexOf(peerInfos[3].id) !== -1) {
+    if (visited.indexOf(peerIds[3]) !== -1) {
       expect.fail('Query continued after success was returned')
     }
   })
 
   it('disjoint path continue other paths after error on one path', async () => {
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
     const values = ['v0', 'v1'].map(Buffer.from)
 
     // mock this so we can dial non existing peers
@@ -463,32 +462,32 @@ describe('Query', () => {
     // 4 -> 5 [error] -> 6
     const topology = {
       // Top level node
-      [peerInfos[1].id.toB58String()]: {
-        closer: [peerInfos[2]]
+      [peerIds[1].toB58String()]: {
+        closer: [{ id: peerIds[2] }]
       },
       // This query has a delay which means it only returns after the other
       // path has already returned an error
-      [peerInfos[2].id.toB58String()]: {
+      [peerIds[2].toB58String()]: {
         delay: 100,
-        closer: [peerInfos[3]]
+        closer: [{ id: peerIds[3] }]
       },
       // Success peer, should get this value back at the end
-      [peerInfos[3].id.toB58String()]: {
+      [peerIds[3].toB58String()]: {
         value: values[0],
         pathComplete: true
       },
 
       // Top level node
-      [peerInfos[4].id.toB58String()]: {
-        closer: [peerInfos[5]]
+      [peerIds[4].toB58String()]: {
+        closer: [{ id: peerIds[5] }]
       },
       // Return an error at this point
-      [peerInfos[5].id.toB58String()]: {
-        closer: [peerInfos[6]],
+      [peerIds[5].toB58String()]: {
+        closer: [{ id: peerIds[6] }],
         error: true
       },
       // Should never reach here
-      [peerInfos[6].id.toB58String()]: {
+      [peerIds[6].toB58String()]: {
         value: values[1],
         pathComplete: true
       }
@@ -510,8 +509,8 @@ describe('Query', () => {
       }
     }
 
-    const q = new Query(dht, peer.id.id, () => queryFunc)
-    const res = await q.run([peerInfos[1].id, peerInfos[4].id])
+    const q = new Query(dht, peerId.id, () => queryFunc)
+    const res = await q.run([peerIds[1], peerIds[4]])
 
     // We should only get back the value from the path 1 -> 2 -> 3
     expect(res.paths.length).to.eql(1)
@@ -523,9 +522,8 @@ describe('Query', () => {
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
 
-    // Sort peers by distance from dht.peerInfo
-    const peerZeroDhtKey = await kadUtils.convertPeerId(dht.peerInfo.id)
-    const peerIds = peerInfos.map(pi => pi.id)
+    // Sort peers by distance from dht.peerId
+    const peerZeroDhtKey = await kadUtils.convertPeerId(dht.peerId)
     const sorted = await kadUtils.sortClosestPeers(peerIds, peerZeroDhtKey)
 
     // Local node has nodes 10, 16 and 18 in k-bucket
@@ -569,18 +567,18 @@ describe('Query', () => {
     }
 
     const peerIndex = (peerId) => sorted.findIndex(p => p === peerId)
-    const peerIdToInfo = (peerId) => peerInfos.find(pi => pi.id === peerId)
+    const peerIdToPeerData = (peerId) => peerIds.find(pi => pi === peerId)
 
     const visited = []
     const queryFunc = async (peerId) => { // eslint-disable-line require-await
       visited.push(peerId)
       const i = peerIndex(peerId)
       const closerIndexes = topology[i] || []
-      const closerPeers = closerIndexes.map(j => peerIdToInfo(sorted[j]))
+      const closerPeers = closerIndexes.map(j => peerIdToPeerData(sorted[j])).map((p) => ({ id: p }))
       return { closerPeers }
     }
 
-    const q = new Query(dht, dht.peerInfo.id.id, () => queryFunc)
+    const q = new Query(dht, dht.peerId.id, () => queryFunc)
     const res = await q.run(initial)
 
     // Should query 19 peers, then find some peers closer to the key, and
@@ -624,19 +622,19 @@ describe('Query', () => {
    */
   it('uses disjoint paths', async () => {
     const goodLength = 3
-    const samplePeerInfos = peerInfos.slice(0, 12)
+    const samplePeerIds = peerIds.slice(0, 12)
     const {
       targetId,
       starts,
       getResponse
-    } = await createDisjointTracks(samplePeerInfos, goodLength)
+    } = await createDisjointTracks(samplePeerIds, goodLength)
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
     let badEndVisited = false
     let targetVisited = false
 
-    const q = new Query(dht, targetId, (trackNum) => {
+    const q = new Query(dht, targetId.id, (trackNum) => {
       return async (p) => { // eslint-disable-line require-await
         const response = getResponse(p, trackNum)
         expect(response).to.exist() // or we aren't on the right track
@@ -655,29 +653,29 @@ describe('Query', () => {
     // we should reach the target node
     expect(targetVisited).to.eql(true)
     // we should visit all nodes (except the target)
-    expect(res.finalSet.size).to.eql(samplePeerInfos.length - 1)
+    expect(res.finalSet.size).to.eql(samplePeerIds.length - 1)
     // there should be one successful path
     expect(res.paths.length).to.eql(1)
   })
 
   it('should discover closer peers', () => {
     const discoverDefer = pDefer()
-    const peer = dht.peerInfo
+    const peerId = dht.peerId
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
 
     const queryFunc = async (p) => { // eslint-disable-line require-await
       return {
-        closerPeers: [peerInfos[2]]
+        closerPeers: [{ id: peerIds[2] }]
       }
     }
 
-    const q = new Query(dht, peer.id.id, () => queryFunc)
-    q.run([peerInfos[1].id])
+    const q = new Query(dht, peerId.id, () => queryFunc)
+    q.run([peerIds[1]])
 
-    dht.once('peer', (peerInfo) => {
-      expect(peerInfo.id).to.eql(peerInfos[2].id)
+    dht.once('peer', (peerData) => {
+      expect(peerData.id).to.eql(peerIds[2])
       discoverDefer.resolve()
     })
 

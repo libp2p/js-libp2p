@@ -1,23 +1,22 @@
 'use strict'
 
 const CID = require('cids')
-const PeerInfo = require('peer-info')
 const errcode = require('err-code')
 
 const Message = require('../../message')
 const utils = require('../../utils')
 
 module.exports = (dht) => {
-  const log = utils.logger(dht.peerInfo.id, 'rpc:get-providers')
+  const log = utils.logger(dht.peerId, 'rpc:get-providers')
 
   /**
    * Process `GetProviders` DHT messages.
    *
-   * @param {PeerInfo} peer
+   * @param {PeerId} peerId
    * @param {Message} msg
    * @returns {Promise<Message>}
    */
-  return async function getProviders (peer, msg) {
+  return async function getProviders (peerId, msg) {
     let cid
     try {
       cid = new CID(msg.key)
@@ -31,26 +30,29 @@ module.exports = (dht) => {
     const [has, peers, closer] = await Promise.all([
       dht.datastore.has(dsKey),
       dht.providers.getProviders(cid),
-      dht._betterPeersToQuery(msg, peer)
+      dht._betterPeersToQuery(msg, peerId)
     ])
 
-    const providers = peers.map((p) => new PeerInfo(p))
+    const providerPeers = peers.map((peerId) => ({ id: peerId }))
+    const closerPeers = closer.map((c) => ({ id: c.id }))
 
     if (has) {
-      providers.push(dht.peerInfo)
+      providerPeers.push({
+        id: dht.peerId
+      })
     }
 
     const response = new Message(msg.type, msg.key, msg.clusterLevel)
 
-    if (providers.length > 0) {
-      response.providerPeers = providers
+    if (providerPeers.length > 0) {
+      response.providerPeers = providerPeers
     }
 
-    if (closer.length > 0) {
-      response.closerPeers = closer
+    if (closerPeers.length > 0) {
+      response.closerPeers = closerPeers
     }
 
-    log('got %s providers %s closerPeers', providers.length, closer.length)
+    log('got %s providers %s closerPeers', providerPeers.length, closerPeers.length)
     return response
   }
 }

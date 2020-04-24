@@ -38,7 +38,7 @@ class Query {
     this.dht = dht
     this.key = key
     this.makePath = makePath
-    this._log = utils.logger(this.dht.peerInfo.id, 'query:' + mh.toB58String(key))
+    this._log = utils.logger(this.dht.peerId, 'query:' + mh.toB58String(key))
 
     this.running = false
 

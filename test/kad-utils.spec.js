@@ -9,7 +9,7 @@ const PeerId = require('peer-id')
 const distance = require('xor-distance')
 
 const utils = require('../src/utils')
-const createPeerInfo = require('./utils/create-peer-info')
+const createPeerId = require('./utils/create-peer-id')
 
 describe('kad utils', () => {
   describe('bufferToKey', () => {
@@ -51,7 +51,7 @@ describe('kad utils', () => {
   })
 
   describe('sortClosestPeers', () => {
-    it('sorts a list of PeerInfos', async () => {
+    it('sorts a list of PeerIds', async () => {
       const rawIds = [
         '11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31',
         '11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a32',
@@ -102,9 +102,9 @@ describe('kad utils', () => {
 
   describe('keyForPublicKey', () => {
     it('works', async () => {
-      const peers = await createPeerInfo(1)
-      expect(utils.keyForPublicKey(peers[0].id))
-        .to.eql(Buffer.concat([Buffer.from('/pk/'), peers[0].id.id]))
+      const peers = await createPeerId(1)
+      expect(utils.keyForPublicKey(peers[0]))
+        .to.eql(Buffer.concat([Buffer.from('/pk/'), peers[0].id]))
     })
   })
 
@@ -112,9 +112,8 @@ describe('kad utils', () => {
     it('round trips', async function () {
       this.timeout(40 * 1000)
 
-      const peers = await createPeerInfo(50)
-      peers.forEach((p, i) => {
-        const id = p.id
+      const peers = await createPeerId(50)
+      peers.forEach((id, i) => {
         expect(utils.isPublicKeyKey(utils.keyForPublicKey(id))).to.eql(true)
         expect(utils.fromPublicKeyKey(utils.keyForPublicKey(id)).id)
           .to.eql(id.id)

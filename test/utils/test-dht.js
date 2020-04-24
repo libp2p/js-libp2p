@@ -7,7 +7,7 @@ const delay = require('delay')
 const KadDHT = require('../../src')
 const { PROTOCOL_DHT } = require('../../src/constants')
 
-const createPeerInfo = require('./create-peer-info')
+const createPeerId = require('./create-peer-id')
 const {
   createMockRegistrar,
   ConnectionPair
@@ -37,15 +37,12 @@ class TestDHT {
       ...options
     }
 
-    const [p] = await createPeerInfo(1)
-    const port = index !== undefined ? 8000 + index : 0
-
-    p.multiaddrs.add(`/ip4/127.0.0.1/tcp/${port}/p2p/${p.id.toB58String()}`)
+    const [peerId] = await createPeerId(1)
 
     const connectToPeer = async (peer) => {
       const remotePeerB58 = peer.toB58String()
       const remoteDht = this.nodes.find(
-        (node) => node.peerInfo.id.toB58String() === remotePeerB58
+        (node) => node.peerId.toB58String() === remotePeerB58
       )
 
       const localOnConnect = regRecord[PROTOCOL_DHT].onConnect
@@ -55,14 +52,14 @@ class TestDHT {
 
       // Notice peers of connection
       const [c0, c1] = ConnectionPair()
-      await localOnConnect(remoteDht.peerInfo, c1)
-      await remoteOnConnect(p, c0)
+      await localOnConnect(remoteDht.peerId, c1)
+      await remoteOnConnect(peerId, c0)
 
       await remoteHandler({
         protocol: PROTOCOL_DHT,
         stream: c0.stream,
         connection: {
-          remotePeer: p.id
+          remotePeer: peerId
         }
       })
 
@@ -79,7 +76,7 @@ class TestDHT {
       },
       registrar: createMockRegistrar(regRecord),
       peerStore,
-      peerInfo: p,
+      peerId: peerId,
       validators: {
         v: {
           func () {
@@ -114,12 +111,12 @@ class TestDHT {
     const [c0, c1] = ConnectionPair()
 
     // Notice peers of connection
-    await onConnectA(dhtB.peerInfo, c0)
-    await onConnectB(dhtA.peerInfo, c1)
+    await onConnectA(dhtB.peerId, c0)
+    await onConnectB(dhtA.peerId, c1)
 
     return Promise.all([
       pRetry(async () => {
-        const match = await dhtA.routingTable.find(dhtB.peerInfo.id)
+        const match = await dhtA.routingTable.find(dhtB.peerId)
 
         if (!match) {
           await delay(100)
@@ -129,7 +126,7 @@ class TestDHT {
         return match
       }, { retries: 50 }),
       pRetry(async () => {
-        const match = await dhtB.routingTable.find(dhtA.peerInfo.id)
+        const match = await dhtB.routingTable.find(dhtA.peerId)
 
         if (!match) {
           await delay(100)

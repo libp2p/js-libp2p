@@ -11,16 +11,16 @@ const utils = require('../../../src/utils')
 
 const T = Message.TYPES.GET_VALUE
 
-const createPeerInfo = require('../../utils/create-peer-info')
+const createPeerId = require('../../utils/create-peer-id')
 const TestDHT = require('../../utils/test-dht')
 
 describe('rpc - handlers - GetValue', () => {
-  let peers
+  let peerIds
   let tdht
   let dht
 
   before(async () => {
-    peers = await createPeerInfo(2)
+    peerIds = await createPeerId(2)
   })
 
   beforeEach(async () => {
@@ -36,7 +36,7 @@ describe('rpc - handlers - GetValue', () => {
     const msg = new Message(T, Buffer.alloc(0), 0)
 
     try {
-      await handler(dht)(peers[0], msg)
+      await handler(dht)(peerIds[0], msg)
     } catch (err) {
       expect(err.code).to.eql('ERR_INVALID_KEY')
       return
@@ -51,7 +51,7 @@ describe('rpc - handlers - GetValue', () => {
     const msg = new Message(T, key, 0)
 
     await dht.put(key, value)
-    const response = await handler(dht)(peers[0], msg)
+    const response = await handler(dht)(peerIds[0], msg)
 
     expect(response.record).to.exist()
     expect(response.record.key).to.eql(key)
@@ -61,45 +61,45 @@ describe('rpc - handlers - GetValue', () => {
   it('responds with closerPeers returned from the dht', async () => {
     const key = Buffer.from('hello')
     const msg = new Message(T, key, 0)
-    const other = peers[1]
+    const other = peerIds[1]
 
     await dht._add(other)
-    const response = await handler(dht)(peers[0], msg)
+    const response = await handler(dht)(peerIds[0], msg)
 
     expect(response.closerPeers).to.have.length(1)
-    expect(response.closerPeers[0].id.toB58String()).to.be.eql(other.id.toB58String())
+    expect(response.closerPeers[0].id.toB58String()).to.be.eql(other.toB58String())
   })
 
   describe('public key', () => {
     it('self', async () => {
-      const key = utils.keyForPublicKey(dht.peerInfo.id)
+      const key = utils.keyForPublicKey(dht.peerId)
 
       const msg = new Message(T, key, 0)
-      const response = await handler(dht)(peers[0], msg)
+      const response = await handler(dht)(peerIds[0], msg)
 
       expect(response.record).to.exist()
-      expect(response.record.value).to.eql(dht.peerInfo.id.pubKey.bytes)
+      expect(response.record.value).to.eql(dht.peerId.pubKey.bytes)
     })
 
     it('other in peerstore', async () => {
-      const other = peers[1]
-      const key = utils.keyForPublicKey(other.id)
+      const other = peerIds[1]
+      const key = utils.keyForPublicKey(other)
 
       const msg = new Message(T, key, 0)
 
-      dht.peerStore.addressBook.add(other.id, other.multiaddrs.toArray())
+      dht.peerStore.addressBook.add(other, [])
       await dht._add(other)
-      const response = await handler(dht)(peers[0], msg)
+      const response = await handler(dht)(peerIds[0], msg)
       expect(response.record).to.exist()
-      expect(response.record.value).to.eql(other.id.pubKey.bytes)
+      expect(response.record.value).to.eql(other.pubKey.bytes)
     })
 
     it('other unkown', async () => {
-      const other = peers[1]
-      const key = utils.keyForPublicKey(other.id)
+      const other = peerIds[1]
+      const key = utils.keyForPublicKey(other)
 
       const msg = new Message(T, key, 0)
-      const response = await handler(dht)(peers[0], msg)
+      const response = await handler(dht)(peerIds[0], msg)
       expect(response.record).to.not.exist()
     })
   })

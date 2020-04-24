@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * A list of unique peer infos.
+ * A list of unique peers.
  */
 class PeerList {
   constructor () {
@@ -9,34 +9,34 @@ class PeerList {
   }
 
   /**
-   * Add a new info. Returns `true` if it was a new one
+   * Add a new peer. Returns `true` if it was a new one
    *
-   * @param {PeerInfo} info
+   * @param {PeerData} peerData
    * @returns {bool}
    */
-  push (info) {
-    if (!this.has(info)) {
-      this.list.push(info)
+  push (peerData) {
+    if (!this.has(peerData.id)) {
+      this.list.push(peerData)
       return true
     }
     return false
   }
 
   /**
-   * Check if this PeerInfo is already in here.
+   * Check if this PeerData is already in here.
    *
-   * @param {PeerInfo} info
+   * @param {PeerId} peerId
    * @returns {bool}
    */
-  has (info) {
-    const match = this.list.find((i) => i.id.isEqual(info.id))
+  has (peerId) {
+    const match = this.list.find((i) => i.id.isEqual(peerId))
     return Boolean(match)
   }
 
   /**
    * Get the list as an array.
    *
-   * @returns {Array<PeerInfo>}
+   * @returns {Array<PeerData>}
    */
   toArray () {
     return this.list.slice()
@@ -45,7 +45,7 @@ class PeerList {
   /**
    * Remove the last element
    *
-   * @returns {PeerInfo}
+   * @returns {PeerData}
    */
   pop () {
     return this.list.pop()

@@ -196,7 +196,7 @@ module.exports = (dht) => {
       if (localRec) {
         vals.push({
           val: localRec.value,
-          from: dht.peerInfo.id
+          from: dht.peerId
         })
       }
 

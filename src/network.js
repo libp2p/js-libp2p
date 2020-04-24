@@ -25,7 +25,7 @@ class Network {
   constructor (self) {
     this.dht = self
     this.readMessageTimeout = c.READ_MESSAGE_TIMEOUT
-    this._log = utils.logger(this.dht.peerInfo.id, 'net')
+    this._log = utils.logger(this.dht.peerId, 'net')
     this._rpc = rpc(this.dht)
     this._onPeerConnected = this._onPeerConnected.bind(this)
     this._running = false
@@ -96,12 +96,12 @@ class Network {
   /**
    * Registrar notifies a connection successfully with dht protocol.
    * @private
-   * @param {PeerInfo} peerInfo remote peer info
+   * @param {PeerId} peerId remote peer id
    * @returns {Promise<void>}
    */
-  async _onPeerConnected (peerInfo) {
-    await this.dht._add(peerInfo)
-    this._log('added to the routing table: %s', peerInfo.id.toB58String())
+  async _onPeerConnected (peerId) {
+    await this.dht._add(peerId)
+    this._log('added to the routing table: %s', peerId.toB58String())
   }
 
   /**

@@ -15,15 +15,22 @@ const utils = require('../utils')
 module.exports = (dht) => {
   /**
    * Look if we are connected to a peer with the given id.
-   * Returns the `PeerInfo` for it, if found, otherwise `undefined`.
+   * Returns its id and addresses, if found, otherwise `undefined`.
    * @param {PeerId} peer
-   * @returns {Promise<PeerInfo>}
+   * @returns {Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
   const findPeerLocal = async (peer) => {
     dht._log('findPeerLocal %s', peer.toB58String())
     const p = await dht.routingTable.find(peer)
 
-    return p && dht.peerStore.get(p)
+    const peerData = p && dht.peerStore.get(p)
+
+    if (peerData) {
+      return {
+        id: peerData.id,
+        multiaddrs: peerData.multiaddrInfos.map((mi) => mi.multiaddr)
+      }
+    }
   }
 
   /**
@@ -42,7 +49,7 @@ module.exports = (dht) => {
    * Find close peers for a given peer
    * @param {Buffer} key
    * @param {PeerId} peer
-   * @returns {Promise<Array<PeerInfo>>}
+   * @returns {Promise<Array<{ id: PeerId, multiaddrs: Multiaddr[] }>>}
    * @private
    */
 
@@ -51,12 +58,11 @@ module.exports = (dht) => {
     const msg = await dht.peerRouting._findPeerSingle(peer, new PeerId(key))
 
     return msg.closerPeers
-      .filter((pInfo) => !dht._isSelf(pInfo.id))
-      .map((pInfo) => {
-        // Add known address to peer store
-        dht.peerStore.addressBook.add(pInfo.id, pInfo.multiaddrs.toArray())
+      .filter((peerData) => !dht._isSelf(peerData.id))
+      .map((peerData) => {
+        dht.peerStore.addressBook.add(peerData.id, peerData.multiaddrs)
 
-        return pInfo
+        return peerData
       })
   }
 
@@ -104,7 +110,7 @@ module.exports = (dht) => {
      * @param {PeerId} id
      * @param {Object} options - findPeer options
      * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
-     * @returns {Promise<PeerInfo>}
+     * @returns {Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>}
      */
     async findPeer (id, options = {}) {
       options.timeout = options.timeout || c.minute
@@ -133,7 +139,10 @@ module.exports = (dht) => {
 
         if (peer) {
           dht._log('found in peerStore')
-          return peer
+          return {
+            id: peer.id,
+            multiaddrs: peer.multiaddrInfos.map((mi) => mi.multiaddr)
+          }
         }
       }
 
@@ -173,7 +182,7 @@ module.exports = (dht) => {
       result.paths.forEach((result) => {
         if (result.success) {
           success = true
-          dht.peerStore.addressBook.add(result.peer.id, result.peer.multiaddrs.toArray())
+          dht.peerStore.addressBook.add(result.peer.id, result.peer.multiaddrs)
         }
       })
       dht._log('findPeer %s: %s', id.toB58String(), success)
@@ -181,7 +190,13 @@ module.exports = (dht) => {
       if (!success) {
         throw errcode(new Error('No peer found'), 'ERR_NOT_FOUND')
       }
-      return dht.peerStore.get(id)
+
+      const peerData = dht.peerStore.get(id)
+
+      return {
+        id: peerData.id,
+        multiaddrs: peerData.multiaddrInfos.map((mi) => mi.multiaddr)
+      }
     },
 
     /**
@@ -232,10 +247,10 @@ module.exports = (dht) => {
       dht._log('getPublicKey %s', peer.toB58String())
 
       // local check
-      const info = dht.peerStore.get(peer)
-      if (info && info.id.pubKey) {
+      const peerData = dht.peerStore.get(peer)
+      if (peerData && peerData.id.pubKey) {
         dht._log('getPublicKey: found local copy')
-        return info.id.pubKey
+        return peerData.id.pubKey
       }
 
       // try the node directly
@@ -249,8 +264,9 @@ module.exports = (dht) => {
         pk = crypto.keys.unmarshalPublicKey(value)
       }
 
-      info.id = new PeerId(peer.id, null, pk)
-      dht.peerStore.addressBook.add(info.id, info.multiaddrs.toArray())
+      peerData.id = new PeerId(peer.id, null, pk)
+      const addrs = peerData.multiaddrInfos.map((mi) => mi.multiaddr)
+      dht.peerStore.addressBook.add(peerData.id, addrs)
 
       return pk
     }

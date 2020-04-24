@@ -5,7 +5,6 @@ const errcode = require('err-code')
 
 const libp2pRecord = require('libp2p-record')
 const { MemoryDatastore } = require('interface-datastore')
-const PeerInfo = require('peer-info')
 
 const RoutingTable = require('./routing')
 const utils = require('./utils')
@@ -40,7 +39,7 @@ class KadDHT extends EventEmitter {
    * Create a new KadDHT.
    * @param {Object} props
    * @param {Dialer} props.dialer libp2p dialer instance
-   * @param {PeerInfo} props.peerInfo peer's peerInfo
+   * @param {PeerId} props.peerId peer's peerId
    * @param {PeerStore} props.peerStore libp2p peerStore
    * @param {Object} props.registrar libp2p registrar instance
    * @param {function} props.registrar.handle
@@ -55,7 +54,7 @@ class KadDHT extends EventEmitter {
    */
   constructor ({
     dialer,
-    peerInfo,
+    peerId,
     peerStore,
     registrar,
     datastore = new MemoryDatastore(),
@@ -78,10 +77,10 @@ class KadDHT extends EventEmitter {
     this.dialer = dialer
 
     /**
-     * Local peer info
-     * @type {PeerInfo}
+     * Local peer-id
+     * @type {PeerId}
      */
-    this.peerInfo = peerInfo
+    this.peerId = peerId
 
     /**
      * Local PeerStore
@@ -120,7 +119,7 @@ class KadDHT extends EventEmitter {
      *
      * @type {RoutingTable}
      */
-    this.routingTable = new RoutingTable(this.peerInfo.id, this.kBucketSize)
+    this.routingTable = new RoutingTable(this.peerId, this.kBucketSize)
 
     /**
      * Reference to the datastore, uses an in-memory store if none given.
@@ -134,7 +133,7 @@ class KadDHT extends EventEmitter {
      *
      * @type {Providers}
      */
-    this.providers = new Providers(this.datastore, this.peerInfo.id)
+    this.providers = new Providers(this.datastore, this.peerId)
 
     this.validators = {
       pk: libp2pRecord.validator.validators.pk,
@@ -148,7 +147,7 @@ class KadDHT extends EventEmitter {
 
     this.network = new Network(this)
 
-    this._log = utils.logger(this.peerInfo.id)
+    this._log = utils.logger(this.peerId)
 
     /**
      * Random walk management
@@ -259,11 +258,11 @@ class KadDHT extends EventEmitter {
    * @param {Object} options - findProviders options
    * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
    * @param {number} options.maxNumProviders - maximum number of providers to find
-   * @returns {AsyncIterable<PeerInfo>}
+   * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
   async * findProviders (key, options = {}) {
-    for await (const pInfo of this.contentRouting.findProviders(key, options)) {
-      yield pInfo
+    for await (const peerData of this.contentRouting.findProviders(key, options)) {
+      yield peerData
     }
   }
 
@@ -275,7 +274,7 @@ class KadDHT extends EventEmitter {
    * @param {PeerId} id
    * @param {Object} options - findPeer options
    * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
-   * @returns {Promise<PeerInfo>}
+   * @returns {Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
   async findPeer (id, options = {}) { // eslint-disable-line require-await
     return this.peerRouting.findPeer(id, options)
@@ -286,7 +285,7 @@ class KadDHT extends EventEmitter {
    * @param {Buffer} key
    * @param {Object} [options]
    * @param {boolean} [options.shallow] shallow query (default: false)
-   * @returns {AsyncIterable<PeerId>}
+   * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
   async * getClosestPeers (key, options = { shallow: false }) {
     for await (const pId of this.peerRouting.getClosestPeers(key, options)) {
@@ -319,7 +318,7 @@ class KadDHT extends EventEmitter {
    * the message.
    *
    * @param {Message} msg
-   * @returns {Promise<Array<PeerInfo>>}
+   * @returns {Promise<Array<{ id: PeerId, multiaddrs: Multiaddr[] }>>}
    * @private
    */
   async _nearestPeersToQuery (msg) {
@@ -328,14 +327,11 @@ class KadDHT extends EventEmitter {
 
     return ids.map((p) => {
       const peer = this.peerStore.get(p)
-      const peerInfo = new PeerInfo(p)
 
-      if (peer) {
-        peer.protocols.forEach((p) => peerInfo.protocols.add(p))
-        peer.multiaddrInfos.forEach((mi) => peerInfo.multiaddrs.add(mi.multiaddr))
+      return {
+        id: p,
+        multiaddrs: peer ? peer.multiaddrInfos.map((mi) => mi.multiaddr) : []
       }
-
-      return peerInfo
     })
   }
 
@@ -344,12 +340,11 @@ class KadDHT extends EventEmitter {
    * than self.
    *
    * @param {Message} msg
-   * @param {PeerInfo} peer
-   * @returns {Promise<Array<PeerInfo>>}
+   * @param {PeerId} peerId
+   * @returns {Promise<Array<{ id: PeerId, multiaddrs: Multiaddr[] }>>}
    * @private
    */
-
-  async _betterPeersToQuery (msg, peer) {
+  async _betterPeersToQuery (msg, peerId) {
     this._log('betterPeersToQuery')
     const closer = await this._nearestPeersToQuery(msg)
 
@@ -360,7 +355,7 @@ class KadDHT extends EventEmitter {
         return false
       }
 
-      return !closer.id.isEqual(peer.id)
+      return !closer.id.isEqual(peerId)
     })
   }
 
@@ -411,14 +406,12 @@ class KadDHT extends EventEmitter {
 
   /**
    * Add the peer to the routing table and update it in the peerStore.
-   *
-   * @param {PeerInfo} peer
+   * @param {PeerId} peerId
    * @returns {Promise<void>}
    * @private
    */
-
-  async _add (peer) {
-    await this.routingTable.add(peer.id)
+  async _add (peerId) {
+    await this.routingTable.add(peerId)
   }
 
   /**
@@ -445,7 +438,7 @@ class KadDHT extends EventEmitter {
    */
 
   _isSelf (other) {
-    return other && this.peerInfo.id.id.equals(other.id)
+    return other && this.peerId.id.equals(other.id)
   }
 
   /**
@@ -478,7 +471,7 @@ class KadDHT extends EventEmitter {
    *
    * @param {PeerId} peer
    * @param {Buffer} key
-   * @returns {Promise<{Record, Array<PeerInfo}>}
+   * @returns {Promise<{Record, Array<{ id: PeerId, multiaddrs: Multiaddr[] }}>}
    * @private
    */
 

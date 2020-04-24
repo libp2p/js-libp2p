@@ -6,12 +6,11 @@ const {
 } = require('../../src/utils')
 
 /*
- * Given an array of peerInfos, decide on a target, start peers, and
+ * Given an array of peerIds, decide on a target, start peers, and
  * "next", a successor function for the query to use. See comment
  * where this is called for details.
  */
-async function createDisjointTracks (peerInfos, goodLength) {
-  const ids = peerInfos.map((info) => info.id)
+async function createDisjointTracks (ids, goodLength) {
   const us = ids[0]
 
   const ourId = await convertPeerId(us)
@@ -52,13 +51,13 @@ async function createDisjointTracks (peerInfos, goodLength) {
     } else {
       const infoIdx = ids.indexOf(track[nextPos])
       return {
-        closerPeers: [peerInfos[infoIdx]]
+        closerPeers: [{ id: ids[infoIdx] }]
       }
     }
   }
 
   return {
-    targetId: target.id,
+    targetId: target,
     starts: [goodTrack[0], badTrack[0]],
     getResponse: next
   }

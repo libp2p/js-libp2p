@@ -4,23 +4,23 @@ const utils = require('../../utils')
 const errcode = require('err-code')
 
 module.exports = (dht) => {
-  const log = utils.logger(dht.peerInfo.id, 'rpc:put-value')
+  const log = utils.logger(dht.peerId, 'rpc:put-value')
 
   /**
    * Process `PutValue` DHT messages.
    *
-   * @param {PeerInfo} peer
+   * @param {PeerId} peerId
    * @param {Message} msg
    * @returns {Promise<Message>}
    */
-  return async function putValue (peer, msg) {
+  return async function putValue (peerId, msg) {
     const key = msg.key
     log('key: %b', key)
 
     const record = msg.record
 
     if (!record) {
-      const errMsg = `Empty record from: ${peer.id.toB58String()}`
+      const errMsg = `Empty record from: ${peerId.toB58String()}`
 
       log.error(errMsg)
       throw errcode(new Error(errMsg), 'ERR_EMPTY_RECORD')

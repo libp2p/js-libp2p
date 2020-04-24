@@ -17,10 +17,8 @@ const {
 
 describe('Random Walk', () => {
   const mockDHT = {
-    peerInfo: {
-      id: {
-        toB58String: () => 'QmRLoXS3E73psYaUsma1VSbboTa2J8Z9kso1tpiGLk9WQ4'
-      }
+    peerId: {
+      toB58String: () => 'QmRLoXS3E73psYaUsma1VSbboTa2J8Z9kso1tpiGLk9WQ4'
     },
     findPeer: () => {},
     _log: {

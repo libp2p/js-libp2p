@@ -5,24 +5,25 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const _ = require('lodash')
+
+const multiaddr = require('multiaddr')
 
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/add-provider')
 
-const createPeerInfo = require('../../utils/create-peer-info')
+const createPeerId = require('../../utils/create-peer-id')
 const createValues = require('../../utils/create-values')
 const TestDHT = require('../../utils/test-dht')
 
 describe('rpc - handlers - AddProvider', () => {
-  let peers
+  let peerIds
   let values
   let tdht
   let dht
 
   before(async () => {
-    [peers, values] = await Promise.all([
-      createPeerInfo(3),
+    [peerIds, values] = await Promise.all([
+      createPeerId(3),
       createValues(2)
     ])
   })
@@ -48,7 +49,7 @@ describe('rpc - handlers - AddProvider', () => {
     await Promise.all(tests.map((t) => {
       it(t.error.toString(), async () => {
         try {
-          await handler(dht)(peers[0], t.message)
+          await handler(dht)(peerIds[0], t.message)
         } catch (err) {
           expect(err).to.exist()
           expect(err.code).to.eql(t.error)
@@ -61,47 +62,47 @@ describe('rpc - handlers - AddProvider', () => {
 
   it('ignore providers that do not match the sender', async () => {
     const cid = values[0].cid
-
     const msg = new Message(Message.TYPES.ADD_PROVIDER, cid.buffer, 0)
-    const sender = _.cloneDeep(peers[0])
-    const provider = _.cloneDeep(peers[0])
-    provider.multiaddrs.add('/ip4/127.0.0.1/tcp/1234')
 
-    const other = _.cloneDeep(peers[1])
-    other.multiaddrs.add('/ip4/127.0.0.1/tcp/2345')
+    const ma1 = multiaddr('/ip4/127.0.0.1/tcp/1234')
+    const ma2 = multiaddr('/ip4/127.0.0.1/tcp/2345')
+
     msg.providerPeers = [
-      provider,
-      other
+      {
+        id: peerIds[0],
+        multiaddrs: [ma1]
+      },
+      {
+        id: peerIds[1],
+        multiaddrs: [ma2]
+      }
     ]
 
-    await handler(dht)(sender, msg)
+    await handler(dht)(peerIds[0], msg)
 
     const provs = await dht.providers.getProviders(cid)
-
     expect(provs).to.have.length(1)
-    expect(provs[0].id).to.eql(provider.id.id)
-    const bookEntry = dht.peerStore.get(provider.id)
+    expect(provs[0].id).to.eql(peerIds[0].id)
 
-    // Favour peerInfo from payload over peerInfo from sender
-    expect(bookEntry.multiaddrInfos.map((mi) => mi.multiaddr)).to.eql(
-      provider.multiaddrs.toArray()
-    )
+    const bookEntry = dht.peerStore.get(peerIds[0])
+    expect(bookEntry.multiaddrInfos.map((mi) => mi.multiaddr)).to.eql([ma1])
   })
 
   it('fall back to sender if providers have no multiaddrs', async () => {
     const cid = values[0].cid
     const msg = new Message(Message.TYPES.ADD_PROVIDER, cid.buffer, 0)
-    const sender = _.cloneDeep(peers[0])
-    const provider = _.cloneDeep(peers[0])
-    provider.multiaddrs.clear()
-    msg.providerPeers = [provider]
 
-    await handler(dht)(sender, msg)
+    msg.providerPeers = [{
+      id: peerIds[0],
+      multiaddrs: []
+    }]
+
+    await handler(dht)(peerIds[0], msg)
 
     const provs = await dht.providers.getProviders(cid)
 
-    expect(dht.peerStore.get(provider.id)).to.equal(undefined)
+    expect(dht.peerStore.get(peerIds[0])).to.equal(undefined)
     expect(provs).to.have.length(1)
-    expect(provs[0].id).to.eql(provider.id.id)
+    expect(provs[0].id).to.eql(peerIds[0].id)
   })
 })

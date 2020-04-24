@@ -17,14 +17,14 @@ class LimitedPeerList extends PeerList {
   }
 
   /**
-   * Add a PeerInfo if it fits in the list
+   * Add a PeerData if it fits in the list
    *
-   * @param {PeerInfo} info
+   * @param {PeerData} peerData
    * @returns {bool}
    */
-  push (info) {
+  push (peerData) {
     if (this.length < this.limit) {
-      return super.push(info)
+      return super.push(peerData)
     }
     return false
   }

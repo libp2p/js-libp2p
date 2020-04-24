@@ -5,13 +5,12 @@
 'use strict'
 const PeerStore = require('libp2p/src/peer-store')
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const multihashes = require('multihashes')
 
 const RoutingTable = require('../../src/routing')
 const Message = require('../../src/message')
 const { convertBuffer } = require('../../src/utils')
-const { sortClosestPeerInfos } = require('../../test/utils')
+const { sortClosestPeers } = require('../../src/utils')
 const DHT = require('../../src')
 
 const NUM_PEERS = 10e3 // Peers to create, not including us
@@ -30,7 +29,7 @@ const VERBOSE = false // If true, some additional logs will run
 let dhtKey
 let network
 let peers
-let ourPeerInfo
+let ourPeerId
 let sortedPeers // Peers in the network sorted by closeness to QUERY_KEY
 let topIds // Closest 20 peerIds in the network
 
@@ -39,8 +38,8 @@ let topIds // Closest 20 peerIds in the network
   console.log('Starting setup...')
   await setup()
 
-  sortedPeers = await sortClosestPeerInfos(peers, dhtKey)
-  topIds = sortedPeers.slice(0, 20).map(peerInfo => peerInfo.id.toB58String())
+  sortedPeers = await sortClosestPeers(peers, dhtKey)
+  topIds = sortedPeers.slice(0, 20).map(peerId => peerId.toB58String())
   const topIdFilter = (value) => topIds.includes(value)
 
   console.log('Total Nodes=%d, Dead Nodes=%d, Max Siblings per Peer=%d', NUM_PEERS, NUM_DEAD_NODES, MAX_PEERS_KNOWN)
@@ -67,7 +66,7 @@ let topIds // Closest 20 peerIds in the network
 async function setup () {
   dhtKey = await convertBuffer(QUERY_KEY)
   peers = await createPeers(NUM_PEERS + 1)
-  ourPeerInfo = peers.shift()
+  ourPeerId = peers.shift()
 
   // Create the network
   network = await MockNetwork(peers)
@@ -75,7 +74,7 @@ async function setup () {
 
 /**
  * @typedef ClosestPeersSimResult
- * @property {Array<PeerInfo>} closestPeers
+ * @property {Array<PeerId>} closestPeers
  * @property {number} runTime Time in ms the query took
  */
 
@@ -84,8 +83,8 @@ async function setup () {
  */
 async function GetClosestPeersSimulation () {
   const dht = new DHT({
-    _peerInfo: ourPeerInfo,
-    _peerBook: new PeerStore(),
+    peerId: ourPeerId,
+    peerStore: new PeerStore(),
     handle: () => {},
     on: () => {}
   }, {
@@ -99,7 +98,7 @@ async function GetClosestPeersSimulation () {
   // Add random peers to our table
   const ourPeers = randomMembers(peers, randomInteger(MIN_PEERS_KNOWN, MAX_PEERS_KNOWN))
   for (const peer of ourPeers) {
-    await dht._add(peer)
+    await dht._add(peer.id)
   }
 
   dht.network.sendRequest = (to, message, callback) => {
@@ -108,9 +107,7 @@ async function GetClosestPeersSimulation () {
 
     if (networkPeer.routingTable) {
       response = new Message(message.type, Buffer.alloc(0), message.clusterLevel)
-      response.closerPeers = networkPeer.routingTable.closestPeers(dhtKey, KValue).map(peerId => {
-        return new PeerInfo(peerId)
-      })
+      response.closerPeers = networkPeer.routingTable.closestPeers(dhtKey, KValue)
     }
 
     VERBOSE && console.log(`sendRequest latency:${networkPeer.latency} peerId:${to.toB58String()} closestPeers:${response ? response.closerPeers.length : null}`)
@@ -134,17 +131,15 @@ async function GetClosestPeersSimulation () {
 }
 
 /**
- * Create `num` PeerInfos
+ * Create `num` PeerIds
  * @param {integer} num How many peers to create
- * @returns {Array<PeerInfo>}
+ * @returns {Array<PeerId>}
  */
 function createPeers (num) {
   const crypto = require('crypto')
   const peers = [...new Array(num)].map(() => {
-    return new PeerInfo(
-      PeerId.createFromB58String(
-        multihashes.toB58String(crypto.randomBytes(34))
-      )
+    return PeerId.createFromB58String(
+      multihashes.toB58String(crypto.randomBytes(34))
     )
   })
 
@@ -153,7 +148,7 @@ function createPeers (num) {
 
 /**
  * Creates a mock network
- * @param {Array<PeerInfo>} peers
+ * @param {Array<PeerId>} peers
  * @returns {Network}
  */
 async function MockNetwork (peers) {

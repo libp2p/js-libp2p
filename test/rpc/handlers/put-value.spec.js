@@ -12,18 +12,18 @@ const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/put-value')
 const utils = require('../../../src/utils')
 
-const createPeerInfo = require('../../utils/create-peer-info')
+const createPeerId = require('../../utils/create-peer-id')
 const TestDHT = require('../../utils/test-dht')
 
 const T = Message.TYPES.PUT_VALUE
 
 describe('rpc - handlers - PutValue', () => {
-  let peers
+  let peerIds
   let tdht
   let dht
 
   before(async () => {
-    peers = await createPeerInfo(2)
+    peerIds = await createPeerId(2)
   })
 
   beforeEach(async () => {
@@ -39,7 +39,7 @@ describe('rpc - handlers - PutValue', () => {
     const msg = new Message(T, Buffer.from('hello'), 5)
 
     try {
-      await handler(dht)(peers[0], msg)
+      await handler(dht)(peerIds[0], msg)
     } catch (err) {
       expect(err.code).to.eql('ERR_EMPTY_RECORD')
       return
@@ -56,7 +56,7 @@ describe('rpc - handlers - PutValue', () => {
     )
     msg.record = record
 
-    const response = await handler(dht)(peers[1], msg)
+    const response = await handler(dht)(peerIds[1], msg)
     expect(response).to.be.eql(msg)
 
     const key = utils.bufferToKey(Buffer.from('hello'))

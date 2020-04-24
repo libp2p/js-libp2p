@@ -3,8 +3,6 @@
 const errcode = require('err-code')
 const pTimeout = require('p-timeout')
 
-const PeerInfo = require('peer-info')
-
 const c = require('../constants')
 const LimitedPeerList = require('../peer-list/limited-peer-list')
 const Message = require('../message')
@@ -38,10 +36,12 @@ module.exports = (dht) => {
       const errors = []
 
       // Add peer as provider
-      await dht.providers.addProvider(key, dht.peerInfo.id)
+      await dht.providers.addProvider(key, dht.peerId)
 
       const msg = new Message(Message.TYPES.ADD_PROVIDER, key.buffer, 0)
-      msg.providerPeers = [dht.peerInfo]
+      msg.providerPeers = [{
+        id: dht.peerId
+      }]
 
       // Notify closest peers
       for await (const peer of dht.getClosestPeers(key.buffer)) {
@@ -58,7 +58,7 @@ module.exports = (dht) => {
         // This should be infrequent. This means a peer we previously connected
         // to failed to exchange the provide message. If getClosestPeers was an
         // iterator, we could continue to pull until we announce to kBucketSize peers.
-        throw errcode(`Failed to provide to ${errors.length} of ${dht.kBucketSize} peers`, 'ERR_SOME_PROVIDES_FAILED', { errors })
+        throw errcode(new Error(`Failed to provide to ${errors.length} of ${dht.kBucketSize} peers`, 'ERR_SOME_PROVIDES_FAILED'), { errors })
       }
     },
 
@@ -68,7 +68,7 @@ module.exports = (dht) => {
      * @param {Object} options - findProviders options
      * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
      * @param {number} options.maxNumProviders - maximum number of providers to find
-     * @returns {AsyncIterable<PeerInfo>}
+     * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
      */
     async * findProviders (key, options = {}) {
       const providerTimeout = options.timeout || c.minute
@@ -80,15 +80,18 @@ module.exports = (dht) => {
       const provs = await dht.providers.getProviders(key)
 
       provs.forEach((id) => {
-        const info = dht.peerStore.get(id) || new PeerInfo(id)
-        out.push(info)
+        const peerData = dht.peerStore.get(id) || {}
+        out.push({
+          id: peerData.id || id,
+          multiaddrs: (peerData.multiaddrInfos || []).map((mi) => mi.multiaddr)
+        })
       })
 
       // All done
       if (out.length >= n) {
         // yield values
-        for (const pInfo of out.toArray()) {
-          yield pInfo
+        for (const pData of out.toArray()) {
+          yield pData
         }
         return
       }
@@ -105,10 +108,10 @@ module.exports = (dht) => {
         return async (peer) => {
           const msg = await findProvidersSingle(peer, key)
           const provs = msg.providerPeers
-          dht._log('(%s) found %s provider entries', dht.peerInfo.id.toB58String(), provs.length)
+          dht._log('(%s) found %s provider entries', dht.peerId.toB58String(), provs.length)
 
           provs.forEach((prov) => {
-            pathProviders.push(prov)
+            pathProviders.push({ id: prov.id })
           })
 
           // hooray we have all that we want
@@ -147,8 +150,8 @@ module.exports = (dht) => {
         throw errcode(new Error('no providers found'), 'ERR_NOT_FOUND')
       }
 
-      for (const pInfo of out.toArray()) {
-        yield pInfo
+      for (const pData of out.toArray()) {
+        yield pData
       }
     }
   }

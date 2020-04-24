@@ -12,24 +12,22 @@ const { collect } = require('streaming-iterables')
 const Message = require('../../src/message')
 const rpc = require('../../src/rpc')
 
-const createPeerInfo = require('../utils/create-peer-info')
+const createPeerId = require('../utils/create-peer-id')
 const TestDHT = require('../utils/test-dht')
 const toBuffer = require('../utils/to-buffer')
 
 describe('rpc', () => {
-  let peerInfos
+  let peerIds
   let tdht
 
   before(async () => {
-    peerInfos = await createPeerInfo(2)
+    peerIds = await createPeerId(2)
     tdht = new TestDHT()
   })
 
   it('calls back with the response', async () => {
     const defer = pDefer()
     const [dht] = await tdht.spawn(1)
-
-    dht.peerStore.addressBook.set(peerInfos[1].id, peerInfos[1].multiaddrs.toArray())
 
     const msg = new Message(Message.TYPES.GET_VALUE, Buffer.from('hello'), 5)
 
@@ -63,7 +61,7 @@ describe('rpc', () => {
       protocol: 'protocol',
       stream: duplexStream,
       connection: {
-        remotePeer: peerInfos[1].id
+        remotePeer: peerIds[1]
       }
     })
 

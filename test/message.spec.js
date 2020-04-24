@@ -4,8 +4,8 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const PeerInfo = require('peer-info')
 const PeerId = require('peer-id')
+const multiaddr = require('multiaddr')
 const range = require('lodash.range')
 const random = require('lodash.random')
 const { Record } = require('libp2p-record')
@@ -32,23 +32,21 @@ describe('Message', () => {
     const peers = await Promise.all(
       Array.from({ length: 5 }).map(() => PeerId.create({ bits: 1024 })))
 
-    const closer = peers.slice(0, 5).map((p) => {
-      const info = new PeerInfo(p)
-      const addr = `/ip4/198.176.1.${random(198)}/tcp/1234`
-      info.multiaddrs.add(addr)
-      info.multiaddrs.add(`/ip4/100.176.1.${random(198)}`)
-      info.connect(addr)
+    const closer = peers.slice(0, 5).map((p) => ({
+      id: p,
+      multiaddrs: [
+        multiaddr(`/ip4/198.176.1.${random(198)}/tcp/1234`),
+        multiaddr(`/ip4/100.176.1.${random(198)}`)
+      ]
+    }))
 
-      return info
-    })
-
-    const provider = peers.slice(0, 5).map((p) => {
-      const info = new PeerInfo(p)
-      info.multiaddrs.add(`/ip4/98.176.1.${random(198)}/tcp/1234`)
-      info.multiaddrs.add(`/ip4/10.176.1.${random(198)}`)
-
-      return info
-    })
+    const provider = peers.slice(0, 5).map((p) => ({
+      id: p,
+      multiaddrs: [
+        multiaddr(`/ip4/98.176.1.${random(198)}/tcp/1234`),
+        multiaddr(`/ip4/10.176.1.${random(198)}`)
+      ]
+    }))
 
     const msg = new Message(Message.TYPES.GET_VALUE, Buffer.from('hello'), 5)
     const record = new Record(Buffer.from('hello'), Buffer.from('world'))
@@ -69,15 +67,13 @@ describe('Message', () => {
     expect(dec.closerPeers).to.have.length(5)
     dec.closerPeers.forEach((peer, i) => {
       expect(peer.id.isEqual(msg.closerPeers[i].id)).to.eql(true)
-      expect(peer.multiaddrs.toArray())
-        .to.eql(msg.closerPeers[i].multiaddrs.toArray())
+      expect(peer.multiaddrs).to.eql(msg.closerPeers[i].multiaddrs)
     })
 
     expect(dec.providerPeers).to.have.length(5)
     dec.providerPeers.forEach((peer, i) => {
       expect(peer.id.isEqual(msg.providerPeers[i].id)).to.equal(true)
-      expect(peer.multiaddrs.toArray())
-        .to.eql(msg.providerPeers[i].multiaddrs.toArray())
+      expect(peer.multiaddrs).to.eql(msg.providerPeers[i].multiaddrs)
     })
   })
 
@@ -103,7 +99,7 @@ describe('Message', () => {
 
       if (msg.providerPeers.length > 0) {
         msg.providerPeers.forEach((p) => {
-          expect(PeerInfo.isPeerInfo(p)).to.eql(true)
+          expect(PeerId.isPeerId(p.id)).to.eql(true)
         })
       }
     })

@@ -15,19 +15,19 @@ const Path = require('../../src/query/path')
 const Run = require('../../src/query/run')
 const DHT = require('../../src')
 const c = require('../../src/constants')
-const createPeerInfo = require('../utils/create-peer-info')
-const { sortClosestPeerInfos } = require('../utils')
+const createPeerId = require('../utils/create-peer-id')
+const { sortClosestPeers } = require('../../src/utils')
 const { convertBuffer } = require('../../src/utils')
 const NUM_IDS = 101
 
 describe('Query', () => {
-  let peerInfos
-  let ourPeerInfo
+  let peerIds
+  let ourPeerId
   before(async () => {
-    const peers = await createPeerInfo(NUM_IDS)
+    const peers = await createPeerId(NUM_IDS)
 
-    ourPeerInfo = peers.shift()
-    peerInfos = peers
+    ourPeerId = peers.shift()
+    peerIds = peers
   })
 
   describe('get closest peers', () => {
@@ -42,7 +42,7 @@ describe('Query', () => {
       const dhtKey = await convertBuffer(targetKey.key)
       targetKey.dhtKey = dhtKey
 
-      sortedPeers = await sortClosestPeerInfos(peerInfos, targetKey.dhtKey)
+      sortedPeers = await sortClosestPeers(peerIds, targetKey.dhtKey)
     })
 
     before('create a dht', () => {
@@ -50,7 +50,7 @@ describe('Query', () => {
       dht = new DHT({
         dialer: {},
         peerStore,
-        peerInfo: ourPeerInfo
+        peerId: ourPeerId
       })
     })
 
@@ -71,7 +71,7 @@ describe('Query', () => {
 
       // Add the sorted peers into 5 paths. This will weight
       // the paths with increasingly further peers
-      const sortedPeerIds = sortedPeers.map(peerInfo => peerInfo.id)
+      const sortedPeerIds = sortedPeers
       const peersPerPath = sortedPeerIds.length / PATHS
       const paths = [...new Array(PATHS)].map((_, index) => {
         const path = new Path(run, query.makePath())
@@ -117,7 +117,7 @@ describe('Query', () => {
 
       await run.init()
 
-      const sortedPeerIds = sortedPeers.map(peerInfo => peerInfo.id)
+      const sortedPeerIds = sortedPeers
 
       // Take the top 15 peers and peers 20 - 25 to seed `run.peersQueried`
       // This leaves us with only 16 - 19 as closer peers

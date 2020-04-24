@@ -5,8 +5,6 @@ const pRetry = require('p-retry')
 const pTimeout = require('p-timeout')
 const duplexPair = require('it-pair/duplex')
 
-const { sortClosestPeers } = require('../../src/utils')
-
 const createMockRegistrar = (registrarRecord) => ({
   handle: (multicodec, handler) => {
     const rec = registrarRecord[multicodec] || {}
@@ -50,23 +48,6 @@ const ConnectionPair = () => {
 }
 
 exports.ConnectionPair = ConnectionPair
-
-/**
- * Like `sortClosestPeers`, expect it takes and returns `PeerInfo`s
- *
- * @param {Array<PeerInfo>} peers
- * @param {Buffer} target
- * @returns {Array<PeerInfo>}
- */
-exports.sortClosestPeerInfos = async (peers, target) => {
-  const sortedPeerIds = await sortClosestPeers(peers.map(peerInfo => peerInfo.id), target)
-
-  return sortedPeerIds.map((peerId) => {
-    return peers.find((peerInfo) => {
-      return peerInfo.id.isEqual(peerId)
-    })
-  })
-}
 
 exports.bootstrap = (dhts) => {
   dhts.forEach((dht) => {

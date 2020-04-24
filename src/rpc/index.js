@@ -2,30 +2,29 @@
 
 const pipe = require('it-pipe')
 const lp = require('it-length-prefixed')
-const PeerInfo = require('peer-info')
 
 const Message = require('../message')
 const handlers = require('./handlers')
 const utils = require('../utils')
 
 module.exports = (dht) => {
-  const log = utils.logger(dht.peerInfo.id, 'rpc')
+  const log = utils.logger(dht.peerId, 'rpc')
   const getMessageHandler = handlers(dht)
 
   /**
    * Process incoming DHT messages.
-   * @param {PeerInfo} peer
+   * @param {PeerId} peerId
    * @param {Message} msg
    * @returns {Promise<Message>}
    *
    * @private
    */
-  async function handleMessage (peer, msg) {
+  async function handleMessage (peerId, msg) {
     // get handler & execute it
     const handler = getMessageHandler(msg.type)
 
     try {
-      await dht._add(peer)
+      await dht._add(peerId)
     } catch (err) {
       log.error('Failed to update the kbucket store', err)
     }
@@ -35,7 +34,7 @@ module.exports = (dht) => {
       return
     }
 
-    return handler(peer, msg)
+    return handler(peerId, msg)
   }
 
   /**
@@ -46,15 +45,15 @@ module.exports = (dht) => {
    * @returns {Promise<void>}
    */
   return async function onIncomingStream ({ stream, connection }) {
-    const peerInfo = await PeerInfo.create(connection.remotePeer)
+    const peerId = connection.remotePeer
 
     try {
-      await dht._add(peerInfo)
+      await dht._add(peerId)
     } catch (err) {
       log.error(err)
     }
 
-    const idB58Str = peerInfo.id.toB58String()
+    const idB58Str = peerId.toB58String()
     log('from: %s', idB58Str)
 
     await pipe(
@@ -64,7 +63,7 @@ module.exports = (dht) => {
         for await (const msg of source) {
           // handle the message
           const desMessage = Message.deserialize(msg.slice())
-          const res = await handleMessage(peerInfo, desMessage)
+          const res = await handleMessage(peerId, desMessage)
 
           // Not all handlers will return a response
           if (res) {

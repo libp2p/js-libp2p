@@ -32,7 +32,7 @@ class RandomWalk {
       ...options
     }
 
-    this.log = logger(dht.peerInfo.id, 'random-walk')
+    this.log = logger(dht.peerId, 'random-walk')
     this._timeoutId = undefined
   }
 
