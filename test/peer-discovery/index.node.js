@@ -3,7 +3,8 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
-
+const { expect } = chai
+const sinon = require('sinon')
 const defer = require('p-defer')
 const mergeOptions = require('merge-options')
 
@@ -31,6 +32,21 @@ describe('peer discovery scenarios', () => {
 
   afterEach(async () => {
     libp2p && await libp2p.stop()
+  })
+  it('should ignore self on discovery', async () => {
+    libp2p = new Libp2p(mergeOptions(baseOptions, {
+      peerInfo,
+      modules: {
+        peerDiscovery: [MulticastDNS]
+      }
+    }))
+
+    await libp2p.start()
+    const discoverySpy = sinon.spy()
+    libp2p.on('peer:discovery', discoverySpy)
+    libp2p._discovery.get('mdns').emit('peer', libp2p.peerInfo)
+
+    expect(discoverySpy.called).to.eql(false)
   })
 
   it('bootstrap should discover all peers in the list', async () => {

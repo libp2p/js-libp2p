@@ -1,5 +1,6 @@
 'use strict'
 
+const { Buffer } = require('buffer')
 const debug = require('debug')
 const Errors = require('./errors')
 const xsalsa20 = require('xsalsa20')

@@ -1,6 +1,7 @@
 /* eslint no-console: ["off"] */
 'use strict'
 
+const { Buffer } = require('buffer')
 const { generate } = require('libp2p/src/pnet')
 const privateLibp2pNode = require('./libp2p-node')
 
@@ -17,7 +18,7 @@ generate(otherSwarmKey)
 ;(async () => {
   const node1 = await privateLibp2pNode(swarmKey)
 
-  // TASK: switch the commented out line below so we're using a different key, to see the nodes fail to connect	
+  // TASK: switch the commented out line below so we're using a different key, to see the nodes fail to connect
   const node2 = await privateLibp2pNode(swarmKey)
   // const node2 = await privateLibp2pNode(otherSwarmKey)
 
@@ -47,4 +48,4 @@ generate(otherSwarmKey)
     ['This message is sent on a private network'],
     stream
   )
-})();
+})()

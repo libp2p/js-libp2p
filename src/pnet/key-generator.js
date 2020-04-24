@@ -1,6 +1,6 @@
 'use strict'
 
-const crypto = require('crypto')
+const crypto = require('libp2p-crypto')
 const KEY_LENGTH = 32
 
 /**
