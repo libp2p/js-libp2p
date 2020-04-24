@@ -49,7 +49,7 @@ class IdentifyService {
    * @param {Registrar} options.registrar
    * @param {Map<string, handler>} options.protocols A reference to the protocols we support
    * @param {PeerId} options.peerId The peer running the identify service
-   * @param {{ listen: Array<Multiaddr>}} options.addresses The peer aaddresses
+   * @param {{ listen: Array<Multiaddr>}} options.addresses The peer addresses
    */
   constructor (options) {
     /**
