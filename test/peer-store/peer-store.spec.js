@@ -45,8 +45,8 @@ describe('peer-store', () => {
     })
 
     it('returns undefined on trying to find a non existant peerId', () => {
-      const peerInfo = peerStore.get(peerIds[0])
-      expect(peerInfo).to.not.exist()
+      const peer = peerStore.get(peerIds[0])
+      expect(peer).to.not.exist()
     })
   })
 
@@ -102,29 +102,29 @@ describe('peer-store', () => {
     })
 
     it('gets the stored information of a peer in all its books', () => {
-      const peerInfo = peerStore.get(peerIds[0])
-      expect(peerInfo).to.exist()
-      expect(peerInfo.protocols).to.have.members([proto1])
+      const peer = peerStore.get(peerIds[0])
+      expect(peer).to.exist()
+      expect(peer.protocols).to.have.members([proto1])
 
-      const peerMultiaddrs = peerInfo.multiaddrInfos.map((mi) => mi.multiaddr)
+      const peerMultiaddrs = peer.addresses.map((mi) => mi.multiaddr)
       expect(peerMultiaddrs).to.have.members([addr1, addr2])
     })
 
     it('gets the stored information of a peer that is not present in all its books', () => {
-      const peerInfo = peerStore.get(peerIds[2])
-      expect(peerInfo).to.exist()
-      expect(peerInfo.protocols.length).to.eql(0)
+      const peers = peerStore.get(peerIds[2])
+      expect(peers).to.exist()
+      expect(peers.protocols.length).to.eql(0)
 
-      const peerMultiaddrs = peerInfo.multiaddrInfos.map((mi) => mi.multiaddr)
+      const peerMultiaddrs = peers.addresses.map((mi) => mi.multiaddr)
       expect(peerMultiaddrs).to.have.members([addr4])
     })
 
     it('can find all the peers supporting a protocol', () => {
       const peerSupporting2 = []
 
-      for (const [, peerInfo] of peerStore.peers.entries()) {
-        if (peerInfo.protocols.includes(proto2)) {
-          peerSupporting2.push(peerInfo)
+      for (const [, peer] of peerStore.peers.entries()) {
+        if (peer.protocols.includes(proto2)) {
+          peerSupporting2.push(peer)
         }
       }
 
@@ -136,11 +136,11 @@ describe('peer-store', () => {
     it('can find all the peers listening on a given address', () => {
       const peerListenint4 = []
 
-      for (const [, peerInfo] of peerStore.peers.entries()) {
-        const multiaddrs = peerInfo.multiaddrInfos.map((mi) => mi.multiaddr)
+      for (const [, peer] of peerStore.peers.entries()) {
+        const multiaddrs = peer.addresses.map((mi) => mi.multiaddr)
 
         if (multiaddrs.includes(addr4)) {
-          peerListenint4.push(peerInfo)
+          peerListenint4.push(peer)
         }
       }
 

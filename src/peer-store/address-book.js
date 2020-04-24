@@ -20,8 +20,8 @@ const {
  */
 class AddressBook extends Book {
   /**
-   * MultiaddrInfo object
-   * @typedef {Object} MultiaddrInfo
+   * Address object
+   * @typedef {Object} Address
    * @property {Multiaddr} multiaddr peer multiaddr.
    */
 
@@ -38,37 +38,37 @@ class AddressBook extends Book {
     super(peerStore, 'change:multiaddrs', 'multiaddrs')
 
     /**
-     * Map known peers to their known multiaddrs.
-     * @type {Map<string, Array<MultiaddrInfo>>}
+     * Map known peers to their known Addresses.
+     * @type {Map<string, Array<Address>>}
      */
     this.data = new Map()
   }
 
   /**
-   * Set known addresses of a provided peer.
+   * Set known multiaddrs of a provided peer.
    * @override
    * @param {PeerId} peerId
-   * @param {Array<Multiaddr>} addresses
+   * @param {Array<Multiaddr>} multiaddrs
    * @returns {AddressBook}
    */
-  set (peerId, addresses) {
+  set (peerId, multiaddrs) {
     if (!PeerId.isPeerId(peerId)) {
       log.error('peerId must be an instance of peer-id to store data')
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    const multiaddrInfos = this._toMultiaddrInfos(addresses)
+    const addresses = this._toAddresses(multiaddrs)
     const id = peerId.toB58String()
     const rec = this.data.get(id)
 
     // Not replace multiaddrs
-    if (!multiaddrInfos.length) {
+    if (!addresses.length) {
       return this
     }
 
     // Already knows the peer
-    if (rec && rec.length === multiaddrInfos.length) {
-      const intersection = rec.filter((mi) => multiaddrInfos.some((newMi) => mi.multiaddr.equals(newMi.multiaddr)))
+    if (rec && rec.length === addresses.length) {
+      const intersection = rec.filter((mi) => addresses.some((newMi) => mi.multiaddr.equals(newMi.multiaddr)))
 
       // Are new addresses equal to the old ones?
       // If yes, no changes needed!
@@ -78,7 +78,7 @@ class AddressBook extends Book {
       }
     }
 
-    this.data.set(id, multiaddrInfos)
+    this.data.set(id, addresses)
     this._setPeerId(peerId)
     log(`stored provided multiaddrs for ${id}`)
 
@@ -89,7 +89,7 @@ class AddressBook extends Book {
 
     this._ps.emit('change:multiaddrs', {
       peerId,
-      multiaddrs: multiaddrInfos.map((mi) => mi.multiaddr)
+      multiaddrs: addresses.map((mi) => mi.multiaddr)
     })
 
     return this
@@ -100,41 +100,41 @@ class AddressBook extends Book {
    * If the peer is not known, it is set with the given addresses.
    * @override
    * @param {PeerId} peerId
-   * @param {Array<Multiaddr>} addresses
+   * @param {Array<Multiaddr>} multiaddrs
    * @returns {AddressBook}
    */
-  add (peerId, addresses) {
+  add (peerId, multiaddrs) {
     if (!PeerId.isPeerId(peerId)) {
       log.error('peerId must be an instance of peer-id to store data')
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    const multiaddrInfos = this._toMultiaddrInfos(addresses)
+    const addresses = this._toAddresses(multiaddrs)
     const id = peerId.toB58String()
     const rec = this.data.get(id)
 
     // Add recorded uniquely to the new array (Union)
     rec && rec.forEach((mi) => {
-      if (!multiaddrInfos.find(r => r.multiaddr.equals(mi.multiaddr))) {
-        multiaddrInfos.push(mi)
+      if (!addresses.find(r => r.multiaddr.equals(mi.multiaddr))) {
+        addresses.push(mi)
       }
     })
 
     // If the recorded length is equal to the new after the unique union
     // The content is the same, no need to update.
-    if (rec && rec.length === multiaddrInfos.length) {
+    if (rec && rec.length === addresses.length) {
       log(`the addresses provided to store are already stored for ${id}`)
       return this
     }
 
     this._setPeerId(peerId)
-    this.data.set(id, multiaddrInfos)
+    this.data.set(id, addresses)
 
     log(`added provided multiaddrs for ${id}`)
 
     this._ps.emit('change:multiaddrs', {
       peerId,
-      multiaddrs: multiaddrInfos.map((mi) => mi.multiaddr)
+      multiaddrs: addresses.map((mi) => mi.multiaddr)
     })
 
     // Notify the existance of a new peer
@@ -146,30 +146,30 @@ class AddressBook extends Book {
   }
 
   /**
-   * Transforms received multiaddrs into MultiaddrInfo.
-   * @param {Array<Multiaddr>} addresses
-   * @returns {Array<MultiaddrInfo>}
+   * Transforms received multiaddrs into Address.
+   * @param {Array<Multiaddr>} multiaddrs
+   * @returns {Array<Address>}
    */
-  _toMultiaddrInfos (addresses) {
-    if (!addresses) {
-      log.error('addresses must be provided to store data')
-      throw errcode(new Error('addresses must be provided'), ERR_INVALID_PARAMETERS)
+  _toAddresses (multiaddrs) {
+    if (!multiaddrs) {
+      log.error('multiaddrs must be provided to store data')
+      throw errcode(new Error('multiaddrs must be provided'), ERR_INVALID_PARAMETERS)
     }
 
-    // create MultiaddrInfo for each address
-    const multiaddrInfos = []
-    addresses.forEach((addr) => {
+    // create Address for each address
+    const addresses = []
+    multiaddrs.forEach((addr) => {
       if (!multiaddr.isMultiaddr(addr)) {
         log.error(`multiaddr ${addr} must be an instance of multiaddr`)
         throw errcode(new Error(`multiaddr ${addr} must be an instance of multiaddr`), ERR_INVALID_PARAMETERS)
       }
 
-      multiaddrInfos.push({
+      addresses.push({
         multiaddr: addr
       })
     })
 
-    return multiaddrInfos
+    return addresses
   }
 
   /**
@@ -189,13 +189,13 @@ class AddressBook extends Book {
       return undefined
     }
 
-    return record.map((multiaddrInfo) => {
-      const addr = multiaddrInfo.multiaddr
+    return record.map((address) => {
+      const multiaddr = address.multiaddr
 
-      const idString = addr.getPeerId()
-      if (idString && idString === peerId.toB58String()) return addr
+      const idString = multiaddr.getPeerId()
+      if (idString && idString === peerId.toB58String()) return multiaddr
 
-      return addr.encapsulate(`/p2p/${peerId.toB58String()}`)
+      return multiaddr.encapsulate(`/p2p/${peerId.toB58String()}`)
     })
   }
 }
