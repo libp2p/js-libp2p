@@ -10,7 +10,7 @@ const PeerId = require('peer-id')
 const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
 const pubsub = require('./pubsub')
-const getPeerId = require('./get-peer-id')
+const getPeer = require('./get-peer')
 const { validate: validateConfig } = require('./config')
 const { codes } = require('./errors')
 
@@ -290,11 +290,13 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<Connection|*>}
    */
   async dialProtocol (peer, protocols, options) {
-    const peerId = getPeerId(peer, this.peerStore)
-    let connection = this.registrar.getConnection(peerId)
+    const { id, multiaddrs } = getPeer(peer, this.peerStore)
+    let connection = this.registrar.getConnection(id)
 
     if (!connection) {
       connection = await this.dialer.connectToPeer(peer, options)
+    } else {
+      this.peerStore.addressBook.add(id, multiaddrs)
     }
 
     // If a protocol was provided, create a new stream
@@ -311,10 +313,10 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<void>}
    */
   hangUp (peer) {
-    const peerId = getPeerId(peer)
+    const { id } = getPeer(peer)
 
     return Promise.all(
-      this.registrar.connections.get(peerId.toB58String()).map(connection => {
+      this.registrar.connections.get(id.toB58String()).map(connection => {
         return connection.close()
       })
     )
@@ -326,9 +328,9 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<number>}
    */
   ping (peer) {
-    const peerId = getPeerId(peer)
+    const { id } = getPeer(peer)
 
-    return ping(this, peerId)
+    return ping(this, id)
   }
 
   /**

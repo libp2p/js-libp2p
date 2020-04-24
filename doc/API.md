@@ -411,7 +411,7 @@ Once a content router succeeds, the iteration will stop. If the DHT is enabled, 
 ```js
 // Iterate over the providers found for the given cid
 for await (const provider of libp2p.contentRouting.findProviders(cid)) {
-  console.log(provider.id, provider.addrs)
+  console.log(provider.id, provider.multiaddrs)
 }
 ```
 
