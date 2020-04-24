@@ -6,6 +6,7 @@ import Secio from 'libp2p-secio'
 import Mplex from 'libp2p-mplex'
 import Boostrap from 'libp2p-bootstrap'
 import pipe from 'it-pipe'
+import pushable from 'it-pushable'
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Create our libp2p node
@@ -57,12 +58,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
 
   // Listen for new connections to peers
-  let dialedStream = null
+  let queuedMessages = pushable()
   libp2p.on('peer:connect', peerInfo => {
     log(`Connected to ${peerInfo.id.toB58String()}`)
     libp2p.dialProtocol(peerInfo, ['/chat']).then(({ stream }) => {
       log('dialed a stream', stream)
-      dialedStream = stream
+      pipe(queuedMessages, stream)
     })
   })
 
@@ -88,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function send () {
     const value = txtSend.value
-    pipe([value], dialedStream)
+    queuedMessages.push(value)
   }
 
   // Export libp2p and send to the window so you can play with the API
