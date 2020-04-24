@@ -5,6 +5,7 @@ import WebRTCStar from 'libp2p-webrtc-star'
 import Secio from 'libp2p-secio'
 import Mplex from 'libp2p-mplex'
 import Boostrap from 'libp2p-bootstrap'
+import pipe from 'it-pipe'
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Create our libp2p node
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // UI elements
   const status = document.getElementById('status')
   const output = document.getElementById('output')
+  const txtSend = document.getElementById('txt_send')
 
   output.textContent = ''
 
@@ -55,8 +57,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
 
   // Listen for new connections to peers
+  let dialedStream = null
   libp2p.on('peer:connect', peerInfo => {
     log(`Connected to ${peerInfo.id.toB58String()}`)
+    libp2p.dialProtocol(peerInfo, ['/chat']).then(({ stream }) => {
+      log('dialed a stream', stream)
+      dialedStream = stream
+    })
   })
 
   // Listen for peers disconnecting
@@ -68,6 +75,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   status.innerText = 'libp2p started!'
   log(`libp2p id is ${libp2p.peerInfo.id.toB58String()}`)
 
-  // Export libp2p to the window so you can play with the API
+  let handledStream = null
+  await libp2p.handle(['/chat'], ({ connection, stream }) => {
+    log(`handle chat from ${connection.remotePeer.toB58String()}`)
+    handledStream = stream
+    pipe(handledStream, async function (source) {
+      for await (const msg of source) {
+        log(`Received message: ${msg}`)
+      }
+    })
+  })
+
+  function send () {
+    const value = txtSend.value
+    pipe([value], dialedStream)
+  }
+
+  // Export libp2p and send to the window so you can play with the API
   window.libp2p = libp2p
+  window.send = send
 })
