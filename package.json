@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.27.6",
+  "version": "0.27.7",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -118,9 +118,9 @@
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Maciej Krüger <mkg20001@gmail.com>",
     "Alex Potsides <alex@achingbrain.net>",
+    "Hugo Dias <mail@hugodias.me>",
     "dirkmc <dirkmdev@gmail.com>",
     "Volker Mische <volker.mische@gmail.com>",
-    "Hugo Dias <mail@hugodias.me>",
     "Richard Littauer <richard.littauer@gmail.com>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Andrew Nesbitt <andrewnez@gmail.com>",
@@ -129,7 +129,6 @@
     "Giovanni T. Parra <fiatjaf@gmail.com>",
     "Ryan Bell <ryan@piing.net>",
     "Thomas Eizinger <thomas@eizinger.io>",
-    "Joel Gustafson <joelg@mit.edu>",
     "Kevin Kwok <antimatter15@gmail.com>",
     "Henrique Dias <hacdias@gmail.com>",
     "Nuno Nogueira <nunofmn@gmail.com>",
@@ -149,6 +148,7 @@
     "Chris Bratlien <chrisbratlien@gmail.com>",
     "isan_rivkin <isanrivkin@gmail.com>",
     "robertkiel <robert.kiel@validitylabs.org>",
-    "Irakli Gozalishvili <rfobic@gmail.com>"
+    "Irakli Gozalishvili <rfobic@gmail.com>",
+    "Joel Gustafson <joelg@mit.edu>"
   ]
 }
