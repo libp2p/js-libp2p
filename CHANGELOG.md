@@ -1,3 +1,13 @@
+<a name="0.27.7"></a>
+## [0.27.7](https://github.com/libp2p/js-libp2p/compare/v0.27.6...v0.27.7) (2020-04-24)
+
+
+### Bug Fixes
+
+* remove node global ([#587](https://github.com/libp2p/js-libp2p/issues/587)) ([9b13fe3](https://github.com/libp2p/js-libp2p/commit/9b13fe3))
+
+
+
 <a name="0.27.6"></a>
 ## [0.27.6](https://github.com/libp2p/js-libp2p/compare/v0.27.5...v0.27.6) (2020-04-16)
 
