@@ -23,10 +23,10 @@ const {
  */
 class PeerStore extends EventEmitter {
   /**
-   * PeerData object
-   * @typedef {Object} PeerData
+   * Peer object
+   * @typedef {Object} Peer
    * @property {PeerId} id peer's peer-id instance.
-   * @property {Array<multiaddrInfo>} multiaddrsInfos peer's information of the multiaddrs.
+   * @property {Array<Address>} addresses peer's addresses containing its multiaddrs and metadata.
    * @property {Array<string>} protocols peer's supported protocols.
    */
 
@@ -34,7 +34,7 @@ class PeerStore extends EventEmitter {
     super()
 
     /**
-     * AddressBook containing a map of peerIdStr to multiaddrsInfo
+     * AddressBook containing a map of peerIdStr to Address
      */
     this.addressBook = new AddressBook(this)
 
@@ -53,17 +53,17 @@ class PeerStore extends EventEmitter {
 
   /**
    * Get all the stored information of every peer.
-   * @returns {Map<string, PeerData>}
+   * @returns {Map<string, Peer>}
    */
   get peers () {
     const peersData = new Map()
 
     // AddressBook
-    for (const [idStr, multiaddrInfos] of this.addressBook.data.entries()) {
+    for (const [idStr, addresses] of this.addressBook.data.entries()) {
       const id = PeerId.createFromCID(idStr)
       peersData.set(idStr, {
         id,
-        multiaddrInfos,
+        addresses,
         protocols: this.protoBook.get(id) || []
       })
     }
@@ -75,7 +75,7 @@ class PeerStore extends EventEmitter {
       if (!pData) {
         peersData.set(idStr, {
           id: PeerId.createFromCID(idStr),
-          multiaddrInfos: [],
+          addresses: [],
           protocols: Array.from(protocols)
         })
       }
@@ -98,7 +98,7 @@ class PeerStore extends EventEmitter {
   /**
    * Get the stored information of a given peer.
    * @param {PeerId} peerId
-   * @returns {PeerData}
+   * @returns {Peer}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
@@ -106,16 +106,16 @@ class PeerStore extends EventEmitter {
     }
 
     const id = this.peerIds.get(peerId.toB58String())
-    const multiaddrInfos = this.addressBook.get(peerId)
+    const addresses = this.addressBook.get(peerId)
     const protocols = this.protoBook.get(peerId)
 
-    if (!multiaddrInfos && !protocols) {
+    if (!addresses && !protocols) {
       return undefined
     }
 
     return {
       id: id || peerId,
-      multiaddrInfos: multiaddrInfos || [],
+      addresses: addresses || [],
       protocols: protocols || []
     }
   }
