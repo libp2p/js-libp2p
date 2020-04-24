@@ -267,7 +267,7 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Dials to the provided peer. If successful, the known `PeerData` of the
+   * Dials to the provided peer. If successful, the known `Peer` data of the
    * peer will be added to the nodes `peerStore`
    * @param {PeerId|Multiaddr|string} peer The peer to dial
    * @param {object} options
@@ -280,7 +280,7 @@ class Libp2p extends EventEmitter {
 
   /**
    * Dials to the provided peer and handshakes with the given protocol.
-   * If successful, the known `PeerData` of the peer will be added to the nodes `peerStore`,
+   * If successful, the known `Peer` data of the peer will be added to the nodes `peerStore`,
    * and the `Connection` will be returned
    * @async
    * @param {PeerId|Multiaddr|string} peer The peer to dial
@@ -295,7 +295,7 @@ class Libp2p extends EventEmitter {
 
     if (!connection) {
       connection = await this.dialer.connectToPeer(peer, options)
-    } else {
+    } else if (multiaddrs) {
       this.peerStore.addressBook.add(id, multiaddrs)
     }
 
@@ -412,9 +412,9 @@ class Libp2p extends EventEmitter {
     await this._setupPeerDiscovery()
 
     // Once we start, emit and dial any peers we may have already discovered
-    for (const peerData of this.peerStore.peers.values()) {
-      this.emit('peer:discovery', peerData.id)
-      this._maybeConnect(peerData.id)
+    for (const peer of this.peerStore.peers.values()) {
+      this.emit('peer:discovery', peer.id)
+      this._maybeConnect(peer.id)
     }
   }
 
@@ -422,16 +422,16 @@ class Libp2p extends EventEmitter {
    * Called whenever peer discovery services emit `peer` events.
    * Known peers may be emitted.
    * @private
-   * @param {PeerDara} peerData
+   * @param {PeerDara} peer
    */
-  _onDiscoveryPeer (peerData) {
-    if (peerData.id.toB58String() === this.peerId.toB58String()) {
+  _onDiscoveryPeer (peer) {
+    if (peer.id.toB58String() === this.peerId.toB58String()) {
       log.error(new Error(codes.ERR_DISCOVERED_SELF))
       return
     }
 
-    peerData.multiaddrs && this.peerStore.addressBook.add(peerData.id, peerData.multiaddrs)
-    peerData.protocols && this.peerStore.protoBook.set(peerData.id, peerData.protocols)
+    peer.multiaddrs && this.peerStore.addressBook.add(peer.id, peer.multiaddrs)
+    peer.protocols && this.peerStore.protoBook.set(peer.id, peer.protocols)
   }
 
   /**

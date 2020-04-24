@@ -69,8 +69,8 @@ describe('addressBook', () => {
       })
 
       ab.set(peerId, supportedMultiaddrs)
-      const multiaddrInfos = ab.get(peerId)
-      const multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
+      const addresses = ab.get(peerId)
+      const multiaddrs = addresses.map((mi) => mi.multiaddr)
       expect(multiaddrs).to.have.deep.members(supportedMultiaddrs)
 
       return defer.promise
@@ -95,8 +95,8 @@ describe('addressBook', () => {
 
       // set 2 (same content)
       ab.set(peerId, supportedMultiaddrsB)
-      const multiaddrInfos = ab.get(peerId)
-      const multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
+      const addresses = ab.get(peerId)
+      const multiaddrs = addresses.map((mi) => mi.multiaddr)
       expect(multiaddrs).to.have.deep.members(supportedMultiaddrsB)
 
       await defer.promise
@@ -177,14 +177,14 @@ describe('addressBook', () => {
 
       // Replace
       ab.set(peerId, supportedMultiaddrsA)
-      let multiaddrInfos = ab.get(peerId)
-      let multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
+      let addresses = ab.get(peerId)
+      let multiaddrs = addresses.map((mi) => mi.multiaddr)
       expect(multiaddrs).to.have.deep.members(supportedMultiaddrsA)
 
       // Add
       ab.add(peerId, supportedMultiaddrsB)
-      multiaddrInfos = ab.get(peerId)
-      multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
+      addresses = ab.get(peerId)
+      multiaddrs = addresses.map((mi) => mi.multiaddr)
       expect(multiaddrs).to.have.deep.members(finalMultiaddrs)
 
       return defer.promise
@@ -210,8 +210,8 @@ describe('addressBook', () => {
 
       // set 2 (content already existing)
       ab.add(peerId, supportedMultiaddrsB)
-      const multiaddrInfos = ab.get(peerId)
-      const multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
+      const addresses = ab.get(peerId)
+      const multiaddrs = addresses.map((mi) => mi.multiaddr)
       expect(multiaddrs).to.have.deep.members(finalMultiaddrs)
 
       await defer.promise
@@ -261,9 +261,9 @@ describe('addressBook', () => {
     })
 
     it('returns undefined if no multiaddrs are known for the provided peer', () => {
-      const multiaddrInfos = ab.get(peerId)
+      const addresses = ab.get(peerId)
 
-      expect(multiaddrInfos).to.not.exist()
+      expect(addresses).to.not.exist()
     })
 
     it('returns the multiaddrs stored', () => {
@@ -271,8 +271,8 @@ describe('addressBook', () => {
 
       ab.set(peerId, supportedMultiaddrs)
 
-      const multiaddrInfos = ab.get(peerId)
-      const multiaddrs = multiaddrInfos.map((mi) => mi.multiaddr)
+      const addresses = ab.get(peerId)
+      const multiaddrs = addresses.map((mi) => mi.multiaddr)
       expect(multiaddrs).to.have.deep.members(supportedMultiaddrs)
     })
   })
@@ -292,9 +292,9 @@ describe('addressBook', () => {
     })
 
     it('returns undefined if no multiaddrs are known for the provided peer', () => {
-      const multiaddrInfos = ab.getMultiaddrsForPeer(peerId)
+      const addresses = ab.getMultiaddrsForPeer(peerId)
 
-      expect(multiaddrInfos).to.not.exist()
+      expect(addresses).to.not.exist()
     })
 
     it('returns the multiaddrs stored', () => {
