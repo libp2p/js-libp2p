@@ -11,9 +11,10 @@
   * [`handle`](#handle)
   * [`unhandle`](#unhandle)
   * [`ping`](#ping)
-  * [`addressManager.listen`](#addressManagerlisten)
-  * [`addressManager.announce`](#addressManagerannounce)
-  * [`addressManager.noAnnounce`](#addressManagernoannounce)
+  * [`getAdvertisingMultiaddrs`](#getadvertisingmultiaddrs)
+  * [`addressManager.getListenMultiaddrs`](#addressmanagergetlistenmultiaddrs)
+  * [`addressmger.getAnnounceMultiaddrs`](#addressmanagergetannouncemultiaddrs)
+  * [`addressManager.getNoAnnounceMultiaddrs`](#addressmanagergetnoannouncemultiaddrs)
   * [`contentRouting.findProviders`](#contentroutingfindproviders)
   * [`contentRouting.provide`](#contentroutingprovide)
   * [`contentRouting.put`](#contentroutingput)
@@ -66,7 +67,7 @@ Creates an instance of Libp2p.
 |------|------|-------------|
 | options | `object` | libp2p options |
 | options.modules | `Array<object>` | libp2p modules to use |
-| [options.addresses] | `{ listen: Array<Multiaddr> }` | Addresses to use for transport listening and to announce to the network |
+| [options.addresses] | `{ listen: Array<string>, announce: Array<string>, noAnnounce: Array<string> }` | Addresses for transport listening and to advertise to the network |
 | [options.config] | `object` | libp2p modules configuration and core configuration |
 | [options.connectionManager] | `object` | libp2p Connection Manager configuration |
 | [options.datastore] | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) (in memory datastore will be used if not provided) |
@@ -363,43 +364,107 @@ Pings a given peer and get the operation's latency.
 const latency = await libp2p.ping(otherPeerId)
 ```
 
-### addressManager.listen
+## getAdvertisingMultiaddrs
 
-Getter for getting the addresses that the peer is using for listening on libp2p transports.
+Get peer advertising multiaddrs. This computes the advertising multiaddrs of the peer by
+joining the multiaddrs that libp2p transports are listening on with the announce multiaddrs
+provided in hte libp2p config. No announce multiaddrs will be filtered out, even when
+using random ports in the provided multiaddrs.
 
-`libp2p.addressManager.listen`
+`libp2p.getAdvertisingMultiaddrs()`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<Multiaddr>` | Advertising multiaddrs |
 
 #### Example
 
 ```js
 // ...
-const listenAddresses = libp2p.addressManager.listen
+const listenMa = libp2p.getAdvertisingMultiaddrs()
 // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
 ```
 
-### addressManager.announce
+### addressManager.getListenMultiaddrs
 
-Getter for getting the addresses that the peer is announcing to other peers in the network.
+Get the multiaddrs that were provided for listening on libp2p transports.
 
-`libp2p.addressManager.announce`
+`libp2p.addressManager.getListenMultiaddrs()`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<Multiaddr>` | Provided listening multiaddrs |
+
+#### Example
 
 ```js
 // ...
-const announceAddresses = libp2p.addressManager.announce
+const listenMa = libp2p.addressManager.getListenMultiaddrs()
+// [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
+```
+
+### addressManager.getAnnounceMultiaddrs
+
+Get the multiaddrs that were provided to announce to the network.
+
+`libp2p.addressManager.getAnnounceMultiaddrs()`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<Multiaddr>` | Provided announce multiaddrs |
+
+#### Example
+
+```js
+// ...
+const announceMa = libp2p.addressManager.getAnnounceMultiaddrs()
 // [ <Multiaddr 047f00000106f9ba - /dns4/peer.io/...> ]
 ```
 
-### addressManager.noAnnounce
+### addressManager.getNoAnnounceMultiaddrs
 
-Getter for getting the addresses that the peer is not announcing in the network.
+Get the multiaddrs that were provided to not announce to the network.
 
-`libp2p.addressManager.noAnnounce`
+`libp2p.addressManager.getNoAnnounceMultiaddrs()`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<Multiaddr>` | Provided noAnnounce multiaddrs |
+
+#### Example
 
 ```js
 // ...
-const noAnnounceAddresses = libp2p.addressManager.noAnnounce
+const noAnnounceMa = libp2p.addressManager.getNoAnnounceMultiaddrs()
 // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
 ```
+
+### transportManager.getAddrs
+
+Get the multiaddrs that libp2p transports are using to listen on.
+
+`libp2p.transportManager.getAddrs()`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<Multiaddr>` | listening multiaddrs |
+
+#### Example
+
+```js
+// ...
+const listenMa = libp2p.transportManager.getAddrs()
+// [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
 
 ### contentRouting.findProviders
 

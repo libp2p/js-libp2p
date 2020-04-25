@@ -128,7 +128,6 @@ class TransportManager {
 
   /**
    * Starts listeners for each listen Multiaddr.
-   * Update listen multiaddrs of the Address Manager after the operation.
    * @async
    */
   async listen () {
