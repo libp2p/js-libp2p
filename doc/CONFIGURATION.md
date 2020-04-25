@@ -204,14 +204,18 @@ Moreover, the majority of the modules can be customized via option parameters. T
 Besides the `modules` and `config`, libp2p allows other internal options and configurations:
 - `datastore`: an instance of [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore/) modules.
   - This is used in modules such as the DHT. If it is not provided, `js-libp2p` will use an in memory datastore.
-- `peerInfo`: a previously created instance of [libp2p/js-peer-info](https://github.com/libp2p/js-peer-info).
+- `peerId`: a previously computed instance of [libp2p/js-peer-id](https://github.com/libp2p/js-peer-id).
   - This is particularly useful if you want to reuse the same `peer-id`, as well as for modules like `libp2p-delegated-content-routing`, which need a `peer-id` in their instantiation.
-
-TODO: Add listen/announce addresses and remove peerInfo!!
+- `addresses`: an object containing `listen`, `announce` and `noAnnounce` properties with `Array<string>`:
+  - `listen` addresses will be provided to the libp2p underlying transports for listening on them.
+  - `announce` addresses will be used to compute the advertises that the node should advertise to the network.
+  - `noAnnounce` addresses will be used as a filter to compute the advertises that the node should advertise to the network.
 
 ### Examples
 
 #### Basic setup
+
+TODO: should we add to the basic setup the configuration of listen addresses? we should probably make it a required option?
 
 ```js
 // Creating a libp2p node with:
@@ -534,7 +538,6 @@ const node = await Libp2p.create({
 ## Configuration examples
 
 As libp2p is designed to be a modular networking library, its usage will vary based on individual project needs. We've included links to some existing project configurations for your reference, in case you wish to replicate their configuration:
-
 
 - [libp2p-ipfs-nodejs](https://github.com/ipfs/js-ipfs/tree/master/src/core/runtime/libp2p-nodejs.js) - libp2p configuration used by js-ipfs when running in Node.js
 - [libp2p-ipfs-browser](https://github.com/ipfs/js-ipfs/tree/master/src/core/runtime/libp2p-browser.js) - libp2p configuration used by js-ipfs when running in a Browser (that supports WebRTC)

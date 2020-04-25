@@ -136,6 +136,8 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
 
+TODO: add listen addresses here?
+
 ```js
 const Libp2p = require('libp2p')
 const WebSockets = require('libp2p-websockets')
