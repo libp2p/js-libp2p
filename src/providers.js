@@ -5,7 +5,7 @@ const varint = require('varint')
 const PeerId = require('peer-id')
 const { Key } = require('interface-datastore')
 const { default: Queue } = require('p-queue')
-
+const { Buffer } = require('buffer')
 const c = require('./constants')
 const utils = require('./utils')
 

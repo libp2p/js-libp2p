@@ -6,7 +6,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const pDefer = require('p-defer')
 const delay = require('delay')
-
+const { Buffer } = require('buffer')
 const Query = require('../src/query')
 const kadUtils = require('../src/utils')
 

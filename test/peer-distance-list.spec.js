@@ -5,7 +5,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const PeerId = require('peer-id')
-
+const { Buffer } = require('buffer')
 const kadUtils = require('../src/utils')
 const PeerDistanceList = require('../src/peer-list/peer-distance-list')
 

@@ -1,4 +1,6 @@
 'use strict'
+const { Buffer } = require('buffer')
+
 /**
  * Converts BufferList messages to Buffers
  * @param {*} source

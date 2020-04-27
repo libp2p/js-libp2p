@@ -11,7 +11,7 @@ const random = require('lodash.random')
 const { Record } = require('libp2p-record')
 const fs = require('fs')
 const path = require('path')
-
+const { Buffer } = require('buffer')
 const Message = require('../src/message')
 
 describe('Message', () => {

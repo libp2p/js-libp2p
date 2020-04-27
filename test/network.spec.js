@@ -4,7 +4,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-
+const { Buffer } = require('buffer')
 const pair = require('it-pair')
 const pipe = require('it-pipe')
 const delay = require('delay')

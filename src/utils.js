@@ -10,6 +10,7 @@ const pMap = require('p-map')
 const { Record } = require('libp2p-record')
 const PeerId = require('peer-id')
 const errcode = require('err-code')
+const { Buffer } = require('buffer')
 
 /**
  * Creates a DHT ID by hashing a given buffer.

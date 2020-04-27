@@ -1,5 +1,6 @@
 'use strict'
 
+const { Buffer } = require('buffer')
 const Message = require('../../message')
 const utils = require('../../utils')
 

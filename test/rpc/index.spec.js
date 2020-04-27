@@ -8,7 +8,7 @@ const pDefer = require('p-defer')
 const pipe = require('it-pipe')
 const lp = require('it-length-prefixed')
 const { collect } = require('streaming-iterables')
-
+const { Buffer } = require('buffer')
 const Message = require('../../src/message')
 const rpc = require('../../src/rpc')
 

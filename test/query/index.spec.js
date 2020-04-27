@@ -9,7 +9,7 @@ const expect = chai.expect
 const sinon = require('sinon')
 const delay = require('delay')
 const PeerStore = require('libp2p/src/peer-store')
-
+const { Buffer } = require('buffer')
 const Query = require('../../src/query')
 const Path = require('../../src/query/path')
 const Run = require('../../src/query/run')

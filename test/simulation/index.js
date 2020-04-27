@@ -6,7 +6,7 @@
 const PeerStore = require('libp2p/src/peer-store')
 const PeerId = require('peer-id')
 const multihashes = require('multihashes')
-
+const { Buffer } = require('buffer')
 const RoutingTable = require('../../src/routing')
 const Message = require('../../src/message')
 const { convertBuffer } = require('../../src/utils')

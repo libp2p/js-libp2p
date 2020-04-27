@@ -10,7 +10,7 @@ const LevelStore = require('datastore-level')
 const path = require('path')
 const os = require('os')
 const multihashing = require('multihashing-async')
-
+const { Buffer } = require('buffer')
 const Providers = require('../src/providers')
 
 const createPeerId = require('./utils/create-peer-id')

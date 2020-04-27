@@ -5,7 +5,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-
+const { Buffer } = require('buffer')
 const multiaddr = require('multiaddr')
 
 const Message = require('../../../src/message')

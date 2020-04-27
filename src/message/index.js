@@ -4,7 +4,7 @@ const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
 const protons = require('protons')
 const { Record } = require('libp2p-record')
-
+const { Buffer } = require('buffer')
 const pbm = protons(require('./dht.proto'))
 
 const MESSAGE_TYPE = pbm.Message.MessageType

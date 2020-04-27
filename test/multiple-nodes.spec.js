@@ -4,7 +4,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-
+const { Buffer } = require('buffer')
 const TestDHT = require('./utils/test-dht')
 
 describe('multiple nodes', () => {
