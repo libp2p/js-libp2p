@@ -9,7 +9,6 @@ const retimer = require('retimer')
 const { EventEmitter } = require('events')
 
 const PeerId = require('peer-id')
-const { Connection } = require('libp2p-interfaces/src/connection')
 
 const {
   ERR_INVALID_PARAMETERS
@@ -172,10 +171,6 @@ class ConnectionManager extends EventEmitter {
    * @param {Connection} connection
    */
   onConnect (connection) {
-    if (!Connection.isConnection(connection)) {
-      throw errcode(new Error('conn must be an instance of interface-connection'), ERR_INVALID_PARAMETERS)
-    }
-
     const peerId = connection.remotePeer.toB58String()
     const storedConn = this.connections.get(peerId)
 
