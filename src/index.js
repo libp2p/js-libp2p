@@ -225,6 +225,8 @@ class Libp2p extends EventEmitter {
 
       await Promise.all(Array.from(this._discovery.values(), s => s.stop()))
 
+      this._discovery = new Map()
+
       this.connectionManager.stop()
 
       await Promise.all([
