@@ -1,3 +1,13 @@
+<a name="0.7.3"></a>
+## [0.7.3](https://github.com/libp2p/js-libp2p-record/compare/v0.7.2...v0.7.3) (2020-04-27)
+
+
+### Bug Fixes
+
+* remove buffer ([#21](https://github.com/libp2p/js-libp2p-record/issues/21)) ([80fb248](https://github.com/libp2p/js-libp2p-record/commit/80fb248))
+
+
+
 <a name="0.7.2"></a>
 ## [0.7.2](https://github.com/libp2p/js-libp2p-record/compare/v0.7.1...v0.7.2) (2020-02-13)
 
