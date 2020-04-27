@@ -7,7 +7,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const crypto = require('libp2p-crypto')
 const PeerId = require('peer-id')
-
+const { Buffer } = require('buffer')
 const libp2pRecord = require('../src')
 const validator = libp2pRecord.validator
 const Record = libp2pRecord.Record

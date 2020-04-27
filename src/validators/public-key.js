@@ -2,7 +2,7 @@
 
 const multihashing = require('multihashing-async')
 const errcode = require('err-code')
-
+const { Buffer } = require('buffer')
 /**
  * Validator for publick key records.
  * Verifies that the passed in record value is the PublicKey

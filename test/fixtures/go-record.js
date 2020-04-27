@@ -1,5 +1,5 @@
 'use strict'
-
+const { Buffer } = require('buffer')
 // Fixtures generated using gore (https://github.com/motemen/gore)
 //
 // :import github.com/libp2p/go-libp2p-record

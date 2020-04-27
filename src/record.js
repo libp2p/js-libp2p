@@ -1,7 +1,7 @@
 'use strict'
 
 const protons = require('protons')
-
+const { Buffer } = require('buffer')
 const pb = protons(require('./record.proto')).Record
 const utils = require('./utils')
 

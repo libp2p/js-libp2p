@@ -3,7 +3,7 @@
 'use strict'
 
 var expect = require('chai').expect
-
+const { Buffer } = require('buffer')
 const libp2pRecord = require('../src')
 const selection = libp2pRecord.selection
 

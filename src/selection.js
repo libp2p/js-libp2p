@@ -1,8 +1,6 @@
 'use strict'
 
-const bsplit = require('buffer-split')
 const errcode = require('err-code')
-
 /**
  * Select the best record out of the given records.
  *
@@ -18,7 +16,7 @@ const bestRecord = (selectors, k, records) => {
     throw errcode(new Error(errMsg), 'ERR_NO_RECORDS_RECEIVED')
   }
 
-  const parts = bsplit(k, Buffer.from('/'))
+  const parts = k.toString().split('/')
 
   if (parts.length < 3) {
     const errMsg = 'Record key does not have a selector function'

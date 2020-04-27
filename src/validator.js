@@ -1,8 +1,6 @@
 'use strict'
 
-const bsplit = require('buffer-split')
 const errcode = require('err-code')
-
 /**
  * Checks a record and ensures it is still valid.
  * It runs the needed validators.
@@ -14,7 +12,7 @@ const errcode = require('err-code')
  */
 const verifyRecord = (validators, record) => {
   const key = record.key
-  const parts = bsplit(key, Buffer.from('/'))
+  const parts = key.toString().split('/')
 
   if (parts.length < 3) {
     // No validator available
