@@ -1168,7 +1168,7 @@ unless they are performing a specific action. See [peer discovery and auto dial]
 
 This event will be triggered anytime a new Connection is established to another peer.
 
-`libp2p.on('peer:connect', (connection) => {})`
+`libp2p.connectionManager.on('peer:connect', (connection) => {})`
 
 - `connection`: instance of [`Connection`][connection]
 
@@ -1176,7 +1176,7 @@ This event will be triggered anytime a new Connection is established to another 
 
 This event will be triggered anytime we are disconnected from another peer, regardless of the circumstances of that disconnection. If we happen to have multiple connections to a peer, this event will **only** be triggered when the last connection is closed.
 
-`libp2p.on('peer:disconnect', (connection) => {})`
+`libp2p.connectionManager.on('peer:disconnect', (connection) => {})`
 
 - `connection`: instance of [`Connection`][connection]
 
