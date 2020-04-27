@@ -85,7 +85,7 @@ describe('rpc - handlers - AddProvider', () => {
     expect(provs[0].id).to.eql(peerIds[0].id)
 
     const bookEntry = dht.peerStore.get(peerIds[0])
-    expect(bookEntry.multiaddrInfos.map((mi) => mi.multiaddr)).to.eql([ma1])
+    expect(bookEntry.addresses.map((address) => address.multiaddr)).to.eql([ma1])
   })
 
   it('fall back to sender if providers have no multiaddrs', async () => {

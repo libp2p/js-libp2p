@@ -83,7 +83,7 @@ module.exports = (dht) => {
         const peerData = dht.peerStore.get(id) || {}
         out.push({
           id: peerData.id || id,
-          multiaddrs: (peerData.multiaddrInfos || []).map((mi) => mi.multiaddr)
+          multiaddrs: (peerData.addresses || []).map((address) => address.multiaddr)
         })
       })
 

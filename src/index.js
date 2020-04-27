@@ -330,7 +330,7 @@ class KadDHT extends EventEmitter {
 
       return {
         id: p,
-        multiaddrs: peer ? peer.multiaddrInfos.map((mi) => mi.multiaddr) : []
+        multiaddrs: peer ? peer.addresses.map((address) => address.multiaddr) : []
       }
     })
   }

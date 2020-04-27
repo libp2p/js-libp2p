@@ -28,7 +28,7 @@ module.exports = (dht) => {
     if (peerData) {
       return {
         id: peerData.id,
-        multiaddrs: peerData.multiaddrInfos.map((mi) => mi.multiaddr)
+        multiaddrs: peerData.addresses.map((address) => address.multiaddr)
       }
     }
   }
@@ -141,7 +141,7 @@ module.exports = (dht) => {
           dht._log('found in peerStore')
           return {
             id: peer.id,
-            multiaddrs: peer.multiaddrInfos.map((mi) => mi.multiaddr)
+            multiaddrs: peer.addresses.map((address) => address.multiaddr)
           }
         }
       }
@@ -195,7 +195,7 @@ module.exports = (dht) => {
 
       return {
         id: peerData.id,
-        multiaddrs: peerData.multiaddrInfos.map((mi) => mi.multiaddr)
+        multiaddrs: peerData.addresses.map((address) => address.multiaddr)
       }
     },
 
@@ -265,7 +265,7 @@ module.exports = (dht) => {
       }
 
       peerData.id = new PeerId(peer.id, null, pk)
-      const addrs = peerData.multiaddrInfos.map((mi) => mi.multiaddr)
+      const addrs = peerData.addresses.map((address) => address.multiaddr)
       dht.peerStore.addressBook.add(peerData.id, addrs)
 
       return pk
