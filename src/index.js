@@ -244,6 +244,7 @@ class Libp2p extends EventEmitter {
         this.emit('error', err)
       }
     }
+    this.peerStore.clear()
     this._isStarted = false
     log('libp2p has stopped')
   }

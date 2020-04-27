@@ -218,6 +218,13 @@ class PeerStore extends EventEmitter {
   }
 
   /**
+   * Clears all entries from the PeerStore
+   */
+  clear () {
+    this.peers.clear()
+  }
+
+  /**
    * Completely replaces the existing peers metadata with the given `peerInfo`
    * @param {PeerInfo} peerInfo
    * @returns {void}
