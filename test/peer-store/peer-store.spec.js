@@ -128,37 +128,56 @@ describe('peer-store', () => {
     await defer.promise
   })
 
-  it('should be able to retrieve a peer from store through its b58str id', async () => {
+  it('should be able to retrieve a peer from store through its PeerInfo, PeerId or b58str id', async () => {
     const [peerInfo] = await peerUtils.createPeerInfo()
     const id = peerInfo.id
+    const b58str = peerInfo.id.toB58String()
 
-    let retrievedPeer = peerStore.get(id)
+    const retrievedPeer = peerStore.get(id)
     expect(retrievedPeer).to.not.exist()
 
     // Put the peer in the store
     peerStore.put(peerInfo)
 
-    retrievedPeer = peerStore.get(id)
-    expect(retrievedPeer).to.exist()
-    expect(retrievedPeer.id).to.equal(peerInfo.id)
-    expect(retrievedPeer.multiaddrs).to.eql(peerInfo.multiaddrs)
-    expect(retrievedPeer.protocols).to.eql(peerInfo.protocols)
+    for (const retrievedPeer of [peerStore.get(peerInfo), peerStore.get(id), peerStore.get(b58str)]) {
+      expect(retrievedPeer).to.exist()
+      expect(retrievedPeer.id).to.equal(peerInfo.id)
+      expect(retrievedPeer.multiaddrs).to.eql(peerInfo.multiaddrs)
+      expect(retrievedPeer.protocols).to.eql(peerInfo.protocols)
+    }
   })
 
-  it('should be able to remove a peer from store through its b58str id', async () => {
-    const [peerInfo] = await peerUtils.createPeerInfo()
-    const id = peerInfo.id
+  it('should be able to remove a peer from store through its PeerId or b58str id', async () => {
+    const [peerInfo1, peerInfo2] = await peerUtils.createPeerInfo({ number: 2 })
+    const id1 = peerInfo1.id
+    const b58str2 = peerInfo2.id.toB58String()
 
-    let removed = peerStore.remove(id)
-    expect(removed).to.eql(false)
+    expect(peerStore.remove(id1)).to.eql(false)
+    expect(peerStore.remove(b58str2)).to.eql(false)
 
-    // Put the peer in the store
-    peerStore.put(peerInfo)
-    expect(peerStore.peers.size).to.equal(1)
+    // Put the peers in the store
+    peerStore.put(peerInfo1)
+    peerStore.put(peerInfo2)
+    expect(peerStore.peers.size).to.equal(2)
 
-    removed = peerStore.remove(id)
-    expect(removed).to.eql(true)
+    expect(peerStore.remove(id1)).to.eql(true)
+    expect(peerStore.remove(b58str2)).to.eql(true)
     expect(peerStore.peers.size).to.equal(0)
+  })
+
+  it('should report presence of a peer through its PeerInfo or PeerId', async () => {
+    const [peerInfo1, peerInfo2] = await peerUtils.createPeerInfo({ number: 2 })
+
+    // Check that initially it doesn't have the peer
+    expect(peerStore.has(peerInfo1)).to.equal(false)
+
+    // Check that the peers are present
+    peerStore.add(peerInfo1)
+    peerStore.put(peerInfo2)
+    expect(peerStore.has(peerInfo1)).to.equal(true)
+    expect(peerStore.has(peerInfo2)).to.equal(true)
+    expect(peerStore.has(peerInfo1.id)).to.equal(true)
+    expect(peerStore.has(peerInfo2.id)).to.equal(true)
   })
 
   it('should be able to get the multiaddrs for a peer', async () => {

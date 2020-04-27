@@ -176,6 +176,9 @@ class PeerStore extends EventEmitter {
    */
   get (peerId) {
     // TODO: deprecate this and just accept `PeerId` instances
+    if (PeerInfo.isPeerInfo(peerId)) {
+      peerId = peerId.id
+    }
     if (PeerId.isPeerId(peerId)) {
       peerId = peerId.toB58String()
     }
@@ -190,6 +193,9 @@ class PeerStore extends EventEmitter {
    */
   has (peerId) {
     // TODO: deprecate this and just accept `PeerId` instances
+    if (PeerInfo.isPeerInfo(peerId)) {
+      peerId = peerId.id
+    }
     if (PeerId.isPeerId(peerId)) {
       peerId = peerId.toB58String()
     }
