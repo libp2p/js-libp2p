@@ -86,11 +86,6 @@ class AddressBook extends Book {
     this._setData(peerId, addresses)
     log(`stored provided multiaddrs for ${id}`)
 
-    // Notify the existance of a new peer
-    if (!rec) {
-      this._ps.emit('peer', peerId)
-    }
-
     return this
   }
 
@@ -129,11 +124,6 @@ class AddressBook extends Book {
     this._setData(peerId, addresses)
 
     log(`added provided multiaddrs for ${id}`)
-
-    // Notify the existance of a new peer
-    if (!rec) {
-      this._ps.emit('peer', peerId)
-    }
 
     return this
   }

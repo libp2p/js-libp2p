@@ -4,6 +4,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
+const sinon = require('sinon')
 
 const PeerStore = require('../../src/peer-store')
 const multiaddr = require('multiaddr')
@@ -47,6 +48,27 @@ describe('peer-store', () => {
     it('returns undefined on trying to find a non existant peerId', () => {
       const peer = peerStore.get(peerIds[0])
       expect(peer).to.not.exist()
+    })
+
+    it('sets the peer to the KeyBook when added to the AddressBook', () => {
+      const spyPeerStore = sinon.spy(peerStore.keyBook, 'set')
+
+      peerStore.addressBook.set(peerIds[0], [addr1, addr2])
+      expect(spyPeerStore).to.have.property('callCount', 1)
+    })
+
+    it('sets the peer to the KeyBook when added to the ProtoBook', () => {
+      const spyPeerStore = sinon.spy(peerStore.keyBook, 'set')
+
+      peerStore.protoBook.set(peerIds[0], [proto1])
+      expect(spyPeerStore).to.have.property('callCount', 1)
+    })
+
+    it('does not re-set the to the KeyBook when directly added to it', () => {
+      const spyPeerStore = sinon.spy(peerStore.keyBook, 'set')
+
+      peerStore.keyBook.set(peerIds[0])
+      expect(spyPeerStore).to.have.property('callCount', 1)
     })
   })
 
@@ -108,6 +130,8 @@ describe('peer-store', () => {
 
       const peerMultiaddrs = peer.addresses.map((mi) => mi.multiaddr)
       expect(peerMultiaddrs).to.have.members([addr1, addr2])
+
+      expect(peer.id).to.exist()
     })
 
     it('gets the stored information of a peer that is not present in all its books', () => {
