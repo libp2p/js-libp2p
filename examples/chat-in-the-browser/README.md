@@ -53,3 +53,7 @@ This will compile the code and start a server listening on port [http://localhos
 Now, if you open a second browser tab to `http://localhost:1234`, you should discover your node from the previous tab. This is due to the fact that the `libp2p-webrtc-star` transport also acts as a Peer Discovery interface. Your node will be notified of any peer that connects to the same signaling server you are connected to. Once libp2p discovers this new peer, it will attempt to establish a direct WebRTC connection.
 
 **Note**: In the example we assign libp2p to `window.libp2p`, in case you would like to play around with the API directly in the browser. You can of course make changes to `index.js` and Parcel will automatically rebuild and reload the browser tabs.
+
+## TypeScript
+
+This example also shows how to use Libp2p using TypeScript. Libp2p itself currently does not support TypeScript, but this example includes a few minimal type declarations so that it can be used, even with strict compilation.

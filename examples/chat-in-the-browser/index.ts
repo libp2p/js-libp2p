@@ -6,7 +6,17 @@ import Secio from 'libp2p-secio'
 import Mplex from 'libp2p-mplex'
 import Boostrap from 'libp2p-bootstrap'
 import pipe from 'it-pipe'
+import PeerInfo from 'peer-info'
 import { consume } from 'streaming-iterables'
+import { Stream, ProtocolHandler } from './types/libp2p'
+import multiaddr from 'multiaddr'
+
+declare global {
+  interface Window {
+    libp2p: Libp2p
+    send: () => void
+  }
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Create our libp2p node
@@ -38,14 +48,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const protocol = '/chat'
 
   // UI elements
-  const status = document.getElementById('status')
-  const output = document.getElementById('output')
-  const txtSend = document.getElementById('txt_send')
-  const btnSend = document.getElementById('btn_send')
+  const status = document.getElementById('status')!
+  const output = document.getElementById('output')!
+  const txtSend = document.getElementById('txt_send')! as HTMLInputElement
+  const btnSend = document.getElementById('btn_send')! as HTMLButtonElement
 
   output.textContent = ''
 
-  function log (txt) {
+  function log (txt: string) {
     console.info(txt)
     output.textContent += `${txt.trim()}\n`
   }
@@ -54,26 +64,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   // libp2p will automatically attempt to dial to the signaling server so that it can
   // receive inbound connections from other peers
   const webrtcAddr = '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star'
-  libp2p.peerInfo.multiaddrs.add(webrtcAddr)
+  libp2p.peerInfo.multiaddrs.add(multiaddr(webrtcAddr))
 
   // Listen for new peers
-  libp2p.on('peer:discovery', peerInfo => {
+  libp2p.on('peer:discovery', (peerInfo: PeerInfo) => {
     log(`Found peer ${peerInfo.id.toB58String()}`)
   })
 
   // Listen for new connections to peers
-  let remotePeer = null
-  libp2p.on('peer:connect', peerInfo => {
+  let remotePeer: PeerInfo | null
+
+  libp2p.on('peer:connect', (peerInfo: PeerInfo) => {
     log(`Connected to ${peerInfo.id.toB58String()}`)
-    libp2p.dialProtocol(peerInfo, [protocol]).then(({ stream }) => {
-      log('dialed a stream', stream)
-      remotePeer = peerInfo
-      btnSend.disabled = false
-    })
+    libp2p
+      .dialProtocol(peerInfo, [protocol])
+      .then(({ stream }: { stream: Stream }) => {
+        log('dialed a stream')
+        remotePeer = peerInfo
+        btnSend.disabled = false
+      })
   })
 
   // Listen for peers disconnecting
-  libp2p.on('peer:disconnect', peerInfo => {
+  libp2p.on('peer:disconnect', (peerInfo: PeerInfo) => {
     log(`Disconnected from ${peerInfo.id.toB58String()}`)
   })
 
@@ -81,25 +94,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   status.innerText = 'libp2p started!'
   log(`libp2p id is ${libp2p.peerInfo.id.toB58String()}`)
 
-  let handledStream = null
-  await libp2p.handle([protocol], ({ connection, stream }) => {
-    log(`handle chat from ${connection.remotePeer.toB58String()}`)
-    handledStream = stream
-    pipe(handledStream, async function (source) {
+  const handleChat: ProtocolHandler = async ({ connection, stream }) => {
+    log(`handle chat from ${connection?.remotePeer.toB58String()}`)
+    const handledStream = stream
+    pipe(handledStream, async function (source: AsyncGenerator<any, any, any>) {
       for await (const msg of source) {
         log(`Received message: ${msg}`)
         pipe([], handledStream)
       }
     })
-  })
-
-  function send () {
-    const value = txtSend.value
-      txtSend.value = ''
-    sendMessage(remotePeer, value)
   }
 
-  async function sendMessage (peerInfo, message) {
+  await libp2p.handle([protocol], handleChat)
+
+  function send () {
+    if (remotePeer) {
+      const value = txtSend.value
+      txtSend.value = ''
+      sendMessage(remotePeer, value)
+    }
+  }
+
+  async function sendMessage (peerInfo: PeerInfo, message: string) {
     try {
       const { stream } = await libp2p.dialProtocol(peerInfo, [protocol])
       await pipe([message], stream, consume)

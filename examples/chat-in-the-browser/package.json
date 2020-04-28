@@ -7,6 +7,8 @@
     "last 2 Chrome versions"
   ],
   "scripts": {
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel index.html",
     "server": "star-signal"
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@babel/cli": "^7.8.3",
     "@babel/core": "^7.8.3",
+    "@types/node": "^13.13.4",
     "babel-plugin-syntax-async-functions": "^6.13.0",
     "babel-plugin-transform-regenerator": "^6.26.0",
     "babel-polyfill": "^6.26.0",
