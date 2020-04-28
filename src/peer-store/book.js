@@ -23,35 +23,24 @@ class Book {
    * @constructor
    * @param {Object} properties
    * @param {PeerStore} properties.peerStore PeerStore instance.
-   * @param {string} properties.eventName Name of the event to emit by the PeerStore.
-   * @param {string} properties.eventProperty Name of the property to emit by the PeerStore.
-   * @param {Object} properties.protoBuf Suffix of the Datastore Key
-   * @param {String} properties.dsPrefix Prefix of the Datastore Key
-   * @param {String} [properties.dsSuffix] Suffix of the Datastore Key
-   * @param {function} [properties.eventTransformer] Transformer function of the provided data for being emitted.
-   * @param {function} [properties.dsSetTransformer] Transformer function of the provided data for being persisted.
-   * @param {function} [properties.dsGetTransformer] Transformer function of the persisted data to be loaded.
+   * @param {Object} [properties.event] Event properties. If not provided, no events will be emitted.
+   * @param {string} [properties.event.name] Name of the event to emit by the PeerStore.
+   * @param {string} [properties.event.property] Name of the property to emit by the PeerStore.
+   * @param {function} [properties.events.transformer] Transformer function of the provided data for being emitted.
+   * @param {Object} [properties.ds] Datastore properties. If not provided, no data will be persisted.
+   * @param {String} [properties.ds.prefix] Prefix of the Datastore Key
+   * @param {String} [properties.ds.suffix = ''] Suffix of the Datastore Key
+   * @param {function} [properties.ds.setTransformer] Transformer function of the provided data for being persisted.
+   * @param {function} [properties.ds.getTransformer] Transformer function of the persisted data to be loaded.
    */
   constructor ({
     peerStore,
-    eventName,
-    eventProperty,
-    protoBuf,
-    dsPrefix,
-    dsSuffix = '',
-    eventTransformer = passthrough,
-    dsSetTransformer = passthrough,
-    dsGetTransformer = passthrough
+    event,
+    ds
   }) {
     this._ps = peerStore
-    this.eventName = eventName
-    this.eventProperty = eventProperty
-    this.protoBuf = protoBuf
-    this.dsPrefix = dsPrefix
-    this.dsSuffix = dsSuffix
-    this.eventTransformer = eventTransformer
-    this.dsSetTransformer = dsSetTransformer
-    this.dsGetTransformer = dsGetTransformer
+    this.event = event
+    this.ds = ds
 
     /**
      * Map known peers to their data.
@@ -67,23 +56,23 @@ class Book {
    * @return {Promise<void>}
    */
   async _loadData () {
-    if (!this._ps._datastore || !this._ps._enabledPersistance) {
+    if (!this._ps._datastore || !this._ps._enabledPersistance || !this.ds) {
       return
     }
 
-    const persistenceQuery = {
-      prefix: this.dsPrefix
-    }
+    const prefix = this.ds.prefix || ''
+    const suffix = this.ds.suffix || ''
+    const transformer = this.ds.getTransformer || passthrough
 
-    for await (const { key, value } of this._ps._datastore.query(persistenceQuery)) {
+    for await (const { key, value } of this._ps._datastore.query({ prefix })) {
       try {
         // PeerId to add to the book
         const b32key = key.toString()
-          .replace(this.dsPrefix, '') // remove prefix from key
-          .replace(this.dsSuffix, '') // remove suffix from key
+          .replace(prefix, '') // remove prefix from key
+          .replace(suffix, '') // remove suffix from key
         const peerId = PeerId.createFromCID(b32key)
         // Data in the format to add to the book
-        const data = this.dsGetTransformer(this.protoBuf.decode(value))
+        const data = transformer(value)
         // Add the book without persist the replicated data and emit modify
         this._setData(peerId, data, {
           persist: false,
@@ -113,10 +102,14 @@ class Book {
     this._setPeerId(peerId)
 
     // Emit event
-    emit && this._ps.emit(this.eventName, {
-      peerId,
-      [this.eventProperty]: this.eventTransformer(data)
-    })
+    if (this.event && emit) {
+      const transformer = this.event.transformer || passthrough
+
+      this._ps.emit(this.event.name, {
+        peerId,
+        [this.event.property]: transformer(data)
+      })
+    }
 
     // Add to Persistence datastore
     persist && await this._persistData(peerId, data)
@@ -130,14 +123,18 @@ class Book {
    * @return {Promise<void>}
    */
   async _persistData (peerId, data) {
-    if (!this._ps._datastore || !this._ps._enabledPersistance) {
+    if (!this._ps._datastore || !this._ps._enabledPersistance || !this.ds) {
       return
     }
 
+    const prefix = this.ds.prefix || ''
+    const suffix = this.ds.suffix || ''
+    const transformer = this.ds.setTransformer || passthrough
+
     const b32key = peerId.toString()
-    const k = `${this.dsPrefix}${b32key}${this.dsSuffix}`
+    const k = `${prefix}${b32key}${suffix}`
     try {
-      const value = this.protoBuf.encode(this.dsSetTransformer(data))
+      const value = transformer(data)
 
       await this._ps._datastore.put(new Key(k), value)
     } catch (err) {
@@ -192,13 +189,21 @@ class Book {
       return false
     }
 
-    this._ps.emit(this.eventName, {
+    // Emit event
+    this.event && this._ps.emit(this.event.name, {
       peerId,
-      [this.eventProperty]: []
+      [this.event.property]: []
     })
 
     // Update Persistence datastore
-    this._persistData(peerId, [])
+    if (this._ps._datastore && this._ps._enabledPersistance && this.ds) {
+      const prefix = this.ds.prefix || ''
+      const suffix = this.ds.suffix || ''
+      const b32key = peerId.toString()
+
+      const k = `${prefix}${b32key}${suffix}`
+      this._ps._datastore.delete(new Key(k))
+    }
 
     return true
   }
