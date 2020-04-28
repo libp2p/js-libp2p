@@ -32,15 +32,22 @@ class ProtoBook extends Book {
      */
     super({
       peerStore,
-      eventName: 'change:protocols',
-      eventProperty: 'protocols',
-      protoBuf: Protobuf,
-      dsPrefix: '/peers/protos/',
-      eventTransformer: (data) => Array.from(data),
-      dsSetTransformer: (data) => ({
-        protocols: Array.from(data)
-      }),
-      dsGetTransformer: (data) => new Set(data.protocols)
+      event: {
+        name: 'change:protocols',
+        property: 'protocols',
+        transformer: (data) => Array.from(data)
+      },
+      ds: {
+        prefix: '/peers/protos/',
+        setTransformer: (data) => Protobuf.encode({
+          protocols: Array.from(data)
+        }),
+        getTransformer: (encData) => {
+          const data = Protobuf.decode(encData)
+
+          return new Set(data.protocols)
+        }
+      }
     })
 
     /**
