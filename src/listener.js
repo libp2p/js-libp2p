@@ -13,6 +13,19 @@ const {
   multiaddrToNetConfig
 } = require('./utils')
 
+/**
+ * Attempts to close the given maConn. If a failure occurs, it will be logged.
+ * @private
+ * @param {MultiaddrConnection} maConn
+ */
+async function attemptClose (maConn) {
+  try {
+    maConn && await maConn.close()
+  } catch (err) {
+    log.error('an error occurred closing the connection', err)
+  }
+}
+
 module.exports = ({ handler, upgrader }, options) => {
   const listener = new EventEmitter()
 
@@ -28,7 +41,7 @@ module.exports = ({ handler, upgrader }, options) => {
       conn = await upgrader.upgradeInbound(maConn)
     } catch (err) {
       log.error('inbound connection failed', err)
-      return maConn && maConn.close()
+      return attemptClose(maConn)
     }
 
     log('inbound connection %s upgraded', maConn.remoteAddr)
@@ -51,7 +64,7 @@ module.exports = ({ handler, upgrader }, options) => {
     if (!server.listening) return
 
     return new Promise((resolve, reject) => {
-      server.__connections.forEach(maConn => maConn.close())
+      server.__connections.forEach(maConn => attemptClose(maConn))
       server.close(err => err ? reject(err) : resolve())
     })
   }
