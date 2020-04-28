@@ -9,6 +9,7 @@ const { EventEmitter } = require('events')
 const PeerId = require('peer-id')
 
 const AddressBook = require('./address-book')
+const KeyBook = require('./key-book')
 const ProtoBook = require('./proto-book')
 
 const {
@@ -42,16 +43,14 @@ class PeerStore extends EventEmitter {
     this.addressBook = new AddressBook(this)
 
     /**
+     * KeyBook containing a map of peerIdStr to their PeerId with public keys.
+     */
+    this.keyBook = new KeyBook(this)
+
+    /**
      * ProtoBook containing a map of peerIdStr to supported protocols.
      */
     this.protoBook = new ProtoBook(this)
-
-    /**
-     * TODO: this should only exist until we have the key-book
-     * Map known peers to their peer-id.
-     * @type {Map<string, Array<PeerId>}
-     */
-    this.peerIds = new Map()
   }
 
   /**
@@ -73,7 +72,7 @@ class PeerStore extends EventEmitter {
 
     // AddressBook
     for (const [idStr, addresses] of this.addressBook.data.entries()) {
-      const id = PeerId.createFromCID(idStr)
+      const id = this.keyBook.data.get(idStr) || PeerId.createFromCID(idStr)
       peersData.set(idStr, {
         id,
         addresses,
@@ -84,10 +83,11 @@ class PeerStore extends EventEmitter {
     // ProtoBook
     for (const [idStr, protocols] of this.protoBook.data.entries()) {
       const pData = peersData.get(idStr)
+      const id = this.keyBook.data.get(idStr) || PeerId.createFromCID(idStr)
 
       if (!pData) {
         peersData.set(idStr, {
-          id: PeerId.createFromCID(idStr),
+          id,
           addresses: [],
           protocols: Array.from(protocols)
         })
@@ -104,8 +104,10 @@ class PeerStore extends EventEmitter {
    */
   delete (peerId) {
     const addressesDeleted = this.addressBook.delete(peerId)
+    const keyDeleted = this.keyBook.delete(peerId)
     const protocolsDeleted = this.protoBook.delete(peerId)
-    return addressesDeleted || protocolsDeleted
+
+    return addressesDeleted || keyDeleted || protocolsDeleted
   }
 
   /**
@@ -118,7 +120,7 @@ class PeerStore extends EventEmitter {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    const id = this.peerIds.get(peerId.toB58String())
+    const id = this.keyBook.data.get(peerId.toB58String())
     const addresses = this.addressBook.get(peerId)
     const protocols = this.protoBook.get(peerId)
 
