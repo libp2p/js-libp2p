@@ -7,7 +7,7 @@ log.error = debug('libp2p:addresses:error')
 const multiaddr = require('multiaddr')
 
 /**
- * Responsible for managing the peer addresses.
+ * Responsible for managing this peers addresses.
  * Peers can specify their listen, announce and noAnnounce addresses.
  * The listen addresses will be used by the libp2p transports to listen for new connections,
  * while the announce an noAnnounce addresses will be combined with the listen addresses for
@@ -31,7 +31,7 @@ class AddressManager {
    * Get peer listen multiaddrs.
    * @return {Array<Multiaddr>}
    */
-  getListenMultiaddrs () {
+  getListenAddrs () {
     return Array.from(this.listen).map((a) => multiaddr(a))
   }
 
@@ -39,7 +39,7 @@ class AddressManager {
    * Get peer announcing multiaddrs.
    * @return {Array<Multiaddr>}
    */
-  getAnnounceMultiaddrs () {
+  getAnnounceAddrs () {
     return Array.from(this.announce).map((a) => multiaddr(a))
   }
 
@@ -47,7 +47,7 @@ class AddressManager {
    * Get peer noAnnouncing multiaddrs.
    * @return {Array<Multiaddr>}
    */
-  getNoAnnounceMultiaddrs () {
+  getNoAnnounceAddrs () {
     return Array.from(this.noAnnounce).map((a) => multiaddr(a))
   }
 }

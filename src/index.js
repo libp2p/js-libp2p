@@ -300,25 +300,15 @@ class Libp2p extends EventEmitter {
    * Get peer advertising multiaddrs by concating the addresses used
    * by transports to listen with the announce addresses.
    * Duplicated addresses and noAnnounce addresses are filtered out.
-   * This takes into account random ports on matching noAnnounce addresses.
    * @return {Array<Multiaddr>}
    */
-  getAdvertisingMultiaddrs () {
+  get multiaddrs () {
     // Filter noAnnounce multiaddrs
-    const filterMa = this.addressManager.getNoAnnounceMultiaddrs()
-
-    // Special filter for noAnnounce addresses using a random port
-    // eg /ip4/0.0.0.0/tcp/0 => /ip4/192.168.1.0/tcp/58751
-    const filterSpecial = filterMa
-      .map((ma) => ({
-        protos: ma.protos(),
-        ...ma.toOptions()
-      }))
-      .filter((op) => op.port === 0)
+    const filterMa = this.addressManager.getNoAnnounceAddrs()
 
     // Create advertising list
     return this.transportManager.getAddrs()
-      .concat(this.addressManager.getAnnounceMultiaddrs())
+      .concat(this.addressManager.getAnnounceAddrs())
       .filter((ma, index, array) => {
         // Filter out if repeated
         if (array.findIndex((otherMa) => otherMa.equals(ma)) !== index) {
@@ -330,16 +320,6 @@ class Libp2p extends EventEmitter {
           return false
         }
 
-        // Filter out if in the special filter
-        const options = ma.toOptions()
-        if (filterSpecial.find((op) =>
-          op.family === options.family &&
-          op.host === options.host &&
-          op.transport === options.transport &&
-          op.protos.length === ma.protos().length
-        )) {
-          return false
-        }
         return true
       })
   }
