@@ -204,7 +204,7 @@ Moreover, the majority of the modules can be customized via option parameters. T
 Besides the `modules` and `config`, libp2p allows other internal options and configurations:
 - `datastore`: an instance of [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore/) modules.
   - This is used in modules such as the DHT. If it is not provided, `js-libp2p` will use an in memory datastore.
-- `peerId`: a previously computed instance of [libp2p/js-peer-id](https://github.com/libp2p/js-peer-id).
+- `peerId`: the identity of the node, an instance of [libp2p/js-peer-id](https://github.com/libp2p/js-peer-id).
   - This is particularly useful if you want to reuse the same `peer-id`, as well as for modules like `libp2p-delegated-content-routing`, which need a `peer-id` in their instantiation.
 - `addresses`: an object containing `listen`, `announce` and `noAnnounce` properties with `Array<string>`:
   - `listen` addresses will be provided to the libp2p underlying transports for listening on them.
@@ -214,8 +214,6 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
 ### Examples
 
 #### Basic setup
-
-TODO: should we add to the basic setup the configuration of listen addresses? we should probably make it a required option?
 
 ```js
 // Creating a libp2p node with:

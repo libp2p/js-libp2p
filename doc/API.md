@@ -11,10 +11,10 @@
   * [`handle`](#handle)
   * [`unhandle`](#unhandle)
   * [`ping`](#ping)
-  * [`getAdvertisingMultiaddrs`](#getadvertisingmultiaddrs)
-  * [`addressManager.getListenMultiaddrs`](#addressmanagergetlistenmultiaddrs)
-  * [`addressmger.getAnnounceMultiaddrs`](#addressmanagergetannouncemultiaddrs)
-  * [`addressManager.getNoAnnounceMultiaddrs`](#addressmanagergetnoannouncemultiaddrs)
+  * [`multiaddrs`](#multiaddrs)
+  * [`addressManager.getListenAddrs`](#addressmanagergetlistenaddrs)
+  * [`addressmger.getAnnounceAddrs`](#addressmanagergetannounceaddrs)
+  * [`addressManager.getNoAnnounceAddrs`](#addressmanagergetnoannounceaddrs)
   * [`contentRouting.findProviders`](#contentroutingfindproviders)
   * [`contentRouting.provide`](#contentroutingprovide)
   * [`contentRouting.put`](#contentroutingput)
@@ -364,14 +364,14 @@ Pings a given peer and get the operation's latency.
 const latency = await libp2p.ping(otherPeerId)
 ```
 
-## getAdvertisingMultiaddrs
+## multiaddrs
 
 Get peer advertising multiaddrs. This computes the advertising multiaddrs of the peer by
 joining the multiaddrs that libp2p transports are listening on with the announce multiaddrs
 provided in hte libp2p config. No announce multiaddrs will be filtered out, even when
 using random ports in the provided multiaddrs.
 
-`libp2p.getAdvertisingMultiaddrs()`
+`libp2p.multiaddrs`
 
 #### Returns
 
@@ -383,15 +383,15 @@ using random ports in the provided multiaddrs.
 
 ```js
 // ...
-const listenMa = libp2p.getAdvertisingMultiaddrs()
+const listenMa = libp2p.multiaddrs
 // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
 ```
 
-### addressManager.getListenMultiaddrs
+### addressManager.getListenAddrs
 
 Get the multiaddrs that were provided for listening on libp2p transports.
 
-`libp2p.addressManager.getListenMultiaddrs()`
+`libp2p.addressManager.getListenAddrs()`
 
 #### Returns
 
@@ -403,15 +403,15 @@ Get the multiaddrs that were provided for listening on libp2p transports.
 
 ```js
 // ...
-const listenMa = libp2p.addressManager.getListenMultiaddrs()
+const listenMa = libp2p.addressManager.getListenAddrs()
 // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
 ```
 
-### addressManager.getAnnounceMultiaddrs
+### addressManager.getAnnounceAddrs
 
 Get the multiaddrs that were provided to announce to the network.
 
-`libp2p.addressManager.getAnnounceMultiaddrs()`
+`libp2p.addressManager.getAnnounceAddrs()`
 
 #### Returns
 
@@ -423,15 +423,15 @@ Get the multiaddrs that were provided to announce to the network.
 
 ```js
 // ...
-const announceMa = libp2p.addressManager.getAnnounceMultiaddrs()
+const announceMa = libp2p.addressManager.getAnnounceAddrs()
 // [ <Multiaddr 047f00000106f9ba - /dns4/peer.io/...> ]
 ```
 
-### addressManager.getNoAnnounceMultiaddrs
+### addressManager.getNoAnnounceAddrs
 
 Get the multiaddrs that were provided to not announce to the network.
 
-`libp2p.addressManager.getNoAnnounceMultiaddrs()`
+`libp2p.addressManager.getNoAnnounceAddrs()`
 
 #### Returns
 
@@ -443,7 +443,7 @@ Get the multiaddrs that were provided to not announce to the network.
 
 ```js
 // ...
-const noAnnounceMa = libp2p.addressManager.getNoAnnounceMultiaddrs()
+const noAnnounceMa = libp2p.addressManager.getNoAnnounceAddrs()
 // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
 ```
 
