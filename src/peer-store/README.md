@@ -113,9 +113,9 @@ All the knownw peer protocols are stored with a key pattern as follows:
 
 _NOT_YET_IMPLEMENTED_
 
-All public and private keys are stored under the following pattern:
+All public keys are stored under the following pattern:
 
-` /peers/keys/<b32 peer id no padding>/{pub, priv}`
+` /peers/keys/<b32 peer id no padding>`
 
 **MetadataBook**
 
