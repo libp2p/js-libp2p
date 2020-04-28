@@ -1,3 +1,13 @@
+<a name="0.19.2"></a>
+## [0.19.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.1...v0.19.2) (2020-04-28)
+
+
+### Bug Fixes
+
+* add buffer ([#185](https://github.com/libp2p/js-libp2p-kad-dht/issues/185)) ([a28d279](https://github.com/libp2p/js-libp2p-kad-dht/commit/a28d279))
+
+
+
 <a name="0.19.1"></a>
 ## [0.19.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.0...v0.19.1) (2020-04-27)
 
