@@ -13,6 +13,7 @@ const PeerStore = require('..')
 const {
   NAMESPACE_ADDRESS,
   NAMESPACE_COMMON,
+  NAMESPACE_KEYS,
   NAMESPACE_PROTOCOL
 } = require('./consts')
 
@@ -56,10 +57,11 @@ class PersistentPeerStore extends PeerStore {
     // Handlers for dirty peers
     this.on('change:protocols', this._addDirtyPeer)
     this.on('change:multiaddrs', this._addDirtyPeer)
+    this.on('change:pubkey', this._addDirtyPeer)
 
     // Load data
     for await (const entry of this._datastore.query({ prefix: NAMESPACE_COMMON })) {
-      this._processDatastoreEntry(entry)
+      await this._processDatastoreEntry(entry)
     }
 
     log('PeerStore started')
@@ -110,10 +112,13 @@ class PersistentPeerStore extends PeerStore {
     const batch = this._datastore.batch()
     for (const peerIdStr of commitPeers) {
       // PeerId (replace by keyBook)
-      const peerId = this.peerIds.get(peerIdStr)
+      const peerId = this.keyBook.data.get(peerIdStr) || PeerId.createFromB58String(peerIdStr)
 
       // Address Book
       this._batchAddressBook(peerId, batch)
+
+      // Key Book
+      this._batchKeyBook(peerId, batch)
 
       // Proto Book
       this._batchProtoBook(peerId, batch)
@@ -155,6 +160,31 @@ class PersistentPeerStore extends PeerStore {
   }
 
   /**
+   * Add Key book data of the peer to the batch.
+   * @private
+   * @param {PeerId} peerId
+   * @param {Object} batch
+   */
+  _batchKeyBook (peerId, batch) {
+    const b32key = peerId.toString()
+    const key = new Key(`${NAMESPACE_KEYS}${b32key}`)
+
+    try {
+      // Deleted from the book
+      if (!peerId.pubKey) {
+        batch.delete(key)
+        return
+      }
+
+      const encodedData = peerId.marshalPubKey()
+
+      batch.put(key, encodedData)
+    } catch (err) {
+      log.error(err)
+    }
+  }
+
+  /**
    * Add proto book data of the peer to the batch.
    * @private
    * @param {PeerId} peerId
@@ -187,8 +217,9 @@ class PersistentPeerStore extends PeerStore {
    * @param {Object} params
    * @param {Key} params.key datastore key
    * @param {Buffer} params.value datastore value stored
+   * @return {Promise<void>}
    */
-  _processDatastoreEntry ({ key, value }) {
+  async _processDatastoreEntry ({ key, value }) {
     try {
       const keyParts = key.toString().split('/')
       const peerId = PeerId.createFromCID(keyParts[3])
@@ -203,6 +234,14 @@ class PersistentPeerStore extends PeerStore {
             decoded.addrs.map((address) => ({
               multiaddr: multiaddr(address.multiaddr)
             })),
+            { emit: false })
+          break
+        case 'keys':
+          decoded = await PeerId.createFromPubKey(value)
+
+          this.keyBook._setData(
+            decoded,
+            decoded,
             { emit: false })
           break
         case 'protos':

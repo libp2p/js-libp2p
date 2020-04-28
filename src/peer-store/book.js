@@ -47,7 +47,7 @@ class Book {
    * Set data into the datastructure, persistence and emit it using the provided transformers.
    * @private
    * @param {PeerId} peerId peerId of the data to store
-   * @param {Array<*>} data data to store.
+   * @param {*} data data to store.
    * @param {Object} [options] storing options.
    * @param {boolean} [options.emit = true] emit the provided data.
    * @return {void}
@@ -57,22 +57,27 @@ class Book {
 
     // Store data in memory
     this.data.set(b58key, data)
-    this._setPeerId(peerId)
+
+    // Store PeerId
+    if (!PeerId.isPeerId(data)) {
+      this._ps.keyBook.set(peerId)
+    }
 
     // Emit event
-    emit && this._ps.emit(this.eventName, {
-      peerId,
-      [this.eventProperty]: this.eventTransformer(data)
-    })
+    emit && this._emit(peerId, data)
   }
 
   /**
-   * Add known data of a provided peer.
+   * Emit data.
+   * @private
    * @param {PeerId} peerId
-   * @param {Array<Data>|Data} data
+   * @param {*} data
    */
-  add (peerId, data) {
-    throw errcode(new Error('set must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
+  _emit (peerId, data) {
+    this._ps.emit(this.eventName, {
+      peerId,
+      [this.eventProperty]: this.eventTransformer(data)
+    })
   }
 
   /**
@@ -104,23 +109,9 @@ class Book {
       return false
     }
 
-    this._ps.emit(this.eventName, {
-      peerId,
-      [this.eventProperty]: []
-    })
+    this._emit(peerId, [])
 
     return true
-  }
-
-  /**
-   * Set PeerId into peerStore datastructure.
-   * @private
-   * @param {PeerId} peerId
-   */
-  _setPeerId (peerId) {
-    if (!this._ps.peerIds.get(peerId)) {
-      this._ps.peerIds.set(peerId.toB58String(), peerId)
-    }
   }
 }
 
