@@ -83,6 +83,7 @@
     "aegir": "^22.0.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
+    "chai-bytes": "^0.1.2",
     "cids": "^0.8.0",
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",

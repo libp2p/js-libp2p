@@ -52,9 +52,11 @@ A `peerId.toString()` identifier mapping to a `Address` object, which should hav
 
 #### Key Book
 
-The `keyBook` tracks the keys of the peers.
+The `keyBook` tracks the publick keys of the peers by keeping their [`PeerId`][peer-id].
 
-**Not Yet Implemented**
+`Map<string, PeerId`
+
+A `peerId.toString()` identifier mapping to a `PeerId` of the peer. This instance contains the peer public key.
 
 #### Protocol Book
 
@@ -74,8 +76,9 @@ For the complete API documentation, you should check the [API.md](../../doc/API.
 
 Access to its underlying books:
 
-- `peerStore.protoBook.*`
 - `peerStore.addressBook.*`
+- `peerStore.keyBook.*`
+- `peerStore.protoBook.*`
 
 ### Events
 
@@ -107,8 +110,6 @@ All the known peer protocols are stored with a key pattern as follows:
 
 **KeyBook**
 
-_NOT_YET_IMPLEMENTED_
-
 All public keys are stored under the following pattern:
 
 ` /peers/keys/<b32 peer id no padding>`
@@ -127,3 +128,5 @@ Metadata is stored under the following key pattern:
 - Further API methods will probably need to be added in the context of multiaddr validity and confidence.
 - When improving libp2p configuration for specific runtimes, we should take into account the PeerStore recommended datastore.
 - When improving libp2p configuration, we should think about a possible way of allowing the configuration of Bootstrap to be influenced by the persisted peers, as a way to decrease the load on Bootstrap nodes.
+
+[peer-id]: https://github.com/libp2p/js-peer-id
