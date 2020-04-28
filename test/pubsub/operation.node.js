@@ -47,7 +47,7 @@ describe('Pubsub subsystem operates correctly', () => {
         remoteLibp2p.start()
       ])
 
-      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getAdvertisingMultiaddrs())
+      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
     })
 
     afterEach(() => Promise.all([
@@ -124,7 +124,7 @@ describe('Pubsub subsystem operates correctly', () => {
       await libp2p.start()
       await remoteLibp2p.start()
 
-      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getAdvertisingMultiaddrs())
+      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
     })
 
     afterEach(() => Promise.all([

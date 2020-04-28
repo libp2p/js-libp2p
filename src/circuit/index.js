@@ -122,7 +122,7 @@ class Circuit {
           type: CircuitPB.Type.HOP,
           srcPeer: {
             id: this.peerId.toBytes(),
-            addrs: this.addressManager.getListenMultiaddrs().map(addr => addr.buffer)
+            addrs: this.addressManager.getListenAddrs().map(addr => addr.buffer)
           },
           dstPeer: {
             id: destinationPeer.toBytes(),

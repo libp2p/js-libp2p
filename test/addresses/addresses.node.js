@@ -13,7 +13,7 @@ const peerUtils = require('../utils/creators/peer')
 const listenAddresses = ['/ip4/127.0.0.1/tcp/0', '/ip4/127.0.0.1/tcp/8000/ws']
 const announceAddreses = ['/dns4/peer.io']
 
-describe('libp2p.getAdvertisingMultiaddrs', () => {
+describe('libp2p.multiaddrs', () => {
   let libp2p
 
   afterEach(() => libp2p && libp2p.stop())
@@ -58,12 +58,12 @@ describe('libp2p.getAdvertisingMultiaddrs', () => {
 
     const tmListen = libp2p.transportManager.getAddrs().map((ma) => ma.toString())
 
-    const spyAnnounce = sinon.spy(libp2p.addressManager, 'getAnnounceMultiaddrs')
-    const spyNoAnnounce = sinon.spy(libp2p.addressManager, 'getNoAnnounceMultiaddrs')
-    const spyListen = sinon.spy(libp2p.addressManager, 'getListenMultiaddrs')
+    const spyAnnounce = sinon.spy(libp2p.addressManager, 'getAnnounceAddrs')
+    const spyNoAnnounce = sinon.spy(libp2p.addressManager, 'getNoAnnounceAddrs')
+    const spyListen = sinon.spy(libp2p.addressManager, 'getListenAddrs')
     const spyTranspMgr = sinon.spy(libp2p.transportManager, 'getAddrs')
 
-    const advertiseMultiaddrs = libp2p.getAdvertisingMultiaddrs().map((ma) => ma.toString())
+    const advertiseMultiaddrs = libp2p.multiaddrs.map((ma) => ma.toString())
 
     expect(spyAnnounce).to.have.property('callCount', 1)
     expect(spyNoAnnounce).to.have.property('callCount', 1)
@@ -92,7 +92,7 @@ describe('libp2p.getAdvertisingMultiaddrs', () => {
       }
     })
 
-    const advertiseMultiaddrs = libp2p.getAdvertisingMultiaddrs().map((ma) => ma.toString())
+    const advertiseMultiaddrs = libp2p.multiaddrs.map((ma) => ma.toString())
 
     // Announce 2 listen (transport), ignoring duplicated in announce
     expect(advertiseMultiaddrs.length).to.equal(2)
@@ -111,33 +111,7 @@ describe('libp2p.getAdvertisingMultiaddrs', () => {
       }
     })
 
-    const advertiseMultiaddrs = libp2p.getAdvertisingMultiaddrs().map((ma) => ma.toString())
-
-    // Announce 1 listen (transport) not in the noAnnounce and the announce
-    expect(advertiseMultiaddrs.length).to.equal(2)
-
-    announceAddreses.forEach((m) => {
-      expect(advertiseMultiaddrs).to.include(m)
-    })
-    noAnnounce.forEach((m) => {
-      expect(advertiseMultiaddrs).to.not.include(m)
-    })
-  })
-
-  it('should not advertise noAnnounce addresses with random port switch', async () => {
-    const noAnnounce = [listenAddresses[0]]
-    ;[libp2p] = await peerUtils.createPeer({
-      config: {
-        ...AddressesOptions,
-        addresses: {
-          listen: listenAddresses,
-          announce: announceAddreses,
-          noAnnounce
-        }
-      }
-    })
-
-    const advertiseMultiaddrs = libp2p.getAdvertisingMultiaddrs().map((ma) => ma.toString())
+    const advertiseMultiaddrs = libp2p.multiaddrs.map((ma) => ma.toString())
 
     // Announce 1 listen (transport) not in the noAnnounce and the announce
     expect(advertiseMultiaddrs.length).to.equal(2)
