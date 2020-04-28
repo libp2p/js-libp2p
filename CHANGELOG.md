@@ -1,3 +1,13 @@
+<a name="0.14.5"></a>
+## [0.14.5](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.4...v0.14.5) (2020-04-28)
+
+
+### Bug Fixes
+
+* catch error from maConn.close ([#128](https://github.com/libp2p/js-libp2p-tcp/issues/128)) ([0fe0815](https://github.com/libp2p/js-libp2p-tcp/commit/0fe0815))
+
+
+
 <a name="0.14.4"></a>
 ## [0.14.4](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.3...v0.14.4) (2020-02-24)
 
