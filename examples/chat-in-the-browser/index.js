@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const status = document.getElementById('status')
   const output = document.getElementById('output')
   const txtSend = document.getElementById('txt_send')
+  const btnSend = document.getElementById('btn_send')
 
   output.textContent = ''
 
@@ -67,6 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     libp2p.dialProtocol(peerInfo, [protocol]).then(({ stream }) => {
       log('dialed a stream', stream)
       remotePeer = peerInfo
+      btnSend.disabled = false
     })
   })
 
