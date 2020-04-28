@@ -305,4 +305,39 @@ describe('libp2p.peerStore', () => {
 
     await newNode.stop()
   })
+
+  it('should delete content from the datastore on delete', async () => {
+    const [peer] = await peerUtils.createPeerId({ number: 2 })
+    const multiaddrs = [multiaddr('/ip4/156.10.1.22/tcp/1000')]
+    const protocols = ['/ping/1.0.0']
+    const spyDs = sinon.spy(memoryDatastore, 'delete')
+    const spyAddressBook = sinon.spy(libp2p.peerStore.addressBook, 'delete')
+    const spyProtoBook = sinon.spy(libp2p.peerStore.protoBook, 'delete')
+
+    await libp2p.start()
+
+    // AddressBook
+    await libp2p.peerStore.addressBook.set(peer, multiaddrs)
+    // ProtoBook
+    await libp2p.peerStore.protoBook.set(peer, protocols)
+
+    expect(spyDs).to.have.property('callCount', 0)
+
+    // Delete from PeerStore
+    libp2p.peerStore.delete(peer)
+    await libp2p.stop()
+
+    expect(spyAddressBook).to.have.property('callCount', 1)
+    expect(spyProtoBook).to.have.property('callCount', 1)
+    expect(spyDs).to.have.property('callCount', 2)
+
+    // Should have zero peer records stored in the datastore
+    const queryParams = {
+      prefix: '/peers/'
+    }
+
+    for await (const _ of memoryDatastore.query(queryParams)) { // eslint-disable-line
+      throw new Error('Datastore should be empty')
+    }
+  })
 })

@@ -40,17 +40,24 @@ class AddressBook extends Book {
      */
     super({
       peerStore,
-      eventName: 'change:multiaddrs',
-      eventProperty: 'multiaddrs',
-      protoBuf: Protobuf,
-      dsPrefix: '/peers/addrs/',
-      eventTransformer: (data) => data.map((address) => address.multiaddr),
-      dsSetTransformer: (data) => ({
-        addrs: data.map((address) => address.multiaddr.buffer)
-      }),
-      dsGetTransformer: (data) => data.addrs.map((a) => ({
-        multiaddr: multiaddr(a)
-      }))
+      event: {
+        name: 'change:multiaddrs',
+        property: 'multiaddrs',
+        transformer: (data) => data.map((address) => address.multiaddr)
+      },
+      ds: {
+        prefix: '/peers/addrs/',
+        setTransformer: (data) => Protobuf.encode({
+          addrs: data.map((address) => address.multiaddr.buffer)
+        }),
+        getTransformer: (encData) => {
+          const data = Protobuf.decode(encData)
+
+          return data.addrs.map((a) => ({
+            multiaddr: multiaddr(a)
+          }))
+        }
+      }
     })
 
     /**
