@@ -86,6 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     pipe(handledStream, async function (source) {
       for await (const msg of source) {
         log(`Received message: ${msg}`)
+        pipe([], handledStream)
       }
     })
   })
