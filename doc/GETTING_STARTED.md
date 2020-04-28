@@ -136,8 +136,6 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
 
-TODO: add listen addresses here?
-
 ```js
 const Libp2p = require('libp2p')
 const WebSockets = require('libp2p-websockets')
@@ -145,6 +143,9 @@ const SECIO = require('libp2p-secio')
 const MPLEX = require('libp2p-mplex')
 
 const node = await Libp2p.create({
+  addresses: {
+    listen: ['/ip4/127.0.0.1/tcp/8000/ws']
+  },
   modules: {
     transport: [WebSockets],
     connEncryption: [SECIO],
@@ -155,6 +156,12 @@ const node = await Libp2p.create({
 // start libp2p
 await node.start()
 console.log('libp2p has started')
+
+const listenAddrs = node.transportManager.getAddrs()
+console.log('libp2p is listening on the following addresses: ', listenAddrs)
+
+const advertiseAddrs = node.multiaddrs
+console.log('libp2p is advertising the following addresses: ', advertiseAddrs)
 
 // stop libp2p
 await node.stop()

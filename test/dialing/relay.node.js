@@ -154,13 +154,13 @@ describe('Dialing (via relay, TCP)', () => {
 
     // Connect the destination peer and the relay
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
-    sinon.stub(dstLibp2p.addressManager, 'getListenMultiaddrs').returns([multiaddr(`${relayAddr}/p2p-circuit`)])
+    sinon.stub(dstLibp2p.addressManager, 'getListenAddrs').returns([multiaddr(`${relayAddr}/p2p-circuit`)])
 
     await dstLibp2p.transportManager.listen()
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
     // Tamper with the our multiaddrs for the circuit message
-    sinon.stub(srcLibp2p.addressManager, 'getListenMultiaddrs').returns([{
+    sinon.stub(srcLibp2p.addressManager, 'getListenAddrs').returns([{
       buffer: Buffer.from('an invalid multiaddr')
     }])
 

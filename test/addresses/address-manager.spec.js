@@ -32,7 +32,7 @@ describe('Address Manager', () => {
     expect(am.announce.size).to.equal(0)
     expect(am.noAnnounce.size).to.equal(0)
 
-    const listenMultiaddrs = am.getListenMultiaddrs()
+    const listenMultiaddrs = am.getListenAddrs()
     expect(listenMultiaddrs.length).to.equal(2)
     expect(listenMultiaddrs[0].equals(multiaddr(listenAddresses[0]))).to.equal(true)
     expect(listenMultiaddrs[1].equals(multiaddr(listenAddresses[1]))).to.equal(true)
@@ -48,7 +48,7 @@ describe('Address Manager', () => {
     expect(am.announce.size).to.equal(announceAddreses.length)
     expect(am.noAnnounce.size).to.equal(0)
 
-    const announceMultiaddrs = am.getAnnounceMultiaddrs()
+    const announceMultiaddrs = am.getAnnounceAddrs()
     expect(announceMultiaddrs.length).to.equal(1)
     expect(announceMultiaddrs[0].equals(multiaddr(announceAddreses[0]))).to.equal(true)
   })
@@ -63,7 +63,7 @@ describe('Address Manager', () => {
     expect(am.announce.size).to.equal(0)
     expect(am.noAnnounce.size).to.equal(listenAddresses.length)
 
-    const noAnnounceMultiaddrs = am.getNoAnnounceMultiaddrs()
+    const noAnnounceMultiaddrs = am.getNoAnnounceAddrs()
     expect(noAnnounceMultiaddrs.length).to.equal(2)
     expect(noAnnounceMultiaddrs[0].equals(multiaddr(listenAddresses[0]))).to.equal(true)
     expect(noAnnounceMultiaddrs[1].equals(multiaddr(listenAddresses[1]))).to.equal(true)

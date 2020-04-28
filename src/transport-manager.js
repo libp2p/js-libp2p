@@ -131,7 +131,7 @@ class TransportManager {
    * @async
    */
   async listen () {
-    const addrs = this.libp2p.addressManager.getListenMultiaddrs()
+    const addrs = this.libp2p.addressManager.getListenAddrs()
 
     if (addrs.length === 0) {
       log('no addresses were provided for listening, this node is dial only')

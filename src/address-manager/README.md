@@ -8,9 +8,9 @@ These Addresses should be specified in your libp2p [configuration](../../doc/CON
 
 A libp2p node should have a set of listen addresses, which will be used by libp2p underlying transports to listen for dials from other nodes in the network.
 
-Before a libp2p node starts, a set of listen addresses should be provided to the AddressManager, so that when the node is started, the libp2p transports can use them to listen for connections. Accordingly, listen addresses should be specified through the libp2p configuration, in order to have the `AddressManager` created with them.
+Before a libp2p node starts, its configured listen addresses will be passed to the AddressManager, so that during startup the libp2p transports can use them to listen for connections. Accordingly, listen addresses should be specified through the libp2p configuration, in order to have the `AddressManager` created with them.
 
-It is important pointing out that libp2p accepts to listen on addresses that intend to rely on any available local port. In this context, the provided listen addresses might not be exactly the same as the ones used by the transports. For example tcp may replace `/ip4/0.0.0.0/tcp/0` with something like `/ip4/0.0.0.0/tcp/8989`. As a consequence, libp2p should take into account this when advertising its addresses.
+It is important pointing out that libp2p accepts ephemeral listening addresses. In this context, the provided listen addresses might not be exactly the same as the ones used by the transports. For example TCP may replace `/ip4/0.0.0.0/tcp/0` with something like `/ip4/127.0.0.1/tcp/8989`. As a consequence, libp2p should take into account this when determining its advertised addresses.
 
 ## Announce Addresses
 
@@ -22,13 +22,13 @@ Scenarios for Announce Addresses include:
 
 ## No Announce Addresses
 
-While we need to add Announce Addresses to enable peers' connectivity, we can also not announce addresses that will not be reachable. This way, No Announce Addresses should be specified so that they are not announced by the peer as addresses that other peers can use to dial it.
+While we need to add Announce Addresses to enable peers' connectivity, we should also avoid announcing addresses that will not be reachable. No Announce Addresses should be specified so that they are filtered from the advertised multiaddrs.
 
-As stated into the Listen Addresses section, Listen Addresses might get modified after libp2p transports get in action and use them to listen for new connections. This way, libp2p should also take into account these changes so that they can be matched when No Announce Addresses are being filtered out for advertising addresses.
+As stated in the Listen Addresses section, Listen Addresses might be modified by libp2p transports after the successfully bind to those addresses. Libp2p should also take these changes into account so that they can be matched when No Announce Addresses are being filtered out of the advertised multiaddrs.
 
 ## Implementation
 
-When a libp2p node is created, the Address Manager will be populated from the provided addresses through the libp2p configuration. Once the node is started, the Transport Manager component will gather the listen addresses from the Address Manager, so that the libp2p transports use them to listen on.
+When a libp2p node is created, the Address Manager will be populated from the provided addresses through the libp2p configuration. Once the node is started, the Transport Manager component will gather the listen addresses from the Address Manager, so that the libp2p transports can attempt to bind to them.
 
 Libp2p will use the the Address Manager as the source of truth when advertising the peers addresses. After all transports are ready, other libp2p components/subsystems will kickoff, namely the Identify Service and the DHT. Both of them will announce the node addresses to the other peers in the network. The announce and noAnnounce addresses will have an important role here and will be gathered by libp2p to compute its current addresses to advertise everytime it is needed.
 
@@ -40,7 +40,7 @@ In a future iteration, we can enable these addresses to be modified in runtime. 
 
 #### Modify Listen Addresses
 
-While adding new addresses to listen on runtime is a feasible operation, removing one listen address might have bad implications for the node, since all the connections using that listen address will be closed. With this in mind and taking also into consideration the lack of good use cases for removing listen addresses, the Address Manager API only allows libp2p users to add new Listen Addresses on runtime.
+While adding new addresses to listen on runtime should be trivial, removing a listen address might have bad implications for the node, since all the connections using that listen address will be closed. However, libp2p should provide a mechanism for both adding and removing listen addresses in the future.
 
 Every time a new listen address is added, the Address Manager should emit an event with the new multiaddrs to listen. The Transport Manager should listen to this events and act accordingly.
 

@@ -55,7 +55,7 @@ describe('Identify', () => {
             set: () => { }
           }
         },
-        getAdvertisingMultiaddrs: () => []
+        multiaddrs: []
       },
       protocols
     })
@@ -63,7 +63,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        getAdvertisingMultiaddrs: () => []
+        multiaddrs: []
       },
       protocols
     })
@@ -108,7 +108,7 @@ describe('Identify', () => {
             set: () => { }
           }
         },
-        getAdvertisingMultiaddrs: () => []
+        multiaddrs: []
       },
       protocols
     })
@@ -116,7 +116,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        getAdvertisingMultiaddrs: () => []
+        multiaddrs: []
       },
       protocols
     })
@@ -153,7 +153,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
-          getAdvertisingMultiaddrs: () => [listeningAddr]
+          multiaddrs: [listeningAddr]
         },
         protocols: new Map([
           [multicodecs.IDENTIFY],
@@ -173,7 +173,7 @@ describe('Identify', () => {
               set: () => { }
             }
           },
-          getAdvertisingMultiaddrs: () => []
+          multiaddrs: []
         }
       })
 
