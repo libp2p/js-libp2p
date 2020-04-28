@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function send () {
     const value = txtSend.value
+      txtSend.value = ''
     sendMessage(remotePeer, value)
   }
 
