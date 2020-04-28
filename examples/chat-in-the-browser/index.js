@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   })
 
+  // Our protocol identifier
+  const protocol = '/chat'
+
   // UI elements
   const status = document.getElementById('status')
   const output = document.getElementById('output')
@@ -61,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let queuedMessages = pushable()
   libp2p.on('peer:connect', peerInfo => {
     log(`Connected to ${peerInfo.id.toB58String()}`)
-    libp2p.dialProtocol(peerInfo, ['/chat']).then(({ stream }) => {
+    libp2p.dialProtocol(peerInfo, [protocol]).then(({ stream }) => {
       log('dialed a stream', stream)
       pipe(queuedMessages, stream)
     })
@@ -77,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   log(`libp2p id is ${libp2p.peerInfo.id.toB58String()}`)
 
   let handledStream = null
-  await libp2p.handle(['/chat'], ({ connection, stream }) => {
+  await libp2p.handle([protocol], ({ connection, stream }) => {
     log(`handle chat from ${connection.remotePeer.toB58String()}`)
     handledStream = stream
     pipe(handledStream, async function (source) {
