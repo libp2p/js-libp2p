@@ -188,8 +188,7 @@ class Libp2p extends EventEmitter {
    */
   async start () {
     log('libp2p is starting')
-    // TODO: consider validate listen addresses on start?
-    // depend on transports?
+
     try {
       await this._onStarting()
       await this._onDidStart()
