@@ -2,6 +2,8 @@
 
 This example leverages the [Parcel.js bundler](https://parceljs.org/) to compile and serve the libp2p chat in the browser. Parcel uses [Babel](https://babeljs.io/) to handle transpilation of the code. You can use other bundlers such as Webpack or Browserify, but we will not be covering them here.
 
+Some interesting discussion and background on this example can be found in [it's pull request](https://github.com/libp2p/js-libp2p/pull/616).
+
 ## Setup
 
 In order to run the example, first install the dependencies from same directory as this README:
