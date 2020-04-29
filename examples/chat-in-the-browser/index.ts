@@ -85,6 +85,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     log(`Connected to ${peerInfo.id.toB58String()}`)
     libp2p.dialProtocol(peerInfo, [protocol]).then(() => {
       log('dialed a stream')
+      // Dial was successful, meaning that the other end can speak our
+      // protocol. Capture the peerInfo so that we can send messages later on.
       remotePeer = peerInfo
       btnSend.disabled = false
     })
@@ -115,11 +117,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     })
   }
 
+  // Tell libp2p how to handle our protocol
   await libp2p.handle([protocol], handleChat)
 
   function send (event: KeyboardEvent | MouseEvent) {
     const k = event as KeyboardEvent
-    if (k && k.keyCode !== 13) return
+    if (k && k.keyCode !== 13) return // ignore key events other than <enter>
 
     if (remotePeer) {
       const value = txtSend.value
