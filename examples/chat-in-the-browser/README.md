@@ -54,6 +54,8 @@ Now, if you open a second browser tab to `http://localhost:1234`, you should dis
 
 **Note**: In the example we assign libp2p to `window.libp2p`, in case you would like to play around with the API directly in the browser. You can of course make changes to `index.js` and Parcel will automatically rebuild and reload the browser tabs.
 
+**Note**: During startup, the example raises exceptions "protocol selection failed". This is normal. The reason is that the example tries to chat with the bootstrap servers, but they don't support the chat protocol.
+
 ## TypeScript
 
 This example also shows how to use Libp2p using TypeScript. Libp2p itself currently does not support TypeScript, but this example includes a few minimal type declarations so that it can be used, even with strict compilation.
