@@ -161,7 +161,7 @@ describe('Dialing (via relay, TCP)', () => {
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
     // Tamper with the our multiaddrs for the circuit message
-    sinon.stub(srcLibp2p.addressManager, 'getListenAddrs').returns([{
+    sinon.stub(srcLibp2p, 'multiaddrs').value([{
       buffer: Buffer.from('an invalid multiaddr')
     }])
 

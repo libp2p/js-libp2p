@@ -366,10 +366,9 @@ const latency = await libp2p.ping(otherPeerId)
 
 ## multiaddrs
 
-Get peer advertising multiaddrs. This computes the advertising multiaddrs of the peer by
-joining the multiaddrs that libp2p transports are listening on with the announce multiaddrs
-provided in hte libp2p config. No announce multiaddrs will be filtered out, even when
-using random ports in the provided multiaddrs.
+Gets the multiaddrs the libp2p node announces to the network. This computes the advertising multiaddrs 
+of the peer by joining the multiaddrs that libp2p transports are listening on with the announce multiaddrs
+provided in the libp2p config. Configured no announce multiaddrs will be filtered out of the advertised addresses.
 
 `libp2p.multiaddrs`
 
@@ -465,6 +464,7 @@ Get the multiaddrs that libp2p transports are using to listen on.
 // ...
 const listenMa = libp2p.transportManager.getAddrs()
 // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
+```
 
 ### contentRouting.findProviders
 
