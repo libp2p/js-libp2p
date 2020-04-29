@@ -50,7 +50,9 @@ describe('MulticastDNS', () => {
 
     const mdnsA = new MulticastDNS({
       peerId: pA,
-      multiaddrs: aMultiaddrs,
+      libp2p: {
+        multiaddrs: aMultiaddrs
+      },
       broadcast: false, // do not talk to ourself
       port: 50001,
       compat: false
@@ -58,7 +60,9 @@ describe('MulticastDNS', () => {
 
     const mdnsB = new MulticastDNS({
       peerId: pB,
-      multiaddrs: bMultiaddrs,
+      libp2p: {
+        multiaddrs: bMultiaddrs
+      },
       port: 50001, // port must be the same
       compat: false
     })
@@ -78,20 +82,26 @@ describe('MulticastDNS', () => {
 
     const mdnsA = new MulticastDNS({
       peerId: pA,
-      multiaddrs: aMultiaddrs,
+      libp2p: {
+        multiaddrs: aMultiaddrs
+      },
       broadcast: false, // do not talk to ourself
       port: 50003,
       compat: false
     })
     const mdnsC = new MulticastDNS({
       peerId: pC,
-      multiaddrs: cMultiaddrs,
+      libp2p: {
+        multiaddrs: cMultiaddrs
+      },
       port: 50003, // port must be the same
       compat: false
     })
     const mdnsD = new MulticastDNS({
       peerId: pD,
-      multiaddrs: dMultiaddrs,
+      libp2p: {
+        multiaddrs: dMultiaddrs
+      },
       port: 50003, // port must be the same
       compat: false
     })
@@ -117,7 +127,9 @@ describe('MulticastDNS', () => {
 
     const mdnsA = new MulticastDNS({
       peerId: pA,
-      multiaddrs: aMultiaddrs,
+      libp2p: {
+        multiaddrs: aMultiaddrs
+      },
       broadcast: false, // do not talk to ourself
       port: 50001,
       compat: false
@@ -125,7 +137,9 @@ describe('MulticastDNS', () => {
 
     const mdnsB = new MulticastDNS({
       peerId: pB,
-      multiaddrs: bMultiaddrs,
+      libp2p: {
+        multiaddrs: bMultiaddrs
+      },
       port: 50001,
       compat: false
     })
@@ -146,14 +160,18 @@ describe('MulticastDNS', () => {
 
     const mdnsA = new MulticastDNS({
       peerId: pA,
-      multiaddrs: aMultiaddrs,
+      libp2p: {
+        multiaddrs: aMultiaddrs
+      },
       port: 50004, // port must be the same
       compat: false
     })
 
     const mdnsC = new MulticastDNS({
       peerId: pC,
-      multiaddrs: cMultiaddrs,
+      libp2p: {
+        multiaddrs: cMultiaddrs
+      },
       port: 50004,
       compat: false
     })
@@ -174,7 +192,9 @@ describe('MulticastDNS', () => {
   it('should start and stop with go-libp2p-mdns compat', async () => {
     const mdns = new MulticastDNS({
       peerId: pA,
-      multiaddrs: aMultiaddrs,
+      libp2p: {
+        multiaddrs: aMultiaddrs
+      },
       port: 50004
     })
 
@@ -185,7 +205,9 @@ describe('MulticastDNS', () => {
   it('should not emit undefined peer ids', async () => {
     const mdns = new MulticastDNS({
       peerId: pA,
-      multiaddrs: aMultiaddrs,
+      libp2p: {
+        multiaddrs: aMultiaddrs
+      },
       port: 50004
     })
     await mdns.start()

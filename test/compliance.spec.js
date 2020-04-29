@@ -14,6 +14,9 @@ describe('compliance tests', () => {
       const peerId = await PeerId.create()
       mdns = new MulticastDNS({
         peerId: peerId,
+        libp2p: {
+          multiaddrs: []
+        },
         broadcast: false,
         port: 50001,
         compat: true

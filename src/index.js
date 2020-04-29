@@ -20,7 +20,7 @@ class MulticastDNS extends EventEmitter {
     this.serviceTag = options.serviceTag || 'ipfs.local'
     this.port = options.port || 5353
     this.peerId = options.peerId
-    this.peerMultiaddrs = options.multiaddrs || []
+    this.peerMultiaddrs = options.libp2p.multiaddrs || []
     this._queryInterval = null
     this._onPeer = this._onPeer.bind(this)
 
