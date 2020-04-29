@@ -52,7 +52,7 @@
     "chai": "^4.2.0",
     "chai-string": "^1.5.0",
     "datastore-fs": "^0.9.0",
-    "datastore-level": "^0.14.0",
+    "datastore-level": "^1.0.0",
     "dirty-chai": "^2.0.1",
     "level": "^6.0.0",
     "multihashes": "^0.4.15",
