@@ -83,13 +83,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   libp2p.on('peer:connect', (peerInfo: PeerInfo) => {
     log(`Connected to ${peerInfo.id.toB58String()}`)
-    libp2p
-      .dialProtocol(peerInfo, [protocol])
-      .then(({ stream }: { stream: Stream }) => {
-        log('dialed a stream')
-        remotePeer = peerInfo
-        btnSend.disabled = false
-      })
+    libp2p.dialProtocol(peerInfo, [protocol]).then(() => {
+      log('dialed a stream')
+      remotePeer = peerInfo
+      btnSend.disabled = false
+    })
   })
 
   // Listen for peers disconnecting
