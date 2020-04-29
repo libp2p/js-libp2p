@@ -39,7 +39,8 @@
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
     "libp2p-interfaces": "^0.3.0",
-    "p-defer": "^3.0.0"
+    "p-defer": "^3.0.0",
+    "p-wait-for": "^3.1.0"
   },
   "dependencies": {
     "debug": "^4.1.1",

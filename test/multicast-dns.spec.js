@@ -7,6 +7,7 @@ const expect = chai.expect
 chai.use(dirtyChai)
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
+const pWaitFor = require('p-wait-for')
 
 const MulticastDNS = require('./../src')
 
@@ -110,10 +111,16 @@ describe('MulticastDNS', () => {
     mdnsC.start()
     mdnsD.start()
 
-    const { id, multiaddrs } = await new Promise((resolve) => mdnsA.once('peer', resolve))
+    const peers = new Map()
+    const expectedPeer = pC.toB58String()
 
-    expect(pC.toB58String()).to.eql(id.toB58String())
-    expect(multiaddrs.length).to.equal(1)
+    const foundPeer = peer => peers.set(peer.id.toB58String(), peer)
+    mdnsA.on('peer', foundPeer)
+
+    await pWaitFor(() => peers.has(expectedPeer))
+    mdnsA.removeListener('peer', foundPeer)
+
+    expect(peers.get(expectedPeer).multiaddrs.length).to.equal(1)
 
     await Promise.all([
       mdnsA.stop(),
