@@ -12,7 +12,7 @@
     </header>
 
     <chat>
-      <input id="txt_send" type="text" onchange="send()" />
+      <input id="txt_send" type="text" onkeyup="send(event)" />
       <button id="btn_send" onclick="send()" disabled>Send</button>
       <pre id="chat"></pre>
     </chat>

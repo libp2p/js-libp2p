@@ -14,7 +14,7 @@ import multiaddr from 'multiaddr'
 declare global {
   interface Window {
     libp2p: Libp2p
-    send: () => void
+    send: (event: KeyboardEvent | MouseEvent) => void
   }
 }
 
@@ -117,7 +117,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await libp2p.handle([protocol], handleChat)
 
-  function send () {
+  function send (event: KeyboardEvent | MouseEvent) {
+    const k = event as KeyboardEvent
+    if (k && k.keyCode !== 13) return
+
     if (remotePeer) {
       const value = txtSend.value
       txtSend.value = ''
