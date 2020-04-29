@@ -8,7 +8,7 @@ import Boostrap from 'libp2p-bootstrap'
 import pipe from 'it-pipe'
 import PeerInfo from 'peer-info'
 import { consume } from 'streaming-iterables'
-import { Stream, ProtocolHandler } from './types/libp2p'
+import { ProtocolHandler } from './types/libp2p'
 import multiaddr from 'multiaddr'
 
 declare global {
