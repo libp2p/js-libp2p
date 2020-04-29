@@ -49,11 +49,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // UI elements
   const status = document.getElementById('status')!
+  const chat = document.getElementById('chat')!
   const output = document.getElementById('output')!
   const txtSend = document.getElementById('txt_send')! as HTMLInputElement
   const btnSend = document.getElementById('btn_send')! as HTMLButtonElement
 
+  chat.textContent = ''
   output.textContent = ''
+
+  function addChatLine (txt: string) {
+    const now = new Date().toLocaleTimeString()
+    chat.textContent += `[${now}] ${txt}\n`
+  }
 
   function log (txt: string) {
     console.info(txt)
@@ -100,6 +107,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     pipe(handledStream, async function (source: AsyncGenerator<any, any, any>) {
       for await (const msg of source) {
         log(`Received message: ${msg}`)
+        addChatLine(
+          `${connection?.remotePeer.toB58String().substr(0, 5)}: ${msg}`
+        )
       }
       // Causes `consume` in `sendMessage` to close the stream, as a sort
       // of ACK:
@@ -114,6 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const value = txtSend.value
       txtSend.value = ''
       sendMessage(remotePeer, value)
+      addChatLine(`me: ${value}`)
     }
   }
 
