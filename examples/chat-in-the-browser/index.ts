@@ -100,8 +100,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     pipe(handledStream, async function (source: AsyncGenerator<any, any, any>) {
       for await (const msg of source) {
         log(`Received message: ${msg}`)
-        pipe([], handledStream)
       }
+      // Causes `consume` in `sendMessage` to close the stream, as a sort
+      // of ACK:
+      pipe([], handledStream)
     })
   }
 
