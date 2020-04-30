@@ -5,13 +5,12 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 
-const multiaddr = require('multiaddr')
 const Transport = require('libp2p-tcp')
 
 const { create } = require('../../src')
 const peerUtils = require('../utils/creators/peer')
 
-const listenAddr = multiaddr('/ip4/0.0.0.0/tcp/0')
+const listenAddr = '/ip4/0.0.0.0/tcp/0'
 
 describe('Listening', () => {
   let peerId

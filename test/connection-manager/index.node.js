@@ -7,13 +7,11 @@ chai.use(require('chai-as-promised'))
 const { expect } = chai
 const sinon = require('sinon')
 
-const multiaddr = require('multiaddr')
-
 const peerUtils = require('../utils/creators/peer')
 const mockConnection = require('../utils/mockConnection')
 const baseOptions = require('../utils/base-options.browser')
 
-const listenMultiaddr = multiaddr('/ip4/127.0.0.1/tcp/15002/ws')
+const listenMultiaddr = '/ip4/127.0.0.1/tcp/15002/ws'
 
 describe('Connection Manager', () => {
   let libp2p
@@ -57,7 +55,7 @@ describe('Connection Manager', () => {
     const [remoteLibp2p] = await peerUtils.createPeer({
       config: {
         addresses: {
-          listen: [multiaddr('/ip4/127.0.0.1/tcp/15003/ws')]
+          listen: ['/ip4/127.0.0.1/tcp/15003/ws']
         },
         modules: baseOptions.modules
       }
@@ -67,7 +65,7 @@ describe('Connection Manager', () => {
     sinon.spy(libp2p.connectionManager, 'emit')
     sinon.spy(remoteLibp2p.connectionManager, 'emit')
 
-    libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.addresses.listen)
+    libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
     await libp2p.dial(remoteLibp2p.peerId)
 
     // check connect event
@@ -84,5 +82,34 @@ describe('Connection Manager', () => {
 
     await remoteLibp2p.stop()
     expect(remoteLibp2p.connectionManager.size).to.eql(0)
+  })
+})
+
+describe('libp2p.connections', () => {
+  it('libp2p.connections gets the connectionManager conns', async () => {
+    const [libp2p] = await peerUtils.createPeer({
+      config: {
+        addresses: {
+          listen: ['/ip4/127.0.0.1/tcp/15003/ws']
+        },
+        modules: baseOptions.modules
+      }
+    })
+    const [remoteLibp2p] = await peerUtils.createPeer({
+      config: {
+        addresses: {
+          listen: ['/ip4/127.0.0.1/tcp/15004/ws']
+        },
+        modules: baseOptions.modules
+      }
+    })
+
+    libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
+    await libp2p.dial(remoteLibp2p.peerId)
+
+    expect(libp2p.connections.size).to.eql(1)
+
+    await libp2p.stop()
+    await remoteLibp2p.stop()
   })
 })
