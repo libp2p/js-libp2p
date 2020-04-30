@@ -9,6 +9,9 @@ const MulticastDNS = require('libp2p-mdns')
 
 const createNode = async () => {
   const node = await Libp2p.create({
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
     modules: {
       transport: [TCP],
       streamMuxer: [Mplex],
@@ -24,7 +27,6 @@ const createNode = async () => {
       }
     }
   })
-  node.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
 
   return node
 }
@@ -35,8 +37,8 @@ const createNode = async () => {
     createNode()
   ])
 
-  node1.on('peer:discovery', (peer) => console.log('Discovered:', peer.id.toB58String()))
-  node2.on('peer:discovery', (peer) => console.log('Discovered:', peer.id.toB58String()))
+  node1.on('peer:discovery', (peerId) => console.log('Discovered:', peerId.toB58String()))
+  node2.on('peer:discovery', (peerId) => console.log('Discovered:', peerId.toB58String()))
 
   await Promise.all([
     node1.start(),

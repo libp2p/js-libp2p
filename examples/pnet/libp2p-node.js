@@ -15,6 +15,9 @@ const Protector = require('libp2p/src/pnet')
  */
 const privateLibp2pNode = async (swarmKeyPath) => {
   const node = await Libp2p.create({
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
     modules: {
       transport: [TCP], // We're only using the TCP transport for this example
       streamMuxer: [MPLEX], // We're only using mplex muxing
@@ -29,7 +32,6 @@ const privateLibp2pNode = async (swarmKeyPath) => {
     }
   })
 
-  node.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
   return node
 }
 

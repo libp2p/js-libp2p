@@ -293,7 +293,7 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Dials to the provided peer. If successful, the known `Peer` data of the
+   * Dials to the provided peer. If successful, the known metadata of the
    * peer will be added to the nodes `peerStore`
    * @param {PeerId|Multiaddr|string} peer The peer to dial
    * @param {object} options
@@ -306,7 +306,7 @@ class Libp2p extends EventEmitter {
 
   /**
    * Dials to the provided peer and handshakes with the given protocol.
-   * If successful, the known `Peer` data of the peer will be added to the nodes `peerStore`,
+   * If successful, the known metadata of the peer will be added to the nodes `peerStore`,
    * and the `Connection` will be returned
    * @async
    * @param {PeerId|Multiaddr|string} peer The peer to dial
@@ -465,21 +465,21 @@ class Libp2p extends EventEmitter {
       this._maybeConnect(peerId)
     })
 
-    // Peer discovery
-    await this._setupPeerDiscovery()
-
     // Once we start, emit and dial any peers we may have already discovered
     for (const peer of this.peerStore.peers.values()) {
       this.emit('peer:discovery', peer.id)
       this._maybeConnect(peer.id)
     }
+
+    // Peer discovery
+    await this._setupPeerDiscovery()
   }
 
   /**
    * Called whenever peer discovery services emit `peer` events.
    * Known peers may be emitted.
    * @private
-   * @param {PeerDara} peer
+   * @param {{ id: PeerId, multiaddrs: Array<Multiaddr>, protocols: Array<string> }} peer
    */
   _onDiscoveryPeer (peer) {
     if (peer.id.toB58String() === this.peerId.toB58String()) {

@@ -22,6 +22,9 @@ const bootstrapers = [
 
 ;(async () => {
   const node = await Libp2p.create({
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
     modules: {
       transport: [TCP],
       streamMuxer: [Mplex],
@@ -39,15 +42,13 @@ const bootstrapers = [
     }
   })
 
-  node.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-
-  node.on('peer:connect', (peer) => {
-    console.log('Connection established to:', peer.id.toB58String())	// Emitted when a peer has been found
+  node.connectionManager.on('peer:connect', (connection) => {
+    console.log('Connection established to:', connection.remotePeer.toB58String())	// Emitted when a peer has been found
   })
 
-  node.on('peer:discovery', (peer) => {
+  node.on('peer:discovery', (peerId) => {
     // No need to dial, autoDial is on
-    console.log('Discovered:', peer.id.toB58String())
+    console.log('Discovered:', peerId.toB58String())
   })
 
   await node.start()
