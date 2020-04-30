@@ -105,8 +105,7 @@
     "p-times": "^2.1.0",
     "p-wait-for": "^3.1.0",
     "sinon": "^9.0.0",
-    "streaming-iterables": "^4.1.0",
-    "wrtc": "^0.4.1"
+    "streaming-iterables": "^4.1.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
