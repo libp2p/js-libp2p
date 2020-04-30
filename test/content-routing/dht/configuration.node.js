@@ -6,13 +6,12 @@ chai.use(require('dirty-chai'))
 const { expect } = chai
 
 const mergeOptions = require('merge-options')
-const multiaddr = require('multiaddr')
 
 const { create } = require('../../../src')
 const { baseOptions, subsystemOptions } = require('./utils')
 const peerUtils = require('../../utils/creators/peer')
 
-const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+const listenAddr = '/ip4/127.0.0.1/tcp/0'
 
 describe('DHT subsystem is configurable', () => {
   let libp2p
