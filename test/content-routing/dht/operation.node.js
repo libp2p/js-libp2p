@@ -5,9 +5,9 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 
+const multiaddr = require('multiaddr')
 const pWaitFor = require('p-wait-for')
 const mergeOptions = require('merge-options')
-const multiaddr = require('multiaddr')
 
 const { create } = require('../../../src')
 const { subsystemOptions, subsystemMulticodecs } = require('./utils')

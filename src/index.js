@@ -248,7 +248,7 @@ class Libp2p extends EventEmitter {
    * @returns {Map<string, Connection[]>}
    */
   get connections () {
-    return this.registrar.connections
+    return this.connectionManager.connections
   }
 
   /**

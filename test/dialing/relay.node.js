@@ -18,7 +18,7 @@ const baseOptions = require('../utils/base-options')
 const Libp2p = require('../../src')
 const { codes: Errors } = require('../../src/errors')
 
-const listenAddr = multiaddr('/ip4/0.0.0.0/tcp/0')
+const listenAddr = '/ip4/0.0.0.0/tcp/0'
 
 describe('Dialing (via relay, TCP)', () => {
   let srcLibp2p
