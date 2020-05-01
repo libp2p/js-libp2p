@@ -39,10 +39,6 @@ If you are looking for the documentation of the latest release, you can view the
 
 [**`Weekly Core Dev Calls`**](https://github.com/ipfs/pm/issues/650)
 
-## Tech Lead
-
-[David Dias](https://github.com/diasdavid/)
-
 ## Lead Maintainer
 
 [Jacob Heun](https://github.com/jacobheun/)

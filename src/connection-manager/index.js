@@ -2,7 +2,7 @@
 
 const errcode = require('err-code')
 const mergeOptions = require('merge-options')
-const LatencyMonitor = require('latency-monitor').default
+const LatencyMonitor = require('./latency-monitor')
 const debug = require('debug')('libp2p:connection-manager')
 const retimer = require('retimer')
 

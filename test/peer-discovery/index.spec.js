@@ -15,7 +15,6 @@ const WebRTCStar = require('libp2p-webrtc-star')
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options.browser')
 const { createPeerId } = require('../utils/creators/peer')
-const { EventEmitter } = require('events')
 
 describe('peer discovery', () => {
   describe('basic functions', () => {
@@ -53,27 +52,6 @@ describe('peer discovery', () => {
 
       expect(spy.calledOnce).to.eql(true)
       expect(spy.getCall(0).args[0].toString()).to.eql(remotePeerId.toString())
-    })
-
-    it('should ignore self on discovery', async () => {
-      const mockDiscovery = new EventEmitter()
-      mockDiscovery.tag = 'mock'
-      mockDiscovery.start = () => {}
-      mockDiscovery.stop = () => {}
-
-      libp2p = new Libp2p(mergeOptions(baseOptions, {
-        peerId,
-        modules: {
-          peerDiscovery: [mockDiscovery]
-        }
-      }))
-
-      await libp2p.start()
-      const discoverySpy = sinon.spy()
-      libp2p.on('peer:discovery', discoverySpy)
-      libp2p._discovery.get('mock').emit('peer', { id: libp2p.peerId })
-
-      expect(discoverySpy.called).to.eql(false)
     })
 
     it('should stop discovery on libp2p start/stop', async () => {

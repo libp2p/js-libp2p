@@ -366,10 +366,9 @@ const latency = await libp2p.ping(otherPeerId)
 
 ## multiaddrs
 
-Get peer advertising multiaddrs. This computes the advertising multiaddrs of the peer by
-joining the multiaddrs that libp2p transports are listening on with the announce multiaddrs
-provided in hte libp2p config. No announce multiaddrs will be filtered out, even when
-using random ports in the provided multiaddrs.
+Gets the multiaddrs the libp2p node announces to the network. This computes the advertising multiaddrs 
+of the peer by joining the multiaddrs that libp2p transports are listening on with the announce multiaddrs
+provided in the libp2p config. Configured no announce multiaddrs will be filtered out of the advertised addresses.
 
 `libp2p.multiaddrs`
 
@@ -404,6 +403,66 @@ Get the multiaddrs that were provided for listening on libp2p transports.
 ```js
 // ...
 const listenMa = libp2p.addressManager.getListenAddrs()
+// [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
+```
+
+### addressManager.getAnnounceAddrs
+
+Get the multiaddrs that were provided to announce to the network.
+
+`libp2p.addressManager.getAnnounceAddrs()`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<Multiaddr>` | Provided announce multiaddrs |
+
+#### Example
+
+```js
+// ...
+const announceMa = libp2p.addressManager.getAnnounceAddrs()
+// [ <Multiaddr 047f00000106f9ba - /dns4/peer.io/...> ]
+```
+
+### addressManager.getNoAnnounceAddrs
+
+Get the multiaddrs that were provided to not announce to the network.
+
+`libp2p.addressManager.getNoAnnounceAddrs()`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<Multiaddr>` | Provided noAnnounce multiaddrs |
+
+#### Example
+
+```js
+// ...
+const noAnnounceMa = libp2p.addressManager.getNoAnnounceAddrs()
+// [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
+```
+
+### transportManager.getAddrs
+
+Get the multiaddrs that libp2p transports are using to listen on.
+
+`libp2p.transportManager.getAddrs()`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<Multiaddr>` | listening multiaddrs |
+
+#### Example
+
+```js
+// ...
+const listenMa = libp2p.transportManager.getAddrs()
 // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
 ```
 

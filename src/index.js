@@ -2,6 +2,7 @@
 
 const { EventEmitter } = require('events')
 const debug = require('debug')
+const globalThis = require('ipfs-utils/src/globalthis')
 const log = debug('libp2p')
 log.error = debug('libp2p:error')
 
@@ -133,7 +134,7 @@ class Libp2p extends EventEmitter {
     // Attach private network protector
     if (this._modules.connProtector) {
       this.upgrader.protector = this._modules.connProtector
-    } else if (process.env.LIBP2P_FORCE_PNET) {
+    } else if (globalThis.process !== undefined && globalThis.process.env && globalThis.process.env.LIBP2P_FORCE_PNET) {
       throw new Error('Private network is enforced, but no protector was provided')
     }
 
@@ -188,8 +189,6 @@ class Libp2p extends EventEmitter {
    */
   async start () {
     log('libp2p is starting')
-    // TODO: consider validate listen addresses on start?
-    // depend on transports?
     try {
       await this._onStarting()
       await this._onDidStart()
@@ -216,6 +215,8 @@ class Libp2p extends EventEmitter {
       }
 
       await Promise.all(Array.from(this._discovery.values(), s => s.stop()))
+
+      this._discovery = new Map()
 
       this.connectionManager.stop()
 
@@ -249,7 +250,7 @@ class Libp2p extends EventEmitter {
    * @returns {Map<string, Connection[]>}
    */
   get connections () {
-    return this.registrar.connections
+    return this.connectionManager.connections
   }
 
   /**
@@ -326,11 +327,17 @@ class Libp2p extends EventEmitter {
    * @param {PeerId|multiaddr|string} peer the peer to close connections to
    * @returns {Promise<void>}
    */
-  hangUp (peer) {
+  async hangUp (peer) {
     const { id } = getPeer(peer)
 
-    return Promise.all(
-      this.connectionManager.connections.get(id.toB58String()).map(connection => {
+    const connections = this.connectionManager.connections.get(id.toB58String())
+
+    if (!connections) {
+      return
+    }
+
+    await Promise.all(
+      connections.map(connection => {
         return connection.close()
       })
     )

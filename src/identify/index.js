@@ -1,5 +1,6 @@
 'use strict'
 
+const { Buffer } = require('buffer')
 const debug = require('debug')
 const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')

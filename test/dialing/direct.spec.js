@@ -393,6 +393,19 @@ describe('Dialing (direct, WebSockets)', () => {
       expect(connection.stat.timeline.close).to.exist()
     })
 
+    it('should be able to use hangup when no connection exists', async () => {
+      libp2p = new Libp2p({
+        peerId,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      await libp2p.hangUp(remoteAddr)
+    })
+
     it('should abort pending dials on stop', async () => {
       libp2p = new Libp2p({
         peerId,

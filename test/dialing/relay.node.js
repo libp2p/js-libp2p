@@ -1,6 +1,7 @@
 'use strict'
 /* eslint-env mocha */
 
+const { Buffer } = require('buffer')
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-as-promised'))
@@ -18,7 +19,7 @@ const baseOptions = require('../utils/base-options')
 const Libp2p = require('../../src')
 const { codes: Errors } = require('../../src/errors')
 
-const listenAddr = multiaddr('/ip4/0.0.0.0/tcp/0')
+const listenAddr = '/ip4/0.0.0.0/tcp/0'
 
 describe('Dialing (via relay, TCP)', () => {
   let srcLibp2p
@@ -160,7 +161,7 @@ describe('Dialing (via relay, TCP)', () => {
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
     // Tamper with the our multiaddrs for the circuit message
-    sinon.stub(srcLibp2p.addressManager, 'getListenAddrs').returns([{
+    sinon.stub(srcLibp2p, 'multiaddrs').value([{
       buffer: Buffer.from('an invalid multiaddr')
     }])
 
