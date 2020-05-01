@@ -21,7 +21,8 @@ const DefaultConfig = {
     enabled: false
   },
   peerStore: {
-    persistence: true
+    persistence: false,
+    threshold: 5
   },
   config: {
     dht: {

@@ -8,7 +8,6 @@ log.error = debug('libp2p:peer-store:proto-book:error')
 const PeerId = require('peer-id')
 
 const Book = require('./book')
-const Protobuf = require('./pb/proto-book.proto')
 
 const {
   codes: { ERR_INVALID_PARAMETERS }
@@ -17,8 +16,7 @@ const {
 /**
  * The ProtoBook is responsible for keeping the known supported
  * protocols of a peer.
- * This data will be persisted in the PeerStore datastore as follows:
- * /peers/protos/<b32 peer id no padding>
+ * @fires ProtoBook#change:protocols
  */
 class ProtoBook extends Book {
   /**
@@ -32,22 +30,9 @@ class ProtoBook extends Book {
      */
     super({
       peerStore,
-      event: {
-        name: 'change:protocols',
-        property: 'protocols',
-        transformer: (data) => Array.from(data)
-      },
-      ds: {
-        prefix: '/peers/protos/',
-        setTransformer: (data) => Protobuf.encode({
-          protocols: Array.from(data)
-        }),
-        getTransformer: (encData) => {
-          const data = Protobuf.decode(encData)
-
-          return new Set(data.protocols)
-        }
-      }
+      eventName: 'change:protocols',
+      eventProperty: 'protocols',
+      eventTransformer: (data) => Array.from(data)
     })
 
     /**
@@ -123,6 +108,8 @@ class ProtoBook extends Book {
       log(`the protocols provided to store are already stored for ${id}`)
       return this
     }
+
+    protocols = [...newSet]
 
     this._setData(peerId, newSet)
     log(`added provided protocols for ${id}`)
