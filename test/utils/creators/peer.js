@@ -28,9 +28,6 @@ async function createPeer ({ number = 1, fixture = true, started = true, populat
   const peers = await pTimes(number, (i) => Libp2p.create({
     peerId: peerIds[i],
     addresses,
-    peerStore: {
-      persistence: false
-    },
     ...defaultOptions,
     ...config
   }))

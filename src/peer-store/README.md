@@ -85,15 +85,11 @@ Access to its underlying books:
 
 ## Data Persistence
 
-The data stored in the PeerStore will be persisted by default. Keeping a record of the peers already discovered by the peer, as well as their known data aims to improve the efficiency of peers joining the network after being offline.
+The data stored in the PeerStore can be persisted if configured appropriately. Keeping a record of the peers already discovered by the peer, as well as their known data aims to improve the efficiency of peers joining the network after being offline.
 
----
-TODO: Discuss if we should make it persisted by default now. Taking into consideration that we will use a MemoryDatastore by default, unless the user configures a datastore to use, it will be worthless. It might make sense to make it disabled by default until we work on improving configuration and provide good defauls for each environment.
----
+The libp2p node will need to receive a [datastore](https://github.com/ipfs/interface-datastore), in order to store this data in a persistent way. A [datastore](https://github.com/ipfs/interface-datastore) stores its data in a key-value fashion. As a result, we need coherent keys so that we do not overwrite data.
 
-The libp2p node will need to receive a [datastore](https://github.com/ipfs/interface-datastore), in order to store this data in a persistent way. Otherwise, it will be stored on a [memory datastore](https://github.com/ipfs/interface-datastore/blob/master/src/memory.js).
-
-A [datastore](https://github.com/ipfs/interface-datastore) stores its data in a key-value fashion. As a result, we need coherent keys so that we do not overwrite data.
+The PeerStore should not be continuously updating the datastore with the new data observed. Accordingly, it should only store new data after reaching a certain threshold of "dirty" peers, as well as when the node is stopped.
 
 Taking into account that a datastore allows queries using a key prefix, we can find all the information if we define a consistent namespace that allow us to find the content without having any information. The namespaces were defined as follows:
 
