@@ -6,7 +6,6 @@ const globalThis = require('ipfs-utils/src/globalthis')
 const log = debug('libp2p')
 log.error = debug('libp2p:error')
 
-const { MemoryDatastore } = require('interface-datastore')
 const PeerId = require('peer-id')
 
 const peerRouting = require('./peer-routing')
@@ -24,6 +23,7 @@ const Metrics = require('./metrics')
 const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
+const PersistentPeerStore = require('./peer-store/persistent')
 const Registrar = require('./registrar')
 const ping = require('./ping')
 const {
@@ -45,11 +45,14 @@ class Libp2p extends EventEmitter {
     this._options = validateConfig(_options)
 
     this.peerId = this._options.peerId
-    this.datastore = this._options.datastore || new MemoryDatastore()
-    this.peerStore = new PeerStore({
-      datastore: this.datastore,
-      ...this._options.peerStore
-    })
+    this.datastore = this._options.datastore
+
+    this.peerStore = !(this.datastore && this._options.peerStore.persistence)
+      ? new PeerStore()
+      : new PersistentPeerStore({
+        datastore: this.datastore,
+        ...this._options.peerStore
+      })
 
     // Addresses {listen, announce, noAnnounce}
     this.addresses = this._options.addresses
@@ -223,7 +226,8 @@ class Libp2p extends EventEmitter {
 
       this._discovery = new Map()
 
-      this.connectionManager.stop()
+      await this.peerStore.stop()
+      await this.connectionManager.stop()
 
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
@@ -398,7 +402,7 @@ class Libp2p extends EventEmitter {
     await this.transportManager.listen()
 
     // Start PeerStore
-    await this.peerStore.load()
+    await this.peerStore.start()
 
     if (this._config.pubsub.enabled) {
       this.pubsub && this.pubsub.start()
