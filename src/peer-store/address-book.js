@@ -9,7 +9,6 @@ const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 
 const Book = require('./book')
-const Protobuf = require('./pb/address-book.proto')
 
 const {
   codes: { ERR_INVALID_PARAMETERS }
@@ -18,8 +17,6 @@ const {
 /**
  * The AddressBook is responsible for keeping the known multiaddrs
  * of a peer.
- * This data will be persisted in the PeerStore datastore as follows:
- * /peers/addrs/<b32 peer id no padding>
  */
 class AddressBook extends Book {
   /**
@@ -40,24 +37,9 @@ class AddressBook extends Book {
      */
     super({
       peerStore,
-      event: {
-        name: 'change:multiaddrs',
-        property: 'multiaddrs',
-        transformer: (data) => data.map((address) => address.multiaddr)
-      },
-      ds: {
-        prefix: '/peers/addrs/',
-        setTransformer: (data) => Protobuf.encode({
-          addrs: data.map((address) => address.multiaddr.buffer)
-        }),
-        getTransformer: (encData) => {
-          const data = Protobuf.decode(encData)
-
-          return data.addrs.map((a) => ({
-            multiaddr: multiaddr(a)
-          }))
-        }
-      }
+      eventName: 'change:multiaddrs',
+      eventProperty: 'multiaddrs',
+      eventTransformer: (data) => data.map((address) => address.multiaddr)
     })
 
     /**
@@ -145,6 +127,7 @@ class AddressBook extends Book {
     }
 
     this._setData(peerId, addresses)
+
     log(`added provided multiaddrs for ${id}`)
 
     // Notify the existance of a new peer

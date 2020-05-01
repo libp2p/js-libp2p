@@ -2,10 +2,13 @@
 
 const protons = require('protons')
 
-/* eslint-disable no-tabs */
 const message = `
 message Addresses {
-  repeated bytes addrs = 1;
+  message Address {
+    required bytes multiaddr = 1;
+  }
+
+  repeated Address addrs = 1;
 }
 `
 

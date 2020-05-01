@@ -32,17 +32,9 @@ class PeerStore extends EventEmitter {
 
   /**
    * @constructor
-   * @param {Object} properties
-   * @param {Datastore} [properties.datastore] Datastore to persist data.
-   * @param {boolean} [properties.persistance = true] Persist peerstore data.
    */
-  constructor ({ datastore, persistance = true } = {}) {
+  constructor () {
     super()
-
-    /**
-     * Backend datastore used to persist data.
-     */
-    this._datastore = datastore
 
     /**
      * AddressBook containing a map of peerIdStr to Address.
@@ -60,19 +52,17 @@ class PeerStore extends EventEmitter {
      * @type {Map<string, Array<PeerId>}
      */
     this.peerIds = new Map()
-
-    this._enabledPersistance = persistance
   }
 
   /**
-   * Load data from the datastore to populate the PeerStore.
+   * Start the PeerStore.
    */
-  async load () {
-    if (this._enabledPersistance) {
-      await this.addressBook._loadData()
-      await this.protoBook._loadData()
-    }
-  }
+  start () {}
+
+  /**
+   * Stop the PeerStore.
+   */
+  stop () {}
 
   /**
    * Get all the stored information of every peer.
