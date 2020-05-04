@@ -22,6 +22,7 @@
     ["libp2p/js-libp2p-websockets", "libp2p-websockets"],
 
     "secure channels",
+    ["NodeFactoryIo/js-libp2p-noise", "libp2p-noise"],
     ["libp2p/js-libp2p-secio", "libp2p-secio"],
 
     "stream multiplexers",
