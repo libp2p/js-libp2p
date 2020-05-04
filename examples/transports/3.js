@@ -4,6 +4,7 @@
 const Libp2p = require('../..')
 const TCP = require('libp2p-tcp')
 const WebSockets = require('libp2p-websockets')
+const { NOISE } = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
 const MPLEX = require('libp2p-mplex')
 
@@ -20,7 +21,7 @@ const createNode = async (transports, addresses = []) => {
     },
     modules: {
       transport: transports,
-      connEncryption: [SECIO],
+      connEncryption: [NOISE, SECIO],
       streamMuxer: [MPLEX]
     }
   })

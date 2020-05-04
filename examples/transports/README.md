@@ -25,6 +25,7 @@ First thing is to create our own libp2p node! Insert:
 
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
+const { NOISE } = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
 
 const createNode = async () => {
@@ -36,7 +37,7 @@ const createNode = async () => {
     },
     modules: {
       transport: [ TCP ],
-      connEncryption: [ SECIO ]
+      connEncryption: [ NOISE, SECIO ]
     }
   })
 

@@ -5,6 +5,7 @@ const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const Bootstrap = require('libp2p-bootstrap')
 
 // Find this list at: https://github.com/ipfs/js-ipfs/blob/master/src/core/runtime/config-nodejs.json
@@ -28,7 +29,7 @@ const bootstrapers = [
     modules: {
       transport: [TCP],
       streamMuxer: [Mplex],
-      connEncryption: [SECIO],
+      connEncryption: [NOISE, SECIO],
       peerDiscovery: [Bootstrap]
     },
     config: {

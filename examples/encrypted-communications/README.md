@@ -8,7 +8,7 @@ A byproduct of having these encrypted communications modules is that we can auth
 
 # 1. Set up encrypted communications with SECIO
 
-We will build this example on top of example for [Protocol and Stream Multiplexing](../protocol-and-stream-multiplexing). You will need the module `libp2p-secio` to complete it, go ahead and `npm install libp2p-secio`.
+We will build this example on top of example for [Protocol and Stream Multiplexing](../protocol-and-stream-multiplexing). You will need the modules `libp2p-secio` and `libp2p-noise` to complete it, go ahead and `npm install libp2p-secio libp2p-noise`.
 
 SECIO is the crypto channel developed for IPFS, it is a TLS 1.3 like crypto channel that established an encrypted communication channel between two peers.
 
@@ -16,6 +16,7 @@ To add it to your libp2p configuration, all you have to do is:
 
 ```JavaScript
 const Libp2p = require('libp2p')
+const { NOISE } = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
 
 const createNode = () => {
@@ -24,7 +25,7 @@ const createNode = () => {
       transport: [ TCP ],
       streamMuxer: [ Mplex ],
       // Attach secio as the crypto channel to use
-      connEncryption: [ SECIO ]
+      connEncryption: [ NOISE, SECIO ]
     }
   })
 }

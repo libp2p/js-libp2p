@@ -20,7 +20,7 @@ const node = Libp2p.create({
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
-    connEncryption: [ SECIO ],
+    connEncryption: [ NOISE, SECIO ],
     peerDiscovery: [ Bootstrap ]
   },
   config: {
@@ -62,7 +62,7 @@ const node = await Libp2p.create({
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
-    connEncryption: [ SECIO ],
+    connEncryption: [ NOISE, SECIO ],
     peerDiscovery: [ Bootstrap ]
   },
   config: {
@@ -130,7 +130,7 @@ const createNode = () => {
     modules: {
       transport: [ TCP ],
       streamMuxer: [ Mplex ],
-      connEncryption: [ SECIO ],
+      connEncryption: [ NOISE, SECIO ],
       peerDiscovery: [ MulticastDNS ]
     },
     config: {

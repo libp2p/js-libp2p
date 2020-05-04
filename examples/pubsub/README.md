@@ -27,7 +27,7 @@ const node = await Libp2p.create({
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
-    connEncryption: [ SECIO ],
+    connEncryption: [ NOISE, SECIO ],
     // we add the Pubsub module we want
     pubsub: Gossipsub
   }

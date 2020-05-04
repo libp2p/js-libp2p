@@ -2,6 +2,7 @@ import 'babel-polyfill'
 import Libp2p from 'libp2p'
 import Websockets from 'libp2p-websockets'
 import WebRTCStar from 'libp2p-webrtc-star'
+import { NOISE } from 'libp2p-noise'
 import Secio from 'libp2p-secio'
 import Mplex from 'libp2p-mplex'
 import Boostrap from 'libp2p-bootstrap'
@@ -17,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     },
     modules: {
       transport: [Websockets, WebRTCStar],
-      connEncryption: [Secio],
+      connEncryption: [NOISE, Secio],
       streamMuxer: [Mplex],
       peerDiscovery: [Boostrap]
     },
