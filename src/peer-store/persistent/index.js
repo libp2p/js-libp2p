@@ -11,9 +11,9 @@ const PeerId = require('peer-id')
 const PeerStore = require('..')
 
 const {
-  ADDRESS_NAMESPACE,
-  COMMON_NAMESPACE,
-  PROTOCOL_NAMESPACE
+  NAMESPACE_ADDRESS,
+  NAMESPACE_COMMON,
+  NAMESPACE_PROTOCOL
 } = require('./consts')
 
 const Addresses = require('./pb/address-book.proto')
@@ -51,25 +51,25 @@ class PersistentPeerStore extends PeerStore {
    * @return {Promise<void>}
    */
   async start () {
-    log('Persistent PeerStore is starting')
+    log('PeerStore is starting')
 
     // Handlers for dirty peers
     this.on('change:protocols', this._addDirtyPeer)
     this.on('change:multiaddrs', this._addDirtyPeer)
 
     // Load data
-    for await (const entry of this._datastore.query({ prefix: COMMON_NAMESPACE })) {
+    for await (const entry of this._datastore.query({ prefix: NAMESPACE_COMMON })) {
       this._processDatastoreEntry(entry)
     }
 
-    log('Persistent PeerStore started')
+    log('PeerStore started')
   }
 
   async stop () {
-    log('Persistent PeerStore is stopping')
+    log('PeerStore is stopping')
     this.removeAllListeners()
     await this._commitData()
-    log('Persistent PeerStore stopped')
+    log('PeerStore stopped')
   }
 
   /**
@@ -131,7 +131,7 @@ class PersistentPeerStore extends PeerStore {
    */
   _batchAddressBook (peerId, batch) {
     const b32key = peerId.toString()
-    const key = new Key(`${ADDRESS_NAMESPACE}${b32key}`)
+    const key = new Key(`${NAMESPACE_ADDRESS}${b32key}`)
 
     const addresses = this.addressBook.get(peerId)
 
@@ -162,7 +162,7 @@ class PersistentPeerStore extends PeerStore {
    */
   _batchProtoBook (peerId, batch) {
     const b32key = peerId.toString()
-    const key = new Key(`${PROTOCOL_NAMESPACE}${b32key}`)
+    const key = new Key(`${NAMESPACE_PROTOCOL}${b32key}`)
 
     const protocols = this.protoBook.get(peerId)
 
@@ -185,7 +185,7 @@ class PersistentPeerStore extends PeerStore {
    * Process datastore entry and add its data to the correct book.
    * @private
    * @param {Object} params
-   * @param {string} params.key datastore key
+   * @param {Key} params.key datastore key
    * @param {Buffer} params.value datastore value stored
    */
   _processDatastoreEntry ({ key, value }) {
