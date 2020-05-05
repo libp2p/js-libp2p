@@ -80,16 +80,16 @@ Creates an instance of Libp2p.
 | Name | Type | Description |
 |------|------|-------------|
 | options | `object` | libp2p options |
-| options.modules | `Array<object>` | libp2p modules to use |
+| options.modules | [`Array<object>`](./CONFIGURATION.md#modules) | libp2p modules to use |
 | [options.addresses] | `{ listen: Array<string>, announce: Array<string>, noAnnounce: Array<string> }` | Addresses for transport listening and to advertise to the network |
 | [options.config] | `object` | libp2p modules configuration and core configuration |
-| [options.connectionManager] | `object` | libp2p Connection Manager configuration |
+| [options.connectionManager] | [`object`](./CONFIGURATION.md#configuring-connection-manager) | libp2p Connection Manager configuration |
 | [options.datastore] | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) (in memory datastore will be used if not provided) |
-| [options.dialer] | `object` | libp2p Dialer configuration
+| [options.dialer] | [`object`](./CONFIGURATION.md#configuring-dialing) | libp2p Dialer configuration
 | [options.keychain] | [`object`](./CONFIGURATION.md#setup-with-keychain) | keychain configuration |
-| [options.metrics] | `object` | libp2p Metrics configuration
+| [options.metrics] | [`object`](./CONFIGURATION.md#configuring-metrics) | libp2p Metrics configuration
 | [options.peerId] | [`PeerId`][peer-id] | peerId instance (it will be created if not provided) |
-| [options.peerStore] | `object` | libp2p PeerStore configuration |
+| [options.peerStore] | [`object`](./CONFIGURATION.md#configuring-peerstore) | libp2p PeerStore configuration |
 
 For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
 
