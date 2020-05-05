@@ -508,7 +508,9 @@ const node = await Libp2p.create({
 
 #### Configuring PeerStore
 
-PeerStore persistence is disabled in libp2p by default. You can enable and configure it as follows. Aside from enabled being `false` by default, it will need an implementation of a [datastore](https://github.com/ipfs/interface-datastore).
+PeerStore persistence is disabled in libp2p by default. You can enable and configure it as follows. Aside from enabled being `false` by default, it will need an implementation of a [datastore](https://github.com/ipfs/interface-datastore). Take into consideration that using the memory datastore will be ineffective for persistence.
+
+The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with unflushed records when the window is closed.
 
 ```js
 const Libp2p = require('libp2p')
@@ -526,8 +528,8 @@ const node = await Libp2p.create({
   },
   datastore: new LevelStore('path/to/store'),
   peerStore: {
-    persistence: true,
-    threshold: 5
+    persistence: true, // Is persistence enabled (default: false)
+    threshold: 5 // Number of dirty peers allowed (default: 5)
   }
 })
 ```
