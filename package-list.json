@@ -49,7 +49,6 @@
 
     "data types",
     ["libp2p/js-peer-id", "peer-id"],
-    ["libp2p/js-peer-info", "peer-info"],
 
     "pubsub",
     ["libp2p/js-libp2p-pubsub", "libp2p-pubsub"],
