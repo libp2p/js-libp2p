@@ -74,7 +74,7 @@ Creates an instance of Libp2p.
 | [options.dialer] | `object` | libp2p Dialer configuration
 | [options.metrics] | `object` | libp2p Metrics configuration
 | [options.peerId] | [`PeerId`][peer-id] | peerId instance (it will be created if not provided) |
-| [options.peerStore] | [`PeerId`][peer-id] | libp2p PeerStore configuration |
+| [options.peerStore] | `object` | libp2p PeerStore configuration |
 
 For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
 
