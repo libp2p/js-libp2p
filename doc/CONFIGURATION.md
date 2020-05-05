@@ -24,6 +24,7 @@
       - [Configuring Dialing](#configuring-dialing)
       - [Configuring Connection Manager](#configuring-connection-manager)
       - [Configuring Metrics](#configuring-metrics)
+      - [Configuring PeerStore](#configuring-peerstore)
       - [Customizing Transports](#customizing-transports)
   - [Configuration examples](#configuration-examples)
 
@@ -376,10 +377,10 @@ const MPLEX = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
-const PeerInfo = require('peer-info')
+const PeerId = require('peer-id')
 
-// create a peerInfo
-const peerInfo = await PeerInfo.create()
+// create a peerId
+const peerId = await PeerId.create()
 
 const node = await Libp2p.create({
   modules: {
@@ -387,13 +388,13 @@ const node = await Libp2p.create({
     streamMuxer: [MPLEX],
     connEncryption: [SECIO],
     contentRouting: [
-      new DelegatedContentRouter(peerInfo.id)
+      new DelegatedContentRouter(peerId)
     ],
     peerRouting: [
       new DelegatedPeerRouter()
     ],
   },
-  peerInfo
+  peerId
 })
 ```
 
@@ -456,7 +457,15 @@ await libp2p.loadKeychain()
 
 #### Configuring Dialing
 
-Dialing in libp2p can be configured to limit the rate of dialing, and how long dials are allowed to take. The below configuration example shows the default values for the dialer.
+Dialing in libp2p can be configured to limit the rate of dialing, and how long dials are allowed to take. The dialer configuration object should have the following properties:
+
+| Name | Type | Description |
+|------|------|-------------|
+| maxParallelDials | `number` | How many multiaddrs we can dial in parallel. |
+| maxDialsPerPeer | `number` | How many multiaddrs we can dial per peer, in parallel. |
+| dialTimeout | `number` | Second dial timeout per peer in ms. |
+
+The below configuration example shows how the dialer should be configured, with the current defaults:
 
 ```js
 const Libp2p = require('libp2p')
@@ -471,9 +480,9 @@ const node = await Libp2p.create({
     connEncryption: [SECIO]
   },
   dialer: {
-    maxParallelDials: 100, // How many multiaddrs we can dial in parallel
-    maxDialsPerPeer: 4, // How many multiaddrs we can dial per peer, in parallel
-    dialTimeout: 30e3 // 30 second dial timeout per peer
+    maxParallelDials: 100,
+    maxDialsPerPeer: 4,
+    dialTimeout: 30e3
   }
 ```
 
@@ -510,7 +519,17 @@ const node = await Libp2p.create({
 
 #### Configuring Metrics
 
-Metrics are disabled in libp2p by default. You can enable and configure them as follows. Aside from enabled being `false` by default, the configuration options listed here are the current defaults.
+Metrics are disabled in libp2p by default. You can enable and configure them as follows:
+
+| Name | Type | Description |
+|------|------|-------------|
+| enabled | `boolean` | Enabled metrics collection. |
+| computeThrottleMaxQueueSize | `number` | How many messages a stat will queue before processing. |
+| computeThrottleTimeout | `number` | Time in milliseconds a stat will wait, after the last item was added, before processing. |
+| movingAverageIntervals | `Array<number>` | The moving averages that will be computed. |
+| maxOldPeersRetention | `number` | How many disconnected peers we will retain stats for. |
+
+The below configuration example shows how the metrics should be configured. Aside from enabled being `false` by default, the following default configuration options are listed below:
 
 ```js
 const Libp2p = require('libp2p')
@@ -526,14 +545,14 @@ const node = await Libp2p.create({
   },
   metrics: {
     enabled: true,
-    computeThrottleMaxQueueSize: 1000,  // How many messages a stat will queue before processing
-    computeThrottleTimeout: 2000,       // Time in milliseconds a stat will wait, after the last item was added, before processing
-    movingAverageIntervals: [           // The moving averages that will be computed
+    computeThrottleMaxQueueSize: 1000,
+    computeThrottleTimeout: 2000,
+    movingAverageIntervals: [
       60 * 1000, // 1 minute
       5 * 60 * 1000, // 5 minutes
       15 * 60 * 1000 // 15 minutes
     ],
-    maxOldPeersRetention: 50            // How many disconnected peers we will retain stats for
+    maxOldPeersRetention: 50
   }
 })
 ```
@@ -543,6 +562,13 @@ const node = await Libp2p.create({
 PeerStore persistence is disabled in libp2p by default. You can enable and configure it as follows. Aside from enabled being `false` by default, it will need an implementation of a [datastore](https://github.com/ipfs/interface-datastore). Take into consideration that using the memory datastore will be ineffective for persistence.
 
 The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with unflushed records when the window is closed.
+
+| Name | Type | Description |
+|------|------|-------------|
+| persistence | `boolean` | Is persistence enabled. |
+| threshold | `number` | Number of dirty peers allowed. |
+
+The below configuration example shows how the PeerStore should be configured. Aside from persistence being `false` by default, the following default configuration options are listed below:
 
 ```js
 const Libp2p = require('libp2p')
@@ -560,8 +586,8 @@ const node = await Libp2p.create({
   },
   datastore: new LevelStore('path/to/store'),
   peerStore: {
-    persistence: true, // Is persistence enabled (default: false)
-    threshold: 5 // Number of dirty peers allowed (default: 5)
+    persistence: true,
+    threshold: 5
   }
 })
 ```
