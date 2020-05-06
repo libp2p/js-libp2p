@@ -1,3 +1,13 @@
+<a name="0.27.8"></a>
+## [0.27.8](https://github.com/libp2p/js-libp2p/compare/v0.27.7...v0.27.8) (2020-05-06)
+
+
+### Bug Fixes
+
+* reset discovery services upon stop ([#618](https://github.com/libp2p/js-libp2p/issues/618)) ([ea0621b](https://github.com/libp2p/js-libp2p/commit/ea0621b))
+
+
+
 <a name="0.27.7"></a>
 ## [0.27.7](https://github.com/libp2p/js-libp2p/compare/v0.27.6...v0.27.7) (2020-04-24)
 
