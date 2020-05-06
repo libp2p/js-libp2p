@@ -4,7 +4,6 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
-const sinon = require('sinon')
 
 const PeerStore = require('../../src/peer-store')
 const multiaddr = require('multiaddr')
@@ -50,25 +49,11 @@ describe('peer-store', () => {
       expect(peer).to.not.exist()
     })
 
-    it('sets the peer to the KeyBook when added to the AddressBook', () => {
-      const spyPeerStore = sinon.spy(peerStore.keyBook, 'set')
+    it('sets the peer\'s public key to the KeyBook', () => {
+      peerStore.keyBook.set(peerIds[0], peerIds[0].pubKey)
 
-      peerStore.addressBook.set(peerIds[0], [addr1, addr2])
-      expect(spyPeerStore).to.have.property('callCount', 1)
-    })
-
-    it('sets the peer to the KeyBook when added to the ProtoBook', () => {
-      const spyPeerStore = sinon.spy(peerStore.keyBook, 'set')
-
-      peerStore.protoBook.set(peerIds[0], [proto1])
-      expect(spyPeerStore).to.have.property('callCount', 1)
-    })
-
-    it('does not re-set the to the KeyBook when directly added to it', () => {
-      const spyPeerStore = sinon.spy(peerStore.keyBook, 'set')
-
-      peerStore.keyBook.set(peerIds[0])
-      expect(spyPeerStore).to.have.property('callCount', 1)
+      const pubKey = peerStore.keyBook.get(peerIds[0])
+      expect(pubKey).to.exist()
     })
   })
 
