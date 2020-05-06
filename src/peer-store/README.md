@@ -10,7 +10,9 @@ Several libp2p subsystems will perform operations, which will gather relevant in
 
 In a libp2p node's life, it will discover peers through its discovery protocols. In a typical discovery protocol, addresses of the peer are discovered along with its peer id. Once this happens, the PeerStore should collect this information for future (or immediate) usage by other subsystems. When the information is stored, the PeerStore should inform interested parties of the peer discovered (`peer` event).
 
-Taking into account a different scenario, a peer might perform/receive a dial request to/from a unkwown peer. In such a scenario, the PeerStore must store the peer's multiaddr once a connection is established. 
+Taking into account a different scenario, a peer might perform/receive a dial request to/from a unkwown peer. In such a scenario, the PeerStore must store the peer's multiaddr once a connection is established.
+
+When a connection is being upgraded, more precisely after its encryption, or even in a discovery protocol, a libp2p node can get to know other parties public keys. In this scenario, libp2p will add the peer's public key to its `KeyBook`.
 
 After a connection is established with a peer, the Identify protocol will run automatically. A stream is created and peers exchange their information (Multiaddrs, running protocols and their public key). Once this information is obtained, it should be added to the PeerStore. In this specific case, as we are speaking to the source of truth, we should ensure the PeerStore is prioritizing these records. If the recorded `multiaddrs` or `protocols` have changed, interested parties must be informed via the `change:multiaddrs` or `change:protocols` events respectively.
 
@@ -42,7 +44,7 @@ The `addressBook` keeps the known multiaddrs of a peer. The multiaddrs of each p
 
 `Map<string, Address>`
 
-A `peerId.toString()` identifier mapping to a `Address` object, which should have the following structure:
+A `peerId.toB58String()` identifier mapping to a `Address` object, which should have the following structure:
 
 ```js
 {
@@ -52,11 +54,11 @@ A `peerId.toString()` identifier mapping to a `Address` object, which should hav
 
 #### Key Book
 
-The `keyBook` tracks the publick keys of the peers by keeping their [`PeerId`][peer-id].
+The `keyBook` tracks the public keys of the peers by keeping their [`PeerId`][peer-id].
 
 `Map<string, PeerId`
 
-A `peerId.toString()` identifier mapping to a `PeerId` of the peer. This instance contains the peer public key.
+A `peerId.toB58String()` identifier mapping to a `PeerId` of the peer. This instance contains the peer public key.
 
 #### Protocol Book
 
@@ -64,7 +66,7 @@ The `protoBook` holds the identifiers of the protocols supported by each peer. T
 
 `Map<string, Set<string>>`
 
-A `peerId.toString()` identifier mapping to a `Set` of protocol identifier strings.
+A `peerId.toB58String()` identifier mapping to a `Set` of protocol identifier strings.
 
 #### Metadata Book
 
