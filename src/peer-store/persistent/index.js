@@ -111,7 +111,7 @@ class PersistentPeerStore extends PeerStore {
     log('create batch commit')
     const batch = this._datastore.batch()
     for (const peerIdStr of commitPeers) {
-      // PeerId (replace by keyBook)
+      // PeerId
       const peerId = this.keyBook.data.get(peerIdStr) || PeerId.createFromB58String(peerIdStr)
 
       // Address Book

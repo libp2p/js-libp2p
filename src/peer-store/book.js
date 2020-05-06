@@ -58,11 +58,6 @@ class Book {
     // Store data in memory
     this.data.set(b58key, data)
 
-    // Store PeerId
-    if (!PeerId.isPeerId(data)) {
-      this._ps.keyBook.set(peerId)
-    }
-
     // Emit event
     emit && this._emit(peerId, data)
   }

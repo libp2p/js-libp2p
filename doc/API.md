@@ -814,8 +814,6 @@ Add known `protocols` of a given peer.
 peerStore.protoBook.add(peerId, protocols)
 ```
 
-* [`peerStore.keyBook.get`](#peerstorekeybookget)
-* [`peerStore.keyBook.set`](#peerstorekeybookset)
 
 ### peerStore.keyBook.delete
 
@@ -840,7 +838,7 @@ Delete the provided peer from the book.
 ```js
 peerStore.keyBook.delete(peerId)
 // false
-peerStore.keyBook.set(peerId)
+peerStore.keyBook.set(peerId, publicKey)
 peerStore.keyBook.delete(peerId)
 // true
 ```
@@ -868,7 +866,7 @@ Get the known `PublicKey` of a provided peer.
 ```js
 peerStore.keyBook.get(peerId)
 // undefined
-peerStore.keyBook.set(peerId) // with inline public key
+peerStore.keyBook.set(peerId, publicKey)
 peerStore.keyBook.get(peerId)
 // PublicKey
 ```
@@ -877,13 +875,14 @@ peerStore.keyBook.get(peerId)
 
 Set known `peerId`. This can include its Public Key.
 
-`peerStore.keyBook.set(peerId)`
+`peerStore.keyBook.set(peerId, publicKey)`
 
 #### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
 | peerId | [`PeerId`][peer-id] | peerId to set |
+| publicKey | [`RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey`][keys] | peer's public key |
 
 #### Returns
 
@@ -894,7 +893,8 @@ Set known `peerId`. This can include its Public Key.
 #### Example
 
 ```js
-peerStore.keyBook.set(peerId)
+const publicKey = peerId.pubKey
+peerStore.keyBook.set(peerId, publicKey)
 ```
 
 ### peerStore.protoBook.delete
@@ -1420,3 +1420,4 @@ This event will be triggered anytime we are disconnected from another peer, rega
 [connection]: https://github.com/libp2p/js-interfaces/tree/master/src/connection
 [multiaddr]: https://github.com/multiformats/js-multiaddr
 [peer-id]: https://github.com/libp2p/js-peer-id
+[keys]: https://github.com/libp2p/js-libp2p-crypto/tree/master/src/keys

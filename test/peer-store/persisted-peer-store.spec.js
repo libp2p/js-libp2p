@@ -68,14 +68,14 @@ describe('Persisted PeerStore', () => {
       // AddressBook
       peerStore.addressBook.set(peer, multiaddrs)
 
-      expect(spyDirty).to.have.property('callCount', 2) // Address + PeerId
-      expect(spyDs).to.have.property('callCount', 2)
+      expect(spyDirty).to.have.property('callCount', 1) // Address
+      expect(spyDs).to.have.property('callCount', 1)
 
       // ProtoBook
       peerStore.protoBook.set(peer, protocols)
 
-      expect(spyDirty).to.have.property('callCount', 3) // Protocol
-      expect(spyDs).to.have.property('callCount', 3)
+      expect(spyDirty).to.have.property('callCount', 2) // Protocol
+      expect(spyDs).to.have.property('callCount', 2)
 
       // Should have three peer records stored in the datastore
       const queryParams = {
@@ -86,7 +86,7 @@ describe('Persisted PeerStore', () => {
       for await (const _ of datastore.query(queryParams)) { // eslint-disable-line
         count++
       }
-      expect(count).to.equal(3)
+      expect(count).to.equal(2)
 
       // Validate data
       const storedPeer = peerStore.get(peer)
@@ -110,11 +110,15 @@ describe('Persisted PeerStore', () => {
       peerStore.addressBook.set(peers[0], [multiaddrs[0]])
       peerStore.addressBook.set(peers[1], [multiaddrs[1]])
 
+      // KeyBook
+      peerStore.keyBook.set(peers[0], peers[0].pubKey)
+      peerStore.keyBook.set(peers[1], peers[1].pubKey)
+
       // ProtoBook
       peerStore.protoBook.set(peers[0], protocols)
       peerStore.protoBook.set(peers[1], protocols)
 
-      expect(spyDs).to.have.property('callCount', 6) // 2 AddressBook + 2 ProtoBook + 2 KeyBook
+      expect(spyDs).to.have.property('callCount', 6) // 2 AddressBook + 2 KeyBook + 2 ProtoBook
       expect(peerStore.peers.size).to.equal(2)
 
       await peerStore.stop()
@@ -127,11 +131,12 @@ describe('Persisted PeerStore', () => {
 
       await peerStore.start()
 
-      expect(spy).to.have.property('callCount', 6) // 6 datastore entries
-      expect(spyDs).to.have.property('callCount', 6) // 6 previous operations
+      expect(spy).to.have.property('callCount', 6)
+      expect(spyDs).to.have.property('callCount', 6)
 
       expect(peerStore.peers.size).to.equal(2)
       expect(peerStore.addressBook.data.size).to.equal(2)
+      expect(peerStore.keyBook.data.size).to.equal(2)
       expect(peerStore.protoBook.data.size).to.equal(2)
     })
 
@@ -159,7 +164,7 @@ describe('Persisted PeerStore', () => {
       expect(spyAddressBook).to.have.property('callCount', 1)
       expect(spyKeyBook).to.have.property('callCount', 1)
       expect(spyProtoBook).to.have.property('callCount', 1)
-      expect(spyDs).to.have.property('callCount', 3)
+      expect(spyDs).to.have.property('callCount', 2)
 
       // Should have zero peer records stored in the datastore
       const queryParams = {
@@ -201,7 +206,7 @@ describe('Persisted PeerStore', () => {
       // Remove data from the same Peer
       peerStore.addressBook.delete(peers[0])
 
-      expect(spyDirty).to.have.property('callCount', 4) // 2 AddrBook ops, 1 ProtoBook op, 1 KeyBook op
+      expect(spyDirty).to.have.property('callCount', 3) // 2 AddrBook ops, 1 ProtoBook op
       expect(peerStore._dirtyPeers.size).to.equal(1)
       expect(spyDs).to.have.property('callCount', 0)
 
@@ -215,7 +220,7 @@ describe('Persisted PeerStore', () => {
       // Add data for second book
       peerStore.addressBook.set(peers[1], multiaddrs)
 
-      expect(spyDirty).to.have.property('callCount', 6)
+      expect(spyDirty).to.have.property('callCount', 4)
       expect(spyDs).to.have.property('callCount', 1)
 
       // Should have two peer records stored in the datastore
@@ -223,7 +228,7 @@ describe('Persisted PeerStore', () => {
       for await (const _ of datastore.query(queryParams)) { // eslint-disable-line
         count++
       }
-      expect(count).to.equal(4)
+      expect(count).to.equal(2)
       expect(peerStore.peers.size).to.equal(2)
     })
 
@@ -240,7 +245,7 @@ describe('Persisted PeerStore', () => {
       peerStore.protoBook.set(peer, protocols)
 
       expect(spyDs).to.have.property('callCount', 0)
-      expect(spyDirty).to.have.property('callCount', 2) // ProtoBook + KeyBook
+      expect(spyDirty).to.have.property('callCount', 1) // ProtoBook
       expect(peerStore._dirtyPeers.size).to.equal(1)
 
       const queryParams = {
@@ -252,7 +257,7 @@ describe('Persisted PeerStore', () => {
 
       await peerStore.stop()
 
-      expect(spyDirty).to.have.property('callCount', 2)
+      expect(spyDirty).to.have.property('callCount', 1)
       expect(spyDs).to.have.property('callCount', 1)
       expect(peerStore._dirtyPeers.size).to.equal(0) // Reset
 
@@ -261,7 +266,7 @@ describe('Persisted PeerStore', () => {
       for await (const _ of datastore.query(queryParams)) { // eslint-disable-line
         count++
       }
-      expect(count).to.equal(2)
+      expect(count).to.equal(1)
       expect(peerStore.peers.size).to.equal(1)
     })
   })
@@ -354,7 +359,7 @@ describe('libp2p.peerStore (Persisted)', () => {
 
       await newNode.start()
 
-      expect(spy).to.have.property('callCount', 6) // 6 datastore entries
+      expect(spy).to.have.property('callCount', 4) // 4 datastore entries
 
       expect(newNode.peerStore.peers.size).to.equal(2)
 
