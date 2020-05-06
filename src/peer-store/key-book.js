@@ -24,7 +24,7 @@ class KeyBook extends Book {
   constructor (peerStore) {
     super({
       peerStore,
-      eventName: 'change:pubkey', // TODO: the name is not probably the best!?
+      eventName: 'change:pubkey',
       eventProperty: 'pubkey',
       eventTransformer: (data) => data.pubKey
     })
@@ -37,12 +37,13 @@ class KeyBook extends Book {
   }
 
   /**
-   * Set PeerId. If the peer was not known before, it will be added.
+   * Set the Peer public key.
    * @override
    * @param {PeerId} peerId
+   * @param {RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey} publicKey
    * @return {KeyBook}
- */
-  set (peerId) {
+  */
+  set (peerId, publicKey) {
     if (!PeerId.isPeerId(peerId)) {
       log.error('peerId must be an instance of peer-id to store data')
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
@@ -51,12 +52,13 @@ class KeyBook extends Book {
     const id = peerId.toB58String()
     const recPeerId = this.data.get(id)
 
-    !recPeerId && this._ps.emit('peer', peerId)
-    // If no record available, or it is incomplete
-    if (!recPeerId || (peerId.pubKey && !recPeerId.pubKey)) {
-      this._setData(peerId, peerId, {
-        emit: Boolean(peerId.pubKey) // No persistence if no public key
-      })
+    // If no record available, and this is valid
+    if (!recPeerId && publicKey) {
+      // This might be unecessary, but we want to store the PeerId
+      // to avoid an async operation when reconstructing the PeerId
+      peerId.pubKey = publicKey
+
+      this._setData(peerId, peerId)
       log(`stored provided public key for ${id}`)
     }
 
@@ -67,7 +69,7 @@ class KeyBook extends Book {
    * Get Public key of the given PeerId, if stored.
    * @override
    * @param {PeerId} peerId
-   * @return {PublicKey}
+   * @return {RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
