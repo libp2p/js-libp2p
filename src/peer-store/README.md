@@ -10,7 +10,9 @@ Several libp2p subsystems will perform operations, which will gather relevant in
 
 In a libp2p node's life, it will discover peers through its discovery protocols. In a typical discovery protocol, addresses of the peer are discovered along with its peer id. Once this happens, the PeerStore should collect this information for future (or immediate) usage by other subsystems. When the information is stored, the PeerStore should inform interested parties of the peer discovered (`peer` event).
 
-Taking into account a different scenario, a peer might perform/receive a dial request to/from a unkwown peer. In such a scenario, the PeerStore must store the peer's multiaddr once a connection is established. 
+Taking into account a different scenario, a peer might perform/receive a dial request to/from a unkwown peer. In such a scenario, the PeerStore must store the peer's multiaddr once a connection is established.
+
+When a connection is being upgraded, more precisely after its encryption, or even in a discovery protocol, a libp2p node can get to know other parties public keys. In this scenario, libp2p will add the peer's public key to its `KeyBook`.
 
 After a connection is established with a peer, the Identify protocol will run automatically. A stream is created and peers exchange their information (Multiaddrs, running protocols and their public key). Once this information is obtained, it should be added to the PeerStore. In this specific case, as we are speaking to the source of truth, we should ensure the PeerStore is prioritizing these records. If the recorded `multiaddrs` or `protocols` have changed, interested parties must be informed via the `change:multiaddrs` or `change:protocols` events respectively.
 
@@ -42,7 +44,7 @@ The `addressBook` keeps the known multiaddrs of a peer. The multiaddrs of each p
 
 `Map<string, Address>`
 
-A `peerId.toString()` identifier mapping to a `Address` object, which should have the following structure:
+A `peerId.toB58String()` identifier mapping to a `Address` object, which should have the following structure:
 
 ```js
 {
@@ -52,9 +54,11 @@ A `peerId.toString()` identifier mapping to a `Address` object, which should hav
 
 #### Key Book
 
-The `keyBook` tracks the keys of the peers.
+The `keyBook` tracks the public keys of the peers by keeping their [`PeerId`][peer-id].
 
-**Not Yet Implemented**
+`Map<string, PeerId`
+
+A `peerId.toB58String()` identifier mapping to a `PeerId` of the peer. This instance contains the peer public key.
 
 #### Protocol Book
 
@@ -62,7 +66,7 @@ The `protoBook` holds the identifiers of the protocols supported by each peer. T
 
 `Map<string, Set<string>>`
 
-A `peerId.toString()` identifier mapping to a `Set` of protocol identifier strings.
+A `peerId.toB58String()` identifier mapping to a `Set` of protocol identifier strings.
 
 #### Metadata Book
 
@@ -74,8 +78,9 @@ For the complete API documentation, you should check the [API.md](../../doc/API.
 
 Access to its underlying books:
 
-- `peerStore.protoBook.*`
 - `peerStore.addressBook.*`
+- `peerStore.keyBook.*`
+- `peerStore.protoBook.*`
 
 ### Events
 
@@ -107,8 +112,6 @@ All the known peer protocols are stored with a key pattern as follows:
 
 **KeyBook**
 
-_NOT_YET_IMPLEMENTED_
-
 All public keys are stored under the following pattern:
 
 ` /peers/keys/<b32 peer id no padding>`
@@ -127,3 +130,5 @@ Metadata is stored under the following key pattern:
 - Further API methods will probably need to be added in the context of multiaddr validity and confidence.
 - When improving libp2p configuration for specific runtimes, we should take into account the PeerStore recommended datastore.
 - When improving libp2p configuration, we should think about a possible way of allowing the configuration of Bootstrap to be influenced by the persisted peers, as a way to decrease the load on Bootstrap nodes.
+
+[peer-id]: https://github.com/libp2p/js-peer-id

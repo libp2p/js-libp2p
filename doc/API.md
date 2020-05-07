@@ -26,6 +26,9 @@
   * [`peerStore.addressBook.get`](#peerstoreaddressbookget)
   * [`peerStore.addressBook.getMultiaddrsForPeer`](#peerstoreaddressbookgetmultiaddrsforpeer)
   * [`peerStore.addressBook.set`](#peerstoreaddressbookset)
+  * [`peerStore.keyBook.delete`](#peerstorekeybookdelete)
+  * [`peerStore.keyBook.get`](#peerstorekeybookget)
+  * [`peerStore.keyBook.set`](#peerstorekeybookset)
   * [`peerStore.protoBook.add`](#peerstoreprotobookadd)
   * [`peerStore.protoBook.delete`](#peerstoreprotobookdelete)
   * [`peerStore.protoBook.get`](#peerstoreprotobookget)
@@ -870,6 +873,89 @@ Add known `protocols` of a given peer.
 peerStore.protoBook.add(peerId, protocols)
 ```
 
+
+### peerStore.keyBook.delete
+
+Delete the provided peer from the book.
+
+`peerStore.keyBook.delete(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to remove |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | true if found and removed |
+
+#### Example
+
+```js
+peerStore.keyBook.delete(peerId)
+// false
+peerStore.keyBook.set(peerId, publicKey)
+peerStore.keyBook.delete(peerId)
+// true
+```
+
+### peerStore.keyBook.get
+
+Get the known `PublicKey` of a provided peer.
+
+`peerStore.keyBook.get(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to get |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey` | Peer PublicKey |
+
+#### Example
+
+```js
+peerStore.keyBook.get(peerId)
+// undefined
+peerStore.keyBook.set(peerId, publicKey)
+peerStore.keyBook.get(peerId)
+// PublicKey
+```
+
+### peerStore.keyBook.set
+
+Set known `peerId`. This can include its Public Key.
+
+`peerStore.keyBook.set(peerId, publicKey)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to set |
+| publicKey | [`RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey`][keys] | peer's public key |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `KeyBook` | Returns the Key Book component |
+
+#### Example
+
+```js
+const publicKey = peerId.pubKey
+peerStore.keyBook.set(peerId, publicKey)
+```
+
 ### peerStore.protoBook.delete
 
 Delete the provided peer from the book.
@@ -1393,3 +1479,4 @@ This event will be triggered anytime we are disconnected from another peer, rega
 [connection]: https://github.com/libp2p/js-interfaces/tree/master/src/connection
 [multiaddr]: https://github.com/multiformats/js-multiaddr
 [peer-id]: https://github.com/libp2p/js-peer-id
+[keys]: https://github.com/libp2p/js-libp2p-crypto/tree/master/src/keys

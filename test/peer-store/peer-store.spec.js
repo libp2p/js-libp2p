@@ -48,6 +48,13 @@ describe('peer-store', () => {
       const peer = peerStore.get(peerIds[0])
       expect(peer).to.not.exist()
     })
+
+    it('sets the peer\'s public key to the KeyBook', () => {
+      peerStore.keyBook.set(peerIds[0], peerIds[0].pubKey)
+
+      const pubKey = peerStore.keyBook.get(peerIds[0])
+      expect(pubKey).to.exist()
+    })
   })
 
   describe('previously populated books', () => {
@@ -108,6 +115,8 @@ describe('peer-store', () => {
 
       const peerMultiaddrs = peer.addresses.map((mi) => mi.multiaddr)
       expect(peerMultiaddrs).to.have.members([addr1, addr2])
+
+      expect(peer.id).to.exist()
     })
 
     it('gets the stored information of a peer that is not present in all its books', () => {
