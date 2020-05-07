@@ -171,18 +171,22 @@ class ConnectionManager extends EventEmitter {
    * @param {Connection} connection
    */
   onConnect (connection) {
-    const peerId = connection.remotePeer.toB58String()
-    const storedConn = this.connections.get(peerId)
+    const peerId = connection.remotePeer
+    const peerIdStr = peerId.toB58String()
+    const storedConn = this.connections.get(peerIdStr)
 
     if (storedConn) {
       storedConn.push(connection)
     } else {
-      this.connections.set(peerId, [connection])
+      this.connections.set(peerIdStr, [connection])
       this.emit('peer:connect', connection)
     }
 
-    if (!this._peerValues.has(peerId)) {
-      this._peerValues.set(peerId, this._options.defaultPeerValue)
+    this._libp2p.peerStore.addressBook.add(peerId, [connection.remoteAddr])
+    this._libp2p.peerStore.keyBook.set(peerId, peerId.pubKey)
+
+    if (!this._peerValues.has(peerIdStr)) {
+      this._peerValues.set(peerIdStr, this._options.defaultPeerValue)
     }
 
     this._checkLimit('maxConnections', this.size)
