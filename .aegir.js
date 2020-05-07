@@ -6,7 +6,7 @@ const Peers = require('./test/fixtures/peers')
 const PeerId = require('peer-id')
 const WebSockets = require('libp2p-websockets')
 const Muxer = require('libp2p-mplex')
-const Crypto = require('libp2p-secio')
+const { NOISE: Crypto } = require('libp2p-noise')
 const pipe = require('it-pipe')
 let libp2p
 
@@ -45,7 +45,7 @@ const after = async () => {
 }
 
 module.exports = {
-  bundlesize: { maxSize: '179kB' },
+  bundlesize: { maxSize: '185kB' },
   hooks: {
     pre: before,
     post: after

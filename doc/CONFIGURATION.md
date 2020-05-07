@@ -94,6 +94,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 Some available connection encryption protocols:
 
+- [NodeFactoryIo/js-libp2p-noise](https://github.com/NodeFactoryIo/js-libp2p-noise)
 - [libp2p/js-libp2p-secio](https://github.com/libp2p/js-libp2p-secio)
 
 If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Crypto Interface](https://github.com/libp2p/js-interfaces/tree/master/src/crypto).
@@ -501,6 +502,34 @@ const node = await Libp2p.create({
       15 * 60 * 1000 // 15 minutes
     ],
     maxOldPeersRetention: 50            // How many disconnected peers we will retain stats for
+  }
+})
+```
+
+#### Configuring PeerStore
+
+PeerStore persistence is disabled in libp2p by default. You can enable and configure it as follows. Aside from enabled being `false` by default, it will need an implementation of a [datastore](https://github.com/ipfs/interface-datastore). Take into consideration that using the memory datastore will be ineffective for persistence.
+
+The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with unflushed records when the window is closed.
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+
+const LevelStore = require('datastore-level')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO]
+  },
+  datastore: new LevelStore('path/to/store'),
+  peerStore: {
+    persistence: true, // Is persistence enabled (default: false)
+    threshold: 5 // Number of dirty peers allowed (default: 5)
   }
 })
 ```

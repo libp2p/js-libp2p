@@ -83,7 +83,47 @@ Access to its underlying books:
 - `change:multiaadrs` - emitted when a known peer has a different set of multiaddrs.
 - `change:protocols` - emitted when a known peer supports a different set of protocols.
 
+## Data Persistence
+
+The data stored in the PeerStore can be persisted if configured appropriately. Keeping a record of the peers already discovered by the peer, as well as their known data aims to improve the efficiency of peers joining the network after being offline.
+
+The libp2p node will need to receive a [datastore](https://github.com/ipfs/interface-datastore), in order to persist this data across restarts. A [datastore](https://github.com/ipfs/interface-datastore) stores its data in a key-value fashion. As a result, we need coherent keys so that we do not overwrite data.
+
+The PeerStore should not continuously update the datastore whenever data is changed. Instead, it should only store new data after reaching a certain threshold of "dirty" peers, as well as when the node is stopped, in order to batch writes to the datastore.
+
+The peer id will be appended to the datastore key for each data namespace. The namespaces were defined as follows:
+
+**AddressBook**
+
+All the known peer addresses are stored with a key pattern as follows:
+
+`/peers/addrs/<b32 peer id no padding>`
+
+**ProtoBook**
+
+All the known peer protocols are stored with a key pattern as follows:
+
+`/peers/protos/<b32 peer id no padding>`
+
+**KeyBook**
+
+_NOT_YET_IMPLEMENTED_
+
+All public keys are stored under the following pattern:
+
+` /peers/keys/<b32 peer id no padding>`
+
+**MetadataBook**
+
+_NOT_YET_IMPLEMENTED_
+
+Metadata is stored under the following key pattern:
+
+`/peers/metadata/<b32 peer id no padding>/<key>`
+
 ## Future Considerations
 
 - If multiaddr TTLs are added, the PeerStore may schedule jobs to delete all addresses that exceed the TTL to prevent AddressBook bloating
 - Further API methods will probably need to be added in the context of multiaddr validity and confidence.
+- When improving libp2p configuration for specific runtimes, we should take into account the PeerStore recommended datastore.
+- When improving libp2p configuration, we should think about a possible way of allowing the configuration of Bootstrap to be influenced by the persisted peers, as a way to decrease the load on Bootstrap nodes.

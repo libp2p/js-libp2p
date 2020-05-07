@@ -13,7 +13,7 @@ const pipe = require('it-pipe')
 const { collect } = require('streaming-iterables')
 const pSettle = require('p-settle')
 const Transport = require('libp2p-websockets')
-const Crypto = require('libp2p-secio')
+const { NOISE: Crypto } = require('libp2p-noise')
 const Protector = require('../../src/pnet')
 const swarmKeyBuffer = Buffer.from(require('../fixtures/swarm.key'))
 

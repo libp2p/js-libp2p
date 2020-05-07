@@ -30,11 +30,14 @@ class PeerStore extends EventEmitter {
    * @property {Array<string>} protocols peer's supported protocols.
    */
 
+  /**
+   * @constructor
+   */
   constructor () {
     super()
 
     /**
-     * AddressBook containing a map of peerIdStr to Address
+     * AddressBook containing a map of peerIdStr to Address.
      */
     this.addressBook = new AddressBook(this)
 
@@ -50,6 +53,16 @@ class PeerStore extends EventEmitter {
      */
     this.peerIds = new Map()
   }
+
+  /**
+   * Start the PeerStore.
+   */
+  start () {}
+
+  /**
+   * Stop the PeerStore.
+   */
+  stop () {}
 
   /**
    * Get all the stored information of every peer.

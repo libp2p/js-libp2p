@@ -23,6 +23,7 @@ const Metrics = require('./metrics')
 const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
+const PersistentPeerStore = require('./peer-store/persistent')
 const Registrar = require('./registrar')
 const ping = require('./ping')
 const {
@@ -43,9 +44,15 @@ class Libp2p extends EventEmitter {
     // and add default values where appropriate
     this._options = validateConfig(_options)
 
-    this.datastore = this._options.datastore
     this.peerId = this._options.peerId
-    this.peerStore = new PeerStore()
+    this.datastore = this._options.datastore
+
+    this.peerStore = (this.datastore && this._options.peerStore.persistence)
+      ? new PersistentPeerStore({
+        datastore: this.datastore,
+        ...this._options.peerStore
+      })
+      : new PeerStore()
 
     // Addresses {listen, announce, noAnnounce}
     this.addresses = this._options.addresses
@@ -218,7 +225,8 @@ class Libp2p extends EventEmitter {
 
       this._discovery = new Map()
 
-      this.connectionManager.stop()
+      await this.peerStore.stop()
+      await this.connectionManager.stop()
 
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
@@ -391,6 +399,9 @@ class Libp2p extends EventEmitter {
   async _onStarting () {
     // Listen on the provided transports
     await this.transportManager.listen()
+
+    // Start PeerStore
+    await this.peerStore.start()
 
     if (this._config.pubsub.enabled) {
       this.pubsub && this.pubsub.start()

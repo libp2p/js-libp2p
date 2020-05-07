@@ -4,17 +4,28 @@ const errcode = require('err-code')
 const PeerId = require('peer-id')
 
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
+
+const passthrough = data => data
 
 /**
  * The Book is the skeleton for the PeerStore books.
  */
 class Book {
-  constructor (peerStore, eventName, eventProperty) {
+  /**
+   * @constructor
+   * @param {Object} properties
+   * @param {PeerStore} properties.peerStore PeerStore instance.
+   * @param {string} properties.eventName Name of the event to emit by the PeerStore.
+   * @param {string} properties.eventProperty Name of the property to emit by the PeerStore.
+   * @param {function} [properties.eventTransformer] Transformer function of the provided data for being emitted.
+   */
+  constructor ({ peerStore, eventName, eventProperty, eventTransformer = passthrough }) {
     this._ps = peerStore
     this.eventName = eventName
     this.eventProperty = eventProperty
+    this.eventTransformer = eventTransformer
 
     /**
      * Map known peers to their data.
@@ -30,6 +41,29 @@ class Book {
    */
   set (peerId, data) {
     throw errcode(new Error('set must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
+  }
+
+  /**
+   * Set data into the datastructure, persistence and emit it using the provided transformers.
+   * @private
+   * @param {PeerId} peerId peerId of the data to store
+   * @param {Array<*>} data data to store.
+   * @param {Object} [options] storing options.
+   * @param {boolean} [options.emit = true] emit the provided data.
+   * @return {void}
+   */
+  _setData (peerId, data, { emit = true } = {}) {
+    const b58key = peerId.toB58String()
+
+    // Store data in memory
+    this.data.set(b58key, data)
+    this._setPeerId(peerId)
+
+    // Emit event
+    emit && this._ps.emit(this.eventName, {
+      peerId,
+      [this.eventProperty]: this.eventTransformer(data)
+    })
   }
 
   /**
@@ -78,6 +112,11 @@ class Book {
     return true
   }
 
+  /**
+   * Set PeerId into peerStore datastructure.
+   * @private
+   * @param {PeerId} peerId
+   */
   _setPeerId (peerId) {
     if (!this._ps.peerIds.get(peerId)) {
       this._ps.peerIds.set(peerId.toB58String(), peerId)

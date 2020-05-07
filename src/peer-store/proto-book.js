@@ -10,7 +10,7 @@ const PeerId = require('peer-id')
 const Book = require('./book')
 
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
 
 /**
@@ -28,7 +28,12 @@ class ProtoBook extends Book {
      * PeerStore Event emitter, used by the ProtoBook to emit:
      * "change:protocols" - emitted when the known protocols of a peer change.
      */
-    super(peerStore, 'change:protocols', 'protocols')
+    super({
+      peerStore,
+      eventName: 'change:protocols',
+      eventProperty: 'protocols',
+      eventTransformer: (data) => Array.from(data)
+    })
 
     /**
      * Map known peers to their known protocols.
@@ -69,14 +74,8 @@ class ProtoBook extends Book {
       return this
     }
 
-    this.data.set(id, newSet)
-    this._setPeerId(peerId)
+    this._setData(peerId, newSet)
     log(`stored provided protocols for ${id}`)
-
-    this._ps.emit('change:protocols', {
-      peerId,
-      protocols
-    })
 
     return this
   }
@@ -112,14 +111,8 @@ class ProtoBook extends Book {
 
     protocols = [...newSet]
 
-    this.data.set(id, newSet)
-    this._setPeerId(peerId)
+    this._setData(peerId, newSet)
     log(`added provided protocols for ${id}`)
-
-    this._ps.emit('change:protocols', {
-      peerId,
-      protocols
-    })
 
     return this
   }
