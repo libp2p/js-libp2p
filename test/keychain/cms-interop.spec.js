@@ -10,7 +10,7 @@ chai.use(require('chai-string'))
 
 const os = require('os')
 const path = require('path')
-const { isBrowser } = require('ipfs-utils/src/env')
+const { isNode } = require('ipfs-utils/src/env')
 const FsStore = require('datastore-fs')
 const LevelStore = require('datastore-level')
 
@@ -22,9 +22,9 @@ describe('cms interop', () => {
   let ks
 
   before(() => {
-    const datastore = isBrowser
-      ? new LevelStore('test-keystore-1', { db: require('level') })
-      : new FsStore(path.join(os.tmpdir(), 'test-keystore-1-' + Date.now()))
+    const datastore = isNode
+      ? new FsStore(path.join(os.tmpdir(), 'test-keystore-1-' + Date.now()))
+      : new LevelStore('test-keystore-1', { db: require('level') })
     ks = new Keychain(datastore, { passPhrase: passPhrase })
   })
 

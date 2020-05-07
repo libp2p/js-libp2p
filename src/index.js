@@ -6,6 +6,7 @@ const globalThis = require('ipfs-utils/src/globalthis')
 const log = debug('libp2p')
 log.error = debug('libp2p:error')
 
+const { MemoryDatastore } = require('interface-datastore')
 const PeerId = require('peer-id')
 
 const peerRouting = require('./peer-routing')
@@ -19,6 +20,8 @@ const AddressManager = require('./address-manager')
 const ConnectionManager = require('./connection-manager')
 const Circuit = require('./circuit')
 const Dialer = require('./dialer')
+const Keychain = require('./keychain')
+const NoKeychain = require('./keychain/no-keychain')
 const Metrics = require('./metrics')
 const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
@@ -44,8 +47,9 @@ class Libp2p extends EventEmitter {
     // and add default values where appropriate
     this._options = validateConfig(_options)
 
-    this.peerId = this._options.peerId
     this.datastore = this._options.datastore
+    this.keychain = this._options.keychain
+    this.peerId = this._options.peerId
 
     this.peerStore = (this.datastore && this._options.peerStore.persistence)
       ? new PersistentPeerStore({
@@ -167,6 +171,9 @@ class Libp2p extends EventEmitter {
     // peer and content routing will automatically get modules from _modules and _dht
     this.peerRouting = peerRouting(this)
     this.contentRouting = contentRouting(this)
+
+    // Keychain
+    this.keychain = this._options._keychain || new NoKeychain()
 
     // Mount default protocols
     ping.mount(this)
@@ -541,13 +548,40 @@ class Libp2p extends EventEmitter {
  * @returns {Libp2p}
  */
 Libp2p.create = async function create (options = {}) {
-  if (options.peerId) {
-    return new Libp2p(options)
+  let peerId = options.peerId
+
+  if (!peerId) {
+    peerId = await PeerId.create()
+
+    options.peerId = peerId
   }
 
-  const peerId = await PeerId.create()
+  const keychainOptions = options.keychain || {}
 
-  options.peerId = peerId
+  if (keychainOptions.pass) {
+    log('creating keychain')
+
+    const datastore = keychainOptions.datastore || new MemoryDatastore()
+    const keychainOpts = Keychain.generateOptions()
+
+    const keychain = new Keychain(datastore, {
+      passPhrase: keychainOptions.pass,
+      ...keychainOpts,
+      ...keychainOptions
+    })
+
+    log('keychain constructed')
+
+    // Import the private key as 'self', if needed.
+    try {
+      await keychain.findByName('self')
+    } catch (err) {
+      await keychain.importPeer('self', peerId)
+    }
+
+    options._keychain = keychain
+  }
+
   return new Libp2p(options)
 }
 

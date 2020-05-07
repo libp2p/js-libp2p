@@ -43,7 +43,7 @@ class CMS {
       throw errcode(new Error('Plain data must be a Buffer'), 'ERR_INVALID_PARAMS')
     }
 
-    const key = await this.keychain.findKeyByName(name)
+    const key = await this.keychain.findByName(name)
     const pem = await this.keychain._getPrivateKey(name)
     const privateKey = forge.pki.decryptRsaPrivateKey(pem, this.keychain._())
     const certificate = await certificateForKey(key, privateKey)
@@ -96,7 +96,7 @@ class CMS {
 
     const r = await findAsync(recipients, async (recipient) => {
       try {
-        const key = await this.keychain.findKeyById(recipient.keyId)
+        const key = await this.keychain.findById(recipient.keyId)
         if (key) return true
       } catch (err) {
         return false
@@ -111,7 +111,7 @@ class CMS {
       })
     }
 
-    const key = await this.keychain.findKeyById(r.keyId)
+    const key = await this.keychain.findById(r.keyId)
     const pem = await this.keychain._getPrivateKey(key.name)
     const privateKey = forge.pki.decryptRsaPrivateKey(pem, this.keychain._())
     cms.decrypt(r.recipient, privateKey)

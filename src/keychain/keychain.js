@@ -104,29 +104,29 @@ class Keychain {
     }
     this.store = store
 
-    const opts = mergeOptions(defaultOptions, options)
+    this.opts = mergeOptions(defaultOptions, options)
 
     // Enforce NIST SP 800-132
-    if (!opts.passPhrase || opts.passPhrase.length < 20) {
+    if (!this.opts.passPhrase || this.opts.passPhrase.length < 20) {
       throw new Error('passPhrase must be least 20 characters')
     }
-    if (opts.dek.keyLength < NIST.minKeyLength) {
+    if (this.opts.dek.keyLength < NIST.minKeyLength) {
       throw new Error(`dek.keyLength must be least ${NIST.minKeyLength} bytes`)
     }
-    if (opts.dek.salt.length < NIST.minSaltLength) {
+    if (this.opts.dek.salt.length < NIST.minSaltLength) {
       throw new Error(`dek.saltLength must be least ${NIST.minSaltLength} bytes`)
     }
-    if (opts.dek.iterationCount < NIST.minIterationCount) {
+    if (this.opts.dek.iterationCount < NIST.minIterationCount) {
       throw new Error(`dek.iterationCount must be least ${NIST.minIterationCount}`)
     }
 
     // Create the derived encrypting key
     const dek = crypto.pbkdf2(
-      opts.passPhrase,
-      opts.dek.salt,
-      opts.dek.iterationCount,
-      opts.dek.keyLength,
-      opts.dek.hash)
+      this.opts.passPhrase,
+      this.opts.dek.salt,
+      this.opts.dek.iterationCount,
+      this.opts.dek.keyLength,
+      this.opts.dek.hash)
     Object.defineProperty(this, '_', { value: () => dek })
   }
 
@@ -229,7 +229,7 @@ class Keychain {
    *
     * @returns {KeyInfo[]}
    */
-  async listKeys () {
+  async list () {
     const self = this
     const query = {
       prefix: infoPrefix
@@ -249,9 +249,9 @@ class Keychain {
    * @param {string} id - The universally unique key identifier.
     * @returns {KeyInfo}
    */
-  async findKeyById (id) {
+  async findById (id) {
     try {
-      const keys = await this.listKeys()
+      const keys = await this.list()
       return keys.find((k) => k.id === id)
     } catch (err) {
       return throwDelayed(err)
@@ -264,7 +264,7 @@ class Keychain {
    * @param {string} name - The local key name.
     * @returns {KeyInfo}
    */
-  async findKeyByName (name) {
+  async findByName (name) {
     if (!validateKeyName(name)) {
       return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
@@ -290,7 +290,7 @@ class Keychain {
       return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
     }
     const dsname = DsName(name)
-    const keyInfo = await self.findKeyByName(name)
+    const keyInfo = await self.findByName(name)
     const batch = self.store.batch()
     batch.delete(dsname)
     batch.delete(DsInfoName(name))

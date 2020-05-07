@@ -44,6 +44,17 @@
   * [`connectionManager.get`](#connectionmanagerget)
   * [`connectionManager.setPeerValue`](#connectionmanagersetpeervalue)
   * [`connectionManager.size`](#connectionmanagersize)
+  * [`keychain.createKey`](#keychaincreatekey)
+  * [`keychain.renameKey`](#keychainrenamekey)
+  * [`keychain.removeKey`](#keychainremovekey)
+  * [`keychain.exportKey`](#keychainexportkey)
+  * [`keychain.importKey`](#keychainimportkey)
+  * [`keychain.importPeer`](#keychainimportpeer)
+  * [`keychain.list`](#keychainlist)
+  * [`keychain.findById`](#keychainfindbyid)
+  * [`keychain.findByName`](#keychainfindbyname)
+  * [`keychain.cms.encrypt`](#keychaincmsencrypt)
+  * [`keychain.cms.decrypt`](#keychaincmsdecrypt)
   * [`metrics.global`](#metricsglobal)
   * [`metrics.peers`](#metricspeers)
   * [`metrics.protocols`](#metricsprotocols)
@@ -75,7 +86,8 @@ Creates an instance of Libp2p.
 | [options.connectionManager] | `object` | libp2p Connection Manager configuration |
 | [options.datastore] | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) (in memory datastore will be used if not provided) |
 | [options.dialer] | `object` | libp2p Dialer configuration
-| [options.metrics] | `object` | libp2p Metrics configuration
+| [options.keychain] | [`object`](./CONFIGURATION.md#setup-with-keychain) | libp2p Keychain configuration |
+| [options.metrics] | `object` | libp2p Metrics configuration |
 | [options.peerId] | [`PeerId`][peer-id] | peerId instance (it will be created if not provided) |
 | [options.peerStore] | `object` | libp2p PeerStore configuration |
 
@@ -1311,6 +1323,278 @@ Getter for obtaining the current number of open connections.
 ```js
 libp2p.connectionManager.size
 // 10
+```
+
+### keychain.createKey
+
+Create a key in the keychain.
+
+`libp2p.keychain.createKey(name, type, size)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| name | `string` | The local key name. It cannot already exist. |
+| type | `string` | One of the key types; 'rsa' |
+| size | `number` | The key size in bits. |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<{ id, name }>` | Key info object |
+
+#### Example
+
+```js
+const keyInfo = await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
+```
+
+### keychain.renameKey
+
+Rename a key in the keychain.
+
+`libp2p.keychain.renameKey(oldName, newName)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| name | `string` | The old local key name. It must already exist. |
+| type | `string` | The new local key name. It must not already exist. |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<{ id, name }>` | Key info object |
+
+#### Example
+
+```js
+await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
+const keyInfo = await libp2p.keychain.renameKey('keyTest', 'keyNewNtest')
+```
+
+### keychain.removeKey
+
+Removes a key from the keychain.
+
+`libp2p.keychain.removeKey(name)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| name | `string` | The local key name. It must already exist. |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<{ id, name }>` | Key info object |
+
+#### Example
+
+```js
+await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
+const keyInfo = await libp2p.keychain.removeKey('keyTest')
+```
+
+### keychain.exportKey
+
+Export an existing key as a PEM encrypted PKCS #8 string.
+
+`libp2p.keychain.exportKey(name, password)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| name | `string` | The local key name. It must already exist. |
+| password | `string` | The password to use. |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<string>` | Key as a PEM encrypted PKCS #8 |
+
+#### Example
+
+```js
+await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
+const pemKey = await libp2p.keychain.exportKey('keyTest', 'password123')
+```
+
+### keychain.importKey
+
+Import a new key from a PEM encoded PKCS #8 string.
+
+`libp2p.keychain.importKey(name, pem, password)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| name | `string` | The local key name. It must not exist. |
+| pem | `string` | The PEM encoded PKCS #8 string. |
+| password | `string` | The password to use. |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<{ id, name }>` | Key info object |
+
+#### Example
+
+```js
+await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
+const pemKey = await libp2p.keychain.exportKey('keyTest', 'password123')
+const keyInfo = await libp2p.keychain.importKey('keyTestImport', pemKey, 'password123')
+```
+
+### keychain.importPeer
+
+Import a new key from a PeerId.
+
+`libp2p.keychain.importPeer(name, peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| name | `string` | The local key name. It must not exist. |
+| peerId | ['PeerId'][peer-id] | The PEM encoded PKCS #8 string. |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<{ id, name }>` | Key info object |
+
+#### Example
+
+```js
+const keyInfo = await libp2p.keychain.importPeer('keyTestImport', peerId)
+```
+
+### keychain.list
+
+List all the keys.
+
+`libp2p.keychain.list()`
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<Array<{ id, name }>>` | Array of Key info |
+
+#### Example
+
+```js
+const keyInfos = await libp2p.keychain.list()
+```
+
+### keychain.findById
+
+Find a key by it's id.
+
+`libp2p.keychain.findById(id)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| id | `string` | The universally unique key identifier. |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<{ id, name }>` | Key info object |
+
+#### Example
+
+```js
+const keyInfo = await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
+const keyInfo2 = await libp2p.keychain.findById(keyInfo.id)
+```
+
+### keychain.findByName
+
+Find a key by it's name.
+
+`libp2p.keychain.findByName(id)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| id | `string` | The local key name. |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<{ id, name }>` | Key info object |
+
+#### Example
+
+```js
+const keyInfo = await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
+const keyInfo2 = await libp2p.keychain.findByName('keyTest')
+```
+
+### keychain.cms.encrypt
+
+Encrypt protected data using the Cryptographic Message Syntax (CMS).
+
+`libp2p.keychain.cms.encrypt(name, data)`
+
+| Name | Type | Description |
+|------|------|-------------|
+| name | `string` | The local key name. |
+| data | `Buffer` | The data to encrypt. |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<Buffer>` | Encrypted data as a PKCS #7 message in DER. |
+
+#### Example
+
+```js
+const keyInfo = await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
+const enc = await libp2p.keychain.cms.encrypt('keyTest', Buffer.from('data'))
+```
+
+### keychain.cms.decrypt
+
+Decrypt protected data using the Cryptographic Message Syntax (CMS).
+The keychain must contain one of the keys used to encrypt the data.  If none of the keys exists, an Error is returned with the property 'missingKeys'.
+
+`libp2p.keychain.cms.decrypt(cmsData)`
+
+| Name | Type | Description |
+|------|------|-------------|
+| cmsData | `string` | The CMS encrypted data to decrypt. |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<Buffer>` | Decrypted data. |
+
+#### Example
+
+```js
+const keyInfo = await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
+const enc = await libp2p.keychain.cms.encrypt('keyTest', Buffer.from('data'))
 ```
 
 ### metrics.global
