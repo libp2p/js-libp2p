@@ -3,7 +3,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
-chai.use(require('chai-as-promised'))
+chai.use(require('chai-bytes'))
 const { expect } = chai
 const sinon = require('sinon')
 
@@ -23,12 +23,29 @@ describe('libp2p.peerStore', () => {
     })
   })
 
-  it('adds peer address to AddressBook when establishing connection', async () => {
+  it('adds peer address to AddressBook and keys to the keybook when establishing connection', async () => {
+    const idStr = libp2p.peerId.toB58String()
+    const remoteIdStr = remoteLibp2p.peerId.toB58String()
+
     const spyAddressBook = sinon.spy(libp2p.peerStore.addressBook, 'add')
-    const remoteMultiaddr = `${remoteLibp2p.multiaddrs[0]}/p2p/${remoteLibp2p.peerId.toB58String()}`
+    const spyKeyBook = sinon.spy(libp2p.peerStore.keyBook, 'set')
+
+    const remoteMultiaddr = `${remoteLibp2p.multiaddrs[0]}/p2p/${remoteIdStr}`
     const conn = await libp2p.dial(remoteMultiaddr)
 
     expect(conn).to.exist()
-    expect(spyAddressBook).to.have.property('callCount', 1)
+    expect(spyAddressBook).to.have.property('called', true)
+    expect(spyKeyBook).to.have.property('called', true)
+
+    const localPeers = libp2p.peerStore.peers
+    expect(localPeers.size).to.equal(1)
+    // const publicKeyInLocalPeer = localPeers.get(remoteIdStr).id.pubKey
+    // expect(publicKeyInLocalPeer.bytes).to.equalBytes(remoteLibp2p.peerId.pubKey.bytes)
+
+    const remotePeers = remoteLibp2p.peerStore.peers
+    expect(remotePeers.size).to.equal(1)
+    const publicKeyInRemotePeer = remotePeers.get(idStr).id.pubKey
+    expect(publicKeyInRemotePeer).to.exist()
+    expect(publicKeyInRemotePeer.bytes).to.equalBytes(libp2p.peerId.pubKey.bytes)
   })
 })
