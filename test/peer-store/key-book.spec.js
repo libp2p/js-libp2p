@@ -23,7 +23,7 @@ describe('keyBook', () => {
     kb = peerStore.keyBook
   })
 
-  it('throwns invalid parameters error if invalid PeerId is provided in set', () => {
+  it('throws invalid parameters error if invalid PeerId is provided in set', () => {
     try {
       kb.set('invalid peerId')
     } catch (err) {
@@ -33,7 +33,7 @@ describe('keyBook', () => {
     throw new Error('invalid peerId should throw error')
   })
 
-  it('throwns invalid parameters error if invalid PeerId is provided in get', () => {
+  it('throws invalid parameters error if invalid PeerId is provided in get', () => {
     try {
       kb.get('invalid peerId')
     } catch (err) {
