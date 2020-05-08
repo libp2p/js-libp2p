@@ -69,7 +69,7 @@
     "xor-distance": "^2.0.0"
   },
   "devDependencies": {
-    "aegir": "^21.0.2",
+    "aegir": "^22.0.0",
     "async-iterator-all": "^1.0.0",
     "chai": "^4.2.0",
     "chai-checkmark": "^1.0.1",
