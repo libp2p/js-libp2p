@@ -20,6 +20,7 @@
       - [Customizing DHT](#customizing-dht)
       - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
       - [Setup with Relay](#setup-with-relay)
+      - [Setup with Keychain](#setup-with-keychain)
       - [Configuring Dialing](#configuring-dialing)
       - [Configuring Connection Manager](#configuring-connection-manager)
       - [Configuring Metrics](#configuring-metrics)
@@ -420,6 +421,37 @@ const node = await Libp2p.create({
     }
   }
 })
+```
+
+#### Setup with Keychain
+
+Libp2p allows you to setup a secure key chain to manage your keys. The keychain configuration object should have the following properties:
+
+| Name | Type | Description |
+|------|------|-------------|
+| pass | `string` | Passphrase to use in the keychain (minimum of 20 characters). |
+| datastore | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) |
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+const LevelStore = require('datastore-level')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO]
+  },
+  keychain: {
+    pass: 'notsafepassword123456789',
+    datastore: new LevelStore('path/to/store')
+  }
+})
+
+await libp2p.loadKeychain()
 ```
 
 #### Configuring Dialing
