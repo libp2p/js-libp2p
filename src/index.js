@@ -19,6 +19,7 @@ const AddressManager = require('./address-manager')
 const ConnectionManager = require('./connection-manager')
 const Circuit = require('./circuit')
 const Dialer = require('./dialer')
+const Keychain = require('./keychain')
 const Metrics = require('./metrics')
 const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
@@ -72,6 +73,22 @@ class Libp2p extends EventEmitter {
         ...this._options.metrics,
         connectionManager: this.connectionManager
       })
+    }
+
+    // Create keychain
+    if (this._options.keychain.pass) {
+      log('creating keychain')
+
+      const datastore = this._options.keychain.datastore
+      const keychainOpts = Keychain.generateOptions()
+
+      this.keychain = new Keychain(datastore, {
+        passPhrase: this._options.keychain.pass,
+        ...keychainOpts,
+        ...this._options.keychain
+      })
+
+      log('keychain constructed')
     }
 
     // Setup the Upgrader
@@ -247,6 +264,20 @@ class Libp2p extends EventEmitter {
     }
     this._isStarted = false
     log('libp2p has stopped')
+  }
+
+  /**
+   * Load keychain keys from the datastore.
+   * Imports the private key as 'self', if needed.
+   * @async
+   * @returns {void}
+   */
+  async loadKeychain () {
+    try {
+      await this.keychain.findKeyByName('self')
+    } catch (err) {
+      await this.keychain.importPeer('self', this.peerId)
+    }
   }
 
   isStarted () {
