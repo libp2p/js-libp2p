@@ -6,7 +6,7 @@ The PeerStore manages the high level operations on its inner books. Moreover, th
 
 ## Submitting records to the PeerStore
 
-Several libp2p subsystems will perform operations that might gather relevant informations about peers.
+Several libp2p subsystems will perform operations that might gather relevant information about peers.
 
 ### Identify
 - The Identify protocol automatically runs on every connection when multiplexing is enabled. The protocol will put the multiaddrs and protocols provided by the peer to the PeerStore.
@@ -15,14 +15,14 @@ Several libp2p subsystems will perform operations that might gather relevant inf
 - Taking into account that the Identify protocol records are directly from the peer, they should be considered the source of truth and weighted accordingly.
 
 ### Peer Discovery
-- Libp2p discovery protocols aim to discover new peers in the network. In a typical discovery protocol, addresses of the peer are discovered along its peer id. Once this happens, a libp2p discovery protocol should emit a `peer` event with the information of the discovered peer and this information it added to the PeerStore by libp2p.
+- Libp2p discovery protocols aim to discover new peers in the network. In a typical discovery protocol, addresses of the peer are discovered along with its peer id. Once this happens, a libp2p discovery protocol should emit a `peer` event with the information of the discovered peer and this information will be added to the PeerStore by libp2p.
 
 ### Dialer
-- Libp2p API supports dialing a peer through its `multiaddr`. This way, if the node is able to establish a connection with the peer listening on the given `multiaddr`, this peer and its multiaddr should be added to the PeerStore.
+- Libp2p API supports dialing a peer given a `multiaddr`, and no prior knowledge of the peer. If the node is able to establish a connection with the peer, it and its multiaddr is added to the PeerStore.
 - When a connection is being upgraded, more precisely after its encryption, or even in a discovery protocol, a libp2p node can get to know other parties public keys. In this scenario, libp2p will add the peer's public key to its `KeyBook`.
 
 ### DHT
-- On some DHT operations, such as finding providers for a given CID, nodes can exchange peer data as part of the query. This peer data can include unkwown peers multiaddrs and is also stored on the PeerStore.
+- On some DHT operations, such as finding providers for a given CID, nodes may exchange peer data as part of the query. This passive peer discovery should result in the DHT emitting the `peer` event in the same way [Peer Discovery](#peerdiscovery) does.
 
 ## Retrieving records from the PeerStore
 
@@ -33,7 +33,6 @@ When data in the PeerStore is updated the PeerStore will emit events based on th
 
 ### Protocols
 - When the known protocols of a peer change, the PeerStore emits a [`change:protocols` event][peer-store-events].
-  - Libp2p topologies will be particularly interested in this, so that the subsystem can open streams with relevant peers for them
 
 ### Multiaddrs
 - When the known listening `multiaddrs` of a peer change, the PeerStore emits a [`change:multiaddrs` event][peer-store-events].
