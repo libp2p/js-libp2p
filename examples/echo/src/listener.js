@@ -33,7 +33,7 @@ async function run() {
   await listenerNode.start()
 
   console.log('Listener ready, listening on:')
-  listenerNode.transportManager.getAddrs().forEach((ma) => {
+  listenerNode.multiaddrs.forEach((ma) => {
     console.log(ma.toString() + '/p2p/' + listenerId.toB58String())
   })
 }

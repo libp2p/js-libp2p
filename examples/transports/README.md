@@ -59,7 +59,7 @@ console.log('node has started (true/false):', node.isStarted())
 // 0, which means "listen in any network interface and pick
 // a port for me
 console.log('listening on:')
-node.transportManager.getAddrs().forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
 ```
 
 Running this should result in something like:
@@ -96,7 +96,7 @@ We are going to reuse the `createNode` function from step 1, but this time to ma
 ```JavaScript
 function printAddrs (node, number) {
   console.log('node %s is listening on:', number)
-  node.transportManager.getAddrs().forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
 }
 ```
 

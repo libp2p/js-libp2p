@@ -31,6 +31,8 @@ const createNode = async () => {
     createNode()
   ])
 
+  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+
   node2.handle('/a-protocol', ({ stream }) => {
     pipe(
       stream,
@@ -42,8 +44,7 @@ const createNode = async () => {
     )
   })
 
-  const node2Multiaddr = `${node2.transportManager.getAddrs()[0]}/p2p/${node2.peerId.toB58String()}`
-  const { stream } = await node1.dialProtocol(node2Multiaddr, '/a-protocol')
+  const { stream } = await node1.dialProtocol(node2.peerId, '/a-protocol')
 
   await pipe(
     ['This information is sent out encrypted to the other peer'],

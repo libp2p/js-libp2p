@@ -77,7 +77,7 @@ const node = await Libp2p.create({
 })
 
 node.connectionManager.on('peer:connect', (connection) => {
-  console.log('Connection established to:', connection.remotePeer.toB58String())	// Emitted when a peer has been found
+  console.log('Connection established to:', connection.remotePeer.toB58String())	// Emitted when a new connection has been created
 })
 
 node.on('peer:discovery', (peerId) => {

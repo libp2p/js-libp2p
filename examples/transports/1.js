@@ -28,5 +28,5 @@ const createNode = async () => {
 
   console.log('node has started (true/false):', node.isStarted())
   console.log('listening on:')
-  node.transportManager.getAddrs().forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
 })();

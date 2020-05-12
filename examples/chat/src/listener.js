@@ -34,7 +34,7 @@ async function run() {
 
   // Output listen addresses to the console
   console.log('Listener ready, listening on:')
-  nodeListener.addresses.listen.forEach((ma) => {
+  nodeListener.multiaddrs.forEach((ma) => {
     console.log(ma.toString() + '/p2p/' + idListener.toB58String())
   })
 }

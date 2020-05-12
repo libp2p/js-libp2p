@@ -20,21 +20,18 @@ async function run() {
     }
   })
 
-  // Add the listener peer multiaddr to the PeerStore
-  // This would be automatic if it was discovered through a discovery service
-  nodeDialer.peerStore.addressBook.set(idListener, [multiaddr('/ip4/127.0.0.1/tcp/10333')])
-
   // Start the libp2p host
   await nodeDialer.start()
 
   // Output this node's address
   console.log('Dialer ready, listening on:')
-  nodeDialer.transportManager.getAddrs().forEach((ma) => {
-    console.log(ma.toString() + '/p2p/' + idListener.toB58String())
+  nodeDialer.multiaddrs.forEach((ma) => {
+    console.log(ma.toString() + '/p2p/' + idDialer.toB58String())
   })
 
   // Dial to the remote peer (the "listener")
-  const { stream } = await nodeDialer.dialProtocol(idListener, '/chat/1.0.0')
+  const listenerMa = multiaddr(`/ip4/127.0.0.1/tcp/10333/p2p/${idListener.toB58String()}`)
+  const { stream } = await nodeDialer.dialProtocol(listenerMa, '/chat/1.0.0')
 
   console.log('Dialer dialed to listener on protocol: /chat/1.0.0')
   console.log('Type a message and see what happens')

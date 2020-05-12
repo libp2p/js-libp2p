@@ -32,7 +32,7 @@ const createNode = async (transports, addresses = []) => {
 
 function printAddrs(node, number) {
   console.log('node %s is listening on:', number)
-  node.transportManager.getAddrs().forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
 }
 
 function print ({ stream }) {
