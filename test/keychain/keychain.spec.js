@@ -416,6 +416,7 @@ describe('libp2p.keychain', () => {
       started: false,
       config: {
         keychain: {
+          datastore: new MemoryDatastore(),
           pass: '12345678901234567890'
         }
       }
