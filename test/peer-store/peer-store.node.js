@@ -39,9 +39,8 @@ describe('libp2p.peerStore', () => {
     const localPeers = libp2p.peerStore.peers
     expect(localPeers.size).to.equal(1)
 
-    // TODO: needs https://github.com/NodeFactoryIo/js-libp2p-noise/issues/58
-    // const publicKeyInLocalPeer = localPeers.get(remoteIdStr).id.pubKey
-    // expect(publicKeyInLocalPeer.bytes).to.equalBytes(remoteLibp2p.peerId.pubKey.bytes)
+    const publicKeyInLocalPeer = localPeers.get(remoteIdStr).id.pubKey
+    expect(publicKeyInLocalPeer.bytes).to.equalBytes(remoteLibp2p.peerId.pubKey.bytes)
 
     const publicKeyInRemotePeer = remoteLibp2p.peerStore.keyBook.get(libp2p.peerId)
     expect(publicKeyInRemotePeer).to.exist()
