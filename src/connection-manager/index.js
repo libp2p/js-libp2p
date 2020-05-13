@@ -182,7 +182,6 @@ class ConnectionManager extends EventEmitter {
       this.emit('peer:connect', connection)
     }
 
-    this._libp2p.peerStore.addressBook.add(peerId, [connection.remoteAddr])
     this._libp2p.peerStore.keyBook.set(peerId, peerId.pubKey)
 
     if (!this._peerValues.has(peerIdStr)) {
