@@ -1,6 +1,5 @@
 'use strict'
 
-const { MemoryDatastore } = require('interface-datastore')
 const mergeOptions = require('merge-options')
 const Constants = require('./constants')
 
@@ -17,9 +16,6 @@ const DefaultConfig = {
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
     maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
     dialTimeout: Constants.DIAL_TIMEOUT
-  },
-  keychain: {
-    datastore: new MemoryDatastore()
   },
   metrics: {
     enabled: false

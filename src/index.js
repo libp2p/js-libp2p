@@ -76,13 +76,12 @@ class Libp2p extends EventEmitter {
     }
 
     // Create keychain
-    if (this._options.keychain.pass) {
+    if (this._options.keychain && this._options.keychain.pass && this._options.keychain.datastore) {
       log('creating keychain')
 
-      const datastore = this._options.keychain.datastore
       const keychainOpts = Keychain.generateOptions()
 
-      this.keychain = new Keychain(datastore, {
+      this.keychain = new Keychain(this._options.keychain.datastore, {
         passPhrase: this._options.keychain.pass,
         ...keychainOpts,
         ...this._options.keychain
