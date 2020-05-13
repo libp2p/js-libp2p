@@ -24,7 +24,6 @@ describe('libp2p.peerStore', () => {
   })
 
   it('adds peer address to AddressBook and keys to the keybook when establishing connection', async () => {
-    const idStr = libp2p.peerId.toB58String()
     const remoteIdStr = remoteLibp2p.peerId.toB58String()
 
     const spyAddressBook = sinon.spy(libp2p.peerStore.addressBook, 'add')
@@ -44,9 +43,7 @@ describe('libp2p.peerStore', () => {
     // const publicKeyInLocalPeer = localPeers.get(remoteIdStr).id.pubKey
     // expect(publicKeyInLocalPeer.bytes).to.equalBytes(remoteLibp2p.peerId.pubKey.bytes)
 
-    const remotePeers = remoteLibp2p.peerStore.peers
-    expect(remotePeers.size).to.equal(1)
-    const publicKeyInRemotePeer = remotePeers.get(idStr).id.pubKey
+    const publicKeyInRemotePeer = remoteLibp2p.peerStore.keyBook.get(libp2p.peerId)
     expect(publicKeyInRemotePeer).to.exist()
     expect(publicKeyInRemotePeer.bytes).to.equalBytes(libp2p.peerId.pubKey.bytes)
   })

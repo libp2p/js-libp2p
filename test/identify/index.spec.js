@@ -242,8 +242,8 @@ describe('Identify', () => {
       expect(connection).to.exist()
 
       // Wait for peer store to be updated
-      // Dialer._createDialTarget (add), Connected (add), Identify (replace)
-      await pWaitFor(() => peerStoreSpySet.callCount === 1 && peerStoreSpyAdd.callCount === 2)
+      // Dialer._createDialTarget (add), Identify (replace)
+      await pWaitFor(() => peerStoreSpySet.callCount === 1 && peerStoreSpyAdd.callCount === 1)
       expect(libp2p.identifyService.identify.callCount).to.equal(1)
 
       // The connection should have no open streams
