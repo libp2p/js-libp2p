@@ -425,7 +425,7 @@ const node = await Libp2p.create({
 
 #### Setup with Keychain
 
-Libp2p allows you to setup a secure key chain to manage your keys. The keychain configuration object should have the following properties:
+Libp2p allows you to setup a secure keychain to manage your keys. The keychain configuration object should have the following properties:
 
 | Name | Type | Description |
 |------|------|-------------|
