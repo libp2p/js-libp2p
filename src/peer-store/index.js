@@ -76,27 +76,12 @@ class PeerStore extends EventEmitter {
    * @returns {Map<string, Peer>}
    */
   get peers () {
-    const storedPeers = new Set()
-
-    // AddressBook
-    for (const [idStr] of this.addressBook.data.entries()) {
-      storedPeers.add(idStr)
-    }
-
-    // ProtoBook
-    for (const [idStr] of this.protoBook.data.entries()) {
-      storedPeers.add(idStr)
-    }
-
-    // KeyBook
-    for (const [idStr] of this.protoBook.data.entries()) {
-      storedPeers.add(idStr)
-    }
-
-    // MetadataBook
-    for (const [idStr] of this.metadataBook.data.entries()) {
-      storedPeers.add(idStr)
-    }
+    const storedPeers = new Set([
+      ...this.addressBook.data.keys(),
+      ...this.keyBook.data.keys(),
+      ...this.protoBook.data.keys(),
+      ...this.metadataBook.data.keys()
+    ])
 
     const peersData = new Map()
     storedPeers.forEach((idStr) => {
@@ -135,7 +120,7 @@ class PeerStore extends EventEmitter {
     const metadata = this.metadataBook.get(peerId)
     const protocols = this.protoBook.get(peerId)
 
-    if (!addresses && !metadata && !protocols) {
+    if (!id && !addresses && !metadata && !protocols) {
       return undefined
     }
 
