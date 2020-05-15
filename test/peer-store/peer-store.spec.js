@@ -158,4 +158,57 @@ describe('peer-store', () => {
       expect(peerListenint4[1].id.toB58String()).to.eql(peerIds[3].toB58String())
     })
   })
+
+  describe('peerStore.peers', () => {
+    let peerStore
+
+    beforeEach(() => {
+      peerStore = new PeerStore()
+    })
+
+    it('returns peers if only addresses are known', () => {
+      peerStore.addressBook.set(peerIds[0], [addr1])
+
+      const peers = peerStore.peers
+      expect(peers.size).to.equal(1)
+
+      const peerData = peers.get(peerIds[0].toB58String())
+      expect(peerData).to.exist()
+      expect(peerData.id).to.exist()
+      expect(peerData.addresses).to.have.lengthOf(1)
+      expect(peerData.protocols).to.have.lengthOf(0)
+      expect(peerData.metadata).to.not.exist()
+    })
+
+    it('returns peers if only protocols are known', () => {
+      peerStore.protoBook.set(peerIds[0], [proto1])
+
+      const peers = peerStore.peers
+      expect(peers.size).to.equal(1)
+
+      const peerData = peers.get(peerIds[0].toB58String())
+      expect(peerData).to.exist()
+      expect(peerData.id).to.exist()
+      expect(peerData.addresses).to.have.lengthOf(0)
+      expect(peerData.protocols).to.have.lengthOf(1)
+      expect(peerData.metadata).to.not.exist()
+    })
+
+    it('returns peers if only metadata is known', () => {
+      const metadataKey = 'location'
+      const metadataValue = Buffer.from('earth')
+      peerStore.metadataBook.set(peerIds[0], metadataKey, metadataValue)
+
+      const peers = peerStore.peers
+      expect(peers.size).to.equal(1)
+
+      const peerData = peers.get(peerIds[0].toB58String())
+      expect(peerData).to.exist()
+      expect(peerData.id).to.exist()
+      expect(peerData.addresses).to.have.lengthOf(0)
+      expect(peerData.protocols).to.have.lengthOf(0)
+      expect(peerData.metadata).to.exist()
+      expect(peerData.metadata.get(metadataKey)).to.equalBytes(metadataValue)
+    })
+  })
 })

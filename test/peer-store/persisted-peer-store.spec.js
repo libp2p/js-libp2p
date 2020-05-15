@@ -118,7 +118,10 @@ describe('Persisted PeerStore', () => {
       peerStore.protoBook.set(peers[0], protocols)
       peerStore.protoBook.set(peers[1], protocols)
 
-      expect(spyDs).to.have.property('callCount', 6) // 2 AddressBook + 2 KeyBook + 2 ProtoBook
+      // MetadataBook
+      peerStore.metadataBook.set(peers[0], 'location', Buffer.from('earth'))
+
+      expect(spyDs).to.have.property('callCount', 7) // 2 Address + 2 Key + 2 Proto + 1 Metadata
       expect(peerStore.peers.size).to.equal(2)
 
       await peerStore.stop()
@@ -131,13 +134,14 @@ describe('Persisted PeerStore', () => {
 
       await peerStore.start()
 
-      expect(spy).to.have.property('callCount', 6)
-      expect(spyDs).to.have.property('callCount', 6)
+      expect(spy).to.have.property('callCount', 7)
+      expect(spyDs).to.have.property('callCount', 7)
 
       expect(peerStore.peers.size).to.equal(2)
       expect(peerStore.addressBook.data.size).to.equal(2)
       expect(peerStore.keyBook.data.size).to.equal(2)
       expect(peerStore.protoBook.data.size).to.equal(2)
+      expect(peerStore.metadataBook.data.size).to.equal(1)
     })
 
     it('should delete content from the datastore on delete', async () => {
@@ -151,11 +155,14 @@ describe('Persisted PeerStore', () => {
       peerStore.addressBook.set(peer, multiaddrs)
       // ProtoBook
       peerStore.protoBook.set(peer, protocols)
+      // MetadataBook
+      peerStore.metadataBook.set(peer, 'location', Buffer.from('earth'))
 
       const spyDs = sinon.spy(datastore, 'batch')
       const spyAddressBook = sinon.spy(peerStore.addressBook, 'delete')
       const spyKeyBook = sinon.spy(peerStore.keyBook, 'delete')
       const spyProtoBook = sinon.spy(peerStore.protoBook, 'delete')
+      const spyMetadataBook = sinon.spy(peerStore.metadataBook, 'delete')
 
       // Delete from PeerStore
       peerStore.delete(peer)
@@ -164,7 +171,8 @@ describe('Persisted PeerStore', () => {
       expect(spyAddressBook).to.have.property('callCount', 1)
       expect(spyKeyBook).to.have.property('callCount', 1)
       expect(spyProtoBook).to.have.property('callCount', 1)
-      expect(spyDs).to.have.property('callCount', 2)
+      expect(spyMetadataBook).to.have.property('callCount', 1)
+      expect(spyDs).to.have.property('callCount', 3)
 
       // Should have zero peer records stored in the datastore
       const queryParams = {
@@ -187,6 +195,7 @@ describe('Persisted PeerStore', () => {
 
     it('should not commit until threshold is reached', async () => {
       const spyDirty = sinon.spy(peerStore, '_addDirtyPeer')
+      const spyDirtyMetadata = sinon.spy(peerStore, '_addDirtyPeerMetadata')
       const spyDs = sinon.spy(datastore, 'batch')
 
       const peers = await peerUtils.createPeerId({ number: 2 })
@@ -202,11 +211,13 @@ describe('Persisted PeerStore', () => {
       // Add Peer0 data in multiple books
       peerStore.addressBook.set(peers[0], multiaddrs)
       peerStore.protoBook.set(peers[0], protocols)
+      peerStore.metadataBook.set(peers[0], 'location', Buffer.from('earth'))
 
       // Remove data from the same Peer
       peerStore.addressBook.delete(peers[0])
 
       expect(spyDirty).to.have.property('callCount', 3) // 2 AddrBook ops, 1 ProtoBook op
+      expect(spyDirtyMetadata).to.have.property('callCount', 1) // 1 MetadataBook op
       expect(peerStore._dirtyPeers.size).to.equal(1)
       expect(spyDs).to.have.property('callCount', 0)
 
@@ -221,14 +232,15 @@ describe('Persisted PeerStore', () => {
       peerStore.addressBook.set(peers[1], multiaddrs)
 
       expect(spyDirty).to.have.property('callCount', 4)
+      expect(spyDirtyMetadata).to.have.property('callCount', 1)
       expect(spyDs).to.have.property('callCount', 1)
 
-      // Should have two peer records stored in the datastore
+      // Should have three peer records stored in the datastore
       let count = 0
       for await (const _ of datastore.query(queryParams)) { // eslint-disable-line
         count++
       }
-      expect(count).to.equal(2)
+      expect(count).to.equal(3)
       expect(peerStore.peers.size).to.equal(2)
     })
 
@@ -241,7 +253,7 @@ describe('Persisted PeerStore', () => {
 
       await peerStore.start()
 
-      // Add Peer data in a booka
+      // Add Peer data in a book
       peerStore.protoBook.set(peer, protocols)
 
       expect(spyDs).to.have.property('callCount', 0)
