@@ -14,6 +14,7 @@ const {
   NAMESPACE_ADDRESS,
   NAMESPACE_COMMON,
   NAMESPACE_KEYS,
+  NAMESPACE_METADATA,
   NAMESPACE_PROTOCOL
 } = require('./consts')
 
@@ -43,6 +44,12 @@ class PersistentPeerStore extends PeerStore {
      */
     this._dirtyPeers = new Set()
 
+    /**
+     * Peers metadata changed mapping peer identifers to metadata changed.
+     * @type {Map<string, Set<string>>}
+     */
+    this._dirtyMetadata = new Map()
+
     this.threshold = threshold
     this._addDirtyPeer = this._addDirtyPeer.bind(this)
   }
@@ -58,6 +65,7 @@ class PersistentPeerStore extends PeerStore {
     this.on('change:protocols', this._addDirtyPeer)
     this.on('change:multiaddrs', this._addDirtyPeer)
     this.on('change:pubkey', this._addDirtyPeer)
+    this.on('change:metadata', this._addDirtyPeerMetadata)
 
     // Load data
     for await (const entry of this._datastore.query({ prefix: NAMESPACE_COMMON })) {
@@ -93,6 +101,30 @@ class PersistentPeerStore extends PeerStore {
   }
 
   /**
+   * Add modified metadata peer to the set.
+   * @private
+   * @param {Object} params
+   * @param {PeerId} params.peerId
+   * @param {string} params.metadata
+   */
+  _addDirtyPeerMetadata ({ peerId, metadata }) {
+    const peerIdstr = peerId.toB58String()
+
+    log('add dirty metadata peer', peerIdstr)
+    this._dirtyPeers.add(peerIdstr)
+
+    // Add dirty metadata key
+    const mData = this._dirtyMetadata.get(peerIdstr) || new Set()
+    mData.add(metadata)
+    this._dirtyMetadata.set(peerIdstr, mData)
+
+    if (this._dirtyPeers.size >= this.threshold) {
+      // Commit current data
+      this._commitData()
+    }
+  }
+
+  /**
    * Add all the peers current data to a datastore batch and commit it.
    * @private
    * @param {Array<string>} peers
@@ -119,6 +151,9 @@ class PersistentPeerStore extends PeerStore {
 
       // Key Book
       this._batchKeyBook(peerId, batch)
+
+      // Metadata Book
+      this._batchMetadataBook(peerId, batch)
 
       // Proto Book
       this._batchProtoBook(peerId, batch)
@@ -185,6 +220,32 @@ class PersistentPeerStore extends PeerStore {
   }
 
   /**
+   * Add metadata book data of the peer to the batch.
+   * @private
+   * @param {PeerId} peerId
+   * @param {Object} batch
+   */
+  _batchMetadataBook (peerId, batch) {
+    const b32key = peerId.toString()
+    const dirtyMetada = this._dirtyMetadata.get(peerId.toB58String()) || []
+
+    try {
+      dirtyMetada.forEach((dirtyKey) => {
+        const key = new Key(`${NAMESPACE_METADATA}${b32key}/${dirtyKey}`)
+        const dirtyValue = this.metadataBook.getValue(peerId, dirtyKey)
+
+        if (dirtyValue) {
+          batch.put(key, dirtyValue)
+        } else {
+          batch.delete(key)
+        }
+      })
+    } catch (err) {
+      log.error(err)
+    }
+  }
+
+  /**
    * Add proto book data of the peer to the batch.
    * @private
    * @param {PeerId} peerId
@@ -242,6 +303,13 @@ class PersistentPeerStore extends PeerStore {
           this.keyBook._setData(
             decoded,
             decoded,
+            { emit: false })
+          break
+        case 'metadata':
+          this.metadataBook._setValue(
+            peerId,
+            keyParts[4],
+            value,
             { emit: false })
           break
         case 'protos':
