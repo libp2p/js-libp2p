@@ -76,61 +76,32 @@ class PeerStore extends EventEmitter {
    * @returns {Map<string, Peer>}
    */
   get peers () {
-    const peersData = new Map()
+    const storedPeers = new Set()
 
     // AddressBook
-    for (const [idStr, addresses] of this.addressBook.data.entries()) {
-      const id = this.keyBook.data.get(idStr) || PeerId.createFromCID(idStr)
-      peersData.set(idStr, {
-        id,
-        addresses,
-        metadata: this.metadataBook.get(id),
-        protocols: this.protoBook.get(id) || []
-      })
+    for (const [idStr] of this.addressBook.data.entries()) {
+      storedPeers.add(idStr)
     }
 
     // ProtoBook
-    for (const [idStr, protocols] of this.protoBook.data.entries()) {
-      const pData = peersData.get(idStr)
-      const id = this.keyBook.data.get(idStr) || PeerId.createFromCID(idStr)
-
-      if (!pData) {
-        peersData.set(idStr, {
-          id,
-          addresses: [],
-          metadata: this.metadataBook.get(id),
-          protocols: Array.from(protocols)
-        })
-      }
+    for (const [idStr] of this.protoBook.data.entries()) {
+      storedPeers.add(idStr)
     }
 
     // KeyBook
-    for (const [idStr, peerId] of this.protoBook.data.entries()) {
-      const pData = peersData.get(idStr)
-
-      if (!pData) {
-        peersData.set(idStr, {
-          id: peerId,
-          addresses: [],
-          metadata: this.metadataBook.get(peerId),
-          protocols: []
-        })
-      }
+    for (const [idStr] of this.protoBook.data.entries()) {
+      storedPeers.add(idStr)
     }
 
     // MetadataBook
-    for (const [idStr, metadata] of this.metadataBook.data.entries()) {
-      const pData = peersData.get(idStr)
-
-      if (!pData) {
-        peersData.set(idStr, {
-          id: PeerId.createFromCID(idStr),
-          addresses: [],
-          metadata,
-          protocols: []
-        })
-      }
+    for (const [idStr] of this.metadataBook.data.entries()) {
+      storedPeers.add(idStr)
     }
+
+    const peersData = new Map()
+    storedPeers.forEach((idStr) => {
+      peersData.set(idStr, this.get(PeerId.createFromCID(idStr)))
+    })
 
     return peersData
   }
