@@ -1,3 +1,8 @@
+<a name="0.19.3"></a>
+## [0.19.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.2...v0.19.3) (2020-05-15)
+
+
+
 <a name="0.19.2"></a>
 ## [0.19.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.1...v0.19.2) (2020-04-28)
 
