@@ -75,7 +75,11 @@ A `peerId.toB58String()` identifier mapping to a `Set` of protocol identifier st
 
 #### Metadata Book
 
-**Not Yet Implemented**
+The `metadataBook` keeps track of the known metadata of a peer. Its metadata is stored in a key value fashion, where a key identifier (`string`) represents a metadata value (`Buffer`).
+
+`Map<string, Map<string, Buffer>>`
+
+A `peerId.toB58String()` identifier mapping to the peer metadata Map.
 
 ### API
 
@@ -85,6 +89,7 @@ Access to its underlying books:
 
 - `peerStore.addressBook.*`
 - `peerStore.keyBook.*`
+- `peerStore.metadataBook.*`
 - `peerStore.protoBook.*`
 
 ### Events
@@ -92,6 +97,8 @@ Access to its underlying books:
 - `peer` - emitted when a new peer is added.
 - `change:multiaadrs` - emitted when a known peer has a different set of multiaddrs.
 - `change:protocols` - emitted when a known peer supports a different set of protocols.
+- `change:pubkey` - emitted when a peer's public key is known.
+- `change:metadata` - emitted when known metadata of a peer changes.
 
 ## Data Persistence
 
@@ -122,8 +129,6 @@ All public keys are stored under the following pattern:
 ` /peers/keys/<b32 peer id no padding>`
 
 **MetadataBook**
-
-_NOT_YET_IMPLEMENTED_
 
 Metadata is stored under the following key pattern:
 

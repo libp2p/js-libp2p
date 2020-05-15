@@ -10,6 +10,7 @@ const PeerId = require('peer-id')
 
 const AddressBook = require('./address-book')
 const KeyBook = require('./key-book')
+const MetadataBook = require('./metadata-book')
 const ProtoBook = require('./proto-book')
 
 const {
@@ -21,6 +22,8 @@ const {
  * @fires PeerStore#peer Emitted when a new peer is added.
  * @fires PeerStore#change:protocols Emitted when a known peer supports a different set of protocols.
  * @fires PeerStore#change:multiaddrs Emitted when a known peer has a different set of multiaddrs.
+ * @fires PeerStore#change:pubkey Emitted emitted when a peer's public key is known.
+ * @fires PeerStore#change:metadata Emitted when the known metadata of a peer change.
  */
 class PeerStore extends EventEmitter {
   /**
@@ -48,6 +51,11 @@ class PeerStore extends EventEmitter {
     this.keyBook = new KeyBook(this)
 
     /**
+     * MetadataBook containing a map of peerIdStr to their metadata Map.
+     */
+    this.metadataBook = new MetadataBook(this)
+
+    /**
      * ProtoBook containing a map of peerIdStr to supported protocols.
      */
     this.protoBook = new ProtoBook(this)
@@ -68,31 +76,17 @@ class PeerStore extends EventEmitter {
    * @returns {Map<string, Peer>}
    */
   get peers () {
+    const storedPeers = new Set([
+      ...this.addressBook.data.keys(),
+      ...this.keyBook.data.keys(),
+      ...this.protoBook.data.keys(),
+      ...this.metadataBook.data.keys()
+    ])
+
     const peersData = new Map()
-
-    // AddressBook
-    for (const [idStr, addresses] of this.addressBook.data.entries()) {
-      const id = this.keyBook.data.get(idStr) || PeerId.createFromCID(idStr)
-      peersData.set(idStr, {
-        id,
-        addresses,
-        protocols: this.protoBook.get(id) || []
-      })
-    }
-
-    // ProtoBook
-    for (const [idStr, protocols] of this.protoBook.data.entries()) {
-      const pData = peersData.get(idStr)
-      const id = this.keyBook.data.get(idStr) || PeerId.createFromCID(idStr)
-
-      if (!pData) {
-        peersData.set(idStr, {
-          id,
-          addresses: [],
-          protocols: Array.from(protocols)
-        })
-      }
-    }
+    storedPeers.forEach((idStr) => {
+      peersData.set(idStr, this.get(PeerId.createFromCID(idStr)))
+    })
 
     return peersData
   }
@@ -106,8 +100,9 @@ class PeerStore extends EventEmitter {
     const addressesDeleted = this.addressBook.delete(peerId)
     const keyDeleted = this.keyBook.delete(peerId)
     const protocolsDeleted = this.protoBook.delete(peerId)
+    const metadataDeleted = this.metadataBook.delete(peerId)
 
-    return addressesDeleted || keyDeleted || protocolsDeleted
+    return addressesDeleted || keyDeleted || protocolsDeleted || metadataDeleted
   }
 
   /**
@@ -122,16 +117,18 @@ class PeerStore extends EventEmitter {
 
     const id = this.keyBook.data.get(peerId.toB58String())
     const addresses = this.addressBook.get(peerId)
+    const metadata = this.metadataBook.get(peerId)
     const protocols = this.protoBook.get(peerId)
 
-    if (!addresses && !protocols) {
+    if (!id && !addresses && !metadata && !protocols) {
       return undefined
     }
 
     return {
       id: id || peerId,
       addresses: addresses || [],
-      protocols: protocols || []
+      protocols: protocols || [],
+      metadata: metadata
     }
   }
 }

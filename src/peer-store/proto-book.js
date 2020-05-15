@@ -83,7 +83,6 @@ class ProtoBook extends Book {
   /**
    * Adds known protocols of a provided peer.
    * If the peer was not known before, it will be added.
-   * @override
    * @param {PeerId} peerId
    * @param {Array<string>} protocols
    * @returns {ProtoBook}

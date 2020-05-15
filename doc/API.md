@@ -29,6 +29,11 @@
   * [`peerStore.keyBook.delete`](#peerstorekeybookdelete)
   * [`peerStore.keyBook.get`](#peerstorekeybookget)
   * [`peerStore.keyBook.set`](#peerstorekeybookset)
+  * [`peerStore.metadataBook.delete`](#peerstoremetadatabookdelete)
+  * [`peerStore.metadataBook.deleteValue`](#peerstoremetadatabookdeletevalue)
+  * [`peerStore.metadataBook.get`](#peerstoremetadatabookget)
+  * [`peerStore.metadataBook.getValue`](#peerstoremetadatabookgetvalue)
+  * [`peerStore.metadataBook.set`](#peerstoremetadatabookset)
   * [`peerStore.protoBook.add`](#peerstoreprotobookadd)
   * [`peerStore.protoBook.delete`](#peerstoreprotobookdelete)
   * [`peerStore.protoBook.get`](#peerstoreprotobookget)
@@ -937,6 +942,146 @@ Set known `peerId`. This can include its Public Key.
 ```js
 const publicKey = peerId.pubKey
 peerStore.keyBook.set(peerId, publicKey)
+```
+
+### peerStore.metadataBook.delete
+
+Delete the provided peer from the book.
+
+`peerStore.metadataBook.delete(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to remove |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | true if found and removed |
+
+#### Example
+
+```js
+peerStore.metadataBook.delete(peerId)
+// false
+peerStore.metadataBook.set(peerId, 'nickname', Buffer.from('homePeer'))
+peerStore.metadataBook.delete(peerId)
+// true
+```
+
+### peerStore.metadataBook.deleteValue
+
+Deletes the provided peer metadata key-value pair from the book.
+
+`peerStore.metadataBook.deleteValue(peerId, key)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to remove |
+| key | `string` | key of the metadata value to remove |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | true if found and removed |
+
+#### Example
+
+```js
+peerStore.metadataBook.deleteValue(peerId, 'location')
+// false
+peerStore.metadataBook.set(peerId, 'location', Buffer.from('Berlin'))
+peerStore.metadataBook.deleteValue(peerId, 'location')
+// true
+```
+
+### peerStore.metadataBook.get
+
+Get the known metadata of a provided peer.
+
+`peerStore.metadataBook.get(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to get |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Map<string, Buffer>` | Peer Metadata |
+
+#### Example
+
+```js
+peerStore.metadataBook.get(peerId)
+// undefined
+peerStore.metadataBook.set(peerId, 'location', Buffer.from('Berlin'))
+peerStore.metadataBook.get(peerId)
+// Metadata Map
+```
+
+### peerStore.metadataBook.getValue
+
+Get specific metadata of a provided peer.
+
+`peerStore.metadataBook.getValue(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to get |
+| key | `string` | key of the metadata value to get |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Map<string, Buffer>` | Peer Metadata |
+
+#### Example
+
+```js
+peerStore.metadataBook.getValue(peerId, 'location')
+// undefined
+peerStore.metadataBook.set(peerId, 'location', Buffer.from('Berlin'))
+peerStore.metadataBook.getValue(peerId, 'location')
+// Metadata Map
+```
+
+### peerStore.metadataBook.set
+
+Set known metadata of a given `peerId`.
+
+`peerStore.metadataBook.set(peerId, key, value)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to set |
+| key | `string` | key of the metadata value to store |
+| value | `Buffer` | metadata value to store |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `MetadataBook` | Returns the Metadata Book component |
+
+#### Example
+
+```js
+peerStore.metadataBook.set(peerId, 'location', Buffer.from('Berlin'))
 ```
 
 ### peerStore.protoBook.delete
