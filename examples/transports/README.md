@@ -25,18 +25,19 @@ First thing is to create our own libp2p node! Insert:
 
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
+const { NOISE } = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
 
-const createNode = async (peerInfo) => {
-  // To signall the addresses we want to be available, we use
-  // the multiaddr format, a self describable address
-  peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-
+const createNode = async () => {
   const node = await Libp2p.create({
-    peerInfo,
+    addresses: {
+      // To signall the addresses we want to be available, we use
+      // the multiaddr format, a self describable address
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
     modules: {
       transport: [ TCP ],
-      connEncryption: [ SECIO ]
+      connEncryption: [ NOISE, SECIO ]
     }
   })
 
@@ -48,8 +49,7 @@ const createNode = async (peerInfo) => {
 Now that we have a function to create our own libp2p node, let's create a node with it.
 
 ```JavaScript
-const peerInfo = await PeerInfo.create()
-const node = await createNode(peerInfo)
+const node = await createNode()
 
 // At this point the node has started
 console.log('node has started (true/false):', node.isStarted())
@@ -59,7 +59,7 @@ console.log('node has started (true/false):', node.isStarted())
 // 0, which means "listen in any network interface and pick
 // a port for me
 console.log('listening on:')
-node.peerInfo.multiaddrs.forEach((ma) => console.log(ma.toString()))
+node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
 ```
 
 Running this should result in something like:
@@ -96,7 +96,7 @@ We are going to reuse the `createNode` function from step 1, but this time to ma
 ```JavaScript
 function printAddrs (node, number) {
   console.log('node %s is listening on:', number)
-  node.peerInfo.multiaddrs.forEach((ma) => console.log(ma.toString()))
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
 }
 ```
 
@@ -104,10 +104,6 @@ Then,
 
 ```js
 ;(async () => {
-  const [peerInfo1, peerInfo2] = await Promise.all([
-    PeerInfo.create(),
-    PeerInfo.create()
-  ])
   const [node1, node2] = await Promise.all([
     createNode(),
     createNode()
@@ -127,7 +123,8 @@ Then,
     )
   })
 
-  const { stream } = await node1.dialProtocol(node2.peerInfo, '/print')
+node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  const { stream } = await node1.dialProtocol(node2.peerId, '/print')
 
   await pipe(
     ['Hello', ' ', 'p2p', ' ', 'world', '!'],
@@ -166,18 +163,19 @@ We want to create 3 nodes, one with TCP, one with TCP+WebSockets and one with ju
 ```JavaScript
 // ...
 
-const createNode = async (peerInfo, transports, multiaddrs = []) => {
+const createNode = async (transports, multiaddrs = []) => {
   if (!Array.isArray(multiaddrs)) {
     multiaddrs = [multiaddrs]
   }
 
-  multiaddrs.forEach((addr) => peerInfo.multiaddrs.add(addr))
-
   const node = await Libp2p.create({
-    peerInfo,
+    addresses: {
+      listen: multiaddrs.map((a) => multiaddr(a))
+    },
     modules: {
       transport: transports,
-      connEncryption: [ SECIO ]
+      connEncryption: [SECIO],
+      streamMuxer: [MPLEX]
     }
   })
 
@@ -194,15 +192,10 @@ Let's update our flow to create nodes and see how they behave when dialing to ea
 const WebSockets = require('libp2p-websockets')
 const TCP = require('libp2p-tcp')
 
-const [peerInfo1, peerInfo2, peerInfo3] = await Promise.all([
-  PeerInfo.create(),
-  PeerInfo.create(),
-  PeerInfo.create()
-])
 const [node1, node2, node3] = await Promise.all([
-  createNode(peerInfo1, [TCP], '/ip4/0.0.0.0/tcp/0'),
-  createNode(peerInfo2, [TCP, WebSockets], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
-  createNode(peerInfo3, [WebSockets], '/ip4/127.0.0.1/tcp/20000/ws')
+  createNode([TCP], '/ip4/0.0.0.0/tcp/0'),
+  createNode([TCP, WebSockets], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
+  createNode([WebSockets], '/ip4/127.0.0.1/tcp/20000/ws')
 ])
 
 printAddrs(node1, '1')
@@ -213,15 +206,19 @@ node1.handle('/print', print)
 node2.handle('/print', print)
 node3.handle('/print', print)
 
+node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+node3.peerStore.addressBook.set(node1.peerId, node1.multiaddrs)
+
 // node 1 (TCP) dials to node 2 (TCP+WebSockets)
-const { stream } = await node1.dialProtocol(node2.peerInfo, '/print')
+const { stream } = await node1.dialProtocol(node2.peerId, '/print')
 await pipe(
   ['node 1 dialed to node 2 successfully'],
   stream
 )
 
 // node 2 (TCP+WebSockets) dials to node 2 (WebSockets)
-const { stream: stream2 } = await node2.dialProtocol(node3.peerInfo, '/print')
+const { stream: stream2 } = await node2.dialProtocol(node3.peerId, '/print')
 await pipe(
   ['node 2 dialed to node 3 successfully'],
   stream2
@@ -229,7 +226,7 @@ await pipe(
 
 // node 3 (WebSockets) attempts to dial to node 1 (TCP)
 try {
-  await node3.dialProtocol(node1.peerInfo, '/print')
+  await node3.dialProtocol(node1.peerId, '/print')
 } catch (err) {
   console.log('node 3 failed to dial to node 1 with:', err.message)
 }

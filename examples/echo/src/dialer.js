@@ -5,8 +5,8 @@
  * Dialer Node
  */
 
+const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const Node = require('./libp2p-bundle')
 const pipe = require('it-pipe')
 
@@ -17,28 +17,26 @@ async function run() {
   ])
 
   // Dialer
-  const dialerPeerInfo = new PeerInfo(dialerId)
-  dialerPeerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
   const dialerNode = new Node({
-    peerInfo: dialerPeerInfo
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
+    peerId: dialerId
   })
 
-  // Peer to Dial (the listener)
-  const listenerPeerInfo = new PeerInfo(listenerId)
-  const listenerMultiaddr = '/ip4/127.0.0.1/tcp/10333/p2p/' +
-      listenerId.toB58String()
-  listenerPeerInfo.multiaddrs.add(listenerMultiaddr)
+  // Add peer to Dial (the listener) into the PeerStore
+  const listenerMultiaddr = '/ip4/127.0.0.1/tcp/10333/p2p/' + listenerId.toB58String()
 
   // Start the dialer libp2p node
   await dialerNode.start()
 
   console.log('Dialer ready, listening on:')
-  dialerPeerInfo.multiaddrs.forEach((ma) => console.log(ma.toString() +
+  dialerNode.multiaddrs.forEach((ma) => console.log(ma.toString() +
         '/p2p/' + dialerId.toB58String()))
 
   // Dial the listener node
-  console.log('Dialing to peer:', listenerMultiaddr.toString())
-  const { stream } = await dialerNode.dialProtocol(listenerPeerInfo, '/echo/1.0.0')
+  console.log('Dialing to peer:', listenerMultiaddr)
+  const { stream } = await dialerNode.dialProtocol(listenerMultiaddr, '/echo/1.0.0')
 
   console.log('nodeA dialed to nodeB on protocol: /echo/1.0.0')
 

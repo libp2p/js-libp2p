@@ -5,20 +5,19 @@ const { Buffer } = require('buffer')
 const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
-const PeerInfo = require('peer-info')
 const Gossipsub = require('libp2p-gossipsub')
 
 const createNode = async () => {
-  const peerInfo = await PeerInfo.create()
-  peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-
   const node = await Libp2p.create({
-    peerInfo,
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
     modules: {
       transport: [TCP],
       streamMuxer: [Mplex],
-      connEncryption: [SECIO],
+      connEncryption: [NOISE, SECIO],
       pubsub: Gossipsub
     }
   })
@@ -35,7 +34,9 @@ const createNode = async () => {
     createNode()
   ])
 
-  await node1.dial(node2.peerInfo)
+  // Add node's 2 data to the PeerStore
+  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node1.dial(node2.peerId)
 
   await node1.pubsub.subscribe(topic, (msg) => {
     console.log(`node1 received: ${msg.data.toString()}`)

@@ -17,10 +17,13 @@ const Libp2p = require('libp2p')
 const KadDHT = require('libp2p-kad-dht')
 
 const node = await Libp2p.create({
+  addresses: {
+    listen: ['/ip4/0.0.0.0/tcp/0']
+  },
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
-    connEncryption: [ SECIO ],
+    connEncryption: [ NOISE, SECIO ],
     // we add the DHT module that will enable Peer and Content Routing
     dht: KadDHT
   },
@@ -40,18 +43,21 @@ const node1 = nodes[0]
 const node2 = nodes[1]
 const node3 = nodes[2]
 
+node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+
 await Promise.all([
-  node1.dial(node2.peerInfo),
-  node2.dial(node3.peerInfo)
+  node1.dial(node2.peerId),
+  node2.dial(node3.peerId)
 ])
 
 // Set up of the cons might take time
 await delay(100)
 
-const peer = await node1.peerRouting.findPeer(node3.peerInfo.id)
+const peer = await node1.peerRouting.findPeer(node3.peerId)
 
 console.log('Found it, multiaddrs are:')
-peer.multiaddrs.forEach((ma) => console.log(ma.toString()))
+peer.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${peer.id.toB58String()}`))
 ```
 
 You should see the output being something like:
@@ -59,8 +65,8 @@ You should see the output being something like:
 ```Bash
 > node 1.js
 Found it, multiaddrs are:
-/ip4/127.0.0.1/tcp/63617/p2p/QmWrFXvZr9S4iDqycyoyc2zDdrT1jg9wpdenUTdd1LTar6
-/ip4/192.168.86.41/tcp/63617/p2p/QmWrFXvZr9S4iDqycyoyc2zDdrT1jg9wpdenUTdd1LTar6
+/ip4/127.0.0.1/tcp/63617
+/ip4/192.168.86.41/tcp/63617
 ```
 
 You have successfully used Peer Routing to find a peer that you were not directly connected. Now all you have to do is to dial to the multiaddrs you discovered.
@@ -75,7 +81,7 @@ Instead of calling `peerRouting.findPeer`, we will use `contentRouting.provide` 
 
 ```JavaScript
 await node1.contentRouting.provide(cid)
-console.log('Node %s is providing %s', node1.peerInfo.id.toB58String(), cid.toBaseEncodedString())
+console.log('Node %s is providing %s', node1.peerId.toB58String(), cid.toBaseEncodedString())
 
 const provs = await all(node3.contentRouting.findProviders(cid, { timeout: 5000 }))
 
