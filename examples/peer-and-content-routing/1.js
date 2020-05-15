@@ -4,22 +4,21 @@
 const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
-const PeerInfo = require('peer-info')
 const KadDHT = require('libp2p-kad-dht')
 
 const delay = require('delay')
 
 const createNode = async () => {
-  const peerInfo = await PeerInfo.create()
-  peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-
   const node = await Libp2p.create({
-    peerInfo,
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
     modules: {
       transport: [TCP],
       streamMuxer: [Mplex],
-      connEncryption: [SECIO],
+      connEncryption: [NOISE, SECIO],
       dht: KadDHT
     },
     config: {
@@ -40,16 +39,19 @@ const createNode = async () => {
     createNode()
   ])
 
+  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+
   await Promise.all([
-    node1.dial(node2.peerInfo),
-    node2.dial(node3.peerInfo)
+    node1.dial(node2.peerId),
+    node2.dial(node3.peerId)
   ])
 
   // The DHT routing tables need a moment to populate
   await delay(100)
 
-  const peer = await node1.peerRouting.findPeer(node3.peerInfo.id)
+  const peer = await node1.peerRouting.findPeer(node3.peerId)
 
   console.log('Found it, multiaddrs are:')
-  peer.multiaddrs.forEach((ma) => console.log(ma.toString()))
+  peer.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${peer.id.toB58String()}`))
 })();
