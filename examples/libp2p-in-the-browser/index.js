@@ -2,6 +2,7 @@ import 'babel-polyfill'
 import Libp2p from 'libp2p'
 import Websockets from 'libp2p-websockets'
 import WebRTCStar from 'libp2p-webrtc-star'
+import { NOISE } from 'libp2p-noise'
 import Secio from 'libp2p-secio'
 import Mplex from 'libp2p-mplex'
 import Boostrap from 'libp2p-bootstrap'
@@ -9,9 +10,15 @@ import Boostrap from 'libp2p-bootstrap'
 document.addEventListener('DOMContentLoaded', async () => {
   // Create our libp2p node
   const libp2p = await Libp2p.create({
+    addresses: {
+      // Add the signaling server address, along with our PeerId to our multiaddrs list
+      // libp2p will automatically attempt to dial to the signaling server so that it can
+      // receive inbound connections from other peers
+      listen: ['/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star']
+    },
     modules: {
       transport: [Websockets, WebRTCStar],
-      connEncryption: [Secio],
+      connEncryption: [NOISE, Secio],
       streamMuxer: [Mplex],
       peerDiscovery: [Boostrap]
     },
@@ -43,30 +50,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     output.textContent += `${txt.trim()}\n`
   }
 
-  // Add the signaling server address, along with our PeerId to our multiaddrs list
-  // libp2p will automatically attempt to dial to the signaling server so that it can
-  // receive inbound connections from other peers
-  const webrtcAddr = '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star'
-  libp2p.peerInfo.multiaddrs.add(webrtcAddr)
-
   // Listen for new peers
-  libp2p.on('peer:discovery', (peerInfo) => {
-    log(`Found peer ${peerInfo.id.toB58String()}`)
+  libp2p.on('peer:discovery', (peerId) => {
+    log(`Found peer ${peerId.toB58String()}`)
   })
 
   // Listen for new connections to peers
-  libp2p.on('peer:connect', (peerInfo) => {
-    log(`Connected to ${peerInfo.id.toB58String()}`)
+  libp2p.connectionManager.on('peer:connect', (connection) => {
+    log(`Connected to ${connection.remotePeer.toB58String()}`)
   })
 
   // Listen for peers disconnecting
-  libp2p.on('peer:disconnect', (peerInfo) => {
-    log(`Disconnected from ${peerInfo.id.toB58String()}`)
+  libp2p.connectionManager.on('peer:disconnect', (connection) => {
+    log(`Disconnected from ${connection.remotePeer.toB58String()}`)
   })
 
   await libp2p.start()
   status.innerText = 'libp2p started!'
-  log(`libp2p id is ${libp2p.peerInfo.id.toB58String()}`)
+  log(`libp2p id is ${libp2p.peerId.toB58String()}`)
 
   // Export libp2p to the window so you can play with the API
   window.libp2p = libp2p

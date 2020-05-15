@@ -4,7 +4,7 @@ A Peer Discovery module enables libp2p to find peers to connect to. Think of the
 
 With these system, a libp2p node can both have a set of nodes to always connect on boot (bootstraper nodes), discover nodes through locality (e.g connected in the same LAN) or through serendipity (random walks on a DHT).
 
-These mechanisms save configuration and enable a node to operate without any explicit dials, it will just work.
+These mechanisms save configuration and enable a node to operate without any explicit dials, it will just work. Once new peers are discovered, their known data is stored in the peer's PeerStore.
 
 ## 1. Bootstrap list of Peers when booting a node
 
@@ -20,7 +20,7 @@ const node = Libp2p.create({
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
-    connEncryption: [ SECIO ],
+    connEncryption: [ NOISE, SECIO ],
     peerDiscovery: [ Bootstrap ]
   },
   config: {
@@ -55,11 +55,14 @@ Now, once we create and start the node, we can listen for events such as `peer:d
 
 ```JavaScript
 const node = await Libp2p.create({
-  peerInfo,
+  peerId,
+  addresses: {
+    listen: ['/ip4/0.0.0.0/tcp/0']
+  }
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
-    connEncryption: [ SECIO ],
+    connEncryption: [ NOISE, SECIO ],
     peerDiscovery: [ Bootstrap ]
   },
   config: {
@@ -73,15 +76,13 @@ const node = await Libp2p.create({
   }
 })
 
-node.peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-
-node.on('peer:connect', (peer) => {
-  console.log('Connection established to:', peer.id.toB58String())	// Emitted when a peer has been found
+node.connectionManager.on('peer:connect', (connection) => {
+  console.log('Connection established to:', connection.remotePeer.toB58String())	// Emitted when a new connection has been created
 })
 
-// Emitted when a peer has been found
-node.on('peer:discovery', (peer) => {
-  console.log('Discovered:', peer.id.toB58String())
+node.on('peer:discovery', (peerId) => {
+  // No need to dial, autoDial is on
+  console.log('Discovered:', peerId.toB58String())
 })
 
 await node.start()
@@ -100,6 +101,15 @@ Discovered: QmSoLV4Bbm51jM9C4gDYZQ9Cy3U6aXMJDAbzgu2fzaDs64
 Discovered: QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd
 Discovered: QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3
 Discovered: QmSoLju6m7xTh3DuokvT3886QRYqxAzb1kShaanJgW36yx
+Connection established to: QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ
+Connection established to: QmSoLnSGccFuZQJzRadHn95W2CrSFmZuTdDWP8HXaHca9z
+Connection established to: QmSoLPppuBtQSGwKDZT2M73ULpjvfd3aZ6ha4oFGL1KrGM
+Connection established to: QmSoLueR4xBeUbY9WZ9xGUUxunbKWcrNFTDAadQJmocnWm
+Connection established to: QmSoLSafTMBsPKadTEgaXctDQVcqN88CNLHXMkTNwMKPnu
+Connection established to: QmSoLV4Bbm51jM9C4gDYZQ9Cy3U6aXMJDAbzgu2fzaDs64
+Connection established to: QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd
+Connection established to: QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3
+Connection established to: QmSoLju6m7xTh3DuokvT3886QRYqxAzb1kShaanJgW36yx
 ```
 
 ## 2. MulticastDNS to find other peers in the network
@@ -114,10 +124,13 @@ const MulticastDNS = require('libp2p-mdns')
 
 const createNode = () => {
   return Libp2p.create({
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    }
     modules: {
       transport: [ TCP ],
       streamMuxer: [ Mplex ],
-      connEncryption: [ SECIO ],
+      connEncryption: [ NOISE, SECIO ],
       peerDiscovery: [ MulticastDNS ]
     },
     config: {

@@ -3,21 +3,20 @@
 const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
-const PeerInfo = require('peer-info')
 
 const pipe = require('it-pipe')
 
 const createNode = async () => {
-  const peerInfo = await PeerInfo.create()
-  peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-
   const node = await Libp2p.create({
-    peerInfo,
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
     modules: {
       transport: [TCP],
       streamMuxer: [MPLEX],
-      connEncryption: [SECIO]
+      connEncryption: [NOISE, SECIO]
     }
   })
 
@@ -31,6 +30,9 @@ const createNode = async () => {
     createNode(),
     createNode()
   ])
+
+  // Add node's 2 data to the PeerStore
+  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
 
   // exact matching
   node2.handle('/your-protocol', ({ stream }) => {
@@ -62,14 +64,14 @@ const createNode = async () => {
   })
   */
 
-  const { stream } = await node1.dialProtocol(node2.peerInfo, ['/your-protocol'])
+  const { stream } = await node1.dialProtocol(node2.peerId, ['/your-protocol'])
   await pipe(
     ['my own protocol, wow!'],
     stream
   )
 
   /*
-  const { stream } = node1.dialProtocol(node2.peerInfo, ['/another-protocol/1.0.0'])
+  const { stream } = node1.dialProtocol(node2.peerId, ['/another-protocol/1.0.0'])
 
   await pipe(
     ['my own protocol, wow!'],

@@ -3,23 +3,23 @@
 
 const Libp2p = require('../..')
 const TCP = require('libp2p-tcp')
+const { NOISE } = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
 const MPLEX = require('libp2p-mplex')
-const PeerInfo = require('peer-info')
 
 const pipe = require('it-pipe')
 const concat = require('it-concat')
 
-const createNode = async (peerInfo) => {
-  // To signall the addresses we want to be available, we use
-  // the multiaddr format, a self describable address
-  peerInfo.multiaddrs.add('/ip4/0.0.0.0/tcp/0')
-
+const createNode = async () => {
   const node = await Libp2p.create({
-    peerInfo,
+    addresses: {
+      // To signall the addresses we want to be available, we use
+      // the multiaddr format, a self describable address
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
     modules: {
       transport: [TCP],
-      connEncryption: [SECIO],
+      connEncryption: [NOISE, SECIO],
       streamMuxer: [MPLEX]
     }
   })
@@ -30,17 +30,13 @@ const createNode = async (peerInfo) => {
 
 function printAddrs (node, number) {
   console.log('node %s is listening on:', number)
-  node.peerInfo.multiaddrs.forEach((ma) => console.log(ma.toString()))
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
 }
 
 ;(async () => {
-  const [peerInfo1, peerInfo2] = await Promise.all([
-    PeerInfo.create(),
-    PeerInfo.create()
-  ])
   const [node1, node2] = await Promise.all([
-    createNode(peerInfo1),
-    createNode(peerInfo2)
+    createNode(),
+    createNode()
   ])
 
   printAddrs(node1, '1')
@@ -54,7 +50,8 @@ function printAddrs (node, number) {
     console.log(result.toString())
   })
 
-  const { stream } = await node1.dialProtocol(node2.peerInfo, '/print')
+  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  const { stream } = await node1.dialProtocol(node2.peerId, '/print')
 
   await pipe(
     ['Hello', ' ', 'p2p', ' ', 'world', '!'],

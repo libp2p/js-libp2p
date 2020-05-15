@@ -21,10 +21,13 @@ const Libp2p = require('libp2p')
 const Gossipsub = require('libp2p-gossipsub')
 
 const node = await Libp2p.create({
+  addresses: {
+    listen: ['/ip4/0.0.0.0/tcp/0']
+  },
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
-    connEncryption: [ SECIO ],
+    connEncryption: [ NOISE, SECIO ],
     // we add the Pubsub module we want
     pubsub: Gossipsub
   }
@@ -39,7 +42,10 @@ const topic = 'news'
 const node1 = nodes[0]
 const node2 = nodes[1]
 
-await node1.dial(node2.peerInfo)
+// Add node's 2 data to the PeerStore
+node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+
+await node1.dial(node2.peerId)
 
 await node1.pubsub.subscribe(topic, (msg) => {
   console.log(`node1 received: ${msg.data.toString()}`)

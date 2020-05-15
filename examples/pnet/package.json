@@ -13,6 +13,7 @@
   "dependencies": {
     "libp2p": "../..",
     "libp2p-mplex": "^0.9.3",
+    "libp2p-noise": "^1.1.0",
     "libp2p-secio": "^0.12.1",
     "libp2p-tcp": "^0.14.2"
   }

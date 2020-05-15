@@ -29,7 +29,9 @@ generate(otherSwarmKey)
 
   console.log('nodes started...')
 
-  await node1.dial(node2.peerInfo)
+  // Add node 2 data to node1's PeerStore
+  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node1.dial(node2.peerId)
 
   node2.handle('/private', ({ stream }) => {
     pipe(
@@ -42,7 +44,7 @@ generate(otherSwarmKey)
     )
   })
 
-  const { stream } = await node1.dialProtocol(node2.peerInfo, '/private')
+  const { stream } = await node1.dialProtocol(node2.peerId, '/private')
 
   await pipe(
     ['This message is sent on a private network'],

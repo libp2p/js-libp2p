@@ -6,7 +6,7 @@ The feature of agreeing on a protocol over an established connection is what we 
 
 # 1. Handle multiple protocols
 
-Let's see _protocol multiplexing_ in action! You will need the following modules for this example: `libp2p`, `libp2p-tcp`, `peer-info`, `it-pipe`, `it-buffer` and `streaming-iterables`. This example reuses the base left by the [Transports](../transports) example. You can see the complete solution at [1.js](./1.js).
+Let's see _protocol multiplexing_ in action! You will need the following modules for this example: `libp2p`, `libp2p-tcp`, `peer-id`, `it-pipe`, `it-buffer` and `streaming-iterables`. This example reuses the base left by the [Transports](../transports) example. You can see the complete solution at [1.js](./1.js).
 
 After creating the nodes, we need to tell libp2p which protocols to handle.
 
@@ -18,6 +18,9 @@ const { toBuffer } = require('it-buffer')
 // ...
 const node1 = nodes[0]
 const node2 = nodes[1]
+
+// Add node's 2 data to the PeerStore
+node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
 
 // Here we are telling libp2p that if someone dials this node to talk with the `/your-protocol`
 // multicodec, the protocol identifier, please call this handler and give it the stream
@@ -37,7 +40,7 @@ node2.handle('/your-protocol', ({ stream }) => {
 After the protocol is _handled_, now we can dial to it.
 
 ```JavaScript
-const { stream } = await node1.dialProtocol(node2.peerInfo, ['/your-protocol'])
+const { stream } = await node1.dialProtocol(node2.peerId, ['/your-protocol'])
 
 await pipe(
   ['my own protocol, wow!'],
@@ -59,7 +62,7 @@ node2.handle('/another-protocol/1.0.1', ({ stream }) => {
   )
 })
 // ...
-const { stream } = await node1.dialProtocol(node2.peerInfo, ['/another-protocol/1.0.0'])
+const { stream } = await node1.dialProtocol(node2.peerId, ['/another-protocol/1.0.0'])
 
 await pipe(
   ['my own protocol, wow!'],
@@ -128,19 +131,19 @@ node2.handle(['/a', '/b'], ({ protocol, stream }) => {
   )
 })
 
-const { stream } = await node1.dialProtocol(node2.peerInfo, ['/a'])
+const { stream } = await node1.dialProtocol(node2.peerId, ['/a'])
 await pipe(
   ['protocol (a)'],
   stream
 )
 
-const { stream: stream2 } = await node1.dialProtocol(node2.peerInfo, ['/b'])
+const { stream: stream2 } = await node1.dialProtocol(node2.peerId, ['/b'])
 await pipe(
   ['protocol (b)'],
   stream2
 )
 
-const { stream: stream3 } = await node1.dialProtocol(node2.peerInfo, ['/b'])
+const { stream: stream3 } = await node1.dialProtocol(node2.peerId, ['/b'])
 await pipe(
   ['another stream on protocol (b)'],
   stream3
