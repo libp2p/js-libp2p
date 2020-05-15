@@ -267,6 +267,7 @@ module.exports = (dht) => {
       peerData.id = new PeerId(peer.id, null, pk)
       const addrs = peerData.addresses.map((address) => address.multiaddr)
       dht.peerStore.addressBook.add(peerData.id, addrs)
+      dht.peerStore.keyBook.set(peerData.id, pk)
 
       return pk
     }

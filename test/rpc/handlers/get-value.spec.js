@@ -88,6 +88,8 @@ describe('rpc - handlers - GetValue', () => {
       const msg = new Message(T, key, 0)
 
       dht.peerStore.addressBook.add(other, [])
+      dht.peerStore.keyBook.set(other, other.pubKey)
+
       await dht._add(other)
       const response = await handler(dht)(peerIds[0], msg)
       expect(response.record).to.exist()
