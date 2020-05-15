@@ -97,7 +97,6 @@ class AddressBook extends Book {
   /**
    * Add known addresses of a provided peer.
    * If the peer is not known, it is set with the given addresses.
-   * @override
    * @param {PeerId} peerId
    * @param {Array<Multiaddr>} multiaddrs
    * @returns {AddressBook}
