@@ -46,7 +46,7 @@
     "err-code": "^2.0.0",
     "hashlru": "^2.3.0",
     "heap": "~0.2.6",
-    "interface-datastore": "~1.0.2",
+    "interface-datastore": "^1.0.2",
     "it-length-prefixed": "^3.0.0",
     "it-pipe": "^1.1.0",
     "k-bucket": "^5.0.0",
