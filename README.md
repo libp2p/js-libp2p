@@ -35,9 +35,11 @@ We've come a long way, but this project is still in Alpha, lots of development i
 The documentation in the master branch may contain changes from a pre-release.
 If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
 
-**Want to get started?** Check our [examples folder](/examples).
+**Want to get started?** Check our [GETTING_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples folder](/examples).
 
-[**`Weekly Core Dev Calls`**](https://github.com/ipfs/pm/issues/650)
+**Want to update libp2p in your project?** Check our [migrations folder](./doc/migrations).
+
+[**`Weekly Core Dev Calls`**](https://github.com/libp2p/team-mgmt/issues/16)
 
 ## Lead Maintainer
 
