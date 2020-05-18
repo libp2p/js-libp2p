@@ -60,7 +60,7 @@
     "p-map": "^4.0.0",
     "p-queue": "^6.2.1",
     "p-timeout": "^3.2.0",
-    "p-times": "^2.1.0",
+    "p-times": "^3.0.0",
     "peer-id": "~0.13.5",
     "promise-to-callback": "^1.0.0",
     "protons": "^1.0.1",
