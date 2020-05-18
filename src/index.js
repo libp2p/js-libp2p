@@ -101,7 +101,8 @@ class Libp2p extends EventEmitter {
     // Setup the transport manager
     this.transportManager = new TransportManager({
       libp2p: this,
-      upgrader: this.upgrader
+      upgrader: this.upgrader,
+      supportDialOnly: this._options.transportManager.supportDialOnly
     })
 
     // Create the Registrar

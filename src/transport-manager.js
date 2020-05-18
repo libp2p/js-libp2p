@@ -13,12 +13,14 @@ class TransportManager {
    * @param {object} options
    * @param {Libp2p} options.libp2p The Libp2p instance. It will be passed to the transports.
    * @param {Upgrader} options.upgrader The upgrader to provide to the transports
+   * @param {boolean} options.supportDialOnly Address listen error tolerance supporting dial only mode.
    */
-  constructor ({ libp2p, upgrader }) {
+  constructor ({ libp2p, upgrader, supportDialOnly }) {
     this.libp2p = libp2p
     this.upgrader = upgrader
     this._transports = new Map()
     this._listeners = new Map()
+    this.supportDialOnly = supportDialOnly
   }
 
   /**
@@ -173,7 +175,11 @@ class TransportManager {
     // If no transports were able to listen, throw an error. This likely
     // means we were given addresses we do not have transports for
     if (couldNotListen.length === this._transports.size) {
-      throw errCode(new Error(`no valid addresses were provided for transports [${couldNotListen}]`), codes.ERR_NO_VALID_ADDRESSES)
+      const message = `no valid addresses were provided for transports [${couldNotListen}]`
+      if (!this.supportDialOnly) {
+        throw errCode(new Error(message), codes.ERR_NO_VALID_ADDRESSES)
+      }
+      log(`libp2p in dial mode only: ${message}`)
     }
   }
 

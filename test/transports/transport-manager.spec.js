@@ -165,3 +165,55 @@ describe('libp2p.transportManager', () => {
     expect(libp2p.transportManager.close.callCount).to.equal(1)
   })
 })
+
+describe('libp2p.transportManager (dial only)', () => {
+  let peerId
+  let libp2p
+
+  before(async () => {
+    peerId = await PeerId.createFromJSON(Peers[0])
+  })
+
+  afterEach(async () => {
+    sinon.restore()
+    libp2p && await libp2p.stop()
+  })
+
+  it('fails to start if multiaddr fails to listen', async () => {
+    libp2p = new Libp2p({
+      peerId,
+      addresses: {
+        listen: [multiaddr('/ip4/127.0.0.1/tcp/0')]
+      },
+      modules: {
+        transport: [Transport]
+      }
+    })
+
+    try {
+      await libp2p.start()
+    } catch (err) {
+      expect(err).to.exist()
+      expect(err.code).to.equal(ErrorCodes.ERR_NO_VALID_ADDRESSES)
+      return
+    }
+    throw new Error('it should fail to start if multiaddr fails to listen')
+  })
+
+  it('does not fail to start if multiaddr fails to listen when supporting dial only mode', async () => {
+    libp2p = new Libp2p({
+      peerId,
+      addresses: {
+        listen: [multiaddr('/ip4/127.0.0.1/tcp/0')]
+      },
+      transportManager: {
+        supportDialOnly: true
+      },
+      modules: {
+        transport: [Transport]
+      }
+    })
+
+    await libp2p.start()
+  })
+})

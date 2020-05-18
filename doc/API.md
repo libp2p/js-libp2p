@@ -89,6 +89,7 @@ Creates an instance of Libp2p.
 | [options.addresses] | `{ listen: Array<string>, announce: Array<string>, noAnnounce: Array<string> }` | Addresses for transport listening and to advertise to the network |
 | [options.config] | `object` | libp2p modules configuration and core configuration |
 | [options.connectionManager] | [`object`](./CONFIGURATION.md#configuring-connection-manager) | libp2p Connection Manager configuration |
+| [options.transportManager] | [`object`](./CONFIGURATION.md#configuring-transport-manager) | libp2p transport manager configuration |
 | [options.datastore] | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) (in memory datastore will be used if not provided) |
 | [options.dialer] | [`object`](./CONFIGURATION.md#configuring-dialing) | libp2p Dialer configuration
 | [options.keychain] | [`object`](./CONFIGURATION.md#setup-with-keychain) | keychain configuration |

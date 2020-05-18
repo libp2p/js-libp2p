@@ -12,6 +12,9 @@ const DefaultConfig = {
   connectionManager: {
     minPeers: 25
   },
+  transportManager: {
+    supportDialOnly: false
+  },
   dialer: {
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
     maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
