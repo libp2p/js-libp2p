@@ -906,7 +906,7 @@ Get the known `PublicKey` of a provided peer.
 
 | Type | Description |
 |------|-------------|
-| `RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey` | Peer PublicKey |
+| [`RsaPublicKey\|Ed25519PublicKey\|Secp256k1PublicKey`][keys] | Peer PublicKey |
 
 #### Example
 
@@ -929,7 +929,7 @@ Set known `peerId`. This can include its Public Key.
 | Name | Type | Description |
 |------|------|-------------|
 | peerId | [`PeerId`][peer-id] | peerId to set |
-| publicKey | [`RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey`][keys] | peer's public key |
+| publicKey | [`RsaPublicKey\|Ed25519PublicKey\|Secp256k1PublicKey`][keys] | peer's public key |
 
 #### Returns
 
