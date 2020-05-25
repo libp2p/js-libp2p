@@ -8,12 +8,12 @@ const Protector = require('libp2p/src/pnet')
 
 /**
  * privateLibp2pNode returns a libp2p node function that will use the swarm
- * key at the given `swarmKeyPath` to create the Protector
+ * key with the given `swarmKey` to create the Protector
  *
  * @param {Buffer} swarmKey
  * @returns {Promise<libp2p>} Returns a libp2pNode function for use in IPFS creation
  */
-const privateLibp2pNode = async (swarmKeyPath) => {
+const privateLibp2pNode = async (swarmKey) => {
   const node = await Libp2p.create({
     modules: {
       transport: [TCP], // We're only using the TCP transport for this example
@@ -25,7 +25,7 @@ const privateLibp2pNode = async (swarmKeyPath) => {
       // being left in for explicit readability.
       // We should explicitly dial pnet peers, or use a custom discovery service for finding nodes in our pnet
       peerDiscovery: [],
-      connProtector: new Protector(swarmKeyPath)
+      connProtector: new Protector(swarmKey)
     }
   })
 
