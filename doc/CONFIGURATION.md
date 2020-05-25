@@ -528,6 +528,8 @@ const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 
+const { FaultTolerance } = require('libp2p/src/transport-manager')}
+
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
@@ -535,7 +537,7 @@ const node = await Libp2p.create({
     connEncryption: [SECIO]
   },
   transportManager: {
-    supportDialOnly: true
+    faultTolerance: FaultTolerance.NO_FATAL
   }
 })
 ```

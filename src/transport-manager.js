@@ -13,14 +13,14 @@ class TransportManager {
    * @param {object} options
    * @param {Libp2p} options.libp2p The Libp2p instance. It will be passed to the transports.
    * @param {Upgrader} options.upgrader The upgrader to provide to the transports
-   * @param {boolean} options.supportDialOnly Address listen error tolerance supporting dial only mode.
+   * @param {boolean} [options.faultTolerance = FAULT_TOLERANCE.FATAL_ALL] Address listen error tolerance.
    */
-  constructor ({ libp2p, upgrader, supportDialOnly }) {
+  constructor ({ libp2p, upgrader, faultTolerance = FAULT_TOLERANCE.FATAL_ALL }) {
     this.libp2p = libp2p
     this.upgrader = upgrader
     this._transports = new Map()
     this._listeners = new Map()
-    this.supportDialOnly = supportDialOnly
+    this.faultTolerance = faultTolerance
   }
 
   /**
@@ -176,7 +176,7 @@ class TransportManager {
     // means we were given addresses we do not have transports for
     if (couldNotListen.length === this._transports.size) {
       const message = `no valid addresses were provided for transports [${couldNotListen}]`
-      if (!this.supportDialOnly) {
+      if (this.faultTolerance === FAULT_TOLERANCE.FATAL_ALL) {
         throw errCode(new Error(message), codes.ERR_NO_VALID_ADDRESSES)
       }
       log(`libp2p in dial mode only: ${message}`)
@@ -217,5 +217,12 @@ class TransportManager {
     await Promise.all(tasks)
   }
 }
+
+const FAULT_TOLERANCE = {
+  FATAL_ALL: 0,
+  NO_FATAL: 1
+}
+
+TransportManager.FaultTolerance = FAULT_TOLERANCE
 
 module.exports = TransportManager

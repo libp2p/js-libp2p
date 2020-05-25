@@ -3,6 +3,8 @@
 const mergeOptions = require('merge-options')
 const Constants = require('./constants')
 
+const { FaultTolerance } = require('./transport-manager')
+
 const DefaultConfig = {
   addresses: {
     listen: [],
@@ -13,7 +15,7 @@ const DefaultConfig = {
     minPeers: 25
   },
   transportManager: {
-    supportDialOnly: false
+    faultTolerance: FaultTolerance.FATAL_ALL
   },
   dialer: {
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,

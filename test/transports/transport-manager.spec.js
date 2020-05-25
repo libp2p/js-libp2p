@@ -15,6 +15,8 @@ const mockUpgrader = require('../utils/mockUpgrader')
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const { codes: ErrorCodes } = require('../../src/errors')
 const Libp2p = require('../../src')
+const { FaultTolerance } = require('../../src/transport-manager')
+
 const Peers = require('../fixtures/peers')
 const PeerId = require('peer-id')
 
@@ -207,7 +209,7 @@ describe('libp2p.transportManager (dial only)', () => {
         listen: [multiaddr('/ip4/127.0.0.1/tcp/0')]
       },
       transportManager: {
-        supportDialOnly: true
+        faultTolerance: FaultTolerance.NO_FATAL
       },
       modules: {
         transport: [Transport]
