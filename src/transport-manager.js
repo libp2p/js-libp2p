@@ -218,6 +218,13 @@ class TransportManager {
   }
 }
 
+/**
+ * Enum Transport Manager Fault Tolerance values.
+ * FATAL_ALL should be used for failing in any listen circumstance.
+ * NO_FATAL should be used for not failing when not listening.
+ * @readonly
+ * @enum {number}
+ */
 const FAULT_TOLERANCE = {
   FATAL_ALL: 0,
   NO_FATAL: 1
