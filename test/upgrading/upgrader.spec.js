@@ -4,6 +4,7 @@
 const { Buffer } = require('buffer')
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-as-promised'))
 const { expect } = chai
 const sinon = require('sinon')
 const Muxer = require('libp2p-mplex')
@@ -399,6 +400,40 @@ describe('libp2p.upgrader', () => {
     libp2p.unhandle(['/echo/1.0.0'])
     expect(libp2p.upgrader.protocols.get('/echo/1.0.0')).to.equal(undefined)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.1')).to.equal(echoHandler)
+  })
+
+  it('should return muxed streams', async () => {
+    const remotePeer = peers[1]
+    libp2p = new Libp2p({
+      peerId: peers[0],
+      modules: {
+        transport: [Transport],
+        streamMuxer: [Muxer],
+        connEncryption: [Crypto]
+      }
+    })
+    const echoHandler = () => {}
+    libp2p.handle(['/echo/1.0.0'], echoHandler)
+
+    const remoteUpgrader = new Upgrader({
+      localPeer: remotePeer,
+      muxers: new Map([[Muxer.multicodec, Muxer]]),
+      cryptos: new Map([[Crypto.protocol, Crypto]])
+    })
+    remoteUpgrader.protocols.set('/echo/1.0.0', echoHandler)
+
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+    const [localConnection] = await Promise.all([
+      libp2p.upgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+    sinon.spy(remoteUpgrader, '_onStream')
+
+    const { stream } = await localConnection.newStream(['/echo/1.0.0'])
+    expect(stream).to.include.keys(['id', 'close', 'reset', 'timeline'])
+
+    const [arg0] = remoteUpgrader._onStream.getCall(0).args
+    expect(arg0.stream).to.include.keys(['id', 'close', 'reset', 'timeline'])
   })
 
   it('should emit connect and disconnect events', async () => {
