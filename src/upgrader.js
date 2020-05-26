@@ -232,7 +232,7 @@ class Upgrader {
             log('%s: incoming stream opened on %s', direction, protocol)
             if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
             connection.addStream(muxedStream, { protocol })
-            this._onStream({ connection, stream, protocol })
+            this._onStream({ connection, stream: { ...muxedStream, ...stream }, protocol })
           } catch (err) {
             log.error(err)
           }
