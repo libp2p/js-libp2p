@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-utils#readme",
   "devDependencies": {
-    "aegir": "^21.0.2",
+    "aegir": "^22.0.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
     "it-pair": "^1.0.0",
