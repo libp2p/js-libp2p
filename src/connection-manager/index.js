@@ -175,11 +175,11 @@ class ConnectionManager extends EventEmitter {
     const peerIdStr = peerId.toB58String()
     const storedConn = this.connections.get(peerIdStr)
 
+    this.emit('peer:connect', connection)
     if (storedConn) {
       storedConn.push(connection)
     } else {
       this.connections.set(peerIdStr, [connection])
-      this.emit('peer:connect', connection)
     }
 
     this._libp2p.peerStore.keyBook.set(peerId, peerId.pubKey)
