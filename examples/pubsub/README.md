@@ -1,6 +1,6 @@
 # Publish Subscribe
 
-Publish Subscribe is also included on the stack. Currently, we have two PubSub implementation available [libp2p-floodsub](https://github.com/libp2p/js-libp2p-floodsub) and [libp2p-gossipsub](https://github.com/ChainSafe/gossipsub-js), with many more being researched at [research-pubsub](https://github.com/libp2p/research-pubsub).
+Publish Subscribe is also included on the stack. Currently, we have two PubSub implementation available [libp2p-floodsub](https://github.com/libp2p/js-libp2p-floodsub) and [libp2p-gossipsub](https://github.com/ChainSafe/js-libp2p-gossipsub), with many more being researched at [research-pubsub](https://github.com/libp2p/research-pubsub).
 
 We've seen many interesting use cases appear with this, here are some highlights:
 

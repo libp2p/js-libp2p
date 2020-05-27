@@ -53,7 +53,7 @@
     "pubsub",
     ["libp2p/js-libp2p-pubsub", "libp2p-pubsub"],
     ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"],
-    ["ChainSafe/gossipsub-js", "libp2p-gossipsub"],
+    ["ChainSafe/js-libp2p-gossipsub", "libp2p-gossipsub"],
 
     "extensions",
     ["libp2p/js-libp2p-nat-mgnr", "libp2p-nat-mgnr"],
