@@ -28,7 +28,7 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^21.2.0",
+    "aegir": "^22.0.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
     "libp2p-interfaces": "^0.3.0"
