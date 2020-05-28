@@ -1,3 +1,50 @@
+<a name="0.28.0-rc.0"></a>
+# [0.28.0-rc.0](https://github.com/libp2p/js-libp2p/compare/v0.27.8...v0.28.0-rc.0) (2020-05-28)
+
+
+### Bug Fixes
+
+* always emit when a connection is made ([72f37ac](https://github.com/libp2p/js-libp2p/commit/72f37ac))
+* expose the muxed stream interface on inbound streams ([52a615f](https://github.com/libp2p/js-libp2p/commit/52a615f))
+* libp2p connections getter ([aaf62a4](https://github.com/libp2p/js-libp2p/commit/aaf62a4))
+* onConnect should not add addr to the addressBook ([2b45fee](https://github.com/libp2p/js-libp2p/commit/2b45fee))
+* use libp2p.multiaddrs instead of listen ([7fbd155](https://github.com/libp2p/js-libp2p/commit/7fbd155))
+* **example:** rename misleading variable ([#645](https://github.com/libp2p/js-libp2p/issues/645)) ([b781911](https://github.com/libp2p/js-libp2p/commit/b781911))
+
+
+### Chores
+
+* deprecate old peer store api ([#598](https://github.com/libp2p/js-libp2p/issues/598)) ([ed6d5bb](https://github.com/libp2p/js-libp2p/commit/ed6d5bb))
+* remove peer-info usage ([12e48ad](https://github.com/libp2p/js-libp2p/commit/12e48ad))
+
+
+### Features
+
+* address and proto books ([#590](https://github.com/libp2p/js-libp2p/issues/590)) ([e9d225c](https://github.com/libp2p/js-libp2p/commit/e9d225c))
+* address manager ([2a7967c](https://github.com/libp2p/js-libp2p/commit/2a7967c))
+* keybook ([ce38033](https://github.com/libp2p/js-libp2p/commit/ce38033))
+* metadata book ([#638](https://github.com/libp2p/js-libp2p/issues/638)) ([84b935f](https://github.com/libp2p/js-libp2p/commit/84b935f))
+* peerStore persistence ([5123a83](https://github.com/libp2p/js-libp2p/commit/5123a83))
+* support dial only on transport manager to tolerate errors ([#643](https://github.com/libp2p/js-libp2p/issues/643)) ([698c1df](https://github.com/libp2p/js-libp2p/commit/698c1df))
+
+
+### BREAKING CHANGES
+
+* all API methods with peer-info parameters or return values were changed. You can check the API.md document, in order to check the new values to use
+* the peer-store api changed. Check the API docs for the new specification.
+
+* chore: apply suggestions from code review
+
+Co-Authored-By: Jacob Heun <jacobheun@gmail.com>
+
+* chore: apply suggestions from code review
+
+Co-Authored-By: Jacob Heun <jacobheun@gmail.com>
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+
+
+
 <a name="0.27.8"></a>
 ## [0.27.8](https://github.com/libp2p/js-libp2p/compare/v0.27.7...v0.27.8) (2020-05-06)
 
