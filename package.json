@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-record",
   "devDependencies": {
-    "aegir": "^21.2.0",
+    "aegir": "^22.0.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
     "libp2p-crypto": "~0.17.0",
