@@ -208,7 +208,7 @@ Validates the signature of a message.
 You can use the following implementations as examples for building your own pubsub implementation.
 
 - [libp2p/js-libp2p-floodsub](https://github.com/libp2p/js-libp2p-floodsub)
-- [ChainSafe/gossipsub-js](https://github.com/ChainSafe/gossipsub-js)
+- [ChainSafe/js-libp2p-gossipsub](https://github.com/ChainSafe/js-libp2p-gossipsub)
 
 ## Contribute
 
