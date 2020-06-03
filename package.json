@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-pubsub#readme",
   "devDependencies": {
-    "aegir": "^21.2.0",
+    "aegir": "^22.0.0",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "chai-spies": "^1.0.0",
