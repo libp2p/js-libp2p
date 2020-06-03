@@ -65,6 +65,7 @@
     "merge-options": "^2.0.0",
     "moving-average": "^1.0.0",
     "multiaddr": "^7.4.3",
+    "multicodec": "^1.0.2",
     "multistream-select": "^0.15.0",
     "mutable-proxy": "^1.0.0",
     "node-forge": "^0.9.1",
