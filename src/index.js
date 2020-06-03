@@ -18,11 +18,13 @@ const { codes, messages } = require('./errors')
 
 const AddressManager = require('./address-manager')
 const ConnectionManager = require('./connection-manager')
+const RecordManager = require('./record-manager')
+const TransportManager = require('./transport-manager')
+
 const Circuit = require('./circuit')
 const Dialer = require('./dialer')
 const Keychain = require('./keychain')
 const Metrics = require('./metrics')
-const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
 const PersistentPeerStore = require('./peer-store/persistent')
@@ -59,6 +61,9 @@ class Libp2p extends EventEmitter {
     // Addresses {listen, announce, noAnnounce}
     this.addresses = this._options.addresses
     this.addressManager = new AddressManager(this._options.addresses)
+
+    // Records
+    this.RecordManager = new RecordManager(this)
 
     this._modules = this._options.modules
     this._config = this._options.config
