@@ -178,7 +178,6 @@ class PubsubBaseProtocol extends EventEmitter {
       protocols: [protocol]
     }))
 
-    peer.attachConnection(stream)
     this._processMessages(idB58Str, stream, peer)
   }
 
@@ -200,7 +199,6 @@ class PubsubBaseProtocol extends EventEmitter {
     try {
       const { stream } = await conn.newStream(this.multicodecs)
       peer.attachConnection(stream)
-      this._processMessages(idB58Str, stream, peer)
     } catch (err) {
       this.log.err(err)
     }

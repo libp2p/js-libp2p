@@ -87,6 +87,8 @@ class Peer extends EventEmitter {
     this.conn = conn
     this.stream = pushable({
       onEnd: () => {
+        // close readable side of the stream
+        this.conn.reset && this.conn.reset()
         this.conn = null
         this.stream = null
         this.emit('close')
