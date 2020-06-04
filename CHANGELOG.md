@@ -1,3 +1,13 @@
+<a name="0.21.3"></a>
+## [0.21.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.21.2...v0.21.3) (2020-06-04)
+
+
+### Bug Fixes
+
+* use unidirectional streams ([#105](https://github.com/libp2p/js-libp2p-floodsub/issues/105)) ([96d3265](https://github.com/libp2p/js-libp2p-floodsub/commit/96d3265))
+
+
+
 <a name="0.21.2"></a>
 ## [0.21.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.21.1...v0.21.2) (2020-05-04)
 
