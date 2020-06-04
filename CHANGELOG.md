@@ -1,3 +1,13 @@
+<a name="0.5.2"></a>
+## [0.5.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.5.1...v0.5.2) (2020-06-04)
+
+
+### Bug Fixes
+
+* use unidirectional streams ([#45](https://github.com/libp2p/js-libp2p-pubsub/issues/45)) ([c6ba48d](https://github.com/libp2p/js-libp2p-pubsub/commit/c6ba48d))
+
+
+
 <a name="0.5.1"></a>
 ## [0.5.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.5.0...v0.5.1) (2020-04-23)
 
