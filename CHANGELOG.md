@@ -1,3 +1,13 @@
+<a name="0.19.5"></a>
+## [0.19.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.4...v0.19.5) (2020-06-05)
+
+
+### Bug Fixes
+
+* providers leaking resources on dht construction ([#194](https://github.com/libp2p/js-libp2p-kad-dht/issues/194)) ([59f373a](https://github.com/libp2p/js-libp2p-kad-dht/commit/59f373a))
+
+
+
 <a name="0.19.4"></a>
 ## [0.19.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.3...v0.19.4) (2020-05-20)
 
