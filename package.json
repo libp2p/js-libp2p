@@ -77,7 +77,7 @@
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
     "it-pair": "^1.0.0",
-    "libp2p": "libp2p/js-libp2p#0.28.x",
+    "libp2p": "^0.28.0-rc.0",
     "lodash": "^4.17.11",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",

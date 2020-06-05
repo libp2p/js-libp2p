@@ -185,6 +185,7 @@ class KadDHT extends EventEmitter {
    */
   async start () {
     this._running = true
+    this.providers.start()
     this._queryManager.start()
     await this.network.start()
 

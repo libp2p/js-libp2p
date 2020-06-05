@@ -88,6 +88,8 @@ describe('Providers', () => {
     providers.cleanupInterval = 100
     providers.provideValidity = 200
 
+    providers.start()
+
     const cid = new CID('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
     await Promise.all([
       providers.addProvider(cid, peerIds[0]),
@@ -104,6 +106,7 @@ describe('Providers', () => {
 
     const provsAfter = await providers.getProviders(cid)
     expect(provsAfter).to.have.length(0)
+    providers.stop()
   })
 
   // slooow so only run when you need to
