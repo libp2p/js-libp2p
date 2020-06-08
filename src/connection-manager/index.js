@@ -230,6 +230,26 @@ class ConnectionManager extends EventEmitter {
   }
 
   /**
+   * Get all open connections with a peer.
+   * @param {PeerId} peerId
+   * @returns {Array<Connection>}
+   */
+  getAll (peerId) {
+    if (!PeerId.isPeerId(peerId)) {
+      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+    }
+
+    const id = peerId.toB58String()
+    const connections = this.connections.get(id)
+
+    // Return all open connections
+    if (connections) {
+      return connections.filter(connection => connection.stat.status === 'open')
+    }
+    return []
+  }
+
+  /**
    * If the event loop is slow, maybe close a connection
    * @private
    * @param {*} summary The LatencyMonitor summary
