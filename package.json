@@ -92,7 +92,7 @@
     "datastore-level": "^1.1.0",
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
-    "interop-libp2p": "libp2p/interop#chore/update-libp2p-daemon-with-peerstore",
+    "interop-libp2p": "^0.1.0",
     "ipfs-http-client": "^44.0.0",
     "it-concat": "^1.0.0",
     "it-pair": "^1.0.0",
