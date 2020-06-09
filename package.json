@@ -41,14 +41,14 @@
   "homepage": "https://github.com/libp2p/js-libp2p-keychain#readme",
   "dependencies": {
     "err-code": "^2.0.0",
-    "interface-datastore": "^0.8.0",
+    "interface-datastore": "^1.0.2",
     "libp2p-crypto": "^0.17.1",
     "merge-options": "^2.0.0",
     "node-forge": "^0.9.1",
     "sanitize-filename": "^1.6.1"
   },
   "devDependencies": {
-    "aegir": "^21.2.0",
+    "aegir": "^22.0.0",
     "chai": "^4.2.0",
     "chai-string": "^1.5.0",
     "datastore-fs": "^1.0.0",
