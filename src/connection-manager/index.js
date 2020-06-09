@@ -215,16 +215,9 @@ class ConnectionManager extends EventEmitter {
    * @returns {Connection}
    */
   get (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    const id = peerId.toB58String()
-    const connections = this.connections.get(id)
-
-    // Return the first, open connection
-    if (connections) {
-      return connections.find(connection => connection.stat.status === 'open')
+    const connections = this.getAll(peerId)
+    if (connections.length) {
+      return connections[0]
     }
     return null
   }
