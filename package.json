@@ -1,6 +1,6 @@
 {
   "name": "libp2p-keychain",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Key management and cryptographically protected messages",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -61,17 +61,16 @@
     "rimraf": "^3.0.0"
   },
   "contributors": [
-    "Alan Shaw <alan.shaw@protocol.ai>",
-    "Alberto Elias <hi@albertoelias.me>",
-    "Alex Potsides <alex@achingbrain.net>",
-    "David Dias <daviddias.p@gmail.com>",
-    "Hugo Dias <mail@hugodias.me>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "Maciej Krüger <mkg20001@gmail.com>",
-    "Masahiro Saito <camelmasa@gmail.com>",
-    "Richard Schneider <makaretu@gmail.com>",
     "Vasco Santos <vasco.santos@moxy.studio>",
-    "Vasco Santos <vasco.santos@ua.pt>",
+    "Richard Schneider <makaretu@gmail.com>",
+    "David Dias <daviddias.p@gmail.com>",
+    "Alan Shaw <alan.shaw@protocol.ai>",
+    "Alex Potsides <alex@achingbrain.net>",
+    "Alberto Elias <hi@albertoelias.me>",
+    "Masahiro Saito <camelmasa@gmail.com>",
+    "Maciej Krüger <mkg20001@gmail.com>",
+    "Jacob Heun <jacobheun@gmail.com>",
+    "Hugo Dias <mail@hugodias.me>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>"
   ]
 }
