@@ -33,7 +33,7 @@
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
     ["libp2p/js-libp2p-mdns", "libp2p-mdns"],
     ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
-    ["ChainSafe/discv5", "discv5"],
+    ["ChainSafe/discv5", "@chainsafe/discv5"],
 
     "content routing",
     ["libp2p/js-libp2p-delegated-content-routing", "libp2p-delegated-content-routing"],
