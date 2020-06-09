@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto",
-  "version": "0.17.6",
+  "version": "0.17.7",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -92,10 +92,10 @@
     "Jack Kleeman <jackkleeman@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
     "Richard Schneider <makaretu@gmail.com>",
+    "Alex Potsides <alex@achingbrain.net>",
     "dirkmc <dirkmdev@gmail.com>",
     "Alberto Elias <hi@albertoelias.me>",
     "nikuda <nikuda@gmail.com>",
-    "Alex Potsides <alex@achingbrain.net>",
     "Tom Swindell <t.swindell@rubyx.co.uk>",
     "Carson Farmer <carson.farmer@gmail.com>",
     "Joao Santos <jrmsantos15@gmail.com>"
