@@ -5,7 +5,6 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 const sinon = require('sinon')
-const delay = require('delay')
 const PeerStore = require('../../src/peer-store/persistent')
 const multiaddr = require('multiaddr')
 const { MemoryDatastore } = require('interface-datastore')
@@ -62,6 +61,7 @@ describe('Persisted PeerStore', () => {
       const protocols = ['/ping/1.0.0']
       const spyDirty = sinon.spy(peerStore, '_addDirtyPeer')
       const spyDs = sinon.spy(datastore, 'batch')
+      const commitSpy = sinon.spy(peerStore, '_commitData')
 
       await peerStore.start()
 
@@ -72,7 +72,7 @@ describe('Persisted PeerStore', () => {
       expect(spyDs).to.have.property('callCount', 1)
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       // ProtoBook
       peerStore.protoBook.set(peer, protocols)
@@ -81,7 +81,7 @@ describe('Persisted PeerStore', () => {
       expect(spyDs).to.have.property('callCount', 2)
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       // Should have three peer records stored in the datastore
       const queryParams = {
@@ -104,6 +104,7 @@ describe('Persisted PeerStore', () => {
     it('should load content to the peerStore when restart but not put in datastore again', async () => {
       const spyDs = sinon.spy(datastore, 'batch')
       const peers = await peerUtils.createPeerId({ number: 2 })
+      const commitSpy = sinon.spy(peerStore, '_commitData')
       const multiaddrs = [
         multiaddr('/ip4/156.10.1.22/tcp/1000'),
         multiaddr('/ip4/156.10.1.23/tcp/1000')
@@ -117,27 +118,27 @@ describe('Persisted PeerStore', () => {
       peerStore.addressBook.set(peers[1], [multiaddrs[1]])
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       // KeyBook
       peerStore.keyBook.set(peers[0], peers[0].pubKey)
       peerStore.keyBook.set(peers[1], peers[1].pubKey)
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       // ProtoBook
       peerStore.protoBook.set(peers[0], protocols)
       peerStore.protoBook.set(peers[1], protocols)
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       // MetadataBook
       peerStore.metadataBook.set(peers[0], 'location', Buffer.from('earth'))
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       expect(spyDs).to.have.property('callCount', 7) // 2 Address + 2 Key + 2 Proto + 1 Metadata
       expect(peerStore.peers.size).to.equal(2)
@@ -166,6 +167,7 @@ describe('Persisted PeerStore', () => {
       const [peer] = await peerUtils.createPeerId()
       const multiaddrs = [multiaddr('/ip4/156.10.1.22/tcp/1000')]
       const protocols = ['/ping/1.0.0']
+      const commitSpy = sinon.spy(peerStore, '_commitData')
 
       await peerStore.start()
 
@@ -177,7 +179,7 @@ describe('Persisted PeerStore', () => {
       peerStore.metadataBook.set(peer, 'location', Buffer.from('earth'))
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       const spyDs = sinon.spy(datastore, 'batch')
       const spyAddressBook = sinon.spy(peerStore.addressBook, 'delete')
@@ -189,7 +191,7 @@ describe('Persisted PeerStore', () => {
       peerStore.delete(peer)
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       await peerStore.stop()
 
@@ -222,6 +224,7 @@ describe('Persisted PeerStore', () => {
       const spyDirty = sinon.spy(peerStore, '_addDirtyPeer')
       const spyDirtyMetadata = sinon.spy(peerStore, '_addDirtyPeerMetadata')
       const spyDs = sinon.spy(datastore, 'batch')
+      const commitSpy = sinon.spy(peerStore, '_commitData')
 
       const peers = await peerUtils.createPeerId({ number: 2 })
 
@@ -239,13 +242,13 @@ describe('Persisted PeerStore', () => {
       peerStore.metadataBook.set(peers[0], 'location', Buffer.from('earth'))
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       // Remove data from the same Peer
       peerStore.addressBook.delete(peers[0])
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       expect(spyDirty).to.have.property('callCount', 3) // 2 AddrBook ops, 1 ProtoBook op
       expect(spyDirtyMetadata).to.have.property('callCount', 1) // 1 MetadataBook op
@@ -263,7 +266,7 @@ describe('Persisted PeerStore', () => {
       peerStore.addressBook.set(peers[1], multiaddrs)
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       expect(spyDirty).to.have.property('callCount', 4)
       expect(spyDirtyMetadata).to.have.property('callCount', 1)
@@ -367,6 +370,7 @@ describe('libp2p.peerStore (Persisted)', () => {
     })
 
     it('should load content to the peerStore when a new node is started with the same datastore', async () => {
+      const commitSpy = sinon.spy(libp2p.peerStore, '_commitData')
       const peers = await peerUtils.createPeerId({ number: 2 })
       const multiaddrs = [
         multiaddr('/ip4/156.10.1.22/tcp/1000'),
@@ -381,14 +385,14 @@ describe('libp2p.peerStore (Persisted)', () => {
       libp2p.peerStore.addressBook.set(peers[1], [multiaddrs[1]])
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       // ProtoBook
       libp2p.peerStore.protoBook.set(peers[0], protocols)
       libp2p.peerStore.protoBook.set(peers[1], protocols)
 
       // let batch commit complete
-      await delay(100)
+      await Promise.all(commitSpy.returnValues)
 
       expect(libp2p.peerStore.peers.size).to.equal(2)
 
