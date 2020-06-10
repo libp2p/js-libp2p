@@ -96,7 +96,9 @@ class PersistentPeerStore extends PeerStore {
 
     if (this._dirtyPeers.size >= this.threshold) {
       // Commit current data
-      this._commitData()
+      this._commitData().catch(err => {
+        log('error committing data', err)
+      })
     }
   }
 
@@ -120,7 +122,9 @@ class PersistentPeerStore extends PeerStore {
 
     if (this._dirtyPeers.size >= this.threshold) {
       // Commit current data
-      this._commitData()
+      this._commitData().catch(err => {
+        log('error committing data', err)
+      })
     }
   }
 
