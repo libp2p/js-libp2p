@@ -6,6 +6,7 @@ chai.use(require('dirty-chai'))
 const { expect } = chai
 
 const Transport = require('libp2p-tcp')
+const { NOISE: Crypto } = require('libp2p-noise')
 
 const { create } = require('../../src')
 const peerUtils = require('../utils/creators/peer')
@@ -31,7 +32,8 @@ describe('Listening', () => {
         listen: [listenAddr]
       },
       modules: {
-        transport: [Transport]
+        transport: [Transport],
+        connEncryption: [Crypto]
       }
     })
 
