@@ -1,3 +1,18 @@
+<a name="0.28.1"></a>
+## [0.28.1](https://github.com/libp2p/js-libp2p/compare/v0.28.0...v0.28.1) (2020-06-12)
+
+
+### Bug Fixes
+
+* throw if no conn encryption module provided ([#665](https://github.com/libp2p/js-libp2p/issues/665)) ([c038550](https://github.com/libp2p/js-libp2p/commit/c038550))
+
+
+### Features
+
+* add ConnectionManager#getAll ([8f680e2](https://github.com/libp2p/js-libp2p/commit/8f680e2))
+
+
+
 <a name="0.28.0"></a>
 # [0.28.0](https://github.com/libp2p/js-libp2p/compare/v0.28.0-rc.0...v0.28.0) (2020-06-05)
 
