@@ -1,3 +1,13 @@
+<a name="0.28.2"></a>
+## [0.28.2](https://github.com/libp2p/js-libp2p/compare/v0.28.1...v0.28.2) (2020-06-15)
+
+
+### Reverts
+
+* "fix: throw if no conn encryption module provided ([#665](https://github.com/libp2p/js-libp2p/issues/665))" ([b621fbd](https://github.com/libp2p/js-libp2p/commit/b621fbd))
+
+
+
 <a name="0.28.1"></a>
 ## [0.28.1](https://github.com/libp2p/js-libp2p/compare/v0.28.0...v0.28.1) (2020-06-12)
 
