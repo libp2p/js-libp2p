@@ -52,7 +52,7 @@ The libp2p ecosystem contains at least one module for each of these subsystems. 
 
 After selecting the modules to use, it is also possible to configure each one according to your needs.
 
-Bear in mind that only a **transport** and **connection encryption** are required, while all the other subsystems are optional.
+Bear in mind that a **transport** and **connection encryption** are **required**, while all the other subsystems are optional.
 
 ### Transport
 
