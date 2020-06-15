@@ -1,3 +1,13 @@
+<a name="0.5.3"></a>
+## [0.5.3](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.5.2...v0.5.3) (2020-06-15)
+
+
+### Bug Fixes
+
+* not create stream if it already exists ([#48](https://github.com/libp2p/js-libp2p-pubsub/issues/48)) ([f3b06d9](https://github.com/libp2p/js-libp2p-pubsub/commit/f3b06d9))
+
+
+
 <a name="0.5.2"></a>
 ## [0.5.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.5.1...v0.5.2) (2020-06-04)
 
