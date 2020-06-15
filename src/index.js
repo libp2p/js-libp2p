@@ -6,7 +6,6 @@ const globalThis = require('ipfs-utils/src/globalthis')
 const log = debug('libp2p')
 log.error = debug('libp2p:error')
 
-const errCode = require('err-code')
 const PeerId = require('peer-id')
 
 const peerRouting = require('./peer-routing')
@@ -14,7 +13,7 @@ const contentRouting = require('./content-routing')
 const pubsub = require('./pubsub')
 const getPeer = require('./get-peer')
 const { validate: validateConfig } = require('./config')
-const { codes, messages } = require('./errors')
+const { codes } = require('./errors')
 
 const AddressManager = require('./address-manager')
 const ConnectionManager = require('./connection-manager')
@@ -116,13 +115,12 @@ class Libp2p extends EventEmitter {
     this.registrar.handle = this.handle
 
     // Attach crypto channels
-    if (!this._modules.connEncryption || !this._modules.connEncryption.length) {
-      throw errCode(new Error(messages.CONN_ENCRYPTION_REQUIRED), codes.CONN_ENCRYPTION_REQUIRED)
+    if (this._modules.connEncryption) {
+      const cryptos = this._modules.connEncryption
+      cryptos.forEach((crypto) => {
+        this.upgrader.cryptos.set(crypto.protocol, crypto)
+      })
     }
-    const cryptos = this._modules.connEncryption
-    cryptos.forEach((crypto) => {
-      this.upgrader.cryptos.set(crypto.protocol, crypto)
-    })
 
     this.dialer = new Dialer({
       transportManager: this.transportManager,

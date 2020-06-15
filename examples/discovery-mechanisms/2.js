@@ -21,7 +21,7 @@ const createNode = async () => {
     },
     config: {
       peerDiscovery: {
-        [MulticastDNS.tag]: {
+        mdns: {
           interval: 20e3,
           enabled: true
         }
