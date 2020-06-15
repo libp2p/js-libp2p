@@ -9,6 +9,7 @@ const sinon = require('sinon')
 
 const multiaddr = require('multiaddr')
 const Transport = require('libp2p-websockets')
+const { NOISE: Crypto } = require('libp2p-noise')
 const AddressManager = require('../../src/address-manager')
 const TransportManager = require('../../src/transport-manager')
 const mockUpgrader = require('../utils/mockUpgrader')
@@ -110,7 +111,8 @@ describe('libp2p.transportManager', () => {
     libp2p = new Libp2p({
       peerId,
       modules: {
-        transport: [Transport]
+        transport: [Transport],
+        connEncryption: [Crypto]
       }
     })
 
@@ -128,7 +130,8 @@ describe('libp2p.transportManager', () => {
     libp2p = new Libp2p({
       peerId,
       modules: {
-        transport: [spy]
+        transport: [spy],
+        connEncryption: [Crypto]
       },
       config: {
         transport: {
@@ -152,7 +155,8 @@ describe('libp2p.transportManager', () => {
     libp2p = new Libp2p({
       peerId,
       modules: {
-        transport: [Transport]
+        transport: [Transport],
+        connEncryption: [Crypto]
       }
     })
 
@@ -188,7 +192,8 @@ describe('libp2p.transportManager (dial only)', () => {
         listen: [multiaddr('/ip4/127.0.0.1/tcp/0')]
       },
       modules: {
-        transport: [Transport]
+        transport: [Transport],
+        connEncryption: [Crypto]
       }
     })
 
@@ -212,7 +217,8 @@ describe('libp2p.transportManager (dial only)', () => {
         faultTolerance: FaultTolerance.NO_FATAL
       },
       modules: {
-        transport: [Transport]
+        transport: [Transport],
+        connEncryption: [Crypto]
       }
     })
 
