@@ -172,11 +172,7 @@ class PubsubBaseProtocol extends EventEmitter {
   _onIncomingStream ({ protocol, stream, connection }) {
     const peerId = connection.remotePeer
     const idB58Str = peerId.toB58String()
-
-    const peer = this._addPeer(new Peer({
-      id: peerId,
-      protocols: [protocol]
-    }))
+    const peer = this._addPeer(peerId, [protocol])
 
     this._processMessages(idB58Str, stream, peer)
   }
@@ -191,10 +187,7 @@ class PubsubBaseProtocol extends EventEmitter {
     const idB58Str = peerId.toB58String()
     this.log('connected', idB58Str)
 
-    const peer = this._addPeer(new Peer({
-      id: peerId,
-      protocols: this.multicodecs
-    }))
+    const peer = this._addPeer(peerId, this.multicodecs)
 
     if (peer.isConnected) {
       return
@@ -225,15 +218,22 @@ class PubsubBaseProtocol extends EventEmitter {
   /**
    * Add a new connected peer to the peers map.
    * @private
-   * @param {Peer} peer internal peer
+   * @param {PeerId} peerId
+   * @param {Array<string>} protocols
    * @returns {Peer}
    */
-  _addPeer (peer) {
-    const id = peer.id.toB58String()
+  _addPeer (peerId, protocols) {
+    const id = peerId.toB58String()
     let existing = this.peers.get(id)
 
     if (!existing) {
       this.log('new peer', id)
+
+      const peer = new Peer({
+        id: peerId,
+        protocols
+      })
+
       this.peers.set(id, peer)
       existing = peer
 
