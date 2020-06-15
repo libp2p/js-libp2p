@@ -189,6 +189,29 @@ describe('pubsub base protocol', () => {
       expect(pubsubB.peers.size).to.be.eql(1)
     })
 
+    it('should not create a new stream if onConnect is called twice', async () => {
+      const onConnectA = registrarRecordA[protocol].onConnect
+      const handlerB = registrarRecordB[protocol].handler
+
+      // Notice peers of connection
+      const [c0, c1] = ConnectionPair()
+
+      const spyNewStream = sinon.spy(c0, 'newStream')
+
+      await onConnectA(peerIdB, c0)
+      await handlerB({
+        protocol,
+        stream: c1.stream,
+        connection: {
+          remotePeer: peerIdA
+        }
+      })
+      expect(spyNewStream).to.have.property('callCount', 1)
+
+      await onConnectA(peerIdB, c0)
+      expect(spyNewStream).to.have.property('callCount', 1)
+    })
+
     it('should handle newStream errors in onConnect', async () => {
       const onConnectA = registrarRecordA[protocol].onConnect
       const handlerB = registrarRecordB[protocol].handler
