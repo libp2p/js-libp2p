@@ -70,7 +70,7 @@ class Dialer {
   async connectToPeer (peer, options = {}) {
     const dialTarget = this._createDialTarget(peer)
 
-    if (!dialTarget.addrs.length) {
+    if (!dialTarget.addrs || !dialTarget.addrs.length) {
       throw errCode(new Error('The dial request has no addresses'), codes.ERR_NO_VALID_ADDRESSES)
     }
     const pendingDial = this._pendingDials.get(dialTarget.id) || this._createPendingDial(dialTarget, options)
