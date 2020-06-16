@@ -1,3 +1,13 @@
+<a name="0.19.6"></a>
+## [0.19.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.5...v0.19.6) (2020-06-16)
+
+
+### Bug Fixes
+
+* use utils.mapParallel for parallel processing of peers ([#166](https://github.com/libp2p/js-libp2p-kad-dht/issues/166)) ([534a2d9](https://github.com/libp2p/js-libp2p-kad-dht/commit/534a2d9))
+
+
+
 <a name="0.19.5"></a>
 ## [0.19.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.4...v0.19.5) (2020-06-05)
 
