@@ -44,14 +44,14 @@ module.exports = (dht) => {
       }]
 
       // Notify closest peers
-      for await (const peer of dht.getClosestPeers(key.buffer)) {
+      await utils.mapParallel(dht.getClosestPeers(key.buffer), async (peer) => {
         dht._log('putProvider %s to %s', key.toBaseEncodedString(), peer.toB58String())
         try {
           await dht.network.sendMessage(peer, msg)
         } catch (err) {
           errors.push(err)
         }
-      }
+      })
 
       if (errors.length) {
         // TODO:

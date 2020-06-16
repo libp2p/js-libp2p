@@ -109,7 +109,7 @@ module.exports = (dht) => {
       let counterAll = 0
       let counterSuccess = 0
 
-      for await (const peer of dht.getClosestPeers(key, { shallow: true })) {
+      await utils.mapParallel(dht.getClosestPeers(key, { shallow: true }), async (peer) => {
         try {
           counterAll += 1
           await dht._putValueToPeer(key, record, peer)
@@ -117,7 +117,7 @@ module.exports = (dht) => {
         } catch (err) {
           dht._log.error('Failed to put to peer (%b): %s', peer.id, err)
         }
-      }
+      })
 
       // verify if we were able to put to enough peers
       const minPeers = options.minPeers || counterAll // Ensure we have a default `minPeers`

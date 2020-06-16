@@ -206,3 +206,22 @@ exports.withTimeout = (asyncFn, time) => {
     ])
   }
 }
+
+/**
+ * Iterates the given `asyncIterator` and runs each item through the given `asyncFn` in parallel.
+ * Returns a promise that resolves when all items of the `asyncIterator` have been passed
+ * through `asyncFn`.
+ *
+ * @param {AsyncIterable} [asyncIterator]
+ * @param {Function} [asyncFn]
+ * @returns {Array}
+ *
+ * @private
+ */
+exports.mapParallel = async function (asyncIterator, asyncFn) {
+  const tasks = []
+  for await (const item of asyncIterator) {
+    tasks.push(asyncFn(item))
+  }
+  return Promise.all(tasks)
+}
