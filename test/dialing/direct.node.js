@@ -98,7 +98,7 @@ describe('Dialing (direct, TCP)', () => {
 
   it('should fail appropriately if peer has no addresses', async () => {
     const dialer = new Dialer({ transportManager: localTM, peerStore })
-    const peer = new PeerId(Buffer.from("QmfEa1LrSt2R7KiZ31yPo3TT8ipfyDfrMRkaQix3rcXeTo"))
+    const peer = new PeerId(Buffer.from('QmfEa1LrSt2R7KiZ31yPo3TT8ipfyDfrMRkaQix3rcXeTo'))
     await expect(dialer.connectToPeer(peer))
       .to.eventually.be.rejectedWith(Error)
       .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
