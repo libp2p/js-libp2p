@@ -208,7 +208,7 @@ class IdentifyService {
    * @param {*} options.stream
    * @param {Connection} options.connection
    */
-  _handleIdentify ({ connection, stream }) {
+  async _handleIdentify ({ connection, stream }) {
     let publicKey = Buffer.alloc(0)
     if (this.peerId.pubKey) {
       publicKey = this.peerId.pubKey.bytes
@@ -223,12 +223,16 @@ class IdentifyService {
       protocols: Array.from(this._protocols.keys())
     })
 
-    pipe(
-      [message],
-      lp.encode(),
-      stream,
-      consume
-    )
+    try {
+      await pipe(
+        [message],
+        lp.encode(),
+        stream,
+        consume
+      )
+    } catch (err) {
+      log.error('could not respond to identify request', err)
+    }
   }
 
   /**
