@@ -215,7 +215,7 @@ class Metrics {
 
     const _sink = stream.sink
     stream.sink = source => {
-      pipe(
+      return pipe(
         source,
         tap(chunk => metrics._onMessage({
           remotePeer,
