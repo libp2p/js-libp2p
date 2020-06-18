@@ -243,17 +243,16 @@ class IdentifyService {
    * @param {Connection} options.connection
    */
   async _handlePush ({ connection, stream }) {
-    const [data] = await pipe(
-      [],
-      stream,
-      lp.decode(),
-      take(1),
-      toBuffer,
-      collect
-    )
-
     let message
     try {
+      const [data] = await pipe(
+        [],
+        stream,
+        lp.decode(),
+        take(1),
+        toBuffer,
+        collect
+      )
       message = Message.decode(data)
     } catch (err) {
       return log.error('received invalid message', err)
