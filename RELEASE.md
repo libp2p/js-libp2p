@@ -26,6 +26,7 @@
 - Documentation
   - [ ] Ensure that README.md is up to date
   - [ ] Ensure that all the examples run
+  - [ ] Ensure that [libp2p/docs](https://github.com/libp2p/docs) is updated
 - Communication
   - [ ] Create the release issue
   - [ ] Take a snapshot between of everyone that has contributed to this release (including its subdeps in IPFS, libp2p, IPLD and multiformats) using [`name-your-contributors`](https://www.npmjs.com/package/name-your-contributors). Generate a nice markdown list with [this script](https://gist.github.com/jacobheun/d2ff479ca991733c13cdcf688a1317e5)
