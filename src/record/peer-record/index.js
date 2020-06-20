@@ -95,4 +95,6 @@ PeerRecord.createFromProtobuf = (buf) => {
   return new PeerRecord({ peerId, multiaddrs, seqNumber })
 }
 
+PeerRecord.DOMAIN = ENVELOPE_DOMAIN_PEER_RECORD
+
 module.exports = PeerRecord
