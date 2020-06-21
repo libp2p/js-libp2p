@@ -9,10 +9,12 @@ const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 
 const Book = require('./book')
+const PeerRecord = require('../record/peer-record')
 
 const {
   codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
+const Envelope = require('../record/envelope')
 
 /**
  * The AddressBook is responsible for keeping the known multiaddrs
@@ -23,7 +25,22 @@ class AddressBook extends Book {
    * Address object
    * @typedef {Object} Address
    * @property {Multiaddr} multiaddr peer multiaddr.
+   * @property {boolean} isCertified obtained from a signed peer record.
    */
+
+  /**
+  * CertifiedRecord object
+  * @typedef {Object} CertifiedRecord
+  * @property {Buffer} raw raw envelope.
+  * @property {number} seqNumber seq counter.
+  */
+
+  /**
+  * Entry object for the addressBook
+  * @typedef {Object} Entry
+  * @property {Array<Address>} addresses peer Addresses.
+  * @property {CertifiedRecord} record certified peer record.
+  */
 
   /**
   * @constructor
@@ -39,14 +56,93 @@ class AddressBook extends Book {
       peerStore,
       eventName: 'change:multiaddrs',
       eventProperty: 'multiaddrs',
-      eventTransformer: (data) => data.map((address) => address.multiaddr)
+      eventTransformer: (data) => {
+        if (!data.addresses) {
+          return []
+        }
+        return data.addresses.map((address) => address.multiaddr)
+      }
     })
 
     /**
-     * Map known peers to their known Addresses.
-     * @type {Map<string, Array<Address>>}
+     * Map known peers to their known Address Entries.
+     * @type {Map<string, Array<Entry>>}
      */
     this.data = new Map()
+  }
+
+  /**
+   * ConsumePeerRecord adds addresses from a signed peer.PeerRecord contained in a record envelope.
+   * This will return a boolean that indicates if the record was successfully processed and integrated
+   * into the AddressBook.
+   * @param {Envelope} envelope
+   * @return {boolean}
+   */
+  consumePeerRecord (envelope) {
+    let peerRecord
+    try {
+      peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+    } catch (err) {
+      log.error('invalid peer record received')
+      return false
+    }
+
+    // Verify peerId
+    if (peerRecord.peerId.toB58String() !== envelope.peerId.toB58String()) {
+      log('signing key does not match PeerId in the PeerRecord')
+      return false
+    }
+
+    const peerId = peerRecord.peerId
+    const id = peerId.toB58String()
+    const entry = this.data.get(id) || {}
+    const storedRecord = entry.record
+
+    // ensure seq is greater than, or equal to, the last received
+    if (storedRecord &&
+      storedRecord.seqNumber >= peerRecord.seqNumber) {
+      return false
+    }
+
+    // ensure the record has multiaddrs
+    if (!peerRecord.multiaddrs || !peerRecord.multiaddrs.length) {
+      return false
+    }
+
+    const addresses = this._toAddresses(peerRecord.multiaddrs, true)
+
+    // TODO: new record with different addresses from stored record
+    // - Remove the older ones?
+    // - Change to uncertified?
+
+    // TODO: events
+    // Should a multiaddr only modified to certified trigger an event?
+    // - Needed for persistent peer store
+    this._setData(peerId, {
+      addresses,
+      record: {
+        raw: envelope.marshal(),
+        seqNumber: peerRecord.seqNumber
+      }
+    })
+    log(`stored provided peer record for ${id}`)
+
+    return true
+  }
+
+  /**
+   * Get an Envelope containing a PeerRecord for the given peer.
+   * @param {PeerId} peerId
+   * @return {Promise<Envelope>}
+   */
+  getPeerRecord (peerId) {
+    const entry = this.data.get(peerId.toB58String())
+
+    if (!entry || !entry.record || !entry.record.raw) {
+      return
+    }
+
+    return Envelope.createFromProtobuf(entry.record.raw)
   }
 
   /**
@@ -64,7 +160,8 @@ class AddressBook extends Book {
 
     const addresses = this._toAddresses(multiaddrs)
     const id = peerId.toB58String()
-    const rec = this.data.get(id)
+    const entry = this.data.get(id) || {}
+    const rec = entry.addresses
 
     // Not replace multiaddrs
     if (!addresses.length) {
@@ -83,7 +180,10 @@ class AddressBook extends Book {
       }
     }
 
-    this._setData(peerId, addresses)
+    this._setData(peerId, {
+      addresses,
+      record: entry.record
+    })
     log(`stored provided multiaddrs for ${id}`)
 
     // Notify the existance of a new peer
@@ -109,7 +209,9 @@ class AddressBook extends Book {
 
     const addresses = this._toAddresses(multiaddrs)
     const id = peerId.toB58String()
-    const rec = this.data.get(id)
+
+    const entry = this.data.get(id) || {}
+    const rec = entry.addresses
 
     // Add recorded uniquely to the new array (Union)
     rec && rec.forEach((mi) => {
@@ -125,7 +227,10 @@ class AddressBook extends Book {
       return this
     }
 
-    this._setData(peerId, addresses)
+    this._setData(peerId, {
+      addresses,
+      record: entry.record
+    })
 
     log(`added provided multiaddrs for ${id}`)
 
@@ -138,12 +243,30 @@ class AddressBook extends Book {
   }
 
   /**
+   * Get the known data of a provided peer.
+   * @override
+   * @param {PeerId} peerId
+   * @returns {Array<data>}
+   */
+  get (peerId) {
+    // TODO: should we return Entry instead??
+    if (!PeerId.isPeerId(peerId)) {
+      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+    }
+
+    const entry = this.data.get(peerId.toB58String())
+
+    return entry && entry.addresses ? [...entry.addresses] : undefined
+  }
+
+  /**
    * Transforms received multiaddrs into Address.
    * @private
    * @param {Array<Multiaddr>} multiaddrs
+   * @param {boolean} [isCertified]
    * @returns {Array<Address>}
    */
-  _toAddresses (multiaddrs) {
+  _toAddresses (multiaddrs, isCertified = false) {
     if (!multiaddrs) {
       log.error('multiaddrs must be provided to store data')
       throw errcode(new Error('multiaddrs must be provided'), ERR_INVALID_PARAMETERS)
@@ -158,7 +281,8 @@ class AddressBook extends Book {
       }
 
       addresses.push({
-        multiaddr: addr
+        multiaddr: addr,
+        isCertified
       })
     })
 
@@ -177,13 +301,13 @@ class AddressBook extends Book {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    const record = this.data.get(peerId.toB58String())
+    const entry = this.data.get(peerId.toB58String())
 
-    if (!record) {
+    if (!entry || !entry.addresses) {
       return undefined
     }
 
-    return record.map((address) => {
+    return entry.addresses.map((address) => {
       const multiaddr = address.multiaddr
 
       const idString = multiaddr.getPeerId()

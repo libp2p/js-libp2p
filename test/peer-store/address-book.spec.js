@@ -1,15 +1,20 @@
 'use strict'
 /* eslint-env mocha */
+/* eslint max-nested-callbacks: ["error", 6] */
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 
-const pDefer = require('p-defer')
+const { Buffer } = require('buffer')
 const multiaddr = require('multiaddr')
 const arrayEquals = require('libp2p-utils/src/array-equals')
+const PeerId = require('peer-id')
+const pDefer = require('p-defer')
 
 const PeerStore = require('../../src/peer-store')
+const Envelope = require('../../src/record/envelope')
+const PeerRecord = require('../../src/record/peer-record')
 
 const peerUtils = require('../utils/creators/peer')
 const {
@@ -394,6 +399,239 @@ describe('addressBook', () => {
       expect(deleted).to.equal(true)
 
       return defer.promise
+    })
+  })
+
+  describe('certified records', () => {
+    let peerStore, ab
+
+    describe('consumes successfully a valid peer record and stores its data', () => {
+      beforeEach(() => {
+        peerStore = new PeerStore()
+        ab = peerStore.addressBook
+      })
+
+      it('no previous data in AddressBook', async () => {
+        const multiaddrs = [addr1, addr2]
+        const peerRecord = new PeerRecord({
+          peerId,
+          multiaddrs
+        })
+        const envelope = await Envelope.seal(peerRecord, peerId)
+
+        // consume peer record
+        const consumed = ab.consumePeerRecord(envelope)
+        expect(consumed).to.eql(true)
+
+        // Validate stored envelope
+        const storedEnvelope = await ab.getPeerRecord(peerId)
+        expect(envelope.isEqual(storedEnvelope)).to.eql(true)
+
+        // Validate AddressBook addresses
+        const addrs = ab.get(peerId)
+        expect(addrs).to.exist()
+        expect(addrs).to.have.lengthOf(multiaddrs.length)
+        addrs.forEach((addr, index) => {
+          expect(addr.isCertified).to.eql(true)
+          expect(multiaddrs[index].equals(addr.multiaddr)).to.eql(true)
+        })
+      })
+
+      it('emits change:multiaddrs event when adding multiaddrs', async () => {
+        const defer = pDefer()
+        const multiaddrs = [addr1, addr2]
+        const peerRecord = new PeerRecord({
+          peerId,
+          multiaddrs
+        })
+        const envelope = await Envelope.seal(peerRecord, peerId)
+
+        peerStore.once('change:multiaddrs', ({ peerId, multiaddrs }) => {
+          expect(peerId).to.exist()
+          expect(multiaddrs).to.eql(multiaddrs)
+          defer.resolve()
+        })
+
+        // consume peer record
+        const consumed = ab.consumePeerRecord(envelope)
+        expect(consumed).to.eql(true)
+
+        return defer.promise
+      })
+
+      it('with same data currently in AddressBook (not certified)', async () => {
+        const multiaddrs = [addr1, addr2]
+
+        // Set addressBook data
+        ab.set(peerId, multiaddrs)
+
+        // Validate data exists, but not certified
+        let addrs = ab.get(peerId)
+        expect(addrs).to.exist()
+        expect(addrs).to.have.lengthOf(multiaddrs.length)
+
+        addrs.forEach((addr, index) => {
+          expect(addr.isCertified).to.eql(false)
+          expect(multiaddrs[index].equals(addr.multiaddr)).to.eql(true)
+        })
+
+        // Create peer record
+        const peerRecord = new PeerRecord({
+          peerId,
+          multiaddrs
+        })
+        const envelope = await Envelope.seal(peerRecord, peerId)
+
+        // consume peer record
+        const consumed = ab.consumePeerRecord(envelope)
+        expect(consumed).to.eql(true)
+
+        // Validate data exists and certified
+        addrs = ab.get(peerId)
+        expect(addrs).to.exist()
+        expect(addrs).to.have.lengthOf(multiaddrs.length)
+        addrs.forEach((addr, index) => {
+          expect(addr.isCertified).to.eql(true)
+          expect(multiaddrs[index].equals(addr.multiaddr)).to.eql(true)
+        })
+      })
+
+      it('with previous partial data in AddressBook (not certified)', async () => {
+        const multiaddrs = [addr1, addr2]
+
+        // Set addressBook data
+        ab.set(peerId, [addr1])
+
+        // Validate data exists, but not certified
+        let addrs = ab.get(peerId)
+        expect(addrs).to.exist()
+        expect(addrs).to.have.lengthOf(1)
+        expect(addrs[0].isCertified).to.eql(false)
+        expect(addrs[0].multiaddr.equals(addr1)).to.eql(true)
+
+        // Create peer record
+        const peerRecord = new PeerRecord({
+          peerId,
+          multiaddrs
+        })
+        const envelope = await Envelope.seal(peerRecord, peerId)
+
+        // consume peer record
+        const consumed = ab.consumePeerRecord(envelope)
+        expect(consumed).to.eql(true)
+
+        // Validate data exists and certified
+        addrs = ab.get(peerId)
+        expect(addrs).to.exist()
+        expect(addrs).to.have.lengthOf(multiaddrs.length)
+        addrs.forEach((addr, index) => {
+          expect(addr.isCertified).to.eql(true)
+          expect(multiaddrs[index].equals(addr.multiaddr)).to.eql(true)
+        })
+      })
+
+      it('with previous different data in AddressBook (not certified)', async () => {
+        const multiaddrsUncertified = [addr3]
+        const multiaddrsCertified = [addr1, addr2]
+
+        // Set addressBook data
+        ab.set(peerId, multiaddrsUncertified)
+
+        // Validate data exists, but not certified
+        let addrs = ab.get(peerId)
+        expect(addrs).to.exist()
+        expect(addrs).to.have.lengthOf(multiaddrsUncertified.length)
+        addrs.forEach((addr, index) => {
+          expect(addr.isCertified).to.eql(false)
+          expect(multiaddrsUncertified[index].equals(addr.multiaddr)).to.eql(true)
+        })
+
+        // Create peer record
+        const peerRecord = new PeerRecord({
+          peerId,
+          multiaddrs: multiaddrsCertified
+        })
+        const envelope = await Envelope.seal(peerRecord, peerId)
+
+        // consume peer record
+        const consumed = ab.consumePeerRecord(envelope)
+        expect(consumed).to.eql(true)
+
+        // Validate data exists and certified
+        addrs = ab.get(peerId)
+        expect(addrs).to.exist()
+        expect(addrs).to.have.lengthOf(multiaddrsCertified.length)
+        addrs.forEach((addr, index) => {
+          expect(addr.isCertified).to.eql(true)
+          expect(multiaddrsCertified[index].equals(addr.multiaddr)).to.eql(true)
+        })
+        // TODO: should it has the older one?
+      })
+    })
+
+    describe('fails to consume invalid peer records', () => {
+      beforeEach(() => {
+        peerStore = new PeerStore()
+        ab = peerStore.addressBook
+      })
+
+      it('invalid peer record', () => {
+        const invalidEnvelope = {
+          payload: Buffer.from('invalid-peerRecord')
+        }
+
+        const consumed = ab.consumePeerRecord(invalidEnvelope)
+        expect(consumed).to.eql(false)
+      })
+
+      it('peer that created the envelope is not the same as the peer record', async () => {
+        const multiaddrs = [addr1, addr2]
+
+        // Create peer record
+        const peerId2 = await PeerId.create()
+        const peerRecord = new PeerRecord({
+          peerId: peerId2,
+          multiaddrs
+        })
+        const envelope = await Envelope.seal(peerRecord, peerId)
+
+        const consumed = ab.consumePeerRecord(envelope)
+        expect(consumed).to.eql(false)
+      })
+
+      it('does not store an outdated record', async () => {
+        const multiaddrs = [addr1, addr2]
+        const peerRecord1 = new PeerRecord({
+          peerId,
+          multiaddrs,
+          seqNumber: Date.now()
+        })
+        const peerRecord2 = new PeerRecord({
+          peerId,
+          multiaddrs,
+          seqNumber: Date.now() - 1
+        })
+        const envelope1 = await Envelope.seal(peerRecord1, peerId)
+        const envelope2 = await Envelope.seal(peerRecord2, peerId)
+
+        // Consume envelope1 (bigger seqNumber)
+        let consumed = ab.consumePeerRecord(envelope1)
+        expect(consumed).to.eql(true)
+
+        consumed = ab.consumePeerRecord(envelope2)
+        expect(consumed).to.eql(false)
+      })
+
+      it('empty multiaddrs', async () => {
+        const peerRecord = new PeerRecord({
+          peerId,
+          multiaddrs: []
+        })
+        const envelope = await Envelope.seal(peerRecord, peerId)
+
+        const consumed = ab.consumePeerRecord(envelope)
+        expect(consumed).to.eql(false)
+      })
     })
   })
 })
