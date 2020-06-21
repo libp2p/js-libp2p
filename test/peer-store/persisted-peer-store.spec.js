@@ -210,6 +210,8 @@ describe('Persisted PeerStore', () => {
         throw new Error('Datastore should be empty')
       }
     })
+
+    // TODO: certified?
   })
 
   describe('setup with content not stored per change (threshold 2)', () => {

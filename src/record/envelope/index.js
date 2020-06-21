@@ -112,11 +112,6 @@ const formatSignaturePayload = (domain, payloadType, payload) => {
   ])
 }
 
-/**
- * Unmarshal a serialized Envelope protobuf message.
- * @param {Buffer} data
- * @return {Envelope}
- */
 const unmarshalEnvelope = async (data) => {
   const envelopeData = Protobuf.decode(data)
   const peerId = await PeerId.createFromPubKey(envelopeData.public_key)
@@ -128,6 +123,13 @@ const unmarshalEnvelope = async (data) => {
     signature: envelopeData.signature
   })
 }
+
+/**
+ * Unmarshal a serialized Envelope protobuf message.
+ * @param {Buffer} data
+ * @return {Promise<Envelope>}
+ */
+Envelope.createFromProtobuf = unmarshalEnvelope
 
 /**
 * Seal marshals the given Record, places the marshaled bytes inside an Envelope

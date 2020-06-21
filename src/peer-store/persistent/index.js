@@ -296,9 +296,11 @@ class PersistentPeerStore extends PeerStore {
 
           this.addressBook._setData(
             peerId,
-            decoded.addrs.map((address) => ({
-              multiaddr: multiaddr(address.multiaddr)
-            })),
+            {
+              addresses: decoded.addrs.map((address) => ({
+                multiaddr: multiaddr(address.multiaddr)
+              }))
+            },
             { emit: false })
           break
         case 'keys':
