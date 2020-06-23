@@ -1,6 +1,6 @@
 'use strict'
 
-const mh = require('multihashes')
+const mh = require('multihashing-async').multihash
 
 const utils = require('../utils')
 const Run = require('./run')

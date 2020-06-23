@@ -5,7 +5,7 @@
 'use strict'
 const PeerStore = require('libp2p/src/peer-store')
 const PeerId = require('peer-id')
-const multihashes = require('multihashes')
+const multihashes = require('multihashing-async').multihash
 const { Buffer } = require('buffer')
 const RoutingTable = require('../../src/routing')
 const Message = require('../../src/message')

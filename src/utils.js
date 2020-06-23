@@ -2,7 +2,7 @@
 
 const debug = require('debug')
 const multihashing = require('multihashing-async')
-const mh = require('multihashes')
+const mh = multihashing.multihash
 const { Key } = require('interface-datastore')
 const base32 = require('base32.js')
 const distance = require('xor-distance')

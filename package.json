@@ -54,8 +54,7 @@
     "libp2p-interfaces": "^0.3.0",
     "libp2p-record": "~0.7.0",
     "multiaddr": "^7.4.3",
-    "multihashes": "~0.4.15",
-    "multihashing-async": "~0.8.0",
+    "multihashing-async": "^0.8.2",
     "p-filter": "^2.1.0",
     "p-map": "^4.0.0",
     "p-queue": "^6.2.1",
@@ -69,7 +68,7 @@
     "xor-distance": "^2.0.0"
   },
   "devDependencies": {
-    "aegir": "^22.0.0",
+    "aegir": "^23.0.0",
     "async-iterator-all": "^1.0.0",
     "chai": "^4.2.0",
     "chai-checkmark": "^1.0.1",
