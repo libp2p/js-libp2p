@@ -446,9 +446,6 @@ class Libp2p extends EventEmitter {
     // Listen on the provided transports
     await this.transportManager.listen()
 
-    // Start record Manager
-    await this.recordManager.start()
-
     // Start PeerStore
     await this.peerStore.start()
 

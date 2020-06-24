@@ -1,7 +1,11 @@
 'use strict'
 
-const { Buffer } = require('buffer')
 const debug = require('debug')
+const log = debug('libp2p:identify')
+log.error = debug('libp2p:identify:error')
+
+const errCode = require('err-code')
+const { Buffer } = require('buffer')
 const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
 const pipe = require('it-pipe')
@@ -13,8 +17,8 @@ const { toBuffer } = require('it-buffer')
 
 const Message = require('./message')
 
-const log = debug('libp2p:identify')
-log.error = debug('libp2p:identify:error')
+const Envelope = require('../record/envelope')
+const PeerRecord = require('../record/peer-record')
 
 const {
   MULTICODEC_IDENTIFY,
@@ -25,10 +29,7 @@ const {
   PROTOCOL_VERSION
 } = require('./consts')
 
-const errCode = require('err-code')
 const { messages, codes } = require('../errors')
-const Envelope = require('../record-manager/envelope')
-const PeerRecord = require('../record-manager/peer-record')
 
 class IdentifyService {
   /**
@@ -83,6 +84,9 @@ class IdentifyService {
     this._protocols = protocols
 
     this.handleMessage = this.handleMessage.bind(this)
+
+    // TODO: this should be stored in the certified AddressBook in follow up PR
+    this._selfRecord = undefined
   }
 
   /**
@@ -108,7 +112,7 @@ class IdentifyService {
           )
         }
 
-        const envelope = this._libp2p.recordManager.getPeerRecord()
+        const envelope = await this._getSelfPeerRecord()
         const signedPeerRecord = envelope.marshal()
 
         await pipe(
@@ -272,7 +276,7 @@ class IdentifyService {
       publicKey = this.peerId.pubKey.bytes
     }
 
-    const envelope = this._libp2p.recordManager.getPeerRecord()
+    const envelope = await this._getSelfPeerRecord()
     const signedPeerRecord = envelope.marshal()
 
     const message = Message.encode({
@@ -417,6 +421,25 @@ class IdentifyService {
 
     // Update the protocols
     this.peerStore.protoBook.set(id, message.protocols)
+  }
+
+  /**
+   * Get self signed peer record envelope.
+   * @return {Envelope}
+   */
+  async _getSelfPeerRecord () {
+    // TODO: Verify if updated
+    if (this._selfRecord) {
+      return this._selfRecord
+    }
+
+    const peerRecord = new PeerRecord({
+      peerId: this.peerId,
+      multiaddrs: this._libp2p.multiaddrs
+    })
+    this._selfRecord = await Envelope.seal(peerRecord, this.peerId)
+
+    return this._selfRecord
   }
 }
 

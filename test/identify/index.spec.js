@@ -14,9 +14,6 @@ const duplexPair = require('it-pair/duplex')
 const multiaddr = require('multiaddr')
 const pWaitFor = require('p-wait-for')
 
-const Envelope = require('../../src/record-manager/envelope')
-const PeerRecord = require('../../src/record-manager/peer-record')
-
 const { codes: Errors } = require('../../src/errors')
 const { IdentifyService, multicodecs } = require('../../src/identify')
 const Peers = require('../fixtures/peers')
@@ -39,23 +36,14 @@ const protocolsLegacy = new Map([
 ])
 
 describe('Identify', () => {
-  let localPeer, localPeerRecord
-  let remotePeer, remotePeerRecord
+  let localPeer
+  let remotePeer
 
   before(async () => {
     [localPeer, remotePeer] = (await Promise.all([
       PeerId.createFromJSON(Peers[0]),
       PeerId.createFromJSON(Peers[1])
     ]))
-  })
-
-  // Compute peer records
-  before(async () => {
-    // Compute PeerRecords
-    const localRecord = new PeerRecord({ peerId: localPeer, multiaddrs: listenMaddrs })
-    localPeerRecord = await Envelope.seal(localRecord, localPeer)
-    const remoteRecord = new PeerRecord({ peerId: remotePeer, multiaddrs: listenMaddrs })
-    remotePeerRecord = await Envelope.seal(remoteRecord, remotePeer)
   })
 
   afterEach(() => {
@@ -136,10 +124,7 @@ describe('Identify', () => {
             set: () => { }
           }
         },
-        multiaddrs: [],
-        recordManager: {
-          getPeerRecord: () => localPeerRecord
-        }
+        multiaddrs: listenMaddrs
       },
       protocols
     })
@@ -148,10 +133,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        multiaddrs: [],
-        recordManager: {
-          getPeerRecord: () => remotePeerRecord
-        }
+        multiaddrs: listenMaddrs
       },
       protocols
     })
@@ -206,10 +188,7 @@ describe('Identify', () => {
             set: () => { }
           }
         },
-        multiaddrs: [],
-        recordManager: {
-          getPeerRecord: () => localPeerRecord
-        }
+        multiaddrs: []
       },
       protocols
     })
@@ -217,10 +196,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        multiaddrs: [],
-        recordManager: {
-          getPeerRecord: () => remotePeerRecord
-        }
+        multiaddrs: []
       },
       protocols
     })
@@ -319,10 +295,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
-          multiaddrs: listenMaddrs,
-          recordManager: {
-            getPeerRecord: () => localPeerRecord
-          }
+          multiaddrs: listenMaddrs
         },
         protocols: new Map([
           [multicodecs.IDENTIFY],
@@ -342,10 +315,7 @@ describe('Identify', () => {
               set: () => { }
             }
           },
-          multiaddrs: [],
-          recordManager: {
-            getPeerRecord: () => remotePeerRecord
-          }
+          multiaddrs: []
         }
       })
 
