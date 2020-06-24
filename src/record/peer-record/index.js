@@ -80,14 +80,12 @@ class PeerRecord extends Record {
   }
 }
 
-exports = module.exports = PeerRecord
-
 /**
  * Unmarshal Peer Record Protobuf.
  * @param {Buffer} buf marshaled peer record.
  * @return {PeerRecord}
  */
-exports.createFromProtobuf = (buf) => {
+PeerRecord.createFromProtobuf = (buf) => {
   // Decode
   const peerRecord = Protobuf.decode(buf)
 
@@ -97,3 +95,5 @@ exports.createFromProtobuf = (buf) => {
 
   return new PeerRecord({ peerId, multiaddrs, seqNumber })
 }
+
+module.exports = PeerRecord

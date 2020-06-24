@@ -84,46 +84,6 @@ class Envelope {
   }
 }
 
-exports = module.exports = Envelope
-
-/**
-* Seal marshals the given Record, places the marshaled bytes inside an Envelope
-* and signs with the given private key.
-* @async
-* @param {Record} record
-* @param {PeerId} peerId
-* @return {Envelope}
-*/
-exports.seal = async (record, peerId) => {
-  const domain = record.domain
-  const payloadType = Buffer.from(`${multicodec.print[record.codec]}${domain}`)
-  const payload = record.marshal()
-
-  const signData = createSignData(domain, payloadType, payload)
-  const signature = await peerId.privKey.sign(signData)
-
-  return new Envelope({
-    peerId,
-    payloadType,
-    payload,
-    signature
-  })
-}
-
-// ConsumeEnvelope unmarshals a serialized Envelope and validates its
-// signature using the provided 'domain' string. If validation fails, an error
-// is returned, along with the unmarshalled envelope so it can be inspected.
-//
-// On success, ConsumeEnvelope returns the Envelope itself, as well as the inner payload,
-// unmarshalled into a concrete Record type. The actual type of the returned Record depends
-// on what has been registered for the Envelope's PayloadType (see RegisterType for details).
-exports.openAndCertify = async (data, domain) => {
-  const envelope = await unmarshalEnvelope(data)
-  await envelope.validate(domain)
-
-  return envelope
-}
-
 /**
  * Helper function that prepares a buffer to sign or verify a signature.
  * @param {string} domain
@@ -155,3 +115,43 @@ const unmarshalEnvelope = async (data) => {
     signature: envelopeData.signature
   })
 }
+
+/**
+* Seal marshals the given Record, places the marshaled bytes inside an Envelope
+* and signs with the given private key.
+* @async
+* @param {Record} record
+* @param {PeerId} peerId
+* @return {Envelope}
+*/
+Envelope.seal = async (record, peerId) => {
+  const domain = record.domain
+  const payloadType = Buffer.from(`${multicodec.print[record.codec]}${domain}`)
+  const payload = record.marshal()
+
+  const signData = createSignData(domain, payloadType, payload)
+  const signature = await peerId.privKey.sign(signData)
+
+  return new Envelope({
+    peerId,
+    payloadType,
+    payload,
+    signature
+  })
+}
+
+/**
+ * Open and certify a given marshalled envelope.
+ * Data is unmarshalled and the siganture validated with the given domain.
+ * @param {Buffer} data
+ * @param {string} domain
+ * @return {Envelope}
+ */
+Envelope.openAndCertify = async (data, domain) => {
+  const envelope = await unmarshalEnvelope(data)
+  await envelope.validate(domain)
+
+  return envelope
+}
+
+module.exports = Envelope
