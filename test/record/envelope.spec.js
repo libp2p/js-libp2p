@@ -8,7 +8,7 @@ const { expect } = chai
 
 const multicodec = require('multicodec')
 
-const Envelope = require('../../src/record-manager/envelope')
+const Envelope = require('../../src/record/envelope')
 const Record = require('libp2p-interfaces/src/record')
 
 const peerUtils = require('../utils/creators/peer')
