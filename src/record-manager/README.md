@@ -2,7 +2,7 @@
 
 All libp2p nodes keep a `PeerStore`, that among other information stores a set of known addresses for each peer. Addresses for a peer can come from a variety of sources.
 
-Libp2p peer records were created to enable the distributiion of verifiable address records, which we can prove originated from the addressed peer itself. 
+Libp2p peer records were created to enable the distribution of verifiable address records, which we can prove originated from the addressed peer itself. 
 
 With such guarantees, libp2p can prioritize addresses based on their authenticity, with the most strict strategy being to only dial certified addresses.
 
@@ -26,7 +26,7 @@ A peer record contains the peers' publicly reachable listen addresses, and may b
 
 Each peer record contains a `seq` field, so that we can order peer records by time and identify if a received record is more recent than the stored one.
 
-They should be used either through a direct exchange (as in th libp2p identify protocol), or through a peer routing provider, such as a DHT. 
+They should be used either through a direct exchange (as in the libp2p identify protocol), or through a peer routing provider, such as a DHT. 
 
 ## Libp2p flows
 
@@ -36,7 +36,7 @@ Once a libp2p node has started and is listening on a set of multiaddrs, the **Re
 
 Considering that a node can discover other peers' addresses from a variety of sources, Libp2p Peerstore should be able to differentiate the addresses that were obtained through a signed peer record. Once all these pieces are in place, we will also need a way to prioritize addresses based on their authenticity, that is, the dialer can prioritize self-certified addresses over addresses from an unknown origin.
 
-When a libp2p node receives a new signed peer record, the `seq` number of the record must be compared with potentially stored records, so that we do not override correct data,
+When a libp2p node receives a new signed peer record, the `seq` number of the record must be compared with potentially stored records, so that we do not override correct data.
 
 ### Notes:
 
