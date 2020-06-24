@@ -31,8 +31,8 @@ const protocols = new Map([
 ])
 
 const protocolsLegacy = new Map([
-  [multicodecs.IDENTIFY_LEGACY, () => { }],
-  [multicodecs.IDENTIFY_PUSH_LEGACY, () => { }]
+  [multicodecs.IDENTIFY_1_0_0, () => { }],
+  [multicodecs.IDENTIFY_PUSH_1_0_0, () => { }]
 ])
 
 describe('Identify', () => {
@@ -50,7 +50,7 @@ describe('Identify', () => {
     sinon.restore()
   })
 
-  it('should be able to identify another peer with legacy protocol', async () => {
+  it('should be able to identify another peer with 1.0.0 legacy protocol', async () => {
     const localIdentify = new IdentifyService({
       libp2p: {
         peerId: localPeer,
@@ -82,7 +82,7 @@ describe('Identify', () => {
     const remoteConnectionMock = { remoteAddr: observedAddr }
 
     const [local, remote] = duplexPair()
-    sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY_LEGACY })
+    sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY_1_0_0 })
 
     sinon.spy(localIdentify.peerStore.addressBook, 'set')
     sinon.spy(localIdentify.peerStore.protoBook, 'set')
@@ -93,7 +93,7 @@ describe('Identify', () => {
       remoteIdentify.handleMessage({
         connection: remoteConnectionMock,
         stream: remote,
-        protocol: multicodecs.IDENTIFY_LEGACY
+        protocol: multicodecs.IDENTIFY_1_0_0
       })
     ])
 
@@ -224,7 +224,7 @@ describe('Identify', () => {
   })
 
   describe('push', () => {
-    it('should be able to push identify updates to another peer with legacy protocol', async () => {
+    it('should be able to push identify updates to another peer with 1.0.0 legacy protocols', async () => {
       const connectionManager = new EventEmitter()
       connectionManager.getConnection = () => {}
 
@@ -235,8 +235,8 @@ describe('Identify', () => {
           multiaddrs: listenMaddrs
         },
         protocols: new Map([
-          [multicodecs.IDENTIFY_LEGACY],
-          [multicodecs.IDENTIFY_PUSH_LEGACY],
+          [multicodecs.IDENTIFY_1_0_0],
+          [multicodecs.IDENTIFY_PUSH_1_0_0],
           ['/echo/1.0.0']
         ])
       })
@@ -257,12 +257,12 @@ describe('Identify', () => {
       })
 
       // Setup peer protocols and multiaddrs
-      const localProtocols = new Set([multicodecs.IDENTIFY_LEGACY, multicodecs.IDENTIFY_PUSH_LEGACY, '/echo/1.0.0'])
+      const localProtocols = new Set([multicodecs.IDENTIFY_1_0_0, multicodecs.IDENTIFY_PUSH_1_0_0, '/echo/1.0.0'])
       const localConnectionMock = { newStream: () => {} }
       const remoteConnectionMock = { remotePeer: localPeer }
 
       const [local, remote] = duplexPair()
-      sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY_PUSH_LEGACY })
+      sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY_PUSH_1_0_0 })
 
       sinon.spy(remoteIdentify.peerStore.addressBook, 'set')
       sinon.spy(remoteIdentify.peerStore.protoBook, 'set')
@@ -273,7 +273,7 @@ describe('Identify', () => {
         remoteIdentify.handleMessage({
           connection: remoteConnectionMock,
           stream: remote,
-          protocol: multicodecs.IDENTIFY_PUSH_LEGACY
+          protocol: multicodecs.IDENTIFY_PUSH_1_0_0
         })
       ])
 
