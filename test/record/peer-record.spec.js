@@ -8,7 +8,7 @@ const { expect } = chai
 const multiaddr = require('multiaddr')
 
 const tests = require('libp2p-interfaces/src/record/tests')
-const PeerRecord = require('../../src/record-manager/peer-record')
+const PeerRecord = require('../../src/record/peer-record')
 
 const peerUtils = require('../utils/creators/peer')
 
