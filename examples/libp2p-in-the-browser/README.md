@@ -11,23 +11,6 @@ cd ./examples/libp2p-in-the-browser
 npm install
 ```
 
-## Signaling Server
-
-This example uses the `libp2p-webrtc-star` module, which enables libp2p browser nodes to establish direct connections to one another via a central signaling server. For this example, we are using the signaling server that ships with `libp2p-webrtc-star`.
-
-You can start the server by running `npm run server`. This will start a signaling server locally on port `9090`. If you'd like to run a signaling server outside of this example, you can see instructions on how to do so in the [`libp2p-webrtc-star` README](https://github.com/libp2p/js-libp2p-webrtc-star).
-
-When you run the server, you should see output that looks something like this:
-
-```log
-$ npm run server
-
-> libp2p-in-browser@1.0.0 server
-> star-signal
-
-Listening on: http://0.0.0.0:9090
-```
-
 ## Running the examples
 
 Once you have started the signaling server, you can run the Parcel server.
@@ -53,3 +36,11 @@ This will compile the code and start a server listening on port [http://localhos
 Now, if you open a second browser tab to `http://localhost:1234`, you should discover your node from the previous tab. This is due to the fact that the `libp2p-webrtc-star` transport also acts as a Peer Discovery interface. Your node will be notified of any peer that connects to the same signaling server you are connected to. Once libp2p discovers this new peer, it will attempt to establish a direct WebRTC connection.
 
 **Note**: In the example we assign libp2p to `window.libp2p`, in case you would like to play around with the API directly in the browser. You can of course make changes to `index.js` and Parcel will automatically rebuild and reload the browser tabs.
+
+## Going to production?
+
+This example uses public `libp2p-webrtc-star` servers. These servers should be used for experimenting and demos, they **MUST** not be used in production as there is no guarantee on availability.
+
+You can see how to deploy your own signaling server in [libp2p/js-libp2p-webrtc-star/DEPLOYMENT.md](https://github.com/libp2p/js-libp2p-webrtc-star/blob/master/DEPLOYMENT.md).
+
+Once you have your own server running, you should add its listen address in your libp2p node configuration.
