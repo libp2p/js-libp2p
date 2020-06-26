@@ -6,18 +6,18 @@ chai.use(require('dirty-chai'))
 chai.use(require('chai-bytes'))
 const { expect } = chai
 
-const multicodec = require('multicodec')
-
 const Envelope = require('../../src/record/envelope')
 const Record = require('libp2p-interfaces/src/record')
+const { codes: ErrorCodes } = require('../../src/errors')
 
 const peerUtils = require('../utils/creators/peer')
 
-const domain = '/test-domain'
+const domain = 'libp2p-testing'
+const codec = '/libp2p/testdata'
 
 class TestRecord extends Record {
   constructor (data) {
-    super(domain, multicodec.LIBP2P_PEER_RECORD)
+    super(domain, codec)
     this.data = data
   }
 
@@ -31,7 +31,7 @@ class TestRecord extends Record {
 }
 
 describe('Envelope', () => {
-  const payloadType = Buffer.from(`${multicodec.print[multicodec.LIBP2P_PEER_RECORD]}${domain}`)
+  const payloadType = Buffer.from(codec)
   let peerId
   let testRecord
 
@@ -78,11 +78,12 @@ describe('Envelope', () => {
     expect(isEqual).to.eql(true)
   })
 
-  it.skip('throw on open and verify when a different domain is used', async () => {
+  it('throw on open and verify when a different domain is used', async () => {
     const envelope = await Envelope.seal(testRecord, peerId)
     const rawEnvelope = envelope.marshal()
 
-    await expect(Envelope.openAndCertify(rawEnvelope, '/fake-domain'))
-      .to.eventually.rejected()
+    await expect(Envelope.openAndCertify(rawEnvelope, '/bad-domain'))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_SIGNATURE_NOT_VALID)
   })
 })
