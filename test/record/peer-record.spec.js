@@ -5,9 +5,10 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 
+const tests = require('libp2p-interfaces/src/record/tests')
 const multiaddr = require('multiaddr')
 
-const tests = require('libp2p-interfaces/src/record/tests')
+const Envelope = require('../../src/record/envelope')
 const PeerRecord = require('../../src/record/peer-record')
 
 const peerUtils = require('../utils/creators/peer')
@@ -113,5 +114,28 @@ describe('PeerRecord', () => {
 })
 
 describe('PeerRecord inside Envelope', () => {
-  // TODO
+  let peerId
+  let peerRecord
+
+  before(async () => {
+    [peerId] = await peerUtils.createPeerId()
+    const multiaddrs = [
+      multiaddr('/ip4/127.0.0.1/tcp/2000')
+    ]
+    const seqNumber = Date.now()
+    peerRecord = new PeerRecord({ peerId, multiaddrs, seqNumber })
+  })
+
+  it('creates an envelope with the PeerRecord and can unmarshal it', async () => {
+    const e = await Envelope.seal(peerRecord, peerId)
+    const byteE = e.marshal()
+
+    const decodedE = await Envelope.openAndCertify(byteE, peerRecord.domain)
+    expect(decodedE).to.exist()
+
+    const decodedPeerRecord = PeerRecord.createFromProtobuf(decodedE.payload)
+
+    const isEqual = peerRecord.isEqual(decodedPeerRecord)
+    expect(isEqual).to.eql(true)
+  })
 })
