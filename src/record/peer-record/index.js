@@ -24,7 +24,6 @@ class PeerRecord extends Record {
    * @param {number} [params.seqNumber] monotonically-increasing sequence counter that's used to order PeerRecords in time.
    */
   constructor ({ peerId, multiaddrs = [], seqNumber = Date.now() }) {
-    // TODO: verify domain/payload type
     super(ENVELOPE_DOMAIN_PEER_RECORD, ENVELOPE_PAYLOAD_TYPE_PEER_RECORD)
 
     this.peerId = peerId

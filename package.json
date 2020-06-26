@@ -78,6 +78,7 @@
     "sanitize-filename": "^1.6.3",
     "streaming-iterables": "^4.1.0",
     "timeout-abort-controller": "^1.0.0",
+    "varint": "^5.0.0",
     "xsalsa20": "^1.0.2"
   },
   "devDependencies": {
