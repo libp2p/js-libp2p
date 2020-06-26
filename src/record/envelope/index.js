@@ -5,14 +5,18 @@ const log = debug('libp2p:envelope')
 log.error = debug('libp2p:envelope:error')
 const errCode = require('err-code')
 
-const crypto = require('libp2p-crypto')
-const multicodec = require('multicodec')
-const PeerId = require('peer-id')
+const { Buffer } = require('buffer')
 
+const crypto = require('libp2p-crypto')
+const PeerId = require('peer-id')
+const varint = require('varint')
+
+const { codes } = require('../../errors')
 const Protobuf = require('./envelope.proto')
 
 /**
- * The Envelope is responsible for keeping arbitrary signed by a libp2p peer.
+ * The Envelope is responsible for keeping an arbitrary signed record
+ * by a libp2p peer.
  */
 class Envelope {
   /**
@@ -41,7 +45,7 @@ class Envelope {
     if (this._marshal) {
       return this._marshal
     }
-    // TODO: type for marshal (default: RSA)
+
     const publicKey = crypto.keys.marshalPublicKey(this.peerId.pubKey)
 
     this._marshal = Protobuf.encode({
@@ -69,34 +73,43 @@ class Envelope {
   /**
    * Validate envelope data signature for the given domain.
    * @param {string} domain
-   * @return {Promise}
+   * @return {Promise<boolean>}
    */
-  async validate (domain) {
+  validate (domain) {
     const signData = createSignData(domain, this.payloadType, this.payload)
 
-    try {
-      await this.peerId.pubKey.verify(signData, this.signature)
-    } catch (_) {
-      log.error('record signature verification failed')
-      // TODO
-      throw errCode(new Error('record signature verification failed'), 'ERRORS.ERR_SIGNATURE_VERIFICATION')
-    }
+    return this.peerId.pubKey.verify(signData, this.signature)
   }
 }
 
 /**
  * Helper function that prepares a buffer to sign or verify a signature.
  * @param {string} domain
- * @param {number} payloadType
+ * @param {Buffer} payloadType
  * @param {Buffer} payload
  * @return {Buffer}
  */
 const createSignData = (domain, payloadType, payload) => {
-  // TODO: this should be compliant with the spec!
-  const domainBuffer = Buffer.from(domain)
-  const payloadTypeBuffer = Buffer.from(payloadType.toString())
+  // When signing, a peer will prepare a buffer by concatenating the following:
+  // - The length of the domain separation string string in bytes
+  // - The domain separation string, encoded as UTF-8
+  // - The length of the payload_type field in bytes
+  // - The value of the payload_type field
+  // - The length of the payload field in bytes
+  // - The value of the payload field
 
-  return Buffer.concat([domainBuffer, payloadTypeBuffer, payload])
+  const domainLength = varint.encode(Buffer.byteLength(domain))
+  const payloadTypeLength = varint.encode(payloadType.length)
+  const payloadLength = varint.encode(payload.length)
+
+  return Buffer.concat([
+    Buffer.from(domainLength),
+    Buffer.from(domain),
+    Buffer.from(payloadTypeLength),
+    payloadType,
+    Buffer.from(payloadLength),
+    payload
+  ])
 }
 
 /**
@@ -118,7 +131,7 @@ const unmarshalEnvelope = async (data) => {
 
 /**
 * Seal marshals the given Record, places the marshaled bytes inside an Envelope
-* and signs with the given private key.
+* and signs it with the given peerId's private key.
 * @async
 * @param {Record} record
 * @param {PeerId} peerId
@@ -126,7 +139,7 @@ const unmarshalEnvelope = async (data) => {
 */
 Envelope.seal = async (record, peerId) => {
   const domain = record.domain
-  const payloadType = Buffer.from(`${multicodec.print[record.codec]}${domain}`)
+  const payloadType = Buffer.from(record.codec)
   const payload = record.marshal()
 
   const signData = createSignData(domain, payloadType, payload)
@@ -149,7 +162,11 @@ Envelope.seal = async (record, peerId) => {
  */
 Envelope.openAndCertify = async (data, domain) => {
   const envelope = await unmarshalEnvelope(data)
-  await envelope.validate(domain)
+  const valid = await envelope.validate(domain)
+
+  if (!valid) {
+    throw errCode(new Error('envelope signature is not valid for the given domain'), codes.ERR_SIGNATURE_NOT_VALID)
+  }
 
   return envelope
 }
