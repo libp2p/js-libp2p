@@ -47,7 +47,7 @@ All libp2p nodes keep a `PeerStore`, that among other information stores a set o
 
 Libp2p peer records were created to enable the distribution of verifiable address records, which we can prove originated from the addressed peer itself. With such guarantees, libp2p can prioritize addresses based on their authenticity, with the most strict strategy being to only dial certified addresses.
 
-A peer record contains the peers' publicly reachable listen addresses, and may be extended in the future to contain additional metadata relevant to routing. It also contains a `seq` field, so that we can order peer records by time and identify if a received record is more recent than the stored one.
+A peer record contains the peers' publicly reachable listen addresses, and may be extended in the future to contain additional metadata relevant to routing. It also contains a `seqNumber` field, so that we can order peer records by time and identify if a received record is more recent than the stored one.
 
 You can read further about the Peer Record in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
 
@@ -92,7 +92,7 @@ When a libp2p node changes its listen addresses, the identify service should be 
 
 Considering that a node can discover other peers' addresses from a variety of sources, Libp2p Peerstore should be able to differentiate the addresses that were obtained through a signed peer record.
 
-Once a record is received and its signature properly validated, its envelope should be stored in the AddressBook on its byte representations. However, the `seq` number of the record must be compared with potentially stored records, so that we do not override correct data.
+Once a record is received and its signature properly validated, its envelope should be stored in the AddressBook on its byte representations. However, the `seqNumber` number of the record must be compared with potentially stored records, so that we do not override correct data.
 
 The AddressBook Addresses must be updated with the content of the envelope with a certified property that allows other subsystems to identify that the known certified addresses of a peer.
 
@@ -112,17 +112,3 @@ When a subsystem wants to provide a record, it should get it from the AddressBoo
   - Modular dialer? (taken from go PR notes)
     - With the modular dialer, users should easily be able to configure precedence. With dialer v1, anything we do to prioritise dials is gonna be spaghetti and adhoc. With the modular dialer, you’d be able to specify the order of dials when instantiating the pipeline.
     - Multiple parallel dials. We already have the issue where new addresses aren't added to existing dials.
-
-### Notes:
-
-- Possible design for AddressBook
-
-```
-addr_book_record
-  \_ peer_id: bytes
-  \_ signed_addrs: []AddrEntry
-  \_ unsigned_addrs: []AddrEntry
-  \_ certified_record
-      \_ seq: bytes
-      \_ raw: bytes
-```
