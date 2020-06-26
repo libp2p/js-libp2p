@@ -13,7 +13,7 @@ npm install
 
 ## Running the examples
 
-Once you have started the signaling server, you can run the Parcel server.
+You can run the Parcel server.
 
 ```
 npm start
