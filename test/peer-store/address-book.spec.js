@@ -459,7 +459,8 @@ describe('addressBook', () => {
         return defer.promise
       })
 
-      it('with same data currently in AddressBook (not certified)', async () => {
+      it('emits change:multiaddrs event with same data currently in AddressBook (not certified)', async () => {
+        const defer = pDefer()
         const multiaddrs = [addr1, addr2]
 
         // Set addressBook data
@@ -482,9 +483,18 @@ describe('addressBook', () => {
         })
         const envelope = await Envelope.seal(peerRecord, peerId)
 
+        peerStore.once('change:multiaddrs', ({ peerId, multiaddrs }) => {
+          expect(peerId).to.exist()
+          expect(multiaddrs).to.eql(multiaddrs)
+          defer.resolve()
+        })
+
         // consume peer record
         const consumed = ab.consumePeerRecord(envelope)
         expect(consumed).to.eql(true)
+
+        // Wait event
+        await defer.promise
 
         // Validate data exists and certified
         addrs = ab.get(peerId)
@@ -496,7 +506,8 @@ describe('addressBook', () => {
         })
       })
 
-      it('with previous partial data in AddressBook (not certified)', async () => {
+      it('emits change:multiaddrs event with previous partial data in AddressBook (not certified)', async () => {
+        const defer = pDefer()
         const multiaddrs = [addr1, addr2]
 
         // Set addressBook data
@@ -516,9 +527,18 @@ describe('addressBook', () => {
         })
         const envelope = await Envelope.seal(peerRecord, peerId)
 
+        peerStore.once('change:multiaddrs', ({ peerId, multiaddrs }) => {
+          expect(peerId).to.exist()
+          expect(multiaddrs).to.eql(multiaddrs)
+          defer.resolve()
+        })
+
         // consume peer record
         const consumed = ab.consumePeerRecord(envelope)
         expect(consumed).to.eql(true)
+
+        // Wait event
+        await defer.promise
 
         // Validate data exists and certified
         addrs = ab.get(peerId)
@@ -531,6 +551,7 @@ describe('addressBook', () => {
       })
 
       it('with previous different data in AddressBook (not certified)', async () => {
+        const defer = pDefer()
         const multiaddrsUncertified = [addr3]
         const multiaddrsCertified = [addr1, addr2]
 
@@ -553,9 +574,18 @@ describe('addressBook', () => {
         })
         const envelope = await Envelope.seal(peerRecord, peerId)
 
+        peerStore.once('change:multiaddrs', ({ peerId, multiaddrs }) => {
+          expect(peerId).to.exist()
+          expect(multiaddrs).to.eql(multiaddrs)
+          defer.resolve()
+        })
+
         // consume peer record
         const consumed = ab.consumePeerRecord(envelope)
         expect(consumed).to.eql(true)
+
+        // Wait event
+        await defer.promise
 
         // Validate data exists and certified
         addrs = ab.get(peerId)
@@ -565,7 +595,6 @@ describe('addressBook', () => {
           expect(addr.isCertified).to.eql(true)
           expect(multiaddrsCertified[index].equals(addr.multiaddr)).to.eql(true)
         })
-        // TODO: should it has the older one?
       })
     })
 
