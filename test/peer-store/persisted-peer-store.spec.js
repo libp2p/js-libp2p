@@ -5,7 +5,11 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 const sinon = require('sinon')
+
+const Envelope = require('../../src/record/envelope')
+const PeerRecord = require('../../src/record/peer-record')
 const PeerStore = require('../../src/peer-store/persistent')
+
 const multiaddr = require('multiaddr')
 const { MemoryDatastore } = require('interface-datastore')
 
@@ -99,6 +103,7 @@ describe('Persisted PeerStore', () => {
       expect(storedPeer.id.toB58String()).to.eql(peer.toB58String())
       expect(storedPeer.protocols).to.have.members(protocols)
       expect(storedPeer.addresses.map((a) => a.multiaddr.toString())).to.have.members([multiaddrs[0].toString()])
+      expect(storedPeer.addresses.map((a) => a.isCertified)).to.have.members([false])
     })
 
     it('should load content to the peerStore when restart but not put in datastore again', async () => {
@@ -211,7 +216,162 @@ describe('Persisted PeerStore', () => {
       }
     })
 
-    // TODO: certified?
+    it('should store certified peer records after peer marked as dirty (threshold 1)', async () => {
+      const [peerId] = await peerUtils.createPeerId()
+      const multiaddrs = [multiaddr('/ip4/156.10.1.22/tcp/1000')]
+      const spyDirty = sinon.spy(peerStore, '_addDirtyPeer')
+      const spyDs = sinon.spy(datastore, 'batch')
+      const commitSpy = sinon.spy(peerStore, '_commitData')
+
+      await peerStore.start()
+
+      const peerRecord = new PeerRecord({
+        peerId,
+        multiaddrs
+      })
+      const envelope = await Envelope.seal(peerRecord, peerId)
+
+      // consume peer record
+      const consumed = peerStore.addressBook.consumePeerRecord(envelope)
+      expect(consumed).to.eql(true)
+      expect(spyDirty).to.have.property('callCount', 1) // Address
+      expect(spyDs).to.have.property('callCount', 1)
+
+      // let batch commit complete
+      await Promise.all(commitSpy.returnValues)
+
+      // Should have three peer records stored in the datastore
+      const queryParams = {
+        prefix: '/peers/'
+      }
+
+      let count = 0
+      for await (const _ of datastore.query(queryParams)) { // eslint-disable-line
+        count++
+      }
+      expect(count).to.equal(1)
+
+      // Validate data
+      const storedPeer = peerStore.get(peerId)
+      expect(storedPeer.id.toB58String()).to.eql(peerId.toB58String())
+      expect(storedPeer.addresses.map((a) => a.multiaddr.toString())).to.have.members([multiaddrs[0].toString()])
+      expect(storedPeer.addresses.map((a) => a.isCertified)).to.have.members([true])
+    })
+
+    it('should load certified peer records to the peerStore when restart but not put in datastore again', async () => {
+      const spyDs = sinon.spy(datastore, 'batch')
+      const peers = await peerUtils.createPeerId({ number: 2 })
+      const commitSpy = sinon.spy(peerStore, '_commitData')
+      const multiaddrs = [
+        multiaddr('/ip4/156.10.1.22/tcp/1000'),
+        multiaddr('/ip4/156.10.1.23/tcp/1000')
+      ]
+      const peerRecord0 = new PeerRecord({
+        peerId: peers[0],
+        multiaddrs: [multiaddrs[0]]
+      })
+      const envelope0 = await Envelope.seal(peerRecord0, peers[0])
+      const peerRecord1 = new PeerRecord({
+        peerId: peers[1],
+        multiaddrs: [multiaddrs[1]]
+      })
+      const envelope1 = await Envelope.seal(peerRecord1, peers[1])
+
+      await peerStore.start()
+
+      // AddressBook
+      let consumed = peerStore.addressBook.consumePeerRecord(envelope0)
+      expect(consumed).to.eql(true)
+      consumed = peerStore.addressBook.consumePeerRecord(envelope1)
+      expect(consumed).to.eql(true)
+
+      // let batch commit complete
+      await Promise.all(commitSpy.returnValues)
+
+      expect(spyDs).to.have.property('callCount', 2) // 2 Address + 2 Key + 2 Proto + 1 Metadata
+      expect(peerStore.peers.size).to.equal(2)
+
+      await peerStore.stop()
+      peerStore.addressBook.data.clear()
+
+      // Load on restart
+      const spy = sinon.spy(peerStore, '_processDatastoreEntry')
+
+      await peerStore.start()
+
+      expect(spy).to.have.property('callCount', 2)
+      expect(spyDs).to.have.property('callCount', 2)
+
+      expect(peerStore.peers.size).to.equal(2)
+      expect(peerStore.addressBook.data.size).to.equal(2)
+
+      expect(peerStore.addressBook.getRawEnvelope(peers[0])).to.exist()
+      expect(peerStore.addressBook.getRawEnvelope(peers[1])).to.exist()
+
+      // Validate stored envelopes
+      const storedEnvelope0 = await peerStore.addressBook.getPeerRecord(peers[0])
+      expect(envelope0.isEqual(storedEnvelope0)).to.eql(true)
+
+      const storedEnvelope1 = await peerStore.addressBook.getPeerRecord(peers[1])
+      expect(envelope1.isEqual(storedEnvelope1)).to.eql(true)
+
+      // Validate multiaddrs
+      const storedPeer0 = peerStore.get(peers[0])
+      expect(storedPeer0.id.toB58String()).to.eql(peers[0].toB58String())
+      expect(storedPeer0.addresses.map((a) => a.multiaddr.toString())).to.have.members([multiaddrs[0].toString()])
+
+      const storedPeer1 = peerStore.get(peers[1])
+      expect(storedPeer1.id.toB58String()).to.eql(peers[1].toB58String())
+      expect(storedPeer1.addresses.map((a) => a.multiaddr.toString())).to.have.members([multiaddrs[1].toString()])
+    })
+
+    it('should delete certified peer records from the datastore on delete', async () => {
+      const [peer] = await peerUtils.createPeerId()
+      const multiaddrs = [multiaddr('/ip4/156.10.1.22/tcp/1000')]
+      const commitSpy = sinon.spy(peerStore, '_commitData')
+
+      await peerStore.start()
+
+      // AddressBook
+      const peerRecord = new PeerRecord({
+        peerId: peer,
+        multiaddrs
+      })
+      const envelope = await Envelope.seal(peerRecord, peer)
+
+      // consume peer record
+      const consumed = peerStore.addressBook.consumePeerRecord(envelope)
+      expect(consumed).to.eql(true)
+
+      // let batch commit complete
+      await Promise.all(commitSpy.returnValues)
+      expect(peerStore.addressBook.getRawEnvelope(peer)).to.exist()
+
+      const spyDs = sinon.spy(datastore, 'batch')
+      const spyAddressBook = sinon.spy(peerStore.addressBook, 'delete')
+
+      // Delete from PeerStore
+      peerStore.delete(peer)
+
+      // let batch commit complete
+      await Promise.all(commitSpy.returnValues)
+
+      await peerStore.stop()
+
+      expect(spyAddressBook).to.have.property('callCount', 1)
+      expect(spyDs).to.have.property('callCount', 1)
+
+      // Should have zero peer records stored in the datastore
+      const queryParams = {
+        prefix: '/peers/'
+      }
+
+      for await (const _ of datastore.query(queryParams)) { // eslint-disable-line
+        throw new Error('Datastore should be empty')
+      }
+
+      expect(peerStore.addressBook.getRawEnvelope(peer)).to.not.exist()
+    })
   })
 
   describe('setup with content not stored per change (threshold 2)', () => {

@@ -19,6 +19,7 @@ const { IdentifyService, multicodecs } = require('../../src/identify')
 const Peers = require('../fixtures/peers')
 const Libp2p = require('../../src')
 const Envelope = require('../../src/record/envelope')
+const PeerStore = require('../../src/peer-store')
 const baseOptions = require('../utils/base-options.browser')
 
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
@@ -49,14 +50,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        peerStore: {
-          addressBook: {
-            set: () => { }
-          },
-          protoBook: {
-            set: () => { }
-          }
-        },
+        peerStore: new PeerStore(),
         multiaddrs: listenMaddrs
       },
       protocols
@@ -66,6 +60,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
+        peerStore: new PeerStore(),
         multiaddrs: listenMaddrs
       },
       protocols
@@ -108,14 +103,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        peerStore: {
-          addressBook: {
-            set: () => {}
-          },
-          protoBook: {
-            set: () => {}
-          }
-        },
+        peerStore: new PeerStore(),
         multiaddrs: listenMaddrs
       },
       protocols
@@ -125,6 +113,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
+        peerStore: new PeerStore(),
         multiaddrs: listenMaddrs
       },
       protocols
@@ -138,7 +127,7 @@ describe('Identify', () => {
     sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY })
     sinon.stub(Envelope, 'openAndCertify').throws()
 
-    sinon.spy(localIdentify.peerStore.addressBook, 'set')
+    sinon.spy(localIdentify.peerStore.addressBook, 'consumePeerRecord')
     sinon.spy(localIdentify.peerStore.protoBook, 'set')
 
     // Run identify
@@ -151,15 +140,15 @@ describe('Identify', () => {
       })
     ])
 
-    expect(localIdentify.peerStore.addressBook.set.callCount).to.equal(1)
+    expect(localIdentify.peerStore.addressBook.consumePeerRecord.callCount).to.equal(1)
     expect(localIdentify.peerStore.protoBook.set.callCount).to.equal(1)
 
     // Validate the remote peer gets updated in the peer store
-    const call = localIdentify.peerStore.addressBook.set.firstCall
-    expect(call.args[0].id.bytes).to.equal(remotePeer.bytes)
-    expect(call.args[1]).to.exist()
-    expect(call.args[1]).have.lengthOf(listenMaddrs.length)
-    expect(call.args[1][0].equals(listenMaddrs[0]))
+    const addresses = localIdentify.peerStore.addressBook.get(remotePeer)
+    expect(addresses).to.exist()
+    expect(addresses).have.lengthOf(listenMaddrs.length)
+    expect(addresses.map((a) => a.multiaddr)[0].equals(listenMaddrs[0]))
+    expect(addresses.map((a) => a.isCertified)[0]).to.eql(true)
   })
 
   it('should throw if identified peer is the wrong peer', async () => {
@@ -167,14 +156,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        peerStore: {
-          addressBook: {
-            set: () => { }
-          },
-          protoBook: {
-            set: () => { }
-          }
-        },
+        peerStore: new PeerStore(),
         multiaddrs: []
       },
       protocols
@@ -183,6 +165,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
+        peerStore: new PeerStore(),
         multiaddrs: []
       },
       protocols
@@ -219,6 +202,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
+          peerStore: new PeerStore(),
           multiaddrs: listenMaddrs
         },
         protocols: new Map([
@@ -231,14 +215,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: remotePeer,
           connectionManager,
-          peerStore: {
-            addressBook: {
-              set: () => { }
-            },
-            protoBook: {
-              set: () => { }
-            }
-          },
+          peerStore: new PeerStore(),
           multiaddrs: []
         }
       })
@@ -251,7 +228,7 @@ describe('Identify', () => {
       const [local, remote] = duplexPair()
       sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY_PUSH })
 
-      sinon.spy(remoteIdentify.peerStore.addressBook, 'set')
+      sinon.spy(remoteIdentify.peerStore.addressBook, 'consumePeerRecord')
       sinon.spy(remoteIdentify.peerStore.protoBook, 'set')
 
       // Run identify
@@ -264,11 +241,14 @@ describe('Identify', () => {
         })
       ])
 
-      expect(remoteIdentify.peerStore.addressBook.set.callCount).to.equal(1)
+      expect(remoteIdentify.peerStore.addressBook.consumePeerRecord.callCount).to.equal(1)
       expect(remoteIdentify.peerStore.protoBook.set.callCount).to.equal(1)
-      const [peerId, multiaddrs] = remoteIdentify.peerStore.addressBook.set.firstCall.args
-      expect(peerId.bytes).to.eql(localPeer.bytes)
-      expect(multiaddrs).to.eql(listenMaddrs)
+
+      const addresses = localIdentify.peerStore.addressBook.get(localPeer)
+      expect(addresses).to.exist()
+      expect(addresses).have.lengthOf(listenMaddrs.length)
+      expect(addresses.map((a) => a.multiaddr)).to.eql(listenMaddrs)
+
       const [peerId2, protocols] = remoteIdentify.peerStore.protoBook.set.firstCall.args
       expect(peerId2.bytes).to.eql(localPeer.bytes)
       expect(protocols).to.eql(Array.from(localProtocols))
@@ -283,6 +263,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
+          peerStore: new PeerStore(),
           multiaddrs: listenMaddrs
         },
         protocols: new Map([
@@ -295,14 +276,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: remotePeer,
           connectionManager,
-          peerStore: {
-            addressBook: {
-              set: () => { }
-            },
-            protoBook: {
-              set: () => { }
-            }
-          },
+          peerStore: new PeerStore(),
           multiaddrs: []
         }
       })
@@ -316,7 +290,7 @@ describe('Identify', () => {
       sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY_PUSH })
       sinon.stub(Envelope, 'openAndCertify').throws()
 
-      sinon.spy(remoteIdentify.peerStore.addressBook, 'set')
+      sinon.spy(remoteIdentify.peerStore.addressBook, 'consumePeerRecord')
       sinon.spy(remoteIdentify.peerStore.protoBook, 'set')
 
       // Run identify
@@ -329,11 +303,14 @@ describe('Identify', () => {
         })
       ])
 
-      expect(remoteIdentify.peerStore.addressBook.set.callCount).to.equal(1)
+      expect(remoteIdentify.peerStore.addressBook.consumePeerRecord.callCount).to.equal(1)
       expect(remoteIdentify.peerStore.protoBook.set.callCount).to.equal(1)
-      const [peerId, multiaddrs] = remoteIdentify.peerStore.addressBook.set.firstCall.args
-      expect(peerId.bytes).to.eql(localPeer.bytes)
-      expect(multiaddrs).to.eql(listenMaddrs)
+
+      const addresses = localIdentify.peerStore.addressBook.get(localPeer)
+      expect(addresses).to.exist()
+      expect(addresses).have.lengthOf(listenMaddrs.length)
+      expect(addresses.map((a) => a.multiaddr)).to.eql(listenMaddrs)
+
       const [peerId2, protocols] = remoteIdentify.peerStore.protoBook.set.firstCall.args
       expect(peerId2.bytes).to.eql(localPeer.bytes)
       expect(protocols).to.eql(Array.from(localProtocols))
@@ -368,15 +345,15 @@ describe('Identify', () => {
       await libp2p.start()
 
       sinon.spy(libp2p.identifyService, 'identify')
-      const peerStoreSpySet = sinon.spy(libp2p.peerStore.addressBook, 'set')
+      const peerStoreSpyConsumeRecord = sinon.spy(libp2p.peerStore.addressBook, 'consumePeerRecord')
       const peerStoreSpyAdd = sinon.spy(libp2p.peerStore.addressBook, 'add')
 
       const connection = await libp2p.dialer.connectToPeer(remoteAddr)
       expect(connection).to.exist()
 
       // Wait for peer store to be updated
-      // Dialer._createDialTarget (add), Identify (replace)
-      await pWaitFor(() => peerStoreSpySet.callCount === 1 && peerStoreSpyAdd.callCount === 1)
+      // Dialer._createDialTarget (add), Identify (consume), Create self (consume)
+      await pWaitFor(() => peerStoreSpyConsumeRecord.callCount === 2 && peerStoreSpyAdd.callCount === 1)
       expect(libp2p.identifyService.identify.callCount).to.equal(1)
 
       // The connection should have no open streams
