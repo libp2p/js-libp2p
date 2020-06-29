@@ -13,7 +13,7 @@ npm install
 
 ## Running the examples
 
-You can run the Parcel server.
+Start by running the Parcel server:
 
 ```
 npm start
