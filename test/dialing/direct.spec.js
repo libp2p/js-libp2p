@@ -363,7 +363,7 @@ describe('Dialing (direct, WebSockets)', () => {
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
 
-      sinon.spy(libp2p.peerStore.addressBook, 'set')
+      sinon.spy(libp2p.peerStore.addressBook, 'consumePeerRecord')
       sinon.spy(libp2p.peerStore.protoBook, 'set')
 
       // Wait for onConnection to be called
@@ -372,7 +372,8 @@ describe('Dialing (direct, WebSockets)', () => {
       expect(libp2p.identifyService.identify.callCount).to.equal(1)
       await libp2p.identifyService.identify.firstCall.returnValue
 
-      expect(libp2p.peerStore.addressBook.set.callCount).to.equal(1)
+      // Self + New peer
+      expect(libp2p.peerStore.addressBook.consumePeerRecord.callCount).to.equal(2)
       expect(libp2p.peerStore.protoBook.set.callCount).to.equal(1)
     })
 

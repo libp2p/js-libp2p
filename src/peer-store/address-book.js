@@ -72,8 +72,8 @@ class AddressBook extends Book {
   }
 
   /**
-   * ConsumePeerRecord adds addresses from a signed peer.PeerRecord contained in a record envelope.
-   * This will return a boolean that indicates if the record was successfully processed and integrated
+   * ConsumePeerRecord adds addresses from a signed peer record contained in a record envelope.
+   * This will return a boolean that indicates if the record was successfully processed and added
    * into the AddressBook.
    * @param {Envelope} envelope
    * @return {boolean}
@@ -93,31 +93,25 @@ class AddressBook extends Book {
       return false
     }
 
+    // ensure the record has multiaddrs
+    if (!peerRecord.multiaddrs || !peerRecord.multiaddrs.length) {
+      return false
+    }
+
     const peerId = peerRecord.peerId
     const id = peerId.toB58String()
     const entry = this.data.get(id) || {}
     const storedRecord = entry.record
 
     // ensure seq is greater than, or equal to, the last received
-    if (storedRecord &&
-      storedRecord.seqNumber >= peerRecord.seqNumber) {
-      return false
-    }
-
-    // ensure the record has multiaddrs
-    if (!peerRecord.multiaddrs || !peerRecord.multiaddrs.length) {
+    if (storedRecord && storedRecord.seqNumber >= peerRecord.seqNumber) {
       return false
     }
 
     const addresses = this._toAddresses(peerRecord.multiaddrs, true)
 
-    // TODO: new record with different addresses from stored record
-    // - Remove the older ones?
-    // - Change to uncertified?
-
-    // TODO: events
-    // Should a multiaddr only modified to certified trigger an event?
-    // - Needed for persistent peer store
+    // Replace unsigned addresses by the new ones from the record
+    // TODO: Once we have ttls for the addresses, we should merge these in.
     this._setData(peerId, {
       addresses,
       record: {
@@ -131,18 +125,33 @@ class AddressBook extends Book {
   }
 
   /**
+   * Get a peer raw envelope.
+   * @param {PeerId} peerId
+   * @return {Buffer}
+   */
+  getRawEnvelope (peerId) {
+    const entry = this.data.get(peerId.toB58String())
+
+    if (!entry || !entry.record || !entry.record.raw) {
+      return undefined
+    }
+
+    return entry.record.raw
+  }
+
+  /**
    * Get an Envelope containing a PeerRecord for the given peer.
    * @param {PeerId} peerId
    * @return {Promise<Envelope>}
    */
   getPeerRecord (peerId) {
-    const entry = this.data.get(peerId.toB58String())
+    const raw = this.getRawEnvelope(peerId)
 
-    if (!entry || !entry.record || !entry.record.raw) {
-      return
+    if (!raw) {
+      return undefined
     }
 
-    return Envelope.createFromProtobuf(entry.record.raw)
+    return Envelope.createFromProtobuf(raw)
   }
 
   /**
@@ -170,7 +179,7 @@ class AddressBook extends Book {
 
     // Already knows the peer
     if (rec && rec.length === addresses.length) {
-      const intersection = rec.filter((mi) => addresses.some((newMi) => mi.multiaddr.equals(newMi.multiaddr)))
+      const intersection = rec.filter((addr) => addresses.some((newAddr) => addr.multiaddr.equals(newAddr.multiaddr)))
 
       // Are new addresses equal to the old ones?
       // If yes, no changes needed!
@@ -214,9 +223,9 @@ class AddressBook extends Book {
     const rec = entry.addresses
 
     // Add recorded uniquely to the new array (Union)
-    rec && rec.forEach((mi) => {
-      if (!addresses.find(r => r.multiaddr.equals(mi.multiaddr))) {
-        addresses.push(mi)
+    rec && rec.forEach((addr) => {
+      if (!addresses.find(r => r.multiaddr.equals(addr.multiaddr))) {
+        addresses.push(addr)
       }
     })
 
@@ -249,7 +258,6 @@ class AddressBook extends Book {
    * @returns {Array<data>}
    */
   get (peerId) {
-    // TODO: should we return Entry instead??
     if (!PeerId.isPeerId(peerId)) {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }

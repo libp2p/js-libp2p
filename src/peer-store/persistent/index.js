@@ -177,21 +177,24 @@ class PersistentPeerStore extends PeerStore {
     const b32key = peerId.toString()
     const key = new Key(`${NAMESPACE_ADDRESS}${b32key}`)
 
-    const addresses = this.addressBook.get(peerId)
+    const entry = this.addressBook.data.get(peerId.toB58String())
 
     try {
       // Deleted from the book
-      if (!addresses) {
+      if (!entry) {
         batch.delete(key)
         return
       }
 
       const encodedData = Addresses.encode({
-        addrs: addresses.map((address) => ({
+        addrs: entry.addresses.map((address) => ({
           multiaddr: address.multiaddr.buffer
-        }))
+        })),
+        certified_record: entry.record ? {
+          seq: entry.record.seqNumber,
+          raw: entry.record.raw
+        } : undefined
       })
-
       batch.put(key, encodedData)
     } catch (err) {
       log.error(err)
@@ -299,7 +302,11 @@ class PersistentPeerStore extends PeerStore {
             {
               addresses: decoded.addrs.map((address) => ({
                 multiaddr: multiaddr(address.multiaddr)
-              }))
+              })),
+              record: decoded.certified_record ? {
+                raw: decoded.certified_record.raw,
+                seqNumber: decoded.certified_record.seq
+              } : undefined
             },
             { emit: false })
           break
