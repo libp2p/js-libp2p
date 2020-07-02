@@ -28,17 +28,21 @@ describe('MulticastDNS', () => {
     ])
 
     aMultiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/20001')
+      multiaddr('/ip4/127.0.0.1/tcp/20001'),
+      multiaddr('/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star'),
+      multiaddr('/dns4/discovery.libp2p.io/tcp/8443')
     ]
 
     bMultiaddrs = [
       multiaddr('/ip4/127.0.0.1/tcp/20002'),
-      multiaddr('/ip6/::1/tcp/20002')
+      multiaddr('/ip6/::1/tcp/20002'),
+      multiaddr('/dnsaddr/discovery.libp2p.io')
     ]
 
     cMultiaddrs = [
       multiaddr('/ip4/127.0.0.1/tcp/20003'),
-      multiaddr('/ip4/127.0.0.1/tcp/30003/ws')
+      multiaddr('/ip4/127.0.0.1/tcp/30003/ws'),
+      multiaddr('/dns4/discovery.libp2p.io')
     ]
 
     dMultiaddrs = [

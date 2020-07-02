@@ -23,7 +23,13 @@ class Responder {
   }
 
   _onQuery (event, info) {
-    const addresses = this._multiaddrs.map(ma => ma.toOptions())
+    const addresses = this._multiaddrs.reduce((acc, addr) => {
+      if (addr.isThinWaistAddress()) {
+        acc.push(addr.toOptions())
+      }
+      return acc
+    }, [])
+
     // Only announce TCP for now
     if (!addresses.length) return
 

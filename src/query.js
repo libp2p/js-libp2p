@@ -86,7 +86,13 @@ module.exports = {
   gotQuery: function (qry, mdns, peerId, multiaddrs, serviceTag, broadcast) {
     if (!broadcast) { return }
 
-    const addresses = multiaddrs.map(ma => ma.toOptions())
+    const addresses = multiaddrs.reduce((acc, addr) => {
+      if (addr.isThinWaistAddress()) {
+        acc.push(addr.toOptions())
+      }
+      return acc
+    }, [])
+
     // Only announce TCP for now
     if (addresses.length === 0) { return }
 

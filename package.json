@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-mdns",
   "devDependencies": {
-    "aegir": "^21.0.2",
+    "aegir": "^25.0.0",
     "chai": "^4.2.0",
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
@@ -44,9 +44,9 @@
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "multiaddr": "^7.1.0",
+    "multiaddr": "^7.5.0",
     "multicast-dns": "^7.2.0",
-    "peer-id": "~0.13.3"
+    "peer-id": "^0.13.13"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
