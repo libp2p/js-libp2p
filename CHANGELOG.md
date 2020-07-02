@@ -1,3 +1,13 @@
+<a name="0.14.2"></a>
+## [0.14.2](https://github.com/libp2p/js-libp2p-mdns/compare/v0.14.1...v0.14.2) (2020-07-02)
+
+
+### Bug Fixes
+
+* actually check tcp multiaddrs ([#94](https://github.com/libp2p/js-libp2p-mdns/issues/94)) ([9f45f73](https://github.com/libp2p/js-libp2p-mdns/commit/9f45f73))
+
+
+
 <a name="0.14.1"></a>
 ## [0.14.1](https://github.com/libp2p/js-libp2p-mdns/compare/v0.14.0...v0.14.1) (2020-04-29)
 
