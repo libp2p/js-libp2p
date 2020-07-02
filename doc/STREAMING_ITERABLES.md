@@ -161,4 +161,4 @@ const duplex = {
 [it-pipe]: https://github.com/alanshaw/it-pipe
 [it-pushable]: https://github.com/alanshaw/it-pushable
 [it-reader]: https://github.com/alanshaw/it-reader
-[streaming-iterables]: https://github.com/bustle/streaming-iterables
+[streaming-iterables]: https://github.com/reconbot/streaming-iterables
