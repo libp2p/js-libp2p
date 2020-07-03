@@ -59,7 +59,7 @@
     "it-pipe": "^1.1.0",
     "it-protocol-buffers": "^0.2.0",
     "libp2p-crypto": "^0.17.6",
-    "libp2p-interfaces": "^0.3.0",
+    "libp2p-interfaces": "libp2p/js-libp2p-interfaces#fix/reconnect-should-trigger-topology-on-connect-if-protocol-stored",
     "libp2p-utils": "^0.1.2",
     "mafmt": "^7.0.0",
     "merge-options": "^2.0.0",
