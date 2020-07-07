@@ -5,7 +5,7 @@ import React from 'react'
 import Ipfs from 'ipfs'
 import libp2pConfig from './libp2p-configuration'
 
-const BootstrapNode = '/ip4/127.0.0.1/tcp/4004/ws/ipfs/QmPHafDaco9vynQ93MHv5cRSW6UCECycCGdTRafL8X5WEj'
+const BootstrapNode = '/ip4/127.0.0.1/tcp/4010/ws/p2p/QmZrsjJ7v9QoJNjDJmjsQ8947wiK3UnaPPLQvrTSRDAZ2d'
 
 class App extends React.Component {
   constructor (props) {
@@ -64,8 +64,8 @@ class App extends React.Component {
     })
   }
 
-  componentDidMount () {
-    window.ipfs = this.ipfs = new Ipfs({
+  async componentDidMount () {
+    window.ipfs = this.ipfs = await Ipfs.create({
       config: {
         Addresses: {
           Swarm: []
@@ -88,21 +88,14 @@ class App extends React.Component {
       libp2p: libp2pConfig
     })
 
-    this.ipfs.on('ready', async () => {
-      if (this.peerInterval) {
-        clearInterval(this.peerInterval)
-      }
+    await this.ipfs.swarm.connect(BootstrapNode)
+    console.log('Connected!')
 
+    this.peerInterval = setInterval(async () => {
+      const peers = await this.ipfs.swarm.peers()
 
-      await this.ipfs.swarm.connect(BootstrapNode)
-      console.log('Connected!')
-
-      this.peerInterval = setInterval(async () => {
-        const peers = await this.ipfs.swarm.peers()
-
-        if (peers) this.setState({peers: peers.length})
-      }, 2500)
-    })
+      if (peers) this.setState({ peers: peers.length })
+    }, 2500)
   }
 
   render () {

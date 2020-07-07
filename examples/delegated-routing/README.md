@@ -1,7 +1,3 @@
-❗❗Outdated: This example is still not refactored with the `0.27.*` release. 
-WIP on [libp2p/js-libp2p#507](https://github.com/libp2p/js-libp2p/pull/507)
-======
-
 # Delegated Routing with Libp2p and IPFS
 
 This example shows how to use delegated peer and content routing. The [Peer and Content Routing Example](../peer-and-content-routing) focuses
@@ -21,7 +17,7 @@ various Peer Discovery modules and see the impact it has on your Peer count.
 
 1. Install IPFS locally if you dont already have it. [Install Guide](https://docs.ipfs.io/introduction/install/)
 2. Run the IPFS daemon: `ipfs daemon`
-3. The daemon will output a line about its API address, like `API server listening on /ip4/127.0.0.1/tcp/8080`
+3. The daemon will output a line about its API address, like `API server listening on /ip4/127.0.0.1/tcp/5001`
 4. In another window output the addresses of the node: `ipfs id`. Make note of the websocket address, it will contain `/ws/` in the address.
   - If there is no websocket address, you will need to add it in the ipfs config file (`~/.ipfs/config`)
   - Add to Swarm Addresses something like: `"/ip4/127.0.0.1/tcp/4010/ws"`
