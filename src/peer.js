@@ -5,6 +5,10 @@ const EventEmitter = require('events')
 const lp = require('it-length-prefixed')
 const pushable = require('it-pushable')
 const pipe = require('it-pipe')
+const debug = require('debug')
+
+const log = debug('libp2p-pubsub:peer')
+log.error = debug('libp2p-pubsub:peer:error')
 
 const { RPC } = require('./message')
 
@@ -39,8 +43,6 @@ class Peer extends EventEmitter {
      * @type {Pushable}
      */
     this.stream = null
-
-    this._references = 0
   }
 
   /**
@@ -83,25 +85,38 @@ class Peer extends EventEmitter {
    * @param {Connection} conn
    * @returns {void}
    */
-  attachConnection (conn) {
-    this.conn = conn
+  async attachConnection (conn) {
+    const _prevStream = this.stream
+    if (_prevStream) {
+      // End the stream without emitting a close event
+      await _prevStream.end(false)
+    }
+
     this.stream = pushable({
-      onEnd: () => {
+      onEnd: (emit) => {
         // close readable side of the stream
         this.conn.reset && this.conn.reset()
         this.conn = null
         this.stream = null
-        this.emit('close')
+        if (emit !== false) {
+          this.emit('close')
+        }
       }
     })
+    this.conn = conn
 
     pipe(
       this.stream,
       lp.encode(),
       conn
-    )
+    ).catch(err => {
+      log.error(err)
+    })
 
-    this.emit('connection')
+    // Only emit if the connection is new
+    if (!_prevStream) {
+      this.emit('connection')
+    }
   }
 
   _sendRawSubscriptions (topics, subscribe) {
@@ -173,9 +188,6 @@ class Peer extends EventEmitter {
    * @returns {void}
    */
   close () {
-    // Force removal of peer
-    this._references = 1
-
     // End the pushable
     if (this.stream) {
       this.stream.end()

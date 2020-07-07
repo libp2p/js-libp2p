@@ -189,14 +189,15 @@ describe('pubsub base protocol', () => {
       expect(pubsubB.peers.size).to.be.eql(1)
     })
 
-    it('should not create a new stream if onConnect is called twice', async () => {
+    it('should use the latest connection if onConnect is called more than once', async () => {
       const onConnectA = registrarRecordA[protocol].onConnect
       const handlerB = registrarRecordB[protocol].handler
 
       // Notice peers of connection
       const [c0, c1] = ConnectionPair()
+      const [c2] = ConnectionPair()
 
-      const spyNewStream = sinon.spy(c0, 'newStream')
+      sinon.spy(c0, 'newStream')
 
       await onConnectA(peerIdB, c0)
       await handlerB({
@@ -206,10 +207,25 @@ describe('pubsub base protocol', () => {
           remotePeer: peerIdA
         }
       })
-      expect(spyNewStream).to.have.property('callCount', 1)
+      expect(c0.newStream).to.have.property('callCount', 1)
 
-      await onConnectA(peerIdB, c0)
-      expect(spyNewStream).to.have.property('callCount', 1)
+      sinon.spy(pubsubA, '_removePeer')
+
+      sinon.spy(c2, 'newStream')
+
+      await onConnectA(peerIdB, c2)
+      expect(c2.newStream).to.have.property('callCount', 1)
+      expect(pubsubA._removePeer).to.have.property('callCount', 0)
+
+      // Verify the first stream was closed
+      const { stream: firstStream } = await c0.newStream.returnValues[0]
+      try {
+        await firstStream.sink(['test'])
+      } catch (err) {
+        expect(err).to.exist()
+        return
+      }
+      expect.fail('original stream should have ended')
     })
 
     it('should handle newStream errors in onConnect', async () => {
