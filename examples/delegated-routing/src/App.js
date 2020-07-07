@@ -4,6 +4,7 @@
 import React from 'react'
 import Ipfs from 'ipfs'
 import libp2pConfig from './libp2p-configuration'
+import PeerId from 'peer-id'
 
 const BootstrapNode = '/ip4/127.0.0.1/tcp/4010/ws/p2p/QmZrsjJ7v9QoJNjDJmjsQ8947wiK3UnaPPLQvrTSRDAZ2d'
 
@@ -43,10 +44,13 @@ class App extends React.Component {
       isLoading: this.state.isLoading + 1
     })
 
-    const data = await this.ipfs.cat(this.state.hash)
+    const chunks = []
+    for await (const chunk of this.ipfs.cat(this.state.hash)) {
+      chunks.push(chunk)
+    }
 
     this.setState({
-      response: data.toString(),
+      response: Buffer.concat(chunks).toString(),
       isLoading: this.state.isLoading - 1
     })
   }
@@ -56,7 +60,8 @@ class App extends React.Component {
       isLoading: this.state.isLoading + 1
     })
 
-    const results = await this.ipfs.dht.findpeer(this.state.peer)
+    const peerId = PeerId.createFromB58String(this.state.peer)
+    const results = await this.ipfs.libp2p.peerRouting.findPeer(peerId)
 
     this.setState({
       response: JSON.stringify(results, null, 2),

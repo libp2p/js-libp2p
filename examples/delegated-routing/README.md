@@ -36,7 +36,7 @@ This should open your browser to http://localhost:3000. If it does not, go ahead
 
 ### Finding Content via the Delegate
 1. Add a file to your IPFS node. From this example root you can do `ipfs add ./README.md` to add the example readme.
-2. Copy the hash from line 5, it will look something like *Qmf33vz4HJFkqgH7XPP1uA6atYKTX1BWQEQthzpKcAdeyZ*.
+2. Copy the hash from line 5, it will look something like *QmV8QZ1m4fi57fbmaYDAkaTSTjHZVLUJmsqvaP6EcUyUNb*.
 3. In the browser, paste the hash into the *Hash* field and hit `Find`. The readme contents should display.
 
 This will do a few things:
