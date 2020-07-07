@@ -10,8 +10,7 @@ const KadDHT = require('libp2p-kad-dht')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 
-export default function Libp2pConfiguration ({peerInfo}) {
-  const wrtcstar = new WebRTCStar({id: peerInfo.id})
+export default function Libp2pConfiguration ({peerId}) {
   const delegatedApiOptions = {
     host: '127.0.0.1',
     protocol: 'http',
@@ -19,7 +18,7 @@ export default function Libp2pConfiguration ({peerInfo}) {
   }
 
   return new Libp2p({
-    peerInfo,
+    peerId,
     // Lets limit the connection managers peers and have it check peer health less frequently
     connectionManager: {
       maxPeers: 10,
@@ -27,16 +26,13 @@ export default function Libp2pConfiguration ({peerInfo}) {
     },
     modules: {
       contentRouting: [
-        new DelegatedContentRouter(peerInfo.id, delegatedApiOptions)
+        new DelegatedContentRouter(peerId, delegatedApiOptions)
       ],
       peerRouting: [
         new DelegatedPeerRouter(delegatedApiOptions)
       ],
-      peerDiscovery: [
-        wrtcstar.discovery
-      ],
       transport: [
-        wrtcstar,
+        WebRTCStar,
         Websockets
       ],
       streamMuxer: [

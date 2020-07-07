@@ -3,18 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "ipfs": "~0.40.0",
+    "ipfs": "~0.47.0",
     "libp2p": "../..",
-    "libp2p-delegated-content-routing": "~0.4.1",
-    "libp2p-delegated-peer-routing": "~0.4.0",
-    "libp2p-kad-dht": "~0.18.2",
-    "libp2p-mplex": "~0.9.3",
-    "libp2p-secio": "~0.12.1",
-    "libp2p-webrtc-star": "~0.17.0",
-    "libp2p-websockets": "~0.13.1",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
-    "react-scripts": "3.3.0"
+    "libp2p-delegated-content-routing": "~0.5.0",
+    "libp2p-delegated-peer-routing": "~0.5.0",
+    "libp2p-kad-dht": "~0.19.7",
+    "libp2p-mplex": "~0.9.5",
+    "libp2p-secio": "~0.12.5",
+    "libp2p-webrtc-star": "~0.18.6",
+    "libp2p-websockets": "~0.13.6",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "^3.2.0"
   },
   "scripts": {
     "start": "react-scripts start"
