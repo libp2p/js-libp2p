@@ -1,12 +1,20 @@
 # js-libp2p-circuit
 
-> Node.js implementation of the Circuit module that libp2p uses, which implements the [interface-connection](https://github.com/libp2p/js-interfaces/tree/master/src/connection) interface for dial/listen.
+> Node.js implementation of the Circuit module that libp2p uses, which implements the [interface-connection](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/connection) interface for dial/listen.
 
 **Note**: git history prior to merging into js-libp2p can be found in the original repository, https://github.com/libp2p/js-libp2p-circuit.
 
-`libp2p-circuit` implements the circuit-relay mechanism that allows nodes that don't speak the same protocol to communicate using a third _relay_ node.
+`libp2p-circuit` implements the circuit-relay mechanism that allows nodes that don't speak the same protocol to communicate using a third _relay_ node. You can read more about this in its [spec](https://github.com/libp2p/specs/tree/master/relay).
 
-This module uses [pull-streams](https://pull-stream.github.io) for all stream based interfaces.
+## Table of Contents
+
+- [js-libp2p-circuit](#js-libp2p-circuit)
+    - [Why?](#why)
+    - [libp2p-circuit and IPFS](#libp2p-circuit-and-ipfs)
+  - [Table of Contents](#table-of-contents)
+  - [Usage](#usage)
+  - [API](#api)
+    - [Implementation rational](#implementation-rational)
 
 ### Why?
 
@@ -16,77 +24,42 @@ The use of circuit-relaying is not limited to routing traffic between browser no
  - routing traffic between private nets and circumventing NAT layers
  - route mangling for better privacy (matreshka/shallot dialing).
 
- It's also possible to use it for clients that implement exotic transports such as  devices that only have bluetooth radios to be reachable over bluetooth enabled relays and become full p2p nodes.
+It's also possible to use it for clients that implement exotic transports such as  devices that only have bluetooth radios to be reachable over bluetooth enabled relays and become full p2p nodes.
 
 ### libp2p-circuit and IPFS
 
 Prior to `libp2p-circuit` there was a rift in the IPFS network, were IPFS nodes could only access content from nodes that speak the same protocol, for example TCP only nodes could only dial to other TCP only nodes, same for any other protocol combination. In practice, this limitation was most visible in JS-IPFS browser nodes, since they can only dial out but not be dialed in over WebRTC or WebSockets, hence any content that the browser node held was not reachable by the rest of the network even through it was announced on the DHT. Non browser IPFS nodes would usually speak more than one protocol such as TCP, WebSockets and/or WebRTC, this made the problem less severe outside of the browser. `libp2p-circuit` solves this problem completely, as long as there are `relay nodes` capable of routing traffic between those nodes their content should be available to the rest of the IPFS network.
 
-## Table of Contents
-
-- [js-libp2p-circuit](#js-libp2p-circuit)
-    - [Why?](#why)
-    - [libp2p-circuit and IPFS](#libp2p-circuit-and-ipfs)
-  - [Table of Contents](#table-of-contents)
-  - [Usage](#usage)
-    - [Example](#example)
-      - [Create dialer/listener](#create-dialerlistener)
-      - [Create `relay`](#create-relay)
-  - [API](#api)
-    - [Implementation rational](#implementation-rational)
-
 ## Usage
 
-### Example
+Libp2p circuit configuration can be seen at [Setup with Relay](../../doc/CONFIGURATION.md#setup-with-relay).
 
-#### Create dialer/listener
+Once you have a circuit relay node running, you can configure other nodes to use it as a relay as follows:
 
 ```js
-const Circuit = require('libp2p-circuit')
 const multiaddr = require('multiaddr')
-const pull = require('pull-stream')
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
 
-const mh1 = multiaddr('/p2p-circuit/p2p/QmHash') // dial /p2p/QmHash over any circuit
+const relayAddr = ...
 
-const circuit = new Circuit(swarmInstance, options) // pass swarm instance and options
-
-const listener = circuit.createListener(mh1, (connection) => {
-  console.log('new connection opened')
-  pull(
-    pull.values(['hello']),
-    socket
-  )
+const node = await Libp2p.create({
+  addresses: {
+    listen: [multiaddr(`${relayAddr}/p2p-circuit`)]
+  },
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO]
+  },
+  config: {
+    relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
+      enabled: true           // Allows you to dial and accept relayed connections. Does not make you a relay.
+    }
+  }
 })
-
-listener.listen(() => {
-  console.log('listening')
-
-  pull(
-    circuit.dial(mh1),
-    pull.log,
-    pull.onEnd(() => {
-      circuit.close()
-    })
-  )
-})
-```
-
-Outputs:
-
-```sh
-listening
-new connection opened
-hello
-```
-
-#### Create `relay`
-
-```js
-const Relay = require('libp2p-circuit').Relay
-
-const relay = new Relay(options)
-
-relay.mount(swarmInstance) // start relaying traffic
 ```
 
 ## API
@@ -101,7 +74,7 @@ Both for dialing and listening.
 
 ### Implementation rational
 
-This module is not a transport, however it implements `interface-transport` interface in order to allow circuit to be plugged with `libp2p-swarm`. The rational behind it is that, `libp2p-circuit` has a dial and listen flow, which fits nicely with other transports, moreover, it requires the _raw_ connection to be encrypted and muxed just as a regular transport's connection does. All in all, `interface-transport` ended up being the correct level of abstraction for circuit, as well as allowed us to reuse existing integration points in `libp2p-swarm` and `libp2p` without adding any ad-hoc logic. All parts of `interface-transport` are used, including `.getAddr` which returns a list of `/p2p-circuit` addresses that circuit is currently listening.
+This module is not a transport, however it implements `interface-transport` interface in order to allow circuit to be plugged with `libp2p`. The rational behind it is that, `libp2p-circuit` has a dial and listen flow, which fits nicely with other transports, moreover, it requires the _raw_ connection to be encrypted and muxed just as a regular transport's connection does. All in all, `interface-transport` ended up being the correct level of abstraction for circuit, as well as allowed us to reuse existing integration points in `libp2p` and `libp2p` without adding any ad-hoc logic. All parts of `interface-transport` are used, including `.getAddr` which returns a list of `/p2p-circuit` addresses that circuit is currently listening.
 
 ```
 libp2p                                                                                  libp2p-circuit (transport)
@@ -109,13 +82,13 @@ libp2p                                                                          
 |        +---------------------------------+      |                                     |                          |
 |        |                                 |      |                                     |   +------------------+   |
 |        |                                 |      |  circuit-relay listens for the HOP  |   |                  |   |
-|        |           libp2p-swarm          <------------------------------------------------|  circuit-relay   |   |
+|        |              libp2p             <------------------------------------------------|  circuit-relay   |   |
 |        |                                 |      |  message to handle incomming relay  |   |                  |   |
 |        |                                 |      |  requests from other nodes          |   +------------------+   |
 |        +---------------------------------+      |                                     |                          |
 |         ^     ^   ^  ^   ^           ^          |                                     |   +------------------+   |
 |         |     |   |  |   |           |          |                                     |   | +-------------+  |   |
-|         |     |   |  |   |           |          |  dialer uses libp2p-swarm to dial   |   | |             |  |   |
+|         |     |   |  |   |           |          |      dialer uses libp2p to dial     |   | |             |  |   |
 |         |     |   |  +---------------------------------------------------------------------->   dialer    |  |   |
 |         |     | transports           |          |  to a circuit-relay node using the  |   | |             |  |   |
 |         |     |   |      |           |          |  HOP message                        |   | +-------------+  |   |
