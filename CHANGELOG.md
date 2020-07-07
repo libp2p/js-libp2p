@@ -1,3 +1,13 @@
+<a name="0.5.4"></a>
+## [0.5.4](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.5.3...v0.5.4) (2020-07-07)
+
+
+### Bug Fixes
+
+* quick reconnects ([#57](https://github.com/libp2p/js-libp2p-pubsub/issues/57)) ([f86dfbc](https://github.com/libp2p/js-libp2p-pubsub/commit/f86dfbc))
+
+
+
 <a name="0.5.3"></a>
 ## [0.5.3](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.5.2...v0.5.3) (2020-06-15)
 
