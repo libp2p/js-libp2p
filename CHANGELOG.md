@@ -1,3 +1,13 @@
+<a name="0.19.8"></a>
+## [0.19.8](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.7...v0.19.8) (2020-07-08)
+
+
+### Bug Fixes
+
+* check for an existing connection before using the dialer ([#199](https://github.com/libp2p/js-libp2p-kad-dht/issues/199)) ([578c5d0](https://github.com/libp2p/js-libp2p-kad-dht/commit/578c5d0))
+
+
+
 <a name="0.19.7"></a>
 ## [0.19.7](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.6...v0.19.7) (2020-06-23)
 
