@@ -12,9 +12,9 @@ const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 
 export default function Libp2pConfiguration ({peerId}) {
   const delegatedApiOptions = {
-    host: '127.0.0.1',
-    protocol: 'http',
-    port: '5001'
+    protocol: 'https',
+    port: 443,
+    host: 'node0.delegate.ipfs.io'
   }
 
   return new Libp2p({
