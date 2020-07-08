@@ -5,30 +5,36 @@ const pRetry = require('p-retry')
 const pTimeout = require('p-timeout')
 const duplexPair = require('it-pair/duplex')
 
-const createMockRegistrar = (registrarRecord) => ({
-  handle: (multicodec, handler) => {
-    const rec = registrarRecord[multicodec] || {}
+const createMockRegistrar = (registrarRecord) => {
+  const mockRegistrar = {
+    handle: (multicodec, handler) => {
+      const rec = registrarRecord[multicodec] || {}
 
-    registrarRecord[multicodec] = {
-      ...rec,
-      handler
+      registrarRecord[multicodec] = {
+        ...rec,
+        handler
+      }
+    },
+    register: ({ multicodecs, _onConnect, _onDisconnect }) => {
+      const rec = registrarRecord[multicodecs[0]] || {}
+
+      registrarRecord[multicodecs[0]] = {
+        ...rec,
+        onConnect: _onConnect,
+        onDisconnect: _onDisconnect
+      }
+
+      return multicodecs[0]
+    },
+    unregister: (id) => {
+      delete registrarRecord[id]
     }
-  },
-  register: ({ multicodecs, _onConnect, _onDisconnect }) => {
-    const rec = registrarRecord[multicodecs[0]] || {}
-
-    registrarRecord[multicodecs[0]] = {
-      ...rec,
-      onConnect: _onConnect,
-      onDisconnect: _onDisconnect
-    }
-
-    return multicodecs[0]
-  },
-  unregister: (id) => {
-    delete registrarRecord[id]
   }
-})
+  mockRegistrar.connectionManager = {
+    get: () => {}
+  }
+  return mockRegistrar
+}
 
 exports.createMockRegistrar = createMockRegistrar
 

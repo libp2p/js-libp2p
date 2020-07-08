@@ -120,7 +120,11 @@ class Network {
     const id = to.toB58String()
     this._log('sending to: %s', id)
 
-    const conn = await this.dht.dialer.connectToPeer(to)
+    let conn = this.dht.registrar.connectionManager.get(to)
+    if (!conn) {
+      conn = await this.dht.dialer.connectToPeer(to)
+    }
+
     const { stream } = await conn.newStream(c.PROTOCOL_DHT)
 
     return this._writeReadMessage(stream, msg.serialize())
@@ -141,7 +145,10 @@ class Network {
     const id = to.toB58String()
     this._log('sending to: %s', id)
 
-    const conn = await this.dht.dialer.connectToPeer(to)
+    let conn = this.dht.registrar.connectionManager.get(to)
+    if (!conn) {
+      conn = await this.dht.dialer.connectToPeer(to)
+    }
     const { stream } = await conn.newStream(c.PROTOCOL_DHT)
 
     return this._writeMessage(stream, msg.serialize())
