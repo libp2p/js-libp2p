@@ -16,7 +16,7 @@ class App extends React.Component {
       // This hash is the IPFS readme
       hash: 'QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB',
       // This peer is one of the Bootstrap nodes for IPFS
-      peer: 'QmV6kA2fB8kTr6jc3pL5zbNsjKbmPUHAPKKHRBYe1kDEyc',
+      peer: 'QmSoLnSGccFuZQJzRadHn95W2CrSFmZuTdDWP8HXaHca9z',
       isLoading: 0
     }
     this.peerInterval = null
