@@ -170,5 +170,5 @@ Discovered: QmRcXXhtG8vTqwVBRonKWtV4ovDoC1Fe56WYtcrw694eiJ
 There are plenty more Peer Discovery Mechanisms out there, you can:
 
 - Find one in [libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star). Yes, a transport with discovery capabilities! This happens because WebRTC requires a rendezvous point for peers to exchange [SDP](https://tools.ietf.org/html/rfc4317) offer, which means we have one or more points that can introduce peers to each other. Think of it as MulticastDNS for the Web, as in MulticastDNS only works in LAN.
-- Any DHT will offer you a discovery capability. You can simple _random-walk_ the routing tables to find other peers to connect to.
+- Any DHT will offer you a discovery capability. You can simple _random-walk_ the routing tables to find other peers to connect to. For example [libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht) can be used for peer discovery. An example how to configure it to enable random walks can be found [here](https://github.com/libp2p/js-libp2p/blob/v0.28.4/doc/CONFIGURATION.md#customizing-dht).
 - You can create your own Discovery service, a registry, a list, a radio beacon, you name it!
