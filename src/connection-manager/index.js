@@ -1,9 +1,12 @@
 'use strict'
 
+const debug = require('debug')
+const log = debug('libp2p:connection-manager')
+log.error = debug('libp2p:connection-manager:error')
+
 const errcode = require('err-code')
 const mergeOptions = require('merge-options')
 const LatencyMonitor = require('./latency-monitor')
-const debug = require('debug')('libp2p:connection-manager')
 const retimer = require('retimer')
 
 const { EventEmitter } = require('events')
@@ -57,7 +60,7 @@ class ConnectionManager extends EventEmitter {
       throw errcode(new Error('Connection Manager maxConnections must be greater than minConnections'), ERR_INVALID_PARAMETERS)
     }
 
-    debug('options: %j', this._options)
+    log('options: %j', this._options)
 
     this._libp2p = libp2p
 
@@ -101,7 +104,8 @@ class ConnectionManager extends EventEmitter {
     })
     this._onLatencyMeasure = this._onLatencyMeasure.bind(this)
     this._latencyMonitor.on('data', this._onLatencyMeasure)
-    debug('started')
+    this._maybeConnectN()
+    log('started')
   }
 
   /**
@@ -113,7 +117,7 @@ class ConnectionManager extends EventEmitter {
     this._latencyMonitor && this._latencyMonitor.removeListener('data', this._onLatencyMeasure)
 
     await this._close()
-    debug('stopped')
+    log('stopped')
   }
 
   /**
@@ -157,12 +161,12 @@ class ConnectionManager extends EventEmitter {
   _checkMetrics () {
     const movingAverages = this._libp2p.metrics.global.movingAverages
     const received = movingAverages.dataReceived[this._options.movingAverageInterval].movingAverage()
-    this._checkLimit('maxReceivedData', received)
+    this._checkMaxLimit('maxReceivedData', received)
     const sent = movingAverages.dataSent[this._options.movingAverageInterval].movingAverage()
-    this._checkLimit('maxSentData', sent)
+    this._checkMaxLimit('maxSentData', sent)
     const total = received + sent
-    this._checkLimit('maxData', total)
-    debug('metrics update', total)
+    this._checkMaxLimit('maxData', total)
+    log('metrics update', total)
     this._timer.reschedule(this._options.pollInterval)
   }
 
@@ -188,7 +192,7 @@ class ConnectionManager extends EventEmitter {
       this._peerValues.set(peerIdStr, this._options.defaultPeerValue)
     }
 
-    this._checkLimit('maxConnections', this.size)
+    this._checkMaxLimit('maxConnections', this.size)
   }
 
   /**
@@ -206,6 +210,7 @@ class ConnectionManager extends EventEmitter {
       this.connections.delete(peerId)
       this._peerValues.delete(connection.remotePeer.toB58String())
       this.emit('peer:disconnect', connection)
+      this._maybeConnectN()
     }
   }
 
@@ -248,7 +253,7 @@ class ConnectionManager extends EventEmitter {
    * @param {*} summary The LatencyMonitor summary
    */
   _onLatencyMeasure (summary) {
-    this._checkLimit('maxEventLoopDelay', summary.avgMs)
+    this._checkMaxLimit('maxEventLoopDelay', summary.avgMs)
   }
 
   /**
@@ -257,12 +262,50 @@ class ConnectionManager extends EventEmitter {
    * @param {string} name The name of the field to check limits for
    * @param {number} value The current value of the field
    */
-  _checkLimit (name, value) {
+  _checkMaxLimit (name, value) {
     const limit = this._options[name]
-    debug('checking limit of %s. current value: %d of %d', name, value, limit)
+    log('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
-      debug('%s: limit exceeded: %s, %d', this._peerId, name, value)
+      log('%s: limit exceeded: %s, %d', this._peerId, name, value)
       this._maybeDisconnectOne()
+    }
+  }
+
+  /**
+   * Proactively tries to connect to known peers stored in the PeerStore.
+   * It will keep the number of connections below the upper limit and sort
+   * the peers to connect based on wether we know their keys and protocols.
+   * @async
+   * @private
+   */
+  async _maybeConnectN () {
+    const minConnections = this._options.minConnections
+
+    // Already has enough connections
+    if (this.size >= minConnections) {
+      return
+    }
+
+    // Sort peers on wether we know protocols of public keys for them
+    const peers = Array.from(this._libp2p.peerStore.peers.values())
+      .sort((a, b) => {
+        if (b.protocols && b.protocols.length && (!a.protocols || !a.protocols.length)) {
+          return 1
+        } else if (b.id.pubKey && !a.id.pubKey) {
+          return 1
+        }
+        return -1
+      })
+
+    for (let i = 0; i < peers.length && this.size < minConnections; i++) {
+      if (!this.get(peers[i].id)) {
+        log('connecting to a peerStore stored peer %s', peers[i].id.toB58String())
+        try {
+          await this._libp2p.dialer.connectToPeer(peers[i].id)
+        } catch (err) {
+          log.error('could not connect to peerStore stored peer', err)
+        }
+      }
     }
   }
 
@@ -274,12 +317,12 @@ class ConnectionManager extends EventEmitter {
   _maybeDisconnectOne () {
     if (this._options.minConnections < this.connections.size) {
       const peerValues = Array.from(this._peerValues).sort(byPeerValue)
-      debug('%s: sorted peer values: %j', this._peerId, peerValues)
+      log('%s: sorted peer values: %j', this._peerId, peerValues)
       const disconnectPeer = peerValues[0]
       if (disconnectPeer) {
         const peerId = disconnectPeer[0]
-        debug('%s: lowest value peer is %s', this._peerId, peerId)
-        debug('%s: closing a connection to %j', this._peerId, peerId)
+        log('%s: lowest value peer is %s', this._peerId, peerId)
+        log('%s: closing a connection to %j', this._peerId, peerId)
         for (const connections of this.connections.values()) {
           if (connections[0].remotePeer.toB58String() === peerId) {
             connections[0].close()

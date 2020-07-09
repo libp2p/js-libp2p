@@ -31,10 +31,13 @@ describe('peer discovery', () => {
       sinon.reset()
     })
 
-    it('should dial know peers on startup', async () => {
+    it('should dial know peers on startup below the minConnections watermark', async () => {
       libp2p = new Libp2p({
         ...baseOptions,
-        peerId
+        peerId,
+        connectionManager: {
+          minConnections: 2
+        }
       })
 
       libp2p.peerStore.addressBook.set(remotePeerId, [multiaddr('/ip4/165.1.1.1/tcp/80')])

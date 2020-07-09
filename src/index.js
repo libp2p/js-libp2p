@@ -459,15 +459,18 @@ class Libp2p extends EventEmitter {
   async _onDidStart () {
     this._isStarted = true
 
-    this.connectionManager.start()
-
     this.peerStore.on('peer', peerId => {
       this.emit('peer:discovery', peerId)
       this._maybeConnect(peerId)
     })
 
-    // Once we start, emit and dial any peers we may have already discovered
-    this._maybeConnectPeerStorePeers()
+    // Once we start, emit any peers we may have already discovered
+    // TODO: this should be removed, as we already discovered these peers in the past
+    for (const peer of this.peerStore.peers.values()) {
+      this.emit('peer:discovery', peer.id)
+    }
+
+    this.connectionManager.start()
 
     // Peer discovery
     await this._setupPeerDiscovery()
@@ -487,33 +490,6 @@ class Libp2p extends EventEmitter {
 
     peer.multiaddrs && this.peerStore.addressBook.add(peer.id, peer.multiaddrs)
     peer.protocols && this.peerStore.protoBook.set(peer.id, peer.protocols)
-  }
-
-  /**
-   * Will dial a substet of the peers already known
-   * @private
-   * @returns {void}
-   */
-  _maybeConnectPeerStorePeers () {
-    if (!this._config.peerDiscovery.autoDial) {
-      return
-    }
-
-    const minPeers = this._options.connectionManager.minPeers || 0
-
-    // TODO: this should be ordered by score on PeerStoreV2
-    this.peerStore.peers.forEach(async (peer) => {
-      this.emit('peer:discovery', peer.id)
-
-      if (minPeers > this.connectionManager.size && !this.connectionManager.get(peer.id)) {
-        log('connecting to previously discovered peer %s', peer.id.toB58String())
-        try {
-          await this.dialer.connectToPeer(peer.id)
-        } catch (err) {
-          log.error('could not connect to previously discovered peer', err)
-        }
-      }
-    })
   }
 
   /**
