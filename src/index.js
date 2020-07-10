@@ -166,6 +166,7 @@ class Libp2p extends EventEmitter {
     if (this._modules.dht) {
       const DHT = this._modules.dht
       this._dht = new DHT({
+        libp2p: this,
         dialer: this.dialer,
         peerId: this.peerId,
         peerStore: this.peerStore,
