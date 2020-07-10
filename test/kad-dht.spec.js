@@ -41,6 +41,10 @@ describe('KadDHT', () => {
     values = res[1]
   })
 
+  afterEach(() => {
+    sinon.restore()
+  })
+
   describe('create', () => {
     let tdht
 
@@ -106,6 +110,25 @@ describe('KadDHT', () => {
       await dht.stop()
       expect(dht.network.stop.calledOnce).to.equal(true)
       expect(dht.randomWalk.stop.calledOnce).to.equal(true)
+    })
+
+    it('server mode', async () => {
+      // Currently on by default
+      const [dht] = await tdht.spawn(1, null, false)
+      sinon.spy(dht.registrar, 'handle')
+
+      await dht.start()
+      expect(dht.registrar.handle.callCount).to.equal(1)
+      await dht.stop()
+    })
+
+    it('client mode', async () => {
+      const [dht] = await tdht.spawn(1, { clientMode: true })
+      sinon.spy(dht.registrar, 'handle')
+
+      await dht.start()
+      expect(dht.registrar.handle.callCount).to.equal(0)
+      await dht.stop()
     })
 
     it('random-walk disabled', async () => {

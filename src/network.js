@@ -46,8 +46,11 @@ class Network {
 
     this._running = true
 
-    // Incoming streams
-    this.dht.registrar.handle(c.PROTOCOL_DHT, this._rpc)
+    // Only respond to queries when not in client mode
+    if (this.dht._clientMode === false) {
+      // Incoming streams
+      this.dht.registrar.handle(c.PROTOCOL_DHT, this._rpc)
+    }
 
     // register protocol with topology
     const topology = new MulticodecTopology({

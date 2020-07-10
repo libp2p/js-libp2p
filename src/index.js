@@ -46,6 +46,7 @@ class KadDHT extends EventEmitter {
    * @param {function} props.registrar.register
    * @param {function} props.registrar.unregister
    * @param {number} props.kBucketSize k-bucket size (default 20)
+   * @param {boolean} props.clientMode If true, the DHT will not respond to queries. This should be true if your node will not be dialable. (default: false)
    * @param {number} props.concurrency alpha concurrency of queries (default 3)
    * @param {Datastore} props.datastore datastore (default MemoryDatastore)
    * @param {object} props.validators validators object with namespace as keys and function(key, record, callback)
@@ -59,6 +60,7 @@ class KadDHT extends EventEmitter {
     registrar,
     datastore = new MemoryDatastore(),
     kBucketSize = c.K,
+    clientMode = false,
     concurrency = c.ALPHA,
     validators = {},
     selectors = {},
@@ -100,6 +102,8 @@ class KadDHT extends EventEmitter {
      * @type {number}
      */
     this.kBucketSize = kBucketSize
+
+    this._clientMode = clientMode
 
     /**
      * ALPHA concurrency at which each query path with run, defaults to 3

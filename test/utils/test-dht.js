@@ -18,14 +18,14 @@ class TestDHT {
     this.nodes = []
   }
 
-  spawn (length, options = {}) {
+  spawn (length, options = {}, autoStart = true) {
     return Promise.all(
       Array.from({ length })
-        .map((_, index) => this._spawnOne(index, options))
+        .map((_, index) => this._spawnOne(index, options, autoStart))
     )
   }
 
-  async _spawnOne (index, options = {}) {
+  async _spawnOne (index, options = {}, autoStart = true) {
     const regRecord = {}
     const peerStore = new PeerStore()
 
@@ -97,7 +97,9 @@ class TestDHT {
       ...options
     })
 
-    await dht.start()
+    if (autoStart) {
+      await dht.start()
+    }
 
     dht.regRecord = regRecord
     this.nodes.push(dht)
