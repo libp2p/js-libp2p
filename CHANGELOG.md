@@ -1,3 +1,18 @@
+<a name="0.19.9"></a>
+## [0.19.9](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.8...v0.19.9) (2020-07-10)
+
+
+### Bug Fixes
+
+* actually send the add provider rpc with addresses ([#201](https://github.com/libp2p/js-libp2p-kad-dht/issues/201)) ([f3188be](https://github.com/libp2p/js-libp2p-kad-dht/commit/f3188be))
+
+
+### Features
+
+* add support for client mode ([#200](https://github.com/libp2p/js-libp2p-kad-dht/issues/200)) ([91f6e4f](https://github.com/libp2p/js-libp2p-kad-dht/commit/91f6e4f))
+
+
+
 <a name="0.19.8"></a>
 ## [0.19.8](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.7...v0.19.8) (2020-07-08)
 
