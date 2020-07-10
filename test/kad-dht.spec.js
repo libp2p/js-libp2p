@@ -528,6 +528,63 @@ describe('KadDHT', () => {
       return tdht.teardown()
     })
 
+    it('find providers from client', async function () {
+      this.timeout(20 * 1000)
+
+      const val = values[0]
+      const tdht = new TestDHT()
+      const dhts = await tdht.spawn(2)
+      const [clientDHT] = await tdht.spawn(1, { clientMode: true })
+
+      // Connect
+      await Promise.all([
+        tdht.connect(clientDHT, dhts[0]),
+        tdht.connect(dhts[0], dhts[1])
+      ])
+
+      await Promise.all(dhts.map((dht) => dht.provide(val.cid)))
+
+      const res0 = await all(clientDHT.findProviders(val.cid))
+      const res1 = await all(clientDHT.findProviders(val.cid, { maxNumProviders: 1 }))
+
+      // find providers find all the 2 providers
+      expect(res0).to.exist()
+      expect(res0).to.have.length(2)
+
+      // find providers limited to a maxium of 1 providers
+      expect(res1).to.exist()
+      expect(res1).to.have.length(1)
+
+      return tdht.teardown()
+    })
+
+    it('find client provider', async function () {
+      this.timeout(20 * 1000)
+
+      const val = values[0]
+      const tdht = new TestDHT()
+      const dhts = await tdht.spawn(2)
+      const [clientDHT] = await tdht.spawn(1, { clientMode: true })
+
+      // Connect
+      await Promise.all([
+        tdht.connect(clientDHT, dhts[0]),
+        tdht.connect(dhts[0], dhts[1])
+      ])
+
+      await clientDHT.provide(val.cid)
+
+      await delay(1e3)
+
+      const res = await all(dhts[1].findProviders(val.cid))
+
+      // find providers find the client provider
+      expect(res).to.exist()
+      expect(res).to.have.length(1)
+
+      return tdht.teardown()
+    })
+
     it('find one provider locally', async function () {
       this.timeout(20 * 1000)
       const val = values[0]

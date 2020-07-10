@@ -38,9 +38,11 @@ module.exports = (dht) => {
       // Add peer as provider
       await dht.providers.addProvider(key, dht.peerId)
 
+      const multiaddrs = dht.libp2p ? dht.libp2p.multiaddrs : []
       const msg = new Message(Message.TYPES.ADD_PROVIDER, key.buffer, 0)
       msg.providerPeers = [{
-        id: dht.peerId
+        id: dht.peerId,
+        multiaddrs
       }]
 
       // Notify closest peers

@@ -3,6 +3,7 @@
 const PeerStore = require('libp2p/src/peer-store')
 const pRetry = require('p-retry')
 const delay = require('delay')
+const multiaddr = require('multiaddr')
 
 const KadDHT = require('../../src')
 const { PROTOCOL_DHT } = require('../../src/constants')
@@ -39,7 +40,7 @@ class TestDHT {
 
     const [peerId] = await createPeerId(1)
 
-    const connectToPeer = async (peer) => {
+    const connectToPeer = (localDHT, peer) => {
       const remotePeerB58 = peer.toB58String()
       const remoteDht = this.nodes.find(
         (node) => node.peerId.toB58String() === remotePeerB58
@@ -52,27 +53,35 @@ class TestDHT {
 
       // Notice peers of connection
       const [c0, c1] = ConnectionPair()
-      await localOnConnect(remoteDht.peerId, c1)
-      await remoteOnConnect(peerId, c0)
-
-      await remoteHandler({
-        protocol: PROTOCOL_DHT,
-        stream: c0.stream,
-        connection: {
-          remotePeer: peerId
-        }
-      })
 
       return {
-        newStream: () => {
+        newStream: async () => {
+          if (remoteDht._clientMode) {
+            throw new Error('unsupported protocol')
+          }
+
+          // Trigger on connect for servers connecting
+          if (!remoteDht._clientMode) await localOnConnect(remoteDht.peerId, c1)
+          if (!localDHT._clientMode) await remoteOnConnect(peerId, c0)
+
+          await remoteHandler({
+            protocol: PROTOCOL_DHT,
+            stream: c0.stream,
+            connection: {
+              remotePeer: peerId
+            }
+          })
           return { stream: c1.stream }
         }
       }
     }
 
     const dht = new KadDHT({
+      libp2p: {
+        multiaddrs: [multiaddr('/ip4/0.0.0.0/tcp/4002')]
+      },
       dialer: {
-        connectToPeer
+        connectToPeer: (peer) => connectToPeer(dht, peer)
       },
       registrar: createMockRegistrar(regRecord),
       peerStore,
@@ -112,12 +121,13 @@ class TestDHT {
 
     const [c0, c1] = ConnectionPair()
 
-    // Notice peers of connection
-    await onConnectA(dhtB.peerId, c0)
-    await onConnectB(dhtA.peerId, c1)
+    const routingTableChecks = []
 
-    return Promise.all([
-      pRetry(async () => {
+    // Notice peers of connection
+    if (!dhtB._clientMode) {
+      // B is a server, trigger connect events on A
+      await onConnectA(dhtB.peerId, c0)
+      routingTableChecks.push(async () => {
         const match = await dhtA.routingTable.find(dhtB.peerId)
 
         if (!match) {
@@ -126,8 +136,12 @@ class TestDHT {
         }
 
         return match
-      }, { retries: 50 }),
-      pRetry(async () => {
+      })
+    }
+    if (!dhtA._clientMode) {
+      // A is a server, trigger connect events on B
+      await onConnectB(dhtA.peerId, c1)
+      routingTableChecks.push(async () => {
         const match = await dhtB.routingTable.find(dhtA.peerId)
 
         if (!match) {
@@ -136,8 +150,13 @@ class TestDHT {
         }
 
         return match
-      }, { retries: 50 })
-    ])
+      })
+    }
+
+    // Check routing tables
+    return Promise.all(routingTableChecks.map(check => {
+      pRetry(check, { retries: 50 })
+    }))
   }
 
   async teardown () {

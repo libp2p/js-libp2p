@@ -5,6 +5,7 @@ const errcode = require('err-code')
 const pipe = require('it-pipe')
 const lp = require('it-length-prefixed')
 const pTimeout = require('p-timeout')
+const { consume } = require('streaming-iterables')
 
 const MulticodecTopology = require('libp2p-interfaces/src/topology/multicodec-topology')
 
@@ -186,7 +187,8 @@ class Network {
     return pipe(
       [msg],
       lp.encode(),
-      stream
+      stream,
+      consume
     )
   }
 }

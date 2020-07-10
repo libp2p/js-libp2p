@@ -38,6 +38,7 @@ class KadDHT extends EventEmitter {
   /**
    * Create a new KadDHT.
    * @param {Object} props
+   * @param {Libp2p} [props.libp2p] the libp2p instance
    * @param {Dialer} props.dialer libp2p dialer instance
    * @param {PeerId} props.peerId peer's peerId
    * @param {PeerStore} props.peerStore libp2p peerStore
@@ -54,6 +55,7 @@ class KadDHT extends EventEmitter {
    * @param {randomWalkOptions} options.randomWalk randomWalk options
    */
   constructor ({
+    libp2p,
     dialer,
     peerId,
     peerStore,
@@ -71,6 +73,12 @@ class KadDHT extends EventEmitter {
     if (!dialer) {
       throw new Error('libp2p-kad-dht requires an instance of Dialer')
     }
+
+    /**
+     * Local reference to the libp2p instance. May be undefined.
+     * @type {Libp2p}
+     */
+    this.libp2p = libp2p
 
     /**
      * Local reference to the libp2p dialer instance
