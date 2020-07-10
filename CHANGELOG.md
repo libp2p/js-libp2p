@@ -1,3 +1,13 @@
+<a name="0.28.5"></a>
+## [0.28.5](https://github.com/libp2p/js-libp2p/compare/v0.28.4...v0.28.5) (2020-07-10)
+
+
+### Bug Fixes
+
+* pass libp2p to the dht ([#700](https://github.com/libp2p/js-libp2p/issues/700)) ([5a84dd5](https://github.com/libp2p/js-libp2p/commit/5a84dd5))
+
+
+
 <a name="0.28.4"></a>
 ## [0.28.4](https://github.com/libp2p/js-libp2p/compare/v0.28.3...v0.28.4) (2020-07-03)
 
