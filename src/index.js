@@ -63,6 +63,10 @@ class Libp2p extends EventEmitter {
     this._config = this._options.config
     this._transport = [] // Transport instances/references
     this._discovery = new Map() // Discovery service instances/references
+    
+    // When both conf are set memory get exhausted
+    if(this._config.dht.enabled && this._config.pubsub.enabled)
+      log(`{dht: {enabled: true} and {pubsub: {enabled:true}} may causes memory exhaust`)
 
     // Create the Connection Manager
     this.connectionManager = new ConnectionManager(this, this._options.connectionManager)
