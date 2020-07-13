@@ -258,7 +258,7 @@ class Upgrader {
       }
 
       // Pipe all data through the muxer
-      pipe(upgradedConn, muxer, upgradedConn)
+      pipe(upgradedConn, muxer, upgradedConn).catch(log.error)
     }
 
     const _timeline = maConn.timeline
