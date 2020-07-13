@@ -17,7 +17,7 @@ const handshake = require('it-handshake')
 const { NONCE_LENGTH } = require('./key-generator')
 const debug = require('debug')
 const log = debug('libp2p:pnet')
-log.err = debug('libp2p:pnet:err')
+log.error = debug('libp2p:pnet:err')
 
 /**
  * Takes a Private Shared Key (psk) and provides a `protect` method
@@ -69,7 +69,7 @@ class Protector {
       // Decrypt all inbound traffic
       createUnboxStream(remoteNonce, this.psk),
       external
-    )
+    ).catch(log.error)
 
     return internal
   }
