@@ -99,6 +99,33 @@ describe('libp2p.metrics', () => {
     await remoteLibp2p.stop()
   })
 
+  it('should record metrics on connections and streams when enabled', async () => {
+    const config = {
+      ...baseOptions,
+      connectionManager: {
+        movingAverageIntervals: [10]
+      },
+      metrics: {
+        enabled: true,
+        computeThrottleMaxQueueSize: 1, // compute after every message
+        movingAverageIntervals: [10]
+      }
+    }
+    let remoteLibp2p
+    ;[libp2p, remoteLibp2p] = await createPeer({ number: 2, config })
+
+    remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
+
+    const connection = await libp2p.dial(remoteLibp2p.peerInfo)
+    const { stream } = await connection.newStream('/echo/1.0.0')
+
+    const bytes = randomBytes(512)
+    const results = stream.sink([bytes])
+
+    expect(results).to.exist()
+    await remoteLibp2p.stop()
+  })
+
   it('should move disconnected peers to the old peers list', async () => {
     const config = {
       ...baseOptions,
