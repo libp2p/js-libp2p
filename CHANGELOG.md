@@ -1,3 +1,13 @@
+<a name="0.27.9"></a>
+## [0.27.9](https://github.com/libp2p/js-libp2p/compare/v0.27.8...v0.27.9) (2020-07-13)
+
+
+### Bug Fixes
+
+* back port [#678](https://github.com/libp2p/js-libp2p/issues/678) to catch pipe errors ([#708](https://github.com/libp2p/js-libp2p/issues/708)) ([4b88f0e](https://github.com/libp2p/js-libp2p/commit/4b88f0e))
+
+
+
 <a name="0.27.8"></a>
 ## [0.27.8](https://github.com/libp2p/js-libp2p/compare/v0.27.7...v0.27.8) (2020-05-06)
 
