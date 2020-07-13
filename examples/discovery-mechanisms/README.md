@@ -112,6 +112,9 @@ Connection established to: QmSoLMeWqB7YGVLJN3pNLQpmmEk35v6wYtsMGLzSr5QBU3
 Connection established to: QmSoLju6m7xTh3DuokvT3886QRYqxAzb1kShaanJgW36yx
 ```
 
+### Multiaddrs in docker-compose
+If you run your application in docker containers orchestrated by docker-compose you will have to use `dns4` instead of `ip4` in the multiaddr, as docker-compose resolves the service names to IPs. For example if your service is labeled `service-a` in the `docker-compose.yml` it can be found with a multiaddr like `'/dns4/service-a/tcp/4001/p2p/Qm...'`. Using `'/ip4/service-a/tcp/4001/p2p/Qm...'` will be considered as an invalid multiaddr.
+
 ## 2. MulticastDNS to find other peers in the network
 
 For this example, we need `libp2p-mdns`, go ahead and `npm install` it. You can find the complete solution at [2.js](./2.js).
