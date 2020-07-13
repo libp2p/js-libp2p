@@ -37,7 +37,7 @@
   "homepage": "https://libp2p.io",
   "license": "MIT",
   "engines": {
-    "node": ">=10.0.0",
+    "node": ">=12.0.0",
     "npm": ">=6.0.0"
   },
   "dependencies": {
