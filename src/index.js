@@ -15,6 +15,16 @@ const {
   verifySignature
 } = require('./message/sign')
 
+/**
+ * @typedef {Object} InMessage
+ * @property {string} from
+ * @property {string} receivedFrom
+ * @property {string[]} topicIDs
+ * @property {Buffer} data
+ * @property {Buffer} [signature]
+ * @property {Buffer} [key]
+ */
+
 function validateRegistrar (registrar) {
   // registrar handling
   if (typeof registrar !== 'object') {
@@ -257,7 +267,7 @@ class PubsubBaseProtocol extends EventEmitter {
 
   /**
    * Validates the given message. The signature will be checked for authenticity.
-   * @param {rpc.RPC.Message} message
+   * @param {InMessage} message
    * @returns {Promise<Boolean>}
    */
   async validate (message) { // eslint-disable-line require-await

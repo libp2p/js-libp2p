@@ -53,7 +53,7 @@ async function verifySignature (message) {
  * Returns the PublicKey associated with the given message.
  * If no, valid PublicKey can be retrieved an error will be returned.
  *
- * @param {Message} message
+ * @param {InMessage} message
  * @returns {Promise<PublicKey>}
  */
 async function messagePublicKey (message) {
@@ -66,7 +66,12 @@ async function messagePublicKey (message) {
     throw new Error('Public Key does not match the originator')
   } else {
     // should be available in the from property of the message (peer id)
-    const from = PeerId.createFromBytes(message.from)
+    let from
+    if (typeof message.from === 'string') {
+      from = PeerId.createFromB58String(message.from)
+    } else {
+      from = PeerId.createFromBytes(message.from)
+    }
 
     if (from.pubKey) {
       return from.pubKey

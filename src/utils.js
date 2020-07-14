@@ -73,26 +73,18 @@ exports.ensureArray = (maybeArray) => {
  * Ensures `message.from` is base58 encoded
  * @param {Object} message
  * @param {Buffer|String} message.from
+ * @param {PeerId} peerId
  * @return {Object}
  */
-exports.normalizeInRpcMessage = (message) => {
+exports.normalizeInRpcMessage = (message, peerId) => {
   const m = Object.assign({}, message)
   if (Buffer.isBuffer(message.from)) {
     m.from = multibase.encode('base58btc', message.from).toString().slice(1)
   }
-  return m
-}
-
-/**
- * The same as `normalizeInRpcMessage`, but performed on an array of messages
- * @param {Object[]} messages
- * @return {Object[]}
- */
-exports.normalizeInRpcMessages = (messages) => {
-  if (!messages) {
-    return messages
+  if (peerId) {
+    m.receivedFrom = peerId.toB58String()
   }
-  return messages.map(exports.normalizeInRpcMessage)
+  return m
 }
 
 exports.normalizeOutRpcMessage = (message) => {
@@ -101,11 +93,4 @@ exports.normalizeOutRpcMessage = (message) => {
     m.from = multibase.decode('z' + message.from)
   }
   return m
-}
-
-exports.normalizeOutRpcMessages = (messages) => {
-  if (!messages) {
-    return messages
-  }
-  return messages.map(exports.normalizeOutRpcMessage)
 }
