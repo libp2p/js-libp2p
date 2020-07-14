@@ -25,7 +25,7 @@ const defaultOptions = {
   maxReceivedData: Infinity,
   maxEventLoopDelay: Infinity,
   pollInterval: 2000,
-  maybeConnectInterval: 10000,
+  autoDialInterval: 10000,
   movingAverageInterval: 60000,
   defaultPeerValue: 1
 }
@@ -49,7 +49,8 @@ class ConnectionManager extends EventEmitter {
    * @param {Number} options.pollInterval How often, in milliseconds, metrics and latency should be checked. Default=2000
    * @param {Number} options.movingAverageInterval How often, in milliseconds, to compute averages. Default=60000
    * @param {Number} options.defaultPeerValue The value of the peer. Default=1
-   * @param {Number} options.maybeConnectInterval How often, in milliseconds, it should preemptively guarantee connections are above the low watermark. Default=10000
+   * @param {boolean} options.autoDial Should preemptively guarantee connections are above the low watermark. Default=true
+   * @param {Number} options.autoDialInterval How often, in milliseconds, it should preemptively guarantee connections are above the low watermark. Default=10000
    */
   constructor (libp2p, options) {
     super()
@@ -80,9 +81,9 @@ class ConnectionManager extends EventEmitter {
 
     this._started = false
     this._timer = null
-    this._maybeConnectTimeout = null
+    this._autoDialTimeout = null
     this._checkMetrics = this._checkMetrics.bind(this)
-    this._maybeConnectN = this._maybeConnectN.bind(this)
+    this._autoDial = this._autoDial.bind(this)
   }
 
   /**
@@ -113,7 +114,7 @@ class ConnectionManager extends EventEmitter {
     this._started = true
     log('started')
 
-    this._maybeConnectN()
+    this._options.autoDial && this._autoDial()
   }
 
   /**
@@ -121,8 +122,7 @@ class ConnectionManager extends EventEmitter {
    * @async
    */
   async stop () {
-    clearTimeout(this._maybeConnectTimeout)
-
+    this._autoDialTimeout && this._autoDialTimeout.clear()
     this._timer && this._timer.clear()
     this._latencyMonitor && this._latencyMonitor.removeListener('data', this._onLatencyMeasure)
 
@@ -288,13 +288,13 @@ class ConnectionManager extends EventEmitter {
    * @async
    * @private
    */
-  async _maybeConnectN () {
-    this._isTryingToConnect = true
-
+  async _autoDial () {
     const minConnections = this._options.minConnections
 
     // Already has enough connections
     if (this.size >= minConnections) {
+      this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
+
       return
     }
 
@@ -325,7 +325,7 @@ class ConnectionManager extends EventEmitter {
       }
     }
 
-    this._maybeConnectTimeout = setTimeout(this._maybeConnectN, this._options.maybeConnectInterval)
+    this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
   }
 
   /**
