@@ -178,7 +178,7 @@ class ConnectionManager extends EventEmitter {
     const total = received + sent
     this._checkMaxLimit('maxData', total)
     log('metrics update', total)
-    this._timer.reschedule(this._options.pollInterval)
+    retimer(this._checkMetrics, this._options.pollInterval)
   }
 
   /**
@@ -291,17 +291,9 @@ class ConnectionManager extends EventEmitter {
   async _autoDial () {
     const minConnections = this._options.minConnections
 
-    const recursiveTimeoutTrigger = () => {
-      if (this._autoDialTimeout) {
-        this._autoDialTimeout.reschedule(this._options.autoDialInterval)
-      } else {
-        this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
-      }
-    }
-
     // Already has enough connections
     if (this.size >= minConnections) {
-      recursiveTimeoutTrigger()
+      this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
       return
     }
 
@@ -332,7 +324,7 @@ class ConnectionManager extends EventEmitter {
       }
     }
 
-    recursiveTimeoutTrigger()
+    this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
   }
 
   /**
