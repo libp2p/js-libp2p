@@ -65,7 +65,13 @@ class Libp2p extends EventEmitter {
     this._discovery = new Map() // Discovery service instances/references
 
     // Create the Connection Manager
-    this.connectionManager = new ConnectionManager(this, this._options.connectionManager)
+    if (this._options.connectionManager.minPeers) { // Remove in 0.29
+      this._options.connectionManager.minConnections = this._options.connectionManager.minPeers
+    }
+    this.connectionManager = new ConnectionManager(this, {
+      autoDial: this._config.peerDiscovery.autoDial,
+      ...this._options.connectionManager
+    })
 
     // Create Metrics
     if (this._options.metrics.enabled) {
@@ -460,18 +466,18 @@ class Libp2p extends EventEmitter {
   async _onDidStart () {
     this._isStarted = true
 
-    this.connectionManager.start()
-
     this.peerStore.on('peer', peerId => {
       this.emit('peer:discovery', peerId)
       this._maybeConnect(peerId)
     })
 
-    // Once we start, emit and dial any peers we may have already discovered
+    // Once we start, emit any peers we may have already discovered
+    // TODO: this should be removed, as we already discovered these peers in the past
     for (const peer of this.peerStore.peers.values()) {
       this.emit('peer:discovery', peer.id)
-      this._maybeConnect(peer.id)
     }
+
+    this.connectionManager.start()
 
     // Peer discovery
     await this._setupPeerDiscovery()
@@ -496,15 +502,15 @@ class Libp2p extends EventEmitter {
   /**
    * Will dial to the given `peerId` if the current number of
    * connected peers is less than the configured `ConnectionManager`
-   * minPeers.
+   * minConnections.
    * @private
    * @param {PeerId} peerId
    */
   async _maybeConnect (peerId) {
     // If auto dialing is on and we have no connection to the peer, check if we should dial
     if (this._config.peerDiscovery.autoDial === true && !this.connectionManager.get(peerId)) {
-      const minPeers = this._options.connectionManager.minPeers || 0
-      if (minPeers > this.connectionManager.size) {
+      const minConnections = this._options.connectionManager.minConnections || 0
+      if (minConnections > this.connectionManager.size) {
         log('connecting to discovered peer %s', peerId.toB58String())
         try {
           await this.dialer.connectToPeer(peerId)

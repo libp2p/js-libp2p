@@ -7,6 +7,9 @@ chai.use(require('chai-as-promised'))
 const { expect } = chai
 const sinon = require('sinon')
 
+const delay = require('delay')
+const pWaitFor = require('p-wait-for')
+
 const peerUtils = require('../utils/creators/peer')
 const mockConnection = require('../utils/mockConnection')
 const baseOptions = require('../utils/base-options.browser')
@@ -111,5 +114,149 @@ describe('libp2p.connections', () => {
 
     await libp2p.stop()
     await remoteLibp2p.stop()
+  })
+
+  describe('proactive connections', () => {
+    let nodes = []
+
+    beforeEach(async () => {
+      nodes = await peerUtils.createPeer({
+        number: 2,
+        config: {
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          }
+        }
+      })
+    })
+
+    afterEach(async () => {
+      await Promise.all(nodes.map((node) => node.stop()))
+      sinon.reset()
+    })
+
+    it('should connect to all the peers stored in the PeerStore, if their number is below minConnections', async () => {
+      const [libp2p] = await peerUtils.createPeer({
+        fixture: false,
+        started: false,
+        config: {
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          connectionManager: {
+            minConnections: 3
+          }
+        }
+      })
+
+      // Populate PeerStore before starting
+      libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
+      libp2p.peerStore.addressBook.set(nodes[1].peerId, nodes[1].multiaddrs)
+
+      await libp2p.start()
+
+      // Wait for peers to connect
+      await pWaitFor(() => libp2p.connectionManager.size === 2)
+
+      await libp2p.stop()
+    })
+
+    it('should connect to all the peers stored in the PeerStore until reaching the minConnections', async () => {
+      const minConnections = 1
+      const [libp2p] = await peerUtils.createPeer({
+        fixture: false,
+        started: false,
+        config: {
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          connectionManager: {
+            minConnections
+          }
+        }
+      })
+
+      // Populate PeerStore before starting
+      libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
+      libp2p.peerStore.addressBook.set(nodes[1].peerId, nodes[1].multiaddrs)
+
+      await libp2p.start()
+
+      // Wait for peer to connect
+      await pWaitFor(() => libp2p.connectionManager.size === minConnections)
+
+      // Wait more time to guarantee no other connection happened
+      await delay(200)
+      expect(libp2p.connectionManager.size).to.eql(minConnections)
+
+      await libp2p.stop()
+    })
+
+    it('should connect to all the peers stored in the PeerStore until reaching the minConnections sorted', async () => {
+      const minConnections = 1
+      const [libp2p] = await peerUtils.createPeer({
+        fixture: false,
+        started: false,
+        config: {
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          connectionManager: {
+            minConnections
+          }
+        }
+      })
+
+      // Populate PeerStore before starting
+      libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
+      libp2p.peerStore.addressBook.set(nodes[1].peerId, nodes[1].multiaddrs)
+      libp2p.peerStore.protoBook.set(nodes[1].peerId, ['/protocol-min-conns'])
+
+      await libp2p.start()
+
+      // Wait for peer to connect
+      await pWaitFor(() => libp2p.connectionManager.size === minConnections)
+
+      // Should have connected to the peer with protocols
+      expect(libp2p.connectionManager.get(nodes[0].peerId)).to.not.exist()
+      expect(libp2p.connectionManager.get(nodes[1].peerId)).to.exist()
+
+      await libp2p.stop()
+    })
+
+    it('should connect to peers in the PeerStore when a peer disconnected', async () => {
+      const minConnections = 1
+      const autoDialInterval = 1000
+
+      const [libp2p] = await peerUtils.createPeer({
+        fixture: false,
+        config: {
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          connectionManager: {
+            minConnections,
+            autoDialInterval
+          }
+        }
+      })
+
+      // Populate PeerStore after starting (discovery)
+      libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
+
+      // Wait for peer to connect
+      const conn = await libp2p.dial(nodes[0].peerId)
+      expect(libp2p.connectionManager.get(nodes[0].peerId)).to.exist()
+
+      await conn.close()
+      // Closed
+      await pWaitFor(() => libp2p.connectionManager.size === 0)
+      // Connected
+      await pWaitFor(() => libp2p.connectionManager.size === 1)
+
+      expect(libp2p.connectionManager.get(nodes[0].peerId)).to.exist()
+
+      await libp2p.stop()
+    })
   })
 })
