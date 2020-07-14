@@ -128,11 +128,7 @@ class Stats extends EventEmitter {
    * @returns {void}
    */
   _resetComputeTimeout () {
-    if (this._timeout) {
-      this._timeout.reschedule(this._nextTimeout())
-    } else {
-      this._timeout = retimer(this._update, this._nextTimeout())
-    }
+    this._timeout = retimer(this._update, this._nextTimeout())
   }
 
   /**
