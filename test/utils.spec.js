@@ -59,9 +59,7 @@ describe('utils', () => {
       { from: stringId },
       { from: stringId }
     ]
-    for (let i = 0; i < m.length; i++) {
-      expect(utils.normalizeInRpcMessage(m[i])).to.deep.eql(expected[i])
-    }
+    expect(utils.normalizeInRpcMessages(m)).to.deep.eql(expected)
   })
 
   it('converts an OUT msg.from to binary', () => {
@@ -75,8 +73,6 @@ describe('utils', () => {
       { from: binaryId },
       { from: binaryId }
     ]
-    for (let i = 0; i < m.length; i++) {
-      expect(utils.normalizeOutRpcMessage(m[i])).to.deep.eql(expected[i])
-    }
+    expect(utils.normalizeOutRpcMessages(m)).to.deep.eql(expected)
   })
 })
