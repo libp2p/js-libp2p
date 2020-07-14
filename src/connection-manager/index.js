@@ -291,10 +291,17 @@ class ConnectionManager extends EventEmitter {
   async _autoDial () {
     const minConnections = this._options.minConnections
 
+    const recursiveTimeoutTrigger = () => {
+      if (this._autoDialTimeout) {
+        this._autoDialTimeout.reschedule(this._options.autoDialInterval)
+      } else {
+        this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
+      }
+    }
+
     // Already has enough connections
     if (this.size >= minConnections) {
-      this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
-
+      recursiveTimeoutTrigger()
       return
     }
 
@@ -325,7 +332,7 @@ class ConnectionManager extends EventEmitter {
       }
     }
 
-    this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
+    recursiveTimeoutTrigger()
   }
 
   /**
