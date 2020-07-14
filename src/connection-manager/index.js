@@ -178,7 +178,7 @@ class ConnectionManager extends EventEmitter {
     const total = received + sent
     this._checkMaxLimit('maxData', total)
     log('metrics update', total)
-    retimer(this._checkMetrics, this._options.pollInterval)
+    this._timer = retimer(this._checkMetrics, this._options.pollInterval)
   }
 
   /**
