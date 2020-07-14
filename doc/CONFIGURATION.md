@@ -270,7 +270,7 @@ const node = await Libp2p.create({
   },
   config: {
     peerDiscovery: {
-      autoDial: true,             // Auto connect to discovered peers (limited by ConnectionManager minPeers)
+      autoDial: true,             // Auto connect to discovered peers (limited by ConnectionManager minConnections)
       // The `tag` property will be searched when creating the instance of your Peer Discovery service.
       // The associated object, will be passed to the service when it is instantiated.
       [MulticastDNS.tag]: {

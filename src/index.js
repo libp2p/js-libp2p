@@ -501,15 +501,15 @@ class Libp2p extends EventEmitter {
   /**
    * Will dial to the given `peerId` if the current number of
    * connected peers is less than the configured `ConnectionManager`
-   * minPeers.
+   * minConnections.
    * @private
    * @param {PeerId} peerId
    */
   async _maybeConnect (peerId) {
     // If auto dialing is on and we have no connection to the peer, check if we should dial
     if (this._config.peerDiscovery.autoDial === true && !this.connectionManager.get(peerId)) {
-      const minPeers = this._options.connectionManager.minPeers || 0
-      if (minPeers > this.connectionManager.size) {
+      const minConnections = this._options.connectionManager.minConnections || 0
+      if (minConnections > this.connectionManager.size) {
         log('connecting to discovered peer %s', peerId.toB58String())
         try {
           await this.dialer.connectToPeer(peerId)
