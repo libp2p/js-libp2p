@@ -1,3 +1,13 @@
+<a name="0.28.6"></a>
+## [0.28.6](https://github.com/libp2p/js-libp2p/compare/v0.28.5...v0.28.6) (2020-07-14)
+
+
+### Bug Fixes
+
+* not dial all known peers in parallel on startup ([#698](https://github.com/libp2p/js-libp2p/issues/698)) ([9ccab40](https://github.com/libp2p/js-libp2p/commit/9ccab40))
+
+
+
 <a name="0.28.5"></a>
 ## [0.28.5](https://github.com/libp2p/js-libp2p/compare/v0.28.4...v0.28.5) (2020-07-10)
 
