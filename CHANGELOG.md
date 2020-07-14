@@ -1,3 +1,13 @@
+<a name="0.28.7"></a>
+## [0.28.7](https://github.com/libp2p/js-libp2p/compare/v0.28.6...v0.28.7) (2020-07-14)
+
+
+### Bug Fixes
+
+* retimer reschedule does not work as interval ([#710](https://github.com/libp2p/js-libp2p/issues/710)) ([999c1b7](https://github.com/libp2p/js-libp2p/commit/999c1b7))
+
+
+
 <a name="0.28.6"></a>
 ## [0.28.6](https://github.com/libp2p/js-libp2p/compare/v0.28.5...v0.28.6) (2020-07-14)
 
