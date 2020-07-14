@@ -25,6 +25,7 @@ const defaultOptions = {
   maxReceivedData: Infinity,
   maxEventLoopDelay: Infinity,
   pollInterval: 2000,
+  maybeConnectInterval: 10000,
   movingAverageInterval: 60000,
   defaultPeerValue: 1
 }
@@ -48,6 +49,7 @@ class ConnectionManager extends EventEmitter {
    * @param {Number} options.pollInterval How often, in milliseconds, metrics and latency should be checked. Default=2000
    * @param {Number} options.movingAverageInterval How often, in milliseconds, to compute averages. Default=60000
    * @param {Number} options.defaultPeerValue The value of the peer. Default=1
+   * @param {Number} options.maybeConnectInterval How often, in milliseconds, it should preemptively guarantee connections are above the low watermark. Default=10000
    */
   constructor (libp2p, options) {
     super()
@@ -76,8 +78,11 @@ class ConnectionManager extends EventEmitter {
      */
     this.connections = new Map()
 
+    this._started = false
     this._timer = null
+    this._maybeConnectTimeout = null
     this._checkMetrics = this._checkMetrics.bind(this)
+    this._maybeConnectN = this._maybeConnectN.bind(this)
   }
 
   /**
@@ -104,8 +109,11 @@ class ConnectionManager extends EventEmitter {
     })
     this._onLatencyMeasure = this._onLatencyMeasure.bind(this)
     this._latencyMonitor.on('data', this._onLatencyMeasure)
-    this._maybeConnectN()
+
+    this._started = true
     log('started')
+
+    this._maybeConnectN()
   }
 
   /**
@@ -113,9 +121,12 @@ class ConnectionManager extends EventEmitter {
    * @async
    */
   async stop () {
+    clearTimeout(this._maybeConnectTimeout)
+
     this._timer && this._timer.clear()
     this._latencyMonitor && this._latencyMonitor.removeListener('data', this._onLatencyMeasure)
 
+    this._started = false
     await this._close()
     log('stopped')
   }
@@ -210,7 +221,6 @@ class ConnectionManager extends EventEmitter {
       this.connections.delete(peerId)
       this._peerValues.delete(connection.remotePeer.toB58String())
       this.emit('peer:disconnect', connection)
-      this._maybeConnectN()
     }
   }
 
@@ -279,6 +289,8 @@ class ConnectionManager extends EventEmitter {
    * @private
    */
   async _maybeConnectN () {
+    this._isTryingToConnect = true
+
     const minConnections = this._options.minConnections
 
     // Already has enough connections
@@ -302,11 +314,18 @@ class ConnectionManager extends EventEmitter {
         log('connecting to a peerStore stored peer %s', peers[i].id.toB58String())
         try {
           await this._libp2p.dialer.connectToPeer(peers[i].id)
+
+          // Connection Manager was stopped
+          if (!this._started) {
+            return
+          }
         } catch (err) {
           log.error('could not connect to peerStore stored peer', err)
         }
       }
     }
+
+    this._maybeConnectTimeout = setTimeout(this._maybeConnectN, this._options.maybeConnectInterval)
   }
 
   /**
