@@ -226,7 +226,7 @@ describe('libp2p.connections', () => {
 
     it('should connect to peers in the PeerStore when a peer disconnected', async () => {
       const minConnections = 1
-      const maybeConnectInterval = 1000
+      const autoDialInterval = 1000
 
       const [libp2p] = await peerUtils.createPeer({
         fixture: false,
@@ -236,7 +236,7 @@ describe('libp2p.connections', () => {
           },
           connectionManager: {
             minConnections,
-            maybeConnectInterval
+            autoDialInterval
           }
         }
       })
