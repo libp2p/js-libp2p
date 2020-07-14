@@ -65,6 +65,9 @@ class Libp2p extends EventEmitter {
     this._discovery = new Map() // Discovery service instances/references
 
     // Create the Connection Manager
+    if (this._options.connectionManager.minPeers) { // Remove in 0.29
+      this._options.connectionManager.minConnections = this._options.connectionManager.minPeers
+    }
     this.connectionManager = new ConnectionManager(this, {
       autoDial: this._config.peerDiscovery.autoDial,
       ...this._options.connectionManager

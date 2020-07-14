@@ -12,7 +12,7 @@ const DefaultConfig = {
     noAnnounce: []
   },
   connectionManager: {
-    minPeers: 25
+    minConnections: 25
   },
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL

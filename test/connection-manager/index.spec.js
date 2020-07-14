@@ -58,7 +58,8 @@ describe('Connection Manager', () => {
       config: {
         modules: baseOptions.modules,
         connectionManager: {
-          maxConnections: max
+          maxConnections: max,
+          minConnections: 2
         }
       },
       started: false
@@ -96,7 +97,8 @@ describe('Connection Manager', () => {
       config: {
         modules: baseOptions.modules,
         connectionManager: {
-          maxConnections: max
+          maxConnections: max,
+          minConnections: 0
         }
       },
       started: false

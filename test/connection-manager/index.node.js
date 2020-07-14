@@ -243,18 +243,18 @@ describe('libp2p.connections', () => {
 
       // Populate PeerStore after starting (discovery)
       libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
-      libp2p.peerStore.addressBook.set(nodes[1].peerId, nodes[1].multiaddrs)
-      libp2p.peerStore.protoBook.set(nodes[1].peerId, ['/protocol-min-conns'])
 
       // Wait for peer to connect
       const conn = await libp2p.dial(nodes[0].peerId)
       expect(libp2p.connectionManager.get(nodes[0].peerId)).to.exist()
-      expect(libp2p.connectionManager.get(nodes[1].peerId)).to.not.exist()
 
       await conn.close()
-      await pWaitFor(() => libp2p.connectionManager.size === minConnections)
-      expect(libp2p.connectionManager.get(nodes[0].peerId)).to.not.exist()
-      expect(libp2p.connectionManager.get(nodes[1].peerId)).to.exist()
+      // Closed
+      await pWaitFor(() => libp2p.connectionManager.size === 0)
+      // Connected
+      await pWaitFor(() => libp2p.connectionManager.size === 1)
+
+      expect(libp2p.connectionManager.get(nodes[0].peerId)).to.exist()
 
       await libp2p.stop()
     })
