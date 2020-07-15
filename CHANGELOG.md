@@ -1,3 +1,13 @@
+<a name="0.1.3"></a>
+## [0.1.3](https://github.com/libp2p/js-libp2p-utils/compare/v0.1.2...v0.1.3) (2020-07-15)
+
+
+### Features
+
+* arrayEquals for non primitive types with equals function ([80668ff](https://github.com/libp2p/js-libp2p-utils/commit/80668ff))
+
+
+
 <a name="0.1.2"></a>
 ## [0.1.2](https://github.com/libp2p/js-libp2p-utils/compare/v0.1.1...v0.1.2) (2020-02-15)
 
