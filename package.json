@@ -1,6 +1,6 @@
 {
   "name": "libp2p-utils",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "leadMaintainer": "Vasco Santos <santos.vasco10@gmail.com>",
   "main": "src/index.js",
