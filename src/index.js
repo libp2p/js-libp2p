@@ -51,10 +51,11 @@ class Libp2p extends EventEmitter {
 
     this.peerStore = (this.datastore && this._options.peerStore.persistence)
       ? new PersistentPeerStore({
+        peerId: this.peerId,
         datastore: this.datastore,
         ...this._options.peerStore
       })
-      : new PeerStore()
+      : new PeerStore({ peerId: this.peerId })
 
     // Addresses {listen, announce, noAnnounce}
     this.addresses = this._options.addresses

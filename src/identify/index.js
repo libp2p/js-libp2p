@@ -184,13 +184,14 @@ class IdentifyService {
     try {
       const envelope = await Envelope.openAndCertify(signedPeerRecord, PeerRecord.DOMAIN)
       if (this.peerStore.addressBook.consumePeerRecord(envelope)) {
+        this.peerStore.protoBook.set(id, protocols)
         return
       }
     } catch (err) {
       log('received invalid envelope, discard it and fallback to listenAddrs is available', err)
     }
 
-    // Update peers data in PeerStore
+    // LEGACY: Update peers data in PeerStore
     try {
       this.peerStore.addressBook.set(id, listenAddrs.map((addr) => multiaddr(addr)))
     } catch (err) {
@@ -289,19 +290,14 @@ class IdentifyService {
     try {
       const envelope = await Envelope.openAndCertify(message.signedPeerRecord, PeerRecord.DOMAIN)
       if (this.peerStore.addressBook.consumePeerRecord(envelope)) {
+        this.peerStore.protoBook.set(id, message.protocols)
         return
       }
     } catch (err) {
-<<<<<<< HEAD
       log('received invalid envelope, discard it and fallback to listenAddrs is available', err)
-      // Try Legacy
-      addresses = message.listenAddrs
-=======
-      log('received invalid envelope, discard it and fallback to listenAddrs is available')
->>>>>>> chore: add certified peer records to persisted peer store
     }
 
-    // Update peers data in PeerStore
+    // LEGACY: Update peers data in PeerStore
     try {
       this.peerStore.addressBook.set(id, message.listenAddrs.map((addr) => multiaddr(addr)))
     } catch (err) {
@@ -316,7 +312,7 @@ class IdentifyService {
    * Get self signed peer record raw envelope.
    * @return {Buffer}
    */
-  async _getSelfPeerRecord() {
+  async _getSelfPeerRecord () {
     const selfSignedPeerRecord = this.peerStore.addressBook.getRawEnvelope(this.peerId)
 
     // TODO: support invalidation when dynamic multiaddrs are supported

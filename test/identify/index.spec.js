@@ -73,7 +73,7 @@ describe('Identify', () => {
     const [local, remote] = duplexPair()
     sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY })
 
-    sinon.spy(localIdentify.peerStore.addressBook, 'set')
+    sinon.spy(localIdentify.peerStore.addressBook, 'consumePeerRecord')
     sinon.spy(localIdentify.peerStore.protoBook, 'set')
 
     // Run identify
@@ -86,15 +86,15 @@ describe('Identify', () => {
       })
     ])
 
-    expect(localIdentify.peerStore.addressBook.set.callCount).to.equal(1)
+    expect(localIdentify.peerStore.addressBook.consumePeerRecord.callCount).to.equal(1)
     expect(localIdentify.peerStore.protoBook.set.callCount).to.equal(1)
 
     // Validate the remote peer gets updated in the peer store
-    const call = localIdentify.peerStore.addressBook.set.firstCall
-    expect(call.args[0].id.bytes).to.equal(remotePeer.bytes)
-    expect(call.args[1]).to.exist()
-    expect(call.args[1]).have.lengthOf(listenMaddrs.length)
-    expect(call.args[1][0].equals(listenMaddrs[0]))
+    const addresses = localIdentify.peerStore.addressBook.get(remotePeer)
+    expect(addresses).to.exist()
+    expect(addresses).have.lengthOf(listenMaddrs.length)
+    expect(addresses.map((a) => a.multiaddr)[0].equals(listenMaddrs[0]))
+    expect(addresses.map((a) => a.isCertified)[0]).to.eql(true)
   })
 
   // LEGACY
@@ -127,7 +127,7 @@ describe('Identify', () => {
     sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY })
     sinon.stub(Envelope, 'openAndCertify').throws()
 
-    sinon.spy(localIdentify.peerStore.addressBook, 'consumePeerRecord')
+    sinon.spy(localIdentify.peerStore.addressBook, 'set')
     sinon.spy(localIdentify.peerStore.protoBook, 'set')
 
     // Run identify
@@ -140,15 +140,15 @@ describe('Identify', () => {
       })
     ])
 
-    expect(localIdentify.peerStore.addressBook.consumePeerRecord.callCount).to.equal(1)
+    expect(localIdentify.peerStore.addressBook.set.callCount).to.equal(1)
     expect(localIdentify.peerStore.protoBook.set.callCount).to.equal(1)
 
     // Validate the remote peer gets updated in the peer store
-    const addresses = localIdentify.peerStore.addressBook.get(remotePeer)
-    expect(addresses).to.exist()
-    expect(addresses).have.lengthOf(listenMaddrs.length)
-    expect(addresses.map((a) => a.multiaddr)[0].equals(listenMaddrs[0]))
-    expect(addresses.map((a) => a.isCertified)[0]).to.eql(true)
+    const call = localIdentify.peerStore.addressBook.set.firstCall
+    expect(call.args[0].id.bytes).to.equal(remotePeer.bytes)
+    expect(call.args[1]).to.exist()
+    expect(call.args[1]).have.lengthOf(listenMaddrs.length)
+    expect(call.args[1][0].equals(listenMaddrs[0]))
   })
 
   it('should throw if identified peer is the wrong peer', async () => {
@@ -290,7 +290,7 @@ describe('Identify', () => {
       sinon.stub(localConnectionMock, 'newStream').returns({ stream: local, protocol: multicodecs.IDENTIFY_PUSH })
       sinon.stub(Envelope, 'openAndCertify').throws()
 
-      sinon.spy(remoteIdentify.peerStore.addressBook, 'consumePeerRecord')
+      sinon.spy(remoteIdentify.peerStore.addressBook, 'set')
       sinon.spy(remoteIdentify.peerStore.protoBook, 'set')
 
       // Run identify
@@ -303,13 +303,12 @@ describe('Identify', () => {
         })
       ])
 
-      expect(remoteIdentify.peerStore.addressBook.consumePeerRecord.callCount).to.equal(1)
+      expect(remoteIdentify.peerStore.addressBook.set.callCount).to.equal(1)
       expect(remoteIdentify.peerStore.protoBook.set.callCount).to.equal(1)
 
-      const addresses = localIdentify.peerStore.addressBook.get(localPeer)
-      expect(addresses).to.exist()
-      expect(addresses).have.lengthOf(listenMaddrs.length)
-      expect(addresses.map((a) => a.multiaddr)).to.eql(listenMaddrs)
+      const [peerId, multiaddrs] = remoteIdentify.peerStore.addressBook.set.firstCall.args
+      expect(peerId.bytes).to.eql(localPeer.bytes)
+      expect(multiaddrs).to.eql(listenMaddrs)
 
       const [peerId2, protocols] = remoteIdentify.peerStore.protoBook.set.firstCall.args
       expect(peerId2.bytes).to.eql(localPeer.bytes)
