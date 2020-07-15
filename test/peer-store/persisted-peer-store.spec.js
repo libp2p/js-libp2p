@@ -533,7 +533,7 @@ describe('libp2p.peerStore (Persisted)', () => {
 
     it('should load content to the peerStore when a new node is started with the same datastore', async () => {
       const commitSpy = sinon.spy(libp2p.peerStore, '_commitData')
-      const peers = await peerUtils.createPeerId({ number: 2 })
+      const peers = await peerUtils.createPeerId({ number: 3 })
       const multiaddrs = [
         multiaddr('/ip4/156.10.1.22/tcp/1000'),
         multiaddr('/ip4/156.10.1.23/tcp/1000')
@@ -543,15 +543,15 @@ describe('libp2p.peerStore (Persisted)', () => {
       await libp2p.start()
 
       // AddressBook
-      libp2p.peerStore.addressBook.set(peers[0], [multiaddrs[0]])
-      libp2p.peerStore.addressBook.set(peers[1], [multiaddrs[1]])
+      libp2p.peerStore.addressBook.set(peers[1], [multiaddrs[0]])
+      libp2p.peerStore.addressBook.set(peers[2], [multiaddrs[1]])
 
       // let batch commit complete
       await Promise.all(commitSpy.returnValues)
 
       // ProtoBook
-      libp2p.peerStore.protoBook.set(peers[0], protocols)
       libp2p.peerStore.protoBook.set(peers[1], protocols)
+      libp2p.peerStore.protoBook.set(peers[2], protocols)
 
       // let batch commit complete
       await Promise.all(commitSpy.returnValues)
@@ -582,13 +582,13 @@ describe('libp2p.peerStore (Persisted)', () => {
       expect(newNode.peerStore.peers.size).to.equal(2)
 
       // Validate data
-      const peer0 = newNode.peerStore.get(peers[0])
-      expect(peer0.id.toB58String()).to.eql(peers[0].toB58String())
+      const peer0 = newNode.peerStore.get(peers[1])
+      expect(peer0.id.toB58String()).to.eql(peers[1].toB58String())
       expect(peer0.protocols).to.have.members(protocols)
       expect(peer0.addresses.map((a) => a.multiaddr.toString())).to.have.members([multiaddrs[0].toString()])
 
-      const peer1 = newNode.peerStore.get(peers[1])
-      expect(peer1.id.toB58String()).to.eql(peers[1].toB58String())
+      const peer1 = newNode.peerStore.get(peers[2])
+      expect(peer1.id.toB58String()).to.eql(peers[2].toB58String())
       expect(peer1.protocols).to.have.members(protocols)
       expect(peer1.addresses.map((a) => a.multiaddr.toString())).to.have.members([multiaddrs[1].toString()])
 

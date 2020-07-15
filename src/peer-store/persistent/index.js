@@ -28,11 +28,12 @@ class PersistentPeerStore extends PeerStore {
   /**
    * @constructor
    * @param {Object} properties
+   * @param {PeerId} properties.peerId
    * @param {Datastore} properties.datastore Datastore to persist data.
    * @param {number} [properties.threshold = 5] Number of dirty peers allowed before commit data.
    */
-  constructor ({ datastore, threshold = 5 }) {
-    super()
+  constructor ({ peerId, datastore, threshold = 5 }) {
+    super({ peerId })
 
     /**
      * Backend datastore used to persist data.

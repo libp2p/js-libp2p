@@ -38,8 +38,10 @@ class PeerStore extends EventEmitter {
   /**
    * @constructor
    */
-  constructor () {
+  constructor ({ peerId } = {}) {
     super()
+
+    this._peerId = peerId
 
     /**
      * AddressBook containing a map of peerIdStr to Address.
@@ -73,7 +75,7 @@ class PeerStore extends EventEmitter {
   stop () {}
 
   /**
-   * Get all the stored information of every peer.
+   * Get all the stored information of every peer known.
    * @returns {Map<string, Peer>}
    */
   get peers () {
@@ -83,6 +85,9 @@ class PeerStore extends EventEmitter {
       ...this.protoBook.data.keys(),
       ...this.metadataBook.data.keys()
     ])
+
+    // Remove self peer if present
+    this._peerId && storedPeers.delete(this._peerId.toB58String())
 
     const peersData = new Map()
     storedPeers.forEach((idStr) => {
