@@ -45,7 +45,7 @@ const after = async () => {
 }
 
 module.exports = {
-  bundlesize: { maxSize: '202kB' },
+  bundlesize: { maxSize: '205kB' },
   hooks: {
     pre: before,
     post: after
