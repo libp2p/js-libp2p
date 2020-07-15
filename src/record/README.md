@@ -12,42 +12,57 @@ You can read further about the envelope in [libp2p/specs#217](https://github.com
 
 ### Usage
 
-- create an envelope with an instance of an `interface-record` implementation and prepare it for being exchanged:
+- create an envelope with an instance of an [interface-record](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/record) implementation and prepare it for being exchanged:
+
+```js
+// interface-record implementation example with the "libp2p-example" namespace
+const Record = require('libp2p-interfaces/src/record')
+
+class ExampleRecord extends Record {
+  constructor () {
+    super ('libp2p-example', Buffer.from('0302', 'hex'))
+  }
+
+  marshal () {}
+
+  equals (other) {}
+}
+
+ExampleRecord.createFromProtobuf = () => {}
+```
 
 ```js
 const Envelope = require('libp2p/src/record/envelop')
+const ExampleRecord = require('./example-record')
 
-// ... create a record named rec with domain X
-
+const rec = new ExampleRecord()
 const e = await Envelope.seal(rec, peerId)
 const wireData = e.marshal()
 ```
 
-- consume a received envelope, as well as to get back the record:
+- consume a received envelope (`wireData`) and transform it back to a record:
 
 ```js
 const Envelope = require('libp2p/src/record/envelop')
-// const Record = ...
+const ExampleRecord = require('./example-record')
 
-// ... receive envelope data
-
-const domain = 'X'
+const domain = 'libp2p-example'
 let e
 
 try {
-  e = await Envelope.openAndCertify(data, domain)
+  e = await Envelope.openAndCertify(wireData, domain)
 } catch (err) {}
 
-const rec = Record.createFromProtobuf(e.payload)
+const rec = ExampleRecord.createFromProtobuf(e.payload)
 ```
 
 ## Peer Record
 
 All libp2p nodes keep a `PeerStore`, that among other information stores a set of known addresses for each peer, which can come from a variety of sources.
 
-Libp2p peer records were created to enable the distribution of verifiable address records, which we can prove originated from the addressed peer itself. With such guarantees, libp2p can prioritize addresses based on their authenticity, with the most strict strategy being to only dial certified addresses.
+Libp2p peer records were created to enable the distribution of verifiable address records, which we can prove originated from the addressed peer itself. With such guarantees, libp2p is able to prioritize addresses based on their authenticity, with the most strict strategy being to only dial certified addresses (no strategies implemented at the time of writing).
 
-A peer record contains the peers' publicly reachable listen addresses, and may be extended in the future to contain additional metadata relevant to routing. It also contains a `seqNumber` field, so that we can order peer records by time and identify if a received record is more recent than the stored one.
+A peer record contains the peers' publicly reachable listen addresses, and may be extended in the future to contain additional metadata relevant to routing. It also contains a `seqNumber` field, a timestamp per the spec, so that we can verify the most recent record.
 
 You can read further about the Peer Record in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
 
@@ -78,29 +93,29 @@ const pr = PeerRecord.createFromProtobuf(data)
 
 Once a libp2p node has started and is listening on a set of multiaddrs, its own peer record can be created.
 
-The identify service is responsible for creating the self record when the identify protocol kicks in for the first time. This record should be stored for future needs of the identify protocol when connecting with other peers.
+The identify service is responsible for creating the self record when the identify protocol kicks in for the first time. This record will be stored for future needs of the identify protocol when connecting with other peers.
 
 #### Self record Updates
 
 **_NOT_YET_IMPLEMENTED_**
 
-While creating peer records is fairly trivial, addresses should not be static and can be modified at arbitrary times. This can happen via an Address Manager API, or even through AutoRelay/AutoNAT.
+While creating peer records is fairly trivial, addresses are not static and might be modified at arbitrary times. This can happen via an Address Manager API, or even through AutoRelay/AutoNAT.
 
-When a libp2p node changes its listen addresses, the identify service should be informed. Once that happens, the identify service should create a new self record and store it. With the new record, the identify push/delta protocol will be used to communicate this change to the connected peers.
+When a libp2p node changes its listen addresses, the identify service will be informed. Once that happens, the identify service creates a new self record and stores it. With the new record, the identify push/delta protocol will be used to communicate this change to the connected peers.
 
 #### Subsystem receiving a record
 
-Considering that a node can discover other peers' addresses from a variety of sources, Libp2p Peerstore should be able to differentiate the addresses that were obtained through a signed peer record.
+Considering that a node can discover other peers' addresses from a variety of sources, Libp2p Peerstore can differentiate the addresses that were obtained through a signed peer record.
 
-Once a record is received and its signature properly validated, its envelope should be stored in the AddressBook on its byte representations. However, the `seqNumber` number of the record must be compared with potentially stored records, so that we do not override correct data.
+Once a record is received and its signature properly validated, its envelope is stored in the AddressBook in its byte representation. The `seqNumber` remains unmarshalled so that we can quickly compare it against incoming records to determine the most recent record.
 
-The AddressBook Addresses must be updated with the content of the envelope with a certified property that allows other subsystems to identify that the known certified addresses of a peer.
+The AddressBook Addresses will be updated with the content of the envelope with a certified property. This allows other subsystems to identify the known certified addresses of a peer.
 
 #### Subsystem providing a record
 
-Libp2p subsystems that exchange other peers information should provide the envelope that they received by those peers. As a result, other peers can verify if the envelope was really created by the addressed peer.
+Libp2p subsystems that exchange other peers information will provide the envelope that they received by those peers. As a result, other peers can verify if the envelope was really created by the addressed peer.
 
-When a subsystem wants to provide a record, it should get it from the AddressBook if it exists. Other subsystems should also be able to provide the self record that will also be stored in the AddressBook.
+When a subsystem wants to provide a record, it will get it from the AddressBook, if it exists. Other subsystems are also able to provide the self record, since it is also stored in the AddressBook.
 
 ### Future Work
 
