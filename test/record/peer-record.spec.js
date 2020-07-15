@@ -72,32 +72,32 @@ describe('PeerRecord', () => {
     const unmarshalPeerRecord = PeerRecord.createFromProtobuf(rawData)
     expect(unmarshalPeerRecord).to.exist()
 
-    const isEqual = peerRecord.isEqual(unmarshalPeerRecord)
-    expect(isEqual).to.eql(true)
+    const equals = peerRecord.equals(unmarshalPeerRecord)
+    expect(equals).to.eql(true)
   })
 
-  it('isEqual returns false if the peer record has a different peerId', async () => {
+  it('equals returns false if the peer record has a different peerId', async () => {
     const peerRecord0 = new PeerRecord({ peerId })
 
     const [peerId1] = await peerUtils.createPeerId({ fixture: false })
     const peerRecord1 = new PeerRecord({ peerId: peerId1 })
 
-    const isEqual = peerRecord0.isEqual(peerRecord1)
-    expect(isEqual).to.eql(false)
+    const equals = peerRecord0.equals(peerRecord1)
+    expect(equals).to.eql(false)
   })
 
-  it('isEqual returns false if the peer record has a different seqNumber', () => {
+  it('equals returns false if the peer record has a different seqNumber', () => {
     const ts0 = Date.now()
     const peerRecord0 = new PeerRecord({ peerId, seqNumber: ts0 })
 
     const ts1 = ts0 + 20
     const peerRecord1 = new PeerRecord({ peerId, seqNumber: ts1 })
 
-    const isEqual = peerRecord0.isEqual(peerRecord1)
-    expect(isEqual).to.eql(false)
+    const equals = peerRecord0.equals(peerRecord1)
+    expect(equals).to.eql(false)
   })
 
-  it('isEqual returns false if the peer record has a different multiaddrs', () => {
+  it('equals returns false if the peer record has a different multiaddrs', () => {
     const multiaddrs = [
       multiaddr('/ip4/127.0.0.1/tcp/2000')
     ]
@@ -108,8 +108,8 @@ describe('PeerRecord', () => {
     ]
     const peerRecord1 = new PeerRecord({ peerId, multiaddrs: multiaddrs1 })
 
-    const isEqual = peerRecord0.isEqual(peerRecord1)
-    expect(isEqual).to.eql(false)
+    const equals = peerRecord0.equals(peerRecord1)
+    expect(equals).to.eql(false)
   })
 })
 
@@ -135,7 +135,7 @@ describe('PeerRecord inside Envelope', () => {
 
     const decodedPeerRecord = PeerRecord.createFromProtobuf(decodedE.payload)
 
-    const isEqual = peerRecord.isEqual(decodedPeerRecord)
-    expect(isEqual).to.eql(true)
+    const equals = peerRecord.equals(decodedPeerRecord)
+    expect(equals).to.eql(true)
   })
 })

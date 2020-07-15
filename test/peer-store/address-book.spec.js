@@ -7,6 +7,7 @@ const { expect } = chai
 
 const pDefer = require('p-defer')
 const multiaddr = require('multiaddr')
+const arrayEquals = require('libp2p-utils/src/array-equals')
 
 const PeerStore = require('../../src/peer-store')
 
@@ -18,8 +19,6 @@ const {
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = multiaddr('/ip4/127.0.0.1/tcp/8001')
 const addr3 = multiaddr('/ip4/127.0.0.1/tcp/8002')
-
-const arraysAreEqual = (a, b) => a.length === b.length && a.sort().every((item, index) => b[index] === item)
 
 describe('addressBook', () => {
   let peerId
@@ -194,7 +193,7 @@ describe('addressBook', () => {
       let changeTrigger = 2
       peerStore.on('change:multiaddrs', ({ multiaddrs }) => {
         changeTrigger--
-        if (changeTrigger === 0 && arraysAreEqual(multiaddrs, finalMultiaddrs)) {
+        if (changeTrigger === 0 && arrayEquals(multiaddrs, finalMultiaddrs)) {
           defer.resolve()
         }
       })

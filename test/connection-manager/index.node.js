@@ -75,7 +75,7 @@ describe('Connection Manager', () => {
     expect(libp2p.connectionManager.emit.callCount).to.equal(1)
     const [event, connection] = libp2p.connectionManager.emit.getCall(0).args
     expect(event).to.equal('peer:connect')
-    expect(connection.remotePeer.isEqual(remoteLibp2p.peerId)).to.equal(true)
+    expect(connection.remotePeer.equals(remoteLibp2p.peerId)).to.equal(true)
 
     const libp2pConn = libp2p.connectionManager.get(remoteLibp2p.peerId)
     expect(libp2pConn).to.exist()
