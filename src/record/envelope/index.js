@@ -63,7 +63,7 @@ class Envelope {
    * @param {Envelope} other
    * @return {boolean}
    */
-  isEqual (other) {
+  equals (other) {
     return this.peerId.pubKey.bytes.equals(other.peerId.pubKey.bytes) &&
       this.payloadType.equals(other.payloadType) &&
       this.payload.equals(other.payload) &&
@@ -76,7 +76,7 @@ class Envelope {
    * @return {Promise<boolean>}
    */
   validate (domain) {
-    const signData = createSignData(domain, this.payloadType, this.payload)
+    const signData = formatSignaturePayload(domain, this.payloadType, this.payload)
 
     return this.peerId.pubKey.verify(signData, this.signature)
   }
@@ -89,7 +89,7 @@ class Envelope {
  * @param {Buffer} payload
  * @return {Buffer}
  */
-const createSignData = (domain, payloadType, payload) => {
+const formatSignaturePayload = (domain, payloadType, payload) => {
   // When signing, a peer will prepare a buffer by concatenating the following:
   // - The length of the domain separation string string in bytes
   // - The domain separation string, encoded as UTF-8
@@ -142,7 +142,7 @@ Envelope.seal = async (record, peerId) => {
   const payloadType = Buffer.from(record.codec)
   const payload = record.marshal()
 
-  const signData = createSignData(domain, payloadType, payload)
+  const signData = formatSignaturePayload(domain, payloadType, payload)
   const signature = await peerId.privKey.sign(signData)
 
   return new Envelope({
@@ -155,7 +155,7 @@ Envelope.seal = async (record, peerId) => {
 
 /**
  * Open and certify a given marshalled envelope.
- * Data is unmarshalled and the siganture validated with the given domain.
+ * Data is unmarshalled and the signature validated for the given domain.
  * @param {Buffer} data
  * @param {string} domain
  * @return {Envelope}
