@@ -25,7 +25,7 @@ class TestRecord extends Record {
     return Buffer.from(this.data)
   }
 
-  isEqual (other) {
+  equals (other) {
     return Buffer.compare(this.data, other.data)
   }
 }
@@ -74,8 +74,8 @@ describe('Envelope', () => {
     const unmarshalledEnvelope = await Envelope.openAndCertify(rawEnvelope, testRecord.domain)
     expect(unmarshalledEnvelope).to.exist()
 
-    const isEqual = envelope.isEqual(unmarshalledEnvelope)
-    expect(isEqual).to.eql(true)
+    const equals = envelope.equals(unmarshalledEnvelope)
+    expect(equals).to.eql(true)
   })
 
   it('throw on open and verify when a different domain is used', async () => {

@@ -43,7 +43,7 @@ async function encrypt (localId, conn, remoteId) {
     throw new InvalidCryptoExchangeError('Remote did not provide its public key')
   }
 
-  if (remoteId && !peerId.isEqual(remoteId)) {
+  if (remoteId && !peerId.equals(remoteId)) {
     throw new UnexpectedPeerError()
   }
 

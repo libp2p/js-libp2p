@@ -467,13 +467,13 @@ describe('libp2p.upgrader', () => {
 
     let [event, connection] = libp2p.connectionManager.emit.getCall(0).args
     expect(event).to.equal('peer:connect')
-    expect(connection.remotePeer.isEqual(remotePeer)).to.equal(true)
+    expect(connection.remotePeer.equals(remotePeer)).to.equal(true)
 
     // Close and check the disconnect event
     await Promise.all(connections.map(conn => conn.close()))
     expect(libp2p.connectionManager.emit.callCount).to.equal(2)
     ;([event, connection] = libp2p.connectionManager.emit.getCall(1).args)
     expect(event).to.equal('peer:disconnect')
-    expect(connection.remotePeer.isEqual(remotePeer)).to.equal(true)
+    expect(connection.remotePeer.equals(remotePeer)).to.equal(true)
   })
 })
