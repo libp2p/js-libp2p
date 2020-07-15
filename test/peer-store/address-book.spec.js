@@ -425,7 +425,7 @@ describe('addressBook', () => {
 
         // Validate stored envelope
         const storedEnvelope = await ab.getPeerRecord(peerId)
-        expect(envelope.isEqual(storedEnvelope)).to.eql(true)
+        expect(envelope.equals(storedEnvelope)).to.eql(true)
 
         // Validate AddressBook addresses
         const addrs = ab.get(peerId)
