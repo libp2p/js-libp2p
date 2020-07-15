@@ -310,10 +310,10 @@ describe('Persisted PeerStore', () => {
 
       // Validate stored envelopes
       const storedEnvelope0 = await peerStore.addressBook.getPeerRecord(peers[0])
-      expect(envelope0.isEqual(storedEnvelope0)).to.eql(true)
+      expect(envelope0.equals(storedEnvelope0)).to.eql(true)
 
       const storedEnvelope1 = await peerStore.addressBook.getPeerRecord(peers[1])
-      expect(envelope1.isEqual(storedEnvelope1)).to.eql(true)
+      expect(envelope1.equals(storedEnvelope1)).to.eql(true)
 
       // Validate multiaddrs
       const storedPeer0 = peerStore.get(peers[0])
