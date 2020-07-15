@@ -92,17 +92,20 @@ class IdentifyService {
    * @param {Array<Connection>} connections
    * @returns {Promise<void>}
    */
-  push (connections) {
+  async push (connections) {
+    const signedPeerRecord = await this._getSelfPeerRecord()
+    const listenAddrs = this._libp2p.multiaddrs.map((ma) => ma.buffer)
+    const protocols = Array.from(this._protocols.keys())
+
     const pushes = connections.map(async connection => {
       try {
         const { stream } = await connection.newStream(MULTICODEC_IDENTIFY_PUSH)
-        const signedPeerRecord = await this._getSelfPeerRecord()
 
         await pipe(
           [{
-            listenAddrs: this._libp2p.multiaddrs.map((ma) => ma.buffer),
+            listenAddrs,
             signedPeerRecord,
-            protocols: Array.from(this._protocols.keys())
+            protocols
           }],
           pb.encode(Message),
           stream,
@@ -189,7 +192,7 @@ class IdentifyService {
 
       addresses = peerRecord.multiaddrs
     } catch (err) {
-      log('received invalid envelope, discard it and fallback to listenAddrs is available')
+      log('received invalid envelope, discard it and fallback to listenAddrs is available', err)
       // Try Legacy
       addresses = listenAddrs
     }
@@ -298,7 +301,7 @@ class IdentifyService {
 
       addresses = peerRecord.multiaddrs
     } catch (err) {
-      log('received invalid envelope, discard it and fallback to listenAddrs is available')
+      log('received invalid envelope, discard it and fallback to listenAddrs is available', err)
       // Try Legacy
       addresses = message.listenAddrs
     }
