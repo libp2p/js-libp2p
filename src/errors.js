@@ -3,9 +3,7 @@
 exports.messages = {
   NOT_STARTED_YET: 'The libp2p node is not started yet',
   DHT_DISABLED: 'DHT is not available',
-  CONN_ENCRYPTION_REQUIRED: 'At least one connection encryption module is required',
-  ERR_INVALID_ENVELOPE: 'Invalid envelope received',
-  ERR_INVALID_PEER_RECORD: 'Invalid peer record received'
+  CONN_ENCRYPTION_REQUIRED: 'At least one connection encryption module is required'
 }
 
 exports.codes = {
@@ -22,8 +20,6 @@ exports.codes = {
   ERR_DUPLICATE_TRANSPORT: 'ERR_DUPLICATE_TRANSPORT',
   ERR_ENCRYPTION_FAILED: 'ERR_ENCRYPTION_FAILED',
   ERR_HOP_REQUEST_FAILED: 'ERR_HOP_REQUEST_FAILED',
-  ERR_INVALID_ENVELOPE: 'ERR_INVALID_ENVELOPE',
-  ERR_INVALID_PEER_RECORD: 'ERR_INVALID_PEER_RECORD',
   ERR_INVALID_KEY: 'ERR_INVALID_KEY',
   ERR_INVALID_MESSAGE: 'ERR_INVALID_MESSAGE',
   ERR_INVALID_PARAMETERS: 'ERR_INVALID_PARAMETERS',

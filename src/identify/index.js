@@ -22,14 +22,12 @@ const PeerRecord = require('../record/peer-record')
 
 const {
   MULTICODEC_IDENTIFY,
-  MULTICODEC_IDENTIFY_1_0_0,
   MULTICODEC_IDENTIFY_PUSH,
-  MULTICODEC_IDENTIFY_PUSH_1_0_0,
   AGENT_VERSION,
   PROTOCOL_VERSION
 } = require('./consts')
 
-const { messages, codes } = require('../errors')
+const { codes } = require('../errors')
 
 class IdentifyService {
   /**
@@ -97,7 +95,7 @@ class IdentifyService {
   push (connections) {
     const pushes = connections.map(async connection => {
       try {
-        const { stream } = await connection.newStream([MULTICODEC_IDENTIFY_PUSH, MULTICODEC_IDENTIFY_PUSH_1_0_0])
+        const { stream } = await connection.newStream(MULTICODEC_IDENTIFY_PUSH)
         const signedPeerRecord = await this._getSelfPeerRecord()
 
         await pipe(
@@ -145,7 +143,7 @@ class IdentifyService {
    * @returns {Promise<void>}
    */
   async identify (connection) {
-    const { protocol, stream } = await connection.newStream([MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_1_0_0])
+    const { stream } = await connection.newStream(MULTICODEC_IDENTIFY)
     const [data] = await pipe(
       [],
       stream,
@@ -183,40 +181,26 @@ class IdentifyService {
     // Get the observedAddr if there is one
     observedAddr = IdentifyService.getCleanMultiaddr(observedAddr)
 
-    // LEGACY: differentiate message with SignedPeerRecord
-    if (protocol === MULTICODEC_IDENTIFY_1_0_0) {
-      // Update peers data in PeerStore
-      this.peerStore.addressBook.set(id, listenAddrs.map((addr) => multiaddr(addr)))
-      this.peerStore.protoBook.set(id, protocols)
+    let addresses
 
-      // TODO: Track our observed address so that we can score it
-      log('received observed address of %s', observedAddr)
-
-      return
-    }
-
-    // Open envelope and verify if is authenticated
-    let envelope
     try {
-      envelope = await Envelope.openAndCertify(signedPeerRecord, PeerRecord.DOMAIN)
-    } catch (err) {
-      log('received invalid envelope, discard it')
-      throw errCode(new Error(messages.ERR_INVALID_ENVELOPE), codes.ERR_INVALID_ENVELOPE)
-    }
+      const envelope = await Envelope.openAndCertify(signedPeerRecord, PeerRecord.DOMAIN)
+      const peerRecord = await PeerRecord.createFromProtobuf(envelope.payload)
 
-    // Decode peer record
-    let peerRecord
-    try {
-      peerRecord = await PeerRecord.createFromProtobuf(envelope.payload)
+      addresses = peerRecord.multiaddrs
     } catch (err) {
-      log('received invalid peer record, discard it')
-      throw errCode(new Error(messages.ERR_INVALID_PEER_RECORD), codes.ERR_INVALID_PEER_RECORD)
+      log('received invalid envelope, discard it and fallback to listenAddrs is available')
+      // Try Legacy
+      addresses = listenAddrs
     }
-
-    // TODO: Store as certified record
 
     // Update peers data in PeerStore
-    this.peerStore.addressBook.set(id, peerRecord.multiaddrs.map((addr) => multiaddr(addr)))
+    try {
+      this.peerStore.addressBook.set(id, addresses.map((addr) => multiaddr(addr)))
+    } catch (err) {
+      log.error('received invalid addrs', err)
+    }
+
     this.peerStore.protoBook.set(id, protocols)
     this.peerStore.metadataBook.set(id, 'AgentVersion', Buffer.from(message.agentVersion))
 
@@ -236,10 +220,8 @@ class IdentifyService {
   handleMessage ({ connection, stream, protocol }) {
     switch (protocol) {
       case MULTICODEC_IDENTIFY:
-      case MULTICODEC_IDENTIFY_1_0_0:
         return this._handleIdentify({ connection, stream })
       case MULTICODEC_IDENTIFY_PUSH:
-      case MULTICODEC_IDENTIFY_PUSH_1_0_0:
         return this._handlePush({ connection, stream })
       default:
         log.error('cannot handle unknown protocol %s', protocol)
@@ -309,45 +291,23 @@ class IdentifyService {
 
     const id = connection.remotePeer
 
-    // Legacy
-    if (!message.signedPeerRecord) {
-      try {
-        this.peerStore.addressBook.set(id, message.listenAddrs.map((addr) => multiaddr(addr)))
-      } catch (err) {
-        return log.error('received invalid listen addrs', err)
-      }
+    let addresses
 
-      // Update the protocols
-      this.peerStore.protoBook.set(id, message.protocols)
+    try {
+      const envelope = await Envelope.openAndCertify(message.signedPeerRecord, PeerRecord.DOMAIN)
+      const peerRecord = await PeerRecord.createFromProtobuf(envelope.payload)
 
-      return
+      addresses = peerRecord.multiaddrs
+    } catch (err) {
+      log('received invalid envelope, discard it and fallback to listenAddrs is available')
+      // Try Legacy
+      addresses = message.listenAddrs
     }
 
-    // Open envelope and verify if is authenticated
-    let envelope
     try {
-      envelope = await Envelope.openAndCertify(message.signedPeerRecord, PeerRecord.DOMAIN)
+      this.peerStore.addressBook.set(id, addresses.map((addr) => multiaddr(addr)))
     } catch (err) {
-      log('received invalid envelope, discard it')
-      throw errCode(new Error(messages.ERR_INVALID_ENVELOPE), codes.ERR_INVALID_ENVELOPE)
-    }
-
-    // Decode peer record
-    let peerRecord
-    try {
-      peerRecord = await PeerRecord.createFromProtobuf(envelope.payload)
-    } catch (err) {
-      log('received invalid peer record, discard it')
-      throw errCode(new Error(messages.ERR_INVALID_PEER_RECORD), codes.ERR_INVALID_PEER_RECORD)
-    }
-
-    // Update peers data in PeerStore
-    try {
-      // TODO: Store as certified record
-
-      this.peerStore.addressBook.set(id, peerRecord.multiaddrs.map((addr) => multiaddr(addr)))
-    } catch (err) {
-      return log.error('received invalid listen addrs', err)
+      log.error('received invalid addrs', err)
     }
 
     // Update the protocols
@@ -359,20 +319,25 @@ class IdentifyService {
    * @return {Buffer}
    */
   async _getSelfPeerRecord () {
-    // TODO: Verify if updated
+    // TODO: support invalidation when dynamic multiaddrs are supported
     if (this._selfRecord) {
       return this._selfRecord
     }
 
-    const peerRecord = new PeerRecord({
-      peerId: this.peerId,
-      multiaddrs: this._libp2p.multiaddrs
-    })
-    const envelope = await Envelope.seal(peerRecord, this.peerId)
+    try {
+      const peerRecord = new PeerRecord({
+        peerId: this.peerId,
+        multiaddrs: this._libp2p.multiaddrs
+      })
+      const envelope = await Envelope.seal(peerRecord, this.peerId)
 
-    this._selfRecord = envelope.marshal()
+      this._selfRecord = envelope.marshal()
 
-    return this._selfRecord
+      return this._selfRecord
+    } catch (err) {
+      log.error('failed to get self peer record')
+    }
+    return null
   }
 }
 
@@ -383,8 +348,6 @@ module.exports.IdentifyService = IdentifyService
  */
 module.exports.multicodecs = {
   IDENTIFY: MULTICODEC_IDENTIFY,
-  IDENTIFY_1_0_0: MULTICODEC_IDENTIFY_1_0_0,
-  IDENTIFY_PUSH: MULTICODEC_IDENTIFY_PUSH,
-  IDENTIFY_PUSH_1_0_0: MULTICODEC_IDENTIFY_PUSH_1_0_0
+  IDENTIFY_PUSH: MULTICODEC_IDENTIFY_PUSH
 }
 module.exports.Message = Message
