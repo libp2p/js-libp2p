@@ -67,7 +67,7 @@ describe('non primitive array equals', () => {
     ]
 
     const b = [
-      multiaddr('/ip4/127.0.0.1/tcp/8001'),
+      multiaddr('/ip4/127.0.0.1/tcp/8000'),
       multiaddr('/dns4/test.libp2p.io')
     ]
 
