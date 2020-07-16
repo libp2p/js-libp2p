@@ -35,7 +35,10 @@ __Describe__
 
 With this release you should update the following libp2p modules if you are relying on them:
 
-<!--Specify module versions in JSON for migration below-->
+<!--Specify module versions in JSON for migration below.
+It's recommended to check package.json changes for this: 
+`git diff <release> <prev> -- package.json`
+-->
 
 ```json
 
