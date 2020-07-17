@@ -23,7 +23,7 @@ describe('peer-store', () => {
   let peerIds
   before(async () => {
     peerIds = await peerUtils.createPeerId({
-      number: 4
+      number: 5
     })
   })
 
@@ -31,7 +31,7 @@ describe('peer-store', () => {
     let peerStore
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId: peerIds[4] })
     })
 
     it('has an empty map of peers', () => {
@@ -61,7 +61,7 @@ describe('peer-store', () => {
     let peerStore
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId: peerIds[4] })
 
       // Add peer0 with { addr1, addr2 } and { proto1 }
       peerStore.addressBook.set(peerIds[0], [addr1, addr2])
@@ -163,7 +163,7 @@ describe('peer-store', () => {
     let peerStore
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId: peerIds[4] })
     })
 
     it('returns peers if only addresses are known', () => {

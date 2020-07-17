@@ -55,7 +55,7 @@ describe('Dialing (direct, TCP)', () => {
     })
     remoteTM.add(Transport.prototype[Symbol.toStringTag], Transport)
 
-    peerStore = new PeerStore()
+    peerStore = new PeerStore({ peerId: remotePeerId })
     localTM = new TransportManager({
       libp2p: {},
       upgrader: mockUpgrader
@@ -97,13 +97,13 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should be able to connect to a given peer id', async () => {
-    const peerStore = new PeerStore()
+    const peerId = await PeerId.createFromJSON(Peers[0])
+    const peerStore = new PeerStore({ peerId })
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore
     })
 
-    const peerId = await PeerId.createFromJSON(Peers[0])
     peerStore.addressBook.set(peerId, [remoteAddr])
 
     const connection = await dialer.connectToPeer(peerId)

@@ -7,6 +7,9 @@ message Addresses {
   // Address represents a single multiaddr.
   message Address {
     required bytes multiaddr = 1;
+
+    // Flag to indicate if the address comes from a certified source.
+    optional bool isCertified = 2;
   }
 
   // CertifiedRecord contains a serialized signed PeerRecord used to

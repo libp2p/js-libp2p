@@ -19,7 +19,7 @@ describe('keyBook', () => {
 
   beforeEach(async () => {
     [peerId] = await peerUtils.createPeerId()
-    peerStore = new PeerStore()
+    peerStore = new PeerStore({ peerId })
     kb = peerStore.keyBook
   })
 
