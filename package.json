@@ -33,23 +33,23 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^21.0.2",
+    "aegir": "^25.0.0",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
-    "libp2p-interfaces": "^0.2.0",
+    "libp2p-interfaces": "^0.3.1",
     "it-pipe": "^1.1.0",
     "sinon": "^9.0.0",
-    "streaming-iterables": "^4.1.1"
+    "streaming-iterables": "^5.0.2"
   },
   "dependencies": {
     "abortable-iterator": "^3.0.0",
     "class-is": "^1.1.0",
     "debug": "^4.1.1",
     "err-code": "^2.0.0",
-    "libp2p-utils": "~0.1.0",
-    "mafmt": "^7.0.0",
-    "multiaddr": "^7.2.1",
-    "stream-to-it": "^0.2.0"
+    "libp2p-utils": "^0.1.2",
+    "mafmt": "^7.1.0",
+    "multiaddr": "^7.5.0",
+    "stream-to-it": "^0.2.2"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
