@@ -17,11 +17,16 @@ const peerUtils = require('../utils/creators/peer')
 
 describe('Persisted PeerStore', () => {
   let datastore, peerStore
+  let peerId
+
+  before(async () => {
+    [peerId] = await peerUtils.createPeerId({ fixture: false })
+  })
 
   describe('start and stop flows', () => {
     beforeEach(() => {
       datastore = new MemoryDatastore()
-      peerStore = new PeerStore({ datastore })
+      peerStore = new PeerStore({ datastore, peerId })
     })
 
     afterEach(() => peerStore.stop())
@@ -54,7 +59,7 @@ describe('Persisted PeerStore', () => {
   describe('simple setup with content stored per change (threshold 1)', () => {
     beforeEach(() => {
       datastore = new MemoryDatastore()
-      peerStore = new PeerStore({ datastore, threshold: 1 })
+      peerStore = new PeerStore({ datastore, peerId, threshold: 1 })
     })
 
     afterEach(() => peerStore.stop())
@@ -319,10 +324,12 @@ describe('Persisted PeerStore', () => {
       const storedPeer0 = peerStore.get(peers[0])
       expect(storedPeer0.id.toB58String()).to.eql(peers[0].toB58String())
       expect(storedPeer0.addresses.map((a) => a.multiaddr.toString())).to.have.members([multiaddrs[0].toString()])
+      expect(storedPeer0.addresses.map((a) => a.isCertified)).to.have.members([true])
 
       const storedPeer1 = peerStore.get(peers[1])
       expect(storedPeer1.id.toB58String()).to.eql(peers[1].toB58String())
       expect(storedPeer1.addresses.map((a) => a.multiaddr.toString())).to.have.members([multiaddrs[1].toString()])
+      expect(storedPeer1.addresses.map((a) => a.isCertified)).to.have.members([true])
     })
 
     it('should delete certified peer records from the datastore on delete', async () => {
@@ -377,7 +384,7 @@ describe('Persisted PeerStore', () => {
   describe('setup with content not stored per change (threshold 2)', () => {
     beforeEach(() => {
       datastore = new MemoryDatastore()
-      peerStore = new PeerStore({ datastore, threshold: 2 })
+      peerStore = new PeerStore({ datastore, peerId, threshold: 2 })
     })
 
     afterEach(() => peerStore.stop())

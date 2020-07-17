@@ -27,7 +27,7 @@ describe('protoBook', () => {
     let peerStore, pb
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       pb = peerStore.protoBook
     })
 
@@ -121,7 +121,7 @@ describe('protoBook', () => {
     let peerStore, pb
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       pb = peerStore.protoBook
     })
 
@@ -228,7 +228,7 @@ describe('protoBook', () => {
     let peerStore, pb
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       pb = peerStore.protoBook
     })
 
@@ -258,7 +258,7 @@ describe('protoBook', () => {
     let peerStore, pb
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       pb = peerStore.protoBook
     })
 

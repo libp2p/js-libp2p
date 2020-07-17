@@ -88,7 +88,7 @@ class AddressBook extends Book {
     }
 
     // Verify peerId
-    if (peerRecord.peerId.toB58String() !== envelope.peerId.toB58String()) {
+    if (!peerRecord.peerId.equals(envelope.peerId)) {
       log('signing key does not match PeerId in the PeerRecord')
       return false
     }
@@ -220,10 +220,10 @@ class AddressBook extends Book {
     const id = peerId.toB58String()
 
     const entry = this.data.get(id) || {}
-    const rec = entry.addresses
+    const rec = entry.addresses || []
 
     // Add recorded uniquely to the new array (Union)
-    rec && rec.forEach((addr) => {
+    rec.forEach((addr) => {
       if (!addresses.find(r => r.multiaddr.equals(addr.multiaddr))) {
         addresses.push(addr)
       }
@@ -244,7 +244,7 @@ class AddressBook extends Book {
     log(`added provided multiaddrs for ${id}`)
 
     // Notify the existance of a new peer
-    if (!rec) {
+    if (!entry.addresses) {
       this._ps.emit('peer', peerId)
     }
 

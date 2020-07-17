@@ -38,7 +38,7 @@ class PeerStore extends EventEmitter {
   /**
    * @constructor
    */
-  constructor ({ peerId } = {}) {
+  constructor ({ peerId }) {
     super()
 
     this._peerId = peerId
