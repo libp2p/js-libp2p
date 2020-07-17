@@ -21,10 +21,15 @@ const multicodec = '/test/1.0.0'
 describe('registrar', () => {
   let peerStore
   let registrar
+  let peerId
+
+  before(async () => {
+    [peerId] = await peerUtils.createPeerId()
+  })
 
   describe('errors', () => {
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       registrar = new Registrar({ peerStore, connectionManager: new EventEmitter() })
     })
 

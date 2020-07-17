@@ -25,7 +25,7 @@ describe('metadataBook', () => {
     let peerStore, mb
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       mb = peerStore.metadataBook
     })
 
@@ -158,7 +158,7 @@ describe('metadataBook', () => {
     let peerStore, mb
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       mb = peerStore.metadataBook
     })
 
@@ -194,7 +194,7 @@ describe('metadataBook', () => {
     let peerStore, mb
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       mb = peerStore.metadataBook
     })
 
@@ -243,7 +243,7 @@ describe('metadataBook', () => {
     let peerStore, mb
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       mb = peerStore.metadataBook
     })
 
@@ -300,7 +300,7 @@ describe('metadataBook', () => {
     let peerStore, mb
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       mb = peerStore.metadataBook
     })
 

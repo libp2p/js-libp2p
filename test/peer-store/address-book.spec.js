@@ -36,7 +36,7 @@ describe('addressBook', () => {
     let peerStore, ab
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       ab = peerStore.addressBook
     })
 
@@ -150,7 +150,7 @@ describe('addressBook', () => {
     let peerStore, ab
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       ab = peerStore.addressBook
     })
 
@@ -278,7 +278,7 @@ describe('addressBook', () => {
     let peerStore, ab
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       ab = peerStore.addressBook
     })
 
@@ -313,7 +313,7 @@ describe('addressBook', () => {
     let peerStore, ab
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       ab = peerStore.addressBook
     })
 
@@ -349,7 +349,7 @@ describe('addressBook', () => {
     let peerStore, ab
 
     beforeEach(() => {
-      peerStore = new PeerStore()
+      peerStore = new PeerStore({ peerId })
       ab = peerStore.addressBook
     })
 
@@ -405,9 +405,9 @@ describe('addressBook', () => {
   describe('certified records', () => {
     let peerStore, ab
 
-    describe('consumes successfully a valid peer record and stores its data', () => {
+    describe('consumes a valid peer record and stores its data', () => {
       beforeEach(() => {
-        peerStore = new PeerStore()
+        peerStore = new PeerStore({ peerId })
         ab = peerStore.addressBook
       })
 
@@ -600,7 +600,7 @@ describe('addressBook', () => {
 
     describe('fails to consume invalid peer records', () => {
       beforeEach(() => {
-        peerStore = new PeerStore()
+        peerStore = new PeerStore({ peerId })
         ab = peerStore.addressBook
       })
 

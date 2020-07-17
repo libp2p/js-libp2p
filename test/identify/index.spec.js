@@ -51,7 +51,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore(),
+        peerStore: new PeerStore({ peerId: localPeer }),
         multiaddrs: listenMaddrs
       },
       protocols
@@ -61,7 +61,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore(),
+        peerStore: new PeerStore({ peerId: remotePeer }),
         multiaddrs: listenMaddrs
       },
       protocols
@@ -104,7 +104,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore(),
+        peerStore: new PeerStore({ peerId: localPeer }),
         multiaddrs: listenMaddrs
       },
       protocols
@@ -114,7 +114,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore(),
+        peerStore: new PeerStore({ peerId: remotePeer }),
         multiaddrs: listenMaddrs
       },
       protocols
@@ -163,7 +163,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore(),
+        peerStore: new PeerStore({ peerId: localPeer }),
         multiaddrs: []
       },
       protocols
@@ -172,7 +172,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore(),
+        peerStore: new PeerStore({ peerId: remotePeer }),
         multiaddrs: []
       },
       protocols
@@ -209,7 +209,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
-          peerStore: new PeerStore(),
+          peerStore: new PeerStore({ peerId: localPeer }),
           multiaddrs: listenMaddrs
         },
         protocols: new Map([
@@ -222,7 +222,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: remotePeer,
           connectionManager,
-          peerStore: new PeerStore(),
+          peerStore: new PeerStore({ peerId: remotePeer }),
           multiaddrs: []
         }
       })
@@ -270,7 +270,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
-          peerStore: new PeerStore(),
+          peerStore: new PeerStore({ peerId: localPeer }),
           multiaddrs: listenMaddrs
         },
         protocols: new Map([
@@ -283,7 +283,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: remotePeer,
           connectionManager,
-          peerStore: new PeerStore(),
+          peerStore: new PeerStore({ peerId: remotePeer }),
           multiaddrs: []
         }
       })

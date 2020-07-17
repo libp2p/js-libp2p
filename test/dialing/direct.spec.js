@@ -13,7 +13,6 @@ const Transport = require('libp2p-websockets')
 const Muxer = require('libp2p-mplex')
 const { NOISE: Crypto } = require('libp2p-noise')
 const multiaddr = require('multiaddr')
-const PeerId = require('peer-id')
 const AggregateError = require('aggregate-error')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 
@@ -24,7 +23,6 @@ const PeerStore = require('../../src/peer-store')
 const TransportManager = require('../../src/transport-manager')
 const Libp2p = require('../../src')
 
-const Peers = require('../fixtures/peers')
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const mockUpgrader = require('../utils/mockUpgrader')
 const createMockConnection = require('../utils/mockConnection')
@@ -35,9 +33,11 @@ const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 describe('Dialing (direct, WebSockets)', () => {
   let localTM
   let peerStore
+  let peerId
 
-  before(() => {
-    peerStore = new PeerStore()
+  before(async () => {
+    [peerId] = await createPeerId()
+    peerStore = new PeerStore({ peerId })
     localTM = new TransportManager({
       libp2p: {},
       upgrader: mockUpgrader,
@@ -132,7 +132,6 @@ describe('Dialing (direct, WebSockets)', () => {
         }
       }
     })
-    const peerId = await PeerId.createFromJSON(Peers[0])
 
     const connection = await dialer.connectToPeer(peerId)
     expect(connection).to.exist()
@@ -149,7 +148,6 @@ describe('Dialing (direct, WebSockets)', () => {
         }
       }
     })
-    const peerId = await PeerId.createFromJSON(Peers[0])
 
     await expect(dialer.connectToPeer(peerId))
       .to.eventually.be.rejectedWith(AggregateError)
@@ -198,7 +196,6 @@ describe('Dialing (direct, WebSockets)', () => {
     const deferredDial = pDefer()
     sinon.stub(localTM, 'dial').callsFake(() => deferredDial.promise)
 
-    const [peerId] = await createPeerId()
     // Perform 3 multiaddr dials
     dialer.connectToPeer(peerId)
 
@@ -245,7 +242,6 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     // Perform 3 multiaddr dials
-    const [peerId] = await createPeerId()
     const dialPromise = dialer.connectToPeer(peerId)
 
     // Let the call stack run
@@ -266,13 +262,8 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   describe('libp2p.dialer', () => {
-    let peerId
     let libp2p
     let remoteLibp2p
-
-    before(async () => {
-      peerId = await PeerId.createFromJSON(Peers[0])
-    })
 
     afterEach(async () => {
       sinon.restore()

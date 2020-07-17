@@ -189,13 +189,15 @@ class PersistentPeerStore extends PeerStore {
 
       const encodedData = Addresses.encode({
         addrs: entry.addresses.map((address) => ({
-          multiaddr: address.multiaddr.buffer
+          multiaddr: address.multiaddr.buffer,
+          isCertified: address.isCertified
         })),
         certified_record: entry.record ? {
           seq: entry.record.seqNumber,
           raw: entry.record.raw
         } : undefined
       })
+
       batch.put(key, encodedData)
     } catch (err) {
       log.error(err)
@@ -302,7 +304,8 @@ class PersistentPeerStore extends PeerStore {
             peerId,
             {
               addresses: decoded.addrs.map((address) => ({
-                multiaddr: multiaddr(address.multiaddr)
+                multiaddr: multiaddr(address.multiaddr),
+                isCertified: Boolean(address.isCertified)
               })),
               record: decoded.certified_record ? {
                 raw: decoded.certified_record.raw,
