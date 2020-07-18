@@ -131,25 +131,28 @@ describe('ed25519', function () {
 
   describe('go interop', () => {
     // @ts-check
-    /**
-     * @type {PrivateKey}
-     */
-    let privateKey
-
-    before(async () => {
-      const key = await crypto.keys.unmarshalPrivateKey(fixtures.verify.privateKey)
-      privateKey = key
-    })
-
     it('verifies with data from go', async () => {
       const key = crypto.keys.unmarshalPublicKey(fixtures.verify.publicKey)
       const ok = await key.verify(fixtures.verify.data, fixtures.verify.signature)
       expect(ok).to.eql(true)
     })
 
+    it('verifies with data from go with redundant public key', async () => {
+      const key = crypto.keys.unmarshalPublicKey(fixtures.redundantPubKey.publicKey)
+      const ok = await key.verify(fixtures.redundantPubKey.data, fixtures.redundantPubKey.signature)
+      expect(ok).to.eql(true)
+    })
+
     it('generates the same signature as go', async () => {
-      const sig = await privateKey.sign(fixtures.verify.data)
+      const key = await crypto.keys.unmarshalPrivateKey(fixtures.verify.privateKey)
+      const sig = await key.sign(fixtures.verify.data)
       expect(sig).to.eql(fixtures.verify.signature)
+    })
+
+    it('generates the same signature as go with redundant public key', async () => {
+      const key = await crypto.keys.unmarshalPrivateKey(fixtures.redundantPubKey.privateKey)
+      const sig = await key.sign(fixtures.redundantPubKey.data)
+      expect(sig).to.eql(fixtures.redundantPubKey.signature)
     })
   })
 })

@@ -89,9 +89,17 @@ class Ed25519PrivateKey {
 }
 
 function unmarshalEd25519PrivateKey (bytes) {
-  bytes = ensureKey(bytes, crypto.privateKeyLength + crypto.publicKeyLength)
+  // Try the old, redundant public key version
+  if (bytes.length > crypto.privateKeyLength) {
+    bytes = ensureKey(bytes, crypto.privateKeyLength + crypto.publicKeyLength)
+    const privateKeyBytes = bytes.slice(0, crypto.privateKeyLength)
+    const publicKeyBytes = bytes.slice(crypto.privateKeyLength, bytes.length)
+    return new Ed25519PrivateKey(privateKeyBytes, publicKeyBytes)
+  }
+
+  bytes = ensureKey(bytes, crypto.privateKeyLength)
   const privateKeyBytes = bytes.slice(0, crypto.privateKeyLength)
-  const publicKeyBytes = bytes.slice(crypto.privateKeyLength, bytes.length)
+  const publicKeyBytes = bytes.slice(crypto.publicKeyLength)
   return new Ed25519PrivateKey(privateKeyBytes, publicKeyBytes)
 }
 
@@ -111,11 +119,9 @@ async function generateKeyPairFromSeed (seed) {
 }
 
 function ensureKey (key, length) {
-  if (Buffer.isBuffer(key)) {
-    key = new Uint8Array(key)
-  }
-  if (!(key instanceof Uint8Array) || key.length !== length) {
-    throw errcode(new Error('Key must be a Uint8Array or Buffer of length ' + length), 'ERR_INVALID_KEY_TYPE')
+  key = Uint8Array.from(key || [])
+  if (key.length !== length) {
+    throw errcode(new Error(`Key must be a Uint8Array or Buffer of length ${length}, got ${key.length}`), 'ERR_INVALID_KEY_TYPE')
   }
   return key
 }
