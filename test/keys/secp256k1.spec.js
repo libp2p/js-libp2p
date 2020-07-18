@@ -31,7 +31,7 @@ describe('secp256k1 keys', () => {
   })
 
   it('optionally accepts a `bits` argument when generating a key', async () => {
-    const _key = await secp256k1.generateKeyPair(256)
+    const _key = await secp256k1.generateKeyPair()
     expect(_key).to.be.an.instanceof(secp256k1.Secp256k1PrivateKey)
   })
 
@@ -71,7 +71,7 @@ describe('secp256k1 keys', () => {
     })
 
     it('not equals other key', async () => {
-      const key2 = await secp256k1.generateKeyPair(256)
+      const key2 = await secp256k1.generateKeyPair()
       expect(key.equals(key2)).to.eql(false)
       expect(key2.equals(key)).to.eql(false)
       expect(key.public.equals(key2.public)).to.eql(false)

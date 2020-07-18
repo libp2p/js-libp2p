@@ -6,7 +6,7 @@ const expect = chai.expect
 
 // @ts-check
 /**
- * @type {function(any, string): void}
+ * @type {function(any, string): Promise<void>}
  */
 const expectErrCode = async (p, code) => {
   try {

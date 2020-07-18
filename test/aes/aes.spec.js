@@ -98,7 +98,7 @@ describe('AES-CTR', () => {
 
 // @ts-check
 /**
- * @type {function(Cipher): void}
+ * @type {function(Cipher): Promise<void>}
  */
 async function encryptAndDecrypt (cipher) {
   const data = Buffer.alloc(100)
