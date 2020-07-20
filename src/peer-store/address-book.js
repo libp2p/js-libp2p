@@ -168,8 +168,9 @@ class AddressBook extends Book {
   /**
    * Get the known multiaddrs for a given peer. All returned multiaddrs
    * will include the encapsulated `PeerId` of the peer.
+   * Returns `undefined` if there are no known multiaddrs for the given peer.
    * @param {PeerId} peerId
-   * @returns {Array<Multiaddr>}
+   * @returns {Array<Multiaddr>|undefined}
    */
   getMultiaddrsForPeer (peerId) {
     if (!PeerId.isPeerId(peerId)) {

@@ -760,7 +760,7 @@ Get the known [`Addresses`][address] of a provided peer.
 
 | Type | Description |
 |------|-------------|
-| `Array<Address>` | Array of peer's [`Addresses`][address] containing the multiaddr and its metadata |
+| `Array<Address>|undefined` | Array of peer's [`Addresses`][address] containing the multiaddr and its metadata if available, otherwise undefined |
 
 #### Example
 
@@ -797,7 +797,7 @@ Get the known `Multiaddr` of a provided peer. All returned multiaddrs will inclu
 
 | Type | Description |
 |------|-------------|
-| `Array<Multiaddr>` | Array of peer's multiaddr |
+| `Array<Multiaddr>|undefined` | Array of peer's multiaddr if available, otherwise undefined |
 
 #### Example
 
