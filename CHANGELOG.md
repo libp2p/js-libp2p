@@ -1,3 +1,13 @@
+<a name="0.17.8"></a>
+## [0.17.8](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.7...v0.17.8) (2020-07-20)
+
+
+### Bug Fixes
+
+* go ed25519 interop ([2f18a07](https://github.com/libp2p/js-libp2p-crypto/commit/2f18a07))
+
+
+
 <a name="0.17.7"></a>
 ## [0.17.7](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.6...v0.17.7) (2020-06-09)
 
