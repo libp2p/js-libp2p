@@ -58,7 +58,7 @@
     "it-length-prefixed": "^3.0.1",
     "it-pipe": "^1.1.0",
     "it-protocol-buffers": "^0.2.0",
-    "libp2p-crypto": "^0.17.6",
+    "libp2p-crypto": "^0.17.8",
     "libp2p-interfaces": "^0.3.1",
     "libp2p-utils": "^0.1.2",
     "mafmt": "^7.0.0",
