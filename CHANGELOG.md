@@ -1,3 +1,13 @@
+<a name="0.28.8"></a>
+## [0.28.8](https://github.com/libp2p/js-libp2p/compare/v0.28.7...v0.28.8) (2020-07-20)
+
+
+### Bug Fixes
+
+* create dial target for peer with no known addrs ([#715](https://github.com/libp2p/js-libp2p/issues/715)) ([7da9ad4](https://github.com/libp2p/js-libp2p/commit/7da9ad4))
+
+
+
 <a name="0.28.7"></a>
 ## [0.28.7](https://github.com/libp2p/js-libp2p/compare/v0.28.6...v0.28.7) (2020-07-14)
 
