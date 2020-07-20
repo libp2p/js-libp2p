@@ -77,8 +77,9 @@ class Book {
 
   /**
    * Get the known data of a provided peer.
+   * Returns `undefined` if there is no available data for the given peer.
    * @param {PeerId} peerId
-   * @returns {Array<Data>}
+   * @returns {Array<Data>|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
