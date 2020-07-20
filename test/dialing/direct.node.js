@@ -96,6 +96,15 @@ describe('Dialing (direct, TCP)', () => {
       .and.to.have.nested.property('._errors[0].code', ErrorCodes.ERR_TRANSPORT_UNAVAILABLE)
   })
 
+  it('should fail to connect if peer has no known addresses', async () => {
+    const dialer = new Dialer({ transportManager: localTM, peerStore })
+    const peerId = await PeerId.createFromJSON(Peers[1])
+
+    await expect(dialer.connectToPeer(peerId))
+      .to.eventually.be.rejectedWith(Error)
+      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+  })
+
   it('should be able to connect to a given peer id', async () => {
     const peerStore = new PeerStore()
     const dialer = new Dialer({

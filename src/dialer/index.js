@@ -112,7 +112,7 @@ class Dialer {
       this.peerStore.addressBook.add(id, multiaddrs)
     }
 
-    let addrs = this.peerStore.addressBook.getMultiaddrsForPeer(id)
+    let addrs = this.peerStore.addressBook.getMultiaddrsForPeer(id) || []
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.
