@@ -179,7 +179,7 @@ class AddressBook extends Book {
     const record = this.data.get(peerId.toB58String())
 
     if (!record) {
-      return undefined
+      return []
     }
 
     return record.map((address) => {

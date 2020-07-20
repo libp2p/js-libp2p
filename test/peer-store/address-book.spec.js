@@ -323,10 +323,10 @@ describe('addressBook', () => {
       throw new Error('invalid peerId should throw error')
     })
 
-    it('returns undefined if no multiaddrs are known for the provided peer', () => {
+    it('returns empty array if no multiaddrs are known for the provided peer', () => {
       const addresses = ab.getMultiaddrsForPeer(peerId)
 
-      expect(addresses).to.not.exist()
+      expect(addresses).to.be.empty()
     })
 
     it('returns the multiaddrs stored', () => {
