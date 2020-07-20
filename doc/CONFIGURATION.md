@@ -304,7 +304,7 @@ const node = await Libp2p.create({
   },
   config: {
     peerDiscovery: {
-      webRTCStar: {
+      [WebRTCStar.tag]: {
         enabled: true
       }
     }
