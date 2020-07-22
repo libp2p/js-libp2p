@@ -125,9 +125,10 @@ class AddressBook extends Book {
   }
 
   /**
-   * Get a peer raw envelope.
+   * Get the raw Envelope for a peer. Returns
+   * undefined if no Envelope is found.
    * @param {PeerId} peerId
-   * @return {Buffer}
+   * @return {Buffer|undefined}
    */
   getRawEnvelope (peerId) {
     const entry = this.data.get(peerId.toB58String())
@@ -141,8 +142,9 @@ class AddressBook extends Book {
 
   /**
    * Get an Envelope containing a PeerRecord for the given peer.
+   * Returns undefined if no record exists.
    * @param {PeerId} peerId
-   * @return {Promise<Envelope>}
+   * @return {Promise<Envelope|void>}
    */
   getPeerRecord (peerId) {
     const raw = this.getRawEnvelope(peerId)
