@@ -158,6 +158,8 @@ class AddressBook extends Book {
 
   /**
    * Set known multiaddrs of a provided peer.
+   * This will replace previously stored multiaddrs, if available.
+   * Replacing stored multiaddrs might result in losing obtained certified addresses.
    * @override
    * @param {PeerId} peerId
    * @param {Array<Multiaddr>} multiaddrs
