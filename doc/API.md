@@ -816,6 +816,7 @@ peerStore.addressBook.getMultiaddrsForPeer(peerId)
 
 Set known `multiaddrs` of a given peer. This will replace previously stored multiaddrs, if available.
 Replacing stored multiaddrs might result in losing obtained certified addresses, which is not desirable.
+Consider using `addressBook.add()` if you're not sure this is what you want to do.
 
 `peerStore.addressBook.set(peerId, multiaddrs)`
 
