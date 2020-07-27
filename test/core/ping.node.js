@@ -17,7 +17,7 @@ describe('ping', () => {
 
   beforeEach(async () => {
     nodes = await peerUtils.createPeer({
-      number: 2,
+      number: 3,
       config: baseOptions
     })
 
@@ -25,7 +25,14 @@ describe('ping', () => {
     nodes[1].peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
   })
 
-  it('ping once from peer0 to peer1', async () => {
+  it('ping once from peer0 to peer1 using a multiaddr', async () => {
+    const ma = `${nodes[2].multiaddrs[0]}/p2p/${nodes[2].peerId.toB58String()}`
+    const latency = await nodes[0].ping(ma)
+
+    expect(latency).to.be.a('Number')
+  })
+
+  it('ping once from peer0 to peer1 using a peerId', async () => {
     const latency = await nodes[0].ping(nodes[1].peerId)
 
     expect(latency).to.be.a('Number')

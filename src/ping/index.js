@@ -15,11 +15,11 @@ const { PROTOCOL, PING_LENGTH } = require('./constants')
 /**
  * Ping a given peer and wait for its response, getting the operation latency.
  * @param {Libp2p} node
- * @param {PeerId} peer
+ * @param {PeerId|multiaddr} peer
  * @returns {Promise<Number>}
  */
 async function ping (node, peer) {
-  log('dialing %s to %s', PROTOCOL, peer.toB58String())
+  log('dialing %s to %s', PROTOCOL, peer.toB58String ? peer.toB58String() : peer)
 
   const { stream } = await node.dialProtocol(peer, PROTOCOL)
 
