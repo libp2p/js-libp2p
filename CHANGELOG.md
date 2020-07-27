@@ -1,3 +1,13 @@
+<a name="0.28.9"></a>
+## [0.28.9](https://github.com/libp2p/js-libp2p/compare/v0.28.8...v0.28.9) (2020-07-27)
+
+
+### Bug Fixes
+
+* ping multiaddr from peer not previously stored in peerstore ([#719](https://github.com/libp2p/js-libp2p/issues/719)) ([2440c87](https://github.com/libp2p/js-libp2p/commit/2440c87))
+
+
+
 <a name="0.28.8"></a>
 ## [0.28.8](https://github.com/libp2p/js-libp2p/compare/v0.28.7...v0.28.8) (2020-07-20)
 
