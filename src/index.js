@@ -324,7 +324,7 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<Connection|*>}
    */
   async dialProtocol (peer, protocols, options) {
-    const { id, multiaddrs } = getPeer(peer, this.peerStore)
+    const { id, multiaddrs } = getPeer(peer)
     let connection = this.connectionManager.get(id)
 
     if (!connection) {
@@ -396,7 +396,12 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<number>}
    */
   ping (peer) {
-    const { id } = getPeer(peer)
+    const { id, multiaddrs } = getPeer(peer)
+
+    // If received multiaddr, ping it
+    if (multiaddrs) {
+      return ping(this, multiaddrs[0])
+    }
 
     return ping(this, id)
   }
