@@ -446,8 +446,9 @@ class Libp2p extends EventEmitter {
   }
 
   async _onStarting () {
-    // Listen on the provided transports
-    await this.transportManager.listen()
+    // Listen on the provided transports for the provided addresses
+    const addrs = this.addressManager.getListenAddrs()
+    await this.transportManager.listen(addrs)
 
     // Start PeerStore
     await this.peerStore.start()

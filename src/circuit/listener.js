@@ -8,12 +8,17 @@ const log = debug('libp2p:circuit:listener')
 log.err = debug('libp2p:circuit:error:listener')
 
 /**
- * @param {*} circuit
+ * @param {Libp2p} libp2p
  * @returns {Listener} a transport listener
  */
-module.exports = (circuit) => {
+module.exports = (libp2p) => {
   const listener = new EventEmitter()
   const listeningAddrs = new Map()
+
+  // Remove listeningAddrs when a peer disconnects
+  libp2p.connectionManager.on('peer:disconnect', (connection) => {
+    listeningAddrs.delete(connection.remotePeer.toB58String())
+  })
 
   /**
    * Add swarm handler and listen for incoming connections
@@ -24,7 +29,7 @@ module.exports = (circuit) => {
   listener.listen = async (addr) => {
     const addrString = String(addr).split('/p2p-circuit').find(a => a !== '')
 
-    const relayConn = await circuit._dialer.connectToPeer(multiaddr(addrString))
+    const relayConn = await libp2p.dial(multiaddr(addrString))
     const relayedAddr = relayConn.remoteAddr.encapsulate('/p2p-circuit')
 
     listeningAddrs.set(relayConn.remotePeer.toB58String(), relayedAddr)
