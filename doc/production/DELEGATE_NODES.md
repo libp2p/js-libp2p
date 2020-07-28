@@ -65,6 +65,13 @@ Bear in mind that this allows access to any origin. You might want to control th
 
 6. Start the example and retry its flows.
 
+<details>
+<summary>Troubleshooting</summary>
+
+<p><b>Error: no IPFS repo found in <code>$INSTALLATION_PATH/ipfs/common</code></b></p>
+Bear in mind that in some distributions you might need to run <code>ipfs init</code> before starting the <code>go-ipfs</code> daemon. If you are running the <code>go-ipfs</code> node in a server you might prefer using the <code>server</code> profile and running <code>ipfs init --profile server</code> instead. For more detailed instructions, please refer to the canonical documentation for <a target="_blank" href="https://docs.ipfs.io/how-to/command-line-quick-start/#initialize-the-repository">initializing the repository</a>
+</details>
+
 ## Setup a remote go-ipfs node as a Delegate Node for js-ipfs
 
 You should follow all the steps mentioned for the setup of a remote go-ipfs for the libp2p example, except for the integration with the example.
