@@ -1,6 +1,6 @@
 {
   "name": "libp2p-record",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "description": "libp2p record implementation",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -56,10 +56,10 @@
     "David Dias <daviddias.p@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Hugo Dias <hugomrdias@gmail.com>",
-    "Alan Shaw <alan.shaw@protocol.ai>",
-    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Alex Potsides <alex@achingbrain.net>",
+    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Matt Joiner <anacrolix@gmail.com>",
-    "dirkmc <dirkmdev@gmail.com>"
+    "dirkmc <dirkmdev@gmail.com>",
+    "Alan Shaw <alan.shaw@protocol.ai>"
   ]
 }
