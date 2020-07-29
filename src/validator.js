@@ -1,6 +1,7 @@
 'use strict'
 
 const errcode = require('err-code')
+const { utf8Decoder } = require('./utils')
 /**
  * Checks a record and ensures it is still valid.
  * It runs the needed validators.
@@ -12,7 +13,8 @@ const errcode = require('err-code')
  */
 const verifyRecord = (validators, record) => {
   const key = record.key
-  const parts = key.toString().split('/')
+  const keyString = utf8Decoder.decode(key)
+  const parts = keyString.split('/')
 
   if (parts.length < 3) {
     // No validator available

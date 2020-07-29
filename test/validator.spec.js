@@ -7,7 +7,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const crypto = require('libp2p-crypto')
 const PeerId = require('peer-id')
-const { Buffer } = require('buffer')
+const { utf8TextEncoder } = require('./utils')
 const libp2pRecord = require('../src')
 const validator = libp2pRecord.validator
 const Record = libp2pRecord.Record
@@ -18,21 +18,20 @@ const generateCases = (hash) => {
   return {
     valid: {
       publicKey: [
-        Buffer.concat([
-          Buffer.from('/pk/'),
-          hash
-        ])
+        Uint8Array.of(
+          ...utf8TextEncoder.encode('/pk/'),
+          ...hash
+        )
       ]
     },
     invalid: {
       publicKey: [
         // missing hashkey
-        [Buffer.from('/pk/'), 'ERR_INVALID_RECORD_KEY_TOO_SHORT'],
+        [utf8TextEncoder.encode('/pk/'), 'ERR_INVALID_RECORD_KEY_TOO_SHORT'],
         // not the hash of a key
-        [Buffer.concat([
-          Buffer.from('/pk/'),
-          Buffer.from('random')
-        ]), 'ERR_INVALID_RECORD_HASH_MISMATCH'],
+        [Uint8Array.of(...utf8TextEncoder.encode('/pk/'),
+          ...utf8TextEncoder.encode('random')
+        ), 'ERR_INVALID_RECORD_HASH_MISMATCH'],
         // missing prefix
         [hash, 'ERR_INVALID_RECORD_KEY_BAD_PREFIX'],
         // not a buffer
@@ -55,14 +54,14 @@ describe('validator', () => {
 
   describe('verifyRecord', () => {
     it('calls matching validator', () => {
-      const k = Buffer.from('/hello/you')
-      const rec = new Record(k, Buffer.from('world'), new PeerId(hash))
+      const k = utf8TextEncoder.encode('/hello/you')
+      const rec = new Record(k, utf8TextEncoder.encode('world'), new PeerId(hash))
 
       const validators = {
         hello: {
           func (key, value) {
             expect(key).to.eql(k)
-            expect(value).to.eql(Buffer.from('world'))
+            expect(value).to.eql(utf8TextEncoder.encode('world'))
           },
           sign: false
         }
@@ -71,14 +70,14 @@ describe('validator', () => {
     })
 
     it('calls not matching any validator', () => {
-      const k = Buffer.from('/hallo/you')
-      const rec = new Record(k, Buffer.from('world'), new PeerId(hash))
+      const k = utf8TextEncoder.encode('/hallo/you')
+      const rec = new Record(k, utf8TextEncoder.encode('world'), new PeerId(hash))
 
       const validators = {
         hello: {
           func (key, value) {
             expect(key).to.eql(k)
-            expect(value).to.eql(Buffer.from('world'))
+            expect(value).to.eql(utf8TextEncoder.encode('world'))
           },
           sign: false
         }
@@ -129,7 +128,7 @@ describe('validator', () => {
       const pubKey = crypto.keys.unmarshalPublicKey(fixture.publicKey)
 
       const hash = await pubKey.hash()
-      const k = Buffer.concat([Buffer.from('/pk/'), hash])
+      const k = Uint8Array.of(...utf8TextEncoder.encode('/pk/'), ...hash)
       return validator.validators.pk.func(k, pubKey.bytes)
     })
   })

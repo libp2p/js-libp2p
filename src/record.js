@@ -1,23 +1,22 @@
 'use strict'
 
 const protons = require('protons')
-const { Buffer } = require('buffer')
 const pb = protons(require('./record.proto')).Record
 const utils = require('./utils')
 
 class Record {
   /**
-   * @param {Buffer} [key]
-   * @param {Buffer} [value]
+   * @param {Uint8Array} [key]
+   * @param {Uint8Array} [value]
    * @param {Date} [recvtime]
    */
   constructor (key, value, recvtime) {
-    if (key && !Buffer.isBuffer(key)) {
-      throw new Error('key must be a Buffer')
+    if (!(key instanceof Uint8Array)) {
+      throw new Error('key must be a Uint8Array')
     }
 
-    if (value && !Buffer.isBuffer(value)) {
-      throw new Error('value must be a buffer')
+    if (!(value instanceof Uint8Array)) {
+      throw new Error('value must be a Uint8Array')
     }
 
     this.key = key
@@ -26,7 +25,7 @@ class Record {
   }
 
   /**
-   * @returns {Buffer}
+   * @returns {Uint8Array}
    */
   serialize () {
     return pb.encode(this.prepareSerialize())
@@ -48,7 +47,7 @@ class Record {
   /**
    * Decode a protobuf encoded record.
    *
-   * @param {Buffer} raw
+   * @param {Uint8Array} raw
    * @returns {Record}
    */
   static deserialize (raw) {

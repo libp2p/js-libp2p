@@ -1,12 +1,14 @@
 'use strict'
 
 const errcode = require('err-code')
+const { utf8Decoder } = require('./utils')
+
 /**
  * Select the best record out of the given records.
  *
  * @param {Object} selectors
- * @param {Buffer} k
- * @param {Array<Buffer>} records
+ * @param {Uint8Array} k
+ * @param {Array<Uint8Array>} records
  * @returns {number} - The index of the best record.
  */
 const bestRecord = (selectors, k, records) => {
@@ -16,7 +18,8 @@ const bestRecord = (selectors, k, records) => {
     throw errcode(new Error(errMsg), 'ERR_NO_RECORDS_RECEIVED')
   }
 
-  const parts = k.toString().split('/')
+  const kStr = utf8Decoder.decode(k)
+  const parts = kStr.split('/')
 
   if (parts.length < 3) {
     const errMsg = 'Record key does not have a selector function'

@@ -2,27 +2,28 @@
 
 const multihashing = require('multihashing-async')
 const errcode = require('err-code')
-const { Buffer } = require('buffer')
+const { utf8Decoder, uint8ArraysEqual } = require('../utils')
+
 /**
- * Validator for publick key records.
+ * Validator for public key records.
  * Verifies that the passed in record value is the PublicKey
  * that matches the passed in key.
  * If validation fails the returned Promise will reject with the error.
  *
- * @param {Buffer} key - A valid key is of the form `'/pk/<keymultihash>'`
- * @param {Buffer} publicKey - The public key to validate against (protobuf encoded).
+ * @param {Uint8Array} key - A valid key is of the form `'/pk/<keymultihash>'`
+ * @param {Uint8Array} publicKey - The public key to validate against (protobuf encoded).
  * @returns {Promise}
  */
 const validatePublicKeyRecord = async (key, publicKey) => {
-  if (!Buffer.isBuffer(key)) {
-    throw errcode(new Error('"key" must be a Buffer'), 'ERR_INVALID_RECORD_KEY_NOT_BUFFER')
+  if (!(key instanceof Uint8Array)) {
+    throw errcode(new Error('"key" must be a Uint8Array'), 'ERR_INVALID_RECORD_KEY_NOT_BUFFER')
   }
 
-  if (key.length < 5) {
+  if (key.byteLength < 5) {
     throw errcode(new Error('invalid public key record'), 'ERR_INVALID_RECORD_KEY_TOO_SHORT')
   }
 
-  const prefix = key.slice(0, 4).toString()
+  const prefix = utf8Decoder.decode(key.subarray(0, 4))
 
   if (prefix !== '/pk/') {
     throw errcode(new Error('key was not prefixed with /pk/'), 'ERR_INVALID_RECORD_KEY_BAD_PREFIX')
@@ -32,7 +33,7 @@ const validatePublicKeyRecord = async (key, publicKey) => {
 
   const publicKeyHash = await multihashing(publicKey, 'sha2-256')
 
-  if (!keyhash.equals(publicKeyHash)) {
+  if (!uint8ArraysEqual(keyhash, publicKeyHash)) {
     throw errcode(new Error('public key does not match passed in key'), 'ERR_INVALID_RECORD_HASH_MISMATCH')
   }
 }
