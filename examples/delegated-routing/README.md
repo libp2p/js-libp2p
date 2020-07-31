@@ -13,7 +13,7 @@ This example uses a publicly known delegated routing node. This aims to ease exp
 2. Run the IPFS daemon: `ipfs daemon`
 3. In another window output the addresses of the node: `ipfs id`. Make note of the websocket address, it will contain `/ws/` in the address.
   - If there is no websocket address, you will need to add it in the ipfs config file (`~/.ipfs/config`)
-  - Add to Swarm Addresses something like: `"/ip4/127.0.0.1/tcp/4010/ws"`
+  - Add to Swarm Addresses something like: `"/ip4/127.0.0.1/tcp/4001/ws"`. Make sure to restart your IPFS node afterwards to ensure the new settings had been applied.
 4. In `./src/App.js` replace `BootstrapNode` with your nodes Websocket address from the step above.
 5. Start this example:
 
