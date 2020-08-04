@@ -8,6 +8,8 @@ const DS = require('interface-datastore')
 const CMS = require('./cms')
 const errcode = require('err-code')
 
+require('node-forge/lib/sha512')
+
 const keyPrefix = '/pkcs8/'
 const infoPrefix = '/info/'
 
@@ -174,7 +176,7 @@ class Keychain {
    * @param {int} size - The key size in bits.
     * @returns {KeyInfo}
    */
-  async createKey (name, type, size) {
+  async createKey (name, type, size = 0) {
     const self = this
 
     if (!validateKeyName(name) || name === 'self') {
