@@ -19,6 +19,7 @@ const { IdentifyService, multicodecs } = require('../../src/identify')
 const Peers = require('../fixtures/peers')
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options.browser')
+const pkg = require('../../package.json')
 
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
@@ -53,6 +54,9 @@ describe('Identify', () => {
           },
           protoBook: {
             set: () => { }
+          },
+          metadataBook: {
+            set: () => { }
           }
         },
         multiaddrs: []
@@ -77,6 +81,7 @@ describe('Identify', () => {
 
     sinon.spy(localIdentify.peerStore.addressBook, 'set')
     sinon.spy(localIdentify.peerStore.protoBook, 'set')
+    sinon.spy(localIdentify.peerStore.metadataBook, 'set')
 
     // Run identify
     await Promise.all([
@@ -90,6 +95,12 @@ describe('Identify', () => {
 
     expect(localIdentify.peerStore.addressBook.set.callCount).to.equal(1)
     expect(localIdentify.peerStore.protoBook.set.callCount).to.equal(1)
+
+    const metadataArgs = localIdentify.peerStore.metadataBook.set.firstCall.args
+    expect(metadataArgs[0].id.bytes).to.equal(remotePeer.bytes)
+    expect(metadataArgs[1]).to.equal('AgentVersion')
+    expect(metadataArgs[2].toString()).to.equal(`js-libp2p/${pkg.version}`)
+
     // Validate the remote peer gets updated in the peer store
     const call = localIdentify.peerStore.addressBook.set.firstCall
     expect(call.args[0].id.bytes).to.equal(remotePeer.bytes)
