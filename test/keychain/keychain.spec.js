@@ -2,10 +2,8 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-const { expect } = chai
+const { chai, expect } = require('aegir/utils/chai')
 const fail = expect.fail
-chai.use(require('dirty-chai'))
 chai.use(require('chai-string'))
 
 const peerUtils = require('../utils/creators/peer')
@@ -40,8 +38,8 @@ describe('keychain', () => {
     emptyKeystore = new Keychain(datastore1, { passPhrase: passPhrase })
   })
 
-  it('needs a pass phrase to encrypt a key', () => {
-    expect(() => new Keychain(datastore2)).to.throw()
+  it('can start without a password', () => {
+    expect(() => new Keychain(datastore2)).to.not.throw()
   })
 
   it('needs a NIST SP 800-132 non-weak pass phrase', () => {
@@ -56,10 +54,48 @@ describe('keychain', () => {
     expect(Keychain.options).to.exist()
   })
 
-  it('needs a supported hashing alorithm', () => {
+  it('supports supported hashing alorithms', () => {
     const ok = new Keychain(datastore2, { passPhrase: passPhrase, dek: { hash: 'sha2-256' } })
     expect(ok).to.exist()
-    expect(() => new Keychain(datastore2, { passPhrase: passPhrase, dek: { hash: 'my-hash' } })).to.throw()
+  })
+
+  it('does not support unsupported hashing alorithms', () => {
+    const keychain = new Keychain(datastore2, { passPhrase: passPhrase, dek: { hash: 'my-hash' } })
+
+    expect(keychain.createKey('derp')).to.be.rejected()
+  })
+
+  it('can list keys without a password', async () => {
+    const keychain = new Keychain(datastore2)
+
+    expect(await keychain.listKeys()).to.have.lengthOf(0)
+  })
+
+  it('can find a key without a password', async () => {
+    const keychain = new Keychain(datastore2)
+    const keychainWithPassword = new Keychain(datastore2, { passPhrase: `hello-${Date.now()}-${Date.now()}` })
+    const id = `key-${Math.random()}`
+
+    await keychainWithPassword.createKey(id, 'rsa', 2048)
+
+    await expect(keychain.findKeyById(id)).to.eventually.be.ok()
+  })
+
+  it('can remove a key without a password', async () => {
+    const keychainWithoutPassword = new Keychain(datastore2)
+    const keychainWithPassword = new Keychain(datastore2, { passPhrase: `hello-${Date.now()}-${Date.now()}` })
+    const name = `key-${Math.random()}`
+
+    expect(await keychainWithPassword.createKey(name, 'rsa', 2048)).to.have.property('name', name)
+    expect(await keychainWithoutPassword.findKeyByName(name)).to.have.property('name', name)
+    await keychainWithoutPassword.removeKey(name)
+    await expect(keychainWithoutPassword.findKeyByName(name)).to.be.rejectedWith(/does not exist/)
+  })
+
+  it('requires a key to create a password', async () => {
+    const keychain = new Keychain(datastore2)
+
+    await expect(keychain.createKey('derp')).to.be.rejected()
   })
 
   it('can generate options', () => {
