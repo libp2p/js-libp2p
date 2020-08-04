@@ -175,6 +175,7 @@ class IdentifyService {
     // Update peers data in PeerStore
     this.peerStore.addressBook.set(id, listenAddrs.map((addr) => multiaddr(addr)))
     this.peerStore.protoBook.set(id, protocols)
+    this.peerStore.metadataBook.set(id, 'AgentVersion', Buffer.from(message.agentVersion))
 
     // TODO: Track our observed address so that we can score it
     log('received observed address of %s', observedAddr)
