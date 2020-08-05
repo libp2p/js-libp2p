@@ -110,7 +110,7 @@ class Keychain {
     this.opts = mergeOptions(defaultOptions, options)
 
     // Enforce NIST SP 800-132
-    if (!this.opts.passPhrase || this.opts.passPhrase.length < 20) {
+    if (this.opts.passPhrase && this.opts.passPhrase.length < 20) {
       throw new Error('passPhrase must be least 20 characters')
     }
     if (this.opts.dek.keyLength < NIST.minKeyLength) {
@@ -123,13 +123,13 @@ class Keychain {
       throw new Error(`dek.iterationCount must be least ${NIST.minIterationCount}`)
     }
 
-    // Create the derived encrypting key
-    const dek = crypto.pbkdf2(
+    const dek = this.opts.passPhrase ? crypto.pbkdf2(
       this.opts.passPhrase,
       this.opts.dek.salt,
       this.opts.dek.iterationCount,
       this.opts.dek.keyLength,
-      this.opts.dek.hash)
+      this.opts.dek.hash) : ''
+
     Object.defineProperty(this, '_', { value: () => dek })
   }
 
