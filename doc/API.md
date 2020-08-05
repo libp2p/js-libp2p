@@ -418,7 +418,7 @@ const latency = await libp2p.ping(otherPeerId)
 
 ## multiaddrs
 
-Gets the multiaddrs the libp2p node announces to the network. This computes the advertising multiaddrs 
+Gets the multiaddrs the libp2p node announces to the network. This computes the advertising multiaddrs
 of the peer by joining the multiaddrs that libp2p transports are listening on with the announce multiaddrs
 provided in the libp2p config. Configured no announce multiaddrs will be filtered out of the advertised addresses.
 
@@ -1454,7 +1454,7 @@ Create a key in the keychain.
 |------|------|-------------|
 | name | `string` | The local key name. It cannot already exist. |
 | type | `string` | One of the key types; 'rsa' |
-| size | `number` | The key size in bits. |
+| [size] | `number` | The key size in bits. Must be provided for rsa keys. |
 
 #### Returns
 
@@ -1801,7 +1801,7 @@ console.log(peerStats.toJSON())
 
 ## Events
 
-Once you have a libp2p instance, you can listen to several events it emits, so that you can be notified of relevant network events. 
+Once you have a libp2p instance, you can listen to several events it emits, so that you can be notified of relevant network events.
 
 ### libp2p
 

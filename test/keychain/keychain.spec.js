@@ -149,6 +149,70 @@ describe('keychain', () => {
     })
   })
 
+  describe('ed25519 keys', () => {
+    const keyName = 'my custom key'
+    it('can be an ed25519 key', async () => {
+      const keyInfo = await ks.createKey(keyName, 'ed25519')
+      expect(keyInfo).to.exist()
+      expect(keyInfo).to.have.property('name', keyName)
+      expect(keyInfo).to.have.property('id')
+    })
+
+    it('does not overwrite existing key', async () => {
+      const err = await ks.createKey(keyName, 'ed25519').then(fail, err => err)
+      expect(err).to.have.property('code', 'ERR_KEY_ALREADY_EXISTS')
+    })
+
+    it('can export/import a key', async () => {
+      const keyName = 'a new key'
+      const password = 'my sneaky password'
+      const keyInfo = await ks.createKey(keyName, 'ed25519')
+      const exportedKey = await ks.exportKey(keyName, password)
+      // remove it so we can import it
+      await ks.removeKey(keyName)
+      const importedKey = await ks.importKey(keyName, exportedKey, password)
+      expect(importedKey.id).to.eql(keyInfo.id)
+    })
+
+    it('cannot create the "self" key', async () => {
+      const err = await ks.createKey('self', 'ed25519').then(fail, err => err)
+      expect(err).to.exist()
+      expect(err).to.have.property('code', 'ERR_INVALID_KEY_NAME')
+    })
+  })
+
+  describe('secp256k1 keys', () => {
+    const keyName = 'my secp256k1 key'
+    it('can be an secp256k1 key', async () => {
+      const keyInfo = await ks.createKey(keyName, 'secp256k1')
+      expect(keyInfo).to.exist()
+      expect(keyInfo).to.have.property('name', keyName)
+      expect(keyInfo).to.have.property('id')
+    })
+
+    it('does not overwrite existing key', async () => {
+      const err = await ks.createKey(keyName, 'secp256k1').then(fail, err => err)
+      expect(err).to.have.property('code', 'ERR_KEY_ALREADY_EXISTS')
+    })
+
+    it('can export/import a key', async () => {
+      const keyName = 'a new secp256k1 key'
+      const password = 'my sneaky password'
+      const keyInfo = await ks.createKey(keyName, 'secp256k1')
+      const exportedKey = await ks.exportKey(keyName, password)
+      // remove it so we can import it
+      await ks.removeKey(keyName)
+      const importedKey = await ks.importKey(keyName, exportedKey, password)
+      expect(importedKey.id).to.eql(keyInfo.id)
+    })
+
+    it('cannot create the "self" key', async () => {
+      const err = await ks.createKey('self', 'secp256k1').then(fail, err => err)
+      expect(err).to.exist()
+      expect(err).to.have.property('code', 'ERR_INVALID_KEY_NAME')
+    })
+  })
+
   describe('query', () => {
     it('finds all existing keys', async () => {
       const keys = await ks.listKeys()
