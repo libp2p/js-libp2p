@@ -1,3 +1,19 @@
+<a name="0.28.10"></a>
+## [0.28.10](https://github.com/libp2p/js-libp2p/compare/v0.28.9...v0.28.10) (2020-08-05)
+
+
+### Bug Fixes
+
+* allow certain keychain operations without a password ([#726](https://github.com/libp2p/js-libp2p/issues/726)) ([8c56ec0](https://github.com/libp2p/js-libp2p/commit/8c56ec0))
+* **identify:** make agentversion dynamic and add it to the peerstore ([#724](https://github.com/libp2p/js-libp2p/issues/724)) ([726a746](https://github.com/libp2p/js-libp2p/commit/726a746))
+
+
+### Features
+
+* **keychain:** add support for ed25519 and secp keys ([#725](https://github.com/libp2p/js-libp2p/issues/725)) ([51d7ca4](https://github.com/libp2p/js-libp2p/commit/51d7ca4))
+
+
+
 <a name="0.28.9"></a>
 ## [0.28.9](https://github.com/libp2p/js-libp2p/compare/v0.28.8...v0.28.9) (2020-07-27)
 
