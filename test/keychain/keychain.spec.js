@@ -60,9 +60,7 @@ describe('keychain', () => {
   })
 
   it('does not support unsupported hashing alorithms', () => {
-    const keychain = new Keychain(datastore2, { passPhrase: passPhrase, dek: { hash: 'my-hash' } })
-
-    expect(keychain.createKey('derp')).to.be.rejected()
+    expect(() => new Keychain(datastore2, { passPhrase: passPhrase, dek: { hash: 'my-hash' } })).to.throw()
   })
 
   it('can list keys without a password', async () => {

@@ -123,22 +123,14 @@ class Keychain {
       throw new Error(`dek.iterationCount must be least ${NIST.minIterationCount}`)
     }
 
-    // Lazily create the derived encrypting key
-    let dek
-    Object.defineProperty(this, '_', {
-      value: () => {
-        if (!dek) {
-          dek = crypto.pbkdf2(
-            this.opts.passPhrase,
-            this.opts.dek.salt,
-            this.opts.dek.iterationCount,
-            this.opts.dek.keyLength,
-            this.opts.dek.hash)
-        }
+    const dek = this.opts.passPhrase ? crypto.pbkdf2(
+      this.opts.passPhrase,
+      this.opts.dek.salt,
+      this.opts.dek.iterationCount,
+      this.opts.dek.keyLength,
+      this.opts.dek.hash) : ''
 
-        return dek
-      }
-    })
+    Object.defineProperty(this, '_', { value: () => dek })
   }
 
   /**
