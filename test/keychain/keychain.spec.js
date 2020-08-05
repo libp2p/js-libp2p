@@ -509,7 +509,7 @@ describe('libp2p.keychain', () => {
     throw new Error('should throw an error using the keychain if no passphrase provided')
   })
 
-  it('can be used if a passphrase is provided', async () => {
+  it('can be used when a passphrase is provided', async () => {
     const [libp2p] = await peerUtils.createPeer({
       started: false,
       config: {
@@ -523,6 +523,22 @@ describe('libp2p.keychain', () => {
     await libp2p.loadKeychain()
 
     const kInfo = await libp2p.keychain.createKey('keyName', 'rsa', 2048)
+    expect(kInfo).to.exist()
+  })
+
+  it('does not require a keychain passphrase', async () => {
+    const [libp2p] = await peerUtils.createPeer({
+      started: false,
+      config: {
+        keychain: {
+          datastore: new MemoryDatastore()
+        }
+      }
+    })
+
+    await libp2p.loadKeychain()
+
+    const kInfo = await libp2p.keychain.createKey('keyName', 'ed25519')
     expect(kInfo).to.exist()
   })
 
