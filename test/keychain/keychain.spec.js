@@ -5,17 +5,11 @@
 const { chai, expect } = require('aegir/utils/chai')
 const fail = expect.fail
 chai.use(require('chai-string'))
+const { MemoryDatastore } = require('interface-datastore')
+const PeerId = require('peer-id')
 
 const peerUtils = require('../utils/creators/peer')
-
-const os = require('os')
-const path = require('path')
-const { isNode } = require('ipfs-utils/src/env')
-const { MemoryDatastore } = require('interface-datastore')
-const FsStore = require('datastore-fs')
-const LevelStore = require('datastore-level')
 const Keychain = require('../../src/keychain')
-const PeerId = require('peer-id')
 
 describe('keychain', () => {
   const passPhrase = 'this is not a secure phrase'
@@ -27,12 +21,8 @@ describe('keychain', () => {
   let datastore1, datastore2
 
   before(() => {
-    datastore1 = isNode
-      ? new FsStore(path.join(os.tmpdir(), 'test-keystore-1-' + Date.now()))
-      : new LevelStore('test-keystore-1', { db: require('level') })
-    datastore2 = isNode
-      ? new FsStore(path.join(os.tmpdir(), 'test-keystore-2-' + Date.now()))
-      : new LevelStore('test-keystore-2', { db: require('level') })
+    datastore1 = new MemoryDatastore()
+    datastore2 = new MemoryDatastore()
 
     ks = new Keychain(datastore2, { passPhrase: passPhrase })
     emptyKeystore = new Keychain(datastore1, { passPhrase: passPhrase })
@@ -71,12 +61,12 @@ describe('keychain', () => {
 
   it('can find a key without a password', async () => {
     const keychain = new Keychain(datastore2)
-    const keychainWithPassword = new Keychain(datastore2, { passPhrase: `hello-${Date.now()}-${Date.now()}` })
     const id = `key-${Math.random()}`
 
-    await keychainWithPassword.createKey(id, 'rsa', 2048)
+    const key = await keychain.createKey(id, 'rsa', 2048)
+    const foundKey = await keychain.findKeyById(key.id)
 
-    await expect(keychain.findKeyById(id)).to.eventually.be.ok()
+    await expect(key.id).to.equal(foundKey.id)
   })
 
   it('can remove a key without a password', async () => {
