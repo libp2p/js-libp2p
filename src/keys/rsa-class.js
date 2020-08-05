@@ -5,11 +5,13 @@ const protobuf = require('protons')
 const multibase = require('multibase')
 const errcode = require('err-code')
 
-const crypto = require('./rsa')
-const pbm = protobuf(require('./keys.proto'))
 require('node-forge/lib/sha512')
 require('node-forge/lib/ed25519')
 const forge = require('node-forge/lib/forge')
+
+const crypto = require('./rsa')
+const pbm = protobuf(require('./keys.proto'))
+const exporter = require('./exporter')
 
 class RsaPublicKey {
   constructor (key) {
@@ -109,28 +111,26 @@ class RsaPrivateKey {
    * Exports the key into a password protected PEM format
    *
    * @param {string} password - The password to read the encrypted PEM
-   * @param {string} [format] - Defaults to 'pkcs-8'.
+   * @param {string} [format=pkcs-8] - The format in which to export as
    */
   async export (password, format = 'pkcs-8') { // eslint-disable-line require-await
-    let pem = null
-
-    const buffer = new forge.util.ByteBuffer(this.marshal())
-    const asn1 = forge.asn1.fromDer(buffer)
-    const privateKey = forge.pki.privateKeyFromAsn1(asn1)
-
     if (format === 'pkcs-8') {
+      const buffer = new forge.util.ByteBuffer(this.marshal())
+      const asn1 = forge.asn1.fromDer(buffer)
+      const privateKey = forge.pki.privateKeyFromAsn1(asn1)
+
       const options = {
         algorithm: 'aes256',
         count: 10000,
         saltSize: 128 / 8,
         prfAlgorithm: 'sha512'
       }
-      pem = forge.pki.encryptRsaPrivateKey(privateKey, password, options)
+      return forge.pki.encryptRsaPrivateKey(privateKey, password, options)
+    } else if (format === 'libp2p-key') {
+      return exporter.export(this.bytes, password)
     } else {
-      throw errcode(new Error(`Unknown export format '${format}'. Must be pkcs-8`), 'ERR_INVALID_EXPORT_FORMAT')
+      throw errcode(new Error(`export format '${format}' is not supported`), 'ERR_INVALID_EXPORT_FORMAT')
     }
-
-    return pem
   }
 }
 

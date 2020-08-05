@@ -6,9 +6,10 @@
   "types": "src/index.d.ts",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "browser": {
+    "./src/aes/ciphers.js": "./src/aes/ciphers-browser.js",
+    "./src/ciphers/aes-gcm.js": "./src/ciphers/aes-gcm.browser.js",
     "./src/hmac/index.js": "./src/hmac/index-browser.js",
     "./src/keys/ecdh.js": "./src/keys/ecdh-browser.js",
-    "./src/aes/ciphers.js": "./src/aes/ciphers-browser.js",
     "./src/keys/rsa.js": "./src/keys/rsa-browser.js"
   },
   "files": [
@@ -43,21 +44,22 @@
     "is-typedarray": "^1.0.0",
     "iso-random-stream": "^1.1.0",
     "keypair": "^1.0.1",
-    "multibase": "^0.7.0",
+    "multibase": "^1.0.1",
+    "multicodec": "^1.0.4",
     "multihashing-async": "^0.8.1",
     "node-forge": "^0.9.1",
     "pem-jwk": "^2.0.0",
-    "protons": "^1.0.1",
+    "protons": "^1.2.1",
     "secp256k1": "^4.0.0",
-    "ursa-optional": "~0.10.1"
+    "uint8arrays": "^1.0.0",
+    "ursa-optional": "^0.10.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.11",
+    "@types/chai": "^4.2.12",
     "@types/chai-string": "^1.4.2",
     "@types/dirty-chai": "^2.0.2",
-    "@types/mocha": "^7.0.1",
-    "@types/sinon": "^9.0.0",
-    "aegir": "^22.0.0",
+    "@types/mocha": "^8.0.1",
+    "aegir": "^25.0.0",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "chai-string": "^1.5.0",

@@ -8,6 +8,7 @@ const { bigIntegerToUintBase64url, base64urlToBigInteger } = require('./../util'
 
 // Convert a PKCS#1 in ASN1 DER format to a JWK key
 exports.pkcs1ToJwk = function (bytes) {
+  bytes = Buffer.from(bytes) // convert Uint8Arrays
   const asn1 = forge.asn1.fromDer(bytes.toString('binary'))
   const privateKey = forge.pki.privateKeyFromAsn1(asn1)
 

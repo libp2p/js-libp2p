@@ -85,6 +85,26 @@ describe('ed25519', function () {
     expect(id).to.be.a('string')
   })
 
+  it('should export a password encrypted libp2p-key', async () => {
+    const key = await crypto.keys.generateKeyPair('Ed25519')
+    const encryptedKey = await key.export('my secret')
+    // Import the key
+    const importedKey = await crypto.keys.import(encryptedKey, 'my secret')
+    expect(key.equals(importedKey)).to.equal(true)
+  })
+
+  it('should fail to import libp2p-key with wrong password', async () => {
+    const key = await crypto.keys.generateKeyPair('Ed25519')
+    const encryptedKey = await key.export('my secret', 'libp2p-key')
+    try {
+      await crypto.keys.import(encryptedKey, 'not my secret')
+    } catch (err) {
+      expect(err).to.exist()
+      return
+    }
+    expect.fail('should have thrown')
+  })
+
   describe('key equals', () => {
     it('equals itself', () => {
       expect(

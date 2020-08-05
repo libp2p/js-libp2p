@@ -262,14 +262,23 @@ Returns `Promise<RsaPrivateKey|Ed25519PrivateKey|Secp256k1PrivateKey>`
 
 Converts a protobuf serialized private key into its representative object.
 
-### `crypto.keys.import(pem, password)`
+### `crypto.keys.import(encryptedKey, password)`
 
-- `pem: string`
+- `encryptedKey: string`
 - `password: string`
 
-Returns `Promise<RsaPrivateKey>`
+Returns `Promise<PrivateKey>`
 
-Converts a PEM password protected private key into its representative object.
+Converts an exported private key into its representative object. Supported formats are 'pem' (RSA only) and 'libp2p-key'.
+
+### `privateKey.export(password, format)`
+
+- `password: string`
+- `format: string` the format to export to: 'pem' (rsa only), 'libp2p-key'
+
+Returns `string`
+
+Exports the password protected `PrivateKey`. RSA keys will be exported as password protected PEM by default. Ed25519 and Secp256k1 keys will be exported as password protected AES-GCM base64 encoded strings ('libp2p-key' format).
 
 ### `crypto.randomBytes(number)`
 

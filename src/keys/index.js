@@ -8,6 +8,8 @@ require('node-forge/lib/pbe')
 const forge = require('node-forge/lib/forge')
 const errcode = require('err-code')
 
+const importer = require('./importer')
+
 exports = module.exports
 
 const supportedKeys = {
@@ -109,8 +111,21 @@ exports.marshalPrivateKey = (key, type) => {
   return key.bytes
 }
 
-exports.import = async (pem, password) => { // eslint-disable-line require-await
-  const key = forge.pki.decryptRsaPrivateKey(pem, password)
+/**
+ *
+ * @param {string} encryptedKey
+ * @param {string} password
+ */
+exports.import = async (encryptedKey, password) => { // eslint-disable-line require-await
+  try {
+    const key = await importer.import(encryptedKey, password)
+    return exports.unmarshalPrivateKey(key)
+  } catch (_) {
+    // Ignore and try the old pem decrypt
+  }
+
+  // Only rsa supports pem right now
+  const key = forge.pki.decryptRsaPrivateKey(encryptedKey, password)
   if (key === null) {
     throw errcode(new Error('Cannot read the key, most likely the password is wrong or not a RSA key'), 'ERR_CANNOT_DECRYPT_PEM')
   }

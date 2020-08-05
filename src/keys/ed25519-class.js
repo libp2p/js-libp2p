@@ -8,6 +8,7 @@ const errcode = require('err-code')
 
 const crypto = require('./ed25519')
 const pbm = protobuf(require('./keys.proto'))
+const exporter = require('./exporter')
 
 class Ed25519PublicKey {
   constructor (key) {
@@ -85,6 +86,21 @@ class Ed25519PrivateKey {
   async id () {
     const hash = await this.public.hash()
     return multibase.encode('base58btc', hash).toString().slice(1)
+  }
+
+  /**
+   * Exports the key into a password protected `format`
+   *
+   * @param {string} password - The password to encrypt the key
+   * @param {string} [format=libp2p-key] - The format in which to export as
+   * @returns {Promise<Buffer>} The encrypted private key
+   */
+  async export (password, format = 'libp2p-key') { // eslint-disable-line require-await
+    if (format === 'libp2p-key') {
+      return exporter.export(this.bytes, password)
+    } else {
+      throw errcode(new Error(`export format '${format}' is not supported`), 'ERR_INVALID_EXPORT_FORMAT')
+    }
   }
 }
 

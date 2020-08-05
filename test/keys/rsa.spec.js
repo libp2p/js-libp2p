@@ -135,6 +135,24 @@ describe('RSA', function () {
       expect(key.equals(clone)).to.eql(true)
     })
 
+    it('should export a password encrypted libp2p-key', async () => {
+      const encryptedKey = await key.export('my secret', 'libp2p-key')
+      // Import the key
+      const importedKey = await crypto.keys.import(encryptedKey, 'my secret')
+      expect(key.equals(importedKey)).to.equal(true)
+    })
+
+    it('should fail to import libp2p-key with wrong password', async () => {
+      const encryptedKey = await key.export('my secret', 'libp2p-key')
+      try {
+        await crypto.keys.import(encryptedKey, 'not my secret')
+      } catch (err) {
+        expect(err).to.exist()
+        return
+      }
+      expect.fail('should have thrown')
+    })
+
     it('needs correct password', async () => {
       const pem = await key.export('another secret')
       try {

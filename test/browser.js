@@ -2,9 +2,11 @@
 'use strict'
 
 const chai = require('chai')
-const dirtyChai = require('dirty-chai')
+chai.use(require('dirty-chai'))
 const expect = chai.expect
-chai.use(dirtyChai)
+
+const { Buffer } = require('buffer')
+
 const crypto = require('../')
 const webcrypto = require('../src/webcrypto')
 
