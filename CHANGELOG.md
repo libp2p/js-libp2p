@@ -1,3 +1,13 @@
+<a name="0.17.9"></a>
+## [0.17.9](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.8...v0.17.9) (2020-08-05)
+
+
+### Features
+
+* add exporting/importing of non rsa keys in libp2p-key format ([#179](https://github.com/libp2p/js-libp2p-crypto/issues/179)) ([7273739](https://github.com/libp2p/js-libp2p-crypto/commit/7273739))
+
+
+
 <a name="0.17.8"></a>
 ## [0.17.8](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.7...v0.17.8) (2020-07-20)
 
