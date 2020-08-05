@@ -7,6 +7,7 @@ const crypto = require('libp2p-crypto')
 const DS = require('interface-datastore')
 const CMS = require('./cms')
 const errcode = require('err-code')
+const { Number } = require('ipfs-utils/src/globalthis')
 
 require('node-forge/lib/sha512')
 
@@ -173,10 +174,10 @@ class Keychain {
    *
    * @param {string} name - The local key name; cannot already exist.
    * @param {string} type - One of the key types; 'rsa'.
-   * @param {int} size - The key size in bits.
-    * @returns {KeyInfo}
+   * @param {int} [size] - The key size in bits. Used for rsa keys only.
+   * @returns {KeyInfo}
    */
-  async createKey (name, type, size = 0) {
+  async createKey (name, type, size) {
     const self = this
 
     if (!validateKeyName(name) || name === 'self') {
@@ -187,17 +188,13 @@ class Keychain {
       return throwDelayed(errcode(new Error(`Invalid key type '${type}'`), 'ERR_INVALID_KEY_TYPE'))
     }
 
-    if (!Number.isSafeInteger(size)) {
-      return throwDelayed(errcode(new Error(`Invalid key size '${size}'`), 'ERR_INVALID_KEY_SIZE'))
-    }
-
     const dsname = DsName(name)
     const exists = await self.store.has(dsname)
     if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
 
     switch (type.toLowerCase()) {
       case 'rsa':
-        if (size < 2048) {
+        if (!Number.isSafeInteger(size) || size < 2048) {
           return throwDelayed(errcode(new Error(`Invalid RSA key size ${size}`), 'ERR_INVALID_KEY_SIZE'))
         }
         break
