@@ -216,7 +216,7 @@ class PersistentPeerStore extends PeerStore {
 
     try {
       // Deleted from the book
-      if (!peerId.pubKey) {
+      if (!this.keyBook.data.get(peerId.toB58String())) {
         batch.delete(key)
         return
       }
