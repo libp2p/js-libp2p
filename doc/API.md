@@ -306,7 +306,7 @@ Dials to another peer in the network and selects a protocol to communicate with 
 
 | Type | Description |
 |------|-------------|
-| `Promise<{ stream:*, protocol:string }>` | Promise resolves with a [duplex stream](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9#duplex-it) and the protocol used |
+| `Promise<{ stream:*, protocol:string }>` | Promise resolves with a [duplex stream](https://github.com/libp2p/js-libp2p/blob/master/doc/STREAMING_ITERABLES.md#duplex) and the protocol used |
 
 #### Example
 
