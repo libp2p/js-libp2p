@@ -1,3 +1,23 @@
+<a name="0.15.0"></a>
+# [0.15.0](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.6...v0.15.0) (2020-08-07)
+
+
+### Chores
+
+* update deps ([#134](https://github.com/libp2p/js-libp2p-tcp/issues/134)) ([d9f9912](https://github.com/libp2p/js-libp2p-tcp/commit/d9f9912))
+
+
+### BREAKING CHANGES
+
+* - The multiaddr dep used by this module returns Uint8Arrays and may
+  not be compatible with previous versions
+
+* chore: update utils
+
+* chore: remove gh dep url
+
+
+
 <a name="0.14.6"></a>
 ## [0.14.6](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.5...v0.14.6) (2020-07-17)
 
