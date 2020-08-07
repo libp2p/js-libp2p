@@ -38,18 +38,16 @@
   "homepage": "https://github.com/libp2p/js-libp2p-record",
   "devDependencies": {
     "aegir": "^25.0.0",
-    "chai": "^4.2.0",
-    "dirty-chai": "^2.0.1",
-    "ipfs-utils": "^2.3.1",
-    "libp2p-crypto": "~0.17.0",
-    "multibase": "^2.0.0",
-    "peer-id": "~0.13.6"
+    "libp2p-crypto": "^0.18.0",
+    "multibase": "^3.0.0",
+    "peer-id": "^0.14.0"
   },
   "dependencies": {
     "err-code": "^2.0.0",
-    "multihashes": "^1.0.1",
-    "multihashing-async": "^1.0.0",
-    "protons": "^1.2.1"
+    "multihashes": "^3.0.1",
+    "multihashing-async": "^2.0.1",
+    "protons": "^2.0.0",
+    "uint8arrays": "^1.1.0"
   },
   "contributors": [
     "Vasco Santos <vasco.santos@moxy.studio>",

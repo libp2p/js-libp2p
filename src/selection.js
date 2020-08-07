@@ -1,7 +1,7 @@
 'use strict'
 
 const errcode = require('err-code')
-const { utf8Decoder } = require('./utils')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 /**
  * Select the best record out of the given records.
@@ -18,7 +18,7 @@ const bestRecord = (selectors, k, records) => {
     throw errcode(new Error(errMsg), 'ERR_NO_RECORDS_RECEIVED')
   }
 
-  const kStr = utf8Decoder.decode(k)
+  const kStr = uint8ArrayToString(k)
   const parts = kStr.split('/')
 
   if (parts.length < 3) {

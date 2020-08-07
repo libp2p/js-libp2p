@@ -1,8 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
-
+const { expect } = require('aegir/utils/chai')
 const utils = require('../src/utils')
 
 const dates = [[

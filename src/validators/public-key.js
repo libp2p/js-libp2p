@@ -2,7 +2,8 @@
 
 const multihashing = require('multihashing-async')
 const errcode = require('err-code')
-const { utf8Decoder, uint8ArraysEqual } = require('../utils')
+const uint8ArrayToString = require('uint8arrays/to-string')
+const uint8ArrayEquals = require('uint8arrays/equals')
 
 /**
  * Validator for public key records.
@@ -23,7 +24,7 @@ const validatePublicKeyRecord = async (key, publicKey) => {
     throw errcode(new Error('invalid public key record'), 'ERR_INVALID_RECORD_KEY_TOO_SHORT')
   }
 
-  const prefix = utf8Decoder.decode(key.subarray(0, 4))
+  const prefix = uint8ArrayToString(key.subarray(0, 4))
 
   if (prefix !== '/pk/') {
     throw errcode(new Error('key was not prefixed with /pk/'), 'ERR_INVALID_RECORD_KEY_BAD_PREFIX')
@@ -33,7 +34,7 @@ const validatePublicKeyRecord = async (key, publicKey) => {
 
   const publicKeyHash = await multihashing(publicKey, 'sha2-256')
 
-  if (!uint8ArraysEqual(keyhash, publicKeyHash)) {
+  if (!uint8ArrayEquals(keyhash, publicKeyHash)) {
     throw errcode(new Error('public key does not match passed in key'), 'ERR_INVALID_RECORD_HASH_MISMATCH')
   }
 }

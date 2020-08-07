@@ -2,12 +2,10 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const crypto = require('libp2p-crypto')
 const PeerId = require('peer-id')
-const { utf8TextEncoder } = require('./utils')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 const libp2pRecord = require('../src')
 const validator = libp2pRecord.validator
 const Record = libp2pRecord.Record
@@ -19,7 +17,7 @@ const generateCases = (hash) => {
     valid: {
       publicKey: [
         Uint8Array.of(
-          ...utf8TextEncoder.encode('/pk/'),
+          ...uint8ArrayFromString('/pk/'),
           ...hash
         )
       ]
@@ -27,10 +25,10 @@ const generateCases = (hash) => {
     invalid: {
       publicKey: [
         // missing hashkey
-        [utf8TextEncoder.encode('/pk/'), 'ERR_INVALID_RECORD_KEY_TOO_SHORT'],
+        [uint8ArrayFromString('/pk/'), 'ERR_INVALID_RECORD_KEY_TOO_SHORT'],
         // not the hash of a key
-        [Uint8Array.of(...utf8TextEncoder.encode('/pk/'),
-          ...utf8TextEncoder.encode('random')
+        [Uint8Array.of(...uint8ArrayFromString('/pk/'),
+          ...uint8ArrayFromString('random')
         ), 'ERR_INVALID_RECORD_HASH_MISMATCH'],
         // missing prefix
         [hash, 'ERR_INVALID_RECORD_KEY_BAD_PREFIX'],
@@ -54,14 +52,14 @@ describe('validator', () => {
 
   describe('verifyRecord', () => {
     it('calls matching validator', () => {
-      const k = utf8TextEncoder.encode('/hello/you')
-      const rec = new Record(k, utf8TextEncoder.encode('world'), new PeerId(hash))
+      const k = uint8ArrayFromString('/hello/you')
+      const rec = new Record(k, uint8ArrayFromString('world'), new PeerId(hash))
 
       const validators = {
         hello: {
           func (key, value) {
             expect(key).to.eql(k)
-            expect(value).to.eql(utf8TextEncoder.encode('world'))
+            expect(value).to.eql(uint8ArrayFromString('world'))
           },
           sign: false
         }
@@ -70,14 +68,14 @@ describe('validator', () => {
     })
 
     it('calls not matching any validator', () => {
-      const k = utf8TextEncoder.encode('/hallo/you')
-      const rec = new Record(k, utf8TextEncoder.encode('world'), new PeerId(hash))
+      const k = uint8ArrayFromString('/hallo/you')
+      const rec = new Record(k, uint8ArrayFromString('world'), new PeerId(hash))
 
       const validators = {
         hello: {
           func (key, value) {
             expect(key).to.eql(k)
-            expect(value).to.eql(utf8TextEncoder.encode('world'))
+            expect(value).to.eql(uint8ArrayFromString('world'))
           },
           sign: false
         }
@@ -128,7 +126,7 @@ describe('validator', () => {
       const pubKey = crypto.keys.unmarshalPublicKey(fixture.publicKey)
 
       const hash = await pubKey.hash()
-      const k = Uint8Array.of(...utf8TextEncoder.encode('/pk/'), ...hash)
+      const k = Uint8Array.of(...uint8ArrayFromString('/pk/'), ...hash)
       return validator.validators.pk.func(k, pubKey.bytes)
     })
   })

@@ -1,7 +1,8 @@
 'use strict'
 
 const errcode = require('err-code')
-const { utf8Decoder } = require('./utils')
+const uint8ArrayToString = require('uint8arrays/to-string')
+
 /**
  * Checks a record and ensures it is still valid.
  * It runs the needed validators.
@@ -13,7 +14,7 @@ const { utf8Decoder } = require('./utils')
  */
 const verifyRecord = (validators, record) => {
   const key = record.key
-  const keyString = utf8Decoder.decode(key)
+  const keyString = uint8ArrayToString(key)
   const parts = keyString.split('/')
 
   if (parts.length < 3) {
