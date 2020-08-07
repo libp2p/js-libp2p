@@ -1,3 +1,24 @@
+<a name="0.18.0"></a>
+# [0.18.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.9...v0.18.0) (2020-08-07)
+
+
+### Bug Fixes
+
+* remove rendundant public key ([#181](https://github.com/libp2p/js-libp2p-crypto/issues/181)) ([afcffc8](https://github.com/libp2p/js-libp2p-crypto/commit/afcffc8))
+* replace node buffers with uint8arrays ([#180](https://github.com/libp2p/js-libp2p-crypto/issues/180)) ([a0f387a](https://github.com/libp2p/js-libp2p-crypto/commit/a0f387a))
+
+
+### BREAKING CHANGES
+
+* The private ed25519 key will no longer include the redundant public key
+
+* chore: fix lint
+* - Where node Buffers were returned, now Uint8Arrays are
+
+* chore: remove commented code
+
+
+
 <a name="0.17.9"></a>
 ## [0.17.9](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.8...v0.17.9) (2020-08-05)
 
