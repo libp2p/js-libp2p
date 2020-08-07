@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto",
-  "version": "0.17.9",
+  "version": "0.18.0",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -85,20 +85,20 @@
     "dryajov <dryajov@gmail.com>",
     "Alan Shaw <alan.shaw@protocol.ai>",
     "Hugo Dias <hugomrdias@gmail.com>",
-    "Yusef Napora <yusef@napora.org>",
     "Cayman <caymannava@gmail.com>",
-    "Victor Bjelkholm <victorbjelkholm@gmail.com>",
+    "Yusef Napora <yusef@napora.org>",
+    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
+    "Alex Potsides <alex@achingbrain.net>",
     "Arve Knudsen <arve.knudsen@gmail.com>",
     "Vasco Santos <vasco.santos@ua.pt>",
     "Jack Kleeman <jackkleeman@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
     "Richard Schneider <makaretu@gmail.com>",
-    "Alex Potsides <alex@achingbrain.net>",
     "dirkmc <dirkmdev@gmail.com>",
     "Alberto Elias <hi@albertoelias.me>",
     "nikuda <nikuda@gmail.com>",
-    "Tom Swindell <t.swindell@rubyx.co.uk>",
     "Carson Farmer <carson.farmer@gmail.com>",
+    "Tom Swindell <t.swindell@rubyx.co.uk>",
     "Joao Santos <jrmsantos15@gmail.com>"
   ]
 }
