@@ -23,6 +23,8 @@ class MulticastDNS extends EventEmitter {
     this.peerMultiaddrs = options.libp2p.multiaddrs || []
     this._queryInterval = null
     this._onPeer = this._onPeer.bind(this)
+    this._onMdnsQuery = this._onMdnsQuery.bind(this)
+    this._onMdnsResponse = this._onMdnsResponse.bind(this)
 
     if (options.compat !== false) {
       this._goMdns = new GoMulticastDNS({
@@ -44,8 +46,8 @@ class MulticastDNS extends EventEmitter {
     if (this.mdns) return
 
     this.mdns = multicastDNS({ port: this.port })
-    this.mdns.on('query', (event) => this._onMdnsQuery(event))
-    this.mdns.on('response', (event) => this._onMdnsResponse(event))
+    this.mdns.on('query', this._onMdnsQuery)
+    this.mdns.on('response', this._onMdnsResponse)
 
     this._queryInterval = query.queryLAN(this.mdns, this.serviceTag, this.interval)
 
@@ -85,7 +87,7 @@ class MulticastDNS extends EventEmitter {
     }
 
     this.mdns.removeListener('query', this._onMdnsQuery)
-    this.mdns.removeListener('query', this._onMdnsResponse)
+    this.mdns.removeListener('response', this._onMdnsResponse)
     this._goMdns && this._goMdns.removeListener('peer', this._onPeer)
 
     clearInterval(this._queryInterval)
