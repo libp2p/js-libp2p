@@ -30,8 +30,6 @@
   "homepage": "https://github.com/libp2p/js-libp2p-utils#readme",
   "devDependencies": {
     "aegir": "^25.0.0",
-    "chai": "^4.2.0",
-    "dirty-chai": "^2.0.1",
     "it-pair": "^1.0.0",
     "it-pipe": "^1.1.0",
     "streaming-iterables": "^5.0.2"
@@ -41,7 +39,7 @@
     "debug": "^4.1.1",
     "err-code": "^2.0.3",
     "ip-address": "^6.1.0",
-    "multiaddr": "^7.5.0"
+    "multiaddr": "^8.0.0"
   },
   "contributors": [
     "Vasco Santos <vasco.santos@moxy.studio>"
