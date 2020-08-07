@@ -1,3 +1,13 @@
+<a name="0.14.3"></a>
+## [0.14.3](https://github.com/libp2p/js-libp2p-mdns/compare/v0.14.2...v0.14.3) (2020-08-07)
+
+
+### Bug Fixes
+
+* ensure event handlers are removed on MulticastDNS.stop ([#96](https://github.com/libp2p/js-libp2p-mdns/issues/96)) ([9fea1f6](https://github.com/libp2p/js-libp2p-mdns/commit/9fea1f6))
+
+
+
 <a name="0.14.2"></a>
 ## [0.14.2](https://github.com/libp2p/js-libp2p-mdns/compare/v0.14.1...v0.14.2) (2020-07-02)
 
