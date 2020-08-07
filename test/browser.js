@@ -4,8 +4,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-
-const { Buffer } = require('buffer')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const crypto = require('../')
 const webcrypto = require('../src/webcrypto')
@@ -38,7 +37,7 @@ describe('Missing web crypto', () => {
   })
 
   it('should error for hmac create when web crypto is missing', () => {
-    return expectMissingWebCrypto(() => crypto.hmac.create('SHA256', Buffer.from('secret')))
+    return expectMissingWebCrypto(() => crypto.hmac.create('SHA256', uint8ArrayFromString('secret')))
   })
 
   it('should error for generate ephemeral key pair when web crypto is missing', () => {
@@ -54,10 +53,10 @@ describe('Missing web crypto', () => {
   })
 
   it('should error for sign RSA private key when web crypto is missing', () => {
-    return expectMissingWebCrypto(() => rsaPrivateKey.sign(Buffer.from('test')))
+    return expectMissingWebCrypto(() => rsaPrivateKey.sign(uint8ArrayFromString('test')))
   })
 
   it('should error for verify RSA public key when web crypto is missing', () => {
-    return expectMissingWebCrypto(() => rsaPrivateKey.public.verify(Buffer.from('test'), Buffer.from('test')))
+    return expectMissingWebCrypto(() => rsaPrivateKey.public.verify(uint8ArrayFromString('test'), uint8ArrayFromString('test')))
   })
 })

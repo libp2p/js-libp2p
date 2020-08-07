@@ -2,8 +2,9 @@
 
 const sha = require('multihashing-async/src/sha')
 const protobuf = require('protons')
-const multibase = require('multibase')
 const errcode = require('err-code')
+const uint8ArrayEquals = require('uint8arrays/equals')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 require('node-forge/lib/sha512')
 require('node-forge/lib/ed25519')
@@ -38,7 +39,7 @@ class RsaPublicKey {
   }
 
   equals (key) {
-    return this.bytes.equals(key.bytes)
+    return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
   async hash () { // eslint-disable-line require-await
@@ -48,7 +49,7 @@ class RsaPublicKey {
 
 class RsaPrivateKey {
   // key       - Object of the jwk format
-  // publicKey - Buffer of the spki format
+  // publicKey - Uint8Array of the spki format
   constructor (key, publicKey) {
     this._key = key
     this._publicKey = publicKey
@@ -86,7 +87,7 @@ class RsaPrivateKey {
   }
 
   equals (key) {
-    return this.bytes.equals(key.bytes)
+    return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
   async hash () { // eslint-disable-line require-await
@@ -104,7 +105,7 @@ class RsaPrivateKey {
    */
   async id () {
     const hash = await this.public.hash()
-    return multibase.encode('base58btc', hash).toString().slice(1)
+    return uint8ArrayToString(hash, 'base58btc')
   }
 
   /**

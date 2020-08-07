@@ -1,12 +1,12 @@
 'use strict'
 
-const { Buffer } = require('buffer')
 const protobuf = require('protons')
 const keysPBM = protobuf(require('./keys.proto'))
 require('node-forge/lib/asn1')
 require('node-forge/lib/pbe')
 const forge = require('node-forge/lib/forge')
 const errcode = require('err-code')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const importer = require('./importer')
 
@@ -130,6 +130,6 @@ exports.import = async (encryptedKey, password) => { // eslint-disable-line requ
     throw errcode(new Error('Cannot read the key, most likely the password is wrong or not a RSA key'), 'ERR_CANNOT_DECRYPT_PEM')
   }
   let der = forge.asn1.toDer(forge.pki.privateKeyToAsn1(key))
-  der = Buffer.from(der.getBytes(), 'binary')
+  der = uint8ArrayFromString(der.getBytes(), 'ascii')
   return supportedKeys.rsa.unmarshalRsaPrivateKey(der)
 }

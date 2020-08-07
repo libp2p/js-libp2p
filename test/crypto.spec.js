@@ -9,6 +9,7 @@ chai.use(dirtyChai)
 const crypto = require('../src')
 const fixtures = require('./fixtures/go-key-rsa')
 const { expectErrCode } = require('./util')
+const uint8ArrayEquals = require('uint8arrays/equals')
 
 /** @typedef {import("libp2p-crypto").PrivateKey} PrivateKey */
 
@@ -83,7 +84,7 @@ describe('libp2p-crypto', function () {
     it('unmarshal -> marshal, public key', () => {
       const key = crypto.keys.unmarshalPublicKey(fixtures.public.key)
       const marshalled = crypto.keys.marshalPublicKey(key)
-      expect(fixtures.public.key.equals(marshalled)).to.eql(true)
+      expect(uint8ArrayEquals(fixtures.public.key, marshalled)).to.eql(true)
     })
   })
 

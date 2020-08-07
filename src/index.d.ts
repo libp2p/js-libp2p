@@ -31,15 +31,15 @@ export namespace aes {
    * AES Cipher in CTR mode.
    */
   interface Cipher {
-    encrypt(data: Buffer): Promise<Buffer>;
-    decrypt(data: Buffer): Promise<Buffer>;
+    encrypt(data: Uint8Array): Promise<Uint8Array>;
+    decrypt(data: Uint8Array): Promise<Uint8Array>;
   }
   /**
    * Create a new AES Cipher.
    * @param key The key, if length 16 then AES 128 is used. For length 32, AES 256 is used.
    * @param iv Must have length 16.
    */
-  function create(key: Buffer, iv: Buffer): Promise<Cipher>;
+  function create(key: Uint8Array, iv: Uint8Array): Promise<Cipher>;
 }
 
 /**
@@ -53,7 +53,7 @@ export namespace hmac {
    * HMAC Digest.
    */
   interface Digest {
-    digest(data: Buffer): Promise<Buffer>;
+    digest(data: Uint8Array): Promise<Uint8Array>;
     length: 20 | 32 | 64 | number;
   }
   /**
@@ -61,7 +61,7 @@ export namespace hmac {
    */
   function create(
     hash: "SHA1" | "SHA256" | "SHA512" | string,
-    secret: Buffer
+    secret: Uint8Array
   ): Promise<Digest>;
 }
 
@@ -69,11 +69,11 @@ export namespace hmac {
  * Generic public key interface.
  */
 export interface PublicKey {
-  readonly bytes: Buffer;
-  verify(data: Buffer, sig: Buffer): Promise<boolean>;
-  marshal(): Buffer;
+  readonly bytes: Uint8Array;
+  verify(data: Uint8Array, sig: Uint8Array): Promise<boolean>;
+  marshal(): Uint8Array;
   equals(key: PublicKey): boolean;
-  hash(): Promise<Buffer>;
+  hash(): Promise<Uint8Array>;
 }
 
 /**
@@ -81,11 +81,11 @@ export interface PublicKey {
  */
 export interface PrivateKey {
   readonly public: PublicKey;
-  readonly bytes: Buffer;
-  sign(data: Buffer): Promise<Buffer>;
-  marshal(): Buffer;
+  readonly bytes: Uint8Array;
+  sign(data: Uint8Array): Promise<Uint8Array>;
+  marshal(): Uint8Array;
   equals(key: PrivateKey): boolean;
-  hash(): Promise<Buffer>;
+  hash(): Promise<Uint8Array>;
   /**
    * Gets the ID of the key.
    *
@@ -101,10 +101,10 @@ export interface PrivateKey {
 }
 
 export interface Keystretcher {
-  (res: Buffer): Keystretcher;
-  iv: Buffer;
-  cipherKey: Buffer;
-  macKey: Buffer;
+  (res: Uint8Array): Keystretcher;
+  iv: Uint8Array;
+  cipherKey: Uint8Array;
+  macKey: Uint8Array;
 }
 
 export interface StretchPair {
@@ -127,94 +127,94 @@ export namespace keys {
   export namespace supportedKeys {
     namespace rsa {
       class RsaPublicKey implements PublicKey {
-        constructor(key: Buffer);
-        readonly bytes: Buffer;
-        verify(data: Buffer, sig: Buffer): Promise<boolean>;
-        marshal(): Buffer;
-        encrypt(bytes: Buffer): Buffer;
+        constructor(key: Uint8Array);
+        readonly bytes: Uint8Array;
+        verify(data: Uint8Array, sig: Uint8Array): Promise<boolean>;
+        marshal(): Uint8Array;
+        encrypt(bytes: Uint8Array): Uint8Array;
         equals(key: PublicKey): boolean;
-        hash(): Promise<Buffer>;
+        hash(): Promise<Uint8Array>;
       }
 
       class RsaPrivateKey implements PrivateKey {
-        constructor(key: any, publicKey: Buffer);
+        constructor(key: any, publicKey: Uint8Array);
         readonly public: RsaPublicKey;
-        readonly bytes: Buffer;
-        genSecret(): Buffer;
-        sign(data: Buffer): Promise<Buffer>;
-        decrypt(bytes: Buffer): Buffer;
-        marshal(): Buffer;
+        readonly bytes: Uint8Array;
+        genSecret(): Uint8Array;
+        sign(data: Uint8Array): Promise<Uint8Array>;
+        decrypt(bytes: Uint8Array): Uint8Array;
+        marshal(): Uint8Array;
         equals(key: PrivateKey): boolean;
-        hash(): Promise<Buffer>;
+        hash(): Promise<Uint8Array>;
         id(): Promise<string>;
         export(password: string, format?: string): Promise<string>;
       }
-      function unmarshalRsaPublicKey(buf: Buffer): RsaPublicKey;
-      function unmarshalRsaPrivateKey(buf: Buffer): Promise<RsaPrivateKey>;
+      function unmarshalRsaPublicKey(buf: Uint8Array): RsaPublicKey;
+      function unmarshalRsaPrivateKey(buf: Uint8Array): Promise<RsaPrivateKey>;
       function generateKeyPair(bits: number): Promise<RsaPrivateKey>;
-      function fromJwk(jwk: Buffer): Promise<RsaPrivateKey>;
+      function fromJwk(jwk: Uint8Array): Promise<RsaPrivateKey>;
     }
 
     namespace ed25519 {
       class Ed25519PublicKey implements PublicKey {
-        constructor(key: Buffer);
-        readonly bytes: Buffer;
-        verify(data: Buffer, sig: Buffer): Promise<boolean>;
-        marshal(): Buffer;
-        encrypt(bytes: Buffer): Buffer;
+        constructor(key: Uint8Array);
+        readonly bytes: Uint8Array;
+        verify(data: Uint8Array, sig: Uint8Array): Promise<boolean>;
+        marshal(): Uint8Array;
+        encrypt(bytes: Uint8Array): Uint8Array;
         equals(key: PublicKey): boolean;
-        hash(): Promise<Buffer>;
+        hash(): Promise<Uint8Array>;
       }
 
       class Ed25519PrivateKey implements PrivateKey {
-        constructor(key: Buffer, publicKey: Buffer);
+        constructor(key: Uint8Array, publicKey: Uint8Array);
         readonly public: Ed25519PublicKey;
-        readonly bytes: Buffer;
-        sign(data: Buffer): Promise<Buffer>;
-        marshal(): Buffer;
+        readonly bytes: Uint8Array;
+        sign(data: Uint8Array): Promise<Uint8Array>;
+        marshal(): Uint8Array;
         equals(key: PrivateKey): boolean;
-        hash(): Promise<Buffer>;
+        hash(): Promise<Uint8Array>;
         id(): Promise<string>;
         export(password: string, format?: string): Promise<string>;
       }
 
       function unmarshalEd25519PrivateKey(
-        buf: Buffer
+        buf: Uint8Array
       ): Promise<Ed25519PrivateKey>;
-      function unmarshalEd25519PublicKey(buf: Buffer): Ed25519PublicKey;
+      function unmarshalEd25519PublicKey(buf: Uint8Array): Ed25519PublicKey;
       function generateKeyPair(): Promise<Ed25519PrivateKey>;
       function generateKeyPairFromSeed(
-        seed: Buffer
+        seed: Uint8Array
       ): Promise<Ed25519PrivateKey>;
     }
 
     namespace secp256k1 {
       class Secp256k1PublicKey implements PublicKey {
-        constructor(key: Buffer);
-        readonly bytes: Buffer;
-        verify(data: Buffer, sig: Buffer): Promise<boolean>;
-        marshal(): Buffer;
-        encrypt(bytes: Buffer): Buffer;
+        constructor(key: Uint8Array);
+        readonly bytes: Uint8Array;
+        verify(data: Uint8Array, sig: Uint8Array): Promise<boolean>;
+        marshal(): Uint8Array;
+        encrypt(bytes: Uint8Array): Uint8Array;
         equals(key: PublicKey): boolean;
-        hash(): Promise<Buffer>;
+        hash(): Promise<Uint8Array>;
       }
 
       class Secp256k1PrivateKey implements PrivateKey {
-        constructor(key: Uint8Array | Buffer, publicKey: Uint8Array | Buffer);
+        constructor(key: Uint8Array, publicKey: Uint8Array);
         readonly public: Secp256k1PublicKey;
-        readonly bytes: Buffer;
-        sign(data: Buffer): Promise<Buffer>;
-        marshal(): Buffer;
+        readonly bytes: Uint8Array;
+        sign(data: Uint8Array): Promise<Uint8Array>;
+        marshal(): Uint8Array;
         equals(key: PrivateKey): boolean;
-        hash(): Promise<Buffer>;
+        hash(): Promise<Uint8Array>;
         id(): Promise<string>;
         export(password: string, format?: string): Promise<string>;
       }
 
       function unmarshalSecp256k1PrivateKey(
-        bytes: Buffer
+        bytes: Uint8Array
       ): Promise<Secp256k1PrivateKey>;
-      function unmarshalSecp256k1PublicKey(bytes: Buffer): Secp256k1PublicKey;
+      function unmarshalSecp256k1PublicKey(bytes: Uint8Array): Secp256k1PublicKey;
       function generateKeyPair(): Promise<Secp256k1PrivateKey>;
     }
   }
@@ -266,8 +266,8 @@ export namespace keys {
   export function generateEphemeralKeyPair(
     curve: CurveType | string
   ): Promise<{
-    key: Buffer;
-    genSharedKey: (theirPub: Buffer, forcePrivate?: any) => Promise<Buffer>;
+    key: Uint8Array;
+    genSharedKey: (theirPub: Uint8Array, forcePrivate?: any) => Promise<Uint8Array>;
   }>;
 
   /**
@@ -279,34 +279,34 @@ export namespace keys {
   export function keyStretcher(
     cipherType: CipherType | string,
     hashType: HashType | string,
-    secret: Buffer | string
+    secret: Uint8Array | string
   ): Promise<StretchPair>;
 
   /**
    * Converts a protobuf serialized public key into its representative object.
    * @param buf The protobuf serialized public key.
    */
-  export function unmarshalPublicKey(buf: Buffer): PublicKey;
+  export function unmarshalPublicKey(buf: Uint8Array): PublicKey;
 
   /**
    * Converts a public key object into a protobuf serialized public key.
    * @param key An RSA, Ed25519, or Secp256k1 public key object.
    * @param type One of the supported key types.
    */
-  export function marshalPublicKey(key: PublicKey, type?: KeyType | string): Buffer;
+  export function marshalPublicKey(key: PublicKey, type?: KeyType | string): Uint8Array;
 
   /**
    * Converts a protobuf serialized private key into its representative object.
    * @param buf The protobuf serialized private key.
    */
-  export function unmarshalPrivateKey(buf: Buffer): Promise<PrivateKey>;
+  export function unmarshalPrivateKey(buf: Uint8Array): Promise<PrivateKey>;
 
   /**
    * Converts a private key object into a protobuf serialized private key.
    * @param key An RSA, Ed25519, or Secp256k1 private key object.
    * @param type One of the supported key types.
    */
-  export function marshalPrivateKey(key: PrivateKey, type?: KeyType | string): Buffer;
+  export function marshalPrivateKey(key: PrivateKey, type?: KeyType | string): Uint8Array;
 
   /**
    * Converts a PEM password protected private key into its representative object.
@@ -318,10 +318,10 @@ export namespace keys {
 }
 
 /**
- * Generates a Buffer populated by random bytes.
- * @param The size of the random bytes Buffer.
+ * Generates a Uint8Array populated by random bytes.
+ * @param The size of the random bytes Uint8Array.
  */
-export function randomBytes(number: number): Buffer;
+export function randomBytes(number: number): Uint8Array;
 
 /**
  * Computes the Password-Based Key Derivation Function 2.
@@ -332,9 +332,9 @@ export function randomBytes(number: number): Buffer;
  * @param hash The hash name ('sha1', 'sha2-512, ...)
  */
 export function pbkdf2(
-  password: string | Buffer,
-  salt: string | Buffer,
+  password: string | Uint8Array,
+  salt: string | Uint8Array,
   iterations: number,
   keySize: number,
   hash: string
-): Buffer;
+): Uint8Array;

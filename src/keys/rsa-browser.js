@@ -1,8 +1,9 @@
 'use strict'
 
-const { Buffer } = require('buffer')
 const webcrypto = require('../webcrypto')
 const randomBytes = require('../random-bytes')
+const uint8ArrayToString = require('uint8arrays/to-string')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 exports.utils = require('./rsa-utils')
 
@@ -75,7 +76,7 @@ exports.hashAndSign = async function (key, msg) {
     Uint8Array.from(msg)
   )
 
-  return Buffer.from(sig)
+  return new Uint8Array(sig, sig.byteOffset, sig.byteLength)
 }
 
 exports.hashAndVerify = async function (key, sig, msg) {
@@ -129,8 +130,8 @@ RSA encryption/decryption for the browser with webcrypto workarround
 
 Explanation:
   - Convert JWK to nodeForge
-  - Convert msg buffer to nodeForge buffer: ByteBuffer is a "binary-string backed buffer", so let's make our buffer a binary string
-  - Convert resulting nodeForge buffer to buffer: it returns a binary string, turn that into a uint8array(buffer)
+  - Convert msg Uint8Array to nodeForge buffer: ByteBuffer is a "binary-string backed buffer", so let's make our Uint8Array a binary string
+  - Convert resulting nodeForge buffer to Uint8Array: it returns a binary string, turn that into a Uint8Array
 
 */
 
@@ -138,9 +139,9 @@ const { jwk2pub, jwk2priv } = require('./jwk2pem')
 
 function convertKey (key, pub, msg, handle) {
   const fkey = pub ? jwk2pub(key) : jwk2priv(key)
-  const fmsg = Buffer.from(msg).toString('binary')
+  const fmsg = uint8ArrayToString(Uint8Array.from(msg), 'ascii')
   const fomsg = handle(fmsg, fkey)
-  return Buffer.from(fomsg, 'binary')
+  return uint8ArrayFromString(fomsg, 'ascii')
 }
 
 exports.encrypt = function (key, msg) {

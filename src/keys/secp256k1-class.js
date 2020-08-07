@@ -1,8 +1,9 @@
 'use strict'
 
-const multibase = require('multibase')
 const sha = require('multihashing-async/src/sha')
 const errcode = require('err-code')
+const uint8ArrayEquals = require('uint8arrays/equals')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const exporter = require('./exporter')
 
@@ -31,7 +32,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
     }
 
     equals (key) {
-      return this.bytes.equals(key.bytes)
+      return uint8ArrayEquals(this.bytes, key.bytes)
     }
 
     hash () {
@@ -67,7 +68,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
     }
 
     equals (key) {
-      return this.bytes.equals(key.bytes)
+      return uint8ArrayEquals(this.bytes, key.bytes)
     }
 
     hash () {
@@ -85,7 +86,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
      */
     async id () {
       const hash = await this.public.hash()
-      return multibase.encode('base58btc', hash).toString().slice(1)
+      return uint8ArrayToString(hash, 'base58btc')
     }
 
     /**

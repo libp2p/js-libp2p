@@ -9,7 +9,7 @@ module.exports = {
    * The PrivateKey is encrypted via a password derived PBKDF2 key
    * leveraging the aes-gcm cipher algorithm.
    *
-   * @param {Buffer} privateKey The PrivateKey protobuf buffer
+   * @param {Uint8Array} privateKey The PrivateKey protobuf
    * @param {string} password
    * @returns {Promise<string>} A base64 encoded string
    */

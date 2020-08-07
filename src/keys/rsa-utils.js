@@ -1,15 +1,15 @@
 'use strict'
 
-const { Buffer } = require('buffer')
 require('node-forge/lib/asn1')
 require('node-forge/lib/rsa')
 const forge = require('node-forge/lib/forge')
 const { bigIntegerToUintBase64url, base64urlToBigInteger } = require('./../util')
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 // Convert a PKCS#1 in ASN1 DER format to a JWK key
 exports.pkcs1ToJwk = function (bytes) {
-  bytes = Buffer.from(bytes) // convert Uint8Arrays
-  const asn1 = forge.asn1.fromDer(bytes.toString('binary'))
+  const asn1 = forge.asn1.fromDer(uint8ArrayToString(bytes, 'ascii'))
   const privateKey = forge.pki.privateKeyFromAsn1(asn1)
 
   // https://tools.ietf.org/html/rfc7518#section-6.3.1
@@ -41,12 +41,12 @@ exports.jwkToPkcs1 = function (jwk) {
     qInv: base64urlToBigInteger(jwk.qi)
   })
 
-  return Buffer.from(forge.asn1.toDer(asn1).getBytes(), 'binary')
+  return uint8ArrayFromString(forge.asn1.toDer(asn1).getBytes(), 'ascii')
 }
 
 // Convert a PKCIX in ASN1 DER format to a JWK key
 exports.pkixToJwk = function (bytes) {
-  const asn1 = forge.asn1.fromDer(bytes.toString('binary'))
+  const asn1 = forge.asn1.fromDer(uint8ArrayToString(bytes, 'ascii'))
   const publicKey = forge.pki.publicKeyFromAsn1(asn1)
 
   return {
@@ -65,5 +65,5 @@ exports.jwkToPkix = function (jwk) {
     e: base64urlToBigInteger(jwk.e)
   })
 
-  return Buffer.from(forge.asn1.toDer(asn1).getBytes(), 'binary')
+  return uint8ArrayFromString(forge.asn1.toDer(asn1).getBytes(), 'ascii')
 }

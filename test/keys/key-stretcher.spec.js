@@ -17,7 +17,7 @@ describe('keyStretcher', () => {
     let res
     // @ts-check
     /**
-     * @type {Buffer}
+     * @type {Uint8Array}
      */
     let secret
 

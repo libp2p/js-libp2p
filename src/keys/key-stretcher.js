@@ -1,6 +1,8 @@
 'use strict'
-const { Buffer } = require('buffer')
+
 const errcode = require('err-code')
+const uint8ArrayConcat = require('uint8arrays/concat')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 const hmac = require('../hmac')
 
 const cipherMap = {
@@ -35,7 +37,7 @@ module.exports = async (cipherType, hash, secret) => {
   const cipherKeySize = cipher.keySize
   const ivSize = cipher.ivSize
   const hmacKeySize = 20
-  const seed = Buffer.from('key expansion')
+  const seed = uint8ArrayFromString('key expansion')
   const resultLength = 2 * (ivSize + cipherKeySize + hmacKeySize)
 
   const m = await hmac.create(hash, secret)
@@ -45,7 +47,7 @@ module.exports = async (cipherType, hash, secret) => {
   let j = 0
 
   while (j < resultLength) {
-    const b = await m.digest(Buffer.concat([a, seed]))
+    const b = await m.digest(uint8ArrayConcat([a, seed]))
     let todo = b.length
 
     if (j + todo > resultLength) {
@@ -58,7 +60,7 @@ module.exports = async (cipherType, hash, secret) => {
   }
 
   const half = resultLength / 2
-  const resultBuffer = Buffer.concat(result)
+  const resultBuffer = uint8ArrayConcat(result)
   const r1 = resultBuffer.slice(0, half)
   const r2 = resultBuffer.slice(half, resultLength)
 

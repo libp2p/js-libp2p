@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 'use strict'
 
-const { Buffer } = require('buffer')
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const crypto = require('../../src')
 const ed25519 = crypto.keys.supportedKeys.ed25519
@@ -130,16 +130,16 @@ describe('ed25519', function () {
   })
 
   it('sign and verify', async () => {
-    const data = Buffer.from('hello world')
+    const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
     const valid = await key.public.verify(data, sig)
     expect(valid).to.eql(true)
   })
 
   it('fails to verify for different data', async () => {
-    const data = Buffer.from('hello world')
+    const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
-    const valid = await key.public.verify(Buffer.from('hello'), sig)
+    const valid = await key.public.verify(uint8ArrayFromString('hello'), sig)
     expect(valid).to.be.eql(false)
   })
 

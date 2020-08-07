@@ -2,7 +2,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-env mocha */
 'use strict'
-const { Buffer } = require('buffer')
+
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
@@ -23,10 +23,10 @@ const bytes = {
 describe('AES-CTR', () => {
   Object.keys(bytes).forEach((byte) => {
     it(`${bytes[byte]} - encrypt and decrypt`, async () => {
-      const key = Buffer.alloc(parseInt(byte, 10))
+      const key = new Uint8Array(parseInt(byte, 10))
       key.fill(5)
 
-      const iv = Buffer.alloc(16)
+      const iv = new Uint8Array(16)
       iv.fill(1)
 
       const cipher = await crypto.aes.create(key, iv)
@@ -41,18 +41,18 @@ describe('AES-CTR', () => {
 
   Object.keys(bytes).forEach((byte) => {
     it(`${bytes[byte]} - fixed - encrypt and decrypt`, async () => {
-      const key = Buffer.alloc(parseInt(byte, 10))
+      const key = new Uint8Array(parseInt(byte, 10))
       key.fill(5)
 
-      const iv = Buffer.alloc(16)
+      const iv = new Uint8Array(16)
       iv.fill(1)
 
       const cipher = await crypto.aes.create(key, iv)
 
       for (let i = 0; i < fixtures[byte].inputs.length; i++) {
         const rawIn = fixtures[byte].inputs[i]
-        const input = Buffer.from(rawIn)
-        const output = Buffer.from(fixtures[byte].outputs[i])
+        const input = Uint8Array.from(rawIn.data)
+        const output = Uint8Array.from(fixtures[byte].outputs[i].data)
         const encrypted = await cipher.encrypt(input)
         expect(encrypted).to.have.length(output.length)
         expect(encrypted).to.eql(output)
@@ -68,18 +68,18 @@ describe('AES-CTR', () => {
     }
 
     it(`${bytes[byte]} - go interop - encrypt and decrypt`, async () => {
-      const key = Buffer.alloc(parseInt(byte, 10))
+      const key = new Uint8Array(parseInt(byte, 10))
       key.fill(5)
 
-      const iv = Buffer.alloc(16)
+      const iv = new Uint8Array(16)
       iv.fill(1)
 
       const cipher = await crypto.aes.create(key, iv)
 
       for (let i = 0; i < goFixtures[byte].inputs.length; i++) {
         const rawIn = goFixtures[byte].inputs[i]
-        const input = Buffer.from(rawIn)
-        const output = Buffer.from(goFixtures[byte].outputs[i])
+        const input = Uint8Array.from(rawIn)
+        const output = Uint8Array.from(goFixtures[byte].outputs[i])
         const encrypted = await cipher.encrypt(input)
         expect(encrypted).to.have.length(output.length)
         expect(encrypted).to.eql(output)
@@ -90,8 +90,8 @@ describe('AES-CTR', () => {
   })
 
   it('checks key length', () => {
-    const key = Buffer.alloc(5)
-    const iv = Buffer.alloc(16)
+    const key = new Uint8Array(5)
+    const iv = new Uint8Array(16)
     return expectErrCode(crypto.aes.create(key, iv), 'ERR_INVALID_KEY_LENGTH')
   })
 })
@@ -101,7 +101,7 @@ describe('AES-CTR', () => {
  * @type {function(Cipher): Promise<void>}
  */
 async function encryptAndDecrypt (cipher) {
-  const data = Buffer.alloc(100)
+  const data = new Uint8Array(100)
   data.fill(Math.ceil(Math.random() * 100))
 
   const encrypted = await cipher.encrypt(data)

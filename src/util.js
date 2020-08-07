@@ -1,13 +1,15 @@
 'use strict'
 
-const { Buffer } = require('buffer')
 require('node-forge/lib/util')
 require('node-forge/lib/jsbn')
 const forge = require('node-forge/lib/forge')
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
+const uint8ArrayConcat = require('uint8arrays/concat')
 
 exports.bigIntegerToUintBase64url = (num, len) => {
   // Call `.abs()` to convert to unsigned
-  let buf = Buffer.from(num.abs().toByteArray()) // toByteArray converts to big endian
+  let buf = Uint8Array.from(num.abs().toByteArray()) // toByteArray converts to big endian
 
   // toByteArray() gives us back a signed array, which will include a leading 0
   // byte if the most significant bit of the number is 1:
@@ -17,38 +19,24 @@ exports.bigIntegerToUintBase64url = (num, len) => {
 
   if (len != null) {
     if (buf.length > len) throw new Error('byte array longer than desired length')
-    buf = Buffer.concat([Buffer.alloc(len - buf.length), buf])
+    buf = uint8ArrayConcat([new Uint8Array(len - buf.length), buf])
   }
 
-  return exports.bufferToBase64url(buf)
-}
-
-// Convert a Buffer to a base64 encoded string without padding
-// Adapted from https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-41#appendix-C
-exports.bufferToBase64url = buf => {
-  return buf
-    .toString('base64')
-    .split('=')[0] // Remove any trailing '='s
-    .replace(/\+/g, '-') // 62nd char of encoding
-    .replace(/\//g, '_') // 63rd char of encoding
+  return uint8ArrayToString(buf, 'base64url')
 }
 
 // Convert a base64url encoded string to a BigInteger
 exports.base64urlToBigInteger = str => {
   const buf = exports.base64urlToBuffer(str)
-  return new forge.jsbn.BigInteger(buf.toString('hex'), 16)
+  return new forge.jsbn.BigInteger(uint8ArrayToString(buf, 'base16'), 16)
 }
 
 exports.base64urlToBuffer = (str, len) => {
-  str = (str + '==='.slice((str.length + 3) % 4))
-    .replace(/-/g, '+')
-    .replace(/_/g, '/')
-
-  let buf = Buffer.from(str, 'base64')
+  let buf = uint8ArrayFromString(str, 'base64urlpad')
 
   if (len != null) {
     if (buf.length > len) throw new Error('byte array longer than desired length')
-    buf = Buffer.concat([Buffer.alloc(len - buf.length), buf])
+    buf = uint8ArrayConcat([new Uint8Array(len - buf.length), buf])
   }
 
   return buf

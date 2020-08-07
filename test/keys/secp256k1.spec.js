@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 'use strict'
 
-const { Buffer } = require('buffer')
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
@@ -11,6 +10,7 @@ const secp256k1 = crypto.keys.supportedKeys.secp256k1
 const keysPBM = crypto.keys.keysPBM
 const randomBytes = crypto.randomBytes
 const secp256k1Crypto = require('../../src/keys/secp256k1')(randomBytes)
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 describe('secp256k1 keys', () => {
   let key
@@ -100,16 +100,16 @@ describe('secp256k1 keys', () => {
   })
 
   it('sign and verify', async () => {
-    const data = Buffer.from('hello world')
+    const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
     const valid = await key.public.verify(data, sig)
     expect(valid).to.eql(true)
   })
 
   it('fails to verify for different data', async () => {
-    const data = Buffer.from('hello world')
+    const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
-    const valid = await key.public.verify(Buffer.from('hello'), sig)
+    const valid = await key.public.verify(uint8ArrayFromString('hello'), sig)
     expect(valid).to.eql(false)
   })
 })
@@ -145,7 +145,7 @@ describe('handles generation of invalid key', () => {
   before(() => {
     generateKey = secp256k1Crypto.generateKey
     secp256k1 = require('../../src/keys/secp256k1-class')(keysPBM, randomBytes, secp256k1Crypto)
-    secp256k1Crypto.generateKey = () => Buffer.from('not a real key')
+    secp256k1Crypto.generateKey = () => uint8ArrayFromString('not a real key')
   })
 
   after(() => {
@@ -179,17 +179,17 @@ describe('crypto functions', () => {
   })
 
   it('does not validate an invalid key', () => {
-    expect(() => secp256k1Crypto.validatePublicKey(Buffer.from('42'))).to.throw()
-    expect(() => secp256k1Crypto.validatePrivateKey(Buffer.from('42'))).to.throw()
+    expect(() => secp256k1Crypto.validatePublicKey(uint8ArrayFromString('42'))).to.throw()
+    expect(() => secp256k1Crypto.validatePrivateKey(uint8ArrayFromString('42'))).to.throw()
   })
 
   it('validates a correct signature', async () => {
-    const sig = await secp256k1Crypto.hashAndSign(privKey, Buffer.from('hello'))
-    const valid = await secp256k1Crypto.hashAndVerify(pubKey, sig, Buffer.from('hello'))
+    const sig = await secp256k1Crypto.hashAndSign(privKey, uint8ArrayFromString('hello'))
+    const valid = await secp256k1Crypto.hashAndVerify(pubKey, sig, uint8ArrayFromString('hello'))
     expect(valid).to.equal(true)
   })
 
-  it('errors if given a null buffer to sign', async () => {
+  it('errors if given a null Uint8Array to sign', async () => {
     try {
       await secp256k1Crypto.hashAndSign(privKey, null)
     } catch (err) {
@@ -200,15 +200,15 @@ describe('crypto functions', () => {
 
   it('errors when signing with an invalid key', async () => {
     try {
-      await secp256k1Crypto.hashAndSign(Buffer.from('42'), Buffer.from('Hello'))
+      await secp256k1Crypto.hashAndSign(uint8ArrayFromString('42'), uint8ArrayFromString('Hello'))
     } catch (err) {
       return expect(err.message).to.equal('Expected private key to be an Uint8Array with length 32')
     }
     throw new Error('Expected error to be thrown')
   })
 
-  it('errors if given a null buffer to validate', async () => {
-    const sig = await secp256k1Crypto.hashAndSign(privKey, Buffer.from('hello'))
+  it('errors if given a null Uint8Array to validate', async () => {
+    const sig = await secp256k1Crypto.hashAndSign(privKey, uint8ArrayFromString('hello'))
 
     try {
       await secp256k1Crypto.hashAndVerify(privKey, sig, null)
@@ -220,7 +220,7 @@ describe('crypto functions', () => {
 
   it('errors when validating a message with an invalid signature', async () => {
     try {
-      await secp256k1Crypto.hashAndVerify(pubKey, Buffer.from('invalid-sig'), Buffer.from('hello'))
+      await secp256k1Crypto.hashAndVerify(pubKey, uint8ArrayFromString('invalid-sig'), uint8ArrayFromString('hello'))
     } catch (err) {
       return expect(err.message).to.equal('Signature could not be parsed')
     }
@@ -229,7 +229,7 @@ describe('crypto functions', () => {
 
   it('errors when signing with an invalid key', async () => {
     try {
-      await secp256k1Crypto.hashAndSign(Buffer.from('42'), Buffer.from('Hello'))
+      await secp256k1Crypto.hashAndSign(uint8ArrayFromString('42'), uint8ArrayFromString('Hello'))
     } catch (err) {
       return expect(err.message).to.equal('Expected private key to be an Uint8Array with length 32')
     }
@@ -237,11 +237,11 @@ describe('crypto functions', () => {
   })
 
   it('throws when compressing an invalid public key', () => {
-    expect(() => secp256k1Crypto.compressPublicKey(Buffer.from('42'))).to.throw()
+    expect(() => secp256k1Crypto.compressPublicKey(uint8ArrayFromString('42'))).to.throw()
   })
 
   it('throws when decompressing an invalid public key', () => {
-    expect(() => secp256k1Crypto.decompressPublicKey(Buffer.from('42'))).to.throw()
+    expect(() => secp256k1Crypto.decompressPublicKey(uint8ArrayFromString('42'))).to.throw()
   })
 
   it('compresses/decompresses a valid public key', () => {

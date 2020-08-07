@@ -1,6 +1,8 @@
 'use strict'
 
 const crypto = require('crypto')
+const uint8ArrayConcat = require('uint8arrays/concat')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 // Based off of code from https://github.com/luke-park/SecureCompatibleEncryptionExamples
 
@@ -27,9 +29,9 @@ function create ({
   /**
    *
    * @private
-   * @param {Buffer} data
-   * @param {Buffer} key
-   * @returns {Promise<Buffer>}
+   * @param {Uint8Array} data
+   * @param {Uint8Array} key
+   * @returns {Promise<Uint8Array>}
    */
   async function encryptWithKey (data, key) { // eslint-disable-line require-await
     const nonce = crypto.randomBytes(nonceLength)
@@ -38,28 +40,32 @@ function create ({
     const cipher = crypto.createCipheriv(algorithm, key, nonce)
 
     // Encrypt and prepend nonce.
-    const ciphertext = Buffer.concat([cipher.update(data), cipher.final()])
+    const ciphertext = uint8ArrayConcat([cipher.update(data), cipher.final()])
 
-    return Buffer.concat([nonce, ciphertext, cipher.getAuthTag()])
+    return uint8ArrayConcat([nonce, ciphertext, cipher.getAuthTag()])
   }
 
   /**
    * Uses the provided password to derive a pbkdf2 key. The key
    * will then be used to encrypt the data.
    *
-   * @param {Buffer} data The data to decrypt
-   * @param {string|Buffer} password A plain password
-   * @returns {Promise<Buffer>}
+   * @param {Uint8Array} data The data to decrypt
+   * @param {string|Uint8Array} password A plain password
+   * @returns {Promise<Uint8Array>}
    */
   async function encrypt (data, password) { // eslint-disable-line require-await
     // Generate a 128-bit salt using a CSPRNG.
     const salt = crypto.randomBytes(saltLength)
 
+    if (typeof password === 'string' || password instanceof String) {
+      password = uint8ArrayFromString(password)
+    }
+
     // Derive a key using PBKDF2.
-    const key = crypto.pbkdf2Sync(Buffer.from(password), salt, iterations, keyLength, digest)
+    const key = crypto.pbkdf2Sync(password, salt, iterations, keyLength, digest)
 
     // Encrypt and prepend salt.
-    return Buffer.concat([salt, await encryptWithKey(Buffer.from(data), key)])
+    return uint8ArrayConcat([salt, await encryptWithKey(Uint8Array.from(data), key)])
   }
 
   /**
@@ -70,12 +76,12 @@ function create ({
    * the encryption cipher.
    *
    * @private
-   * @param {Buffer} ciphertextAndNonce The data to decrypt
-   * @param {Buffer} key
-   * @returns {Promise<Buffer>}
+   * @param {Uint8Array} ciphertextAndNonce The data to decrypt
+   * @param {Uint8Array} key
+   * @returns {Promise<Uint8Array>}
    */
   async function decryptWithKey (ciphertextAndNonce, key) { // eslint-disable-line require-await
-    // Create buffers of nonce, ciphertext and tag.
+    // Create Uint8Arrays of nonce, ciphertext and tag.
     const nonce = ciphertextAndNonce.slice(0, nonceLength)
     const ciphertext = ciphertextAndNonce.slice(nonceLength, ciphertextAndNonce.length - algorithmTagLength)
     const tag = ciphertextAndNonce.slice(ciphertext.length + nonceLength)
@@ -85,7 +91,7 @@ function create ({
 
     // Decrypt and return result.
     cipher.setAuthTag(tag)
-    return Buffer.concat([cipher.update(ciphertext), cipher.final()])
+    return uint8ArrayConcat([cipher.update(ciphertext), cipher.final()])
   }
 
   /**
@@ -94,16 +100,20 @@ function create ({
    * this decryption cipher must be the same as those used to create
    * the encryption cipher.
    *
-   * @param {Buffer} data The data to decrypt
-   * @param {string|Buffer} password A plain password
+   * @param {Uint8Array} data The data to decrypt
+   * @param {string|Uint8Array} password A plain password
    */
   async function decrypt (data, password) { // eslint-disable-line require-await
-    // Create buffers of salt and ciphertextAndNonce.
+    // Create Uint8Arrays of salt and ciphertextAndNonce.
     const salt = data.slice(0, saltLength)
     const ciphertextAndNonce = data.slice(saltLength)
 
+    if (typeof password === 'string' || password instanceof String) {
+      password = uint8ArrayFromString(password)
+    }
+
     // Derive the key using PBKDF2.
-    const key = crypto.pbkdf2Sync(Buffer.from(password), salt, iterations, keyLength, digest)
+    const key = crypto.pbkdf2Sync(password, salt, iterations, keyLength, digest)
 
     // Decrypt and return result.
     return decryptWithKey(ciphertextAndNonce, key)

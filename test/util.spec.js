@@ -3,7 +3,6 @@
 'use strict'
 
 const chai = require('chai')
-const { Buffer } = require('buffer')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
@@ -32,8 +31,8 @@ describe('Util', () => {
     expect(num.equals(bn)).to.be.true()
   })
 
-  it('should convert base64url encoded string to Buffer with padding', () => {
+  it('should convert base64url encoded string to Uint8Array with padding', () => {
     const buf = util.base64urlToBuffer('AP8', 2)
-    expect(Buffer.from([0, 255])).to.eql(buf)
+    expect(Uint8Array.from([0, 255])).to.eql(buf)
   })
 })

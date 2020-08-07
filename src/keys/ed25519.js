@@ -16,7 +16,7 @@ exports.generateKeyFromSeed = async function (seed) { // eslint-disable-line req
 
 exports.hashAndSign = async function (key, msg) { // eslint-disable-line require-await
   return forge.pki.ed25519.sign({ message: msg, privateKey: key })
-  // return Buffer.from(nacl.sign.detached(msg, key))
+  // return Uint8Array.from(nacl.sign.detached(msg, key))
 }
 
 exports.hashAndVerify = async function (key, sig, msg) { // eslint-disable-line require-await

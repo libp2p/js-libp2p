@@ -11,7 +11,7 @@ module.exports = {
    *
    * @param {string} privateKey A base64 encoded encrypted key
    * @param {string} password
-   * @returns {Promise<Buffer>} The private key protobuf buffer
+   * @returns {Promise<Uint8Array>} The private key protobuf
    */
   import: async function (privateKey, password) {
     const base64 = multibase.names.base64

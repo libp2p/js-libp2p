@@ -20,10 +20,12 @@ This repo contains the JavaScript implementation of the crypto primitives needed
 ## Table of Contents
 
 - [js-libp2p-crypto](#js-libp2p-crypto)
-  - [Lead Maintainer](#Lead-Maintainer)
-  - [Table of Contents](#Table-of-Contents)
-  - [Install](#Install)
-  - [API](#API)
+  - [Lead Maintainer](#lead-maintainer)
+  - [Table of Contents](#table-of-contents)
+  - [Install](#install)
+  - [Usage](#usage)
+    - [Web Crypto API](#web-crypto-api)
+  - [API](#api)
     - [`crypto.aes`](#cryptoaes)
       - [`crypto.aes.create(key, iv)`](#cryptoaescreatekey-iv)
         - [`decrypt(data)`](#decryptdata)
@@ -32,18 +34,19 @@ This repo contains the JavaScript implementation of the crypto primitives needed
       - [`crypto.hmac.create(hash, secret)`](#cryptohmaccreatehash-secret)
         - [`digest(data)`](#digestdata)
     - [`crypto.keys`](#cryptokeys)
-    - [`crypto.keys.generateKeyPair(type, bits)`](#cryptokeysgenerateKeyPairtype-bits)
-    - [`crypto.keys.generateEphemeralKeyPair(curve)`](#cryptokeysgenerateEphemeralKeyPaircurve)
-    - [`crypto.keys.keyStretcher(cipherType, hashType, secret)`](#cryptokeyskeyStretchercipherType-hashType-secret)
-    - [`crypto.keys.marshalPublicKey(key, [type])`](#cryptokeysmarshalPublicKeykey-type)
-    - [`crypto.keys.unmarshalPublicKey(buf)`](#cryptokeysunmarshalPublicKeybuf)
-    - [`crypto.keys.marshalPrivateKey(key, [type])`](#cryptokeysmarshalPrivateKeykey-type)
-    - [`crypto.keys.unmarshalPrivateKey(buf)`](#cryptokeysunmarshalPrivateKeybuf)
-    - [`crypto.keys.import(pem, password)`](#cryptokeysimportpem-password)
-    - [`crypto.randomBytes(number)`](#cryptorandomBytesnumber)
-    - [`crypto.pbkdf2(password, salt, iterations, keySize, hash)`](#cryptopbkdf2password-salt-iterations-keySize-hash)
-  - [Contribute](#Contribute)
-  - [License](#License)
+    - [`crypto.keys.generateKeyPair(type, bits)`](#cryptokeysgeneratekeypairtype-bits)
+    - [`crypto.keys.generateEphemeralKeyPair(curve)`](#cryptokeysgenerateephemeralkeypaircurve)
+    - [`crypto.keys.keyStretcher(cipherType, hashType, secret)`](#cryptokeyskeystretcherciphertype-hashtype-secret)
+    - [`crypto.keys.marshalPublicKey(key, [type])`](#cryptokeysmarshalpublickeykey-type)
+    - [`crypto.keys.unmarshalPublicKey(buf)`](#cryptokeysunmarshalpublickeybuf)
+    - [`crypto.keys.marshalPrivateKey(key, [type])`](#cryptokeysmarshalprivatekeykey-type)
+    - [`crypto.keys.unmarshalPrivateKey(buf)`](#cryptokeysunmarshalprivatekeybuf)
+    - [`crypto.keys.import(encryptedKey, password)`](#cryptokeysimportencryptedkey-password)
+    - [`privateKey.export(password, format)`](#privatekeyexportpassword-format)
+    - [`crypto.randomBytes(number)`](#cryptorandombytesnumber)
+    - [`crypto.pbkdf2(password, salt, iterations, keySize, hash)`](#cryptopbkdf2password-salt-iterations-keysize-hash)
+  - [Contribute](#contribute)
+  - [License](#license)
 
 ## Install
 
@@ -82,22 +85,22 @@ This uses `CTR` mode.
 
 #### `crypto.aes.create(key, iv)`
 
-- `key: Buffer` The key, if length `16` then `AES 128` is used. For length `32`, `AES 256` is used.
-- `iv: Buffer` Must have length `16`.
+- `key: Uint8Array` The key, if length `16` then `AES 128` is used. For length `32`, `AES 256` is used.
+- `iv: Uint8Array` Must have length `16`.
 
 Returns `Promise<{decrypt<Function>, encrypt<Function>}>`
 
 ##### `decrypt(data)`
 
-- `data: Buffer`
+- `data: Uint8Array`
 
-Returns `Promise<Buffer>`
+Returns `Promise<Uint8Array>`
 
 ##### `encrypt(data)`
 
-- `data: Buffer`
+- `data: Uint8Array`
 
-Returns `Promise<Buffer>`
+Returns `Promise<Uint8Array>`
 
 ```js
 const crypto = require('libp2p-crypto')
@@ -105,26 +108,26 @@ const crypto = require('libp2p-crypto')
 // Setting up Key and IV
 
 // A 16 bytes array, 128 Bits, AES-128 is chosen
-const key128 = Buffer.from([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+const key128 = Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
 
 // A 16 bytes array, 128 Bits,
-const IV = Buffer.from([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+const IV = Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
 
 async function main () {
   const decryptedMessage = 'Hello, world!'
 
   // Encrypting
   const cipher = await crypto.aes.create(key128, IV)
-  const encryptedBuffer = await cipher.encrypt(Buffer.from(decryptedMessage))
+  const encryptedBuffer = await cipher.encrypt(Uint8Array.from(decryptedMessage))
   console.log(encryptedBuffer)
-  // prints: <Buffer 42 f1 67 d9 2e 42 d0 32 9e b1 f8 3c>
+  // prints: <Uint8Array 42 f1 67 d9 2e 42 d0 32 9e b1 f8 3c>
 
   // Decrypting
   const decipher = await crypto.aes.create(key128, IV)
   const decryptedBuffer = await cipher.decrypt(encryptedBuffer)
 
   console.log(decryptedBuffer)
-  // prints: <Buffer 42 f1 67 d9 2e 42 d0 32 9e b1 f8 3c>
+  // prints: <Uint8Array 42 f1 67 d9 2e 42 d0 32 9e b1 f8 3c>
 
   console.log(decryptedBuffer.toString('utf-8'))
   // prints: Hello, world!
@@ -140,15 +143,15 @@ Exposes an interface to the Keyed-Hash Message Authentication Code (HMAC) as def
 #### `crypto.hmac.create(hash, secret)`
 
 - `hash: String`
-- `secret: Buffer`
+- `secret: Uint8Array`
 
 Returns `Promise<{digest<Function>}>`
 
 ##### `digest(data)`
 
-- `data: Buffer`
+- `data: Uint8Array`
 
-Returns `Promise<Buffer>`
+Returns `Promise<Uint8Array>`
 
 Example:
 
@@ -157,8 +160,8 @@ const crypto = require('libp2p-crypto')
 
 async function main () {
   const hash = 'SHA1' // 'SHA256' || 'SHA512'
-  const hmac = await crypto.hmac.create(hash, Buffer.from('secret'))
-  const sig = await hmac.digest(Buffer.from('hello world'))
+  const hmac = await crypto.hmac.create(hash, uint8ArrayFromString('secret'))
+  const sig = await hmac.digest(uint8ArrayFromString('hello world'))
   console.log(sig)
 }
 
@@ -178,7 +181,7 @@ Currently the `'RSA'`, `'ed25519'`, and `secp256k1` types are supported, althoug
 - `type: String`, see [Supported Key Types](#supported-key-types) above.
 - `bits: Number` Minimum of 1024
 
-Returns `Promise<{privateKey<Buffer>, publicKey<Buffer>}>`
+Returns `Promise<{privateKey<Uint8Array>, publicKey<Uint8Array>}>`
 
 Generates a keypair of the given type and bitsize.
 
@@ -196,7 +199,7 @@ Resolves to an object of the form:
 
 ```js
 {
-  key: Buffer,
+  key: Uint8Array,
   genSharedKey: Function
 }
 ```
@@ -205,7 +208,7 @@ Resolves to an object of the form:
 
 - `cipherType: String`, one of `'AES-128'`, `'AES-256'`, `'Blowfish'`
 - `hashType: String`, one of `'SHA1'`, `SHA256`, `SHA512`
-- `secret: Buffer`
+- `secret: Uint8Array`
 
 Returns `Promise`
 
@@ -216,14 +219,14 @@ Resolves to an object of the form:
 ```js
 {
   k1: {
-    iv: Buffer,
-    cipherKey: Buffer,
-    macKey: Buffer
+    iv: Uint8Array,
+    cipherKey: Uint8Array,
+    macKey: Uint8Array
   },
   k2: {
-    iv: Buffer,
-    cipherKey: Buffer,
-    macKey: Buffer
+    iv: Uint8Array,
+    cipherKey: Uint8Array,
+    macKey: Uint8Array
   }
 }
 ```
@@ -233,13 +236,13 @@ Resolves to an object of the form:
 - `key: keys.rsa.RsaPublicKey | keys.ed25519.Ed25519PublicKey | keys.secp256k1.Secp256k1PublicKey`
 - `type: String`, see [Supported Key Types](#supported-key-types) above.  Defaults to 'rsa'.
 
-Returns `Buffer`
+Returns `Uint8Array`
 
 Converts a public key object into a protobuf serialized public key.
 
 ### `crypto.keys.unmarshalPublicKey(buf)`
 
-- `buf: Buffer`
+- `buf: Uint8Array`
 
 Returns `RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey`
 
@@ -250,13 +253,13 @@ Converts a protobuf serialized public key into its representative object.
 - `key: keys.rsa.RsaPrivateKey | keys.ed25519.Ed25519PrivateKey | keys.secp256k1.Secp256k1PrivateKey`
 - `type: String`, see [Supported Key Types](#supported-key-types) above.
 
-Returns `Buffer`
+Returns `Uint8Array`
 
 Converts a private key object into a protobuf serialized private key.
 
 ### `crypto.keys.unmarshalPrivateKey(buf)`
 
-- `buf: Buffer`
+- `buf: Uint8Array`
 
 Returns `Promise<RsaPrivateKey|Ed25519PrivateKey|Secp256k1PrivateKey>`
 
@@ -284,9 +287,9 @@ Exports the password protected `PrivateKey`. RSA keys will be exported as passwo
 
 - `number: Number`
 
-Returns `Buffer`
+Returns `Uint8Array`
 
-Generates a Buffer with length `number` populated by random bytes.
+Generates a Uint8Array with length `number` populated by random bytes.
 
 ### `crypto.pbkdf2(password, salt, iterations, keySize, hash)`
 

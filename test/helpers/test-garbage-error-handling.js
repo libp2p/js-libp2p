@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 'use strict'
 
-const { Buffer } = require('buffer')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 const util = require('util')
-const garbage = [Buffer.from('00010203040506070809', 'hex'), {}, null, false, undefined, true, 1, 0, Buffer.from(''), 'aGVsbG93b3JsZA==', 'helloworld', '']
+const garbage = [uint8ArrayFromString('00010203040506070809', 'base16'), {}, null, false, undefined, true, 1, 0, uint8ArrayFromString(''), 'aGVsbG93b3JsZA==', 'helloworld', '']
 
 function doTests (fncName, fnc, num, skipBuffersAndStrings) {
   if (!num) {
@@ -11,8 +11,8 @@ function doTests (fncName, fnc, num, skipBuffersAndStrings) {
   }
 
   garbage.forEach((garbage) => {
-    if (skipBuffersAndStrings && (Buffer.isBuffer(garbage) || (typeof garbage) === 'string')) {
-      // skip this garbage because it's a buffer or a string and we were told do do that
+    if (skipBuffersAndStrings && (garbage instanceof Uint8Array || (typeof garbage) === 'string')) {
+      // skip this garbage because it's a Uint8Array or a String and we were told do do that
       return
     }
     const args = []

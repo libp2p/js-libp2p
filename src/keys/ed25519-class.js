@@ -1,10 +1,11 @@
 'use strict'
 
-const { Buffer } = require('buffer')
 const sha = require('multihashing-async/src/sha')
 const protobuf = require('protons')
 const multibase = require('multibase')
 const errcode = require('err-code')
+const uint8ArrayEquals = require('uint8arrays/equals')
+const uint8ArrayConcat = require('uint8arrays/concat')
 
 const crypto = require('./ed25519')
 const pbm = protobuf(require('./keys.proto'))
@@ -20,7 +21,7 @@ class Ed25519PublicKey {
   }
 
   marshal () {
-    return Buffer.from(this._key)
+    return this._key
   }
 
   get bytes () {
@@ -31,7 +32,7 @@ class Ed25519PublicKey {
   }
 
   equals (key) {
-    return this.bytes.equals(key.bytes)
+    return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
   async hash () { // eslint-disable-line require-await
@@ -40,8 +41,8 @@ class Ed25519PublicKey {
 }
 
 class Ed25519PrivateKey {
-  // key       - 64 byte Uint8Array or Buffer containing private key
-  // publicKey - 32 byte Uint8Array or Buffer containing public key
+  // key       - 64 byte Uint8Array containing private key
+  // publicKey - 32 byte Uint8Array containing public key
   constructor (key, publicKey) {
     this._key = ensureKey(key, crypto.privateKeyLength)
     this._publicKey = ensureKey(publicKey, crypto.publicKeyLength)
@@ -56,7 +57,7 @@ class Ed25519PrivateKey {
   }
 
   marshal () {
-    return Buffer.concat([Buffer.from(this._key), Buffer.from(this._publicKey)])
+    return uint8ArrayConcat([this._key, this._publicKey])
   }
 
   get bytes () {
@@ -67,7 +68,7 @@ class Ed25519PrivateKey {
   }
 
   equals (key) {
-    return this.bytes.equals(key.bytes)
+    return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
   async hash () { // eslint-disable-line require-await
@@ -93,7 +94,7 @@ class Ed25519PrivateKey {
    *
    * @param {string} password - The password to encrypt the key
    * @param {string} [format=libp2p-key] - The format in which to export as
-   * @returns {Promise<Buffer>} The encrypted private key
+   * @returns {Promise<Uint8Array>} The encrypted private key
    */
   async export (password, format = 'libp2p-key') { // eslint-disable-line require-await
     if (format === 'libp2p-key') {
@@ -137,7 +138,7 @@ async function generateKeyPairFromSeed (seed) {
 function ensureKey (key, length) {
   key = Uint8Array.from(key || [])
   if (key.length !== length) {
-    throw errcode(new Error(`Key must be a Uint8Array or Buffer of length ${length}, got ${key.length}`), 'ERR_INVALID_KEY_TYPE')
+    throw errcode(new Error(`Key must be a Uint8Array of length ${length}, got ${key.length}`), 'ERR_INVALID_KEY_TYPE')
   }
   return key
 }

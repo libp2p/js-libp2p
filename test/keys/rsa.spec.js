@@ -2,13 +2,13 @@
 /* eslint-env mocha */
 'use strict'
 
-const { Buffer } = require('buffer')
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 chai.use(require('chai-string'))
 const { expectErrCode } = require('../util')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const crypto = require('../../src')
 const rsa = crypto.keys.supportedKeys.rsa
@@ -81,14 +81,14 @@ describe('RSA', function () {
   })
 
   it('sign and verify', async () => {
-    const data = Buffer.from('hello world')
+    const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
     const valid = await key.public.verify(data, sig)
     expect(valid).to.be.eql(true)
   })
 
   it('encrypt and decrypt', async () => {
-    const data = Buffer.from('hello world')
+    const data = uint8ArrayFromString('hello world')
     const enc = await key.public.encrypt(data)
     const dec = await key.decrypt(enc)
     expect(dec).to.be.eql(data)
@@ -99,22 +99,22 @@ describe('RSA', function () {
     /**
      * @type {any}
      */
-    const id = await crypto.keys.unmarshalPrivateKey(Buffer.from('CAASqAkwggSkAgEAAoIBAQCk0O+6oNRxhcdZe2GxEDrFBkDV4TZFZnp2ly/dL1cGMBql/8oXPZgei6h7+P5zzfDq2YCfwbjbf0IVY1AshRl6B5VGE1WS+9p1y1OZxJf5os6V1ENnTi6FTcyuBl4BN8dmIKOif0hqgqflaT5OhfYZDXfbJyVQj4vb2+Stu2Xpph3nwqAnTw/7GC/7jrt2Cq6Tu1PoZi36wSwEPYW3eQ1HAYxZjTYYDXl2iyHygnTcbkGRwAQ7vjk+mW7u60zyoolCm9f6Y7c/orJ33DDUocbaGJLlHcfd8bioBwaZy/2m7q43X8pQs0Q1/iwUt0HHZj1YARmHKbh0zR31ciFiV37dAgMBAAECggEADtJBNKnA4QKURj47r0YT2uLwkqtBi6UnDyISalQXAdXyl4n0nPlrhBewC5H9I+HZr+zmTbeIjaiYgz7el1pSy7AB4v7bG7AtWZlyx6mvtwHGjR+8/f3AXjl8Vgv5iSeAdXUq8fJ7SyS7v3wi38HZOzCEXj9bci6ud5ODMYJgLE4gZD0+i1+/V9cpuYfGpS/gLTLEMQLiw/9o8NSZ7sAnxg0UlYhotqaQY23hvXPBOe+0oa95zl2n6XTxCafa3dQl/B6CD1tUq9dhbQew4bxqMq/mhRO9pREEqZ083Uh+u4PTc1BeHgIQaS864pHPb+AY1F7KDvPtHhdojnghp8d70QKBgQDeRYFxo6sd04ohY86Z/i9icVYIyCvfXAKnaMKeGUjK7ou6sDJwFX8W97+CzXpZ/vffsk/l5GGhC50KqrITxHAy/h5IjyDODfps7NMIp0Dm9sO4PWibbw3OOVBRc8w3b3i7I8MrUUA1nLHE1T1HA1rKOTz5jYhE0fi9XKiT1ciKOQKBgQC903w+n9y7M7eaMW7Z5/13kZ7PS3HlM681eaPrk8J4J+c6miFF40/8HOsmarS38v0fgTeKkriPz5A7aLzRHhSiOnp350JNM6c3sLwPEs2qx/CRuWWx1rMERatfDdUH6mvlK6QHu0QgSfQR27EO6a6XvVSJXbvFmimjmtIaz/IpxQKBgQDWJ9HYVAGC81abZTaiWK3/A4QJYhQjWNuVwPICsgnYvI4Uib+PDqcs0ffLZ38DRw48kek5bxpBuJbOuDhro1EXUJCNCJpq7jzixituovd9kTRyR3iKii2bDM2+LPwOTXDdnk9lZRugjCEbrPkleq33Ob7uEtfAty4aBTTHe6uEwQKBgQCB+2q8RyMSXNuADhFlzOFXGrOwJm0bEUUMTPrduRQUyt4e1qOqA3klnXe3mqGcxBpnlEe/76/JacvNom6Ikxx16a0qpYRU8OWz0KU1fR6vrrEgV98241k5t6sdL4+MGA1Bo5xyXtzLb1hdUh3vpDwVU2OrnC+To3iXus/b5EBiMQKBgEI1OaBcFiyjgLGEyFKoZbtzH1mdatTExfrAQqCjOVjQByoMpGhHTXwEaosvyYu63Pa8AJPT7juSGaiKYEJFcXO9BiNyVfmQiqSHJcYeuh+fmO9IlHRHgy5xaIIC00AHS2vC/gXwmXAdPis6BZqDJeiCuOLWJ94QXn8JBT8IgGAI', 'base64'))
+    const id = await crypto.keys.unmarshalPrivateKey(uint8ArrayFromString('CAASqAkwggSkAgEAAoIBAQCk0O+6oNRxhcdZe2GxEDrFBkDV4TZFZnp2ly/dL1cGMBql/8oXPZgei6h7+P5zzfDq2YCfwbjbf0IVY1AshRl6B5VGE1WS+9p1y1OZxJf5os6V1ENnTi6FTcyuBl4BN8dmIKOif0hqgqflaT5OhfYZDXfbJyVQj4vb2+Stu2Xpph3nwqAnTw/7GC/7jrt2Cq6Tu1PoZi36wSwEPYW3eQ1HAYxZjTYYDXl2iyHygnTcbkGRwAQ7vjk+mW7u60zyoolCm9f6Y7c/orJ33DDUocbaGJLlHcfd8bioBwaZy/2m7q43X8pQs0Q1/iwUt0HHZj1YARmHKbh0zR31ciFiV37dAgMBAAECggEADtJBNKnA4QKURj47r0YT2uLwkqtBi6UnDyISalQXAdXyl4n0nPlrhBewC5H9I+HZr+zmTbeIjaiYgz7el1pSy7AB4v7bG7AtWZlyx6mvtwHGjR+8/f3AXjl8Vgv5iSeAdXUq8fJ7SyS7v3wi38HZOzCEXj9bci6ud5ODMYJgLE4gZD0+i1+/V9cpuYfGpS/gLTLEMQLiw/9o8NSZ7sAnxg0UlYhotqaQY23hvXPBOe+0oa95zl2n6XTxCafa3dQl/B6CD1tUq9dhbQew4bxqMq/mhRO9pREEqZ083Uh+u4PTc1BeHgIQaS864pHPb+AY1F7KDvPtHhdojnghp8d70QKBgQDeRYFxo6sd04ohY86Z/i9icVYIyCvfXAKnaMKeGUjK7ou6sDJwFX8W97+CzXpZ/vffsk/l5GGhC50KqrITxHAy/h5IjyDODfps7NMIp0Dm9sO4PWibbw3OOVBRc8w3b3i7I8MrUUA1nLHE1T1HA1rKOTz5jYhE0fi9XKiT1ciKOQKBgQC903w+n9y7M7eaMW7Z5/13kZ7PS3HlM681eaPrk8J4J+c6miFF40/8HOsmarS38v0fgTeKkriPz5A7aLzRHhSiOnp350JNM6c3sLwPEs2qx/CRuWWx1rMERatfDdUH6mvlK6QHu0QgSfQR27EO6a6XvVSJXbvFmimjmtIaz/IpxQKBgQDWJ9HYVAGC81abZTaiWK3/A4QJYhQjWNuVwPICsgnYvI4Uib+PDqcs0ffLZ38DRw48kek5bxpBuJbOuDhro1EXUJCNCJpq7jzixituovd9kTRyR3iKii2bDM2+LPwOTXDdnk9lZRugjCEbrPkleq33Ob7uEtfAty4aBTTHe6uEwQKBgQCB+2q8RyMSXNuADhFlzOFXGrOwJm0bEUUMTPrduRQUyt4e1qOqA3klnXe3mqGcxBpnlEe/76/JacvNom6Ikxx16a0qpYRU8OWz0KU1fR6vrrEgV98241k5t6sdL4+MGA1Bo5xyXtzLb1hdUh3vpDwVU2OrnC+To3iXus/b5EBiMQKBgEI1OaBcFiyjgLGEyFKoZbtzH1mdatTExfrAQqCjOVjQByoMpGhHTXwEaosvyYu63Pa8AJPT7juSGaiKYEJFcXO9BiNyVfmQiqSHJcYeuh+fmO9IlHRHgy5xaIIC00AHS2vC/gXwmXAdPis6BZqDJeiCuOLWJ94QXn8JBT8IgGAI', 'base64pad'))
 
-    const msg = Buffer.from('hello')
+    const msg = uint8ArrayFromString('hello')
 
     // browser
-    const dec1 = id.decrypt(Buffer.from('YRFUDx8UjbWSfDS84cDA4WowaaOmd1qFNAv5QutodCKYb9uPtU/tDiAvJzOGu5DCJRo2J0l/35P2weiB4/C2Cb1aZgXKMx/QQC+2jSJiymhqcZaYerjTvkCFwkjCaqthoVo/YXxsaFZ1q7bdTZUDH1TaJR7hWfSyzyPcA8c0w43MIsw16pY8ZaPSclvnCwhoTg1JGjMk6te3we7+wR8QU7VrPhs54mZWxrpu3NQ8xZ6xQqIedsEiNhBUccrCSzYghgsP0Ae/8iKyGyl3U6IegsJNn8jcocvzOJrmU03rgIFPjvuBdaqB38xDSTjbA123KadB28jNoSZh18q/yH3ZIg==', 'base64'))
+    const dec1 = id.decrypt(uint8ArrayFromString('YRFUDx8UjbWSfDS84cDA4WowaaOmd1qFNAv5QutodCKYb9uPtU/tDiAvJzOGu5DCJRo2J0l/35P2weiB4/C2Cb1aZgXKMx/QQC+2jSJiymhqcZaYerjTvkCFwkjCaqthoVo/YXxsaFZ1q7bdTZUDH1TaJR7hWfSyzyPcA8c0w43MIsw16pY8ZaPSclvnCwhoTg1JGjMk6te3we7+wR8QU7VrPhs54mZWxrpu3NQ8xZ6xQqIedsEiNhBUccrCSzYghgsP0Ae/8iKyGyl3U6IegsJNn8jcocvzOJrmU03rgIFPjvuBdaqB38xDSTjbA123KadB28jNoSZh18q/yH3ZIg==', 'base64pad'))
     expect(dec1).to.be.eql(msg)
     // node
-    const dec2 = id.decrypt(Buffer.from('e6yxssqXsWc27ozDy0PGKtMkCS28KwFyES2Ijz89yiz+w6bSFkNOhHPKplpPzgQEuNoUGdbseKlJFyRYHjIT8FQFBHZM8UgSkgoimbY5on4xSxXs7E5/+twjqKdB7oNveTaTf7JCwaeUYnKSjbiYFEawtMiQE91F8sTT7TmSzOZ48tUhnddAAZ3Ac/O3Z9MSAKOCDipi+JdZtXRT8KimGt36/7hjjosYmPuHR1Xy/yMTL6SMbXtBM3yAuEgbQgP+q/7kHMHji3/JvTpYdIUU+LVtkMusXNasRA+UWG2zAht18vqjFMsm9JTiihZw9jRHD4vxAhf75M992tnC+0ZuQg==', 'base64'))
+    const dec2 = id.decrypt(uint8ArrayFromString('e6yxssqXsWc27ozDy0PGKtMkCS28KwFyES2Ijz89yiz+w6bSFkNOhHPKplpPzgQEuNoUGdbseKlJFyRYHjIT8FQFBHZM8UgSkgoimbY5on4xSxXs7E5/+twjqKdB7oNveTaTf7JCwaeUYnKSjbiYFEawtMiQE91F8sTT7TmSzOZ48tUhnddAAZ3Ac/O3Z9MSAKOCDipi+JdZtXRT8KimGt36/7hjjosYmPuHR1Xy/yMTL6SMbXtBM3yAuEgbQgP+q/7kHMHji3/JvTpYdIUU+LVtkMusXNasRA+UWG2zAht18vqjFMsm9JTiihZw9jRHD4vxAhf75M992tnC+0ZuQg==', 'base64pad'))
     expect(dec2).to.be.eql(msg)
   })
 
   it('fails to verify for different data', async () => {
-    const data = Buffer.from('hello world')
+    const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
-    const valid = await key.public.verify(Buffer.from('hello'), sig)
+    const valid = await key.public.verify(uint8ArrayFromString('hello'), sig)
     expect(valid).to.be.eql(false)
   })
 
