@@ -5,7 +5,6 @@ const protobuf = require('protons')
 const multibase = require('multibase')
 const errcode = require('err-code')
 const uint8ArrayEquals = require('uint8arrays/equals')
-const uint8ArrayConcat = require('uint8arrays/concat')
 
 const crypto = require('./ed25519')
 const pbm = protobuf(require('./keys.proto'))
@@ -57,7 +56,7 @@ class Ed25519PrivateKey {
   }
 
   marshal () {
-    return uint8ArrayConcat([this._key, this._publicKey])
+    return this._key
   }
 
   get bytes () {

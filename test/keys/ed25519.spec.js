@@ -157,6 +157,13 @@ describe('ed25519', function () {
       expect(ok).to.eql(true)
     })
 
+    it('does not include the redundant public key when marshalling privatekey', async () => {
+      const key = await crypto.keys.unmarshalPrivateKey(fixtures.redundantPubKey.privateKey)
+      const bytes = key.marshal()
+      expect(bytes.length).to.equal(64)
+      expect(bytes.slice(32)).to.eql(key.public.marshal())
+    })
+
     it('verifies with data from go with redundant public key', async () => {
       const key = crypto.keys.unmarshalPublicKey(fixtures.redundantPubKey.publicKey)
       const ok = await key.verify(fixtures.redundantPubKey.data, fixtures.redundantPubKey.signature)
