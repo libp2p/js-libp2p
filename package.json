@@ -1,6 +1,6 @@
 {
   "name": "libp2p-record",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "libp2p record implementation",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -52,9 +52,9 @@
   "contributors": [
     "Vasco Santos <vasco.santos@moxy.studio>",
     "David Dias <daviddias.p@gmail.com>",
+    "Alex Potsides <alex@achingbrain.net>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Hugo Dias <hugomrdias@gmail.com>",
-    "Alex Potsides <alex@achingbrain.net>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Matt Joiner <anacrolix@gmail.com>",
     "dirkmc <dirkmdev@gmail.com>",
