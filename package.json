@@ -28,16 +28,14 @@
     "npm": ">=3.0.0"
   },
   "devDependencies": {
-    "aegir": "^22.0.0",
-    "chai": "^4.2.0",
-    "dirty-chai": "^2.0.1",
-    "libp2p-interfaces": "^0.3.0"
+    "aegir": "^25.0.0",
+    "libp2p-interfaces": "^0.4.0"
   },
   "dependencies": {
     "debug": "^4.1.1",
     "mafmt": "^7.0.0",
-    "multiaddr": "^7.2.1",
-    "peer-id": "^0.13.5"
+    "multiaddr": "^8.0.0",
+    "peer-id": "^0.14.0"
   },
   "pre-push": [
     "lint",
