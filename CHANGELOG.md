@@ -1,3 +1,20 @@
+<a name="0.20.0"></a>
+# [0.20.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.9...v0.20.0) (2020-08-10)
+
+
+### Bug Fixes
+
+* replace node buffers with uint8arrays ([#202](https://github.com/libp2p/js-libp2p-kad-dht/issues/202)) ([989be87](https://github.com/libp2p/js-libp2p-kad-dht/commit/989be87))
+
+
+### BREAKING CHANGES
+
+* - Where node Buffers were returned, now Uint8Arrays are
+
+* chore: remove gh dep urls
+
+
+
 <a name="0.19.9"></a>
 ## [0.19.9](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.8...v0.19.9) (2020-07-10)
 
