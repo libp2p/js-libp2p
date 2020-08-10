@@ -34,8 +34,8 @@
   },
   "devDependencies": {
     "aegir": "^25.0.0",
-    "libp2p-interfaces": "^0.3.1",
     "it-pipe": "^1.1.0",
+    "libp2p-interfaces": "^0.4.0",
     "sinon": "^9.0.0",
     "streaming-iterables": "^5.0.2"
   },
