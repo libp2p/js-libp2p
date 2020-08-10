@@ -5,7 +5,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-spies'))
 const expect = chai.expect
-const { Buffer } = require('buffer')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 const FloodSub = require('../src')
 
 const {
@@ -36,7 +36,7 @@ describe('emit self', () => {
     it('should emit to self on publish', () => {
       const promise = new Promise((resolve) => floodsub.once(topic, resolve))
 
-      floodsub.publish(topic, Buffer.from('hey'))
+      floodsub.publish(topic, uint8ArrayFromString('hey'))
 
       return promise
     })
@@ -59,7 +59,7 @@ describe('emit self', () => {
     it('should emit to self on publish', () => {
       floodsub.once(topic, (m) => shouldNotHappen)
 
-      floodsub.publish(topic, Buffer.from('hey'))
+      floodsub.publish(topic, uint8ArrayFromString('hey'))
 
       // Wait 1 second to guarantee that self is not noticed
       return new Promise((resolve) => setTimeout(() => resolve(), 1000))

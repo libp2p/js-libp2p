@@ -10,7 +10,6 @@ const lp = require('it-length-prefixed')
 const pMap = require('p-map')
 const TimeCache = require('time-cache')
 const nextTick = require('async.nexttick')
-const { Buffer } = require('buffer')
 const PeerId = require('peer-id')
 const BaseProtocol = require('libp2p-pubsub')
 const { message, utils } = require('libp2p-pubsub')
@@ -127,7 +126,7 @@ class FloodSub extends BaseProtocol {
         lp.decode(),
         async function (source) {
           for await (const data of source) {
-            const rpc = Buffer.isBuffer(data) ? data : data.slice()
+            const rpc = data instanceof Uint8Array ? data : data.slice()
 
             onRpcFunc(idB58Str, message.rpc.RPC.decode(rpc))
           }

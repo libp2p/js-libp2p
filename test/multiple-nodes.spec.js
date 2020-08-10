@@ -2,10 +2,9 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
-const { Buffer } = require('buffer')
+const { expect } = require('aegir/utils/chai')
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
 const pDefer = require('p-defer')
 
 const FloodSub = require('../src')
@@ -172,10 +171,10 @@ describe('multiple nodes (more than 2)', () => {
         psB.on('Z', incMsg)
         psC.on('Z', incMsg)
 
-        psA.publish('Z', Buffer.from('hey'))
+        psA.publish('Z', uint8ArrayFromString('hey'))
 
         function incMsg (msg) {
-          expect(msg.data.toString()).to.equal('hey')
+          expect(uint8ArrayToString(msg.data)).to.equal('hey')
           check()
         }
 
@@ -199,10 +198,10 @@ describe('multiple nodes (more than 2)', () => {
         psB.on('Z', incMsg)
         psC.on('Z', incMsg)
 
-        psA.publish('Z', [Buffer.from('hey'), Buffer.from('hey')])
+        psA.publish('Z', [uint8ArrayFromString('hey'), uint8ArrayFromString('hey')])
 
         function incMsg (msg) {
-          expect(msg.data.toString()).to.equal('hey')
+          expect(uint8ArrayToString(msg.data)).to.equal('hey')
           check()
         }
 
@@ -235,10 +234,10 @@ describe('multiple nodes (more than 2)', () => {
           psB.on('Z', incMsg)
           psC.on('Z', incMsg)
 
-          psB.publish('Z', Buffer.from('hey'))
+          psB.publish('Z', uint8ArrayFromString('hey'))
 
           function incMsg (msg) {
-            expect(msg.data.toString()).to.equal('hey')
+            expect(uint8ArrayToString(msg.data)).to.equal('hey')
             check()
           }
 
@@ -410,10 +409,10 @@ describe('multiple nodes (more than 2)', () => {
         psD.on('Z', incMsg)
         psE.on('Z', incMsg)
 
-        psC.publish('Z', Buffer.from('hey from c'))
+        psC.publish('Z', uint8ArrayFromString('hey from c'))
 
         function incMsg (msg) {
-          expect(msg.data.toString()).to.equal('hey from c')
+          expect(uint8ArrayToString(msg.data)).to.equal('hey from c')
           check()
         }
 

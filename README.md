@@ -19,12 +19,16 @@ js-libp2p-floodsub
 
 ## Table of Contents
 
-- [Install](#install)
-- [Usage](#usage)
-- [API](#api)
-- [Events](#events)
-- [Contribute](#contribute)
-- [License](#license)
+- [js-libp2p-floodsub](#js-libp2p-floodsub)
+  - [Lead Maintainer](#lead-maintainer)
+  - [Table of Contents](#table-of-contents)
+  - [Install](#install)
+  - [Usage](#usage)
+  - [API](#api)
+    - [Create a floodsub implementation](#create-a-floodsub-implementation)
+  - [Events](#events)
+  - [Contribute](#contribute)
+  - [License](#license)
 
 ## Install
 
@@ -47,7 +51,7 @@ fsub.on('fruit', (data) => {
 })
 fsub.subscribe('fruit')
 
-fsub.publish('fruit', new Buffer('banana'))
+fsub.publish('fruit', new TextEncoder().encode('banana'))
 ```
 
 ## API
@@ -72,7 +76,7 @@ Floodsub emits two kinds of events:
   ```Javascript
     fsub.on('fruit', (data) => { ... })
   ```
-  - `data`: a Buffer containing the data that was published to the topic
+  - `data`: a Uint8Array containing the data that was published to the topic
 2. `floodsub:subscription-change` when the local peer receives an update to the subscriptions of a remote peer.
   ```Javascript
     fsub.on('floodsub:subscription-change', (peerId, topics, changes) => { ... })

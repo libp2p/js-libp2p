@@ -6,7 +6,8 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-spies'))
 const expect = chai.expect
-const { Buffer } = require('buffer')
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
 const pDefer = require('p-defer')
 const times = require('lodash/times')
 
@@ -115,14 +116,14 @@ describe('basics between 2 nodes', () => {
       const defer = pDefer()
 
       fsA.once('Z', (msg) => {
-        expect(msg.data.toString()).to.equal('hey')
+        expect(uint8ArrayToString(msg.data)).to.equal('hey')
         fsB.removeListener('Z', shouldNotHappen)
         defer.resolve()
       })
 
       fsB.once('Z', shouldNotHappen)
 
-      fsA.publish('Z', Buffer.from('hey'))
+      fsA.publish('Z', uint8ArrayFromString('hey'))
 
       return defer.promise
     })
@@ -132,7 +133,7 @@ describe('basics between 2 nodes', () => {
 
       fsA.once('Z', (msg) => {
         fsA.once('Z', shouldNotHappen)
-        expect(msg.data.toString()).to.equal('banana')
+        expect(uint8ArrayToString(msg.data)).to.equal('banana')
 
         setTimeout(() => {
           fsA.removeListener('Z', shouldNotHappen)
@@ -144,7 +145,7 @@ describe('basics between 2 nodes', () => {
 
       fsB.once('Z', shouldNotHappen)
 
-      fsB.publish('Z', Buffer.from('banana'))
+      fsB.publish('Z', uint8ArrayFromString('banana'))
 
       return defer.promise
     })
@@ -157,9 +158,9 @@ describe('basics between 2 nodes', () => {
       fsA.on('Z', receivedMsg)
 
       function receivedMsg (msg) {
-        expect(msg.data.toString()).to.equal('banana')
+        expect(uint8ArrayToString(msg.data)).to.equal('banana')
         expect(msg.from).to.be.eql(fsB.peerId.toB58String())
-        expect(Buffer.isBuffer(msg.seqno)).to.be.true()
+        expect(msg.seqno).to.be.a('Uint8Array')
         expect(msg.topicIDs).to.be.eql(['Z'])
 
         if (++counter === 10) {
@@ -169,7 +170,7 @@ describe('basics between 2 nodes', () => {
           defer.resolve()
         }
       }
-      times(10, () => fsB.publish('Z', Buffer.from('banana')))
+      times(10, () => fsB.publish('Z', uint8ArrayFromString('banana')))
 
       return defer.promise
     })
@@ -182,9 +183,9 @@ describe('basics between 2 nodes', () => {
       fsA.on('Z', receivedMsg)
 
       function receivedMsg (msg) {
-        expect(msg.data.toString()).to.equal('banana')
+        expect(uint8ArrayToString(msg.data)).to.equal('banana')
         expect(msg.from).to.be.eql(fsB.peerId.toB58String())
-        expect(Buffer.isBuffer(msg.seqno)).to.be.true()
+        expect(msg.seqno).to.be.a('Uint8Array')
         expect(msg.topicIDs).to.be.eql(['Z'])
 
         if (++counter === 10) {
@@ -196,7 +197,7 @@ describe('basics between 2 nodes', () => {
       }
 
       const msgs = []
-      times(10, () => msgs.push(Buffer.from('banana')))
+      times(10, () => msgs.push(uint8ArrayFromString('banana')))
       fsB.publish('Z', msgs)
 
       return defer.promise
@@ -233,8 +234,8 @@ describe('basics between 2 nodes', () => {
         defer.resolve()
       }, 100)
 
-      fsB.publish('Z', Buffer.from('banana'))
-      fsA.publish('Z', Buffer.from('banana'))
+      fsB.publish('Z', uint8ArrayFromString('banana'))
+      fsA.publish('Z', uint8ArrayFromString('banana'))
 
       return defer.promise
     })

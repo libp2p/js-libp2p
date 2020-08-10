@@ -2,11 +2,9 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
-const { Buffer } = require('buffer')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 const Floodsub = require('../src')
 const { createPeerId, mockRegistrar } = require('./utils')
 const { utils } = require('libp2p-pubsub')
@@ -41,7 +39,7 @@ describe('pubsub', () => {
       sinon.spy(utils, 'randomSeqno')
 
       const topic = 'my-topic'
-      const message = Buffer.from('a neat message')
+      const message = uint8ArrayFromString('a neat message')
 
       await floodsub.publish(topic, message)
       expect(floodsub._emitMessages.callCount).to.eql(1)
@@ -61,7 +59,7 @@ describe('pubsub', () => {
       sinon.spy(utils, 'randomSeqno')
 
       const topic = 'my-topic'
-      const message = Buffer.from('a neat message')
+      const message = uint8ArrayFromString('a neat message')
 
       await floodsub.publish(topic, message)
       expect(floodsub._forwardMessages.callCount).to.eql(1)
@@ -92,7 +90,7 @@ describe('pubsub', () => {
         subscriptions: [],
         msgs: [{
           from: peerId.id,
-          data: Buffer.from('an unsigned message'),
+          data: uint8ArrayFromString('an unsigned message'),
           seqno: utils.randomSeqno(),
           topicIDs: [topic]
         }]
@@ -122,7 +120,7 @@ describe('pubsub', () => {
         subscriptions: [],
         msgs: [{
           from: peerId.id,
-          data: Buffer.from('an unsigned message'),
+          data: uint8ArrayFromString('an unsigned message'),
           seqno: utils.randomSeqno(),
           topicIDs: [topic]
         }]
