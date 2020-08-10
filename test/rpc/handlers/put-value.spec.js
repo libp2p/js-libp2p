@@ -7,7 +7,7 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const { Record } = require('libp2p-record')
 const delay = require('delay')
-const { Buffer } = require('buffer')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/put-value')
 const utils = require('../../../src/utils')
@@ -36,7 +36,7 @@ describe('rpc - handlers - PutValue', () => {
   afterEach(() => tdht.teardown())
 
   it('errors on missing record', async () => {
-    const msg = new Message(T, Buffer.from('hello'), 5)
+    const msg = new Message(T, uint8ArrayFromString('hello'), 5)
 
     try {
       await handler(dht)(peerIds[0], msg)
@@ -49,22 +49,22 @@ describe('rpc - handlers - PutValue', () => {
   })
 
   it('stores the record in the datastore', async () => {
-    const msg = new Message(T, Buffer.from('hello'), 5)
+    const msg = new Message(T, uint8ArrayFromString('hello'), 5)
     const record = new Record(
-      Buffer.from('hello'),
-      Buffer.from('world')
+      uint8ArrayFromString('hello'),
+      uint8ArrayFromString('world')
     )
     msg.record = record
 
     const response = await handler(dht)(peerIds[1], msg)
     expect(response).to.be.eql(msg)
 
-    const key = utils.bufferToKey(Buffer.from('hello'))
+    const key = utils.bufferToKey(uint8ArrayFromString('hello'))
     const res = await dht.datastore.get(key)
 
     const rec = Record.deserialize(res)
 
-    expect(rec).to.have.property('key').eql(Buffer.from('hello'))
+    expect(rec).to.have.property('key').eql(uint8ArrayFromString('hello'))
 
     // make sure some time has passed
     await delay(10)

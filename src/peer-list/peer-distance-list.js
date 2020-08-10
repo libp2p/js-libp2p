@@ -3,6 +3,7 @@
 const distance = require('xor-distance')
 const utils = require('../utils')
 const pMap = require('p-map')
+const uint8ArrayEquals = require('uint8arrays/equals')
 
 /**
  * Maintains a list of peerIds sorted by distance from a DHT key.
@@ -11,7 +12,7 @@ class PeerDistanceList {
   /**
    * Creates a new PeerDistanceList.
    *
-   * @param {Buffer} originDhtKey - the DHT key from which distance is calculated
+   * @param {Uint8Array} originDhtKey - the DHT key from which distance is calculated
    * @param {number} capacity - the maximum size of the list
    */
   constructor (originDhtKey, capacity) {
@@ -41,7 +42,7 @@ class PeerDistanceList {
    * @returns {Promise<void>}
    */
   async add (peerId) {
-    if (this.peerDistances.find(pd => pd.peerId.id.equals(peerId.id))) {
+    if (this.peerDistances.find(pd => uint8ArrayEquals(pd.peerId.id, peerId.id))) {
       return
     }
 

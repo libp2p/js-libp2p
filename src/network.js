@@ -164,7 +164,7 @@ class Network {
    * this will error out.
    *
    * @param {DuplexIterable} stream - the stream to use
-   * @param {Buffer} msg - the message to send
+   * @param {Uint8Array} msg - the message to send
    * @returns {Promise<Message>}
    * @private
    */
@@ -179,7 +179,7 @@ class Network {
    * Write a message to the given stream.
    *
    * @param {DuplexIterable} stream - the stream to use
-   * @param {Buffer} msg - the message to send
+   * @param {Uint8Array} msg - the message to send
    * @returns {Promise<void>}
    * @private
    */

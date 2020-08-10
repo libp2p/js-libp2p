@@ -1,6 +1,6 @@
 'use strict'
 
-const { Buffer } = require('buffer')
+const uint8ArrayEquals = require('uint8arrays/equals')
 const Message = require('../../message')
 const utils = require('../../utils')
 
@@ -18,7 +18,7 @@ module.exports = (dht) => {
     log('start')
 
     let closer
-    if (msg.key.equals(dht.peerId.id)) {
+    if (uint8ArrayEquals(msg.key, dht.peerId.id)) {
       closer = [{
         id: dht.peerId
       }]
@@ -26,7 +26,7 @@ module.exports = (dht) => {
       closer = await dht._betterPeersToQuery(msg, peerId)
     }
 
-    const response = new Message(msg.type, Buffer.alloc(0), msg.clusterLevel)
+    const response = new Message(msg.type, new Uint8Array(0), msg.clusterLevel)
 
     if (closer.length > 0) {
       response.closerPeers = closer

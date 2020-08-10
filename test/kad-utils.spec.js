@@ -1,13 +1,14 @@
 /* eslint-env mocha */
 'use strict'
 
-const { Buffer } = require('buffer')
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const base32 = require('base32.js')
 const PeerId = require('peer-id')
 const distance = require('xor-distance')
+const uint8ArrayConcat = require('uint8arrays/concat')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const utils = require('../src/utils')
 const createPeerId = require('./utils/create-peer-id')
@@ -15,7 +16,7 @@ const createPeerId = require('./utils/create-peer-id')
 describe('kad utils', () => {
   describe('bufferToKey', () => {
     it('returns the base32 encoded key of the buffer', () => {
-      const buf = Buffer.from('hello world')
+      const buf = uint8ArrayFromString('hello world')
 
       const key = utils.bufferToKey(buf)
 
@@ -27,11 +28,11 @@ describe('kad utils', () => {
 
   describe('convertBuffer', () => {
     it('returns the sha2-256 hash of the buffer', async () => {
-      const buf = Buffer.from('hello world')
+      const buf = uint8ArrayFromString('hello world')
       const digest = await utils.convertBuffer(buf)
 
       expect(digest)
-        .to.eql(Buffer.from('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9', 'hex'))
+        .to.eql(uint8ArrayFromString('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9', 'base16'))
     })
   })
 
@@ -61,7 +62,7 @@ describe('kad utils', () => {
       ]
 
       const ids = rawIds.map((raw) => {
-        return new PeerId(Buffer.from(raw))
+        return new PeerId(uint8ArrayFromString(raw))
       })
 
       const input = [
@@ -87,12 +88,12 @@ describe('kad utils', () => {
 
   describe('xorCompare', () => {
     it('sorts two distances', () => {
-      const target = Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a90')
+      const target = uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a90')
       const a = {
-        distance: distance(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a95'), target)
+        distance: distance(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a95'), target)
       }
       const b = {
-        distance: distance(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a96'), target)
+        distance: distance(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a96'), target)
       }
 
       expect(utils.xorCompare(a, b)).to.eql(-1)
@@ -105,7 +106,7 @@ describe('kad utils', () => {
     it('works', async () => {
       const peers = await createPeerId(1)
       expect(utils.keyForPublicKey(peers[0]))
-        .to.eql(Buffer.concat([Buffer.from('/pk/'), peers[0].id]))
+        .to.eql(uint8ArrayConcat([uint8ArrayFromString('/pk/'), peers[0].id]))
     })
   })
 

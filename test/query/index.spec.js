@@ -9,7 +9,6 @@ const expect = chai.expect
 const sinon = require('sinon')
 const delay = require('delay')
 const PeerStore = require('libp2p/src/peer-store')
-const { Buffer } = require('buffer')
 const Query = require('../../src/query')
 const Path = require('../../src/query/path')
 const Run = require('../../src/query/run')
@@ -18,6 +17,7 @@ const c = require('../../src/constants')
 const createPeerId = require('../utils/create-peer-id')
 const { sortClosestPeers } = require('../../src/utils')
 const { convertBuffer } = require('../../src/utils')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 const NUM_IDS = 101
 
 describe('Query', () => {
@@ -32,7 +32,7 @@ describe('Query', () => {
 
   describe('get closest peers', () => {
     const targetKey = {
-      key: Buffer.from('A key to find'),
+      key: uint8ArrayFromString('A key to find'),
       dhtKey: null
     }
     let sortedPeers

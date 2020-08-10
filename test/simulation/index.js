@@ -6,12 +6,12 @@
 const PeerStore = require('libp2p/src/peer-store')
 const PeerId = require('peer-id')
 const multihashes = require('multihashing-async').multihash
-const { Buffer } = require('buffer')
 const RoutingTable = require('../../src/routing')
 const Message = require('../../src/message')
 const { convertBuffer } = require('../../src/utils')
 const { sortClosestPeers } = require('../../src/utils')
 const DHT = require('../../src')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const NUM_PEERS = 10e3 // Peers to create, not including us
 const LATENCY_DEAD_NODE = 120e3 // How long dead nodes should take before erroring
@@ -22,7 +22,7 @@ const LATENCY_MIN = 100 // min time a good peer should take to respond
 const LATENCY_MAX = 10e3 // max time a good peer should take to respond
 const KValue = 20 // k Bucket size
 const ALPHA = 6 // alpha concurrency
-const QUERY_KEY = Buffer.from('a key to search for')
+const QUERY_KEY = uint8ArrayFromString('a key to search for')
 const RUNS = 3 // How many times the simulation should run
 const VERBOSE = false // If true, some additional logs will run
 
@@ -106,7 +106,7 @@ async function GetClosestPeersSimulation () {
     let response = null
 
     if (networkPeer.routingTable) {
-      response = new Message(message.type, Buffer.alloc(0), message.clusterLevel)
+      response = new Message(message.type, new Uint8Array(0), message.clusterLevel)
       response.closerPeers = networkPeer.routingTable.closestPeers(dhtKey, KValue)
     }
 

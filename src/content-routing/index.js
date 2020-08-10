@@ -20,7 +20,7 @@ module.exports = (dht) => {
    * @private
    */
   const findProvidersSingle = async (peer, key) => { // eslint-disable-line require-await
-    const msg = new Message(Message.TYPES.GET_PROVIDERS, key.buffer, 0)
+    const msg = new Message(Message.TYPES.GET_PROVIDERS, key.bytes, 0)
     return dht.network.sendRequest(peer, msg)
   }
 
@@ -39,14 +39,14 @@ module.exports = (dht) => {
       await dht.providers.addProvider(key, dht.peerId)
 
       const multiaddrs = dht.libp2p ? dht.libp2p.multiaddrs : []
-      const msg = new Message(Message.TYPES.ADD_PROVIDER, key.buffer, 0)
+      const msg = new Message(Message.TYPES.ADD_PROVIDER, key.bytes, 0)
       msg.providerPeers = [{
         id: dht.peerId,
         multiaddrs
       }]
 
       // Notify closest peers
-      await utils.mapParallel(dht.getClosestPeers(key.buffer), async (peer) => {
+      await utils.mapParallel(dht.getClosestPeers(key.bytes), async (peer) => {
         dht._log('putProvider %s to %s', key.toBaseEncodedString(), peer.toB58String())
         try {
           await dht.network.sendMessage(peer, msg)
@@ -100,7 +100,7 @@ module.exports = (dht) => {
 
       // need more, query the network
       const paths = []
-      const query = new Query(dht, key.buffer, (pathIndex, numPaths) => {
+      const query = new Query(dht, key.bytes, (pathIndex, numPaths) => {
         // This function body runs once per disjoint path
         const pathSize = utils.pathSize(n - out.length, numPaths)
         const pathProviders = new LimitedPeerList(pathSize)
@@ -126,7 +126,7 @@ module.exports = (dht) => {
         }
       })
 
-      const peers = dht.routingTable.closestPeers(key.buffer, dht.kBucketSize)
+      const peers = dht.routingTable.closestPeers(key.bytes, dht.kBucketSize)
 
       try {
         await pTimeout(

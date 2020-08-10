@@ -4,12 +4,12 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const { Buffer } = require('buffer')
 const pair = require('it-pair')
 const pipe = require('it-pipe')
 const delay = require('delay')
 const lp = require('it-length-prefixed')
 const pDefer = require('p-defer')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const Message = require('../src/message')
 
@@ -29,7 +29,7 @@ describe('Network', () => {
 
   describe('sendRequest', () => {
     it('send and response echo', async () => {
-      const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
+      const msg = new Message(Message.TYPES.PING, uint8ArrayFromString('hello'), 0)
 
       // mock dial
       dht.dialer.connectToPeer = () => {
@@ -53,11 +53,11 @@ describe('Network', () => {
         }
       }
 
-      const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
+      const msg = new Message(Message.TYPES.PING, uint8ArrayFromString('hello'), 0)
 
       // mock it
       dht.dialer.connectToPeer = async () => {
-        const msg = new Message(Message.TYPES.FIND_NODE, Buffer.from('world'), 0)
+        const msg = new Message(Message.TYPES.FIND_NODE, uint8ArrayFromString('world'), 0)
 
         const data = []
         await pipe(
@@ -117,7 +117,7 @@ describe('Network', () => {
         }
       }
 
-      const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
+      const msg = new Message(Message.TYPES.PING, uint8ArrayFromString('hello'), 0)
 
       // mock it
       dht.dialer.connectToPeer = () => {

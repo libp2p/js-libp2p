@@ -10,13 +10,15 @@ const pMap = require('p-map')
 const { Record } = require('libp2p-record')
 const PeerId = require('peer-id')
 const errcode = require('err-code')
-const { Buffer } = require('buffer')
+const uint8ArrayConcat = require('uint8arrays/concat')
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 /**
- * Creates a DHT ID by hashing a given buffer.
+ * Creates a DHT ID by hashing a given Uint8Array.
  *
- * @param {Buffer} buf
- * @returns {Promise<Buffer>}
+ * @param {Uint8Array} buf
+ * @returns {Promise<Uint8Array>}
  */
 exports.convertBuffer = (buf) => {
   return multihashing.digest(buf, 'sha2-256')
@@ -26,16 +28,16 @@ exports.convertBuffer = (buf) => {
  * Creates a DHT ID by hashing a Peer ID
  *
  * @param {PeerId} peer
- * @returns {Promise<Buffer>}
+ * @returns {Promise<Uint8Array>}
  */
 exports.convertPeerId = (peer) => {
   return multihashing.digest(peer.id, 'sha2-256')
 }
 
 /**
- * Convert a buffer to their SHA2-256 hash.
+ * Convert a Uint8Array to their SHA2-256 hash.
  *
- * @param {Buffer} buf
+ * @param {Uint8Array} buf
  * @returns {Key}
  */
 exports.bufferToKey = (buf) => {
@@ -46,17 +48,17 @@ exports.bufferToKey = (buf) => {
  * Generate the key for a public key.
  *
  * @param {PeerId} peer
- * @returns {Buffer}
+ * @returns {Uint8Array}
  */
 exports.keyForPublicKey = (peer) => {
-  return Buffer.concat([
-    Buffer.from('/pk/'),
+  return uint8ArrayConcat([
+    uint8ArrayFromString('/pk/'),
     peer.id
   ])
 }
 
 exports.isPublicKeyKey = (key) => {
-  return key.slice(0, 4).toString() === '/pk/'
+  return uint8ArrayToString(key.slice(0, 4)) === '/pk/'
 }
 
 exports.fromPublicKeyKey = (key) => {
@@ -73,8 +75,8 @@ exports.now = () => {
 }
 
 /**
- * Encode a given buffer into a base32 string.
- * @param {Buffer} buf
+ * Encode a given Uint8Array into a base32 string.
+ * @param {Uint8Array} buf
  * @returns {string}
  */
 exports.encodeBase32 = (buf) => {
@@ -83,20 +85,20 @@ exports.encodeBase32 = (buf) => {
 }
 
 /**
- * Decode a given base32 string into a buffer.
+ * Decode a given base32 string into a Uint8Array.
  * @param {string} raw
- * @returns {Buffer}
+ * @returns {Uint8Array}
  */
 exports.decodeBase32 = (raw) => {
   const dec = new base32.Decoder()
-  return Buffer.from(dec.write(raw).finalize())
+  return Uint8Array.from(dec.write(raw).finalize())
 }
 
 /**
  * Sort peers by distance to the given `target`.
  *
  * @param {Array<PeerId>} peers
- * @param {Buffer} target
+ * @param {Uint8Array} target
  * @returns {Array<PeerId>}
  */
 exports.sortClosestPeers = async (peers, target) => {
@@ -138,9 +140,9 @@ exports.pathSize = (resultsWanted, numPaths) => {
 /**
  * Create a new put record, encodes and signs it if enabled.
  *
- * @param {Buffer} key
- * @param {Buffer} value
- * @returns {Buffer}
+ * @param {Uint8Array} key
+ * @param {Uint8Array} value
+ * @returns {Uint8Array}
  */
 exports.createPutRecord = (key, value) => {
   const timeReceived = new Date()

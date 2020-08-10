@@ -6,10 +6,12 @@ chai.use(require('dirty-chai'))
 chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const sinon = require('sinon')
-const { Buffer } = require('buffer')
 const multiaddr = require('multiaddr')
 const { Record } = require('libp2p-record')
 const errcode = require('err-code')
+const uint8ArrayEquals = require('uint8arrays/equals')
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const all = require('async-iterator-all')
 const pMapSeries = require('p-map-series')
@@ -170,15 +172,15 @@ describe('KadDHT', () => {
       this.timeout(10 * 1000)
 
       const tdht = new TestDHT()
-      const key = Buffer.from('/v/hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('/v/hello')
+      const value = uint8ArrayFromString('world')
 
       const [dht] = await tdht.spawn(2)
 
       // Exchange data through the dht
       await dht.put(key, value)
 
-      const res = await dht.get(Buffer.from('/v/hello'), { timeout: 1000 })
+      const res = await dht.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })
       expect(res).to.eql(value)
 
       return tdht.teardown()
@@ -188,8 +190,8 @@ describe('KadDHT', () => {
       this.timeout(10 * 1000)
 
       const tdht = new TestDHT()
-      const key = Buffer.from('/v/hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('/v/hello')
+      const value = uint8ArrayFromString('world')
 
       const [dhtA, dhtB] = await tdht.spawn(2)
 
@@ -199,7 +201,7 @@ describe('KadDHT', () => {
       // Exchange data through the dht
       await dhtA.put(key, value)
 
-      const res = await dhtB.get(Buffer.from('/v/hello'), { timeout: 1000 })
+      const res = await dhtB.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })
       expect(res).to.eql(value)
 
       return tdht.teardown()
@@ -210,8 +212,8 @@ describe('KadDHT', () => {
 
       const errCode = 'ERR_NOT_AVAILABLE'
       const error = errcode(new Error('fake error'), errCode)
-      const key = Buffer.from('/v/hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('/v/hello')
+      const value = uint8ArrayFromString('world')
 
       const tdht = new TestDHT()
       const [dhtA, dhtB, dhtC, dhtD] = await tdht.spawn(4)
@@ -238,8 +240,8 @@ describe('KadDHT', () => {
 
       const errCode = 'ERR_NOT_AVAILABLE'
       const error = errcode(new Error('fake error'), errCode)
-      const key = Buffer.from('/v/hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('/v/hello')
+      const value = uint8ArrayFromString('world')
 
       const tdht = new TestDHT()
       const [dhtA, dhtB, dhtC, dhtD] = await tdht.spawn(4)
@@ -272,8 +274,8 @@ describe('KadDHT', () => {
 
       const errCode = 'ERR_NOT_AVAILABLE'
       const error = errcode(new Error('fake error'), errCode)
-      const key = Buffer.from('/v/hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('/v/hello')
+      const value = uint8ArrayFromString('world')
 
       const tdht = new TestDHT()
       const [dhtA, dhtB, dhtC] = await tdht.spawn(3)
@@ -301,8 +303,8 @@ describe('KadDHT', () => {
     it('put - get using key with no prefix (no selector available)', async function () {
       this.timeout(10 * 1000)
 
-      const key = Buffer.from('hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('hello')
+      const value = uint8ArrayFromString('world')
 
       const tdht = new TestDHT()
       const [dhtA, dhtB] = await tdht.spawn(2)
@@ -320,8 +322,8 @@ describe('KadDHT', () => {
     it('put - get using key from provided validator and selector', async function () {
       this.timeout(10 * 1000)
 
-      const key = Buffer.from('/ipns/hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('/ipns/hello')
+      const value = uint8ArrayFromString('world')
 
       const tdht = new TestDHT()
       const [dhtA, dhtB] = await tdht.spawn(2, {
@@ -348,8 +350,8 @@ describe('KadDHT', () => {
     it('put - get should fail if unrecognized key prefix in get', async function () {
       this.timeout(10 * 1000)
 
-      const key = Buffer.from('/v2/hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('/v2/hello')
+      const value = uint8ArrayFromString('world')
 
       const tdht = new TestDHT()
       const [dhtA, dhtB] = await tdht.spawn(2)
@@ -369,9 +371,9 @@ describe('KadDHT', () => {
     it('put - get with update', async function () {
       this.timeout(20 * 1000)
 
-      const key = Buffer.from('/v/hello')
-      const valueA = Buffer.from('worldA')
-      const valueB = Buffer.from('worldB')
+      const key = uint8ArrayFromString('/v/hello')
+      const valueA = uint8ArrayFromString('worldA')
+      const valueB = uint8ArrayFromString('worldB')
 
       const tdht = new TestDHT()
       const [dhtA, dhtB] = await tdht.spawn(2)
@@ -402,8 +404,8 @@ describe('KadDHT', () => {
     it('layered get', async function () {
       this.timeout(40 * 1000)
 
-      const key = Buffer.from('/v/hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('/v/hello')
+      const value = uint8ArrayFromString('world')
 
       const nDHTs = 4
       const tdht = new TestDHT()
@@ -425,8 +427,8 @@ describe('KadDHT', () => {
     })
 
     it('getMany with nvals=1 goes out to swarm if there is no local value', async () => {
-      const key = Buffer.from('/v/hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('/v/hello')
+      const value = uint8ArrayFromString('world')
       const rec = new Record(key, value)
 
       const tdht = new TestDHT()
@@ -474,7 +476,7 @@ describe('KadDHT', () => {
 
       // Expect an ADD_PROVIDER message to be sent to each peer for each value
       const fn = dhts[3].network.sendMessage
-      const valuesBuffs = values.map(v => v.cid.buffer)
+      const valuesBuffs = values.map(v => v.cid.bytes)
       const calls = fn.getCalls().map(c => c.args)
 
       for (const [peerId, msg] of calls) {
@@ -640,7 +642,7 @@ describe('KadDHT', () => {
       const guy = dhts[0]
 
       // The key
-      const val = Buffer.from('foobar')
+      const val = uint8ArrayFromString('foobar')
 
       // Hash the key into the DHT's key format
       const rtval = await kadUtils.convertBuffer(val)
@@ -678,7 +680,7 @@ describe('KadDHT', () => {
         rtableSet[p.toB58String()] = true
       })
 
-      const guyIndex = ids.findIndex(i => i.id.equals(guy.peerId.id))
+      const guyIndex = ids.findIndex(i => uint8ArrayEquals(i.id, guy.peerId.id))
       const otherIds = ids.slice(0, guyIndex).concat(ids.slice(guyIndex + 1))
 
       // Make the query
@@ -715,7 +717,7 @@ describe('KadDHT', () => {
         await tdht.connect(dhts[index], dhts[(index + 1) % dhts.length])
       })
 
-      const res = await all(dhts[1].getClosestPeers(Buffer.from('foo')))
+      const res = await all(dhts[1].getClosestPeers(uint8ArrayFromString('foo')))
       expect(res).to.have.length(c.K)
 
       return tdht.teardown()
@@ -753,7 +755,7 @@ describe('KadDHT', () => {
       dhts[0].peerStore.addressBook.add(dhts[1].peerId, [multiaddr('/ip4/160.1.1.1/tcp/80')])
 
       const key = await dhts[0].getPublicKey(ids[1])
-      expect(key.equals(dhts[1].peerId.pubKey)).to.eql(true)
+      expect(uint8ArrayEquals(key, dhts[1].peerId.pubKey)).to.eql(true)
 
       return tdht.teardown()
     })
@@ -806,8 +808,8 @@ describe('KadDHT', () => {
         const [dht] = await tdht.spawn(1)
 
         const record = new Record(
-          Buffer.from('hello'),
-          Buffer.from('world')
+          uint8ArrayFromString('hello'),
+          uint8ArrayFromString('world')
         )
         record.timeReceived = new Date()
 
@@ -815,15 +817,15 @@ describe('KadDHT', () => {
         const rec = await dht._checkLocalDatastore(record.key)
 
         expect(rec).to.exist('Record should not have expired')
-        expect(rec.value.toString()).to.equal(record.value.toString())
+        expect(uint8ArrayToString(rec.value)).to.equal(uint8ArrayToString(record.value))
       })
 
       it('delete entries received from peers that have expired', async () => {
         const [dht] = await tdht.spawn(1)
 
         const record = new Record(
-          Buffer.from('hello'),
-          Buffer.from('world')
+          uint8ArrayFromString('hello'),
+          uint8ArrayFromString('world')
         )
         const received = new Date()
         received.setDate(received.getDate() - 2)
@@ -847,8 +849,8 @@ describe('KadDHT', () => {
     it('_verifyRecordLocally', async () => {
       const [dht] = await tdht.spawn(1)
       const record = new Record(
-        Buffer.from('hello'),
-        Buffer.from('world')
+        uint8ArrayFromString('hello'),
+        uint8ArrayFromString('world')
       )
       const enc = record.serialize()
 
@@ -868,7 +870,7 @@ describe('KadDHT', () => {
       await delay(100)
 
       try {
-        await dhts[0].getMany(Buffer.from('/v/hello'), 5)
+        await dhts[0].getMany(uint8ArrayFromString('/v/hello'), 5)
       } catch (err) {
         expect(err).to.exist()
         expect(err.code).to.be.eql('ERR_NO_PEERS_IN_ROUTING_TABLE')
@@ -892,7 +894,7 @@ describe('KadDHT', () => {
       await tdht.connect(dhtA, dhtB)
 
       try {
-        await dhtA.get(Buffer.from('/v/hello'), { timeout: 1000 })
+        await dhtA.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })
       } catch (err) {
         expect(err).to.exist()
         expect(err.code).to.be.eql(errCode)
@@ -914,7 +916,7 @@ describe('KadDHT', () => {
       await tdht.connect(dhtA, dhtB)
 
       try {
-        await dhtA.get(Buffer.from('/v/hello'), { timeout: 1000 })
+        await dhtA.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })
       } catch (err) {
         expect(err).to.exist()
         expect(err.code).to.be.eql('ERR_NOT_FOUND')

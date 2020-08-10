@@ -5,18 +5,18 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const PeerId = require('peer-id')
-const { Buffer } = require('buffer')
 const kadUtils = require('../src/utils')
 const PeerDistanceList = require('../src/peer-list/peer-distance-list')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 describe('PeerDistanceList', () => {
-  const p1 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))
-  const p2 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a32'))
-  const p3 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'))
-  const p4 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a34'))
-  const p5 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))
-  const p6 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a35'))
-  const p7 = new PeerId(Buffer.from('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a32'))
+  const p1 = new PeerId(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))
+  const p2 = new PeerId(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a32'))
+  const p3 = new PeerId(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33'))
+  const p4 = new PeerId(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a34'))
+  const p5 = new PeerId(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))
+  const p6 = new PeerId(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a35'))
+  const p7 = new PeerId(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a32'))
 
   let key
   before(async () => {

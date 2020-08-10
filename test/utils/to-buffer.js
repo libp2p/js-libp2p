@@ -1,15 +1,14 @@
 'use strict'
-const { Buffer } = require('buffer')
 
 /**
- * Converts BufferList messages to Buffers
+ * Converts BufferList messages to Uint8Arrays
  * @param {*} source
  * @returns {AsyncGenerator}
  */
 const toBuffer = (source) => {
   return (async function * () {
     for await (const chunk of source) {
-      yield Buffer.isBuffer(chunk) ? chunk : chunk.slice()
+      yield chunk instanceof Uint8Array ? chunk : chunk.slice()
     }
   })()
 }

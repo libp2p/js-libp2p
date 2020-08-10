@@ -26,9 +26,9 @@ class PeerQueue {
   }
 
   /**
-   * Create from a given buffer.
+   * Create from a given Uint8Array.
    *
-   * @param {Buffer} keyBuffer
+   * @param {Uint8Array} keyBuffer
    * @returns {Promise<PeerQueue>}
    */
   static async fromKey (keyBuffer) {
@@ -40,7 +40,7 @@ class PeerQueue {
   /**
    * Create a new PeerQueue.
    *
-   * @param {Buffer} from - The sha2-256 encoded peer id
+   * @param {Uint8Array} from - The sha2-256 encoded peer id
    */
   constructor (from) {
     log('create: %b', from)

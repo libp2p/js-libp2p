@@ -10,8 +10,8 @@ const LevelStore = require('datastore-level')
 const path = require('path')
 const os = require('os')
 const multihashing = require('multihashing-async')
-const { Buffer } = require('buffer')
 const Providers = require('../src/providers')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const createPeerId = require('./utils/create-peer-id')
 const createValues = require('./utils/create-values')
@@ -69,7 +69,7 @@ describe('Providers', () => {
     providers = new Providers(new MemoryDatastore(), peerIds[2], 10)
 
     const hashes = await Promise.all([...new Array(100)].map((i) => {
-      return multihashing(Buffer.from(`hello ${i}`), 'sha2-256')
+      return multihashing(uint8ArrayFromString(`hello ${i}`), 'sha2-256')
     }))
 
     const cids = hashes.map((h) => new CID(h))

@@ -4,9 +4,9 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const { Buffer } = require('buffer')
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/ping')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const T = Message.TYPES.PING
 
@@ -32,7 +32,7 @@ describe('rpc - handlers - Ping', () => {
   afterEach(() => tdht.teardown())
 
   it('replies with the same message', async () => {
-    const msg = new Message(T, Buffer.from('hello'), 5)
+    const msg = new Message(T, uint8ArrayFromString('hello'), 5)
     const response = await handler(dht)(peerIds[0], msg)
 
     expect(response).to.be.eql(msg)

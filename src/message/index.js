@@ -4,7 +4,6 @@ const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
 const protons = require('protons')
 const { Record } = require('libp2p-record')
-const { Buffer } = require('buffer')
 const pbm = protons(require('./dht.proto'))
 
 const MESSAGE_TYPE = pbm.Message.MessageType
@@ -16,12 +15,12 @@ const CONNECTION_TYPE = pbm.Message.ConnectionType
 class Message {
   /**
    * @param {MessageType} type
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @param {number} level
    */
   constructor (type, key, level) {
-    if (key && !Buffer.isBuffer(key)) {
-      throw new Error('Key must be a buffer')
+    if (key && !(key instanceof Uint8Array)) {
+      throw new Error('Key must be a Uint8Array')
     }
 
     this.type = type
@@ -50,7 +49,7 @@ class Message {
 
   /**
    * Encode into protobuf
-   * @returns {Buffer}
+   * @returns {Uint8Array}
    */
   serialize () {
     const obj = {
@@ -62,7 +61,7 @@ class Message {
     }
 
     if (this.record) {
-      if (Buffer.isBuffer(this.record)) {
+      if (this.record instanceof Uint8Array) {
         obj.record = this.record
       } else {
         obj.record = this.record.serialize()
@@ -75,7 +74,7 @@ class Message {
   /**
    * Decode from protobuf
    *
-   * @param {Buffer} raw
+   * @param {Uint8Array} raw
    * @returns {Message}
    */
   static deserialize (raw) {
@@ -99,7 +98,7 @@ Message.CONNECTION_TYPES = CONNECTION_TYPE
 function toPbPeer (peer) {
   return {
     id: peer.id.id,
-    addrs: (peer.multiaddrs || []).map((m) => m.buffer),
+    addrs: (peer.multiaddrs || []).map((m) => m.bytes),
     connection: CONNECTION_TYPE.CONNECTED
   }
 }

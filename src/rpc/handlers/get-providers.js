@@ -25,7 +25,7 @@ module.exports = (dht) => {
     }
 
     log('%s', cid.toBaseEncodedString())
-    const dsKey = utils.bufferToKey(cid.buffer)
+    const dsKey = utils.bufferToKey(cid.bytes)
 
     const [has, peers, closer] = await Promise.all([
       dht.datastore.has(dsKey),

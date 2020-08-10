@@ -8,9 +8,9 @@ const pDefer = require('p-defer')
 const pipe = require('it-pipe')
 const lp = require('it-length-prefixed')
 const { collect } = require('streaming-iterables')
-const { Buffer } = require('buffer')
 const Message = require('../../src/message')
 const rpc = require('../../src/rpc')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const createPeerId = require('../utils/create-peer-id')
 const TestDHT = require('../utils/test-dht')
@@ -29,11 +29,11 @@ describe('rpc', () => {
     const defer = pDefer()
     const [dht] = await tdht.spawn(1)
 
-    const msg = new Message(Message.TYPES.GET_VALUE, Buffer.from('hello'), 5)
+    const msg = new Message(Message.TYPES.GET_VALUE, uint8ArrayFromString('hello'), 5)
 
     const validateMessage = (res) => {
       const msg = Message.deserialize(res[0])
-      expect(msg).to.have.property('key').eql(Buffer.from('hello'))
+      expect(msg).to.have.property('key').eql(uint8ArrayFromString('hello'))
       expect(msg).to.have.property('closerPeers').eql([])
       defer.resolve()
     }

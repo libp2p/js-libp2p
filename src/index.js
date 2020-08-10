@@ -5,6 +5,7 @@ const errcode = require('err-code')
 
 const libp2pRecord = require('libp2p-record')
 const { MemoryDatastore } = require('interface-datastore')
+const uint8ArrayEquals = require('uint8arrays/equals')
 
 const RoutingTable = require('./routing')
 const utils = require('./utils')
@@ -220,8 +221,8 @@ class KadDHT extends EventEmitter {
 
   /**
    * Store the given key/value  pair in the DHT.
-   * @param {Buffer} key
-   * @param {Buffer} value
+   * @param {Uint8Array} key
+   * @param {Uint8Array} value
    * @param {Object} [options] - put options
    * @param {number} [options.minPeers] - minimum number of peers required to successfully put (default: closestPeers.length)
    * @returns {Promise<void>}
@@ -233,10 +234,10 @@ class KadDHT extends EventEmitter {
   /**
    * Get the value to the given key.
    * Times out after 1 minute by default.
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @param {Object} [options] - get options
    * @param {number} [options.timeout] - optional timeout (default: 60000)
-   * @returns {Promise<Buffer>}
+   * @returns {Promise<Uint8Array>}
    */
   async get (key, options = {}) { // eslint-disable-line require-await
     return this.contentFetching.get(key, options)
@@ -244,11 +245,11 @@ class KadDHT extends EventEmitter {
 
   /**
    * Get the `n` values to the given key without sorting.
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @param {number} nvals
    * @param {Object} [options] - get options
    * @param {number} [options.timeout] - optional timeout (default: 60000)
-   * @returns {Promise<Array<{from: PeerId, val: Buffer}>>}
+   * @returns {Promise<Array<{from: PeerId, val: Uint8Array}>>}
    */
   async getMany (key, nvals, options = {}) { // eslint-disable-line require-await
     return this.contentFetching.getMany(key, nvals, options)
@@ -295,7 +296,7 @@ class KadDHT extends EventEmitter {
 
   /**
    * Kademlia 'node lookup' operation.
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @param {Object} [options]
    * @param {boolean} [options.shallow] shallow query (default: false)
    * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
@@ -378,7 +379,7 @@ class KadDHT extends EventEmitter {
    * - it was either authored by this node, or
    * - it was received less than `MAX_RECORD_AGE` ago.
    *
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @returns {Promise<Record>}
    * @private
    */
@@ -451,14 +452,14 @@ class KadDHT extends EventEmitter {
    */
 
   _isSelf (other) {
-    return other && this.peerId.id.equals(other.id)
+    return other && uint8ArrayEquals(this.peerId.id, other.id)
   }
 
   /**
    * Store the given key/value pair at the peer `target`.
    *
-   * @param {Buffer} key
-   * @param {Buffer} rec - encoded record
+   * @param {Uint8Array} key
+   * @param {Uint8Array} rec - encoded record
    * @param {PeerId} target
    * @returns {Promise<void>}
    *
@@ -483,7 +484,7 @@ class KadDHT extends EventEmitter {
    * Note: The peerStore is updated with new addresses found for the given peer.
    *
    * @param {PeerId} peer
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @returns {Promise<{Record, Array<{ id: PeerId, multiaddrs: Multiaddr[] }}>}
    * @private
    */
@@ -518,7 +519,7 @@ class KadDHT extends EventEmitter {
    * Get a value via rpc call for the given parameters.
    *
    * @param {PeerId} peer
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @returns {Promise<Message>}
    * @private
    */

@@ -85,7 +85,7 @@ class RoutingTable {
   /**
    * Retrieve the closest peers to the given key.
    *
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @returns {PeerId|undefined}
    */
   closestPeer (key) {
@@ -98,7 +98,7 @@ class RoutingTable {
   /**
    * Retrieve the `count`-closest peers to the given key.
    *
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @param {number} count
    * @returns {Array<PeerId>}
    */

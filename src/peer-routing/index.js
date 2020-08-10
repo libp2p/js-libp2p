@@ -36,7 +36,7 @@ module.exports = (dht) => {
   /**
    * Get a value via rpc call for the given parameters.
    * @param {PeerId} peer
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @returns {Promise<Message>}
    * @private
    */
@@ -47,7 +47,7 @@ module.exports = (dht) => {
 
   /**
    * Find close peers for a given peer
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @param {PeerId} peer
    * @returns {Promise<Array<{ id: PeerId, multiaddrs: Multiaddr[] }>>}
    * @private
@@ -201,7 +201,7 @@ module.exports = (dht) => {
 
     /**
      * Kademlia 'node lookup' operation.
-     * @param {Buffer} key
+     * @param {Uint8Array} key
      * @param {Object} [options]
      * @param {boolean} [options.shallow] shallow query (default: false)
      * @returns {AsyncIterable<PeerId>}

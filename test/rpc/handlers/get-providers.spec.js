@@ -4,10 +4,10 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const { Buffer } = require('buffer')
 const Message = require('../../../src/message')
 const utils = require('../../../src/utils')
 const handler = require('../../../src/rpc/handlers/get-providers')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const T = Message.TYPES.GET_PROVIDERS
 
@@ -38,7 +38,7 @@ describe('rpc - handlers - GetProviders', () => {
   afterEach(() => tdht.teardown())
 
   it('errors with an invalid key ', async () => {
-    const msg = new Message(T, Buffer.from('hello'), 0)
+    const msg = new Message(T, uint8ArrayFromString('hello'), 0)
 
     try {
       await handler(dht)(peerIds[0], msg)
@@ -50,13 +50,13 @@ describe('rpc - handlers - GetProviders', () => {
   it('responds with self if the value is in the datastore', async () => {
     const v = values[0]
 
-    const msg = new Message(T, v.cid.buffer, 0)
-    const dsKey = utils.bufferToKey(v.cid.buffer)
+    const msg = new Message(T, v.cid.bytes, 0)
+    const dsKey = utils.bufferToKey(v.cid.bytes)
 
     await dht.datastore.put(dsKey, v.value)
     const response = await handler(dht)(peerIds[0], msg)
 
-    expect(response.key).to.be.eql(v.cid.buffer)
+    expect(response.key).to.be.eql(v.cid.bytes)
     expect(response.providerPeers).to.have.length(1)
     expect(response.providerPeers[0].id.toB58String())
       .to.eql(dht.peerId.toB58String())
@@ -65,7 +65,7 @@ describe('rpc - handlers - GetProviders', () => {
   it('responds with listed providers and closer peers', async () => {
     const v = values[0]
 
-    const msg = new Message(T, v.cid.buffer, 0)
+    const msg = new Message(T, v.cid.bytes, 0)
     const prov = peerIds[1]
     const closer = peerIds[2]
 
@@ -73,7 +73,7 @@ describe('rpc - handlers - GetProviders', () => {
     await dht.providers.addProvider(v.cid, prov)
     const response = await handler(dht)(peerIds[0], msg)
 
-    expect(response.key).to.be.eql(v.cid.buffer)
+    expect(response.key).to.be.eql(v.cid.bytes)
     expect(response.providerPeers).to.have.length(1)
     expect(response.providerPeers[0].id.toB58String())
       .to.eql(prov.toB58String())

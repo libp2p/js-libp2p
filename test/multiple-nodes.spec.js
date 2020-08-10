@@ -4,8 +4,8 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const { Buffer } = require('buffer')
 const TestDHT = require('./utils/test-dht')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 describe('multiple nodes', () => {
   const n = 8
@@ -34,8 +34,8 @@ describe('multiple nodes', () => {
 
   it('put to "bootstrap" node and get with the others', async function () {
     this.timeout(10 * 1000)
-    const key = Buffer.from('/v/hello0')
-    const value = Buffer.from('world')
+    const key = uint8ArrayFromString('/v/hello0')
+    const value = uint8ArrayFromString('world')
 
     await dhts[7].put(key, value)
 
@@ -49,19 +49,19 @@ describe('multiple nodes', () => {
       dhts[6].get(key, { timeout: 1000 })
     ])
 
-    expect(res[0]).to.eql(Buffer.from('world'))
-    expect(res[1]).to.eql(Buffer.from('world'))
-    expect(res[2]).to.eql(Buffer.from('world'))
-    expect(res[3]).to.eql(Buffer.from('world'))
-    expect(res[4]).to.eql(Buffer.from('world'))
-    expect(res[5]).to.eql(Buffer.from('world'))
-    expect(res[6]).to.eql(Buffer.from('world'))
+    expect(res[0]).to.eql(uint8ArrayFromString('world'))
+    expect(res[1]).to.eql(uint8ArrayFromString('world'))
+    expect(res[2]).to.eql(uint8ArrayFromString('world'))
+    expect(res[3]).to.eql(uint8ArrayFromString('world'))
+    expect(res[4]).to.eql(uint8ArrayFromString('world'))
+    expect(res[5]).to.eql(uint8ArrayFromString('world'))
+    expect(res[6]).to.eql(uint8ArrayFromString('world'))
   })
 
   it('put to a node and get with the others', async function () {
     this.timeout(10 * 1000)
-    const key = Buffer.from('/v/hello1')
-    const value = Buffer.from('world')
+    const key = uint8ArrayFromString('/v/hello1')
+    const value = uint8ArrayFromString('world')
 
     await dhts[1].put(key, value)
 
@@ -75,25 +75,25 @@ describe('multiple nodes', () => {
       dhts[7].get(key, { timeout: 1000 })
     ])
 
-    expect(res[0]).to.eql(Buffer.from('world'))
-    expect(res[1]).to.eql(Buffer.from('world'))
-    expect(res[2]).to.eql(Buffer.from('world'))
-    expect(res[3]).to.eql(Buffer.from('world'))
-    expect(res[4]).to.eql(Buffer.from('world'))
-    expect(res[5]).to.eql(Buffer.from('world'))
-    expect(res[6]).to.eql(Buffer.from('world'))
+    expect(res[0]).to.eql(uint8ArrayFromString('world'))
+    expect(res[1]).to.eql(uint8ArrayFromString('world'))
+    expect(res[2]).to.eql(uint8ArrayFromString('world'))
+    expect(res[3]).to.eql(uint8ArrayFromString('world'))
+    expect(res[4]).to.eql(uint8ArrayFromString('world'))
+    expect(res[5]).to.eql(uint8ArrayFromString('world'))
+    expect(res[6]).to.eql(uint8ArrayFromString('world'))
   })
 
   it('put to several nodes in series with different values and get the last one in a subset of them', async function () {
     this.timeout(20 * 1000)
-    const key = Buffer.from('/v/hallo')
-    const result = Buffer.from('world4')
+    const key = uint8ArrayFromString('/v/hallo')
+    const result = uint8ArrayFromString('world4')
 
-    await dhts[0].put(key, Buffer.from('world0'))
-    await dhts[1].put(key, Buffer.from('world1'))
-    await dhts[2].put(key, Buffer.from('world2'))
-    await dhts[3].put(key, Buffer.from('world3'))
-    await dhts[4].put(key, Buffer.from('world4'))
+    await dhts[0].put(key, uint8ArrayFromString('world0'))
+    await dhts[1].put(key, uint8ArrayFromString('world1'))
+    await dhts[2].put(key, uint8ArrayFromString('world2'))
+    await dhts[3].put(key, uint8ArrayFromString('world3'))
+    await dhts[4].put(key, uint8ArrayFromString('world4'))
 
     const res = await Promise.all([
       dhts[4].get(key, { timeout: 2000 }),

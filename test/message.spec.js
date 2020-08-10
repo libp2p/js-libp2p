@@ -11,16 +11,16 @@ const random = require('lodash.random')
 const { Record } = require('libp2p-record')
 const fs = require('fs')
 const path = require('path')
-const { Buffer } = require('buffer')
 const Message = require('../src/message')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 describe('Message', () => {
   it('create', () => {
-    const k = Buffer.from('hello')
+    const k = uint8ArrayFromString('hello')
     const msg = new Message(Message.TYPES.PING, k, 5)
 
     expect(msg).to.have.property('type', 5)
-    expect(msg).to.have.property('key').eql(Buffer.from('hello'))
+    expect(msg).to.have.property('key').eql(uint8ArrayFromString('hello'))
     // TODO: confirm this works as expected
     expect(msg).to.have.property('_clusterLevelRaw', 5)
     expect(msg).to.have.property('clusterLevel', 4)
@@ -48,8 +48,8 @@ describe('Message', () => {
       ]
     }))
 
-    const msg = new Message(Message.TYPES.GET_VALUE, Buffer.from('hello'), 5)
-    const record = new Record(Buffer.from('hello'), Buffer.from('world'))
+    const msg = new Message(Message.TYPES.GET_VALUE, uint8ArrayFromString('hello'), 5)
+    const record = new Record(uint8ArrayFromString('hello'), uint8ArrayFromString('world'))
 
     msg.closerPeers = closer
     msg.providerPeers = provider
@@ -62,7 +62,7 @@ describe('Message', () => {
     expect(dec.key).to.be.eql(msg.key)
     expect(dec.clusterLevel).to.be.eql(msg.clusterLevel)
     expect(dec.record.serialize()).to.be.eql(record.serialize())
-    expect(dec.record.key).to.eql(Buffer.from('hello'))
+    expect(dec.record.key).to.eql(uint8ArrayFromString('hello'))
 
     expect(dec.closerPeers).to.have.length(5)
     dec.closerPeers.forEach((peer, i) => {
@@ -78,7 +78,7 @@ describe('Message', () => {
   })
 
   it('clusterlevel', () => {
-    const msg = new Message(Message.TYPES.PING, Buffer.from('hello'), 0)
+    const msg = new Message(Message.TYPES.PING, uint8ArrayFromString('hello'), 0)
 
     msg.clusterLevel = 10
     expect(msg.clusterLevel).to.eql(9)
@@ -94,7 +94,7 @@ describe('Message', () => {
 
       expect(msg.clusterLevel).to.gte(0)
       if (msg.record) {
-        expect(Buffer.isBuffer(msg.record.key)).to.eql(true)
+        expect(msg.record.key).to.be.a('Uint8Array')
       }
 
       if (msg.providerPeers.length > 0) {

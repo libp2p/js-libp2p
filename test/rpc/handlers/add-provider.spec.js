@@ -5,8 +5,8 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const { Buffer } = require('buffer')
 const multiaddr = require('multiaddr')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/add-provider')
@@ -39,10 +39,10 @@ describe('rpc - handlers - AddProvider', () => {
 
   describe('invalid messages', async () => {
     const tests = [{
-      message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.alloc(0), 0),
+      message: new Message(Message.TYPES.ADD_PROVIDER, new Uint8Array(0), 0),
       error: 'ERR_MISSING_KEY'
     }, {
-      message: new Message(Message.TYPES.ADD_PROVIDER, Buffer.from('hello world'), 0),
+      message: new Message(Message.TYPES.ADD_PROVIDER, uint8ArrayFromString('hello world'), 0),
       error: 'ERR_INVALID_CID'
     }]
 
@@ -62,7 +62,7 @@ describe('rpc - handlers - AddProvider', () => {
 
   it('ignore providers that do not match the sender', async () => {
     const cid = values[0].cid
-    const msg = new Message(Message.TYPES.ADD_PROVIDER, cid.buffer, 0)
+    const msg = new Message(Message.TYPES.ADD_PROVIDER, cid.bytes, 0)
 
     const ma1 = multiaddr('/ip4/127.0.0.1/tcp/1234')
     const ma2 = multiaddr('/ip4/127.0.0.1/tcp/2345')
@@ -90,7 +90,7 @@ describe('rpc - handlers - AddProvider', () => {
 
   it('fall back to sender if providers have no multiaddrs', async () => {
     const cid = values[0].cid
-    const msg = new Message(Message.TYPES.ADD_PROVIDER, cid.buffer, 0)
+    const msg = new Message(Message.TYPES.ADD_PROVIDER, cid.bytes, 0)
 
     msg.providerPeers = [{
       id: peerIds[0],

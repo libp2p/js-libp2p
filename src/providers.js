@@ -5,7 +5,6 @@ const varint = require('varint')
 const PeerId = require('peer-id')
 const { Key } = require('interface-datastore')
 const { default: Queue } = require('p-queue')
-const { Buffer } = require('buffer')
 const c = require('./constants')
 const utils = require('./utils')
 
@@ -211,7 +210,7 @@ class Providers {
  * @private
  */
 function makeProviderKey (cid) {
-  cid = typeof cid === 'string' ? cid : utils.encodeBase32(cid.buffer)
+  cid = typeof cid === 'string' ? cid : utils.encodeBase32(cid.bytes)
   return c.PROVIDERS_KEY_PREFIX + cid
 }
 
@@ -234,7 +233,7 @@ async function writeProviderEntry (store, cid, peer, time) { // eslint-disable-l
   ].join('')
 
   const key = new Key(dsKey)
-  const buffer = Buffer.from(varint.encode(time))
+  const buffer = Uint8Array.from(varint.encode(time))
   return store.put(key, buffer)
 }
 

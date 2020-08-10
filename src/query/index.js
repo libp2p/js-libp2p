@@ -31,7 +31,7 @@ class Query {
    * use when on that path.
    *
    * @param {DHT} dht - DHT instance
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @param {makePath} makePath - Called to set up each disjoint path. Must return the query function.
    */
   constructor (dht, key, makePath) {

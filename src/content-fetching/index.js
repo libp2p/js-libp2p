@@ -2,7 +2,7 @@
 
 const errcode = require('err-code')
 const pTimeout = require('p-timeout')
-
+const uint8ArrayEquals = require('uint8arrays/equals')
 const libp2pRecord = require('libp2p-record')
 
 const c = require('../constants')
@@ -21,7 +21,7 @@ module.exports = (dht) => {
    * Attempt to retrieve the value for the given key from
    * the local datastore.
    *
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @returns {Promise<Record>}
    *
    * @private
@@ -40,7 +40,7 @@ module.exports = (dht) => {
   /**
    * Send the best record found to any peers that have an out of date record.
    *
-   * @param {Buffer} key
+   * @param {Uint8Array} key
    * @param {Array<Object>} vals - values retrieved from the DHT
    * @param {Object} best - the best record that was found
    * @returns {Promise}
@@ -52,7 +52,7 @@ module.exports = (dht) => {
 
     return Promise.all(vals.map(async (v) => {
       // no need to do anything
-      if (v.val.equals(best)) {
+      if (uint8ArrayEquals(v.val, best)) {
         return
       }
 
@@ -78,8 +78,8 @@ module.exports = (dht) => {
   return {
     /**
      * Store the given key/value pair locally, in the datastore.
-     * @param {Buffer} key
-     * @param {Buffer} rec - encoded record
+     * @param {Uint8Array} key
+     * @param {Uint8Array} rec - encoded record
      * @returns {Promise<void>}
      * @private
      */
@@ -90,8 +90,8 @@ module.exports = (dht) => {
     /**
      * Store the given key/value  pair in the DHT.
      *
-     * @param {Buffer} key
-     * @param {Buffer} value
+     * @param {Uint8Array} key
+     * @param {Uint8Array} value
      * @param {Object} [options] - put options
      * @param {number} [options.minPeers] - minimum number of peers required to successfully put (default: closestPeers.length)
      * @returns {Promise<void>}
@@ -133,10 +133,10 @@ module.exports = (dht) => {
      * Get the value to the given key.
      * Times out after 1 minute by default.
      *
-     * @param {Buffer} key
+     * @param {Uint8Array} key
      * @param {Object} [options] - get options
      * @param {number} [options.timeout] - optional timeout (default: 60000)
-     * @returns {Promise<Buffer>}
+     * @returns {Promise<Uint8Array>}
      */
     async get (key, options = {}) {
       options.timeout = options.timeout || c.minute
@@ -171,11 +171,11 @@ module.exports = (dht) => {
     /**
      * Get the `n` values to the given key without sorting.
      *
-     * @param {Buffer} key
+     * @param {Uint8Array} key
      * @param {number} nvals
      * @param {Object} [options] - get options
      * @param {number} [options.timeout] - optional timeout (default: 60000)
-     * @returns {Promise<Array<{from: PeerId, val: Buffer}>>}
+     * @returns {Promise<Array<{from: PeerId, val: Uint8Array}>>}
      */
     async getMany (key, nvals, options = {}) {
       options.timeout = options.timeout || c.minute

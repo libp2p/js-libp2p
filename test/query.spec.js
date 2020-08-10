@@ -6,9 +6,9 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 const pDefer = require('p-defer')
 const delay = require('delay')
-const { Buffer } = require('buffer')
 const Query = require('../src/query')
 const kadUtils = require('../src/utils')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const createPeerId = require('./utils/create-peer-id')
 const TestDHT = require('./utils/test-dht')
@@ -44,7 +44,7 @@ describe('Query', () => {
         expect(p.id).to.eql(peerIds[2].id)
 
         return {
-          value: Buffer.from('cool'),
+          value: uint8ArrayFromString('cool'),
           pathComplete: true
         }
       }
@@ -57,7 +57,7 @@ describe('Query', () => {
     const q = new Query(dht, peerId.id, () => queryFunc)
     const res = await q.run([peerIds[1]])
 
-    expect(res.paths[0].value).to.eql(Buffer.from('cool'))
+    expect(res.paths[0].value).to.eql(uint8ArrayFromString('cool'))
     expect(res.paths[0].success).to.eql(true)
     expect(res.finalSet.size).to.eql(2)
   })
@@ -329,7 +329,7 @@ describe('Query', () => {
 
   it('disjoint path values', async () => {
     const peerId = dht.peerId
-    const values = ['v0', 'v1'].map(Buffer.from)
+    const values = ['v0', 'v1'].map((str) => uint8ArrayFromString(str))
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
@@ -384,7 +384,7 @@ describe('Query', () => {
 
   it('disjoint path values with early completion', async () => {
     const peerId = dht.peerId
-    const values = ['v0', 'v1'].map(Buffer.from)
+    const values = ['v0', 'v1'].map((str) => uint8ArrayFromString(str))
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}
@@ -453,7 +453,7 @@ describe('Query', () => {
 
   it('disjoint path continue other paths after error on one path', async () => {
     const peerId = dht.peerId
-    const values = ['v0', 'v1'].map(Buffer.from)
+    const values = ['v0', 'v1'].map((str) => uint8ArrayFromString(str))
 
     // mock this so we can dial non existing peers
     dht.dialer.dial = () => {}

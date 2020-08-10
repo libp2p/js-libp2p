@@ -4,10 +4,10 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const { Buffer } = require('buffer')
 const Message = require('../../../src/message')
 const handler = require('../../../src/rpc/handlers/get-value')
 const utils = require('../../../src/utils')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const T = Message.TYPES.GET_VALUE
 
@@ -33,7 +33,7 @@ describe('rpc - handlers - GetValue', () => {
   afterEach(() => tdht.teardown())
 
   it('errors when missing key', async () => {
-    const msg = new Message(T, Buffer.alloc(0), 0)
+    const msg = new Message(T, new Uint8Array(0), 0)
 
     try {
       await handler(dht)(peerIds[0], msg)
@@ -46,8 +46,8 @@ describe('rpc - handlers - GetValue', () => {
   })
 
   it('responds with a local value', async () => {
-    const key = Buffer.from('hello')
-    const value = Buffer.from('world')
+    const key = uint8ArrayFromString('hello')
+    const value = uint8ArrayFromString('world')
     const msg = new Message(T, key, 0)
 
     await dht.put(key, value)
@@ -59,7 +59,7 @@ describe('rpc - handlers - GetValue', () => {
   })
 
   it('responds with closerPeers returned from the dht', async () => {
-    const key = Buffer.from('hello')
+    const key = uint8ArrayFromString('hello')
     const msg = new Message(T, key, 0)
     const other = peerIds[1]
 
