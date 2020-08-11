@@ -1,3 +1,20 @@
+<a name="0.6.0"></a>
+# [0.6.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.5.6...v0.6.0) (2020-08-11)
+
+
+### Bug Fixes
+
+* replace node buffers with uint8arrays ([#70](https://github.com/libp2p/js-libp2p-pubsub/issues/70)) ([92632b5](https://github.com/libp2p/js-libp2p-pubsub/commit/92632b5))
+
+
+### BREAKING CHANGES
+
+* - The `.data`, `.from` and `.seq` properties of messages used to be
+  node Buffers, now they are Uint8Arrays
+- All deps of this module now use Uint8Arrays instead of Buffers
+
+
+
 <a name="0.5.6"></a>
 ## [0.5.6](https://github.com/libp2p/js-libp2p-pubsub/compare/v0.5.5...v0.5.6) (2020-07-14)
 
