@@ -2,10 +2,11 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
-const { Buffer } = require('buffer')
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
+const uint8ArrayConcat = require('uint8arrays/concat')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const { Message } = require('../src/message')
 const {
@@ -27,12 +28,12 @@ describe('message signing', () => {
   it('should be able to sign and verify a message', async () => {
     const message = {
       from: peerId.id,
-      data: 'hello',
+      data: uint8ArrayFromString('hello'),
       seqno: randomSeqno(),
       topicIDs: ['test-topic']
     }
 
-    const bytesToSign = Buffer.concat([SignPrefix, Message.encode(message)])
+    const bytesToSign = uint8ArrayConcat([SignPrefix, Message.encode(message)])
     const expectedSignature = await peerId.privKey.sign(bytesToSign)
 
     const signedMessage = await signMessage(peerId, message)
@@ -51,12 +52,12 @@ describe('message signing', () => {
 
     const message = {
       from: secPeerId.id,
-      data: 'hello',
+      data: uint8ArrayFromString('hello'),
       seqno: randomSeqno(),
       topicIDs: ['test-topic']
     }
 
-    const bytesToSign = Buffer.concat([SignPrefix, Message.encode(message)])
+    const bytesToSign = uint8ArrayConcat([SignPrefix, Message.encode(message)])
     const expectedSignature = await secPeerId.privKey.sign(bytesToSign)
 
     const signedMessage = await signMessage(secPeerId, message)
@@ -73,12 +74,12 @@ describe('message signing', () => {
   it('should be able to extract the public key from the message', async () => {
     const message = {
       from: peerId.id,
-      data: 'hello',
+      data: uint8ArrayFromString('hello'),
       seqno: randomSeqno(),
       topicIDs: ['test-topic']
     }
 
-    const bytesToSign = Buffer.concat([SignPrefix, Message.encode(message)])
+    const bytesToSign = uint8ArrayConcat([SignPrefix, Message.encode(message)])
     const expectedSignature = await peerId.privKey.sign(bytesToSign)
 
     const signedMessage = await signMessage(peerId, message)

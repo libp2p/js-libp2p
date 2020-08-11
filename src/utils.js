@@ -1,15 +1,16 @@
 'use strict'
 
-const { Buffer } = require('buffer')
 const crypto = require('libp2p-crypto')
 const multibase = require('multibase')
+const uint8ArrayToString = require('uint8arrays/to-string')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 exports = module.exports
 
 /**
  * Generatea random sequence number.
  *
- * @returns {Buffer}
+ * @returns {Uint8Array}
  * @private
  */
 exports.randomSeqno = () => {
@@ -20,12 +21,12 @@ exports.randomSeqno = () => {
  * Generate a message id, based on the `from` and `seqno`.
  *
  * @param {string} from
- * @param {Buffer} seqno
+ * @param {Uint8Array} seqno
  * @returns {string}
  * @private
  */
 exports.msgId = (from, seqno) => {
-  return from + seqno.toString('hex')
+  return from + uint8ArrayToString(seqno, 'base16')
 }
 
 /**
@@ -72,13 +73,13 @@ exports.ensureArray = (maybeArray) => {
 /**
  * Ensures `message.from` is base58 encoded
  * @param {Object} message
- * @param {Buffer|String} message.from
+ * @param {Uint8Array|String} message.from
  * @return {Object}
  */
 exports.normalizeInRpcMessage = (message) => {
   const m = Object.assign({}, message)
-  if (Buffer.isBuffer(message.from)) {
-    m.from = multibase.encode('base58btc', message.from).toString().slice(1)
+  if (message.from instanceof Uint8Array) {
+    m.from = uint8ArrayToString(message.from, 'base58btc')
   }
   return m
 }
@@ -99,6 +100,9 @@ exports.normalizeOutRpcMessage = (message) => {
   const m = Object.assign({}, message)
   if (typeof message.from === 'string' || message.from instanceof String) {
     m.from = multibase.decode('z' + message.from)
+  }
+  if (typeof message.data === 'string' || message.data instanceof String) {
+    m.data = uint8ArrayFromString(message.data)
   }
   return m
 }

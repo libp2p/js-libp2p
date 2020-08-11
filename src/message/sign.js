@@ -1,8 +1,10 @@
 'use strict'
-const { Buffer } = require('buffer')
+
 const PeerId = require('peer-id')
 const { Message } = require('./index')
-const SignPrefix = Buffer.from('libp2p-pubsub:')
+const uint8ArrayConcat = require('uint8arrays/concat')
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
 
 /**
  * Signs the provided message with the given `peerId`
@@ -13,7 +15,7 @@ const SignPrefix = Buffer.from('libp2p-pubsub:')
  */
 async function signMessage (peerId, message) {
   // Get the message in bytes, and prepend with the pubsub prefix
-  const bytes = Buffer.concat([
+  const bytes = uint8ArrayConcat([
     SignPrefix,
     Message.encode(message)
   ])
@@ -37,7 +39,7 @@ async function verifySignature (message) {
   const baseMessage = { ...message }
   delete baseMessage.signature
   delete baseMessage.key
-  const bytes = Buffer.concat([
+  const bytes = uint8ArrayConcat([
     SignPrefix,
     Message.encode(baseMessage)
   ])

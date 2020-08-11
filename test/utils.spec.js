@@ -2,8 +2,8 @@
 'use strict'
 
 const { expect } = require('chai')
-const { Buffer } = require('buffer')
 const utils = require('../src/utils')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 describe('utils', () => {
   it('randomSeqno', () => {
@@ -16,13 +16,13 @@ describe('utils', () => {
   })
 
   it('msgId', () => {
-    expect(utils.msgId('hello', Buffer.from('world'))).to.be.eql('hello776f726c64')
+    expect(utils.msgId('hello', uint8ArrayFromString('world'))).to.be.eql('hello776f726c64')
   })
 
-  it('msgId should not generate same ID for two different buffers', () => {
+  it('msgId should not generate same ID for two different Uint8Arrays', () => {
     const peerId = 'QmPNdSYk5Rfpo5euNqwtyizzmKXMNHdXeLjTQhcN4yfX22'
-    const msgId0 = utils.msgId(peerId, Buffer.from('15603533e990dfde', 'hex'))
-    const msgId1 = utils.msgId(peerId, Buffer.from('15603533e990dfe0', 'hex'))
+    const msgId0 = utils.msgId(peerId, uint8ArrayFromString('15603533e990dfde', 'base16'))
+    const msgId1 = utils.msgId(peerId, uint8ArrayFromString('15603533e990dfe0', 'base16'))
     expect(msgId0).to.not.eql(msgId1)
   })
 
@@ -49,7 +49,7 @@ describe('utils', () => {
   })
 
   it('converts an IN msg.from to b58', () => {
-    const binaryId = Buffer.from('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'hex')
+    const binaryId = uint8ArrayFromString('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'base16')
     const stringId = 'QmdZEWgtaWAxBh93fELFT298La1rsZfhiC2pqwMVwy3jZM'
     const m = [
       { from: binaryId },
@@ -63,7 +63,7 @@ describe('utils', () => {
   })
 
   it('converts an OUT msg.from to binary', () => {
-    const binaryId = Buffer.from('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'hex')
+    const binaryId = uint8ArrayFromString('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'base16')
     const stringId = 'QmdZEWgtaWAxBh93fELFT298La1rsZfhiC2pqwMVwy3jZM'
     const m = [
       { from: binaryId },

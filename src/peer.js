@@ -67,7 +67,7 @@ class Peer extends EventEmitter {
    * Send a message to this peer.
    * Throws if there is no `stream` to write to available.
    *
-   * @param {Buffer} msg
+   * @param {Uint8Array} msg
    * @returns {undefined}
    */
   write (msg) {
