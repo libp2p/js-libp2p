@@ -1,3 +1,20 @@
+<a name="0.14.0"></a>
+# [0.14.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.6...v0.14.0) (2020-08-11)
+
+
+### Bug Fixes
+
+* replace node buffers with uint8arrays ([#115](https://github.com/libp2p/js-libp2p-websockets/issues/115)) ([a277bf6](https://github.com/libp2p/js-libp2p-websockets/commit/a277bf6))
+
+
+### BREAKING CHANGES
+
+* - All deps used by this module now use Uint8Arrays in place of Buffers
+
+* chore: remove gh dep
+
+
+
 <a name="0.13.6"></a>
 ## [0.13.6](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.5...v0.13.6) (2020-03-23)
 
