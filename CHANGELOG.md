@@ -1,3 +1,20 @@
+<a name="0.15.0"></a>
+# [0.15.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.14.3...v0.15.0) (2020-08-11)
+
+
+### Chores
+
+* upgrade deps ([#97](https://github.com/libp2p/js-libp2p-mdns/issues/97)) ([3cf0e75](https://github.com/libp2p/js-libp2p-mdns/commit/3cf0e75))
+
+
+### BREAKING CHANGES
+
+* - All deps of this module now use Uint8Arrays instead of node Buffers
+
+* chore: address pr comments
+
+
+
 <a name="0.14.3"></a>
 ## [0.14.3](https://github.com/libp2p/js-libp2p-mdns/compare/v0.14.2...v0.14.3) (2020-08-07)
 
