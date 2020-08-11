@@ -1,3 +1,18 @@
+<a name="0.12.1"></a>
+## [0.12.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.11.0...v0.12.1) (2020-08-11)
+
+
+### Bug Fixes
+
+* replace node buffers with uint8arrays ([#106](https://github.com/libp2p/js-libp2p-bootstrap/issues/106)) ([b59b7ad](https://github.com/libp2p/js-libp2p-bootstrap/commit/b59b7ad))
+
+
+### BREAKING CHANGES
+
+* - The deps of this module have Uint8Array properties
+
+
+
 <a name="0.12.0"></a>
 # [0.12.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.11.0...v0.12.0) (2020-08-10)
 
