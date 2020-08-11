@@ -1,3 +1,22 @@
+<a name="0.10.0"></a>
+# [0.10.0](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.5...v0.10.0) (2020-08-11)
+
+
+### Bug Fixes
+
+* replace node buffers with uint8arrays ([#114](https://github.com/libp2p/js-libp2p-mplex/issues/114)) ([d005338](https://github.com/libp2p/js-libp2p-mplex/commit/d005338))
+
+
+### BREAKING CHANGES
+
+* - All use of node Buffers has been replaced with Uint8Arrays
+
+* fix: keep allocUnsafe for node for performance
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+
+
+
 <a name="0.9.5"></a>
 ## [0.9.5](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.4...v0.9.5) (2020-03-18)
 
