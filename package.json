@@ -1,6 +1,6 @@
 {
   "name": "libp2p-floodsub",
-  "version": "0.21.3",
+  "version": "0.22.0",
   "description": "libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -72,17 +72,17 @@
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "dirkmc <dirk@mccormick.cx>",
     "Jacob Heun <jacobheun@gmail.com>",
-    "Pedro Teixeira <i@pgte.me>",
-    "Gavin McDermott <gavinmcdermott@gmail.com>",
     "Cayman <caymannava@gmail.com>",
+    "Gavin McDermott <gavinmcdermott@gmail.com>",
+    "Pedro Teixeira <i@pgte.me>",
     "Richard Schneider <makaretu@gmail.com>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
-    "Hugo Dias <hugomrdias@gmail.com>",
-    "Alan Shaw <alan.shaw@protocol.ai>",
     "Alex Potsides <alex@achingbrain.net>",
+    "Hugo Dias <hugomrdias@gmail.com>",
+    "wanderer <mjbecze@gmail.com>",
+    "Alan Shaw <alan.shaw@protocol.ai>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "Mikerah <mikerah14@gmail.com>",
-    "Yusef Napora <yusef@napora.org>",
-    "wanderer <mjbecze@gmail.com>"
+    "Yusef Napora <yusef@napora.org>"
   ]
 }
