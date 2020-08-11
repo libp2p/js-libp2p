@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "mafmt": "^7.0.0",
+    "mafmt": "^8.0.0",
     "multiaddr": "^8.0.0",
     "peer-id": "^0.14.0"
   },
