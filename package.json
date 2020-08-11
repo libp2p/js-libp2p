@@ -1,6 +1,6 @@
 {
   "name": "libp2p-mdns",
-  "version": "0.14.3",
+  "version": "0.15.0",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -54,8 +54,8 @@
     "Richard Schneider <makaretu@gmail.com>",
     "Vasco Santos <vasco.santos@moxy.studio>",
     "Alan Shaw <alan.shaw@protocol.ai>",
-    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Alex Potsides <alex@achingbrain.net>",
+    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
     "dirkmc <dirkmdev@gmail.com>",
     "emersion <contact@emersion.fr>",
