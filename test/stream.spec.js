@@ -1,16 +1,15 @@
 /* eslint-env mocha */
 'use strict'
 
-const { Buffer } = require('buffer')
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const { expect } = chai
-chai.use(dirtyChai)
+const { expect } = require('aegir/utils/chai')
 const pipe = require('it-pipe')
 const randomBytes = require('random-bytes')
 const randomInt = require('random-int')
 const { tap, take, collect, consume, map } = require('streaming-iterables')
 const defer = require('p-defer')
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
+const uint8ArrayConcat = require('uint8arrays/concat')
 
 const createStream = require('../src/stream')
 const { MessageTypes, MessageTypeNames } = require('../src/message-types')
@@ -31,13 +30,13 @@ const infiniteRandom = {
   }
 }
 
-const msgToBuffer = msg => Buffer.from(JSON.stringify(msg))
+const msgToBuffer = msg => uint8ArrayFromString(JSON.stringify(msg))
 
 const bufferToMessage = buf => {
-  const msg = JSON.parse(buf)
+  const msg = JSON.parse(uint8ArrayToString(buf))
   // JSON.stringify(Buffer) encodes as {"type":"Buffer","data":[1,2,3]}
   if (msg.data && msg.data.type === 'Buffer') {
-    msg.data = Buffer.from(msg.data.data)
+    msg.data = new Uint8Array(msg.data.data)
   }
   return msg
 }
@@ -565,6 +564,6 @@ describe('stream', () => {
     expect(dataMessages[0].data.length).to.equal(maxMsgSize)
     expect(dataMessages[1].data.length).to.equal(maxMsgSize)
     expect(dataMessages[2].data.length).to.equal(2)
-    expect(Buffer.concat(dataMessages.map(m => m.data.slice()))).to.deep.equal(bigMessage)
+    expect(uint8ArrayConcat(dataMessages.map(m => m.data.slice()))).to.deep.equal(bigMessage)
   })
 })

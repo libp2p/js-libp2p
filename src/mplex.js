@@ -188,7 +188,7 @@ class Mplex {
    * @param {object} options
    * @param {number} options.id
    * @param {string} options.type
-   * @param {Buffer|BufferList} options.data
+   * @param {Uint8Array|BufferList} options.data
    * @returns {void}
    */
   _handleIncoming ({ id, type, data }) {

@@ -1,10 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const { expect } = chai
-chai.use(dirtyChai)
+const { expect } = require('aegir/utils/chai')
 const pipe = require('it-pipe')
 const randomBytes = require('random-bytes')
 const { tap, consume, collect } = require('streaming-iterables')

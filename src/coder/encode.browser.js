@@ -7,14 +7,14 @@ const POOL_SIZE = 10 * 1024
 
 class Encoder {
   constructor () {
-    this._pool = Buffer.allocUnsafe(POOL_SIZE)
+    this._pool = new Uint8Array(POOL_SIZE)
     this._poolOffset = 0
   }
 
   /**
    * Encodes the given message and returns it and its header
    * @param {*} msg The message object to encode
-   * @returns {Buffer|Buffer[]}
+   * @returns {Uint8Array|Uint8Array[]}
    */
   write (msg) {
     const pool = this._pool
@@ -25,10 +25,10 @@ class Encoder {
     varint.encode(msg.data ? msg.data.length : 0, pool, offset)
     offset += varint.encode.bytes
 
-    const header = pool.slice(this._poolOffset, offset)
+    const header = pool.subarray(this._poolOffset, offset)
 
     if (POOL_SIZE - offset < 100) {
-      this._pool = Buffer.allocUnsafe(POOL_SIZE)
+      this._pool = new Uint8Array(POOL_SIZE)
       this._poolOffset = 0
     } else {
       this._poolOffset = offset

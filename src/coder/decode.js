@@ -23,7 +23,7 @@ class Decoder {
   }
 
   /**
-   * @param {Buffer|BufferList} chunk
+   * @param {Uint8Array|BufferList} chunk
    * @returns {object[]} An array of message objects
    */
   write (chunk) {
@@ -58,7 +58,7 @@ class Decoder {
   /**
    * Attempts to decode the message header from the buffer
    * @private
-   * @param {Buffer} data
+   * @param {Uint8Array} data
    * @returns {*} message header (id, type, offset, length)
    */
   _decodeHeader (data) {
