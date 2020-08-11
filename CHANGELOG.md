@@ -1,3 +1,20 @@
+<a name="0.22.0"></a>
+# [0.22.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.21.3...v0.22.0) (2020-08-11)
+
+
+### Bug Fixes
+
+* replace node buffers with uint8arrays ([5a522b4](https://github.com/libp2p/js-libp2p-floodsub/commit/5a522b4))
+
+
+### BREAKING CHANGES
+
+* - The `.data` property of received pubsub messages was a Buffer,
+  now it is a Uint8Array
+- All deps of this module use Uint8Arrays
+
+
+
 <a name="0.21.3"></a>
 ## [0.21.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.21.2...v0.21.3) (2020-06-04)
 
