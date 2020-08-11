@@ -5,15 +5,13 @@
 const https = require('https')
 const fs = require('fs')
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const expect = chai.expect
-chai.use(dirtyChai)
+const { expect } = require('aegir/utils/chai')
 const multiaddr = require('multiaddr')
 const goodbye = require('it-goodbye')
 const { collect } = require('streaming-iterables')
 const pipe = require('it-pipe')
 const BufferList = require('bl/BufferList')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const WS = require('../src')
 
@@ -211,7 +209,7 @@ describe('dial', () => {
 
       const result = await pipe(s, conn, s)
 
-      expect(result).to.be.eql([Buffer.from('hey')])
+      expect(result).to.be.eql([uint8ArrayFromString('hey')])
     })
 
     it('dial with p2p Id', async () => {
@@ -221,7 +219,7 @@ describe('dial', () => {
 
       const result = await pipe(s, conn, s)
 
-      expect(result).to.be.eql([Buffer.from('hey')])
+      expect(result).to.be.eql([uint8ArrayFromString('hey')])
     })
 
     it('should resolve port 0', async () => {
@@ -276,7 +274,7 @@ describe('dial', () => {
 
       const result = await pipe(s, conn, s)
 
-      expect(result).to.be.eql([Buffer.from('hey')])
+      expect(result).to.be.eql([uint8ArrayFromString('hey')])
     })
   })
 
@@ -299,7 +297,7 @@ describe('dial', () => {
 
       const result = await pipe(s, conn, s)
 
-      expect(result).to.be.eql([Buffer.from('hey')])
+      expect(result).to.be.eql([uint8ArrayFromString('hey')])
     })
 
     it('dial and use BufferList', async () => {
@@ -308,7 +306,7 @@ describe('dial', () => {
 
       const result = await pipe(s, conn, s)
 
-      expect(result).to.be.eql([Buffer.from('hey')])
+      expect(result).to.be.eql([uint8ArrayFromString('hey')])
     })
 
     it('dial with p2p Id', async () => {
@@ -321,7 +319,7 @@ describe('dial', () => {
       })
 
       const result = await pipe(s, conn, s)
-      expect(result).to.be.eql([Buffer.from('hey')])
+      expect(result).to.be.eql([uint8ArrayFromString('hey')])
     })
   })
 })

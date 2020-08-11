@@ -1,15 +1,13 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const expect = chai.expect
-chai.use(dirtyChai)
+const { expect } = require('aegir/utils/chai')
 
 const multiaddr = require('multiaddr')
 const pipe = require('it-pipe')
 const goodbye = require('it-goodbye')
 const { collect, take } = require('streaming-iterables')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const WS = require('../src')
 
@@ -29,7 +27,7 @@ describe('libp2p-websockets', () => {
   })
 
   it('echo', async () => {
-    const message = Buffer.from('Hello World!')
+    const message = uint8ArrayFromString('Hello World!')
     const s = goodbye({ source: [message], sink: collect })
 
     const results = await pipe(s, conn, s)
@@ -38,7 +36,7 @@ describe('libp2p-websockets', () => {
 
   describe('stress', () => {
     it('one big write', async () => {
-      const rawMessage = Buffer.allocUnsafe(1000000).fill('a')
+      const rawMessage = new Uint8Array(1000000).fill('a')
 
       const s = goodbye({ source: [rawMessage], sink: collect })
 
@@ -52,7 +50,7 @@ describe('libp2p-websockets', () => {
         source: pipe(
           {
             [Symbol.iterator] () { return this },
-            next: () => ({ done: false, value: Buffer.from(Math.random().toString()) })
+            next: () => ({ done: false, value: uint8ArrayFromString(Math.random().toString()) })
           },
           take(20000)
         ),
