@@ -64,7 +64,7 @@ node -e "require('libp2p/src/pnet').generate(process.stdout)" > swarm.key
 
 ```js
 const writeKey = require('libp2p/src/pnet').generate
-const swarmKey = Buffer.alloc(95)
+const swarmKey = new Uint8Array(95)
 writeKey(swarmKey)
 fs.writeFileSync('swarm.key', swarmKey)
 ```

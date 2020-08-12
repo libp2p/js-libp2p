@@ -1,8 +1,8 @@
 'use strict'
 
-const { Buffer } = require('buffer')
 const errCode = require('err-code')
 const { messages, codes } = require('./errors')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 module.exports = (node, Pubsub, config) => {
   const pubsub = new Pubsub(node.peerId, node.registrar, config)
@@ -50,7 +50,7 @@ module.exports = (node, Pubsub, config) => {
     /**
      * Publish messages to the given topics.
      * @param {Array<string>|string} topic
-     * @param {Buffer} data
+     * @param {Uint8Array} data
      * @returns {Promise<void>}
      */
     publish: (topic, data) => {
@@ -58,10 +58,14 @@ module.exports = (node, Pubsub, config) => {
         throw errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED)
       }
 
+      if (typeof data === 'string' || data instanceof 'String') {
+        data = uint8ArrayFromString(data)
+      }
+
       try {
-        data = Buffer.from(data)
+        data = Uint8Array.from(data)
       } catch (err) {
-        throw errCode(new Error('data must be convertible to a Buffer'), 'ERR_DATA_IS_NOT_VALID')
+        throw errCode(new Error('data must be convertible to a Uint8Array'), 'ERR_DATA_IS_NOT_VALID')
       }
 
       return pubsub.publish(topic, data)

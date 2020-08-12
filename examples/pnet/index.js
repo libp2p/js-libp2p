@@ -1,18 +1,17 @@
 /* eslint no-console: ["off"] */
 'use strict'
 
-const { Buffer } = require('buffer')
 const { generate } = require('libp2p/src/pnet')
 const privateLibp2pNode = require('./libp2p-node')
 
 const pipe = require('it-pipe')
 
-// Create a buffer and write the swarm key to it
-const swarmKey = Buffer.alloc(95)
+// Create a Uint8Array and write the swarm key to it
+const swarmKey = new Uint8Array(95)
 generate(swarmKey)
 
 // This key is for testing a different key not working
-const otherSwarmKey = Buffer.alloc(95)
+const otherSwarmKey = new Uint8Array(95)
 generate(otherSwarmKey)
 
 ;(async () => {

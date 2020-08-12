@@ -13,6 +13,7 @@ const Floodsub = require('libp2p-floodsub')
 const Gossipsub = require('libp2p-gossipsub')
 const { multicodec: floodsubMulticodec } = require('libp2p-floodsub')
 const { multicodec: gossipsubMulticodec } = require('libp2p-gossipsub')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const multiaddr = require('multiaddr')
 
@@ -81,7 +82,7 @@ describe('Pubsub subsystem is able to use different implementations', () => {
     expect(connection).to.exist()
 
     libp2p.pubsub.subscribe(topic, (msg) => {
-      expect(msg.data.toString()).to.equal(data)
+      expect(uint8ArrayToString(msg.data)).to.equal(data)
       defer.resolve()
     })
 

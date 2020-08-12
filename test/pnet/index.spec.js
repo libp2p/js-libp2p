@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 'use strict'
 
-const { Buffer } = require('buffer')
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 chai.use(dirtyChai)
@@ -9,13 +8,14 @@ const expect = chai.expect
 const duplexPair = require('it-pair/duplex')
 const pipe = require('it-pipe')
 const { collect } = require('streaming-iterables')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const Protector = require('../../src/pnet')
 const Errors = Protector.errors
 const generate = Protector.generate
 
-const swarmKeyBuffer = Buffer.alloc(95)
-const wrongSwarmKeyBuffer = Buffer.alloc(95)
+const swarmKeyBuffer = new Uint8Array(95)
+const wrongSwarmKeyBuffer = new Uint8Array(95)
 
 // Write new psk files to the buffers
 generate(swarmKeyBuffer)
@@ -39,7 +39,7 @@ describe('private network', () => {
     ])
 
     pipe(
-      [Buffer.from('hello world'), Buffer.from('doo dah')],
+      [uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')],
       aToB
     )
 
@@ -53,7 +53,7 @@ describe('private network', () => {
       collect
     )
 
-    expect(output).to.eql([Buffer.from('hello world'), Buffer.from('doo dah')])
+    expect(output).to.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
   })
 
   it('should not be able to share correct data with different keys', async () => {
@@ -67,7 +67,7 @@ describe('private network', () => {
     ])
 
     pipe(
-      [Buffer.from('hello world'), Buffer.from('doo dah')],
+      [uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')],
       aToB
     )
 
@@ -76,19 +76,19 @@ describe('private network', () => {
       collect
     )
 
-    expect(output).to.not.eql([Buffer.from('hello world'), Buffer.from('doo dah')])
+    expect(output).to.not.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
   })
 
   describe('invalid psks', () => {
     it('should not accept a bad psk', () => {
       expect(() => {
-        return new Protector(Buffer.from('not-a-key'))
+        return new Protector(uint8ArrayFromString('not-a-key'))
       }).to.throw(Errors.INVALID_PSK)
     })
 
     it('should not accept a psk of incorrect length', () => {
       expect(() => {
-        return new Protector(Buffer.from('/key/swarm/psk/1.0.0/\n/base16/\ndffb7e'))
+        return new Protector(uint8ArrayFromString('/key/swarm/psk/1.0.0/\n/base16/\ndffb7e'))
       }).to.throw(Errors.INVALID_PSK)
     })
   })

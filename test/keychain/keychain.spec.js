@@ -5,6 +5,8 @@
 const { chai, expect } = require('aegir/utils/chai')
 const fail = expect.fail
 chai.use(require('chai-string'))
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const peerUtils = require('../utils/creators/peer')
 
@@ -26,7 +28,7 @@ describe('keychain', () => {
   let ks
   let datastore1, datastore2
 
-  before(() => {
+  before(async () => {
     datastore1 = isNode
       ? new FsStore(path.join(os.tmpdir(), 'test-keystore-1-' + Date.now()))
       : new LevelStore('test-keystore-1', { db: require('level') })
@@ -36,6 +38,14 @@ describe('keychain', () => {
 
     ks = new Keychain(datastore2, { passPhrase: passPhrase })
     emptyKeystore = new Keychain(datastore1, { passPhrase: passPhrase })
+
+    await datastore1.open()
+    await datastore2.open()
+  })
+
+  after(async () => {
+    await datastore2.close()
+    await datastore2.close()
   })
 
   it('can start without a password', () => {
@@ -278,7 +288,7 @@ describe('keychain', () => {
   })
 
   describe('CMS protected data', () => {
-    const plainData = Buffer.from('This is a message from Alice to Bob')
+    const plainData = uint8ArrayFromString('This is a message from Alice to Bob')
     let cms
 
     it('service is available', () => {
@@ -291,7 +301,7 @@ describe('keychain', () => {
       expect(err).to.have.property('code', 'ERR_KEY_NOT_FOUND')
     })
 
-    it('requires plain data as a Buffer', async () => {
+    it('requires plain data as a Uint8Array', async () => {
       const err = await ks.cms.encrypt(rsaKeyName, 'plain data').then(fail, err => err)
       expect(err).to.exist()
       expect(err).to.have.property('code', 'ERR_INVALID_PARAMS')
@@ -300,7 +310,7 @@ describe('keychain', () => {
     it('encrypts', async () => {
       cms = await ks.cms.encrypt(rsaKeyName, plainData)
       expect(cms).to.exist()
-      expect(cms).to.be.instanceOf(Buffer)
+      expect(cms).to.be.instanceOf(Uint8Array)
     })
 
     it('is a PKCS #7 message', async () => {
@@ -326,7 +336,7 @@ describe('keychain', () => {
     it('can be read with the key', async () => {
       const plain = await ks.cms.decrypt(cms)
       expect(plain).to.exist()
-      expect(plain.toString()).to.equal(plainData.toString())
+      expect(uint8ArrayToString(plain)).to.equal(uint8ArrayToString(plainData))
     })
   })
 
@@ -380,7 +390,7 @@ describe('keychain', () => {
     let alice
 
     before(async function () {
-      const encoded = Buffer.from(alicePrivKey, 'base64')
+      const encoded = uint8ArrayFromString(alicePrivKey, 'base64pad')
       alice = await PeerId.createFromPrivKey(encoded)
     })
 

@@ -189,7 +189,7 @@ class PersistentPeerStore extends PeerStore {
 
       const encodedData = Addresses.encode({
         addrs: entry.addresses.map((address) => ({
-          multiaddr: address.multiaddr.buffer,
+          multiaddr: address.multiaddr.bytes,
           isCertified: address.isCertified
         })),
         certified_record: entry.record ? {
@@ -287,7 +287,7 @@ class PersistentPeerStore extends PeerStore {
    * @private
    * @param {Object} params
    * @param {Key} params.key datastore key
-   * @param {Buffer} params.value datastore value stored
+   * @param {Uint8Array} params.value datastore value stored
    * @return {Promise<void>}
    */
   async _processDatastoreEntry ({ key, value }) {

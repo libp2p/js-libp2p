@@ -8,13 +8,13 @@ exports = module.exports
 /**
  * Gets a self-signed X.509 certificate for the key.
  *
- * The output Buffer contains the PKCS #7 message in DER.
+ * The output Uint8Array contains the PKCS #7 message in DER.
  *
  * TODO: move to libp2p-crypto package
  *
  * @param {KeyInfo} key - The id and name of the key
  * @param {RsaPrivateKey} privateKey - The naked key
- * @returns {undefined}
+ * @returns {Uint8Array}
  */
 exports.certificateForKey = (key, privateKey) => {
   const publicKey = pki.setRsaPublicKey(privateKey.n, privateKey.e)

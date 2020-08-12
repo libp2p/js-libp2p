@@ -11,7 +11,7 @@ const Protector = require('libp2p/src/pnet')
  * privateLibp2pNode returns a libp2p node function that will use the swarm
  * key with the given `swarmKey` to create the Protector
  *
- * @param {Buffer} swarmKey
+ * @param {Uint8Array} swarmKey
  * @returns {Promise<libp2p>} Returns a libp2pNode function for use in IPFS creation
  */
 const privateLibp2pNode = async (swarmKey) => {

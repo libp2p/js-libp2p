@@ -5,6 +5,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-bytes'))
 const { expect } = chai
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const pDefer = require('p-defer')
 const PeerStore = require('../../src/peer-store')
@@ -76,7 +77,7 @@ describe('metadataBook', () => {
     it('stores the content and emit change event', () => {
       const defer = pDefer()
       const metadataKey = 'location'
-      const metadataValue = Buffer.from('mars')
+      const metadataValue = uint8ArrayFromString('mars')
 
       peerStore.once('change:metadata', ({ peerId, metadata }) => {
         expect(peerId).to.exist()
@@ -99,8 +100,8 @@ describe('metadataBook', () => {
     it('emits on set if not storing the exact same content', () => {
       const defer = pDefer()
       const metadataKey = 'location'
-      const metadataValue1 = Buffer.from('mars')
-      const metadataValue2 = Buffer.from('saturn')
+      const metadataValue1 = uint8ArrayFromString('mars')
+      const metadataValue2 = uint8ArrayFromString('saturn')
 
       let changeCounter = 0
       peerStore.on('change:metadata', () => {
@@ -129,7 +130,7 @@ describe('metadataBook', () => {
     it('does not emit on set if it is storing the exact same content', () => {
       const defer = pDefer()
       const metadataKey = 'location'
-      const metadataValue = Buffer.from('mars')
+      const metadataValue = uint8ArrayFromString('mars')
 
       let changeCounter = 0
       peerStore.on('change:metadata', () => {
@@ -180,7 +181,7 @@ describe('metadataBook', () => {
 
     it('returns the metadata stored', () => {
       const metadataKey = 'location'
-      const metadataValue = Buffer.from('mars')
+      const metadataValue = uint8ArrayFromString('mars')
 
       mb.set(peerId, metadataKey, metadataValue)
 
@@ -217,7 +218,7 @@ describe('metadataBook', () => {
 
     it('returns the metadata value stored for the given key', () => {
       const metadataKey = 'location'
-      const metadataValue = Buffer.from('mars')
+      const metadataValue = uint8ArrayFromString('mars')
 
       mb.set(peerId, metadataKey, metadataValue)
 
@@ -229,7 +230,7 @@ describe('metadataBook', () => {
     it('returns undefined if no metadata is known for the provided peer and key', () => {
       const metadataKey = 'location'
       const metadataBadKey = 'nickname'
-      const metadataValue = Buffer.from('mars')
+      const metadataValue = uint8ArrayFromString('mars')
 
       mb.set(peerId, metadataKey, metadataValue)
 
@@ -279,7 +280,7 @@ describe('metadataBook', () => {
     it('returns true if the record exists and an event is emitted', () => {
       const defer = pDefer()
       const metadataKey = 'location'
-      const metadataValue = Buffer.from('mars')
+      const metadataValue = uint8ArrayFromString('mars')
 
       mb.set(peerId, metadataKey, metadataValue)
 
@@ -337,7 +338,7 @@ describe('metadataBook', () => {
     it('returns true if the record exists and an event is emitted', () => {
       const defer = pDefer()
       const metadataKey = 'location'
-      const metadataValue = Buffer.from('mars')
+      const metadataValue = uint8ArrayFromString('mars')
 
       mb.set(peerId, metadataKey, metadataValue)
 
@@ -357,7 +358,7 @@ describe('metadataBook', () => {
       const defer = pDefer()
       const metadataKey = 'location'
       const metadataBadKey = 'nickname'
-      const metadataValue = Buffer.from('mars')
+      const metadataValue = uint8ArrayFromString('mars')
 
       mb.set(peerId, metadataKey, metadataValue)
 
