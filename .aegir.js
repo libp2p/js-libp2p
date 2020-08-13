@@ -49,5 +49,11 @@ module.exports = {
   hooks: {
     pre: before,
     post: after
+  },
+  webpack: {
+    node: {
+      // needed by bcrypto
+      Buffer: true
+    }
   }
 }

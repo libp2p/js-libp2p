@@ -9,13 +9,7 @@ chai.use(dirtyChai)
 chai.use(require('chai-string'))
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
-
-const os = require('os')
-const path = require('path')
-const { isNode } = require('ipfs-utils/src/env')
-const FsStore = require('datastore-fs')
-const LevelStore = require('datastore-level')
-
+const { MemoryDatastore } = require('interface-datastore')
 const Keychain = require('../../src/keychain')
 
 describe('cms interop', () => {
@@ -24,9 +18,7 @@ describe('cms interop', () => {
   let ks
 
   before(() => {
-    const datastore = isNode
-      ? new FsStore(path.join(os.tmpdir(), 'test-keystore-1-' + Date.now()))
-      : new LevelStore('test-keystore-1', { db: require('level') })
+    const datastore = new MemoryDatastore()
     ks = new Keychain(datastore, { passPhrase: passPhrase })
   })
 
@@ -58,7 +50,7 @@ cn4oisOvxCprs4aM9UVjtZTCjfyNpX8UWwT1W3rySV+KQNhxuMy3RzmL
     expect(key.id).to.equal(aliceKid)
   })
 
-  it('decrypts node-forge example', async () => {
+  it.only('decrypts node-forge example', async () => {
     const example = `
 MIIBcwYJKoZIhvcNAQcDoIIBZDCCAWACAQAxgfowgfcCAQAwYDBbMQ0wCwYDVQQK
 EwRpcGZzMREwDwYDVQQLEwhrZXlzdG9yZTE3MDUGA1UEAxMuUW1OekJxUHdwNDJI

@@ -90,8 +90,6 @@
     "chai-bytes": "^0.1.2",
     "chai-string": "^1.5.0",
     "cids": "^1.0.0",
-    "datastore-fs": "^2.0.0",
-    "datastore-level": "^2.0.0",
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
     "interop-libp2p": "^0.1.0",

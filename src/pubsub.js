@@ -58,7 +58,7 @@ module.exports = (node, Pubsub, config) => {
         throw errCode(new Error(messages.NOT_STARTED_YET), codes.PUBSUB_NOT_STARTED)
       }
 
-      if (typeof data === 'string' || data instanceof 'String') {
+      if (typeof data === 'string' || data instanceof String) {
         data = uint8ArrayFromString(data)
       }
 

@@ -10,12 +10,7 @@ const uint8ArrayToString = require('uint8arrays/to-string')
 
 const peerUtils = require('../utils/creators/peer')
 
-const os = require('os')
-const path = require('path')
-const { isNode } = require('ipfs-utils/src/env')
 const { MemoryDatastore } = require('interface-datastore')
-const FsStore = require('datastore-fs')
-const LevelStore = require('datastore-level')
 const Keychain = require('../../src/keychain')
 const PeerId = require('peer-id')
 
@@ -29,12 +24,8 @@ describe('keychain', () => {
   let datastore1, datastore2
 
   before(async () => {
-    datastore1 = isNode
-      ? new FsStore(path.join(os.tmpdir(), 'test-keystore-1-' + Date.now()))
-      : new LevelStore('test-keystore-1', { db: require('level') })
-    datastore2 = isNode
-      ? new FsStore(path.join(os.tmpdir(), 'test-keystore-2-' + Date.now()))
-      : new LevelStore('test-keystore-2', { db: require('level') })
+    datastore1 = new MemoryDatastore()
+    datastore2 = new MemoryDatastore()
 
     ks = new Keychain(datastore2, { passPhrase: passPhrase })
     emptyKeystore = new Keychain(datastore1, { passPhrase: passPhrase })
