@@ -11,7 +11,6 @@ const PeerId = require('peer-id')
 
 const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
-const pubsub = require('./pubsub')
 const getPeer = require('./get-peer')
 const { validate: validateConfig } = require('./config')
 const { codes, messages } = require('./errors')
@@ -185,9 +184,10 @@ class Libp2p extends EventEmitter {
       })
     }
 
-    // start pubsub
+    // Create pubsub if provided
     if (this._modules.pubsub) {
-      this.pubsub = pubsub(this, this._modules.pubsub, this._config.pubsub)
+      const Pubsub = this._modules.pubsub
+      this.pubsub = new Pubsub(this, this._config.pubsub)
     }
 
     // Attach remaining APIs
