@@ -238,7 +238,7 @@ class Keychain {
 
     const info = []
     for await (const value of self.store.query(query)) {
-      info.push(JSON.parse(value.value))
+      info.push(JSON.parse(uint8ArrayToString(value.value)))
     }
 
     return info
