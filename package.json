@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "lint": "aegir lint",
-    "build": "aegir build -ts",
+    "build": "aegir build",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "aegir test -t node -f \"./test/**/*.{node,spec}.js\"",
     "test:browser": "aegir test -t browser",
