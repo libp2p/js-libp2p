@@ -1216,7 +1216,7 @@ Get the stored information of a given peer, namely its [`PeerId`][peer-id], know
 
 | Type | Description |
 |------|-------------|
-| `{ id: PeerId, addresses: Array<Address>, protocols: Array<string> }` | Peer information of the provided peer |
+| `{ id: PeerId, addresses: Array<Address>, metadata: Map<string, Buffer>}, protocols: Array<string> }` | Peer information of the provided peer |
 
 #### Example
 
@@ -1243,13 +1243,13 @@ Get all the stored information of every peer.
 
 | Type | Description |
 |------|-------------|
-| `Map<string, { id: PeerId, addresses: Array<Address>, protocols: Array<string> }>` | Peer data of every peer known |
+| `Map<string, { id: PeerId, addresses: Array<Address>, metadata: Map<string, Buffer>}, protocols: Array<string> }>` | Peer data of every peer known |
 
 #### Example
 
 ```js
 for (let [peerIdString, peer] of peerStore.peers.entries()) {
-  // peer { id, addresses, protocols }
+  // peer { id, addresses, metadata, protocols }
 }
 ```
 
