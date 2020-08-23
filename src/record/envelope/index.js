@@ -64,7 +64,7 @@ class Envelope {
    * @return {boolean}
    */
   equals (other) {
-    return uint8arraysEquals(this.peerId.pubKey.bytes,other.peerId.pubKey.bytes) &&
+    return uint8arraysEquals(this.peerId.pubKey.bytes, other.peerId.pubKey.bytes) &&
       uint8arraysEquals(this.payloadType, other.payloadType) &&
       uint8arraysEquals(this.payload, other.payload) &&
       uint8arraysEquals(this.signature, other.signature)
