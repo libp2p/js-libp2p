@@ -5,7 +5,6 @@ const log = debug('libp2p:identify')
 log.error = debug('libp2p:identify:error')
 
 const errCode = require('err-code')
-const { Buffer } = require('buffer')
 const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
 const pipe = require('it-pipe')
@@ -92,7 +91,7 @@ class IdentifyService {
    */
   async push (connections) {
     const signedPeerRecord = await this._getSelfPeerRecord()
-    const listenAddrs = this._libp2p.multiaddrs.map((ma) => ma.buffer)
+    const listenAddrs = this._libp2p.multiaddrs.map((ma) => ma.bytes)
     const protocols = Array.from(this._protocols.keys())
 
     const pushes = connections.map(async connection => {
@@ -312,7 +311,7 @@ class IdentifyService {
 
   /**
    * Get self signed peer record raw envelope.
-   * @return {Buffer}
+   * @return {Uint8Array}
    */
   async _getSelfPeerRecord () {
     const selfSignedPeerRecord = this.peerStore.addressBook.getRawEnvelope(this.peerId)

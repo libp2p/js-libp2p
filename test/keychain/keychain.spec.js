@@ -75,7 +75,7 @@ describe('keychain', () => {
     const keychainWithPassword = new Keychain(datastore2, { passPhrase: `hello-${Date.now()}-${Date.now()}` })
     const id = `key-${Math.random()}`
 
-    await keychainWithPassword.createKey(id, 'rsa', 2048)
+    await keychainWithPassword.createKey(id, 'ed25519')
 
     await expect(keychain.findKeyById(id)).to.eventually.be.ok()
   })
@@ -85,7 +85,7 @@ describe('keychain', () => {
     const keychainWithPassword = new Keychain(datastore2, { passPhrase: `hello-${Date.now()}-${Date.now()}` })
     const name = `key-${Math.random()}`
 
-    expect(await keychainWithPassword.createKey(name, 'rsa', 2048)).to.have.property('name', name)
+    expect(await keychainWithPassword.createKey(name, 'ed25519')).to.have.property('name', name)
     expect(await keychainWithoutPassword.findKeyByName(name)).to.have.property('name', name)
     await keychainWithoutPassword.removeKey(name)
     await expect(keychainWithoutPassword.findKeyByName(name)).to.be.rejectedWith(/does not exist/)
@@ -523,7 +523,7 @@ describe('libp2p.keychain', () => {
 
     await libp2p.loadKeychain()
 
-    const kInfo = await libp2p.keychain.createKey('keyName', 'rsa', 2048)
+    const kInfo = await libp2p.keychain.createKey('keyName', 'ed25519')
     expect(kInfo).to.exist()
   })
 
@@ -556,7 +556,7 @@ describe('libp2p.keychain', () => {
     })
     await libp2p.loadKeychain()
 
-    const kInfo = await libp2p.keychain.createKey('keyName', 'rsa', 2048)
+    const kInfo = await libp2p.keychain.createKey('keyName', 'ed25519')
     expect(kInfo).to.exist()
 
     const [libp2p2] = await peerUtils.createPeer({
