@@ -5,6 +5,8 @@ require('node-forge/lib/pbe')
 const forge = require('node-forge/lib/forge')
 const { certificateForKey, findAsync } = require('./util')
 const errcode = require('err-code')
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 /**
  * Cryptographic Message Syntax (aka PKCS #7)
@@ -32,15 +34,15 @@ class CMS {
   /**
    * Creates some protected data.
    *
-   * The output Buffer contains the PKCS #7 message in DER.
+   * The output Uint8Array contains the PKCS #7 message in DER.
    *
    * @param {string} name - The local key name.
-   * @param {Buffer} plain - The data to encrypt.
+   * @param {Uint8Array} plain - The data to encrypt.
    * @returns {undefined}
    */
   async encrypt (name, plain) {
-    if (!Buffer.isBuffer(plain)) {
-      throw errcode(new Error('Plain data must be a Buffer'), 'ERR_INVALID_PARAMS')
+    if (!(plain instanceof Uint8Array)) {
+      throw errcode(new Error('Plain data must be a Uint8Array'), 'ERR_INVALID_PARAMS')
     }
 
     const key = await this.keychain.findKeyByName(name)
@@ -56,7 +58,7 @@ class CMS {
 
     // convert message to DER
     const der = forge.asn1.toDer(p7.toAsn1()).getBytes()
-    return Buffer.from(der, 'binary')
+    return uint8ArrayFromString(der, 'ascii')
   }
 
   /**
@@ -65,17 +67,17 @@ class CMS {
    * The keychain must contain one of the keys used to encrypt the data.  If none of the keys
    * exists, an Error is returned with the property 'missingKeys'.  It is array of key ids.
    *
-   * @param {Buffer} cmsData - The CMS encrypted data to decrypt.
+   * @param {Uint8Array} cmsData - The CMS encrypted data to decrypt.
    * @returns {undefined}
    */
   async decrypt (cmsData) {
-    if (!Buffer.isBuffer(cmsData)) {
+    if (!(cmsData instanceof Uint8Array)) {
       throw errcode(new Error('CMS data is required'), 'ERR_INVALID_PARAMS')
     }
 
     let cms
     try {
-      const buf = forge.util.createBuffer(cmsData.toString('binary'))
+      const buf = forge.util.createBuffer(uint8ArrayToString(cmsData, 'ascii'))
       const obj = forge.asn1.fromDer(buf)
       cms = forge.pkcs7.messageFromAsn1(obj)
     } catch (err) {
@@ -115,7 +117,7 @@ class CMS {
     const pem = await this.keychain._getPrivateKey(key.name)
     const privateKey = forge.pki.decryptRsaPrivateKey(pem, this.keychain._())
     cms.decrypt(r.recipient, privateKey)
-    return Buffer.from(cms.content.getBytes(), 'binary')
+    return uint8ArrayFromString(cms.content.getBytes(), 'ascii')
   }
 }
 

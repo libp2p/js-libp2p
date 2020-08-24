@@ -3,6 +3,7 @@
 
 const chai = require('chai')
 chai.use(require('dirty-chai'))
+chai.use(require('chai-as-promised'))
 const { expect } = chai
 const nock = require('nock')
 const sinon = require('sinon')
@@ -96,7 +97,7 @@ describe('content-routing', () => {
     let delegate
 
     beforeEach(async () => {
-      const [peerId] = await peerUtils.createPeerId({ fixture: false })
+      const [peerId] = await peerUtils.createPeerId({ fixture: true })
 
       delegate = new DelegatedContentRouter(peerId, {
         host: '0.0.0.0',
@@ -227,7 +228,7 @@ describe('content-routing', () => {
     let delegate
 
     beforeEach(async () => {
-      const [peerId] = await peerUtils.createPeerId({ fixture: false })
+      const [peerId] = await peerUtils.createPeerId({ fixture: true })
 
       delegate = new DelegatedContentRouter(peerId, {
         host: '0.0.0.0',

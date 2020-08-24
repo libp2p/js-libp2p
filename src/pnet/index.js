@@ -25,7 +25,7 @@ log.error = debug('libp2p:pnet:err')
  */
 class Protector {
   /**
-   * @param {Buffer} keyBuffer The private shared key buffer
+   * @param {Uint8Array} keyBuffer The private shared key buffer
    * @constructor
    */
   constructor (keyBuffer) {

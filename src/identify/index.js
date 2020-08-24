@@ -5,11 +5,11 @@ const log = debug('libp2p:identify')
 log.error = debug('libp2p:identify:error')
 
 const errCode = require('err-code')
-const { Buffer } = require('buffer')
 const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
 const pipe = require('it-pipe')
 const { collect, take, consume } = require('streaming-iterables')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
@@ -32,7 +32,7 @@ const { codes } = require('../errors')
 class IdentifyService {
   /**
    * Takes the `addr` and converts it to a Multiaddr if possible
-   * @param {Buffer|String} addr
+   * @param {Uint8Array|String} addr
    * @returns {Multiaddr|null}
    */
   static getCleanMultiaddr (addr) {
@@ -91,7 +91,7 @@ class IdentifyService {
    */
   async push (connections) {
     const signedPeerRecord = await this._getSelfPeerRecord()
-    const listenAddrs = this._libp2p.multiaddrs.map((ma) => ma.buffer)
+    const listenAddrs = this._libp2p.multiaddrs.map((ma) => ma.bytes)
     const protocols = Array.from(this._protocols.keys())
 
     const pushes = connections.map(async connection => {
@@ -199,7 +199,7 @@ class IdentifyService {
     }
 
     this.peerStore.protoBook.set(id, protocols)
-    this.peerStore.metadataBook.set(id, 'AgentVersion', Buffer.from(message.agentVersion))
+    this.peerStore.metadataBook.set(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
 
     // TODO: Track our observed address so that we can score it
     log('received observed address of %s', observedAddr)
@@ -234,7 +234,7 @@ class IdentifyService {
    * @param {Connection} options.connection
    */
   async _handleIdentify ({ connection, stream }) {
-    let publicKey = Buffer.alloc(0)
+    let publicKey = new Uint8Array(0)
     if (this.peerId.pubKey) {
       publicKey = this.peerId.pubKey.bytes
     }
@@ -245,9 +245,9 @@ class IdentifyService {
       protocolVersion: PROTOCOL_VERSION,
       agentVersion: AGENT_VERSION,
       publicKey,
-      listenAddrs: this._libp2p.multiaddrs.map((ma) => ma.buffer),
+      listenAddrs: this._libp2p.multiaddrs.map((ma) => ma.bytes),
       signedPeerRecord,
-      observedAddr: connection.remoteAddr.buffer,
+      observedAddr: connection.remoteAddr.bytes,
       protocols: Array.from(this._protocols.keys())
     })
 
@@ -311,7 +311,7 @@ class IdentifyService {
 
   /**
    * Get self signed peer record raw envelope.
-   * @return {Buffer}
+   * @return {Uint8Array}
    */
   async _getSelfPeerRecord () {
     const selfSignedPeerRecord = this.peerStore.addressBook.getRawEnvelope(this.peerId)

@@ -13,6 +13,7 @@ const PeerId = require('peer-id')
 const duplexPair = require('it-pair/duplex')
 const multiaddr = require('multiaddr')
 const pWaitFor = require('p-wait-for')
+const unit8ArrayToString = require('uint8arrays/to-string')
 
 const { codes: Errors } = require('../../src/errors')
 const { IdentifyService, multicodecs } = require('../../src/identify')
@@ -148,7 +149,7 @@ describe('Identify', () => {
     const metadataArgs = localIdentify.peerStore.metadataBook.set.firstCall.args
     expect(metadataArgs[0].id.bytes).to.equal(remotePeer.bytes)
     expect(metadataArgs[1]).to.equal('AgentVersion')
-    expect(metadataArgs[2].toString()).to.equal(`js-libp2p/${pkg.version}`)
+    expect(unit8ArrayToString(metadataArgs[2])).to.equal(`js-libp2p/${pkg.version}`)
 
     // Validate the remote peer gets updated in the peer store
     const call = localIdentify.peerStore.addressBook.set.firstCall

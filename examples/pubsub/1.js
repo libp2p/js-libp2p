@@ -1,13 +1,13 @@
 /* eslint-disable no-console */
 'use strict'
 
-const { Buffer } = require('buffer')
 const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
 const Gossipsub = require('libp2p-gossipsub')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const createNode = async () => {
   const node = await Libp2p.create({
@@ -48,6 +48,6 @@ const createNode = async () => {
 
   // node2 publishes "news" every second
   setInterval(() => {
-    node2.pubsub.publish(topic, Buffer.from('Bird bird bird, bird is the word!'))
+    node2.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!'))
   }, 1000)
 })()

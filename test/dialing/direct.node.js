@@ -1,11 +1,7 @@
 'use strict'
 /* eslint-env mocha */
 
-const { Buffer } = require('buffer')
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-chai.use(require('chai-as-promised'))
-const { expect } = chai
+const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 const Transport = require('libp2p-tcp')
 const Muxer = require('libp2p-mplex')
@@ -19,6 +15,7 @@ const pipe = require('it-pipe')
 const AggregateError = require('aggregate-error')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const Libp2p = require('../../src')
 const Dialer = require('../../src/dialer')
@@ -27,7 +24,7 @@ const PeerStore = require('../../src/peer-store')
 const TransportManager = require('../../src/transport-manager')
 const { codes: ErrorCodes } = require('../../src/errors')
 const Protector = require('../../src/pnet')
-const swarmKeyBuffer = Buffer.from(require('../fixtures/swarm.key'))
+const swarmKeyBuffer = uint8ArrayFromString(require('../fixtures/swarm.key'))
 
 const mockUpgrader = require('../utils/mockUpgrader')
 const createMockConnection = require('../utils/mockConnection')

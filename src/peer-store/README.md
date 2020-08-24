@@ -75,9 +75,9 @@ A `peerId.toB58String()` identifier mapping to a `Set` of protocol identifier st
 
 #### Metadata Book
 
-The `metadataBook` keeps track of the known metadata of a peer. Its metadata is stored in a key value fashion, where a key identifier (`string`) represents a metadata value (`Buffer`).
+The `metadataBook` keeps track of the known metadata of a peer. Its metadata is stored in a key value fashion, where a key identifier (`string`) represents a metadata value (`Uint8Array`).
 
-`Map<string, Map<string, Buffer>>`
+`Map<string, Map<string, Uint8Array>>`
 
 A `peerId.toB58String()` identifier mapping to the peer metadata Map.
 

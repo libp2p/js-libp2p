@@ -10,6 +10,7 @@ const pWaitFor = require('p-wait-for')
 const pDefer = require('p-defer')
 const mergeOptions = require('merge-options')
 const multiaddr = require('multiaddr')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const { create } = require('../../src')
 const { subsystemOptions, subsystemMulticodecs } = require('./utils')
@@ -82,7 +83,7 @@ describe('Pubsub subsystem operates correctly', () => {
       expect(subscribedTopics).to.not.include(topic)
 
       libp2p.pubsub.subscribe(topic, (msg) => {
-        expect(msg.data.toString()).to.equal(data)
+        expect(uint8ArrayToString(msg.data)).to.equal(data)
         defer.resolve()
       })
 
@@ -171,7 +172,7 @@ describe('Pubsub subsystem operates correctly', () => {
       expect(subscribedTopics).to.not.include(topic)
 
       libp2p.pubsub.subscribe(topic, (msg) => {
-        expect(msg.data.toString()).to.equal(data)
+        expect(uint8ArrayToString(msg.data)).to.equal(data)
         defer.resolve()
       })
 
@@ -242,7 +243,7 @@ describe('Pubsub subsystem operates correctly', () => {
       const defer1 = pDefer()
       const defer2 = pDefer()
       const handler = (msg) => {
-        expect(msg.data.toString()).to.equal(data)
+        expect(uint8ArrayToString(msg.data)).to.equal(data)
         counter++
         counter === 1 ? defer1.resolve() : defer2.resolve()
       }
@@ -307,7 +308,7 @@ describe('Pubsub subsystem operates correctly', () => {
       libp2p.pubsub.publish(topic, 'message1')
       remoteLibp2p.pubsub.publish(topic, 'message2')
       await pWaitFor(() => handlerSpy.callCount === 2)
-      expect(handlerSpy.args.map(([message]) => message.data.toString())).to.include.members(['message1', 'message2'])
+      expect(handlerSpy.args.map(([message]) => uint8ArrayToString(message.data))).to.include.members(['message1', 'message2'])
 
       // Disconnect the first connection (this acts as a delayed reconnect)
       await originalConnection.close()
@@ -317,7 +318,7 @@ describe('Pubsub subsystem operates correctly', () => {
       libp2p.pubsub.publish(topic, 'message3')
       remoteLibp2p.pubsub.publish(topic, 'message4')
       await pWaitFor(() => handlerSpy.callCount === 2)
-      expect(handlerSpy.args.map(([message]) => message.data.toString())).to.include.members(['message3', 'message4'])
+      expect(handlerSpy.args.map(([message]) => uint8ArrayToString(message.data))).to.include.members(['message3', 'message4'])
     })
   })
 })

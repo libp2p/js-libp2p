@@ -1,7 +1,6 @@
 'use strict'
 /* eslint-env mocha */
 
-const { Buffer } = require('buffer')
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
@@ -56,7 +55,7 @@ describe('plaintext', () => {
 
     // When we attempt to get the remote peer key, return the wrong peers pub key
     sinon.stub(remotePeer, 'marshalPubKey').callsFake(() => {
-      return Buffer.alloc(0)
+      return new Uint8Array(0)
     })
 
     return Promise.all([

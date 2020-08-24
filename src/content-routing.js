@@ -64,8 +64,8 @@ module.exports = (node) => {
 
     /**
      * Store the given key/value pair in the DHT.
-     * @param {Buffer} key
-     * @param {Buffer} value
+     * @param {Uint8Array} key
+     * @param {Uint8Array} value
      * @param {Object} [options] - put options
      * @param {number} [options.minPeers] - minimum number of peers required to successfully put
      * @returns {Promise<void>}
@@ -81,10 +81,10 @@ module.exports = (node) => {
     /**
      * Get the value to the given key.
      * Times out after 1 minute by default.
-     * @param {Buffer} key
+     * @param {Uint8Array} key
      * @param {Object} [options] - get options
      * @param {number} [options.timeout] - optional timeout (default: 60000)
-     * @returns {Promise<{from: PeerId, val: Buffer}>}
+     * @returns {Promise<{from: PeerId, val: Uint8Array}>}
      */
     async get (key, options) { // eslint-disable-line require-await
       if (!node.isStarted() || !dht.isStarted) {
@@ -96,11 +96,11 @@ module.exports = (node) => {
 
     /**
      * Get the `n` values to the given key without sorting.
-     * @param {Buffer} key
+     * @param {Uint8Array} key
      * @param {number} nVals
      * @param {Object} [options] - get options
      * @param {number} [options.timeout] - optional timeout (default: 60000)
-     * @returns {Promise<Array<{from: PeerId, val: Buffer}>>}
+     * @returns {Promise<Array<{from: PeerId, val: Uint8Array}>>}
      */
     async getMany (key, nVals, options) { // eslint-disable-line require-await
       if (!node.isStarted() || !dht.isStarted) {

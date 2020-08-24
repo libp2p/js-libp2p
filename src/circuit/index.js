@@ -122,11 +122,11 @@ class Circuit {
           type: CircuitPB.Type.HOP,
           srcPeer: {
             id: this.peerId.toBytes(),
-            addrs: this._libp2p.multiaddrs.map(addr => addr.buffer)
+            addrs: this._libp2p.multiaddrs.map(addr => addr.bytes)
           },
           dstPeer: {
             id: destinationPeer.toBytes(),
-            addrs: [multiaddr(destinationAddr).buffer]
+            addrs: [multiaddr(destinationAddr).bytes]
           }
         }
       })
