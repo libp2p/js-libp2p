@@ -3,6 +3,7 @@
 
 const pipe = require('it-pipe')
 const lp = require('it-length-prefixed')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 function stdinToStream(stream) {
   // Read utf-8 from stdin
@@ -28,7 +29,7 @@ function streamToConsole(stream) {
       // For each chunk of data
       for await (const msg of source) {
         // Output the data as a utf8 string
-        console.log('> ' + msg.toString('utf8').replace('\n', ''))
+        console.log('> ' + uint8ArrayToString(msg).replace('\n', ''))
       }
     }
   )

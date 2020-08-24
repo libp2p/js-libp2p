@@ -8,6 +8,8 @@ const DS = require('interface-datastore')
 const CMS = require('./cms')
 const errcode = require('err-code')
 const { Number } = require('ipfs-utils/src/globalthis')
+const uint8ArrayToString = require('uint8arrays/to-string')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 require('node-forge/lib/sha512')
 
@@ -155,7 +157,7 @@ class Keychain {
   static generateOptions () {
     const options = Object.assign({}, defaultOptions)
     const saltLength = Math.ceil(NIST.minSaltLength / 3) * 3 // no base64 padding
-    options.dek.salt = crypto.randomBytes(saltLength).toString('base64')
+    options.dek.salt = uint8ArrayToString(crypto.randomBytes(saltLength), 'base64')
     return options
   }
 
@@ -212,8 +214,8 @@ class Keychain {
         id: kid
       }
       const batch = self.store.batch()
-      batch.put(dsname, pem)
-      batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+      batch.put(dsname, uint8ArrayFromString(pem))
+      batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
 
       await batch.commit()
     } catch (err) {
@@ -236,7 +238,7 @@ class Keychain {
 
     const info = []
     for await (const value of self.store.query(query)) {
-      info.push(JSON.parse(value.value))
+      info.push(JSON.parse(uint8ArrayToString(value.value)))
     }
 
     return info
@@ -271,7 +273,7 @@ class Keychain {
     const dsname = DsInfoName(name)
     try {
       const res = await this.store.get(dsname)
-      return JSON.parse(res.toString())
+      return JSON.parse(uint8ArrayToString(res))
     } catch (err) {
       return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
     }
@@ -321,15 +323,14 @@ class Keychain {
     if (exists) return throwDelayed(errcode(new Error(`Key '${newName}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
 
     try {
-      let res = await this.store.get(oldDsname)
-      const pem = res.toString()
-      res = await self.store.get(oldInfoName)
+      const pem = await self.store.get(oldDsname)
+      const res = await self.store.get(oldInfoName)
 
-      const keyInfo = JSON.parse(res.toString())
+      const keyInfo = JSON.parse(uint8ArrayToString(res))
       keyInfo.name = newName
       const batch = self.store.batch()
       batch.put(newDsname, pem)
-      batch.put(newInfoName, JSON.stringify(keyInfo))
+      batch.put(newInfoName, uint8ArrayFromString(JSON.stringify(keyInfo)))
       batch.delete(oldDsname)
       batch.delete(oldInfoName)
       await batch.commit()
@@ -357,7 +358,7 @@ class Keychain {
     const dsname = DsName(name)
     try {
       const res = await this.store.get(dsname)
-      const pem = res.toString()
+      const pem = uint8ArrayToString(res)
       const privateKey = await crypto.keys.import(pem, this._())
       return privateKey.export(password)
     } catch (err) {
@@ -405,8 +406,8 @@ class Keychain {
       id: kid
     }
     const batch = self.store.batch()
-    batch.put(dsname, pem)
-    batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+    batch.put(dsname, uint8ArrayFromString(pem))
+    batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
     await batch.commit()
 
     return keyInfo
@@ -434,8 +435,8 @@ class Keychain {
         id: kid
       }
       const batch = self.store.batch()
-      batch.put(dsname, pem)
-      batch.put(DsInfoName(name), JSON.stringify(keyInfo))
+      batch.put(dsname, uint8ArrayFromString(pem))
+      batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
       await batch.commit()
       return keyInfo
     } catch (err) {
@@ -458,7 +459,7 @@ class Keychain {
     try {
       const dsname = DsName(name)
       const res = await this.store.get(dsname)
-      return res.toString()
+      return uint8ArrayToString(res)
     } catch (err) {
       return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
     }

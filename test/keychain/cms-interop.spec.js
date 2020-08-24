@@ -7,13 +7,9 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 chai.use(require('chai-string'))
-
-const os = require('os')
-const path = require('path')
-const { isNode } = require('ipfs-utils/src/env')
-const FsStore = require('datastore-fs')
-const LevelStore = require('datastore-level')
-
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
+const { MemoryDatastore } = require('interface-datastore')
 const Keychain = require('../../src/keychain')
 
 describe('cms interop', () => {
@@ -22,13 +18,11 @@ describe('cms interop', () => {
   let ks
 
   before(() => {
-    const datastore = isNode
-      ? new FsStore(path.join(os.tmpdir(), 'test-keystore-1-' + Date.now()))
-      : new LevelStore('test-keystore-1', { db: require('level') })
+    const datastore = new MemoryDatastore()
     ks = new Keychain(datastore, { passPhrase: passPhrase })
   })
 
-  const plainData = Buffer.from('This is a message from Alice to Bob')
+  const plainData = uint8ArrayFromString('This is a message from Alice to Bob')
 
   it('imports openssl key', async function () {
     this.timeout(10 * 1000)
@@ -67,8 +61,8 @@ knU1yykWGkdlbclCuu0NaAfmb8o0OX50CbEKZB7xmsv8tnqn0H0jMF4GCSqGSIb3
 DQEHATAdBglghkgBZQMEASoEEP/PW1JWehQx6/dsLkp/Mf+gMgQwFM9liLTqC56B
 nHILFmhac/+a/StQOKuf9dx5qXeGvt9LnwKuGGSfNX4g+dTkoa6N
 `
-    const plain = await ks.cms.decrypt(Buffer.from(example, 'base64'))
+    const plain = await ks.cms.decrypt(uint8ArrayFromString(example.replace(/\s/g, ''), 'base64'))
     expect(plain).to.exist()
-    expect(plain.toString()).to.equal(plainData.toString())
+    expect(uint8ArrayToString(plain)).to.equal(uint8ArrayToString(plainData))
   })
 })

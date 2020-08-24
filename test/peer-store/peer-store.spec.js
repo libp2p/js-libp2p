@@ -7,6 +7,7 @@ const { expect } = chai
 
 const PeerStore = require('../../src/peer-store')
 const multiaddr = require('multiaddr')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const peerUtils = require('../utils/creators/peer')
 
@@ -196,7 +197,7 @@ describe('peer-store', () => {
 
     it('returns peers if only metadata is known', () => {
       const metadataKey = 'location'
-      const metadataValue = Buffer.from('earth')
+      const metadataValue = uint8ArrayFromString('earth')
       peerStore.metadataBook.set(peerIds[0], metadataKey, metadataValue)
 
       const peers = peerStore.peers

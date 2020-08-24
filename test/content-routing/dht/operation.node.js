@@ -1,14 +1,12 @@
 'use strict'
 /* eslint-env mocha */
 
-const { Buffer } = require('buffer')
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const { expect } = chai
+const { expect } = require('aegir/utils/chai')
 
 const multiaddr = require('multiaddr')
 const pWaitFor = require('p-wait-for')
 const mergeOptions = require('merge-options')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const { create } = require('../../../src')
 const { subsystemOptions, subsystemMulticodecs } = require('./utils')
@@ -68,8 +66,8 @@ describe('DHT subsystem operates correctly', () => {
     })
 
     it('should put on a peer and get from the other', async () => {
-      const key = Buffer.from('hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('hello')
+      const value = uint8ArrayFromString('world')
 
       await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
       await Promise.all([
@@ -131,8 +129,8 @@ describe('DHT subsystem operates correctly', () => {
     it('should put on a peer and get from the other', async () => {
       await libp2p.dial(remAddr)
 
-      const key = Buffer.from('hello')
-      const value = Buffer.from('world')
+      const key = uint8ArrayFromString('hello')
+      const value = uint8ArrayFromString('world')
 
       await remoteLibp2p._dht.start()
       await pWaitFor(() => libp2p._dht.routingTable.size === 1)

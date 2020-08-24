@@ -13,6 +13,7 @@ const crypto = require('libp2p-crypto')
 const KadDht = require('libp2p-kad-dht')
 const MulticastDNS = require('libp2p-mdns')
 const multiaddr = require('multiaddr')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options')
@@ -110,7 +111,7 @@ describe('peer discovery scenarios', () => {
             enabled: true,
             interval: 200, // discover quickly
             // use a random tag to prevent CI collision
-            serviceTag: crypto.randomBytes(10).toString('hex')
+            serviceTag: uint8ArrayToString(crypto.randomBytes(10), 'base16')
           }
         }
       }

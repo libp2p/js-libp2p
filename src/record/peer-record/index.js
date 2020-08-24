@@ -36,7 +36,7 @@ class PeerRecord extends Record {
 
   /**
    * Marshal a record to be used in an envelope.
-   * @return {Buffer}
+   * @return {Uint8Array}
    */
   marshal () {
     if (this._marshal) {
@@ -47,7 +47,7 @@ class PeerRecord extends Record {
       peer_id: this.peerId.toBytes(),
       seq: this.seqNumber,
       addresses: this.multiaddrs.map((m) => ({
-        multiaddr: m.buffer
+        multiaddr: m.bytes
       }))
     })
 
@@ -81,7 +81,7 @@ class PeerRecord extends Record {
 
 /**
  * Unmarshal Peer Record Protobuf.
- * @param {Buffer} buf marshaled peer record.
+ * @param {Uint8Array} buf marshaled peer record.
  * @return {PeerRecord}
  */
 PeerRecord.createFromProtobuf = (buf) => {

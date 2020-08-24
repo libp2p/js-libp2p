@@ -57,7 +57,7 @@ await node2.pubsub.subscribe(topic, (msg) => {
 
 // node2 publishes "news" every second
 setInterval(() => {
-  node2.pubsub.publish(topic, Buffer.from('Bird bird bird, bird is the word!'))
+  node2.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!'))
 }, 1000)
 ```
 

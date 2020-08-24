@@ -1,10 +1,11 @@
 'use strict'
 
-const { Buffer } = require('buffer')
 const debug = require('debug')
 const Errors = require('./errors')
 const xsalsa20 = require('xsalsa20')
 const KEY_LENGTH = require('./key-generator').KEY_LENGTH
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const log = debug('libp2p:pnet')
 log.trace = debug('libp2p:pnet:trace')
@@ -13,15 +14,15 @@ log.error = debug('libp2p:pnet:err')
 /**
   * Creates a stream iterable to encrypt messages in a private network
  *
- * @param {Buffer} nonce The nonce to use in encryption
- * @param {Buffer} psk The private shared key to use in encryption
+ * @param {Uint8Array} nonce The nonce to use in encryption
+ * @param {Uint8Array} psk The private shared key to use in encryption
  * @returns {*} a through iterable
  */
 module.exports.createBoxStream = (nonce, psk) => {
   const xor = xsalsa20(nonce, psk)
   return (source) => (async function * () {
     for await (const chunk of source) {
-      yield Buffer.from(xor.update(chunk.slice()))
+      yield Uint8Array.from(xor.update(chunk.slice()))
     }
   })()
 }
@@ -29,8 +30,8 @@ module.exports.createBoxStream = (nonce, psk) => {
 /**
   * Creates a stream iterable to decrypt messages in a private network
  *
- * @param {Buffer} nonce The nonce of the remote peer
- * @param {Buffer} psk The private shared key to use in decryption
+ * @param {Uint8Array} nonce The nonce of the remote peer
+ * @param {Uint8Array} psk The private shared key to use in decryption
  * @returns {*} a through iterable
  */
 module.exports.createUnboxStream = (nonce, psk) => {
@@ -39,15 +40,15 @@ module.exports.createUnboxStream = (nonce, psk) => {
     log.trace('Decryption enabled')
 
     for await (const chunk of source) {
-      yield Buffer.from(xor.update(chunk.slice()))
+      yield Uint8Array.from(xor.update(chunk.slice()))
     }
   })()
 }
 
 /**
- * Decode the version 1 psk from the given Buffer
+ * Decode the version 1 psk from the given Uint8Array
  *
- * @param {Buffer} pskBuffer
+ * @param {Uint8Array} pskBuffer
  * @throws {INVALID_PSK}
  * @returns {Object} The PSK metadata (tag, codecName, psk)
  */
@@ -58,10 +59,10 @@ module.exports.decodeV1PSK = (pskBuffer) => {
     // from the buffer line by line to evaluate the next line
     // programmatically instead of making assumptions about the
     // encodings of each line.
-    const metadata = pskBuffer.toString().split(/(?:\r\n|\r|\n)/g)
+    const metadata = uint8ArrayToString(pskBuffer).split(/(?:\r\n|\r|\n)/g)
     const pskTag = metadata.shift()
     const codec = metadata.shift()
-    const psk = Buffer.from(metadata.shift(), 'hex')
+    const psk = uint8ArrayFromString(metadata.shift(), 'base16')
 
     if (psk.byteLength !== KEY_LENGTH) {
       throw new Error(Errors.INVALID_PSK)

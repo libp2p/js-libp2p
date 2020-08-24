@@ -31,7 +31,7 @@ class AddressBook extends Book {
   /**
   * CertifiedRecord object
   * @typedef {Object} CertifiedRecord
-  * @property {Buffer} raw raw envelope.
+  * @property {Uint8Array} raw raw envelope.
   * @property {number} seqNumber seq counter.
   */
 
@@ -128,7 +128,7 @@ class AddressBook extends Book {
    * Get the raw Envelope for a peer. Returns
    * undefined if no Envelope is found.
    * @param {PeerId} peerId
-   * @return {Buffer|undefined}
+   * @return {Uint8Array|undefined}
    */
   getRawEnvelope (peerId) {
     const entry = this.data.get(peerId.toB58String())

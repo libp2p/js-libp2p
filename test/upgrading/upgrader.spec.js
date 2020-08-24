@@ -1,11 +1,7 @@
 'use strict'
 /* eslint-env mocha */
 
-const { Buffer } = require('buffer')
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-chai.use(require('chai-as-promised'))
-const { expect } = chai
+const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 const Muxer = require('libp2p-mplex')
 const multiaddr = require('multiaddr')
@@ -16,7 +12,8 @@ const pSettle = require('p-settle')
 const Transport = require('libp2p-websockets')
 const { NOISE: Crypto } = require('libp2p-noise')
 const Protector = require('../../src/pnet')
-const swarmKeyBuffer = Buffer.from(require('../fixtures/swarm.key'))
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const swarmKeyBuffer = uint8ArrayFromString(require('../fixtures/swarm.key'))
 
 const Libp2p = require('../../src')
 const Upgrader = require('../../src/upgrader')
@@ -102,7 +99,7 @@ describe('Upgrader', () => {
     const { stream, protocol } = await connections[0].newStream('/echo/1.0.0')
     expect(protocol).to.equal('/echo/1.0.0')
 
-    const hello = Buffer.from('hello there!')
+    const hello = uint8ArrayFromString('hello there!')
     const result = await pipe(
       [hello],
       stream,
@@ -172,7 +169,7 @@ describe('Upgrader', () => {
     const { stream, protocol } = await connections[0].newStream('/echo/1.0.0')
     expect(protocol).to.equal('/echo/1.0.0')
 
-    const hello = Buffer.from('hello there!')
+    const hello = uint8ArrayFromString('hello there!')
     const result = await pipe(
       [hello],
       stream,

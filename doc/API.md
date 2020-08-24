@@ -585,7 +585,7 @@ Writes a value to a key in the DHT.
 | Name | Type | Description |
 |------|------|-------------|
 | key | `string` | key to add to the dht |
-| value | `Buffer` | value to add to the dht |
+| value | `Uint8Array` | value to add to the dht |
 | [options] | `object` | put options |
 | [options.minPeers] | `number` | minimum number of peers required to successfully put (default: closestPeers.length) |
 
@@ -600,7 +600,7 @@ Writes a value to a key in the DHT.
 ```js
 // ...
 const key = '/key'
-const value = Buffer.from('oh hello there')
+const value = uint8ArrayFromString('oh hello there')
 
 await libp2p.contentRouting.put(key, value)
 ```
@@ -623,7 +623,7 @@ Queries the DHT for a value stored for a given key.
 
 | Type | Description |
 |------|-------------|
-| `Promise<Buffer>` | Value obtained from the DHT |
+| `Promise<Uint8Array>` | Value obtained from the DHT |
 
 #### Example
 
@@ -653,7 +653,7 @@ Queries the DHT for the n values stored for the given key (without sorting).
 
 | Type | Description |
 |------|-------------|
-| `Promise<Array<{from: PeerId, val: Buffer}>>` | Array of records obtained from the DHT |
+| `Promise<Array<{from: PeerId, val: Uint8Array}>>` | Array of records obtained from the DHT |
 
 #### Example
 
@@ -970,7 +970,7 @@ Delete the provided peer from the book.
 ```js
 peerStore.metadataBook.delete(peerId)
 // false
-peerStore.metadataBook.set(peerId, 'nickname', Buffer.from('homePeer'))
+peerStore.metadataBook.set(peerId, 'nickname', uint8ArrayFromString('homePeer'))
 peerStore.metadataBook.delete(peerId)
 // true
 ```
@@ -999,7 +999,7 @@ Deletes the provided peer metadata key-value pair from the book.
 ```js
 peerStore.metadataBook.deleteValue(peerId, 'location')
 // false
-peerStore.metadataBook.set(peerId, 'location', Buffer.from('Berlin'))
+peerStore.metadataBook.set(peerId, 'location', uint8ArrayFromString('Berlin'))
 peerStore.metadataBook.deleteValue(peerId, 'location')
 // true
 ```
@@ -1020,14 +1020,14 @@ Get the known metadata of a provided peer.
 
 | Type | Description |
 |------|-------------|
-| `Map<string, Buffer>` | Peer Metadata |
+| `Map<string, Uint8Array>` | Peer Metadata |
 
 #### Example
 
 ```js
 peerStore.metadataBook.get(peerId)
 // undefined
-peerStore.metadataBook.set(peerId, 'location', Buffer.from('Berlin'))
+peerStore.metadataBook.set(peerId, 'location', uint8ArrayFromString('Berlin'))
 peerStore.metadataBook.get(peerId)
 // Metadata Map
 ```
@@ -1049,14 +1049,14 @@ Get specific metadata of a provided peer.
 
 | Type | Description |
 |------|-------------|
-| `Map<string, Buffer>` | Peer Metadata |
+| `Map<string, Uint8Array>` | Peer Metadata |
 
 #### Example
 
 ```js
 peerStore.metadataBook.getValue(peerId, 'location')
 // undefined
-peerStore.metadataBook.set(peerId, 'location', Buffer.from('Berlin'))
+peerStore.metadataBook.set(peerId, 'location', uint8ArrayFromString('Berlin'))
 peerStore.metadataBook.getValue(peerId, 'location')
 // Metadata Map
 ```
@@ -1073,7 +1073,7 @@ Set known metadata of a given `peerId`.
 |------|------|-------------|
 | peerId | [`PeerId`][peer-id] | peerId to set |
 | key | `string` | key of the metadata value to store |
-| value | `Buffer` | metadata value to store |
+| value | `Uint8Array` | metadata value to store |
 
 #### Returns
 
@@ -1084,7 +1084,7 @@ Set known metadata of a given `peerId`.
 #### Example
 
 ```js
-peerStore.metadataBook.set(peerId, 'location', Buffer.from('Berlin'))
+peerStore.metadataBook.set(peerId, 'location', uint8ArrayFromString('Berlin'))
 ```
 
 ### peerStore.protoBook.delete
@@ -1308,7 +1308,7 @@ Publishes messages to the given topics.
 | Name | Type | Description |
 |------|------|-------------|
 | topic | `string` | topic to publish |
-| data | `Buffer` | data to publish  |
+| data | `Uint8Array` | data to publish  |
 
 #### Returns
 
@@ -1320,7 +1320,7 @@ Publishes messages to the given topics.
 
 ```js
 const topic = 'topic'
-const data = Buffer.from('data')
+const data = uint8ArrayFromString('data')
 
 await libp2p.pubsub.publish(topic, data)
 ```
@@ -1336,7 +1336,7 @@ Subscribes the given handler to a pubsub topic.
 | Name | Type | Description |
 |------|------|-------------|
 | topic | `string` | topic to subscribe |
-| handler | `function({ from: string, data: Buffer, seqno: Buffer, topicIDs: Array<string>, signature: Buffer, key: Buffer })` | handler for new data on topic |
+| handler | `function({ from: string, data: Uint8Array, seqno: Uint8Array, topicIDs: Array<string>, signature: Uint8Array, key: Uint8Array })` | handler for new data on topic |
 
 #### Returns
 
@@ -1679,19 +1679,19 @@ Encrypt protected data using the Cryptographic Message Syntax (CMS).
 | Name | Type | Description |
 |------|------|-------------|
 | name | `string` | The local key name. |
-| data | `Buffer` | The data to encrypt. |
+| data | `Uint8Array` | The data to encrypt. |
 
 #### Returns
 
 | Type | Description |
 |------|-------------|
-| `Promise<Buffer>` | Encrypted data as a PKCS #7 message in DER. |
+| `Promise<Uint8Array>` | Encrypted data as a PKCS #7 message in DER. |
 
 #### Example
 
 ```js
 const keyInfo = await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
-const enc = await libp2p.keychain.cms.encrypt('keyTest', Buffer.from('data'))
+const enc = await libp2p.keychain.cms.encrypt('keyTest', uint8ArrayFromString('data'))
 ```
 
 ### keychain.cms.decrypt
@@ -1711,13 +1711,13 @@ The keychain must contain one of the keys used to encrypt the data.  If none of 
 
 | Type | Description |
 |------|-------------|
-| `Promise<Buffer>` | Decrypted data. |
+| `Promise<Uint8Array>` | Decrypted data. |
 
 #### Example
 
 ```js
 const keyInfo = await libp2p.keychain.createKey('keyTest', 'rsa', 4096)
-const enc = await libp2p.keychain.cms.encrypt('keyTest', Buffer.from('data'))
+const enc = await libp2p.keychain.cms.encrypt('keyTest', uint8ArrayFromString('data'))
 const decData = await libp2p.keychain.cms.decrypt(enc)
 ```
 

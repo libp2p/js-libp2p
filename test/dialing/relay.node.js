@@ -1,7 +1,6 @@
 'use strict'
 /* eslint-env mocha */
 
-const { Buffer } = require('buffer')
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 chai.use(require('chai-as-promised'))
@@ -13,6 +12,7 @@ const { collect } = require('streaming-iterables')
 const pipe = require('it-pipe')
 const AggregateError = require('aggregate-error')
 const PeerId = require('peer-id')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const { createPeerId } = require('../utils/creators/peer')
 const baseOptions = require('../utils/base-options')
@@ -88,7 +88,7 @@ describe('Dialing (via relay, TCP)', () => {
     )
 
     const { stream: echoStream } = await connection.newStream('/echo/1.0.0')
-    const input = Buffer.from('hello')
+    const input = uint8ArrayFromString('hello')
     const [output] = await pipe(
       [input],
       echoStream,
@@ -162,7 +162,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     // Tamper with the our multiaddrs for the circuit message
     sinon.stub(srcLibp2p, 'multiaddrs').value([{
-      buffer: Buffer.from('an invalid multiaddr')
+      bytes: uint8ArrayFromString('an invalid multiaddr')
     }])
 
     await expect(srcLibp2p.dial(dialAddr))

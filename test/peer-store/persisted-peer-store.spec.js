@@ -12,6 +12,7 @@ const PeerStore = require('../../src/peer-store/persistent')
 
 const multiaddr = require('multiaddr')
 const { MemoryDatastore } = require('interface-datastore')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const peerUtils = require('../utils/creators/peer')
 
@@ -145,7 +146,7 @@ describe('Persisted PeerStore', () => {
       await Promise.all(commitSpy.returnValues)
 
       // MetadataBook
-      peerStore.metadataBook.set(peers[0], 'location', Buffer.from('earth'))
+      peerStore.metadataBook.set(peers[0], 'location', uint8ArrayFromString('earth'))
 
       // let batch commit complete
       await Promise.all(commitSpy.returnValues)
@@ -186,7 +187,7 @@ describe('Persisted PeerStore', () => {
       // ProtoBook
       peerStore.protoBook.set(peer, protocols)
       // MetadataBook
-      peerStore.metadataBook.set(peer, 'location', Buffer.from('earth'))
+      peerStore.metadataBook.set(peer, 'location', uint8ArrayFromString('earth'))
 
       // let batch commit complete
       await Promise.all(commitSpy.returnValues)
@@ -408,7 +409,7 @@ describe('Persisted PeerStore', () => {
       // Add Peer0 data in multiple books
       peerStore.addressBook.set(peers[0], multiaddrs)
       peerStore.protoBook.set(peers[0], protocols)
-      peerStore.metadataBook.set(peers[0], 'location', Buffer.from('earth'))
+      peerStore.metadataBook.set(peers[0], 'location', uint8ArrayFromString('earth'))
 
       // let batch commit complete
       await Promise.all(commitSpy.returnValues)

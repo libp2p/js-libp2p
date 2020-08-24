@@ -79,7 +79,7 @@ const myFruits = ['banana', 'apple', 'car', 'orange'];
 
 setInterval(() => {
   console.log('############## fruit ' + myFruits[count] + ' ##############')
-  node1.pubsub.publish(topic, Buffer.from(myFruits[count]))
+  node1.pubsub.publish(topic, new TextEncoder().encode(myFruits[count]))
   count++
   if (count == myFruits.length) {
     count = 0

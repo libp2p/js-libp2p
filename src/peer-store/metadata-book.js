@@ -4,8 +4,7 @@ const errcode = require('err-code')
 const debug = require('debug')
 const log = debug('libp2p:peer-store:proto-book')
 log.error = debug('libp2p:peer-store:proto-book:error')
-
-const { Buffer } = require('buffer')
+const uint8ArrayEquals = require('uint8arrays/equals')
 
 const PeerId = require('peer-id')
 
@@ -38,7 +37,7 @@ class MetadataBook extends Book {
 
     /**
      * Map known peers to their known protocols.
-     * @type {Map<string, Map<string, Buffer>>}
+     * @type {Map<string, Map<string, Uint8Array>>}
      */
     this.data = new Map()
   }
@@ -48,7 +47,7 @@ class MetadataBook extends Book {
    * @override
    * @param {PeerId} peerId
    * @param {string} key metadata key
-   * @param {Buffer} value metadata value
+   * @param {Uint8Array} value metadata value
    * @returns {ProtoBook}
    */
   set (peerId, key, value) {
@@ -57,7 +56,7 @@ class MetadataBook extends Book {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
-    if (typeof key !== 'string' || !Buffer.isBuffer(value)) {
+    if (typeof key !== 'string' || !(value instanceof Uint8Array)) {
       log.error('valid key and value must be provided to store data')
       throw errcode(new Error('valid key and value must be provided'), ERR_INVALID_PARAMETERS)
     }
@@ -77,7 +76,7 @@ class MetadataBook extends Book {
     const recMap = rec.get(key)
 
     // Already exists and is equal
-    if (recMap && value.equals(recMap)) {
+    if (recMap && uint8ArrayEquals(value, recMap)) {
       log(`the metadata provided to store is equal to the already stored for ${id} on ${key}`)
       return
     }
@@ -91,7 +90,7 @@ class MetadataBook extends Book {
   /**
    * Get the known data of a provided peer.
    * @param {PeerId} peerId
-   * @returns {Map<string, Buffer>}
+   * @returns {Map<string, Uint8Array>}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
@@ -105,7 +104,7 @@ class MetadataBook extends Book {
    * Get specific metadata value, if it exists
    * @param {PeerId} peerId
    * @param {string} key
-   * @returns {Buffer}
+   * @returns {Uint8Array}
    */
   getValue (peerId, key) {
     if (!PeerId.isPeerId(peerId)) {
