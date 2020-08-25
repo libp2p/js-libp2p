@@ -1,3 +1,84 @@
+<a name="0.29.0-rc.0"></a>
+# [0.29.0-rc.0](https://github.com/libp2p/js-libp2p/compare/v0.28.10...v0.29.0-rc.0) (2020-08-25)
+
+
+### Bug Fixes
+
+* do not return self on peerstore.peers ([e1b8edc](https://github.com/libp2p/js-libp2p/commit/e1b8edc))
+* replace node buffers with uint8arrays ([#730](https://github.com/libp2p/js-libp2p/issues/730)) ([507f8c4](https://github.com/libp2p/js-libp2p/commit/507f8c4))
+* revert new identify protocol versions ([a798c65](https://github.com/libp2p/js-libp2p/commit/a798c65))
+* signature compliant with spec ([97b5d2a](https://github.com/libp2p/js-libp2p/commit/97b5d2a))
+
+
+### Chores
+
+* update travis to use node lts and stable ([c272288](https://github.com/libp2p/js-libp2p/commit/c272288))
+
+
+### Features
+
+* cerified addressbook ([e0ed258](https://github.com/libp2p/js-libp2p/commit/e0ed258))
+* create self peer record in identify ([83922a7](https://github.com/libp2p/js-libp2p/commit/83922a7))
+* exchange signed peer records in identify ([f835457](https://github.com/libp2p/js-libp2p/commit/f835457))
+* gossipsub 1.1 ([#733](https://github.com/libp2p/js-libp2p/issues/733)) ([e14ce40](https://github.com/libp2p/js-libp2p/commit/e14ce40))
+* signed peer records record manager ([f95edf1](https://github.com/libp2p/js-libp2p/commit/f95edf1))
+
+
+### Reverts
+
+* reapply "fix: throw if no conn encryption module provided ([#665](https://github.com/libp2p/js-libp2p/issues/665))" ([ad7f02e](https://github.com/libp2p/js-libp2p/commit/ad7f02e))
+
+
+### BREAKING CHANGES
+
+* pubsub implementation is now directly exposed and its API was updated according to the new pubsub interface in js-libp2p-interfaces repo
+
+* chore: use gossipsub branch with src added
+
+* fix: add pubsub handlers adapter
+
+* chore: fix deps
+
+* chore: update pubsub docs and examples
+
+* chore: apply suggestions from code review
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+
+* chore: use new floodsub
+
+* chore: change validator doc set
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+
+* chore: add new gossipsub src
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+* - All deps used by this module now use Uint8Arrays in place of node Buffers
+
+* chore: browser fixes
+
+* chore: remove .only
+
+* chore: stringify uint8array before parsing
+
+* chore: update interop suite
+
+* chore: remove ts from build command
+
+* chore: update deps
+
+* fix: update records to use uint8array
+
+* chore: fix lint
+
+* chore: update deps
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+* this drops testing support in node 10.
+
+
+
 <a name="0.28.10"></a>
 ## [0.28.10](https://github.com/libp2p/js-libp2p/compare/v0.28.9...v0.28.10) (2020-08-05)
 
