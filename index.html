@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset='utf-8'>
-  <title>libp2p 0.28.10 | Documentation</title>
+  <title>libp2p 0.29.0-rc.0 | Documentation</title>
   <meta name='description' content='JavaScript implementation of libp2p, a modular peer to peer network stack'>
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link href='assets/bass.css' rel='stylesheet'>
@@ -15,7 +15,7 @@
       <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
         <div class='py1 px2'>
           <h3 class='mb0 no-anchor'>libp2p</h3>
-          <div class='mb1'><code>0.28.10</code></div>
+          <div class='mb1'><code>0.29.0-rc.0</code></div>
           <input
             placeholder='Filter'
             id='filter-input'
@@ -26,16 +26,6 @@
             type='text' />
           <div id='toc'>
             <ul class='list-reset h5 py1-ul'>
-              
-                
-                <li><a
-                  href='#intro'
-                  class="h5 bold black caps">
-                  Intro
-                  
-                </a>
-                
-                </li>
               
                 
                 <li><a
@@ -197,56 +187,6 @@
                   href='#getmany'
                   class="">
                   getMany
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#subscribe'
-                  class="">
-                  subscribe
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#unsubscribe'
-                  class="">
-                  unsubscribe
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#publish'
-                  class="">
-                  publish
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#gettopics'
-                  class="">
-                  getTopics
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#getsubscribers'
-                  class="">
-                  getSubscribers
                   
                 </a>
                 
@@ -1346,6 +1286,24 @@
                       </a></li>
                       
                       <li><a
+                        href='#addressbookconsumepeerrecord'
+                        class='regular pre-open'>
+                        #consumePeerRecord
+                      </a></li>
+                      
+                      <li><a
+                        href='#addressbookgetrawenvelope'
+                        class='regular pre-open'>
+                        #getRawEnvelope
+                      </a></li>
+                      
+                      <li><a
+                        href='#addressbookgetpeerrecord'
+                        class='regular pre-open'>
+                        #getPeerRecord
+                      </a></li>
+                      
+                      <li><a
                         href='#addressbookset'
                         class='regular pre-open'>
                         #set
@@ -1355,6 +1313,12 @@
                         href='#addressbookadd'
                         class='regular pre-open'>
                         #add
+                      </a></li>
+                      
+                      <li><a
+                        href='#addressbookget'
+                        class='regular pre-open'>
+                        #get
                       </a></li>
                       
                       <li><a
@@ -1593,6 +1557,26 @@
               
                 
                 <li><a
+                  href='#subscribe'
+                  class="">
+                  subscribe
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#unsubscribe'
+                  class="">
+                  unsubscribe
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
                   href='#persistentpeerstore'
                   class=" toggle-sibling">
                   PersistentPeerStore
@@ -1811,11 +1795,139 @@
               
                 
                 <li><a
+                  href='#_getselfpeerrecord'
+                  class="">
+                  _getSelfPeerRecord
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
                   href='#getcleanmultiaddr'
                   class="">
                   getCleanMultiaddr
                   
                 </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#envelope'
+                  class=" toggle-sibling">
+                  Envelope
+                  <span class='icon'>▸</span>
+                </a>
+                
+                <div class='toggle-target display-none'>
+                  
+                  <ul class='list-reset py1-ul pl1'>
+                    <li class='h5'><span>Static members</span></li>
+                    
+                      <li><a
+                        href='#envelopecreatefromprotobuf'
+                        class='regular pre-open'>
+                        .createFromProtobuf
+                      </a></li>
+                    
+                      <li><a
+                        href='#envelopeseal'
+                        class='regular pre-open'>
+                        .seal
+                      </a></li>
+                    
+                      <li><a
+                        href='#envelopeopenandcertify'
+                        class='regular pre-open'>
+                        .openAndCertify
+                      </a></li>
+                    
+                    </ul>
+                  
+                  
+                    <ul class='list-reset py1-ul pl1'>
+                      <li class='h5'><span>Instance members</span></li>
+                      
+                      <li><a
+                        href='#envelopemarshal'
+                        class='regular pre-open'>
+                        #marshal
+                      </a></li>
+                      
+                      <li><a
+                        href='#envelopeequals'
+                        class='regular pre-open'>
+                        #equals
+                      </a></li>
+                      
+                      <li><a
+                        href='#envelopevalidate'
+                        class='regular pre-open'>
+                        #validate
+                      </a></li>
+                      
+                    </ul>
+                  
+                  
+                  
+                </div>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#formatsignaturepayload'
+                  class="">
+                  formatSignaturePayload
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#peerrecord'
+                  class=" toggle-sibling">
+                  PeerRecord
+                  <span class='icon'>▸</span>
+                </a>
+                
+                <div class='toggle-target display-none'>
+                  
+                  <ul class='list-reset py1-ul pl1'>
+                    <li class='h5'><span>Static members</span></li>
+                    
+                      <li><a
+                        href='#peerrecordcreatefromprotobuf'
+                        class='regular pre-open'>
+                        .createFromProtobuf
+                      </a></li>
+                    
+                    </ul>
+                  
+                  
+                    <ul class='list-reset py1-ul pl1'>
+                      <li class='h5'><span>Instance members</span></li>
+                      
+                      <li><a
+                        href='#peerrecordmarshal'
+                        class='regular pre-open'>
+                        #marshal
+                      </a></li>
+                      
+                      <li><a
+                        href='#peerrecordequals'
+                        class='regular pre-open'>
+                        #equals
+                      </a></li>
+                      
+                    </ul>
+                  
+                  
+                  
+                </div>
                 
                 </li>
               
@@ -1829,34 +1941,6 @@
       <div id='split-right' class='relative overflow-auto height-viewport-100'>
         
           
-            <div class='keyline-top-not py2'><section class='py2 clearfix'>
-
-  <h2 id='intro' class='mt0'>
-    Intro
-  </h2>
-
-  
-    <p>Installable via  <code>npm install --save libp2p</code>, it can also be used directly in the browser.</p>
-<h2>Download</h2>
-<p>The source is available for download from <a href="https://github.com/libp2p/js-libp2p.git">GitHub</a>. Alternatively, you can install using npm:</p>
-<pre class='hljs'>$ npm install --save libp2p</pre>
-<p>You can then <code>require()</code> libp2p as normal:</p>
-<pre class='hljs'><span class="hljs-keyword">const</span> libp2P = <span class="hljs-built_in">require</span>(<span class="hljs-string">'libp2p'</span>)</pre>
-<h2>In the Browser</h2>
-<p><code>libp2p</code> should work in any ECMAScript 2018 environment out of the box.</p>
-<p>Usage:</p>
-<pre class='hljs'><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/javascript"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"index.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></pre>
-<p>The portable versions of <code>libp2p</code>, including <code>index.js</code> and <code>index.min.js</code>, are included in the <code>/dist</code> folder. <code>libp2p</code> can also be found on <a href="https://unpkg.com">unpkg.com</a> under</p>
-<ul>
-<li><a href="https://unpkg.com/libp2p/dist/index.min.js">https://unpkg.com/libp2p/dist/index.min.js</a></li>
-<li><a href="https://unpkg.com/libp2p/dist/index.js">https://unpkg.com/libp2p/dist/index.js</a></li>
-</ul>
-
-  
-</section></div>
-          
-        
-          
           <section class='p2 mb2 clearfix bg-white minishadow'>
 
   
@@ -1867,7 +1951,7 @@
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L41-L579'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L42-L584'>
       <span>src/index.js</span>
       </a>
     
@@ -1936,7 +2020,7 @@
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L587-L596'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L592-L601'>
       <span>src/index.js</span>
       </a>
     
@@ -2026,7 +2110,7 @@ instance if one is not provided in options.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L208-L214'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L213-L219'>
       <span>src/index.js</span>
       </a>
     
@@ -2114,7 +2198,7 @@ if there is a handler. If not, errors will be logged.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L221-L234'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L226-L239'>
       <span>src/index.js</span>
       </a>
     
@@ -2180,7 +2264,7 @@ if there is a handler. If not, errors will be logged.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L241-L274'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L246-L279'>
       <span>src/index.js</span>
       </a>
     
@@ -2246,7 +2330,7 @@ if there is a handler. If not, errors will be logged.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L282-L288'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L287-L293'>
       <span>src/index.js</span>
       </a>
     
@@ -2313,7 +2397,7 @@ Imports the private key as 'self', if needed.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L299-L301'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L304-L306'>
       <span>src/index.js</span>
       </a>
     
@@ -2380,7 +2464,7 @@ Imports the private key as 'self', if needed.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L311-L313'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L316-L318'>
       <span>src/index.js</span>
       </a>
     
@@ -2493,7 +2577,7 @@ peer will be added to the nodes <code>peerStore</code></p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L326-L342'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L331-L347'>
       <span>src/index.js</span>
       </a>
     
@@ -2615,7 +2699,7 @@ and the <code>Connection</code> will be returned</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L350-L370'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L355-L375'>
       <span>src/index.js</span>
       </a>
     
@@ -2683,7 +2767,7 @@ Duplicated addresses and noAnnounce addresses are filtered out.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L377-L391'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L382-L396'>
       <span>src/index.js</span>
       </a>
     
@@ -2763,7 +2847,7 @@ Duplicated addresses and noAnnounce addresses are filtered out.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L398-L407'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L403-L412'>
       <span>src/index.js</span>
       </a>
     
@@ -2843,7 +2927,7 @@ Duplicated addresses and noAnnounce addresses are filtered out.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L414-L424'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L419-L429'>
       <span>src/index.js</span>
       </a>
     
@@ -2922,7 +3006,7 @@ Duplicated addresses and noAnnounce addresses are filtered out.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/index.js#L431-L441'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/index.js#L436-L446'>
       <span>src/index.js</span>
       </a>
     
@@ -3002,7 +3086,7 @@ will no longer be supported on streams.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-routing.js#L23-L38'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-routing.js#L23-L38'>
       <span>src/peer-routing.js</span>
       </a>
     
@@ -3111,7 +3195,7 @@ will no longer be supported on streams.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/content-routing.js#L29-L48'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/content-routing.js#L29-L48'>
       <span>src/content-routing.js</span>
       </a>
     
@@ -3230,7 +3314,7 @@ Once a content router succeeds, iteration will stop.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/content-routing.js#L57-L63'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/content-routing.js#L57-L63'>
       <span>src/content-routing.js</span>
       </a>
     
@@ -3307,7 +3391,7 @@ a provider of the given key.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/content-routing.js#L73-L79'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/content-routing.js#L73-L79'>
       <span>src/content-routing.js</span>
       </a>
     
@@ -3316,7 +3400,7 @@ a provider of the given key.</p>
 
   <p>Store the given key/value pair in the DHT.</p>
 
-    <div class='pre p1 fill-light mt0'>put(key: <a href="https://nodejs.org/api/buffer.html">Buffer</a>, value: <a href="https://nodejs.org/api/buffer.html">Buffer</a>, options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>?): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;void></div>
+    <div class='pre p1 fill-light mt0'>put(key: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>, value: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>, options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>?): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;void></div>
   
   
 
@@ -3333,7 +3417,7 @@ a provider of the given key.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>key</span> <code class='quiet'>(<a href="https://nodejs.org/api/buffer.html">Buffer</a>)</code>
+            <span class='code bold'>key</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
 	    
           </div>
           
@@ -3341,7 +3425,7 @@ a provider of the given key.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>value</span> <code class='quiet'>(<a href="https://nodejs.org/api/buffer.html">Buffer</a>)</code>
+            <span class='code bold'>value</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
 	    
           </div>
           
@@ -3424,7 +3508,7 @@ a provider of the given key.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/content-routing.js#L89-L95'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/content-routing.js#L89-L95'>
       <span>src/content-routing.js</span>
       </a>
     
@@ -3434,7 +3518,7 @@ a provider of the given key.</p>
   <p>Get the value to the given key.
 Times out after 1 minute by default.</p>
 
-    <div class='pre p1 fill-light mt0'>get(key: <a href="https://nodejs.org/api/buffer.html">Buffer</a>, options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>?): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;{from: PeerId, val: <a href="https://nodejs.org/api/buffer.html">Buffer</a>}></div>
+    <div class='pre p1 fill-light mt0'>get(key: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>, options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>?): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;{from: PeerId, val: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>}></div>
   
   
 
@@ -3451,7 +3535,7 @@ Times out after 1 minute by default.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>key</span> <code class='quiet'>(<a href="https://nodejs.org/api/buffer.html">Buffer</a>)</code>
+            <span class='code bold'>key</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
 	    
           </div>
           
@@ -3499,7 +3583,7 @@ Times out after 1 minute by default.</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;{from: PeerId, val: <a href="https://nodejs.org/api/buffer.html">Buffer</a>}></code>:
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;{from: PeerId, val: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>}></code>:
         
 
       
@@ -3534,7 +3618,7 @@ Times out after 1 minute by default.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/content-routing.js#L105-L111'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/content-routing.js#L105-L111'>
       <span>src/content-routing.js</span>
       </a>
     
@@ -3543,7 +3627,7 @@ Times out after 1 minute by default.</p>
 
   <p>Get the <code>n</code> values to the given key without sorting.</p>
 
-    <div class='pre p1 fill-light mt0'>getMany(key: <a href="https://nodejs.org/api/buffer.html">Buffer</a>, nVals: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>, options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>?): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;{from: PeerId, val: <a href="https://nodejs.org/api/buffer.html">Buffer</a>}>></div>
+    <div class='pre p1 fill-light mt0'>getMany(key: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>, nVals: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>, options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>?): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;{from: PeerId, val: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>}>></div>
   
   
 
@@ -3560,7 +3644,7 @@ Times out after 1 minute by default.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>key</span> <code class='quiet'>(<a href="https://nodejs.org/api/buffer.html">Buffer</a>)</code>
+            <span class='code bold'>key</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
 	    
           </div>
           
@@ -3616,387 +3700,7 @@ Times out after 1 minute by default.</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;{from: PeerId, val: <a href="https://nodejs.org/api/buffer.html">Buffer</a>}>></code>:
-        
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-          <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='subscribe'>
-      subscribe
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/pubsub.js#L17-L27'>
-      <span>src/pubsub.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Subscribe the given handler to a pubsub topic</p>
-
-    <div class='pre p1 fill-light mt0'>subscribe(topic: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, handler: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>): void</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>topic</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>handler</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>)</code>
-	    The handler to subscribe
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code>void</code>:
-        
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-          <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='unsubscribe'>
-      unsubscribe
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/pubsub.js#L34-L48'>
-      <span>src/pubsub.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Unsubscribes from a pubsub topic</p>
-
-    <div class='pre p1 fill-light mt0'>unsubscribe(topic: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, handler: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>?)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>topic</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>handler</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function">function</a>?)</code>
-	    The handler to unsubscribe from
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-          <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='publish'>
-      publish
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/pubsub.js#L56-L68'>
-      <span>src/pubsub.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Publish messages to the given topics.</p>
-
-    <div class='pre p1 fill-light mt0'>publish(topic: (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>), data: <a href="https://nodejs.org/api/buffer.html">Buffer</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;void></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>topic</span> <code class='quiet'>((<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>))</code>
-	    
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>data</span> <code class='quiet'>(<a href="https://nodejs.org/api/buffer.html">Buffer</a>)</code>
-	    
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;void></code>:
-        
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-          <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='gettopics'>
-      getTopics
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/pubsub.js#L74-L80'>
-      <span>src/pubsub.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Get a list of topics the node is subscribed to.</p>
-
-    <div class='pre p1 fill-light mt0'>getTopics(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>></code>:
-        topics
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-          <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='getsubscribers'>
-      getSubscribers
-    </h3>
-    
-    
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/pubsub.js#L87-L93'>
-      <span>src/pubsub.js</span>
-      </a>
-    
-  </div>
-  
-
-  <p>Get a list of the peer-ids that are subscribed to one topic.</p>
-
-    <div class='pre p1 fill-light mt0'>getSubscribers(topic: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>topic</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>></code>:
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;{from: PeerId, val: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>}>></code>:
         
 
       
@@ -4031,7 +3735,7 @@ Times out after 1 minute by default.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/get-peer.js#L16-L38'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/get-peer.js#L16-L38'>
       <span>src/get-peer.js</span>
       </a>
     
@@ -4115,7 +3819,7 @@ If a multiaddr is received, the addressBook is updated.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/address-manager/index.js#L16-L53'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/address-manager/index.js#L16-L53'>
       <span>src/address-manager/index.js</span>
       </a>
     
@@ -4239,7 +3943,7 @@ address adverstising to other peers in the network.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/address-manager/index.js#L34-L36'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/address-manager/index.js#L34-L36'>
       <span>src/address-manager/index.js</span>
       </a>
     
@@ -4305,7 +4009,7 @@ address adverstising to other peers in the network.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/address-manager/index.js#L42-L44'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/address-manager/index.js#L42-L44'>
       <span>src/address-manager/index.js</span>
       </a>
     
@@ -4371,7 +4075,7 @@ address adverstising to other peers in the network.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/address-manager/index.js#L50-L52'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/address-manager/index.js#L50-L52'>
       <span>src/address-manager/index.js</span>
       </a>
     
@@ -4445,7 +4149,7 @@ address adverstising to other peers in the network.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L38-L353'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L38-L353'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -4525,7 +4229,7 @@ address adverstising to other peers in the network.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L74-L74'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L74-L74'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -4588,7 +4292,7 @@ address adverstising to other peers in the network.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L80-L80'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L80-L80'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -4651,7 +4355,7 @@ address adverstising to other peers in the network.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L92-L95'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L92-L95'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -4709,7 +4413,7 @@ address adverstising to other peers in the network.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L101-L118'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L101-L118'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -4768,7 +4472,7 @@ only event loop and connection limits will be monitored.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L124-L132'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L124-L132'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -4826,7 +4530,7 @@ only event loop and connection limits will be monitored.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L138-L149'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L138-L149'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -4884,7 +4588,7 @@ only event loop and connection limits will be monitored.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L157-L165'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L157-L165'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -4965,7 +4669,7 @@ will be disconnected first.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L188-L207'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L188-L207'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -5036,7 +4740,7 @@ will be disconnected first.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L213-L225'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L213-L225'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -5107,7 +4811,7 @@ will be disconnected first.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L232-L238'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L232-L238'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -5186,7 +4890,7 @@ will be disconnected first.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/index.js#L245-L258'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/index.js#L245-L258'>
       <span>src/connection-manager/index.js</span>
       </a>
     
@@ -5273,7 +4977,7 @@ will be disconnected first.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/latency-monitor.js#L8-L8'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/latency-monitor.js#L8-L8'>
       <span>src/connection-manager/latency-monitor.js</span>
       </a>
     
@@ -5327,7 +5031,7 @@ will be disconnected first.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/latency-monitor.js#L13-L20'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/latency-monitor.js#L13-L20'>
       <span>src/connection-manager/latency-monitor.js</span>
       </a>
     
@@ -5425,7 +5129,7 @@ will be disconnected first.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/latency-monitor.js#L38-L240'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/latency-monitor.js#L38-L240'>
       <span>src/connection-manager/latency-monitor.js</span>
       </a>
     
@@ -5600,7 +5304,7 @@ monitor.on(<span class="hljs-string">'data'</span>, (summary) =&gt; <span class=
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/latency-monitor.js#L157-L173'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/latency-monitor.js#L157-L173'>
       <span>src/connection-manager/latency-monitor.js</span>
       </a>
     
@@ -5675,7 +5379,7 @@ it will not count for this time period</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/visibility-change-emitter.js#L6-L6'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/visibility-change-emitter.js#L6-L6'>
       <span>src/connection-manager/visibility-change-emitter.js</span>
       </a>
     
@@ -5729,7 +5433,7 @@ it will not count for this time period</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/visibility-change-emitter.js#L35-L118'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/visibility-change-emitter.js#L35-L118'>
       <span>src/connection-manager/visibility-change-emitter.js</span>
       </a>
     
@@ -5803,7 +5507,7 @@ it will not count for this time period</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/connection-manager/visibility-change-emitter.js#L97-L103'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/connection-manager/visibility-change-emitter.js#L97-L103'>
       <span>src/connection-manager/visibility-change-emitter.js</span>
       </a>
     
@@ -5866,7 +5570,7 @@ it will not count for this time period</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/index.js#L29-L38'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/index.js#L29-L38'>
       <span>src/circuit/index.js</span>
       </a>
     
@@ -5965,7 +5669,7 @@ it will not count for this time period</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/index.js#L102-L148'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/index.js#L102-L148'>
       <span>src/circuit/index.js</span>
       </a>
     
@@ -6075,7 +5779,7 @@ it will not count for this time period</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/index.js#L157-L167'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/index.js#L157-L167'>
       <span>src/circuit/index.js</span>
       </a>
     
@@ -6158,7 +5862,7 @@ it will not count for this time period</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/index.js#L175-L181'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/index.js#L175-L181'>
       <span>src/circuit/index.js</span>
       </a>
     
@@ -6233,7 +5937,7 @@ it will not count for this time period</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/index.js#L187-L187'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/index.js#L187-L187'>
       <span>src/circuit/index.js</span>
       </a>
     
@@ -6287,7 +5991,7 @@ it will not count for this time period</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L280-L283'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L345-L348'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -6355,7 +6059,7 @@ it will not count for this time period</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/listener.js#L14-L66'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/listener.js#L14-L66'>
       <span>src/circuit/listener.js</span>
       </a>
     
@@ -6425,7 +6129,7 @@ it will not count for this time period</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/listener.js#L24-L32'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/listener.js#L24-L32'>
       <span>src/circuit/listener.js</span>
       </a>
     
@@ -6504,7 +6208,7 @@ it will not count for this time period</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/listener.js#L39-L39'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/listener.js#L39-L39'>
       <span>src/circuit/listener.js</span>
       </a>
     
@@ -6570,7 +6274,7 @@ it will not count for this time period</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/listener.js#L57-L63'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/listener.js#L57-L63'>
       <span>src/circuit/listener.js</span>
       </a>
     
@@ -6655,7 +6359,7 @@ be dialed over TCP rather than any other transport</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/circuit/hop.js#L98-L118'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/circuit/hop.js#L98-L118'>
       <span>src/circuit/circuit/hop.js</span>
       </a>
     
@@ -6772,7 +6476,7 @@ peer. A new, virtual, connection will be created between the two via the relay.<
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/circuit/utils.js#L12-L17'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/circuit/utils.js#L12-L17'>
       <span>src/circuit/circuit/utils.js</span>
       </a>
     
@@ -6847,7 +6551,7 @@ peer. A new, virtual, connection will be created between the two via the relay.<
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/circuit/utils.js#L25-L47'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/circuit/utils.js#L25-L47'>
       <span>src/circuit/circuit/utils.js</span>
       </a>
     
@@ -6923,7 +6627,7 @@ peer. A new, virtual, connection will be created between the two via the relay.<
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/circuit/stream-handler.js#L19-L24'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/circuit/stream-handler.js#L19-L24'>
       <span>src/circuit/circuit/stream-handler.js</span>
       </a>
     
@@ -7026,7 +6730,7 @@ peer. A new, virtual, connection will be created between the two via the relay.<
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/circuit/stream-handler.js#L31-L42'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/circuit/stream-handler.js#L31-L42'>
       <span>src/circuit/circuit/stream-handler.js</span>
       </a>
     
@@ -7088,7 +6792,7 @@ peer. A new, virtual, connection will be created between the two via the relay.<
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/circuit/stream-handler.js#L49-L52'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/circuit/stream-handler.js#L49-L52'>
       <span>src/circuit/circuit/stream-handler.js</span>
       </a>
     
@@ -7156,7 +6860,7 @@ peer. A new, virtual, connection will be created between the two via the relay.<
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/circuit/stream-handler.js#L59-L62'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/circuit/stream-handler.js#L59-L62'>
       <span>src/circuit/circuit/stream-handler.js</span>
       </a>
     
@@ -7218,7 +6922,7 @@ peer. A new, virtual, connection will be created between the two via the relay.<
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/circuit/circuit/stream-handler.js#L74-L77'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/circuit/circuit/stream-handler.js#L74-L77'>
       <span>src/circuit/circuit/stream-handler.js</span>
       </a>
     
@@ -7280,7 +6984,7 @@ peer. A new, virtual, connection will be created between the two via the relay.<
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/dialer/index.js#L30-L44'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/dialer/index.js#L30-L44'>
       <span>src/dialer/index.js</span>
       </a>
     
@@ -7468,7 +7172,7 @@ peer. A new, virtual, connection will be created between the two via the relay.<
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/dialer/index.js#L49-L58'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/dialer/index.js#L49-L58'>
       <span>src/dialer/index.js</span>
       </a>
     
@@ -7522,7 +7226,7 @@ peer. A new, virtual, connection will be created between the two via the relay.<
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/dialer/index.js#L70-L92'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/dialer/index.js#L70-L92'>
       <span>src/dialer/index.js</span>
       </a>
     
@@ -7634,7 +7338,7 @@ will be used.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/dialer/index.js#L108-L128'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/dialer/index.js#L108-L128'>
       <span>src/dialer/index.js</span>
       </a>
     
@@ -7717,7 +7421,7 @@ will be used.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/dialer/index.js#L146-L175'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/dialer/index.js#L146-L175'>
       <span>src/dialer/index.js</span>
       </a>
     
@@ -7820,7 +7524,7 @@ will be used.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/dialer/dial-request.js#L24-L32'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/dialer/dial-request.js#L24-L32'>
       <span>src/dialer/dial-request.js</span>
       </a>
     
@@ -7931,7 +7635,7 @@ all other dials in the request will be cancelled.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/dialer/dial-request.js#L40-L77'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/dialer/dial-request.js#L40-L77'>
       <span>src/dialer/dial-request.js</span>
       </a>
     
@@ -8030,7 +7734,7 @@ all other dials in the request will be cancelled.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L80-L87'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L82-L89'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8108,7 +7812,7 @@ all other dials in the request will be cancelled.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L97-L466'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L99-L467'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8186,7 +7890,7 @@ all other dials in the request will be cancelled.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L155-L160'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L157-L162'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8252,7 +7956,7 @@ all other dials in the request will be cancelled.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L168-L170'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L170-L172'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8327,7 +8031,7 @@ The default options for a keychain.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L146-L148'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L148-L150'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8397,7 +8101,7 @@ arbitrary message content.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L180-L224'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L182-L226'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8495,7 +8199,7 @@ arbitrary message content.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L231-L243'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L233-L245'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8561,7 +8265,7 @@ arbitrary message content.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L251-L258'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L253-L260'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8641,7 +8345,7 @@ arbitrary message content.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L266-L278'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L268-L280'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8721,7 +8425,7 @@ arbitrary message content.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L286-L298'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L288-L300'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8801,7 +8505,7 @@ arbitrary message content.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L307-L340'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L309-L341'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8890,7 +8594,7 @@ arbitrary message content.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L349-L366'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L350-L367'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -8979,7 +8683,7 @@ arbitrary message content.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/index.js#L376-L413'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/index.js#L377-L414'>
       <span>src/keychain/index.js</span>
       </a>
     
@@ -9085,7 +8789,7 @@ arbitrary message content.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/cms.js#L18-L120'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/cms.js#L20-L122'>
       <span>src/keychain/cms.js</span>
       </a>
     
@@ -9155,7 +8859,7 @@ arbitrary message content.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/cms.js#L41-L60'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/cms.js#L43-L62'>
       <span>src/keychain/cms.js</span>
       </a>
     
@@ -9163,9 +8867,9 @@ arbitrary message content.</p>
   
 
   <p>Creates some protected data.</p>
-<p>The output Buffer contains the PKCS #7 message in DER.</p>
+<p>The output Uint8Array contains the PKCS #7 message in DER.</p>
 
-    <div class='pre p1 fill-light mt0'>encrypt(name: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, plain: <a href="https://nodejs.org/api/buffer.html">Buffer</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></div>
+    <div class='pre p1 fill-light mt0'>encrypt(name: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, plain: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></div>
   
   
 
@@ -9191,7 +8895,7 @@ arbitrary message content.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>plain</span> <code class='quiet'>(<a href="https://nodejs.org/api/buffer.html">Buffer</a>)</code>
+            <span class='code bold'>plain</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
 	    The data to encrypt.
 
           </div>
@@ -9245,7 +8949,7 @@ arbitrary message content.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/cms.js#L71-L119'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/cms.js#L73-L121'>
       <span>src/keychain/cms.js</span>
       </a>
     
@@ -9256,7 +8960,7 @@ arbitrary message content.</p>
 <p>The keychain must contain one of the keys used to encrypt the data.  If none of the keys
 exists, an Error is returned with the property 'missingKeys'.  It is array of key ids.</p>
 
-    <div class='pre p1 fill-light mt0'>decrypt(cmsData: <a href="https://nodejs.org/api/buffer.html">Buffer</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></div>
+    <div class='pre p1 fill-light mt0'>decrypt(cmsData: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></div>
   
   
 
@@ -9273,7 +8977,7 @@ exists, an Error is returned with the property 'missingKeys'.  It is array of ke
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>cmsData</span> <code class='quiet'>(<a href="https://nodejs.org/api/buffer.html">Buffer</a>)</code>
+            <span class='code bold'>cmsData</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
 	    The CMS encrypted data to decrypt.
 
           </div>
@@ -9335,7 +9039,7 @@ exists, an Error is returned with the property 'missingKeys'.  It is array of ke
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/util.js#L19-L70'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/util.js#L19-L70'>
       <span>src/keychain/util.js</span>
       </a>
     
@@ -9343,10 +9047,10 @@ exists, an Error is returned with the property 'missingKeys'.  It is array of ke
   
 
   <p>Gets a self-signed X.509 certificate for the key.</p>
-<p>The output Buffer contains the PKCS #7 message in DER.</p>
+<p>The output Uint8Array contains the PKCS #7 message in DER.</p>
 <p>TODO: move to libp2p-crypto package</p>
 
-    <div class='pre p1 fill-light mt0'>certificateForKey(key: <a href="#keyinfo">KeyInfo</a>, privateKey: RsaPrivateKey): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></div>
+    <div class='pre p1 fill-light mt0'>certificateForKey(key: <a href="#keyinfo">KeyInfo</a>, privateKey: RsaPrivateKey): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></div>
   
   
 
@@ -9387,7 +9091,7 @@ exists, an Error is returned with the property 'missingKeys'.  It is array of ke
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></code>:
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></code>:
         
 
       
@@ -9422,7 +9126,7 @@ exists, an Error is returned with the property 'missingKeys'.  It is array of ke
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/keychain/util.js#L82-L87'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/keychain/util.js#L82-L87'>
       <span>src/keychain/util.js</span>
       </a>
     
@@ -9501,7 +9205,7 @@ resolve to either <code>true</code> or <code>false</code>.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L30-L42'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L30-L42'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -9623,7 +9327,7 @@ resolve to either <code>true</code> or <code>false</code>.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L48-L50'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L48-L50'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -9678,7 +9382,7 @@ will be ignored.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L56-L65'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L56-L65'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -9733,7 +9437,7 @@ Once <code>stop</code> is called, <code>start</code> must be called to resume st
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L71-L73'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L71-L73'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -9795,7 +9499,7 @@ Once <code>stop</code> is called, <code>start</code> must be called to resume st
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L79-L81'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L79-L81'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -9857,7 +9561,7 @@ Once <code>stop</code> is called, <code>start</code> must be called to resume st
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L89-L92'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L89-L92'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -9933,7 +9637,7 @@ is a live peer, or in the disconnected peer LRU cache.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L98-L100'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L98-L100'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -9995,7 +9699,7 @@ is a live peer, or in the disconnected peer LRU cache.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L107-L109'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L107-L109'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -10070,7 +9774,7 @@ is a live peer, or in the disconnected peer LRU cache.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L117-L125'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L117-L125'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -10139,7 +9843,7 @@ be stopped and moved to an LRU for temporary retention.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L173-L191'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L173-L191'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -10217,7 +9921,7 @@ placeholder stats will be merged with the existing stats.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L206-L231'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L206-L231'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -10347,7 +10051,7 @@ with the placeholder string returned from here, and the known <code>PeerId</code
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/index.js#L240-L249'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/index.js#L240-L249'>
       <span>src/metrics/index.js</span>
       </a>
     
@@ -10431,7 +10135,7 @@ and returned.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/old-peers.js#L11-L15'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/old-peers.js#L11-L15'>
       <span>src/metrics/old-peers.js</span>
       </a>
     
@@ -10506,7 +10210,7 @@ and returned.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/stats.js#L14-L258'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/stats.js#L14-L258'>
       <span>src/metrics/stats.js</span>
       </a>
     
@@ -10586,7 +10290,7 @@ and returned.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/stats.js#L49-L53'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/stats.js#L49-L53'>
       <span>src/metrics/stats.js</span>
       </a>
     
@@ -10654,7 +10358,7 @@ should only need to be called if <code>Stats.stop</code> was previously called, 
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/stats.js#L61-L66'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/stats.js#L61-L66'>
       <span>src/metrics/stats.js</span>
       </a>
     
@@ -10721,7 +10425,7 @@ timer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/stats.js#L73-L75'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/stats.js#L73-L75'>
       <span>src/metrics/stats.js</span>
       </a>
     
@@ -10787,7 +10491,7 @@ timer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/stats.js#L82-L84'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/stats.js#L82-L84'>
       <span>src/metrics/stats.js</span>
       </a>
     
@@ -10853,7 +10557,7 @@ timer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/stats.js#L91-L109'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/stats.js#L91-L109'>
       <span>src/metrics/stats.js</span>
       </a>
     
@@ -10919,7 +10623,7 @@ timer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/metrics/stats.js#L119-L122'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/metrics/stats.js#L119-L122'>
       <span>src/metrics/stats.js</span>
       </a>
     
@@ -11015,7 +10719,7 @@ current Timestamp, then resets the update timer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L18-L24'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L18-L24'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11126,7 +10830,7 @@ current Timestamp, then resets the update timer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L34-L53'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L34-L53'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11219,7 +10923,7 @@ current Timestamp, then resets the update timer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L59-L74'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L59-L74'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11273,7 +10977,7 @@ current Timestamp, then resets the update timer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L82-L94'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L82-L94'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11356,7 +11060,7 @@ current Timestamp, then resets the update timer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L100-L108'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L100-L108'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11418,7 +11122,7 @@ current Timestamp, then resets the update timer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L114-L116'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L114-L116'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11480,7 +11184,7 @@ current Timestamp, then resets the update timer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L123-L129'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L123-L129'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11555,7 +11259,7 @@ current Timestamp, then resets the update timer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L135-L184'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L135-L184'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11609,7 +11313,7 @@ current Timestamp, then resets the update timer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L193-L204'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L193-L204'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11677,7 +11381,7 @@ If a transport has any running listeners, they will be closed.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L211-L218'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L211-L218'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11732,7 +11436,7 @@ If any listeners are running, they will be closed.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/transport-manager.js#L228-L231'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/transport-manager.js#L228-L231'>
       <span>src/transport-manager.js</span>
       </a>
     
@@ -11793,7 +11497,7 @@ NO_FATAL should be used for not failing when not listening.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/upgrader.js#L30-L418'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/upgrader.js#L30-L418'>
       <span>src/upgrader.js</span>
       </a>
     
@@ -11954,7 +11658,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/upgrader.js#L64-L123'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/upgrader.js#L64-L123'>
       <span>src/upgrader.js</span>
       </a>
     
@@ -12033,7 +11737,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/upgrader.js#L131-L197'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/upgrader.js#L131-L197'>
       <span>src/upgrader.js</span>
       </a>
     
@@ -12120,7 +11824,7 @@ NO_FATAL should be used for not failing when not listening.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/upgrader.js#L30-L418'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/upgrader.js#L30-L418'>
       <span>src/upgrader.js</span>
       </a>
     
@@ -12284,7 +11988,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/upgrader.js#L64-L123'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/upgrader.js#L64-L123'>
       <span>src/upgrader.js</span>
       </a>
     
@@ -12363,7 +12067,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/upgrader.js#L131-L197'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/upgrader.js#L131-L197'>
       <span>src/upgrader.js</span>
       </a>
     
@@ -12450,7 +12154,7 @@ NO_FATAL should be used for not failing when not listening.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/index.js#L28-L134'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/index.js#L28-L139'>
       <span>src/peer-store/index.js</span>
       </a>
     
@@ -12459,7 +12163,7 @@ NO_FATAL should be used for not failing when not listening.</p>
 
   <p>Responsible for managing known peers, as well as their addresses, protocols and metadata.</p>
 
-    <div class='pre p1 fill-light mt0'>new PeerStore()</div>
+    <div class='pre p1 fill-light mt0'>new PeerStore($0: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</div>
   
   
     <p>
@@ -12477,6 +12181,43 @@ NO_FATAL should be used for not failing when not listening.</p>
   
   
 
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>$0</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
+	    
+          </div>
+          
+          <table class='mt1 mb2 fixed-table h5 col-12'>
+            <colgroup>
+              <col width='30%' />
+              <col width='70%' />
+            </colgroup>
+            <thead>
+              <tr class='bold fill-light'>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody class='mt1'>
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>$0.peerId</span> <code class='quiet'>any</code>
+  </td>
+  <td class='break-word'><span></span></td>
+</tr>
+
+
+              
+            </tbody>
+          </table>
+          
+        </div>
+      
+    </div>
   
 
   
@@ -12509,7 +12250,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/index.js#L46-L46'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/index.js#L48-L48'>
       <span>src/peer-store/index.js</span>
       </a>
     
@@ -12567,7 +12308,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/index.js#L51-L51'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/index.js#L53-L53'>
       <span>src/peer-store/index.js</span>
       </a>
     
@@ -12625,7 +12366,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/index.js#L56-L56'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/index.js#L58-L58'>
       <span>src/peer-store/index.js</span>
       </a>
     
@@ -12683,7 +12424,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/index.js#L61-L61'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/index.js#L63-L63'>
       <span>src/peer-store/index.js</span>
       </a>
     
@@ -12741,7 +12482,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/index.js#L67-L67'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/index.js#L69-L69'>
       <span>src/peer-store/index.js</span>
       </a>
     
@@ -12799,7 +12540,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/index.js#L72-L72'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/index.js#L74-L74'>
       <span>src/peer-store/index.js</span>
       </a>
     
@@ -12857,14 +12598,14 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/index.js#L78-L92'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/index.js#L80-L97'>
       <span>src/peer-store/index.js</span>
       </a>
     
   </div>
   
 
-  <p>Get all the stored information of every peer.</p>
+  <p>Get all the stored information of every peer known.</p>
 
     <div class='pre p1 fill-light mt0'>peers</div>
   
@@ -12923,7 +12664,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/index.js#L99-L106'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/index.js#L104-L111'>
       <span>src/peer-store/index.js</span>
       </a>
     
@@ -13002,7 +12743,7 @@ NO_FATAL should be used for not failing when not listening.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/index.js#L113-L133'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/index.js#L118-L138'>
       <span>src/peer-store/index.js</span>
       </a>
     
@@ -13089,7 +12830,7 @@ NO_FATAL should be used for not failing when not listening.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/address-book.js#L21-L195'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/address-book.js#L23-L332'>
       <span>src/peer-store/address-book.js</span>
       </a>
     
@@ -13162,20 +12903,20 @@ of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/address-book.js#L49-L49'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/address-book.js#L71-L71'>
       <span>src/peer-store/address-book.js</span>
       </a>
     
   </div>
   
 
-  <p>Map known peers to their known Addresses.</p>
+  <p>Map known peers to their known Address Entries.</p>
 
     <div class='pre p1 fill-light mt0'>data</div>
   
     <p>
       Type:
-      <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;Address>>
+      <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;Entry>>
     </p>
   
   
@@ -13211,6 +12952,247 @@ of a peer.</p>
       </div>
     </div>
   
+    <div class='border-bottom' id='addressbookconsumepeerrecord'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>consumePeerRecord(envelope)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/address-book.js#L81-L125'>
+      <span>src/peer-store/address-book.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>ConsumePeerRecord adds addresses from a signed peer record contained in a record envelope.
+This will return a boolean that indicates if the record was successfully processed and added
+into the AddressBook.</p>
+
+    <div class='pre p1 fill-light mt0'>consumePeerRecord(envelope: <a href="#envelope">Envelope</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>envelope</span> <code class='quiet'>(<a href="#envelope">Envelope</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='addressbookgetrawenvelope'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>getRawEnvelope(peerId)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/address-book.js#L133-L141'>
+      <span>src/peer-store/address-book.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Get the raw Envelope for a peer. Returns
+undefined if no Envelope is found.</p>
+
+    <div class='pre p1 fill-light mt0'>getRawEnvelope(peerId: PeerId): (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>peerId</span> <code class='quiet'>(PeerId)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a>)</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='addressbookgetpeerrecord'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>getPeerRecord(peerId)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/address-book.js#L149-L157'>
+      <span>src/peer-store/address-book.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Get an Envelope containing a PeerRecord for the given peer.
+Returns undefined if no record exists.</p>
+
+    <div class='pre p1 fill-light mt0'>getPeerRecord(peerId: PeerId): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;(<a href="#envelope">Envelope</a> | void)></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>peerId</span> <code class='quiet'>(PeerId)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;(<a href="#envelope">Envelope</a> | void)></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
     <div class='border-bottom' id='addressbookset'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
@@ -13225,14 +13207,17 @@ of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/address-book.js#L59-L95'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/address-book.js#L169-L209'>
       <span>src/peer-store/address-book.js</span>
       </a>
     
   </div>
   
 
-  <p>Set known multiaddrs of a provided peer.</p>
+  <p>Set known multiaddrs of a provided peer.
+This will replace previously stored multiaddrs, if available.
+Replacing stored multiaddrs might result in losing obtained certified addresses.
+If you are not sure, it's recommended to use <code>add</code> instead.</p>
 
     <div class='pre p1 fill-light mt0'>set(peerId: PeerId, multiaddrs: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;Multiaddr>): <a href="#addressbook">AddressBook</a></div>
   
@@ -13312,7 +13297,7 @@ of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/address-book.js#L104-L138'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/address-book.js#L218-L257'>
       <span>src/peer-store/address-book.js</span>
       </a>
     
@@ -13386,6 +13371,85 @@ If the peer is not known, it is set with the given addresses.</p>
       </div>
     </div>
   
+    <div class='border-bottom' id='addressbookget'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>get(peerId)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/address-book.js#L265-L273'>
+      <span>src/peer-store/address-book.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Get the known data of a provided peer.</p>
+
+    <div class='pre p1 fill-light mt0'>get(peerId: PeerId): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;data></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>peerId</span> <code class='quiet'>(PeerId)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;data></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
     <div class='border-bottom' id='addressbookgetmultiaddrsforpeer'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
@@ -13400,7 +13464,7 @@ If the peer is not known, it is set with the given addresses.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/address-book.js#L175-L194'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/address-book.js#L312-L331'>
       <span>src/peer-store/address-book.js</span>
       </a>
     
@@ -13489,7 +13553,7 @@ Returns <code>undefined</code> if there are no known multiaddrs for the given pe
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/address-book.js#L38-L43'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/address-book.js#L55-L65'>
       <span>src/peer-store/address-book.js</span>
       </a>
     
@@ -13545,7 +13609,7 @@ Returns <code>undefined</code> if there are no known multiaddrs for the given pe
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/proto-book.js#L31-L36'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/proto-book.js#L31-L36'>
       <span>src/peer-store/proto-book.js</span>
       </a>
     
@@ -13600,7 +13664,7 @@ Returns <code>undefined</code> if there are no known multiaddrs for the given pe
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/book.js#L15-L112'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/book.js#L15-L112'>
       <span>src/peer-store/book.js</span>
       </a>
     
@@ -13723,7 +13787,7 @@ Returns <code>undefined</code> if there are no known multiaddrs for the given pe
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/book.js#L34-L34'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/book.js#L34-L34'>
       <span>src/peer-store/book.js</span>
       </a>
     
@@ -13781,7 +13845,7 @@ Returns <code>undefined</code> if there are no known multiaddrs for the given pe
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/book.js#L42-L44'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/book.js#L42-L44'>
       <span>src/peer-store/book.js</span>
       </a>
     
@@ -13860,7 +13924,7 @@ Returns <code>undefined</code> if there are no known multiaddrs for the given pe
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/book.js#L84-L92'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/book.js#L84-L92'>
       <span>src/peer-store/book.js</span>
       </a>
     
@@ -13940,7 +14004,7 @@ Returns <code>undefined</code> if there is no available data for the given peer.
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/book.js#L99-L111'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/book.js#L99-L111'>
       <span>src/peer-store/book.js</span>
       </a>
     
@@ -14027,7 +14091,7 @@ Returns <code>undefined</code> if there is no available data for the given peer.
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/key-book.js#L19-L83'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/key-book.js#L19-L83'>
       <span>src/peer-store/key-book.js</span>
       </a>
     
@@ -14099,7 +14163,7 @@ Returns <code>undefined</code> if there is no available data for the given peer.
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/key-book.js#L36-L36'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/key-book.js#L36-L36'>
       <span>src/peer-store/key-book.js</span>
       </a>
     
@@ -14162,7 +14226,7 @@ Returns <code>undefined</code> if there is no available data for the given peer.
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/key-book.js#L46-L66'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/key-book.js#L46-L66'>
       <span>src/peer-store/key-book.js</span>
       </a>
     
@@ -14249,7 +14313,7 @@ Returns <code>undefined</code> if there is no available data for the given peer.
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/key-book.js#L74-L82'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/key-book.js#L74-L82'>
       <span>src/peer-store/key-book.js</span>
       </a>
     
@@ -14336,7 +14400,7 @@ Returns <code>undefined</code> if there is no available data for the given peer.
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/metadata-book.js#L23-L159'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/metadata-book.js#L22-L158'>
       <span>src/peer-store/metadata-book.js</span>
       </a>
     
@@ -14409,7 +14473,7 @@ protocols of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/metadata-book.js#L43-L43'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/metadata-book.js#L42-L42'>
       <span>src/peer-store/metadata-book.js</span>
       </a>
     
@@ -14422,7 +14486,7 @@ protocols of a peer.</p>
   
     <p>
       Type:
-      <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://nodejs.org/api/buffer.html">Buffer</a>>>
+      <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>>>
     </p>
   
   
@@ -14472,7 +14536,7 @@ protocols of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/metadata-book.js#L54-L68'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/metadata-book.js#L53-L67'>
       <span>src/peer-store/metadata-book.js</span>
       </a>
     
@@ -14481,7 +14545,7 @@ protocols of a peer.</p>
 
   <p>Set metadata key and value of a provided peer.</p>
 
-    <div class='pre p1 fill-light mt0'>set(peerId: PeerId, key: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, value: <a href="https://nodejs.org/api/buffer.html">Buffer</a>): <a href="#protobook">ProtoBook</a></div>
+    <div class='pre p1 fill-light mt0'>set(peerId: PeerId, key: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, value: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>): <a href="#protobook">ProtoBook</a></div>
   
   
 
@@ -14515,7 +14579,7 @@ protocols of a peer.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>value</span> <code class='quiet'>(<a href="https://nodejs.org/api/buffer.html">Buffer</a>)</code>
+            <span class='code bold'>value</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
 	    metadata value
 
           </div>
@@ -14569,7 +14633,7 @@ protocols of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/metadata-book.js#L74-L89'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/metadata-book.js#L73-L88'>
       <span>src/peer-store/metadata-book.js</span>
       </a>
     
@@ -14691,7 +14755,7 @@ protocols of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/metadata-book.js#L96-L102'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/metadata-book.js#L95-L101'>
       <span>src/peer-store/metadata-book.js</span>
       </a>
     
@@ -14700,7 +14764,7 @@ protocols of a peer.</p>
 
   <p>Get the known data of a provided peer.</p>
 
-    <div class='pre p1 fill-light mt0'>get(peerId: PeerId): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://nodejs.org/api/buffer.html">Buffer</a>></div>
+    <div class='pre p1 fill-light mt0'>get(peerId: PeerId): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>></div>
   
   
 
@@ -14731,7 +14795,7 @@ protocols of a peer.</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://nodejs.org/api/buffer.html">Buffer</a>></code>:
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map">Map</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>></code>:
         
 
       
@@ -14770,7 +14834,7 @@ protocols of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/metadata-book.js#L110-L117'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/metadata-book.js#L109-L116'>
       <span>src/peer-store/metadata-book.js</span>
       </a>
     
@@ -14779,7 +14843,7 @@ protocols of a peer.</p>
 
   <p>Get specific metadata value, if it exists</p>
 
-    <div class='pre p1 fill-light mt0'>getValue(peerId: PeerId, key: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://nodejs.org/api/buffer.html">Buffer</a></div>
+    <div class='pre p1 fill-light mt0'>getValue(peerId: PeerId, key: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></div>
   
   
 
@@ -14818,7 +14882,7 @@ protocols of a peer.</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://nodejs.org/api/buffer.html">Buffer</a></code>:
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></code>:
         
 
       
@@ -14857,7 +14921,7 @@ protocols of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/metadata-book.js#L124-L136'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/metadata-book.js#L123-L135'>
       <span>src/peer-store/metadata-book.js</span>
       </a>
     
@@ -14936,7 +15000,7 @@ protocols of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/metadata-book.js#L144-L158'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/metadata-book.js#L143-L157'>
       <span>src/peer-store/metadata-book.js</span>
       </a>
     
@@ -15031,7 +15095,7 @@ protocols of a peer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/metadata-book.js#L33-L37'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/metadata-book.js#L32-L36'>
       <span>src/peer-store/metadata-book.js</span>
       </a>
     
@@ -15086,7 +15150,7 @@ protocols of a peer.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/proto-book.js#L21-L118'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/proto-book.js#L21-L118'>
       <span>src/peer-store/proto-book.js</span>
       </a>
     
@@ -15159,7 +15223,7 @@ protocols of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/proto-book.js#L42-L42'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/proto-book.js#L42-L42'>
       <span>src/peer-store/proto-book.js</span>
       </a>
     
@@ -15222,7 +15286,7 @@ protocols of a peer.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/proto-book.js#L53-L81'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/proto-book.js#L53-L81'>
       <span>src/peer-store/proto-book.js</span>
       </a>
     
@@ -15310,7 +15374,7 @@ If the peer was not known before, it will be added.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/proto-book.js#L90-L117'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/proto-book.js#L90-L117'>
       <span>src/peer-store/proto-book.js</span>
       </a>
     
@@ -15401,12 +15465,178 @@ If the peer was not known before, it will be added.</p>
   
   <div class='clearfix'>
     
+    <h3 class='fl m0' id='subscribe'>
+      subscribe
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/pubsub-adapter.js#L13-L17'>
+      <span>src/pubsub-adapter.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Subscribes to a given topic.</p>
+
+    <div class='pre p1 fill-light mt0'>subscribe(topic: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, handler: function (msg: InMessage)?): void</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>topic</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>handler</span> <code class='quiet'>(function (msg: InMessage)?)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='unsubscribe'>
+      unsubscribe
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/pubsub-adapter.js#L26-L36'>
+      <span>src/pubsub-adapter.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Unsubscribe from the given topic.</p>
+
+    <div class='pre p1 fill-light mt0'>unsubscribe(topic: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, handler: function (msg: InMessage)?): void</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>topic</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>handler</span> <code class='quiet'>(function (msg: InMessage)?)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>void</code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
     <h3 class='fl m0' id='persistentpeerstore'>
       PersistentPeerStore
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/persistent/index.js#L27-L334'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/persistent/index.js#L27-L347'>
       <span>src/peer-store/persistent/index.js</span>
       </a>
     
@@ -15455,6 +15685,14 @@ If the peer was not known before, it will be added.</p>
               </tr>
             </thead>
             <tbody class='mt1'>
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>$0.peerId</span> <code class='quiet'>any</code>
+  </td>
+  <td class='break-word'><span></span></td>
+</tr>
+
+
               
                 <tr>
   <td class='break-word'><span class='code bold'>$0.datastore</span> <code class='quiet'>any</code>
@@ -15520,7 +15758,7 @@ If the peer was not known before, it will be added.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/persistent/index.js#L40-L40'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/persistent/index.js#L41-L41'>
       <span>src/peer-store/persistent/index.js</span>
       </a>
     
@@ -15578,7 +15816,7 @@ If the peer was not known before, it will be added.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/persistent/index.js#L45-L45'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/persistent/index.js#L46-L46'>
       <span>src/peer-store/persistent/index.js</span>
       </a>
     
@@ -15636,7 +15874,7 @@ If the peer was not known before, it will be added.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/persistent/index.js#L51-L51'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/persistent/index.js#L52-L52'>
       <span>src/peer-store/persistent/index.js</span>
       </a>
     
@@ -15699,7 +15937,7 @@ If the peer was not known before, it will be added.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/peer-store/persistent/index.js#L61-L76'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/peer-store/persistent/index.js#L62-L77'>
       <span>src/peer-store/persistent/index.js</span>
       </a>
     
@@ -15773,7 +16011,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/registrar.js#L16-L100'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/registrar.js#L16-L100'>
       <span>src/registrar.js</span>
       </a>
     
@@ -15878,7 +16116,7 @@ If the peer was not known before, it will be added.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/registrar.js#L34-L34'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/registrar.js#L34-L34'>
       <span>src/registrar.js</span>
       </a>
     
@@ -15941,7 +16179,7 @@ If the peer was not known before, it will be added.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/registrar.js#L55-L57'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/registrar.js#L55-L57'>
       <span>src/registrar.js</span>
       </a>
     
@@ -16020,7 +16258,7 @@ If the peer was not known before, it will be added.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/registrar.js#L64-L78'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/registrar.js#L64-L78'>
       <span>src/registrar.js</span>
       </a>
     
@@ -16100,7 +16338,7 @@ If the peer was not known before, it will be added.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/registrar.js#L85-L87'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/registrar.js#L85-L87'>
       <span>src/registrar.js</span>
       </a>
     
@@ -16180,7 +16418,7 @@ If the peer was not known before, it will be added.</p>
   <div class='clearfix'>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/registrar.js#L95-L99'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/registrar.js#L95-L99'>
       <span>src/registrar.js</span>
       </a>
     
@@ -16275,7 +16513,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/ping/index.js#L21-L43'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/ping/index.js#L21-L43'>
       <span>src/ping/index.js</span>
       </a>
     
@@ -16358,7 +16596,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/ping/index.js#L49-L51'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/ping/index.js#L49-L51'>
       <span>src/ping/index.js</span>
       </a>
     
@@ -16425,7 +16663,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/ping/index.js#L57-L59'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/ping/index.js#L57-L59'>
       <span>src/ping/index.js</span>
       </a>
     
@@ -16492,7 +16730,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L52-L82'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L55-L85'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -16591,7 +16829,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L56-L56'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L59-L59'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -16644,7 +16882,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L61-L61'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L64-L64'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -16697,7 +16935,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L72-L72'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L75-L75'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -16750,7 +16988,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L77-L77'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L80-L80'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -16803,7 +17041,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L89-L110'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L92-L118'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -16878,7 +17116,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L116-L126'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L124-L134'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -16945,7 +17183,7 @@ If the peer was not known before, it will be added.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L137-L182'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L145-L206'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -17022,7 +17260,7 @@ an error will be thrown.</p>
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L193-L202'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L217-L226'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -17132,12 +17370,74 @@ an error will be thrown.</p>
   
   <div class='clearfix'>
     
+    <h3 class='fl m0' id='_getselfpeerrecord'>
+      _getSelfPeerRecord
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L316-L337'>
+      <span>src/identify/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Get self signed peer record raw envelope.</p>
+
+    <div class='pre p1 fill-light mt0'>_getSelfPeerRecord(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
     <h3 class='fl m0' id='getcleanmultiaddr'>
       getCleanMultiaddr
     </h3>
     
     
-      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/0e18735b8cbbdda671aeff05d3ed086cc29095a6/src/identify/index.js#L35-L44'>
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/identify/index.js#L38-L47'>
       <span>src/identify/index.js</span>
       </a>
     
@@ -17146,7 +17446,7 @@ an error will be thrown.</p>
 
   <p>Takes the <code>addr</code> and converts it to a Multiaddr if possible</p>
 
-    <div class='pre p1 fill-light mt0'>getCleanMultiaddr(addr: (<a href="https://nodejs.org/api/buffer.html">Buffer</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)): (Multiaddr | null)</div>
+    <div class='pre p1 fill-light mt0'>getCleanMultiaddr(addr: (<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)): (Multiaddr | null)</div>
   
   
 
@@ -17163,7 +17463,7 @@ an error will be thrown.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>addr</span> <code class='quiet'>((<a href="https://nodejs.org/api/buffer.html">Buffer</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>))</code>
+            <span class='code bold'>addr</span> <code class='quiet'>((<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a> | <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>))</code>
 	    
           </div>
           
@@ -17191,6 +17491,1076 @@ an error will be thrown.</p>
   
 
   
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='envelope'>
+      Envelope
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/envelope/index.js#L21-L83'>
+      <span>src/record/envelope/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>The Envelope is responsible for keeping an arbitrary signed record
+by a libp2p peer.</p>
+
+    <div class='pre p1 fill-light mt0'>new Envelope($0: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, params: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>$0</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
+	    
+          </div>
+          
+          <table class='mt1 mb2 fixed-table h5 col-12'>
+            <colgroup>
+              <col width='30%' />
+              <col width='70%' />
+            </colgroup>
+            <thead>
+              <tr class='bold fill-light'>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody class='mt1'>
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>$0.peerId</span> <code class='quiet'>any</code>
+  </td>
+  <td class='break-word'><span></span></td>
+</tr>
+
+
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>$0.payloadType</span> <code class='quiet'>any</code>
+  </td>
+  <td class='break-word'><span></span></td>
+</tr>
+
+
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>$0.payload</span> <code class='quiet'>any</code>
+  </td>
+  <td class='break-word'><span></span></td>
+</tr>
+
+
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>$0.signature</span> <code class='quiet'>any</code>
+  </td>
+  <td class='break-word'><span></span></td>
+</tr>
+
+
+              
+            </tbody>
+          </table>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>params</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Static Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='envelopecreatefromprotobuf'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>createFromProtobuf(data)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/envelope/index.js#L121-L131'>
+      <span>src/record/envelope/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Unmarshal a serialized Envelope protobuf message.</p>
+
+    <div class='pre p1 fill-light mt0'>createFromProtobuf(data: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="#envelope">Envelope</a>></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>data</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="#envelope">Envelope</a>></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='envelopeseal'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>seal(record, peerId)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/envelope/index.js#L141-L155'>
+      <span>src/record/envelope/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Seal marshals the given Record, places the marshaled bytes inside an Envelope
+and signs it with the given peerId's private key.</p>
+
+    <div class='pre p1 fill-light mt0'>seal(record: Record, peerId: PeerId): <a href="#envelope">Envelope</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>record</span> <code class='quiet'>(Record)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>peerId</span> <code class='quiet'>(PeerId)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="#envelope">Envelope</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='envelopeopenandcertify'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>openAndCertify(data, domain)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/envelope/index.js#L164-L173'>
+      <span>src/record/envelope/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Open and certify a given marshalled envelope.
+Data is unmarshalled and the signature validated for the given domain.</p>
+
+    <div class='pre p1 fill-light mt0'>openAndCertify(data: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>, domain: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="#envelope">Envelope</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>data</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>domain</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="#envelope">Envelope</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='envelopemarshal'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>marshal()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/envelope/index.js#L44-L59'>
+      <span>src/record/envelope/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Marshal the envelope content.</p>
+
+    <div class='pre p1 fill-light mt0'>marshal(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='envelopeequals'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>equals(other)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/envelope/index.js#L66-L71'>
+      <span>src/record/envelope/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Verifies if the other Envelope is identical to this one.</p>
+
+    <div class='pre p1 fill-light mt0'>equals(other: <a href="#envelope">Envelope</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>other</span> <code class='quiet'>(<a href="#envelope">Envelope</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='envelopevalidate'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>validate(domain)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/envelope/index.js#L78-L82'>
+      <span>src/record/envelope/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Validate envelope data signature for the given domain.</p>
+
+    <div class='pre p1 fill-light mt0'>validate(domain: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>domain</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='formatsignaturepayload'>
+      formatSignaturePayload
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/envelope/index.js#L92-L114'>
+      <span>src/record/envelope/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Helper function that prepares a Uint8Array to sign or verify a signature.</p>
+
+    <div class='pre p1 fill-light mt0'>formatSignaturePayload</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>domain</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>payloadType</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>payload</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='peerrecord'>
+      PeerRecord
+    </h3>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/peer-record/index.js#L18-L80'>
+      <span>src/record/peer-record/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>The PeerRecord is used for distributing peer routing records across the network.
+It contains the peer's reachable listen addresses.</p>
+
+    <div class='pre p1 fill-light mt0'>new PeerRecord($0: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, params: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
+  
+  
+    <p>
+      Extends
+      
+        Record
+      
+    </p>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>$0</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
+	    
+          </div>
+          
+          <table class='mt1 mb2 fixed-table h5 col-12'>
+            <colgroup>
+              <col width='30%' />
+              <col width='70%' />
+            </colgroup>
+            <thead>
+              <tr class='bold fill-light'>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody class='mt1'>
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>$0.peerId</span> <code class='quiet'>any</code>
+  </td>
+  <td class='break-word'><span></span></td>
+</tr>
+
+
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>$0.multiaddrs</span> <code class='quiet'>any</code>
+  
+    (default <code>[]</code>)
+  </td>
+  <td class='break-word'><span></span></td>
+</tr>
+
+
+              
+                <tr>
+  <td class='break-word'><span class='code bold'>$0.seqNumber</span> <code class='quiet'>any</code>
+  
+    (default <code>Date.now()</code>)
+  </td>
+  <td class='break-word'><span></span></td>
+</tr>
+
+
+              
+            </tbody>
+          </table>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>params</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Static Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='peerrecordcreatefromprotobuf'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>createFromProtobuf(buf)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/peer-record/index.js#L87-L96'>
+      <span>src/record/peer-record/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Unmarshal Peer Record Protobuf.</p>
+
+    <div class='pre p1 fill-light mt0'>createFromProtobuf(buf: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>): <a href="#peerrecord">PeerRecord</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>buf</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>)</code>
+	    marshaled peer record.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="#peerrecord">PeerRecord</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='peerrecordmarshal'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>marshal()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/peer-record/index.js#L41-L55'>
+      <span>src/record/peer-record/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Marshal a record to be used in an envelope.</p>
+
+    <div class='pre p1 fill-light mt0'>marshal(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='peerrecordequals'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>equals(other)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    
+      <a class='fr fill-darken0 round round pad1x quiet h5' href='https://github.com/libp2p/js-libp2p/blob/32e7a83c39530233998dcd3878a8bb5facc05a56/src/record/peer-record/index.js#L62-L79'>
+      <span>src/record/peer-record/index.js</span>
+      </a>
+    
+  </div>
+  
+
+  <p>Returns true if <code>this</code> record equals the <code>other</code>.</p>
+
+    <div class='pre p1 fill-light mt0'>equals(other: Record): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>other</span> <code class='quiet'>(Record)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
 
   
 
