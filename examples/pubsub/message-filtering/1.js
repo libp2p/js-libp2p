@@ -8,6 +8,7 @@ const { NOISE } = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
 const Gossipsub = require('libp2p-gossipsub')
 const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const createNode = async () => {
   const node = await Libp2p.create({
@@ -43,29 +44,34 @@ const createNode = async () => {
   await node2.dial(node3.peerId)
 
   //subscribe
-  await node1.pubsub.subscribe(topic, (msg) => {
-    console.log(`node1 received: ${msg.data.toString()}`)
+  node1.pubsub.on(topic, (msg) => {
+    console.log(`node1 received: ${uint8ArrayToString(msg.data)}`)
   })
+  await node1.pubsub.subscribe(topic)
 
-  await node2.pubsub.subscribe(topic, (msg) => {
-    console.log(`node2 received: ${msg.data.toString()}`)
+  node2.pubsub.on(topic, (msg) => {
+    console.log(`node2 received: ${uint8ArrayToString(msg.data)}`)
   })
+  await node2.pubsub.subscribe(topic)
 
-  await node3.pubsub.subscribe(topic, (msg) => {
-    console.log(`node3 received: ${msg.data.toString()}`)
+  node3.pubsub.on(topic, (msg) => {
+    console.log(`node3 received: ${uint8ArrayToString(msg.data)}`)
   })
+  await node3.pubsub.subscribe(topic)
 
-  const validateFruit = (msgTopic, peer, msg) => {
-    const fruit = msg.data.toString();
+  const validateFruit = (msgTopic, msg) => {
+    const fruit = uint8ArrayToString(msg.data)
     const validFruit = ['banana', 'apple', 'orange']
-    const valid = validFruit.includes(fruit);
-    return valid;
+
+    if (!validFruit.includes(fruit)) {
+      throw new Error('no valid fruit received')
+    }
   }
 
   //validate fruit
-  node1.pubsub._pubsub.topicValidators.set(topic, validateFruit);
-  node2.pubsub._pubsub.topicValidators.set(topic, validateFruit);
-  node3.pubsub._pubsub.topicValidators.set(topic, validateFruit);
+  node1.pubsub.topicValidators.set(topic, validateFruit)
+  node2.pubsub.topicValidators.set(topic, validateFruit)
+  node3.pubsub.topicValidators.set(topic, validateFruit)
 
   // node1 publishes "fruits" every five seconds
   var count = 0;

@@ -46,6 +46,8 @@
   * [`pubsub.publish`](#pubsubpublish)
   * [`pubsub.subscribe`](#pubsubsubscribe)
   * [`pubsub.unsubscribe`](#pubsubunsubscribe)
+  * [`pubsub.on`](#pubsubon)
+  * [`pubsub.removeListener`](#pubsubremovelistener)
   * [`connectionManager.get`](#connectionmanagerget)
   * [`connectionManager.setPeerValue`](#connectionmanagersetpeervalue)
   * [`connectionManager.size`](#connectionmanagersize)
@@ -1327,15 +1329,75 @@ await libp2p.pubsub.publish(topic, data)
 
 ### pubsub.subscribe
 
-Subscribes the given handler to a pubsub topic.
+Subscribes to a pubsub topic.
 
-`libp2p.pubsub.subscribe(topic, handler)`
+`libp2p.pubsub.subscribe(topic)`
 
 #### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
 | topic | `string` | topic to subscribe |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `void` |  |
+
+#### Example
+
+```js
+const topic = 'topic'
+const handler = (msg) => {
+  // msg.data - pubsub data received
+}
+
+libp2p.pubsub.on(topic, handler)
+libp2p.pubsub.subscribe(topic)
+```
+
+### pubsub.unsubscribe
+
+Unsubscribes from a pubsub topic.
+
+`libp2p.pubsub.unsubscribe(topic)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| topic | `string` | topic to unsubscribe |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `void` |  |
+
+#### Example
+
+```js
+const topic = 'topic'
+const handler = (msg) => {
+  // msg.data - pubsub data received
+}
+
+libp2p.pubsub.removeListener(topic handler)
+libp2p.pubsub.unsubscribe(topic)
+```
+
+## pubsub.on
+
+A Pubsub router is an [EventEmitter](https://nodejs.org/api/events.html#events_class_eventemitter) and uses its events for pubsub message handlers.
+
+`libp2p.pubsub.on(topic, handler)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| topic | `string` | topic to listen |
 | handler | `function({ from: string, data: Uint8Array, seqno: Uint8Array, topicIDs: Array<string>, signature: Uint8Array, key: Uint8Array })` | handler for new data on topic |
 
 #### Returns
@@ -1352,21 +1414,22 @@ const handler = (msg) => {
   // msg.data - pubsub data received
 }
 
-libp2p.pubsub.subscribe(topic, handler)
+libp2p.pubsub.on(topic, handler)
+libp2p.pubsub.subscribe(topic)
 ```
 
-### pubsub.unsubscribe
+## pubsub.removeListener
 
-Unsubscribes the given handler from a pubsub topic. If no handler is provided, all handlers for the topic are removed.
+A Pubsub router is an [EventEmitter](https://nodejs.org/api/events.html#events_class_eventemitter) and uses its events for pubsub message handlers.
 
-`libp2p.pubsub.unsubscribe(topic, handler)`
+`libp2p.pubsub.removeListener(topic, handler)`
 
 #### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| topic | `string` | topic to unsubscribe |
-| handler | `function(<object>)` | handler subscribed |
+| topic | `string` | topic to remove listener |
+| handler | `function({ from: string, data: Uint8Array, seqno: Uint8Array, topicIDs: Array<string>, signature: Uint8Array, key: Uint8Array })` | handler for new data on topic |
 
 #### Returns
 
@@ -1382,7 +1445,67 @@ const handler = (msg) => {
   // msg.data - pubsub data received
 }
 
-libp2p.pubsub.unsubscribe(topic, handler)
+libp2p.pubsub.removeListener(topic handler)
+libp2p.pubsub.unsubscribe(topic)
+```
+
+## pubsub.topicValidators.set
+
+Pubsub routers support message validators per topic, which will validate the message before its propagations. Set is used to specify a validator for a topic.
+
+`libp2p.pubsub.topicValidators.set(topic, validator)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| topic | `string` | topic to bind a validator |
+| handler | `function({ topic: string, msg: RPC })` | validator for new data on topic |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Map<string, function(string, RPC)>` | The `Map` object |
+
+#### Example
+
+```js
+const topic = 'topic'
+const validateMessage = (msgTopic, msg) => {
+  const input = uint8ArrayToString(msg.data)
+  const validInputs = ['a', 'b', 'c']
+
+  if (!validInputs.includes(input)) {
+    throw new Error('no valid input received')
+  }
+}
+libp2p.pubsub.topicValidators.set(topic, validateMessage)
+```
+
+## pubsub.topicValidators.delete
+
+Pubsub routers support message validators per topic, which will validate the message before its propagations. Delete is used to remove a validator for a topic.
+
+`libp2p.pubsub.topicValidators.delete(topic)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| topic | `string` | topic to remove a validator |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | `true` if an element in the Map object existed and has been removed, or `false` if the element does not exist. |
+
+#### Example
+
+```js
+const topic = 'topic'
+libp2p.pubsub.topicValidators.delete(topic)
 ```
 
 ### connectionManager.get
