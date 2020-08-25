@@ -47,13 +47,15 @@ node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
 
 await node1.dial(node2.peerId)
 
-await node1.pubsub.subscribe(topic, (msg) => {
-  console.log(`node1 received: ${msg.data.toString()}`)
+node1.pubsub.on(topic, (msg) => {
+  console.log(`node1 received: ${uint8ArrayToString(msg.data)}`)
 })
+await node1.pubsub.subscribe(topic)
 
-await node2.pubsub.subscribe(topic, (msg) => {
-  console.log(`node2 received: ${msg.data.toString()}`)
+node2.pubsub.on(topic, (msg) => {
+  console.log(`node2 received: ${uint8ArrayToString(msg.data)}`)
 })
+await node2.pubsub.subscribe(topic)
 
 // node2 publishes "news" every second
 setInterval(() => {

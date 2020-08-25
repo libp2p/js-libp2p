@@ -11,7 +11,6 @@ const PeerId = require('peer-id')
 
 const peerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
-const pubsub = require('./pubsub')
 const getPeer = require('./get-peer')
 const { validate: validateConfig } = require('./config')
 const { codes, messages } = require('./errors')
@@ -25,6 +24,7 @@ const Metrics = require('./metrics')
 const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
+const PubsubAdapter = require('./pubsub-adapter')
 const PersistentPeerStore = require('./peer-store/persistent')
 const Registrar = require('./registrar')
 const ping = require('./ping')
@@ -185,9 +185,11 @@ class Libp2p extends EventEmitter {
       })
     }
 
-    // start pubsub
+    // Create pubsub if provided
     if (this._modules.pubsub) {
-      this.pubsub = pubsub(this, this._modules.pubsub, this._config.pubsub)
+      const Pubsub = this._modules.pubsub
+      // using pubsub adapter with *DEPRECATED* handlers functionality
+      this.pubsub = PubsubAdapter(Pubsub, this, this._config.pubsub)
     }
 
     // Attach remaining APIs

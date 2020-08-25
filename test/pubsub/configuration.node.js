@@ -42,13 +42,13 @@ describe('Pubsub subsystem is configurable', () => {
     })
 
     libp2p = await create(customOptions)
-    expect(libp2p.pubsub._pubsub.started).to.equal(false)
+    expect(libp2p.pubsub.started).to.equal(false)
 
     await libp2p.start()
-    expect(libp2p.pubsub._pubsub.started).to.equal(true)
+    expect(libp2p.pubsub.started).to.equal(true)
 
     await libp2p.stop()
-    expect(libp2p.pubsub._pubsub.started).to.equal(false)
+    expect(libp2p.pubsub.started).to.equal(false)
   })
 
   it('should not start if disabled once libp2p starts', async () => {
@@ -67,10 +67,10 @@ describe('Pubsub subsystem is configurable', () => {
     })
 
     libp2p = await create(customOptions)
-    expect(libp2p.pubsub._pubsub.started).to.equal(false)
+    expect(libp2p.pubsub.started).to.equal(false)
 
     await libp2p.start()
-    expect(libp2p.pubsub._pubsub.started).to.equal(false)
+    expect(libp2p.pubsub.started).to.equal(false)
   })
 
   it('should allow a manual start', async () => {
@@ -90,9 +90,9 @@ describe('Pubsub subsystem is configurable', () => {
 
     libp2p = await create(customOptions)
     await libp2p.start()
-    expect(libp2p.pubsub._pubsub.started).to.equal(false)
+    expect(libp2p.pubsub.started).to.equal(false)
 
     await libp2p.pubsub.start()
-    expect(libp2p.pubsub._pubsub.started).to.equal(true)
+    expect(libp2p.pubsub.started).to.equal(true)
   })
 })

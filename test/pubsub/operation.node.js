@@ -66,8 +66,8 @@ describe('Pubsub subsystem operates correctly', () => {
       expect(connection).to.exist()
 
       return Promise.all([
-        pWaitFor(() => libp2p.pubsub._pubsub.peers.size === 1),
-        pWaitFor(() => remoteLibp2p.pubsub._pubsub.peers.size === 1)
+        pWaitFor(() => libp2p.pubsub.peers.size === 1),
+        pWaitFor(() => remoteLibp2p.pubsub.peers.size === 1)
       ])
     })
 
@@ -141,14 +141,14 @@ describe('Pubsub subsystem operates correctly', () => {
       const connection = await libp2p.dial(remotePeerId)
 
       expect(connection).to.exist()
-      expect(libp2p.pubsub._pubsub.peers.size).to.be.eql(0)
-      expect(remoteLibp2p.pubsub._pubsub.peers.size).to.be.eql(0)
+      expect(libp2p.pubsub.peers.size).to.be.eql(0)
+      expect(remoteLibp2p.pubsub.peers.size).to.be.eql(0)
 
       remoteLibp2p.pubsub.start()
 
       return Promise.all([
-        pWaitFor(() => libp2p.pubsub._pubsub.peers.size === 1),
-        pWaitFor(() => remoteLibp2p.pubsub._pubsub.peers.size === 1)
+        pWaitFor(() => libp2p.pubsub.peers.size === 1),
+        pWaitFor(() => remoteLibp2p.pubsub.peers.size === 1)
       ])
     })
 
@@ -164,8 +164,8 @@ describe('Pubsub subsystem operates correctly', () => {
       remoteLibp2p.pubsub.start()
 
       await Promise.all([
-        pWaitFor(() => libp2p.pubsub._pubsub.peers.size === 1),
-        pWaitFor(() => remoteLibp2p.pubsub._pubsub.peers.size === 1)
+        pWaitFor(() => libp2p.pubsub.peers.size === 1),
+        pWaitFor(() => remoteLibp2p.pubsub.peers.size === 1)
       ])
 
       let subscribedTopics = libp2p.pubsub.getTopics()
