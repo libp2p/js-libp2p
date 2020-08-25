@@ -11,10 +11,9 @@ module.exports = (PubsubRouter, libp2p, options) => {
      * @returns {void}
      */
     subscribe (topic, handler) {
-      super.subscribe(topic)
-
       // Bind provided handler
       handler && this.on(topic, handler)
+      super.subscribe(topic)
     }
 
     /**
@@ -31,7 +30,9 @@ module.exports = (PubsubRouter, libp2p, options) => {
         this.removeListener(topic, handler)
       }
 
-      super.unsubscriber(topic)
+      if (this.listenerCount(topic) === 0) {
+        super.unsubscribe(topic)
+      }
     }
   }
 

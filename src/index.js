@@ -190,7 +190,6 @@ class Libp2p extends EventEmitter {
       const Pubsub = this._modules.pubsub
       // using pubsub adapter with *DEPRECATED* handlers functionality
       this.pubsub = PubsubAdapter(Pubsub, this, this._config.pubsub)
-      // this.pubsub = new Pubsub(this, this._config.pubsub)
     }
 
     // Attach remaining APIs
