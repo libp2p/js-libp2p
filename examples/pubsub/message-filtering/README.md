@@ -44,31 +44,36 @@ Now we' can subscribe to the fruit topic and log incoming messages.
 ```JavaScript
 const topic = 'fruit'
 
-await node1.pubsub.subscribe(topic, (msg) => {
-  console.log(`node1 received: ${msg.data.toString()}`)
+node1.pubsub.on(topic, (msg) => {
+  console.log(`node1 received: ${uint8ArrayToString(msg.data)}`)
 })
+await node1.pubsub.subscribe(topic)
 
-await node2.pubsub.subscribe(topic, (msg) => {
-  console.log(`node2 received: ${msg.data.toString()}`)
+node2.pubsub.on(topic, (msg) => {
+  console.log(`node2 received: ${uint8ArrayToString(msg.data)}`)
 })
+await node2.pubsub.subscribe(topic)
 
-await node3.pubsub.subscribe(topic, (msg) => {
-  console.log(`node3 received: ${msg.data.toString()}`)
+node3.pubsub.on(topic, (msg) => {
+  console.log(`node3 received: ${uint8ArrayToString(msg.data)}`)
 })
+await node3.pubsub.subscribe(topic)
 ```
 Finally, let's define the additional filter in the fruit topic.
 
 ```JavaScript
-const validateFruit = (msgTopic, peer, msg) => {
-  const fruit = msg.data.toString();
+const validateFruit = (msgTopic, msg) => {
+  const fruit = uint8ArrayToString(msg.data)
   const validFruit = ['banana', 'apple', 'orange']
-  const valid = validFruit.includes(fruit);
-  return valid;
+
+  if (!validFruit.includes(fruit)) {
+    throw new Error('no valid fruit received')
+  }
 }
 
-node1.pubsub._pubsub.topicValidators.set(topic, validateFruit);
-node2.pubsub._pubsub.topicValidators.set(topic, validateFruit);
-node3.pubsub._pubsub.topicValidators.set(topic, validateFruit);
+node1.pubsub.topicValidators.set(topic, validateFruit)
+node2.pubsub.topicValidators.set(topic, validateFruit)
+node3.pubsub.topicValidators.set(topic, validateFruit)
 ```
 
 In this example, node one has an outdated version of the system, or is a malicious node. When it tries to publish fruit, the messages are re-shared and all the nodes share the message. However, when it tries to publish a vehicle the message is not re-shared.
