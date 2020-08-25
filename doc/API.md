@@ -1451,7 +1451,7 @@ libp2p.pubsub.unsubscribe(topic)
 
 ## pubsub.topicValidators.set
 
-Pubsub routers support message validators per topic, which will validate the message before its propagations. Set is used to add a validator for a topic.
+Pubsub routers support message validators per topic, which will validate the message before its propagations. Set is used to specify a validator for a topic.
 
 `libp2p.pubsub.topicValidators.set(topic, validator)`
 
