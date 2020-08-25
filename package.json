@@ -109,7 +109,7 @@
     "libp2p-noise": "^2.0.0",
     "libp2p-secio": "^0.13.1",
     "libp2p-tcp": "^0.15.1",
-    "libp2p-webrtc-star": "^0.19.0",
+    "libp2p-webrtc-star": "^0.20.0",
     "libp2p-websockets": "^0.14.0",
     "multihashes": "^3.0.1",
     "nock": "^13.0.3",
