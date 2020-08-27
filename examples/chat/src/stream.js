@@ -29,7 +29,7 @@ function streamToConsole(stream) {
       // For each chunk of data
       for await (const msg of source) {
         // Output the data as a utf8 string
-        console.log('> ' + uint8ArrayToString(msg).replace('\n', ''))
+        console.log('> ' + msg.toString().replace('\n', ''))
       }
     }
   )

@@ -2,11 +2,7 @@
 This example shows how to set up a private network of libp2p nodes.
 
 ## Setup
-Install dependencies:
-
-```
-npm install
-```
+1. Install the modules in the libp2p root directory, `npm install`.
 
 ## Run
 Running the example will cause two nodes with the same swarm key to be started and exchange basic information.
