@@ -7,6 +7,8 @@ chai.use(require('chai-bytes'))
 chai.use(require('chai-as-promised'))
 const { expect } = chai
 
+const uint8arrayFromString = require('uint8arrays/from-string')
+const uint8arrayEquals = require('uint8arrays/equals')
 const Envelope = require('../../src/record/envelope')
 const Record = require('libp2p-interfaces/src/record')
 const { codes: ErrorCodes } = require('../../src/errors')
@@ -14,7 +16,7 @@ const { codes: ErrorCodes } = require('../../src/errors')
 const peerUtils = require('../utils/creators/peer')
 
 const domain = 'libp2p-testing'
-const codec = '/libp2p/testdata'
+const codec = uint8arrayFromString('/libp2p/testdata')
 
 class TestRecord extends Record {
   constructor (data) {
@@ -23,16 +25,16 @@ class TestRecord extends Record {
   }
 
   marshal () {
-    return Buffer.from(this.data)
+    return uint8arrayFromString(this.data)
   }
 
   equals (other) {
-    return Buffer.compare(this.data, other.data)
+    return uint8arrayEquals(this.data, other.data)
   }
 }
 
 describe('Envelope', () => {
-  const payloadType = Buffer.from(codec)
+  const payloadType = codec
   let peerId
   let testRecord
 
@@ -43,7 +45,7 @@ describe('Envelope', () => {
 
   it('creates an envelope with a random key', () => {
     const payload = testRecord.marshal()
-    const signature = Buffer.from(Math.random().toString(36).substring(7))
+    const signature = uint8arrayFromString(Math.random().toString(36).substring(7))
 
     const envelope = new Envelope({
       peerId,
@@ -63,7 +65,7 @@ describe('Envelope', () => {
     const envelope = await Envelope.seal(testRecord, peerId)
     expect(envelope).to.exist()
     expect(envelope.peerId.equals(peerId)).to.eql(true)
-    expect(envelope.payloadType).to.equalBytes(payloadType)
+    expect(envelope.payloadType).to.eql(payloadType)
     expect(envelope.payload).to.exist()
     expect(envelope.signature).to.exist()
   })
