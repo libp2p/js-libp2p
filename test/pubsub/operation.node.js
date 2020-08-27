@@ -311,7 +311,11 @@ describe('Pubsub subsystem operates correctly', () => {
       expect(handlerSpy.args.map(([message]) => uint8ArrayToString(message.data))).to.include.members(['message1', 'message2'])
 
       // Disconnect the first connection (this acts as a delayed reconnect)
+      const libp2pConnUpdateSpy = sinon.spy(libp2p.connectionManager.connections, 'set')
+      const remoteLibp2pConnUpdateSpy = sinon.spy(remoteLibp2p.connectionManager.connections, 'set')
+
       await originalConnection.close()
+      await pWaitFor(() => libp2pConnUpdateSpy.callCount === 1 && remoteLibp2pConnUpdateSpy.callCount === 1)
 
       // Verify messages go both ways after the disconnect
       handlerSpy.resetHistory()
