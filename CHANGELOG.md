@@ -1,3 +1,13 @@
+<a name="0.29.0-rc.1"></a>
+# [0.29.0-rc.1](https://github.com/libp2p/js-libp2p/compare/v0.29.0-rc.0...v0.29.0-rc.1) (2020-08-27)
+
+
+### Bug Fixes
+
+* peer record interop with go ([#739](https://github.com/libp2p/js-libp2p/issues/739)) ([c4c7ef9](https://github.com/libp2p/js-libp2p/commit/c4c7ef9))
+
+
+
 <a name="0.29.0-rc.0"></a>
 # [0.29.0-rc.0](https://github.com/libp2p/js-libp2p/compare/v0.28.10...v0.29.0-rc.0) (2020-08-25)
 
