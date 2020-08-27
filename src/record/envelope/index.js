@@ -140,7 +140,7 @@ Envelope.createFromProtobuf = async (data) => {
 */
 Envelope.seal = async (record, peerId) => {
   const domain = record.domain
-  const payloadType = uint8arraysFromString(record.codec)
+  const payloadType = record.codec
   const payload = record.marshal()
 
   const signData = formatSignaturePayload(domain, payloadType, payload)
