@@ -125,6 +125,7 @@ describe('auto-relay', () => {
     it('should only add maxListeners relayed addresses', async () => {
       // Spy if a connected peer is being added as listen relay
       sinon.spy(autoRelay1, '_addListenRelay')
+      sinon.spy(autoRelay1._listenRelays, 'add')
 
       // Discover one relay and connect
       relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
@@ -133,7 +134,7 @@ describe('auto-relay', () => {
       expect(relayLibp2p1.connectionManager.size).to.eql(1)
 
       // Wait for peer added as listen relay
-      await pWaitFor(() => autoRelay1._addListenRelay.callCount === 1)
+      await pWaitFor(() => autoRelay1._addListenRelay.callCount === 1 && autoRelay1._listenRelays.add.callCount === 1)
       expect(autoRelay1._listenRelays.size).to.equal(1)
 
       // Wait for listen multiaddr update
@@ -154,7 +155,8 @@ describe('auto-relay', () => {
       // Wait to guarantee the dialed peer is not added as a listen relay
       await delay(300)
 
-      expect(autoRelay1._addListenRelay.callCount).to.equal(1)
+      expect(autoRelay1._addListenRelay.callCount).to.equal(2)
+      expect(autoRelay1._listenRelays.add.callCount).to.equal(1)
       expect(autoRelay1._listenRelays.size).to.equal(1)
       expect(relayLibp2p1.connectionManager.size).to.eql(2)
 
