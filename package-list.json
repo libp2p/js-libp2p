@@ -51,7 +51,6 @@
     ["libp2p/js-peer-id", "peer-id"],
 
     "pubsub",
-    ["libp2p/js-libp2p-pubsub", "libp2p-pubsub"],
     ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"],
     ["ChainSafe/js-libp2p-gossipsub", "libp2p-gossipsub"],
 
