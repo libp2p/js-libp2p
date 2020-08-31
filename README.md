@@ -1,3 +1,9 @@
+# ⛔️ DEPRECATED
+
+libp2p-pubsub was refactored and is now in [libp2p/js-libp2p-interfaces/src/pubsub](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/pubsub). If you want to create a libp2p compatible pubsub router you should use the interface from `libp2p@0.29`.
+
+_This library will not be maintained._
+
 js-libp2p-pubsub
 ==================
 
