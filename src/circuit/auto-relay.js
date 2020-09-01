@@ -17,16 +17,15 @@ const hopMetadataValue = 'true'
 
 class AutoRelay {
   /**
-   * Creates an instance of AutoRelay
+   * Creates an instance of AutoRelay.
    * @constructor
-   * @param {object} params
-   * @param {Libp2p} params.libp2p
-   * @param {number} params.maxListeners maximum number of relays to listen.
+   * @param {object} props
+   * @param {Libp2p} props.libp2p
+   * @param {number} props.maxListeners maximum number of relays to listen.
    */
   constructor ({ libp2p, maxListeners }) {
     this._libp2p = libp2p
     this._peerId = libp2p.peerId
-    this._registrar = libp2p.registrar
     this._peerStore = libp2p.peerStore
     this._connectionManager = libp2p.connectionManager
     this._transportManager = libp2p.transportManager
@@ -46,8 +45,8 @@ class AutoRelay {
   }
 
   /**
-   * Check if a new peer supports the relay protocol.
-   * If the protocol is not supported, check if it was supported before and remove listen relay.
+   * Check if a peer supports the relay protocol.
+   * If the protocol is not supported, check if it was supported before and remove it as a listen relay.
    * If the protocol is supported, check if the peer supports **HOP** and add it as a listener if
    * inside the threshold.
    * @param {Object} props
@@ -80,6 +79,7 @@ class AutoRelay {
       }
 
       await canHop({ connection })
+
       this._peerStore.metadataBook.set(peerId, hopMetadataKey, uint8ArrayFromString(hopMetadataValue))
       await this._addListenRelay(connection, id)
     } catch (err) {
