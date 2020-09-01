@@ -12,6 +12,7 @@ const { relay: multicodec } = require('./multicodec')
 const { canHop } = require('./circuit/hop')
 
 const hopMetadataKey = 'hop_relay'
+const hopMetadataValue = 'true'
 
 class AutoRelay {
   /**
@@ -41,12 +42,13 @@ class AutoRelay {
 
     this._peerStore.on('change:protocols', this._onProtocolChange)
     this._connectionManager.on('peer:disconnect', this._onPeerDisconnected)
-
-    // TODO: proactively try to connect via connMgr
   }
 
   /**
-   * Check if a new peer supports the multicodec for the relay.
+   * Check if a new peer supports the relay protocol.
+   * If the protocol is not supported, check if it was supported before and remove listen relay.
+   * If the protocol is supported, check if the peer supports **HOP** and add it as a listener if
+   * inside the threshold.
    * @param {Object} props
    * @param {PeerId} props.peerId
    * @param {Array<string>} props.protocols
@@ -60,8 +62,7 @@ class AutoRelay {
 
     // If no protocol, check if we were keeping the peer before as a listenRelay
     if (!hasProtocol && this._listenRelays.has(id)) {
-      await this._removeListenRelay(id)
-      this._listenOnAvailableHopRelays()
+      this._removeListenRelay(id)
       return
     } else if (!hasProtocol || this._listenRelays.has(id)) {
       return
@@ -72,11 +73,7 @@ class AutoRelay {
       const connection = this._connectionManager.get(peerId)
 
       await canHop({ connection })
-
-      // Save peer metadata
-      this._peerStore.metadataBook.set(peerId, hopMetadataKey, uint8ArrayFromString('true'))
-
-      // Listen on relay
+      this._peerStore.metadataBook.set(peerId, hopMetadataKey, uint8ArrayFromString(hopMetadataValue))
       await this._addListenRelay(connection, id)
     } catch (err) {
       log.error(err)
@@ -86,9 +83,9 @@ class AutoRelay {
   /**
    * Peer disconnects.
    * @param {Connection} connection connection to the peer
-   * @return {Promise<void>}
+   * @return {void}
    */
-  async _onPeerDisconnected (connection) {
+  _onPeerDisconnected (connection) {
     const peerId = connection.remotePeer
     const id = peerId.toB58String()
 
@@ -97,8 +94,7 @@ class AutoRelay {
       return
     }
 
-    await this._removeListenRelay(id)
-    await this._listenOnAvailableHopRelays()
+    this._removeListenRelay(id)
   }
 
   /**
@@ -139,12 +135,12 @@ class AutoRelay {
    * Remove listen relay.
    * @private
    * @param {string} id peer identifier string.
+   * @return {void}
    */
   _removeListenRelay (id) {
     this._listenRelays.delete(id)
-
-    // TODO: remove listen
-    // TODO: check if we really need to do this
+    // TODO: this should be responsibility of the connMgr
+    this._listenOnAvailableHopRelays()
   }
 
   /**
@@ -170,7 +166,7 @@ class AutoRelay {
       const supportsHop = this._peerStore.metadataBook.getValue(peerId, hopMetadataKey)
 
       // Continue to next if it does not support Hop
-      if (!supportsHop || uint8ArrayToString(supportsHop) !== 'true') {
+      if (!supportsHop || uint8ArrayToString(supportsHop) !== hopMetadataValue) {
         continue
       }
 
@@ -181,7 +177,6 @@ class AutoRelay {
         break
       }
     }
-    // Auto dial: Iterate peer store...
   }
 }
 

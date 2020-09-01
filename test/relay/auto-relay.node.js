@@ -75,7 +75,7 @@ describe('auto-relay', () => {
       return Promise.all([libp2p, relayLibp2p1, relayLibp2p2, relayLibp2p3].map(libp2p => libp2p.stop()))
     })
 
-    it('should ask if node supports hop on connect (relay protocol) and add to listen multiaddrs', async () => {
+    it('should ask if node supports hop on protocol change (relay protocol) and add to listen multiaddrs', async () => {
       // Spy if a connected peer is being added as listen relay
       sinon.spy(autoRelay1, '_addListenRelay')
 
@@ -163,6 +163,24 @@ describe('auto-relay', () => {
       // Relay2 has relay multicodec
       const knownProtocols3 = relayLibp2p1.peerStore.protoBook.get(relayLibp2p3.peerId)
       expect(knownProtocols3).to.include(relayMulticodec)
+    })
+
+    it('should not listen on a relayed address if peer disconnects', async () => {
+      // Discover one relay and connect
+      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
+      await relayLibp2p1.dial(relayLibp2p2.peerId)
+
+      // Wait for listenning on the relay
+      await pWaitFor(() => relayLibp2p1.multiaddrs.length === 3)
+      expect(autoRelay1._listenRelays.size).to.equal(1)
+      expect(relayLibp2p1.multiaddrs[2].getPeerId()).to.eql(relayLibp2p2.peerId.toB58String())
+
+      // Disconnect from peer used for relay
+      await relayLibp2p1.hangUp(relayLibp2p2.peerId)
+
+      // Wait for removed listening on the relay
+      await pWaitFor(() => relayLibp2p1.multiaddrs.length === 2)
+      expect(autoRelay1._listenRelays.size).to.equal(0)
     })
 
     it('should try to listen on other relayed addresses if one used relay disconnects', async () => {
