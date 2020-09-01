@@ -223,8 +223,7 @@ describe('auto-relay', () => {
     })
   })
 
-  // TODO: do not allow listen on a relayed connection
-  describe.skip('flows with 2 max listeners', () => {
+  describe('flows with 2 max listeners', () => {
     let relayLibp2p1
     let relayLibp2p2
     let relayLibp2p3
@@ -301,6 +300,13 @@ describe('auto-relay', () => {
       expect(autoRelay2._listenRelays.size).to.equal(1)
 
       // Relay 1 discovers Relay 2 relayed multiaddr via Relay 3
+      const ma2RelayedBy3 = relayLibp2p2.multiaddrs[2]
+      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, [ma2RelayedBy3])
+      await relayLibp2p1.dial(relayLibp2p2.peerId)
+
+      // Peer not added as listen relay
+      expect(autoRelay1._addListenRelay.callCount).to.equal(1)
+      expect(autoRelay1._listenRelays.size).to.equal(1)
     })
   })
 })

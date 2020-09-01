@@ -11,6 +11,7 @@ const multiaddr = require('multiaddr')
 const { relay: multicodec } = require('./multicodec')
 const { canHop } = require('./circuit/hop')
 
+const circuitProtoCode = 290
 const hopMetadataKey = 'hop_relay'
 const hopMetadataValue = 'true'
 
@@ -71,6 +72,12 @@ class AutoRelay {
     // If protocol, check if can hop, store info in the metadataBook and listen on it
     try {
       const connection = this._connectionManager.get(peerId)
+
+      // Do not hop on a relayed connection
+      if (connection.remoteAddr.protoCodes().includes(circuitProtoCode)) {
+        log(`relayed connection to ${id} will not be used to hop on`)
+        return
+      }
 
       await canHop({ connection })
       this._peerStore.metadataBook.set(peerId, hopMetadataKey, uint8ArrayFromString(hopMetadataValue))
@@ -179,7 +186,5 @@ class AutoRelay {
     }
   }
 }
-
-// TODO: be careful about relay connect to relay peer that might create a double relayed conn
 
 module.exports = AutoRelay
