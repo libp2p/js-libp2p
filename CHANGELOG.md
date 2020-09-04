@@ -1,3 +1,8 @@
+<a name="0.23.1"></a>
+## [0.23.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.23.0...v0.23.1) (2020-09-04)
+
+
+
 <a name="0.23.0"></a>
 # [0.23.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.21.3...v0.23.0) (2020-08-25)
 
