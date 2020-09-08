@@ -98,7 +98,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 Some available connection encryption protocols:
 
 - [NodeFactoryIo/js-libp2p-noise](https://github.com/NodeFactoryIo/js-libp2p-noise)
-- [libp2p/js-libp2p-secio](https://github.com/libp2p/js-libp2p-secio)
+- [libp2p/js-libp2p-secio](https://github.com/libp2p/js-libp2p-secio) ⚠️ [DEPRECATED](https://blog.ipfs.io/2020-08-07-deprecating-secio)
 
 If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Crypto Interface](https://github.com/libp2p/js-interfaces/tree/master/src/crypto).
 
@@ -232,7 +232,7 @@ const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const WS = require('libp2p-websockets')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const MulticastDNS = require('libp2p-mdns')
 const DHT = require('libp2p-kad-dht')
 const GossipSub = require('libp2p-gossipsub')
@@ -244,7 +244,7 @@ const node = await Libp2p.create({
       new WS() // It can take instances too!
     ],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO],
+    connEncryption: [NOISE],
     peerDiscovery: [MulticastDNS],
     dht: DHT,
     pubsub: GossipSub
@@ -258,14 +258,14 @@ const node = await Libp2p.create({
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const MulticastDNS = require('libp2p-mdns')
 
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO],
+    connEncryption: [NOISE],
     peerDiscovery: [MulticastDNS]
   },
   config: {
@@ -291,7 +291,7 @@ const Libp2p = require('libp2p')
 const WS = require('libp2p-websockets')
 const WebRTCStar = require('libp2p-webrtc-star')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 
 const node = await Libp2p.create({
   modules: {
@@ -300,7 +300,7 @@ const node = await Libp2p.create({
       WebRTCStar
     ],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO],
+    connEncryption: [NOISE],
   },
   config: {
     peerDiscovery: {
@@ -318,14 +318,14 @@ const node = await Libp2p.create({
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const GossipSub = require('libp2p-gossipsub')
 
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO],
+    connEncryption: [NOISE],
     pubsub: GossipSub
   },
   config: {
@@ -345,14 +345,14 @@ const node = await Libp2p.create({
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const DHT = require('libp2p-kad-dht')
 
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO],
+    connEncryption: [NOISE],
     dht: DHT
   },
   config: {
@@ -375,7 +375,7 @@ const node = await Libp2p.create({
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const PeerId = require('peer-id')
@@ -387,7 +387,7 @@ const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO],
+    connEncryption: [NOISE],
     contentRouting: [
       new DelegatedContentRouter(peerId)
     ],
@@ -405,13 +405,13 @@ const node = await Libp2p.create({
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO]
+    connEncryption: [NOISE]
   },
   config: {
     relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
@@ -438,14 +438,14 @@ Libp2p allows you to setup a secure keychain to manage your keys. The keychain c
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const LevelStore = require('datastore-level')
 
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO]
+    connEncryption: [NOISE]
   },
   keychain: {
     pass: 'notsafepassword123456789',
@@ -472,13 +472,13 @@ The below configuration example shows how the dialer should be configured, with 
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO]
+    connEncryption: [NOISE]
   },
   dialer: {
     maxParallelDials: 100,
@@ -495,13 +495,13 @@ The Connection Manager prunes Connections in libp2p whenever certain limits are 
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO]
+    connEncryption: [NOISE]
   },
   connectionManager: {
     maxConnections: Infinity,
@@ -526,7 +526,7 @@ The Transport Manager is responsible for managing the libp2p transports life cyc
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 
 const { FaultTolerance } = require('libp2p/src/transport-manager')}
 
@@ -534,7 +534,7 @@ const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO]
+    connEncryption: [NOISE]
   },
   transportManager: {
     faultTolerance: FaultTolerance.NO_FATAL
@@ -560,13 +560,13 @@ The below configuration example shows how the metrics should be configured. Asid
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO]
+    connEncryption: [NOISE]
   },
   metrics: {
     enabled: true,
@@ -599,7 +599,7 @@ The below configuration example shows how the PeerStore should be configured. As
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 
 const LevelStore = require('datastore-level')
 
@@ -607,7 +607,7 @@ const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO]
+    connEncryption: [NOISE]
   },
   datastore: new LevelStore('path/to/store'),
   peerStore: {
@@ -625,7 +625,7 @@ Some Transports can be passed additional options when they are created. For exam
 const Libp2p = require('libp2p')
 const WebRTCStar = require('libp2p-webrtc-star')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const wrtc = require('wrtc')
 
 const transportKey = WebRTCStar.prototype[Symbol.toStringTag]
@@ -633,7 +633,7 @@ const node = await Libp2p.create({
   modules: {
     transport: [WebRTCStar],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO]
+    connEncryption: [NOISE]
   },
   config: {
     transport: {
