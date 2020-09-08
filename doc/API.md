@@ -2,7 +2,7 @@
 
 * [Static Functions](#static-functions)
   * [`create`](#create)
-* [Instance Methods](#instance-methods)
+* [Instance Methods](#libp2p-instance-methods)
   * [`start`](#start)
   * [`stop`](#stop)
   * [`dial`](#dial)

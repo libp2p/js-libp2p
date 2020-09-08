@@ -112,13 +112,13 @@ npm install libp2p-mplex
 ```js
 const Libp2p = require('libp2p')
 const WebSockets = require('libp2p-websockets')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const MPLEX = require('libp2p-mplex')
 
 const node = await Libp2p.create({
   modules: {
     transport: [WebSockets],
-    connEncryption: [SECIO],
+    connEncryption: [NOISE],
     streamMuxer: [MPLEX]
   }
 })
@@ -139,7 +139,7 @@ Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] 
 ```js
 const Libp2p = require('libp2p')
 const WebSockets = require('libp2p-websockets')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const MPLEX = require('libp2p-mplex')
 
 const node = await Libp2p.create({
@@ -148,7 +148,7 @@ const node = await Libp2p.create({
   },
   modules: {
     transport: [WebSockets],
-    connEncryption: [SECIO],
+    connEncryption: [NOISE],
     streamMuxer: [MPLEX]
   }
 })
@@ -197,7 +197,7 @@ We can provide specific configurations for each protocol within a `config.peerDi
 ```js
 const Libp2p = require('libp2p')
 const WebSockets = require('libp2p-websockets')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 const MPLEX = require('libp2p-mplex')
 
 const Bootstrap = require('libp2p-bootstrap')
@@ -211,7 +211,7 @@ const bootstrapMultiaddrs = [
 const node = await Libp2p.create({
   modules: {
     transport: [WebSockets],
-    connEncryption: [SECIO],
+    connEncryption: [NOISE],
     streamMuxer: [MPLEX],
     peerDiscovery: [Bootstrap]
   },
