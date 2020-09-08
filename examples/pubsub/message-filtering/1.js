@@ -5,7 +5,6 @@ const Libp2p = require('../../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
-const SECIO = require('libp2p-secio')
 const Gossipsub = require('libp2p-gossipsub')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
@@ -18,7 +17,7 @@ const createNode = async () => {
     modules: {
       transport: [TCP],
       streamMuxer: [Mplex],
-      connEncryption: [NOISE, SECIO],
+      connEncryption: [NOISE],
       pubsub: Gossipsub
     }
   })

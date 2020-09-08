@@ -3,7 +3,6 @@
 
 const pipe = require('it-pipe')
 const lp = require('it-length-prefixed')
-const uint8ArrayToString = require('uint8arrays/to-string')
 
 function stdinToStream(stream) {
   // Read utf-8 from stdin

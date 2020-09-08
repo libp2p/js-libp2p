@@ -4,7 +4,6 @@ const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
-const SECIO = require('libp2p-secio')
 
 const pipe = require('it-pipe')
 
@@ -16,7 +15,7 @@ const createNode = async () => {
     modules: {
       transport: [TCP],
       streamMuxer: [MPLEX],
-      connEncryption: [NOISE, SECIO]
+      connEncryption: [NOISE]
     }
   })
 

@@ -4,7 +4,6 @@
 const Libp2p = require('../..')
 const TCP = require('libp2p-tcp')
 const { NOISE } = require('libp2p-noise')
-const SECIO = require('libp2p-secio')
 
 const createNode = async () => {
   const node = await Libp2p.create({
@@ -15,7 +14,7 @@ const createNode = async () => {
     },
     modules: {
       transport: [TCP],
-      connEncryption: [NOISE, SECIO]
+      connEncryption: [NOISE]
     }
   })
 

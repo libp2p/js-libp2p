@@ -23,7 +23,7 @@ const node = await Libp2p.create({
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
-    connEncryption: [ NOISE, SECIO ],
+    connEncryption: [ NOISE ],
     // we add the DHT module that will enable Peer and Content Routing
     dht: KadDHT
   },

@@ -4,7 +4,6 @@
 const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
 const { NOISE } = require('libp2p-noise')
 const Bootstrap = require('libp2p-bootstrap')
 
@@ -29,7 +28,7 @@ const bootstrapers = [
     modules: {
       transport: [TCP],
       streamMuxer: [Mplex],
-      connEncryption: [NOISE, SECIO],
+      connEncryption: [NOISE],
       peerDiscovery: [Bootstrap]
     },
     config: {

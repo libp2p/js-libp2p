@@ -3,7 +3,6 @@
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
 const { NOISE } = require('libp2p-noise')
 const Protector = require('libp2p/src/pnet')
 
@@ -24,7 +23,7 @@ const privateLibp2pNode = async (swarmKey) => {
       streamMuxer: [MPLEX], // We're only using mplex muxing
       // Let's make sure to use identifying crypto in our pnet since the protector doesn't
       // care about node identity, and only the presence of private keys
-      connEncryption: [NOISE, SECIO],
+      connEncryption: [NOISE],
       // Leave peer discovery empty, we don't want to find peers. We could omit the property, but it's
       // being left in for explicit readability.
       // We should explicitly dial pnet peers, or use a custom discovery service for finding nodes in our pnet
