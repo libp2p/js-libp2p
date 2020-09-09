@@ -28,16 +28,19 @@ describe('auto-relay', () => {
       const peerIds = await createPeerId({ number: 2 })
       // Create 2 nodes, and turn HOP on for the relay
       ;[libp2p, relayLibp2p] = peerIds.map((peerId, index) => {
-        const opts = baseOptions
-
-        opts.config.relay = {
-          ...opts.config.relay,
-          hop: {
-            enabled: index !== 0
-          },
-          autoRelay: {
-            enabled: true,
-            maxListeners: 1
+        const opts = {
+          ...baseOptions,
+          config: {
+            ...baseOptions.config,
+            relay: {
+              hop: {
+                enabled: index !== 0
+              },
+              autoRelay: {
+                enabled: true,
+                maxListeners: 1
+              }
+            }
           }
         }
 
@@ -106,17 +109,22 @@ describe('auto-relay', () => {
       const peerIds = await createPeerId({ number: 4 })
       // Create 4 nodes, and turn HOP on for the relay
       ;[libp2p, relayLibp2p1, relayLibp2p2, relayLibp2p3] = peerIds.map((peerId, index) => {
-        const opts = baseOptions
+        let opts = baseOptions
 
         if (index !== 0) {
-          opts.config.relay = {
-            ...opts.config.relay,
-            hop: {
-              enabled: true
-            },
-            autoRelay: {
-              enabled: true,
-              maxListeners: 1
+          opts = {
+            ...baseOptions,
+            config: {
+              ...baseOptions.config,
+              relay: {
+                hop: {
+                  enabled: true
+                },
+                autoRelay: {
+                  enabled: true,
+                  maxListeners: 1
+                }
+              }
             }
           }
         }
@@ -260,19 +268,24 @@ describe('auto-relay', () => {
       expect(autoRelay1._listenRelays.size).to.equal(1)
       expect(relayLibp2p1.multiaddrs[originalMultiaddrs1Length].getPeerId()).to.eql(relayLibp2p2.peerId.toB58String())
 
+      // Spy if identify push is fired
+      sinon.spy(relayLibp2p1.identifyService, 'pushToPeerStore')
+
       // Disconnect from peer used for relay
       await relayLibp2p1.hangUp(relayLibp2p2.peerId)
 
       // Wait for removed listening on the relay
       await pWaitFor(() => relayLibp2p1.multiaddrs.length === originalMultiaddrs1Length)
       expect(autoRelay1._listenRelays.size).to.equal(0)
+      // TODO: identify-push expect(relayLibp2p1.identifyService.pushToPeerStore.callCount).to.equal(1)
     })
 
-    it('should try to listen on other relayed addresses if one used relay disconnects', async () => {
+    it('should try to listen on other connected peers relayed address if one used relay disconnects', async () => {
       const originalMultiaddrs1Length = relayLibp2p1.multiaddrs.length
 
       // Spy if a connected peer is being added as listen relay
       sinon.spy(autoRelay1, '_addListenRelay')
+      sinon.spy(relayLibp2p1.transportManager, 'listen')
 
       // Discover one relay and connect
       relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
@@ -282,14 +295,17 @@ describe('auto-relay', () => {
       relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p3.peerId)
 
-      // Wait for peer added as listen relay
+      // Wait for both peer to be attempted to added as listen relay
       await pWaitFor(() => autoRelay1._addListenRelay.callCount === 1)
       expect(autoRelay1._listenRelays.size).to.equal(1)
-      expect(relayLibp2p1.connectionManager.size).to.eql(2)
+      expect(relayLibp2p1.connectionManager.size).to.equal(2)
 
       // Wait for listen multiaddr update
       await pWaitFor(() => relayLibp2p1.multiaddrs.length === originalMultiaddrs1Length + 1)
       expect(relayLibp2p1.multiaddrs[originalMultiaddrs1Length].getPeerId()).to.eql(relayLibp2p2.peerId.toB58String())
+
+      // Only one will be used for listeninng
+      expect(relayLibp2p1.transportManager.listen.callCount).to.equal(1)
 
       // Spy if relay from listen map was removed
       sinon.spy(autoRelay1._listenRelays, 'delete')
@@ -299,14 +315,56 @@ describe('auto-relay', () => {
       expect(autoRelay1._listenRelays.delete.callCount).to.equal(1)
       expect(autoRelay1._addListenRelay.callCount).to.equal(1)
 
-      // Wait for other peer connected to be added as listen relay
-      await pWaitFor(() => autoRelay1._addListenRelay.callCount === 2)
+      // Wait for other peer connected to be added as listen addr
+      await pWaitFor(() => relayLibp2p1.transportManager.listen.callCount === 2)
       expect(autoRelay1._listenRelays.size).to.equal(1)
       expect(relayLibp2p1.connectionManager.size).to.eql(1)
 
       // Wait for listen multiaddr update
       await pWaitFor(() => relayLibp2p1.multiaddrs.length === originalMultiaddrs1Length + 1)
       expect(relayLibp2p1.multiaddrs[originalMultiaddrs1Length].getPeerId()).to.eql(relayLibp2p3.peerId.toB58String())
+    })
+
+    it('should try to listen on stored peers relayed address if one used relay disconnects and there are not enough connected', async () => {
+      // Spy if a connected peer is being added as listen relay
+      sinon.spy(autoRelay1, '_addListenRelay')
+      sinon.spy(relayLibp2p1.transportManager, 'listen')
+
+      // Discover one relay and connect
+      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
+      await relayLibp2p1.dial(relayLibp2p2.peerId)
+
+      // Discover an extra relay and connect to gather its Hop support
+      relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
+      await relayLibp2p1.dial(relayLibp2p3.peerId)
+
+      // Wait for both peer to be attempted to added as listen relay
+      await pWaitFor(() => autoRelay1._addListenRelay.callCount === 2)
+      expect(autoRelay1._listenRelays.size).to.equal(1)
+      expect(relayLibp2p1.connectionManager.size).to.equal(2)
+
+      // Only one will be used for listeninng
+      expect(relayLibp2p1.transportManager.listen.callCount).to.equal(1)
+
+      // Disconnect not used listen relay
+      await relayLibp2p1.hangUp(relayLibp2p3.peerId)
+
+      expect(autoRelay1._listenRelays.size).to.equal(1)
+      expect(relayLibp2p1.connectionManager.size).to.equal(1)
+
+      // Spy on dial
+      sinon.spy(relayLibp2p1, 'dial')
+
+      // Remove peer used as relay from peerStore and disconnect it
+      relayLibp2p1.peerStore.delete(relayLibp2p2.peerId)
+      await relayLibp2p1.hangUp(relayLibp2p2.peerId)
+      expect(autoRelay1._listenRelays.size).to.equal(0)
+      expect(relayLibp2p1.connectionManager.size).to.equal(0)
+
+      // Wait for other peer connected to be added as listen addr
+      await pWaitFor(() => relayLibp2p1.transportManager.listen.callCount === 2)
+      expect(autoRelay1._listenRelays.size).to.equal(1)
+      expect(relayLibp2p1.connectionManager.size).to.eql(1)
     })
   })
 
@@ -320,15 +378,13 @@ describe('auto-relay', () => {
     beforeEach(async () => {
       const peerIds = await createPeerId({ number: 3 })
       // Create 3 nodes, and turn HOP on for the relay
-      ;[relayLibp2p1, relayLibp2p2, relayLibp2p3] = peerIds.map((peerId, index) => {
-        const opts = baseOptions
-
+      ;[relayLibp2p1, relayLibp2p2, relayLibp2p3] = peerIds.map((peerId) => {
         return new Libp2p({
-          ...opts,
+          ...baseOptions,
           config: {
-            ...opts.config,
+            ...baseOptions.config,
             relay: {
-              ...opts.config.relay,
+              ...baseOptions.config.relay,
               hop: {
                 enabled: true
               },

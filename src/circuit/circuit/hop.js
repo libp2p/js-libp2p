@@ -121,7 +121,7 @@ module.exports.hop = async function hop ({
  * Performs a CAN_HOP request to a relay peer, in order to understand its capabilities.
  * @param {object} options
  * @param {Connection} options.connection Connection to the relay
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>}
  */
 module.exports.canHop = async function canHop ({
   connection
@@ -138,8 +138,10 @@ module.exports.canHop = async function canHop ({
   await streamHandler.close()
 
   if (response.code !== CircuitPB.Status.SUCCESS) {
-    throw errCode(new Error('Relay is not able to hop'), Errors.ERR_CANNOT_HOP)
+    return false
   }
+
+  return true
 }
 
 /**

@@ -424,7 +424,7 @@ class Libp2p extends EventEmitter {
 
     // Only push if libp2p is running
     if (this.isStarted() && this.identifyService) {
-      this.identifyService.pushToPeerStore(this.peerStore)
+      this.identifyService.pushToPeerStore()
     }
   }
 
@@ -441,7 +441,7 @@ class Libp2p extends EventEmitter {
 
     // Only push if libp2p is running
     if (this.isStarted() && this.identifyService) {
-      this.identifyService.pushToPeerStore(this.peerStore)
+      this.identifyService.pushToPeerStore()
     }
   }
 

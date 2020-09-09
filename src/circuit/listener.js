@@ -17,7 +17,12 @@ module.exports = (libp2p) => {
 
   // Remove listeningAddrs when a peer disconnects
   libp2p.connectionManager.on('peer:disconnect', (connection) => {
-    listeningAddrs.delete(connection.remotePeer.toB58String())
+    const deleted = listeningAddrs.delete(connection.remotePeer.toB58String())
+
+    if (deleted) {
+      // TODO push announce multiaddrs update
+      // libp2p.identifyService.pushToPeerStore()
+    }
   })
 
   /**

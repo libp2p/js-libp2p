@@ -7,6 +7,7 @@ log.error = debug('libp2p:auto-relay:error')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const multiaddr = require('multiaddr')
+const PeerId = require('peer-id')
 
 const { relay: multicodec } = require('./multicodec')
 const { canHop } = require('./circuit/hop')
@@ -78,10 +79,12 @@ class AutoRelay {
         return
       }
 
-      await canHop({ connection })
+      const supportsHop = await canHop({ connection })
 
-      this._peerStore.metadataBook.set(peerId, hopMetadataKey, uint8ArrayFromString(hopMetadataValue))
-      await this._addListenRelay(connection, id)
+      if (supportsHop) {
+        this._peerStore.metadataBook.set(peerId, hopMetadataKey, uint8ArrayFromString(hopMetadataValue))
+        await this._addListenRelay(connection, id)
+      }
     } catch (err) {
       log.error(err)
     }
@@ -117,21 +120,30 @@ class AutoRelay {
       return
     }
 
-    this._listenRelays.add(id)
-
     // Create relay listen addr
-    const remoteMultiaddr = connection.remoteAddr
-    let listenAddr
+    let listenAddr, remoteMultiaddr
+
+    try {
+      const remoteAddrs = this._peerStore.addressBook.get(connection.remotePeer)
+      remoteMultiaddr = remoteAddrs.find(a => a.isCertified).multiaddr // Get first announced address certified
+    } catch (_) {
+      log.error(`${id} does not have announced certified multiaddrs`)
+      return
+    }
 
     if (!remoteMultiaddr.protoNames().includes('p2p')) {
-      listenAddr = `${remoteMultiaddr.toString()}/p2p/${connection.remotePeer.toB58String()}/p2p-circuit/p2p/${this._peerId.toB58String()}`
+      listenAddr = `${remoteMultiaddr.toString()}/p2p/${connection.remotePeer.toB58String()}/p2p-circuit`
     } else {
-      listenAddr = `${remoteMultiaddr.toString()}/p2p-circuit/p2p/${this._peerId.toB58String()}`
+      listenAddr = `${remoteMultiaddr.toString()}/p2p-circuit`
     }
 
     // Attempt to listen on relay
+    this._listenRelays.add(id)
+
     try {
       await this._transportManager.listen([multiaddr(listenAddr)])
+      // TODO: push announce multiaddrs update
+      // await this._libp2p.identifyService.pushToPeerStore()
     } catch (err) {
       log.error(err)
       this._listenRelays.delete(id)
@@ -145,35 +157,50 @@ class AutoRelay {
    * @return {void}
    */
   _removeListenRelay (id) {
-    this._listenRelays.delete(id)
-    // TODO: this should be responsibility of the connMgr
-    this._listenOnAvailableHopRelays()
+    if (this._listenRelays.delete(id)) {
+      // TODO: this should be responsibility of the connMgr
+      this._listenOnAvailableHopRelays([id])
+    }
   }
 
   /**
    * Try to listen on available hop relay connections.
+   * The following order will happen while we do not have enough relays.
+   * 1. Check the metadata store for known relays, try to listen on the ones we are already connected.
+   * 2. Dial and try to listen on the peers we know that support hop but are not connected.
+   * 3. Search the network.
+   * @param {Array<string>} [peersToIgnore]
    * @return {Promise<void>}
    */
-  async _listenOnAvailableHopRelays () {
+  async _listenOnAvailableHopRelays (peersToIgnore = []) {
+    // TODO: The peer redial issue on disconnect should be handled by connection gating
     // Check if already listening on enough relays
     if (this._listenRelays.size >= this.maxListeners) {
       return
     }
 
-    // Verify if there are available connections to hop
-    for (const [connection] of this._connectionManager.connections.values()) {
-      const peerId = connection.remotePeer
-      const id = peerId.toB58String()
+    const knownHopsToDial = []
 
-      // Continue to next if listening on this
-      if (this._listenRelays.has(id)) {
+    // Check if we have known hop peers to use and attempt to listen on the already connected
+    for (const [id, metadataMap] of this._peerStore.metadataBook.data.entries()) {
+      // Continue to next if listening on this or peer to ignore
+      if (this._listenRelays.has(id) || peersToIgnore.includes(id)) {
         continue
       }
 
-      const supportsHop = this._peerStore.metadataBook.getValue(peerId, hopMetadataKey)
+      const supportsHop = metadataMap.get(hopMetadataKey)
 
       // Continue to next if it does not support Hop
       if (!supportsHop || uint8ArrayToString(supportsHop) !== hopMetadataValue) {
+        continue
+      }
+
+      const peerId = PeerId.createFromCID(id)
+      const connection = this._connectionManager.get(peerId)
+
+      // If not connected, store for possible later use.
+      if (!connection) {
+        knownHopsToDial.push(peerId)
         continue
       }
 
@@ -181,9 +208,22 @@ class AutoRelay {
 
       // Check if already listening on enough relays
       if (this._listenRelays.size >= this.maxListeners) {
-        break
+        return
       }
     }
+
+    // Try to listen on known peers that are not connected
+    for (const peerId of knownHopsToDial) {
+      const connection = await this._libp2p.dial(peerId)
+      await this._addListenRelay(connection, peerId.toB58String())
+
+      // Check if already listening on enough relays
+      if (this._listenRelays.size >= this.maxListeners) {
+        return
+      }
+    }
+
+    // TODO: Try to find relays to hop on the network
   }
 }
 

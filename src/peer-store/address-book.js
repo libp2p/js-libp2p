@@ -260,7 +260,7 @@ class AddressBook extends Book {
    * Get the known data of a provided peer.
    * @override
    * @param {PeerId} peerId
-   * @returns {Array<data>}
+   * @returns {Array<Address>|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
