@@ -259,6 +259,9 @@ describe('auto-relay', () => {
     it('should not listen on a relayed address if peer disconnects', async () => {
       const originalMultiaddrs1Length = relayLibp2p1.multiaddrs.length
 
+      // Spy if identify push is fired on adding/removing listen addr
+      sinon.spy(relayLibp2p1.identifyService, 'pushToPeerStore')
+
       // Discover one relay and connect
       relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p2.peerId)
@@ -268,8 +271,8 @@ describe('auto-relay', () => {
       expect(autoRelay1._listenRelays.size).to.equal(1)
       expect(relayLibp2p1.multiaddrs[originalMultiaddrs1Length].getPeerId()).to.eql(relayLibp2p2.peerId.toB58String())
 
-      // Spy if identify push is fired
-      sinon.spy(relayLibp2p1.identifyService, 'pushToPeerStore')
+      // Identify push for adding listen relay multiaddr
+      expect(relayLibp2p1.identifyService.pushToPeerStore.callCount).to.equal(1)
 
       // Disconnect from peer used for relay
       await relayLibp2p1.hangUp(relayLibp2p2.peerId)
@@ -277,7 +280,9 @@ describe('auto-relay', () => {
       // Wait for removed listening on the relay
       await pWaitFor(() => relayLibp2p1.multiaddrs.length === originalMultiaddrs1Length)
       expect(autoRelay1._listenRelays.size).to.equal(0)
-      // TODO: identify-push expect(relayLibp2p1.identifyService.pushToPeerStore.callCount).to.equal(1)
+
+      // Identify push for removing listen relay multiaddr
+      expect(relayLibp2p1.identifyService.pushToPeerStore.callCount).to.equal(2)
     })
 
     it('should try to listen on other connected peers relayed address if one used relay disconnects', async () => {
