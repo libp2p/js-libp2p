@@ -258,6 +258,7 @@ class Libp2p extends EventEmitter {
       await this.peerStore.stop()
       await this.connectionManager.stop()
 
+      ping.unmount(this)
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
         this._dht && this._dht.stop(),
@@ -266,7 +267,6 @@ class Libp2p extends EventEmitter {
 
       await this.transportManager.close()
 
-      ping.unmount(this)
       this.dialer.destroy()
     } catch (err) {
       if (err) {
