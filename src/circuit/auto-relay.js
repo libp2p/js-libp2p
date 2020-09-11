@@ -11,10 +11,13 @@ const PeerId = require('peer-id')
 
 const { relay: multicodec } = require('./multicodec')
 const { canHop } = require('./circuit/hop')
-
-const circuitProtoCode = 290
-const hopMetadataKey = 'hop_relay'
-const hopMetadataValue = 'true'
+const { namespaceToCid } = require('./utils')
+const {
+  CIRCUIT_PROTO_CODE,
+  HOP_METADATA_KEY,
+  HOP_METADATA_VALUE,
+  RELAY_RENDEZVOUS_NS
+} = require('./constants')
 
 class AutoRelay {
   /**
@@ -76,7 +79,7 @@ class AutoRelay {
       const connection = this._connectionManager.get(peerId)
 
       // Do not hop on a relayed connection
-      if (connection.remoteAddr.protoCodes().includes(circuitProtoCode)) {
+      if (connection.remoteAddr.protoCodes().includes(CIRCUIT_PROTO_CODE)) {
         log(`relayed connection to ${id} will not be used to hop on`)
         return
       }
@@ -84,7 +87,7 @@ class AutoRelay {
       const supportsHop = await canHop({ connection })
 
       if (supportsHop) {
-        this._peerStore.metadataBook.set(peerId, hopMetadataKey, uint8ArrayFromString(hopMetadataValue))
+        this._peerStore.metadataBook.set(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
         await this._addListenRelay(connection, id)
       }
     } catch (err) {
@@ -125,15 +128,21 @@ class AutoRelay {
     }
 
     // Create relay listen addr
-    let listenAddr, remoteMultiaddr
+    let listenAddr, remoteMultiaddr, remoteAddrs
 
     try {
-      const remoteAddrs = this._peerStore.addressBook.get(connection.remotePeer)
+      remoteAddrs = this._peerStore.addressBook.get(connection.remotePeer)
       // TODO: HOP Relays should avoid advertising private addresses!
       remoteMultiaddr = remoteAddrs.find(a => a.isCertified).multiaddr // Get first announced address certified
     } catch (_) {
       log.error(`${id} does not have announced certified multiaddrs`)
-      return
+
+      // Attempt first if existing
+      if (!remoteAddrs || !remoteAddrs.length) {
+        return
+      }
+
+      remoteMultiaddr = remoteAddrs[0].multiaddr
     }
 
     if (!remoteMultiaddr.protoNames().includes('p2p')) {
@@ -194,10 +203,10 @@ class AutoRelay {
         continue
       }
 
-      const supportsHop = metadataMap.get(hopMetadataKey)
+      const supportsHop = metadataMap.get(HOP_METADATA_KEY)
 
       // Continue to next if it does not support Hop
-      if (!supportsHop || uint8ArrayToString(supportsHop) !== hopMetadataValue) {
+      if (!supportsHop || uint8ArrayToString(supportsHop) !== HOP_METADATA_VALUE) {
         continue
       }
 
@@ -229,7 +238,32 @@ class AutoRelay {
       }
     }
 
-    // TODO: Try to find relays to hop on the network
+    // Try to find relays to hop on the network
+    try {
+      const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
+      for await (const provider of this._libp2p.contentRouting.findProviders(cid)) {
+        if (!provider || !provider.id || !provider.multiaddrs || !provider.multiaddrs.length) {
+          continue
+        }
+        const peerId = provider.id
+
+        this._peerStore.addressBook.add(peerId, provider.multiaddrs)
+        const connection = await this._libp2p.dial(peerId)
+
+        await this._addListenRelay(connection, peerId.toB58String())
+
+        // Check if already listening on enough relays
+        if (this._listenRelays.size >= this.maxListeners) {
+          return
+        }
+      }
+    } catch (err) {
+      if (err.code !== 'NO_ROUTERS_AVAILABLE') {
+        throw err
+      } else {
+        log('there are no routers configured to find hop relay services')
+      }
+    }
   }
 }
 

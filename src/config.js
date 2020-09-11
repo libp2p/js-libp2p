@@ -2,6 +2,7 @@
 
 const mergeOptions = require('merge-options')
 const Constants = require('./constants')
+const RelayConstants = require('./circuit/constants')
 
 const { FaultTolerance } = require('./transport-manager')
 
@@ -51,6 +52,10 @@ const DefaultConfig = {
     },
     relay: {
       enabled: true,
+      advertise: {
+        bootDelay: RelayConstants.ADVERTISE_BOOT_DELAY,
+        ttl: RelayConstants.ADVERTISE_TTL
+      },
       hop: {
         enabled: false,
         active: false
