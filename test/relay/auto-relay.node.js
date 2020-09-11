@@ -8,7 +8,10 @@ const { expect } = chai
 const delay = require('delay')
 const pWaitFor = require('p-wait-for')
 const sinon = require('sinon')
+const nock = require('nock')
 
+const ipfsHttpClient = require('ipfs-http-client')
+const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const multiaddr = require('multiaddr')
 const Libp2p = require('../../src')
 const { relay: relayMulticodec } = require('../../src/circuit/multicodec')
@@ -59,7 +62,7 @@ describe('auto-relay', () => {
         })
       })
 
-      autoRelay = libp2p.transportManager._transports.get('Circuit')._autoRelay
+      autoRelay = libp2p.relay._autoRelay
 
       expect(autoRelay.maxListeners).to.eql(1)
     })
@@ -144,7 +147,7 @@ describe('auto-relay', () => {
         })
       })
 
-      autoRelay1 = relayLibp2p1.transportManager._transports.get('Circuit')._autoRelay
+      autoRelay1 = relayLibp2p1.relay._autoRelay
 
       expect(autoRelay1.maxListeners).to.eql(1)
     })
@@ -412,8 +415,8 @@ describe('auto-relay', () => {
         })
       })
 
-      autoRelay1 = relayLibp2p1.transportManager._transports.get('Circuit')._autoRelay
-      autoRelay2 = relayLibp2p2.transportManager._transports.get('Circuit')._autoRelay
+      autoRelay1 = relayLibp2p1.relay._autoRelay
+      autoRelay2 = relayLibp2p2.relay._autoRelay
     })
 
     beforeEach(() => {
@@ -455,6 +458,127 @@ describe('auto-relay', () => {
       // Peer not added as listen relay
       expect(autoRelay1._addListenRelay.callCount).to.equal(1)
       expect(autoRelay1._listenRelays.size).to.equal(1)
+    })
+  })
+
+  describe('discovery', () => {
+    let libp2p
+    let libp2p2
+    let relayLibp2p
+
+    beforeEach(async () => {
+      const peerIds = await createPeerId({ number: 3 })
+
+      // Create 2 nodes, and turn HOP on for the relay
+      ;[libp2p, libp2p2, relayLibp2p] = peerIds.map((peerId, index) => {
+        const delegate = new DelegatedContentRouter(peerId, ipfsHttpClient({
+          host: '0.0.0.0',
+          protocol: 'http',
+          port: 60197
+        }), [
+          multiaddr('/ip4/0.0.0.0/tcp/60197')
+        ])
+
+        const opts = {
+          ...baseOptions,
+          config: {
+            ...baseOptions.config,
+            relay: {
+              advertise: {
+                bootDelay: 1000,
+                ttl: 1000
+              },
+              hop: {
+                enabled: index === 2
+              },
+              autoRelay: {
+                enabled: true,
+                maxListeners: 1
+              }
+            }
+          }
+        }
+
+        return new Libp2p({
+          ...opts,
+          modules: {
+            ...opts.modules,
+            contentRouting: [delegate]
+          },
+          addresses: {
+            listen: [listenAddr]
+          },
+          connectionManager: {
+            autoDial: false
+          },
+          peerDiscovery: {
+            autoDial: false
+          },
+          peerId
+        })
+      })
+
+      sinon.spy(relayLibp2p.contentRouting, 'provide')
+    })
+
+    beforeEach(async () => {
+      nock('http://0.0.0.0:60197')
+        // mock the refs call
+        .post('/api/v0/refs')
+        .query(true)
+        .reply(200, null, [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
+
+      // Start each node
+      await Promise.all([libp2p, libp2p2, relayLibp2p].map(libp2p => libp2p.start()))
+
+      // Should provide on start
+      await pWaitFor(() => relayLibp2p.contentRouting.provide.callCount === 1)
+
+      const provider = relayLibp2p.peerId.toB58String()
+      const multiaddrs = relayLibp2p.multiaddrs.map((m) => m.toString())
+
+      // Mock findProviders
+      nock('http://0.0.0.0:60197')
+        .post('/api/v0/dht/findprovs')
+        .query(true)
+        .reply(200, `{"Extra":"","ID":"${provider}","Responses":[{"Addrs":${JSON.stringify(multiaddrs)},"ID":"${provider}"}],"Type":4}\n`, [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
+    })
+
+    afterEach(() => {
+      // Stop each node
+      return Promise.all([libp2p, libp2p2, relayLibp2p].map(libp2p => libp2p.stop()))
+    })
+
+    it('should find providers for relay and add it as listen relay', async () => {
+      const originalMultiaddrsLength = libp2p.multiaddrs.length
+
+      // Spy add listen relay
+      sinon.spy(libp2p.relay._autoRelay, '_addListenRelay')
+      // Spy Find Providers
+      sinon.spy(libp2p.contentRouting, 'findProviders')
+
+      // Try to listen on Available hop relays
+      await libp2p.relay._autoRelay._listenOnAvailableHopRelays()
+
+      // Should try to find relay service providers
+      await pWaitFor(() => libp2p.contentRouting.findProviders.callCount === 1)
+      // Wait for peer added as listen relay
+      await pWaitFor(() => libp2p.relay._autoRelay._addListenRelay.callCount === 1)
+      expect(libp2p.relay._autoRelay._listenRelays.size).to.equal(1)
+      await pWaitFor(() => libp2p.multiaddrs.length === originalMultiaddrsLength + 1)
+
+      const relayedAddr = libp2p.multiaddrs[libp2p.multiaddrs.length - 1]
+      libp2p2.peerStore.addressBook.set(libp2p2.peerId, [relayedAddr])
+
+      // Dial from peer 2 through the relayed address
+      const conn = await libp2p2.dial(libp2p2.peerId)
+      expect(conn).to.exist()
     })
   })
 })
