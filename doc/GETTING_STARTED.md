@@ -232,9 +232,9 @@ node.on('peer:discovery', (peer) => {
   console.log('Discovered %s', peer.id.toB58String()) // Log discovered peer
 })
 
-node.on('peer:connect', (peer) => {
-    console.log('Connected to %s', peer.id.toB58String()) // Log connected peer
-  })
+node.connectionManager.on('peer:connect', (connection) => {
+  console.log('Connected to %s', connection.remotePeer.toB58String()) // Log connected peer
+})
 
 // start libp2p
 await node.start()

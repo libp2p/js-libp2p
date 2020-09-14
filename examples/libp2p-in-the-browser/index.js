@@ -5,7 +5,7 @@ import WebRTCStar from 'libp2p-webrtc-star'
 import { NOISE } from 'libp2p-noise'
 import Secio from 'libp2p-secio'
 import Mplex from 'libp2p-mplex'
-import Boostrap from 'libp2p-bootstrap'
+import Bootstrap from 'libp2p-bootstrap'
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Create our libp2p node
@@ -23,11 +23,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       transport: [Websockets, WebRTCStar],
       connEncryption: [NOISE, Secio],
       streamMuxer: [Mplex],
-      peerDiscovery: [Boostrap]
+      peerDiscovery: [Bootstrap]
     },
     config: {
       peerDiscovery: {
-        bootstrap: {
+        // The `tag` property will be searched when creating the instance of your Peer Discovery service.
+        // The associated object, will be passed to the service when it is instantiated.
+        [Bootstrap.tag]: {
           enabled: true,
           list: [
             '/dns4/ams-1.bootstrap.libp2p.io/tcp/443/wss/p2p/QmSoLer265NRgSp2LA3dPaeykiS1J6DifTC88f5uVQKNAd',
