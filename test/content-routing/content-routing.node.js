@@ -12,6 +12,7 @@ const pDefer = require('p-defer')
 const mergeOptions = require('merge-options')
 
 const CID = require('cids')
+const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const multiaddr = require('multiaddr')
 
@@ -99,11 +100,11 @@ describe('content-routing', () => {
     beforeEach(async () => {
       const [peerId] = await peerUtils.createPeerId({ fixture: true })
 
-      delegate = new DelegatedContentRouter(peerId, {
+      delegate = new DelegatedContentRouter(peerId, ipfsHttpClient({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
-      }, [
+      }), [
         multiaddr('/ip4/0.0.0.0/tcp/60197')
       ])
 
@@ -230,11 +231,11 @@ describe('content-routing', () => {
     beforeEach(async () => {
       const [peerId] = await peerUtils.createPeerId({ fixture: true })
 
-      delegate = new DelegatedContentRouter(peerId, {
+      delegate = new DelegatedContentRouter(peerId, ipfsHttpClient({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
-      }, [
+      }), [
         multiaddr('/ip4/0.0.0.0/tcp/60197')
       ])
 

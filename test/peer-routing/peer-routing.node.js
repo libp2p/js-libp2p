@@ -10,6 +10,7 @@ const sinon = require('sinon')
 const pDefer = require('p-defer')
 const mergeOptions = require('merge-options')
 
+const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 
 const peerUtils = require('../utils/creators/peer')
@@ -72,11 +73,11 @@ describe('peer-routing', () => {
     let delegate
 
     beforeEach(async () => {
-      delegate = new DelegatedPeerRouter({
+      delegate = new DelegatedPeerRouter(ipfsHttpClient({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
-      })
+      }))
 
       ;[node] = await peerUtils.createPeer({
         config: mergeOptions(baseOptions, {
@@ -162,11 +163,11 @@ describe('peer-routing', () => {
     let delegate
 
     beforeEach(async () => {
-      delegate = new DelegatedPeerRouter({
+      delegate = new DelegatedPeerRouter(ipfsHttpClient({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
-      })
+      }))
 
       ;[node] = await peerUtils.createPeer({
         config: mergeOptions(routingOptions, {
