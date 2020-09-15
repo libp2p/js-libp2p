@@ -22,9 +22,9 @@ class AutoRelay {
    * @constructor
    * @param {object} props
    * @param {Libp2p} props.libp2p
-   * @param {number} props.maxListeners maximum number of relays to listen.
+   * @param {number} [props.maxListeners = 1] maximum number of relays to listen.
    */
-  constructor ({ libp2p, maxListeners }) {
+  constructor ({ libp2p, maxListeners = 1 }) {
     this._libp2p = libp2p
     this._peerId = libp2p.peerId
     this._peerStore = libp2p.peerStore
@@ -125,6 +125,7 @@ class AutoRelay {
 
     try {
       const remoteAddrs = this._peerStore.addressBook.get(connection.remotePeer)
+      // TODO: HOP Relays should avoid advertising private addresses!
       remoteMultiaddr = remoteAddrs.find(a => a.isCertified).multiaddr // Get first announced address certified
     } catch (_) {
       log.error(`${id} does not have announced certified multiaddrs`)
