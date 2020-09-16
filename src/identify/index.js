@@ -119,12 +119,12 @@ class IdentifyService {
 
   /**
    * Calls `push` for all peers in the `peerStore` that are connected
-   * @param {PeerStore} peerStore
+   * @returns {void}
    */
-  pushToPeerStore (peerStore) {
+  pushToPeerStore () {
     const connections = []
     let connection
-    for (const peer of peerStore.peers.values()) {
+    for (const peer of this.peerStore.peers.values()) {
       if (peer.protocols.includes(MULTICODEC_IDENTIFY_PUSH) && (connection = this.connectionManager.get(peer.id))) {
         connections.push(connection)
       }

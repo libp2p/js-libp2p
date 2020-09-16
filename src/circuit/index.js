@@ -1,16 +1,18 @@
 'use strict'
 
+const debug = require('debug')
+const log = debug('libp2p:circuit')
+log.error = debug('libp2p:circuit:error')
+
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 const withIs = require('class-is')
 const { CircuitRelay: CircuitPB } = require('./protocol')
 
-const debug = require('debug')
-const log = debug('libp2p:circuit')
-log.error = debug('libp2p:circuit:error')
 const toConnection = require('libp2p-utils/src/stream-to-ma-conn')
 
+const AutoRelay = require('./auto-relay')
 const { relay: multicodec } = require('./multicodec')
 const createListener = require('./listener')
 const { handleCanHop, handleHop, hop } = require('./circuit/hop')
@@ -35,11 +37,19 @@ class Circuit {
     this._libp2p = libp2p
     this.peerId = libp2p.peerId
     this._registrar.handle(multicodec, this._onProtocol.bind(this))
+
+    // Create autoRelay if enabled
+    this._autoRelay = this._options.autoRelay.enabled && new AutoRelay({ libp2p, ...this._options.autoRelay })
   }
 
-  async _onProtocol ({ connection, stream, protocol }) {
+  async _onProtocol ({ connection, stream }) {
     const streamHandler = new StreamHandler({ stream })
     const request = await streamHandler.read()
+
+    if (!request) {
+      return
+    }
+
     const circuit = this
     let virtualConnection
 
@@ -163,7 +173,7 @@ class Circuit {
     // Called on successful HOP and STOP requests
     this.handler = handler
 
-    return createListener(this, options)
+    return createListener(this._libp2p, options)
   }
 
   /**

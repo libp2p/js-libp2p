@@ -72,7 +72,7 @@ describe('Dialing (via relay, TCP)', () => {
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
     sinon.stub(dstLibp2p.addressManager, 'listen').value([multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
 
-    await dstLibp2p.transportManager.listen()
+    await dstLibp2p.transportManager.listen(dstLibp2p.addressManager.getListenAddrs())
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
     const connection = await srcLibp2p.dial(dialAddr)
@@ -157,7 +157,7 @@ describe('Dialing (via relay, TCP)', () => {
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
     sinon.stub(dstLibp2p.addressManager, 'getListenAddrs').returns([multiaddr(`${relayAddr}/p2p-circuit`)])
 
-    await dstLibp2p.transportManager.listen()
+    await dstLibp2p.transportManager.listen(dstLibp2p.addressManager.getListenAddrs())
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
     // Tamper with the our multiaddrs for the circuit message
