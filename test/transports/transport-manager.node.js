@@ -56,7 +56,7 @@ describe('Transport Manager (TCP)', () => {
 
   it('should be able to dial', async () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
-    await tm.listen()
+    await tm.listen(addrs)
     const addr = tm.getAddrs().shift()
     const connection = await tm.dial(addr)
     expect(connection).to.exist()
