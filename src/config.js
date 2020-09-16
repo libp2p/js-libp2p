@@ -54,6 +54,10 @@ const DefaultConfig = {
       hop: {
         enabled: false,
         active: false
+      },
+      autoRelay: {
+        enabled: false,
+        maxListeners: 2
       }
     },
     transport: {}
