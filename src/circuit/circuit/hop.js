@@ -117,6 +117,33 @@ module.exports.hop = async function hop ({
 }
 
 /**
+ * Performs a CAN_HOP request to a relay peer, in order to understand its capabilities.
+ * @param {object} options
+ * @param {Connection} options.connection Connection to the relay
+ * @returns {Promise<boolean>}
+ */
+module.exports.canHop = async function canHop ({
+  connection
+}) {
+  // Create a new stream to the relay
+  const { stream } = await connection.newStream([multicodec.relay])
+  // Send the HOP request
+  const streamHandler = new StreamHandler({ stream })
+  streamHandler.write({
+    type: CircuitPB.Type.CAN_HOP
+  })
+
+  const response = await streamHandler.read()
+  await streamHandler.close()
+
+  if (response.code !== CircuitPB.Status.SUCCESS) {
+    return false
+  }
+
+  return true
+}
+
+/**
  * Creates an unencoded CAN_HOP response based on the Circuits configuration
  *
  * @param {Object} options
