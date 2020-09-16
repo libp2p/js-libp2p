@@ -87,7 +87,7 @@ describe('Transport Manager (WebSockets)', () => {
   it('should fail to listen with no valid address', async () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
 
-    await expect(tm.listen())
+    await expect(tm.listen([listenAddr]))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })

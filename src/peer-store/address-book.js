@@ -270,7 +270,7 @@ class AddressBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @returns {Array<data>}
+   * @returns {Array<Address>|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
