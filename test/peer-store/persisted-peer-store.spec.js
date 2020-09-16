@@ -135,8 +135,7 @@ describe('Persisted PeerStore', () => {
       peerStore.keyBook.set(peers[0], peers[0].pubKey)
       peerStore.keyBook.set(peers[1], peers[1].pubKey)
 
-      // let batch commit complete
-      await Promise.all(commitSpy.returnValues)
+      // no batch commit as public key inline
 
       // ProtoBook
       peerStore.protoBook.set(peers[0], protocols)
@@ -151,7 +150,7 @@ describe('Persisted PeerStore', () => {
       // let batch commit complete
       await Promise.all(commitSpy.returnValues)
 
-      expect(spyDs).to.have.property('callCount', 7) // 2 Address + 2 Key + 2 Proto + 1 Metadata
+      expect(spyDs).to.have.property('callCount', 5) // 2 Address + 2 Proto + 1 Metadata
       expect(peerStore.peers.size).to.equal(2)
 
       await peerStore.stop()
@@ -164,12 +163,12 @@ describe('Persisted PeerStore', () => {
 
       await peerStore.start()
 
-      expect(spy).to.have.property('callCount', 7)
-      expect(spyDs).to.have.property('callCount', 7)
+      expect(spy).to.have.property('callCount', 5)
+      expect(spyDs).to.have.property('callCount', 5)
 
       expect(peerStore.peers.size).to.equal(2)
       expect(peerStore.addressBook.data.size).to.equal(2)
-      expect(peerStore.keyBook.data.size).to.equal(2)
+      expect(peerStore.keyBook.data.size).to.equal(0)
       expect(peerStore.protoBook.data.size).to.equal(2)
       expect(peerStore.metadataBook.data.size).to.equal(1)
     })
