@@ -248,7 +248,9 @@ If you want to know more about libp2p peer discovery, you should read the follow
 
 ## What is next
 
-There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](./CONFIGURATION.md) and the [examples folder](../examples). If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
+There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](./CONFIGURATION.md) and the [examples folder](../examples).
+For guidelines on how to enable discoverability and connectivity for your node environment and use case, you can check the [Discoverability and Connectivity Readme](./DISCOVERABILITY_AND_CONNECTIVITY.md).
+If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
 
 
 [transport]: https://github.com/libp2p/js-interfaces/tree/master/src/transport
