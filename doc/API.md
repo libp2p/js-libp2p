@@ -73,7 +73,6 @@
   * [`libp2p`](#libp2p)
   * [`libp2p.connectionManager`](#libp2pconnectionmanager)
   * [`libp2p.peerStore`](#libp2ppeerStore)
-  * [`libp2p.transportManager`](#libp2ptransportmanager)
 * [Types](#types)
   * [`Stats`](#stats)
 
@@ -1987,14 +1986,6 @@ This event will be triggered anytime we are disconnected from another peer, rega
 
 - `peerId`: instance of [`PeerId`][peer-id]
 - `protocols`: array of known, supported protocols for the peer (string identifiers)
-
-### libp2p.transportManager
-
-#### Listening addresses change
-
-This event will be triggered anytime the listening addresses change.
-
-`libp2p.transportManager.on('listening', () => {})`
 
 ## Types
 

@@ -65,11 +65,6 @@ class IdentifyService {
     this.connectionManager = libp2p.connectionManager
 
     /**
-     * @property {TransportManager}
-     */
-    this.transportManager = libp2p.transportManager
-
-    /**
      * @property {PeerId}
      */
     this.peerId = libp2p.peerId
@@ -89,10 +84,11 @@ class IdentifyService {
       this.identify(connection, peerId).catch(log.error)
     })
 
-    // When new addresses are used for listening, update self peer record
-    this.transportManager.on('listening', async () => {
-      await this._createSelfPeerRecord()
-      this.pushToPeerStore()
+    // When self multiaddrs change, trigger identify-push
+    this.peerStore.on('change:multiaddrs', ({ peerId }) => {
+      if (peerId.toString() === this.peerId.toString()) {
+        this.pushToPeerStore()
+      }
     })
   }
 
@@ -103,7 +99,7 @@ class IdentifyService {
    * @returns {Promise<void>}
    */
   async push (connections) {
-    const signedPeerRecord = await this._getSelfPeerRecord()
+    const signedPeerRecord = await this.peerStore.addressBook.getRawEnvelope(this.peerId)
     const listenAddrs = this._libp2p.multiaddrs.map((ma) => ma.bytes)
     const protocols = Array.from(this._protocols.keys())
 
@@ -253,7 +249,7 @@ class IdentifyService {
       publicKey = this.peerId.pubKey.bytes
     }
 
-    const signedPeerRecord = await this._getSelfPeerRecord()
+    const signedPeerRecord = await this.peerStore.addressBook.getRawEnvelope(this.peerId)
 
     const message = Message.encode({
       protocolVersion: PROTOCOL_VERSION,
@@ -322,40 +318,6 @@ class IdentifyService {
 
     // Update the protocols
     this.peerStore.protoBook.set(id, message.protocols)
-  }
-
-  /**
-   * Get self signed peer record raw envelope.
-   * @return {Promise<Uint8Array>}
-   */
-  _getSelfPeerRecord () {
-    const selfSignedPeerRecord = this.peerStore.addressBook.getRawEnvelope(this.peerId)
-
-    if (selfSignedPeerRecord) {
-      return selfSignedPeerRecord
-    }
-
-    return this._createSelfPeerRecord()
-  }
-
-  /**
-   * Create self signed peer record raw envelope.
-   * @return {Uint8Array}
-   */
-  async _createSelfPeerRecord () {
-    try {
-      const peerRecord = new PeerRecord({
-        peerId: this.peerId,
-        multiaddrs: this._libp2p.multiaddrs
-      })
-      const envelope = await Envelope.seal(peerRecord, this.peerId)
-      this.peerStore.addressBook.consumePeerRecord(envelope)
-
-      return this.peerStore.addressBook.getRawEnvelope(this.peerId)
-    } catch (err) {
-      log.error('failed to get self peer record')
-    }
-    return null
   }
 }
 
