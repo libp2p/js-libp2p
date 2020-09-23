@@ -1,5 +1,6 @@
 'use strict'
 
+const { EventEmitter } = require('events')
 const pSettle = require('p-settle')
 const { codes } = require('./errors')
 const errCode = require('err-code')
@@ -7,7 +8,11 @@ const debug = require('debug')
 const log = debug('libp2p:transports')
 log.error = debug('libp2p:transports:error')
 
-class TransportManager {
+/**
+ * Responsible for managing the transports and their listeners.
+ * @fires TransportManager#listening Emitted when listening addresses change.
+ */
+class TransportManager extends EventEmitter {
   /**
    * @class
    * @param {object} options
@@ -16,6 +21,8 @@ class TransportManager {
    * @param {boolean} [options.faultTolerance = FAULT_TOLERANCE.FATAL_ALL] - Address listen error tolerance.
    */
   constructor ({ libp2p, upgrader, faultTolerance = FAULT_TOLERANCE.FATAL_ALL }) {
+    super()
+
     this.libp2p = libp2p
     this.upgrader = upgrader
     this._transports = new Map()
@@ -63,6 +70,7 @@ class TransportManager {
       log('closing listeners for %s', key)
       while (listeners.length) {
         const listener = listeners.pop()
+        listener.removeAllListeners('listening')
         tasks.push(listener.close())
       }
     }
@@ -156,6 +164,9 @@ class TransportManager {
         const listener = transport.createListener({}, this.onConnection)
         this._listeners.get(key).push(listener)
 
+        // Track listen events
+        listener.on('listening', () => this.emit('listening'))
+
         // We need to attempt to listen on everything
         tasks.push(listener.listen(addr))
       }
@@ -200,6 +211,7 @@ class TransportManager {
     if (this._listeners.has(key)) {
       // Close any running listeners
       for (const listener of this._listeners.get(key)) {
+        listener.removeAllListeners('listening')
         await listener.close()
       }
     }
