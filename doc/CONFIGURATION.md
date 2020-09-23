@@ -20,6 +20,7 @@
       - [Customizing DHT](#customizing-dht)
       - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
       - [Setup with Relay](#setup-with-relay)
+      - [Setup with Auto Relay](#setup-with-auto-relay)
       - [Setup with Keychain](#setup-with-keychain)
       - [Configuring Dialing](#configuring-dialing)
       - [Configuring Connection Manager](#configuring-connection-manager)
@@ -419,7 +420,38 @@ const node = await Libp2p.create({
       hop: {
         enabled: true,         // Allows you to be a relay for other peers
         active: true           // You will attempt to dial destination peers if you are not connected to them
+      },
+      advertise: {
+        bootDelay: 15 * 60 * 1000, // Delay before HOP relay service is advertised on the network
+        enabled: true,          // Allows you to disable the advertise of the Hop service
+        ttl: 30 * 60 * 1000     // Delay Between HOP relay service advertisements on the network
       }
+    }
+  }
+})
+```
+
+#### Setup with Auto Relay
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const SECIO = require('libp2p-secio')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [SECIO]
+  },
+  config: {
+    relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
+      enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
+      autoRelay: {
+        enabled: false,         // Allows you to bind to relays with HOP enabled for improving node dialability
+        maxListeners: 2         // Configure maximum number of HOP relays to use
+      },
     }
   }
 })

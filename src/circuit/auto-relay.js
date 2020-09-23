@@ -242,7 +242,7 @@ class AutoRelay {
     try {
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
       for await (const provider of this._libp2p.contentRouting.findProviders(cid)) {
-        if (!provider || !provider.multiaddrs.length) {
+        if (!provider.multiaddrs.length) {
           continue
         }
         const peerId = provider.id
