@@ -20,8 +20,16 @@ class Relay {
    * @param {Libp2p} libp2p
    */
   constructor (libp2p) {
-    this._options = libp2p._config.relay
     this._libp2p = libp2p
+    this._options = {
+      advertise: {
+        bootDelay: ADVERTISE_BOOT_DELAY,
+        enabled: true,
+        ttl: ADVERTISE_TTL,
+        ...libp2p._config.relay.advertise
+      },
+      ...libp2p._config.relay
+    }
 
     // Create autoRelay if enabled
     this._autoRelay = this._options.autoRelay.enabled && new AutoRelay({ libp2p, ...this._options.autoRelay })
@@ -35,10 +43,10 @@ class Relay {
     // Advertise service if HOP enabled
     const canHop = this._options.hop.enabled
 
-    if (canHop) {
+    if (canHop && this._options.advertise.enabled) {
       this._timeout = setTimeout(() => {
         this._advertiseService()
-      }, this._options.advertise.bootDelay || ADVERTISE_BOOT_DELAY)
+      }, this._options.advertise.bootDelay)
     }
   }
 
@@ -64,12 +72,16 @@ class Relay {
       } else {
         log.error(err)
       }
+      // Stop the advertise
+      this.stop()
+
+      return
     }
 
     // Restart timeout
     this._timeout = setTimeout(() => {
       this._advertiseService()
-    }, this._options.advertise.ttl || ADVERTISE_TTL)
+    }, this._options.advertise.ttl)
   }
 }
 
