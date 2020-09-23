@@ -247,6 +247,7 @@ class Libp2p extends EventEmitter {
     log('libp2p is stopping')
 
     try {
+      this._isStarted = false
       for (const service of this._discovery.values()) {
         service.removeListener('peer', this._onDiscoveryPeer)
       }
@@ -258,7 +259,6 @@ class Libp2p extends EventEmitter {
       await this.peerStore.stop()
       await this.connectionManager.stop()
 
-      ping.unmount(this)
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
         this._dht && this._dht.stop(),
@@ -267,6 +267,8 @@ class Libp2p extends EventEmitter {
 
       await this.transportManager.close()
 
+      ping.unmount(this)
+
       this.dialer.destroy()
     } catch (err) {
       if (err) {
@@ -274,7 +276,6 @@ class Libp2p extends EventEmitter {
         this.emit('error', err)
       }
     }
-    this._isStarted = false
     log('libp2p has stopped')
   }
 
