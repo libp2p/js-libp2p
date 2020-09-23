@@ -52,6 +52,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
+        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: localPeer }),
         multiaddrs: listenMaddrs,
         _options: { host: {} }
@@ -63,6 +64,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
+        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: remotePeer }),
         multiaddrs: listenMaddrs,
         _options: { host: {} }
@@ -107,6 +109,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
+        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: localPeer }),
         multiaddrs: listenMaddrs,
         _options: { host: {} }
@@ -118,6 +121,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
+        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: remotePeer }),
         multiaddrs: listenMaddrs,
         _options: { host: {} }
@@ -168,6 +172,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
+        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: localPeer }),
         multiaddrs: [],
         _options: { host: {} }
@@ -178,6 +183,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
+        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: remotePeer }),
         multiaddrs: [],
         _options: { host: {} }
@@ -246,6 +252,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
+          transportManager: new EventEmitter(),
           peerStore: new PeerStore({ peerId: localPeer }),
           multiaddrs: listenMaddrs,
           _options: { host: {} }
@@ -260,6 +267,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: remotePeer,
           connectionManager,
+          transportManager: new EventEmitter(),
           peerStore: new PeerStore({ peerId: remotePeer }),
           multiaddrs: [],
           _options: { host: {} }
@@ -309,6 +317,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
+          transportManager: new EventEmitter(),
           peerStore: new PeerStore({ peerId: localPeer }),
           multiaddrs: listenMaddrs,
           _options: { host: {} }
@@ -323,6 +332,7 @@ describe('Identify', () => {
         libp2p: {
           peerId: remotePeer,
           connectionManager,
+          transportManager: new EventEmitter(),
           peerStore: new PeerStore({ peerId: remotePeer }),
           multiaddrs: [],
           _options: { host: {} }
