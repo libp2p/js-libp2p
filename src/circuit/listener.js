@@ -21,7 +21,7 @@ module.exports = (libp2p) => {
 
     if (deleted) {
       // Announce listen addresses change
-      listener.emit('listening')
+      listener.emit('close')
     }
   })
 
