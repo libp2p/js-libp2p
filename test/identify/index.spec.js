@@ -20,6 +20,7 @@ const { IdentifyService, multicodecs } = require('../../src/identify')
 const Peers = require('../fixtures/peers')
 const Libp2p = require('../../src')
 const Envelope = require('../../src/record/envelope')
+const PeerRecord = require('../../src/record/peer-record')
 const PeerStore = require('../../src/peer-store')
 const baseOptions = require('../utils/base-options.browser')
 const pkg = require('../../package.json')
@@ -52,7 +53,6 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: localPeer }),
         multiaddrs: listenMaddrs,
         _options: { host: {} }
@@ -64,7 +64,6 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: remotePeer }),
         multiaddrs: listenMaddrs,
         _options: { host: {} }
@@ -81,6 +80,9 @@ describe('Identify', () => {
 
     sinon.spy(localIdentify.peerStore.addressBook, 'consumePeerRecord')
     sinon.spy(localIdentify.peerStore.protoBook, 'set')
+
+    // Transport Manager creates signed peer record
+    await _createSelfPeerRecord(remoteIdentify._libp2p)
 
     // Run identify
     await Promise.all([
@@ -109,7 +111,6 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: localPeer }),
         multiaddrs: listenMaddrs,
         _options: { host: {} }
@@ -121,7 +122,6 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: remotePeer }),
         multiaddrs: listenMaddrs,
         _options: { host: {} }
@@ -172,7 +172,6 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: localPeer }),
         multiaddrs: [],
         _options: { host: {} }
@@ -183,7 +182,6 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        transportManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: remotePeer }),
         multiaddrs: [],
         _options: { host: {} }
@@ -252,7 +250,6 @@ describe('Identify', () => {
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
-          transportManager: new EventEmitter(),
           peerStore: new PeerStore({ peerId: localPeer }),
           multiaddrs: listenMaddrs,
           _options: { host: {} }
@@ -267,7 +264,6 @@ describe('Identify', () => {
         libp2p: {
           peerId: remotePeer,
           connectionManager,
-          transportManager: new EventEmitter(),
           peerStore: new PeerStore({ peerId: remotePeer }),
           multiaddrs: [],
           _options: { host: {} }
@@ -285,6 +281,10 @@ describe('Identify', () => {
       sinon.spy(remoteIdentify.peerStore.addressBook, 'consumePeerRecord')
       sinon.spy(remoteIdentify.peerStore.protoBook, 'set')
 
+      // Transport Manager creates signed peer record
+      await _createSelfPeerRecord(localIdentify._libp2p)
+      await _createSelfPeerRecord(remoteIdentify._libp2p)
+
       // Run identify
       await Promise.all([
         localIdentify.push([localConnectionMock]),
@@ -295,7 +295,7 @@ describe('Identify', () => {
         })
       ])
 
-      expect(remoteIdentify.peerStore.addressBook.consumePeerRecord.callCount).to.equal(1)
+      expect(remoteIdentify.peerStore.addressBook.consumePeerRecord.callCount).to.equal(2)
       expect(remoteIdentify.peerStore.protoBook.set.callCount).to.equal(1)
 
       const addresses = localIdentify.peerStore.addressBook.get(localPeer)
@@ -317,7 +317,6 @@ describe('Identify', () => {
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
-          transportManager: new EventEmitter(),
           peerStore: new PeerStore({ peerId: localPeer }),
           multiaddrs: listenMaddrs,
           _options: { host: {} }
@@ -332,7 +331,6 @@ describe('Identify', () => {
         libp2p: {
           peerId: remotePeer,
           connectionManager,
-          transportManager: new EventEmitter(),
           peerStore: new PeerStore({ peerId: remotePeer }),
           multiaddrs: [],
           _options: { host: {} }
@@ -409,8 +407,8 @@ describe('Identify', () => {
       expect(connection).to.exist()
 
       // Wait for peer store to be updated
-      // Dialer._createDialTarget (add), Identify (consume), Create self (consume)
-      await pWaitFor(() => peerStoreSpyConsumeRecord.callCount === 2 && peerStoreSpyAdd.callCount === 1)
+      // Dialer._createDialTarget (add), Identify (consume)
+      await pWaitFor(() => peerStoreSpyConsumeRecord.callCount === 1 && peerStoreSpyAdd.callCount === 1)
       expect(libp2p.identifyService.identify.callCount).to.equal(1)
 
       // The connection should have no open streams
@@ -474,3 +472,18 @@ describe('Identify', () => {
     })
   })
 })
+
+// Self peer record creating on Transport Manager simulation
+const _createSelfPeerRecord = async (libp2p) => {
+  try {
+    const peerRecord = new PeerRecord({
+      peerId: libp2p.peerId,
+      multiaddrs: libp2p.multiaddrs
+    })
+    const envelope = await Envelope.seal(peerRecord, libp2p.peerId)
+    libp2p.peerStore.addressBook.consumePeerRecord(envelope)
+
+    return libp2p.peerStore.addressBook.getRawEnvelope(libp2p.peerId)
+  } catch (_) {}
+  return null
+}
