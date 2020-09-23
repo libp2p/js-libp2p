@@ -462,15 +462,15 @@ describe('auto-relay', () => {
   })
 
   describe('discovery', () => {
-    let libp2p
-    let libp2p2
+    let local
+    let remote
     let relayLibp2p
 
     beforeEach(async () => {
       const peerIds = await createPeerId({ number: 3 })
 
       // Create 2 nodes, and turn HOP on for the relay
-      ;[libp2p, libp2p2, relayLibp2p] = peerIds.map((peerId, index) => {
+      ;[local, remote, relayLibp2p] = peerIds.map((peerId, index) => {
         const delegate = new DelegatedContentRouter(peerId, ipfsHttpClient({
           host: '0.0.0.0',
           protocol: 'http',
@@ -532,7 +532,7 @@ describe('auto-relay', () => {
         ])
 
       // Start each node
-      await Promise.all([libp2p, libp2p2, relayLibp2p].map(libp2p => libp2p.start()))
+      await Promise.all([local, remote, relayLibp2p].map(libp2p => libp2p.start()))
 
       // Should provide on start
       await pWaitFor(() => relayLibp2p.contentRouting.provide.callCount === 1)
@@ -552,32 +552,32 @@ describe('auto-relay', () => {
 
     afterEach(() => {
       // Stop each node
-      return Promise.all([libp2p, libp2p2, relayLibp2p].map(libp2p => libp2p.stop()))
+      return Promise.all([local, remote, relayLibp2p].map(libp2p => libp2p.stop()))
     })
 
     it('should find providers for relay and add it as listen relay', async () => {
-      const originalMultiaddrsLength = libp2p.multiaddrs.length
+      const originalMultiaddrsLength = local.multiaddrs.length
 
       // Spy add listen relay
-      sinon.spy(libp2p.relay._autoRelay, '_addListenRelay')
+      sinon.spy(local.relay._autoRelay, '_addListenRelay')
       // Spy Find Providers
-      sinon.spy(libp2p.contentRouting, 'findProviders')
+      sinon.spy(local.contentRouting, 'findProviders')
 
       // Try to listen on Available hop relays
-      await libp2p.relay._autoRelay._listenOnAvailableHopRelays()
+      await local.relay._autoRelay._listenOnAvailableHopRelays()
 
       // Should try to find relay service providers
-      await pWaitFor(() => libp2p.contentRouting.findProviders.callCount === 1)
+      await pWaitFor(() => local.contentRouting.findProviders.callCount === 1)
       // Wait for peer added as listen relay
-      await pWaitFor(() => libp2p.relay._autoRelay._addListenRelay.callCount === 1)
-      expect(libp2p.relay._autoRelay._listenRelays.size).to.equal(1)
-      await pWaitFor(() => libp2p.multiaddrs.length === originalMultiaddrsLength + 1)
+      await pWaitFor(() => local.relay._autoRelay._addListenRelay.callCount === 1)
+      expect(local.relay._autoRelay._listenRelays.size).to.equal(1)
+      await pWaitFor(() => local.multiaddrs.length === originalMultiaddrsLength + 1)
 
-      const relayedAddr = libp2p.multiaddrs[libp2p.multiaddrs.length - 1]
-      libp2p2.peerStore.addressBook.set(libp2p2.peerId, [relayedAddr])
+      const relayedAddr = local.multiaddrs[local.multiaddrs.length - 1]
+      remote.peerStore.addressBook.set(local.peerId, [relayedAddr])
 
-      // Dial from peer 2 through the relayed address
-      const conn = await libp2p2.dial(libp2p2.peerId)
+      // Dial from remote through the relayed address
+      const conn = await remote.dial(local.peerId)
       expect(conn).to.exist()
     })
   })
