@@ -1,6 +1,5 @@
 'use strict'
 
-const { EventEmitter } = require('events')
 const pSettle = require('p-settle')
 const { codes } = require('./errors')
 const errCode = require('err-code')
@@ -8,11 +7,10 @@ const debug = require('debug')
 const log = debug('libp2p:transports')
 log.error = debug('libp2p:transports:error')
 
-/**
- * Responsible for managing the transports and their listeners.
- * @fires TransportManager#listening Emitted when listening addresses change.
- */
-class TransportManager extends EventEmitter {
+const Envelope = require('./record/envelope')
+const PeerRecord = require('./record/peer-record')
+
+class TransportManager {
   /**
    * @constructor
    * @param {object} options
@@ -21,8 +19,6 @@ class TransportManager extends EventEmitter {
    * @param {boolean} [options.faultTolerance = FAULT_TOLERANCE.FATAL_ALL] Address listen error tolerance.
    */
   constructor ({ libp2p, upgrader, faultTolerance = FAULT_TOLERANCE.FATAL_ALL }) {
-    super()
-
     this.libp2p = libp2p
     this.upgrader = upgrader
     this._transports = new Map()
@@ -70,6 +66,7 @@ class TransportManager extends EventEmitter {
       while (listeners.length) {
         const listener = listeners.pop()
         listener.removeAllListeners('listening')
+        listener.removeAllListeners('close')
         tasks.push(listener.close())
       }
     }
@@ -158,8 +155,9 @@ class TransportManager extends EventEmitter {
         const listener = transport.createListener({}, this.onConnection)
         this._listeners.get(key).push(listener)
 
-        // Track listen events
-        listener.on('listening', () => this.emit('listening'))
+        // Track listen/close events
+        listener.on('listening', () => this._createSelfPeerRecord())
+        listener.on('close', () => this._createSelfPeerRecord())
 
         // We need to attempt to listen on everything
         tasks.push(listener.listen(addr))
@@ -206,6 +204,7 @@ class TransportManager extends EventEmitter {
       // Close any running listeners
       for (const listener of this._listeners.get(key)) {
         listener.removeAllListeners('listening')
+        listener.removeAllListeners('close')
         await listener.close()
       }
     }
@@ -226,6 +225,26 @@ class TransportManager extends EventEmitter {
     }
 
     await Promise.all(tasks)
+  }
+
+  /**
+   * Create self signed peer record raw envelope.
+   * @return {Uint8Array}
+   */
+  async _createSelfPeerRecord () {
+    try {
+      const peerRecord = new PeerRecord({
+        peerId: this.libp2p.peerId,
+        multiaddrs: this.libp2p.multiaddrs
+      })
+      const envelope = await Envelope.seal(peerRecord, this.libp2p.peerId)
+      this.libp2p.peerStore.addressBook.consumePeerRecord(envelope)
+
+      return this.libp2p.peerStore.addressBook.getRawEnvelope(this.libp2p.peerId)
+    } catch (err) {
+      log.error('failed to get self peer record')
+    }
+    return null
   }
 }
 
