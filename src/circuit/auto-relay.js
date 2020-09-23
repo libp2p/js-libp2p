@@ -143,8 +143,7 @@ class AutoRelay {
 
     try {
       await this._transportManager.listen([multiaddr(listenAddr)])
-      // Announce multiaddrs update on listen success
-      await this._libp2p.identifyService.pushToPeerStore()
+      // Announce multiaddrs will update on listen success by TransportManager event being triggered
     } catch (err) {
       log.error(err)
       this._listenRelays.delete(id)

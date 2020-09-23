@@ -268,7 +268,6 @@ class Libp2p extends EventEmitter {
       await this.transportManager.close()
 
       ping.unmount(this)
-
       this.dialer.destroy()
     } catch (err) {
       if (err) {

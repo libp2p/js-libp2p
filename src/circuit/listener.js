@@ -20,8 +20,8 @@ module.exports = (libp2p) => {
     const deleted = listeningAddrs.delete(connection.remotePeer.toB58String())
 
     if (deleted) {
-      // Announce multiaddrs update on listen success
-      libp2p.identifyService.pushToPeerStore()
+      // Announce listen addresses change
+      listener.emit('listening')
     }
   })
 
