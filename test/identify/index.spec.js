@@ -470,6 +470,42 @@ describe('Identify', () => {
       expect(agentVersion).to.eql(unit8ArrayToString(storedAgentVersion))
       expect(storedProtocolVersion).to.exist()
     })
+
+    it('should push multiaddr updates to an already connected peer', async () => {
+      libp2p = new Libp2p({
+        ...baseOptions,
+        peerId
+      })
+
+      await libp2p.start()
+
+      sinon.spy(libp2p.identifyService, 'identify')
+      sinon.spy(libp2p.identifyService, 'push')
+
+      const connection = await libp2p.dialer.connectToPeer(remoteAddr)
+      expect(connection).to.exist()
+      // Wait for nextTick to trigger the identify call
+      await delay(1)
+
+      // Wait for identify to finish
+      await libp2p.identifyService.identify.firstCall.returnValue
+      sinon.stub(libp2p, 'isStarted').returns(true)
+
+      libp2p.peerStore.addressBook.add(libp2p.peerId, [multiaddr('/ip4/180.0.0.1/tcp/15001/ws')])
+
+      // Verify the remote peer is notified of change
+      expect(libp2p.identifyService.push.callCount).to.equal(1)
+      for (const call of libp2p.identifyService.push.getCalls()) {
+        const [connections] = call.args
+        expect(connections.length).to.equal(1)
+        expect(connections[0].remotePeer.toB58String()).to.equal(remoteAddr.getPeerId())
+        const results = await call.returnValue
+        expect(results.length).to.equal(1)
+      }
+
+      // Verify the streams close
+      await pWaitFor(() => connection.streams.length === 0)
+    })
   })
 })
 
@@ -482,8 +518,5 @@ const _createSelfPeerRecord = async (libp2p) => {
     })
     const envelope = await Envelope.seal(peerRecord, libp2p.peerId)
     libp2p.peerStore.addressBook.consumePeerRecord(envelope)
-
-    return libp2p.peerStore.addressBook.getRawEnvelope(libp2p.peerId)
   } catch (_) {}
-  return null
 }
