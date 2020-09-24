@@ -8,7 +8,6 @@ const { expect } = chai
 const sinon = require('sinon')
 
 const { EventEmitter } = require('events')
-const delay = require('delay')
 const PeerId = require('peer-id')
 const duplexPair = require('it-pair/duplex')
 const multiaddr = require('multiaddr')
@@ -20,9 +19,9 @@ const { IdentifyService, multicodecs } = require('../../src/identify')
 const Peers = require('../fixtures/peers')
 const Libp2p = require('../../src')
 const Envelope = require('../../src/record/envelope')
-const PeerRecord = require('../../src/record/peer-record')
 const PeerStore = require('../../src/peer-store')
 const baseOptions = require('../utils/base-options.browser')
+const { updateSelfPeerRecord } = require('../../src/record/utils')
 const pkg = require('../../package.json')
 
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
@@ -80,7 +79,7 @@ describe('Identify', () => {
     sinon.spy(localIdentify.peerStore.protoBook, 'set')
 
     // Transport Manager creates signed peer record
-    await _createSelfPeerRecord(remoteIdentify._libp2p)
+    await updateSelfPeerRecord(remoteIdentify._libp2p)
 
     // Run identify
     await Promise.all([
@@ -244,8 +243,8 @@ describe('Identify', () => {
       sinon.spy(remoteIdentify.peerStore.protoBook, 'set')
 
       // Transport Manager creates signed peer record
-      await _createSelfPeerRecord(localIdentify._libp2p)
-      await _createSelfPeerRecord(remoteIdentify._libp2p)
+      await updateSelfPeerRecord(localIdentify._libp2p)
+      await updateSelfPeerRecord(remoteIdentify._libp2p)
 
       // Run identify
       await Promise.all([
@@ -389,8 +388,6 @@ describe('Identify', () => {
 
       const connection = await libp2p.dialer.connectToPeer(remoteAddr)
       expect(connection).to.exist()
-      // Wait for nextTick to trigger the identify call
-      await delay(1)
 
       // Wait for identify to finish
       await libp2p.identifyService.identify.firstCall.returnValue
@@ -426,8 +423,6 @@ describe('Identify', () => {
 
       const connection = await libp2p.dialer.connectToPeer(remoteAddr)
       expect(connection).to.exist()
-      // Wait for nextTick to trigger the identify call
-      await delay(1)
 
       // Wait for identify to finish
       await libp2p.identifyService.identify.firstCall.returnValue
@@ -450,15 +445,3 @@ describe('Identify', () => {
     })
   })
 })
-
-// Self peer record creating on Transport Manager simulation
-const _createSelfPeerRecord = async (libp2p) => {
-  try {
-    const peerRecord = new PeerRecord({
-      peerId: libp2p.peerId,
-      multiaddrs: libp2p.multiaddrs
-    })
-    const envelope = await Envelope.seal(peerRecord, libp2p.peerId)
-    libp2p.peerStore.addressBook.consumePeerRecord(envelope)
-  } catch (_) {}
-}
