@@ -4,11 +4,11 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
-const sinon = require('sinon')
 
 const AddressManager = require('../../src/address-manager')
 const TransportManager = require('../../src/transport-manager')
 const PeerStore = require('../../src/peer-store')
+const PeerRecord = require('../../src/record/peer-record')
 const Transport = require('libp2p-tcp')
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
@@ -27,11 +27,13 @@ describe('Transport Manager (TCP)', () => {
     localPeer = await PeerId.createFromJSON(Peers[0])
   })
 
-  before(() => {
+  beforeEach(() => {
     tm = new TransportManager({
       libp2p: {
+        peerId: localPeer,
+        multiaddrs: addrs,
         addressManager: new AddressManager({ listen: addrs }),
-        PeerStore: new PeerStore({ peerId: localPeer })
+        peerStore: new PeerStore({ peerId: localPeer })
       },
       upgrader: mockUpgrader,
       onConnection: () => {}
@@ -50,20 +52,34 @@ describe('Transport Manager (TCP)', () => {
   })
 
   it('should be able to listen', async () => {
-    sinon.spy(tm, '_createSelfPeerRecord')
-
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
     await tm.listen(addrs)
     expect(tm._listeners).to.have.key(Transport.prototype[Symbol.toStringTag])
     expect(tm._listeners.get(Transport.prototype[Symbol.toStringTag])).to.have.length(addrs.length)
 
-    // Created Self Peer record on new listen address
-    expect(tm._createSelfPeerRecord.callCount).to.equal(addrs.length)
-
     // Ephemeral ip addresses may result in multiple listeners
     expect(tm.getAddrs().length).to.equal(addrs.length)
     await tm.close()
     expect(tm._listeners.get(Transport.prototype[Symbol.toStringTag])).to.have.length(0)
+  })
+
+  it('should create self signed peer record on listen', async () => {
+    let signedPeerRecord = await tm.libp2p.peerStore.addressBook.getPeerRecord(localPeer)
+    expect(signedPeerRecord).to.not.exist()
+
+    tm.add(Transport.prototype[Symbol.toStringTag], Transport)
+    await tm.listen(addrs)
+
+    // Should created Self Peer record on new listen address
+    signedPeerRecord = await tm.libp2p.peerStore.addressBook.getPeerRecord(localPeer)
+    expect(signedPeerRecord).to.exist()
+
+    const record = PeerRecord.createFromProtobuf(signedPeerRecord.payload)
+    expect(record).to.exist()
+    expect(record.multiaddrs.length).to.equal(addrs.length)
+    addrs.forEach((a, i) => {
+      expect(record.multiaddrs[i].equals(a)).to.be.true()
+    })
   })
 
   it('should be able to dial', async () => {
