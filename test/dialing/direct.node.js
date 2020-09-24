@@ -42,21 +42,28 @@ describe('Dialing (direct, TCP)', () => {
   let peerStore
   let remoteAddr
 
-  before(async () => {
-    const [remotePeerId] = await Promise.all([
-      PeerId.createFromJSON(Peers[0])
+  beforeEach(async () => {
+    const [localPeerId, remotePeerId] = await Promise.all([
+      PeerId.createFromJSON(Peers[0]),
+      PeerId.createFromJSON(Peers[1])
     ])
+
+    peerStore = new PeerStore({ peerId: remotePeerId })
     remoteTM = new TransportManager({
       libp2p: {
-        addressManager: new AddressManager({ listen: [listenAddr] })
+        addressManager: new AddressManager({ listen: [listenAddr] }),
+        peerId: remotePeerId,
+        peerStore
       },
       upgrader: mockUpgrader
     })
     remoteTM.add(Transport.prototype[Symbol.toStringTag], Transport)
 
-    peerStore = new PeerStore({ peerId: remotePeerId })
     localTM = new TransportManager({
-      libp2p: {},
+      libp2p: {
+        peerId: localPeerId,
+        peerStore: new PeerStore({ peerId: localPeerId })
+      },
       upgrader: mockUpgrader
     })
     localTM.add(Transport.prototype[Symbol.toStringTag], Transport)
@@ -66,7 +73,7 @@ describe('Dialing (direct, TCP)', () => {
     remoteAddr = remoteTM.getAddrs()[0].encapsulate(`/p2p/${remotePeerId.toB58String()}`)
   })
 
-  after(() => remoteTM.close())
+  afterEach(() => remoteTM.close())
 
   afterEach(() => {
     sinon.restore()
@@ -112,7 +119,7 @@ describe('Dialing (direct, TCP)', () => {
       peerStore
     })
 
-    peerStore.addressBook.set(peerId, [remoteAddr])
+    peerStore.addressBook.set(peerId, remoteTM.getAddrs())
 
     const connection = await dialer.connectToPeer(peerId)
     expect(connection).to.exist()
