@@ -7,8 +7,7 @@ const debug = require('debug')
 const log = debug('libp2p:transports')
 log.error = debug('libp2p:transports:error')
 
-const Envelope = require('./record/envelope')
-const PeerRecord = require('./record/peer-record')
+const { updateSelfPeerRecord } = require('./record/utils')
 
 class TransportManager {
   /**
@@ -162,8 +161,8 @@ class TransportManager {
         this._listeners.get(key).push(listener)
 
         // Track listen/close events
-        listener.on('listening', () => this._createSelfPeerRecord())
-        listener.on('close', () => this._createSelfPeerRecord())
+        listener.on('listening', () => updateSelfPeerRecord(this.libp2p))
+        listener.on('close', () => updateSelfPeerRecord(this.libp2p))
 
         // We need to attempt to listen on everything
         tasks.push(listener.listen(addr))
@@ -232,26 +231,6 @@ class TransportManager {
     }
 
     await Promise.all(tasks)
-  }
-
-  /**
-   * Create self signed peer record raw envelope.
-   * @return {Uint8Array}
-   */
-  async _createSelfPeerRecord () {
-    try {
-      const peerRecord = new PeerRecord({
-        peerId: this.libp2p.peerId,
-        multiaddrs: this.libp2p.multiaddrs
-      })
-      const envelope = await Envelope.seal(peerRecord, this.libp2p.peerId)
-      this.libp2p.peerStore.addressBook.consumePeerRecord(envelope)
-
-      return this.libp2p.peerStore.addressBook.getRawEnvelope(this.libp2p.peerId)
-    } catch (err) {
-      log.error('failed to get self peer record')
-    }
-    return null
   }
 }
 
