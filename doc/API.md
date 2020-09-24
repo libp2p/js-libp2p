@@ -37,6 +37,7 @@
   * [`peerStore.protoBook.add`](#peerstoreprotobookadd)
   * [`peerStore.protoBook.delete`](#peerstoreprotobookdelete)
   * [`peerStore.protoBook.get`](#peerstoreprotobookget)
+  * [`peerStore.protoBook.remove`](#peerstoreprotobookremove)
   * [`peerStore.protoBook.set`](#peerstoreprotobookset)
   * [`peerStore.delete`](#peerstoredelete)
   * [`peerStore.get`](#peerstoreget)
@@ -843,32 +844,6 @@ Consider using `addressBook.add()` if you're not sure this is what you want to d
 peerStore.addressBook.add(peerId, multiaddr)
 ```
 
-### peerStore.protoBook.add
-
-Add known `protocols` of a given peer.
-
-`peerStore.protoBook.add(peerId, protocols)`
-
-#### Parameters
-
-| Name | Type | Description |
-|------|------|-------------|
-| peerId | [`PeerId`][peer-id] | peerId to set |
-| protocols | `Array<string>` | protocols to add |
-
-#### Returns
-
-| Type | Description |
-|------|-------------|
-| `ProtoBook` | Returns the Proto Book component |
-
-#### Example
-
-```js
-peerStore.protoBook.add(peerId, protocols)
-```
-
-
 ### peerStore.keyBook.delete
 
 Delete the provided peer from the book.
@@ -1091,6 +1066,31 @@ Set known metadata of a given `peerId`.
 peerStore.metadataBook.set(peerId, 'location', uint8ArrayFromString('Berlin'))
 ```
 
+### peerStore.protoBook.add
+
+Add known `protocols` of a given peer.
+
+`peerStore.protoBook.add(peerId, protocols)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to set |
+| protocols | `Array<string>` | protocols to add |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `ProtoBook` | Returns the Proto Book component |
+
+#### Example
+
+```js
+peerStore.protoBook.add(peerId, protocols)
+```
+
 ### peerStore.protoBook.delete
 
 Delete the provided peer from the book.
@@ -1145,6 +1145,31 @@ peerStore.protoBook.get(peerId)
 peerStore.protoBook.set(peerId, [ '/proto/1.0.0', '/proto/1.1.0' ])
 peerStore.protoBook.get(peerId)
 // [ '/proto/1.0.0', '/proto/1.1.0' ]
+```
+
+### peerStore.protoBook.remove
+
+Remove given `protocols` of a given peer.
+
+`peerStore.protoBook.remove(peerId, protocols)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | [`PeerId`][peer-id] | peerId to set |
+| protocols | `Array<string>` | protocols to remove |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `ProtoBook` | Returns the Proto Book component |
+
+#### Example
+
+```js
+peerStore.protoBook.remove(peerId, protocols)
 ```
 
 ### peerStore.protoBook.set

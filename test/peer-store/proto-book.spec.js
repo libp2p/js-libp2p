@@ -224,6 +224,113 @@ describe('protoBook', () => {
     })
   })
 
+  describe('protoBook.remove', () => {
+    let peerStore, pb
+
+    beforeEach(() => {
+      peerStore = new PeerStore({ peerId })
+      pb = peerStore.protoBook
+    })
+
+    afterEach(() => {
+      peerStore.removeAllListeners()
+    })
+
+    it('throwns invalid parameters error if invalid PeerId is provided', () => {
+      expect(() => {
+        pb.remove('invalid peerId')
+      }).to.throw(ERR_INVALID_PARAMETERS)
+    })
+
+    it('throwns invalid parameters error if no protocols provided', () => {
+      expect(() => {
+        pb.remove(peerId)
+      }).to.throw(ERR_INVALID_PARAMETERS)
+    })
+
+    it('removes the given protocol and emits change event', () => {
+      const defer = pDefer()
+
+      const supportedProtocols = ['protocol1', 'protocol2']
+      const removedProtocols = ['protocol1']
+      const finalProtocols = supportedProtocols.filter(p => !removedProtocols.includes(p))
+
+      let changeTrigger = 2
+      peerStore.on('change:protocols', ({ protocols }) => {
+        changeTrigger--
+        if (changeTrigger === 0 && arraysAreEqual(protocols, finalProtocols)) {
+          defer.resolve()
+        }
+      })
+
+      // Replace
+      pb.set(peerId, supportedProtocols)
+      let protocols = pb.get(peerId)
+      expect(protocols).to.have.deep.members(supportedProtocols)
+
+      // Remove
+      pb.remove(peerId, removedProtocols)
+      protocols = pb.get(peerId)
+      expect(protocols).to.have.deep.members(finalProtocols)
+
+      return defer.promise
+    })
+
+    it('emits on remove if the content changes', () => {
+      const defer = pDefer()
+
+      const supportedProtocols = ['protocol1', 'protocol2']
+      const removedProtocols = ['protocol2']
+      const finalProtocols = supportedProtocols.filter(p => !removedProtocols.includes(p))
+
+      let changeCounter = 0
+      peerStore.on('change:protocols', () => {
+        changeCounter++
+        if (changeCounter > 1) {
+          defer.resolve()
+        }
+      })
+
+      // set
+      pb.set(peerId, supportedProtocols)
+
+      // remove (content already existing)
+      pb.remove(peerId, removedProtocols)
+      const protocols = pb.get(peerId)
+      expect(protocols).to.have.deep.members(finalProtocols)
+
+      return defer.promise
+    })
+
+    it('does not emit on remove if the content does not change', () => {
+      const defer = pDefer()
+
+      const supportedProtocols = ['protocol1', 'protocol2']
+      const removedProtocols = ['protocol3']
+
+      let changeCounter = 0
+      peerStore.on('change:protocols', () => {
+        changeCounter++
+        if (changeCounter > 1) {
+          defer.reject()
+        }
+      })
+
+      // set
+      pb.set(peerId, supportedProtocols)
+
+      // remove
+      pb.remove(peerId, removedProtocols)
+
+      // Wait 50ms for incorrect second event
+      setTimeout(() => {
+        defer.resolve()
+      }, 50)
+
+      return defer.promise
+    })
+  })
+
   describe('protoBook.get', () => {
     let peerStore, pb
 
