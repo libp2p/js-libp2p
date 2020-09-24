@@ -1,6 +1,6 @@
 'use strict'
 
-const EventEmitter = require('events')
+const EventEmitter = require('proper-event-emitter')
 const multiaddr = require('multiaddr')
 
 const debug = require('debug')

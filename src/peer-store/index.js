@@ -5,7 +5,7 @@ const debug = require('debug')
 const log = debug('libp2p:peer-store')
 log.error = debug('libp2p:peer-store:error')
 
-const { EventEmitter } = require('events')
+const EventEmitter = require('proper-event-emitter')
 const PeerId = require('peer-id')
 
 const AddressBook = require('./address-book')

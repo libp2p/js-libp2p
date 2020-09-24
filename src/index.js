@@ -1,6 +1,6 @@
 'use strict'
 
-const { EventEmitter } = require('events')
+const EventEmitter = require('proper-event-emitter')
 const debug = require('debug')
 const globalThis = require('ipfs-utils/src/globalthis')
 const log = debug('libp2p')

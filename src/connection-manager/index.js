@@ -9,7 +9,7 @@ const mergeOptions = require('merge-options')
 const LatencyMonitor = require('./latency-monitor')
 const retimer = require('retimer')
 
-const { EventEmitter } = require('events')
+const EventEmitter = require('proper-event-emitter')
 
 const PeerId = require('peer-id')
 
@@ -199,6 +199,7 @@ class ConnectionManager extends EventEmitter {
     const storedConn = this.connections.get(peerIdStr)
 
     this.emit('peer:connect', connection)
+
     if (storedConn) {
       storedConn.push(connection)
     } else {
