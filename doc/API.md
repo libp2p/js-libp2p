@@ -20,6 +20,8 @@
   * [`contentRouting.put`](#contentroutingput)
   * [`contentRouting.get`](#contentroutingget)
   * [`contentRouting.getMany`](#contentroutinggetmany)
+  * [`discovery.advertise`](#discoveryadvertise)
+  * [`discovery.findPeers`](#discoveryfindpeers)
   * [`peerRouting.findPeer`](#peerroutingfindpeer)
   * [`peerStore.addressBook.add`](#peerstoreaddressbookadd)
   * [`peerStore.addressBook.delete`](#peerstoreaddressbookdelete)
@@ -664,6 +666,64 @@ Queries the DHT for the n values stored for the given key (without sorting).
 
 const key = '/key'
 const { from, val } = await libp2p.contentRouting.get(key)
+```
+
+### discovery.advertise
+
+Advertise services on the network.
+This will use content routing modules and rendezvous if enabled.
+
+`libp2p.discovery.advertise(namespace, options)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| namespace | `string` | namespace of the service to advertise |
+| [options] | `object` | advertise options |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<void>` | Promise resolves once advertise messages are sent |
+
+#### Example
+
+```js
+// ...
+const namespace = '/libp2p/relay'
+await libp2p.discovery.advertise(namespace)
+```
+
+### discovery.findPeers
+
+Discover peers providing a given service.
+This will use content routing modules and rendezvous if enabled and will store the peers data in the PeerStore.
+
+`libp2p.discovery.findPeers(namespace, options)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| namespace | `string` | namespace of the service to find peers |
+| [options] | `object` | find peers options |
+| [options.limit] | `number` | number of distinct peers to find |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `AsyncIterable<PeerId>}` |  Async iterator for peers |
+
+#### Example
+
+```js
+// Iterate over the peers found for the given namespace
+for await (const peer of libp2p.discovery.findPeers(namespace)) {
+  console.log(peer)
+}
 ```
 
 ### peerRouting.findPeer

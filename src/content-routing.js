@@ -16,6 +16,7 @@ module.exports = (node) => {
   }
 
   return {
+    routers,
     /**
      * Iterates over all content routers in series to find providers of the given key.
      * Once a content router succeeds, iteration will stop.
@@ -30,6 +31,8 @@ module.exports = (node) => {
       if (!routers.length) {
         throw errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE')
       }
+
+      // TODO: Abortables
 
       const result = await pAny(
         routers.map(async (router) => {
