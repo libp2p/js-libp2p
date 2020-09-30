@@ -15,6 +15,7 @@ const { NOISE: Crypto } = require('libp2p-noise')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 const AggregateError = require('aggregate-error')
+const AbortController = require('abort-controller')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 
 const { codes: ErrorCodes } = require('../../src/errors')
@@ -35,8 +36,10 @@ const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 describe('Dialing (direct, WebSockets)', () => {
   let localTM
   let peerStore
+  let peerId
 
-  before(() => {
+  before(async () => {
+    [peerId] = await createPeerId()
     peerStore = new PeerStore()
     localTM = new TransportManager({
       libp2p: {},
@@ -179,6 +182,47 @@ describe('Dialing (direct, WebSockets)', () => {
     await expect(dialer.connectToPeer(remoteAddr))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
+  })
+
+  it('should abort subsequent dials', async () => {
+    const dialer = new Dialer({
+      transportManager: localTM,
+      timeout: 1000,
+      peerStore: {
+        addressBook: {
+          add: () => { },
+          getMultiaddrsForPeer: () => [remoteAddr]
+        }
+      }
+    })
+    const controller = new AbortController()
+
+    const deferredDial = pDefer()
+    const deferredAbort = pDefer()
+
+    sinon.stub(localTM, 'dial').callsFake(async (_, options) => {
+      deferredDial.resolve()
+      expect(options.signal).to.exist()
+      expect(options.signal.aborted).to.equal(false)
+      await deferredAbort.promise
+      expect(options.signal.aborted).to.equal(true)
+      throw new AbortError()
+    })
+
+    const dialPromise1 = dialer.connectToPeer(peerId)
+    const dialPromise2 = dialer.connectToPeer(peerId, { signal: controller.signal })
+
+    await deferredDial.promise
+    controller.abort()
+
+    deferredAbort.resolve()
+
+    await expect(dialPromise1)
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_SUBSEQUENT_DIAL_ABORT)
+    await expect(dialPromise2)
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_SUBSEQUENT_DIAL_ABORT)
   })
 
   it('should dial to the max concurrency', async () => {

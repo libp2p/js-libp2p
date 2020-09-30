@@ -73,7 +73,21 @@ class Dialer {
     if (!dialTarget.addrs.length) {
       throw errCode(new Error('The dial request has no addresses'), codes.ERR_NO_VALID_ADDRESSES)
     }
-    const pendingDial = this._pendingDials.get(dialTarget.id) || this._createPendingDial(dialTarget, options)
+
+    // Used for subsequent dials pending
+    let subsequentDialAborted = false
+    const onAbort = () => {
+      subsequentDialAborted = true
+      pendingDial.controller.abort()
+    }
+
+    let pendingDial = this._pendingDials.get(dialTarget.id)
+    if (!pendingDial) {
+      pendingDial = this._createPendingDial(dialTarget, options)
+    } else {
+      // track subsequent dial abort
+      options.signal && options.signal.addEventListener('abort', onAbort)
+    }
 
     try {
       const connection = await pendingDial.promise
@@ -81,12 +95,16 @@ class Dialer {
       return connection
     } catch (err) {
       // Error is a timeout
-      if (pendingDial.controller.signal.aborted) {
+      if (pendingDial.controller.signal.aborted && !subsequentDialAborted) {
         err.code = codes.ERR_TIMEOUT
+      // Error is a subsequent dial abort
+      } else if (subsequentDialAborted) {
+        err.code = codes.ERR_SUBSEQUENT_DIAL_ABORT
       }
       log.error(err)
       throw err
     } finally {
+      options.signal && options.signal.removeEventListener('abort', onAbort)
       pendingDial.destroy()
     }
   }
