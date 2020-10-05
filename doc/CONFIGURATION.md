@@ -449,9 +449,9 @@ const node = await Libp2p.create({
     relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
       enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
       autoRelay: {
-        enabled: false,         // Allows you to bind to relays with HOP enabled for improving node dialability
+        enabled: true,         // Allows you to bind to relays with HOP enabled for improving node dialability
         maxListeners: 2         // Configure maximum number of HOP relays to use
-      },
+      }
     }
   }
 })

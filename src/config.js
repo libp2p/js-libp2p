@@ -59,7 +59,7 @@ const DefaultConfig = {
       enabled: true,
       advertise: {
         bootDelay: RelayConstants.ADVERTISE_BOOT_DELAY,
-        enabled: true,
+        enabled: false,
         ttl: RelayConstants.ADVERTISE_TTL
       },
       hop: {

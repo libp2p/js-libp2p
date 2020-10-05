@@ -486,7 +486,8 @@ describe('auto-relay', () => {
             relay: {
               advertise: {
                 bootDelay: 1000,
-                ttl: 1000
+                ttl: 1000,
+                enabled: true
               },
               hop: {
                 enabled: index === 2
