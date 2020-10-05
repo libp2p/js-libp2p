@@ -68,12 +68,12 @@ class Relay {
       await this._libp2p.contentRouting.provide(cid)
     } catch (err) {
       if (err.code === 'NO_ROUTERS_AVAILABLE') {
-        log('there are no routers configured to advertise hop relay service')
+        log.error('a content router, such as a DHT, must be provided in order to advertise the relay service', err)
+        // Stop the advertise
+        this.stop()
       } else {
         log.error(err)
       }
-      // Stop the advertise
-      this.stop()
 
       return
     }
