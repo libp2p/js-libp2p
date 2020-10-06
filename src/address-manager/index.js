@@ -15,11 +15,11 @@ const multiaddr = require('multiaddr')
  */
 class AddressManager {
   /**
-   * @constructor
+   * @class
    * @param {object} [options]
-   * @param {Array<string>} [options.listen = []] list of multiaddrs string representation to listen.
-   * @param {Array<string>} [options.announce = []] list of multiaddrs string representation to announce.
-   * @param {Array<string>} [options.noAnnounce = []] list of multiaddrs string representation to not announce.
+   * @param {Array<string>} [options.listen = []] - list of multiaddrs string representation to listen.
+   * @param {Array<string>} [options.announce = []] - list of multiaddrs string representation to announce.
+   * @param {Array<string>} [options.noAnnounce = []] - list of multiaddrs string representation to not announce.
    */
   constructor ({ listen = [], announce = [], noAnnounce = [] } = {}) {
     this.listen = new Set(listen)
@@ -29,7 +29,8 @@ class AddressManager {
 
   /**
    * Get peer listen multiaddrs.
-   * @return {Array<Multiaddr>}
+   *
+   * @returns {Array<Multiaddr>}
    */
   getListenAddrs () {
     return Array.from(this.listen).map((a) => multiaddr(a))
@@ -37,7 +38,8 @@ class AddressManager {
 
   /**
    * Get peer announcing multiaddrs.
-   * @return {Array<Multiaddr>}
+   *
+   * @returns {Array<Multiaddr>}
    */
   getAnnounceAddrs () {
     return Array.from(this.announce).map((a) => multiaddr(a))
@@ -45,7 +47,8 @@ class AddressManager {
 
   /**
    * Get peer noAnnouncing multiaddrs.
-   * @return {Array<Multiaddr>}
+   *
+   * @returns {Array<Multiaddr>}
    */
   getNoAnnounceAddrs () {
     return Array.from(this.noAnnounce).map((a) => multiaddr(a))

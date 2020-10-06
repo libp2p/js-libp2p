@@ -16,13 +16,14 @@ const {
 /**
  * The ProtoBook is responsible for keeping the known supported
  * protocols of a peer.
+ *
  * @fires ProtoBook#change:protocols
  */
 class ProtoBook extends Book {
   /**
-  * @constructor
-  * @param {PeerStore} peerStore
-  */
+   * @class
+   * @param {PeerStore} peerStore
+   */
   constructor (peerStore) {
     /**
      * PeerStore Event emitter, used by the ProtoBook to emit:
@@ -37,6 +38,7 @@ class ProtoBook extends Book {
 
     /**
      * Map known peers to their known protocols.
+     *
      * @type {Map<string, Set<string>>}
      */
     this.data = new Map()
@@ -45,6 +47,7 @@ class ProtoBook extends Book {
   /**
    * Set known protocols of a provided peer.
    * If the peer was not known before, it will be added.
+   *
    * @override
    * @param {PeerId} peerId
    * @param {Array<string>} protocols
@@ -83,6 +86,7 @@ class ProtoBook extends Book {
   /**
    * Adds known protocols of a provided peer.
    * If the peer was not known before, it will be added.
+   *
    * @param {PeerId} peerId
    * @param {Array<string>} protocols
    * @returns {ProtoBook}

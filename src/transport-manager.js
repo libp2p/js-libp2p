@@ -9,11 +9,11 @@ log.error = debug('libp2p:transports:error')
 
 class TransportManager {
   /**
-   * @constructor
+   * @class
    * @param {object} options
-   * @param {Libp2p} options.libp2p The Libp2p instance. It will be passed to the transports.
-   * @param {Upgrader} options.upgrader The upgrader to provide to the transports
-   * @param {boolean} [options.faultTolerance = FAULT_TOLERANCE.FATAL_ALL] Address listen error tolerance.
+   * @param {Libp2p} options.libp2p - The Libp2p instance. It will be passed to the transports.
+   * @param {Upgrader} options.upgrader - The upgrader to provide to the transports
+   * @param {boolean} [options.faultTolerance = FAULT_TOLERANCE.FATAL_ALL] - Address listen error tolerance.
    */
   constructor ({ libp2p, upgrader, faultTolerance = FAULT_TOLERANCE.FATAL_ALL }) {
     this.libp2p = libp2p
@@ -26,9 +26,9 @@ class TransportManager {
   /**
    * Adds a `Transport` to the manager
    *
-   * @param {String} key
+   * @param {string} key
    * @param {Transport} Transport
-   * @param {*} transportOptions Additional options to pass to the transport
+   * @param {*} transportOptions - Additional options to pass to the transport
    * @returns {void}
    */
   add (key, Transport, transportOptions = {}) {
@@ -54,6 +54,7 @@ class TransportManager {
 
   /**
    * Stops all listeners
+   *
    * @async
    */
   async close () {
@@ -75,6 +76,7 @@ class TransportManager {
 
   /**
    * Dials the given Multiaddr over it's supported transport
+   *
    * @param {Multiaddr} ma
    * @param {*} options
    * @returns {Promise<Connection>}
@@ -95,6 +97,7 @@ class TransportManager {
 
   /**
    * Returns all Multiaddr's the listeners are using
+   *
    * @returns {Multiaddr[]}
    */
   getAddrs () {
@@ -109,6 +112,7 @@ class TransportManager {
 
   /**
    * Returns all the transports instances.
+   *
    * @returns {Iterator<Transport>}
    */
   getTransports () {
@@ -117,6 +121,7 @@ class TransportManager {
 
   /**
    * Finds a transport that matches the given Multiaddr
+   *
    * @param {Multiaddr} ma
    * @returns {Transport|null}
    */
@@ -130,6 +135,7 @@ class TransportManager {
 
   /**
    * Starts listeners for each listen Multiaddr.
+   *
    * @async
    */
   async listen () {
@@ -206,6 +212,7 @@ class TransportManager {
   /**
    * Removes all transports from the manager.
    * If any listeners are running, they will be closed.
+   *
    * @async
    */
   async removeAll () {
@@ -222,6 +229,7 @@ class TransportManager {
  * Enum Transport Manager Fault Tolerance values.
  * FATAL_ALL should be used for failing in any listen circumstance.
  * NO_FATAL should be used for not failing when not listening.
+ *
  * @readonly
  * @enum {number}
  */

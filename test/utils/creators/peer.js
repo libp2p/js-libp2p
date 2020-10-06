@@ -13,13 +13,14 @@ const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 /**
  * Create libp2p nodes.
+ *
  * @param {Object} [properties]
  * @param {Object} [properties.config]
- * @param {number} [properties.number] number of peers (default: 1).
- * @param {boolean} [properties.fixture] use fixture for peer-id generation (default: true)
- * @param {boolean} [properties.started] nodes should start (default: true)
- * @param {boolean} [properties.populateAddressBooks] nodes addressBooks should be populated with other peers (default: true)
- * @return {Promise<Array<Libp2p>>}
+ * @param {number} [properties.number] - number of peers (default: 1).
+ * @param {boolean} [properties.fixture] - use fixture for peer-id generation (default: true)
+ * @param {boolean} [properties.started] - nodes should start (default: true)
+ * @param {boolean} [properties.populateAddressBooks] - nodes addressBooks should be populated with other peers (default: true)
+ * @returns {Promise<Array<Libp2p>>}
  */
 async function createPeer ({ number = 1, fixture = true, started = true, populateAddressBooks = true, config = {} } = {}) {
   const peerIds = await createPeerId({ number, fixture })
@@ -53,10 +54,11 @@ function _populateAddressBooks (peers) {
 
 /**
  * Create Peer-ids.
+ *
  * @param {Object} [properties]
- * @param {number} [properties.number] number of peers (default: 1).
- * @param {boolean} [properties.fixture] use fixture for peer-id generation (default: true)
- * @return {Promise<Array<PeerId>>}
+ * @param {number} [properties.number] - number of peers (default: 1).
+ * @param {boolean} [properties.fixture] - use fixture for peer-id generation (default: true)
+ * @returns {Promise<Array<PeerId>>}
  */
 function createPeerId ({ number = 1, fixture = true } = {}) {
   return pTimes(number, (i) => fixture

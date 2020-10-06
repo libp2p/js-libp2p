@@ -12,11 +12,11 @@ const debug = require('debug')('latency-monitor:LatencyMonitor')
 
 /**
  * @typedef {Object} SummaryObject
- * @property {Number} events How many events were called
- * @property {Number} minMS What was the min time for a cb to be called
- * @property {Number} maxMS What was the max time for a cb to be called
- * @property {Number} avgMs What was the average time for a cb to be called
- * @property {Number} lengthMs How long this interval was in ms
+ * @property {number} events How many events were called
+ * @property {number} minMS What was the min time for a cb to be called
+ * @property {number} maxMS What was the max time for a cb to be called
+ * @property {number} avgMs What was the average time for a cb to be called
+ * @property {number} lengthMs How long this interval was in ms
  */
 
 /**
@@ -37,11 +37,12 @@ const debug = require('debug')('latency-monitor:LatencyMonitor')
  */
 class LatencyMonitor extends EventEmitter {
   /**
-     * @param {Number} [latencyCheckIntervalMs=500] How often to add a latency check event (ms)
-     * @param {Number} [dataEmitIntervalMs=5000] How often to summarize latency check events. null or 0 disables event firing
-     * @param {function} [asyncTestFn] What cb-style async function to use
-     * @param {Number} [latencyRandomPercentage=5] What percent (+/-) of latencyCheckIntervalMs should we randomly use? This helps avoid alignment to other events.
-     */
+   * @param {object} [options]
+   * @param {number} [options.latencyCheckIntervalMs=500] - How often to add a latency check event (ms)
+   * @param {number} [options.dataEmitIntervalMs=5000] - How often to summarize latency check events. null or 0 disables event firing
+   * @param {Function} [options.asyncTestFn] - What cb-style async function to use
+   * @param {number} [options.latencyRandomPercentage=5] - What percent (+/-) of latencyCheckIntervalMs should we randomly use? This helps avoid alignment to other events.
+   */
   constructor ({ latencyCheckIntervalMs, dataEmitIntervalMs, asyncTestFn, latencyRandomPercentage } = {}) {
     super()
     const that = this
@@ -106,9 +107,10 @@ class LatencyMonitor extends EventEmitter {
   }
 
   /**
-     * Start internal timers
-     * @private
-     */
+   * Start internal timers
+   *
+   * @private
+   */
   _startTimers () {
     // Timer already started, ignore this
     if (this._checkLatencyID) {
@@ -124,9 +126,10 @@ class LatencyMonitor extends EventEmitter {
   }
 
   /**
-     * Stop internal timers
-     * @private
-     */
+   * Stop internal timers
+   *
+   * @private
+   */
   _stopTimers () {
     if (this._checkLatencyID) {
       clearTimeout(this._checkLatencyID)
@@ -139,9 +142,10 @@ class LatencyMonitor extends EventEmitter {
   }
 
   /**
-     * Emit summary only if there were events. It might not have any events if it was forced via a page hidden/show
-     * @private
-     */
+   * Emit summary only if there were events. It might not have any events if it was forced via a page hidden/show
+   *
+   * @private
+   */
   _emitSummary () {
     const summary = this.getSummary()
     if (summary.events > 0) {
@@ -150,10 +154,11 @@ class LatencyMonitor extends EventEmitter {
   }
 
   /**
-     * Calling this function will end the collection period. If a timing event was already fired and somewhere in the queue,
-     * it will not count for this time period
-     * @returns {SummaryObject}
-     */
+   * Calling this function will end the collection period. If a timing event was already fired and somewhere in the queue,
+   * it will not count for this time period
+   *
+   * @returns {SummaryObject}
+   */
   getSummary () {
     // We might want to adjust for the number of expected events
     // Example: first 1 event it comes back, then such a long blocker that the next emit check comes
@@ -173,11 +178,11 @@ class LatencyMonitor extends EventEmitter {
   }
 
   /**
-     * Randomly calls an async fn every roughly latencyCheckIntervalMs (plus some randomness). If no async fn is found,
-     * it will simply report on event loop latency.
-     *
-     * @private
-     */
+   * Randomly calls an async fn every roughly latencyCheckIntervalMs (plus some randomness). If no async fn is found,
+   * it will simply report on event loop latency.
+   *
+   * @private
+   */
   _checkLatency () {
     const that = this
     // Randomness is needed to avoid alignment by accident to regular things in the event loop

@@ -34,8 +34,8 @@ const debug = require('debug')('latency-monitor:VisibilityChangeEmitter')
  */
 module.exports = class VisibilityChangeEmitter extends EventEmitter {
   /**
-     * Creates a VisibilityChangeEmitter
-     */
+   * Creates a VisibilityChangeEmitter
+   */
   constructor () {
     super()
     if (typeof document === 'undefined') {
@@ -47,13 +47,14 @@ module.exports = class VisibilityChangeEmitter extends EventEmitter {
   }
 
   /**
-     * document.hidden and document.visibilityChange are the two variables we need to check for;
-     * Since these variables are named differently in different browsers, this function sets
-     * the appropriate name based on the browser being used. Once executed, tha actual names of
-     * document.hidden and document.visibilityChange are found in this._hidden and this._visibilityChange
-     * respectively
-     * @private
-     */
+   * document.hidden and document.visibilityChange are the two variables we need to check for;
+   * Since these variables are named differently in different browsers, this function sets
+   * the appropriate name based on the browser being used. Once executed, tha actual names of
+   * document.hidden and document.visibilityChange are found in this._hidden and this._visibilityChange
+   * respectively
+   *
+   * @private
+   */
   _initializeVisibilityVarNames () {
     let hidden
     let visibilityChange
@@ -75,10 +76,11 @@ module.exports = class VisibilityChangeEmitter extends EventEmitter {
   }
 
   /**
-     * Adds an event listener on the document that listens to changes in document.visibilityChange
-     * (or whatever name by which the visibilityChange variable is known in the browser)
-     * @private
-     */
+   * Adds an event listener on the document that listens to changes in document.visibilityChange
+   * (or whatever name by which the visibilityChange variable is known in the browser)
+   *
+   * @private
+   */
   _addVisibilityChangeListener () {
     if (typeof document.addEventListener === 'undefined' ||
             typeof document[this._hidden] === 'undefined') {
@@ -90,10 +92,11 @@ module.exports = class VisibilityChangeEmitter extends EventEmitter {
   }
 
   /**
-     * The function returns ```true``` if the page is visible or ```false``` if the page is not visible and
-     * ```undefined``` if the page visibility API is not supported by the browser.
-     * @returns {Boolean|void} whether the page is now visible or not (undefined is unknown)
-     */
+   * The function returns ```true``` if the page is visible or ```false``` if the page is not visible and
+   * ```undefined``` if the page visibility API is not supported by the browser.
+   *
+   * @returns {boolean | void} whether the page is now visible or not (undefined is unknown)
+   */
   isVisible () {
     if (this._hidden === undefined || document[this._hidden] === undefined) {
       return undefined
@@ -103,12 +106,12 @@ module.exports = class VisibilityChangeEmitter extends EventEmitter {
   }
 
   /**
-     * The function that is called when document.visibilityChange has changed
-     * It emits an event called visibilityChange and sends the value of document.hidden as a
-     * parameter
-     *
-     * @private
-     */
+   * The function that is called when document.visibilityChange has changed
+   * It emits an event called visibilityChange and sends the value of document.hidden as a
+   * parameter
+   *
+   * @private
+   */
   _handleVisibilityChange () {
     const visible = !document[this._hidden]
     debug(visible ? 'Page Visible' : 'Page Hidden')

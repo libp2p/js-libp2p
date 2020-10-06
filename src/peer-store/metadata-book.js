@@ -17,13 +17,14 @@ const {
 /**
  * The MetadataBook is responsible for keeping the known supported
  * protocols of a peer.
+ *
  * @fires MetadataBook#change:metadata
  */
 class MetadataBook extends Book {
   /**
-  * @constructor
-  * @param {PeerStore} peerStore
-  */
+   * @class
+   * @param {PeerStore} peerStore
+   */
   constructor (peerStore) {
     /**
      * PeerStore Event emitter, used by the MetadataBook to emit:
@@ -37,6 +38,7 @@ class MetadataBook extends Book {
 
     /**
      * Map known peers to their known protocols.
+     *
      * @type {Map<string, Map<string, Uint8Array>>}
      */
     this.data = new Map()
@@ -44,10 +46,11 @@ class MetadataBook extends Book {
 
   /**
    * Set metadata key and value of a provided peer.
+   *
    * @override
    * @param {PeerId} peerId
-   * @param {string} key metadata key
-   * @param {Uint8Array} value metadata value
+   * @param {string} key - metadata key
+   * @param {Uint8Array} value - metadata value
    * @returns {ProtoBook}
    */
   set (peerId, key, value) {
@@ -68,6 +71,7 @@ class MetadataBook extends Book {
 
   /**
    * Set data into the datastructure
+   *
    * @override
    */
   _setValue (peerId, key, value, { emit = true } = {}) {
@@ -89,6 +93,7 @@ class MetadataBook extends Book {
 
   /**
    * Get the known data of a provided peer.
+   *
    * @param {PeerId} peerId
    * @returns {Map<string, Uint8Array>}
    */
@@ -102,6 +107,7 @@ class MetadataBook extends Book {
 
   /**
    * Get specific metadata value, if it exists
+   *
    * @param {PeerId} peerId
    * @param {string} key
    * @returns {Uint8Array}
@@ -117,6 +123,7 @@ class MetadataBook extends Book {
 
   /**
    * Deletes the provided peer from the book.
+   *
    * @param {PeerId} peerId
    * @returns {boolean}
    */
@@ -136,6 +143,7 @@ class MetadataBook extends Book {
 
   /**
    * Deletes the provided peer metadata key from the book.
+   *
    * @param {PeerId} peerId
    * @param {string} key
    * @returns {boolean}

@@ -77,7 +77,7 @@ exports.certificateForKey = (key, privateKey) => {
  * resolve to either `true` or `false`.
  *
  * @param {Array} array
- * @param {function(*)} asyncCompare An async function that returns a boolean
+ * @param {function(*)} asyncCompare - An async function that returns a boolean
  */
 async function findAsync (array, asyncCompare) {
   const promises = array.map(asyncCompare)

@@ -26,11 +26,11 @@ const Protocols = require('./pb/proto-book.proto')
  */
 class PersistentPeerStore extends PeerStore {
   /**
-   * @constructor
+   * @class
    * @param {Object} properties
    * @param {PeerId} properties.peerId
-   * @param {Datastore} properties.datastore Datastore to persist data.
-   * @param {number} [properties.threshold = 5] Number of dirty peers allowed before commit data.
+   * @param {Datastore} properties.datastore - Datastore to persist data.
+   * @param {number} [properties.threshold = 5] - Number of dirty peers allowed before commit data.
    */
   constructor ({ peerId, datastore, threshold = 5 }) {
     super({ peerId })
@@ -47,6 +47,7 @@ class PersistentPeerStore extends PeerStore {
 
     /**
      * Peers metadata changed mapping peer identifers to metadata changed.
+     *
      * @type {Map<string, Set<string>>}
      */
     this._dirtyMetadata = new Map()
@@ -57,7 +58,8 @@ class PersistentPeerStore extends PeerStore {
 
   /**
    * Start Persistent PeerStore.
-   * @return {Promise<void>}
+   *
+   * @returns {Promise<void>}
    */
   async start () {
     log('PeerStore is starting')
@@ -76,6 +78,11 @@ class PersistentPeerStore extends PeerStore {
     log('PeerStore started')
   }
 
+  /**
+   * Stop Persistent PeerStore.
+   *
+   * @returns {Promise<void>}
+   */
   async stop () {
     log('PeerStore is stopping')
     this.removeAllListeners()
@@ -85,6 +92,7 @@ class PersistentPeerStore extends PeerStore {
 
   /**
    * Add modified peer to the dirty set
+   *
    * @private
    * @param {Object} params
    * @param {PeerId} params.peerId
@@ -105,6 +113,7 @@ class PersistentPeerStore extends PeerStore {
 
   /**
    * Add modified metadata peer to the set.
+   *
    * @private
    * @param {Object} params
    * @param {PeerId} params.peerId
@@ -131,9 +140,9 @@ class PersistentPeerStore extends PeerStore {
 
   /**
    * Add all the peers current data to a datastore batch and commit it.
+   *
    * @private
-   * @param {Array<string>} peers
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   async _commitData () {
     const commitPeers = Array.from(this._dirtyPeers)
@@ -170,6 +179,7 @@ class PersistentPeerStore extends PeerStore {
 
   /**
    * Add address book data of the peer to the batch.
+   *
    * @private
    * @param {PeerId} peerId
    * @param {Object} batch
@@ -206,6 +216,7 @@ class PersistentPeerStore extends PeerStore {
 
   /**
    * Add Key book data of the peer to the batch.
+   *
    * @private
    * @param {PeerId} peerId
    * @param {Object} batch
@@ -231,6 +242,7 @@ class PersistentPeerStore extends PeerStore {
 
   /**
    * Add metadata book data of the peer to the batch.
+   *
    * @private
    * @param {PeerId} peerId
    * @param {Object} batch
@@ -257,6 +269,7 @@ class PersistentPeerStore extends PeerStore {
 
   /**
    * Add proto book data of the peer to the batch.
+   *
    * @private
    * @param {PeerId} peerId
    * @param {Object} batch
@@ -284,11 +297,12 @@ class PersistentPeerStore extends PeerStore {
 
   /**
    * Process datastore entry and add its data to the correct book.
+   *
    * @private
    * @param {Object} params
-   * @param {Key} params.key datastore key
-   * @param {Uint8Array} params.value datastore value stored
-   * @return {Promise<void>}
+   * @param {Key} params.key - datastore key
+   * @param {Uint8Array} params.value - datastore value stored
+   * @returns {Promise<void>}
    */
   async _processDatastoreEntry ({ key, value }) {
     try {

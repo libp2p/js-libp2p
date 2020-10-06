@@ -19,6 +19,7 @@ const {
 
 /**
  * Responsible for managing known peers, as well as their addresses, protocols and metadata.
+ *
  * @fires PeerStore#peer Emitted when a new peer is added.
  * @fires PeerStore#change:protocols Emitted when a known peer supports a different set of protocols.
  * @fires PeerStore#change:multiaddrs Emitted when a known peer has a different set of multiaddrs.
@@ -28,6 +29,7 @@ const {
 class PeerStore extends EventEmitter {
   /**
    * Peer object
+   *
    * @typedef {Object} Peer
    * @property {PeerId} id peer's peer-id instance.
    * @property {Array<Address>} addresses peer's addresses containing its multiaddrs and metadata.
@@ -36,7 +38,9 @@ class PeerStore extends EventEmitter {
    */
 
   /**
-   * @constructor
+   * @param {object} options
+   * @param {PeerId} options.peerId
+   * @class
    */
   constructor ({ peerId }) {
     super()
@@ -76,6 +80,7 @@ class PeerStore extends EventEmitter {
 
   /**
    * Get all the stored information of every peer known.
+   *
    * @returns {Map<string, Peer>}
    */
   get peers () {
@@ -99,6 +104,7 @@ class PeerStore extends EventEmitter {
 
   /**
    * Delete the information of the given peer in every book.
+   *
    * @param {PeerId} peerId
    * @returns {boolean} true if found and removed
    */
@@ -113,6 +119,7 @@ class PeerStore extends EventEmitter {
 
   /**
    * Get the stored information of a given peer.
+   *
    * @param {PeerId} peerId
    * @returns {Peer}
    */

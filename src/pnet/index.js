@@ -25,8 +25,8 @@ log.error = debug('libp2p:pnet:err')
  */
 class Protector {
   /**
-   * @param {Uint8Array} keyBuffer The private shared key buffer
-   * @constructor
+   * @param {Uint8Array} keyBuffer - The private shared key buffer
+   * @class
    */
   constructor (keyBuffer) {
     const decodedPSK = decodeV1PSK(keyBuffer)
@@ -39,7 +39,7 @@ class Protector {
    * between its two peers from the PSK the Protector instance was
    * created with.
    *
-   * @param {Connection} connection The connection to protect
+   * @param {Connection} connection - The connection to protect
    * @returns {*} A protected duplex iterable
    */
   async protect (connection) {

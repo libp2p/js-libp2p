@@ -5,7 +5,7 @@ const LRU = require('hashlru')
 /**
  * Creates and returns a Least Recently Used Cache
  *
- * @param {Number} maxSize
+ * @param {number} maxSize
  * @returns {LRUCache}
  */
 module.exports = (maxSize) => {

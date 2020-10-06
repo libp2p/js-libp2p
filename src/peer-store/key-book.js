@@ -18,9 +18,9 @@ const {
  */
 class KeyBook extends Book {
   /**
-  * @constructor
-  * @param {PeerStore} peerStore
-  */
+   * @class
+   * @param {PeerStore} peerStore
+   */
   constructor (peerStore) {
     super({
       peerStore,
@@ -31,6 +31,7 @@ class KeyBook extends Book {
 
     /**
      * Map known peers to their known Public Key.
+     *
      * @type {Map<string, PeerId>}
      */
     this.data = new Map()
@@ -38,11 +39,12 @@ class KeyBook extends Book {
 
   /**
    * Set the Peer public key.
+   *
    * @override
    * @param {PeerId} peerId
    * @param {RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey} publicKey
-   * @return {KeyBook}
-  */
+   * @returns {KeyBook}
+   */
   set (peerId, publicKey) {
     if (!PeerId.isPeerId(peerId)) {
       log.error('peerId must be an instance of peer-id to store data')
@@ -67,9 +69,10 @@ class KeyBook extends Book {
 
   /**
    * Get Public key of the given PeerId, if stored.
+   *
    * @override
    * @param {PeerId} peerId
-   * @return {RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey}
+   * @returns {RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {

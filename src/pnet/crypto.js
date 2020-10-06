@@ -12,10 +12,10 @@ log.trace = debug('libp2p:pnet:trace')
 log.error = debug('libp2p:pnet:err')
 
 /**
-  * Creates a stream iterable to encrypt messages in a private network
+ * Creates a stream iterable to encrypt messages in a private network
  *
- * @param {Uint8Array} nonce The nonce to use in encryption
- * @param {Uint8Array} psk The private shared key to use in encryption
+ * @param {Uint8Array} nonce - The nonce to use in encryption
+ * @param {Uint8Array} psk - The private shared key to use in encryption
  * @returns {*} a through iterable
  */
 module.exports.createBoxStream = (nonce, psk) => {
@@ -28,10 +28,10 @@ module.exports.createBoxStream = (nonce, psk) => {
 }
 
 /**
-  * Creates a stream iterable to decrypt messages in a private network
+ * Creates a stream iterable to decrypt messages in a private network
  *
- * @param {Uint8Array} nonce The nonce of the remote peer
- * @param {Uint8Array} psk The private shared key to use in decryption
+ * @param {Uint8Array} nonce - The nonce of the remote peer
+ * @param {Uint8Array} psk - The private shared key to use in decryption
  * @returns {*} a through iterable
  */
 module.exports.createUnboxStream = (nonce, psk) => {

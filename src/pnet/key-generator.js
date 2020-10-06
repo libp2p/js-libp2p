@@ -7,7 +7,8 @@ const uint8ArrayFromString = require('uint8arrays/from-string')
 
 /**
  * Generates a PSK that can be used in a libp2p-pnet private network
- * @param {Uint8Array} bytes An object to write the psk into
+ *
+ * @param {Uint8Array} bytes - An object to write the psk into
  * @returns {void}
  */
 function generate (bytes) {

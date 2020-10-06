@@ -228,7 +228,7 @@ class Keychain {
   /**
    * List all the keys.
    *
-    * @returns {KeyInfo[]}
+   * @returns {KeyInfo[]}
    */
   async listKeys () {
     const self = this
@@ -248,7 +248,7 @@ class Keychain {
    * Find a key by it's id.
    *
    * @param {string} id - The universally unique key identifier.
-    * @returns {KeyInfo}
+   * @returns {KeyInfo}
    */
   async findKeyById (id) {
     try {
@@ -263,7 +263,7 @@ class Keychain {
    * Find a key by it's name.
    *
    * @param {string} name - The local key name.
-    * @returns {KeyInfo}
+   * @returns {KeyInfo}
    */
   async findKeyByName (name) {
     if (!validateKeyName(name)) {
@@ -283,7 +283,7 @@ class Keychain {
    * Remove an existing key.
    *
    * @param {string} name - The local key name; must already exist.
-    * @returns {KeyInfo}
+   * @returns {KeyInfo}
    */
   async removeKey (name) {
     const self = this
@@ -304,7 +304,7 @@ class Keychain {
    *
    * @param {string} oldName - The old local key name; must already exist.
    * @param {string} newName - The new local key name; must not already exist.
-    * @returns {KeyInfo}
+   * @returns {KeyInfo}
    */
   async renameKey (oldName, newName) {
     const self = this
@@ -345,7 +345,7 @@ class Keychain {
    *
    * @param {string} name - The local key name; must already exist.
    * @param {string} password - The password
-    * @returns {string}
+   * @returns {string}
    */
   async exportKey (name, password) {
     if (!validateKeyName(name)) {
@@ -372,7 +372,7 @@ class Keychain {
    * @param {string} name - The local key name; must not already exist.
    * @param {string} pem - The PEM encoded PKCS #8 string
    * @param {string} password - The password.
-    * @returns {KeyInfo}
+   * @returns {KeyInfo}
    */
   async importKey (name, pem, password) {
     const self = this
@@ -448,7 +448,7 @@ class Keychain {
    * Gets the private key as PEM encoded PKCS #8 string.
    *
    * @param {string} name
-    * @returns {string}
+   * @returns {string}
    * @private
    */
   async _getPrivateKey (name) {

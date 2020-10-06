@@ -58,9 +58,9 @@ module.exports = async (properties = {}) => {
  * Creates a full connection pair, without the transport or encryption
  *
  * @param {object} options
- * @param {Multiaddr[]} options.addrs Should contain two addresses for the local and remote peer respectively
- * @param {PeerId[]} options.remotePeer Should contain two peer ids, for the local and remote peer respectively
- * @param {Map<string, function>} options.protocols The protocols the connections should support
+ * @param {Multiaddr[]} options.addrs - Should contain two addresses for the local and remote peer respectively
+ * @param {Array<PeerId>} options.peers - Array containing local and remote peer ids
+ * @param {Map<string, Function>} options.protocols - The protocols the connections should support
  * @returns {{inbound:Connection, outbound:Connection}}
  */
 module.exports.pair = function connectionPair ({ addrs, peers, protocols }) {

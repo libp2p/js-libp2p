@@ -19,7 +19,7 @@ function writeResponse (streamHandler, status) {
 /**
  * Validate incomming HOP/STOP message
  *
- * @param {*} msg A CircuitRelay unencoded protobuf message
+ * @param {*} msg - A CircuitRelay unencoded protobuf message
  * @param {StreamHandler} streamHandler
  */
 function validateAddrs (msg, streamHandler) {

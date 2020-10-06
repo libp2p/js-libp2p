@@ -21,7 +21,7 @@ class Circuit {
   /**
    * Creates an instance of Circuit.
    *
-   * @constructor
+   * @class
    * @param {object} options
    * @param {Libp2p} options.libp2p
    * @param {Upgrader} options.upgrader
@@ -152,7 +152,7 @@ class Circuit {
    *
    * @param {any} options
    * @param {Function} handler
-   * @return {listener}
+   * @returns {listener}
    */
   createListener (options, handler) {
     if (typeof options === 'function') {
