@@ -364,7 +364,7 @@ describe('Identify', () => {
       expect(libp2p.identifyService.identify.callCount).to.equal(1)
 
       // The connection should have no open streams
-      expect(connection.streams).to.have.length(0)
+      await pWaitFor(() => connection.streams.length === 0)
       await connection.close()
     })
 
