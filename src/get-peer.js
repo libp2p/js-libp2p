@@ -9,8 +9,8 @@ const { codes } = require('./errors')
 /**
  * Converts the given `peer` to a `Peer` object.
  * If a multiaddr is received, the addressBook is updated.
+ *
  * @param {PeerId|Multiaddr|string} peer
- * @param {PeerStore} peerStore
  * @returns {{ id: PeerId, multiaddrs: Array<Multiaddr> }}
  */
 function getPeer (peer) {

@@ -196,8 +196,8 @@ class Stats extends EventEmitter {
    *
    * @private
    * @param {string} key
-   * @param {number} timeDiffMS Time in milliseconds
-   * @param {Timestamp} latestTime Time in ticks
+   * @param {number} timeDiffMS - Time in milliseconds
+   * @param {Timestamp} latestTime - Time in ticks
    * @returns {void}
    */
   _updateFrequencyFor (key, timeDiffMS, latestTime) {

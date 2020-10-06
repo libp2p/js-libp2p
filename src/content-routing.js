@@ -20,9 +20,9 @@ module.exports = (node) => {
      * Iterates over all content routers in series to find providers of the given key.
      * Once a content router succeeds, iteration will stop.
      *
-     * @param {CID} key The CID key of the content to find
+     * @param {CID} key - The CID key of the content to find
      * @param {object} [options]
-     * @param {number} [options.timeout] How long the query should run
+     * @param {number} [options.timeout] - How long the query should run
      * @param {number} [options.maxNumProviders] - maximum number of providers to find
      * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
      */
@@ -51,7 +51,7 @@ module.exports = (node) => {
      * Iterates over all content routers in parallel to notify it is
      * a provider of the given key.
      *
-     * @param {CID} key The CID key of the content to find
+     * @param {CID} key - The CID key of the content to find
      * @returns {Promise<void>}
      */
     async provide (key) { // eslint-disable-line require-await
@@ -64,6 +64,7 @@ module.exports = (node) => {
 
     /**
      * Store the given key/value pair in the DHT.
+     *
      * @param {Uint8Array} key
      * @param {Uint8Array} value
      * @param {Object} [options] - put options
@@ -81,6 +82,7 @@ module.exports = (node) => {
     /**
      * Get the value to the given key.
      * Times out after 1 minute by default.
+     *
      * @param {Uint8Array} key
      * @param {Object} [options] - get options
      * @param {number} [options.timeout] - optional timeout (default: 60000)
@@ -96,6 +98,7 @@ module.exports = (node) => {
 
     /**
      * Get the `n` values to the given key without sorting.
+     *
      * @param {Uint8Array} key
      * @param {number} nVals
      * @param {Object} [options] - get options

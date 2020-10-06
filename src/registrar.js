@@ -18,7 +18,7 @@ class Registrar {
    * @param {Object} props
    * @param {PeerStore} props.peerStore
    * @param {connectionManager} props.connectionManager
-   * @constructor
+   * @class
    */
   constructor ({ peerStore, connectionManager }) {
     // Used on topology to listen for protocol changes
@@ -49,6 +49,7 @@ class Registrar {
 
   /**
    * Get a connection with a peer.
+   *
    * @param {PeerId} peerId
    * @returns {Connection}
    */
@@ -58,8 +59,9 @@ class Registrar {
 
   /**
    * Register handlers for a set of multicodecs given
-   * @param {Topology} topology protocol topology
-   * @return {string} registrar identifier
+   *
+   * @param {Topology} topology - protocol topology
+   * @returns {string} registrar identifier
    */
   register (topology) {
     if (!Topology.isTopology(topology)) {
@@ -79,8 +81,9 @@ class Registrar {
 
   /**
    * Unregister topology.
-   * @param {string} id registrar identifier
-   * @return {boolean} unregistered successfully
+   *
+   * @param {string} id - registrar identifier
+   * @returns {boolean} unregistered successfully
    */
   unregister (id) {
     return this.topologies.delete(id)
@@ -88,6 +91,7 @@ class Registrar {
 
   /**
    * Remove a disconnected peer from the record
+   *
    * @param {Connection} connection
    * @param {Error} [error]
    * @returns {void}

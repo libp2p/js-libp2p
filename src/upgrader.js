@@ -14,7 +14,7 @@ const { codes } = require('./errors')
 
 /**
  * @typedef MultiaddrConnection
- * @property {function} sink
+ * @property {Function} sink
  * @property {AsyncIterator} source
  * @property {*} conn
  * @property {Multiaddr} remoteAddr
@@ -34,7 +34,7 @@ class Upgrader {
    * @param {Metrics} options.metrics
    * @param {Map<string, Crypto>} options.cryptos
    * @param {Map<string, Muxer>} options.muxers
-   * @param {function(Connection)} options.onConnection Called when a connection is upgraded
+   * @param {function(Connection)} options.onConnection - Called when a connection is upgraded
    * @param {function(Connection)} options.onConnectionEnd
    */
   constructor ({
@@ -57,6 +57,7 @@ class Upgrader {
 
   /**
    * Upgrades an inbound connection
+   *
    * @async
    * @param {MultiaddrConnection} maConn
    * @returns {Promise<Connection>}
@@ -124,6 +125,7 @@ class Upgrader {
 
   /**
    * Upgrades an outbound connection
+   *
    * @async
    * @param {MultiaddrConnection} maConn
    * @returns {Promise<Connection>}
@@ -198,14 +200,15 @@ class Upgrader {
 
   /**
    * A convenience method for generating a new `Connection`
+   *
    * @private
    * @param {object} options
-   * @param {string} cryptoProtocol The crypto protocol that was negotiated
-   * @param {string} direction One of ['inbound', 'outbound']
-   * @param {MultiaddrConnection} maConn The transport layer connection
-   * @param {*} upgradedConn A duplex connection returned from multiplexer and/or crypto selection
-   * @param {Muxer} Muxer The muxer to be used for muxing
-   * @param {PeerId} remotePeer The peer the connection is with
+   * @param {string} options.cryptoProtocol - The crypto protocol that was negotiated
+   * @param {string} options.direction - One of ['inbound', 'outbound']
+   * @param {MultiaddrConnection} options.maConn - The transport layer connection
+   * @param {*} options.upgradedConn - A duplex connection returned from multiplexer and/or crypto selection
+   * @param {Muxer} options.Muxer - The muxer to be used for muxing
+   * @param {PeerId} options.remotePeer - The peer the connection is with
    * @returns {Connection}
    */
   _createConnection ({
@@ -302,9 +305,10 @@ class Upgrader {
 
   /**
    * Routes incoming streams to the correct handler
+   *
    * @private
    * @param {object} options
-   * @param {Connection} options.connection The connection the stream belongs to
+   * @param {Connection} options.connection - The connection the stream belongs to
    * @param {Stream} options.stream
    * @param {string} options.protocol
    */
@@ -315,9 +319,10 @@ class Upgrader {
 
   /**
    * Attempts to encrypt the incoming `connection` with the provided `cryptos`.
+   *
    * @private
    * @async
-   * @param {PeerId} localPeer The initiators PeerId
+   * @param {PeerId} localPeer - The initiators PeerId
    * @param {*} connection
    * @param {Map<string, Crypto>} cryptos
    * @returns {CryptoResult} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
@@ -344,9 +349,10 @@ class Upgrader {
   /**
    * Attempts to encrypt the given `connection` with the provided `cryptos`.
    * The first `Crypto` module to succeed will be used
+   *
    * @private
    * @async
-   * @param {PeerId} localPeer The initiators PeerId
+   * @param {PeerId} localPeer - The initiators PeerId
    * @param {*} connection
    * @param {PeerId} remotePeerId
    * @param {Map<string, Crypto>} cryptos
@@ -374,10 +380,11 @@ class Upgrader {
   /**
    * Selects one of the given muxers via multistream-select. That
    * muxer will be used for all future streams on the connection.
+   *
    * @private
    * @async
-   * @param {*} connection A basic duplex connection to multiplex
-   * @param {Map<string, Muxer>} muxers The muxers to attempt multiplexing with
+   * @param {*} connection - A basic duplex connection to multiplex
+   * @param {Map<string, Muxer>} muxers - The muxers to attempt multiplexing with
    * @returns {*} A muxed connection
    */
   async _multiplexOutbound (connection, muxers) {
@@ -397,10 +404,11 @@ class Upgrader {
   /**
    * Registers support for one of the given muxers via multistream-select. The
    * selected muxer will be used for all future streams on the connection.
+   *
    * @private
    * @async
-   * @param {*} connection A basic duplex connection to multiplex
-   * @param {Map<string, Muxer>} muxers The muxers to attempt multiplexing with
+   * @param {*} connection - A basic duplex connection to multiplex
+   * @param {Map<string, Muxer>} muxers - The muxers to attempt multiplexing with
    * @returns {*} A muxed connection
    */
   async _multiplexInbound (connection, muxers) {

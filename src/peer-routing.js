@@ -15,9 +15,9 @@ module.exports = (node) => {
     /**
      * Iterates over all peer routers in series to find the given peer.
      *
-     * @param {String} id The id of the peer to find
+     * @param {string} id - The id of the peer to find
      * @param {object} [options]
-     * @param {number} [options.timeout] How long the query should run
+     * @param {number} [options.timeout] - How long the query should run
      * @returns {Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>}
      */
     findPeer: async (id, options) => { // eslint-disable-line require-await

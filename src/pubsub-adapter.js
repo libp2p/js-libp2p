@@ -5,6 +5,7 @@ module.exports = (PubsubRouter, libp2p, options) => {
   class Pubsub extends PubsubRouter {
     /**
      * Subscribes to a given topic.
+     *
      * @override
      * @param {string} topic
      * @param {function(msg: InMessage)} [handler]
@@ -18,6 +19,7 @@ module.exports = (PubsubRouter, libp2p, options) => {
 
     /**
      * Unsubscribe from the given topic.
+     *
      * @override
      * @param {string} topic
      * @param {function(msg: InMessage)} [handler]

@@ -17,11 +17,11 @@ const {
  */
 class PeerRecord extends Record {
   /**
-   * @constructor
+   * @class
    * @param {object} params
    * @param {PeerId} params.peerId
-   * @param {Array<multiaddr>} params.multiaddrs addresses of the associated peer.
-   * @param {number} [params.seqNumber] monotonically-increasing sequence counter that's used to order PeerRecords in time.
+   * @param {Array<multiaddr>} params.multiaddrs - addresses of the associated peer.
+   * @param {number} [params.seqNumber] - monotonically-increasing sequence counter that's used to order PeerRecords in time.
    */
   constructor ({ peerId, multiaddrs = [], seqNumber = Date.now() }) {
     super(ENVELOPE_DOMAIN_PEER_RECORD, ENVELOPE_PAYLOAD_TYPE_PEER_RECORD)
@@ -36,7 +36,8 @@ class PeerRecord extends Record {
 
   /**
    * Marshal a record to be used in an envelope.
-   * @return {Uint8Array}
+   *
+   * @returns {Uint8Array}
    */
   marshal () {
     if (this._marshal) {
@@ -56,8 +57,9 @@ class PeerRecord extends Record {
 
   /**
    * Returns true if `this` record equals the `other`.
+   *
    * @param {Record} other
-   * @return {boolean}
+   * @returns {boolean}
    */
   equals (other) {
     // Validate PeerId
@@ -81,8 +83,9 @@ class PeerRecord extends Record {
 
 /**
  * Unmarshal Peer Record Protobuf.
- * @param {Uint8Array} buf marshaled peer record.
- * @return {PeerRecord}
+ *
+ * @param {Uint8Array} buf - marshaled peer record.
+ * @returns {PeerRecord}
  */
 PeerRecord.createFromProtobuf = (buf) => {
   // Decode

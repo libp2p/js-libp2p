@@ -66,6 +66,7 @@ class Metrics {
 
   /**
    * Gets the global `Stats` object
+   *
    * @returns {Stats}
    */
   get global () {
@@ -74,6 +75,7 @@ class Metrics {
 
   /**
    * Returns a list of `PeerId` strings currently being tracked
+   *
    * @returns {Array<string>}
    */
   get peers () {
@@ -83,6 +85,7 @@ class Metrics {
   /**
    * Returns the `Stats` object for the given `PeerId` whether it
    * is a live peer, or in the disconnected peer LRU cache.
+   *
    * @param {PeerId} peerId
    * @returns {Stats}
    */
@@ -93,6 +96,7 @@ class Metrics {
 
   /**
    * Returns a list of all protocol strings currently being tracked.
+   *
    * @returns {Array<string>}
    */
   get protocols () {
@@ -101,6 +105,7 @@ class Metrics {
 
   /**
    * Returns the `Stats` object for the given `protocol`.
+   *
    * @param {string} protocol
    * @returns {Stats}
    */
@@ -112,6 +117,7 @@ class Metrics {
    * Should be called when all connections to a given peer
    * have closed. The `Stats` collection for the peer will
    * be stopped and moved to an LRU for temporary retention.
+   *
    * @param {PeerId} peerId
    */
   onPeerDisconnected (peerId) {
@@ -131,10 +137,10 @@ class Metrics {
    *
    * @private
    * @param {object} params
-   * @param {PeerId} params.remotePeer Remote peer
-   * @param {string} [params.protocol] Protocol string the stream is running
-   * @param {string} params.direction One of ['in','out']
-   * @param {number} params.dataLength Size of the message
+   * @param {PeerId} params.remotePeer - Remote peer
+   * @param {string} [params.protocol] - Protocol string the stream is running
+   * @param {string} params.direction - One of ['in','out']
+   * @param {number} params.dataLength - Size of the message
    * @returns {void}
    */
   _onMessage ({ remotePeer, protocol, direction, dataLength }) {
@@ -167,7 +173,8 @@ class Metrics {
    * Replaces the `PeerId` string with the given `peerId`.
    * If stats are already being tracked for the given `peerId`, the
    * placeholder stats will be merged with the existing stats.
-   * @param {PeerId} placeholder A peerId string
+   *
+   * @param {PeerId} placeholder - A peerId string
    * @param {PeerId} peerId
    */
   updatePlaceholder (placeholder, peerId) {
@@ -198,9 +205,9 @@ class Metrics {
    * with the placeholder string returned from here, and the known `PeerId`.
    *
    * @param {Object} options
-   * @param {{ sink: function(*), source: function() }} options.stream A duplex iterable stream
-   * @param {PeerId} [options.peerId] The id of the remote peer that's connected
-   * @param {string} [options.protocol] The protocol the stream is running
+   * @param {{ sink: function(*), source: function() }} options.stream - A duplex iterable stream
+   * @param {PeerId} [options.remotePeer] - The id of the remote peer that's connected
+   * @param {string} [options.protocol] - The protocol the stream is running
    * @returns {string} The peerId string or placeholder string
    */
   trackStream ({ stream, remotePeer, protocol }) {
@@ -233,6 +240,7 @@ class Metrics {
   /**
    * Merges `other` into `target`. `target` will be modified
    * and returned.
+   *
    * @param {Stats} target
    * @param {Stats} other
    * @returns {Stats}

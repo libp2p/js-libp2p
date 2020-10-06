@@ -15,7 +15,7 @@ log.error = debug('libp2p:circuit:stop:error')
  * @private
  * @param {*} options
  * @param {Connection} options.connection
- * @param {*} options.request The CircuitRelay protobuf request (unencoded)
+ * @param {*} options.request - The CircuitRelay protobuf request (unencoded)
  * @param {StreamHandler} options.streamHandler
  * @returns {Promise<*>} Resolves a duplex iterable
  */
@@ -42,10 +42,11 @@ module.exports.handleStop = function handleStop ({
 
 /**
  * Creates a STOP request
+ *
  * @private
  * @param {*} options
  * @param {Connection} options.connection
- * @param {*} options.request The CircuitRelay protobuf request (unencoded)
+ * @param {*} options.request - The CircuitRelay protobuf request (unencoded)
  * @returns {Promise<*>} Resolves a duplex iterable
  */
 module.exports.stop = async function stop ({

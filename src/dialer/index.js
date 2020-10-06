@@ -20,12 +20,13 @@ const {
 
 class Dialer {
   /**
-   * @constructor
+   * @class
    * @param {object} options
    * @param {TransportManager} options.transportManager
-   * @param {Peerstore} peerStore
-   * @param {number} options.concurrency Number of max concurrent dials. Defaults to `MAX_PARALLEL_DIALS`
-   * @param {number} options.timeout How long a dial attempt is allowed to take. Defaults to `DIAL_TIMEOUT`
+   * @param {Peerstore} options.peerStore
+   * @param {number} [options.concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
+   * @param {number} [options.perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
+   * @param {number} [options.timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
    */
   constructor ({
     transportManager,
@@ -62,9 +63,9 @@ class Dialer {
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    *
-   * @param {PeerId|Multiaddr|string} peer The peer to dial
+   * @param {PeerId|Multiaddr|string} peer - The peer to dial
    * @param {object} [options]
-   * @param {AbortSignal} [options.signal] An AbortController signal
+   * @param {AbortSignal} [options.signal] - An AbortController signal
    * @returns {Promise<Connection>}
    */
   async connectToPeer (peer, options = {}) {
@@ -101,8 +102,9 @@ class Dialer {
    * Creates a DialTarget. The DialTarget is used to create and track
    * the DialRequest to a given peer.
    * If a multiaddr is received it should be the first address attempted.
+   *
    * @private
-   * @param {PeerId|Multiaddr|string} peer A PeerId or Multiaddr
+   * @param {PeerId|Multiaddr|string} peer - A PeerId or Multiaddr
    * @returns {DialTarget}
    */
   _createDialTarget (peer) {
@@ -137,10 +139,11 @@ class Dialer {
 
   /**
    * Creates a PendingDial that wraps the underlying DialRequest
+   *
    * @private
    * @param {DialTarget} dialTarget
    * @param {object} [options]
-   * @param {AbortSignal} [options.signal] An AbortController signal
+   * @param {AbortSignal} [options.signal] - An AbortController signal
    * @returns {PendingDial}
    */
   _createPendingDial (dialTarget, options) {

@@ -14,12 +14,12 @@ const passthrough = data => data
  */
 class Book {
   /**
-   * @constructor
+   * @class
    * @param {Object} properties
-   * @param {PeerStore} properties.peerStore PeerStore instance.
-   * @param {string} properties.eventName Name of the event to emit by the PeerStore.
-   * @param {string} properties.eventProperty Name of the property to emit by the PeerStore.
-   * @param {function} [properties.eventTransformer] Transformer function of the provided data for being emitted.
+   * @param {PeerStore} properties.peerStore - PeerStore instance.
+   * @param {string} properties.eventName - Name of the event to emit by the PeerStore.
+   * @param {string} properties.eventProperty - Name of the property to emit by the PeerStore.
+   * @param {Function} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
    */
   constructor ({ peerStore, eventName, eventProperty, eventTransformer = passthrough }) {
     this._ps = peerStore
@@ -29,6 +29,7 @@ class Book {
 
     /**
      * Map known peers to their data.
+     *
      * @type {Map<string, Array<Data>}
      */
     this.data = new Map()
@@ -36,6 +37,7 @@ class Book {
 
   /**
    * Set known data of a provided peer.
+   *
    * @param {PeerId} peerId
    * @param {Array<Data>|Data} data
    */
@@ -45,12 +47,13 @@ class Book {
 
   /**
    * Set data into the datastructure, persistence and emit it using the provided transformers.
+   *
    * @private
-   * @param {PeerId} peerId peerId of the data to store
-   * @param {*} data data to store.
-   * @param {Object} [options] storing options.
-   * @param {boolean} [options.emit = true] emit the provided data.
-   * @return {void}
+   * @param {PeerId} peerId - peerId of the data to store
+   * @param {*} data - data to store.
+   * @param {Object} [options] - storing options.
+   * @param {boolean} [options.emit = true] - emit the provided data.
+   * @returns {void}
    */
   _setData (peerId, data, { emit = true } = {}) {
     const b58key = peerId.toB58String()
@@ -64,6 +67,7 @@ class Book {
 
   /**
    * Emit data.
+   *
    * @private
    * @param {PeerId} peerId
    * @param {*} data
@@ -78,6 +82,7 @@ class Book {
   /**
    * Get the known data of a provided peer.
    * Returns `undefined` if there is no available data for the given peer.
+   *
    * @param {PeerId} peerId
    * @returns {Array<Data>|undefined}
    */
@@ -93,6 +98,7 @@ class Book {
 
   /**
    * Deletes the provided peer from the book.
+   *
    * @param {PeerId} peerId
    * @returns {boolean}
    */

@@ -6,9 +6,10 @@ const AbortController = require('abort-controller')
 
 /**
  * Returns both sides of a mocked MultiaddrConnection
+ *
  * @param {object} options
- * @param {Multiaddr[]} options.addrs Should contain two addresses for the local and remote peer
- * @param {PeerId} options.remotePeer The peer that is being "dialed"
+ * @param {Multiaddr[]} options.addrs - Should contain two addresses for the local and remote peer
+ * @param {PeerId} options.remotePeer - The peer that is being "dialed"
  * @returns {{inbound:MultiaddrConnection, outbound:MultiaddrConnection}}
  */
 module.exports = function mockMultiaddrConnPair ({ addrs, remotePeer }) {

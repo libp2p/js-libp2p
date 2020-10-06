@@ -32,25 +32,26 @@ const defaultOptions = {
 
 /**
  * Responsible for managing known connections.
+ *
  * @fires ConnectionManager#peer:connect Emitted when a new peer is connected.
  * @fires ConnectionManager#peer:disconnect Emitted when a peer is disconnected.
  */
 class ConnectionManager extends EventEmitter {
   /**
-   * @constructor
+   * @class
    * @param {Libp2p} libp2p
    * @param {object} options
-   * @param {Number} options.maxConnections The maximum number of connections allowed. Default=Infinity
-   * @param {Number} options.minConnections The minimum number of connections to avoid pruning. Default=0
-   * @param {Number} options.maxData The max data (in and out), per average interval to allow. Default=Infinity
-   * @param {Number} options.maxSentData The max outgoing data, per average interval to allow. Default=Infinity
-   * @param {Number} options.maxReceivedData The max incoming data, per average interval to allow.. Default=Infinity
-   * @param {Number} options.maxEventLoopDelay The upper limit the event loop can take to run. Default=Infinity
-   * @param {Number} options.pollInterval How often, in milliseconds, metrics and latency should be checked. Default=2000
-   * @param {Number} options.movingAverageInterval How often, in milliseconds, to compute averages. Default=60000
-   * @param {Number} options.defaultPeerValue The value of the peer. Default=1
-   * @param {boolean} options.autoDial Should preemptively guarantee connections are above the low watermark. Default=true
-   * @param {Number} options.autoDialInterval How often, in milliseconds, it should preemptively guarantee connections are above the low watermark. Default=10000
+   * @param {number} options.maxConnections - The maximum number of connections allowed. Default=Infinity
+   * @param {number} options.minConnections - The minimum number of connections to avoid pruning. Default=0
+   * @param {number} options.maxData - The max data (in and out), per average interval to allow. Default=Infinity
+   * @param {number} options.maxSentData - The max outgoing data, per average interval to allow. Default=Infinity
+   * @param {number} options.maxReceivedData - The max incoming data, per average interval to allow.. Default=Infinity
+   * @param {number} options.maxEventLoopDelay - The upper limit the event loop can take to run. Default=Infinity
+   * @param {number} options.pollInterval - How often, in milliseconds, metrics and latency should be checked. Default=2000
+   * @param {number} options.movingAverageInterval - How often, in milliseconds, to compute averages. Default=60000
+   * @param {number} options.defaultPeerValue - The value of the peer. Default=1
+   * @param {boolean} options.autoDial - Should preemptively guarantee connections are above the low watermark. Default=true
+   * @param {number} options.autoDialInterval - How often, in milliseconds, it should preemptively guarantee connections are above the low watermark. Default=10000
    */
   constructor (libp2p, options) {
     super()
@@ -69,12 +70,14 @@ class ConnectionManager extends EventEmitter {
 
     /**
      * Map of peer identifiers to their peer value for pruning connections.
+     *
      * @type {Map<string, number>}
      */
     this._peerValues = new Map()
 
     /**
      * Map of connections per peer
+     *
      * @type {Map<string, Array<conn>>}
      */
     this.connections = new Map()
@@ -119,6 +122,7 @@ class ConnectionManager extends EventEmitter {
 
   /**
    * Stops the Connection Manager
+   *
    * @async
    */
   async stop () {
@@ -133,6 +137,7 @@ class ConnectionManager extends EventEmitter {
 
   /**
    * Cleans up the connections
+   *
    * @async
    */
   async _close () {
@@ -151,8 +156,9 @@ class ConnectionManager extends EventEmitter {
   /**
    * Sets the value of the given peer. Peers with lower values
    * will be disconnected first.
+   *
    * @param {PeerId} peerId
-   * @param {number} value A number between 0 and 1
+   * @param {number} value - A number between 0 and 1
    */
   setPeerValue (peerId, value) {
     if (value < 0 || value > 1) {
@@ -167,6 +173,7 @@ class ConnectionManager extends EventEmitter {
   /**
    * Checks the libp2p metrics to determine if any values have exceeded
    * the configured maximums.
+   *
    * @private
    */
   _checkMetrics () {
@@ -183,6 +190,7 @@ class ConnectionManager extends EventEmitter {
 
   /**
    * Tracks the incoming connection and check the connection limit
+   *
    * @param {Connection} connection
    */
   onConnect (connection) {
@@ -208,6 +216,7 @@ class ConnectionManager extends EventEmitter {
 
   /**
    * Removes the connection from tracking
+   *
    * @param {Connection} connection
    */
   onDisconnect (connection) {
@@ -226,6 +235,7 @@ class ConnectionManager extends EventEmitter {
 
   /**
    * Get a connection with a peer.
+   *
    * @param {PeerId} peerId
    * @returns {Connection}
    */
@@ -239,6 +249,7 @@ class ConnectionManager extends EventEmitter {
 
   /**
    * Get all open connections with a peer.
+   *
    * @param {PeerId} peerId
    * @returns {Array<Connection>}
    */
@@ -259,8 +270,9 @@ class ConnectionManager extends EventEmitter {
 
   /**
    * If the event loop is slow, maybe close a connection
+   *
    * @private
-   * @param {*} summary The LatencyMonitor summary
+   * @param {*} summary - The LatencyMonitor summary
    */
   _onLatencyMeasure (summary) {
     this._checkMaxLimit('maxEventLoopDelay', summary.avgMs)
@@ -268,9 +280,10 @@ class ConnectionManager extends EventEmitter {
 
   /**
    * If the `value` of `name` has exceeded its limit, maybe close a connection
+   *
    * @private
-   * @param {string} name The name of the field to check limits for
-   * @param {number} value The current value of the field
+   * @param {string} name - The name of the field to check limits for
+   * @param {number} value - The current value of the field
    */
   _checkMaxLimit (name, value) {
     const limit = this._options[name]
@@ -285,6 +298,7 @@ class ConnectionManager extends EventEmitter {
    * Proactively tries to connect to known peers stored in the PeerStore.
    * It will keep the number of connections below the upper limit and sort
    * the peers to connect based on wether we know their keys and protocols.
+   *
    * @async
    * @private
    */
@@ -330,6 +344,7 @@ class ConnectionManager extends EventEmitter {
   /**
    * If we have more connections than our maximum, close a connection
    * to the lowest valued peer.
+   *
    * @private
    */
   _maybeDisconnectOne () {

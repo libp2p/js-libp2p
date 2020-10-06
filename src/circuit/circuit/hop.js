@@ -90,9 +90,8 @@ module.exports.handleHop = async function handleHop ({
  * peer. A new, virtual, connection will be created between the two via the relay.
  *
  * @param {object} options
- * @param {Connection} options.connection Connection to the relay
+ * @param {Connection} options.connection - Connection to the relay
  * @param {*} options.request
- * @param {Circuit} options.circuit
  * @returns {Promise<Connection>}
  */
 module.exports.hop = async function hop ({
@@ -119,6 +118,11 @@ module.exports.hop = async function hop ({
 
 /**
  * Creates an unencoded CAN_HOP response based on the Circuits configuration
+ *
+ * @param {Object} options
+ * @param {Connection} options.connection
+ * @param {StreamHandler} options.streamHandler
+ * @param {Circuit} options.circuit
  * @private
  */
 module.exports.handleCanHop = function handleCanHop ({

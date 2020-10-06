@@ -20,12 +20,12 @@ const Protobuf = require('./envelope.proto')
  */
 class Envelope {
   /**
-   * @constructor
+   * @class
    * @param {object} params
    * @param {PeerId} params.peerId
    * @param {Uint8Array} params.payloadType
-   * @param {Uint8Array} params.payload marshaled record
-   * @param {Uint8Array} params.signature signature of the domain string :: type hint :: payload.
+   * @param {Uint8Array} params.payload - marshaled record
+   * @param {Uint8Array} params.signature - signature of the domain string :: type hint :: payload.
    */
   constructor ({ peerId, payloadType, payload, signature }) {
     this.peerId = peerId
@@ -39,7 +39,8 @@ class Envelope {
 
   /**
    * Marshal the envelope content.
-   * @return {Uint8Array}
+   *
+   * @returns {Uint8Array}
    */
   marshal () {
     if (this._marshal) {
@@ -60,8 +61,9 @@ class Envelope {
 
   /**
    * Verifies if the other Envelope is identical to this one.
+   *
    * @param {Envelope} other
-   * @return {boolean}
+   * @returns {boolean}
    */
   equals (other) {
     return uint8arraysEquals(this.peerId.pubKey.bytes, other.peerId.pubKey.bytes) &&
@@ -72,8 +74,9 @@ class Envelope {
 
   /**
    * Validate envelope data signature for the given domain.
+   *
    * @param {string} domain
-   * @return {Promise<boolean>}
+   * @returns {Promise<boolean>}
    */
   validate (domain) {
     const signData = formatSignaturePayload(domain, this.payloadType, this.payload)
@@ -84,10 +87,11 @@ class Envelope {
 
 /**
  * Helper function that prepares a Uint8Array to sign or verify a signature.
+ *
  * @param {string} domain
  * @param {Uint8Array} payloadType
  * @param {Uint8Array} payload
- * @return {Uint8Array}
+ * @returns {Uint8Array}
  */
 const formatSignaturePayload = (domain, payloadType, payload) => {
   // When signing, a peer will prepare a Uint8Array by concatenating the following:
@@ -115,8 +119,9 @@ const formatSignaturePayload = (domain, payloadType, payload) => {
 
 /**
  * Unmarshal a serialized Envelope protobuf message.
+ *
  * @param {Uint8Array} data
- * @return {Promise<Envelope>}
+ * @returns {Promise<Envelope>}
  */
 Envelope.createFromProtobuf = async (data) => {
   const envelopeData = Protobuf.decode(data)
@@ -131,13 +136,14 @@ Envelope.createFromProtobuf = async (data) => {
 }
 
 /**
-* Seal marshals the given Record, places the marshaled bytes inside an Envelope
-* and signs it with the given peerId's private key.
-* @async
-* @param {Record} record
-* @param {PeerId} peerId
-* @return {Envelope}
-*/
+ * Seal marshals the given Record, places the marshaled bytes inside an Envelope
+ * and signs it with the given peerId's private key.
+ *
+ * @async
+ * @param {Record} record
+ * @param {PeerId} peerId
+ * @returns {Envelope}
+ */
 Envelope.seal = async (record, peerId) => {
   const domain = record.domain
   const payloadType = record.codec
@@ -157,9 +163,10 @@ Envelope.seal = async (record, peerId) => {
 /**
  * Open and certify a given marshalled envelope.
  * Data is unmarshalled and the signature validated for the given domain.
+ *
  * @param {Uint8Array} data
  * @param {string} domain
- * @return {Envelope}
+ * @returns {Envelope}
  */
 Envelope.openAndCertify = async (data, domain) => {
   const envelope = await Envelope.createFromProtobuf(data)

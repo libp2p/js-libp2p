@@ -32,7 +32,8 @@ const { codes } = require('../errors')
 class IdentifyService {
   /**
    * Takes the `addr` and converts it to a Multiaddr if possible
-   * @param {Uint8Array|String} addr
+   *
+   * @param {Uint8Array | string} addr
    * @returns {Multiaddr|null}
    */
   static getCleanMultiaddr (addr) {
@@ -47,10 +48,10 @@ class IdentifyService {
   }
 
   /**
-   * @constructor
+   * @class
    * @param {object} options
    * @param {Libp2p} options.libp2p
-   * @param {Map<string, handler>} options.protocols A reference to the protocols we support
+   * @param {Map<string, handler>} options.protocols - A reference to the protocols we support
    */
   constructor ({ libp2p, protocols }) {
     /**
@@ -86,6 +87,7 @@ class IdentifyService {
 
   /**
    * Send an Identify Push update to the list of connections
+   *
    * @param {Array<Connection>} connections
    * @returns {Promise<void>}
    */
@@ -119,6 +121,7 @@ class IdentifyService {
 
   /**
    * Calls `push` for all peers in the `peerStore` that are connected
+   *
    * @param {PeerStore} peerStore
    */
   pushToPeerStore (peerStore) {
@@ -209,7 +212,7 @@ class IdentifyService {
    * A handler to register with Libp2p to process identify messages.
    *
    * @param {object} options
-   * @param {String} options.protocol
+   * @param {string} options.protocol
    * @param {*} options.stream
    * @param {Connection} options.connection
    * @returns {Promise<void>}
@@ -228,6 +231,7 @@ class IdentifyService {
   /**
    * Sends the `Identify` response with the Signed Peer Record
    * to the requesting peer over the given `connection`
+   *
    * @private
    * @param {object} options
    * @param {*} options.stream
@@ -265,6 +269,7 @@ class IdentifyService {
 
   /**
    * Reads the Identify Push message from the given `connection`
+   *
    * @private
    * @param {object} options
    * @param {*} options.stream
@@ -311,7 +316,8 @@ class IdentifyService {
 
   /**
    * Get self signed peer record raw envelope.
-   * @return {Uint8Array}
+   *
+   * @returns {Uint8Array}
    */
   async _getSelfPeerRecord () {
     const selfSignedPeerRecord = this.peerStore.addressBook.getRawEnvelope(this.peerId)
@@ -340,6 +346,7 @@ class IdentifyService {
 module.exports.IdentifyService = IdentifyService
 /**
  * The protocols the IdentifyService supports
+ *
  * @property multicodecs
  */
 module.exports.multicodecs = {

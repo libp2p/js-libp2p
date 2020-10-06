@@ -16,6 +16,7 @@ class DialRequest {
    * from `dialer.getTokens`. Once a DialRequest is created, it can be
    * started using `DialRequest.run(options)`. Once a single dial has succeeded,
    * all other dials in the request will be cancelled.
+   *
    * @param {object} options
    * @param {Multiaddr[]} options.addrs
    * @param {function(Multiaddr):Promise<Connection>} options.dialAction
@@ -34,7 +35,7 @@ class DialRequest {
   /**
    * @async
    * @param {object} options
-   * @param {AbortSignal} options.signal An AbortController signal
+   * @param {AbortSignal} options.signal - An AbortController signal
    * @returns {Connection}
    */
   async run (options) {

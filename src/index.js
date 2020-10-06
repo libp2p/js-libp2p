@@ -206,6 +206,7 @@ class Libp2p extends EventEmitter {
   /**
    * Overrides EventEmitter.emit to conditionally emit errors
    * if there is a handler. If not, errors will be logged.
+   *
    * @param {string} eventName
    * @param  {...any} args
    * @returns {void}
@@ -240,6 +241,7 @@ class Libp2p extends EventEmitter {
 
   /**
    * Stop the libp2p node by closing its listeners and open connections
+   *
    * @async
    * @returns {void}
    */
@@ -281,6 +283,7 @@ class Libp2p extends EventEmitter {
   /**
    * Load keychain keys from the datastore.
    * Imports the private key as 'self', if needed.
+   *
    * @async
    * @returns {void}
    */
@@ -299,6 +302,7 @@ class Libp2p extends EventEmitter {
   /**
    * Gets a Map of the current connections. The keys are the stringified
    * `PeerId` of the peer. The value is an array of Connections to that peer.
+   *
    * @returns {Map<string, Connection[]>}
    */
   get connections () {
@@ -308,7 +312,8 @@ class Libp2p extends EventEmitter {
   /**
    * Dials to the provided peer. If successful, the known metadata of the
    * peer will be added to the nodes `peerStore`
-   * @param {PeerId|Multiaddr|string} peer The peer to dial
+   *
+   * @param {PeerId|Multiaddr|string} peer - The peer to dial
    * @param {object} options
    * @param {AbortSignal} [options.signal]
    * @returns {Promise<Connection>}
@@ -321,8 +326,9 @@ class Libp2p extends EventEmitter {
    * Dials to the provided peer and handshakes with the given protocol.
    * If successful, the known metadata of the peer will be added to the nodes `peerStore`,
    * and the `Connection` will be returned
+   *
    * @async
-   * @param {PeerId|Multiaddr|string} peer The peer to dial
+   * @param {PeerId|Multiaddr|string} peer - The peer to dial
    * @param {string[]|string} protocols
    * @param {object} options
    * @param {AbortSignal} [options.signal]
@@ -350,7 +356,8 @@ class Libp2p extends EventEmitter {
    * Get peer advertising multiaddrs by concating the addresses used
    * by transports to listen with the announce addresses.
    * Duplicated addresses and noAnnounce addresses are filtered out.
-   * @return {Array<Multiaddr>}
+   *
+   * @returns {Array<Multiaddr>}
    */
   get multiaddrs () {
     // Filter noAnnounce multiaddrs
@@ -376,7 +383,8 @@ class Libp2p extends EventEmitter {
 
   /**
    * Disconnects all connections to the given `peer`
-   * @param {PeerId|multiaddr|string} peer the peer to close connections to
+   *
+   * @param {PeerId|multiaddr|string} peer - the peer to close connections to
    * @returns {Promise<void>}
    */
   async hangUp (peer) {
@@ -397,7 +405,8 @@ class Libp2p extends EventEmitter {
 
   /**
    * Pings the given peer in order to obtain the operation latency.
-   * @param {PeerId|Multiaddr|string} peer The peer to ping
+   *
+   * @param {PeerId|Multiaddr|string} peer - The peer to ping
    * @returns {Promise<number>}
    */
   ping (peer) {
@@ -413,6 +422,7 @@ class Libp2p extends EventEmitter {
 
   /**
    * Registers the `handler` for each protocol
+   *
    * @param {string[]|string} protocols
    * @param {function({ connection:*, stream:*, protocol:string })} handler
    */
@@ -431,6 +441,7 @@ class Libp2p extends EventEmitter {
   /**
    * Removes the handler for each protocol. The protocol
    * will no longer be supported on streams.
+   *
    * @param {string[]|string} protocols
    */
   unhandle (protocols) {
@@ -471,6 +482,7 @@ class Libp2p extends EventEmitter {
 
   /**
    * Called when libp2p has started and before it returns
+   *
    * @private
    */
   async _onDidStart () {
@@ -496,6 +508,7 @@ class Libp2p extends EventEmitter {
   /**
    * Called whenever peer discovery services emit `peer` events.
    * Known peers may be emitted.
+   *
    * @private
    * @param {{ id: PeerId, multiaddrs: Array<Multiaddr>, protocols: Array<string> }} peer
    */
@@ -513,6 +526,7 @@ class Libp2p extends EventEmitter {
    * Will dial to the given `peerId` if the current number of
    * connected peers is less than the configured `ConnectionManager`
    * minConnections.
+   *
    * @private
    * @param {PeerId} peerId
    */
@@ -586,7 +600,8 @@ class Libp2p extends EventEmitter {
 /**
  * Like `new Libp2p(options)` except it will create a `PeerId`
  * instance if one is not provided in options.
- * @param {object} options Libp2p configuration options
+ *
+ * @param {object} options - Libp2p configuration options
  * @returns {Libp2p}
  */
 Libp2p.create = async function create (options = {}) {
