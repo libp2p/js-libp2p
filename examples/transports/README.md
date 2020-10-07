@@ -13,7 +13,7 @@ When using libp2p, you need properly configure it, that is, pick your set of mod
 You will need 4 dependencies total, so go ahead and install all of them with:
 
 ```bash
-> npm install libp2p libp2p-tcp libp2p-secio peer-info
+> npm install libp2p libp2p-tcp libp2p-noise peer-info
 ```
 
 Then, on your favorite text editor create a file with the `.js` extension. I've called mine `1.js`.
@@ -26,7 +26,6 @@ First thing is to create our own libp2p node! Insert:
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const { NOISE } = require('libp2p-noise')
-const SECIO = require('libp2p-secio')
 
 const createNode = async () => {
   const node = await Libp2p.create({
@@ -37,7 +36,7 @@ const createNode = async () => {
     },
     modules: {
       transport: [ TCP ],
-      connEncryption: [ NOISE, SECIO ]
+      connEncryption: [ NOISE ]
     }
   })
 
@@ -174,7 +173,7 @@ const createNode = async (transports, multiaddrs = []) => {
     },
     modules: {
       transport: transports,
-      connEncryption: [SECIO],
+      connEncryption: [NOISE],
       streamMuxer: [MPLEX]
     }
   })

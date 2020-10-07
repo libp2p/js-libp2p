@@ -8,7 +8,7 @@ These mechanisms save configuration and enable a node to operate without any exp
 
 ## 1. Bootstrap list of Peers when booting a node
 
-For this demo, we will connect to IPFS default bootstrapper nodes and so, we will need to support the same set of features those nodes have, that are: TCP, mplex and SECIO. You can see the complete example at [1.js](./1.js).
+For this demo, we will connect to IPFS default bootstrapper nodes and so, we will need to support the same set of features those nodes have, that are: TCP, mplex and NOISE. You can see the complete example at [1.js](./1.js).
 
 First, we create our libp2p node.
 
@@ -20,7 +20,7 @@ const node = Libp2p.create({
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
-    connEncryption: [ NOISE, SECIO ],
+    connEncryption: [ NOISE ],
     peerDiscovery: [ Bootstrap ]
   },
   config: {
@@ -62,7 +62,7 @@ const node = await Libp2p.create({
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
-    connEncryption: [ NOISE, SECIO ],
+    connEncryption: [ NOISE ],
     peerDiscovery: [ Bootstrap ]
   },
   config: {
@@ -130,7 +130,7 @@ const createNode = () => {
     modules: {
       transport: [ TCP ],
       streamMuxer: [ Mplex ],
-      connEncryption: [ NOISE, SECIO ],
+      connEncryption: [ NOISE ],
       peerDiscovery: [ MulticastDNS ]
     },
     config: {

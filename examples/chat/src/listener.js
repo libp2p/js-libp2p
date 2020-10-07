@@ -1,7 +1,6 @@
 'use strict'
 /* eslint-disable no-console */
 
-const multaddr = require('multiaddr')
 const PeerId = require('peer-id')
 const Node = require('./libp2p-bundle.js')
 const { stdinToStream, streamToConsole } = require('./stream')

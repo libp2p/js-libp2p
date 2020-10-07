@@ -5,7 +5,6 @@ const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
-const SECIO = require('libp2p-secio')
 const KadDHT = require('libp2p-kad-dht')
 
 const delay = require('delay')
@@ -18,7 +17,7 @@ const createNode = async () => {
     modules: {
       transport: [TCP],
       streamMuxer: [Mplex],
-      connEncryption: [NOISE, SECIO],
+      connEncryption: [NOISE],
       dht: KadDHT
     },
     config: {

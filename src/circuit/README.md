@@ -41,7 +41,7 @@ const multiaddr = require('multiaddr')
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('libp2p-noise')
 
 const relayAddr = ...
 
@@ -52,7 +52,7 @@ const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
-    connEncryption: [SECIO]
+    connEncryption: [NOISE]
   },
   config: {
     relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)

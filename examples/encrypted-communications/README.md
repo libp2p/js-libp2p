@@ -8,31 +8,24 @@ A byproduct of having these encrypted communications modules is that we can auth
 
 # 1. Set up encrypted communications
 
-We will build this example on top of example for [Protocol and Stream Multiplexing](../protocol-and-stream-multiplexing). You will need the modules `libp2p-secio`<sup>*</sup> and `libp2p-noise` to complete it, go ahead and `npm install libp2p-secio libp2p-noise`.
+We will build this example on top of example for [Protocol and Stream Multiplexing](../protocol-and-stream-multiplexing). You will need the `libp2p-noise` module to complete it, go ahead and `npm install libp2p-noise`.
 
 To add them to your libp2p configuration, all you have to do is:
 
 ```JavaScript
 const Libp2p = require('libp2p')
 const { NOISE } = require('libp2p-noise')
-const SECIO = require('libp2p-secio')
 
 const createNode = () => {
   return Libp2p.create({
     modules: {
       transport: [ TCP ],
       streamMuxer: [ Mplex ],
-      // Attach secio as the crypto channel to use
-      connEncryption: [ NOISE, SECIO ]
+      // Attach noise as the crypto channel to use
+      connEncryption: [ NOISE ]
     }
   })
 }
 ```
 
 And that's it, from now on, all your libp2p communications are encrypted. Try running the example [1.js](./1.js) to see it working.
-
-_<sup>*</sup> SECIO is the crypto channel developed for IPFS, it is a TLS 1.3 like crypto channel that established an encrypted communication channel between two peers._
-
-If you want to want to learn more about how SECIO works, you can read the [great write up done by Dominic Tarr](https://github.com/auditdrivencrypto/secure-channel/blob/master/prior-art.md#ipfss-secure-channel).
-
-Important note: SECIO hasn't been audited and so, we do not recommend to trust its security. We intent to move to TLS 1.3 once the specification is finalized and an implementation exists that we can use.
