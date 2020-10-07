@@ -62,7 +62,7 @@ Compatible with multiaddr, peer-id and others.
 
 ```js
 const PeerId = require('peer-id')
-const arrayEquals = require('libp2p-utils/src/multiaddr/array-equals')
+const arrayEquals = require('libp2p-utils/src/array-equals')
 
 const peerId1 = await PeerId.create()
 const peerId2 = await PeerId.create()
