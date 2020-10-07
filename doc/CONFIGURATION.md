@@ -223,7 +223,7 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
 // Creating a libp2p node with:
 //   transport: websockets + tcp
 //   stream-muxing: mplex
-//   crypto-channel: secio
+//   crypto-channel: noise
 //   discovery: multicast-dns
 //   dht: kad-dht
 //   pubsub: gossipsub
