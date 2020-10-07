@@ -5,8 +5,9 @@ const multihashing = require('multihashing-async')
 
 /**
  * Convert a namespace string into a cid.
+ *
  * @param {string} namespace
- * @return {Promise<CID>}
+ * @returns {Promise<CID>}
  */
 module.exports.namespaceToCid = async (namespace) => {
   const bytes = new TextEncoder('utf8').encode(namespace)
