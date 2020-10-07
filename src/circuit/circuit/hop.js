@@ -118,8 +118,9 @@ module.exports.hop = async function hop ({
 
 /**
  * Performs a CAN_HOP request to a relay peer, in order to understand its capabilities.
+ *
  * @param {object} options
- * @param {Connection} options.connection Connection to the relay
+ * @param {Connection} options.connection - Connection to the relay
  * @returns {Promise<boolean>}
  */
 module.exports.canHop = async function canHop ({

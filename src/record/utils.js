@@ -5,6 +5,7 @@ const PeerRecord = require('./peer-record')
 
 /**
  * Create (or update if existing) self peer record and store it in the AddressBook.
+ *
  * @param {libp2p} libp2p
  * @returns {Promise<void>}
  */

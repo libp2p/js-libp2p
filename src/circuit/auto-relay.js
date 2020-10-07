@@ -19,10 +19,11 @@ const hopMetadataValue = 'true'
 class AutoRelay {
   /**
    * Creates an instance of AutoRelay.
-   * @constructor
+   *
+   * @class
    * @param {object} props
    * @param {Libp2p} props.libp2p
-   * @param {number} [props.maxListeners = 1] maximum number of relays to listen.
+   * @param {number} [props.maxListeners = 1] - maximum number of relays to listen.
    */
   constructor ({ libp2p, maxListeners = 1 }) {
     this._libp2p = libp2p
@@ -50,10 +51,11 @@ class AutoRelay {
    * If the protocol is not supported, check if it was supported before and remove it as a listen relay.
    * If the protocol is supported, check if the peer supports **HOP** and add it as a listener if
    * inside the threshold.
+   *
    * @param {Object} props
    * @param {PeerId} props.peerId
    * @param {Array<string>} props.protocols
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   async _onProtocolChange ({ peerId, protocols }) {
     const id = peerId.toB58String()
@@ -92,8 +94,9 @@ class AutoRelay {
 
   /**
    * Peer disconnects.
-   * @param {Connection} connection connection to the peer
-   * @return {void}
+   *
+   * @param {Connection} connection - connection to the peer
+   * @returns {void}
    */
   _onPeerDisconnected (connection) {
     const peerId = connection.remotePeer
@@ -109,10 +112,11 @@ class AutoRelay {
 
   /**
    * Attempt to listen on the given relay connection.
+   *
    * @private
-   * @param {Connection} connection connection to the peer
-   * @param {string} id peer identifier string
-   * @return {Promise<void>}
+   * @param {Connection} connection - connection to the peer
+   * @param {string} id - peer identifier string
+   * @returns {Promise<void>}
    */
   async _addListenRelay (connection, id) {
     // Check if already listening on enough relays
@@ -152,9 +156,10 @@ class AutoRelay {
 
   /**
    * Remove listen relay.
+   *
    * @private
-   * @param {string} id peer identifier string.
-   * @return {void}
+   * @param {string} id - peer identifier string.
+   * @returns {void}
    */
   _removeListenRelay (id) {
     if (this._listenRelays.delete(id)) {
@@ -169,8 +174,9 @@ class AutoRelay {
    * 1. Check the metadata store for known relays, try to listen on the ones we are already connected.
    * 2. Dial and try to listen on the peers we know that support hop but are not connected.
    * 3. Search the network.
+   *
    * @param {Array<string>} [peersToIgnore]
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   async _listenOnAvailableHopRelays (peersToIgnore = []) {
     // TODO: The peer redial issue on disconnect should be handled by connection gating
