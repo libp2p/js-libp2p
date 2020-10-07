@@ -37,6 +37,7 @@ class Relay {
 
   /**
    * Start Relay service.
+   *
    * @returns {void}
    */
   start () {
@@ -52,6 +53,7 @@ class Relay {
 
   /**
    * Stop Relay service.
+   *
    * @returns {void}
    */
   stop () {
@@ -60,6 +62,7 @@ class Relay {
 
   /**
    * Advertise hop relay service in the network.
+   *
    * @returns {Promise<void>}
    */
   async _advertiseService () {
