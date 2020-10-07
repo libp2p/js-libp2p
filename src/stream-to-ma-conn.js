@@ -3,9 +3,18 @@
 const abortable = require('abortable-iterator')
 const log = require('debug')('libp2p:stream:converter')
 
-// Convert a duplex iterable into a MultiaddrConnection
-// https://github.com/libp2p/interface-transport#multiaddrconnection
-module.exports = ({ stream, remoteAddr, localAddr }, options = {}) => {
+/**
+ * Convert a duplex iterable into a MultiaddrConnection.
+ * https://github.com/libp2p/interface-transport#multiaddrconnection
+ *
+ * @param {object} streamProperties
+ * @param {DuplexStream} streamProperties.stream
+ * @param {Multiaddr} streamProperties.remoteAddr
+ * @param {Multiaddr} streamProperties.localAddr
+ * @param {object} [options]
+ * @param {AbortSignal} [options.signal]
+ */
+function streamToMaConnection ({ stream, remoteAddr, localAddr }, options = {}) {
   const { sink, source } = stream
   const maConn = {
     async sink (source) {
@@ -47,3 +56,5 @@ module.exports = ({ stream, remoteAddr, localAddr }, options = {}) => {
 
   return maConn
 }
+
+module.exports = streamToMaConnection

@@ -2,7 +2,7 @@
 
 /**
  * Verify if two arrays of non primitive types with the "equals" function are equal.
- * Compatible with multiaddr, peer-id and Buffer.
+ * Compatible with multiaddr, peer-id and others.
  *
  * @param {Array<*>} a
  * @param {Array<*>} b

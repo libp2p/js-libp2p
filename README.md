@@ -40,6 +40,36 @@ const ma = ipAndPortToMultiaddr('127.0.0.1', 9000)
 
 ## API
 
+### arrayEquals(a, b)
+
+Verify if two arrays of non primitive types with the "equals" function are equal.
+Compatible with multiaddr, peer-id and others.
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| a | `Array<*>` | First array to verify |
+| b | `Array<*>` | Second array to verify |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | returns true if arrays are equal, false otherwise |
+
+#### Example
+
+```js
+const PeerId = require('peer-id')
+const arrayEquals = require('libp2p-utils/src/multiaddr/array-equals')
+
+const peerId1 = await PeerId.create()
+const peerId2 = await PeerId.create()
+
+const equals = arrayEquals([peerId1], [peerId2])
+```
+
 ### multiaddr `.isLoopback(ma)`
 
 Check if a given multiaddr is a loopback address.
@@ -90,6 +120,71 @@ const isPrivate = require('libp2p-utils/src/multiaddr/is-private')
 
 const ma = multiaddr('/ip4/10.0.0.1/tcp/1000')
 isMultiaddrPrivateAddrs = isPrivate(ma)
+```
+
+### ipPortToMultiaddr(ip, port)
+
+Transform an IP, Port pair into a multiaddr with tcp transport.
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| ip | `string` | ip for multiaddr |
+| port | `number|string` | port for multiaddr |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Multiaddr` | returns created multiaddr |
+
+#### Example
+
+```js
+const ipPortPairToMultiaddr = require('libp2p-utils/src/multiaddr/ip-port-to-multiaddr')
+const ip = '127.0.0.1'
+const port = '9090'
+
+const ma = ipPortPairToMultiaddr(ma)
+```
+
+### streamToMaConnection(streamProperties, options)
+
+Convert a duplex stream into a [MultiaddrConnection](https://github.com/libp2p/interface-transport#multiaddrconnection).
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| streamProperties | `object` | duplex stream properties |
+| streamProperties.stream | [`DuplexStream`](https://github.com/libp2p/js-libp2p/blob/master/doc/STREAMING_ITERABLES.md#duplex) | duplex stream |
+| streamProperties.remoteAddr | `Multiaddr` | stream remote address |
+| streamProperties.localAddr | `Multiaddr` | stream local address |
+| [options] | `object` | options |
+| [options.signal] | `AbortSignal` | abort signal |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Connection` | returns a multiaddr [Connection](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/connection) |
+
+#### Example
+
+```js
+const streamToMaConnection = require('libp2p-utils/src/stream-to-ma-conn')
+
+const stream = {
+  sink: async source => {/* ... */},
+  source: { [Symbol.asyncIterator] () {/* ... */} }
+}
+
+const conn = streamToMaConnection({
+  stream,
+  remoteAddr: /* ... */
+  localAddr; /* ... */
+})
 ```
 
 ## Contribute

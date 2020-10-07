@@ -10,7 +10,13 @@ const errors = {
   ERR_INVALID_IP: 'ERR_INVALID_IP'
 }
 
-module.exports = (ip, port) => {
+/**
+ * Transform an IP, Port pair into a multiaddr
+ *
+ * @param {string} ip
+ * @param {number|string} port
+ */
+function ipPortToMultiaddr (ip, port) {
   if (typeof ip !== 'string') {
     throw errCode(new Error(`invalid ip provided: ${ip}`), errors.ERR_INVALID_IP_PARAMETER)
   }
@@ -35,5 +41,7 @@ module.exports = (ip, port) => {
 
   throw errCode(new Error(`invalid ip:port for creating a multiaddr: ${ip}:${port}`), errors.ERR_INVALID_IP)
 }
+
+module.exports = ipPortToMultiaddr
 
 module.exports.Errors = errors
