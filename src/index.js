@@ -35,8 +35,6 @@ const {
 
 /**
  * @fires Libp2p#error Emitted when an error occurs
- * @fires Libp2p#peer:connect Emitted when a peer is connected to this node
- * @fires Libp2p#peer:disconnect Emitted when a peer disconnects from this node
  * @fires Libp2p#peer:discovery Emitted when a peer is discovered
  */
 class Libp2p extends EventEmitter {
