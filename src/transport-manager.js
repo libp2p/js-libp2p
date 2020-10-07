@@ -143,7 +143,7 @@ class TransportManager {
    * Starts listeners for each listen Multiaddr.
    *
    * @async
-   * @param {Array<Multiaddr>} addrs addresses to attempt to listen on
+   * @param {Array<Multiaddr>} addrs - addresses to attempt to listen on
    */
   async listen (addrs) {
     if (!addrs || addrs.length === 0) {

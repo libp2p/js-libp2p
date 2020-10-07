@@ -135,6 +135,7 @@ class IdentifyService {
 
   /**
    * Calls `push` for all peers in the `peerStore` that are connected
+   *
    * @returns {void}
    */
   pushToPeerStore () {
