@@ -38,6 +38,60 @@ const ipAndPortToMultiaddr = require('libp2p-utils/src/ip-port-to-multiaddr')
 const ma = ipAndPortToMultiaddr('127.0.0.1', 9000)
 ```
 
+## API
+
+### multiaddr `.isLoopback(ma)`
+
+Check if a given multiaddr is a loopback address.
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| ma | `Multiaddr` | multiaddr to verify |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | returns true if multiaddr is a loopback address, false otherwise |
+
+#### Example
+
+```js
+const multiaddr = require('multiaddr')
+const isLoopback = require('libp2p-utils/src/multiaddr/is-loopback')
+
+const ma = multiaddr('/ip4/127.0.0.1/tcp/1000')
+isMultiaddrLoopbackAddrs = isLoopback(ma)
+```
+
+### multiaddr `.isPrivate(ma)`
+
+Check if a given multiaddr has a private address.
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| ma | `Multiaddr` | multiaddr to verify |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `boolean` | returns true if multiaddr is a private address, false otherwise |
+
+#### Example
+
+```js
+const multiaddr = require('multiaddr')
+const isPrivate = require('libp2p-utils/src/multiaddr/is-private')
+
+const ma = multiaddr('/ip4/10.0.0.1/tcp/1000')
+isMultiaddrPrivateAddrs = isPrivate(ma)
+```
+
 ## Contribute
 
 Contributions welcome. Please check out [the issues](https://github.com/libp2p/js-libp2p-utils/issues).

@@ -29,17 +29,19 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-utils#readme",
   "devDependencies": {
-    "aegir": "^25.0.0",
+    "aegir": "^27.0.0",
     "it-pair": "^1.0.0",
     "it-pipe": "^1.1.0",
-    "streaming-iterables": "^5.0.2"
+    "streaming-iterables": "^5.0.3"
   },
   "dependencies": {
     "abortable-iterator": "^3.0.0",
-    "debug": "^4.1.1",
+    "debug": "^4.2.0",
     "err-code": "^2.0.3",
     "ip-address": "^6.1.0",
-    "multiaddr": "^8.0.0"
+    "is-loopback-addr": "^1.0.0",
+    "multiaddr": "^8.0.0",
+    "private-ip": "^1.0.5"
   },
   "contributors": [
     "Vasco Santos <vasco.santos@moxy.studio>",
