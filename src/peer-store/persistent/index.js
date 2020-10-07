@@ -67,7 +67,7 @@ class PersistentPeerStore extends PeerStore {
     // Handlers for dirty peers
     this.on('change:protocols', this._addDirtyPeer)
     this.on('change:multiaddrs', this._addDirtyPeer)
-    this.on('change:pubkey', this._addDirtyPeer)
+    this.on('change:pubkey', this._addDirtyPeerKey)
     this.on('change:metadata', this._addDirtyPeerMetadata)
 
     // Load data
@@ -101,6 +101,31 @@ class PersistentPeerStore extends PeerStore {
     const peerIdstr = peerId.toB58String()
 
     log('add dirty peer', peerIdstr)
+    this._dirtyPeers.add(peerIdstr)
+
+    if (this._dirtyPeers.size >= this.threshold) {
+      // Commit current data
+      this._commitData().catch(err => {
+        log.error('error committing data', err)
+      })
+    }
+  }
+
+  /**
+   * Add modified peer key to the dirty set
+   * @private
+   * @param {Object} params
+   * @param {PeerId} params.peerId
+   */
+  _addDirtyPeerKey ({ peerId }) {
+    // Not add if inline key available
+    if (peerId.hasInlinePublicKey()) {
+      return
+    }
+
+    const peerIdstr = peerId.toB58String()
+
+    log('add dirty peer key', peerIdstr)
     this._dirtyPeers.add(peerIdstr)
 
     if (this._dirtyPeers.size >= this.threshold) {
@@ -164,7 +189,7 @@ class PersistentPeerStore extends PeerStore {
       this._batchAddressBook(peerId, batch)
 
       // Key Book
-      this._batchKeyBook(peerId, batch)
+      !peerId.hasInlinePublicKey() && this._batchKeyBook(peerId, batch)
 
       // Metadata Book
       this._batchMetadataBook(peerId, batch)

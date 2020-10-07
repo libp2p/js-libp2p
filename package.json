@@ -72,7 +72,7 @@
     "p-any": "^3.0.0",
     "p-fifo": "^1.0.0",
     "p-settle": "^4.0.1",
-    "peer-id": "^0.14.0",
+    "peer-id": "^0.14.2",
     "protons": "^2.0.0",
     "retimer": "^2.0.0",
     "sanitize-filename": "^1.6.3",
