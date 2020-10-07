@@ -113,6 +113,7 @@ class PersistentPeerStore extends PeerStore {
 
   /**
    * Add modified peer key to the dirty set
+   *
    * @private
    * @param {Object} params
    * @param {PeerId} params.peerId
