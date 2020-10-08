@@ -264,11 +264,7 @@ class AutoRelay {
         }
       }
     } catch (err) {
-      if (err.code !== 'NO_ROUTERS_AVAILABLE') {
-        throw err
-      } else {
-        log('there are no routers configured to find hop relay services')
-      }
+      log.error(err)
     }
   }
 }
