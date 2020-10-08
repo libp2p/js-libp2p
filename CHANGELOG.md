@@ -1,3 +1,26 @@
+<a name="0.2.1"></a>
+## [0.2.1](https://github.com/libp2p/js-libp2p-utils/compare/v0.1.3...v0.2.1) (2020-10-08)
+
+
+### Chores
+
+* update deps ([#9](https://github.com/libp2p/js-libp2p-utils/issues/9)) ([a2ea68f](https://github.com/libp2p/js-libp2p-utils/commit/a2ea68f))
+
+
+### Features
+
+* is multiaddr private and loopback ([#10](https://github.com/libp2p/js-libp2p-utils/issues/10)) ([d7fa562](https://github.com/libp2p/js-libp2p-utils/commit/d7fa562))
+
+
+### BREAKING CHANGES
+
+* - The multiaddr dep of this module uses Uint8Arrays and may not be
+  compatible with previous versions
+
+* chore: remove gh url
+
+
+
 <a name="0.2.0"></a>
 # [0.2.0](https://github.com/libp2p/js-libp2p-utils/compare/v0.1.3...v0.2.0) (2020-08-07)
 
