@@ -48,6 +48,8 @@
   * [`pubsub.unsubscribe`](#pubsubunsubscribe)
   * [`pubsub.on`](#pubsubon)
   * [`pubsub.removeListener`](#pubsubremovelistener)
+  * [`pubsub.topicValidators.set`](#pubsubtopicvalidatorsset)
+  * [`pubsub.topicValidators.delete`](#pubsubtopicvalidatorsdelete)
   * [`connectionManager.get`](#connectionmanagerget)
   * [`connectionManager.setPeerValue`](#connectionmanagersetpeervalue)
   * [`connectionManager.size`](#connectionmanagersize)
