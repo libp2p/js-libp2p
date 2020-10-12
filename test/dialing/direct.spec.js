@@ -263,16 +263,11 @@ describe('Dialing (direct, WebSockets)', () => {
 
   describe('libp2p.dialer', () => {
     let libp2p
-    let remoteLibp2p
 
     afterEach(async () => {
       sinon.restore()
       libp2p && await libp2p.stop()
       libp2p = null
-    })
-
-    after(async () => {
-      remoteLibp2p && await remoteLibp2p.stop()
     })
 
     it('should create a dialer', () => {

@@ -1,6 +1,8 @@
 'use strict'
 
 const mergeOptions = require('merge-options')
+const { dnsaddrResolver } = require('multiaddr/src/resolvers')
+
 const Constants = require('./constants')
 
 const { FaultTolerance } = require('./transport-manager')
@@ -20,7 +22,10 @@ const DefaultConfig = {
   dialer: {
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
     maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
-    dialTimeout: Constants.DIAL_TIMEOUT
+    dialTimeout: Constants.DIAL_TIMEOUT,
+    resolvers: {
+      dnsaddr: dnsaddrResolver
+    }
   },
   metrics: {
     enabled: false
