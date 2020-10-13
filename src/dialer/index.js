@@ -18,9 +18,6 @@ const {
   MAX_PER_PEER_DIALS
 } = require('../constants')
 
-const dns4Code = 54
-const dns6Code = 55
-
 class Dialer {
   /**
    * @class
@@ -45,9 +42,12 @@ class Dialer {
     this.concurrency = concurrency
     this.timeout = timeout
     this.perPeerLimit = perPeerLimit
-    this.resolvers = resolvers
     this.tokens = [...new Array(concurrency)].map((_, index) => index)
     this._pendingDials = new Map()
+
+    for (const [key, value] of Object.entries(resolvers)) {
+      multiaddr.resolvers.set(key, value)
+    }
   }
 
   /**
@@ -211,10 +211,11 @@ class Dialer {
    */
   async _resolve (ma) {
     // TODO: recursive logic should live in multiaddr once dns4/dns6 support is in place
-    const resolvableProto = ma.protos().find((p) => p.resolvable)
+    // Now only supporting resolve for dnsaddr
+    const resolvableProto = ma.protoNames().includes('dnsaddr')
 
-    // Multiaddr is not resolvable (including exception for dns4/dns6)? End recursion!
-    if (!resolvableProto || resolvableProto.code === dns4Code || resolvableProto === dns6Code) {
+    // Multiaddr is not resolvable? End recursion!
+    if (!resolvableProto) {
       return [ma]
     }
 
@@ -232,17 +233,19 @@ class Dialer {
   }
 
   /**
-   * Add dialer resolvers to multiaddr and resolve multiaddr.
+   * Resolve a given multiaddr. If this fails, an empty array will be returned
    *
    * @param {Multiaddr} ma
    * @returns {Promise<Array<Multiaddr>>}
    */
-  _resolveRecord (ma) {
-    for (const [key, value] of Object.entries(this.resolvers)) {
-      ma.resolvers.set(key, value)
+  async _resolveRecord (ma) {
+    try {
+      const multiaddrs = await ma.resolve()
+      return multiaddrs
+    } catch (_) {
+      log.error(`multiaddr ${ma} could not be resolved`)
+      return []
     }
-
-    return ma.resolve()
   }
 }
 

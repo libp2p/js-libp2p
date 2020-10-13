@@ -7,6 +7,8 @@ const sinon = require('sinon')
 const multiaddr = require('multiaddr')
 const { Resolver } = require('multiaddr/src/resolvers/dns')
 
+const { codes: ErrorCodes } = require('../../src/errors')
+
 const peerUtils = require('../utils/creators/peer')
 const baseOptions = require('../utils/base-options.browser')
 
@@ -88,10 +90,10 @@ describe('Dialing (resolvable addresses)', () => {
 
     // Resolver stub
     const stub = sinon.stub(Resolver.prototype, 'resolveTxt')
-    let alreadyCalled = false
+    let firstCall = false
     stub.callsFake(() => {
-      if (!alreadyCalled) {
-        alreadyCalled = true
+      if (!firstCall) {
+        firstCall = true
         // Return an array of dnsaddr
         return Promise.resolve(getDnsaddrStub(remoteId))
       }
@@ -108,6 +110,7 @@ describe('Dialing (resolvable addresses)', () => {
   })
 
   // TODO: Temporary solution does not resolve dns4/dns6
+  // Resolver just returns the received multiaddrs
   it('stops recursive resolve if finds dns4/dns6 and dials it', async () => {
     const remoteId = remoteLibp2p.peerId.toB58String()
     const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
@@ -127,5 +130,59 @@ describe('Dialing (resolvable addresses)', () => {
     })
 
     await libp2p.dial(dialAddr)
+  })
+
+  it('resolves a dnsaddr recursively not failing if one address fails to resolve', async () => {
+    const remoteId = remoteLibp2p.peerId.toB58String()
+    const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
+    const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
+
+    // Transport spy
+    const transport = libp2p.transportManager._transports.get('Circuit')
+    sinon.spy(transport, 'dial')
+
+    // Resolver stub
+    let firstCall = false
+    let secondCall = false
+
+    const stub = sinon.stub(Resolver.prototype, 'resolveTxt')
+    stub.callsFake(() => {
+      if (!firstCall) {
+        firstCall = true
+        // Return an array of dnsaddr
+        return Promise.resolve(getDnsaddrStub(remoteId))
+      } else if (!secondCall) {
+        secondCall = true
+        // Address failed to resolve
+        return Promise.reject(new Error())
+      }
+      return Promise.resolve(getDnsRelayedAddrStub(remoteId))
+    })
+
+    // Dial with address resolve
+    const connection = await libp2p.dial(dialAddr)
+    expect(connection).to.exist()
+    expect(connection.remoteAddr.equals(relayedAddrFetched))
+
+    const dialArgs = transport.dial.firstCall.args
+    expect(dialArgs[0].equals(relayedAddrFetched)).to.eql(true)
+  })
+
+  it('fails to dial if resolve fails and there are no addresses to dial', async () => {
+    const remoteId = remoteLibp2p.peerId.toB58String()
+    const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
+
+    // Stub resolver
+    const stubResolve = sinon.stub(Resolver.prototype, 'resolveTxt')
+    stubResolve.returns(Promise.reject(new Error()))
+
+    // Stub transport
+    const transport = libp2p.transportManager._transports.get('WebSockets')
+    const spy = sinon.spy(transport, 'dial')
+
+    await expect(libp2p.dial(dialAddr))
+      .to.eventually.be.rejectedWith(Error)
+      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+    expect(spy.callCount).to.eql(0)
   })
 })
