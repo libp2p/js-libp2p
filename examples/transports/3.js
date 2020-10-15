@@ -16,7 +16,7 @@ const createNode = async (transports, addresses = []) => {
 
   const node = await Libp2p.create({
     addresses: {
-      listen: addresses.map((a) => a)
+      listen: addresses
     },
     modules: {
       transport: transports,

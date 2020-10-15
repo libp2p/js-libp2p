@@ -8,7 +8,7 @@ const { NOISE } = require('libp2p-noise')
 const createNode = async () => {
   const node = await Libp2p.create({
     addresses: {
-      // To signall the addresses we want to be available, we use
+      // To signal the addresses we want to be available, we use
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
