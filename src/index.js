@@ -362,11 +362,13 @@ class Libp2p extends EventEmitter {
    * @returns {Array<Multiaddr>}
    */
   get multiaddrs () {
+    const announceFilter = this._options.addresses.announceFilter || ((multiaddrs) => multiaddrs)
+
     // Filter noAnnounce multiaddrs
     const filterMa = this.addressManager.getNoAnnounceAddrs()
 
     // Create advertising list
-    return this.transportManager.getAddrs()
+    return announceFilter(this.transportManager.getAddrs()
       .concat(this.addressManager.getAnnounceAddrs())
       .filter((ma, index, array) => {
         // Filter out if repeated
@@ -380,7 +382,7 @@ class Libp2p extends EventEmitter {
         }
 
         return true
-      })
+      }))
   }
 
   /**

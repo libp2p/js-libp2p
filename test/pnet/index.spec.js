@@ -1,10 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-chai.use(dirtyChai)
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const duplexPair = require('it-pair/duplex')
 const pipe = require('it-pipe')
 const { collect } = require('streaming-iterables')

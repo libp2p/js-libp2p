@@ -1,9 +1,7 @@
 'use strict'
 /* eslint-env mocha */
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const { expect } = chai
+const { expect } = require('aegir/utils/chai')
 
 const AddressManager = require('../../src/address-manager')
 const TransportManager = require('../../src/transport-manager')

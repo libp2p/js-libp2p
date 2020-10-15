@@ -215,6 +215,7 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
   - `listen` addresses will be provided to the libp2p underlying transports for listening on them.
   - `announce` addresses will be used to compute the advertises that the node should advertise to the network.
   - `noAnnounce` addresses will be used as a filter to compute the advertises that the node should advertise to the network.
+  - `announceFilter`: filter function used to filter announced addresses programmatically: `(ma: Array<multiaddr>) => Array<multiaddr>`. Default: bypass all addresses. [`libp2p-utils`](https://github.com/libp2p/js-libp2p-utils) provides useful [multiaddr utilities](https://github.com/libp2p/js-libp2p-utils/blob/master/API.md#multiaddr-isloopbackma) to create your filters.
 
 ### Examples
 
