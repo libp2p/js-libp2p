@@ -121,4 +121,30 @@ describe('libp2p.multiaddrs', () => {
     expect(multiaddrs.length).to.equal(1)
     expect(multiaddrs[0].equals(stubMa)).to.eql(true)
   })
+
+  it('can filter out loopback addresses to announced by the announce filter', async () => {
+    [libp2p] = await peerUtils.createPeer({
+      started: false,
+      config: {
+        ...AddressesOptions,
+        addresses: {
+          listen: listenAddresses,
+          announce: announceAddreses,
+          announceFilter: (multiaddrs) => multiaddrs.filter(m => !isLoopback(m))
+        }
+      }
+    })
+
+    const listenAddrs = libp2p.addressManager.listen
+    expect(listenAddrs.size).to.equal(listenAddresses.length)
+    expect(listenAddrs.has(listenAddresses[0])).to.equal(true)
+    expect(listenAddrs.has(listenAddresses[1])).to.equal(true)
+
+    await libp2p.start()
+
+    const multiaddrs = libp2p.multiaddrs
+    expect(multiaddrs.length).to.equal(announceAddreses.length)
+    expect(multiaddrs.includes(listenAddresses[0])).to.equal(false)
+    expect(multiaddrs.includes(listenAddresses[1])).to.equal(false)
+  })
 })
