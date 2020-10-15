@@ -1,9 +1,7 @@
 'use strict'
 /* eslint-env mocha */
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const { expect } = chai
+const { expect } = require('aegir/utils/chai')
 
 const tests = require('libp2p-interfaces/src/record/tests')
 const multiaddr = require('multiaddr')

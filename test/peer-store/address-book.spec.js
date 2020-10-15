@@ -2,10 +2,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const { expect } = chai
-
+const { expect } = require('aegir/utils/chai')
 const { Buffer } = require('buffer')
 const multiaddr = require('multiaddr')
 const arrayEquals = require('libp2p-utils/src/array-equals')

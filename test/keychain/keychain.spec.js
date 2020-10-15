@@ -73,9 +73,9 @@ describe('keychain', () => {
   it('can find a key without a password', async () => {
     const keychain = new Keychain(datastore2)
     const keychainWithPassword = new Keychain(datastore2, { passPhrase: `hello-${Date.now()}-${Date.now()}` })
-    const id = `key-${Math.random()}`
+    const name = `key-${Math.random()}`
 
-    await keychainWithPassword.createKey(id, 'ed25519')
+    const { id } = await keychainWithPassword.createKey(name, 'ed25519')
 
     await expect(keychain.findKeyById(id)).to.eventually.be.ok()
   })

@@ -1,17 +1,16 @@
 'use strict'
 /* eslint-env mocha */
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-chai.use(require('chai-as-promised'))
-const { expect } = chai
+const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
+
+const isLoopback = require('libp2p-utils/src/multiaddr/is-loopback')
 
 const { AddressesOptions } = require('./utils')
 const peerUtils = require('../utils/creators/peer')
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/0', '/ip4/127.0.0.1/tcp/8000/ws']
-const announceAddreses = ['/dns4/peer.io']
+const announceAddreses = ['/dns4/peer.io/tcp/433/p2p/12D3KooWNvSZnPi3RrhrTwEY4LuuBeB6K6facKUCJcyWG1aoDd2p']
 
 describe('libp2p.multiaddrs', () => {
   let libp2p
@@ -122,5 +121,31 @@ describe('libp2p.multiaddrs', () => {
     noAnnounce.forEach((m) => {
       expect(advertiseMultiaddrs).to.not.include(m)
     })
+  })
+
+  it('can filter out loopback addresses to announced by the announce filter', async () => {
+    [libp2p] = await peerUtils.createPeer({
+      started: false,
+      config: {
+        ...AddressesOptions,
+        addresses: {
+          listen: listenAddresses,
+          announce: announceAddreses,
+          announceFilter: (multiaddrs) => multiaddrs.filter(m => !isLoopback(m))
+        }
+      }
+    })
+
+    const listenAddrs = libp2p.addressManager.listen
+    expect(listenAddrs.size).to.equal(listenAddresses.length)
+    expect(listenAddrs.has(listenAddresses[0])).to.equal(true)
+    expect(listenAddrs.has(listenAddresses[1])).to.equal(true)
+
+    await libp2p.start()
+
+    const multiaddrs = libp2p.multiaddrs
+    expect(multiaddrs.length).to.equal(announceAddreses.length)
+    expect(multiaddrs.includes(listenAddresses[0])).to.equal(false)
+    expect(multiaddrs.includes(listenAddresses[1])).to.equal(false)
   })
 })

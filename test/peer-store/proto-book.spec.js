@@ -1,11 +1,9 @@
 'use strict'
 /* eslint-env mocha */
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const { expect } = chai
-
+const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
+
 const pDefer = require('p-defer')
 const pWaitFor = require('p-wait-for')
 
