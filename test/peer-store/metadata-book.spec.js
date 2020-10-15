@@ -1,10 +1,8 @@
 'use strict'
 /* eslint-env mocha */
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
+const { chai, expect } = require('aegir/utils/chai')
 chai.use(require('chai-bytes'))
-const { expect } = chai
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const pDefer = require('p-defer')

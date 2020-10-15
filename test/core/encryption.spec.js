@@ -1,10 +1,7 @@
 'use strict'
 /* eslint-env mocha */
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-chai.use(require('chai-as-promised'))
-const { expect } = chai
+const { expect } = require('aegir/utils/chai')
 
 const Transport = require('libp2p-websockets')
 const { NOISE: Crypto } = require('libp2p-noise')
