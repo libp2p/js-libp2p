@@ -5,6 +5,7 @@ const log = debug('libp2p:upgrader')
 log.error = debug('libp2p:upgrader:error')
 const Multistream = require('multistream-select')
 const { Connection } = require('libp2p-interfaces/src/connection')
+const ConnectionStatus = require('libp2p-interfaces/src/connection/status')
 const PeerId = require('peer-id')
 const pipe = require('it-pipe')
 const errCode = require('err-code')
@@ -268,8 +269,13 @@ class Upgrader {
     maConn.timeline = new Proxy(_timeline, {
       set: (...args) => {
         if (connection && args[1] === 'close' && args[2] && !_timeline.close) {
-          connection.stat.status = 'closed'
-          this.onConnectionEnd(connection)
+          // Wait for close to finish before notifying of the closure
+          (async () => {
+            if (connection.stat.status === ConnectionStatus.OPEN) {
+              await connection.close()
+            }
+            this.onConnectionEnd(connection)
+          })()
         }
 
         return Reflect.set(...args)
@@ -295,7 +301,7 @@ class Upgrader {
       },
       newStream: newStream || errConnectionNotMultiplexed,
       getStreams: () => muxer ? muxer.streams : errConnectionNotMultiplexed,
-      close: err => maConn.close(err)
+      close: (err) => maConn.close(err)
     })
 
     this.onConnection(connection)
