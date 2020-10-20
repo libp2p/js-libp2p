@@ -11,7 +11,9 @@ const PeerId = require('peer-id')
 const delay = require('delay')
 const pDefer = require('p-defer')
 const pSettle = require('p-settle')
+const pWaitFor = require('p-wait-for')
 const pipe = require('it-pipe')
+const pushable = require('it-pushable')
 const AggregateError = require('aggregate-error')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
@@ -297,6 +299,50 @@ describe('Dialing (direct, TCP)', () => {
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
       expect(libp2p.dialer.connectToPeer.callCount).to.equal(1)
+    })
+
+    it('should close all streams when the connection closes', async () => {
+      libp2p = new Libp2p({
+        peerId,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      // register some stream handlers to simulate several protocols
+      libp2p.handle('/stream-count/1', ({ stream }) => pipe(stream, stream))
+      libp2p.handle('/stream-count/2', ({ stream }) => pipe(stream, stream))
+      remoteLibp2p.handle('/stream-count/3', ({ stream }) => pipe(stream, stream))
+      remoteLibp2p.handle('/stream-count/4', ({ stream }) => pipe(stream, stream))
+
+      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
+      const connection = await libp2p.dial(remotePeerId)
+
+      // Create local to remote streams
+      const { stream } = await connection.newStream('/echo/1.0.0')
+      await connection.newStream('/stream-count/3')
+      await libp2p.dialProtocol(remoteLibp2p.peerId, '/stream-count/4')
+
+      // Partially write to the echo stream
+      const source = pushable()
+      stream.sink(source)
+      source.push('hello')
+
+      // Create remote to local streams
+      await remoteLibp2p.dialProtocol(libp2p.peerId, '/stream-count/1')
+      await remoteLibp2p.dialProtocol(libp2p.peerId, '/stream-count/2')
+
+      // Verify stream count
+      const remoteConn = remoteLibp2p.connectionManager.get(libp2p.peerId)
+      expect(connection.streams).to.have.length(5)
+      expect(remoteConn.streams).to.have.length(5)
+
+      // Close the connection and verify all streams have been closed
+      await connection.close()
+      await pWaitFor(() => connection.streams.length === 0)
+      await pWaitFor(() => remoteConn.streams.length === 0)
     })
 
     it('should be able to use hangup to close connections', async () => {
