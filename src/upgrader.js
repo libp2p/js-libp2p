@@ -271,10 +271,15 @@ class Upgrader {
         if (connection && args[1] === 'close' && args[2] && !_timeline.close) {
           // Wait for close to finish before notifying of the closure
           (async () => {
-            if (connection.stat.status === ConnectionStatus.OPEN) {
-              await connection.close()
+            try {
+              if (connection.stat.status === ConnectionStatus.OPEN) {
+                await connection.close()
+              }
+            } catch (err) {
+              log.error(err)
+            } finally {
+              this.onConnectionEnd(connection)
             }
-            this.onConnectionEnd(connection)
           })()
         }
 
