@@ -1,3 +1,15 @@
+<a name="0.29.1"></a>
+## [0.29.1](https://github.com/libp2p/js-libp2p/compare/v0.29.0...v0.29.1) (2020-10-22)
+
+
+### Bug Fixes
+
+* catch error in upgrader close call ([e04224a](https://github.com/libp2p/js-libp2p/commit/e04224a))
+* ensure streams are closed on connection close ([4c6be91](https://github.com/libp2p/js-libp2p/commit/4c6be91))
+* flakey identify test firefox ([#774](https://github.com/libp2p/js-libp2p/issues/774)) ([60d437f](https://github.com/libp2p/js-libp2p/commit/60d437f))
+
+
+
 <a name="0.29.0"></a>
 # [0.29.0](https://github.com/libp2p/js-libp2p/compare/v0.28.10...v0.29.0) (2020-08-27)
 
