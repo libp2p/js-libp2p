@@ -7,7 +7,7 @@ stages:
 
 node_js:
   - 'lts/*'
-  - 'stable'
+  - '14'
 
 os:
   - linux
