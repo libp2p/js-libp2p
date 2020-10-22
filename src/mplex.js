@@ -11,11 +11,11 @@ const createStream = require('./stream')
 
 class Mplex {
   /**
-   * @constructor
+   * @class
    * @param {object} options
-   * @param {function(*)} options.onStream Called whenever an inbound stream is created
-   * @param {function(*)} options.onStreamEnd Called whenever a stream ends
-   * @param {AbortSignal} options.signal An AbortController signal
+   * @param {function(*)} options.onStream - Called whenever an inbound stream is created
+   * @param {function(*)} options.onStreamEnd - Called whenever a stream ends
+   * @param {AbortSignal} options.signal - An AbortController signal
    */
   constructor (options) {
     options = options || {}
@@ -45,18 +45,19 @@ class Mplex {
     this.source = this._createSource()
 
     /**
-     * @property {function} onStream
+     * @property {Function} onStream
      */
     this.onStream = options.onStream
 
     /**
-     * @property {function} onStreamEnd
+     * @property {Function} onStreamEnd
      */
     this.onStreamEnd = options.onStreamEnd
   }
 
   /**
    * Returns a Map of streams and their ids
+   *
    * @returns {Map<number,*>}
    */
   get streams () {
@@ -74,7 +75,8 @@ class Mplex {
   /**
    * Initiate a new stream with the given name. If no name is
    * provided, the id of th stream will be used.
-   * @param {string} [name] If name is not a string it will be cast to one
+   *
+   * @param {string} [name] - If name is not a string it will be cast to one
    * @returns {Stream}
    */
   newStream (name) {
@@ -86,6 +88,7 @@ class Mplex {
 
   /**
    * Called whenever an inbound stream is created
+   *
    * @private
    * @param {*} options
    * @param {number} options.id
@@ -99,12 +102,13 @@ class Mplex {
 
   /**
    * Creates a new stream
+   *
    * @private
    * @param {object} options
    * @param {number} options.id
    * @param {string} options.name
    * @param {string} options.type
-   * @param {Map<number, *>} options.registry A map of streams to their ids
+   * @param {Map<number, *>} options.registry - A map of streams to their ids
    * @returns {*} A muxed stream
    */
   _newStream ({ id, name, type, registry }) {
@@ -131,6 +135,7 @@ class Mplex {
   /**
    * Creates a sink with an abortable source. Incoming messages will
    * also have their size restricted. All messages will be varint decoded.
+   *
    * @private
    * @returns {*} Returns an iterable sink
    */
@@ -165,6 +170,7 @@ class Mplex {
   /**
    * Creates a source that restricts outgoing message sizes
    * and varint encodes them.
+   *
    * @private
    * @returns {*} An iterable source
    */

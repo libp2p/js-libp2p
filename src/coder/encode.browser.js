@@ -13,7 +13,8 @@ class Encoder {
 
   /**
    * Encodes the given message and returns it and its header
-   * @param {*} msg The message object to encode
+   *
+   * @param {*} msg - The message object to encode
    * @returns {Uint8Array|Uint8Array[]}
    */
   write (msg) {

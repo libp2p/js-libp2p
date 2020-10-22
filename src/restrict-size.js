@@ -5,7 +5,8 @@ const MAX_MSG_SIZE = 1 << 20 // 1MB
 /**
  * Creates an iterable transform that restricts message sizes to
  * the given maximum size.
- * @param {number} [max] The maximum message size. Defaults to 1MB
+ *
+ * @param {number} [max] - The maximum message size. Defaults to 1MB
  * @returns {*} An iterable transform.
  */
 module.exports = max => {

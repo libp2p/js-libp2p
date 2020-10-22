@@ -5,17 +5,21 @@ const AbortController = require('abort-controller')
 const log = require('debug')('libp2p:mplex:stream')
 const pushable = require('it-pushable')
 const BufferList = require('bl/BufferList')
+const errCode = require('err-code')
 const { MAX_MSG_SIZE } = require('./restrict-size')
 const { InitiatorMessageTypes, ReceiverMessageTypes } = require('./message-types')
+
+const ERR_MPLEX_STREAM_RESET = 'ERR_MPLEX_STREAM_RESET'
+const ERR_MPLEX_STREAM_ABORT = 'ERR_MPLEX_STREAM_ABORT'
 
 /**
  * @param {object} options
  * @param {number} options.id
  * @param {string} options.name
- * @param {function(*)} options.send Called to send data through the stream
- * @param {function(Error)} [options.onEnd] Called whenever the stream ends
- * @param {string} [options.type] One of ['initiator','receiver']. Defaults to 'initiator'
- * @param {number} [options.maxMsgSize] Max size of an mplex message in bytes. Writes > size are automatically split. Defaults to 1MB
+ * @param {function(*)} options.send - Called to send data through the stream
+ * @param {function(Error)} [options.onEnd] - Called whenever the stream ends
+ * @param {string} [options.type] - One of ['initiator','receiver']. Defaults to 'initiator'
+ * @param {number} [options.maxMsgSize] - Max size of an mplex message in bytes. Writes > size are automatically split. Defaults to 1MB
  * @returns {*} A muxed stream
  */
 module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator', maxMsgSize = MAX_MSG_SIZE }) => {
@@ -31,6 +35,7 @@ module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator', maxMsg
   let endErr
 
   const onSourceEnd = err => {
+    if (sourceEnded) return
     sourceEnded = true
     log('%s stream %s source end', type, name, err)
     if (err && !endErr) endErr = err
@@ -41,6 +46,7 @@ module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator', maxMsg
   }
 
   const onSinkEnd = err => {
+    if (sinkEnded) return
     sinkEnded = true
     log('%s stream %s sink end', type, name, err)
     if (err && !endErr) endErr = err
@@ -59,13 +65,19 @@ module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator', maxMsg
       // End the source with the passed error
       stream.source.end(err)
       abortController.abort()
+      onSinkEnd(err)
     },
     // Close immediately for reading and writing (remote error)
-    reset: () => resetController.abort(),
+    reset: () => {
+      const err = errCode(new Error('stream reset'), ERR_MPLEX_STREAM_RESET)
+      resetController.abort()
+      stream.source.end(err)
+      onSinkEnd(err)
+    },
     sink: async source => {
       source = abortable(source, [
-        { signal: abortController.signal, options: { abortMessage: 'stream aborted', abortCode: 'ERR_MPLEX_STREAM_ABORT' } },
-        { signal: resetController.signal, options: { abortMessage: 'stream reset', abortCode: 'ERR_MPLEX_STREAM_RESET' } }
+        { signal: abortController.signal, options: { abortMessage: 'stream aborted', abortCode: ERR_MPLEX_STREAM_ABORT } },
+        { signal: resetController.signal, options: { abortMessage: 'stream reset', abortCode: ERR_MPLEX_STREAM_RESET } }
       ])
 
       if (type === 'initiator') { // If initiator, open a new stream
@@ -86,7 +98,7 @@ module.exports = ({ id, name, send, onEnd = () => {}, type = 'initiator', maxMsg
         }
       } catch (err) {
         // Send no more data if this stream was remotely reset
-        if (err.code === 'ERR_MPLEX_STREAM_RESET') {
+        if (err.code === ERR_MPLEX_STREAM_RESET) {
           log('%s stream %s reset', type, name)
         } else {
           log('%s stream %s error', type, name, err)

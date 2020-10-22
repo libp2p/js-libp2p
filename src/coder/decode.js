@@ -57,6 +57,7 @@ class Decoder {
 
   /**
    * Attempts to decode the message header from the buffer
+   *
    * @private
    * @param {Uint8Array} data
    * @returns {*} message header (id, type, offset, length)
