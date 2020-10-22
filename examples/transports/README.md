@@ -102,7 +102,7 @@ const createNode = async () => {
     },
     modules: {
       transport: [TCP],
-      connEncryption: [NOISE, SECIO],
+      connEncryption: [NOISE],
       streamMuxer: [MPLEX] // <--- Add this line
     }
   })
