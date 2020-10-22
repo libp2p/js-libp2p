@@ -105,7 +105,7 @@
     "libp2p-gossipsub": "^0.6.0",
     "libp2p-kad-dht": "^0.20.0",
     "libp2p-mdns": "^0.15.0",
-    "libp2p-mplex": "libp2p/js-libp2p-mplex#fix/stream-close",
+    "libp2p-mplex": "^0.10.1",
     "libp2p-noise": "^2.0.0",
     "libp2p-secio": "^0.13.1",
     "libp2p-tcp": "^0.15.1",
