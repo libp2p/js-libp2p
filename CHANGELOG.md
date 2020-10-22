@@ -1,3 +1,12 @@
+## [0.10.1](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.0...v0.10.1) (2020-10-22)
+
+
+### Bug Fixes
+
+* ensure stream closes on abort or reset ([#116](https://github.com/libp2p/js-libp2p-mplex/issues/116)) ([77835b3](https://github.com/libp2p/js-libp2p-mplex/commit/77835b326fbce02e3a9bf92f0084d01e4e1d9cf9))
+
+
+
 <a name="0.10.0"></a>
 # [0.10.0](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.5...v0.10.0) (2020-08-11)
 
