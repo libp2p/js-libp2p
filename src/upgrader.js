@@ -306,7 +306,13 @@ class Upgrader {
       },
       newStream: newStream || errConnectionNotMultiplexed,
       getStreams: () => muxer ? muxer.streams : errConnectionNotMultiplexed,
-      close: (err) => maConn.close(err)
+      close: async (err) => {
+        await maConn.close(err)
+        // Ensure remaining streams are aborted
+        if (muxer) {
+          muxer.streams.map(stream => stream.abort(err))
+        }
+      }
     })
 
     this.onConnection(connection)
