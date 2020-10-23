@@ -1,3 +1,13 @@
+<a name="0.29.2"></a>
+## [0.29.2](https://github.com/libp2p/js-libp2p/compare/v0.29.1...v0.29.2) (2020-10-23)
+
+
+### Bug Fixes
+
+* cleanup open streams on conn close ([#791](https://github.com/libp2p/js-libp2p/issues/791)) ([06f26e5](https://github.com/libp2p/js-libp2p/commit/06f26e5))
+
+
+
 <a name="0.29.1"></a>
 ## [0.29.1](https://github.com/libp2p/js-libp2p/compare/v0.29.0...v0.29.1) (2020-10-22)
 
