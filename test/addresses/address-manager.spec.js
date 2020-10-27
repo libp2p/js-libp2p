@@ -16,7 +16,6 @@ describe('Address Manager', () => {
 
     expect(am.listen.size).to.equal(0)
     expect(am.announce.size).to.equal(0)
-    expect(am.noAnnounce.size).to.equal(0)
   })
 
   it('should return listen multiaddrs on get', () => {
@@ -26,7 +25,6 @@ describe('Address Manager', () => {
 
     expect(am.listen.size).to.equal(listenAddresses.length)
     expect(am.announce.size).to.equal(0)
-    expect(am.noAnnounce.size).to.equal(0)
 
     const listenMultiaddrs = am.getListenAddrs()
     expect(listenMultiaddrs.length).to.equal(2)
@@ -42,27 +40,10 @@ describe('Address Manager', () => {
 
     expect(am.listen.size).to.equal(listenAddresses.length)
     expect(am.announce.size).to.equal(announceAddreses.length)
-    expect(am.noAnnounce.size).to.equal(0)
 
     const announceMultiaddrs = am.getAnnounceAddrs()
     expect(announceMultiaddrs.length).to.equal(1)
     expect(announceMultiaddrs[0].equals(multiaddr(announceAddreses[0]))).to.equal(true)
-  })
-
-  it('should return noAnnounce multiaddrs on get', () => {
-    const am = new AddressManager({
-      listen: listenAddresses,
-      noAnnounce: listenAddresses
-    })
-
-    expect(am.listen.size).to.equal(listenAddresses.length)
-    expect(am.announce.size).to.equal(0)
-    expect(am.noAnnounce.size).to.equal(listenAddresses.length)
-
-    const noAnnounceMultiaddrs = am.getNoAnnounceAddrs()
-    expect(noAnnounceMultiaddrs.length).to.equal(2)
-    expect(noAnnounceMultiaddrs[0].equals(multiaddr(listenAddresses[0]))).to.equal(true)
-    expect(noAnnounceMultiaddrs[1].equals(multiaddr(listenAddresses[1]))).to.equal(true)
   })
 })
 
@@ -76,14 +57,12 @@ describe('libp2p.addressManager', () => {
       config: {
         addresses: {
           listen: listenAddresses,
-          announce: announceAddreses,
-          noAnnounce: listenAddresses
+          announce: announceAddreses
         }
       }
     })
 
     expect(libp2p.addressManager.listen.size).to.equal(listenAddresses.length)
     expect(libp2p.addressManager.announce.size).to.equal(announceAddreses.length)
-    expect(libp2p.addressManager.noAnnounce.size).to.equal(listenAddresses.length)
   })
 })

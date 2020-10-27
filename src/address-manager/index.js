@@ -7,11 +7,10 @@ log.error = debug('libp2p:addresses:error')
 const multiaddr = require('multiaddr')
 
 /**
- * Responsible for managing this peers addresses.
- * Peers can specify their listen, announce and noAnnounce addresses.
+ * Responsible for managing the peer addresses.
+ * Peers can specify their listen and announce addresses.
  * The listen addresses will be used by the libp2p transports to listen for new connections,
- * while the announce an noAnnounce addresses will be combined with the listen addresses for
- * address adverstising to other peers in the network.
+ * while the announce addresses will be used for the peer addresses' to other peers in the network.
  */
 class AddressManager {
   /**
@@ -19,12 +18,10 @@ class AddressManager {
    * @param {object} [options]
    * @param {Array<string>} [options.listen = []] - list of multiaddrs string representation to listen.
    * @param {Array<string>} [options.announce = []] - list of multiaddrs string representation to announce.
-   * @param {Array<string>} [options.noAnnounce = []] - list of multiaddrs string representation to not announce.
    */
-  constructor ({ listen = [], announce = [], noAnnounce = [] } = {}) {
+  constructor ({ listen = [], announce = [] } = {}) {
     this.listen = new Set(listen)
     this.announce = new Set(announce)
-    this.noAnnounce = new Set(noAnnounce)
   }
 
   /**
@@ -43,15 +40,6 @@ class AddressManager {
    */
   getAnnounceAddrs () {
     return Array.from(this.announce).map((a) => multiaddr(a))
-  }
-
-  /**
-   * Get peer noAnnouncing multiaddrs.
-   *
-   * @returns {Array<Multiaddr>}
-   */
-  getNoAnnounceAddrs () {
-    return Array.from(this.noAnnounce).map((a) => multiaddr(a))
   }
 }
 

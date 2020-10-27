@@ -13,8 +13,7 @@
   * [`ping`](#ping)
   * [`multiaddrs`](#multiaddrs)
   * [`addressManager.getListenAddrs`](#addressmanagergetlistenaddrs)
-  * [`addressmger.getAnnounceAddrs`](#addressmanagergetannounceaddrs)
-  * [`addressManager.getNoAnnounceAddrs`](#addressmanagergetnoannounceaddrs)
+  * [`addressManager.getAnnounceAddrs`](#addressmanagergetannounceaddrs)
   * [`contentRouting.findProviders`](#contentroutingfindproviders)
   * [`contentRouting.provide`](#contentroutingprovide)
   * [`contentRouting.put`](#contentroutingput)
@@ -91,7 +90,7 @@ Creates an instance of Libp2p.
 |------|------|-------------|
 | options | `object` | libp2p options |
 | options.modules | [`Array<object>`](./CONFIGURATION.md#modules) | libp2p [modules](./CONFIGURATION.md#modules) to use |
-| [options.addresses] | `{ listen: Array<string>, announce: Array<string>, noAnnounce: Array<string> }` | Addresses for transport listening and to advertise to the network |
+| [options.addresses] | `{ listen: Array<string>, announce: Array<string>, announceFilter: (ma: Array<multiaddr>) => Array<multiaddr> }` | Addresses for transport listening and to advertise to the network |
 | [options.config] | `object` | libp2p modules configuration and core configuration |
 | [options.connectionManager] | [`object`](./CONFIGURATION.md#configuring-connection-manager) | libp2p Connection Manager [configuration](./CONFIGURATION.md#configuring-connection-manager) |
 | [options.transportManager] | [`object`](./CONFIGURATION.md#configuring-transport-manager) | libp2p transport manager [configuration](./CONFIGURATION.md#configuring-transport-manager) |
@@ -481,26 +480,6 @@ Get the multiaddrs that were provided to announce to the network.
 // ...
 const announceMa = libp2p.addressManager.getAnnounceAddrs()
 // [ <Multiaddr 047f00000106f9ba - /dns4/peer.io/...> ]
-```
-
-### addressManager.getNoAnnounceAddrs
-
-Get the multiaddrs that were provided to not announce to the network.
-
-`libp2p.addressManager.getNoAnnounceAddrs()`
-
-#### Returns
-
-| Type | Description |
-|------|-------------|
-| `Array<Multiaddr>` | Provided noAnnounce multiaddrs |
-
-#### Example
-
-```js
-// ...
-const noAnnounceMa = libp2p.addressManager.getNoAnnounceAddrs()
-// [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
 ```
 
 ### transportManager.getAddrs
