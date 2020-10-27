@@ -5,7 +5,9 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 
+const sinon = require('sinon')
 const pDefer = require('p-defer')
+const pWaitFor = require('p-wait-for')
 
 const PeerStore = require('../../src/peer-store')
 
@@ -236,32 +238,26 @@ describe('protoBook', () => {
       peerStore.removeAllListeners()
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', () => {
+    it('throws invalid parameters error if invalid PeerId is provided', () => {
       expect(() => {
         pb.remove('invalid peerId')
       }).to.throw(ERR_INVALID_PARAMETERS)
     })
 
-    it('throwns invalid parameters error if no protocols provided', () => {
+    it('throws invalid parameters error if no protocols provided', () => {
       expect(() => {
         pb.remove(peerId)
       }).to.throw(ERR_INVALID_PARAMETERS)
     })
 
-    it('removes the given protocol and emits change event', () => {
-      const defer = pDefer()
+    it('removes the given protocol and emits change event', async () => {
+      const spy = sinon.spy()
 
       const supportedProtocols = ['protocol1', 'protocol2']
       const removedProtocols = ['protocol1']
       const finalProtocols = supportedProtocols.filter(p => !removedProtocols.includes(p))
 
-      let changeTrigger = 2
-      peerStore.on('change:protocols', ({ protocols }) => {
-        changeTrigger--
-        if (changeTrigger === 0 && arraysAreEqual(protocols, finalProtocols)) {
-          defer.resolve()
-        }
-      })
+      peerStore.on('change:protocols', spy)
 
       // Replace
       pb.set(peerId, supportedProtocols)
@@ -273,23 +269,22 @@ describe('protoBook', () => {
       protocols = pb.get(peerId)
       expect(protocols).to.have.deep.members(finalProtocols)
 
-      return defer.promise
+      await pWaitFor(() => spy.callCount === 2)
+
+      const [firstCallArgs] = spy.firstCall.args
+      const [secondCallArgs] = spy.secondCall.args
+      expect(arraysAreEqual(firstCallArgs.protocols, supportedProtocols))
+      expect(arraysAreEqual(secondCallArgs.protocols, finalProtocols))
     })
 
     it('emits on remove if the content changes', () => {
-      const defer = pDefer()
+      const spy = sinon.spy()
 
       const supportedProtocols = ['protocol1', 'protocol2']
       const removedProtocols = ['protocol2']
       const finalProtocols = supportedProtocols.filter(p => !removedProtocols.includes(p))
 
-      let changeCounter = 0
-      peerStore.on('change:protocols', () => {
-        changeCounter++
-        if (changeCounter > 1) {
-          defer.resolve()
-        }
-      })
+      peerStore.on('change:protocols', spy)
 
       // set
       pb.set(peerId, supportedProtocols)
@@ -299,22 +294,16 @@ describe('protoBook', () => {
       const protocols = pb.get(peerId)
       expect(protocols).to.have.deep.members(finalProtocols)
 
-      return defer.promise
+      return pWaitFor(() => spy.callCount === 2)
     })
 
     it('does not emit on remove if the content does not change', () => {
-      const defer = pDefer()
+      const spy = sinon.spy()
 
       const supportedProtocols = ['protocol1', 'protocol2']
       const removedProtocols = ['protocol3']
 
-      let changeCounter = 0
-      peerStore.on('change:protocols', () => {
-        changeCounter++
-        if (changeCounter > 1) {
-          defer.reject()
-        }
-      })
+      peerStore.on('change:protocols', spy)
 
       // set
       pb.set(peerId, supportedProtocols)
@@ -322,12 +311,8 @@ describe('protoBook', () => {
       // remove
       pb.remove(peerId, removedProtocols)
 
-      // Wait 50ms for incorrect second event
-      setTimeout(() => {
-        defer.resolve()
-      }, 50)
-
-      return defer.promise
+      // Only one event
+      expect(spy.callCount).to.eql(1)
     })
   })
 
