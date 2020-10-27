@@ -29,18 +29,21 @@ const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
 describe('Identify', () => {
-  let localPeer
-  let remotePeer
-  const protocols = new Map([
-    [multicodecs.IDENTIFY, () => {}],
-    [multicodecs.IDENTIFY_PUSH, () => {}]
-  ])
+  let localPeer, localPeerStore
+  let remotePeer, remotePeerStore
+  const protocols = [multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH]
 
   before(async () => {
     [localPeer, remotePeer] = (await Promise.all([
       PeerId.createFromJSON(Peers[0]),
       PeerId.createFromJSON(Peers[1])
     ]))
+
+    localPeerStore = new PeerStore({ peerId: localPeer })
+    localPeerStore.protoBook.set(localPeer, protocols)
+
+    remotePeerStore = new PeerStore({ peerId: remotePeer })
+    remotePeerStore.protoBook.set(remotePeer, protocols)
   })
 
   afterEach(() => {
@@ -52,20 +55,19 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore({ peerId: localPeer }),
-        multiaddrs: listenMaddrs
-      },
-      protocols
+        peerStore: localPeerStore,
+        multiaddrs: listenMaddrs,
+        isStarted: () => true
+      }
     })
-
     const remoteIdentify = new IdentifyService({
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore({ peerId: remotePeer }),
-        multiaddrs: listenMaddrs
-      },
-      protocols
+        peerStore: remotePeerStore,
+        multiaddrs: listenMaddrs,
+        isStarted: () => true
+      }
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
@@ -108,20 +110,20 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore({ peerId: localPeer }),
-        multiaddrs: listenMaddrs
-      },
-      protocols
+        peerStore: localPeerStore,
+        multiaddrs: listenMaddrs,
+        isStarted: () => true
+      }
     })
 
     const remoteIdentify = new IdentifyService({
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore({ peerId: remotePeer }),
-        multiaddrs: listenMaddrs
-      },
-      protocols
+        peerStore: remotePeerStore,
+        multiaddrs: listenMaddrs,
+        isStarted: () => true
+      }
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
@@ -167,19 +169,17 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore({ peerId: localPeer }),
+        peerStore: localPeerStore,
         multiaddrs: []
-      },
-      protocols
+      }
     })
     const remoteIdentify = new IdentifyService({
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
-        peerStore: new PeerStore({ peerId: remotePeer }),
+        peerStore: remotePeerStore,
         multiaddrs: []
-      },
-      protocols
+      }
     })
 
     const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
@@ -206,33 +206,38 @@ describe('Identify', () => {
 
   describe('push', () => {
     it('should be able to push identify updates to another peer', async () => {
+      const storedProtocols = [multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH, '/echo/1.0.0']
       const connectionManager = new EventEmitter()
       connectionManager.getConnection = () => { }
+
+      const localPeerStore = new PeerStore({ peerId: localPeer })
+      localPeerStore.protoBook.set(localPeer, storedProtocols)
 
       const localIdentify = new IdentifyService({
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
-          peerStore: new PeerStore({ peerId: localPeer }),
-          multiaddrs: listenMaddrs
-        },
-        protocols: new Map([
-          [multicodecs.IDENTIFY],
-          [multicodecs.IDENTIFY_PUSH],
-          ['/echo/1.0.0']
-        ])
+          peerStore: localPeerStore,
+          multiaddrs: listenMaddrs,
+          isStarted: () => true
+        }
       })
+
+      const remotePeerStore = new PeerStore({ peerId: remotePeer })
+      remotePeerStore.protoBook.set(remotePeer, storedProtocols)
+
       const remoteIdentify = new IdentifyService({
         libp2p: {
           peerId: remotePeer,
           connectionManager,
-          peerStore: new PeerStore({ peerId: remotePeer }),
-          multiaddrs: []
+          peerStore: remotePeerStore,
+          multiaddrs: [],
+          isStarted: () => true
         }
       })
 
       // Setup peer protocols and multiaddrs
-      const localProtocols = new Set([multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH, '/echo/1.0.0'])
+      const localProtocols = new Set(storedProtocols)
       const localConnectionMock = { newStream: () => { } }
       const remoteConnectionMock = { remotePeer: localPeer }
 
@@ -271,33 +276,38 @@ describe('Identify', () => {
 
     // LEGACY
     it('should be able to push identify updates to another peer with no certified peer records support', async () => {
+      const storedProtocols = [multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH, '/echo/1.0.0']
       const connectionManager = new EventEmitter()
       connectionManager.getConnection = () => { }
+
+      const localPeerStore = new PeerStore({ peerId: localPeer })
+      localPeerStore.protoBook.set(localPeer, storedProtocols)
 
       const localIdentify = new IdentifyService({
         libp2p: {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
-          peerStore: new PeerStore({ peerId: localPeer }),
-          multiaddrs: listenMaddrs
-        },
-        protocols: new Map([
-          [multicodecs.IDENTIFY],
-          [multicodecs.IDENTIFY_PUSH],
-          ['/echo/1.0.0']
-        ])
+          peerStore: localPeerStore,
+          multiaddrs: listenMaddrs,
+          isStarted: () => true
+        }
       })
+
+      const remotePeerStore = new PeerStore({ peerId: remotePeer })
+      remotePeerStore.protoBook.set(remotePeer, storedProtocols)
+
       const remoteIdentify = new IdentifyService({
         libp2p: {
           peerId: remotePeer,
           connectionManager,
           peerStore: new PeerStore({ peerId: remotePeer }),
-          multiaddrs: []
+          multiaddrs: [],
+          isStarted: () => true
         }
       })
 
       // Setup peer protocols and multiaddrs
-      const localProtocols = new Set([multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH, '/echo/1.0.0'])
+      const localProtocols = new Set(storedProtocols)
       const localConnectionMock = { newStream: () => {} }
       const remoteConnectionMock = { remotePeer: localPeer }
 
