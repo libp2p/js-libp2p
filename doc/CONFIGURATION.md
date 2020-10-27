@@ -211,11 +211,10 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
   - This is used in modules such as the DHT. If it is not provided, `js-libp2p` will use an in memory datastore.
 - `peerId`: the identity of the node, an instance of [libp2p/js-peer-id](https://github.com/libp2p/js-peer-id).
   - This is particularly useful if you want to reuse the same `peer-id`, as well as for modules like `libp2p-delegated-content-routing`, which need a `peer-id` in their instantiation.
-- `addresses`: an object containing `listen`, `announce` and `noAnnounce` properties with `Array<string>`:
+- `addresses`: an object containing `listen`, `announce` and `announceFilter`:
   - `listen` addresses will be provided to the libp2p underlying transports for listening on them.
   - `announce` addresses will be used to compute the advertises that the node should advertise to the network.
-  - `noAnnounce` addresses will be used as a filter to compute the advertises that the node should advertise to the network.
-  - `announceFilter`: filter function used to filter announced addresses programmatically: `(ma: Array<multiaddr>) => Array<multiaddr>`. Default: bypass all addresses. [`libp2p-utils`](https://github.com/libp2p/js-libp2p-utils) provides useful [multiaddr utilities](https://github.com/libp2p/js-libp2p-utils/blob/master/API.md#multiaddr-isloopbackma) to create your filters.
+  - `announceFilter`: filter function used to filter announced addresses programmatically: `(ma: Array<multiaddr>) => Array<multiaddr>`. Default: returns all addresses. [`libp2p-utils`](https://github.com/libp2p/js-libp2p-utils) provides useful [multiaddr utilities](https://github.com/libp2p/js-libp2p-utils/blob/master/API.md#multiaddr-isloopbackma) to create your filters.
 
 ### Examples
 
