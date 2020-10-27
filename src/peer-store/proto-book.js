@@ -112,10 +112,47 @@ class ProtoBook extends Book {
       return this
     }
 
-    protocols = [...newSet]
-
     this._setData(peerId, newSet)
     log(`added provided protocols for ${id}`)
+
+    return this
+  }
+
+  /**
+   * Removes known protocols of a provided peer.
+   * If the protocols did not exist before, nothing will be done.
+   *
+   * @param {PeerId} peerId
+   * @param {Array<string>} protocols
+   * @returns {ProtoBook}
+   */
+  remove (peerId, protocols) {
+    if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
+      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+    }
+
+    if (!protocols) {
+      log.error('protocols must be provided to store data')
+      throw errcode(new Error('protocols must be provided'), ERR_INVALID_PARAMETERS)
+    }
+
+    const id = peerId.toB58String()
+    const recSet = this.data.get(id)
+
+    if (recSet) {
+      const newSet = new Set([
+        ...recSet
+      ].filter((p) => !protocols.includes(p)))
+
+      // Any protocol removed?
+      if (recSet.size === newSet.size) {
+        return this
+      }
+
+      this._setData(peerId, newSet)
+      log(`removed provided protocols for ${id}`)
+    }
 
     return this
   }

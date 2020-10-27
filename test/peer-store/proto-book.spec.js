@@ -5,7 +5,9 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const { expect } = chai
 
+const sinon = require('sinon')
 const pDefer = require('p-defer')
+const pWaitFor = require('p-wait-for')
 
 const PeerStore = require('../../src/peer-store')
 
@@ -221,6 +223,96 @@ describe('protoBook', () => {
       }, 50)
 
       return defer.promise
+    })
+  })
+
+  describe('protoBook.remove', () => {
+    let peerStore, pb
+
+    beforeEach(() => {
+      peerStore = new PeerStore({ peerId })
+      pb = peerStore.protoBook
+    })
+
+    afterEach(() => {
+      peerStore.removeAllListeners()
+    })
+
+    it('throws invalid parameters error if invalid PeerId is provided', () => {
+      expect(() => {
+        pb.remove('invalid peerId')
+      }).to.throw(ERR_INVALID_PARAMETERS)
+    })
+
+    it('throws invalid parameters error if no protocols provided', () => {
+      expect(() => {
+        pb.remove(peerId)
+      }).to.throw(ERR_INVALID_PARAMETERS)
+    })
+
+    it('removes the given protocol and emits change event', async () => {
+      const spy = sinon.spy()
+
+      const supportedProtocols = ['protocol1', 'protocol2']
+      const removedProtocols = ['protocol1']
+      const finalProtocols = supportedProtocols.filter(p => !removedProtocols.includes(p))
+
+      peerStore.on('change:protocols', spy)
+
+      // Replace
+      pb.set(peerId, supportedProtocols)
+      let protocols = pb.get(peerId)
+      expect(protocols).to.have.deep.members(supportedProtocols)
+
+      // Remove
+      pb.remove(peerId, removedProtocols)
+      protocols = pb.get(peerId)
+      expect(protocols).to.have.deep.members(finalProtocols)
+
+      await pWaitFor(() => spy.callCount === 2)
+
+      const [firstCallArgs] = spy.firstCall.args
+      const [secondCallArgs] = spy.secondCall.args
+      expect(arraysAreEqual(firstCallArgs.protocols, supportedProtocols))
+      expect(arraysAreEqual(secondCallArgs.protocols, finalProtocols))
+    })
+
+    it('emits on remove if the content changes', () => {
+      const spy = sinon.spy()
+
+      const supportedProtocols = ['protocol1', 'protocol2']
+      const removedProtocols = ['protocol2']
+      const finalProtocols = supportedProtocols.filter(p => !removedProtocols.includes(p))
+
+      peerStore.on('change:protocols', spy)
+
+      // set
+      pb.set(peerId, supportedProtocols)
+
+      // remove (content already existing)
+      pb.remove(peerId, removedProtocols)
+      const protocols = pb.get(peerId)
+      expect(protocols).to.have.deep.members(finalProtocols)
+
+      return pWaitFor(() => spy.callCount === 2)
+    })
+
+    it('does not emit on remove if the content does not change', () => {
+      const spy = sinon.spy()
+
+      const supportedProtocols = ['protocol1', 'protocol2']
+      const removedProtocols = ['protocol3']
+
+      peerStore.on('change:protocols', spy)
+
+      // set
+      pb.set(peerId, supportedProtocols)
+
+      // remove
+      pb.remove(peerId, removedProtocols)
+
+      // Only one event
+      expect(spy.callCount).to.eql(1)
     })
   })
 
