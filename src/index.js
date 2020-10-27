@@ -158,10 +158,7 @@ class Libp2p extends EventEmitter {
       })
 
       // Add the identify service since we can multiplex
-      this.identifyService = new IdentifyService({
-        libp2p: this,
-        protocols: this.upgrader.protocols
-      })
+      this.identifyService = new IdentifyService({ libp2p: this })
       this.handle(Object.values(IDENTIFY_PROTOCOLS), this.identifyService.handleMessage)
     }
 
@@ -442,10 +439,8 @@ class Libp2p extends EventEmitter {
       this.upgrader.protocols.set(protocol, handler)
     })
 
-    // Only push if libp2p is running
-    if (this.isStarted() && this.identifyService) {
-      this.identifyService.pushToPeerStore()
-    }
+    // Add new protocols to self protocols in the Protobook
+    this.peerStore.protoBook.add(this.peerId, protocols)
   }
 
   /**
@@ -460,10 +455,8 @@ class Libp2p extends EventEmitter {
       this.upgrader.protocols.delete(protocol)
     })
 
-    // Only push if libp2p is running
-    if (this.isStarted() && this.identifyService) {
-      this.identifyService.pushToPeerStore()
-    }
+    // Remove protocols from self protocols in the Protobook
+    this.peerStore.protoBook.remove(this.peerId, protocols)
   }
 
   async _onStarting () {
