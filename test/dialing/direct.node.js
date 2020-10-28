@@ -132,7 +132,7 @@ describe('Dialing (direct, TCP)', () => {
       peerStore: {
         addressBook: {
           add: () => {},
-          getMultiaddrsForPeer: () => [unsupportedAddr]
+          get: () => [{ multiaddr: unsupportedAddr }]
         }
       }
     })
@@ -175,7 +175,7 @@ describe('Dialing (direct, TCP)', () => {
       peerStore: {
         addressBook: {
           add: () => {},
-          getMultiaddrsForPeer: () => addrs
+          get: () => addrs.map(a => ({ multiaddr: multiaddr(a) }))
         }
       }
     })

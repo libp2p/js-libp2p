@@ -499,6 +499,7 @@ Dialing in libp2p can be configured to limit the rate of dialing, and how long d
 | maxDialsPerPeer | `number` | How many multiaddrs we can dial per peer, in parallel. |
 | dialTimeout | `number` | Second dial timeout per peer in ms. |
 | resolvers | `object` | Dial [Resolvers](https://github.com/multiformats/js-multiaddr/blob/master/src/resolvers/index.js) for resolving multiaddrs |
+| addressSorter | `(Array<Address>) => Array<Address>` | Sort the known addresses of a peer before trying to dial. |
 
 The below configuration example shows how the dialer should be configured, with the current defaults:
 
@@ -509,6 +510,7 @@ const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
 
 const { dnsaddrResolver } = require('multiaddr/src/resolvers')
+const { sortPublicAddressesFirst } = require('libp2p/src/dialer/utils')
 
 const node = await Libp2p.create({
   modules: {
@@ -522,7 +524,8 @@ const node = await Libp2p.create({
     dialTimeout: 30e3,
     resolvers: {
       dnsaddr: dnsaddrResolver
-    }
+    },
+    addressSorter: sortPublicAddressesFirst
   }
 ```
 

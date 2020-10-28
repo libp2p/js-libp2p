@@ -6,6 +6,7 @@ const { dnsaddrResolver } = require('multiaddr/src/resolvers')
 const Constants = require('./constants')
 const RelayConstants = require('./circuit/constants')
 
+const { sortPublicAddressesFirst } = require('./dialer/utils')
 const { FaultTolerance } = require('./transport-manager')
 
 const DefaultConfig = {
@@ -26,7 +27,8 @@ const DefaultConfig = {
     dialTimeout: Constants.DIAL_TIMEOUT,
     resolvers: {
       dnsaddr: dnsaddrResolver
-    }
+    },
+    addressSorter: sortPublicAddressesFirst
   },
   metrics: {
     enabled: false

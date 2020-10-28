@@ -9,6 +9,7 @@ const log = debug('libp2p:dialer')
 log.error = debug('libp2p:dialer:error')
 
 const { DialRequest } = require('./dial-request')
+const { sortPublicAddressesFirst } = require('./utils')
 const getPeer = require('../get-peer')
 
 const { codes } = require('../errors')
@@ -24,6 +25,7 @@ class Dialer {
    * @param {object} options
    * @param {TransportManager} options.transportManager
    * @param {Peerstore} options.peerStore
+   * @param {(addresses: Array<Address) => Array<Address>} [options.addressSorter = sortPublicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
    * @param {number} [options.concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
    * @param {number} [options.perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
    * @param {number} [options.timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
@@ -32,6 +34,7 @@ class Dialer {
   constructor ({
     transportManager,
     peerStore,
+    addressSorter = sortPublicAddressesFirst,
     concurrency = MAX_PARALLEL_DIALS,
     timeout = DIAL_TIMEOUT,
     perPeerLimit = MAX_PER_PEER_DIALS,
@@ -39,6 +42,7 @@ class Dialer {
   }) {
     this.transportManager = transportManager
     this.peerStore = peerStore
+    this.addressSorter = addressSorter
     this.concurrency = concurrency
     this.timeout = timeout
     this.perPeerLimit = perPeerLimit
@@ -120,7 +124,16 @@ class Dialer {
       this.peerStore.addressBook.add(id, multiaddrs)
     }
 
-    let knownAddrs = this.peerStore.addressBook.getMultiaddrsForPeer(id) || []
+    let knownAddrs = this.addressSorter(
+      this.peerStore.addressBook.get(id) || []
+    ).map((address) => {
+      const multiaddr = address.multiaddr
+
+      const idString = multiaddr.getPeerId()
+      if (idString && idString === id.toB58String()) return multiaddr
+
+      return multiaddr.encapsulate(`/p2p/${id.toB58String()}`)
+    })
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.

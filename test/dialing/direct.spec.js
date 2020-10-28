@@ -16,6 +16,7 @@ const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 const { codes: ErrorCodes } = require('../../src/errors')
 const Constants = require('../../src/constants')
 const Dialer = require('../../src/dialer')
+const dialerUtils = require('../../src/dialer/utils')
 const PeerStore = require('../../src/peer-store')
 const TransportManager = require('../../src/transport-manager')
 const Libp2p = require('../../src')
@@ -85,7 +86,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           add: () => {},
-          getMultiaddrsForPeer: () => [remoteAddr]
+          get: () => [{ multiaddr: remoteAddr.decapsulate('/p2p') }]
         }
       }
     })
@@ -101,7 +102,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           add: () => {},
-          getMultiaddrsForPeer: () => [remoteAddr]
+          get: () => [{ multiaddr: remoteAddr.decapsulate('/p2p') }]
         }
       }
     })
@@ -125,7 +126,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           add: () => {},
-          getMultiaddrsForPeer: () => [remoteAddr]
+          get: () => [{ multiaddr: remoteAddr.decapsulate('/p2p') }]
         }
       }
     })
@@ -141,7 +142,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           set: () => {},
-          getMultiaddrsForPeer: () => [unsupportedAddr]
+          get: () => [{ multiaddr: unsupportedAddr.decapsulate('/p2p') }]
         }
       }
     })
@@ -158,7 +159,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           add: () => {},
-          getMultiaddrsForPeer: () => [remoteAddr]
+          get: () => [{ multiaddr: remoteAddr.decapsulate('/p2p') }]
         }
       }
     })
@@ -176,6 +177,28 @@ describe('Dialing (direct, WebSockets)', () => {
       .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
   })
 
+  it('should sort addresses on dial', async () => {
+    sinon.spy(dialerUtils, 'sortPublicAddressesFirst')
+    const dialer = new Dialer({
+      transportManager: localTM,
+      addressSorter: dialerUtils.sortPublicAddressesFirst,
+      concurrency: 2,
+      peerStore: {
+        addressBook: {
+          set: () => { },
+          get: () => [{ multiaddr: remoteAddr }, { multiaddr: remoteAddr }, { multiaddr: remoteAddr }]
+        }
+      }
+    })
+
+    sinon.stub(localTM, 'dial').callsFake(createMockConnection)
+
+    // Perform 3 multiaddr dials
+    await dialer.connectToPeer(peerId)
+
+    expect(dialerUtils.sortPublicAddressesFirst.callCount).to.eql(1)
+  })
+
   it('should dial to the max concurrency', async () => {
     const dialer = new Dialer({
       transportManager: localTM,
@@ -183,7 +206,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           set: () => {},
-          getMultiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
+          get: () => [{ multiaddr: remoteAddr }, { multiaddr: remoteAddr }, { multiaddr: remoteAddr }]
         }
       }
     })
@@ -221,7 +244,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           set: () => {},
-          getMultiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
+          get: () => [{ multiaddr: remoteAddr }, { multiaddr: remoteAddr }, { multiaddr: remoteAddr }]
         }
       }
     })
