@@ -240,6 +240,7 @@ class Dialer {
    */
   async _resolveRecord (ma) {
     try {
+      ma = multiaddr(ma.toString()) // Use current multiaddr module
       const multiaddrs = await ma.resolve()
       return multiaddrs
     } catch (_) {
