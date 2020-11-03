@@ -1,6 +1,6 @@
 # Address Manager
 
-The Address manager is responsible for keeping an updated register of the peer's addresses. It includes 3 different types of Addresses: `Listen Addresses`, `Announce Addresses` and `No Announce Addresses`.
+The Address manager is responsible for keeping an updated register of the peer's addresses. It includes 2 different types of Addresses: `Listen Addresses` and `Announce Addresses`.
 
 These Addresses should be specified in your libp2p [configuration](../../doc/CONFIGURATION.md) when you create your node.
 
@@ -20,17 +20,11 @@ Scenarios for Announce Addresses include:
 - when you setup a libp2p node in your private network at home, but you need to announce your public IP Address to the outside world;
 - when you want to announce a DNS address, which maps to your public IP Address.
 
-## No Announce Addresses
-
-While we need to add Announce Addresses to enable peers' connectivity, we should also avoid announcing addresses that will not be reachable. No Announce Addresses should be specified so that they are filtered from the advertised multiaddrs.
-
-As stated in the Listen Addresses section, Listen Addresses might be modified by libp2p transports after the successfully bind to those addresses. Libp2p should also take these changes into account so that they can be matched when No Announce Addresses are being filtered out of the advertised multiaddrs.
-
 ## Implementation
 
 When a libp2p node is created, the Address Manager will be populated from the provided addresses through the libp2p configuration. Once the node is started, the Transport Manager component will gather the listen addresses from the Address Manager, so that the libp2p transports can attempt to bind to them.
 
-Libp2p will use the the Address Manager as the source of truth when advertising the peers addresses. After all transports are ready, other libp2p components/subsystems will kickoff, namely the Identify Service and the DHT. Both of them will announce the node addresses to the other peers in the network. The announce and noAnnounce addresses will have an important role here and will be gathered by libp2p to compute its current addresses to advertise everytime it is needed.
+Libp2p will use the the Address Manager as the source of truth when advertising the peers addresses. After all transports are ready, other libp2p components/subsystems will kickoff, namely the Identify Service and the DHT. Both of them will announce the node addresses to the other peers in the network. The announce addresses will have an important role here and will be gathered by libp2p to compute its current addresses to advertise everytime it is needed.
 
 ## Future Considerations
 
