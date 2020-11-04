@@ -142,22 +142,10 @@ describe('Dialing (resolvable addresses)', () => {
     sinon.spy(transport, 'dial')
 
     // Resolver stub
-    let firstCall = false
-    let secondCall = false
-
     const stub = sinon.stub(Resolver.prototype, 'resolveTxt')
-    stub.callsFake(() => {
-      if (!firstCall) {
-        firstCall = true
-        // Return an array of dnsaddr
-        return Promise.resolve(getDnsaddrStub(remoteId))
-      } else if (!secondCall) {
-        secondCall = true
-        // Address failed to resolve
-        return Promise.reject(new Error())
-      }
-      return Promise.resolve(getDnsRelayedAddrStub(remoteId))
-    })
+    stub.onCall(0).callsFake(() => Promise.resolve(getDnsaddrStub(remoteId)))
+    stub.onCall(1).callsFake(() => Promise.reject(new Error()))
+    stub.callsFake(() => Promise.resolve(getDnsRelayedAddrStub(remoteId)))
 
     // Dial with address resolve
     const connection = await libp2p.dial(dialAddr)

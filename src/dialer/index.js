@@ -27,7 +27,7 @@ class Dialer {
    * @param {number} [options.concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
    * @param {number} [options.perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
    * @param {number} [options.timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
-   * @param {object} [options.resolvers = {}]
+   * @param {object} [options.resolvers = {}] - multiaddr resolvers to use when dialing
    */
   constructor ({
     transportManager,
