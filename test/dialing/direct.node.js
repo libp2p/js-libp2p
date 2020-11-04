@@ -158,9 +158,9 @@ describe('Dialing (direct, TCP)', () => {
 
   it('should dial to the max concurrency', async () => {
     const addrs = [
-      '/ip4/0.0.0.0/tcp/8000',
-      '/ip4/0.0.0.0/tcp/8001',
-      '/ip4/0.0.0.0/tcp/8002'
+      multiaddr('/ip4/0.0.0.0/tcp/8000'),
+      multiaddr('/ip4/0.0.0.0/tcp/8001'),
+      multiaddr('/ip4/0.0.0.0/tcp/8002')
     ]
     const dialer = new Dialer({
       transportManager: localTM,

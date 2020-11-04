@@ -27,13 +27,15 @@ class Dialer {
    * @param {number} [options.concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
    * @param {number} [options.perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
    * @param {number} [options.timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
+   * @param {object} [options.resolvers = {}] - multiaddr resolvers to use when dialing
    */
   constructor ({
     transportManager,
     peerStore,
     concurrency = MAX_PARALLEL_DIALS,
     timeout = DIAL_TIMEOUT,
-    perPeerLimit = MAX_PER_PEER_DIALS
+    perPeerLimit = MAX_PER_PEER_DIALS,
+    resolvers = {}
   }) {
     this.transportManager = transportManager
     this.peerStore = peerStore
@@ -42,6 +44,10 @@ class Dialer {
     this.perPeerLimit = perPeerLimit
     this.tokens = [...new Array(concurrency)].map((_, index) => index)
     this._pendingDials = new Map()
+
+    for (const [key, value] of Object.entries(resolvers)) {
+      multiaddr.resolvers.set(key, value)
+    }
   }
 
   /**
@@ -69,7 +75,7 @@ class Dialer {
    * @returns {Promise<Connection>}
    */
   async connectToPeer (peer, options = {}) {
-    const dialTarget = this._createDialTarget(peer)
+    const dialTarget = await this._createDialTarget(peer)
 
     if (!dialTarget.addrs.length) {
       throw errCode(new Error('The dial request has no addresses'), codes.ERR_NO_VALID_ADDRESSES)
@@ -105,22 +111,28 @@ class Dialer {
    *
    * @private
    * @param {PeerId|Multiaddr|string} peer - A PeerId or Multiaddr
-   * @returns {DialTarget}
+   * @returns {Promise<DialTarget>}
    */
-  _createDialTarget (peer) {
+  async _createDialTarget (peer) {
     const { id, multiaddrs } = getPeer(peer)
 
     if (multiaddrs) {
       this.peerStore.addressBook.add(id, multiaddrs)
     }
 
-    let addrs = this.peerStore.addressBook.getMultiaddrsForPeer(id) || []
+    let knownAddrs = this.peerStore.addressBook.getMultiaddrsForPeer(id) || []
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.
     if (multiaddr.isMultiaddr(peer)) {
-      addrs = addrs.filter((addr) => !peer.equals(addr))
-      addrs.unshift(peer)
+      knownAddrs = knownAddrs.filter((addr) => !peer.equals(addr))
+      knownAddrs.unshift(peer)
+    }
+
+    const addrs = []
+    for (const a of knownAddrs) {
+      const resolvedAddrs = await this._resolve(a)
+      resolvedAddrs.forEach(ra => addrs.push(ra))
     }
 
     return {
@@ -189,6 +201,52 @@ class Dialer {
     if (this.tokens.indexOf(token) > -1) return
     log('token %d released', token)
     this.tokens.push(token)
+  }
+
+  /**
+   * Resolve multiaddr recursively.
+   *
+   * @param {Multiaddr} ma
+   * @returns {Promise<Array<Multiaddr>>}
+   */
+  async _resolve (ma) {
+    // TODO: recursive logic should live in multiaddr once dns4/dns6 support is in place
+    // Now only supporting resolve for dnsaddr
+    const resolvableProto = ma.protoNames().includes('dnsaddr')
+
+    // Multiaddr is not resolvable? End recursion!
+    if (!resolvableProto) {
+      return [ma]
+    }
+
+    const resolvedMultiaddrs = await this._resolveRecord(ma)
+    const recursiveMultiaddrs = await Promise.all(resolvedMultiaddrs.map((nm) => {
+      return this._resolve(nm)
+    }))
+
+    return recursiveMultiaddrs.flat().reduce((array, newM) => {
+      if (!array.find(m => m.equals(newM))) {
+        array.push(newM)
+      }
+      return array
+    }, []) // Unique addresses
+  }
+
+  /**
+   * Resolve a given multiaddr. If this fails, an empty array will be returned
+   *
+   * @param {Multiaddr} ma
+   * @returns {Promise<Array<Multiaddr>>}
+   */
+  async _resolveRecord (ma) {
+    try {
+      ma = multiaddr(ma.toString()) // Use current multiaddr module
+      const multiaddrs = await ma.resolve()
+      return multiaddrs
+    } catch (_) {
+      log.error(`multiaddr ${ma} could not be resolved`)
+      return []
+    }
   }
 }
 

@@ -64,7 +64,7 @@
     "mafmt": "^8.0.0",
     "merge-options": "^2.0.0",
     "moving-average": "^1.0.0",
-    "multiaddr": "^8.0.0",
+    "multiaddr": "^8.1.0",
     "multicodec": "^2.0.0",
     "multistream-select": "^1.0.0",
     "mutable-proxy": "^1.0.0",
