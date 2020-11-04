@@ -1,3 +1,13 @@
+<a name="0.29.3"></a>
+## [0.29.3](https://github.com/libp2p/js-libp2p/compare/v0.29.2...v0.29.3) (2020-11-04)
+
+
+### Features
+
+* resolve multiaddrs before dial ([#782](https://github.com/libp2p/js-libp2p/issues/782)) ([093c0ea](https://github.com/libp2p/js-libp2p/commit/093c0ea))
+
+
+
 <a name="0.29.2"></a>
 ## [0.29.2](https://github.com/libp2p/js-libp2p/compare/v0.29.1...v0.29.2) (2020-10-23)
 
