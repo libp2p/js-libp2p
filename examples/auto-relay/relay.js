@@ -31,7 +31,7 @@ const MPLEX = require('libp2p-mplex')
 
   await node.start()
 
-  console.log(`Node started. ${node.peerId.toB58String()}`)
+  console.log(`Node started: ${node.peerId.toB58String()}`)
   console.log('Listening on:')
   node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
 })()

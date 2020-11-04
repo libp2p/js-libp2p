@@ -7,13 +7,12 @@ const MPLEX = require('libp2p-mplex')
 
 const pWaitFor = require('p-wait-for')
 
-// TODO: get the relay address from the previous step)
-const relayAddr = '/ip4/192.168.1.120/tcp/61470/ws/p2p/Qme1DfXDeaMEPNsUrG8EFXj2JDqzpgy9LuD6mpqpBsNwTm'
+const relayAddr = process.argv[2]
 if (!relayAddr) {
-  throw new Error('the relay address needs to be specified')
+  throw new Error('the relay address needs to be specified as a parameter')
 }
 
-; (async () => {
+;(async () => {
   const node = await Libp2p.create({
     modules: {
       transport: [Websockets],
@@ -32,11 +31,11 @@ if (!relayAddr) {
   })
 
   await node.start()
-  console.log(`Node started. ${node.peerId.toB58String()}`)
+  console.log(`Node started: ${node.peerId.toB58String()}`)
 
   await node.dial(relayAddr)
 
-  // Wait for connection and relay to be bind
+  // Wait for connection and relay to be bind for the example purpose
   await pWaitFor(() => node.multiaddrs.length > 0)
 
   console.log('connected to the HOP relay')
