@@ -190,6 +190,15 @@ class Libp2p extends EventEmitter {
       this.pubsub = PubsubAdapter(Pubsub, this, this._config.pubsub)
     }
 
+    // Create rendezvous if provided
+    if (this._modules.rendezvous) {
+      const Rendezvous = this._modules.rendezvous
+      this.rendezvous = new Rendezvous({
+        libp2p: this,
+        ...this._config.rendezvous
+      })
+    }
+
     // Attach remaining APIs
     // peer and content routing will automatically get modules from _modules and _dht
     this.peerRouting = peerRouting(this)
@@ -268,6 +277,8 @@ class Libp2p extends EventEmitter {
         this._dht && this._dht.stop(),
         this.metrics && this.metrics.stop()
       ])
+
+      this.rendezvous && this.rendezvous.stop()
 
       await this.transportManager.close()
 
@@ -499,6 +510,8 @@ class Libp2p extends EventEmitter {
     }
 
     this.connectionManager.start()
+
+    this.rendezvous && this.rendezvous.start()
 
     // Peer discovery
     await this._setupPeerDiscovery()

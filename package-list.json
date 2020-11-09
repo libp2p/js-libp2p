@@ -43,6 +43,9 @@
     ["libp2p/js-libp2p-delegated-peer-routing", "libp2p-delegated-peer-routing"],
     ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
 
+    "service discovery",
+    ["libp2p/js-libp2p-rendezvous", "libp2p-rendezvous"],
+
     "utilities",
     ["libp2p/js-libp2p-crypto", "libp2p-crypto"],
     ["libp2p/js-libp2p-crypto-secp256k1", "libp2p-crypto-secp256k1"],
