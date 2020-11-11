@@ -19,7 +19,7 @@ const PeerId = require('peer-id')
 const peerUtils = require('../utils/creators/peer')
 const { baseOptions, routingOptions } = require('./utils')
 
-describe.only('peer-routing', () => {
+describe('peer-routing', () => {
   describe('no routers', () => {
     let node
 
@@ -348,7 +348,7 @@ describe.only('peer-routing', () => {
     let peerIds
 
     before(async () => {
-      peerIds = await peerUtils.createPeerId({ number: 2})
+      peerIds = await peerUtils.createPeerId({ number: 2 })
     })
 
     afterEach(() => {
@@ -373,7 +373,7 @@ describe.only('peer-routing', () => {
       })
 
       sinon.spy(node.peerStore.addressBook, 'add')
-      sinon.stub(node._dht, 'getClosestPeers').callsFake(function* () {
+      sinon.stub(node._dht, 'getClosestPeers').callsFake(function * () {
         yield results[0]
         yield results[1]
       })
@@ -397,7 +397,7 @@ describe.only('peer-routing', () => {
     })
 
     it('should support being disabled', async () => {
-      ;[node] = await peerUtils.createPeer({
+      [node] = await peerUtils.createPeer({
         config: mergeOptions(routingOptions, {
           peerRouting: {
             bootDelay: 100,
@@ -407,7 +407,8 @@ describe.only('peer-routing', () => {
         started: false
       })
 
-      sinon.stub(node._dht, 'getClosestPeers').callsFake(function* () {
+      sinon.stub(node._dht, 'getClosestPeers').callsFake(function * () {
+        yield
         throw new Error('should not be called')
       })
 
@@ -418,7 +419,7 @@ describe.only('peer-routing', () => {
     })
 
     it('should start and run recurrently on interval', async () => {
-      ;[node] = await peerUtils.createPeer({
+      [node] = await peerUtils.createPeer({
         config: mergeOptions(routingOptions, {
           peerRouting: {
             interval: 500,
@@ -428,7 +429,7 @@ describe.only('peer-routing', () => {
         started: false
       })
 
-      sinon.stub(node._dht, 'getClosestPeers').callsFake(function* () {
+      sinon.stub(node._dht, 'getClosestPeers').callsFake(function * () {
         yield { id: peerIds[0], multiaddrs: [multiaddr('/ip4/30.0.0.1/tcp/2000')] }
       })
 

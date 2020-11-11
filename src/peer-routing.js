@@ -7,6 +7,10 @@ log.error = debug('libp2p:peer-routing:error')
 
 const all = require('it-all')
 const pAny = require('p-any')
+const {
+  setDelayedInterval,
+  clearDelayedInterval
+} = require('set-delayed-interval')
 
 /**
  * Responsible for managing the usage of the available Peer Routing modules.
@@ -27,6 +31,8 @@ class PeerRouting {
     }
 
     this._options = libp2p._options.peerRouting
+
+    this._findClosestPeersTask = this._findClosestPeersTask.bind(this)
   }
 
   /**
@@ -37,32 +43,21 @@ class PeerRouting {
       return
     }
 
-    // Start doing queries after `this._options.delay`
-    this._timeoutId = setTimeout(() => {
-      // Start runner immediately
-      this._runPeriodically()
-    }, this._options.bootDelay)
+    this._timeoutId = setDelayedInterval(
+      this._findClosestPeersTask, this._options.interval, this._options.bootDelay
+    )
   }
 
   /**
-   * Run peridocally on every `this._options.interval` ms
-   *
-   * @private
+   * Recurrent task to find closest peers and add their addresses to the Address Book.
    */
-  async _runPeriodically () {
-    // run until the walk has been stopped
-    while (this._timeoutId) {
-      try {
-        for await (const { id, multiaddrs } of this.getClosestPeers(this._peerId.id)) {
-          this._peerStore.addressBook.add(id, multiaddrs)
-        }
-      } catch (err) {
-        log.error(err)
+  async _findClosestPeersTask () {
+    try {
+      for await (const { id, multiaddrs } of this.getClosestPeers(this._peerId.id)) {
+        this._peerStore.addressBook.add(id, multiaddrs)
       }
-      // Each subsequent task should run on a `this._options.interval` ms interval
-      await new Promise(resolve => {
-        this._timeoutId = setTimeout(resolve, this._options.interval)
-      })
+    } catch (err) {
+      log.error(err)
     }
   }
 
@@ -70,7 +65,7 @@ class PeerRouting {
    * Stop peer routing service.
    */
   stop () {
-    clearTimeout(this._timeoutId)
+    clearDelayedInterval(this._timeoutId)
   }
 
   /**
