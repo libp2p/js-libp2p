@@ -9,7 +9,7 @@ log.error = debug('libp2p:error')
 const errCode = require('err-code')
 const PeerId = require('peer-id')
 
-const peerRouting = require('./peer-routing')
+const PeerRouting = require('./peer-routing')
 const contentRouting = require('./content-routing')
 const getPeer = require('./get-peer')
 const { validate: validateConfig } = require('./config')
@@ -192,7 +192,7 @@ class Libp2p extends EventEmitter {
 
     // Attach remaining APIs
     // peer and content routing will automatically get modules from _modules and _dht
-    this.peerRouting = peerRouting(this)
+    this.peerRouting = new PeerRouting(this)
     this.contentRouting = contentRouting(this)
 
     // Mount default protocols
@@ -249,8 +249,8 @@ class Libp2p extends EventEmitter {
     try {
       this._isStarted = false
 
-      // Relay
       this.relay && this.relay.stop()
+      this.peerRouting.stop()
 
       for (const service of this._discovery.values()) {
         service.removeListener('peer', this._onDiscoveryPeer)
@@ -495,6 +495,8 @@ class Libp2p extends EventEmitter {
 
     // Relay
     this.relay && this.relay.start()
+
+    this.peerRouting.start()
   }
 
   /**

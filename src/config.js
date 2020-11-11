@@ -35,6 +35,11 @@ const DefaultConfig = {
     persistence: false,
     threshold: 5
   },
+  peerRouting: {
+    enabled: true,
+    interval: 300e3,
+    bootDelay: 10e3
+  },
   config: {
     dht: {
       enabled: false,
