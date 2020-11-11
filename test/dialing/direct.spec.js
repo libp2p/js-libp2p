@@ -16,7 +16,7 @@ const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 const { codes: ErrorCodes } = require('../../src/errors')
 const Constants = require('../../src/constants')
 const Dialer = require('../../src/dialer')
-const dialerUtils = require('../../src/dialer/utils')
+const addressSort = require('libp2p-utils/src/address-sort')
 const PeerStore = require('../../src/peer-store')
 const TransportManager = require('../../src/transport-manager')
 const Libp2p = require('../../src')
@@ -45,6 +45,7 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   afterEach(() => {
+    peerStore.delete(peerId)
     sinon.restore()
   })
 
@@ -86,7 +87,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           add: () => {},
-          get: () => [{ multiaddr: remoteAddr.decapsulate('/p2p') }]
+          getMultiaddrsForPeer: () => [remoteAddr]
         }
       }
     })
@@ -102,7 +103,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           add: () => {},
-          get: () => [{ multiaddr: remoteAddr.decapsulate('/p2p') }]
+          getMultiaddrsForPeer: () => [remoteAddr]
         }
       }
     })
@@ -126,7 +127,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           add: () => {},
-          get: () => [{ multiaddr: remoteAddr.decapsulate('/p2p') }]
+          getMultiaddrsForPeer: () => [remoteAddr]
         }
       }
     })
@@ -142,7 +143,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           set: () => {},
-          get: () => [{ multiaddr: unsupportedAddr.decapsulate('/p2p') }]
+          getMultiaddrsForPeer: () => [unsupportedAddr]
         }
       }
     })
@@ -159,7 +160,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           add: () => {},
-          get: () => [{ multiaddr: remoteAddr.decapsulate('/p2p') }]
+          getMultiaddrsForPeer: () => [remoteAddr]
         }
       }
     })
@@ -178,25 +179,34 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   it('should sort addresses on dial', async () => {
-    sinon.spy(dialerUtils, 'sortPublicAddressesFirst')
+    const peerMultiaddrs = [
+      multiaddr('/ip4/127.0.0.1/tcp/15001/ws'),
+      multiaddr('/ip4/20.0.0.1/tcp/15001/ws'),
+      multiaddr('/ip4/30.0.0.1/tcp/15001/ws')
+    ]
+
+    sinon.spy(addressSort, 'publicAddressesFirst')
+    sinon.stub(localTM, 'dial').callsFake(createMockConnection)
+
     const dialer = new Dialer({
       transportManager: localTM,
-      addressSorter: dialerUtils.sortPublicAddressesFirst,
-      concurrency: 2,
-      peerStore: {
-        addressBook: {
-          set: () => { },
-          get: () => [{ multiaddr: remoteAddr }, { multiaddr: remoteAddr }, { multiaddr: remoteAddr }]
-        }
-      }
+      addressSorter: addressSort.publicAddressesFirst,
+      concurrency: 3,
+      peerStore
     })
 
-    sinon.stub(localTM, 'dial').callsFake(createMockConnection)
+    // Inject data in the AddressBook
+    peerStore.addressBook.add(peerId, peerMultiaddrs)
 
     // Perform 3 multiaddr dials
     await dialer.connectToPeer(peerId)
 
-    expect(dialerUtils.sortPublicAddressesFirst.callCount).to.eql(1)
+    expect(addressSort.publicAddressesFirst.callCount).to.eql(1)
+
+    const sortedAddresses = addressSort.publicAddressesFirst(peerMultiaddrs.map((m) => ({ multiaddr: m })))
+    expect(localTM.dial.getCall(0).args[0].equals(sortedAddresses[0].multiaddr))
+    expect(localTM.dial.getCall(1).args[0].equals(sortedAddresses[1].multiaddr))
+    expect(localTM.dial.getCall(2).args[0].equals(sortedAddresses[2].multiaddr))
   })
 
   it('should dial to the max concurrency', async () => {
@@ -206,7 +216,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           set: () => {},
-          get: () => [{ multiaddr: remoteAddr }, { multiaddr: remoteAddr }, { multiaddr: remoteAddr }]
+          getMultiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
         }
       }
     })
@@ -244,7 +254,7 @@ describe('Dialing (direct, WebSockets)', () => {
       peerStore: {
         addressBook: {
           set: () => {},
-          get: () => [{ multiaddr: remoteAddr }, { multiaddr: remoteAddr }, { multiaddr: remoteAddr }]
+          getMultiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
         }
       }
     })

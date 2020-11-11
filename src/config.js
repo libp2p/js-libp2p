@@ -6,7 +6,7 @@ const { dnsaddrResolver } = require('multiaddr/src/resolvers')
 const Constants = require('./constants')
 const RelayConstants = require('./circuit/constants')
 
-const { sortPublicAddressesFirst } = require('./dialer/utils')
+const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 const { FaultTolerance } = require('./transport-manager')
 
 const DefaultConfig = {
@@ -28,7 +28,7 @@ const DefaultConfig = {
     resolvers: {
       dnsaddr: dnsaddrResolver
     },
-    addressSorter: sortPublicAddressesFirst
+    addressSorter: publicAddressesFirst
   },
   metrics: {
     enabled: false

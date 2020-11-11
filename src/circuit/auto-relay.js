@@ -129,27 +129,18 @@ class AutoRelay {
     }
 
     // Get peer known addresses and sort them per public addresses first
-    // Sorting addresses to public first
-    const remoteAddrs = this._addressSorter(
-      this._peerStore.addressBook.get(connection.remotePeer) || []
+    const remoteAddrs = this._peerStore.addressBook.getMultiaddrsForPeer(
+      connection.remotePeer, this._addressSorter
     )
 
     if (!remoteAddrs || !remoteAddrs.length) {
       return
     }
 
-    const remoteMultiaddr = remoteAddrs[0].multiaddr
-
-    let listenAddr
-    if (!remoteMultiaddr.protoNames().includes('p2p')) {
-      listenAddr = `${remoteMultiaddr.toString()}/p2p/${connection.remotePeer.toB58String()}/p2p-circuit`
-    } else {
-      listenAddr = `${remoteMultiaddr.toString()}/p2p-circuit`
-    }
-
-    // Attempt to listen on relay
+    const listenAddr = `${remoteAddrs[0].toString()}/p2p-circuit`
     this._listenRelays.add(id)
 
+    // Attempt to listen on relay
     try {
       await this._transportManager.listen([multiaddr(listenAddr)])
       // Announce multiaddrs will update on listen success by TransportManager event being triggered

@@ -61,7 +61,7 @@
     "it-protocol-buffers": "^0.2.0",
     "libp2p-crypto": "^0.18.0",
     "libp2p-interfaces": "^0.7.2",
-    "libp2p-utils": "^0.2.1",
+    "libp2p-utils": "libp2p/js-libp2p-utils#feat/address-sorter",
     "mafmt": "^8.0.0",
     "merge-options": "^2.0.0",
     "moving-average": "^1.0.0",

@@ -6,6 +6,7 @@ const { expect } = require('aegir/utils/chai')
 const { Buffer } = require('buffer')
 const multiaddr = require('multiaddr')
 const arrayEquals = require('libp2p-utils/src/array-equals')
+const addressSort = require('libp2p-utils/src/address-sort')
 const PeerId = require('peer-id')
 const pDefer = require('p-defer')
 
@@ -19,7 +20,7 @@ const {
 } = require('../../src/errors')
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
-const addr2 = multiaddr('/ip4/127.0.0.1/tcp/8001')
+const addr2 = multiaddr('/ip4/20.0.0.1/tcp/8001')
 const addr3 = multiaddr('/ip4/127.0.0.1/tcp/8002')
 
 describe('addressBook', () => {
@@ -338,6 +339,18 @@ describe('addressBook', () => {
       const multiaddrs = ab.getMultiaddrsForPeer(peerId)
       multiaddrs.forEach((m) => {
         expect(m.getPeerId()).to.equal(peerId.toB58String())
+      })
+    })
+
+    it('can sort multiaddrs providing a sorter', () => {
+      const supportedMultiaddrs = [addr1, addr2]
+      ab.set(peerId, supportedMultiaddrs)
+
+      const multiaddrs = ab.getMultiaddrsForPeer(peerId, addressSort.publicAddressesFirst)
+      const sortedAddresses = addressSort.publicAddressesFirst(supportedMultiaddrs.map((m) => ({ multiaddr: m })))
+
+      multiaddrs.forEach((m, index) => {
+        expect(m.equals(sortedAddresses[index].multiaddr))
       })
     })
   })
