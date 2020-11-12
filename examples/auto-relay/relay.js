@@ -5,7 +5,7 @@ const Websockets = require('libp2p-websockets')
 const { NOISE } = require('libp2p-noise')
 const MPLEX = require('libp2p-mplex')
 
-;(async () => {
+async function main () {
   const node = await Libp2p.create({
     modules: {
       transport: [Websockets],
@@ -14,7 +14,8 @@ const MPLEX = require('libp2p-mplex')
     },
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0/ws']
-      // announceFilter: TODO check production section
+      // TODO check "What is next?" section
+      // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
     },
     config: {
       relay: {
@@ -31,7 +32,9 @@ const MPLEX = require('libp2p-mplex')
 
   await node.start()
 
-  console.log(`Node started: ${node.peerId.toB58String()}`)
+  console.log(`Node started with id ${node.peerId.toB58String()}`)
   console.log('Listening on:')
   node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
-})()
+}
+
+main()

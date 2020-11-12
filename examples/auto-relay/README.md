@@ -5,13 +5,13 @@ While direct connections to nodes are preferable, it's not always possible to do
 
 ## 0. Setup the example
 
-Before moving into the examples, you should run `npm install` on the top level `js-libp2p` folder, in order to install all the dependencies needed for this example.
+Before moving into the examples, you should run `npm install` on the top level `js-libp2p` folder, in order to install all the dependencies needed for this example. Once the install finishes, you should move into the example folder with `cd examples/auto-relay`.
 
-This example comes with 3 main files. A `relay.js` file to be used in the first step, a `auto-relay.js` file to be used in the second step and a `other-node.js` file to be used on the third step. All of this scripts will run their own libp2p node, which will interact with the previous ones. This way, you need to have all of them running as you proceed.
+This example comes with 3 main files. A `relay.js` file to be used in the first step, a `listener.js` file to be used in the second step and a `dialer.js` file to be used on the third step. All of these scripts will run their own libp2p node, which will interact with the previous ones. All nodes must be running in order for you to proceed.
 
 ## 1. Set up a relay node
 
-Aiming to support nodes with connectivity issues, you will need to set up a relay node for the former nodes to bind.
+In the first step of this example, we need to configure and run a relay node in order for our target node to bind to for accepting inbound connections.
 
 The relay node will need to have its relay subsystem enabled, as well as its HOP capability. It can be configured as follows:
 
@@ -31,7 +31,6 @@ const node = await Libp2p.create({
     listen: ['/ip4/0.0.0.0/tcp/0/ws']
     // TODO check "What is next?" section
     // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
-    // announceFilter: (addresses) => addresses
   },
   config: {
     relay: {
@@ -48,12 +47,12 @@ const node = await Libp2p.create({
 
 await node.start()
 
-console.log(`Node started: ${node.peerId.toB58String()}`)
+console.log(`Node started with id ${node.peerId.toB58String()}`)
 console.log('Listening on:')
 node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
 ```
 
-The Relay HOP advertise functionality is **NOT** required to be enabled. However, if you are interested in advertising on the network that this node is available to be used as a HOP Relay you can enable it.
+The Relay HOP advertise functionality is **NOT** required to be enabled. However, if you are interested in advertising on the network that this node is available to be used as a HOP Relay you can enable it. A content router module or Rendezvous needs to be configured to leverage this option.
 
 You should now run the following to start the relay node:
 
@@ -64,25 +63,21 @@ node relay.js
 This should print out something similar to the following:
 
 ```sh
-Node started: QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3
+Node started with id QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3
 Listening on:
 /ip4/127.0.0.1/tcp/61592/ws/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3
 /ip4/192.168.1.120/tcp/61592/ws/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3
 ```
 
-TODO: Docker Image with a repo
+## 2. Set up a listener node with Auto Relay Enabled
 
-## 2. Set up a node with Auto Relay Enabled
-
-One of the typical use cases for Auto Relay is nodes behind a NAT or browser nodes thanks to their limitations regarding listening for new connections. For running a libp2p node that automatically binds itself to connected HOP relays, you can see the following:
+One of the typical use cases for Auto Relay is nodes behind a NAT or browser nodes due to their inability to expose a public address. For running a libp2p node that automatically binds itself to connected HOP relays, you can see the following:
 
 ```js
 const Libp2p = require('libp2p')
 const Websockets = require('libp2p-websockets')
 const { NOISE } = require('libp2p-noise')
 const MPLEX = require('libp2p-mplex')
-
-const pWaitFor = require('p-wait-for')
 
 const relayAddr = process.argv[2]
 if (!relayAddr) {
@@ -107,40 +102,45 @@ const node = await Libp2p.create({
 })
 
 await node.start()
-console.log(`Node started: ${node.peerId.toB58String()}`)
+console.log(`Node started with id ${node.peerId.toB58String()}`)
 
-await node.dial(relayAddr)
+const conn = await node.dial(relayAddr)
 
 // Wait for connection and relay to be bind for the example purpose
-await pWaitFor(() => node.multiaddrs.length > 0)
+await new Promise((resolve) => {
+  node.peerStore.on('change:multiaddrs', ({ peerId }) => {
+    // Updated self multiaddrs?
+    if (peerId.equals(node.peerId)) {
+      resolve()
+    }
+  })
+})
 
-console.log('connected to the HOP relay')
-console.log('Listening on:')
-node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+console.log(`Connected to the HOP relay ${conn.remotePeer.toString()}`)
+console.log(`Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toB58String()}`)
 ```
 
-As you can see in the code, we need to provide the `relayAddr` as a process argument. This node will dial the relay and automatically bind to the relay.
+As you can see in the code, we need to provide the relay address, `relayAddr`, as a process argument. This node will dial the provided relay address and automatically bind to it.
 
-You should now run the following to start the relay node:
+You should now run the following to start the node running Auto Relay:
 
 ```sh
-node auto-relay.js /ip4/192.168.1.120/tcp/58941/ws/p2p/QmQKCBm87HQMbFqy14oqC85pMmnRrj6iD46ggM6reqNpsd
+node listener.js /ip4/192.168.1.120/tcp/58941/ws/p2p/QmQKCBm87HQMbFqy14oqC85pMmnRrj6iD46ggM6reqNpsd
 ```
 
 This should print out something similar to the following:
 
 ```sh
-Node started: QmerrWofKF358JE6gv3z74cEAyL7z1KqhuUoVfGEynqjRm
-connected to the HOP relay
-Listening on:
-/ip4/192.168.1.120/tcp/61592/ws/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3/p2p-circuit/p2p/QmerrWofKF358JE6gv3z74cEAyL7z1KqhuUoVfGEynqjRm
+Node started with id QmerrWofKF358JE6gv3z74cEAyL7z1KqhuUoVfGEynqjRm
+Connected to the HOP relay QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3
+Advertising with a relay address of /ip4/192.168.1.120/tcp/61592/ws/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3/p2p-circuit/p2p/QmerrWofKF358JE6gv3z74cEAyL7z1KqhuUoVfGEynqjRm
 ```
 
 Per the address, it is possible to verify that the auto relay node is listening on the circuit relay node address.
 
 Instead of dialing this relay manually, you could set up this node with the Bootstrap module and provide it in the bootstrap list. Moreover, you can use other `peer-discovery` modules to discover peers in the network and the node will automatically bind to the relays that support HOP until reaching the maximum number of listeners.
 
-## 3. Set up another node for testing connectivity
+## 3. Set up a dialer node for testing connectivity
 
 Now that you have a relay node and a node bound to that relay, you can test connecting to the auto relay node via the relay.
 
@@ -164,7 +164,7 @@ const node = await Libp2p.create({
 })
 
 await node.start()
-console.log(`Node started: ${node.peerId.toB58String()}`)
+console.log(`Node started with id ${node.peerId.toB58String()}`)
 
 const conn = await node.dial(autoRelayNodeAddr)
 console.log(`Connected to the auto relay node via ${conn.remoteAddr.toString()}`)
@@ -173,7 +173,7 @@ console.log(`Connected to the auto relay node via ${conn.remoteAddr.toString()}`
 You should now run the following to start the relay node using the listen address from step 2:
 
 ```sh
-node other-node.js /ip4/192.168.1.120/tcp/58941/ws/p2p/QmQKCBm87HQMbFqy14oqC85pMmnRrj6iD46ggM6reqNpsd
+node dialer.js /ip4/192.168.1.120/tcp/58941/ws/p2p/QmQKCBm87HQMbFqy14oqC85pMmnRrj6iD46ggM6reqNpsd
 ```
 
 Once you start your test node, it should print out something similar to the following:

@@ -41,16 +41,16 @@ async function test () {
   process.stdout.write('==================================================================\n')
 
   // Step 2 process
-  process.stdout.write('auto-relay.js\n')
+  process.stdout.write('listener.js\n')
 
-  const proc2 = startProcess('auto-relay.js', [relayAddr])
+  const proc2 = startProcess('listener.js', [relayAddr])
   proc2.all.on('data', async (data) => {
     process.stdout.write(data)
 
     output2 += uint8ArrayToString(data)
 
-    if (output2.includes('Listening on:') && output2.includes('/p2p/')) {
-      autoRelayAddr = output2.trim().split('Listening on:\n')[1]
+    if (output2.includes('Advertising with a relay address of') && output2.includes('/p2p/')) {
+      autoRelayAddr = output2.trim().split('Advertising with a relay address of ')[1]
       proc2Ready.resolve()
     }
   })
@@ -59,9 +59,9 @@ async function test () {
   process.stdout.write('==================================================================\n')
 
   // Step 3 process
-  process.stdout.write('other-node.js\n')
+  process.stdout.write('dialer.js\n')
 
-  const proc3 = startProcess('other-node.js', [autoRelayAddr])
+  const proc3 = startProcess('dialer.js', [autoRelayAddr])
   proc3.all.on('data', async (data) => {
     process.stdout.write(data)
 
@@ -75,7 +75,7 @@ async function test () {
         proc2.kill()
         proc1.kill()
       } else {
-        throw new Error('other-node did not dial through the relay')
+        throw new Error('dialer did not dial through the relay')
       }
     }
   })
