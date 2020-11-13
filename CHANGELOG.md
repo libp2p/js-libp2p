@@ -1,3 +1,17 @@
+# [0.24.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.23.1...v0.24.0) (2020-11-13)
+
+
+### chore
+
+* update deps ([#111](https://github.com/libp2p/js-libp2p-floodsub/issues/111)) ([6080010](https://github.com/libp2p/js-libp2p-floodsub/commit/60800108fec1c1279d66efc11460fe01594047e1))
+
+
+### BREAKING CHANGES
+
+* signing policy added instead of strictsigning options
+
+
+
 <a name="0.23.1"></a>
 ## [0.23.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.23.0...v0.23.1) (2020-09-04)
 
