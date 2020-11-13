@@ -3,6 +3,7 @@
 const debugName = 'libp2p:floodsub'
 
 const TimeCache = require('time-cache')
+const toString = require('uint8arrays/to-string')
 const BaseProtocol = require('libp2p-interfaces/src/pubsub')
 const { utils } = require('libp2p-interfaces/src/pubsub')
 
@@ -15,10 +16,10 @@ const { multicodec } = require('./config')
  */
 class FloodSub extends BaseProtocol {
   /**
-   * @param {Libp2p} libp2p instance of libp2p
+   * @param {Libp2p} libp2p - instance of libp2p
    * @param {Object} [options]
-   * @param {boolean} options.emitSelf if publish should emit to self, if subscribed, defaults to false
-   * @constructor
+   * @param {boolean} options.emitSelf - if publish should emit to self, if subscribed, defaults to false
+   * @class
    */
   constructor (libp2p, options = {}) {
     super({
@@ -40,23 +41,27 @@ class FloodSub extends BaseProtocol {
   /**
    * Process incoming message
    * Extends base implementation to check router cache.
+   *
    * @override
-   * @param {InMessage} message The message to process
+   * @param {InMessage} message - The message to process
    * @returns {Promise<void>}
    */
   async _processRpcMessage (message) {
     // Check if I've seen the message, if yes, ignore
     const seqno = this.getMsgId(message)
-    if (this.seenCache.has(seqno)) {
+    const msgIdStr = toString(seqno, 'base64')
+
+    if (this.seenCache.has(msgIdStr)) {
       return
     }
-    this.seenCache.put(seqno)
+    this.seenCache.put(msgIdStr)
 
     await super._processRpcMessage(message)
   }
 
   /**
    * Publish message created. Forward it to the peers.
+   *
    * @override
    * @param {InMessage} message
    * @returns {void}
@@ -67,6 +72,7 @@ class FloodSub extends BaseProtocol {
 
   /**
    * Forward message to peers.
+   *
    * @param {InMessage} message
    * @returns {void}
    */

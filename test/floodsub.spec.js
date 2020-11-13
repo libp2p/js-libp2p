@@ -93,12 +93,15 @@ describe('floodsub', () => {
     expect(floodsub1._forwardMessage.callCount).to.eql(1)
     const [messageToEmit] = floodsub1._forwardMessage.getCall(0).args
 
+    const computedSeqno = utils.randomSeqno.getCall(0).returnValue
+    utils.randomSeqno.restore()
+    sinon.stub(utils, 'randomSeqno').returns(computedSeqno)
+
     const expected = utils.normalizeInRpcMessage(
       await floodsub1._buildMessage({
         receivedFrom: peer1.peerId.toB58String(),
         from: peer1.peerId.toB58String(),
         data: message,
-        seqno: utils.randomSeqno.getCall(0).returnValue,
         topicIDs: [topic]
       }))
 

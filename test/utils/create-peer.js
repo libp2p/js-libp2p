@@ -40,6 +40,11 @@ const defaultConfig = {
 /**
  * Create libp2p node, selectively determining the listen address based on the operating environment
  * If no peerId is given, default to the first peer in the fixtures peer list
+ *
+ * @param {object} options
+ * @param {PeerId} options.peerId
+ * @param {boolean} [options.started=true]
+ * @param {object} [options.config={}]
  */
 async function createPeer ({ peerId, started = true, config = {} } = {}) {
   if (!peerId) {
@@ -63,12 +68,13 @@ async function createPeer ({ peerId, started = true, config = {} } = {}) {
 
 /**
  * Create libp2p nodes from known peer ids, preconfigured to use fixture peer ids
+ *
  * @param {Object} [properties]
  * @param {Object} [properties.config]
- * @param {number} [properties.number] number of peers (default: 1).
- * @param {boolean} [properties.started] nodes should start (default: true)
- * @param {boolean} [properties.seedAddressBook] nodes should have each other in their addressbook
- * @return {Promise<Array<Libp2p>>}
+ * @param {number} [properties.number] - number of peers (default: 1).
+ * @param {boolean} [properties.started] - nodes should start (default: true)
+ * @param {boolean} [properties.seedAddressBook] - nodes should have each other in their addressbook
+ * @returns {Promise<Array<Libp2p>>}
  */
 async function createPeers ({ number = 1, started = true, seedAddressBook = true, config = {} } = {}) {
   const peerIds = await Promise.all(
@@ -96,8 +102,9 @@ async function createPeers ({ number = 1, started = true, seedAddressBook = true
  *
  * If in node, use websocket address
  * If in browser, use relay address
+ *
  * @param {PeerId} peerId
- * @return {multiaddr}
+ * @returns {multiaddr}
  */
 function getListenAddress (peerId) {
   if (isNode) {
