@@ -322,6 +322,8 @@ const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
 const GossipSub = require('libp2p-gossipsub')
 
+const { SignaturePolicy } = require('libp2p-interfaces/src/pubsub/signature-policy')
+
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
@@ -332,9 +334,8 @@ const node = await Libp2p.create({
   config: {
     pubsub: {                     // The pubsub options (and defaults) can be found in the pubsub router documentation
       enabled: true,
-      emitSelf: true,             // whether the node should emit to self on publish
-      signMessages: true,         // if messages should be signed
-      strictSigning: true         // if message signing should be required
+      emitSelf: false,                                  // whether the node should emit to self on publish
+      globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
     }
   }
 })

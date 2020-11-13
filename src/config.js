@@ -54,10 +54,7 @@ const DefaultConfig = {
       autoDial: true
     },
     pubsub: {
-      enabled: true,
-      emitSelf: true,
-      signMessages: true,
-      strictSigning: true
+      enabled: true
     },
     relay: {
       enabled: true,
