@@ -510,7 +510,7 @@ const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
 
 const { dnsaddrResolver } = require('multiaddr/src/resolvers')
-const { sortPublicAddressesFirst } = require('libp2p/src/dialer/utils')
+const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 
 const node = await Libp2p.create({
   modules: {
@@ -525,7 +525,7 @@ const node = await Libp2p.create({
     resolvers: {
       dnsaddr: dnsaddrResolver
     },
-    addressSorter: sortPublicAddressesFirst
+    addressSorter: publicAddressesFirst
   }
 ```
 
