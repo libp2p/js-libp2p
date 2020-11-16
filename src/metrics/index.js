@@ -17,15 +17,21 @@ const directionToEvent = {
   out: 'dataSent'
 }
 
+/**
+ * @typedef MetricsProperties
+ * @property {ConnectionManager} connectionManager
+ *
+ * @typedef MetricsOptions
+ * @property {number} [computeThrottleMaxQueueSize = defaultOptions.computeThrottleMaxQueueSize]
+ * @property {number} [computeThrottleTimeout = defaultOptions.computeThrottleTimeout]
+ * @property {Array<number>} [movingAverageIntervals = defaultOptions.movingAverageIntervals]
+ * @property {number} [maxOldPeersRetention = defaultOptions.maxOldPeersRetention]
+ */
+
 class Metrics {
   /**
-   *
-   * @param {object} options
-   * @param {ConnectionManager} options.connectionManager
-   * @param {number} options.computeThrottleMaxQueueSize
-   * @param {number} options.computeThrottleTimeout
-   * @param {Array<number>} options.movingAverageIntervals
-   * @param {number} options.maxOldPeersRetention
+   * @class
+   * @param {MetricsProperties & MetricsOptions} options
    */
   constructor (options) {
     this._options = mergeOptions(defaultOptions, options)

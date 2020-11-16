@@ -6,7 +6,7 @@
 
 /* global window */
 const globalThis = require('ipfs-utils/src/globalthis')
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 const VisibilityChangeEmitter = require('./visibility-change-emitter')
 const debug = require('debug')('latency-monitor:LatencyMonitor')
 
@@ -17,12 +17,20 @@ const debug = require('debug')('latency-monitor:LatencyMonitor')
  * @property {number} maxMS What was the max time for a cb to be called
  * @property {number} avgMs What was the average time for a cb to be called
  * @property {number} lengthMs How long this interval was in ms
+ *
+ * @typedef {Object} LatencyMonitorOptions
+ * @property {number} [latencyCheckIntervalMs=500] - How often to add a latency check event (ms)
+ * @property {number} [dataEmitIntervalMs=5000] - How often to summarize latency check events. null or 0 disables event firing
+ * @property {Function} [asyncTestFn] - What cb-style async function to use
+ * @property {number} [latencyRandomPercentage=5] - What percent (+/-) of latencyCheckIntervalMs should we randomly use? This helps avoid alignment to other events.
  */
 
 /**
  * A class to monitor latency of any async function which works in a browser or node. This works by periodically calling
  * the asyncTestFn and timing how long it takes the callback to be called. It can also periodically emit stats about this.
  * This can be disabled and stats can be pulled via setting dataEmitIntervalMs = 0.
+ *
+ * @extends {EventEmitter}
  *
  * The default implementation is an event loop latency monitor. This works by firing periodic events into the event loop
  * and timing how long it takes to get back.
@@ -37,11 +45,8 @@ const debug = require('debug')('latency-monitor:LatencyMonitor')
  */
 class LatencyMonitor extends EventEmitter {
   /**
-   * @param {object} [options]
-   * @param {number} [options.latencyCheckIntervalMs=500] - How often to add a latency check event (ms)
-   * @param {number} [options.dataEmitIntervalMs=5000] - How often to summarize latency check events. null or 0 disables event firing
-   * @param {Function} [options.asyncTestFn] - What cb-style async function to use
-   * @param {number} [options.latencyRandomPercentage=5] - What percent (+/-) of latencyCheckIntervalMs should we randomly use? This helps avoid alignment to other events.
+   * @class
+   * @param {LatencyMonitorOptions} [options]
    */
   constructor ({ latencyCheckIntervalMs, dataEmitIntervalMs, asyncTestFn, latencyRandomPercentage } = {}) {
     super()
@@ -91,6 +96,7 @@ class LatencyMonitor extends EventEmitter {
     // See: http://stackoverflow.com/questions/6032429/chrome-timeouts-interval-suspended-in-background-tabs
     if (isBrowser()) {
       that._visibilityChangeEmitter = new VisibilityChangeEmitter()
+
       that._visibilityChangeEmitter.on('visibilityChange', (pageInFocus) => {
         if (pageInFocus) {
           that._startTimers()

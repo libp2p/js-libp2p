@@ -9,13 +9,22 @@ log.error = debug('libp2p:transports:error')
 
 const { updateSelfPeerRecord } = require('./record/utils')
 
+/**
+ * @typedef {import('multiaddr')} multiaddr
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ *
+ * @typedef {Object} TransportManagerProperties
+ * @property {import('./')} libp2p
+ * @property {import('./upgrader')} upgrader
+ *
+ * @typedef {Object} TransportManagerOptions
+ * @property {boolean} [faultTolerance = FAULT_TOLERANCE.FATAL_ALL] - Address listen error tolerance.
+ */
+
 class TransportManager {
   /**
    * @class
-   * @param {object} options
-   * @param {Libp2p} options.libp2p - The Libp2p instance. It will be passed to the transports.
-   * @param {Upgrader} options.upgrader - The upgrader to provide to the transports
-   * @param {boolean} [options.faultTolerance = FAULT_TOLERANCE.FATAL_ALL] - Address listen error tolerance.
+   * @param {TransportManagerProperties & TransportManagerOptions} options
    */
   constructor ({ libp2p, upgrader, faultTolerance = FAULT_TOLERANCE.FATAL_ALL }) {
     this.libp2p = libp2p
@@ -81,7 +90,7 @@ class TransportManager {
   /**
    * Dials the given Multiaddr over it's supported transport
    *
-   * @param {Multiaddr} ma
+   * @param {multiaddr} ma
    * @param {*} options
    * @returns {Promise<Connection>}
    */
@@ -102,7 +111,7 @@ class TransportManager {
   /**
    * Returns all Multiaddr's the listeners are using
    *
-   * @returns {Multiaddr[]}
+   * @returns {Array<multiaddr>}
    */
   getAddrs () {
     let addrs = []
@@ -126,7 +135,7 @@ class TransportManager {
   /**
    * Finds a transport that matches the given Multiaddr
    *
-   * @param {Multiaddr} ma
+   * @param {multiaddr} ma
    * @returns {Transport|null}
    */
   transportForMultiaddr (ma) {
@@ -141,7 +150,7 @@ class TransportManager {
    * Starts listeners for each listen Multiaddr.
    *
    * @async
-   * @param {Array<Multiaddr>} addrs - addresses to attempt to listen on
+   * @param {Array<multiaddr>} addrs - addresses to attempt to listen on
    */
   async listen (addrs) {
     if (!addrs || addrs.length === 0) {

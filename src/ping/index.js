@@ -13,6 +13,12 @@ const { collect, take } = require('streaming-iterables')
 const { PROTOCOL, PING_LENGTH } = require('./constants')
 
 /**
+ * @typedef {import('../')} Libp2p
+ * @typedef {import('multiaddr')} multiaddr
+ * @typedef {import('peer-id')} PeerId
+ */
+
+/**
  * Ping a given peer and wait for its response, getting the operation latency.
  *
  * @param {Libp2p} node

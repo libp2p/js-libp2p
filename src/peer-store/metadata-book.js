@@ -15,13 +15,15 @@ const {
 } = require('../errors')
 
 /**
- * The MetadataBook is responsible for keeping the known supported
- * protocols of a peer.
+ * @extends {Book}
  *
  * @fires MetadataBook#change:metadata
  */
 class MetadataBook extends Book {
   /**
+   * The MetadataBook is responsible for keeping the known supported
+   * protocols of a peer.
+   *
    * @class
    * @param {PeerStore} peerStore
    */

@@ -13,6 +13,11 @@ const {
 } = require('set-delayed-interval')
 
 /**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('multiaddr')} Multiaddr
+ */
+
+/**
  * Responsible for managing the usage of the available Peer Routing modules.
  */
 class PeerRouting {

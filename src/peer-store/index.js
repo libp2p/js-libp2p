@@ -18,7 +18,7 @@ const {
 } = require('../errors')
 
 /**
- * Responsible for managing known peers, as well as their addresses, protocols and metadata.
+ * @extends {EventEmitter}
  *
  * @fires PeerStore#peer Emitted when a new peer is added.
  * @fires PeerStore#change:protocols Emitted when a known peer supports a different set of protocols.
@@ -38,6 +38,8 @@ class PeerStore extends EventEmitter {
    */
 
   /**
+   * Responsible for managing known peers, as well as their addresses, protocols and metadata.
+   *
    * @param {object} options
    * @param {PeerId} options.peerId
    * @class

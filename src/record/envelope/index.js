@@ -15,11 +15,14 @@ const { codes } = require('../../errors')
 const Protobuf = require('./envelope.proto')
 
 /**
- * The Envelope is responsible for keeping an arbitrary signed record
- * by a libp2p peer.
+ * @typedef {import('peer-id')} PeerId
  */
+
 class Envelope {
   /**
+   * The Envelope is responsible for keeping an arbitrary signed record
+   * by a libp2p peer.
+   *
    * @class
    * @param {object} params
    * @param {PeerId} params.peerId

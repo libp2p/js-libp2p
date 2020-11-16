@@ -12,13 +12,20 @@ const {
 } = require('./consts')
 
 /**
- * The PeerRecord is used for distributing peer routing records across the network.
- * It contains the peer's reachable listen addresses.
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('multiaddr')} multiaddr
+ */
+
+/**
+ * @extends {Record}
  */
 class PeerRecord extends Record {
   /**
+   * The PeerRecord is used for distributing peer routing records across the network.
+   * It contains the peer's reachable listen addresses.
+   *
    * @class
-   * @param {object} params
+   * @param {Object} params
    * @param {PeerId} params.peerId
    * @param {Array<multiaddr>} params.multiaddrs - addresses of the associated peer.
    * @param {number} [params.seqNumber] - monotonically-increasing sequence counter that's used to order PeerRecords in time.

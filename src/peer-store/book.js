@@ -9,17 +9,16 @@ const {
 
 const passthrough = data => data
 
-/**
- * The Book is the skeleton for the PeerStore books.
- */
 class Book {
   /**
+   * The Book is the skeleton for the PeerStore books.
+   *
    * @class
    * @param {Object} properties
    * @param {PeerStore} properties.peerStore - PeerStore instance.
    * @param {string} properties.eventName - Name of the event to emit by the PeerStore.
    * @param {string} properties.eventProperty - Name of the property to emit by the PeerStore.
-   * @param {Function} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
+   * @param {(data: *) => Array<*>} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
    */
   constructor ({ peerStore, eventName, eventProperty, eventTransformer = passthrough }) {
     this._ps = peerStore
@@ -30,7 +29,7 @@ class Book {
     /**
      * Map known peers to their data.
      *
-     * @type {Map<string, Array<Data>}
+     * @type {Map<string, Array<*>}
      */
     this.data = new Map()
   }

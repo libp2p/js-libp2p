@@ -17,35 +17,36 @@ const {
 const Envelope = require('../record/envelope')
 
 /**
- * The AddressBook is responsible for keeping the known multiaddrs
- * of a peer.
+ * Address object
+ *
+ * @typedef {Object} Address
+ * @property {multiaddr} multiaddr peer multiaddr.
+ * @property {boolean} isCertified obtained from a signed peer record.
+ */
+
+/**
+ * CertifiedRecord object
+ *
+ * @typedef {Object} CertifiedRecord
+ * @property {Uint8Array} raw raw envelope.
+ * @property {number} seqNumber seq counter.
+ */
+
+/**
+ * Entry object for the addressBook
+ *
+ * @typedef {Object} Entry
+ * @property {Array<Address>} addresses peer Addresses.
+ * @property {CertifiedRecord} record certified peer record.
+ */
+
+/**
+ * @extends {Book}
  */
 class AddressBook extends Book {
   /**
-   * Address object
+   * The AddressBook is responsible for keeping the known multiaddrs of a peer.
    *
-   * @typedef {Object} Address
-   * @property {Multiaddr} multiaddr peer multiaddr.
-   * @property {boolean} isCertified obtained from a signed peer record.
-   */
-
-  /**
-   * CertifiedRecord object
-   *
-   * @typedef {Object} CertifiedRecord
-   * @property {Uint8Array} raw raw envelope.
-   * @property {number} seqNumber seq counter.
-   */
-
-  /**
-   * Entry object for the addressBook
-   *
-   * @typedef {Object} Entry
-   * @property {Array<Address>} addresses peer Addresses.
-   * @property {CertifiedRecord} record certified peer record.
-   */
-
-  /**
    * @class
    * @param {PeerStore} peerStore
    */
@@ -171,7 +172,7 @@ class AddressBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @param {Array<Multiaddr>} multiaddrs
+   * @param {Array<multiaddr>} multiaddrs
    * @returns {AddressBook}
    */
   set (peerId, multiaddrs) {
@@ -221,7 +222,7 @@ class AddressBook extends Book {
    * If the peer is not known, it is set with the given addresses.
    *
    * @param {PeerId} peerId
-   * @param {Array<Multiaddr>} multiaddrs
+   * @param {Array<multiaddr>} multiaddrs
    * @returns {AddressBook}
    */
   add (peerId, multiaddrs) {
@@ -286,7 +287,7 @@ class AddressBook extends Book {
    * Transforms received multiaddrs into Address.
    *
    * @private
-   * @param {Array<Multiaddr>} multiaddrs
+   * @param {Array<multiaddr>} multiaddrs
    * @param {boolean} [isCertified]
    * @returns {Array<Address>}
    */

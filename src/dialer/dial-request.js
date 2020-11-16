@@ -9,6 +9,16 @@ log.error = debug('libp2p:dialer:request:error')
 const FIFO = require('p-fifo')
 const pAny = require('p-any')
 
+/**
+ * @typedef {import('./')} Dialer
+ */
+
+/**
+ * @typedef {Object} DialRequestOptions
+ * @property {Multiaddr[]} addrs
+ * @property {function(Multiaddr):Promise<Connection>} dialAction
+ * @property {Dialer} dialer
+ */
 class DialRequest {
   /**
    * Manages running the `dialAction` on multiple provided `addrs` in parallel
@@ -17,10 +27,8 @@ class DialRequest {
    * started using `DialRequest.run(options)`. Once a single dial has succeeded,
    * all other dials in the request will be cancelled.
    *
-   * @param {object} options
-   * @param {Multiaddr[]} options.addrs
-   * @param {function(Multiaddr):Promise<Connection>} options.dialAction
-   * @param {Dialer} options.dialer
+   * @class
+   * @param {DialRequestOptions} options
    */
   constructor ({
     addrs,
@@ -34,8 +42,8 @@ class DialRequest {
 
   /**
    * @async
-   * @param {object} options
-   * @param {AbortSignal} options.signal - An AbortController signal
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal] - An AbortController signal
    * @returns {Connection}
    */
   async run (options) {

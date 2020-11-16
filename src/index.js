@@ -35,16 +35,55 @@ const {
 } = require('./identify')
 
 /**
+ * @typedef {Object} PeerStoreOptions
+ * @property {boolean} persistence
+ *
+ * @typedef {Object} PeerDiscoveryOptions
+ * @property {boolean} autoDial
+ *
+ * @typedef {Object} RelayOptions
+ * @property {boolean} enabled
+ * @property {import('./circuit').RelayAdvertiseOptions} advertise
+ * @property {import('./circuit').HopOptions} hop
+ * @property {import('./circuit').AutoRelayOptions} autoRelay
+ *
+ * @typedef {Object} Libp2pConfig
+ * @property {Object} [dht] dht module options
+ * @property {PeerDiscoveryOptions} [peerDiscovery]
+ * @property {Object} [pubsub] pubsub module options
+ * @property {RelayOptions} [relay]
+ * @property {Object} [transport] transport options indexed by transport key
+ *
+ * @typedef {Object} Libp2pOptions
+ * @property {Array<Object>} modules libp2p modules to use
+ * @property {import('./address-manager').AddressManagerOptions} [addresses]
+ * @property {import('./connection-manager').ConnectionManagerOptions} [connectionManager]
+ * @property {import('./dialer').DialerOptions} [dialer]
+ * @property {import('./metrics').MetricsOptions} [metrics]
+ * @property {Object} [keychain]
+ * @property {import('./transport-manager').TransportManagerOptions} [transportManager]
+ * @property {PeerStoreOptions & import('./peer-store/persistent').PersistentPeerStoreOptions} [peerStore]
+ * @property {Libp2pConfig} [config]
+ * @property {PeerId} peerId
+ *
+ * @extends {EventEmitter}
  * @fires Libp2p#error Emitted when an error occurs
  * @fires Libp2p#peer:discovery Emitted when a peer is discovered
  */
 class Libp2p extends EventEmitter {
+  /**
+   * Libp2p node.
+   *
+   * @class
+   * @param {Libp2pOptions} _options
+   */
   constructor (_options) {
     super()
     // validateConfig will ensure the config is correct,
     // and add default values where appropriate
     this._options = validateConfig(_options)
 
+    /** @type {PeerId} */
     this.peerId = this._options.peerId
     this.datastore = this._options.datastore
 
@@ -593,10 +632,15 @@ class Libp2p extends EventEmitter {
 }
 
 /**
+ * @typedef {Object} CreateOptions
+ * @property {PeerId} peerId
+ */
+
+/**
  * Like `new Libp2p(options)` except it will create a `PeerId`
  * instance if one is not provided in options.
  *
- * @param {object} options - Libp2p configuration options
+ * @param {Libp2pOptions & CreateOptions} [options] - Libp2p configuration options
  * @returns {Libp2p}
  */
 Libp2p.create = async function create (options = {}) {
@@ -609,5 +653,11 @@ Libp2p.create = async function create (options = {}) {
   options.peerId = peerId
   return new Libp2p(options)
 }
+
+/**
+ * @typedef {Object} DuplexIterable
+ * @property {(source: AsyncIterator<*>) => Promise} sink
+ * @property {AsyncIterator<*>} source
+ */
 
 module.exports = Libp2p

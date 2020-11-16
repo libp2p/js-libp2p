@@ -14,10 +14,12 @@ const {
 } = require('../errors')
 
 /**
- * The KeyBook is responsible for keeping the known public keys of a peer.
+ * @extends {Book}
  */
 class KeyBook extends Book {
   /**
+   * The KeyBook is responsible for keeping the known public keys of a peer.
+   *
    * @class
    * @param {PeerStore} peerStore
    */

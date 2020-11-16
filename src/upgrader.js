@@ -14,6 +14,10 @@ const mutableProxy = require('mutable-proxy')
 const { codes } = require('./errors')
 
 /**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ */
+
+/**
  * @typedef MultiaddrConnection
  * @property {Function} sink
  * @property {AsyncIterator} source

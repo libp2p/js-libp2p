@@ -4,12 +4,15 @@
  * This code is based on `latency-monitor` (https://github.com/mlucool/latency-monitor) by `mlucool` (https://github.com/mlucool), available under Apache License 2.0 (https://github.com/mlucool/latency-monitor/blob/master/LICENSE)
  */
 'use strict'
-const EventEmitter = require('events')
+
+const { EventEmitter } = require('events')
 
 const debug = require('debug')('latency-monitor:VisibilityChangeEmitter')
 
 /**
  * Listen to page visibility change events (i.e. when the page is focused / blurred) by an event emitter.
+ *
+ * @extends {EventEmitter}
  *
  * Warning: This does not work on all browsers, but should work on all modern browsers
  *
@@ -29,12 +32,12 @@ const debug = require('debug')('latency-monitor:VisibilityChangeEmitter')
  *     });
  *     // To access the visibility state directly, call:
  *     console.log('Am I focused now? ' + myVisibilityEmitter.isVisible());
- *
- * @class VisibilityChangeEmitter
  */
-module.exports = class VisibilityChangeEmitter extends EventEmitter {
+class VisibilityChangeEmitter extends EventEmitter {
   /**
    * Creates a VisibilityChangeEmitter
+   *
+   * @class
    */
   constructor () {
     super()
@@ -119,3 +122,5 @@ module.exports = class VisibilityChangeEmitter extends EventEmitter {
     this.emit('visibilityChange', visible)
   }
 }
+
+module.exports = VisibilityChangeEmitter

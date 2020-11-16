@@ -20,11 +20,15 @@ const log = debug('libp2p:pnet')
 log.error = debug('libp2p:pnet:err')
 
 /**
- * Takes a Private Shared Key (psk) and provides a `protect` method
- * for wrapping existing connections in a private encryption stream
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('../').DuplexIterable} DuplexIterable
  */
+
 class Protector {
   /**
+   * Takes a Private Shared Key (psk) and provides a `protect` method
+   * for wrapping existing connections in a private encryption stream.
+   *
    * @param {Uint8Array} keyBuffer - The private shared key buffer
    * @class
    */
@@ -40,7 +44,7 @@ class Protector {
    * created with.
    *
    * @param {Connection} connection - The connection to protect
-   * @returns {*} A protected duplex iterable
+   * @returns {DuplexIterable} A protected duplex iterable
    */
   async protect (connection) {
     if (!connection) {

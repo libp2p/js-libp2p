@@ -11,13 +11,21 @@ const {
 const Topology = require('libp2p-interfaces/src/topology')
 
 /**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('./peer-store')} PeerStore
+ * @typedef {import('./connection-manager')} ConnectionManager
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/topology')} Topology
+ */
+
+/**
  * Responsible for notifying registered protocols of events in the network.
  */
 class Registrar {
   /**
    * @param {Object} props
    * @param {PeerStore} props.peerStore
-   * @param {connectionManager} props.connectionManager
+   * @param {ConnectionManager} props.connectionManager
    * @class
    */
   constructor ({ peerStore, connectionManager }) {

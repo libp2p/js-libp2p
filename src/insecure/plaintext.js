@@ -16,6 +16,17 @@ function lpEncodeExchange (exchange) {
   return lp.encode.single(pb)
 }
 
+/**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ */
+
+/**
+ * Encrypt connection.
+ *
+ * @param {PeerId} localId
+ * @param {Connection} conn
+ * @param {PeerId} remoteId
+ */
 async function encrypt (localId, conn, remoteId) {
   const shake = handshake(conn)
 

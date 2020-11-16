@@ -29,49 +29,23 @@ const {
 
 const { codes } = require('../errors')
 
+/**
+ * @typedef {import('../')} Libp2p
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('../').DuplexIterable} DuplexIterable
+ */
+
 class IdentifyService {
   /**
-   * Takes the `addr` and converts it to a Multiaddr if possible
-   *
-   * @param {Uint8Array | string} addr
-   * @returns {Multiaddr|null}
-   */
-  static getCleanMultiaddr (addr) {
-    if (addr && addr.length > 0) {
-      try {
-        return multiaddr(addr)
-      } catch (_) {
-        return null
-      }
-    }
-    return null
-  }
-
-  /**
    * @class
-   * @param {object} options
+   * @param {Object} options
    * @param {Libp2p} options.libp2p
    */
   constructor ({ libp2p }) {
-    /**
-     * @property {PeerStore}
-     */
-    this.peerStore = libp2p.peerStore
-
-    /**
-     * @property {ConnectionManager}
-     */
-    this.connectionManager = libp2p.connectionManager
-
-    /**
-     * @property {PeerId}
-     */
-    this.peerId = libp2p.peerId
-
-    /**
-     * @property {AddressManager}
-     */
     this._libp2p = libp2p
+    this.peerStore = libp2p.peerStore
+    this.connectionManager = libp2p.connectionManager
+    this.peerId = libp2p.peerId
 
     this.handleMessage = this.handleMessage.bind(this)
 
@@ -228,9 +202,9 @@ class IdentifyService {
   /**
    * A handler to register with Libp2p to process identify messages.
    *
-   * @param {object} options
+   * @param {Object} options
    * @param {string} options.protocol
-   * @param {*} options.stream
+   * @param {DuplexIterable} options.stream
    * @param {Connection} options.connection
    * @returns {Promise<void>}
    */
@@ -250,8 +224,8 @@ class IdentifyService {
    * to the requesting peer over the given `connection`
    *
    * @private
-   * @param {object} options
-   * @param {*} options.stream
+   * @param {Object} options
+   * @param {DuplexIterable} options.stream
    * @param {Connection} options.connection
    */
   async _handleIdentify ({ connection, stream }) {
@@ -290,7 +264,7 @@ class IdentifyService {
    *
    * @private
    * @param {object} options
-   * @param {*} options.stream
+   * @param {DuplexIterable} options.stream
    * @param {Connection} options.connection
    */
   async _handlePush ({ connection, stream }) {
@@ -330,6 +304,23 @@ class IdentifyService {
 
     // Update the protocols
     this.peerStore.protoBook.set(id, message.protocols)
+  }
+
+  /**
+   * Takes the `addr` and converts it to a Multiaddr if possible
+   *
+   * @param {Uint8Array | string} addr
+   * @returns {multiaddr|null}
+   */
+  static getCleanMultiaddr (addr) {
+    if (addr && addr.length > 0) {
+      try {
+        return multiaddr(addr)
+      } catch (_) {
+        return null
+      }
+    }
+    return null
   }
 }
 

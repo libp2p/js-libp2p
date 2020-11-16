@@ -4,9 +4,13 @@ const Envelope = require('./envelope')
 const PeerRecord = require('./peer-record')
 
 /**
+ * @typedef {import('../')} Libp2p
+ */
+
+/**
  * Create (or update if existing) self peer record and store it in the AddressBook.
  *
- * @param {libp2p} libp2p
+ * @param {Libp2p} libp2p
  * @returns {Promise<void>}
  */
 async function updateSelfPeerRecord (libp2p) {

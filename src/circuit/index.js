@@ -17,6 +17,23 @@ const {
   RELAY_RENDEZVOUS_NS
 } = require('./constants')
 
+/**
+ * @typedef {import('../')} Libp2p
+ *
+ * @typedef {Object} RelayAdvertiseOptions
+ * @property {number} [bootDelay = ADVERTISE_BOOT_DELAY]
+ * @property {boolean} [enabled = true]
+ * @property {number} [ttl = ADVERTISE_TTL]
+ *
+ * @typedef {Object} HopOptions
+ * @property {boolean} [enabled = false]
+ * @property {boolean} [active = false]
+ *
+ * @typedef {Object} AutoRelayOptions
+ * @property {number} [maxListeners = 2] - maximum number of relays to listen.
+ * @property {boolean} [enabled = false]
+ */
+
 class Relay {
   /**
    * Creates an instance of Relay.

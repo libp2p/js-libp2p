@@ -6,6 +6,11 @@ const { messages, codes } = require('./errors')
 const all = require('it-all')
 const pAny = require('p-any')
 
+/**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('multiaddr')} multiaddr
+ */
+
 module.exports = (node) => {
   const routers = node._modules.contentRouting || []
   const dht = node._dht
@@ -24,7 +29,7 @@ module.exports = (node) => {
      * @param {object} [options]
      * @param {number} [options.timeout] - How long the query should run
      * @param {number} [options.maxNumProviders] - maximum number of providers to find
-     * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
+     * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Array<multiaddr> }>}
      */
     async * findProviders (key, options) {
       if (!routers.length) {

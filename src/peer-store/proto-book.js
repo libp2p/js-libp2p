@@ -14,13 +14,15 @@ const {
 } = require('../errors')
 
 /**
- * The ProtoBook is responsible for keeping the known supported
- * protocols of a peer.
+ * @extends {Book}
  *
  * @fires ProtoBook#change:protocols
  */
 class ProtoBook extends Book {
   /**
+   * The ProtoBook is responsible for keeping the known supported
+   * protocols of a peer.
+   *
    * @class
    * @param {PeerStore} peerStore
    */

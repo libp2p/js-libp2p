@@ -19,14 +19,25 @@ const {
   RELAY_RENDEZVOUS_NS
 } = require('./constants')
 
+/**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('../peer-store/address-book').Address} Address
+ */
+
+/**
+ * @typedef {Object} AutoRelayProperties
+ * @property {import('../')} libp2p
+ *
+ * @typedef {Object} AutoRelayOptions
+ * @property {number} [maxListeners = 1] - maximum number of relays to listen.
+ */
+
 class AutoRelay {
   /**
    * Creates an instance of AutoRelay.
    *
    * @class
-   * @param {object} props
-   * @param {Libp2p} props.libp2p
-   * @param {number} [props.maxListeners = 1] - maximum number of relays to listen.
+   * @param {AutoRelayProperties & AutoRelayOptions} props
    */
   constructor ({ libp2p, maxListeners = 1 }) {
     this._libp2p = libp2p

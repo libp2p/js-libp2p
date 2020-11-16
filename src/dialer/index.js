@@ -19,17 +19,40 @@ const {
   MAX_PER_PEER_DIALS
 } = require('../constants')
 
+/**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('../peer-store')} PeerStore
+ * @typedef {import('../transport-manager')} TransportManager
+ * @typedef {import('./dial-request')} DialRequest
+ */
+
+/**
+ * @typedef {Object} DialerProperties
+ * @property {PeerStore} peerStore
+ * @property {TransportManager} transportManager
+ *
+ * @typedef {Object} DialerOptions
+ * @param {(addresses: Array<Address) => Array<Address>} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
+ * @property {number} [concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
+ * @property {number} [perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
+ * @property {number} [timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
+ * @property {Object} [resolvers = {}] - multiaddr resolvers to use when dialing
+ *
+ * @typedef DialTarget
+ * @property {string} id
+ * @property {Array<multiaddr>} addrs
+ *
+ * @typedef PendingDial
+ * @property {DialRequest} dialRequest
+ * @property {TimeoutController} controller
+ * @property {Promise} promise
+ * @property {function():void} destroy
+ */
+
 class Dialer {
   /**
    * @class
-   * @param {object} options
-   * @param {TransportManager} options.transportManager
-   * @param {Peerstore} options.peerStore
-   * @param {(addresses: Array<Address) => Array<Address>} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
-   * @param {number} [options.concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
-   * @param {number} [options.perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
-   * @param {number} [options.timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
-   * @param {object} [options.resolvers = {}] - multiaddr resolvers to use when dialing
+   * @param {DialerProperties & DialerOptions} options
    */
   constructor ({
     transportManager,
@@ -73,7 +96,7 @@ class Dialer {
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    *
-   * @param {PeerId|Multiaddr|string} peer - The peer to dial
+   * @param {PeerId|multiaddr|string} peer - The peer to dial
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] - An AbortController signal
    * @returns {Promise<Connection>}
@@ -103,18 +126,12 @@ class Dialer {
   }
 
   /**
-   * @typedef DialTarget
-   * @property {string} id
-   * @property {Multiaddr[]} addrs
-   */
-
-  /**
    * Creates a DialTarget. The DialTarget is used to create and track
    * the DialRequest to a given peer.
    * If a multiaddr is received it should be the first address attempted.
    *
    * @private
-   * @param {PeerId|Multiaddr|string} peer - A PeerId or Multiaddr
+   * @param {PeerId|multiaddr|string} peer - A PeerId or Multiaddr
    * @returns {Promise<DialTarget>}
    */
   async _createDialTarget (peer) {
@@ -144,14 +161,6 @@ class Dialer {
       addrs
     }
   }
-
-  /**
-   * @typedef PendingDial
-   * @property {DialRequest} dialRequest
-   * @property {TimeoutController} controller
-   * @property {Promise} promise
-   * @property {function():void} destroy
-   */
 
   /**
    * Creates a PendingDial that wraps the underlying DialRequest
@@ -210,8 +219,8 @@ class Dialer {
   /**
    * Resolve multiaddr recursively.
    *
-   * @param {Multiaddr} ma
-   * @returns {Promise<Array<Multiaddr>>}
+   * @param {multiaddr} ma
+   * @returns {Promise<Array<multiaddr>>}
    */
   async _resolve (ma) {
     // TODO: recursive logic should live in multiaddr once dns4/dns6 support is in place
@@ -239,8 +248,8 @@ class Dialer {
   /**
    * Resolve a given multiaddr. If this fails, an empty array will be returned
    *
-   * @param {Multiaddr} ma
-   * @returns {Promise<Array<Multiaddr>>}
+   * @param {multiaddr} ma
+   * @returns {Promise<Array<multiaddr>>}
    */
   async _resolveRecord (ma) {
     try {

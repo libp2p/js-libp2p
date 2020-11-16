@@ -22,15 +22,21 @@ const Addresses = require('./pb/address-book.proto')
 const Protocols = require('./pb/proto-book.proto')
 
 /**
+ * @typedef {Object} PersistentPeerStoreProperties
+ * @property {PeerId} peerId
+ * @property {Datastore} datastore
+ *
+ * @typedef {Object} PersistentPeerStoreOptions
+ * @property {number} [threshold = 5] - Number of dirty peers allowed before commit data.
+ */
+
+/**
  * Responsible for managing the persistence of data in the PeerStore.
  */
 class PersistentPeerStore extends PeerStore {
   /**
    * @class
-   * @param {Object} properties
-   * @param {PeerId} properties.peerId
-   * @param {Datastore} properties.datastore - Datastore to persist data.
-   * @param {number} [properties.threshold = 5] - Number of dirty peers allowed before commit data.
+   * @param {PersistentPeerStoreProperties & PersistentPeerStoreOptions} properties
    */
   constructor ({ peerId, datastore, threshold = 5 }) {
     super({ peerId })
