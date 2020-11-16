@@ -1,5 +1,9 @@
 # API
 
+* [addressSort.publicAddressesFirst(addresses)](#addresssortpublicaddressesfirstaddresses)
+    * [Parameters](#parameters)
+    * [Returns](#returns)
+    * [Example](#example)
 * [arrayEquals(a, b)](#arrayequalsa-b)
     * [Parameters](#parameters)
     * [Returns](#returns)
@@ -20,6 +24,42 @@
     * [Parameters](#parameters-4)
     * [Returns](#returns-4)
     * [Example](#example-4)
+
+## addressSort.publicAddressesFirst(addresses)
+
+Sort given addresses by putting public addresses first. In case of equality, a certified address will come first.
+
+### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| addresses | `Array<Address>` | Array of AddressBook addresses |
+
+### Returns
+
+| Type | Description |
+|------|-------------|
+| `Array<Address>` | returns array of sorted addresses |
+
+### Example
+
+```js
+const multiaddr = require('multiaddr')
+const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
+
+const addresses = [
+    {
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000'),
+        isCertified: false
+    },
+    {
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000'),
+        isCertified: false
+    }
+]
+
+const sortedAddresses = publicAddressesFirst(addresses)
+```
 
 ## arrayEquals(a, b)
 
