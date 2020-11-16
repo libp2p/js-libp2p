@@ -1,3 +1,13 @@
+<a name="0.2.2"></a>
+## [0.2.2](https://github.com/libp2p/js-libp2p-utils/compare/v0.2.1...v0.2.2) (2020-11-16)
+
+
+### Features
+
+* address sorter ([#13](https://github.com/libp2p/js-libp2p-utils/issues/13)) ([cb5e716](https://github.com/libp2p/js-libp2p-utils/commit/cb5e716))
+
+
+
 <a name="0.2.1"></a>
 ## [0.2.1](https://github.com/libp2p/js-libp2p-utils/compare/v0.1.3...v0.2.1) (2020-10-08)
 
