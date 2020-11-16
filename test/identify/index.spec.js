@@ -207,9 +207,8 @@ describe('Identify', () => {
       .and.to.have.property('code', Errors.ERR_INVALID_PEER)
   })
 
-  it('should store host data into metadataBook', () => {
+  it('should store host data and protocol version into metadataBook', () => {
     const agentVersion = 'js-project/1.0.0'
-    const protocolVersion = '1000'
     const peerStore = new PeerStore({ peerId: localPeer })
 
     sinon.spy(peerStore.metadataBook, 'set')
@@ -222,8 +221,7 @@ describe('Identify', () => {
         multiaddrs: listenMaddrs,
         _options: {
           host: {
-            agentVersion,
-            protocolVersion
+            agentVersion
           }
         }
       },
@@ -236,7 +234,7 @@ describe('Identify', () => {
     const storedProtocolVersion = peerStore.metadataBook.getValue(localPeer, 'ProtocolVersion')
 
     expect(agentVersion).to.eql(unit8ArrayToString(storedAgentVersion))
-    expect(protocolVersion).to.eql(unit8ArrayToString(storedProtocolVersion))
+    expect(storedProtocolVersion).to.exist()
   })
 
   describe('push', () => {
@@ -447,16 +445,14 @@ describe('Identify', () => {
       await pWaitFor(() => connection.streams.length === 0)
     })
 
-    it('should store host data into metadataBook', () => {
+    it('should store host data and protocol version into metadataBook', () => {
       const agentVersion = 'js-project/1.0.0'
-      const protocolVersion = '1000'
 
       libp2p = new Libp2p({
         ...baseOptions,
         peerId,
         host: {
-          agentVersion,
-          protocolVersion
+          agentVersion
         }
       })
 
@@ -464,7 +460,7 @@ describe('Identify', () => {
       const storedProtocolVersion = libp2p.peerStore.metadataBook.getValue(localPeer, 'ProtocolVersion')
 
       expect(agentVersion).to.eql(unit8ArrayToString(storedAgentVersion))
-      expect(protocolVersion).to.eql(unit8ArrayToString(storedProtocolVersion))
+      expect(storedProtocolVersion).to.exist()
     })
   })
 })
