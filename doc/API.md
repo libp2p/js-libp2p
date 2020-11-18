@@ -665,7 +665,7 @@ Queries the DHT for the n values stored for the given key (without sorting).
 // ...
 
 const key = '/key'
-const { from, val } = await libp2p.contentRouting.get(key)
+const records = await libp2p.contentRouting.getMany(key, 2)
 ```
 
 ### peerRouting.findPeer
