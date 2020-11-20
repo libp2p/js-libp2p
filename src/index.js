@@ -136,7 +136,8 @@ class Libp2p extends EventEmitter {
       concurrency: this._options.dialer.maxParallelDials,
       perPeerLimit: this._options.dialer.maxDialsPerPeer,
       timeout: this._options.dialer.dialTimeout,
-      resolvers: this._options.dialer.resolvers
+      resolvers: this._options.dialer.resolvers,
+      addressSorter: this._options.dialer.addressSorter
     })
 
     this._modules.transport.forEach((Transport) => {

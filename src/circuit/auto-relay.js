@@ -4,8 +4,6 @@ const debug = require('debug')
 const log = debug('libp2p:auto-relay')
 log.error = debug('libp2p:auto-relay:error')
 
-const isPrivate = require('libp2p-utils/src/multiaddr/is-private')
-
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const multiaddr = require('multiaddr')
@@ -36,6 +34,7 @@ class AutoRelay {
     this._peerStore = libp2p.peerStore
     this._connectionManager = libp2p.connectionManager
     this._transportManager = libp2p.transportManager
+    this._addressSorter = libp2p.dialer.addressSorter
 
     this.maxListeners = maxListeners
 
@@ -129,37 +128,19 @@ class AutoRelay {
       return
     }
 
-    // Create relay listen addr
-    let listenAddr, remoteMultiaddr, remoteAddrs
+    // Get peer known addresses and sort them per public addresses first
+    const remoteAddrs = this._peerStore.addressBook.getMultiaddrsForPeer(
+      connection.remotePeer, this._addressSorter
+    )
 
-    try {
-      // Get peer known addresses and sort them per public addresses first
-      remoteAddrs = this._peerStore.addressBook.get(connection.remotePeer)
-      // TODO: This sort should be customizable in the config (dialer addr sort)
-      remoteAddrs.sort(multiaddrsCompareFunction)
-
-      remoteMultiaddr = remoteAddrs.find(a => a.isCertified).multiaddr // Get first announced address certified
-      // TODO: HOP Relays should avoid advertising private addresses!
-    } catch (_) {
-      log.error(`${id} does not have announced certified multiaddrs`)
-
-      // Attempt first if existing
-      if (!remoteAddrs || !remoteAddrs.length) {
-        return
-      }
-
-      remoteMultiaddr = remoteAddrs[0].multiaddr
+    if (!remoteAddrs || !remoteAddrs.length) {
+      return
     }
 
-    if (!remoteMultiaddr.protoNames().includes('p2p')) {
-      listenAddr = `${remoteMultiaddr.toString()}/p2p/${connection.remotePeer.toB58String()}/p2p-circuit`
-    } else {
-      listenAddr = `${remoteMultiaddr.toString()}/p2p-circuit`
-    }
-
-    // Attempt to listen on relay
+    const listenAddr = `${remoteAddrs[0].toString()}/p2p-circuit`
     this._listenRelays.add(id)
 
+    // Attempt to listen on relay
     try {
       await this._transportManager.listen([multiaddr(listenAddr)])
       // Announce multiaddrs will update on listen success by TransportManager event being triggered
@@ -267,26 +248,6 @@ class AutoRelay {
       log.error(err)
     }
   }
-}
-
-/**
- * Compare function for array.sort().
- * This sort aims to move the private adresses to the end of the array.
- *
- * @param {Address} a
- * @param {Address} b
- * @returns {number}
- */
-function multiaddrsCompareFunction (a, b) {
-  const isAPrivate = isPrivate(a.multiaddr)
-  const isBPrivate = isPrivate(b.multiaddr)
-
-  if (isAPrivate && !isBPrivate) {
-    return 1
-  } else if (!isAPrivate && isBPrivate) {
-    return -1
-  }
-  return 0
 }
 
 module.exports = AutoRelay
