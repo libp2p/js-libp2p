@@ -4,6 +4,7 @@ const mergeOptions = require('merge-options')
 const { dnsaddrResolver } = require('multiaddr/src/resolvers')
 
 const Constants = require('./constants')
+const { AGENT_VERSION } = require('./identify/consts')
 
 const { FaultTolerance } = require('./transport-manager')
 
@@ -26,6 +27,9 @@ const DefaultConfig = {
     resolvers: {
       dnsaddr: dnsaddrResolver
     }
+  },
+  host: {
+    agentVersion: AGENT_VERSION
   },
   metrics: {
     enabled: false

@@ -53,7 +53,8 @@ describe('Identify', () => {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: localPeer }),
-        multiaddrs: listenMaddrs
+        multiaddrs: listenMaddrs,
+        _options: { host: {} }
       },
       protocols
     })
@@ -63,7 +64,8 @@ describe('Identify', () => {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: remotePeer }),
-        multiaddrs: listenMaddrs
+        multiaddrs: listenMaddrs,
+        _options: { host: {} }
       },
       protocols
     })
@@ -106,7 +108,8 @@ describe('Identify', () => {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: localPeer }),
-        multiaddrs: listenMaddrs
+        multiaddrs: listenMaddrs,
+        _options: { host: {} }
       },
       protocols
     })
@@ -116,7 +119,8 @@ describe('Identify', () => {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: remotePeer }),
-        multiaddrs: listenMaddrs
+        multiaddrs: listenMaddrs,
+        _options: { host: {} }
       },
       protocols
     })
@@ -165,7 +169,8 @@ describe('Identify', () => {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: localPeer }),
-        multiaddrs: []
+        multiaddrs: [],
+        _options: { host: {} }
       },
       protocols
     })
@@ -174,7 +179,8 @@ describe('Identify', () => {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
         peerStore: new PeerStore({ peerId: remotePeer }),
-        multiaddrs: []
+        multiaddrs: [],
+        _options: { host: {} }
       },
       protocols
     })
@@ -201,6 +207,36 @@ describe('Identify', () => {
       .and.to.have.property('code', Errors.ERR_INVALID_PEER)
   })
 
+  it('should store host data and protocol version into metadataBook', () => {
+    const agentVersion = 'js-project/1.0.0'
+    const peerStore = new PeerStore({ peerId: localPeer })
+
+    sinon.spy(peerStore.metadataBook, 'set')
+
+    new IdentifyService({ // eslint-disable-line no-new
+      libp2p: {
+        peerId: localPeer,
+        connectionManager: new EventEmitter(),
+        peerStore,
+        multiaddrs: listenMaddrs,
+        _options: {
+          host: {
+            agentVersion
+          }
+        }
+      },
+      protocols
+    })
+
+    expect(peerStore.metadataBook.set.callCount).to.eql(2)
+
+    const storedAgentVersion = peerStore.metadataBook.getValue(localPeer, 'AgentVersion')
+    const storedProtocolVersion = peerStore.metadataBook.getValue(localPeer, 'ProtocolVersion')
+
+    expect(agentVersion).to.eql(unit8ArrayToString(storedAgentVersion))
+    expect(storedProtocolVersion).to.exist()
+  })
+
   describe('push', () => {
     it('should be able to push identify updates to another peer', async () => {
       const connectionManager = new EventEmitter()
@@ -211,7 +247,8 @@ describe('Identify', () => {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
           peerStore: new PeerStore({ peerId: localPeer }),
-          multiaddrs: listenMaddrs
+          multiaddrs: listenMaddrs,
+          _options: { host: {} }
         },
         protocols: new Map([
           [multicodecs.IDENTIFY],
@@ -224,7 +261,8 @@ describe('Identify', () => {
           peerId: remotePeer,
           connectionManager,
           peerStore: new PeerStore({ peerId: remotePeer }),
-          multiaddrs: []
+          multiaddrs: [],
+          _options: { host: {} }
         }
       })
 
@@ -272,7 +310,8 @@ describe('Identify', () => {
           peerId: localPeer,
           connectionManager: new EventEmitter(),
           peerStore: new PeerStore({ peerId: localPeer }),
-          multiaddrs: listenMaddrs
+          multiaddrs: listenMaddrs,
+          _options: { host: {} }
         },
         protocols: new Map([
           [multicodecs.IDENTIFY],
@@ -285,7 +324,8 @@ describe('Identify', () => {
           peerId: remotePeer,
           connectionManager,
           peerStore: new PeerStore({ peerId: remotePeer }),
-          multiaddrs: []
+          multiaddrs: [],
+          _options: { host: {} }
         }
       })
 
@@ -403,6 +443,24 @@ describe('Identify', () => {
 
       // Verify the streams close
       await pWaitFor(() => connection.streams.length === 0)
+    })
+
+    it('should store host data and protocol version into metadataBook', () => {
+      const agentVersion = 'js-project/1.0.0'
+
+      libp2p = new Libp2p({
+        ...baseOptions,
+        peerId,
+        host: {
+          agentVersion
+        }
+      })
+
+      const storedAgentVersion = libp2p.peerStore.metadataBook.getValue(localPeer, 'AgentVersion')
+      const storedProtocolVersion = libp2p.peerStore.metadataBook.getValue(localPeer, 'ProtocolVersion')
+
+      expect(agentVersion).to.eql(unit8ArrayToString(storedAgentVersion))
+      expect(storedProtocolVersion).to.exist()
     })
   })
 })

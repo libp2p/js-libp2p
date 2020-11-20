@@ -83,6 +83,16 @@ class IdentifyService {
     this._protocols = protocols
 
     this.handleMessage = this.handleMessage.bind(this)
+
+    // Store self host metadata
+    this._host = {
+      agentVersion: AGENT_VERSION,
+      protocolVersion: PROTOCOL_VERSION,
+      ...libp2p._options.host
+    }
+
+    this.peerStore.metadataBook.set(this.peerId, 'AgentVersion', uint8ArrayFromString(this._host.agentVersion))
+    this.peerStore.metadataBook.set(this.peerId, 'ProtocolVersion', uint8ArrayFromString(this._host.protocolVersion))
   }
 
   /**
@@ -246,8 +256,8 @@ class IdentifyService {
     const signedPeerRecord = await this._getSelfPeerRecord()
 
     const message = Message.encode({
-      protocolVersion: PROTOCOL_VERSION,
-      agentVersion: AGENT_VERSION,
+      protocolVersion: this._host.protocolVersion,
+      agentVersion: this._host.agentVersion,
       publicKey,
       listenAddrs: this._libp2p.multiaddrs.map((ma) => ma.bytes),
       signedPeerRecord,
