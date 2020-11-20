@@ -319,20 +319,22 @@ class AddressBook extends Book {
    * Returns `undefined` if there are no known multiaddrs for the given peer.
    *
    * @param {PeerId} peerId
+   * @param {(addresses: Array<Address) => Array<Address>} [addressSorter]
    * @returns {Array<Multiaddr>|undefined}
    */
-  getMultiaddrsForPeer (peerId) {
+  getMultiaddrsForPeer (peerId, addressSorter = (ms) => ms) {
     if (!PeerId.isPeerId(peerId)) {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
     }
 
     const entry = this.data.get(peerId.toB58String())
-
     if (!entry || !entry.addresses) {
       return undefined
     }
 
-    return entry.addresses.map((address) => {
+    return addressSorter(
+      entry.addresses || []
+    ).map((address) => {
       const multiaddr = address.multiaddr
 
       const idString = multiaddr.getPeerId()
