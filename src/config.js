@@ -7,6 +7,7 @@ const Constants = require('./constants')
 const { AGENT_VERSION } = require('./identify/consts')
 const RelayConstants = require('./circuit/constants')
 
+const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 const { FaultTolerance } = require('./transport-manager')
 
 const DefaultConfig = {
@@ -27,7 +28,8 @@ const DefaultConfig = {
     dialTimeout: Constants.DIAL_TIMEOUT,
     resolvers: {
       dnsaddr: dnsaddrResolver
-    }
+    },
+    addressSorter: publicAddressesFirst
   },
   host: {
     agentVersion: AGENT_VERSION
