@@ -1,0 +1,16 @@
+{
+  "name": "libp2p-examples",
+  "version": "1.0.0",
+  "description": "Examples of how to use libp2p",
+  "scripts": {
+    "test": "node ./test.js",
+    "test:all": "node ./test-all.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "execa": "^2.1.0",
+    "fs-extra": "^8.1.0",
+    "p-defer": "^3.0.0",
+    "which": "^2.0.1"
+  }
+}
