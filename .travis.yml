@@ -46,5 +46,13 @@ jobs:
         - npm install
         - LIBP2P_JS=${TRAVIS_BUILD_DIR}/src/index.js npx aegir test -t node --bail
 
+    - stage: test
+      if: type = pull_request
+      name: example - auto-relay
+      script:
+        - cd examples
+        - npm install
+        - npm run test -- auto-relay
+
 notifications:
   email: false
