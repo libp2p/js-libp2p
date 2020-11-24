@@ -1,3 +1,25 @@
+# [0.15.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.1...v0.15.0) (2020-11-24)
+
+
+### Bug Fixes
+
+* add buffer ([#112](https://github.com/libp2p/js-libp2p-websockets/issues/112)) ([8065e07](https://github.com/libp2p/js-libp2p-websockets/commit/8065e07bad57b5732cdcec5ce3829ac2361604cf))
+* catch thrown maConn errors in listener ([8bfb19a](https://github.com/libp2p/js-libp2p-websockets/commit/8bfb19a78f296c10d8e1a3c0ac608daa9ffcfefc))
+* remove use of assert module ([#101](https://github.com/libp2p/js-libp2p-websockets/issues/101)) ([89d3723](https://github.com/libp2p/js-libp2p-websockets/commit/89d37232b8f603804b6ce5cd8230cc75d2dd8e28))
+* replace node buffers with uint8arrays ([#115](https://github.com/libp2p/js-libp2p-websockets/issues/115)) ([a277bf6](https://github.com/libp2p/js-libp2p-websockets/commit/a277bf6bfbc7ad796e51f7646d7449c203384c06))
+
+
+### Features
+
+* custom address filter ([#116](https://github.com/libp2p/js-libp2p-websockets/issues/116)) ([711c721](https://github.com/libp2p/js-libp2p-websockets/commit/711c721b033d28b3c57c37bf9ca98d0f5d2a58b6))
+
+
+### BREAKING CHANGES
+
+* Only DNS+WSS addresses are now returned on filter by default in the browser. This can be overritten by the filter option and filters are provided in the module.
+
+
+
 <a name="0.14.0"></a>
 # [0.14.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.6...v0.14.0) (2020-08-11)
 
