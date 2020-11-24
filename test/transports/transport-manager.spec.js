@@ -6,6 +6,7 @@ const sinon = require('sinon')
 
 const multiaddr = require('multiaddr')
 const Transport = require('libp2p-websockets')
+const filters = require('libp2p-websockets/src/filters')
 const { NOISE: Crypto } = require('libp2p-noise')
 const AddressManager = require('../../src/address-manager')
 const TransportManager = require('../../src/transport-manager')
@@ -39,7 +40,7 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should be able to add and remove a transport', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport)
+    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
     expect(tm._transports.size).to.equal(1)
     await tm.remove(Transport.prototype[Symbol.toStringTag])
   })
@@ -66,7 +67,7 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should be able to dial', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport)
+    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
     const addr = MULTIADDRS_WEBSOCKETS[0]
     const connection = await tm.dial(addr)
     expect(connection).to.exist()
@@ -74,7 +75,7 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should fail to dial an unsupported address', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport)
+    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
     const addr = multiaddr('/ip4/127.0.0.1/tcp/0')
     await expect(tm.dial(addr))
       .to.eventually.be.rejected()
@@ -82,7 +83,7 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should fail to listen with no valid address', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport)
+    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
 
     await expect(tm.listen([listenAddr]))
       .to.eventually.be.rejected()

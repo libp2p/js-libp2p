@@ -37,11 +37,12 @@ describe('Dialing (resolvable addresses)', () => {
     [libp2p, remoteLibp2p] = await peerUtils.createPeer({
       number: 2,
       config: {
-        modules: baseOptions.modules,
+        ...baseOptions,
         addresses: {
           listen: [multiaddr(`${relayAddr}/p2p-circuit`)]
         },
         config: {
+          ...baseOptions.config,
           peerDiscovery: {
             autoDial: false
           }
