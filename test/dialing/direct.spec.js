@@ -7,6 +7,7 @@ const pDefer = require('p-defer')
 const pWaitFor = require('p-wait-for')
 const delay = require('delay')
 const Transport = require('libp2p-websockets')
+const filters = require('libp2p-websockets/src/filters')
 const Muxer = require('libp2p-mplex')
 const { NOISE: Crypto } = require('libp2p-noise')
 const multiaddr = require('multiaddr')
@@ -41,7 +42,7 @@ describe('Dialing (direct, WebSockets)', () => {
       upgrader: mockUpgrader,
       onConnection: () => {}
     })
-    localTM.add(Transport.prototype[Symbol.toStringTag], Transport)
+    localTM.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
   })
 
   afterEach(() => {
@@ -292,6 +293,7 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   describe('libp2p.dialer', () => {
+    const transportKey = Transport.prototype[Symbol.toStringTag]
     let libp2p
 
     afterEach(async () => {
@@ -307,6 +309,13 @@ describe('Dialing (direct, WebSockets)', () => {
           transport: [Transport],
           streamMuxer: [Muxer],
           connEncryption: [Crypto]
+        },
+        config: {
+          transport: {
+            [transportKey]: {
+              filter: filters.all
+            }
+          }
         }
       })
 
@@ -330,6 +339,13 @@ describe('Dialing (direct, WebSockets)', () => {
           maxParallelDials: 10,
           maxDialsPerPeer: 1,
           dialTimeout: 1e3 // 30 second dial timeout per peer
+        },
+        config: {
+          transport: {
+            [transportKey]: {
+              filter: filters.all
+            }
+          }
         }
       }
       libp2p = await Libp2p.create(config)
@@ -347,6 +363,13 @@ describe('Dialing (direct, WebSockets)', () => {
           transport: [Transport],
           streamMuxer: [Muxer],
           connEncryption: [Crypto]
+        },
+        config: {
+          transport: {
+            [transportKey]: {
+              filter: filters.all
+            }
+          }
         }
       })
 
@@ -370,6 +393,13 @@ describe('Dialing (direct, WebSockets)', () => {
           transport: [Transport],
           streamMuxer: [Muxer],
           connEncryption: [Crypto]
+        },
+        config: {
+          transport: {
+            [transportKey]: {
+              filter: filters.all
+            }
+          }
         }
       })
 
@@ -397,6 +427,13 @@ describe('Dialing (direct, WebSockets)', () => {
           transport: [Transport],
           streamMuxer: [Muxer],
           connEncryption: [Crypto]
+        },
+        config: {
+          transport: {
+            [transportKey]: {
+              filter: filters.all
+            }
+          }
         }
       })
 
@@ -414,6 +451,13 @@ describe('Dialing (direct, WebSockets)', () => {
           transport: [Transport],
           streamMuxer: [Muxer],
           connEncryption: [Crypto]
+        },
+        config: {
+          transport: {
+            [transportKey]: {
+              filter: filters.all
+            }
+          }
         }
       })
 
@@ -427,6 +471,13 @@ describe('Dialing (direct, WebSockets)', () => {
           transport: [Transport],
           streamMuxer: [Muxer],
           connEncryption: [Crypto]
+        },
+        config: {
+          transport: {
+            [transportKey]: {
+              filter: filters.all
+            }
+          }
         }
       })
 
