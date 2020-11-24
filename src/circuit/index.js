@@ -4,6 +4,11 @@ const debug = require('debug')
 const log = debug('libp2p:relay')
 log.error = debug('libp2p:relay:error')
 
+const {
+  setDelayedInterval,
+  clearDelayedInterval
+} = require('set-delayed-interval')
+
 const AutoRelay = require('./auto-relay')
 const { namespaceToCid } = require('./utils')
 const {
@@ -33,6 +38,8 @@ class Relay {
 
     // Create autoRelay if enabled
     this._autoRelay = this._options.autoRelay.enabled && new AutoRelay({ libp2p, ...this._options.autoRelay })
+
+    this._advertiseService = this._advertiseService.bind(this)
   }
 
   /**
@@ -45,9 +52,9 @@ class Relay {
     const canHop = this._options.hop.enabled
 
     if (canHop && this._options.advertise.enabled) {
-      this._timeout = setTimeout(() => {
-        this._advertiseService()
-      }, this._options.advertise.bootDelay)
+      this._timeout = setDelayedInterval(
+        this._advertiseService, this._options.advertise.ttl, this._options.advertise.bootDelay
+      )
     }
   }
 
@@ -57,7 +64,7 @@ class Relay {
    * @returns {void}
    */
   stop () {
-    clearTimeout(this._timeout)
+    clearDelayedInterval(this._timeout)
   }
 
   /**
@@ -77,14 +84,7 @@ class Relay {
       } else {
         log.error(err)
       }
-
-      return
     }
-
-    // Restart timeout
-    this._timeout = setTimeout(() => {
-      this._advertiseService()
-    }, this._options.advertise.ttl)
   }
 }
 

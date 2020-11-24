@@ -79,6 +79,7 @@
     "protons": "^2.0.0",
     "retimer": "^2.0.0",
     "sanitize-filename": "^1.6.3",
+    "set-delayed-interval": "^1.0.0",
     "streaming-iterables": "^5.0.2",
     "timeout-abort-controller": "^1.1.1",
     "varint": "^5.0.0",
