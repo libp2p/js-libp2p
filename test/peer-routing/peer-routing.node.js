@@ -343,7 +343,7 @@ describe('peer-routing', () => {
     })
   })
 
-  describe('peer routing service', () => {
+  describe('peer routing refresh manager service', () => {
     let node
     let peerIds
 
@@ -366,7 +366,9 @@ describe('peer-routing', () => {
       ;[node] = await peerUtils.createPeer({
         config: mergeOptions(routingOptions, {
           peerRouting: {
-            bootDelay: 100
+            refreshManager: {
+              bootDelay: 100
+            }
           }
         }),
         started: false
@@ -400,8 +402,10 @@ describe('peer-routing', () => {
       [node] = await peerUtils.createPeer({
         config: mergeOptions(routingOptions, {
           peerRouting: {
-            bootDelay: 100,
-            enabled: false
+            refreshManager: {
+              bootDelay: 100,
+              enabled: false
+            }
           }
         }),
         started: false
@@ -422,8 +426,10 @@ describe('peer-routing', () => {
       [node] = await peerUtils.createPeer({
         config: mergeOptions(routingOptions, {
           peerRouting: {
-            interval: 500,
-            bootDelay: 200
+            refreshManager: {
+              interval: 500,
+              bootDelay: 200
+            }
           }
         }),
         started: false

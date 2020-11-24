@@ -30,7 +30,7 @@ class PeerRouting {
       this._routers.unshift(libp2p._dht)
     }
 
-    this._options = libp2p._options.peerRouting
+    this._refreshManagerOptions = libp2p._options.peerRouting.refreshManager
 
     this._findClosestPeersTask = this._findClosestPeersTask.bind(this)
   }
@@ -39,12 +39,12 @@ class PeerRouting {
    * Start peer routing service.
    */
   start () {
-    if (!this._routers.length || this._timeoutId || !this._options.enabled) {
+    if (!this._routers.length || this._timeoutId || !this._refreshManagerOptions.enabled) {
       return
     }
 
     this._timeoutId = setDelayedInterval(
-      this._findClosestPeersTask, this._options.interval, this._options.bootDelay
+      this._findClosestPeersTask, this._refreshManagerOptions.interval, this._refreshManagerOptions.bootDelay
     )
   }
 
