@@ -8,12 +8,14 @@ const fs = require('fs')
 const { expect } = require('aegir/utils/chai')
 const multiaddr = require('multiaddr')
 const goodbye = require('it-goodbye')
+const isLoopbackAddr = require('is-loopback-addr')
 const { collect } = require('streaming-iterables')
 const pipe = require('it-pipe')
 const BufferList = require('bl/BufferList')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const WS = require('../src')
+const filters = require('../src/filters')
 
 require('./compliance.node')
 
@@ -250,6 +252,36 @@ describe('dial', () => {
     })
   })
 
+  describe('ip4 no loopback', () => {
+    let ws
+    let listener
+    const ma = multiaddr('/ip4/0.0.0.0/tcp/0/ws')
+
+    beforeEach(() => {
+      ws = new WS({ upgrader: mockUpgrader })
+      listener = ws.createListener(conn => pipe(conn, conn))
+      return listener.listen(ma)
+    })
+
+    afterEach(() => listener.close())
+
+    it('dial', async () => {
+      const addrs = listener.getAddrs().filter((ma) => {
+        const { address } = ma.nodeAddress()
+
+        return !isLoopbackAddr(address)
+      })
+
+      // Dial first no loopback address
+      const conn = await ws.dial(addrs[0])
+      const s = goodbye({ source: ['hey'], sink: collect })
+
+      const result = await pipe(s, conn, s)
+
+      expect(result).to.be.eql([uint8ArrayFromString('hey')])
+    })
+  })
+
   describe('ip4 with wss', () => {
     let ws
     let listener
@@ -327,11 +359,79 @@ describe('dial', () => {
 describe('filter addrs', () => {
   let ws
 
-  before(() => {
-    ws = new WS({ upgrader: mockUpgrader })
+  describe('default filter addrs with only dns', () => {
+    before(() => {
+      ws = new WS({ upgrader: mockUpgrader })
+    })
+
+    it('should filter out invalid WS addresses', function () {
+      const ma1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
+      const ma2 = multiaddr('/ip4/127.0.0.1/udp/9090')
+      const ma3 = multiaddr('/ip6/::1/tcp/80')
+      const ma4 = multiaddr('/dnsaddr/ipfs.io/tcp/80')
+
+      const valid = ws.filter([ma1, ma2, ma3, ma4])
+      expect(valid.length).to.equal(0)
+    })
+
+    it('should filter correct dns address', function () {
+      const ma1 = multiaddr('/dnsaddr/ipfs.io/ws')
+      const ma2 = multiaddr('/dnsaddr/ipfs.io/tcp/80/ws')
+      const ma3 = multiaddr('/dnsaddr/ipfs.io/tcp/80/wss')
+
+      const valid = ws.filter([ma1, ma2, ma3])
+      expect(valid.length).to.equal(3)
+      expect(valid[0]).to.deep.equal(ma1)
+      expect(valid[1]).to.deep.equal(ma2)
+      expect(valid[2]).to.deep.equal(ma3)
+    })
+
+    it('should filter correct dns address with ipfs id', function () {
+      const ma1 = multiaddr('/dnsaddr/ipfs.io/tcp/80/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const ma2 = multiaddr('/dnsaddr/ipfs.io/tcp/443/wss/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+
+      const valid = ws.filter([ma1, ma2])
+      expect(valid.length).to.equal(2)
+      expect(valid[0]).to.deep.equal(ma1)
+      expect(valid[1]).to.deep.equal(ma2)
+    })
+
+    it('should filter correct dns4 address', function () {
+      const ma1 = multiaddr('/dns4/ipfs.io/tcp/80/ws')
+      const ma2 = multiaddr('/dns4/ipfs.io/tcp/443/wss')
+
+      const valid = ws.filter([ma1, ma2])
+      expect(valid.length).to.equal(2)
+      expect(valid[0]).to.deep.equal(ma1)
+      expect(valid[1]).to.deep.equal(ma2)
+    })
+
+    it('should filter correct dns6 address', function () {
+      const ma1 = multiaddr('/dns6/ipfs.io/tcp/80/ws')
+      const ma2 = multiaddr('/dns6/ipfs.io/tcp/443/wss')
+
+      const valid = ws.filter([ma1, ma2])
+      expect(valid.length).to.equal(2)
+      expect(valid[0]).to.deep.equal(ma1)
+      expect(valid[1]).to.deep.equal(ma2)
+    })
+
+    it('should filter correct dns6 address with ipfs id', function () {
+      const ma1 = multiaddr('/dns6/ipfs.io/tcp/80/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const ma2 = multiaddr('/dns6/ipfs.io/tcp/443/wss/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+
+      const valid = ws.filter([ma1, ma2])
+      expect(valid.length).to.equal(2)
+      expect(valid[0]).to.deep.equal(ma1)
+      expect(valid[1]).to.deep.equal(ma2)
+    })
   })
 
-  describe('filter valid addrs for this transport', function () {
+  describe('custom filter addrs', () => {
+    before(() => {
+      ws = new WS({ upgrader: mockUpgrader, filter: filters.all })
+    })
+
     it('should fail invalid WS addresses', function () {
       const ma1 = multiaddr('/ip4/127.0.0.1/tcp/9090')
       const ma2 = multiaddr('/ip4/127.0.0.1/udp/9090')
@@ -447,14 +547,13 @@ describe('filter addrs', () => {
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma4)
     })
-  })
 
-  it('filter a single addr for this transport', (done) => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    it('filter a single addr for this transport', () => {
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-    const valid = ws.filter(ma)
-    expect(valid.length).to.equal(1)
-    expect(valid[0]).to.deep.equal(ma)
-    done()
+      const valid = ws.filter(ma)
+      expect(valid.length).to.equal(1)
+      expect(valid[0]).to.deep.equal(ma)
+    })
   })
 })

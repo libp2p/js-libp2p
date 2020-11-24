@@ -35,39 +35,62 @@
 > npm i libp2p-websockets
 ```
 
-### Example
+### Constructor properties
 
 ```js
 const WS = require('libp2p-websockets')
-const multiaddr = require('multiaddr')
-const pipe = require('it-pipe')
-const { collect } = require('streaming-iterables')
 
-const addr = multiaddr('/ip4/0.0.0.0/tcp/9090/ws')
+const properties = {
+  upgrader,
+  filter
+}
 
-const ws = new WS({ upgrader })
-
-const listener = ws.createListener((socket) => {
-  console.log('new connection opened')
-  pipe(
-    ['hello'],
-    socket
-  )
-})
-
-await listener.listen(addr)
-console.log('listening')
-
-const socket = await ws.dial(addr)
-const values = await pipe(
-  socket,
-  collect
-)
-console.log(`Value: ${values.toString()}`)
-
-// Close connection after reading
-await listener.close()
+const ws = new WS(properties)
 ```
+
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| upgrader | [`Upgrader`](https://github.com/libp2p/interface-transport#upgrader) | connection upgrader object with `upgradeOutbound` and `upgradeInbound` | **REQUIRED** |
+| filter | `(multiaddrs: Array<Multiaddr>) => Array<Multiaddr>` | override transport addresses filter | **Browser:** DNS+WSS multiaddrs / **Node.js:** DNS+{WS, WSS} multiaddrs |
+
+You can create your own address filters for this transports, or rely in the filters [provided](./src/filters.js).
+
+The available filters are:
+
+- `filters.all`
+  - Returns all TCP and DNS based addresses, both with `ws` or `wss`.
+- `filters.dnsWss`
+  - Returns all DNS based addresses with `wss`.
+- `filters.dnsWsOrWss`
+  - Returns all DNS based addresses, both with `ws` or `wss`.
+
+## Libp2p Usage Example
+
+```js
+const Libp2p = require('libp2p')
+const Websockets = require('libp2p-websockets')
+const filters = require('libp2p-websockets/src/filters')
+const MPLEX = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
+
+const transportKey = Websockets.prototype[Symbol.toStringTag]
+const node = await Libp2p.create({
+  modules: {
+    transport: [Websockets],
+    streamMuxer: [MPLEX],
+    connEncryption: [NOISE]
+  },
+  config: {
+    transport: {
+      [transportKey]: { // Transport properties -- Libp2p upgrader is automatically added
+        filter: filters.dnsWsOrWss
+      }
+    }
+  }
+})
+```
+
+For more information see [libp2p/js-libp2p/doc/CONFIGURATION.md#customizing-transports](https://github.com/libp2p/js-libp2p/blob/master/doc/CONFIGURATION.md#customizing-transports).
 
 ## API
 

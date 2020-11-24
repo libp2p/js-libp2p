@@ -34,6 +34,16 @@ describe('libp2p-websockets', () => {
     expect(results).to.eql([message])
   })
 
+  it('should filter out no DNS websocket addresses', function () {
+    const ma1 = multiaddr('/ip4/127.0.0.1/tcp/80/ws')
+    const ma2 = multiaddr('/ip4/127.0.0.1/tcp/443/wss')
+    const ma3 = multiaddr('/ip6/::1/tcp/80/ws')
+    const ma4 = multiaddr('/ip6/::1/tcp/443/wss')
+
+    const valid = ws.filter([ma1, ma2, ma3, ma4])
+    expect(valid.length).to.equal(0)
+  })
+
   describe('stress', () => {
     it('one big write', async () => {
       const rawMessage = new Uint8Array(1000000).fill('a')
