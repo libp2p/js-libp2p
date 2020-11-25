@@ -20,6 +20,7 @@
   * [`contentRouting.get`](#contentroutingget)
   * [`contentRouting.getMany`](#contentroutinggetmany)
   * [`peerRouting.findPeer`](#peerroutingfindpeer)
+  * [`peerRouting.getClosestPeers`](#peerroutinggetclosestpeers)
   * [`peerStore.addressBook.add`](#peerstoreaddressbookadd)
   * [`peerStore.addressBook.delete`](#peerstoreaddressbookdelete)
   * [`peerStore.addressBook.get`](#peerstoreaddressbookget)
@@ -100,6 +101,7 @@ Creates an instance of Libp2p.
 | [options.keychain] | [`object`](./CONFIGURATION.md#setup-with-keychain) | keychain [configuration](./CONFIGURATION.md#setup-with-keychain) |
 | [options.metrics] | [`object`](./CONFIGURATION.md#configuring-metrics) | libp2p Metrics [configuration](./CONFIGURATION.md#configuring-metrics) |
 | [options.peerId] | [`PeerId`][peer-id] | peerId instance (it will be created if not provided) |
+| [options.peerRouting] | [`object`](./CONFIGURATION.md#setup-with-content-and-peer-routing) | libp2p Peer routing service [configuration](./CONFIGURATION.md#setup-with-content-and-peer-routing) |
 | [options.peerStore] | [`object`](./CONFIGURATION.md#configuring-peerstore) | libp2p PeerStore [configuration](./CONFIGURATION.md#configuring-peerstore) |
 
 For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
@@ -705,6 +707,36 @@ Iterates over all peer routers in series to find the given peer. If the DHT is e
 ```js
 // ...
 const peer = await libp2p.peerRouting.findPeer(peerId, options)
+```
+
+### peerRouting.getClosestPeers
+
+Iterates over all content routers in series to get the closest peers of the given key.
+Once a content router succeeds, the iteration will stop. If the DHT is enabled, it will be queried first.
+
+`libp2p.peerRouting.getClosestPeers(cid, options)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| key | `Uint8Array` | A CID like key |
+| options | `object` | operation options |
+| options.timeout | `number` | How long the query can take (ms). |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }` |  Async iterator for peer data |
+
+#### Example
+
+```js
+// Iterate over the closest peers found for the given key
+for await (const peer of libp2p.peerRouting.getClosestPeers(key)) {
+  console.log(peer.id, peer.multiaddrs)
+}
 ```
 
 ### peerStore.addressBook.add
