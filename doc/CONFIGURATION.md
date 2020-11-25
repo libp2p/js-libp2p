@@ -397,7 +397,14 @@ const node = await Libp2p.create({
       new DelegatedPeerRouter()
     ],
   },
-  peerId
+  peerId,
+  peerRouting: { // Peer routing configuration
+    refreshManager: { // Refresh known and connected closest peers
+      enabled: true, // Should find the closest peers.
+      interval: 6e5, // Interval for getting the new for closest peers of 10min
+      bootDelay: 10e3 // Delay for the initial query for closest peers
+    }
+  }
 })
 ```
 
