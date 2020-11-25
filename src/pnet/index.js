@@ -21,7 +21,7 @@ log.error = debug('libp2p:pnet:err')
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('../').DuplexIterable} DuplexIterable
+ * @typedef {import('libp2p-interfaces/src/connection/connection').DuplexIterableStream} DuplexIterableStream
  */
 
 class Protector {
@@ -44,7 +44,7 @@ class Protector {
    * created with.
    *
    * @param {Connection} connection - The connection to protect
-   * @returns {DuplexIterable} A protected duplex iterable
+   * @returns {DuplexIterableStream} A protected duplex iterable
    */
   async protect (connection) {
     if (!connection) {

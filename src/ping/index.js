@@ -14,7 +14,7 @@ const { PROTOCOL, PING_LENGTH } = require('./constants')
 
 /**
  * @typedef {import('../')} Libp2p
- * @typedef {import('multiaddr')} multiaddr
+ * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('peer-id')} PeerId
  */
 
@@ -22,7 +22,7 @@ const { PROTOCOL, PING_LENGTH } = require('./constants')
  * Ping a given peer and wait for its response, getting the operation latency.
  *
  * @param {Libp2p} node
- * @param {PeerId|multiaddr} peer
+ * @param {PeerId|Multiaddr} peer
  * @returns {Promise<number>}
  */
 async function ping (node, peer) {

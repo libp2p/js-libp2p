@@ -25,7 +25,7 @@ function lpEncodeExchange (exchange) {
  *
  * @param {PeerId} localId
  * @param {Connection} conn
- * @param {PeerId} remoteId
+ * @param {PeerId} [remoteId]
  */
 async function encrypt (localId, conn, remoteId) {
   const shake = handshake(conn)

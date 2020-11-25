@@ -30,16 +30,15 @@ const {
 const { codes } = require('../errors')
 
 /**
- * @typedef {import('../')} Libp2p
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('../').DuplexIterable} DuplexIterable
+ * @typedef {import('libp2p-interfaces/src/connection/connection').DuplexIterableStream} DuplexIterableStream
  */
 
 class IdentifyService {
   /**
    * @class
    * @param {Object} options
-   * @param {Libp2p} options.libp2p
+   * @param {import('../')} options.libp2p
    */
   constructor ({ libp2p }) {
     this._libp2p = libp2p
@@ -74,7 +73,7 @@ class IdentifyService {
   /**
    * Send an Identify Push update to the list of connections
    *
-   * @param {Array<Connection>} connections
+   * @param {Connection[]} connections
    * @returns {Promise<void>}
    */
   async push (connections) {
@@ -204,7 +203,7 @@ class IdentifyService {
    *
    * @param {Object} options
    * @param {string} options.protocol
-   * @param {DuplexIterable} options.stream
+   * @param {DuplexIterableStream} options.stream
    * @param {Connection} options.connection
    * @returns {Promise<void>}
    */
@@ -225,7 +224,7 @@ class IdentifyService {
    *
    * @private
    * @param {Object} options
-   * @param {DuplexIterable} options.stream
+   * @param {DuplexIterableStream} options.stream
    * @param {Connection} options.connection
    */
   async _handleIdentify ({ connection, stream }) {
@@ -264,7 +263,7 @@ class IdentifyService {
    *
    * @private
    * @param {object} options
-   * @param {DuplexIterable} options.stream
+   * @param {DuplexIterableStream} options.stream
    * @param {Connection} options.connection
    */
   async _handlePush ({ connection, stream }) {

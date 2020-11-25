@@ -8,7 +8,13 @@ const pAny = require('p-any')
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('multiaddr')} multiaddr
+ * @typedef {import('multiaddr')} Multiaddr
+ */
+
+/**
+ * @typedef {Object} GetData
+ * @property {PeerId} from
+ * @property {Uint8Array} val
  */
 
 module.exports = (node) => {
@@ -29,7 +35,7 @@ module.exports = (node) => {
      * @param {object} [options]
      * @param {number} [options.timeout] - How long the query should run
      * @param {number} [options.maxNumProviders] - maximum number of providers to find
-     * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Array<multiaddr> }>}
+     * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
      */
     async * findProviders (key, options) {
       if (!routers.length) {
@@ -91,7 +97,7 @@ module.exports = (node) => {
      * @param {Uint8Array} key
      * @param {Object} [options] - get options
      * @param {number} [options.timeout] - optional timeout (default: 60000)
-     * @returns {Promise<{from: PeerId, val: Uint8Array}>}
+     * @returns {Promise<GetData>}
      */
     async get (key, options) { // eslint-disable-line require-await
       if (!node.isStarted() || !dht.isStarted) {
@@ -108,7 +114,7 @@ module.exports = (node) => {
      * @param {number} nVals
      * @param {Object} [options] - get options
      * @param {number} [options.timeout] - optional timeout (default: 60000)
-     * @returns {Promise<Array<{from: PeerId, val: Uint8Array}>>}
+     * @returns {Promise<GetData[]>}
      */
     async getMany (key, nVals, options) { // eslint-disable-line require-await
       if (!node.isStarted() || !dht.isStarted) {

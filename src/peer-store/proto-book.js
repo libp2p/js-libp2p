@@ -52,7 +52,7 @@ class ProtoBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @param {Array<string>} protocols
+   * @param {string[]} protocols
    * @returns {ProtoBook}
    */
   set (peerId, protocols) {
@@ -90,7 +90,7 @@ class ProtoBook extends Book {
    * If the peer was not known before, it will be added.
    *
    * @param {PeerId} peerId
-   * @param {Array<string>} protocols
+   * @param {string[]} protocols
    * @returns {ProtoBook}
    */
   add (peerId, protocols) {
@@ -125,7 +125,7 @@ class ProtoBook extends Book {
    * If the protocols did not exist before, nothing will be done.
    *
    * @param {PeerId} peerId
-   * @param {Array<string>} protocols
+   * @param {string[]} protocols
    * @returns {ProtoBook}
    */
   remove (peerId, protocols) {

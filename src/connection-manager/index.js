@@ -51,7 +51,7 @@ const defaultOptions = {
  */
 
 /**
- * @extends {EventEmitter}
+ * @extends EventEmitter
  *
  * @fires ConnectionManager#peer:connect Emitted when a new peer is connected.
  * @fires ConnectionManager#peer:disconnect Emitted when a peer is disconnected.
@@ -87,7 +87,7 @@ class ConnectionManager extends EventEmitter {
     /**
      * Map of connections per peer
      *
-     * @type {Map<string, Array<Connection>>}
+     * @type {Map<string, Connection[]>}
      */
     this.connections = new Map()
 
@@ -168,6 +168,7 @@ class ConnectionManager extends EventEmitter {
    *
    * @param {PeerId} peerId
    * @param {number} value - A number between 0 and 1
+   * @returns {void}
    */
   setPeerValue (peerId, value) {
     if (value < 0 || value > 1) {
@@ -201,6 +202,7 @@ class ConnectionManager extends EventEmitter {
    * Tracks the incoming connection and check the connection limit
    *
    * @param {Connection} connection
+   * @returns {void}
    */
   onConnect (connection) {
     const peerId = connection.remotePeer
@@ -227,6 +229,7 @@ class ConnectionManager extends EventEmitter {
    * Removes the connection from tracking
    *
    * @param {Connection} connection
+   * @returns {void}
    */
   onDisconnect (connection) {
     const peerId = connection.remotePeer.toB58String()
@@ -260,7 +263,7 @@ class ConnectionManager extends EventEmitter {
    * Get all open connections with a peer.
    *
    * @param {PeerId} peerId
-   * @returns {Array<Connection>}
+   * @returns {Connection[]}
    */
   getAll (peerId) {
     if (!PeerId.isPeerId(peerId)) {

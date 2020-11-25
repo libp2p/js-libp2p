@@ -18,6 +18,10 @@ const {
 } = require('../errors')
 
 /**
+ * @typedef {import('./address-book').Address} Address
+ */
+
+/**
  * @extends {EventEmitter}
  *
  * @fires PeerStore#peer Emitted when a new peer is added.
@@ -32,9 +36,9 @@ class PeerStore extends EventEmitter {
    *
    * @typedef {Object} Peer
    * @property {PeerId} id peer's peer-id instance.
-   * @property {Array<Address>} addresses peer's addresses containing its multiaddrs and metadata.
-   * @property {Array<string>} protocols peer's supported protocols.
-   * @property {Map<string, Buffer>} metadata peer's metadata map.
+   * @property {Address[]} addresses peer's addresses containing its multiaddrs and metadata.
+   * @property {string[]} protocols peer's supported protocols.
+   * @property {Map<string, Uint8Array>} metadata peer's metadata map.
    */
 
   /**

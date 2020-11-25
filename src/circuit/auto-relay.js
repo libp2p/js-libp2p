@@ -69,7 +69,7 @@ class AutoRelay {
    *
    * @param {Object} props
    * @param {PeerId} props.peerId
-   * @param {Array<string>} props.protocols
+   * @param {string[]} props.protocols
    * @returns {Promise<void>}
    */
   async _onProtocolChange ({ peerId, protocols }) {
@@ -182,7 +182,7 @@ class AutoRelay {
    * 2. Dial and try to listen on the peers we know that support hop but are not connected.
    * 3. Search the network.
    *
-   * @param {Array<string>} [peersToIgnore]
+   * @param {string[]} [peersToIgnore]
    * @returns {Promise<void>}
    */
   async _listenOnAvailableHopRelays (peersToIgnore = []) {

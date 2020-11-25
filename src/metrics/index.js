@@ -18,13 +18,17 @@ const directionToEvent = {
 }
 
 /**
+ * @typedef {import('peer-id')} PeerId
+ */
+
+/**
  * @typedef MetricsProperties
  * @property {ConnectionManager} connectionManager
  *
  * @typedef MetricsOptions
  * @property {number} [computeThrottleMaxQueueSize = defaultOptions.computeThrottleMaxQueueSize]
  * @property {number} [computeThrottleTimeout = defaultOptions.computeThrottleTimeout]
- * @property {Array<number>} [movingAverageIntervals = defaultOptions.movingAverageIntervals]
+ * @property {number[]} [movingAverageIntervals = defaultOptions.movingAverageIntervals]
  * @property {number} [maxOldPeersRetention = defaultOptions.maxOldPeersRetention]
  */
 
@@ -82,7 +86,7 @@ class Metrics {
   /**
    * Returns a list of `PeerId` strings currently being tracked
    *
-   * @returns {Array<string>}
+   * @returns {string[]}
    */
   get peers () {
     return Array.from(this._peerStats.keys())
@@ -103,7 +107,7 @@ class Metrics {
   /**
    * Returns a list of all protocol strings currently being tracked.
    *
-   * @returns {Array<string>}
+   * @returns {string[]}
    */
   get protocols () {
     return Array.from(this._protocolStats.keys())
@@ -182,6 +186,7 @@ class Metrics {
    *
    * @param {PeerId} placeholder - A peerId string
    * @param {PeerId} peerId
+   * @returns {void}
    */
   updatePlaceholder (placeholder, peerId) {
     if (!this._running) return

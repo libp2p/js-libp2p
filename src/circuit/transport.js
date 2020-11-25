@@ -18,14 +18,19 @@ const { handleCanHop, handleHop, hop } = require('./circuit/hop')
 const { handleStop } = require('./circuit/stop')
 const StreamHandler = require('./circuit/stream-handler')
 
+/**
+ * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ */
+
 class Circuit {
   /**
    * Creates an instance of the Circuit Transport.
    *
    * @class
    * @param {object} options
-   * @param {Libp2p} options.libp2p
-   * @param {Upgrader} options.upgrader
+   * @param {import('../')} options.libp2p
+   * @param {import('../upgrader')} options.upgrader
    */
   constructor ({ libp2p, upgrader }) {
     this._dialer = libp2p.dialer
@@ -101,7 +106,7 @@ class Circuit {
   /**
    * Dial a peer over a relay
    *
-   * @param {multiaddr} ma - the multiaddr of the peer to dial
+   * @param {Multiaddr} ma - the multiaddr of the peer to dial
    * @param {Object} options - dial options
    * @param {AbortSignal} [options.signal] - An optional abort signal
    * @returns {Connection} - the connection
@@ -176,8 +181,8 @@ class Circuit {
   /**
    * Filter check for all Multiaddrs that this transport can dial on
    *
-   * @param {Array<Multiaddr>} multiaddrs
-   * @returns {Array<Multiaddr>}
+   * @param {Multiaddr[]} multiaddrs
+   * @returns {Multiaddr[]}
    */
   filter (multiaddrs) {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]

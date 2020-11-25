@@ -53,7 +53,7 @@ class MetadataBook extends Book {
    * @param {PeerId} peerId
    * @param {string} key - metadata key
    * @param {Uint8Array} value - metadata value
-   * @returns {ProtoBook}
+   * @returns {MetadataBook}
    */
   set (peerId, key, value) {
     if (!PeerId.isPeerId(peerId)) {

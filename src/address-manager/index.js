@@ -7,9 +7,13 @@ log.error = debug('libp2p:addresses:error')
 const multiaddr = require('multiaddr')
 
 /**
+ * @typedef {import('multiaddr')} Multiaddr
+ */
+
+/**
  * @typedef {Object} AddressManagerOptions
- * @property {Array<string>} [listen = []] - list of multiaddrs string representation to listen.
- * @property {Array<string>} [announce = []] - list of multiaddrs string representation to announce.
+ * @property {string[]} [listen = []] - list of multiaddrs string representation to listen.
+ * @property {string[]} [announce = []] - list of multiaddrs string representation to announce.
  */
 class AddressManager {
   /**
@@ -29,7 +33,7 @@ class AddressManager {
   /**
    * Get peer listen multiaddrs.
    *
-   * @returns {Array<multiaddr>}
+   * @returns {Multiaddr[]}
    */
   getListenAddrs () {
     return Array.from(this.listen).map((a) => multiaddr(a))
@@ -38,7 +42,7 @@ class AddressManager {
   /**
    * Get peer announcing multiaddrs.
    *
-   * @returns {Array<multiaddr>}
+   * @returns {Multiaddr[]}
    */
   getAnnounceAddrs () {
     return Array.from(this.announce).map((a) => multiaddr(a))

@@ -16,10 +16,6 @@ const {
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('multiaddr')} Multiaddr
  */
-
-/**
- * Responsible for managing the usage of the available Peer Routing modules.
- */
 class PeerRouting {
   /**
    * @class
@@ -73,6 +69,7 @@ class PeerRouting {
     clearDelayedInterval(this._timeoutId)
   }
 
+<<<<<<< HEAD
   /**
    * Iterates over all peer routers in series to find the given peer.
    *
@@ -92,6 +89,20 @@ class PeerRouting {
       // If we don't have a result, we need to provide an error to keep trying
       if (!result || Object.keys(result).length === 0) {
         throw errCode(new Error('not found'), 'NOT_FOUND')
+=======
+  return {
+    /**
+     * Iterates over all peer routers in series to find the given peer.
+     *
+     * @param {string} id - The id of the peer to find
+     * @param {object} [options]
+     * @param {number} [options.timeout] - How long the query should run
+     * @returns {Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>}
+     */
+    findPeer: async (id, options) => { // eslint-disable-line require-await
+      if (!routers.length) {
+        throw errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE')
+>>>>>>> chore: address review
       }
 
       return result

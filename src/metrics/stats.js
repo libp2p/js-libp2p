@@ -8,7 +8,7 @@ const retimer = require('retimer')
 /**
  * A queue based manager for stat processing
  *
- * @param {Array<string>} initialCounters
+ * @param {string[]} initialCounters
  * @param {any} options
  */
 class Stats extends EventEmitter {
@@ -77,7 +77,7 @@ class Stats extends EventEmitter {
   /**
    * Returns a clone of the internal movingAverages
    *
-   * @returns {Array<MovingAverage>}
+   * @returns {MovingAverage[]}
    */
   get movingAverages () {
     return Object.assign({}, this._movingAverages)
@@ -229,7 +229,7 @@ class Stats extends EventEmitter {
    * will be updated or initialized if they don't already exist.
    *
    * @private
-   * @param {Array<string, number>} op
+   * @param {{string, number}[]} op
    * @throws {InvalidNumber}
    * @returns {void}
    */

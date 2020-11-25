@@ -13,12 +13,14 @@ class Book {
   /**
    * The Book is the skeleton for the PeerStore books.
    *
+   * @template T
+   *
    * @class
    * @param {Object} properties
    * @param {PeerStore} properties.peerStore - PeerStore instance.
    * @param {string} properties.eventName - Name of the event to emit by the PeerStore.
    * @param {string} properties.eventProperty - Name of the property to emit by the PeerStore.
-   * @param {(data: *) => Array<*>} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
+   * @param {(data: T) => T[]} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
    */
   constructor ({ peerStore, eventName, eventProperty, eventTransformer = passthrough }) {
     this._ps = peerStore
@@ -29,7 +31,7 @@ class Book {
     /**
      * Map known peers to their data.
      *
-     * @type {Map<string, Array<*>}
+     * @type {Map<string, T[]}
      */
     this.data = new Map()
   }
@@ -38,7 +40,7 @@ class Book {
    * Set known data of a provided peer.
    *
    * @param {PeerId} peerId
-   * @param {Array<Data>|Data} data
+   * @param {T[]|T} data
    */
   set (peerId, data) {
     throw errcode(new Error('set must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
@@ -49,7 +51,7 @@ class Book {
    *
    * @private
    * @param {PeerId} peerId - peerId of the data to store
-   * @param {*} data - data to store.
+   * @param {T} data - data to store.
    * @param {Object} [options] - storing options.
    * @param {boolean} [options.emit = true] - emit the provided data.
    * @returns {void}
@@ -69,7 +71,7 @@ class Book {
    *
    * @private
    * @param {PeerId} peerId
-   * @param {*} data
+   * @param {T} data
    */
   _emit (peerId, data) {
     this._ps.emit(this.eventName, {
@@ -83,7 +85,7 @@ class Book {
    * Returns `undefined` if there is no available data for the given peer.
    *
    * @param {PeerId} peerId
-   * @returns {Array<Data>|undefined}
+   * @returns {T[]|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {

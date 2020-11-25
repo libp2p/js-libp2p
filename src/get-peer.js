@@ -8,7 +8,7 @@ const { codes } = require('./errors')
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('multiaddr')} multiaddr
+ * @typedef {import('multiaddr')} Multiaddr
  */
 
 /**
@@ -16,7 +16,7 @@ const { codes } = require('./errors')
  * If a multiaddr is received, the addressBook is updated.
  *
  * @param {PeerId|multiaddr|string} peer
- * @returns {{ id: PeerId, multiaddrs: Array<multiaddr> }}
+ * @returns {{ id: PeerId, multiaddrs: Multiaddr[] }}
  */
 function getPeer (peer) {
   if (typeof peer === 'string') {

@@ -10,7 +10,7 @@ log.error = debug('libp2p:transports:error')
 const { updateSelfPeerRecord } = require('./record/utils')
 
 /**
- * @typedef {import('multiaddr')} multiaddr
+ * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  *
  * @typedef {Object} TransportManagerProperties
@@ -90,7 +90,7 @@ class TransportManager {
   /**
    * Dials the given Multiaddr over it's supported transport
    *
-   * @param {multiaddr} ma
+   * @param {Multiaddr} ma
    * @param {*} options
    * @returns {Promise<Connection>}
    */
@@ -111,7 +111,7 @@ class TransportManager {
   /**
    * Returns all Multiaddr's the listeners are using
    *
-   * @returns {Array<multiaddr>}
+   * @returns {Multiaddr[]}
    */
   getAddrs () {
     let addrs = []
@@ -135,7 +135,7 @@ class TransportManager {
   /**
    * Finds a transport that matches the given Multiaddr
    *
-   * @param {multiaddr} ma
+   * @param {Multiaddr} ma
    * @returns {Transport|null}
    */
   transportForMultiaddr (ma) {
@@ -150,7 +150,7 @@ class TransportManager {
    * Starts listeners for each listen Multiaddr.
    *
    * @async
-   * @param {Array<multiaddr>} addrs - addresses to attempt to listen on
+   * @param {Multiaddr[]} addrs - addresses to attempt to listen on
    */
   async listen (addrs) {
     if (!addrs || addrs.length === 0) {

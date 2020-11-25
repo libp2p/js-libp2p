@@ -20,6 +20,7 @@ const {
 } = require('../constants')
 
 /**
+ * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('../peer-store')} PeerStore
  * @typedef {import('../transport-manager')} TransportManager
@@ -32,7 +33,7 @@ const {
  * @property {TransportManager} transportManager
  *
  * @typedef {Object} DialerOptions
- * @param {(addresses: Array<Address) => Array<Address>} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
+ * @param {(addresses: Address[]) => Address[]} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
  * @property {number} [concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
  * @property {number} [perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
  * @property {number} [timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
@@ -40,7 +41,7 @@ const {
  *
  * @typedef DialTarget
  * @property {string} id
- * @property {Array<multiaddr>} addrs
+ * @property {Multiaddr[]} addrs
  *
  * @typedef PendingDial
  * @property {DialRequest} dialRequest
@@ -96,7 +97,7 @@ class Dialer {
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    *
-   * @param {PeerId|multiaddr|string} peer - The peer to dial
+   * @param {PeerId|Multiaddr|string} peer - The peer to dial
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] - An AbortController signal
    * @returns {Promise<Connection>}
@@ -131,7 +132,7 @@ class Dialer {
    * If a multiaddr is received it should be the first address attempted.
    *
    * @private
-   * @param {PeerId|multiaddr|string} peer - A PeerId or Multiaddr
+   * @param {PeerId|Multiaddr|string} peer - A PeerId or Multiaddr
    * @returns {Promise<DialTarget>}
    */
   async _createDialTarget (peer) {
@@ -219,8 +220,8 @@ class Dialer {
   /**
    * Resolve multiaddr recursively.
    *
-   * @param {multiaddr} ma
-   * @returns {Promise<Array<multiaddr>>}
+   * @param {Multiaddr} ma
+   * @returns {Promise<Multiaddr[]>}
    */
   async _resolve (ma) {
     // TODO: recursive logic should live in multiaddr once dns4/dns6 support is in place
@@ -248,8 +249,8 @@ class Dialer {
   /**
    * Resolve a given multiaddr. If this fails, an empty array will be returned
    *
-   * @param {multiaddr} ma
-   * @returns {Promise<Array<multiaddr>>}
+   * @param {Multiaddr} ma
+   * @returns {Promise<Multiaddr[]>}
    */
   async _resolveRecord (ma) {
     try {

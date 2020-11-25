@@ -17,10 +17,14 @@ const {
 const Envelope = require('../record/envelope')
 
 /**
+ * @typedef {import('multiaddr')} Multiaddr
+ */
+
+/**
  * Address object
  *
  * @typedef {Object} Address
- * @property {multiaddr} multiaddr peer multiaddr.
+ * @property {Multiaddr} multiaddr peer multiaddr.
  * @property {boolean} isCertified obtained from a signed peer record.
  */
 
@@ -36,7 +40,7 @@ const Envelope = require('../record/envelope')
  * Entry object for the addressBook
  *
  * @typedef {Object} Entry
- * @property {Array<Address>} addresses peer Addresses.
+ * @property {Address[]} addresses peer Addresses.
  * @property {CertifiedRecord} record certified peer record.
  */
 
@@ -71,7 +75,7 @@ class AddressBook extends Book {
     /**
      * Map known peers to their known Address Entries.
      *
-     * @type {Map<string, Array<Entry>>}
+     * @type {Map<string, Entry[]>}
      */
     this.data = new Map()
   }
@@ -172,7 +176,7 @@ class AddressBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @param {Array<multiaddr>} multiaddrs
+   * @param {Multiaddr[]} multiaddrs
    * @returns {AddressBook}
    */
   set (peerId, multiaddrs) {
@@ -222,7 +226,7 @@ class AddressBook extends Book {
    * If the peer is not known, it is set with the given addresses.
    *
    * @param {PeerId} peerId
-   * @param {Array<multiaddr>} multiaddrs
+   * @param {Multiaddr[]} multiaddrs
    * @returns {AddressBook}
    */
   add (peerId, multiaddrs) {
@@ -271,7 +275,7 @@ class AddressBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @returns {Array<Address>|undefined}
+   * @returns {Address[]|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
@@ -287,9 +291,9 @@ class AddressBook extends Book {
    * Transforms received multiaddrs into Address.
    *
    * @private
-   * @param {Array<multiaddr>} multiaddrs
+   * @param {Multiaddr[]} multiaddrs
    * @param {boolean} [isCertified]
-   * @returns {Array<Address>}
+   * @returns {Address[]}
    */
   _toAddresses (multiaddrs, isCertified = false) {
     if (!multiaddrs) {
@@ -320,8 +324,8 @@ class AddressBook extends Book {
    * Returns `undefined` if there are no known multiaddrs for the given peer.
    *
    * @param {PeerId} peerId
-   * @param {(addresses: Array<Address) => Array<Address>} [addressSorter]
-   * @returns {Array<Multiaddr>|undefined}
+   * @param {(addresses: Address[]) => Address[]} [addressSorter]
+   * @returns {Multiaddr[]|undefined}
    */
   getMultiaddrsForPeer (peerId, addressSorter = (ms) => ms) {
     if (!PeerId.isPeerId(peerId)) {

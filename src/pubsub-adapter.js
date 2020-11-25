@@ -1,5 +1,9 @@
 'use strict'
 
+/**
+ * @typedef {import('libp2p-interfaces/src/pubsub').InMessage} InMessage
+ */
+
 // Pubsub adapter to keep API with handlers while not removed.
 module.exports = (PubsubRouter, libp2p, options) => {
   class Pubsub extends PubsubRouter {

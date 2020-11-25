@@ -13,7 +13,7 @@ const {
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('multiaddr')} multiaddr
+ * @typedef {import('multiaddr')} Multiaddr
  */
 
 /**
@@ -27,7 +27,7 @@ class PeerRecord extends Record {
    * @class
    * @param {Object} params
    * @param {PeerId} params.peerId
-   * @param {Array<multiaddr>} params.multiaddrs - addresses of the associated peer.
+   * @param {Multiaddr[]} params.multiaddrs - addresses of the associated peer.
    * @param {number} [params.seqNumber] - monotonically-increasing sequence counter that's used to order PeerRecords in time.
    */
   constructor ({ peerId, multiaddrs = [], seqNumber = Date.now() }) {

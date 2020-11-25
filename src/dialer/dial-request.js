@@ -11,6 +11,7 @@ const pAny = require('p-any')
 
 /**
  * @typedef {import('./')} Dialer
+ * @typedef {import('multiaddr')} Multiaddr
  */
 
 /**

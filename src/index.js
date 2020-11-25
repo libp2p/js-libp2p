@@ -35,6 +35,10 @@ const {
 } = require('./identify')
 
 /**
+ * @typedef {import('multiaddr')} Multiaddr
+ */
+
+/**
  * @typedef {Object} PeerStoreOptions
  * @property {boolean} persistence
  *
@@ -55,7 +59,7 @@ const {
  * @property {Object} [transport] transport options indexed by transport key
  *
  * @typedef {Object} Libp2pOptions
- * @property {Array<Object>} modules libp2p modules to use
+ * @property {Object[]} modules libp2p modules to use
  * @property {import('./address-manager').AddressManagerOptions} [addresses]
  * @property {import('./connection-manager').ConnectionManagerOptions} [connectionManager]
  * @property {import('./dialer').DialerOptions} [dialer]
@@ -399,7 +403,7 @@ class Libp2p extends EventEmitter {
    * by transports to listen with the announce addresses.
    * Duplicated addresses and noAnnounce addresses are filtered out.
    *
-   * @returns {Array<Multiaddr>}
+   * @returns {Multiaddr[]}
    */
   get multiaddrs () {
     const announceAddrs = this.addressManager.getAnnounceAddrs()
@@ -416,7 +420,7 @@ class Libp2p extends EventEmitter {
   /**
    * Disconnects all connections to the given `peer`
    *
-   * @param {PeerId|multiaddr|string} peer - the peer to close connections to
+   * @param {PeerId|Multiaddr|string} peer - the peer to close connections to
    * @returns {Promise<void>}
    */
   async hangUp (peer) {
@@ -544,7 +548,7 @@ class Libp2p extends EventEmitter {
    * Known peers may be emitted.
    *
    * @private
-   * @param {{ id: PeerId, multiaddrs: Array<Multiaddr>, protocols: Array<string> }} peer
+   * @param {{ id: PeerId, multiaddrs: Multiaddr[], protocols: string[] }} peer
    */
   _onDiscoveryPeer (peer) {
     if (peer.id.toB58String() === this.peerId.toB58String()) {
@@ -653,11 +657,5 @@ Libp2p.create = async function create (options = {}) {
   options.peerId = peerId
   return new Libp2p(options)
 }
-
-/**
- * @typedef {Object} DuplexIterable
- * @property {(source: AsyncIterator<*>) => Promise} sink
- * @property {AsyncIterator<*>} source
- */
 
 module.exports = Libp2p
