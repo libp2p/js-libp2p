@@ -37,6 +37,13 @@ const DefaultConfig = {
     persistence: false,
     threshold: 5
   },
+  peerRouting: {
+    refreshManager: {
+      enabled: true,
+      interval: 6e5,
+      bootDelay: 10e3
+    }
+  },
   config: {
     dht: {
       enabled: false,
