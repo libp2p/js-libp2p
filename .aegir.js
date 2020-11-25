@@ -31,6 +31,9 @@ const before = async () => {
           enabled: true,
           active: false
         }
+      },
+      nat: {
+        enabled: false
       }
     }
   })

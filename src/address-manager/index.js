@@ -1,6 +1,8 @@
 'use strict'
 
+const { EventEmitter } = require('events')
 const multiaddr = require('multiaddr')
+const PeerId = require('peer-id')
 
 /**
  * @typedef {import('multiaddr')} Multiaddr
@@ -11,7 +13,7 @@ const multiaddr = require('multiaddr')
  * @property {string[]} [listen = []] - list of multiaddrs string representation to listen.
  * @property {string[]} [announce = []] - list of multiaddrs string representation to announce.
  */
-class AddressManager {
+class AddressManager extends EventEmitter {
   /**
    * Responsible for managing the peer addresses.
    * Peers can specify their listen and announce addresses.
@@ -19,11 +21,18 @@ class AddressManager {
    * while the announce addresses will be used for the peer addresses' to other peers in the network.
    *
    * @class
-   * @param {AddressManagerOptions} [options]
+   * @param {PeerId} peerId - The Peer ID of the node
+   * @param {object} [options]
+   * @param {Array<string>} [options.listen = []] - list of multiaddrs string representation to listen.
+   * @param {Array<string>} [options.announce = []] - list of multiaddrs string representation to announce.
    */
-  constructor ({ listen = [], announce = [] } = {}) {
-    this.listen = new Set(listen)
-    this.announce = new Set(announce)
+  constructor (peerId, { listen = [], announce = [] } = {}) {
+    super()
+
+    this.peerId = peerId
+    this.listen = new Set(listen.map(ma => ma.toString()))
+    this.announce = new Set(announce.map(ma => ma.toString()))
+    this.observed = new Set()
   }
 
   /**
@@ -42,6 +51,45 @@ class AddressManager {
    */
   getAnnounceAddrs () {
     return Array.from(this.announce).map((a) => multiaddr(a))
+  }
+
+  /**
+   * Get observed multiaddrs.
+   *
+   * @returns {Array<Multiaddr>}
+   */
+  getObservedAddrs () {
+    return Array.from(this.observed).map((a) => multiaddr(a))
+  }
+
+  /**
+   * Get peer observed addresses
+   *
+   * @param {string | Multiaddr} addr
+   */
+  addObservedAddr (addr) {
+    let ma = multiaddr(addr)
+    const remotePeer = ma.getPeerId()
+
+    // strip our peer id if it has been passed
+    if (remotePeer) {
+      const remotePeerId = PeerId.createFromB58String(remotePeer)
+
+      // use same encoding for comparison
+      if (remotePeerId.toString() === this.peerId.toString()) {
+        ma = ma.decapsulate(multiaddr(`/p2p/${this.peerId}`))
+      }
+    }
+
+    const addrString = ma.toString()
+
+    // do not trigger the change:addresses event if we already know about this address
+    if (this.observed.has(addrString)) {
+      return
+    }
+
+    this.observed.add(addrString)
+    this.emit('change:addresses')
   }
 }
 

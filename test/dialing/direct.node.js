@@ -51,7 +51,7 @@ describe('Dialing (direct, TCP)', () => {
     peerStore = new PeerStore({ peerId: remotePeerId })
     remoteTM = new TransportManager({
       libp2p: {
-        addressManager: new AddressManager({ listen: [listenAddr] }),
+        addressManager: new AddressManager(remotePeerId, { listen: [listenAddr] }),
         peerId: remotePeerId,
         peerStore
       },

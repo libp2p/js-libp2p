@@ -59,6 +59,16 @@ const DefaultConfig = {
         timeout: 10e3
       }
     },
+    nat: {
+      enabled: true,
+      ttl: 7200,
+      keepAlive: true,
+      gateway: null,
+      externalIp: null,
+      pmp: {
+        enabled: false
+      }
+    },
     peerDiscovery: {
       autoDial: true
     },

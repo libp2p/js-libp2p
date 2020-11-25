@@ -147,4 +147,26 @@ describe('libp2p.multiaddrs', () => {
     expect(multiaddrs.includes(listenAddresses[0])).to.equal(false)
     expect(multiaddrs.includes(listenAddresses[1])).to.equal(false)
   })
+
+  it('should include observed addresses in returned multiaddrs', async () => {
+    [libp2p] = await peerUtils.createPeer({
+      started: false,
+      config: {
+        ...AddressesOptions,
+        addresses: {
+          listen: listenAddresses
+        }
+      }
+    })
+    const ma = '/ip4/83.32.123.53/tcp/43928'
+
+    await libp2p.start()
+
+    expect(libp2p.multiaddrs).to.have.lengthOf(listenAddresses.length)
+
+    libp2p.addressManager.addObservedAddr(ma)
+
+    expect(libp2p.multiaddrs).to.have.lengthOf(listenAddresses.length + 1)
+    expect(libp2p.multiaddrs.map(ma => ma.toString())).to.include(ma)
+  })
 })
