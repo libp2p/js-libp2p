@@ -242,7 +242,7 @@ class Libp2p extends EventEmitter {
    * Stop the libp2p node by closing its listeners and open connections
    *
    * @async
-   * @returns {void}
+   * @returns {Promise<void>}
    */
   async stop () {
     log('libp2p is stopping')
@@ -601,7 +601,7 @@ class Libp2p extends EventEmitter {
  * instance if one is not provided in options.
  *
  * @param {object} options - Libp2p configuration options
- * @returns {Libp2p}
+ * @returns {Promise<Libp2p>}
  */
 Libp2p.create = async function create (options = {}) {
   if (options.peerId) {
