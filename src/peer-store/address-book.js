@@ -1,9 +1,10 @@
 'use strict'
 
-const errcode = require('err-code')
 const debug = require('debug')
-const log = debug('libp2p:peer-store:address-book')
-log.error = debug('libp2p:peer-store:address-book:error')
+const log = Object.assign(debug('libp2p:peer-store:address-book'), {
+  error: debug('libp2p:peer-store:address-book:err')
+})
+const errcode = require('err-code')
 
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
@@ -18,6 +19,7 @@ const Envelope = require('../record/envelope')
 
 /**
  * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('./')} PeerStore
  */
 
 /**
@@ -75,7 +77,7 @@ class AddressBook extends Book {
     /**
      * Map known peers to their known Address Entries.
      *
-     * @type {Map<string, Entry[]>}
+     * @type {Map<string, Entry>}
      */
     this.data = new Map()
   }
@@ -110,7 +112,7 @@ class AddressBook extends Book {
 
     const peerId = peerRecord.peerId
     const id = peerId.toB58String()
-    const entry = this.data.get(id) || {}
+    const entry = this.data.get(id) || { record: undefined }
     const storedRecord = entry.record
 
     // ensure seq is greater than, or equal to, the last received
@@ -156,7 +158,7 @@ class AddressBook extends Book {
    * Returns undefined if no record exists.
    *
    * @param {PeerId} peerId
-   * @returns {Promise<Envelope|void>}
+   * @returns {Promise<Envelope|void>|undefined}
    */
   getPeerRecord (peerId) {
     const raw = this.getRawEnvelope(peerId)

@@ -1,23 +1,28 @@
 'use strict'
 
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:circuit:stop'), {
+  error: debug('libp2p:circuit:stop:err')
+})
+
 const { CircuitRelay: CircuitPB } = require('../protocol')
 const multicodec = require('../multicodec')
 const StreamHandler = require('./stream-handler')
 const { validateAddrs } = require('./utils')
 
-const debug = require('debug')
-const log = debug('libp2p:circuit:stop')
-log.error = debug('libp2p:circuit:stop:error')
+/**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ */
 
 /**
  * Handles incoming STOP requests
  *
  * @private
- * @param {*} options
+ * @param {object} options
  * @param {Connection} options.connection
  * @param {*} options.request - The CircuitRelay protobuf request (unencoded)
  * @param {StreamHandler} options.streamHandler
- * @returns {Promise<*>} Resolves a duplex iterable
+ * @returns {Promise<*>|void} Resolves a duplex iterable
  */
 module.exports.handleStop = function handleStop ({
   connection,
@@ -44,7 +49,7 @@ module.exports.handleStop = function handleStop ({
  * Creates a STOP request
  *
  * @private
- * @param {*} options
+ * @param {object} options
  * @param {Connection} options.connection
  * @param {*} options.request - The CircuitRelay protobuf request (unencoded)
  * @returns {Promise<*>} Resolves a duplex iterable

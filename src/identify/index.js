@@ -1,13 +1,13 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:identify')
-log.error = debug('libp2p:identify:error')
-
+const log = Object.assign(debug('libp2p:identify'), {
+  error: debug('libp2p:identify:err')
+})
 const errCode = require('err-code')
 const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
-const pipe = require('it-pipe')
+const { pipe } = require('it-pipe')
 const { collect, take, consume } = require('streaming-iterables')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
@@ -50,9 +50,7 @@ class IdentifyService {
 
     // When a new connection happens, trigger identify
     this.connectionManager.on('peer:connect', (connection) => {
-      const peerId = connection.remotePeer
-
-      this.identify(connection, peerId).catch(log.error)
+      this.identify(connection).catch(log.error)
     })
 
     // When self multiaddrs change, trigger identify-push
@@ -74,7 +72,7 @@ class IdentifyService {
    * Send an Identify Push update to the list of connections
    *
    * @param {Connection[]} connections
-   * @returns {Promise<void>}
+   * @returns {Promise<void[]>}
    */
   async push (connections) {
     const signedPeerRecord = await this.peerStore.addressBook.getRawEnvelope(this.peerId)
@@ -205,7 +203,7 @@ class IdentifyService {
    * @param {string} options.protocol
    * @param {DuplexIterableStream} options.stream
    * @param {Connection} options.connection
-   * @returns {Promise<void>}
+   * @returns {Promise<void>|undefined}
    */
   handleMessage ({ connection, stream, protocol }) {
     switch (protocol) {
@@ -226,6 +224,7 @@ class IdentifyService {
    * @param {Object} options
    * @param {DuplexIterableStream} options.stream
    * @param {Connection} options.connection
+   * @returns {Promise<void>}
    */
   async _handleIdentify ({ connection, stream }) {
     let publicKey = new Uint8Array(0)
@@ -265,6 +264,7 @@ class IdentifyService {
    * @param {object} options
    * @param {DuplexIterableStream} options.stream
    * @param {Connection} options.connection
+   * @returns {Promise<void>}
    */
   async _handlePush ({ connection, stream }) {
     let message

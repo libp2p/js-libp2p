@@ -1,12 +1,16 @@
 'use strict'
 
-const pipe = require('it-pipe')
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:pnet'), {
+  error: debug('libp2p:pnet:err')
+})
+const { pipe } = require('it-pipe')
 const errcode = require('err-code')
 const duplexPair = require('it-pair/duplex')
 const crypto = require('libp2p-crypto')
 const Errors = require('./errors')
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
 const {
   createBoxStream,
@@ -15,9 +19,6 @@ const {
 } = require('./crypto')
 const handshake = require('it-handshake')
 const { NONCE_LENGTH } = require('./key-generator')
-const debug = require('debug')
-const log = debug('libp2p:pnet')
-log.error = debug('libp2p:pnet:err')
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
@@ -44,7 +45,7 @@ class Protector {
    * created with.
    *
    * @param {Connection} connection - The connection to protect
-   * @returns {DuplexIterableStream} A protected duplex iterable
+   * @returns {Promise<DuplexIterableStream>} A protected duplex iterable
    */
   async protect (connection) {
     if (!connection) {

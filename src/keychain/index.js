@@ -101,7 +101,8 @@ class Keychain {
    * Creates a new instance of a key chain.
    *
    * @param {DS} store - where the key are.
-   * @param {object} options - ???
+   * @param {object} options
+   * @class
    */
   constructor (store, options) {
     if (!store) {

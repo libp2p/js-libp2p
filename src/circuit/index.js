@@ -1,8 +1,9 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:relay')
-log.error = debug('libp2p:relay:error')
+const log = Object.assign(debug('libp2p:relay'), {
+  error: debug('libp2p:relay:err')
+})
 
 const {
   setDelayedInterval,

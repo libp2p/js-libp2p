@@ -1,11 +1,13 @@
 'use strict'
 
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:transports'), {
+  error: debug('libp2p:transports:err')
+})
+
 const pSettle = require('p-settle')
 const { codes } = require('./errors')
 const errCode = require('err-code')
-const debug = require('debug')
-const log = debug('libp2p:transports')
-log.error = debug('libp2p:transports:error')
 
 const { updateSelfPeerRecord } = require('./record/utils')
 
@@ -18,7 +20,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {import('./upgrader')} upgrader
  *
  * @typedef {Object} TransportManagerOptions
- * @property {boolean} [faultTolerance = FAULT_TOLERANCE.FATAL_ALL] - Address listen error tolerance.
+ * @property {number} [faultTolerance = FAULT_TOLERANCE.FATAL_ALL] - Address listen error tolerance.
  */
 
 class TransportManager {
@@ -126,7 +128,7 @@ class TransportManager {
   /**
    * Returns all the transports instances.
    *
-   * @returns {Iterator<Transport>}
+   * @returns {IterableIterator<Transport>}
    */
   getTransports () {
     return this._transports.values()
@@ -166,7 +168,7 @@ class TransportManager {
       // For each supported multiaddr, create a listener
       for (const addr of supportedAddrs) {
         log('creating listener for %s on %s', key, addr)
-        const listener = transport.createListener({}, this.onConnection)
+        const listener = transport.createListener({})
         this._listeners.get(key).push(listener)
 
         // Track listen/close events

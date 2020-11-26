@@ -1,9 +1,9 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:persistent-peer-store')
-log.error = debug('libp2p:persistent-peer-store:error')
-
+const log = Object.assign(debug('libp2p:persistent-peer-store'), {
+  error: debug('libp2p:persistent-peer-store:err')
+})
 const { Key } = require('interface-datastore')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
@@ -346,6 +346,7 @@ class PersistentPeerStore extends PeerStore {
         case 'addrs':
           decoded = Addresses.decode(value)
 
+          // @ts-ignore
           this.addressBook._setData(
             peerId,
             {
@@ -363,6 +364,7 @@ class PersistentPeerStore extends PeerStore {
         case 'keys':
           decoded = await PeerId.createFromPubKey(value)
 
+          // @ts-ignore
           this.keyBook._setData(
             decoded,
             decoded,
@@ -378,6 +380,7 @@ class PersistentPeerStore extends PeerStore {
         case 'protos':
           decoded = Protocols.decode(value)
 
+          // @ts-ignore
           this.protoBook._setData(
             peerId,
             new Set(decoded.protocols),

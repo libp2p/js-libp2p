@@ -1,9 +1,6 @@
 'use strict'
 
 const errcode = require('err-code')
-const debug = require('debug')
-const log = debug('libp2p:peer-store')
-log.error = debug('libp2p:peer-store:error')
 
 const { EventEmitter } = require('events')
 const PeerId = require('peer-id')
@@ -14,7 +11,7 @@ const MetadataBook = require('./metadata-book')
 const ProtoBook = require('./proto-book')
 
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
 
 /**
@@ -127,7 +124,7 @@ class PeerStore extends EventEmitter {
    * Get the stored information of a given peer.
    *
    * @param {PeerId} peerId
-   * @returns {Peer}
+   * @returns {Peer|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {

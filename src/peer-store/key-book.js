@@ -1,9 +1,10 @@
 'use strict'
 
-const errcode = require('err-code')
 const debug = require('debug')
-const log = debug('libp2p:peer-store:key-book')
-log.error = debug('libp2p:peer-store:key-book:error')
+const log = Object.assign(debug('libp2p:peer-store:key-book'), {
+  error: debug('libp2p:peer-store:key-book:err')
+})
+const errcode = require('err-code')
 
 const PeerId = require('peer-id')
 
@@ -12,6 +13,10 @@ const Book = require('./book')
 const {
   codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
+
+/**
+ * @typedef {import('./')} PeerStore
+ */
 
 /**
  * @extends {Book}

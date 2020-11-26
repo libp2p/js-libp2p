@@ -2,6 +2,7 @@
 
 /**
  * @typedef {import('libp2p-interfaces/src/pubsub').InMessage} InMessage
+ * @typedef {import('libp2p-interfaces/src/pubsub')} PubsubRouter
  */
 
 // Pubsub adapter to keep API with handlers while not removed.
@@ -12,7 +13,7 @@ module.exports = (PubsubRouter, libp2p, options) => {
      *
      * @override
      * @param {string} topic
-     * @param {function(msg: InMessage)} [handler]
+     * @param {(msg: InMessage) => void} [handler]
      * @returns {void}
      */
     subscribe (topic, handler) {
@@ -26,7 +27,7 @@ module.exports = (PubsubRouter, libp2p, options) => {
      *
      * @override
      * @param {string} topic
-     * @param {function(msg: InMessage)} [handler]
+     * @param {(msg: InMessage) => void} [handler]
      * @returns {void}
      */
     unsubscribe (topic, handler) {

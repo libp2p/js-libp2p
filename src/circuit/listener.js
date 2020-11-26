@@ -1,14 +1,14 @@
 'use strict'
 
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 const multiaddr = require('multiaddr')
 
-const debug = require('debug')
-const log = debug('libp2p:circuit:listener')
-log.err = debug('libp2p:circuit:error:listener')
+/**
+ * @typedef {import('multiaddr')} Multiaddr
+ */
 
 /**
- * @param {Libp2p} libp2p
+ * @param {import('../')} libp2p
  * @returns {Listener} a transport listener
  */
 module.exports = (libp2p) => {

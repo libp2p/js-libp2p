@@ -22,6 +22,8 @@ module.exports = generate
 module.exports.NONCE_LENGTH = 24
 module.exports.KEY_LENGTH = KEY_LENGTH
 
+// @ts-ignore
 if (require.main === module) {
+  // @ts-ignore
   generate(process.stdout)
 }

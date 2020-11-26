@@ -1,20 +1,25 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:circuit:hop')
-log.error = debug('libp2p:circuit:hop:error')
+const log = Object.assign(debug('libp2p:circuit:hop'), {
+  error: debug('libp2p:circuit:hop:err')
+})
+const errCode = require('err-code')
 
 const PeerId = require('peer-id')
 const { validateAddrs } = require('./utils')
 const StreamHandler = require('./stream-handler')
 const { CircuitRelay: CircuitPB } = require('../protocol')
-const pipe = require('it-pipe')
-const errCode = require('err-code')
+const { pipe } = require('it-pipe')
 const { codes: Errors } = require('../../errors')
 
 const { stop } = require('./stop')
 
 const multicodec = require('./../multicodec')
+
+/**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ */
 
 module.exports.handleHop = async function handleHop ({
   connection,

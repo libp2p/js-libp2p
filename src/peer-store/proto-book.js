@@ -1,10 +1,10 @@
 'use strict'
 
-const errcode = require('err-code')
 const debug = require('debug')
-const log = debug('libp2p:peer-store:proto-book')
-log.error = debug('libp2p:peer-store:proto-book:error')
-
+const log = Object.assign(debug('libp2p:peer-store:proto-book'), {
+  error: debug('libp2p:peer-store:proto-book:err')
+})
+const errcode = require('err-code')
 const PeerId = require('peer-id')
 
 const Book = require('./book')
@@ -12,6 +12,10 @@ const Book = require('./book')
 const {
   codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
+
+/**
+ * @typedef {import('./')} PeerStore
+ */
 
 /**
  * @extends {Book}
@@ -79,6 +83,7 @@ class ProtoBook extends Book {
       return this
     }
 
+    // @ts-ignore
     this._setData(peerId, newSet)
     log(`stored provided protocols for ${id}`)
 
@@ -114,6 +119,7 @@ class ProtoBook extends Book {
       return this
     }
 
+    // @ts-ignore
     this._setData(peerId, newSet)
     log(`added provided protocols for ${id}`)
 
@@ -152,6 +158,7 @@ class ProtoBook extends Book {
         return this
       }
 
+      // @ts-ignore
       this._setData(peerId, newSet)
       log(`removed provided protocols for ${id}`)
     }

@@ -1,15 +1,13 @@
 'use strict'
 
+const errCode = require('err-code')
 const AbortController = require('abort-controller')
 const anySignal = require('any-signal')
-const debug = require('debug')
-const errCode = require('err-code')
-const log = debug('libp2p:dialer:request')
-log.error = debug('libp2p:dialer:request:error')
 const FIFO = require('p-fifo')
 const pAny = require('p-any')
 
 /**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('./')} Dialer
  * @typedef {import('multiaddr')} Multiaddr
  */
@@ -45,7 +43,7 @@ class DialRequest {
    * @async
    * @param {object} [options]
    * @param {AbortSignal} [options.signal] - An AbortController signal
-   * @returns {Connection}
+   * @returns {Promise<Connection>}
    */
   async run (options) {
     const tokens = this.dialer.getTokens(this.addrs.length)

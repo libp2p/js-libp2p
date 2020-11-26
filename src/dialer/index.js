@@ -1,12 +1,13 @@
 'use strict'
 
-const multiaddr = require('multiaddr')
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:dialer'), {
+  error: debug('libp2p:dialer:err')
+})
 const errCode = require('err-code')
+const multiaddr = require('multiaddr')
 const TimeoutController = require('timeout-abort-controller')
 const anySignal = require('any-signal')
-const debug = require('debug')
-const log = debug('libp2p:dialer')
-log.error = debug('libp2p:dialer:error')
 
 const { DialRequest } = require('./dial-request')
 const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
@@ -20,9 +21,11 @@ const {
 } = require('../constants')
 
 /**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('../peer-store')} PeerStore
+ * @typedef {import('../peer-store/address-book').Address} Address
  * @typedef {import('../transport-manager')} TransportManager
  * @typedef {import('./dial-request')} DialRequest
  */
@@ -172,7 +175,7 @@ class Dialer {
    * @param {AbortSignal} [options.signal] - An AbortController signal
    * @returns {PendingDial}
    */
-  _createPendingDial (dialTarget, options) {
+  _createPendingDial (dialTarget, options = {}) {
     const dialAction = (addr, options) => {
       if (options.signal.aborted) throw errCode(new Error('already aborted'), codes.ERR_ALREADY_ABORTED)
       return this.transportManager.dial(addr, options)

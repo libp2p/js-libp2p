@@ -1,8 +1,9 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:connection-manager')
-log.error = debug('libp2p:connection-manager:error')
+const log = Object.assign(debug('libp2p:connection-manager'), {
+  error: debug('libp2p:connection-manager:err')
+})
 
 const errcode = require('err-code')
 const mergeOptions = require('merge-options')
@@ -14,7 +15,7 @@ const { EventEmitter } = require('events')
 const PeerId = require('peer-id')
 
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
 
 const defaultOptions = {
@@ -187,15 +188,17 @@ class ConnectionManager extends EventEmitter {
    * @private
    */
   _checkMetrics () {
-    const movingAverages = this._libp2p.metrics.global.movingAverages
-    const received = movingAverages.dataReceived[this._options.movingAverageInterval].movingAverage()
-    this._checkMaxLimit('maxReceivedData', received)
-    const sent = movingAverages.dataSent[this._options.movingAverageInterval].movingAverage()
-    this._checkMaxLimit('maxSentData', sent)
-    const total = received + sent
-    this._checkMaxLimit('maxData', total)
-    log('metrics update', total)
-    this._timer = retimer(this._checkMetrics, this._options.pollInterval)
+    if (this._libp2p.metrics) {
+      const movingAverages = this._libp2p.metrics.global.movingAverages
+      const received = movingAverages.dataReceived[this._options.movingAverageInterval].movingAverage()
+      this._checkMaxLimit('maxReceivedData', received)
+      const sent = movingAverages.dataSent[this._options.movingAverageInterval].movingAverage()
+      this._checkMaxLimit('maxSentData', sent)
+      const total = received + sent
+      this._checkMaxLimit('maxData', total)
+      log('metrics update', total)
+      this._timer = retimer(this._checkMetrics, this._options.pollInterval)
+    }
   }
 
   /**
@@ -249,7 +252,7 @@ class ConnectionManager extends EventEmitter {
    * Get a connection with a peer.
    *
    * @param {PeerId} peerId
-   * @returns {Connection}
+   * @returns {Connection|null}
    */
   get (peerId) {
     const connections = this.getAll(peerId)

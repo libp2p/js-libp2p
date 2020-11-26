@@ -1,12 +1,13 @@
 'use strict'
 
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:circuit:stream-handler'), {
+  error: debug('libp2p:circuit:stream-handler:err')
+})
+
 const lp = require('it-length-prefixed')
 const handshake = require('it-handshake')
 const { CircuitRelay: CircuitPB } = require('../protocol')
-
-const debug = require('debug')
-const log = debug('libp2p:circuit:stream-handler')
-log.error = debug('libp2p:circuit:stream-handler:error')
 
 class StreamHandler {
   /**
@@ -27,7 +28,7 @@ class StreamHandler {
    * Read and decode message
    *
    * @async
-   * @returns {void}
+   * @returns {Promise<void>}
    */
   async read () {
     const msg = await this.decoder.next()

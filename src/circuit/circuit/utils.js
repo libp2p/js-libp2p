@@ -4,6 +4,10 @@ const multiaddr = require('multiaddr')
 const { CircuitRelay } = require('../protocol')
 
 /**
+ * @typedef {import('./stream-handler')} StreamHandler
+ */
+
+/**
  * Write a response
  *
  * @param {StreamHandler} streamHandler

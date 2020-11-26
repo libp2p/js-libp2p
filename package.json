@@ -4,6 +4,15 @@
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
+  "types": "dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "src/*": [
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -15,6 +24,7 @@
     "test:node": "aegir test -t node -f \"./test/**/*.{node,spec}.js\"",
     "test:browser": "aegir test -t browser",
     "test:examples": "cd examples && npm run test:all",
+    "test:types": "aegir ts -p check",
     "release": "aegir release -t node -t browser",
     "release-minor": "aegir release --type minor -t node -t browser",
     "release-major": "aegir release --type major -t node -t browser",
@@ -88,7 +98,7 @@
   "devDependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
     "abortable-iterator": "^3.0.0",
-    "aegir": "^27.0.0",
+    "aegir": "^29.1.0",
     "chai-bytes": "^0.1.2",
     "chai-string": "^1.5.0",
     "delay": "^4.3.0",

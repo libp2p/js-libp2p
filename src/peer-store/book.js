@@ -9,11 +9,16 @@ const {
 
 const passthrough = data => data
 
+/**
+ * @typedef {import('./')} PeerStore
+ */
+
+/**
+ * @template T
+ */
 class Book {
   /**
    * The Book is the skeleton for the PeerStore books.
-   *
-   * @template T
    *
    * @class
    * @param {Object} properties
@@ -31,7 +36,7 @@ class Book {
     /**
      * Map known peers to their data.
      *
-     * @type {Map<string, T[]}
+     * @type {Map<string, T[]|T>}
      */
     this.data = new Map()
   }
@@ -94,6 +99,7 @@ class Book {
 
     const rec = this.data.get(peerId.toB58String())
 
+    // @ts-ignore
     return rec ? [...rec] : undefined
   }
 

@@ -1,10 +1,11 @@
 'use strict'
 
-const { EventEmitter } = require('events')
 const debug = require('debug')
+const log = Object.assign(debug('libp2p'), {
+  error: debug('libp2p:err')
+})
+const { EventEmitter } = require('events')
 const globalThis = require('ipfs-utils/src/globalthis')
-const log = debug('libp2p')
-log.error = debug('libp2p:error')
 
 const errCode = require('err-code')
 const PeerId = require('peer-id')
@@ -36,6 +37,7 @@ const {
 
 /**
  * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  */
 
 /**
@@ -131,6 +133,7 @@ class Libp2p extends EventEmitter {
 
       const keychainOpts = Keychain.generateOptions()
 
+      /** @type {Keychain} */
       this.keychain = new Keychain(this._options.keychain.datastore, {
         passPhrase: this._options.keychain.pass,
         ...keychainOpts,
@@ -285,7 +288,7 @@ class Libp2p extends EventEmitter {
    * Stop the libp2p node by closing its listeners and open connections
    *
    * @async
-   * @returns {void}
+   * @returns {Promise<void>}
    */
   async stop () {
     log('libp2p is stopping')
@@ -331,7 +334,7 @@ class Libp2p extends EventEmitter {
    * Imports the private key as 'self', if needed.
    *
    * @async
-   * @returns {void}
+   * @returns {Promise<void>}
    */
   async loadKeychain () {
     try {
@@ -360,12 +363,12 @@ class Libp2p extends EventEmitter {
    * peer will be added to the nodes `peerStore`
    *
    * @param {PeerId|Multiaddr|string} peer - The peer to dial
-   * @param {object} options
+   * @param {object} [options]
    * @param {AbortSignal} [options.signal]
    * @returns {Promise<Connection>}
    */
   dial (peer, options) {
-    return this.dialProtocol(peer, null, options)
+    return this.dialProtocol(peer, undefined, options)
   }
 
   /**
@@ -375,8 +378,8 @@ class Libp2p extends EventEmitter {
    *
    * @async
    * @param {PeerId|Multiaddr|string} peer - The peer to dial
-   * @param {string[]|string} protocols
-   * @param {object} options
+   * @param {undefined|string[]|string} protocols
+   * @param {object} [options]
    * @param {AbortSignal} [options.signal]
    * @returns {Promise<Connection|*>}
    */
@@ -644,10 +647,10 @@ class Libp2p extends EventEmitter {
  * Like `new Libp2p(options)` except it will create a `PeerId`
  * instance if one is not provided in options.
  *
- * @param {Libp2pOptions & CreateOptions} [options] - Libp2p configuration options
- * @returns {Libp2p}
+ * @param {Libp2pOptions & CreateOptions} options - Libp2p configuration options
+ * @returns {Promise<Libp2p>}
  */
-Libp2p.create = async function create (options = {}) {
+Libp2p.create = async function create (options) {
   if (options.peerId) {
     return new Libp2p(options)
   }

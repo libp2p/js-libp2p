@@ -1,20 +1,22 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:upgrader')
-log.error = debug('libp2p:upgrader:error')
+const log = Object.assign(debug('libp2p:upgrader'), {
+  error: debug('libp2p:upgrader:err')
+})
+const errCode = require('err-code')
 const Multistream = require('multistream-select')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const ConnectionStatus = require('libp2p-interfaces/src/connection/status')
 const PeerId = require('peer-id')
 const pipe = require('it-pipe')
-const errCode = require('err-code')
 const mutableProxy = require('mutable-proxy')
 
 const { codes } = require('./errors')
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('multiaddr')} Multiaddr
  */
 
 /**
@@ -36,11 +38,11 @@ class Upgrader {
   /**
    * @param {object} options
    * @param {PeerId} options.localPeer
-   * @param {Metrics} options.metrics
+   * @param {import('./metrics')} [options.metrics]
    * @param {Map<string, Crypto>} options.cryptos
    * @param {Map<string, Muxer>} options.muxers
-   * @param {function(Connection)} options.onConnection - Called when a connection is upgraded
-   * @param {function(Connection)} options.onConnectionEnd
+   * @param {(Connection) => void} options.onConnection - Called when a connection is upgraded
+   * @param {(Connection) => void} options.onConnectionEnd
    */
   constructor ({
     localPeer,
@@ -78,7 +80,7 @@ class Upgrader {
 
     if (this.metrics) {
       ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
-      const idString = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
+      const idString = (Math.random() * 1e9).toString(36) + Date.now()
       setPeer({ toB58String: () => idString })
       maConn = this.metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
     }

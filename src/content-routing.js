@@ -9,6 +9,7 @@ const pAny = require('p-any')
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('cids')} CID
  */
 
 /**
@@ -63,7 +64,7 @@ module.exports = (node) => {
      * a provider of the given key.
      *
      * @param {CID} key - The CID key of the content to find
-     * @returns {Promise<void>}
+     * @returns {Promise<void[]>}
      */
     async provide (key) { // eslint-disable-line require-await
       if (!routers.length) {

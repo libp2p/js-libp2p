@@ -1,8 +1,9 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:auto-relay')
-log.error = debug('libp2p:auto-relay:error')
+const log = Object.assign(debug('libp2p:auto-relay'), {
+  error: debug('libp2p:auto-relay:err')
+})
 
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')

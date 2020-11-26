@@ -1,11 +1,12 @@
 'use strict'
 
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:plaintext'), {
+  error: debug('libp2p:plaintext:err')
+})
 const handshake = require('it-handshake')
 const lp = require('it-length-prefixed')
 const PeerId = require('peer-id')
-const debug = require('debug')
-const log = debug('libp2p:plaintext')
-log.error = debug('libp2p:plaintext:error')
 const { UnexpectedPeerError, InvalidCryptoExchangeError } = require('libp2p-interfaces/src/crypto/errors')
 
 const { Exchange, KeyType } = require('./proto')

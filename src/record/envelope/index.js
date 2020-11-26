@@ -1,8 +1,5 @@
 'use strict'
 
-const debug = require('debug')
-const log = debug('libp2p:envelope')
-log.error = debug('libp2p:envelope:error')
 const errCode = require('err-code')
 const uint8arraysConcat = require('uint8arrays/concat')
 const uint8arraysFromString = require('uint8arrays/from-string')
@@ -15,7 +12,7 @@ const { codes } = require('../../errors')
 const Protobuf = require('./envelope.proto')
 
 /**
- * @typedef {import('peer-id')} PeerId
+ * @typedef {import('libp2p-interfaces/src/record')} Record
  */
 
 class Envelope {
@@ -145,7 +142,7 @@ Envelope.createFromProtobuf = async (data) => {
  * @async
  * @param {Record} record
  * @param {PeerId} peerId
- * @returns {Envelope}
+ * @returns {Promise<Envelope>}
  */
 Envelope.seal = async (record, peerId) => {
   const domain = record.domain
@@ -169,7 +166,7 @@ Envelope.seal = async (record, peerId) => {
  *
  * @param {Uint8Array} data
  * @param {string} domain
- * @returns {Envelope}
+ * @returns {Promise<Envelope>}
  */
 Envelope.openAndCertify = async (data, domain) => {
   const envelope = await Envelope.createFromProtobuf(data)
