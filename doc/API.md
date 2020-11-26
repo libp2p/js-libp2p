@@ -131,12 +131,20 @@ As an alternative, it is possible to create a Libp2p instance with the construct
 
 ```js
 const Libp2p = require('libp2p')
+const PeerId = require('peer-id')
 
-// specify options
-const options = {}
+;(async () => {
+  const peerId = await PeerId.create();
 
-// create libp2p
-const libp2p = new Libp2p(options)
+  // specify options
+  // peerId is required when Libp2p is instantiated via the constructor
+  const options = {
+    peerId
+  }
+
+  // create libp2p
+  const libp2p = new Libp2p(options)
+})()
 ```
 
 Required keys in the `options` object:

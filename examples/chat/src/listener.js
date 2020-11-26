@@ -2,13 +2,13 @@
 /* eslint-disable no-console */
 
 const PeerId = require('peer-id')
-const Node = require('./libp2p-bundle.js')
+const createLibp2p = require('./libp2p-bundle.js')
 const { stdinToStream, streamToConsole } = require('./stream')
 
 async function run() {
   // Create a new libp2p node with the given multi-address
   const idListener = await PeerId.createFromJSON(require('./peer-id-listener'))
-  const nodeListener = new Node({
+  const nodeListener = await createLibp2p({
     peerId: idListener,
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/10333']

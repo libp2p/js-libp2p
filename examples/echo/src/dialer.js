@@ -5,9 +5,8 @@
  * Dialer Node
  */
 
-const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
-const Node = require('./libp2p-bundle')
+const createLibp2p = require('./libp2p-bundle')
 const pipe = require('it-pipe')
 
 async function run() {
@@ -17,7 +16,7 @@ async function run() {
   ])
 
   // Dialer
-  const dialerNode = new Node({
+  const dialerNode = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
