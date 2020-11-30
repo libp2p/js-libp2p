@@ -3,7 +3,7 @@
 
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
-const Node = require('./libp2p-bundle')
+const createLibp2p = require('./libp2p-bundle')
 const { stdinToStream, streamToConsole } = require('./stream')
 
 async function run() {
@@ -13,7 +13,7 @@ async function run() {
   ])
 
   // Create a new libp2p node on localhost with a randomly chosen port
-  const nodeDialer = new Node({
+  const nodeDialer = await createLibp2p({
     peerId: idDialer,
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']

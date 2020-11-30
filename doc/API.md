@@ -114,12 +114,25 @@ For Libp2p configurations and modules details read the [Configuration Document](
 
 ```js
 const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
 
-// specify options
-const options = {}
+async function main () {
+  // specify options
+  const options = {
+    modules: {
+      transport: [TCP],
+      streamMuxer: [MPLEX],
+      connEncryption: [NOISE]
+    }
+  }
 
-// create libp2p
-const libp2p = await Libp2p.create(options)
+  // create libp2p
+  const libp2p = await Libp2p.create(options)
+}
+
+main()
 ```
 
 Note: The [`PeerId`][peer-id] option is not required and will be generated if it is not provided.
@@ -131,12 +144,30 @@ As an alternative, it is possible to create a Libp2p instance with the construct
 
 ```js
 const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
+const PeerId = require('peer-id')
 
-// specify options
-const options = {}
+async function main () {
+  const peerId = await PeerId.create();
 
-// create libp2p
-const libp2p = new Libp2p(options)
+  // specify options
+  // peerId is required when Libp2p is instantiated via the constructor
+  const options = {
+    peerId,
+    modules: {
+      transport: [TCP],
+      streamMuxer: [MPLEX],
+      connEncryption: [NOISE]
+    }
+  }
+
+  // create libp2p
+  const libp2p = new Libp2p(options)
+}
+
+main()
 ```
 
 Required keys in the `options` object:

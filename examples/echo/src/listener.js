@@ -6,14 +6,14 @@
  */
 
 const PeerId = require('peer-id')
-const Node = require('./libp2p-bundle')
+const createLibp2p = require('./libp2p-bundle')
 const pipe = require('it-pipe')
 
 async function run() {
   const listenerId = await PeerId.createFromJSON(require('./id-l'))
 
   // Listener libp2p node
-  const listenerNode = new Node({
+  const listenerNode = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/10333']
     },
