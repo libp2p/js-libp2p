@@ -41,7 +41,7 @@
     "ip-address": "^6.1.0",
     "is-loopback-addr": "^1.0.0",
     "multiaddr": "^8.0.0",
-    "private-ip": "^1.0.5"
+    "private-ip": "^2.1.1"
   },
   "contributors": [
     "Vasco Santos <vasco.santos@moxy.studio>",
