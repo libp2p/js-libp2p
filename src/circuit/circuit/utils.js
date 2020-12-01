@@ -5,13 +5,14 @@ const { CircuitRelay } = require('../protocol')
 
 /**
  * @typedef {import('./stream-handler')} StreamHandler
+ * @typedef {import('../../types').CircuitStatus} CircuitStatus
  */
 
 /**
  * Write a response
  *
  * @param {StreamHandler} streamHandler
- * @param {CircuitRelay.Status} status
+ * @param {CircuitStatus} status
  */
 function writeResponse (streamHandler, status) {
   streamHandler.write({

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 

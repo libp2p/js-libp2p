@@ -9,27 +9,23 @@ const Multistream = require('multistream-select')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const ConnectionStatus = require('libp2p-interfaces/src/connection/status')
 const PeerId = require('peer-id')
-const pipe = require('it-pipe')
+const { pipe } = require('it-pipe')
 const mutableProxy = require('mutable-proxy')
 
 const { codes } = require('./errors')
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').Muxer} Muxer
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
  * @typedef {import('multiaddr')} Multiaddr
  */
 
 /**
- * @typedef MultiaddrConnection
- * @property {Function} sink
- * @property {AsyncIterator} source
- * @property {*} conn
- * @property {Multiaddr} remoteAddr
- */
-
-/**
  * @typedef CryptoResult
- * @property {*} conn A duplex iterable
+ * @property {MultiaddrConnection} conn A duplex iterable
  * @property {PeerId} remotePeer
  * @property {string} protocol
  */
@@ -39,23 +35,23 @@ class Upgrader {
    * @param {object} options
    * @param {PeerId} options.localPeer
    * @param {import('./metrics')} [options.metrics]
-   * @param {Map<string, Crypto>} options.cryptos
-   * @param {Map<string, Muxer>} options.muxers
+   * @param {Map<string, Crypto>} [options.cryptos]
+   * @param {Map<string, Muxer>} [options.muxers]
    * @param {(Connection) => void} options.onConnection - Called when a connection is upgraded
    * @param {(Connection) => void} options.onConnectionEnd
    */
   constructor ({
     localPeer,
     metrics,
-    cryptos,
-    muxers,
+    cryptos = new Map(),
+    muxers = new Map(),
     onConnectionEnd = () => {},
     onConnection = () => {}
   }) {
     this.localPeer = localPeer
     this.metrics = metrics
-    this.cryptos = cryptos || new Map()
-    this.muxers = muxers || new Map()
+    this.cryptos = cryptos
+    this.muxers = muxers
     this.protector = null
     this.protocols = new Map()
     this.onConnection = onConnection
@@ -138,12 +134,7 @@ class Upgrader {
    * @returns {Promise<Connection>}
    */
   async upgradeOutbound (maConn) {
-    let remotePeerId
-    try {
-      remotePeerId = PeerId.createFromB58String(maConn.remoteAddr.getPeerId())
-    } catch (err) {
-      log.error('multiaddr did not contain a valid peer id', err)
-    }
+    const remotePeerId = PeerId.createFromB58String(maConn.remoteAddr.getPeerId())
 
     let encryptedConn
     let remotePeer
@@ -155,7 +146,7 @@ class Upgrader {
 
     if (this.metrics) {
       ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
-      const idString = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
+      const idString = (Math.random() * 1e9).toString(36) + Date.now()
       setPeer({ toB58String: () => idString })
       maConn = this.metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
     }
@@ -213,8 +204,8 @@ class Upgrader {
    * @param {string} options.cryptoProtocol - The crypto protocol that was negotiated
    * @param {string} options.direction - One of ['inbound', 'outbound']
    * @param {MultiaddrConnection} options.maConn - The transport layer connection
-   * @param {*} options.upgradedConn - A duplex connection returned from multiplexer and/or crypto selection
-   * @param {Muxer} options.Muxer - The muxer to be used for muxing
+   * @param {MuxedStream | MultiaddrConnection} options.upgradedConn - A duplex connection returned from multiplexer and/or crypto selection
+   * @param {Muxer} [options.Muxer] - The muxer to be used for muxing
    * @param {PeerId} options.remotePeer - The peer the connection is with
    * @returns {Connection}
    */
@@ -233,6 +224,7 @@ class Upgrader {
 
     if (Muxer) {
       // Create the muxer
+      // @ts-ignore
       muxer = new Muxer({
         // Run anytime a remote stream is created
         onStream: async muxedStream => {
@@ -306,6 +298,7 @@ class Upgrader {
       remotePeer: remotePeer,
       stat: {
         direction,
+        // @ts-ignore
         timeline: maConn.timeline,
         multiplexer: Muxer && Muxer.multicodec,
         encryption: cryptoProtocol
@@ -332,7 +325,7 @@ class Upgrader {
    * @private
    * @param {object} options
    * @param {Connection} options.connection - The connection the stream belongs to
-   * @param {Stream} options.stream
+   * @param {MuxedStream} options.stream
    * @param {string} options.protocol
    */
   _onStream ({ connection, stream, protocol }) {
@@ -348,7 +341,7 @@ class Upgrader {
    * @param {PeerId} localPeer - The initiators PeerId
    * @param {*} connection
    * @param {Map<string, Crypto>} cryptos
-   * @returns {CryptoResult} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
+   * @returns {Promise<CryptoResult>} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
    */
   async _encryptInbound (localPeer, connection, cryptos) {
     const mss = new Multistream.Listener(connection)
@@ -359,6 +352,10 @@ class Upgrader {
       const { stream, protocol } = await mss.handle(protocols)
       const crypto = cryptos.get(protocol)
       log('encrypting inbound connection...')
+
+      if (!crypto) {
+        throw new Error(`no crypto module found for ${protocol}`)
+      }
 
       return {
         ...await crypto.secureInbound(localPeer, stream),
@@ -379,7 +376,7 @@ class Upgrader {
    * @param {*} connection
    * @param {PeerId} remotePeerId
    * @param {Map<string, Crypto>} cryptos
-   * @returns {CryptoResult} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
+   * @returns {Promise<CryptoResult>} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
    */
   async _encryptOutbound (localPeer, connection, remotePeerId, cryptos) {
     const mss = new Multistream.Dialer(connection)
@@ -390,6 +387,10 @@ class Upgrader {
       const { stream, protocol } = await mss.select(protocols)
       const crypto = cryptos.get(protocol)
       log('encrypting outbound connection to %j', remotePeerId)
+
+      if (!crypto) {
+        throw new Error(`no crypto module found for ${protocol}`)
+      }
 
       return {
         ...await crypto.secureOutbound(localPeer, stream, remotePeerId),
@@ -406,9 +407,9 @@ class Upgrader {
    *
    * @private
    * @async
-   * @param {*} connection - A basic duplex connection to multiplex
+   * @param {MultiaddrConnection} connection - A basic duplex connection to multiplex
    * @param {Map<string, Muxer>} muxers - The muxers to attempt multiplexing with
-   * @returns {*} A muxed connection
+   * @returns {Promise<{ stream: MuxedStream, Muxer?: Muxer}>} A muxed connection
    */
   async _multiplexOutbound (connection, muxers) {
     const dialer = new Multistream.Dialer(connection)
@@ -430,9 +431,9 @@ class Upgrader {
    *
    * @private
    * @async
-   * @param {*} connection - A basic duplex connection to multiplex
+   * @param {MultiaddrConnection} connection - A basic duplex connection to multiplex
    * @param {Map<string, Muxer>} muxers - The muxers to attempt multiplexing with
-   * @returns {*} A muxed connection
+   * @returns {Promise<{ stream: MuxedStream, Muxer?: Muxer}>} A muxed connection
    */
   async _multiplexInbound (connection, muxers) {
     const listener = new Multistream.Listener(connection)

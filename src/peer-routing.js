@@ -20,7 +20,7 @@ const {
 class PeerRouting {
   /**
    * @class
-   * @param {Libp2p} libp2p
+   * @param {import('./')} libp2p
    */
   constructor (libp2p) {
     this._peerId = libp2p.peerId

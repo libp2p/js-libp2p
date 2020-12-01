@@ -60,7 +60,7 @@ class Registrar {
    * Get a connection with a peer.
    *
    * @param {PeerId} peerId
-   * @returns {Connection}
+   * @returns {Connection | null}
    */
   getConnection (peerId) {
     return this.connectionManager.get(peerId)

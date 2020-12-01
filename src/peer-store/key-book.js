@@ -49,7 +49,7 @@ class KeyBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @param {RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey} publicKey
+   * @param {any} publicKey
    * @returns {KeyBook}
    */
   set (peerId, publicKey) {
@@ -79,7 +79,7 @@ class KeyBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @returns {RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey}
+   * @returns {any}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {

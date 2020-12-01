@@ -54,7 +54,7 @@ class Book {
   /**
    * Set data into the datastructure, persistence and emit it using the provided transformers.
    *
-   * @private
+   * @protected
    * @param {PeerId} peerId - peerId of the data to store
    * @param {T} data - data to store.
    * @param {Object} [options] - storing options.
@@ -74,9 +74,9 @@ class Book {
   /**
    * Emit data.
    *
-   * @private
+   * @protected
    * @param {PeerId} peerId
-   * @param {T} data
+   * @param {any} [data]
    */
   _emit (peerId, data) {
     this._ps.emit(this.eventName, {

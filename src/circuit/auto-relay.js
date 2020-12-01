@@ -90,6 +90,9 @@ class AutoRelay {
     // If protocol, check if can hop, store info in the metadataBook and listen on it
     try {
       const connection = this._connectionManager.get(peerId)
+      if (!connection) {
+        return
+      }
 
       // Do not hop on a relayed connection
       if (connection.remoteAddr.protoCodes().includes(CIRCUIT_PROTO_CODE)) {

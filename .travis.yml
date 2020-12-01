@@ -24,6 +24,7 @@ jobs:
         # Remove pull libs once ping is async
         - npx aegir dep-check -- -i pull-handshake -i pull-stream
         - npm run lint
+        - npm run test:types
 
     - stage: test
       name: chrome

@@ -1,7 +1,8 @@
+// @ts-nocheck
 'use strict'
 
 const mergeOptions = require('merge-options')
-const pipe = require('it-pipe')
+const { pipe } = require('it-pipe')
 const { tap } = require('streaming-iterables')
 const oldPeerLRU = require('./old-peers')
 const { METRICS: defaultOptions } = require('../constants')
@@ -19,11 +20,12 @@ const directionToEvent = {
 
 /**
  * @typedef {import('peer-id')} PeerId
+ * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
  */
 
 /**
  * @typedef MetricsProperties
- * @property {ConnectionManager} connectionManager
+ * @property {import('../connection-manager')} connectionManager
  *
  * @typedef MetricsOptions
  * @property {number} [computeThrottleMaxQueueSize = defaultOptions.computeThrottleMaxQueueSize]
@@ -216,10 +218,10 @@ class Metrics {
    * with the placeholder string returned from here, and the known `PeerId`.
    *
    * @param {Object} options
-   * @param {{ sink: function(*), source: function() }} options.stream - A duplex iterable stream
+   * @param {MultiaddrConnection} options.stream - A duplex iterable stream
    * @param {PeerId} [options.remotePeer] - The id of the remote peer that's connected
    * @param {string} [options.protocol] - The protocol the stream is running
-   * @returns {string} The peerId string or placeholder string
+   * @returns {MultiaddrConnection} The peerId string or placeholder string
    */
   trackStream ({ stream, remotePeer, protocol }) {
     const metrics = this

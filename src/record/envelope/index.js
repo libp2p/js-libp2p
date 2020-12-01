@@ -49,7 +49,7 @@ class Envelope {
 
     const publicKey = cryptoKeys.marshalPublicKey(this.peerId.pubKey)
 
-    this._marshal = Protobuf.encode({
+    this._marshal = Protobuf.Envelope.encode({
       public_key: publicKey,
       payload_type: this.payloadType,
       payload: this.payload,
@@ -102,14 +102,14 @@ const formatSignaturePayload = (domain, payloadType, payload) => {
   // - The length of the payload field in bytes
   // - The value of the payload field
 
-  domain = uint8arraysFromString(domain)
-  const domainLength = varint.encode(domain.byteLength)
+  const domainUint8Array = uint8arraysFromString(domain)
+  const domainLength = varint.encode(domainUint8Array.byteLength)
   const payloadTypeLength = varint.encode(payloadType.length)
   const payloadLength = varint.encode(payload.length)
 
   return uint8arraysConcat([
     new Uint8Array(domainLength),
-    domain,
+    domainUint8Array,
     new Uint8Array(payloadTypeLength),
     payloadType,
     new Uint8Array(payloadLength),
@@ -124,7 +124,7 @@ const formatSignaturePayload = (domain, payloadType, payload) => {
  * @returns {Promise<Envelope>}
  */
 Envelope.createFromProtobuf = async (data) => {
-  const envelopeData = Protobuf.decode(data)
+  const envelopeData = Protobuf.Envelope.decode(data)
   const peerId = await PeerId.createFromPubKey(envelopeData.public_key)
 
   return new Envelope({

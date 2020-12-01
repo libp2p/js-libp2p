@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict'
 
 require('node-forge/lib/pkcs7')

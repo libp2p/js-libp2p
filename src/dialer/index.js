@@ -9,7 +9,7 @@ const multiaddr = require('multiaddr')
 const TimeoutController = require('timeout-abort-controller')
 const anySignal = require('any-signal')
 
-const { DialRequest } = require('./dial-request')
+const DialRequest = require('./dial-request')
 const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 const getPeer = require('../get-peer')
 
@@ -27,7 +27,6 @@ const {
  * @typedef {import('../peer-store')} PeerStore
  * @typedef {import('../peer-store/address-book').Address} Address
  * @typedef {import('../transport-manager')} TransportManager
- * @typedef {import('./dial-request')} DialRequest
  */
 
 /**
@@ -241,12 +240,13 @@ class Dialer {
       return this._resolve(nm)
     }))
 
-    return recursiveMultiaddrs.flat().reduce((array, newM) => {
-      if (!array.find(m => m.equals(newM))) {
-        array.push(newM)
-      }
-      return array
-    }, []) // Unique addresses
+    return recursiveMultiaddrs.flat()
+      .reduce((/** @type {Multiaddr[]} */ array, /** @type {Multiaddr} */ newM) => {
+        if (!array.find(m => m.equals(newM))) {
+          array.push(newM)
+        }
+        return array
+      }, []) // Unique addresses
   }
 
   /**

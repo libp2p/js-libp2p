@@ -13,9 +13,10 @@ class StreamHandler {
   /**
    * Create a stream handler for connection
    *
+   * @class
    * @param {object} options
-   * @param {*} options.stream - A duplex iterable
-   * @param {number} options.maxLength - max bytes length of message
+   * @param {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} options.stream - A duplex iterable
+   * @param {number} [options.maxLength = 4096] - max bytes length of message
    */
   constructor ({ stream, maxLength = 4096 }) {
     this.stream = stream
@@ -28,7 +29,7 @@ class StreamHandler {
    * Read and decode message
    *
    * @async
-   * @returns {Promise<void>}
+   * @returns {Promise<CircuitPB>}
    */
   async read () {
     const msg = await this.decoder.next()
@@ -50,6 +51,7 @@ class StreamHandler {
    */
   write (msg) {
     log('write message type %s', msg.type)
+    // @ts-ignore
     this.shake.write(lp.encode.single(CircuitPB.encode(msg)))
   }
 

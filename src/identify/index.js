@@ -31,7 +31,7 @@ const { codes } = require('../errors')
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('libp2p-interfaces/src/connection/connection').DuplexIterableStream} DuplexIterableStream
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  */
 
 class IdentifyService {
@@ -200,9 +200,9 @@ class IdentifyService {
    * A handler to register with Libp2p to process identify messages.
    *
    * @param {Object} options
-   * @param {string} options.protocol
-   * @param {DuplexIterableStream} options.stream
    * @param {Connection} options.connection
+   * @param {MuxedStream} options.stream
+   * @param {string} options.protocol
    * @returns {Promise<void>|undefined}
    */
   handleMessage ({ connection, stream, protocol }) {
@@ -222,7 +222,7 @@ class IdentifyService {
    *
    * @private
    * @param {Object} options
-   * @param {DuplexIterableStream} options.stream
+   * @param {MuxedStream} options.stream
    * @param {Connection} options.connection
    * @returns {Promise<void>}
    */
@@ -262,7 +262,7 @@ class IdentifyService {
    *
    * @private
    * @param {object} options
-   * @param {DuplexIterableStream} options.stream
+   * @param {MuxedStream} options.stream
    * @param {Connection} options.connection
    * @returns {Promise<void>}
    */
@@ -323,14 +323,17 @@ class IdentifyService {
   }
 }
 
-module.exports.IdentifyService = IdentifyService
 /**
  * The protocols the IdentifyService supports
  *
  * @property multicodecs
  */
-module.exports.multicodecs = {
+const multicodecs = {
   IDENTIFY: MULTICODEC_IDENTIFY,
   IDENTIFY_PUSH: MULTICODEC_IDENTIFY_PUSH
 }
-module.exports.Message = Message
+
+IdentifyService.multicodecs = multicodecs
+IdentifyService.Messsage = Message
+
+module.exports = IdentifyService

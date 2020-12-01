@@ -18,6 +18,7 @@ const pAny = require('p-any')
  * @property {function(Multiaddr):Promise<Connection>} dialAction
  * @property {Dialer} dialer
  */
+
 class DialRequest {
   /**
    * Manages running the `dialAction` on multiple provided `addrs` in parallel
@@ -54,6 +55,7 @@ class DialRequest {
 
     const tokenHolder = new FIFO()
     tokens.forEach(token => tokenHolder.push(token))
+    // @ts-ignore
     const dialAbortControllers = this.addrs.map(() => new AbortController())
     let completedDials = 0
 
@@ -63,6 +65,7 @@ class DialRequest {
         let conn
         try {
           const signal = dialAbortControllers[i].signal
+          // @ts-ignore
           conn = await this.dialAction(addr, { ...options, signal: anySignal([signal, options.signal]) })
           // Remove the successful AbortController so it is not aborted
           dialAbortControllers.splice(i, 1)
@@ -85,4 +88,4 @@ class DialRequest {
   }
 }
 
-module.exports.DialRequest = DialRequest
+module.exports = DialRequest

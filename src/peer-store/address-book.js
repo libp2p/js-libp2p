@@ -124,6 +124,7 @@ class AddressBook extends Book {
 
     // Replace unsigned addresses by the new ones from the record
     // TODO: Once we have ttls for the addresses, we should merge these in.
+    // @ts-ignore
     this._setData(peerId, {
       addresses,
       record: {
@@ -188,22 +189,22 @@ class AddressBook extends Book {
     }
 
     const addresses = this._toAddresses(multiaddrs)
-    const id = peerId.toB58String()
-    const entry = this.data.get(id) || {}
-    const rec = entry.addresses
 
     // Not replace multiaddrs
     if (!addresses.length) {
       return this
     }
 
+    const id = peerId.toB58String()
+    const entry = this.data.get(id)
+
     // Already knows the peer
-    if (rec && rec.length === addresses.length) {
-      const intersection = rec.filter((addr) => addresses.some((newAddr) => addr.multiaddr.equals(newAddr.multiaddr)))
+    if (entry && entry.addresses && entry.addresses.length === addresses.length) {
+      const intersection = entry.addresses.filter((addr) => addresses.some((newAddr) => addr.multiaddr.equals(newAddr.multiaddr)))
 
       // Are new addresses equal to the old ones?
       // If yes, no changes needed!
-      if (intersection.length === rec.length) {
+      if (intersection.length === entry.addresses.length) {
         log(`the addresses provided to store are equal to the already stored for ${id}`)
         return this
       }
@@ -211,12 +212,12 @@ class AddressBook extends Book {
 
     this._setData(peerId, {
       addresses,
-      record: entry.record
+      record: entry && entry.record
     })
     log(`stored provided multiaddrs for ${id}`)
 
     // Notify the existance of a new peer
-    if (!rec) {
+    if (!(entry && entry.addresses)) {
       this._ps.emit('peer', peerId)
     }
 
@@ -240,32 +241,33 @@ class AddressBook extends Book {
     const addresses = this._toAddresses(multiaddrs)
     const id = peerId.toB58String()
 
-    const entry = this.data.get(id) || {}
-    const rec = entry.addresses || []
+    const entry = this.data.get(id)
 
-    // Add recorded uniquely to the new array (Union)
-    rec.forEach((addr) => {
-      if (!addresses.find(r => r.multiaddr.equals(addr.multiaddr))) {
-        addresses.push(addr)
+    if (entry && entry.addresses) {
+      // Add recorded uniquely to the new array (Union)
+      entry.addresses.forEach((addr) => {
+        if (!addresses.find(r => r.multiaddr.equals(addr.multiaddr))) {
+          addresses.push(addr)
+        }
+      })
+
+      // If the recorded length is equal to the new after the unique union
+      // The content is the same, no need to update.
+      if (entry.addresses.length === addresses.length) {
+        log(`the addresses provided to store are already stored for ${id}`)
+        return this
       }
-    })
-
-    // If the recorded length is equal to the new after the unique union
-    // The content is the same, no need to update.
-    if (rec && rec.length === addresses.length) {
-      log(`the addresses provided to store are already stored for ${id}`)
-      return this
     }
 
     this._setData(peerId, {
       addresses,
-      record: entry.record
+      record: entry && entry.record
     })
 
     log(`added provided multiaddrs for ${id}`)
 
     // Notify the existance of a new peer
-    if (!entry.addresses) {
+    if (!(entry && entry.addresses)) {
       this._ps.emit('peer', peerId)
     }
 

@@ -51,7 +51,7 @@ module.exports.handleStop = function handleStop ({
  * @private
  * @param {object} options
  * @param {Connection} options.connection
- * @param {*} options.request - The CircuitRelay protobuf request (unencoded)
+ * @param {CircuitPB} options.request - The CircuitRelay protobuf request (unencoded)
  * @returns {Promise<*>} Resolves a duplex iterable
  */
 module.exports.stop = async function stop ({

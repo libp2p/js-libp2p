@@ -1,5 +1,6 @@
 'use strict'
 
+// @ts-ignore
 const libp2pVersion = require('../../package.json').version
 
 module.exports.PROTOCOL_VERSION = 'ipfs/0.1.0'

@@ -14,6 +14,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
 /**
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/transport/types').Transport} Transport
  *
  * @typedef {Object} TransportManagerProperties
  * @property {import('./')} libp2p
@@ -53,6 +54,7 @@ class TransportManager {
       throw errCode(new Error('There is already a transport with this key'), codes.ERR_DUPLICATE_TRANSPORT)
     }
 
+    // @ts-ignore
     const transport = new Transport({
       ...transportOptions,
       libp2p: this.libp2p,

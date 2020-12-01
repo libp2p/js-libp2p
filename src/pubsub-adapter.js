@@ -6,42 +6,49 @@
  */
 
 // Pubsub adapter to keep API with handlers while not removed.
-module.exports = (PubsubRouter, libp2p, options) => {
-  class Pubsub extends PubsubRouter {
-    /**
-     * Subscribes to a given topic.
-     *
-     * @override
-     * @param {string} topic
-     * @param {(msg: InMessage) => void} [handler]
-     * @returns {void}
-     */
-    subscribe (topic, handler) {
-      // Bind provided handler
-      handler && this.on(topic, handler)
-      super.subscribe(topic)
+function pubsubAdapter (PubsubRouter, libp2p, options) {
+  const pubsub = new PubsubRouter(libp2p, options)
+  pubsub._subscribeAdapter = pubsub.subscribe
+  pubsub._unsubscribeAdapter = pubsub.unsubscribe
+
+  /**
+   * Subscribes to a given topic.
+   *
+   * @override
+   * @param {string} topic
+   * @param {(msg: InMessage) => void} [handler]
+   * @returns {void}
+   */
+  function subscribe (topic, handler) {
+    // Bind provided handler
+    handler && pubsub.on(topic, handler)
+    pubsub._subscribeAdapter(topic)
+  }
+
+  /**
+   * Unsubscribe from the given topic.
+   *
+   * @override
+   * @param {string} topic
+   * @param {(msg: InMessage) => void} [handler]
+   * @returns {void}
+   */
+  function unsubscribe (topic, handler) {
+    if (!handler) {
+      pubsub.removeAllListeners(topic)
+    } else {
+      pubsub.removeListener(topic, handler)
     }
 
-    /**
-     * Unsubscribe from the given topic.
-     *
-     * @override
-     * @param {string} topic
-     * @param {(msg: InMessage) => void} [handler]
-     * @returns {void}
-     */
-    unsubscribe (topic, handler) {
-      if (!handler) {
-        this.removeAllListeners(topic)
-      } else {
-        this.removeListener(topic, handler)
-      }
-
-      if (this.listenerCount(topic) === 0) {
-        super.unsubscribe(topic)
-      }
+    if (pubsub.listenerCount(topic) === 0) {
+      pubsub._unsubscribeAdapter(topic)
     }
   }
 
-  return new Pubsub(libp2p, options)
+  pubsub.subscribe = subscribe
+  pubsub.unsubscribe = unsubscribe
+
+  return pubsub
 }
+
+module.exports = pubsubAdapter

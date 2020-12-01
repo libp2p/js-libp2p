@@ -21,8 +21,7 @@ const handshake = require('it-handshake')
 const { NONCE_LENGTH } = require('./key-generator')
 
 /**
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('libp2p-interfaces/src/connection/connection').DuplexIterableStream} DuplexIterableStream
+ * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
  */
 
 class Protector {
@@ -44,8 +43,8 @@ class Protector {
    * between its two peers from the PSK the Protector instance was
    * created with.
    *
-   * @param {Connection} connection - The connection to protect
-   * @returns {Promise<DuplexIterableStream>} A protected duplex iterable
+   * @param {MultiaddrConnection} connection - The connection to protect
+   * @returns {Promise<MultiaddrConnection>} A protected duplex iterable
    */
   async protect (connection) {
     if (!connection) {

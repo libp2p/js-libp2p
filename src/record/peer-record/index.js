@@ -51,7 +51,7 @@ class PeerRecord extends Record {
       return this._marshal
     }
 
-    this._marshal = Protobuf.encode({
+    this._marshal = Protobuf.PeerRecord.encode({
       peer_id: this.peerId.toBytes(),
       seq: this.seqNumber,
       addresses: this.multiaddrs.map((m) => ({
@@ -65,7 +65,7 @@ class PeerRecord extends Record {
   /**
    * Returns true if `this` record equals the `other`.
    *
-   * @param {Record} other
+   * @param {PeerRecord} other
    * @returns {boolean}
    */
   equals (other) {
@@ -96,7 +96,7 @@ class PeerRecord extends Record {
  */
 PeerRecord.createFromProtobuf = (buf) => {
   // Decode
-  const peerRecord = Protobuf.decode(buf)
+  const peerRecord = Protobuf.PeerRecord.decode(buf)
 
   const peerId = PeerId.createFromBytes(peerRecord.peer_id)
   const multiaddrs = (peerRecord.addresses || []).map((a) => multiaddr(a.multiaddr))

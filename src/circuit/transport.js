@@ -1,8 +1,9 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:circuit')
-log.error = debug('libp2p:circuit:error')
+const log = Object.assign(debug('libp2p:circuit'), {
+  error: debug('libp2p:circuit:err')
+})
 
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
@@ -76,8 +77,7 @@ class Circuit {
         virtualConnection = await handleStop({
           connection,
           request,
-          streamHandler,
-          circuit
+          streamHandler
         })
         break
       }
@@ -94,7 +94,7 @@ class Circuit {
         remoteAddr,
         localAddr
       })
-      const type = CircuitPB.Type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
+      const type = request.Type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
       log('new %s connection %s', type, maConn.remoteAddr)
 
       const conn = await this._upgrader.upgradeInbound(maConn)
@@ -109,7 +109,7 @@ class Circuit {
    * @param {Multiaddr} ma - the multiaddr of the peer to dial
    * @param {Object} options - dial options
    * @param {AbortSignal} [options.signal] - An optional abort signal
-   * @returns {Connection} - the connection
+   * @returns {Promise<Connection>} - the connection
    */
   async dial (ma, options) {
     // Check the multiaddr to see if it contains a relay and a destination peer
@@ -129,6 +129,7 @@ class Circuit {
     try {
       const virtualConnection = await hop({
         connection: relayConnection,
+        // @ts-ignore
         circuit: this,
         request: {
           type: CircuitPB.Type.HOP,
@@ -164,7 +165,7 @@ class Circuit {
    *
    * @param {any} options
    * @param {Function} handler
-   * @returns {listener}
+   * @returns {import('libp2p-interfaces/src/transport/types').Listener}
    */
   createListener (options, handler) {
     if (typeof options === 'function') {
@@ -175,7 +176,7 @@ class Circuit {
     // Called on successful HOP and STOP requests
     this.handler = handler
 
-    return createListener(this._libp2p, options)
+    return createListener(this._libp2p)
   }
 
   /**

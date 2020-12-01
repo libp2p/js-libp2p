@@ -35,7 +35,7 @@ class PeerStore extends EventEmitter {
    * @property {PeerId} id peer's peer-id instance.
    * @property {Address[]} addresses peer's addresses containing its multiaddrs and metadata.
    * @property {string[]} protocols peer's supported protocols.
-   * @property {Map<string, Uint8Array>} metadata peer's metadata map.
+   * @property {Map<string, Uint8Array>|undefined} metadata peer's metadata map.
    */
 
   /**

@@ -30,10 +30,8 @@ const PubsubAdapter = require('./pubsub-adapter')
 const PersistentPeerStore = require('./peer-store/persistent')
 const Registrar = require('./registrar')
 const ping = require('./ping')
-const {
-  IdentifyService,
-  multicodecs: IDENTIFY_PROTOCOLS
-} = require('./identify')
+const IdentifyService = require('./identify')
+const IDENTIFY_PROTOCOLS = IdentifyService.multicodecs
 
 /**
  * @typedef {import('multiaddr')} Multiaddr
@@ -193,6 +191,7 @@ class Libp2p extends EventEmitter {
     })
 
     if (this._config.relay.enabled) {
+      // @ts-ignore
       this.transportManager.add(Circuit.prototype[Symbol.toStringTag], Circuit)
       this.relay = new Relay(this)
     }
@@ -206,6 +205,7 @@ class Libp2p extends EventEmitter {
 
       // Add the identify service since we can multiplex
       this.identifyService = new IdentifyService({ libp2p: this })
+      // @ts-ignore
       this.handle(Object.values(IDENTIFY_PROTOCOLS), this.identifyService.handleMessage)
     }
 
@@ -254,13 +254,16 @@ class Libp2p extends EventEmitter {
    *
    * @param {string} eventName
    * @param  {...any} args
-   * @returns {void}
+   * @returns {boolean}
    */
   emit (eventName, ...args) {
+    // TODO: do we still need this?
+    // @ts-ignore
     if (eventName === 'error' && !this._events.error) {
-      log.error(...args)
+      log.error(args)
+      return false
     } else {
-      super.emit(eventName, ...args)
+      return super.emit(eventName, ...args)
     }
   }
 
@@ -463,7 +466,7 @@ class Libp2p extends EventEmitter {
    * Registers the `handler` for each protocol
    *
    * @param {string[]|string} protocols
-   * @param {function({ connection:*, stream:*, protocol:string })} handler
+   * @param {({ connection: Connection, stream: any, protocol: string }) => void} handler
    */
   handle (protocols, handler) {
     protocols = Array.isArray(protocols) ? protocols : [protocols]
@@ -629,7 +632,9 @@ class Libp2p extends EventEmitter {
 
     // Transport modules with discovery
     for (const Transport of this.transportManager.getTransports()) {
+      // @ts-ignore
       if (Transport.discovery) {
+        // @ts-ignore
         setupService(Transport.discovery)
       }
     }

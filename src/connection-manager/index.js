@@ -175,10 +175,7 @@ class ConnectionManager extends EventEmitter {
     if (value < 0 || value > 1) {
       throw new Error('value should be a number between 0 and 1')
     }
-    if (peerId.toB58String) {
-      peerId = peerId.toB58String()
-    }
-    this._peerValues.set(peerId, value)
+    this._peerValues.set(peerId.toB58String(), value)
   }
 
   /**
