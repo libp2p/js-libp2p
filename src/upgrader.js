@@ -7,7 +7,6 @@ const log = Object.assign(debug('libp2p:upgrader'), {
 const errCode = require('err-code')
 const Multistream = require('multistream-select')
 const { Connection } = require('libp2p-interfaces/src/connection')
-const ConnectionStatus = require('libp2p-interfaces/src/connection/status')
 const PeerId = require('peer-id')
 const { pipe } = require('it-pipe')
 const mutableProxy = require('mutable-proxy')
@@ -223,8 +222,7 @@ class Upgrader {
     let connection
 
     if (Muxer) {
-      // Create the muxer
-      // @ts-ignore
+      // @ts-ignore Create the muxer
       muxer = new Muxer({
         // Run anytime a remote stream is created
         onStream: async muxedStream => {
@@ -270,7 +268,7 @@ class Upgrader {
           // Wait for close to finish before notifying of the closure
           (async () => {
             try {
-              if (connection.stat.status === ConnectionStatus.OPEN) {
+              if (connection.stat.status === 'open') {
                 await connection.close()
               }
             } catch (err) {

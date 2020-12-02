@@ -54,7 +54,6 @@ class TransportManager {
       throw errCode(new Error('There is already a transport with this key'), codes.ERR_DUPLICATE_TRANSPORT)
     }
 
-    // @ts-ignore
     const transport = new Transport({
       ...transportOptions,
       libp2p: this.libp2p,

@@ -1,0 +1,67 @@
+name: ci
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: yarn
+    - run: yarn lint
+    - run: yarn build
+    - uses: gozala/typescript-error-reporter-action@v1.0.4
+    - run: yarn aegir dep-check -- -i aegir
+    - uses: ipfs/aegir/actions/bundle-size@master
+      name: size
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+  test-node:
+    needs: check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [12, 14]
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - run: yarn
+      - run: npx nyc --reporter=lcov npm run test:node -- --bail
+      - uses: codecov/codecov-action@v1
+  test-chrome:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: yarn aegir test -t browser -t webworker
+  test-firefox:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: yarn aegir test -t browser -t webworker -- --browsers FirefoxHeadless
+  test-electron-main:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: npx xvfb-maybe yarn aegir test -t electron-main --bail
+  test-electron-renderer:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: npx xvfb-maybe yarn aegir test -t electron-renderer --bail 
