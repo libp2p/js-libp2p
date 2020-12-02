@@ -18,6 +18,7 @@
     "src"
   ],
   "scripts": {
+    "prepare": "aegir build",
     "lint": "aegir lint",
     "build": "aegir build",
     "test": "npm run test:node && npm run test:browser",
