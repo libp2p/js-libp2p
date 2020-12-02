@@ -70,7 +70,7 @@
     "it-pipe": "^1.1.0",
     "it-protocol-buffers": "^0.2.0",
     "libp2p-crypto": "^0.18.0",
-    "libp2p-interfaces": "libp2p/js-libp2p-interfaces#feat/add-types-with-post-install",
+    "libp2p-interfaces": "^0.7.2",
     "libp2p-utils": "^0.2.2",
     "mafmt": "^8.0.0",
     "merge-options": "^2.0.0",
