@@ -9,7 +9,7 @@ const LRU = require('hashlru')
  * @returns {any}
  */
 module.exports = (maxSize) => {
-  // @ts-ignore
+  // @ts-ignore LRU expression is not callable
   const patched = LRU(maxSize)
   patched.delete = patched.remove
   return patched

@@ -346,7 +346,7 @@ class PersistentPeerStore extends PeerStore {
         case 'addrs':
           decoded = Addresses.decode(value)
 
-          // @ts-ignore
+          // @ts-ignore protected function
           this.addressBook._setData(
             peerId,
             {
@@ -364,7 +364,7 @@ class PersistentPeerStore extends PeerStore {
         case 'keys':
           decoded = await PeerId.createFromPubKey(value)
 
-          // @ts-ignore
+          // @ts-ignore protected function
           this.keyBook._setData(
             decoded,
             decoded,
@@ -380,7 +380,7 @@ class PersistentPeerStore extends PeerStore {
         case 'protos':
           decoded = Protocols.decode(value)
 
-          // @ts-ignore
+          // @ts-ignore protected function
           this.protoBook._setData(
             peerId,
             new Set(decoded.protocols),

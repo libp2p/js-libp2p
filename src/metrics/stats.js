@@ -24,7 +24,6 @@ class Stats extends EventEmitter {
     this._frequencyLastTime = Date.now()
     this._frequencyAccumulators = {}
 
-    /** @type {{}} */
     this._movingAverages = {}
 
     this._update = this._update.bind(this)

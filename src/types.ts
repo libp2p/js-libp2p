@@ -7,16 +7,6 @@ export enum KeyType {
   ECDSA = 3
 }
 
-export type MessagePublicKey = {
-  Type: KeyType
-  Data: Uint8Array
-}
-
-export type MessageExchange = {
-  id: Uint8Array
-  pubKey: MessagePublicKey
-}
-
 // Protobufs
 export type MessageProto = {
   encode(value: any): Uint8Array

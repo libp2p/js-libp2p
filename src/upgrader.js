@@ -14,7 +14,6 @@ const mutableProxy = require('mutable-proxy')
 const { codes } = require('./errors')
 
 /**
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').Muxer} Muxer
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
@@ -222,7 +221,7 @@ class Upgrader {
     let connection
 
     if (Muxer) {
-      // @ts-ignore Create the muxer
+      // Create the muxer
       muxer = new Muxer({
         // Run anytime a remote stream is created
         onStream: async muxedStream => {

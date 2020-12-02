@@ -23,23 +23,13 @@ const Envelope = require('../record/envelope')
  */
 
 /**
- * Address object
- *
  * @typedef {Object} Address
  * @property {Multiaddr} multiaddr peer multiaddr.
  * @property {boolean} isCertified obtained from a signed peer record.
- */
-
-/**
- * CertifiedRecord object
  *
  * @typedef {Object} CertifiedRecord
  * @property {Uint8Array} raw raw envelope.
  * @property {number} seqNumber seq counter.
- */
-
-/**
- * Entry object for the addressBook
  *
  * @typedef {Object} Entry
  * @property {Address[]} addresses peer Addresses.
@@ -124,7 +114,6 @@ class AddressBook extends Book {
 
     // Replace unsigned addresses by the new ones from the record
     // TODO: Once we have ttls for the addresses, we should merge these in.
-    // @ts-ignore
     this._setData(peerId, {
       addresses,
       record: {

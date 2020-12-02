@@ -12,14 +12,14 @@ const { UnexpectedPeerError, InvalidCryptoExchangeError } = require('libp2p-inte
 const { Exchange, KeyType } = require('./proto')
 const protocol = '/plaintext/2.0.0'
 
+/**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ */
+
 function lpEncodeExchange (exchange) {
   const pb = Exchange.encode(exchange)
   return lp.encode.single(pb)
 }
-
-/**
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- */
 
 /**
  * Encrypt connection.

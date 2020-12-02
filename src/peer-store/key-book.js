@@ -16,6 +16,7 @@ const {
 
 /**
  * @typedef {import('./')} PeerStore
+ * @typedef {import('libp2p-crypto').PublicKey} PublicKey
  */
 
 /**
@@ -49,7 +50,7 @@ class KeyBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @param {any} publicKey
+   * @param {PublicKey} publicKey
    * @returns {KeyBook}
    */
   set (peerId, publicKey) {
@@ -79,7 +80,7 @@ class KeyBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @returns {any}
+   * @returns {PublicKey | undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {

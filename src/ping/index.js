@@ -28,7 +28,7 @@ const { PROTOCOL, PING_LENGTH } = require('./constants')
  * @returns {Promise<number>}
  */
 async function ping (node, peer) {
-  // @ts-ignore
+  // @ts-ignore multiaddr might not have toB58String
   log('dialing %s to %s', PROTOCOL, peer.toB58String ? peer.toB58String() : peer)
 
   const { stream } = await node.dialProtocol(peer, PROTOCOL)

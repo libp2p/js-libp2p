@@ -60,7 +60,7 @@ class MetadataBook extends Book {
    * @param {Uint8Array} value - metadata value
    * @returns {MetadataBook}
    */
-  // @ts-ignore
+  // @ts-ignore override with more then the parameters expected in Book
   set (peerId, key, value) {
     if (!PeerId.isPeerId(peerId)) {
       log.error('peerId must be an instance of peer-id to store data')
@@ -105,7 +105,6 @@ class MetadataBook extends Book {
    * @param {PeerId} peerId
    * @returns {Map<string, Uint8Array>|undefined}
    */
-  // @ts-ignore
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
       throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)

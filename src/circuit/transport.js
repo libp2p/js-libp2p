@@ -129,8 +129,6 @@ class Circuit {
     try {
       const virtualConnection = await hop({
         connection: relayConnection,
-        // @ts-ignore
-        circuit: this,
         request: {
           type: CircuitPB.Type.HOP,
           srcPeer: {

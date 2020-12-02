@@ -1,6 +1,6 @@
 'use strict'
 
-// @ts-ignore
+// @ts-ignore file not listed within the file list of projects
 const libp2pVersion = require('../../package.json').version
 
 module.exports.PROTOCOL_VERSION = 'ipfs/0.1.0'

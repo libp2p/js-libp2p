@@ -90,7 +90,7 @@ class Book {
    * Returns `undefined` if there is no available data for the given peer.
    *
    * @param {PeerId} peerId
-   * @returns {T[]|undefined}
+   * @returns {T[]|T|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {

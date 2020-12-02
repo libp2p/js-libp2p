@@ -1,7 +1,7 @@
 'use strict'
 
 const errCode = require('err-code')
-const AbortController = require('abort-controller')
+const AbortController = require('abort-controller').default
 const anySignal = require('any-signal')
 const FIFO = require('p-fifo')
 const pAny = require('p-any')
@@ -13,9 +13,12 @@ const pAny = require('p-any')
  */
 
 /**
+ * @typedef {Object} DialOptions
+ * @property {AbortSignal} signal
+ *
  * @typedef {Object} DialRequestOptions
  * @property {Multiaddr[]} addrs
- * @property {function(Multiaddr):Promise<Connection>} dialAction
+ * @property {(m: Multiaddr, options: DialOptions) => Promise<Connection>} dialAction
  * @property {Dialer} dialer
  */
 
@@ -46,7 +49,7 @@ class DialRequest {
    * @param {AbortSignal} [options.signal] - An AbortController signal
    * @returns {Promise<Connection>}
    */
-  async run (options) {
+  async run (options = {}) {
     const tokens = this.dialer.getTokens(this.addrs.length)
     // If no tokens are available, throw
     if (tokens.length < 1) {
@@ -55,7 +58,6 @@ class DialRequest {
 
     const tokenHolder = new FIFO()
     tokens.forEach(token => tokenHolder.push(token))
-    // @ts-ignore
     const dialAbortControllers = this.addrs.map(() => new AbortController())
     let completedDials = 0
 
@@ -65,7 +67,6 @@ class DialRequest {
         let conn
         try {
           const signal = dialAbortControllers[i].signal
-          // @ts-ignore
           conn = await this.dialAction(addr, { ...options, signal: anySignal([signal, options.signal]) })
           // Remove the successful AbortController so it is not aborted
           dialAbortControllers.splice(i, 1)

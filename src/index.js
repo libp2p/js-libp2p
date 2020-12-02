@@ -36,6 +36,8 @@ const IDENTIFY_PROTOCOLS = IdentifyService.multicodecs
 /**
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ * @typedef {import('libp2p-interfaces/src/pubsub')} Pubsub
  */
 
 /**
@@ -52,9 +54,9 @@ const IDENTIFY_PROTOCOLS = IdentifyService.multicodecs
  * @property {import('./circuit').AutoRelayOptions} autoRelay
  *
  * @typedef {Object} Libp2pConfig
- * @property {Object} [dht] dht module options
+ * @property {any} [dht] dht module options
  * @property {PeerDiscoveryOptions} [peerDiscovery]
- * @property {Object} [pubsub] pubsub module options
+ * @property {Pubsub} [pubsub] pubsub module options
  * @property {RelayOptions} [relay]
  * @property {Object} [transport] transport options indexed by transport key
  *
@@ -191,7 +193,7 @@ class Libp2p extends EventEmitter {
     })
 
     if (this._config.relay.enabled) {
-      // @ts-ignore
+      // @ts-ignore Circuit prototype
       this.transportManager.add(Circuit.prototype[Symbol.toStringTag], Circuit)
       this.relay = new Relay(this)
     }
@@ -205,7 +207,6 @@ class Libp2p extends EventEmitter {
 
       // Add the identify service since we can multiplex
       this.identifyService = new IdentifyService({ libp2p: this })
-      // @ts-ignore
       this.handle(Object.values(IDENTIFY_PROTOCOLS), this.identifyService.handleMessage)
     }
 
@@ -234,6 +235,7 @@ class Libp2p extends EventEmitter {
     if (this._modules.pubsub) {
       const Pubsub = this._modules.pubsub
       // using pubsub adapter with *DEPRECATED* handlers functionality
+      /** @type {Pubsub} */
       this.pubsub = PubsubAdapter(Pubsub, this, this._config.pubsub)
     }
 
@@ -258,7 +260,7 @@ class Libp2p extends EventEmitter {
    */
   emit (eventName, ...args) {
     // TODO: do we still need this?
-    // @ts-ignore
+    // @ts-ignore _events does not exist in libp2p
     if (eventName === 'error' && !this._events.error) {
       log.error(args)
       return false
@@ -466,7 +468,7 @@ class Libp2p extends EventEmitter {
    * Registers the `handler` for each protocol
    *
    * @param {string[]|string} protocols
-   * @param {({ connection: Connection, stream: any, protocol: string }) => void} handler
+   * @param {({ connection: Connection, stream: MuxedStream, protocol: string }) => void} handler
    */
   handle (protocols, handler) {
     protocols = Array.isArray(protocols) ? protocols : [protocols]
@@ -632,9 +634,9 @@ class Libp2p extends EventEmitter {
 
     // Transport modules with discovery
     for (const Transport of this.transportManager.getTransports()) {
-      // @ts-ignore
+      // @ts-ignore Transport interface does not include discovery
       if (Transport.discovery) {
-        // @ts-ignore
+        // @ts-ignore Transport interface does not include discovery
         setupService(Transport.discovery)
       }
     }

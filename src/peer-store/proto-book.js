@@ -83,7 +83,6 @@ class ProtoBook extends Book {
       return this
     }
 
-    // @ts-ignore
     this._setData(peerId, newSet)
     log(`stored provided protocols for ${id}`)
 
@@ -119,7 +118,6 @@ class ProtoBook extends Book {
       return this
     }
 
-    // @ts-ignore
     this._setData(peerId, newSet)
     log(`added provided protocols for ${id}`)
 
@@ -158,7 +156,6 @@ class ProtoBook extends Book {
         return this
       }
 
-      // @ts-ignore
       this._setData(peerId, newSet)
       log(`removed provided protocols for ${id}`)
     }

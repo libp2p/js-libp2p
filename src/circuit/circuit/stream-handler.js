@@ -47,11 +47,11 @@ class StreamHandler {
   /**
    * Encode and write array of buffers
    *
-   * @param {*} msg - An unencoded CircuitRelay protobuf message
+   * @param {CircuitPB} msg - An unencoded CircuitRelay protobuf message
    */
   write (msg) {
     log('write message type %s', msg.type)
-    // @ts-ignore
+    // @ts-ignore lp.encode expects type type 'Buffer | BufferList', not 'Uint8Array'
     this.shake.write(lp.encode.single(CircuitPB.encode(msg)))
   }
 
