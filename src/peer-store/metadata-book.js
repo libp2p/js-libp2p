@@ -10,17 +10,23 @@ const uint8ArrayEquals = require('uint8arrays/equals')
 const PeerId = require('peer-id')
 
 const Book = require('./book')
-
 const {
   codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
+
+const eventName = 'change:metadata'
+const eventProperty = 'metadata'
 
 /**
  * @typedef {import('./')} PeerStore
  */
 
 /**
- * @extends {Book}
+ * @typedef {Map<string, Uint8Array>} Metadata
+ */
+
+/**
+ * @extends {Book<Metadata, Metadata, string>}
  *
  * @fires MetadataBook#change:metadata
  */
@@ -39,14 +45,14 @@ class MetadataBook extends Book {
      */
     super({
       peerStore,
-      eventName: 'change:metadata',
-      eventProperty: 'metadata'
+      eventName,
+      eventProperty
     })
 
     /**
      * Map known peers to their known protocols.
      *
-     * @type {Map<string, Map<string, Uint8Array>>}
+     * @type {Map<string, Metadata>}
      */
     this.data = new Map()
   }
@@ -97,20 +103,6 @@ class MetadataBook extends Book {
     this.data.set(id, rec)
 
     emit && this._emit(peerId, key)
-  }
-
-  /**
-   * Get the known data of a provided peer.
-   *
-   * @param {PeerId} peerId
-   * @returns {Map<string, Uint8Array>|undefined}
-   */
-  get (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    return this.data.get(peerId.toB58String())
   }
 
   /**
@@ -167,7 +159,10 @@ class MetadataBook extends Book {
       return false
     }
 
-    this._emit(peerId, key)
+    this._ps.emit(eventName, {
+      peerId,
+      [eventProperty]: key
+    })
 
     return true
   }

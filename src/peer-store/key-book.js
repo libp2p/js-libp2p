@@ -20,7 +20,7 @@ const {
  */
 
 /**
- * @extends {Book}
+ * @extends {Book<PeerId, PublicKey, PublicKey>}
  */
 class KeyBook extends Book {
   /**
@@ -34,7 +34,8 @@ class KeyBook extends Book {
       peerStore,
       eventName: 'change:pubkey',
       eventProperty: 'pubkey',
-      eventTransformer: (data) => data.pubKey
+      eventTransformer: (data) => data && data.pubKey,
+      getTransformer: (data) => data && data.pubKey
     })
 
     /**
@@ -73,23 +74,6 @@ class KeyBook extends Book {
     }
 
     return this
-  }
-
-  /**
-   * Get Public key of the given PeerId, if stored.
-   *
-   * @override
-   * @param {PeerId} peerId
-   * @returns {PublicKey | undefined}
-   */
-  get (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    const rec = this.data.get(peerId.toB58String())
-
-    return rec ? rec.pubKey : undefined
   }
 }
 
