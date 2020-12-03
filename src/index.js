@@ -11,7 +11,7 @@ const errCode = require('err-code')
 const PeerId = require('peer-id')
 
 const PeerRouting = require('./peer-routing')
-const contentRouting = require('./content-routing')
+const ContentRouting = require('./content-routing')
 const getPeer = require('./get-peer')
 const { validate: validateConfig } = require('./config')
 const { codes, messages } = require('./errors')
@@ -242,7 +242,7 @@ class Libp2p extends EventEmitter {
     // Attach remaining APIs
     // peer and content routing will automatically get modules from _modules and _dht
     this.peerRouting = new PeerRouting(this)
-    this.contentRouting = contentRouting(this)
+    this.contentRouting = new ContentRouting(this)
 
     // Mount default protocols
     ping.mount(this)

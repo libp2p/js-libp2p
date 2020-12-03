@@ -13,9 +13,6 @@ const passthrough = data => data
  * @typedef {import('./')} PeerStore
  */
 
-/**
- * @template T
- */
 class Book {
   /**
    * The Book is the skeleton for the PeerStore books.
@@ -25,7 +22,7 @@ class Book {
    * @param {PeerStore} properties.peerStore - PeerStore instance.
    * @param {string} properties.eventName - Name of the event to emit by the PeerStore.
    * @param {string} properties.eventProperty - Name of the property to emit by the PeerStore.
-   * @param {(data: T) => T[]} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
+   * @param {(data: any) => any[]} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
    */
   constructor ({ peerStore, eventName, eventProperty, eventTransformer = passthrough }) {
     this._ps = peerStore
@@ -36,7 +33,7 @@ class Book {
     /**
      * Map known peers to their data.
      *
-     * @type {Map<string, T[]|T>}
+     * @type {Map<string, any[]|any>}
      */
     this.data = new Map()
   }
@@ -45,7 +42,7 @@ class Book {
    * Set known data of a provided peer.
    *
    * @param {PeerId} peerId
-   * @param {T[]|T} data
+   * @param {any[]|any} data
    */
   set (peerId, data) {
     throw errcode(new Error('set must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
@@ -56,7 +53,7 @@ class Book {
    *
    * @protected
    * @param {PeerId} peerId - peerId of the data to store
-   * @param {T} data - data to store.
+   * @param {any} data - data to store.
    * @param {Object} [options] - storing options.
    * @param {boolean} [options.emit = true] - emit the provided data.
    * @returns {void}
@@ -90,7 +87,7 @@ class Book {
    * Returns `undefined` if there is no available data for the given peer.
    *
    * @param {PeerId} peerId
-   * @returns {T[]|T|undefined}
+   * @returns {any[]|any|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
