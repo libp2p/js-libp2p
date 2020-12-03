@@ -51,3 +51,17 @@ jobs:
       - uses: actions/checkout@v2
       - run: yarn
       - run: npx aegir test -t browser -t webworker --bail -- --browsers FirefoxHeadless
+  test-interop:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: cd node_modules/interop-libp2p && yarn && LIBP2P_JS=${GITHUB_WORKSPACE}/src/index.js npx aegir test -t node --bail
+  test-auto-relay-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: cd examples && yarn && npm run test -- auto-relay
