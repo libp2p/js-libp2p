@@ -14,7 +14,7 @@ const passthrough = data => data
  */
 
 /**
- * @template T
+ * @template Data, GetData, EventData
  */
 class Book {
   /**
@@ -25,18 +25,20 @@ class Book {
    * @param {PeerStore} properties.peerStore - PeerStore instance.
    * @param {string} properties.eventName - Name of the event to emit by the PeerStore.
    * @param {string} properties.eventProperty - Name of the property to emit by the PeerStore.
-   * @param {(data: T) => T[]} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
+   * @param {(data: Data | undefined) => EventData | undefined} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
+   * @param {(data: Data | undefined) => GetData | undefined} [properties.getTransformer] - Transformer function of the provided data for being returned on get.
    */
-  constructor ({ peerStore, eventName, eventProperty, eventTransformer = passthrough }) {
+  constructor ({ peerStore, eventName, eventProperty, eventTransformer = passthrough, getTransformer = passthrough }) {
     this._ps = peerStore
     this.eventName = eventName
     this.eventProperty = eventProperty
     this.eventTransformer = eventTransformer
+    this.getTransformer = getTransformer
 
     /**
      * Map known peers to their data.
      *
-     * @type {Map<string, T[]|T>}
+     * @type {Map<string, Data>}
      */
     this.data = new Map()
   }
@@ -45,7 +47,7 @@ class Book {
    * Set known data of a provided peer.
    *
    * @param {PeerId} peerId
-   * @param {T[]|T} data
+   * @param {unknown} data
    */
   set (peerId, data) {
     throw errcode(new Error('set must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
@@ -56,7 +58,7 @@ class Book {
    *
    * @protected
    * @param {PeerId} peerId - peerId of the data to store
-   * @param {T} data - data to store.
+   * @param {Data} data - data to store.
    * @param {Object} [options] - storing options.
    * @param {boolean} [options.emit = true] - emit the provided data.
    * @returns {void}
@@ -76,7 +78,7 @@ class Book {
    *
    * @protected
    * @param {PeerId} peerId
-   * @param {any} [data]
+   * @param {Data | undefined} [data]
    */
   _emit (peerId, data) {
     this._ps.emit(this.eventName, {
@@ -90,7 +92,7 @@ class Book {
    * Returns `undefined` if there is no available data for the given peer.
    *
    * @param {PeerId} peerId
-   * @returns {T[]|T|undefined}
+   * @returns {GetData | undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
@@ -99,8 +101,7 @@ class Book {
 
     const rec = this.data.get(peerId.toB58String())
 
-    // @ts-ignore
-    return rec ? [...rec] : undefined
+    return this.getTransformer(rec)
   }
 
   /**
@@ -118,7 +119,7 @@ class Book {
       return false
     }
 
-    this._emit(peerId, [])
+    this._emit(peerId, undefined)
 
     return true
   }

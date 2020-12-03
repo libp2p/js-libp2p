@@ -33,11 +33,11 @@ const Envelope = require('../record/envelope')
  *
  * @typedef {Object} Entry
  * @property {Address[]} addresses peer Addresses.
- * @property {CertifiedRecord} record certified peer record.
+ * @property {CertifiedRecord} [record] certified peer record.
  */
 
 /**
- * @extends {Book}
+ * @extends {Book<Entry, Address[], Multiaddr[]>}
  */
 class AddressBook extends Book {
   /**
@@ -56,12 +56,13 @@ class AddressBook extends Book {
       peerStore,
       eventName: 'change:multiaddrs',
       eventProperty: 'multiaddrs',
-      eventTransformer: (data) => {
-        if (!data.addresses) {
+      eventTransformer: (entry) => {
+        if (!entry || !entry.addresses) {
           return []
         }
-        return data.addresses.map((address) => address.multiaddr)
-      }
+        return entry.addresses.map((address) => address.multiaddr)
+      },
+      getTransformer: (entry) => entry && entry.addresses ? [...entry.addresses] : undefined
     })
 
     /**
@@ -261,23 +262,6 @@ class AddressBook extends Book {
     }
 
     return this
-  }
-
-  /**
-   * Get the known data of a provided peer.
-   *
-   * @override
-   * @param {PeerId} peerId
-   * @returns {Address[]|undefined}
-   */
-  get (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    const entry = this.data.get(peerId.toB58String())
-
-    return entry && entry.addresses ? [...entry.addresses] : undefined
   }
 
   /**

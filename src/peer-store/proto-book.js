@@ -17,8 +17,21 @@ const {
  * @typedef {import('./')} PeerStore
  */
 
+// @extends {Book<Entry, Address, Multiaddr>}
+
 /**
- * @extends {Book}
+ * @param {Set<string> | undefined} set
+ * @returns {string[] | undefined}
+ */
+const transformSetToArray = (set) => {
+  if (!set) {
+    return undefined
+  }
+  return Array.from(set)
+}
+
+/**
+ * @extends {Book<Set<string>, string[], string[]>}
  *
  * @fires ProtoBook#change:protocols
  */
@@ -39,7 +52,8 @@ class ProtoBook extends Book {
       peerStore,
       eventName: 'change:protocols',
       eventProperty: 'protocols',
-      eventTransformer: (data) => Array.from(data)
+      eventTransformer: (data) => transformSetToArray(data) || [],
+      getTransformer: (data) => transformSetToArray(data)
     })
 
     /**
