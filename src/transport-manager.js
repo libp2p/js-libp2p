@@ -14,6 +14,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
 /**
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory} TransportFactory
  * @typedef {import('libp2p-interfaces/src/transport/types').Transport} Transport
  *
  * @typedef {Object} TransportManagerProperties
@@ -32,6 +33,7 @@ class TransportManager {
   constructor ({ libp2p, upgrader, faultTolerance = FAULT_TOLERANCE.FATAL_ALL }) {
     this.libp2p = libp2p
     this.upgrader = upgrader
+    /** @type {Map<string, Transport>} */
     this._transports = new Map()
     this._listeners = new Map()
     this.faultTolerance = faultTolerance
@@ -41,7 +43,7 @@ class TransportManager {
    * Adds a `Transport` to the manager
    *
    * @param {string} key
-   * @param {Transport} Transport
+   * @param {TransportFactory} Transport
    * @param {*} transportOptions - Additional options to pass to the transport
    * @returns {void}
    */

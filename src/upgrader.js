@@ -15,6 +15,7 @@ const { codes } = require('./errors')
 
 /**
  * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory} MuxerFactory
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').Muxer} Muxer
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
@@ -34,7 +35,7 @@ class Upgrader {
    * @param {PeerId} options.localPeer
    * @param {import('./metrics')} [options.metrics]
    * @param {Map<string, Crypto>} [options.cryptos]
-   * @param {Map<string, Muxer>} [options.muxers]
+   * @param {Map<string, MuxerFactory>} [options.muxers]
    * @param {(Connection) => void} options.onConnection - Called when a connection is upgraded
    * @param {(Connection) => void} options.onConnectionEnd
    */
@@ -203,7 +204,7 @@ class Upgrader {
    * @param {string} options.direction - One of ['inbound', 'outbound']
    * @param {MultiaddrConnection} options.maConn - The transport layer connection
    * @param {MuxedStream | MultiaddrConnection} options.upgradedConn - A duplex connection returned from multiplexer and/or crypto selection
-   * @param {Muxer} [options.Muxer] - The muxer to be used for muxing
+   * @param {MuxerFactory} [options.Muxer] - The muxer to be used for muxing
    * @param {PeerId} options.remotePeer - The peer the connection is with
    * @returns {Connection}
    */
@@ -405,8 +406,8 @@ class Upgrader {
    * @private
    * @async
    * @param {MultiaddrConnection} connection - A basic duplex connection to multiplex
-   * @param {Map<string, Muxer>} muxers - The muxers to attempt multiplexing with
-   * @returns {Promise<{ stream: MuxedStream, Muxer?: Muxer}>} A muxed connection
+   * @param {Map<string, MuxerFactory>} muxers - The muxers to attempt multiplexing with
+   * @returns {Promise<{ stream: MuxedStream, Muxer?: MuxerFactory}>} A muxed connection
    */
   async _multiplexOutbound (connection, muxers) {
     const dialer = new Multistream.Dialer(connection)
@@ -429,8 +430,8 @@ class Upgrader {
    * @private
    * @async
    * @param {MultiaddrConnection} connection - A basic duplex connection to multiplex
-   * @param {Map<string, Muxer>} muxers - The muxers to attempt multiplexing with
-   * @returns {Promise<{ stream: MuxedStream, Muxer?: Muxer}>} A muxed connection
+   * @param {Map<string, MuxerFactory>} muxers - The muxers to attempt multiplexing with
+   * @returns {Promise<{ stream: MuxedStream, Muxer?: MuxerFactory}>} A muxed connection
    */
   async _multiplexInbound (connection, muxers) {
     const listener = new Multistream.Listener(connection)

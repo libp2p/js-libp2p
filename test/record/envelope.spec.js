@@ -6,7 +6,6 @@ chai.use(require('chai-bytes'))
 const uint8arrayFromString = require('uint8arrays/from-string')
 const uint8arrayEquals = require('uint8arrays/equals')
 const Envelope = require('../../src/record/envelope')
-const Record = require('libp2p-interfaces/src/record')
 const { codes: ErrorCodes } = require('../../src/errors')
 
 const peerUtils = require('../utils/creators/peer')
@@ -14,9 +13,10 @@ const peerUtils = require('../utils/creators/peer')
 const domain = 'libp2p-testing'
 const codec = uint8arrayFromString('/libp2p/testdata')
 
-class TestRecord extends Record {
+class TestRecord {
   constructor (data) {
-    super(domain, codec)
+    this.domain = domain
+    this.codec = codec
     this.data = data
   }
 

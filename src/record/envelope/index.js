@@ -12,7 +12,7 @@ const { codes } = require('../../errors')
 const Protobuf = require('./envelope.proto')
 
 /**
- * @typedef {import('libp2p-interfaces/src/record')} Record
+ * @typedef {import('libp2p-interfaces/src/record/types').Record} Record
  */
 
 class Envelope {

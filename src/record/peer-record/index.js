@@ -2,7 +2,6 @@
 
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
-const Record = require('libp2p-interfaces/src/record')
 const arrayEquals = require('libp2p-utils/src/array-equals')
 
 const Protobuf = require('./peer-record.proto')
@@ -14,12 +13,13 @@ const {
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('libp2p-interfaces/src/record/types').Record} Record
  */
 
 /**
- * @extends {Record}
+ * @implements {Record}
  */
-class PeerRecord extends Record {
+class PeerRecord {
   /**
    * The PeerRecord is used for distributing peer routing records across the network.
    * It contains the peer's reachable listen addresses.
@@ -31,7 +31,8 @@ class PeerRecord extends Record {
    * @param {number} [params.seqNumber] - monotonically-increasing sequence counter that's used to order PeerRecords in time.
    */
   constructor ({ peerId, multiaddrs = [], seqNumber = Date.now() }) {
-    super(ENVELOPE_DOMAIN_PEER_RECORD, ENVELOPE_PAYLOAD_TYPE_PEER_RECORD)
+    this.domain = ENVELOPE_DOMAIN_PEER_RECORD
+    this.codec = ENVELOPE_PAYLOAD_TYPE_PEER_RECORD
 
     this.peerId = peerId
     this.multiaddrs = multiaddrs
@@ -66,7 +67,7 @@ class PeerRecord extends Record {
    * Returns true if `this` record equals the `other`.
    *
    * @param {PeerRecord} other
-   * @returns {boolean}
+   * @returns {other is Record}
    */
   equals (other) {
     // Validate PeerId
