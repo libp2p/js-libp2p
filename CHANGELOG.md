@@ -1,3 +1,13 @@
+<a name="0.20.2"></a>
+## [0.20.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.20.1...v0.20.2) (2020-12-04)
+
+
+### Features
+
+* onPut and onRemove events ([#205](https://github.com/libp2p/js-libp2p-kad-dht/issues/205)) ([b28afdd](https://github.com/libp2p/js-libp2p-kad-dht/commit/b28afdd))
+
+
+
 <a name="0.20.1"></a>
 ## [0.20.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.19.9...v0.20.1) (2020-08-11)
 
