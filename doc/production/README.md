@@ -12,6 +12,7 @@ This guide aims to guide you from using the public infrastructure into setting u
   * [Star servers](#star-servers)
   * [Delegate nodes](#delegate-nodes)
   * [Circuit Relay](#circuit-relay)
+  * [SSL](#ssl)
 
 ## `webrtc-star` servers
 
@@ -36,3 +37,7 @@ Libp2p nodes acting as circuit relay aim to establish connectivity between libp2
 A relay is needed in situations where nodes are behind NAT, reverse proxies, firewalls and/or simply don't support the same transports (e.g. go-libp2p vs. browser-libp2p). The circuit relay protocol exists to overcome those scenarios. Nodes with the `auto-relay` feature enabled can automatically bind themselves on a relay to listen for connections on their behalf.
 
 You can use [libp2p/js-libp2p-hop-relay-server](https://github.com/libp2p/js-libp2p-hop-relay-server) to setup your own relay server. This also includes an easy to customize Docker setup for a HOP Relay.
+
+## SSL
+
+TODO
