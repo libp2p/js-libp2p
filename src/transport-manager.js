@@ -156,7 +156,7 @@ class TransportManager {
       // For each supported multiaddr, create a listener
       for (const addr of supportedAddrs) {
         log('creating listener for %s on %s', key, addr)
-        const listener = transport.createListener(this._listenerOptions[key], this.onConnection)
+        const listener = transport.createListener(this._listenerOptions.get(key), this.onConnection)
         this._listeners.get(key).push(listener)
 
         // We need to attempt to listen on everything
