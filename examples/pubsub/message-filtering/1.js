@@ -44,6 +44,7 @@ const createNode = async () => {
 
   //subscribe
   node1.pubsub.on(topic, (msg) => {
+    // Will not receive own published messages by default
     console.log(`node1 received: ${uint8ArrayToString(msg.data)}`)
   })
   await node1.pubsub.subscribe(topic)

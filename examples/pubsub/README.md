@@ -44,7 +44,6 @@ const node2 = nodes[1]
 
 // Add node's 2 data to the PeerStore
 node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-
 await node1.dial(node2.peerId)
 
 node1.pubsub.on(topic, (msg) => {
@@ -52,6 +51,7 @@ node1.pubsub.on(topic, (msg) => {
 })
 await node1.pubsub.subscribe(topic)
 
+// Will not receive own published messages by default
 node2.pubsub.on(topic, (msg) => {
   console.log(`node2 received: ${uint8ArrayToString(msg.data)}`)
 })
@@ -68,23 +68,32 @@ The output of the program should look like:
 ```
 > node 1.js
 connected to QmWpvkKm6qHLhoxpWrTswY6UMNWDyn8hN265Qp9ZYvgS82
-node2 received: Bird bird bird, bird is the word!
 node1 received: Bird bird bird, bird is the word!
-node2 received: Bird bird bird, bird is the word!
 node1 received: Bird bird bird, bird is the word!
 ```
 
-You can change the pubsub `emitSelf` option if you don't want the publishing node to receive its own messages.
+You can change the pubsub `emitSelf` option if you want the publishing node to receive its own messages.
 
 ```JavaScript
 const defaults = {
   config: {
     pubsub: {
       enabled: true,
-      emitSelf: false
+      emitSelf: true
     }
   }
 }
+```
+
+The output of the program should look like:
+
+```
+> node 1.js
+connected to QmWpvkKm6qHLhoxpWrTswY6UMNWDyn8hN265Qp9ZYvgS82
+node1 received: Bird bird bird, bird is the word!
+node2 received: Bird bird bird, bird is the word!
+node1 received: Bird bird bird, bird is the word!
+node2 received: Bird bird bird, bird is the word!
 ```
 
 ## 2. Future work
