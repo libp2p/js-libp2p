@@ -97,15 +97,12 @@ Result
 ```
 > node 1.js
 ############## fruit banana ##############
-node1 received: banana
 node2 received: banana
 node3 received: banana
 ############## fruit apple ##############
-node1 received: apple
 node2 received: apple
 node3 received: apple
 ############## fruit car ##############
-node1 received: car
 ############## fruit orange ##############
 node1 received: orange
 node2 received: orange
