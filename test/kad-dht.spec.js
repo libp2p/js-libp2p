@@ -837,9 +837,15 @@ describe('KadDHT', () => {
         const lookup = await dht.datastore.get(kadUtils.bufferToKey(record.key))
         expect(lookup).to.exist('Record should be in the local datastore')
 
+        let eventResponse
+        dht.onRemove = (record) => {
+          eventResponse = { record }
+        }
+
         const rec = await dht._checkLocalDatastore(record.key)
         expect(rec).to.not.exist('Record should have expired')
 
+        expect(eventResponse).to.have.property('record').eql(record)
         // TODO
         // const lookup2 = await dht.datastore.get(kadUtils.bufferToKey(record.key))
         // expect(lookup2).to.not.exist('Record should be removed from datastore')

@@ -32,6 +32,8 @@ module.exports = (dht) => {
     const recordKey = utils.bufferToKey(record.key)
     await dht.datastore.put(recordKey, record.serialize())
 
+    dht.onPut(record, peerId)
+
     return msg
   }
 }

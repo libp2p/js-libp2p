@@ -56,8 +56,16 @@ describe('rpc - handlers - PutValue', () => {
     )
     msg.record = record
 
+    let eventResponse
+    dht.onPut = (record, peerId) => {
+      eventResponse = { record, peerId }
+    }
+
     const response = await handler(dht)(peerIds[1], msg)
     expect(response).to.be.eql(msg)
+
+    expect(eventResponse).to.have.property('record').eql(record)
+    expect(eventResponse).to.have.property('peerId').eql(peerIds[1])
 
     const key = utils.bufferToKey(uint8ArrayFromString('hello'))
     const res = await dht.datastore.get(key)
