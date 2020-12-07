@@ -41,7 +41,7 @@ describe('Transport Manager (TCP)', () => {
   })
 
   it('should be able to listen', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport, {listenerOptions: {listen: 'carefully'}})
+    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { listenerOptions: { listen: 'carefully' } })
     const transport = tm._transports.get(Transport.prototype[Symbol.toStringTag])
     const spyListener = sinon.spy(transport, 'createListener')
     await tm.listen()
@@ -51,7 +51,7 @@ describe('Transport Manager (TCP)', () => {
     expect(tm.getAddrs().length).to.equal(addrs.length)
     await tm.close()
     expect(tm._listeners.get(Transport.prototype[Symbol.toStringTag])).to.have.length(0)
-    expect(spyListener.firstCall.firstArg).to.deep.equal({listen: 'carefully'})
+    expect(spyListener.firstCall.firstArg).to.deep.equal({ listen: 'carefully' })
   })
 
   it('should be able to dial', async () => {
