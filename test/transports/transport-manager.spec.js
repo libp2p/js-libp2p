@@ -125,7 +125,10 @@ describe('libp2p.transportManager', () => {
     const spy = sinon.spy()
     const key = spy.prototype[Symbol.toStringTag] = 'TransportSpy'
     const customOptions = {
-      another: 'value'
+      another: 'value',
+      listenerOptions: {
+        listen: 'carefully'
+      }
     }
     libp2p = new Libp2p({
       peerId,
@@ -143,6 +146,7 @@ describe('libp2p.transportManager', () => {
     expect(libp2p.transportManager).to.exist()
     // Our transport and circuit relay
     expect(libp2p.transportManager._transports.size).to.equal(2)
+    expect(libp2p.transportManager._listenerOptions.size).to.equal(2)
     expect(spy).to.have.property('callCount', 1)
     expect(spy.getCall(0)).to.have.deep.property('args', [{
       ...customOptions,
