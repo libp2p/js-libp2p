@@ -651,6 +651,32 @@ const node = await Libp2p.create({
 })
 ```
 
+Libp2p will auto call `createListener` after initialized transport, if you want custom listener options, you can provide `listenerOptions` in your transport option. For example, `libp2p-webrtc-star` powered by `libp2p-webrtc-peer`, you can custom the ice server(STUN/TURN) config.
+
+```js
+const transportKey = WebRTCStar.prototype[Symbol.toStringTag]
+const node = await Libp2p.create({
+  modules: {
+    transport: [WebRTCStar],
+    streamMuxer: [MPLEX],
+    connEncryption: [NOISE]
+  },
+  config: {
+    transport: {
+      [transportKey]: {
+        listenerOptions: {
+          config: {
+            iceServers: [
+              {"urls": ["turn:YOUR.TURN.SERVER:3478"], "username": "YOUR.USER", "credential": "YOUR.PASSWORD"},
+              {"urls": ["stun:YOUR.STUN.SERVER:3478"], "username": "", "credential": ""}]
+          }
+        }
+      }
+    }
+  }
+})
+```
+
 ## Configuration examples
 
 As libp2p is designed to be a modular networking library, its usage will vary based on individual project needs. We've included links to some existing project configurations for your reference, in case you wish to replicate their configuration:
