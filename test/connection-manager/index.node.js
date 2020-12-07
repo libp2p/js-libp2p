@@ -18,10 +18,16 @@ const listenMultiaddr = '/ip4/127.0.0.1/tcp/15002/ws'
 
 describe('Connection Manager', () => {
   let libp2p
+  let peerIds
+
+  before(async () => {
+    peerIds = await peerUtils.createPeerId({ number: 2 })
+  })
 
   beforeEach(async () => {
     [libp2p] = await peerUtils.createPeer({
       config: {
+        peerId: peerIds[0],
         addresses: {
           listen: [listenMultiaddr]
         },
@@ -33,12 +39,10 @@ describe('Connection Manager', () => {
   afterEach(() => libp2p.stop())
 
   it('should filter connections on disconnect, removing the closed one', async () => {
-    const [localPeer, remotePeer] = await peerUtils.createPeerId({ number: 2 })
+    const conn1 = await mockConnection({ localPeer: peerIds[0], remotePeer: peerIds[1] })
+    const conn2 = await mockConnection({ localPeer: peerIds[0], remotePeer: peerIds[1] })
 
-    const conn1 = await mockConnection({ localPeer, remotePeer })
-    const conn2 = await mockConnection({ localPeer, remotePeer })
-
-    const id = remotePeer.toB58String()
+    const id = peerIds[1].toB58String()
 
     // Add connection to the connectionManager
     libp2p.connectionManager.onConnect(conn1)
@@ -57,6 +61,7 @@ describe('Connection Manager', () => {
   it('should add connection on dial and remove on node stop', async () => {
     const [remoteLibp2p] = await peerUtils.createPeer({
       config: {
+        peerId: peerIds[1],
         addresses: {
           listen: ['/ip4/127.0.0.1/tcp/15003/ws']
         },
@@ -89,9 +94,16 @@ describe('Connection Manager', () => {
 })
 
 describe('libp2p.connections', () => {
+  let peerIds
+
+  before(async () => {
+    peerIds = await peerUtils.createPeerId({ number: 2 })
+  })
+
   it('libp2p.connections gets the connectionManager conns', async () => {
     const [libp2p] = await peerUtils.createPeer({
       config: {
+        peerId: peerIds[0],
         addresses: {
           listen: ['/ip4/127.0.0.1/tcp/15003/ws']
         },
@@ -100,6 +112,7 @@ describe('libp2p.connections', () => {
     })
     const [remoteLibp2p] = await peerUtils.createPeer({
       config: {
+        peerId: peerIds[1],
         addresses: {
           listen: ['/ip4/127.0.0.1/tcp/15004/ws']
         },
