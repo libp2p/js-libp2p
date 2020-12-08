@@ -663,7 +663,7 @@ const node = await Libp2p.create({
   },
   addresses: {
     listen: ['/dns4/your-wrtc-star.pub/tcp/443/wss/p2p-webrtc-star'] // your webrtc dns multiaddr
-  }
+  },
   config: {
     transport: {
       [transportKey]: {
