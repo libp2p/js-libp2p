@@ -37,6 +37,9 @@ const IDENTIFY_PROTOCOLS = IdentifyService.multicodecs
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory} TransportFactory
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory} MuxerFactory
+ * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
  * @typedef {import('libp2p-interfaces/src/pubsub')} Pubsub
  */
 
@@ -60,8 +63,13 @@ const IDENTIFY_PROTOCOLS = IdentifyService.multicodecs
  * @property {RelayOptions} [relay]
  * @property {Object} [transport] transport options indexed by transport key
  *
+ * @typedef {Object} Libp2pModules
+ * @property {TransportFactory[]} transport
+ * @property {MuxerFactory[]} streamMuxer
+ * @property {Crypto[]} connEncryption
+ *
  * @typedef {Object} Libp2pOptions
- * @property {Object[]} modules libp2p modules to use
+ * @property {Libp2pModules} modules libp2p modules to use
  * @property {import('./address-manager').AddressManagerOptions} [addresses]
  * @property {import('./connection-manager').ConnectionManagerOptions} [connectionManager]
  * @property {import('./dialer').DialerOptions} [dialer]
