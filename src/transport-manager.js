@@ -20,6 +20,7 @@ class TransportManager {
     this.upgrader = upgrader
     this._transports = new Map()
     this._listeners = new Map()
+    this._listenerOptions = new Map()
     this.faultTolerance = faultTolerance
   }
 
@@ -47,6 +48,7 @@ class TransportManager {
     })
 
     this._transports.set(key, transport)
+    this._listenerOptions.set(key, transportOptions.listenerOptions || {})
     if (!this._listeners.has(key)) {
       this._listeners.set(key, [])
     }
@@ -154,7 +156,7 @@ class TransportManager {
       // For each supported multiaddr, create a listener
       for (const addr of supportedAddrs) {
         log('creating listener for %s on %s', key, addr)
-        const listener = transport.createListener({}, this.onConnection)
+        const listener = transport.createListener(this._listenerOptions.get(key), this.onConnection)
         this._listeners.get(key).push(listener)
 
         // We need to attempt to listen on everything

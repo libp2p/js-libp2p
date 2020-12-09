@@ -10,6 +10,7 @@ const TransportManager = require('../../src/transport-manager')
 const Transport = require('libp2p-tcp')
 const multiaddr = require('multiaddr')
 const mockUpgrader = require('../utils/mockUpgrader')
+const sinon = require('sinon')
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
   multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -40,7 +41,9 @@ describe('Transport Manager (TCP)', () => {
   })
 
   it('should be able to listen', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport)
+    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { listenerOptions: { listen: 'carefully' } })
+    const transport = tm._transports.get(Transport.prototype[Symbol.toStringTag])
+    const spyListener = sinon.spy(transport, 'createListener')
     await tm.listen()
     expect(tm._listeners).to.have.key(Transport.prototype[Symbol.toStringTag])
     expect(tm._listeners.get(Transport.prototype[Symbol.toStringTag])).to.have.length(addrs.length)
@@ -48,6 +51,7 @@ describe('Transport Manager (TCP)', () => {
     expect(tm.getAddrs().length).to.equal(addrs.length)
     await tm.close()
     expect(tm._listeners.get(Transport.prototype[Symbol.toStringTag])).to.have.length(0)
+    expect(spyListener.firstCall.firstArg).to.deep.equal({ listen: 'carefully' })
   })
 
   it('should be able to dial', async () => {

@@ -651,6 +651,35 @@ const node = await Libp2p.create({
 })
 ```
 
+During Libp2p startup, transport listeners will be created for the configured listen multiaddrs.  Some transports support custom listener options and you can set them using the `listenerOptions` in the transport configuration. For example, [libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) transport listener supports the configuration of its underlying [simple-peer](https://github.com/feross/simple-peer) ice server(STUN/TURN) config as follows:
+
+```js
+const transportKey = WebRTCStar.prototype[Symbol.toStringTag]
+const node = await Libp2p.create({
+  modules: {
+    transport: [WebRTCStar],
+    streamMuxer: [MPLEX],
+    connEncryption: [NOISE]
+  },
+  addresses: {
+    listen: ['/dns4/your-wrtc-star.pub/tcp/443/wss/p2p-webrtc-star'] // your webrtc dns multiaddr
+  },
+  config: {
+    transport: {
+      [transportKey]: {
+        listenerOptions: {
+          config: {
+            iceServers: [
+              {"urls": ["turn:YOUR.TURN.SERVER:3478"], "username": "YOUR.USER", "credential": "YOUR.PASSWORD"},
+              {"urls": ["stun:YOUR.STUN.SERVER:3478"], "username": "", "credential": ""}]
+          }
+        }
+      }
+    }
+  }
+})
+```
+
 ## Configuration examples
 
 As libp2p is designed to be a modular networking library, its usage will vary based on individual project needs. We've included links to some existing project configurations for your reference, in case you wish to replicate their configuration:
