@@ -1,3 +1,19 @@
+<a name="0.29.4"></a>
+## [0.29.4](https://github.com/libp2p/js-libp2p/compare/v0.29.3...v0.29.4) (2020-12-09)
+
+
+### Bug Fixes
+
+* dial self ([#826](https://github.com/libp2p/js-libp2p/issues/826)) ([6350a18](https://github.com/libp2p/js-libp2p/commit/6350a18))
+
+
+### Features
+
+* custom and store self agent version + store self protocol version ([#800](https://github.com/libp2p/js-libp2p/issues/800)) ([d0a9fad](https://github.com/libp2p/js-libp2p/commit/d0a9fad))
+* support custom listener options ([#822](https://github.com/libp2p/js-libp2p/issues/822)) ([8691465](https://github.com/libp2p/js-libp2p/commit/8691465))
+
+
+
 <a name="0.29.3"></a>
 ## [0.29.3](https://github.com/libp2p/js-libp2p/compare/v0.29.2...v0.29.3) (2020-11-04)
 
