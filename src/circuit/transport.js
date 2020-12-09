@@ -8,7 +8,6 @@ const log = Object.assign(debug('libp2p:circuit'), {
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
-const withIs = require('class-is')
 const { CircuitRelay: CircuitPB } = require('./protocol')
 
 const toConnection = require('libp2p-utils/src/stream-to-ma-conn')
@@ -19,9 +18,12 @@ const { handleCanHop, handleHop, hop } = require('./circuit/hop')
 const { handleStop } = require('./circuit/stop')
 const StreamHandler = require('./circuit/stream-handler')
 
+const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
+
 /**
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  */
 
 class Circuit {
@@ -45,6 +47,11 @@ class Circuit {
     this._registrar.handle(multicodec, this._onProtocol.bind(this))
   }
 
+  /**
+   * @param {Object} props
+   * @param {Connection} props.connection
+   * @param {MuxedStream} props.stream
+   */
   async _onProtocol ({ connection, stream }) {
     const streamHandler = new StreamHandler({ stream })
     const request = await streamHandler.read()
@@ -190,9 +197,20 @@ class Circuit {
       return mafmt.Circuit.matches(ma)
     })
   }
+
+  get [Symbol.toStringTag] () {
+    return 'Circuit'
+  }
+
+  /**
+   * Checks if the given value is a Transport instance.
+   *
+   * @param {any} other
+   * @returns {other is Transport}
+   */
+  static isTransport (other) {
+    return Boolean(other && other[transportSymbol])
+  }
 }
 
-/**
- * @type {Circuit}
- */
-module.exports = withIs(Circuit, { className: 'Circuit', symbolName: '@libp2p/js-libp2p-circuit/circuit' })
+module.exports = Circuit

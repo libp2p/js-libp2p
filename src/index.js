@@ -57,11 +57,11 @@ const IDENTIFY_PROTOCOLS = IdentifyService.multicodecs
  * @property {import('./circuit').AutoRelayOptions} autoRelay
  *
  * @typedef {Object} Libp2pConfig
- * @property {any} [dht] dht module options
+ * @property {Object} [dht] dht module options
  * @property {PeerDiscoveryOptions} [peerDiscovery]
  * @property {Pubsub} [pubsub] pubsub module options
  * @property {RelayOptions} [relay]
- * @property {Object} [transport] transport options indexed by transport key
+ * @property {Record<string, Object>} [transport] transport options indexed by transport key
  *
  * @typedef {Object} Libp2pModules
  * @property {TransportFactory[]} transport
@@ -141,7 +141,6 @@ class Libp2p extends EventEmitter {
 
       const keychainOpts = Keychain.generateOptions()
 
-      /** @type {Keychain} */
       this.keychain = new Keychain(this._options.keychain.datastore, {
         passPhrase: this._options.keychain.pass,
         ...keychainOpts,
@@ -350,6 +349,10 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<void>}
    */
   async loadKeychain () {
+    if (!this.keychain) {
+      return
+    }
+
     try {
       await this.keychain.findKeyByName('self')
     } catch (err) {
@@ -381,7 +384,7 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<Connection>}
    */
   dial (peer, options) {
-    return this.dialProtocol(peer, undefined, options)
+    return this.dialProtocol(peer, [], options)
   }
 
   /**
@@ -391,7 +394,7 @@ class Libp2p extends EventEmitter {
    *
    * @async
    * @param {PeerId|Multiaddr|string} peer - The peer to dial
-   * @param {undefined|string[]|string} protocols
+   * @param {null|string[]|string} protocols
    * @param {object} [options]
    * @param {AbortSignal} [options.signal]
    * @returns {Promise<Connection|*>}
@@ -407,7 +410,7 @@ class Libp2p extends EventEmitter {
     }
 
     // If a protocol was provided, create a new stream
-    if (protocols) {
+    if (protocols && protocols.length) {
       return connection.newStream(protocols)
     }
 

@@ -13,8 +13,6 @@ const debug = require('debug')('latency-monitor:VisibilityChangeEmitter')
 /**
  * Listen to page visibility change events (i.e. when the page is focused / blurred) by an event emitter.
  *
- * @extends {EventEmitter}
- *
  * Warning: This does not work on all browsers, but should work on all modern browsers
  *
  * @example
