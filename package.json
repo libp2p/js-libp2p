@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.29.3",
+  "version": "0.29.4",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -135,6 +135,7 @@
     "dirkmc <dirkmdev@gmail.com>",
     "Volker Mische <volker.mische@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
+    "a1300 <matthias-knopp@gmx.net>",
     "Elven <mon.samuel@qq.com>",
     "Andrew Nesbitt <andrewnez@gmail.com>",
     "Giovanni T. Parra <fiatjaf@gmail.com>",
@@ -142,8 +143,6 @@
     "Thomas Eizinger <thomas@eizinger.io>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Didrik Nordström <didrik@betamos.se>",
-    "Henrique Dias <hacdias@gmail.com>",
-    "Fei Liu <liu.feiwood@gmail.com>",
     "Irakli Gozalishvili <rfobic@gmail.com>",
     "Ethan Lam <elmemphis2000@gmail.com>",
     "Joel Gustafson <joelg@mit.edu>",
@@ -153,9 +152,11 @@
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "RasmusErik Voel Jensen <github@solsort.com>",
     "Diogo Silva <fsdiogo@gmail.com>",
-    "robertkiel <robert.kiel@validitylabs.org>",
+    "Samlior <samlior@foxmail.com>",
+    "Smite Chow <xiaopengyou@live.com>",
     "Soeren <nikorpoulsen@gmail.com>",
     "Sönke Hahn <soenkehahn@gmail.com>",
+    "robertkiel <robert.kiel@validitylabs.org>",
     "Tiago Alves <alvesjtiago@gmail.com>",
     "Daijiro Wachi <daijiro.wachi@gmail.com>",
     "Yusef Napora <yusef@napora.org>",
@@ -164,9 +165,11 @@
     "Chris Bratlien <chrisbratlien@gmail.com>",
     "ebinks <elizabethjbinks@gmail.com>",
     "Bernd Strehl <bernd.strehl@gmail.com>",
-    "isan_rivkin <isanrivkin@gmail.com>",
     "Florian-Merle <florian.david.merle@gmail.com>",
     "Francis Gulotta <wizard@roborooter.com>",
-    "Felipe Martins <felipebrasil93@gmail.com>"
+    "Felipe Martins <felipebrasil93@gmail.com>",
+    "isan_rivkin <isanrivkin@gmail.com>",
+    "Henrique Dias <hacdias@gmail.com>",
+    "Fei Liu <liu.feiwood@gmail.com>"
   ]
 }
