@@ -52,7 +52,6 @@ const defaultOptions = {
  */
 
 /**
- * @extends EventEmitter
  *
  * @fires ConnectionManager#peer:connect Emitted when a new peer is connected.
  * @fires ConnectionManager#peer:disconnect Emitted when a peer is disconnected.

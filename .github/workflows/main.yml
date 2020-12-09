@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v2
     - run: yarn
     - run: yarn lint
-    # - uses: gozala/typescript-error-reporter-action@v1.0.4
+    - uses: gozala/typescript-error-reporter-action@v1.0.8
     - run: yarn build
     - run: yarn aegir dep-check
     - uses: ipfs/aegir/actions/bundle-size@master

@@ -70,14 +70,14 @@ class ContentRouting {
    * a provider of the given key.
    *
    * @param {CID} key - The CID key of the content to find
-   * @returns {Promise<void[]>}
+   * @returns {Promise<void>}
    */
-  async provide (key) { // eslint-disable-line require-await
+  async provide (key) {
     if (!this.routers.length) {
       throw errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE')
     }
 
-    return Promise.all(this.routers.map((router) => router.provide(key)))
+    await Promise.all(this.routers.map((router) => router.provide(key)))
   }
 
   /**
@@ -89,7 +89,7 @@ class ContentRouting {
    * @param {number} [options.minPeers] - minimum number of peers required to successfully put
    * @returns {Promise<void>}
    */
-  async put (key, value, options) { // eslint-disable-line require-await
+  put (key, value, options) {
     if (!this.libp2p.isStarted() || !this.dht.isStarted) {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
@@ -106,7 +106,7 @@ class ContentRouting {
    * @param {number} [options.timeout] - optional timeout (default: 60000)
    * @returns {Promise<GetData>}
    */
-  async get (key, options) { // eslint-disable-line require-await
+  get (key, options) {
     if (!this.libp2p.isStarted() || !this.dht.isStarted) {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }

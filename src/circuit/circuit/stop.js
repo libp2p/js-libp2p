@@ -19,7 +19,7 @@ const { validateAddrs } = require('./utils')
  * Handles incoming STOP requests
  *
  * @private
- * @param {object} options
+ * @param {Object} options
  * @param {Connection} options.connection
  * @param {CircuitPB} options.request - The CircuitRelay protobuf request (unencoded)
  * @param {StreamHandler} options.streamHandler
@@ -50,7 +50,7 @@ module.exports.handleStop = function handleStop ({
  * Creates a STOP request
  *
  * @private
- * @param {object} options
+ * @param {Object} options
  * @param {Connection} options.connection
  * @param {CircuitPB} options.request - The CircuitRelay protobuf request (unencoded)
  * @returns {Promise<MuxedStream|void>} Resolves a duplex iterable

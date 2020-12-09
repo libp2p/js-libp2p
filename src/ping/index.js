@@ -33,7 +33,7 @@ async function ping (node, peer) {
 
   const { stream } = await node.dialProtocol(peer, PROTOCOL)
 
-  const start = new Date().getTime()
+  const start = Date.now()
   const data = crypto.randomBytes(PING_LENGTH)
 
   const [result] = await pipe(

@@ -48,6 +48,7 @@ class StreamHandler {
    * Encode and write array of buffers
    *
    * @param {CircuitPB} msg - An unencoded CircuitRelay protobuf message
+   * @returns {void}
    */
   write (msg) {
     log('write message type %s', msg.type)
