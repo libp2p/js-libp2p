@@ -1,3 +1,13 @@
+<a name="0.20.3"></a>
+## [0.20.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.20.2...v0.20.3) (2020-12-09)
+
+
+### Features
+
+* adds custom multicodec protocol option ([#206](https://github.com/libp2p/js-libp2p-kad-dht/issues/206)) ([20d57b5](https://github.com/libp2p/js-libp2p-kad-dht/commit/20d57b5))
+
+
+
 <a name="0.20.2"></a>
 ## [0.20.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.20.1...v0.20.2) (2020-12-04)
 
