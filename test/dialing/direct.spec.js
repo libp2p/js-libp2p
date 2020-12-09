@@ -409,5 +409,20 @@ describe('Dialing (direct, WebSockets)', () => {
 
       expect(libp2p.dialer.destroy).to.have.property('callCount', 1)
     })
+
+    it('should fail to dial self', async () => {
+      libp2p = new Libp2p({
+        peerId,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      await expect(libp2p.dial(peerId))
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', ErrorCodes.ERR_DIALED_SELF)
+    })
   })
 })

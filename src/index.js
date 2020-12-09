@@ -335,6 +335,11 @@ class Libp2p extends EventEmitter {
    */
   async dialProtocol (peer, protocols, options) {
     const { id, multiaddrs } = getPeer(peer)
+
+    if (id.equals(this.peerId)) {
+      throw errCode(new Error('Cannot dial self'), codes.ERR_DIALED_SELF)
+    }
+
     let connection = this.connectionManager.get(id)
 
     if (!connection) {
