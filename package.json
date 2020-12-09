@@ -20,6 +20,10 @@
   "pre-push": [
     "lint"
   ],
+  "files": [
+    "src",
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/libp2p/js-libp2p-kad-dht.git"
