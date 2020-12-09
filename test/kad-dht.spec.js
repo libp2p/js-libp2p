@@ -957,5 +957,46 @@ describe('KadDHT', () => {
       }
       throw new Error('get should handle correctly an invalid record error and return not found')
     })
+
+    it('should not find peers with different protocols', async function () {
+      this.timeout(40 * 1000)
+
+      const protocol1 = '/test1'
+      const protocol2 = '/test2'
+
+      const tdht = new TestDHT()
+      const dhts = []
+      dhts.push(...await tdht.spawn(2, { protocolPrefix: protocol1 }))
+      dhts.push(...await tdht.spawn(2, { protocolPrefix: protocol2 }))
+
+      // Connect all
+      await Promise.all([
+        tdht.connect(dhts[0], dhts[1]),
+        tdht.connect(dhts[1], dhts[2]),
+        tdht.connect(dhts[2], dhts[3])
+      ])
+
+      try {
+        const ids = dhts.map((d) => d.peerId)
+        await dhts[0].findPeer(ids[3], { timeout: 1000 })
+      } catch (err) {
+        expect(err).to.exist()
+        expect(err.code).to.eql('ERR_NOT_FOUND')
+        return tdht.teardown()
+      }
+      throw new Error('seperate protocols should have their own topologies and communication streams')
+    })
+
+    it('force legacy protocol', async function () {
+      this.timeout(40 * 1000)
+
+      const protocol = '/test/dht/0.0.0'
+
+      const tdht = new TestDHT()
+      const [dht] = await tdht.spawn(1, { protocolPrefix: protocol, forceProtocolLegacy: true })
+
+      expect(dht.protocol).to.eql(protocol)
+      return tdht.teardown()
+    })
   })
 })

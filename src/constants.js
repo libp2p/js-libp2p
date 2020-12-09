@@ -13,7 +13,7 @@ const hour = exports.hour = 60 * minute
 
 exports.MAX_RECORD_AGE = 36 * hour
 
-exports.PROTOCOL_DHT = '/ipfs/kad/1.0.0'
+exports.PROTOCOL_DHT = '/kad/1.0.0'
 
 exports.PROVIDERS_KEY_PREFIX = '/providers/'
 

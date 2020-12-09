@@ -50,12 +50,12 @@ class Network {
     // Only respond to queries when not in client mode
     if (this.dht._clientMode === false) {
       // Incoming streams
-      this.dht.registrar.handle(c.PROTOCOL_DHT, this._rpc)
+      this.dht.registrar.handle(this.dht.protocol, this._rpc)
     }
 
     // register protocol with topology
     const topology = new MulticodecTopology({
-      multicodecs: [c.PROTOCOL_DHT],
+      multicodecs: [this.dht.protocol],
       handlers: {
         onConnect: this._onPeerConnected,
         onDisconnect: () => {}
@@ -129,7 +129,7 @@ class Network {
       conn = await this.dht.dialer.connectToPeer(to)
     }
 
-    const { stream } = await conn.newStream(c.PROTOCOL_DHT)
+    const { stream } = await conn.newStream(this.dht.protocol)
 
     return this._writeReadMessage(stream, msg.serialize())
   }
@@ -153,7 +153,7 @@ class Network {
     if (!conn) {
       conn = await this.dht.dialer.connectToPeer(to)
     }
-    const { stream } = await conn.newStream(c.PROTOCOL_DHT)
+    const { stream } = await conn.newStream(this.dht.protocol)
 
     return this._writeMessage(stream, msg.serialize())
   }

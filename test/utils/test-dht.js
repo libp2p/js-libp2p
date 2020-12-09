@@ -35,6 +35,7 @@ class TestDHT {
       randomWalk: {
         enabled: false
       },
+      protocolPrefix: '/ipfs',
       ...options
     }
 
@@ -46,10 +47,10 @@ class TestDHT {
         (node) => node.peerId.toB58String() === remotePeerB58
       )
 
-      const localOnConnect = regRecord[PROTOCOL_DHT].onConnect
-      const remoteOnConnect = remoteDht.regRecord[PROTOCOL_DHT].onConnect
+      const localOnConnect = regRecord[options.protocolPrefix + PROTOCOL_DHT].onConnect
+      const remoteOnConnect = remoteDht.regRecord[options.protocolPrefix + PROTOCOL_DHT].onConnect
 
-      const remoteHandler = remoteDht.regRecord[PROTOCOL_DHT].handler
+      const remoteHandler = remoteDht.regRecord[options.protocolPrefix + PROTOCOL_DHT].handler
 
       // Notice peers of connection
       const [c0, c1] = ConnectionPair()
@@ -65,7 +66,7 @@ class TestDHT {
           if (!localDHT._clientMode) await remoteOnConnect(peerId, c0)
 
           await remoteHandler({
-            protocol: PROTOCOL_DHT,
+            protocol: options.protocolPrefix + PROTOCOL_DHT,
             stream: c0.stream,
             connection: {
               remotePeer: peerId
@@ -116,8 +117,8 @@ class TestDHT {
   }
 
   async connect (dhtA, dhtB) {
-    const onConnectA = dhtA.regRecord[PROTOCOL_DHT].onConnect
-    const onConnectB = dhtB.regRecord[PROTOCOL_DHT].onConnect
+    const onConnectA = dhtA.regRecord[dhtA.protocol].onConnect
+    const onConnectB = dhtB.regRecord[dhtB.protocol].onConnect
 
     const [c0, c1] = ConnectionPair()
 

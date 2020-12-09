@@ -47,6 +47,8 @@ class KadDHT extends EventEmitter {
    * @param {function} props.registrar.handle
    * @param {function} props.registrar.register
    * @param {function} props.registrar.unregister
+   * @param {string} [props.protocolPrefix = '/ipfs'] libp2p registrar handle protocol
+   * @param {boolean} [props.forceProtocolLegacy = false] WARNING: this is not recommended and should only be used for legacy purposes
    * @param {number} props.kBucketSize k-bucket size (default 20)
    * @param {boolean} props.clientMode If true, the DHT will not respond to queries. This should be true if your node will not be dialable. (default: false)
    * @param {number} props.concurrency alpha concurrency of queries (default 3)
@@ -63,6 +65,8 @@ class KadDHT extends EventEmitter {
     peerId,
     peerStore,
     registrar,
+    protocolPrefix = '/ipfs',
+    forceProtocolLegacy = false,
     datastore = new MemoryDatastore(),
     kBucketSize = c.K,
     clientMode = false,
@@ -108,6 +112,12 @@ class KadDHT extends EventEmitter {
      * @type {Registrar}
      */
     this.registrar = registrar
+
+    /**
+     * Registrar protocol
+     * @type {string}
+     */
+    this.protocol = protocolPrefix + (forceProtocolLegacy ? '' : c.PROTOCOL_DHT)
 
     /**
      * k-bucket size
@@ -553,4 +563,4 @@ class KadDHT extends EventEmitter {
 }
 
 module.exports = KadDHT
-module.exports.multicodec = c.PROTOCOL_DHT
+module.exports.multicodec = '/ipfs' + c.PROTOCOL_DHT
