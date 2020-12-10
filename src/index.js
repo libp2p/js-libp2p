@@ -80,11 +80,32 @@ const IDENTIFY_PROTOCOLS = IdentifyService.multicodecs
  * @property {Libp2pConfig} [config]
  * @property {PeerId} peerId
  *
+ * @typedef {Object} CreateOptions
+ * @property {PeerId} peerId
+ *
  * @extends {EventEmitter}
  * @fires Libp2p#error Emitted when an error occurs
  * @fires Libp2p#peer:discovery Emitted when a peer is discovered
  */
 class Libp2p extends EventEmitter {
+  /**
+   * Like `new Libp2p(options)` except it will create a `PeerId`
+   * instance if one is not provided in options.
+   *
+   * @param {Libp2pOptions & CreateOptions} options - Libp2p configuration options
+   * @returns {Promise<Libp2p>}
+   */
+  static async create (options) {
+    if (options.peerId) {
+      return new Libp2p(options)
+    }
+
+    const peerId = await PeerId.create()
+
+    options.peerId = peerId
+    return new Libp2p(options)
+  }
+
   /**
    * Libp2p node.
    *
@@ -654,29 +675,6 @@ class Libp2p extends EventEmitter {
 
     await Promise.all(Array.from(this._discovery.values(), d => d.start()))
   }
-}
-
-/**
- * @typedef {Object} CreateOptions
- * @property {PeerId} peerId
- */
-
-/**
- * Like `new Libp2p(options)` except it will create a `PeerId`
- * instance if one is not provided in options.
- *
- * @param {Libp2pOptions & CreateOptions} options - Libp2p configuration options
- * @returns {Promise<Libp2p>}
- */
-Libp2p.create = async function create (options) {
-  if (options.peerId) {
-    return new Libp2p(options)
-  }
-
-  const peerId = await PeerId.create()
-
-  options.peerId = peerId
-  return new Libp2p(options)
 }
 
 module.exports = Libp2p
