@@ -1,8 +1,5 @@
 'use strict'
 
-const debug = require('debug')
-const log = debug('libp2p:envelope')
-log.error = debug('libp2p:envelope:error')
 const errCode = require('err-code')
 const uint8arraysConcat = require('uint8arrays/concat')
 const uint8arraysFromString = require('uint8arrays/from-string')
@@ -15,11 +12,14 @@ const { codes } = require('../../errors')
 const Protobuf = require('./envelope.proto')
 
 /**
- * The Envelope is responsible for keeping an arbitrary signed record
- * by a libp2p peer.
+ * @typedef {import('libp2p-interfaces/src/record/types').Record} Record
  */
+
 class Envelope {
   /**
+   * The Envelope is responsible for keeping an arbitrary signed record
+   * by a libp2p peer.
+   *
    * @class
    * @param {object} params
    * @param {PeerId} params.peerId
@@ -49,7 +49,7 @@ class Envelope {
 
     const publicKey = cryptoKeys.marshalPublicKey(this.peerId.pubKey)
 
-    this._marshal = Protobuf.encode({
+    this._marshal = Protobuf.Envelope.encode({
       public_key: publicKey,
       payload_type: this.payloadType,
       payload: this.payload,
@@ -102,14 +102,14 @@ const formatSignaturePayload = (domain, payloadType, payload) => {
   // - The length of the payload field in bytes
   // - The value of the payload field
 
-  domain = uint8arraysFromString(domain)
-  const domainLength = varint.encode(domain.byteLength)
+  const domainUint8Array = uint8arraysFromString(domain)
+  const domainLength = varint.encode(domainUint8Array.byteLength)
   const payloadTypeLength = varint.encode(payloadType.length)
   const payloadLength = varint.encode(payload.length)
 
   return uint8arraysConcat([
     new Uint8Array(domainLength),
-    domain,
+    domainUint8Array,
     new Uint8Array(payloadTypeLength),
     payloadType,
     new Uint8Array(payloadLength),
@@ -124,7 +124,7 @@ const formatSignaturePayload = (domain, payloadType, payload) => {
  * @returns {Promise<Envelope>}
  */
 Envelope.createFromProtobuf = async (data) => {
-  const envelopeData = Protobuf.decode(data)
+  const envelopeData = Protobuf.Envelope.decode(data)
   const peerId = await PeerId.createFromPubKey(envelopeData.public_key)
 
   return new Envelope({
@@ -142,7 +142,7 @@ Envelope.createFromProtobuf = async (data) => {
  * @async
  * @param {Record} record
  * @param {PeerId} peerId
- * @returns {Envelope}
+ * @returns {Promise<Envelope>}
  */
 Envelope.seal = async (record, peerId) => {
   const domain = record.domain
@@ -166,7 +166,7 @@ Envelope.seal = async (record, peerId) => {
  *
  * @param {Uint8Array} data
  * @param {string} domain
- * @returns {Envelope}
+ * @returns {Promise<Envelope>}
  */
 Envelope.openAndCertify = async (data, domain) => {
   const envelope = await Envelope.createFromProtobuf(data)

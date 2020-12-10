@@ -1,10 +1,10 @@
 'use strict'
 
-const errcode = require('err-code')
 const debug = require('debug')
-const log = debug('libp2p:peer-store:proto-book')
-log.error = debug('libp2p:peer-store:proto-book:error')
-
+const log = Object.assign(debug('libp2p:peer-store:proto-book'), {
+  error: debug('libp2p:peer-store:proto-book:err')
+})
+const errcode = require('err-code')
 const PeerId = require('peer-id')
 
 const Book = require('./book')
@@ -14,13 +14,19 @@ const {
 } = require('../errors')
 
 /**
- * The ProtoBook is responsible for keeping the known supported
- * protocols of a peer.
+ * @typedef {import('./')} PeerStore
+ */
+
+/**
+ * @extends {Book}
  *
  * @fires ProtoBook#change:protocols
  */
 class ProtoBook extends Book {
   /**
+   * The ProtoBook is responsible for keeping the known supported
+   * protocols of a peer.
+   *
    * @class
    * @param {PeerStore} peerStore
    */
@@ -50,7 +56,7 @@ class ProtoBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @param {Array<string>} protocols
+   * @param {string[]} protocols
    * @returns {ProtoBook}
    */
   set (peerId, protocols) {
@@ -88,7 +94,7 @@ class ProtoBook extends Book {
    * If the peer was not known before, it will be added.
    *
    * @param {PeerId} peerId
-   * @param {Array<string>} protocols
+   * @param {string[]} protocols
    * @returns {ProtoBook}
    */
   add (peerId, protocols) {
@@ -123,7 +129,7 @@ class ProtoBook extends Book {
    * If the protocols did not exist before, nothing will be done.
    *
    * @param {PeerId} peerId
-   * @param {Array<string>} protocols
+   * @param {string[]} protocols
    * @returns {ProtoBook}
    */
   remove (peerId, protocols) {

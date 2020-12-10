@@ -4,6 +4,15 @@
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
+  "types": "dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "src/*": [
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -53,7 +62,7 @@
     "events": "^3.1.0",
     "hashlru": "^2.3.0",
     "interface-datastore": "^2.0.0",
-    "ipfs-utils": "^2.2.0",
+    "ipfs-utils": "^5.0.1",
     "it-all": "^1.0.1",
     "it-buffer": "^0.1.2",
     "it-handshake": "^1.0.1",
@@ -61,7 +70,7 @@
     "it-pipe": "^1.1.0",
     "it-protocol-buffers": "^0.2.0",
     "libp2p-crypto": "^0.18.0",
-    "libp2p-interfaces": "^0.7.2",
+    "libp2p-interfaces": "^0.8.0",
     "libp2p-utils": "^0.2.2",
     "mafmt": "^8.0.0",
     "merge-options": "^2.0.0",
@@ -88,7 +97,7 @@
   "devDependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
     "abortable-iterator": "^3.0.0",
-    "aegir": "^27.0.0",
+    "aegir": "^29.2.0",
     "chai-bytes": "^0.1.2",
     "chai-string": "^1.5.0",
     "delay": "^4.3.0",

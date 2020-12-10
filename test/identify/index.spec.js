@@ -12,7 +12,8 @@ const pWaitFor = require('p-wait-for')
 const unit8ArrayToString = require('uint8arrays/to-string')
 
 const { codes: Errors } = require('../../src/errors')
-const { IdentifyService, multicodecs } = require('../../src/identify')
+const IdentifyService = require('../../src/identify')
+const multicodecs = IdentifyService.multicodecs
 const Peers = require('../fixtures/peers')
 const Libp2p = require('../../src')
 const Envelope = require('../../src/record/envelope')

@@ -1,13 +1,13 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:identify')
-log.error = debug('libp2p:identify:error')
-
+const log = Object.assign(debug('libp2p:identify'), {
+  error: debug('libp2p:identify:err')
+})
 const errCode = require('err-code')
 const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
-const pipe = require('it-pipe')
+const { pipe } = require('it-pipe')
 const { collect, take, consume } = require('streaming-iterables')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
@@ -29,57 +29,28 @@ const {
 
 const { codes } = require('../errors')
 
+/**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ */
+
 class IdentifyService {
   /**
-   * Takes the `addr` and converts it to a Multiaddr if possible
-   *
-   * @param {Uint8Array | string} addr
-   * @returns {Multiaddr|null}
-   */
-  static getCleanMultiaddr (addr) {
-    if (addr && addr.length > 0) {
-      try {
-        return multiaddr(addr)
-      } catch (_) {
-        return null
-      }
-    }
-    return null
-  }
-
-  /**
    * @class
-   * @param {object} options
-   * @param {Libp2p} options.libp2p
+   * @param {Object} options
+   * @param {import('../')} options.libp2p
    */
   constructor ({ libp2p }) {
-    /**
-     * @property {PeerStore}
-     */
-    this.peerStore = libp2p.peerStore
-
-    /**
-     * @property {ConnectionManager}
-     */
-    this.connectionManager = libp2p.connectionManager
-
-    /**
-     * @property {PeerId}
-     */
-    this.peerId = libp2p.peerId
-
-    /**
-     * @property {AddressManager}
-     */
     this._libp2p = libp2p
+    this.peerStore = libp2p.peerStore
+    this.connectionManager = libp2p.connectionManager
+    this.peerId = libp2p.peerId
 
     this.handleMessage = this.handleMessage.bind(this)
 
     // When a new connection happens, trigger identify
     this.connectionManager.on('peer:connect', (connection) => {
-      const peerId = connection.remotePeer
-
-      this.identify(connection, peerId).catch(log.error)
+      this.identify(connection).catch(log.error)
     })
 
     // When self multiaddrs change, trigger identify-push
@@ -100,8 +71,8 @@ class IdentifyService {
   /**
    * Send an Identify Push update to the list of connections
    *
-   * @param {Array<Connection>} connections
-   * @returns {Promise<void>}
+   * @param {Connection[]} connections
+   * @returns {Promise<void[]>}
    */
   async push (connections) {
     const signedPeerRecord = await this.peerStore.addressBook.getRawEnvelope(this.peerId)
@@ -228,11 +199,11 @@ class IdentifyService {
   /**
    * A handler to register with Libp2p to process identify messages.
    *
-   * @param {object} options
-   * @param {string} options.protocol
-   * @param {*} options.stream
+   * @param {Object} options
    * @param {Connection} options.connection
-   * @returns {Promise<void>}
+   * @param {MuxedStream} options.stream
+   * @param {string} options.protocol
+   * @returns {Promise<void>|undefined}
    */
   handleMessage ({ connection, stream, protocol }) {
     switch (protocol) {
@@ -250,9 +221,10 @@ class IdentifyService {
    * to the requesting peer over the given `connection`
    *
    * @private
-   * @param {object} options
-   * @param {*} options.stream
+   * @param {Object} options
+   * @param {MuxedStream} options.stream
    * @param {Connection} options.connection
+   * @returns {Promise<void>}
    */
   async _handleIdentify ({ connection, stream }) {
     let publicKey = new Uint8Array(0)
@@ -290,8 +262,9 @@ class IdentifyService {
    *
    * @private
    * @param {object} options
-   * @param {*} options.stream
+   * @param {MuxedStream} options.stream
    * @param {Connection} options.connection
+   * @returns {Promise<void>}
    */
   async _handlePush ({ connection, stream }) {
     let message
@@ -331,16 +304,36 @@ class IdentifyService {
     // Update the protocols
     this.peerStore.protoBook.set(id, message.protocols)
   }
+
+  /**
+   * Takes the `addr` and converts it to a Multiaddr if possible
+   *
+   * @param {Uint8Array | string} addr
+   * @returns {multiaddr|null}
+   */
+  static getCleanMultiaddr (addr) {
+    if (addr && addr.length > 0) {
+      try {
+        return multiaddr(addr)
+      } catch (_) {
+        return null
+      }
+    }
+    return null
+  }
 }
 
-module.exports.IdentifyService = IdentifyService
 /**
  * The protocols the IdentifyService supports
  *
  * @property multicodecs
  */
-module.exports.multicodecs = {
+const multicodecs = {
   IDENTIFY: MULTICODEC_IDENTIFY,
   IDENTIFY_PUSH: MULTICODEC_IDENTIFY_PUSH
 }
-module.exports.Message = Message
+
+IdentifyService.multicodecs = multicodecs
+IdentifyService.Messsage = Message
+
+module.exports = IdentifyService

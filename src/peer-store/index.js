@@ -1,9 +1,6 @@
 'use strict'
 
 const errcode = require('err-code')
-const debug = require('debug')
-const log = debug('libp2p:peer-store')
-log.error = debug('libp2p:peer-store:error')
 
 const { EventEmitter } = require('events')
 const PeerId = require('peer-id')
@@ -14,11 +11,15 @@ const MetadataBook = require('./metadata-book')
 const ProtoBook = require('./proto-book')
 
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
 
 /**
- * Responsible for managing known peers, as well as their addresses, protocols and metadata.
+ * @typedef {import('./address-book').Address} Address
+ */
+
+/**
+ * @extends {EventEmitter}
  *
  * @fires PeerStore#peer Emitted when a new peer is added.
  * @fires PeerStore#change:protocols Emitted when a known peer supports a different set of protocols.
@@ -32,12 +33,14 @@ class PeerStore extends EventEmitter {
    *
    * @typedef {Object} Peer
    * @property {PeerId} id peer's peer-id instance.
-   * @property {Array<Address>} addresses peer's addresses containing its multiaddrs and metadata.
-   * @property {Array<string>} protocols peer's supported protocols.
-   * @property {Map<string, Buffer>} metadata peer's metadata map.
+   * @property {Address[]} addresses peer's addresses containing its multiaddrs and metadata.
+   * @property {string[]} protocols peer's supported protocols.
+   * @property {Map<string, Uint8Array>|undefined} metadata peer's metadata map.
    */
 
   /**
+   * Responsible for managing known peers, as well as their addresses, protocols and metadata.
+   *
    * @param {object} options
    * @param {PeerId} options.peerId
    * @class
@@ -121,7 +124,7 @@ class PeerStore extends EventEmitter {
    * Get the stored information of a given peer.
    *
    * @param {PeerId} peerId
-   * @returns {Peer}
+   * @returns {Peer|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {

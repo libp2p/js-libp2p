@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict'
 
 require('node-forge/lib/pkcs7')
@@ -21,7 +22,7 @@ class CMS {
   /**
    * Creates a new instance with a keychain
    *
-   * @param {Keychain} keychain - the available keys
+   * @param {import('./index')} keychain - the available keys
    */
   constructor (keychain) {
     if (!keychain) {
@@ -38,7 +39,7 @@ class CMS {
    *
    * @param {string} name - The local key name.
    * @param {Uint8Array} plain - The data to encrypt.
-   * @returns {undefined}
+   * @returns {Promise<Uint8Array>}
    */
   async encrypt (name, plain) {
     if (!(plain instanceof Uint8Array)) {
@@ -68,7 +69,7 @@ class CMS {
    * exists, an Error is returned with the property 'missingKeys'.  It is array of key ids.
    *
    * @param {Uint8Array} cmsData - The CMS encrypted data to decrypt.
-   * @returns {undefined}
+   * @returns {Promise<Uint8Array>}
    */
   async decrypt (cmsData) {
     if (!(cmsData instanceof Uint8Array)) {

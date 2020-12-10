@@ -1,12 +1,16 @@
 'use strict'
 
-const pipe = require('it-pipe')
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:pnet'), {
+  error: debug('libp2p:pnet:err')
+})
+const { pipe } = require('it-pipe')
 const errcode = require('err-code')
 const duplexPair = require('it-pair/duplex')
 const crypto = require('libp2p-crypto')
 const Errors = require('./errors')
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
 const {
   createBoxStream,
@@ -15,16 +19,16 @@ const {
 } = require('./crypto')
 const handshake = require('it-handshake')
 const { NONCE_LENGTH } = require('./key-generator')
-const debug = require('debug')
-const log = debug('libp2p:pnet')
-log.error = debug('libp2p:pnet:err')
 
 /**
- * Takes a Private Shared Key (psk) and provides a `protect` method
- * for wrapping existing connections in a private encryption stream
+ * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
  */
+
 class Protector {
   /**
+   * Takes a Private Shared Key (psk) and provides a `protect` method
+   * for wrapping existing connections in a private encryption stream.
+   *
    * @param {Uint8Array} keyBuffer - The private shared key buffer
    * @class
    */
@@ -39,8 +43,8 @@ class Protector {
    * between its two peers from the PSK the Protector instance was
    * created with.
    *
-   * @param {Connection} connection - The connection to protect
-   * @returns {*} A protected duplex iterable
+   * @param {MultiaddrConnection} connection - The connection to protect
+   * @returns {Promise<MultiaddrConnection>} A protected duplex iterable
    */
   async protect (connection) {
     if (!connection) {

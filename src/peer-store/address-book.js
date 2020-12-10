@@ -1,9 +1,10 @@
 'use strict'
 
-const errcode = require('err-code')
 const debug = require('debug')
-const log = debug('libp2p:peer-store:address-book')
-log.error = debug('libp2p:peer-store:address-book:error')
+const log = Object.assign(debug('libp2p:peer-store:address-book'), {
+  error: debug('libp2p:peer-store:address-book:err')
+})
+const errcode = require('err-code')
 
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
@@ -17,35 +18,31 @@ const {
 const Envelope = require('../record/envelope')
 
 /**
- * The AddressBook is responsible for keeping the known multiaddrs
- * of a peer.
+ * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('./')} PeerStore
+ */
+
+/**
+ * @typedef {Object} Address
+ * @property {Multiaddr} multiaddr peer multiaddr.
+ * @property {boolean} isCertified obtained from a signed peer record.
+ *
+ * @typedef {Object} CertifiedRecord
+ * @property {Uint8Array} raw raw envelope.
+ * @property {number} seqNumber seq counter.
+ *
+ * @typedef {Object} Entry
+ * @property {Address[]} addresses peer Addresses.
+ * @property {CertifiedRecord} record certified peer record.
+ */
+
+/**
+ * @extends {Book}
  */
 class AddressBook extends Book {
   /**
-   * Address object
+   * The AddressBook is responsible for keeping the known multiaddrs of a peer.
    *
-   * @typedef {Object} Address
-   * @property {Multiaddr} multiaddr peer multiaddr.
-   * @property {boolean} isCertified obtained from a signed peer record.
-   */
-
-  /**
-   * CertifiedRecord object
-   *
-   * @typedef {Object} CertifiedRecord
-   * @property {Uint8Array} raw raw envelope.
-   * @property {number} seqNumber seq counter.
-   */
-
-  /**
-   * Entry object for the addressBook
-   *
-   * @typedef {Object} Entry
-   * @property {Array<Address>} addresses peer Addresses.
-   * @property {CertifiedRecord} record certified peer record.
-   */
-
-  /**
    * @class
    * @param {PeerStore} peerStore
    */
@@ -70,7 +67,7 @@ class AddressBook extends Book {
     /**
      * Map known peers to their known Address Entries.
      *
-     * @type {Map<string, Array<Entry>>}
+     * @type {Map<string, Entry>}
      */
     this.data = new Map()
   }
@@ -105,7 +102,7 @@ class AddressBook extends Book {
 
     const peerId = peerRecord.peerId
     const id = peerId.toB58String()
-    const entry = this.data.get(id) || {}
+    const entry = this.data.get(id) || { record: undefined }
     const storedRecord = entry.record
 
     // ensure seq is greater than, or equal to, the last received
@@ -151,7 +148,7 @@ class AddressBook extends Book {
    * Returns undefined if no record exists.
    *
    * @param {PeerId} peerId
-   * @returns {Promise<Envelope|void>}
+   * @returns {Promise<Envelope|void>|undefined}
    */
   getPeerRecord (peerId) {
     const raw = this.getRawEnvelope(peerId)
@@ -171,7 +168,7 @@ class AddressBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @param {Array<Multiaddr>} multiaddrs
+   * @param {Multiaddr[]} multiaddrs
    * @returns {AddressBook}
    */
   set (peerId, multiaddrs) {
@@ -181,22 +178,22 @@ class AddressBook extends Book {
     }
 
     const addresses = this._toAddresses(multiaddrs)
-    const id = peerId.toB58String()
-    const entry = this.data.get(id) || {}
-    const rec = entry.addresses
 
     // Not replace multiaddrs
     if (!addresses.length) {
       return this
     }
 
+    const id = peerId.toB58String()
+    const entry = this.data.get(id)
+
     // Already knows the peer
-    if (rec && rec.length === addresses.length) {
-      const intersection = rec.filter((addr) => addresses.some((newAddr) => addr.multiaddr.equals(newAddr.multiaddr)))
+    if (entry && entry.addresses && entry.addresses.length === addresses.length) {
+      const intersection = entry.addresses.filter((addr) => addresses.some((newAddr) => addr.multiaddr.equals(newAddr.multiaddr)))
 
       // Are new addresses equal to the old ones?
       // If yes, no changes needed!
-      if (intersection.length === rec.length) {
+      if (intersection.length === entry.addresses.length) {
         log(`the addresses provided to store are equal to the already stored for ${id}`)
         return this
       }
@@ -204,12 +201,12 @@ class AddressBook extends Book {
 
     this._setData(peerId, {
       addresses,
-      record: entry.record
+      record: entry && entry.record
     })
     log(`stored provided multiaddrs for ${id}`)
 
     // Notify the existance of a new peer
-    if (!rec) {
+    if (!entry) {
       this._ps.emit('peer', peerId)
     }
 
@@ -221,7 +218,7 @@ class AddressBook extends Book {
    * If the peer is not known, it is set with the given addresses.
    *
    * @param {PeerId} peerId
-   * @param {Array<Multiaddr>} multiaddrs
+   * @param {Multiaddr[]} multiaddrs
    * @returns {AddressBook}
    */
   add (peerId, multiaddrs) {
@@ -233,32 +230,33 @@ class AddressBook extends Book {
     const addresses = this._toAddresses(multiaddrs)
     const id = peerId.toB58String()
 
-    const entry = this.data.get(id) || {}
-    const rec = entry.addresses || []
+    const entry = this.data.get(id)
 
-    // Add recorded uniquely to the new array (Union)
-    rec.forEach((addr) => {
-      if (!addresses.find(r => r.multiaddr.equals(addr.multiaddr))) {
-        addresses.push(addr)
+    if (entry && entry.addresses) {
+      // Add recorded uniquely to the new array (Union)
+      entry.addresses.forEach((addr) => {
+        if (!addresses.find(r => r.multiaddr.equals(addr.multiaddr))) {
+          addresses.push(addr)
+        }
+      })
+
+      // If the recorded length is equal to the new after the unique union
+      // The content is the same, no need to update.
+      if (entry.addresses.length === addresses.length) {
+        log(`the addresses provided to store are already stored for ${id}`)
+        return this
       }
-    })
-
-    // If the recorded length is equal to the new after the unique union
-    // The content is the same, no need to update.
-    if (rec && rec.length === addresses.length) {
-      log(`the addresses provided to store are already stored for ${id}`)
-      return this
     }
 
     this._setData(peerId, {
       addresses,
-      record: entry.record
+      record: entry && entry.record
     })
 
     log(`added provided multiaddrs for ${id}`)
 
     // Notify the existance of a new peer
-    if (!entry.addresses) {
+    if (!(entry && entry.addresses)) {
       this._ps.emit('peer', peerId)
     }
 
@@ -270,7 +268,7 @@ class AddressBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @returns {Array<Address>|undefined}
+   * @returns {Address[]|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
@@ -286,9 +284,9 @@ class AddressBook extends Book {
    * Transforms received multiaddrs into Address.
    *
    * @private
-   * @param {Array<Multiaddr>} multiaddrs
+   * @param {Multiaddr[]} multiaddrs
    * @param {boolean} [isCertified]
-   * @returns {Array<Address>}
+   * @returns {Address[]}
    */
   _toAddresses (multiaddrs, isCertified = false) {
     if (!multiaddrs) {
@@ -319,8 +317,8 @@ class AddressBook extends Book {
    * Returns `undefined` if there are no known multiaddrs for the given peer.
    *
    * @param {PeerId} peerId
-   * @param {(addresses: Array<Address) => Array<Address>} [addressSorter]
-   * @returns {Array<Multiaddr>|undefined}
+   * @param {(addresses: Address[]) => Address[]} [addressSorter]
+   * @returns {Multiaddr[]|undefined}
    */
   getMultiaddrsForPeer (peerId, addressSorter = (ms) => ms) {
     if (!PeerId.isPeerId(peerId)) {

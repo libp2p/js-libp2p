@@ -56,28 +56,6 @@ describe('Upgrader', () => {
     sinon.restore()
   })
 
-  it('should ignore a missing remote peer id', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-
-    const muxers = new Map([[Muxer.multicodec, Muxer]])
-    sinon.stub(localUpgrader, 'muxers').value(muxers)
-    sinon.stub(remoteUpgrader, 'muxers').value(muxers)
-
-    const cryptos = new Map([[Crypto.protocol, Crypto]])
-    sinon.stub(localUpgrader, 'cryptos').value(cryptos)
-    sinon.stub(remoteUpgrader, 'cryptos').value(cryptos)
-
-    // Remove the peer id from the remote address
-    outbound.remoteAddr = outbound.remoteAddr.decapsulateCode(421)
-
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-
-    expect(connections).to.have.length(2)
-  })
-
   it('should upgrade with valid muxers and crypto', async () => {
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 

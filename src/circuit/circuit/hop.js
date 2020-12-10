@@ -1,22 +1,42 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:circuit:hop')
-log.error = debug('libp2p:circuit:hop:error')
+const log = Object.assign(debug('libp2p:circuit:hop'), {
+  error: debug('libp2p:circuit:hop:err')
+})
+const errCode = require('err-code')
 
 const PeerId = require('peer-id')
 const { validateAddrs } = require('./utils')
 const StreamHandler = require('./stream-handler')
 const { CircuitRelay: CircuitPB } = require('../protocol')
-const pipe = require('it-pipe')
-const errCode = require('err-code')
+const { pipe } = require('it-pipe')
 const { codes: Errors } = require('../../errors')
 
 const { stop } = require('./stop')
 
 const multicodec = require('./../multicodec')
 
-module.exports.handleHop = async function handleHop ({
+/**
+ * @typedef {import('../../types').CircuitRequest} CircuitRequest
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('./stream-handler')<CircuitRequest>} StreamHandlerT
+ * @typedef {import('../transport')} Transport
+ */
+
+/**
+ * @typedef {Object} HopRequest
+ * @property {Connection} connection
+ * @property {CircuitRequest} request
+ * @property {StreamHandlerT} streamHandler
+ * @property {Transport} circuit
+ */
+
+/**
+ * @param {HopRequest} options
+ * @returns {Promise<void>}
+ */
+async function handleHop ({
   connection,
   request,
   streamHandler,
@@ -51,6 +71,9 @@ module.exports.handleHop = async function handleHop ({
   }
 
   // TODO: Handle being an active relay
+  if (!destinationConnection) {
+    return
+  }
 
   // Handle the incoming HOP request by performing a STOP request
   const stopRequest = {
@@ -63,8 +86,7 @@ module.exports.handleHop = async function handleHop ({
   try {
     destinationStream = await stop({
       connection: destinationConnection,
-      request: stopRequest,
-      circuit
+      request: stopRequest
     })
   } catch (err) {
     return log.error(err)
@@ -91,10 +113,10 @@ module.exports.handleHop = async function handleHop ({
  *
  * @param {object} options
  * @param {Connection} options.connection - Connection to the relay
- * @param {*} options.request
+ * @param {CircuitRequest} options.request
  * @returns {Promise<Connection>}
  */
-module.exports.hop = async function hop ({
+async function hop ({
   connection,
   request
 }) {
@@ -123,7 +145,7 @@ module.exports.hop = async function hop ({
  * @param {Connection} options.connection - Connection to the relay
  * @returns {Promise<boolean>}
  */
-module.exports.canHop = async function canHop ({
+async function canHop ({
   connection
 }) {
   // Create a new stream to the relay
@@ -149,11 +171,11 @@ module.exports.canHop = async function canHop ({
  *
  * @param {Object} options
  * @param {Connection} options.connection
- * @param {StreamHandler} options.streamHandler
- * @param {Circuit} options.circuit
+ * @param {StreamHandlerT} options.streamHandler
+ * @param {Transport} options.circuit
  * @private
  */
-module.exports.handleCanHop = function handleCanHop ({
+function handleCanHop ({
   connection,
   streamHandler,
   circuit
@@ -164,4 +186,11 @@ module.exports.handleCanHop = function handleCanHop ({
     type: CircuitPB.Type.STATUS,
     code: canHop ? CircuitPB.Status.SUCCESS : CircuitPB.Status.HOP_CANT_SPEAK_RELAY
   })
+}
+
+module.exports = {
+  handleHop,
+  hop,
+  canHop,
+  handleCanHop
 }

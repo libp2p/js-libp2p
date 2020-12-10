@@ -1,16 +1,17 @@
 'use strict'
 
-const { EventEmitter } = require('events')
 const debug = require('debug')
+const log = Object.assign(debug('libp2p'), {
+  error: debug('libp2p:err')
+})
+const { EventEmitter } = require('events')
 const globalThis = require('ipfs-utils/src/globalthis')
-const log = debug('libp2p')
-log.error = debug('libp2p:error')
 
 const errCode = require('err-code')
 const PeerId = require('peer-id')
 
 const PeerRouting = require('./peer-routing')
-const contentRouting = require('./content-routing')
+const ContentRouting = require('./content-routing')
 const getPeer = require('./get-peer')
 const { validate: validateConfig } = require('./config')
 const { codes, messages } = require('./errors')
@@ -29,22 +30,95 @@ const PubsubAdapter = require('./pubsub-adapter')
 const PersistentPeerStore = require('./peer-store/persistent')
 const Registrar = require('./registrar')
 const ping = require('./ping')
-const {
-  IdentifyService,
-  multicodecs: IDENTIFY_PROTOCOLS
-} = require('./identify')
+const IdentifyService = require('./identify')
+const IDENTIFY_PROTOCOLS = IdentifyService.multicodecs
 
 /**
+ * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory} TransportFactory
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory} MuxerFactory
+ * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
+ * @typedef {import('libp2p-interfaces/src/pubsub')} Pubsub
+ */
+
+/**
+ * @typedef {Object} PeerStoreOptions
+ * @property {boolean} persistence
+ *
+ * @typedef {Object} PeerDiscoveryOptions
+ * @property {boolean} autoDial
+ *
+ * @typedef {Object} RelayOptions
+ * @property {boolean} enabled
+ * @property {import('./circuit').RelayAdvertiseOptions} advertise
+ * @property {import('./circuit').HopOptions} hop
+ * @property {import('./circuit').AutoRelayOptions} autoRelay
+ *
+ * @typedef {Object} Libp2pConfig
+ * @property {Object} [dht] dht module options
+ * @property {PeerDiscoveryOptions} [peerDiscovery]
+ * @property {Pubsub} [pubsub] pubsub module options
+ * @property {RelayOptions} [relay]
+ * @property {Record<string, Object>} [transport] transport options indexed by transport key
+ *
+ * @typedef {Object} Libp2pModules
+ * @property {TransportFactory[]} transport
+ * @property {MuxerFactory[]} streamMuxer
+ * @property {Crypto[]} connEncryption
+ *
+ * @typedef {Object} Libp2pOptions
+ * @property {Libp2pModules} modules libp2p modules to use
+ * @property {import('./address-manager').AddressManagerOptions} [addresses]
+ * @property {import('./connection-manager').ConnectionManagerOptions} [connectionManager]
+ * @property {import('./dialer').DialerOptions} [dialer]
+ * @property {import('./metrics').MetricsOptions} [metrics]
+ * @property {Object} [keychain]
+ * @property {import('./transport-manager').TransportManagerOptions} [transportManager]
+ * @property {PeerStoreOptions & import('./peer-store/persistent').PersistentPeerStoreOptions} [peerStore]
+ * @property {Libp2pConfig} [config]
+ * @property {PeerId} peerId
+ *
+ * @typedef {Object} CreateOptions
+ * @property {PeerId} peerId
+ *
+ * @extends {EventEmitter}
  * @fires Libp2p#error Emitted when an error occurs
  * @fires Libp2p#peer:discovery Emitted when a peer is discovered
  */
 class Libp2p extends EventEmitter {
+  /**
+   * Like `new Libp2p(options)` except it will create a `PeerId`
+   * instance if one is not provided in options.
+   *
+   * @param {Libp2pOptions & CreateOptions} options - Libp2p configuration options
+   * @returns {Promise<Libp2p>}
+   */
+  static async create (options) {
+    if (options.peerId) {
+      return new Libp2p(options)
+    }
+
+    const peerId = await PeerId.create()
+
+    options.peerId = peerId
+    return new Libp2p(options)
+  }
+
+  /**
+   * Libp2p node.
+   *
+   * @class
+   * @param {Libp2pOptions} _options
+   */
   constructor (_options) {
     super()
     // validateConfig will ensure the config is correct,
     // and add default values where appropriate
     this._options = validateConfig(_options)
 
+    /** @type {PeerId} */
     this.peerId = this._options.peerId
     this.datastore = this._options.datastore
 
@@ -147,6 +221,7 @@ class Libp2p extends EventEmitter {
     })
 
     if (this._config.relay.enabled) {
+      // @ts-ignore Circuit prototype
       this.transportManager.add(Circuit.prototype[Symbol.toStringTag], Circuit)
       this.relay = new Relay(this)
     }
@@ -188,13 +263,14 @@ class Libp2p extends EventEmitter {
     if (this._modules.pubsub) {
       const Pubsub = this._modules.pubsub
       // using pubsub adapter with *DEPRECATED* handlers functionality
+      /** @type {Pubsub} */
       this.pubsub = PubsubAdapter(Pubsub, this, this._config.pubsub)
     }
 
     // Attach remaining APIs
     // peer and content routing will automatically get modules from _modules and _dht
     this.peerRouting = new PeerRouting(this)
-    this.contentRouting = contentRouting(this)
+    this.contentRouting = new ContentRouting(this)
 
     // Mount default protocols
     ping.mount(this)
@@ -208,13 +284,16 @@ class Libp2p extends EventEmitter {
    *
    * @param {string} eventName
    * @param  {...any} args
-   * @returns {void}
+   * @returns {boolean}
    */
   emit (eventName, ...args) {
+    // TODO: do we still need this?
+    // @ts-ignore _events does not exist in libp2p
     if (eventName === 'error' && !this._events.error) {
-      log.error(...args)
+      log.error(args)
+      return false
     } else {
-      super.emit(eventName, ...args)
+      return super.emit(eventName, ...args)
     }
   }
 
@@ -242,7 +321,7 @@ class Libp2p extends EventEmitter {
    * Stop the libp2p node by closing its listeners and open connections
    *
    * @async
-   * @returns {void}
+   * @returns {Promise<void>}
    */
   async stop () {
     log('libp2p is stopping')
@@ -288,9 +367,13 @@ class Libp2p extends EventEmitter {
    * Imports the private key as 'self', if needed.
    *
    * @async
-   * @returns {void}
+   * @returns {Promise<void>}
    */
   async loadKeychain () {
+    if (!this.keychain) {
+      return
+    }
+
     try {
       await this.keychain.findKeyByName('self')
     } catch (err) {
@@ -317,12 +400,12 @@ class Libp2p extends EventEmitter {
    * peer will be added to the nodes `peerStore`
    *
    * @param {PeerId|Multiaddr|string} peer - The peer to dial
-   * @param {object} options
+   * @param {object} [options]
    * @param {AbortSignal} [options.signal]
    * @returns {Promise<Connection>}
    */
   dial (peer, options) {
-    return this.dialProtocol(peer, null, options)
+    return this.dialProtocol(peer, [], options)
   }
 
   /**
@@ -333,7 +416,7 @@ class Libp2p extends EventEmitter {
    * @async
    * @param {PeerId|Multiaddr|string} peer - The peer to dial
    * @param {string[]|string} protocols
-   * @param {object} options
+   * @param {object} [options]
    * @param {AbortSignal} [options.signal]
    * @returns {Promise<Connection|*>}
    */
@@ -348,7 +431,7 @@ class Libp2p extends EventEmitter {
     }
 
     // If a protocol was provided, create a new stream
-    if (protocols) {
+    if (protocols && protocols.length) {
       return connection.newStream(protocols)
     }
 
@@ -360,7 +443,7 @@ class Libp2p extends EventEmitter {
    * by transports to listen with the announce addresses.
    * Duplicated addresses and noAnnounce addresses are filtered out.
    *
-   * @returns {Array<Multiaddr>}
+   * @returns {Multiaddr[]}
    */
   get multiaddrs () {
     const announceAddrs = this.addressManager.getAnnounceAddrs()
@@ -377,7 +460,7 @@ class Libp2p extends EventEmitter {
   /**
    * Disconnects all connections to the given `peer`
    *
-   * @param {PeerId|multiaddr|string} peer - the peer to close connections to
+   * @param {PeerId|Multiaddr|string} peer - the peer to close connections to
    * @returns {Promise<void>}
    */
   async hangUp (peer) {
@@ -417,7 +500,7 @@ class Libp2p extends EventEmitter {
    * Registers the `handler` for each protocol
    *
    * @param {string[]|string} protocols
-   * @param {function({ connection:*, stream:*, protocol:string })} handler
+   * @param {({ connection: Connection, stream: MuxedStream, protocol: string }) => void} handler
    */
   handle (protocols, handler) {
     protocols = Array.isArray(protocols) ? protocols : [protocols]
@@ -505,7 +588,7 @@ class Libp2p extends EventEmitter {
    * Known peers may be emitted.
    *
    * @private
-   * @param {{ id: PeerId, multiaddrs: Array<Multiaddr>, protocols: Array<string> }} peer
+   * @param {{ id: PeerId, multiaddrs: Multiaddr[], protocols: string[] }} peer
    */
   _onDiscoveryPeer (peer) {
     if (peer.id.toB58String() === this.peerId.toB58String()) {
@@ -583,31 +666,15 @@ class Libp2p extends EventEmitter {
 
     // Transport modules with discovery
     for (const Transport of this.transportManager.getTransports()) {
+      // @ts-ignore Transport interface does not include discovery
       if (Transport.discovery) {
+        // @ts-ignore Transport interface does not include discovery
         setupService(Transport.discovery)
       }
     }
 
     await Promise.all(Array.from(this._discovery.values(), d => d.start()))
   }
-}
-
-/**
- * Like `new Libp2p(options)` except it will create a `PeerId`
- * instance if one is not provided in options.
- *
- * @param {object} options - Libp2p configuration options
- * @returns {Libp2p}
- */
-Libp2p.create = async function create (options = {}) {
-  if (options.peerId) {
-    return new Libp2p(options)
-  }
-
-  const peerId = await PeerId.create()
-
-  options.peerId = peerId
-  return new Libp2p(options)
 }
 
 module.exports = Libp2p

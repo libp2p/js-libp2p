@@ -1,8 +1,9 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:auto-relay')
-log.error = debug('libp2p:auto-relay:error')
+const log = Object.assign(debug('libp2p:auto-relay'), {
+  error: debug('libp2p:auto-relay:err')
+})
 
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
@@ -19,14 +20,25 @@ const {
   RELAY_RENDEZVOUS_NS
 } = require('./constants')
 
+/**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('../peer-store/address-book').Address} Address
+ */
+
+/**
+ * @typedef {Object} AutoRelayProperties
+ * @property {import('../')} libp2p
+ *
+ * @typedef {Object} AutoRelayOptions
+ * @property {number} [maxListeners = 1] - maximum number of relays to listen.
+ */
+
 class AutoRelay {
   /**
    * Creates an instance of AutoRelay.
    *
    * @class
-   * @param {object} props
-   * @param {Libp2p} props.libp2p
-   * @param {number} [props.maxListeners = 1] - maximum number of relays to listen.
+   * @param {AutoRelayProperties & AutoRelayOptions} props
    */
   constructor ({ libp2p, maxListeners = 1 }) {
     this._libp2p = libp2p
@@ -58,7 +70,7 @@ class AutoRelay {
    *
    * @param {Object} props
    * @param {PeerId} props.peerId
-   * @param {Array<string>} props.protocols
+   * @param {string[]} props.protocols
    * @returns {Promise<void>}
    */
   async _onProtocolChange ({ peerId, protocols }) {
@@ -78,6 +90,9 @@ class AutoRelay {
     // If protocol, check if can hop, store info in the metadataBook and listen on it
     try {
       const connection = this._connectionManager.get(peerId)
+      if (!connection) {
+        return
+      }
 
       // Do not hop on a relayed connection
       if (connection.remoteAddr.protoCodes().includes(CIRCUIT_PROTO_CODE)) {
@@ -171,7 +186,7 @@ class AutoRelay {
    * 2. Dial and try to listen on the peers we know that support hop but are not connected.
    * 3. Search the network.
    *
-   * @param {Array<string>} [peersToIgnore]
+   * @param {string[]} [peersToIgnore]
    * @returns {Promise<void>}
    */
   async _listenOnAvailableHopRelays (peersToIgnore = []) {

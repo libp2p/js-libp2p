@@ -1,15 +1,16 @@
 'use strict'
 
 const debug = require('debug')
+const log = Object.assign(debug('libp2p:pnet'), {
+  trace: debug('libp2p:pnet:trace'),
+  error: debug('libp2p:pnet:err')
+})
+
 const Errors = require('./errors')
 const xsalsa20 = require('xsalsa20')
 const KEY_LENGTH = require('./key-generator').KEY_LENGTH
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
-
-const log = debug('libp2p:pnet')
-log.trace = debug('libp2p:pnet:trace')
-log.error = debug('libp2p:pnet:err')
 
 /**
  * Creates a stream iterable to encrypt messages in a private network
