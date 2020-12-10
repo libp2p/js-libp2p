@@ -95,6 +95,9 @@ class Libp2p extends EventEmitter {
     super()
     // validateConfig will ensure the config is correct,
     // and add default values where appropriate
+    /**
+     * @private
+     */
     this._options = validateConfig(_options)
 
     /** @type {PeerId} */
@@ -394,7 +397,7 @@ class Libp2p extends EventEmitter {
    *
    * @async
    * @param {PeerId|Multiaddr|string} peer - The peer to dial
-   * @param {null|string[]|string} protocols
+   * @param {string[]|string} protocols
    * @param {object} [options]
    * @param {AbortSignal} [options.signal]
    * @returns {Promise<Connection|*>}
