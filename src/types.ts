@@ -43,6 +43,17 @@ export type CAN_HOP = 4;
 
 export type CircuitType = HOP | STOP | STATUS | CAN_HOP
 
+export type CircuitPeer = {
+  id: Uint8Array
+  addrs: Uint8Array[]
+}
+
+export type CircuitRequest = {
+  type: CircuitType
+  dstPeer: CircuitPeer
+  srcPeer: CircuitPeer
+}
+
 export type CircuitMessageProto = {
   encode(value: any): Uint8Array
   decode(bytes: Uint8Array): any

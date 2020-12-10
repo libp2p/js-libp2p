@@ -18,15 +18,18 @@ const { stop } = require('./stop')
 const multicodec = require('./../multicodec')
 
 /**
+ * @typedef {import('../../types').CircuitRequest} Request
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('./stream-handler')<Request>} StreamHandlerT
+ * @typedef {import('../transport')} Transport
  */
 
 /**
  * @typedef {Object} HopRequest
  * @property {Connection} connection
- * @property {any} request
- * @property {any} streamHandler
- * @property {import('../transport')} circuit
+ * @property {Request} request
+ * @property {StreamHandlerT} streamHandler
+ * @property {Transport} circuit
  */
 
 /**
@@ -110,7 +113,7 @@ async function handleHop ({
  *
  * @param {object} options
  * @param {Connection} options.connection - Connection to the relay
- * @param {CircuitPB} options.request
+ * @param {Request} options.request
  * @returns {Promise<Connection>}
  */
 async function hop ({
@@ -168,8 +171,8 @@ async function canHop ({
  *
  * @param {Object} options
  * @param {Connection} options.connection
- * @param {StreamHandler} options.streamHandler
- * @param {import('../transport')} options.circuit
+ * @param {StreamHandlerT} options.streamHandler
+ * @param {Transport} options.circuit
  * @private
  */
 function handleCanHop ({

@@ -9,13 +9,20 @@ const lp = require('it-length-prefixed')
 const handshake = require('it-handshake')
 const { CircuitRelay: CircuitPB } = require('../protocol')
 
+/**
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ */
+
+/**
+ * @template T
+ */
 class StreamHandler {
   /**
    * Create a stream handler for connection
    *
    * @class
    * @param {object} options
-   * @param {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} options.stream - A duplex iterable
+   * @param {MuxedStream} options.stream - A duplex iterable
    * @param {number} [options.maxLength = 4096] - max bytes length of message
    */
   constructor ({ stream, maxLength = 4096 }) {
@@ -29,7 +36,7 @@ class StreamHandler {
    * Read and decode message
    *
    * @async
-   * @returns {Promise<CircuitPB>}
+   * @returns {Promise<T|undefined>}
    */
   async read () {
     const msg = await this.decoder.next()
@@ -48,6 +55,7 @@ class StreamHandler {
    * Encode and write array of buffers
    *
    * @param {CircuitPB} msg - An unencoded CircuitRelay protobuf message
+   * @returns {void}
    */
   write (msg) {
     log('write message type %s', msg.type)

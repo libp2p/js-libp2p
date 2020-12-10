@@ -13,16 +13,18 @@ const { validateAddrs } = require('./utils')
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ * @typedef {import('../../types').CircuitRequest} Request
+ * @typedef {import('./stream-handler')<Request>} StreamHandlerT
  */
 
 /**
  * Handles incoming STOP requests
  *
  * @private
- * @param {object} options
+ * @param {Object} options
  * @param {Connection} options.connection
- * @param {CircuitPB} options.request - The CircuitRelay protobuf request (unencoded)
- * @param {StreamHandler} options.streamHandler
+ * @param {Request} options.request - The CircuitRelay protobuf request (unencoded)
+ * @param {StreamHandlerT} options.streamHandler
  * @returns {Promise<MuxedStream>|void} Resolves a duplex iterable
  */
 module.exports.handleStop = function handleStop ({
@@ -50,9 +52,9 @@ module.exports.handleStop = function handleStop ({
  * Creates a STOP request
  *
  * @private
- * @param {object} options
+ * @param {Object} options
  * @param {Connection} options.connection
- * @param {CircuitPB} options.request - The CircuitRelay protobuf request (unencoded)
+ * @param {Request} options.request - The CircuitRelay protobuf request (unencoded)
  * @returns {Promise<MuxedStream|void>} Resolves a duplex iterable
  */
 module.exports.stop = async function stop ({

@@ -34,12 +34,14 @@ const {
  * @property {PeerStore} peerStore
  * @property {TransportManager} transportManager
  *
+ * @typedef {(addr:Multiaddr) => Promise<string[]>} Resolver
+ *
  * @typedef {Object} DialerOptions
- * @param {(addresses: Address[]) => Address[]} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
+ * @property {(addresses: Address[]) => Address[]} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
  * @property {number} [concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
  * @property {number} [perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
  * @property {number} [timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
- * @property {Object} [resolvers = {}] - multiaddr resolvers to use when dialing
+ * @property {Record<string, Resolver>} [resolvers = {}] - multiaddr resolvers to use when dialing
  *
  * @typedef DialTarget
  * @property {string} id
@@ -240,13 +242,13 @@ class Dialer {
       return this._resolve(nm)
     }))
 
-    return recursiveMultiaddrs.flat()
-      .reduce((/** @type {Multiaddr[]} */ array, /** @type {Multiaddr} */ newM) => {
-        if (!array.find(m => m.equals(newM))) {
-          array.push(newM)
-        }
-        return array
-      }, []) // Unique addresses
+    const addrs = recursiveMultiaddrs.flat()
+    return addrs.reduce((array, newM) => {
+      if (!array.find(m => m.equals(newM))) {
+        array.push(newM)
+      }
+      return array
+    }, /** @type  {Multiaddr[]} */([]))
   }
 
   /**

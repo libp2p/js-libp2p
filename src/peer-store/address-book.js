@@ -207,7 +207,7 @@ class AddressBook extends Book {
     log(`stored provided multiaddrs for ${id}`)
 
     // Notify the existance of a new peer
-    if (!(entry && entry.addresses)) {
+    if (!entry) {
       this._ps.emit('peer', peerId)
     }
 
