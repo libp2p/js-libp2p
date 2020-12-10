@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict'
 
 require('node-forge/lib/pkcs7')
@@ -8,6 +7,8 @@ const { certificateForKey, findAsync } = require('./util')
 const errcode = require('err-code')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
+
+const privates = new WeakMap()
 
 /**
  * Cryptographic Message Syntax (aka PKCS #7)
@@ -23,13 +24,15 @@ class CMS {
    * Creates a new instance with a keychain
    *
    * @param {import('./index')} keychain - the available keys
+   * @param {string} dek
    */
-  constructor (keychain) {
+  constructor (keychain, dek) {
     if (!keychain) {
       throw errcode(new Error('keychain is required'), 'ERR_KEYCHAIN_REQUIRED')
     }
 
     this.keychain = keychain
+    privates.set(this, { dek })
   }
 
   /**
@@ -48,7 +51,9 @@ class CMS {
 
     const key = await this.keychain.findKeyByName(name)
     const pem = await this.keychain._getPrivateKey(name)
-    const privateKey = forge.pki.decryptRsaPrivateKey(pem, this.keychain._())
+    /** @type {string} */
+    const dek = privates.get(this).dek
+    const privateKey = forge.pki.decryptRsaPrivateKey(pem, dek)
     const certificate = await certificateForKey(key, privateKey)
 
     // create a p7 enveloped message
@@ -115,8 +120,14 @@ class CMS {
     }
 
     const key = await this.keychain.findKeyById(r.keyId)
+
+    if (!key) {
+      throw errcode(new Error('No key available to decrypto'), 'ERR_NO_KEY')
+    }
+
     const pem = await this.keychain._getPrivateKey(key.name)
-    const privateKey = forge.pki.decryptRsaPrivateKey(pem, this.keychain._())
+    const dek = privates.get(this).dek
+    const privateKey = forge.pki.decryptRsaPrivateKey(pem, dek)
     cms.decrypt(r.recipient, privateKey)
     return uint8ArrayFromString(cms.content.getBytes(), 'ascii')
   }
