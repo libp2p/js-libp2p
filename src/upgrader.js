@@ -6,7 +6,7 @@ const log = Object.assign(debug('libp2p:upgrader'), {
 })
 const errCode = require('err-code')
 const Multistream = require('multistream-select')
-const { Connection } = require('libp2p-interfaces/src/connection')
+const Connection = require('libp2p-interfaces/src/connection/connection')
 const PeerId = require('peer-id')
 const { pipe } = require('it-pipe')
 const mutableProxy = require('mutable-proxy')
@@ -219,6 +219,7 @@ class Upgrader {
     let muxer
     let newStream
     // eslint-disable-next-line prefer-const
+    /** @type {Connection} */
     let connection
 
     if (Muxer) {
@@ -231,6 +232,7 @@ class Upgrader {
             const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
             log('%s: incoming stream opened on %s', direction, protocol)
             if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
+            // @ts-ignore - metadata seems to be required
             connection.addStream(muxedStream, { protocol })
             this._onStream({ connection, stream: { ...muxedStream, ...stream }, protocol })
           } catch (err) {

@@ -18,17 +18,16 @@ const { stop } = require('./stop')
 const multicodec = require('./../multicodec')
 
 /**
- * @typedef {import('../../types').CircuitRequest} Request
+ * @typedef {import('../../types').CircuitRequest} CircuitRequest
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('./stream-handler')<Request>} StreamHandlerT
  * @typedef {import('../transport')} Transport
  */
 
 /**
  * @typedef {Object} HopRequest
  * @property {Connection} connection
- * @property {Request} request
- * @property {StreamHandlerT} streamHandler
+ * @property {CircuitRequest} request
+ * @property {StreamHandler} streamHandler
  * @property {Transport} circuit
  */
 
@@ -113,7 +112,7 @@ async function handleHop ({
  *
  * @param {object} options
  * @param {Connection} options.connection - Connection to the relay
- * @param {Request} options.request
+ * @param {CircuitRequest} options.request
  * @returns {Promise<Connection>}
  */
 async function hop ({
@@ -128,14 +127,14 @@ async function hop ({
 
   const response = await streamHandler.read()
 
-  if (response.code === CircuitPB.Status.SUCCESS) {
+  if (response && response.code === CircuitPB.Status.SUCCESS) {
     log('hop request was successful')
     return streamHandler.rest()
   }
 
-  log('hop request failed with code %d, closing stream', response.code)
+  log('hop request failed with code %d, closing stream', response && response.code)
   streamHandler.close()
-  throw errCode(new Error(`HOP request failed with code ${response.code}`), Errors.ERR_HOP_REQUEST_FAILED)
+  throw errCode(new Error(`HOP request failed with code ${response && response.code}`), Errors.ERR_HOP_REQUEST_FAILED)
 }
 
 /**
@@ -159,7 +158,7 @@ async function canHop ({
   const response = await streamHandler.read()
   await streamHandler.close()
 
-  if (response.code !== CircuitPB.Status.SUCCESS) {
+  if (!response || response.code !== CircuitPB.Status.SUCCESS) {
     return false
   }
 
@@ -171,7 +170,7 @@ async function canHop ({
  *
  * @param {Object} options
  * @param {Connection} options.connection
- * @param {StreamHandlerT} options.streamHandler
+ * @param {StreamHandler} options.streamHandler
  * @param {Transport} options.circuit
  * @private
  */

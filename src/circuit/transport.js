@@ -101,7 +101,7 @@ class Circuit {
         remoteAddr,
         localAddr
       })
-      const type = request.Type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
+      const type = request.type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
       log('new %s connection %s', type, maConn.remoteAddr)
 
       const conn = await this._upgrader.upgradeInbound(maConn)

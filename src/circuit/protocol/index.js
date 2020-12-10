@@ -1,7 +1,10 @@
 'use strict'
 const protobuf = require('protons')
 
-/** @type {{CircuitRelay: import('../../types').CircuitMessageProto}} */
+/**
+ * @type {{CircuitRelay: import('../../types').CircuitMessageProto}}
+ */
+
 module.exports = protobuf(`
 message CircuitRelay {
 

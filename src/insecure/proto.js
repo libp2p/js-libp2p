@@ -2,6 +2,16 @@
 
 const protobuf = require('protons')
 
+/**
+ * @typedef {Object} Proto
+ * @property {import('../types').ExchangeProto} Exchange,
+ * @property {typeof import('../types').KeyType} KeyType
+ * @property {import('../types').PublicKeyProto} PublicKey
+ */
+
+/**
+ * @type {Proto}
+ */
 module.exports = protobuf(`
 message Exchange {
   optional bytes id = 1;

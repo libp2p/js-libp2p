@@ -8,9 +8,9 @@ export enum KeyType {
 }
 
 // Protobufs
-export type MessageProto = {
-  encode(value: any): Uint8Array
-  decode(bytes: Uint8Array): any
+export interface MessageProto<T> {
+  encode(value: T): Uint8Array
+  decode(bytes: Uint8Array): T
 }
 
 export type SUCCESS = 100;
@@ -50,13 +50,19 @@ export type CircuitPeer = {
 
 export type CircuitRequest = {
   type: CircuitType
+  code?: CircuitStatus
   dstPeer: CircuitPeer
   srcPeer: CircuitPeer
 }
 
-export type CircuitMessageProto = {
-  encode(value: any): Uint8Array
-  decode(bytes: Uint8Array): any
+export type CircuitMessage = {
+  type?: CircuitType
+  dstPeer?: CircuitPeer
+  srcPeer?: CircuitPeer
+  code?: CircuitStatus
+}
+
+export interface CircuitMessageProto extends MessageProto<CircuitMessage> {
   Status: {
     SUCCESS: SUCCESS,
     HOP_SRC_ADDR_TOO_LONG: HOP_SRC_ADDR_TOO_LONG,
@@ -74,7 +80,7 @@ export type CircuitMessageProto = {
     STOP_DST_MULTIADDR_INVALID: STOP_DST_MULTIADDR_INVALID,
     STOP_RELAY_REFUSED: STOP_RELAY_REFUSED,
     MALFORMED_MESSAGE: MALFORMED_MESSAGE
-  },
+  }
   Type: {
     HOP: HOP,
     STOP: STOP,
@@ -82,3 +88,17 @@ export type CircuitMessageProto = {
     CAN_HOP: CAN_HOP
   }
 }
+
+
+export type Exchange = {
+  id: Uint8Array
+  pubkey: PublicKey
+}
+export type ExchangeProto = MessageProto<Exchange>
+
+export type PublicKey = {
+  Type: KeyType,
+  Data: Uint8Array
+}
+
+export type PublicKeyProto = MessageProto<PublicKey>

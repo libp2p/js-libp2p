@@ -6,6 +6,8 @@ const { CircuitRelay } = require('../protocol')
 /**
  * @typedef {import('./stream-handler')} StreamHandler
  * @typedef {import('../../types').CircuitStatus} CircuitStatus
+ * @typedef {import('../../types').CircuitMessage} CircuitMessage
+ * @typedef {import('../../types').CircuitRequest} CircuitRequest
  */
 
 /**
@@ -24,12 +26,13 @@ function writeResponse (streamHandler, status) {
 /**
  * Validate incomming HOP/STOP message
  *
- * @param {*} msg - A CircuitRelay unencoded protobuf message
+ * @param {CircuitRequest} msg - A CircuitRelay unencoded protobuf message
  * @param {StreamHandler} streamHandler
  */
 function validateAddrs (msg, streamHandler) {
+  const { srcPeer, dstPeer } = /** @type {CircuitRequest} */(msg)
   try {
-    msg.dstPeer.addrs.forEach((addr) => {
+    dstPeer.addrs.forEach((addr) => {
       return multiaddr(addr)
     })
   } catch (err) {
@@ -40,7 +43,7 @@ function validateAddrs (msg, streamHandler) {
   }
 
   try {
-    msg.srcPeer.addrs.forEach((addr) => {
+    srcPeer.addrs.forEach((addr) => {
       return multiaddr(addr)
     })
   } catch (err) {

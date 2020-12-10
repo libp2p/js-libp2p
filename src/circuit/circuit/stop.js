@@ -13,8 +13,7 @@ const { validateAddrs } = require('./utils')
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {import('../../types').CircuitRequest} Request
- * @typedef {import('./stream-handler')<Request>} StreamHandlerT
+ * @typedef {import('../../types').CircuitRequest} CircuitRequest
  */
 
 /**
@@ -23,8 +22,8 @@ const { validateAddrs } = require('./utils')
  * @private
  * @param {Object} options
  * @param {Connection} options.connection
- * @param {Request} options.request - The CircuitRelay protobuf request (unencoded)
- * @param {StreamHandlerT} options.streamHandler
+ * @param {CircuitRequest} options.request - The CircuitRelay protobuf request (unencoded)
+ * @param {StreamHandler} options.streamHandler
  * @returns {Promise<MuxedStream>|void} Resolves a duplex iterable
  */
 module.exports.handleStop = function handleStop ({
@@ -54,7 +53,7 @@ module.exports.handleStop = function handleStop ({
  * @private
  * @param {Object} options
  * @param {Connection} options.connection
- * @param {Request} options.request - The CircuitRelay protobuf request (unencoded)
+ * @param {CircuitRequest} options.request - The CircuitRelay protobuf request (unencoded)
  * @returns {Promise<MuxedStream|void>} Resolves a duplex iterable
  */
 module.exports.stop = async function stop ({
@@ -68,11 +67,15 @@ module.exports.stop = async function stop ({
   streamHandler.write(request)
   const response = await streamHandler.read()
 
-  if (response.code === CircuitPB.Status.SUCCESS) {
-    log('stop request to %s was successful', connection.remotePeer.toB58String())
-    return streamHandler.rest()
-  }
+  if (response) {
+    if (response.code === CircuitPB.Status.SUCCESS) {
+      log('stop request to %s was successful', connection.remotePeer.toB58String())
+      return streamHandler.rest()
+    }
 
-  log('stop request failed with code %d', response.code)
+    log('stop request failed with code %d', response.code)
+  } else {
+    log('stop request was not received')
+  }
   streamHandler.close()
 }
