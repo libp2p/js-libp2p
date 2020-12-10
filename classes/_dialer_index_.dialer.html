@@ -1,0 +1,814 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Dialer | libp2p - v0.30.0-rc.0</title>
+	<meta name="description" content="Documentation for libp2p - v0.30.0-rc.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<link href="https://unpkg.com/nord-highlightjs@0.1.0/dist/nord.css" rel="stylesheet" type="text/css" />
+	<style>
+        .toolbar-icon {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .toolbar-icon-search {
+            box-sizing: border-box;
+            position: absolute;
+            overflow: hidden;
+            right: -40px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            @media (min-width: 901px){
+                display: none
+            }
+        }
+            @media (min-width: 901px){
+                .toolbar-icon-menu {
+                    display: none
+                }
+                .toolbar-icon-options {
+                    display: none
+                }
+            }
+
+        .gg-menu {
+            transform: scale(var(--ggs,1))
+        }
+        .gg-menu,
+        .gg-menu::after,
+        .gg-menu::before {
+            box-sizing: border-box;
+            position: relative;
+            display: block;
+            width: 20px;
+            height: 2px;
+            border-radius: 3px;
+            background: currentColor
+        }
+        .gg-menu::after,
+        .gg-menu::before {
+            content: "";
+            position: absolute;
+            top: -6px
+        }
+        .gg-menu::after {
+            top: 6px
+        }
+        .gg-options {
+            box-sizing: border-box;
+            position: relative;
+            display: block;
+            transform: scale(var(--ggs,1));
+            width: 10px;
+            height: 2px;
+            box-shadow:
+                -3px 4px 0 0,
+                3px -4px 0 0
+        }
+        .gg-options::after,
+        .gg-options::before {
+            content: "";
+            display: block;
+            box-sizing: border-box;
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border: 2px solid;
+            border-radius: 100%
+        }
+        .gg-options::before {
+            top: -7px;
+            left: -4px
+        }
+        .gg-options::after {
+            bottom: -7px;
+            right: -4px
+        }
+        .gg-search {
+            box-sizing: border-box;
+            position: relative;
+            display: block;
+            transform: scale(var(--ggs,1));
+            width: 16px;
+            height: 16px;
+            border: 2px solid;
+            border-radius: 100%;
+            margin-left: -4px;
+            margin-top: -4px
+        }
+        .gg-search::after {
+            content: "";
+            display: block;
+            box-sizing: border-box;
+            position: absolute;
+            border-radius: 3px;
+            width: 2px;
+            height: 8px;
+            background: currentColor;
+            transform: rotate(-45deg);
+            top: 10px;
+            left: 12px
+        }
+    </style>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="toolbar-icon toolbar-icon-search"><i class="gg-search"></i></label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">libp2p - v0.30.0-rc.0</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<a href="#" class="toolbar-icon toolbar-icon-menu" data-toggle="menu"><i class="gg-menu"></i></a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules/_dialer_index_.html">dialer/index</a>
+				</li>
+				<li>
+					<a href="_dialer_index_.dialer.html">Dialer</a>
+				</li>
+			</ul>
+			<h1>Class Dialer</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<dl class="tsd-comment-tags">
+						<dt>property</dt>
+						<dd><p>{PeerStore} peerStore</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{TransportManager} transportManager</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{(addresses: Address[]) =&gt; Address[]} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{number} [concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{number} [perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{number} [timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{Record&lt;string, Resolver&gt;} [resolvers = {}] - multiaddr resolvers to use when dialing</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{string} id</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{Multiaddr[]} addrs</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{DialRequest} dialRequest</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{TimeoutController} controller</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{Promise} promise</p>
+						</dd>
+						<dt>property</dt>
+						<dd><p>{function():void} destroy</p>
+						</dd>
+					</dl>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">Dialer</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>References</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#address" class="tsd-kind-icon">Address</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#connection" class="tsd-kind-icon">Connection</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#dialtarget" class="tsd-kind-icon">Dial<wbr>Target</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#dialeroptions" class="tsd-kind-icon">Dialer<wbr>Options</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#dialerproperties" class="tsd-kind-icon">Dialer<wbr>Properties</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#multiaddr" class="tsd-kind-icon">Multiaddr</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#peerid" class="tsd-kind-icon">Peer<wbr>Id</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#peerstore" class="tsd-kind-icon">Peer<wbr>Store</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#pendingdial" class="tsd-kind-icon">Pending<wbr>Dial</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#resolver" class="tsd-kind-icon">Resolver</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_dialer_index_.dialer.html#transportmanager" class="tsd-kind-icon">Transport<wbr>Manager</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-not-exported">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-not-exported">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private tsd-is-not-exported"><a href="_dialer_index_.dialer.html#_createdialtarget" class="tsd-kind-icon">_create<wbr>Dial<wbr>Target</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private tsd-is-not-exported"><a href="_dialer_index_.dialer.html#_creatependingdial" class="tsd-kind-icon">_create<wbr>Pending<wbr>Dial</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#_pendingdials" class="tsd-kind-icon">_pending<wbr>Dials</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#addresssorter" class="tsd-kind-icon">address<wbr>Sorter</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#concurrency" class="tsd-kind-icon">concurrency</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#peerstore-1" class="tsd-kind-icon">peer<wbr>Store</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#perpeerlimit" class="tsd-kind-icon">per<wbr>Peer<wbr>Limit</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#timeout" class="tsd-kind-icon">timeout</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#tokens" class="tsd-kind-icon">tokens</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#transportmanager-1" class="tsd-kind-icon">transport<wbr>Manager</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-not-exported">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#_resolve" class="tsd-kind-icon">_resolve</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#_resolverecord" class="tsd-kind-icon">_resolve<wbr>Record</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#connecttopeer" class="tsd-kind-icon">connect<wbr>ToPeer</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#destroy" class="tsd-kind-icon">destroy</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#gettokens" class="tsd-kind-icon">get<wbr>Tokens</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-not-exported"><a href="_dialer_index_.dialer.html#releasetoken" class="tsd-kind-icon">release<wbr>Token</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>References</h2>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="address" class="tsd-anchor"></a>
+					<h3>Address</h3>
+					Re-exports <a href="../modules/_peer_store_address_book_.html#address">Address</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="connection" class="tsd-anchor"></a>
+					<h3>Connection</h3>
+					Re-exports <a href="../modules/_connection_manager_index_.html#connection">Connection</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="dialtarget" class="tsd-anchor"></a>
+					<h3>Dial<wbr>Target</h3>
+					Re-exports <a href="../modules/_dialer_index_.html#dialtarget">DialTarget</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="dialeroptions" class="tsd-anchor"></a>
+					<h3>Dialer<wbr>Options</h3>
+					Re-exports <a href="../modules/_dialer_index_.html#dialeroptions">DialerOptions</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="dialerproperties" class="tsd-anchor"></a>
+					<h3>Dialer<wbr>Properties</h3>
+					Re-exports <a href="../modules/_dialer_index_.html#dialerproperties">DialerProperties</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="multiaddr" class="tsd-anchor"></a>
+					<h3>Multiaddr</h3>
+					Re-exports <a href="../modules/_address_manager_index_.html#multiaddr">Multiaddr</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="peerid" class="tsd-anchor"></a>
+					<h3>Peer<wbr>Id</h3>
+					Re-exports <a href="../modules/_metrics_index_.html#peerid">PeerId</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="peerstore" class="tsd-anchor"></a>
+					<h3>Peer<wbr>Store</h3>
+					Re-exports <a href="../modules/_peer_store_book_.html#peerstore">PeerStore</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="pendingdial" class="tsd-anchor"></a>
+					<h3>Pending<wbr>Dial</h3>
+					Re-exports <a href="../modules/_dialer_index_.html#pendingdial">PendingDial</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="resolver" class="tsd-anchor"></a>
+					<h3>Resolver</h3>
+					Re-exports <a href="../modules/_dialer_index_.html#resolver">Resolver</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="transportmanager" class="tsd-anchor"></a>
+					<h3>Transport<wbr>Manager</h3>
+					Re-exports <a href="_transport_manager_.transportmanager.html">TransportManager</a>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-not-exported">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Dialer<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>addressSorter<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>addresses<span class="tsd-signature-symbol">: </span><a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">; </span>concurrency<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>peerStore<span class="tsd-signature-symbol">: </span><a href="../modules/_peer_store_book_.html#peerstore" class="tsd-signature-type">PeerStore</a><span class="tsd-signature-symbol">; </span>perPeerLimit<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>resolvers<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="_record_envelope_index_.envelope.html#record" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">(</span>addr<span class="tsd-signature-symbol">: </span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>timeout<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>transportManager<span class="tsd-signature-symbol">: </span><a href="_transport_manager_.transportmanager.html" class="tsd-signature-type">TransportManager</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_dialer_index_.dialer.html" class="tsd-signature-type">Dialer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>__namedParameters: <span class="tsd-signature-symbol">{ </span>addressSorter<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>addresses<span class="tsd-signature-symbol">: </span><a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">; </span>concurrency<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>peerStore<span class="tsd-signature-symbol">: </span><a href="../modules/_peer_store_book_.html#peerstore" class="tsd-signature-type">PeerStore</a><span class="tsd-signature-symbol">; </span>perPeerLimit<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>resolvers<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="_record_envelope_index_.envelope.html#record" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">(</span>addr<span class="tsd-signature-symbol">: </span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>timeout<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>transportManager<span class="tsd-signature-symbol">: </span><a href="_transport_manager_.transportmanager.html" class="tsd-signature-type">TransportManager</a><span class="tsd-signature-symbol"> }</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5>address<wbr>Sorter<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>addresses<span class="tsd-signature-symbol">: </span><a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>concurrency<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>peer<wbr>Store<span class="tsd-signature-symbol">: </span><a href="../modules/_peer_store_book_.html#peerstore" class="tsd-signature-type">PeerStore</a></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>per<wbr>Peer<wbr>Limit<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>resolvers<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="_record_envelope_index_.envelope.html#record" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">(</span>addr<span class="tsd-signature-symbol">: </span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>timeout<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>transport<wbr>Manager<span class="tsd-signature-symbol">: </span><a href="_transport_manager_.transportmanager.html" class="tsd-signature-type">TransportManager</a></h5>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_dialer_index_.dialer.html" class="tsd-signature-type">Dialer</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private tsd-is-not-exported">
+					<a name="_createdialtarget" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _create<wbr>Dial<wbr>Target</h3>
+					<div class="tsd-signature tsd-kind-icon">_create<wbr>Dial<wbr>Target<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Creates a DialTarget. The DialTarget is used to create and track
+								the DialRequest to a given peer.
+							If a multiaddr is received it should be the first address attempted.</p>
+						</div>
+						<dl class="tsd-comment-tags">
+							<dt>param</dt>
+							<dd><p>A PeerId or Multiaddr</p>
+							</dd>
+							<dt>returns</dt>
+							<dd></dd>
+						</dl>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private tsd-is-not-exported">
+					<a name="_creatependingdial" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _create<wbr>Pending<wbr>Dial</h3>
+					<div class="tsd-signature tsd-kind-icon">_create<wbr>Pending<wbr>Dial<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Creates a PendingDial that wraps the underlying DialRequest</p>
+						</div>
+						<dl class="tsd-comment-tags">
+							<dt>param</dt>
+							<dd></dd>
+							<dt>param</dt>
+							<dd></dd>
+							<dt>param</dt>
+							<dd><p>An AbortController signal</p>
+							</dd>
+							<dt>returns</dt>
+							<dd></dd>
+						</dl>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="_pendingdials" class="tsd-anchor"></a>
+					<h3>_pending<wbr>Dials</h3>
+					<div class="tsd-signature tsd-kind-icon">_pending<wbr>Dials<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="addresssorter" class="tsd-anchor"></a>
+					<h3>address<wbr>Sorter</h3>
+					<div class="tsd-signature tsd-kind-icon">address<wbr>Sorter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>addresses<span class="tsd-signature-symbol">: </span><a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-signature">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property tsd-is-not-exported">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>addresses<span class="tsd-signature-symbol">: </span><a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>addresses: <a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <a href="_dialer_index_.dialer.html#address" class="tsd-signature-type">Address</a><span class="tsd-signature-symbol">[]</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="concurrency" class="tsd-anchor"></a>
+					<h3>concurrency</h3>
+					<div class="tsd-signature tsd-kind-icon">concurrency<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="peerstore-1" class="tsd-anchor"></a>
+					<h3>peer<wbr>Store</h3>
+					<div class="tsd-signature tsd-kind-icon">peer<wbr>Store<span class="tsd-signature-symbol">:</span> <a href="../modules/_peer_store_book_.html#peerstore" class="tsd-signature-type">PeerStore</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="perpeerlimit" class="tsd-anchor"></a>
+					<h3>per<wbr>Peer<wbr>Limit</h3>
+					<div class="tsd-signature tsd-kind-icon">per<wbr>Peer<wbr>Limit<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="timeout" class="tsd-anchor"></a>
+					<h3>timeout</h3>
+					<div class="tsd-signature tsd-kind-icon">timeout<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="tokens" class="tsd-anchor"></a>
+					<h3>tokens</h3>
+					<div class="tsd-signature tsd-kind-icon">tokens<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+					<a name="transportmanager-1" class="tsd-anchor"></a>
+					<h3>transport<wbr>Manager</h3>
+					<div class="tsd-signature tsd-kind-icon">transport<wbr>Manager<span class="tsd-signature-symbol">:</span> <a href="_transport_manager_.transportmanager.html" class="tsd-signature-type">TransportManager</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+					<a name="_resolve" class="tsd-anchor"></a>
+					<h3>_resolve</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">_resolve<span class="tsd-signature-symbol">(</span>ma<span class="tsd-signature-symbol">: </span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Resolve multiaddr recursively.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>ma: <a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+					<a name="_resolverecord" class="tsd-anchor"></a>
+					<h3>_resolve<wbr>Record</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">_resolve<wbr>Record<span class="tsd-signature-symbol">(</span>ma<span class="tsd-signature-symbol">: </span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Resolve a given multiaddr. If this fails, an empty array will be returned</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>ma: <a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+					<a name="connecttopeer" class="tsd-anchor"></a>
+					<h3>connect<wbr>ToPeer</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">connect<wbr>ToPeer<span class="tsd-signature-symbol">(</span>peer<span class="tsd-signature-symbol">: </span><a href="../modules/_metrics_index_.html#peerid" class="tsd-signature-type">PeerId</a><span class="tsd-signature-symbol"> | </span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>signal<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">AbortSignal</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_connection_manager_index_.html#connection" class="tsd-signature-type">Connection</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Connects to a given <code>peer</code> by dialing all of its known addresses.
+										The dial to the first address that is successfully able to upgrade a connection
+									will be used.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>peer: <a href="../modules/_metrics_index_.html#peerid" class="tsd-signature-type">PeerId</a><span class="tsd-signature-symbol"> | </span><a href="../modules/_address_manager_index_.html#multiaddr" class="tsd-signature-type">Multiaddr</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The peer to dial</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-symbol">{ </span>signal<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">AbortSignal</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_connection_manager_index_.html#connection" class="tsd-signature-type">Connection</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+					<a name="destroy" class="tsd-anchor"></a>
+					<h3>destroy</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">destroy<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Clears any pending dials</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+					<a name="gettokens" class="tsd-anchor"></a>
+					<h3>get<wbr>Tokens</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Tokens<span class="tsd-signature-symbol">(</span>num<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>num: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+					<a name="releasetoken" class="tsd-anchor"></a>
+					<h3>release<wbr>Token</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+						<li class="tsd-signature tsd-kind-icon">release<wbr>Token<span class="tsd-signature-symbol">(</span>token<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>token: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="current tsd-kind-module">
+						<a href="../modules/_dialer_index_.html">dialer/index</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-parent-kind-module tsd-is-not-exported">
+						<a href="_dialer_index_.dialer.html" class="tsd-kind-icon">Dialer</a>
+						<ul>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#address" class="tsd-kind-icon">Address</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#connection" class="tsd-kind-icon">Connection</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#dialtarget" class="tsd-kind-icon">Dial<wbr>Target</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#dialeroptions" class="tsd-kind-icon">Dialer<wbr>Options</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#dialerproperties" class="tsd-kind-icon">Dialer<wbr>Properties</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#multiaddr" class="tsd-kind-icon">Multiaddr</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#peerid" class="tsd-kind-icon">Peer<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#peerstore" class="tsd-kind-icon">Peer<wbr>Store</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#pendingdial" class="tsd-kind-icon">Pending<wbr>Dial</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#resolver" class="tsd-kind-icon">Resolver</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_dialer_index_.dialer.html#transportmanager" class="tsd-kind-icon">Transport<wbr>Manager</a>
+							</li>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#_createdialtarget" class="tsd-kind-icon">_create<wbr>Dial<wbr>Target</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#_creatependingdial" class="tsd-kind-icon">_create<wbr>Pending<wbr>Dial</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#_pendingdials" class="tsd-kind-icon">_pending<wbr>Dials</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#addresssorter" class="tsd-kind-icon">address<wbr>Sorter</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#concurrency" class="tsd-kind-icon">concurrency</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#peerstore-1" class="tsd-kind-icon">peer<wbr>Store</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#perpeerlimit" class="tsd-kind-icon">per<wbr>Peer<wbr>Limit</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#timeout" class="tsd-kind-icon">timeout</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#tokens" class="tsd-kind-icon">tokens</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#transportmanager-1" class="tsd-kind-icon">transport<wbr>Manager</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#_resolve" class="tsd-kind-icon">_resolve</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#_resolverecord" class="tsd-kind-icon">_resolve<wbr>Record</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#connecttopeer" class="tsd-kind-icon">connect<wbr>ToPeer</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#destroy" class="tsd-kind-icon">destroy</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#gettokens" class="tsd-kind-icon">get<wbr>Tokens</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-not-exported">
+								<a href="_dialer_index_.dialer.html#releasetoken" class="tsd-kind-icon">release<wbr>Token</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#address" class="tsd-kind-icon">Address</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#connection" class="tsd-kind-icon">Connection</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#dialtarget" class="tsd-kind-icon">Dial<wbr>Target</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#dialeroptions" class="tsd-kind-icon">Dialer<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#dialerproperties" class="tsd-kind-icon">Dialer<wbr>Properties</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#multiaddr-1" class="tsd-kind-icon">Multiaddr</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#peerid" class="tsd-kind-icon">Peer<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#peerstore-1" class="tsd-kind-icon">Peer<wbr>Store</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#pendingdial" class="tsd-kind-icon">Pending<wbr>Dial</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#resolver" class="tsd-kind-icon">Resolver</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_dialer_index_.html#transportmanager-1" class="tsd-kind-icon">Transport<wbr>Manager</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
