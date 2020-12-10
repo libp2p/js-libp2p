@@ -16,6 +16,7 @@ const passthrough = data => data
 /**
  * @template Data, GetData, EventData
  */
+
 class Book {
   /**
    * The Book is the skeleton for the PeerStore books.

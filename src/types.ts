@@ -80,7 +80,7 @@ export interface CircuitMessageProto extends MessageProto<CircuitMessage> {
     STOP_DST_MULTIADDR_INVALID: STOP_DST_MULTIADDR_INVALID,
     STOP_RELAY_REFUSED: STOP_RELAY_REFUSED,
     MALFORMED_MESSAGE: MALFORMED_MESSAGE
-  }
+  },
   Type: {
     HOP: HOP,
     STOP: STOP,

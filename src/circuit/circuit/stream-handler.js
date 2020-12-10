@@ -15,6 +15,9 @@ const { CircuitRelay: CircuitPB } = require('../protocol')
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  */
 
+/**
+ * @template T
+ */
 class StreamHandler {
   /**
    * Create a stream handler for connection
