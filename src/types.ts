@@ -89,7 +89,6 @@ export interface CircuitMessageProto extends MessageProto<CircuitMessage> {
   }
 }
 
-
 export type Exchange = {
   id: Uint8Array
   pubkey: PublicKey

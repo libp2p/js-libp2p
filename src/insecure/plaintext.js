@@ -18,6 +18,7 @@ const protocol = '/plaintext/2.0.0'
 
 function lpEncodeExchange (exchange) {
   const pb = Exchange.encode(exchange)
+  // @ts-ignore lp.encode expects type type 'Buffer | BufferList', not 'Uint8Array'
   return lp.encode.single(pb)
 }
 

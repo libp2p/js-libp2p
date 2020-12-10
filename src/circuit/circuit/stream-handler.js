@@ -73,7 +73,7 @@ class StreamHandler {
   }
 
   /**
-   * @param {CircuitMessage} msg 
+   * @param {CircuitMessage} msg
    */
   end (msg) {
     this.write(msg)

@@ -54,7 +54,7 @@ class Circuit {
    * @param {MuxedStream} props.stream
    */
   async _onProtocol ({ connection, stream }) {
-    /** @type {import('./circuit/stream-handler')<CircuitRequest>} */
+    /** @type {import('./circuit/stream-handler')} */
     const streamHandler = new StreamHandler({ stream })
     const request = await streamHandler.read()
 
