@@ -7,7 +7,8 @@ const protons = require('protons')
 // is expected to expand to include other information in the future.
 // PeerRecords are designed to be serialized to bytes and placed inside of
 // SignedEnvelopes before sharing with other peers.
-const message = `
+/** @type {{PeerRecord: import('../../types').MessageProto}} */
+module.exports = protons(`
 message PeerRecord {
     // AddressInfo is a wrapper around a binary multiaddr. It is defined as a
     // separate message to allow us to add per-address metadata in the future.
@@ -24,6 +25,4 @@ message PeerRecord {
     // addresses is a list of public listen addresses for the peer.
     repeated AddressInfo addresses = 3;
 }
-`
-
-module.exports = protons(message).PeerRecord
+`)

@@ -51,8 +51,6 @@ describe('Transport Manager (TCP)', () => {
   })
 
   it('should be able to listen', async () => {
-    sinon.spy(tm, '_createSelfPeerRecord')
-
     tm.add(Transport.prototype[Symbol.toStringTag], Transport, { listenerOptions: { listen: 'carefully' } })
     const transport = tm._transports.get(Transport.prototype[Symbol.toStringTag])
     const spyListener = sinon.spy(transport, 'createListener')

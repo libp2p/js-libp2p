@@ -1,13 +1,26 @@
 'use strict'
 
-const AbortController = require('abort-controller')
-const anySignal = require('any-signal')
-const debug = require('debug')
 const errCode = require('err-code')
-const log = debug('libp2p:dialer:request')
-log.error = debug('libp2p:dialer:request:error')
+const AbortController = require('abort-controller').default
+const anySignal = require('any-signal')
 const FIFO = require('p-fifo')
 const pAny = require('p-any')
+
+/**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('./')} Dialer
+ * @typedef {import('multiaddr')} Multiaddr
+ */
+
+/**
+ * @typedef {Object} DialOptions
+ * @property {AbortSignal} signal
+ *
+ * @typedef {Object} DialRequestOptions
+ * @property {Multiaddr[]} addrs
+ * @property {(m: Multiaddr, options: DialOptions) => Promise<Connection>} dialAction
+ * @property {Dialer} dialer
+ */
 
 class DialRequest {
   /**
@@ -17,10 +30,8 @@ class DialRequest {
    * started using `DialRequest.run(options)`. Once a single dial has succeeded,
    * all other dials in the request will be cancelled.
    *
-   * @param {object} options
-   * @param {Multiaddr[]} options.addrs
-   * @param {function(Multiaddr):Promise<Connection>} options.dialAction
-   * @param {Dialer} options.dialer
+   * @class
+   * @param {DialRequestOptions} options
    */
   constructor ({
     addrs,
@@ -34,11 +45,11 @@ class DialRequest {
 
   /**
    * @async
-   * @param {object} options
-   * @param {AbortSignal} options.signal - An AbortController signal
-   * @returns {Connection}
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal] - An AbortController signal
+   * @returns {Promise<Connection>}
    */
-  async run (options) {
+  async run (options = {}) {
     const tokens = this.dialer.getTokens(this.addrs.length)
     // If no tokens are available, throw
     if (tokens.length < 1) {
@@ -78,4 +89,4 @@ class DialRequest {
   }
 }
 
-module.exports.DialRequest = DialRequest
+module.exports = DialRequest

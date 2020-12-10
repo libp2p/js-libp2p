@@ -1,9 +1,9 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:persistent-peer-store')
-log.error = debug('libp2p:persistent-peer-store:error')
-
+const log = Object.assign(debug('libp2p:persistent-peer-store'), {
+  error: debug('libp2p:persistent-peer-store:err')
+})
 const { Key } = require('interface-datastore')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
@@ -22,15 +22,21 @@ const Addresses = require('./pb/address-book.proto')
 const Protocols = require('./pb/proto-book.proto')
 
 /**
+ * @typedef {Object} PersistentPeerStoreProperties
+ * @property {PeerId} peerId
+ * @property {any} datastore
+ *
+ * @typedef {Object} PersistentPeerStoreOptions
+ * @property {number} [threshold = 5] - Number of dirty peers allowed before commit data.
+ */
+
+/**
  * Responsible for managing the persistence of data in the PeerStore.
  */
 class PersistentPeerStore extends PeerStore {
   /**
    * @class
-   * @param {Object} properties
-   * @param {PeerId} properties.peerId
-   * @param {Datastore} properties.datastore - Datastore to persist data.
-   * @param {number} [properties.threshold = 5] - Number of dirty peers allowed before commit data.
+   * @param {PersistentPeerStoreProperties & PersistentPeerStoreOptions} properties
    */
   constructor ({ peerId, datastore, threshold = 5 }) {
     super({ peerId })
@@ -340,6 +346,7 @@ class PersistentPeerStore extends PeerStore {
         case 'addrs':
           decoded = Addresses.decode(value)
 
+          // @ts-ignore protected function
           this.addressBook._setData(
             peerId,
             {
@@ -357,6 +364,7 @@ class PersistentPeerStore extends PeerStore {
         case 'keys':
           decoded = await PeerId.createFromPubKey(value)
 
+          // @ts-ignore protected function
           this.keyBook._setData(
             decoded,
             decoded,
@@ -372,6 +380,7 @@ class PersistentPeerStore extends PeerStore {
         case 'protos':
           decoded = Protocols.decode(value)
 
+          // @ts-ignore protected function
           this.protoBook._setData(
             peerId,
             new Set(decoded.protocols),

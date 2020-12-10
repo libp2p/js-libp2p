@@ -1,8 +1,9 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:connection-manager')
-log.error = debug('libp2p:connection-manager:error')
+const log = Object.assign(debug('libp2p:connection-manager'), {
+  error: debug('libp2p:connection-manager:err')
+})
 
 const errcode = require('err-code')
 const mergeOptions = require('merge-options')
@@ -14,7 +15,7 @@ const { EventEmitter } = require('events')
 const PeerId = require('peer-id')
 
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
 
 const defaultOptions = {
@@ -31,29 +32,39 @@ const defaultOptions = {
 }
 
 /**
- * Responsible for managing known connections.
+ * @typedef {import('../')} Libp2p
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ */
+
+/**
+ * @typedef {Object} ConnectionManagerOptions
+ * @property {number} [maxConnections = Infinity] - The maximum number of connections allowed.
+ * @property {number} [minConnections = 0] - The minimum number of connections to avoid pruning.
+ * @property {number} [maxData = Infinity] - The max data (in and out), per average interval to allow.
+ * @property {number} [maxSentData = Infinity] - The max outgoing data, per average interval to allow.
+ * @property {number} [maxReceivedData = Infinity] - The max incoming data, per average interval to allow.
+ * @property {number} [maxEventLoopDelay = Infinity] - The upper limit the event loop can take to run.
+ * @property {number} [pollInterval = 2000] - How often, in milliseconds, metrics and latency should be checked.
+ * @property {number} [movingAverageInterval = 60000] - How often, in milliseconds, to compute averages.
+ * @property {number} [defaultPeerValue = 1] - The value of the peer.
+ * @property {boolean} [autoDial = true] - Should preemptively guarantee connections are above the low watermark.
+ * @property {number} [autoDialInterval = 10000] - How often, in milliseconds, it should preemptively guarantee connections are above the low watermark.
+ */
+
+/**
  *
  * @fires ConnectionManager#peer:connect Emitted when a new peer is connected.
  * @fires ConnectionManager#peer:disconnect Emitted when a peer is disconnected.
  */
 class ConnectionManager extends EventEmitter {
   /**
+   * Responsible for managing known connections.
+   *
    * @class
    * @param {Libp2p} libp2p
-   * @param {object} options
-   * @param {number} options.maxConnections - The maximum number of connections allowed. Default=Infinity
-   * @param {number} options.minConnections - The minimum number of connections to avoid pruning. Default=0
-   * @param {number} options.maxData - The max data (in and out), per average interval to allow. Default=Infinity
-   * @param {number} options.maxSentData - The max outgoing data, per average interval to allow. Default=Infinity
-   * @param {number} options.maxReceivedData - The max incoming data, per average interval to allow.. Default=Infinity
-   * @param {number} options.maxEventLoopDelay - The upper limit the event loop can take to run. Default=Infinity
-   * @param {number} options.pollInterval - How often, in milliseconds, metrics and latency should be checked. Default=2000
-   * @param {number} options.movingAverageInterval - How often, in milliseconds, to compute averages. Default=60000
-   * @param {number} options.defaultPeerValue - The value of the peer. Default=1
-   * @param {boolean} options.autoDial - Should preemptively guarantee connections are above the low watermark. Default=true
-   * @param {number} options.autoDialInterval - How often, in milliseconds, it should preemptively guarantee connections are above the low watermark. Default=10000
+   * @param {ConnectionManagerOptions} options
    */
-  constructor (libp2p, options) {
+  constructor (libp2p, options = {}) {
     super()
 
     this._libp2p = libp2p
@@ -66,8 +77,6 @@ class ConnectionManager extends EventEmitter {
 
     log('options: %j', this._options)
 
-    this._libp2p = libp2p
-
     /**
      * Map of peer identifiers to their peer value for pruning connections.
      *
@@ -78,7 +87,7 @@ class ConnectionManager extends EventEmitter {
     /**
      * Map of connections per peer
      *
-     * @type {Map<string, Array<conn>>}
+     * @type {Map<string, Connection[]>}
      */
     this.connections = new Map()
 
@@ -159,15 +168,13 @@ class ConnectionManager extends EventEmitter {
    *
    * @param {PeerId} peerId
    * @param {number} value - A number between 0 and 1
+   * @returns {void}
    */
   setPeerValue (peerId, value) {
     if (value < 0 || value > 1) {
       throw new Error('value should be a number between 0 and 1')
     }
-    if (peerId.toB58String) {
-      peerId = peerId.toB58String()
-    }
-    this._peerValues.set(peerId, value)
+    this._peerValues.set(peerId.toB58String(), value)
   }
 
   /**
@@ -177,21 +184,24 @@ class ConnectionManager extends EventEmitter {
    * @private
    */
   _checkMetrics () {
-    const movingAverages = this._libp2p.metrics.global.movingAverages
-    const received = movingAverages.dataReceived[this._options.movingAverageInterval].movingAverage()
-    this._checkMaxLimit('maxReceivedData', received)
-    const sent = movingAverages.dataSent[this._options.movingAverageInterval].movingAverage()
-    this._checkMaxLimit('maxSentData', sent)
-    const total = received + sent
-    this._checkMaxLimit('maxData', total)
-    log('metrics update', total)
-    this._timer = retimer(this._checkMetrics, this._options.pollInterval)
+    if (this._libp2p.metrics) {
+      const movingAverages = this._libp2p.metrics.global.movingAverages
+      const received = movingAverages.dataReceived[this._options.movingAverageInterval].movingAverage()
+      this._checkMaxLimit('maxReceivedData', received)
+      const sent = movingAverages.dataSent[this._options.movingAverageInterval].movingAverage()
+      this._checkMaxLimit('maxSentData', sent)
+      const total = received + sent
+      this._checkMaxLimit('maxData', total)
+      log('metrics update', total)
+      this._timer = retimer(this._checkMetrics, this._options.pollInterval)
+    }
   }
 
   /**
    * Tracks the incoming connection and check the connection limit
    *
    * @param {Connection} connection
+   * @returns {void}
    */
   onConnect (connection) {
     const peerId = connection.remotePeer
@@ -218,6 +228,7 @@ class ConnectionManager extends EventEmitter {
    * Removes the connection from tracking
    *
    * @param {Connection} connection
+   * @returns {void}
    */
   onDisconnect (connection) {
     const peerId = connection.remotePeer.toB58String()
@@ -237,7 +248,7 @@ class ConnectionManager extends EventEmitter {
    * Get a connection with a peer.
    *
    * @param {PeerId} peerId
-   * @returns {Connection}
+   * @returns {Connection|null}
    */
   get (peerId) {
     const connections = this.getAll(peerId)
@@ -251,7 +262,7 @@ class ConnectionManager extends EventEmitter {
    * Get all open connections with a peer.
    *
    * @param {PeerId} peerId
-   * @returns {Array<Connection>}
+   * @returns {Connection[]}
    */
   getAll (peerId) {
     if (!PeerId.isPeerId(peerId)) {

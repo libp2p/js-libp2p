@@ -10,16 +10,19 @@ const {
 const passthrough = data => data
 
 /**
- * The Book is the skeleton for the PeerStore books.
+ * @typedef {import('./')} PeerStore
  */
+
 class Book {
   /**
+   * The Book is the skeleton for the PeerStore books.
+   *
    * @class
    * @param {Object} properties
    * @param {PeerStore} properties.peerStore - PeerStore instance.
    * @param {string} properties.eventName - Name of the event to emit by the PeerStore.
    * @param {string} properties.eventProperty - Name of the property to emit by the PeerStore.
-   * @param {Function} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
+   * @param {(data: any) => any[]} [properties.eventTransformer] - Transformer function of the provided data for being emitted.
    */
   constructor ({ peerStore, eventName, eventProperty, eventTransformer = passthrough }) {
     this._ps = peerStore
@@ -30,7 +33,7 @@ class Book {
     /**
      * Map known peers to their data.
      *
-     * @type {Map<string, Array<Data>}
+     * @type {Map<string, any[]|any>}
      */
     this.data = new Map()
   }
@@ -39,7 +42,7 @@ class Book {
    * Set known data of a provided peer.
    *
    * @param {PeerId} peerId
-   * @param {Array<Data>|Data} data
+   * @param {any[]|any} data
    */
   set (peerId, data) {
     throw errcode(new Error('set must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
@@ -48,9 +51,9 @@ class Book {
   /**
    * Set data into the datastructure, persistence and emit it using the provided transformers.
    *
-   * @private
+   * @protected
    * @param {PeerId} peerId - peerId of the data to store
-   * @param {*} data - data to store.
+   * @param {any} data - data to store.
    * @param {Object} [options] - storing options.
    * @param {boolean} [options.emit = true] - emit the provided data.
    * @returns {void}
@@ -68,9 +71,9 @@ class Book {
   /**
    * Emit data.
    *
-   * @private
+   * @protected
    * @param {PeerId} peerId
-   * @param {*} data
+   * @param {any} [data]
    */
   _emit (peerId, data) {
     this._ps.emit(this.eventName, {
@@ -84,7 +87,7 @@ class Book {
    * Returns `undefined` if there is no available data for the given peer.
    *
    * @param {PeerId} peerId
-   * @returns {Array<Data>|undefined}
+   * @returns {any[]|any|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
@@ -93,6 +96,7 @@ class Book {
 
     const rec = this.data.get(peerId.toB58String())
 
+    // @ts-ignore
     return rec ? [...rec] : undefined
   }
 

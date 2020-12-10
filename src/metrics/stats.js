@@ -1,17 +1,19 @@
+// @ts-nocheck
 'use strict'
 
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 const Big = require('bignumber.js')
 const MovingAverage = require('moving-average')
 const retimer = require('retimer')
 
-/**
- * A queue based manager for stat processing
- *
- * @param {Array<string>} initialCounters
- * @param {any} options
- */
 class Stats extends EventEmitter {
+  /**
+   * A queue based manager for stat processing
+   *
+   * @class
+   * @param {string[]} initialCounters
+   * @param {any} options
+   */
   constructor (initialCounters, options) {
     super()
 
@@ -21,6 +23,7 @@ class Stats extends EventEmitter {
 
     this._frequencyLastTime = Date.now()
     this._frequencyAccumulators = {}
+
     this._movingAverages = {}
 
     this._update = this._update.bind(this)
@@ -68,7 +71,7 @@ class Stats extends EventEmitter {
   /**
    * Returns a clone of the current stats.
    *
-   * @returns {Map<string, Stat>}
+   * @returns {Object}
    */
   get snapshot () {
     return Object.assign({}, this._stats)
@@ -77,7 +80,7 @@ class Stats extends EventEmitter {
   /**
    * Returns a clone of the internal movingAverages
    *
-   * @returns {Array<MovingAverage>}
+   * @returns {MovingAverage}
    */
   get movingAverages () {
     return Object.assign({}, this._movingAverages)
@@ -229,7 +232,7 @@ class Stats extends EventEmitter {
    * will be updated or initialized if they don't already exist.
    *
    * @private
-   * @param {Array<string, number>} op
+   * @param {{string, number}[]} op
    * @throws {InvalidNumber}
    * @returns {void}
    */
@@ -238,7 +241,7 @@ class Stats extends EventEmitter {
     const inc = op[1]
 
     if (typeof inc !== 'number') {
-      throw new Error('invalid increment number:', inc)
+      throw new Error(`invalid increment number: ${inc}`)
     }
 
     let n
