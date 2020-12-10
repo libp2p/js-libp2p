@@ -97,7 +97,7 @@
   "devDependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
     "abortable-iterator": "^3.0.0",
-    "aegir": "^29.2.0",
+    "aegir": "git://github.com/ipfs/aegir#feat/ts-4.1.x",
     "chai-bytes": "^0.1.2",
     "chai-string": "^1.5.0",
     "delay": "^4.3.0",
