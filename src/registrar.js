@@ -1,14 +1,23 @@
 'use strict'
 
 const debug = require('debug')
+const log = Object.assign(debug('libp2p:peer-store'), {
+  error: debug('libp2p:peer-store:err')
+})
 const errcode = require('err-code')
-const log = debug('libp2p:peer-store')
-log.error = debug('libp2p:peer-store:error')
 
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('./errors')
 const Topology = require('libp2p-interfaces/src/topology')
+
+/**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('./peer-store')} PeerStore
+ * @typedef {import('./connection-manager')} ConnectionManager
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/topology')} Topology
+ */
 
 /**
  * Responsible for notifying registered protocols of events in the network.
@@ -17,7 +26,7 @@ class Registrar {
   /**
    * @param {Object} props
    * @param {PeerStore} props.peerStore
-   * @param {connectionManager} props.connectionManager
+   * @param {ConnectionManager} props.connectionManager
    * @class
    */
   constructor ({ peerStore, connectionManager }) {
@@ -51,7 +60,7 @@ class Registrar {
    * Get a connection with a peer.
    *
    * @param {PeerId} peerId
-   * @returns {Connection}
+   * @returns {Connection | null}
    */
   getConnection (peerId) {
     return this.connectionManager.get(peerId)
@@ -65,11 +74,12 @@ class Registrar {
    */
   register (topology) {
     if (!Topology.isTopology(topology)) {
+      log.error('topology must be an instance of interfaces/topology')
       throw errcode(new Error('topology must be an instance of interfaces/topology'), ERR_INVALID_PARAMETERS)
     }
 
     // Create topology
-    const id = (parseInt(Math.random() * 1e9)).toString(36) + Date.now()
+    const id = (Math.random() * 1e9).toString(36) + Date.now()
 
     this.topologies.set(id, topology)
 

@@ -1,30 +1,39 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p-ping')
-log.error = debug('libp2p-ping:error')
+const log = Object.assign(debug('libp2p:ping'), {
+  error: debug('libp2p:ping:err')
+})
 const errCode = require('err-code')
 
 const crypto = require('libp2p-crypto')
-const pipe = require('it-pipe')
+const { pipe } = require('it-pipe')
 const { toBuffer } = require('it-buffer')
 const { collect, take } = require('streaming-iterables')
+const equals = require('uint8arrays/equals')
 
 const { PROTOCOL, PING_LENGTH } = require('./constants')
+
+/**
+ * @typedef {import('../')} Libp2p
+ * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('peer-id')} PeerId
+ */
 
 /**
  * Ping a given peer and wait for its response, getting the operation latency.
  *
  * @param {Libp2p} node
- * @param {PeerId|multiaddr} peer
+ * @param {PeerId|Multiaddr} peer
  * @returns {Promise<number>}
  */
 async function ping (node, peer) {
+  // @ts-ignore multiaddr might not have toB58String
   log('dialing %s to %s', PROTOCOL, peer.toB58String ? peer.toB58String() : peer)
 
   const { stream } = await node.dialProtocol(peer, PROTOCOL)
 
-  const start = new Date()
+  const start = Date.now()
   const data = crypto.randomBytes(PING_LENGTH)
 
   const [result] = await pipe(
@@ -36,7 +45,7 @@ async function ping (node, peer) {
   )
   const end = Date.now()
 
-  if (!data.equals(result)) {
+  if (!equals(data, result)) {
     throw errCode(new Error('Received wrong ping ack'), 'ERR_WRONG_PING_ACK')
   }
 

@@ -1,9 +1,10 @@
 'use strict'
 
-const errcode = require('err-code')
 const debug = require('debug')
-const log = debug('libp2p:peer-store:key-book')
-log.error = debug('libp2p:peer-store:key-book:error')
+const log = Object.assign(debug('libp2p:peer-store:key-book'), {
+  error: debug('libp2p:peer-store:key-book:err')
+})
+const errcode = require('err-code')
 
 const PeerId = require('peer-id')
 
@@ -14,10 +15,17 @@ const {
 } = require('../errors')
 
 /**
- * The KeyBook is responsible for keeping the known public keys of a peer.
+ * @typedef {import('./')} PeerStore
+ * @typedef {import('libp2p-crypto').PublicKey} PublicKey
+ */
+
+/**
+ * @extends {Book}
  */
 class KeyBook extends Book {
   /**
+   * The KeyBook is responsible for keeping the known public keys of a peer.
+   *
    * @class
    * @param {PeerStore} peerStore
    */
@@ -42,7 +50,7 @@ class KeyBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @param {RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey} publicKey
+   * @param {PublicKey} publicKey
    * @returns {KeyBook}
    */
   set (peerId, publicKey) {
@@ -72,7 +80,7 @@ class KeyBook extends Book {
    *
    * @override
    * @param {PeerId} peerId
-   * @returns {RsaPublicKey|Ed25519PublicKey|Secp256k1PublicKey}
+   * @returns {PublicKey | undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {

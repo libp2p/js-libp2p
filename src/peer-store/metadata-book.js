@@ -1,9 +1,10 @@
 'use strict'
 
-const errcode = require('err-code')
 const debug = require('debug')
-const log = debug('libp2p:peer-store:proto-book')
-log.error = debug('libp2p:peer-store:proto-book:error')
+const log = Object.assign(debug('libp2p:peer-store:proto-book'), {
+  error: debug('libp2p:peer-store:proto-book:err')
+})
+const errcode = require('err-code')
 const uint8ArrayEquals = require('uint8arrays/equals')
 
 const PeerId = require('peer-id')
@@ -15,13 +16,19 @@ const {
 } = require('../errors')
 
 /**
- * The MetadataBook is responsible for keeping the known supported
- * protocols of a peer.
+ * @typedef {import('./')} PeerStore
+ */
+
+/**
+ * @extends {Book}
  *
  * @fires MetadataBook#change:metadata
  */
 class MetadataBook extends Book {
   /**
+   * The MetadataBook is responsible for keeping the known supported
+   * protocols of a peer.
+   *
    * @class
    * @param {PeerStore} peerStore
    */
@@ -51,8 +58,9 @@ class MetadataBook extends Book {
    * @param {PeerId} peerId
    * @param {string} key - metadata key
    * @param {Uint8Array} value - metadata value
-   * @returns {ProtoBook}
+   * @returns {MetadataBook}
    */
+  // @ts-ignore override with more then the parameters expected in Book
   set (peerId, key, value) {
     if (!PeerId.isPeerId(peerId)) {
       log.error('peerId must be an instance of peer-id to store data')
@@ -95,7 +103,7 @@ class MetadataBook extends Book {
    * Get the known data of a provided peer.
    *
    * @param {PeerId} peerId
-   * @returns {Map<string, Uint8Array>}
+   * @returns {Map<string, Uint8Array>|undefined}
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
@@ -110,7 +118,7 @@ class MetadataBook extends Book {
    *
    * @param {PeerId} peerId
    * @param {string} key
-   * @returns {Uint8Array}
+   * @returns {Uint8Array | undefined}
    */
   getValue (peerId, key) {
     if (!PeerId.isPeerId(peerId)) {

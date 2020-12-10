@@ -10,7 +10,7 @@ const AggregateError = require('aggregate-error')
 const pDefer = require('p-defer')
 const delay = require('delay')
 
-const { DialRequest } = require('../../src/dialer/dial-request')
+const DialRequest = require('../../src/dialer/dial-request')
 const createMockConnection = require('../utils/mockConnection')
 const error = new Error('dial failes')
 

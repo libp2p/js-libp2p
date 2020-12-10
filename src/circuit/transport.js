@@ -1,13 +1,13 @@
 'use strict'
 
 const debug = require('debug')
-const log = debug('libp2p:circuit')
-log.error = debug('libp2p:circuit:error')
+const log = Object.assign(debug('libp2p:circuit'), {
+  error: debug('libp2p:circuit:err')
+})
 
 const mafmt = require('mafmt')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
-const withIs = require('class-is')
 const { CircuitRelay: CircuitPB } = require('./protocol')
 
 const toConnection = require('libp2p-utils/src/stream-to-ma-conn')
@@ -18,14 +18,23 @@ const { handleCanHop, handleHop, hop } = require('./circuit/hop')
 const { handleStop } = require('./circuit/stop')
 const StreamHandler = require('./circuit/stream-handler')
 
+const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
+
+/**
+ * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ * @typedef {import('../types').CircuitRequest} CircuitRequest
+ */
+
 class Circuit {
   /**
    * Creates an instance of the Circuit Transport.
    *
    * @class
    * @param {object} options
-   * @param {Libp2p} options.libp2p
-   * @param {Upgrader} options.upgrader
+   * @param {import('../')} options.libp2p
+   * @param {import('../upgrader')} options.upgrader
    */
   constructor ({ libp2p, upgrader }) {
     this._dialer = libp2p.dialer
@@ -39,7 +48,13 @@ class Circuit {
     this._registrar.handle(multicodec, this._onProtocol.bind(this))
   }
 
+  /**
+   * @param {Object} props
+   * @param {Connection} props.connection
+   * @param {MuxedStream} props.stream
+   */
   async _onProtocol ({ connection, stream }) {
+    /** @type {import('./circuit/stream-handler')<CircuitRequest>} */
     const streamHandler = new StreamHandler({ stream })
     const request = await streamHandler.read()
 
@@ -71,8 +86,7 @@ class Circuit {
         virtualConnection = await handleStop({
           connection,
           request,
-          streamHandler,
-          circuit
+          streamHandler
         })
         break
       }
@@ -89,7 +103,7 @@ class Circuit {
         remoteAddr,
         localAddr
       })
-      const type = CircuitPB.Type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
+      const type = request.type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
       log('new %s connection %s', type, maConn.remoteAddr)
 
       const conn = await this._upgrader.upgradeInbound(maConn)
@@ -101,10 +115,10 @@ class Circuit {
   /**
    * Dial a peer over a relay
    *
-   * @param {multiaddr} ma - the multiaddr of the peer to dial
+   * @param {Multiaddr} ma - the multiaddr of the peer to dial
    * @param {Object} options - dial options
    * @param {AbortSignal} [options.signal] - An optional abort signal
-   * @returns {Connection} - the connection
+   * @returns {Promise<Connection>} - the connection
    */
   async dial (ma, options) {
     // Check the multiaddr to see if it contains a relay and a destination peer
@@ -124,7 +138,6 @@ class Circuit {
     try {
       const virtualConnection = await hop({
         connection: relayConnection,
-        circuit: this,
         request: {
           type: CircuitPB.Type.HOP,
           srcPeer: {
@@ -159,7 +172,7 @@ class Circuit {
    *
    * @param {any} options
    * @param {Function} handler
-   * @returns {listener}
+   * @returns {import('libp2p-interfaces/src/transport/types').Listener}
    */
   createListener (options, handler) {
     if (typeof options === 'function') {
@@ -170,14 +183,14 @@ class Circuit {
     // Called on successful HOP and STOP requests
     this.handler = handler
 
-    return createListener(this._libp2p, options)
+    return createListener(this._libp2p)
   }
 
   /**
    * Filter check for all Multiaddrs that this transport can dial on
    *
-   * @param {Array<Multiaddr>} multiaddrs
-   * @returns {Array<Multiaddr>}
+   * @param {Multiaddr[]} multiaddrs
+   * @returns {Multiaddr[]}
    */
   filter (multiaddrs) {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
@@ -186,9 +199,20 @@ class Circuit {
       return mafmt.Circuit.matches(ma)
     })
   }
+
+  get [Symbol.toStringTag] () {
+    return 'Circuit'
+  }
+
+  /**
+   * Checks if the given value is a Transport instance.
+   *
+   * @param {any} other
+   * @returns {other is Transport}
+   */
+  static isTransport (other) {
+    return Boolean(other && other[transportSymbol])
+  }
 }
 
-/**
- * @type {Circuit}
- */
-module.exports = withIs(Circuit, { className: 'Circuit', symbolName: '@libp2p/js-libp2p-circuit/circuit' })
+module.exports = Circuit

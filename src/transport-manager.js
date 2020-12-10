@@ -1,25 +1,39 @@
 'use strict'
 
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:transports'), {
+  error: debug('libp2p:transports:err')
+})
+
 const pSettle = require('p-settle')
 const { codes } = require('./errors')
 const errCode = require('err-code')
-const debug = require('debug')
-const log = debug('libp2p:transports')
-log.error = debug('libp2p:transports:error')
 
 const { updateSelfPeerRecord } = require('./record/utils')
+
+/**
+ * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory} TransportFactory
+ * @typedef {import('libp2p-interfaces/src/transport/types').Transport} Transport
+ *
+ * @typedef {Object} TransportManagerProperties
+ * @property {import('./')} libp2p
+ * @property {import('./upgrader')} upgrader
+ *
+ * @typedef {Object} TransportManagerOptions
+ * @property {number} [faultTolerance = FAULT_TOLERANCE.FATAL_ALL] - Address listen error tolerance.
+ */
 
 class TransportManager {
   /**
    * @class
-   * @param {object} options
-   * @param {Libp2p} options.libp2p - The Libp2p instance. It will be passed to the transports.
-   * @param {Upgrader} options.upgrader - The upgrader to provide to the transports
-   * @param {boolean} [options.faultTolerance = FAULT_TOLERANCE.FATAL_ALL] - Address listen error tolerance.
+   * @param {TransportManagerProperties & TransportManagerOptions} options
    */
   constructor ({ libp2p, upgrader, faultTolerance = FAULT_TOLERANCE.FATAL_ALL }) {
     this.libp2p = libp2p
     this.upgrader = upgrader
+    /** @type {Map<string, Transport>} */
     this._transports = new Map()
     this._listeners = new Map()
     this._listenerOptions = new Map()
@@ -30,7 +44,7 @@ class TransportManager {
    * Adds a `Transport` to the manager
    *
    * @param {string} key
-   * @param {Transport} Transport
+   * @param {TransportFactory} Transport
    * @param {*} transportOptions - Additional options to pass to the transport
    * @returns {void}
    */
@@ -119,7 +133,7 @@ class TransportManager {
   /**
    * Returns all the transports instances.
    *
-   * @returns {Iterator<Transport>}
+   * @returns {IterableIterator<Transport>}
    */
   getTransports () {
     return this._transports.values()
@@ -143,7 +157,7 @@ class TransportManager {
    * Starts listeners for each listen Multiaddr.
    *
    * @async
-   * @param {Array<Multiaddr>} addrs - addresses to attempt to listen on
+   * @param {Multiaddr[]} addrs - addresses to attempt to listen on
    */
   async listen (addrs) {
     if (!addrs || addrs.length === 0) {
@@ -159,7 +173,7 @@ class TransportManager {
       // For each supported multiaddr, create a listener
       for (const addr of supportedAddrs) {
         log('creating listener for %s on %s', key, addr)
-        const listener = transport.createListener(this._listenerOptions.get(key), this.onConnection)
+        const listener = transport.createListener(this._listenerOptions.get(key))
         this._listeners.get(key).push(listener)
 
         // Track listen/close events

@@ -1,14 +1,15 @@
 'use strict'
 
-const multiaddr = require('multiaddr')
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:dialer'), {
+  error: debug('libp2p:dialer:err')
+})
 const errCode = require('err-code')
+const multiaddr = require('multiaddr')
 const TimeoutController = require('timeout-abort-controller')
 const anySignal = require('any-signal')
-const debug = require('debug')
-const log = debug('libp2p:dialer')
-log.error = debug('libp2p:dialer:error')
 
-const { DialRequest } = require('./dial-request')
+const DialRequest = require('./dial-request')
 const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 const getPeer = require('../get-peer')
 
@@ -19,17 +20,44 @@ const {
   MAX_PER_PEER_DIALS
 } = require('../constants')
 
+/**
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('../peer-store')} PeerStore
+ * @typedef {import('../peer-store/address-book').Address} Address
+ * @typedef {import('../transport-manager')} TransportManager
+ */
+
+/**
+ * @typedef {Object} DialerProperties
+ * @property {PeerStore} peerStore
+ * @property {TransportManager} transportManager
+ *
+ * @typedef {(addr:Multiaddr) => Promise<string[]>} Resolver
+ *
+ * @typedef {Object} DialerOptions
+ * @property {(addresses: Address[]) => Address[]} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
+ * @property {number} [concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
+ * @property {number} [perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
+ * @property {number} [timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
+ * @property {Record<string, Resolver>} [resolvers = {}] - multiaddr resolvers to use when dialing
+ *
+ * @typedef DialTarget
+ * @property {string} id
+ * @property {Multiaddr[]} addrs
+ *
+ * @typedef PendingDial
+ * @property {DialRequest} dialRequest
+ * @property {TimeoutController} controller
+ * @property {Promise} promise
+ * @property {function():void} destroy
+ */
+
 class Dialer {
   /**
    * @class
-   * @param {object} options
-   * @param {TransportManager} options.transportManager
-   * @param {Peerstore} options.peerStore
-   * @param {(addresses: Array<Address) => Array<Address>} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
-   * @param {number} [options.concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
-   * @param {number} [options.perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
-   * @param {number} [options.timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
-   * @param {object} [options.resolvers = {}] - multiaddr resolvers to use when dialing
+   * @param {DialerProperties & DialerOptions} options
    */
   constructor ({
     transportManager,
@@ -103,12 +131,6 @@ class Dialer {
   }
 
   /**
-   * @typedef DialTarget
-   * @property {string} id
-   * @property {Multiaddr[]} addrs
-   */
-
-  /**
    * Creates a DialTarget. The DialTarget is used to create and track
    * the DialRequest to a given peer.
    * If a multiaddr is received it should be the first address attempted.
@@ -146,14 +168,6 @@ class Dialer {
   }
 
   /**
-   * @typedef PendingDial
-   * @property {DialRequest} dialRequest
-   * @property {TimeoutController} controller
-   * @property {Promise} promise
-   * @property {function():void} destroy
-   */
-
-  /**
    * Creates a PendingDial that wraps the underlying DialRequest
    *
    * @private
@@ -162,7 +176,7 @@ class Dialer {
    * @param {AbortSignal} [options.signal] - An AbortController signal
    * @returns {PendingDial}
    */
-  _createPendingDial (dialTarget, options) {
+  _createPendingDial (dialTarget, options = {}) {
     const dialAction = (addr, options) => {
       if (options.signal.aborted) throw errCode(new Error('already aborted'), codes.ERR_ALREADY_ABORTED)
       return this.transportManager.dial(addr, options)
@@ -211,7 +225,7 @@ class Dialer {
    * Resolve multiaddr recursively.
    *
    * @param {Multiaddr} ma
-   * @returns {Promise<Array<Multiaddr>>}
+   * @returns {Promise<Multiaddr[]>}
    */
   async _resolve (ma) {
     // TODO: recursive logic should live in multiaddr once dns4/dns6 support is in place
@@ -228,19 +242,20 @@ class Dialer {
       return this._resolve(nm)
     }))
 
-    return recursiveMultiaddrs.flat().reduce((array, newM) => {
+    const addrs = recursiveMultiaddrs.flat()
+    return addrs.reduce((array, newM) => {
       if (!array.find(m => m.equals(newM))) {
         array.push(newM)
       }
       return array
-    }, []) // Unique addresses
+    }, /** @type  {Multiaddr[]} */([]))
   }
 
   /**
    * Resolve a given multiaddr. If this fails, an empty array will be returned
    *
    * @param {Multiaddr} ma
-   * @returns {Promise<Array<Multiaddr>>}
+   * @returns {Promise<Multiaddr[]>}
    */
   async _resolveRecord (ma) {
     try {

@@ -2,7 +2,8 @@
 
 const protons = require('protons')
 
-const message = `
+/** @type {{Envelope: import('../../types').MessageProto}} */
+module.exports = protons(`
 message Envelope {
   // public_key is the public key of the keypair the enclosed payload was
   // signed with.
@@ -20,6 +21,4 @@ message Envelope {
   // additional security.
   bytes signature = 5;
 }
-`
-
-module.exports = protons(message).Envelope
+`)

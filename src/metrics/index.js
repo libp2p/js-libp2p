@@ -1,7 +1,8 @@
+// @ts-nocheck
 'use strict'
 
 const mergeOptions = require('merge-options')
-const pipe = require('it-pipe')
+const { pipe } = require('it-pipe')
 const { tap } = require('streaming-iterables')
 const oldPeerLRU = require('./old-peers')
 const { METRICS: defaultOptions } = require('../constants')
@@ -17,15 +18,26 @@ const directionToEvent = {
   out: 'dataSent'
 }
 
+/**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
+ */
+
+/**
+ * @typedef MetricsProperties
+ * @property {import('../connection-manager')} connectionManager
+ *
+ * @typedef MetricsOptions
+ * @property {number} [computeThrottleMaxQueueSize = defaultOptions.computeThrottleMaxQueueSize]
+ * @property {number} [computeThrottleTimeout = defaultOptions.computeThrottleTimeout]
+ * @property {number[]} [movingAverageIntervals = defaultOptions.movingAverageIntervals]
+ * @property {number} [maxOldPeersRetention = defaultOptions.maxOldPeersRetention]
+ */
+
 class Metrics {
   /**
-   *
-   * @param {object} options
-   * @param {ConnectionManager} options.connectionManager
-   * @param {number} options.computeThrottleMaxQueueSize
-   * @param {number} options.computeThrottleTimeout
-   * @param {Array<number>} options.movingAverageIntervals
-   * @param {number} options.maxOldPeersRetention
+   * @class
+   * @param {MetricsProperties & MetricsOptions} options
    */
   constructor (options) {
     this._options = mergeOptions(defaultOptions, options)
@@ -76,7 +88,7 @@ class Metrics {
   /**
    * Returns a list of `PeerId` strings currently being tracked
    *
-   * @returns {Array<string>}
+   * @returns {string[]}
    */
   get peers () {
     return Array.from(this._peerStats.keys())
@@ -97,7 +109,7 @@ class Metrics {
   /**
    * Returns a list of all protocol strings currently being tracked.
    *
-   * @returns {Array<string>}
+   * @returns {string[]}
    */
   get protocols () {
     return Array.from(this._protocolStats.keys())
@@ -176,6 +188,7 @@ class Metrics {
    *
    * @param {PeerId} placeholder - A peerId string
    * @param {PeerId} peerId
+   * @returns {void}
    */
   updatePlaceholder (placeholder, peerId) {
     if (!this._running) return
@@ -205,10 +218,10 @@ class Metrics {
    * with the placeholder string returned from here, and the known `PeerId`.
    *
    * @param {Object} options
-   * @param {{ sink: function(*), source: function() }} options.stream - A duplex iterable stream
+   * @param {MultiaddrConnection} options.stream - A duplex iterable stream
    * @param {PeerId} [options.remotePeer] - The id of the remote peer that's connected
    * @param {string} [options.protocol] - The protocol the stream is running
-   * @returns {string} The peerId string or placeholder string
+   * @returns {MultiaddrConnection} The peerId string or placeholder string
    */
   trackStream ({ stream, remotePeer, protocol }) {
     const metrics = this

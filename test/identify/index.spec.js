@@ -12,7 +12,8 @@ const pWaitFor = require('p-wait-for')
 const unit8ArrayToString = require('uint8arrays/to-string')
 
 const { codes: Errors } = require('../../src/errors')
-const { IdentifyService, multicodecs } = require('../../src/identify')
+const IdentifyService = require('../../src/identify')
+const multicodecs = IdentifyService.multicodecs
 const Peers = require('../fixtures/peers')
 const Libp2p = require('../../src')
 const Envelope = require('../../src/record/envelope')
@@ -54,7 +55,8 @@ describe('Identify', () => {
         connectionManager: new EventEmitter(),
         peerStore: localPeerStore,
         multiaddrs: listenMaddrs,
-        isStarted: () => true
+        isStarted: () => true,
+        _options: { host: {} }
       }
     })
     const remoteIdentify = new IdentifyService({
@@ -63,7 +65,8 @@ describe('Identify', () => {
         connectionManager: new EventEmitter(),
         peerStore: remotePeerStore,
         multiaddrs: listenMaddrs,
-        isStarted: () => true
+        isStarted: () => true,
+        _options: { host: {} }
       }
     })
 
@@ -109,7 +112,8 @@ describe('Identify', () => {
         connectionManager: new EventEmitter(),
         peerStore: localPeerStore,
         multiaddrs: listenMaddrs,
-        isStarted: () => true
+        isStarted: () => true,
+        _options: { host: {} }
       }
     })
 
@@ -119,7 +123,8 @@ describe('Identify', () => {
         connectionManager: new EventEmitter(),
         peerStore: remotePeerStore,
         multiaddrs: listenMaddrs,
-        isStarted: () => true
+        isStarted: () => true,
+        _options: { host: {} }
       }
     })
 
@@ -167,7 +172,8 @@ describe('Identify', () => {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
         peerStore: localPeerStore,
-        multiaddrs: []
+        multiaddrs: [],
+        _options: { host: {} }
       }
     })
     const remoteIdentify = new IdentifyService({
@@ -175,7 +181,8 @@ describe('Identify', () => {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
         peerStore: remotePeerStore,
-        multiaddrs: []
+        multiaddrs: [],
+        _options: { host: {} }
       }
     })
 
@@ -246,7 +253,8 @@ describe('Identify', () => {
           connectionManager: new EventEmitter(),
           peerStore: localPeerStore,
           multiaddrs: listenMaddrs,
-          isStarted: () => true
+          isStarted: () => true,
+          _options: { host: {} }
         }
       })
 
@@ -259,7 +267,8 @@ describe('Identify', () => {
           connectionManager,
           peerStore: remotePeerStore,
           multiaddrs: [],
-          isStarted: () => true
+          isStarted: () => true,
+          _options: { host: {} }
         }
       })
 
@@ -316,7 +325,8 @@ describe('Identify', () => {
           connectionManager: new EventEmitter(),
           peerStore: localPeerStore,
           multiaddrs: listenMaddrs,
-          isStarted: () => true
+          isStarted: () => true,
+          _options: { host: {} }
         }
       })
 

@@ -1,9 +1,10 @@
 'use strict'
 
-const errCode = require('err-code')
 const debug = require('debug')
-const log = debug('libp2p:peer-routing')
-log.error = debug('libp2p:peer-routing:error')
+const log = Object.assign(debug('libp2p:peer-routing'), {
+  error: debug('libp2p:peer-routing:err')
+})
+const errCode = require('err-code')
 
 const all = require('it-all')
 const pAny = require('p-any')
@@ -13,12 +14,13 @@ const {
 } = require('set-delayed-interval')
 
 /**
- * Responsible for managing the usage of the available Peer Routing modules.
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('multiaddr')} Multiaddr
  */
 class PeerRouting {
   /**
    * @class
-   * @param {Libp2p} libp2p
+   * @param {import('./')} libp2p
    */
   constructor (libp2p) {
     this._peerId = libp2p.peerId
