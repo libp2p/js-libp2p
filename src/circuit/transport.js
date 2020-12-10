@@ -24,6 +24,7 @@ const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ * @typedef {import('../types').CircuitRequest} CircuitRequest
  */
 
 class Circuit {
@@ -53,6 +54,7 @@ class Circuit {
    * @param {MuxedStream} props.stream
    */
   async _onProtocol ({ connection, stream }) {
+    /** @type {import('./circuit/stream-handler')<CircuitRequest>} */
     const streamHandler = new StreamHandler({ stream })
     const request = await streamHandler.read()
 
@@ -101,7 +103,7 @@ class Circuit {
         remoteAddr,
         localAddr
       })
-      const type = request.Type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
+      const type = request.type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
       log('new %s connection %s', type, maConn.remoteAddr)
 
       const conn = await this._upgrader.upgradeInbound(maConn)

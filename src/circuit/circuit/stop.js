@@ -14,7 +14,7 @@ const { validateAddrs } = require('./utils')
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('../../types').CircuitRequest} CircuitRequest
- * @typedef {import('./stream-handler')<Request>} StreamHandlerT
+ * @typedef {import('./stream-handler')<CircuitRequest>} StreamHandlerT
  */
 
 /**

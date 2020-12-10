@@ -95,9 +95,6 @@ class Libp2p extends EventEmitter {
     super()
     // validateConfig will ensure the config is correct,
     // and add default values where appropriate
-    /**
-     * @private
-     */
     this._options = validateConfig(_options)
 
     /** @type {PeerId} */

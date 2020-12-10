@@ -66,10 +66,14 @@ class PeerRecord {
   /**
    * Returns true if `this` record equals the `other`.
    *
-   * @param {PeerRecord} other
-   * @returns {other is Record}
+   * @param {unknown} other
+   * @returns {boolean}
    */
   equals (other) {
+    if (!(other instanceof PeerRecord)) {
+      return false
+    }
+
     // Validate PeerId
     if (!this.peerId.equals(other.peerId)) {
       return false
