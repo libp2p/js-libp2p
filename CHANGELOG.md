@@ -1,3 +1,31 @@
+# [0.30.0-rc.0](https://github.com/libp2p/js-libp2p/compare/v0.29.4...v0.30.0-rc.0) (2020-12-10)
+
+
+### Bug Fixes
+
+* remove test/dialing/utils extra file ([3f1dc20](https://github.com/libp2p/js-libp2p/commit/3f1dc20caf1c80078f403deb9174cd06d08567ab))
+
+
+### chore
+
+* update pubsub ([#801](https://github.com/libp2p/js-libp2p/issues/801)) ([9205fce](https://github.com/libp2p/js-libp2p/commit/9205fce34d0cd8dd5d32988be34c110fc0a5b6e2))
+
+
+### Features
+
+* auto relay ([#723](https://github.com/libp2p/js-libp2p/issues/723)) ([65ec267](https://github.com/libp2p/js-libp2p/commit/65ec267e7f4826caacd042213c3fbacce589ab5b))
+* auto relay network query for new relays ([9faf1bf](https://github.com/libp2p/js-libp2p/commit/9faf1bfcf61581acc715b9be78b71dc14501835a))
+* custom announce filter ([48476d5](https://github.com/libp2p/js-libp2p/commit/48476d504a98b7b51b3e2dc64eab93670fde0c7b))
+* custom dialer addr sorter ([#792](https://github.com/libp2p/js-libp2p/issues/792)) ([91b15b6](https://github.com/libp2p/js-libp2p/commit/91b15b6790952b4db11264961d9c6f2a96d1fe43))
+* discover and connect to closest peers ([#798](https://github.com/libp2p/js-libp2p/issues/798)) ([b73106e](https://github.com/libp2p/js-libp2p/commit/b73106eba2d559621f427f7aa788e9b0ef47d135))
+
+
+### BREAKING CHANGES
+
+* pubsub signing policy properties were changed according to libp2p-interfaces changes to a single property. The emitSelf option default value was also modified to match the routers value
+
+
+
 <a name="0.29.4"></a>
 ## [0.29.4](https://github.com/libp2p/js-libp2p/compare/v0.29.3...v0.29.4) (2020-12-09)
 
