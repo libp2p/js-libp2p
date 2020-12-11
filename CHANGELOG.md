@@ -1,3 +1,12 @@
+# [0.30.0-rc.1](https://github.com/libp2p/js-libp2p/compare/v0.30.0-rc.0...v0.30.0-rc.1) (2020-12-11)
+
+
+### Bug Fixes
+
+* types from ipfs integration ([#832](https://github.com/libp2p/js-libp2p/issues/832)) ([216eb97](https://github.com/libp2p/js-libp2p/commit/216eb9730ef473f73a974c3dbaf306ecdc815c8b))
+
+
+
 # [0.30.0-rc.0](https://github.com/libp2p/js-libp2p/compare/v0.29.4...v0.30.0-rc.0) (2020-12-10)
 
 
