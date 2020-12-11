@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Keychain | libp2p - v0.30.0-rc.0</title>
-	<meta name="description" content="Documentation for libp2p - v0.30.0-rc.0">
+	<title>Keychain | libp2p - v0.30.0-rc.1</title>
+	<meta name="description" content="Documentation for libp2p - v0.30.0-rc.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 	<link href="https://unpkg.com/nord-highlightjs@0.1.0/dist/nord.css" rel="stylesheet" type="text/css" />
@@ -132,7 +132,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">libp2p - v0.30.0-rc.0</a>
+					<a href="../index.html" class="title">libp2p - v0.30.0-rc.1</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<a href="#" class="toolbar-icon toolbar-icon-menu" data-toggle="menu"><i class="gg-menu"></i></a>
@@ -184,7 +184,9 @@
 						<section class="tsd-index-section ">
 							<h3>References</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_keychain_index_.keychain.html#key" class="tsd-kind-icon">Key</a></li>
 								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-kind-icon">Key<wbr>Info</a></li>
+								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_keychain_index_.keychain.html#peerid" class="tsd-kind-icon">Peer<wbr>Id</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -196,7 +198,6 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_keychain_index_.keychain.html#_getprivatekey" class="tsd-kind-icon">_get<wbr>Private<wbr>Key</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_keychain_index_.keychain.html#opts" class="tsd-kind-icon">opts</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_keychain_index_.keychain.html#store" class="tsd-kind-icon">store</a></li>
 							</ul>
@@ -211,6 +212,7 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_keychain_index_.keychain.html#_getprivatekey" class="tsd-kind-icon">_get<wbr>Private<wbr>Key</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_keychain_index_.keychain.html#createkey" class="tsd-kind-icon">create<wbr>Key</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_keychain_index_.keychain.html#exportkey" class="tsd-kind-icon">export<wbr>Key</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_keychain_index_.keychain.html#findkeybyid" class="tsd-kind-icon">find<wbr>Key<wbr>ById</a></li>
@@ -229,9 +231,19 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>References</h2>
 				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="key" class="tsd-anchor"></a>
+					<h3>Key</h3>
+					Re-exports <a href="../modules/_keychain_index_.html#key">Key</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
 					<a name="keyinfo" class="tsd-anchor"></a>
 					<h3>Key<wbr>Info</h3>
 					Re-exports <a href="../modules/_keychain_index_.html#keyinfo">KeyInfo</a>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
+					<a name="peerid" class="tsd-anchor"></a>
+					<h3>Peer<wbr>Id</h3>
+					Re-exports <a href="../modules/_metrics_index_.html#peerid">PeerId</a>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
@@ -272,24 +284,6 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_getprivatekey" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _get<wbr>Private<wbr>Key</h3>
-					<div class="tsd-signature tsd-kind-icon">_get<wbr>Private<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
-					<aside class="tsd-sources">
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Gets the private key as PEM encoded PKCS #8 string.</p>
-						</div>
-						<dl class="tsd-comment-tags">
-							<dt>param</dt>
-							<dd></dd>
-							<dt>returns</dt>
-							<dd></dd>
-						</dl>
-					</div>
-				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="opts" class="tsd-anchor"></a>
 					<h3>opts</h3>
@@ -354,10 +348,35 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="_getprivatekey" class="tsd-anchor"></a>
+					<h3>_get<wbr>Private<wbr>Key</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">_get<wbr>Private<wbr>Key<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the private key as PEM encoded PKCS #8 string.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="createkey" class="tsd-anchor"></a>
 					<h3>create<wbr>Key</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Key<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, size<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Key<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, size<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -383,10 +402,10 @@
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> size: <span class="tsd-signature-type">any</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> size: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -394,7 +413,7 @@
 					<a name="exportkey" class="tsd-anchor"></a>
 					<h3>export<wbr>Key</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">export<wbr>Key<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, password<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+						<li class="tsd-signature tsd-kind-icon">export<wbr>Key<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, password<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -420,7 +439,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -428,7 +447,7 @@
 					<a name="findkeybyid" class="tsd-anchor"></a>
 					<h3>find<wbr>Key<wbr>ById</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">find<wbr>Key<wbr>ById<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></li>
+						<li class="tsd-signature tsd-kind-icon">find<wbr>Key<wbr>ById<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -448,7 +467,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -456,7 +475,7 @@
 					<a name="findkeybyname" class="tsd-anchor"></a>
 					<h3>find<wbr>Key<wbr>ByName</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">find<wbr>Key<wbr>ByName<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></li>
+						<li class="tsd-signature tsd-kind-icon">find<wbr>Key<wbr>ByName<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -476,7 +495,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -484,7 +503,7 @@
 					<a name="importkey" class="tsd-anchor"></a>
 					<h3>import<wbr>Key</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">import<wbr>Key<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, pem<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, password<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></li>
+						<li class="tsd-signature tsd-kind-icon">import<wbr>Key<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, pem<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, password<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -516,7 +535,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -524,22 +543,33 @@
 					<a name="importpeer" class="tsd-anchor"></a>
 					<h3>import<wbr>Peer</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">import<wbr>Peer<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, peer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">import<wbr>Peer<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, peer<span class="tsd-signature-symbol">: </span><a href="../modules/_metrics_index_.html#peerid" class="tsd-signature-type">PeerId</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Import a peer key</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>name: <span class="tsd-signature-type">any</span></h5>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The local key name; must not already exist.</p>
+									</div>
 								</li>
 								<li>
-									<h5>peer: <span class="tsd-signature-type">any</span></h5>
+									<h5>peer: <a href="../modules/_metrics_index_.html#peerid" class="tsd-signature-type">PeerId</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The PEM encoded PKCS #8 string</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -547,7 +577,7 @@
 					<a name="listkeys" class="tsd-anchor"></a>
 					<h3>list<wbr>Keys</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">list<wbr>Keys<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">list<wbr>Keys<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -558,7 +588,7 @@
 									<p>List all the keys.</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">[]</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -566,7 +596,7 @@
 					<a name="removekey" class="tsd-anchor"></a>
 					<h3>remove<wbr>Key</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">remove<wbr>Key<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></li>
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Key<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -586,7 +616,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -594,7 +624,7 @@
 					<a name="renamekey" class="tsd-anchor"></a>
 					<h3>rename<wbr>Key</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">rename<wbr>Key<span class="tsd-signature-symbol">(</span>oldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, newName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></li>
+						<li class="tsd-signature tsd-kind-icon">rename<wbr>Key<span class="tsd-signature-symbol">(</span>oldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, newName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -620,7 +650,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_keychain_index_.keychain.html#keyinfo" class="tsd-signature-type">KeyInfo</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -628,7 +658,7 @@
 					<a name="generateoptions" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> generate<wbr>Options</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">generate<wbr>Options<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></li>
+						<li class="tsd-signature tsd-kind-icon">generate<wbr>Options<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -639,7 +669,7 @@
 									<p>Generates the options for a keychain.  A random salt is produced.</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -661,13 +691,16 @@
 						<a href="_keychain_index_.keychain.html" class="tsd-kind-icon">Keychain</a>
 						<ul>
 							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_keychain_index_.keychain.html#key" class="tsd-kind-icon">Key</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
 								<a href="_keychain_index_.keychain.html#keyinfo" class="tsd-kind-icon">Key<wbr>Info</a>
+							</li>
+							<li class=" tsd-kind-reference tsd-parent-kind-class">
+								<a href="_keychain_index_.keychain.html#peerid" class="tsd-kind-icon">Peer<wbr>Id</a>
 							</li>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
 								<a href="_keychain_index_.keychain.html#constructor" class="tsd-kind-icon">constructor</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="_keychain_index_.keychain.html#_getprivatekey" class="tsd-kind-icon">_get<wbr>Private<wbr>Key</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_keychain_index_.keychain.html#opts" class="tsd-kind-icon">opts</a>
@@ -680,6 +713,9 @@
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-static">
 								<a href="_keychain_index_.keychain.html#options" class="tsd-kind-icon">options</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_keychain_index_.keychain.html#_getprivatekey" class="tsd-kind-icon">_get<wbr>Private<wbr>Key</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_keychain_index_.keychain.html#createkey" class="tsd-kind-icon">create<wbr>Key</a>
@@ -716,7 +752,13 @@
 				</ul>
 				<ul class="after-current">
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_keychain_index_.html#key" class="tsd-kind-icon">Key</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
 						<a href="../modules/_keychain_index_.html#keyinfo" class="tsd-kind-icon">Key<wbr>Info</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+						<a href="../modules/_keychain_index_.html#peerid" class="tsd-kind-icon">Peer<wbr>Id</a>
 					</li>
 				</ul>
 			</nav>
@@ -742,9 +784,6 @@
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
