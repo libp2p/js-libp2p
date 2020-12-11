@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "lint": "aegir lint",
+    "prepare": "aegir build",
     "build": "aegir build",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "aegir test -t node -f \"./test/**/*.{node,spec}.js\"",
