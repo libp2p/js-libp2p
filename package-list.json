@@ -23,7 +23,6 @@
 
     "secure channels",
     ["NodeFactoryIo/js-libp2p-noise", "libp2p-noise"],
-    ["libp2p/js-libp2p-secio", "libp2p-secio"],
 
     "stream multiplexers",
     ["libp2p/js-libp2p-mplex", "libp2p-mplex"],
