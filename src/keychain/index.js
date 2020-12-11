@@ -1,11 +1,10 @@
-// @ts-nocheck
 /* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
 const sanitize = require('sanitize-filename')
 const mergeOptions = require('merge-options')
 const crypto = require('libp2p-crypto')
-const DS = require('interface-datastore')
+const Datastore = require('interface-datastore')
 const CMS = require('./cms')
 const errcode = require('err-code')
 const { Number } = require('ipfs-utils/src/globalthis')
@@ -14,8 +13,14 @@ const uint8ArrayFromString = require('uint8arrays/from-string')
 
 require('node-forge/lib/sha512')
 
+/**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('interface-datastore/src/key')} Key
+ */
+
 const keyPrefix = '/pkcs8/'
 const infoPrefix = '/info/'
+const privates = new WeakMap()
 
 // NIST SP 800-132
 const NIST = {
@@ -46,7 +51,8 @@ function validateKeyName (name) {
  * This assumes than an error indicates that the keychain is under attack. Delay returning an
  * error to make brute force attacks harder.
  *
- * @param {string | Error} err - The error
+ * @param {string|Error} err - The error
+ * @returns {Promise<never>}
  * @private
  */
 async function throwDelayed (err) {
@@ -62,29 +68,28 @@ async function throwDelayed (err) {
  * Converts a key name into a datastore name.
  *
  * @param {string} name
- * @returns {DS.Key}
+ * @returns {Key}
  * @private
  */
 function DsName (name) {
-  return new DS.Key(keyPrefix + name)
+  return new Datastore.Key(keyPrefix + name)
 }
 
 /**
  * Converts a key name into a datastore info name.
  *
  * @param {string} name
- * @returns {DS.Key}
+ * @returns {Key}
  * @private
  */
 function DsInfoName (name) {
-  return new DS.Key(infoPrefix + name)
+  return new Datastore.Key(infoPrefix + name)
 }
 
 /**
  * Information about a key.
  *
  * @typedef {Object} KeyInfo
- *
  * @property {string} id - The universally unique key id.
  * @property {string} name - The local key name.
  */
@@ -101,7 +106,7 @@ class Keychain {
   /**
    * Creates a new instance of a key chain.
    *
-   * @param {DS} store - where the key are.
+   * @param {Datastore} store - where the key are.
    * @param {object} options
    * @class
    */
@@ -134,7 +139,7 @@ class Keychain {
       this.opts.dek.keyLength,
       this.opts.dek.hash) : ''
 
-    Object.defineProperty(this, '_', { value: () => dek })
+    privates.set(this, { dek })
   }
 
   /**
@@ -148,13 +153,13 @@ class Keychain {
    * @returns {CMS}
    */
   get cms () {
-    return new CMS(this)
+    return new CMS(this, privates.get(this).dek)
   }
 
   /**
    * Generates the options for a keychain.  A random salt is produced.
    *
-   * @returns {object}
+   * @returns {Object}
    */
   static generateOptions () {
     const options = Object.assign({}, defaultOptions)
@@ -167,7 +172,7 @@ class Keychain {
    * Gets an object that can encrypt/decrypt protected data.
    * The default options for a keychain.
    *
-   * @returns {object}
+   * @returns {Object}
    */
   static get options () {
     return defaultOptions
@@ -178,10 +183,10 @@ class Keychain {
    *
    * @param {string} name - The local key name; cannot already exist.
    * @param {string} type - One of the key types; 'rsa'.
-   * @param {int} [size] - The key size in bits. Used for rsa keys only.
-   * @returns {KeyInfo}
+   * @param {number} [size = 2048] - The key size in bits. Used for rsa keys only.
+   * @returns {Promise<KeyInfo>}
    */
-  async createKey (name, type, size) {
+  async createKey (name, type, size = 2048) {
     const self = this
 
     if (!validateKeyName(name) || name === 'self') {
@@ -208,9 +213,12 @@ class Keychain {
 
     let keyInfo
     try {
+      // @ts-ignore Differences between several crypto return types need to be fixed in libp2p-crypto
       const keypair = await crypto.keys.generateKeyPair(type, size)
       const kid = await keypair.id()
-      const pem = await keypair.export(this._())
+      /** @type {string} */
+      const dek = privates.get(this).dek
+      const pem = await keypair.export(dek)
       keyInfo = {
         name: name,
         id: kid
@@ -230,7 +238,7 @@ class Keychain {
   /**
    * List all the keys.
    *
-   * @returns {KeyInfo[]}
+   * @returns {Promise<KeyInfo[]>}
    */
   async listKeys () {
     const self = this
@@ -250,7 +258,7 @@ class Keychain {
    * Find a key by it's id.
    *
    * @param {string} id - The universally unique key identifier.
-   * @returns {KeyInfo}
+   * @returns {Promise<KeyInfo|undefined>}
    */
   async findKeyById (id) {
     try {
@@ -265,7 +273,7 @@ class Keychain {
    * Find a key by it's name.
    *
    * @param {string} name - The local key name.
-   * @returns {KeyInfo}
+   * @returns {Promise<KeyInfo>}
    */
   async findKeyByName (name) {
     if (!validateKeyName(name)) {
@@ -285,7 +293,7 @@ class Keychain {
    * Remove an existing key.
    *
    * @param {string} name - The local key name; must already exist.
-   * @returns {KeyInfo}
+   * @returns {Promise<KeyInfo>}
    */
   async removeKey (name) {
     const self = this
@@ -306,7 +314,7 @@ class Keychain {
    *
    * @param {string} oldName - The old local key name; must already exist.
    * @param {string} newName - The new local key name; must not already exist.
-   * @returns {KeyInfo}
+   * @returns {Promise<KeyInfo>}
    */
   async renameKey (oldName, newName) {
     const self = this
@@ -347,7 +355,7 @@ class Keychain {
    *
    * @param {string} name - The local key name; must already exist.
    * @param {string} password - The password
-   * @returns {string}
+   * @returns {Promise<string>}
    */
   async exportKey (name, password) {
     if (!validateKeyName(name)) {
@@ -361,7 +369,9 @@ class Keychain {
     try {
       const res = await this.store.get(dsname)
       const pem = uint8ArrayToString(res)
-      const privateKey = await crypto.keys.import(pem, this._())
+      /** @type {string} */
+      const dek = privates.get(this).dek
+      const privateKey = await crypto.keys.import(pem, dek)
       return privateKey.export(password)
     } catch (err) {
       return throwDelayed(err)
@@ -374,7 +384,7 @@ class Keychain {
    * @param {string} name - The local key name; must not already exist.
    * @param {string} pem - The PEM encoded PKCS #8 string
    * @param {string} password - The password.
-   * @returns {KeyInfo}
+   * @returns {Promise<KeyInfo>}
    */
   async importKey (name, pem, password) {
     const self = this
@@ -398,7 +408,9 @@ class Keychain {
     let kid
     try {
       kid = await privateKey.id()
-      pem = await privateKey.export(this._())
+      /** @type {string} */
+      const dek = privates.get(this).dek
+      pem = await privateKey.export(dek)
     } catch (err) {
       return throwDelayed(err)
     }
@@ -415,6 +427,13 @@ class Keychain {
     return keyInfo
   }
 
+  /**
+   * Import a peer key
+   *
+   * @param {string} name - The local key name; must not already exist.
+   * @param {PeerId} peer - The PEM encoded PKCS #8 string
+   * @returns {Promise<KeyInfo>}
+   */
   async importPeer (name, peer) {
     const self = this
     if (!validateKeyName(name)) {
@@ -431,7 +450,9 @@ class Keychain {
 
     try {
       const kid = await privateKey.id()
-      const pem = await privateKey.export(this._())
+      /** @type {string} */
+      const dek = privates.get(this).dek
+      const pem = await privateKey.export(dek)
       const keyInfo = {
         name: name,
         id: kid
@@ -450,8 +471,7 @@ class Keychain {
    * Gets the private key as PEM encoded PKCS #8 string.
    *
    * @param {string} name
-   * @returns {string}
-   * @private
+   * @returns {Promise<string>}
    */
   async _getPrivateKey (name) {
     if (!validateKeyName(name)) {
