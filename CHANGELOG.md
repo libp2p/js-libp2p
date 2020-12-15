@@ -1,3 +1,7 @@
+# [0.30.0-rc.2](https://github.com/libp2p/js-libp2p/compare/v0.30.0-rc.1...v0.30.0-rc.2) (2020-12-15)
+
+
+
 # [0.30.0-rc.1](https://github.com/libp2p/js-libp2p/compare/v0.30.0-rc.0...v0.30.0-rc.1) (2020-12-11)
 
 
