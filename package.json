@@ -77,7 +77,7 @@
     "merge-options": "^2.0.0",
     "moving-average": "^1.0.0",
     "multiaddr": "^8.1.0",
-    "multicodec": "2.0.4",
+    "multicodec": "^2.0.0",
     "multihashing-async": "^2.0.1",
     "multistream-select": "^1.0.0",
     "mutable-proxy": "^1.0.0",
