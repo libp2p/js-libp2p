@@ -18,7 +18,6 @@
     "src"
   ],
   "scripts": {
-    "prepare": "aegir ts -p types",
     "lint": "aegir lint",
     "build": "aegir build",
     "test": "npm run test:node && npm run test:browser",
