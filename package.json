@@ -46,7 +46,7 @@
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "ipfs-utils": "^4.0.1",
-    "libp2p": "^0.29.3",
+    "libp2p": "^0.30.0",
     "libp2p-mplex": "^0.10.1",
     "libp2p-noise": "^2.0.1",
     "libp2p-websockets": "^0.14.0",
@@ -57,12 +57,12 @@
   },
   "dependencies": {
     "debug": "^4.2.0",
-    "libp2p-interfaces": "^0.7.2",
+    "libp2p-interfaces": "^0.8.1",
     "time-cache": "^0.3.0",
     "uint8arrays": "^1.1.0"
   },
   "peerDependencies": {
-    "libp2p": "^0.29.3"
+    "libp2p": "^0.30.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
