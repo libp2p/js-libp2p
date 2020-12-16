@@ -1,5 +1,3 @@
-/// <reference types="node" />
-
 /**
  * Supported key types.
  */
