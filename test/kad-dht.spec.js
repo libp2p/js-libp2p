@@ -186,6 +186,31 @@ describe('KadDHT', () => {
       return tdht.teardown()
     })
 
+    it('put - removeLocal', async function () {
+      this.timeout(10 * 1000)
+
+      const tdht = new TestDHT()
+      const key = uint8ArrayFromString('/v/hello')
+      const value = uint8ArrayFromString('world')
+
+      const [dht] = await tdht.spawn(2)
+
+      await dht.put(key, value)
+
+      const res = await dht.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })
+      expect(res).to.eql(value)
+
+      // remove from the local datastore
+      await dht.removeLocal(key)
+      try {
+        await dht.datastore.get(key)
+      } catch (err) {
+        expect(err).to.exist()
+        expect(err.code).to.be.eql('ERR_NOT_FOUND')
+        return tdht.teardown()
+      }
+    })
+
     it('put - get', async function () {
       this.timeout(10 * 1000)
 
