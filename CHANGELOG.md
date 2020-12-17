@@ -1,3 +1,13 @@
+<a name="0.20.4"></a>
+## [0.20.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.20.3...v0.20.4) (2020-12-17)
+
+
+### Features
+
+* adds removeLocal function ([#211](https://github.com/libp2p/js-libp2p-kad-dht/issues/211)) ([d0db16b](https://github.com/libp2p/js-libp2p-kad-dht/commit/d0db16b))
+
+
+
 <a name="0.20.3"></a>
 ## [0.20.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.20.2...v0.20.3) (2020-12-09)
 
