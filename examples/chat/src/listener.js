@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 
 const PeerId = require('peer-id')
-const createLibp2p = require('./libp2p-bundle.js')
+const createLibp2p = require('./libp2p.js')
 const { stdinToStream, streamToConsole } = require('./stream')
 
 async function run() {
