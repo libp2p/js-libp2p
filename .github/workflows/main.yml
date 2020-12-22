@@ -72,6 +72,13 @@ jobs:
       - uses: actions/checkout@v2
       - run: yarn
       - run: cd examples && yarn && npm run test -- chat
+  test-connection-encryption-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: cd examples && yarn && npm run test -- connection-encryption
   test-echo-example:
     needs: check
     runs-on: ubuntu-latest
