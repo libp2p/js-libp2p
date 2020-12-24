@@ -81,7 +81,8 @@ const DefaultConfig = {
         maxListeners: 2
       }
     },
-    transport: {}
+    transport: {},
+    exposeRawConn: false
   }
 }
 

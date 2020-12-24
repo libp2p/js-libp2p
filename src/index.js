@@ -176,7 +176,8 @@ class Libp2p extends EventEmitter {
       localPeer: this.peerId,
       metrics: this.metrics,
       onConnection: (connection) => this.connectionManager.onConnect(connection),
-      onConnectionEnd: (connection) => this.connectionManager.onDisconnect(connection)
+      onConnectionEnd: (connection) => this.connectionManager.onDisconnect(connection),
+      exposeRawConn: this._config.exposeRawConn
     })
 
     // Setup the transport manager

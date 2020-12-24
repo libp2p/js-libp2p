@@ -38,6 +38,7 @@ class Upgrader {
    * @param {Map<string, MuxerFactory>} [options.muxers]
    * @param {(Connection) => void} options.onConnection - Called when a connection is upgraded
    * @param {(Connection) => void} options.onConnectionEnd
+   * @param {boolean} [options.exposeRawConn = false]
    */
   constructor ({
     localPeer,
@@ -45,7 +46,8 @@ class Upgrader {
     cryptos = new Map(),
     muxers = new Map(),
     onConnectionEnd = () => {},
-    onConnection = () => {}
+    onConnection = () => {},
+    exposeRawConn = false
   }) {
     this.localPeer = localPeer
     this.metrics = metrics
@@ -55,6 +57,7 @@ class Upgrader {
     this.protocols = new Map()
     this.onConnection = onConnection
     this.onConnectionEnd = onConnectionEnd
+    this.exposeRawConn = exposeRawConn
   }
 
   /**
@@ -290,6 +293,7 @@ class Upgrader {
 
     // Create the connection
     connection = new Connection({
+      rawConn: this.exposeRawConn ? maConn.conn : undefined,
       localAddr: maConn.localAddr,
       remoteAddr: maConn.remoteAddr,
       localPeer: this.localPeer,
