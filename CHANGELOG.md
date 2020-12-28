@@ -1,3 +1,32 @@
+<a name="0.15.2"></a>
+## [0.15.2](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.2...v0.15.2) (2020-12-28)
+
+
+### Bug Fixes
+
+* catch error from maConn.close ([#128](https://github.com/libp2p/js-libp2p-tcp/issues/128)) ([0fe0815](https://github.com/libp2p/js-libp2p-tcp/commit/0fe0815))
+* catch thrown maConn errors in listener ([#122](https://github.com/libp2p/js-libp2p-tcp/issues/122)) ([86db568](https://github.com/libp2p/js-libp2p-tcp/commit/86db568)), closes [#121](https://github.com/libp2p/js-libp2p-tcp/issues/121)
+* intermittent error when asking for interfaces ([#137](https://github.com/libp2p/js-libp2p-tcp/issues/137)) ([af9804e](https://github.com/libp2p/js-libp2p-tcp/commit/af9804e))
+* remove use of assert module ([#123](https://github.com/libp2p/js-libp2p-tcp/issues/123)) ([6272876](https://github.com/libp2p/js-libp2p-tcp/commit/6272876))
+* transport should not handle connection if upgradeInbound throws ([#119](https://github.com/libp2p/js-libp2p-tcp/issues/119)) ([21f8747](https://github.com/libp2p/js-libp2p-tcp/commit/21f8747))
+
+
+### Chores
+
+* update deps ([#134](https://github.com/libp2p/js-libp2p-tcp/issues/134)) ([d9f9912](https://github.com/libp2p/js-libp2p-tcp/commit/d9f9912))
+
+
+### BREAKING CHANGES
+
+* - The multiaddr dep used by this module returns Uint8Arrays and may
+  not be compatible with previous versions
+
+* chore: update utils
+
+* chore: remove gh dep url
+
+
+
 <a name="0.15.1"></a>
 ## [0.15.1](https://github.com/libp2p/js-libp2p-tcp/compare/v0.15.0...v0.15.1) (2020-08-11)
 
