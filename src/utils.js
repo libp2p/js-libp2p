@@ -29,8 +29,9 @@ function isAnyAddr (ip) {
  * @param {string} family One of ['IPv6', 'IPv4']
  * @returns {string[]} an array of ip address strings
  */
+const networks = os.networkInterfaces()
 function getNetworkAddrs (family) {
-  return Object.values(os.networkInterfaces()).reduce((addresses, netAddrs) => {
+  return Object.values(networks).reduce((addresses, netAddrs) => {
     netAddrs.forEach(netAddr => {
       // Add the ip of each matching network interface
       if (netAddr.family === family) addresses.push(netAddr.address)
