@@ -7,6 +7,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const execa = require('execa')
 const dir = path.join(__dirname, process.argv[2])
+const { startServer } = require('./utils')
 
 testExample(dir)
   .then(() => {}, (err) => {
@@ -21,8 +22,12 @@ testExample(dir)
 async function testExample (dir) {
   await installDeps(dir)
   await build(dir)
-  await runTest(dir)
-  // TODO: add browser test setup
+
+  if (dir.includes('browser')) {
+    await runBrowserTest(dir)
+  } else {
+    await runNodeTest(dir)
+  }
 }
 
 async function installDeps (dir) {
@@ -80,7 +85,7 @@ async function build (dir) {
   await proc
 }
 
-async function runTest (dir) {
+async function runNodeTest (dir) {
   console.info('Running node tests in', dir)
   const testFile = path.join(dir, 'test.js')
 
@@ -92,4 +97,30 @@ async function runTest (dir) {
   const runTest = require(testFile)
 
   await runTest()
+}
+
+async function runBrowserTest (dir) {
+  console.info('Running browser tests in', dir)
+
+  const server = await startServer(dir)
+
+  console.info('Running tests at', server.url)
+
+  const proc = execa('nightwatch', [ path.join(dir, 'test.js') ], {
+    cwd: __dirname,
+    env: {
+      ...process.env,
+      LIBP2P_EXAMPLE_TEST_URL: server.url
+    }
+  })
+
+  proc.all.on('data', (data) => {
+    process.stdout.write(data)
+  })
+
+  try {
+    await proc
+  } finally {
+    server.stop()
+  }
 }
