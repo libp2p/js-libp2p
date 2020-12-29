@@ -121,3 +121,10 @@ jobs:
       - uses: actions/checkout@v2
       - run: yarn
       - run: cd examples && yarn && npm run test -- protocol-and-stream-muxing
+  test-pubsub-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: cd examples && yarn && npm run test -- pubsub
