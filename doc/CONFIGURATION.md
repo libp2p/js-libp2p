@@ -391,6 +391,7 @@ const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
+const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const PeerId = require('peer-id')
@@ -398,17 +399,25 @@ const PeerId = require('peer-id')
 // create a peerId
 const peerId = await PeerId.create()
 
+const delegatedPeerRouting = new DelegatedPeerRouter(ipfsHttpClient({
+  host: 'node0.delegate.ipfs.io' // In production you should setup your own delegates
+  protocol: 'https',
+  port: 443
+}))
+
+const delegatedContentRouting = new DelegatedContentRouter(peerId, ipfsHttpClient({
+  host: 'node0.delegate.ipfs.io' // In production you should setup your own delegates
+  protocol: 'https',
+  port: 443
+}))
+
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
     connEncryption: [NOISE],
-    contentRouting: [
-      new DelegatedContentRouter(peerId)
-    ],
-    peerRouting: [
-      new DelegatedPeerRouter()
-    ],
+    contentRouting: [delegatedContentRouting],
+    peerRouting: [delegatedPeerRouting],
   },
   peerId,
   peerRouting: { // Peer routing configuration
