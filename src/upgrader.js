@@ -305,6 +305,7 @@ class Upgrader {
         multiplexer: Muxer && Muxer.multicodec,
         encryption: cryptoProtocol
       },
+      transportTag: maConn.transportTag,
       newStream: newStream || errConnectionNotMultiplexed,
       getStreams: () => muxer ? muxer.streams : errConnectionNotMultiplexed,
       close: async (err) => {
