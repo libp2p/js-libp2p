@@ -28,6 +28,7 @@
       - [Configuring Metrics](#configuring-metrics)
       - [Configuring PeerStore](#configuring-peerstore)
       - [Customizing Transports](#customizing-transports)
+      - [Exposing Raw Connections](#exposing-raw-connections)
   - [Configuration examples](#configuration-examples)
 
 ## Overview
@@ -719,6 +720,24 @@ const node = await Libp2p.create({
         }
       }
     }
+  }
+})
+```
+
+#### Exposing Raw Connections
+
+By default, libp2p abstracts away the underlying raw connections to other peers to provide replicable and expected functionality. However, the underlying connections may have functionality valuable to the developer that lies outside the scope of libp2p. The configuration option `exposeRawConn` can be used to expose the underlying connections. This will also expose a `transportTag` property so the type of transport can be identified at the application level.
+
+```js
+const transportKey = WebRTCStar.prototype[Symbol.toStringTag]
+const node = await Libp2p.create({
+  modules: {
+    transport: [WebRTCStar],
+    streamMuxer: [MPLEX],
+    connEncryption: [NOISE]
+  },
+  config: {
+    exposeRawConn: true
   }
 })
 ```
