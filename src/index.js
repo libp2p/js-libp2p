@@ -30,6 +30,7 @@ const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
 const PubsubAdapter = require('./pubsub-adapter')
 const PersistentPeerStore = require('./peer-store/persistent')
+const Rendezvous = require('./rendezvous')
 const Registrar = require('./registrar')
 const ping = require('./ping')
 const IdentifyService = require('./identify')
@@ -269,6 +270,14 @@ class Libp2p extends EventEmitter {
       this.pubsub = PubsubAdapter(Pubsub, this, this._config.pubsub)
     }
 
+    // Create rendezvous client if enabled
+    if (this._options.rendezvous.enabled) {
+      this.rendezvous = new Rendezvous({
+        libp2p: this,
+        rendezvousPoints: this._options.rendezvous.rendezvousPoints
+      })
+    }
+
     // Attach remaining APIs
     // peer and content routing will automatically get modules from _modules and _dht
     this.peerRouting = new PeerRouting(this)
@@ -331,6 +340,7 @@ class Libp2p extends EventEmitter {
     try {
       this._isStarted = false
 
+      this.rendezvous && this.rendezvous.start()
       this.relay && this.relay.stop()
       this.peerRouting.stop()
 
@@ -583,6 +593,9 @@ class Libp2p extends EventEmitter {
 
     // Peer discovery
     await this._setupPeerDiscovery()
+
+    // Rendezvous
+    this.rendezvous && this.rendezvous.start()
 
     // Relay
     this.relay && this.relay.start()

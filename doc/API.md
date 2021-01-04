@@ -51,6 +51,9 @@
   * [`pubsub.removeListener`](#pubsubremovelistener)
   * [`pubsub.topicValidators.set`](#pubsubtopicvalidatorsset)
   * [`pubsub.topicValidators.delete`](#pubsubtopicvalidatorsdelete)
+  * [`rendezvous.discover`](#rendezvousdiscover)
+  * [`rendezvous.register`](#rendezvousregister)
+  * [`rendezvous.unregister`](#rendezvousunregister)
   * [`connectionManager.get`](#connectionmanagerget)
   * [`connectionManager.setPeerValue`](#connectionmanagersetpeervalue)
   * [`connectionManager.size`](#connectionmanagersize)
@@ -1598,6 +1601,88 @@ Get a connection with a given peer, if it exists.
 
 ```js
 libp2p.connectionManager.get(peerId)
+```
+
+### rendezvous.register
+
+Registers the peer in a given namespace.
+
+`rendezvous.register(namespace, [options])`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| namespace | `string` | namespace to register |
+| [options] | `Object` | rendezvous registrations options |
+| [options.ttl=7.2e6] | `number` | registration ttl in ms |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<number>` | Remaining ttl value |
+
+#### Example
+
+```js
+// ...
+const ttl = await rendezvous.register(namespace)
+```
+
+### rendezvous.unregister
+
+Unregisters the peer from a given namespace.
+
+`rendezvous.unregister(namespace)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| namespace | `string` | namespace to unregister |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<void>` | Operation resolved |
+
+#### Example
+
+```js
+// ...
+await rendezvous.register(namespace)
+await rendezvous.unregister(namespace)
+```
+
+### rendezvous.discover
+
+Discovers peers registered under a given namespace.
+
+`rendezvous.discover(namespace, [limit])`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| namespace | `string` | namespace to discover |
+| limit | `number` | limit of peers to discover |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `AsyncIterable<{ signedPeerRecord: Uint8Array, ns: string, ttl: number }>` | Async Iterable with registrations |
+
+#### Example
+
+```js
+// ...
+await rendezvous.register(namespace)
+for await (const reg of rendezvous.discover(namespace)) {
+  console.log(reg.signedPeerRecord, reg.ns, reg.ttl)
+}
 ```
 
 ### connectionManager.setPeerValue
