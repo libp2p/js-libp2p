@@ -21,6 +21,7 @@
       - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
       - [Setup with Relay](#setup-with-relay)
       - [Setup with Auto Relay](#setup-with-auto-relay)
+      - [Setup with Rendezvous](#setup-with-rendezvous)
       - [Setup with Keychain](#setup-with-keychain)
       - [Configuring Dialing](#configuring-dialing)
       - [Configuring Connection Manager](#configuring-connection-manager)
@@ -483,6 +484,34 @@ const node = await Libp2p.create({
         maxListeners: 2         // Configure maximum number of HOP relays to use
       }
     }
+  }
+})
+```
+
+#### Setup with Rendezvous
+
+You will need to setup a rendezvous server, which will be used by rendezvous client nodes. You can see how to setup a rendezvous server in [libp2p/js-libp2p-rendezvous](https://github.com/libp2p/js-libp2p-rendezvous)
+
+For setting up libp2p with a rendezvous client, you should configure libp2p as follows:
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
+const Rendezvous = require('libp2p-rendezvous')
+const Bootstrap = require('libp2p-bootstrap')
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [NOISE],
+    peerDiscovery: [Bootstrap]
+  },
+  rendezvous: {
+    enabled: true,
+    // Insert your rendezvous servers multiaddrs
+    rendezvousPoints: ['/dnsaddr/rendezvous.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJP']
   }
 })
 ```

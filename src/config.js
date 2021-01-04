@@ -48,6 +48,10 @@ const DefaultConfig = {
       bootDelay: 10e3
     }
   },
+  rendezvous: {
+    enabled: false,
+    rendezvousPoints: []
+  },
   config: {
     dht: {
       enabled: false,
