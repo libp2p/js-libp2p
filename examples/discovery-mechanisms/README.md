@@ -156,7 +156,100 @@ Discovered: QmSSbQpuKrxkoXHm1v4Pi35hPN5hUHMZoBoawEs2Nhvi8m
 Discovered: QmRcXXhtG8vTqwVBRonKWtV4ovDoC1Fe56WYtcrw694eiJ
 ```
 
-## 3. Where to find other Peer Discovery Mechanisms
+## 3. Pubsub based Peer Discovery
+
+For this example, we need [`libp2p-pubsub-peer-discovery`](https://github.com/libp2p/js-libp2p-pubsub-peer-discovery/), go ahead and `npm install` it. You also need to spin up a set of [`libp2p-relay-servers`](https://github.com/libp2p/js-libp2p-relay-server). These servers act as relay servers and a peer discovery source.
+
+In the context of this example, we will create and run the `libp2p-relay-server` in the same code snippet. You can find the complete solution at [3.js](./3.js).
+
+You can create your libp2p nodes as follows:
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const Mplex = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
+const Gossipsub = require('libp2p-gossipsub')
+const Bootstrap = require('libp2p-bootstrap')
+const PubsubPeerDiscovery = require('libp2p-pubsub-peer-discovery')
+
+const createNode = async (bootstrapers) => {
+  const node = await Libp2p.create({
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
+    modules: {
+      transport: [TCP],
+      streamMuxer: [Mplex],
+      connEncryption: [NOISE],
+      pubsub: Gossipsub,
+      peerDiscovery: [Bootstrap, PubsubPeerDiscovery]
+    },
+    config: {
+      peerDiscovery: {
+        [PubsubPeerDiscovery.tag]: {
+          interval: 1000,
+          enabled: true
+        },
+        [Bootstrap.tag]: {
+          enabled: true,
+          list: bootstrapers
+        }
+      }
+    }
+  })
+
+  return node
+}
+```
+
+We will use the `libp2p-relay-server` as bootstrap nodes for the libp2p nodes, so that they establish a connection with the relay after starting. As a result, after they establish a connection with the relay, the pubsub discovery will kick in an the relay will advertise them.
+
+```js
+const relay = await createRelayServer({
+  listenAddresses: ['/ip4/0.0.0.0/tcp/0']
+})
+console.log(`libp2p relay starting with id: ${relay.peerId.toB58String()}`)
+await relay.start()
+const relayMultiaddrs = relay.multiaddrs.map((m) => `${m.toString()}/p2p/${relay.peerId.toB58String()}`)
+
+const [node1, node2] = await Promise.all([
+  createNode(relayMultiaddrs),
+  createNode(relayMultiaddrs)
+])
+
+node1.on('peer:discovery', (peerId) => {
+  console.log(`Peer ${node1.peerId.toB58String()} discovered: ${peerId.toB58String()}`)
+})
+node2.on('peer:discovery', (peerId) => {
+  console.log(`Peer ${node2.peerId.toB58String()} discovered: ${peerId.toB58String()}`)
+})
+
+;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toB58String()}`))
+await Promise.all([
+  node1.start(),
+  node2.start()
+])
+```
+
+If you run this example, you will see the other peers being discovered.
+
+```bash
+> node 3.js
+libp2p relay starting with id: QmW6FqVV6RsyoGC5zaeFGW9gSWA3LcBRVZrjkKMruh38Bo
+Node 0 starting with id: QmezqDTmEjZ5BfMgVqjSpLY19mVVLTQ9bE9mRpZwtGxL8N
+Node 1 starting with id: QmYWeom2odTkm79DzB68NHULqVHDaNDqHhoyqLdcV1fqdv
+Peer QmezqDTmEjZ5BfMgVqjSpLY19mVVLTQ9bE9mRpZwtGxL8N discovered: QmW6FqVV6RsyoGC5zaeFGW9gSWA3LcBRVZrjkKMruh38Bo
+Peer QmYWeom2odTkm79DzB68NHULqVHDaNDqHhoyqLdcV1fqdv discovered: QmW6FqVV6RsyoGC5zaeFGW9gSWA3LcBRVZrjkKMruh38Bo
+Peer QmYWeom2odTkm79DzB68NHULqVHDaNDqHhoyqLdcV1fqdv discovered: QmezqDTmEjZ5BfMgVqjSpLY19mVVLTQ9bE9mRpZwtGxL8N
+Peer QmezqDTmEjZ5BfMgVqjSpLY19mVVLTQ9bE9mRpZwtGxL8N discovered: QmYWeom2odTkm79DzB68NHULqVHDaNDqHhoyqLdcV1fqdv
+```
+
+Taking into account the output, after the relay and both libp2p nodes start, both libp2p nodes will discover the bootstrap node (relay) and connect with it. After establishing a connection with the relay, they will discover each other.
+
+This is really useful when running libp2p in constrained environments like a browser. You can run a set of `libp2p-relay-server` nodes that will be responsible for both relaying websocket connections between browser nodes and for discovering other browser peers.
+
+## 4. Where to find other Peer Discovery Mechanisms
 
 There are plenty more Peer Discovery Mechanisms out there, you can:
 
