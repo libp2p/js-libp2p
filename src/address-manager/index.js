@@ -63,7 +63,7 @@ class AddressManager extends EventEmitter {
   }
 
   /**
-   * Get peer observed addresses
+   * Add peer observed addresses
    *
    * @param {string | Multiaddr} addr
    */
@@ -76,7 +76,7 @@ class AddressManager extends EventEmitter {
       const remotePeerId = PeerId.createFromB58String(remotePeer)
 
       // use same encoding for comparison
-      if (remotePeerId.toString() === this.peerId.toString()) {
+      if (remotePeerId.equals(this.peerId)) {
         ma = ma.decapsulate(multiaddr(`/p2p/${this.peerId}`))
       }
     }

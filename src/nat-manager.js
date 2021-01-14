@@ -32,7 +32,7 @@ class NatManager {
    * @param {boolean} options.enabled - Whether to enable the NAT manager
    * @param {string} [options.externalIp] - Pass a value to use instead of auto-detection
    * @param {string} [options.description] - A string value to use for the port mapping description on the gateway
-   * @param {number} [options.ttl] - How long UPnP port mappings should last for in seconds
+   * @param {number} [options.ttl] - How long UPnP port mappings should last for in seconds (minimum 1200)
    * @param {boolean} [options.keepAlive] - Whether to automatically refresh UPnP port mappings when their TTL is reached
    * @param {string} [options.gateway] - Pass a value to use instead of auto-detection
    * @param {object} [options.pmp] - PMP options
