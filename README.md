@@ -20,18 +20,44 @@ js-libp2p-bootstrap
 ## Usage
 
 ```JavaScript
-const bootstrap = require('libp2p-bootstrap')
+const Libp2p = require('libp2p')
+const Bootstrap = require('libp2p-bootstrap')
+const TCP = require('libp2p-tcp')
+const { NOISE } = require('libp2p-noise')
+const MPLEX = require('libp2p-mplex')
 
-const options = {
-  list: <List of Multiaddrs>
-  interval: 5000 // ms, default is 10s
+let options = {
+    modules: {
+        transport: [ TCP ],
+        peerDiscovery: [ Bootstrap ],
+        streamMuxer: [ MPLEX ],
+        encryption: [ NOISE ]
+    },
+    config: {
+        peerDiscovery: {
+            [Bootstrap.tag]: {
+                list: [ // a list of bootstrap peer multiaddrs to connect to on node startup
+                  "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
+                  "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
+                  "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa" 
+                  ],
+                  interval: 5000 // default is 10 ms,
+                  enabled: true
+            }
+        }
+    }
 }
 
-const b = new bootstrap(options)
+async function start () {
+  let libp2p = await Libp2p.create(options)
 
-b.on('peer', function (peerInfo) {
-  // found a new peer
-})
+  libp2p.on('peer:discovery', function (peerId) {
+    console.log('found peer: ', peerId.toB58String())
+  })
 
-b.start()
+  await libp2p.start()
+
+}
+
+start()
 ```
