@@ -1,3 +1,8 @@
+<a name="0.19.0"></a>
+# [0.19.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.18.0...v0.19.0) (2021-01-15)
+
+
+
 <a name="0.18.0"></a>
 # [0.18.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.9...v0.18.0) (2020-08-07)
 
