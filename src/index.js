@@ -4,7 +4,7 @@ const debug = require('debug')
 const log = Object.assign(debug('libp2p'), {
   error: debug('libp2p:err')
 })
-const { EventEmitter } = require('events')
+const Emittery = require('emittery')
 const globalThis = require('ipfs-utils/src/globalthis')
 
 const errCode = require('err-code')
@@ -83,11 +83,11 @@ const IDENTIFY_PROTOCOLS = IdentifyService.multicodecs
  * @typedef {Object} CreateOptions
  * @property {PeerId} peerId
  *
- * @extends {EventEmitter}
+ * @extends {Emittery}
  * @fires Libp2p#error Emitted when an error occurs
  * @fires Libp2p#peer:discovery Emitted when a peer is discovered
  */
-class Libp2p extends EventEmitter {
+class Libp2p extends Emittery {
   /**
    * Like `new Libp2p(options)` except it will create a `PeerId`
    * instance if one is not provided in options.
@@ -284,17 +284,19 @@ class Libp2p extends EventEmitter {
    *
    * @param {string} eventName
    * @param  {...any} args
-   * @returns {boolean}
+   * @returns {Promise<void>}
    */
   emit (eventName, ...args) {
-    // TODO: do we still need this?
-    // @ts-ignore _events does not exist in libp2p
-    if (eventName === 'error' && !this._events.error) {
-      log.error(args)
-      return false
-    } else {
-      return super.emit(eventName, ...args)
-    }
+    return new Promise((resolve) => {
+      // TODO: do we still need this?
+      // @ts-ignore _events does not exist in libp2p
+      if (eventName === 'error' && !this._events.error) {
+        log.error(args)
+        resolve()
+      } else {
+        super.emit(eventName, args).then(resolve)
+      }
+    })
   }
 
   /**

@@ -10,7 +10,7 @@ const mergeOptions = require('merge-options')
 const LatencyMonitor = require('./latency-monitor')
 const retimer = require('retimer')
 
-const { EventEmitter } = require('events')
+const Emittery = require('emittery')
 
 const PeerId = require('peer-id')
 
@@ -56,7 +56,7 @@ const defaultOptions = {
  * @fires ConnectionManager#peer:connect Emitted when a new peer is connected.
  * @fires ConnectionManager#peer:disconnect Emitted when a peer is disconnected.
  */
-class ConnectionManager extends EventEmitter {
+class ConnectionManager extends Emittery {
   /**
    * Responsible for managing known connections.
    *
@@ -137,7 +137,7 @@ class ConnectionManager extends EventEmitter {
   async stop () {
     this._autoDialTimeout && this._autoDialTimeout.clear()
     this._timer && this._timer.clear()
-    this._latencyMonitor && this._latencyMonitor.removeListener('data', this._onLatencyMeasure)
+    this._latencyMonitor && this._latencyMonitor.off('data', this._onLatencyMeasure)
 
     this._started = false
     await this._close()

@@ -1,12 +1,12 @@
 // @ts-nocheck
 'use strict'
 
-const { EventEmitter } = require('events')
+const Emittery = require('emittery')
 const Big = require('bignumber.js')
 const MovingAverage = require('moving-average')
 const retimer = require('retimer')
 
-class Stats extends EventEmitter {
+class Stats extends Emittery {
   /**
    * A queue based manager for stat processing
    *

@@ -7,7 +7,7 @@
 
 /* global window */
 const globalThis = require('ipfs-utils/src/globalthis')
-const { EventEmitter } = require('events')
+const Emittery = require('emittery')
 const VisibilityChangeEmitter = require('./visibility-change-emitter')
 const debug = require('debug')('latency-monitor:LatencyMonitor')
 
@@ -31,7 +31,7 @@ const debug = require('debug')('latency-monitor:LatencyMonitor')
  * the asyncTestFn and timing how long it takes the callback to be called. It can also periodically emit stats about this.
  * This can be disabled and stats can be pulled via setting dataEmitIntervalMs = 0.
  *
- * @extends {EventEmitter}
+ * @extends {Emittery}
  *
  * The default implementation is an event loop latency monitor. This works by firing periodic events into the event loop
  * and timing how long it takes to get back.
@@ -44,7 +44,7 @@ const debug = require('debug')('latency-monitor:LatencyMonitor')
  * const monitor = new LatencyMonitor({latencyCheckIntervalMs: 1000, dataEmitIntervalMs: 60000, asyncTestFn:ping});
  * monitor.on('data', (summary) => console.log('Ping Pong Latency: %O', summary));
  */
-class LatencyMonitor extends EventEmitter {
+class LatencyMonitor extends Emittery {
   /**
    * @class
    * @param {LatencyMonitorOptions} [options]

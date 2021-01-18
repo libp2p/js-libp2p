@@ -91,7 +91,7 @@ class PersistentPeerStore extends PeerStore {
    */
   async stop () {
     log('PeerStore is stopping')
-    this.removeAllListeners()
+    this.clearListeners()
     await this._commitData()
     log('PeerStore stopped')
   }

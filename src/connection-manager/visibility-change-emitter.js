@@ -6,7 +6,7 @@
  */
 'use strict'
 
-const { EventEmitter } = require('events')
+const Emittery = require('emittery')
 
 const debug = require('debug')('latency-monitor:VisibilityChangeEmitter')
 
@@ -32,7 +32,7 @@ const debug = require('debug')('latency-monitor:VisibilityChangeEmitter')
  *     // To access the visibility state directly, call:
  *     console.log('Am I focused now? ' + myVisibilityEmitter.isVisible());
  */
-class VisibilityChangeEmitter extends EventEmitter {
+class VisibilityChangeEmitter extends Emittery {
   /**
    * Creates a VisibilityChangeEmitter
    *

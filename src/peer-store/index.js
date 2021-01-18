@@ -2,7 +2,7 @@
 
 const errcode = require('err-code')
 
-const { EventEmitter } = require('events')
+const Emittery = require('emittery')
 const PeerId = require('peer-id')
 
 const AddressBook = require('./address-book')
@@ -19,7 +19,7 @@ const {
  */
 
 /**
- * @extends {EventEmitter}
+ * @extends {Emittery}
  *
  * @fires PeerStore#peer Emitted when a new peer is added.
  * @fires PeerStore#change:protocols Emitted when a known peer supports a different set of protocols.
@@ -27,7 +27,7 @@ const {
  * @fires PeerStore#change:pubkey Emitted emitted when a peer's public key is known.
  * @fires PeerStore#change:metadata Emitted when the known metadata of a peer change.
  */
-class PeerStore extends EventEmitter {
+class PeerStore extends Emittery {
   /**
    * Peer object
    *
