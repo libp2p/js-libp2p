@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>VisibilityChangeEmitter | libp2p - v0.30.1</title>
+	<title>EventEmitter | libp2p - v0.30.1</title>
 	<meta name="description" content="Documentation for libp2p - v0.30.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -144,53 +144,42 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../modules/_connection_manager_visibility_change_emitter_.html">connection-manager/visibility-change-emitter</a>
+					<a href="../modules/_types_.html">types</a>
 				</li>
 				<li>
-					<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html">VisibilityChangeEmitter</a>
+					<a href="_types_.eventemitter.html">EventEmitter</a>
 				</li>
 			</ul>
-			<h1>Class VisibilityChangeEmitter</h1>
+			<h1>Interface EventEmitter</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>Listen to page visibility change events (i.e. when the page is focused / blurred) by an event emitter.</p>
-					</div>
-					<p>Warning: This does not work on all browsers, but should work on all modern browsers</p>
-					<dl class="tsd-comment-tags">
-						<dt>example</dt>
-						<dd><pre><code><span class="hljs-keyword">const</span> myVisibilityEmitter = <span class="hljs-keyword">new</span> VisibilityChangeEmitter();
-
-myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">pageInFocus</span>) =&gt;</span> {
-   <span class="hljs-keyword">if</span> ( pageInFocus ){
-       <span class="hljs-comment">// Page is in focus</span>
-       <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;In focus&#x27;</span>);
-   }
-   <span class="hljs-keyword">else</span> {
-       <span class="hljs-comment">// Page is blurred</span>
-       <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Out of focus&#x27;</span>);
-   }
-});
-<span class="hljs-comment">// To access the visibility state directly, call:</span>
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Am I focused now? &#x27;</span> + myVisibilityEmitter.isVisible());</code></pre>
-						</dd>
-					</dl>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="../interfaces/_types_.eventemitter.html" class="tsd-signature-type">EventEmitter</a>
+						<span class="target">EventEmitter</span>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">VisibilityChangeEmitter</span>
+								<a href="../classes/_peer_store_index_.peerstore.html" class="tsd-signature-type">PeerStore</a>
+							</li>
+							<li>
+								<a href="../classes/_connection_manager_latency_monitor_.latencymonitor.html" class="tsd-signature-type">LatencyMonitor</a>
+							</li>
+							<li>
+								<a href="../classes/_connection_manager_index_.connectionmanager.html" class="tsd-signature-type">ConnectionManager</a>
+							</li>
+							<li>
+								<a href="../classes/_metrics_stats_.stats.html" class="tsd-signature-type">Stats</a>
+							</li>
+							<li>
+								<a href="../classes/__libp2p_.libp2p.html" class="tsd-signature-type">Libp2p</a>
+							</li>
+							<li>
+								<a href="../classes/_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html" class="tsd-signature-type">VisibilityChangeEmitter</a>
 							</li>
 						</ul>
 					</li>
@@ -201,122 +190,36 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>References</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-reference tsd-parent-kind-class"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#events" class="tsd-kind-icon">Events</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Properties</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#_addvisibilitychangelistener" class="tsd-kind-icon">_add<wbr>Visibility<wbr>Change<wbr>Listener</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#_handlevisibilitychange" class="tsd-kind-icon">_handle<wbr>Visibility<wbr>Change</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#_hidden" class="tsd-kind-icon">_hidden</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#_initializevisibilityvarnames" class="tsd-kind-icon">_initialize<wbr>Visibility<wbr>Var<wbr>Names</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#_visibilitychange" class="tsd-kind-icon">_visibility<wbr>Change</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#addlistener" class="tsd-kind-icon">add<wbr>Listener</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#emit" class="tsd-kind-icon">emit</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#getmaxlisteners" class="tsd-kind-icon">get<wbr>Max<wbr>Listeners</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#isvisible" class="tsd-kind-icon">is<wbr>Visible</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#listenercount" class="tsd-kind-icon">listener<wbr>Count</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#listeners" class="tsd-kind-icon">listeners</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#off" class="tsd-kind-icon">off</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#on" class="tsd-kind-icon">on</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#once" class="tsd-kind-icon">once</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#rawlisteners" class="tsd-kind-icon">raw<wbr>Listeners</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#removealllisteners" class="tsd-kind-icon">remove<wbr>All<wbr>Listeners</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#removelistener" class="tsd-kind-icon">remove<wbr>Listener</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#setmaxlisteners" class="tsd-kind-icon">set<wbr>Max<wbr>Listeners</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#addlistener" class="tsd-kind-icon">add<wbr>Listener</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#emit" class="tsd-kind-icon">emit</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#getmaxlisteners" class="tsd-kind-icon">get<wbr>Max<wbr>Listeners</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#listenercount" class="tsd-kind-icon">listener<wbr>Count</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#listeners" class="tsd-kind-icon">listeners</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#off" class="tsd-kind-icon">off</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#on" class="tsd-kind-icon">on</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#once" class="tsd-kind-icon">once</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#rawlisteners" class="tsd-kind-icon">raw<wbr>Listeners</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#removealllisteners" class="tsd-kind-icon">remove<wbr>All<wbr>Listeners</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#removelistener" class="tsd-kind-icon">remove<wbr>Listener</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_types_.eventemitter.html#setmaxlisteners" class="tsd-kind-icon">set<wbr>Max<wbr>Listeners</a></li>
 							</ul>
 						</section>
 					</div>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>References</h2>
-				<section class="tsd-panel tsd-member tsd-kind-reference tsd-parent-kind-class">
-					<a name="events" class="tsd-anchor"></a>
-					<h3>Events</h3>
-					Re-exports <a href="../modules/_peer_store_index_.html#events">Events</a>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_addvisibilitychangelistener" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _add<wbr>Visibility<wbr>Change<wbr>Listener</h3>
-					<div class="tsd-signature tsd-kind-icon">_add<wbr>Visibility<wbr>Change<wbr>Listener<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
-					<aside class="tsd-sources">
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Adds an event listener on the document that listens to changes in document.visibilityChange
-							(or whatever name by which the visibilityChange variable is known in the browser)</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_handlevisibilitychange" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _handle<wbr>Visibility<wbr>Change</h3>
-					<div class="tsd-signature tsd-kind-icon">_handle<wbr>Visibility<wbr>Change<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
-					<aside class="tsd-sources">
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>The function that is called when document.visibilityChange has changed
-								It emits an event called visibilityChange and sends the value of document.hidden as a
-							parameter</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="_hidden" class="tsd-anchor"></a>
-					<h3>_hidden</h3>
-					<div class="tsd-signature tsd-kind-icon">_hidden<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
-					<aside class="tsd-sources">
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_initializevisibilityvarnames" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _initialize<wbr>Visibility<wbr>Var<wbr>Names</h3>
-					<div class="tsd-signature tsd-kind-icon">_initialize<wbr>Visibility<wbr>Var<wbr>Names<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
-					<aside class="tsd-sources">
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>document.hidden and document.visibilityChange are the two variables we need to check for;
-								Since these variables are named differently in different browsers, this function sets
-								the appropriate name based on the browser being used. Once executed, tha actual names of
-								document.hidden and document.visibilityChange are found in this._hidden and this._visibilityChange
-							respectively</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="_visibilitychange" class="tsd-anchor"></a>
-					<h3>_visibility<wbr>Change</h3>
-					<div class="tsd-signature tsd-kind-icon">_visibility<wbr>Change<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
-					<aside class="tsd-sources">
-					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="addlistener" class="tsd-anchor"></a>
 					<h3>add<wbr>Listener</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">add<wbr>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#addlistener">addListener</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -349,16 +252,15 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="emit" class="tsd-anchor"></a>
 					<h3>emit</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">emit<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, <span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#emit">emit</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -373,52 +275,29 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="getmaxlisteners" class="tsd-anchor"></a>
 					<h3>get<wbr>Max<wbr>Listeners</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">get<wbr>Max<wbr>Listeners<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#getmaxlisteners">getMaxListeners</a></p>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="isvisible" class="tsd-anchor"></a>
-					<h3>is<wbr>Visible</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">is<wbr>Visible<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>The function returns <code>true</code> if the page is visible or <code>false</code> if the page is not visible and
-									<code>undefined</code> if the page visibility API is not supported by the browser.</p>
-								</div>
-							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></h4>
-							<p>whether the page is now visible or not (undefined is unknown)</p>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="listenercount" class="tsd-anchor"></a>
 					<h3>listener<wbr>Count</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">listener<wbr>Count<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#listenercount">listenerCount</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -430,16 +309,15 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="listeners" class="tsd-anchor"></a>
 					<h3>listeners</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">listeners<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#listeners">listeners</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -451,16 +329,15 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="off" class="tsd-anchor"></a>
 					<h3>off</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">off<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#off">off</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -493,16 +370,15 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="on" class="tsd-anchor"></a>
 					<h3>on</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">on<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#on">on</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -535,16 +411,15 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="once" class="tsd-anchor"></a>
 					<h3>once</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">once<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#once">once</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -577,16 +452,15 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="rawlisteners" class="tsd-anchor"></a>
 					<h3>raw<wbr>Listeners</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">raw<wbr>Listeners<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#rawlisteners">rawListeners</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -598,16 +472,15 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="removealllisteners" class="tsd-anchor"></a>
 					<h3>remove<wbr>All<wbr>Listeners</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">remove<wbr>All<wbr>Listeners<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#removealllisteners">removeAllListeners</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -619,16 +492,15 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="removelistener" class="tsd-anchor"></a>
 					<h3>remove<wbr>Listener</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">remove<wbr>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#removelistener">removeListener</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -661,16 +533,15 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="setmaxlisteners" class="tsd-anchor"></a>
 					<h3>set<wbr>Max<wbr>Listeners</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
 						<li class="tsd-signature tsd-kind-icon">set<wbr>Max<wbr>Listeners<span class="tsd-signature-symbol">(</span>n<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/_types_.eventemitter.html">EventEmitter</a>.<a href="../interfaces/_types_.eventemitter.html#setmaxlisteners">setMaxListeners</a></p>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -688,83 +559,140 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class="current tsd-kind-module">
-						<a href="../modules/_connection_manager_visibility_change_emitter_.html">connection-manager/visibility-change-emitter</a>
+						<a href="../modules/_types_.html">types</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-enum tsd-parent-kind-module">
+						<a href="../enums/_types_.keytype.html" class="tsd-kind-icon">Key<wbr>Type</a>
+					</li>
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class tsd-parent-kind-module">
-						<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html" class="tsd-kind-icon">Visibility<wbr>Change<wbr>Emitter</a>
+					<li class="current tsd-kind-interface tsd-parent-kind-module">
+						<a href="_types_.eventemitter.html" class="tsd-kind-icon">Event<wbr>Emitter</a>
 						<ul>
-							<li class=" tsd-kind-reference tsd-parent-kind-class">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#events" class="tsd-kind-icon">Events</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#addlistener" class="tsd-kind-icon">add<wbr>Listener</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#_addvisibilitychangelistener" class="tsd-kind-icon">_add<wbr>Visibility<wbr>Change<wbr>Listener</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#emit" class="tsd-kind-icon">emit</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#_handlevisibilitychange" class="tsd-kind-icon">_handle<wbr>Visibility<wbr>Change</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#getmaxlisteners" class="tsd-kind-icon">get<wbr>Max<wbr>Listeners</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#_hidden" class="tsd-kind-icon">_hidden</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#listenercount" class="tsd-kind-icon">listener<wbr>Count</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#_initializevisibilityvarnames" class="tsd-kind-icon">_initialize<wbr>Visibility<wbr>Var<wbr>Names</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#listeners" class="tsd-kind-icon">listeners</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#_visibilitychange" class="tsd-kind-icon">_visibility<wbr>Change</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#off" class="tsd-kind-icon">off</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#addlistener" class="tsd-kind-icon">add<wbr>Listener</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#on" class="tsd-kind-icon">on</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#emit" class="tsd-kind-icon">emit</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#once" class="tsd-kind-icon">once</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#getmaxlisteners" class="tsd-kind-icon">get<wbr>Max<wbr>Listeners</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#rawlisteners" class="tsd-kind-icon">raw<wbr>Listeners</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#isvisible" class="tsd-kind-icon">is<wbr>Visible</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#removealllisteners" class="tsd-kind-icon">remove<wbr>All<wbr>Listeners</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#listenercount" class="tsd-kind-icon">listener<wbr>Count</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#removelistener" class="tsd-kind-icon">remove<wbr>Listener</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#listeners" class="tsd-kind-icon">listeners</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#off" class="tsd-kind-icon">off</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#on" class="tsd-kind-icon">on</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#once" class="tsd-kind-icon">once</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#rawlisteners" class="tsd-kind-icon">raw<wbr>Listeners</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#removealllisteners" class="tsd-kind-icon">remove<wbr>All<wbr>Listeners</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#removelistener" class="tsd-kind-icon">remove<wbr>Listener</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_connection_manager_visibility_change_emitter_.visibilitychangeemitter.html#setmaxlisteners" class="tsd-kind-icon">set<wbr>Max<wbr>Listeners</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_types_.eventemitter.html#setmaxlisteners" class="tsd-kind-icon">set<wbr>Max<wbr>Listeners</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_connection_manager_visibility_change_emitter_.html#events" class="tsd-kind-icon">Events</a>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="_types_.eventemitterfactory.html" class="tsd-kind-icon">Event<wbr>Emitter<wbr>Factory</a>
 					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-module tsd-is-not-exported">
-						<a href="../modules/_connection_manager_visibility_change_emitter_.html#visibilitychangeemitter_base" class="tsd-kind-icon">Visibility<wbr>Change<wbr>Emitter_<wbr>base</a>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#can_hop" class="tsd-kind-icon">CAN_<wbr>HOP</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#circuitmessageproto" class="tsd-kind-icon">Circuit<wbr>Message<wbr>Proto</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#circuitpeer" class="tsd-kind-icon">Circuit<wbr>Peer</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#circuitrequest" class="tsd-kind-icon">Circuit<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#circuitstatus" class="tsd-kind-icon">Circuit<wbr>Status</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#circuittype" class="tsd-kind-icon">Circuit<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#hop-1" class="tsd-kind-icon">HOP</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#hop_cant_dial_dst-1" class="tsd-kind-icon">HOP_<wbr>CANT_<wbr>DIAL_<wbr>DST</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#hop_cant_open_dst_stream-1" class="tsd-kind-icon">HOP_<wbr>CANT_<wbr>OPEN_<wbr>DST_<wbr>STREAM</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#hop_cant_relay_to_self-1" class="tsd-kind-icon">HOP_<wbr>CANT_<wbr>RELAY_<wbr>TO_<wbr>SELF</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#hop_cant_speak_relay-1" class="tsd-kind-icon">HOP_<wbr>CANT_<wbr>SPEAK_<wbr>RELAY</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#hop_dst_addr_too_long-1" class="tsd-kind-icon">HOP_<wbr>DST_<wbr>ADDR_<wbr>TOO_<wbr>LONG</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#hop_dst_multiaddr_invalid-1" class="tsd-kind-icon">HOP_<wbr>DST_<wbr>MULTIADDR_<wbr>INVALID</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#hop_no_conn_to_dst-1" class="tsd-kind-icon">HOP_<wbr>NO_<wbr>CONN_<wbr>TO_<wbr>DST</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#hop_src_addr_too_long-1" class="tsd-kind-icon">HOP_<wbr>SRC_<wbr>ADDR_<wbr>TOO_<wbr>LONG</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#hop_src_multiaddr_invalid-1" class="tsd-kind-icon">HOP_<wbr>SRC_<wbr>MULTIADDR_<wbr>INVALID</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#malformed_message-1" class="tsd-kind-icon">MALFORMED_<wbr>MESSAGE</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#messageproto" class="tsd-kind-icon">Message<wbr>Proto</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#status-2" class="tsd-kind-icon">STATUS</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#stop-1" class="tsd-kind-icon">STOP</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#stop_dst_addr_too_long-1" class="tsd-kind-icon">STOP_<wbr>DST_<wbr>ADDR_<wbr>TOO_<wbr>LONG</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#stop_dst_multiaddr_invalid-1" class="tsd-kind-icon">STOP_<wbr>DST_<wbr>MULTIADDR_<wbr>INVALID</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#stop_relay_refused-1" class="tsd-kind-icon">STOP_<wbr>RELAY_<wbr>REFUSED</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#stop_src_addr_too_long-1" class="tsd-kind-icon">STOP_<wbr>SRC_<wbr>ADDR_<wbr>TOO_<wbr>LONG</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#stop_src_multiaddr_invalid-1" class="tsd-kind-icon">STOP_<wbr>SRC_<wbr>MULTIADDR_<wbr>INVALID</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/_types_.html#success-1" class="tsd-kind-icon">SUCCESS</a>
 					</li>
 				</ul>
 			</nav>
@@ -782,22 +710,15 @@ myVisibilityEmitter.on(<span class="hljs-string">&#x27;visibilityChange&#x27;</s
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
 			</ul>
 			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
 				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
 			</ul>
 		</div>
 	</div>
