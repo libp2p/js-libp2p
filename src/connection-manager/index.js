@@ -10,7 +10,9 @@ const mergeOptions = require('merge-options')
 const LatencyMonitor = require('./latency-monitor')
 const retimer = require('retimer')
 
-const { EventEmitter } = require('events')
+/** @typedef {import('../types').EventEmitterFactory} Events */
+/** @type Events */
+const EventEmitter = require('events')
 
 const PeerId = require('peer-id')
 
