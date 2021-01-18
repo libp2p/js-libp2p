@@ -29,7 +29,6 @@
     "babel-plugin-syntax-async-functions": "^6.13.0",
     "babel-plugin-transform-regenerator": "^6.26.0",
     "babel-polyfill": "^6.26.0",
-    "p-retry": "^4.2.0",
     "parcel-bundler": "^1.12.4"
   }
 }

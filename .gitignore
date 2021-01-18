@@ -40,7 +40,6 @@ dist
 test/test-data/go-ipfs-repo/LOCK
 test/test-data/go-ipfs-repo/LOG
 test/test-data/go-ipfs-repo/LOG.old
-tests_output/
 
 # while testing npm5
 package-lock.json
