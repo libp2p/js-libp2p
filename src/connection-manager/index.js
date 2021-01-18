@@ -160,7 +160,7 @@ class ConnectionManager extends EventEmitter {
       }
     }
 
-    await tasks
+    await Promise.all(tasks)
     this.connections.clear()
   }
 
