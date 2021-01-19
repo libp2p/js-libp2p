@@ -12,5 +12,8 @@
     "fs-extra": "^8.1.0",
     "p-defer": "^3.0.0",
     "which": "^2.0.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.7.1"
   }
 }
