@@ -1,3 +1,12 @@
+## [0.30.1](https://github.com/libp2p/js-libp2p/compare/v0.30.0...v0.30.1) (2021-01-18)
+
+
+### Bug Fixes
+
+* event emitter types with local types ([#864](https://github.com/libp2p/js-libp2p/issues/864)) ([6c41e30](https://github.com/libp2p/js-libp2p/commit/6c41e3045608bcae8061d20501be5751dad8157a))
+
+
+
 # [0.30.0](https://github.com/libp2p/js-libp2p/compare/v0.29.4...v0.30.0) (2020-12-16)
 
 

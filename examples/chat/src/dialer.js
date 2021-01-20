@@ -3,7 +3,7 @@
 
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
-const createLibp2p = require('./libp2p-bundle')
+const createLibp2p = require('./libp2p')
 const { stdinToStream, streamToConsole } = require('./stream')
 
 async function run() {

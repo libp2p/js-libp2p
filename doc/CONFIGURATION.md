@@ -264,13 +264,14 @@ const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
 const MulticastDNS = require('libp2p-mdns')
+const Bootstrap = require('libp2p-bootstrap')
 
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
     connEncryption: [NOISE],
-    peerDiscovery: [MulticastDNS]
+    peerDiscovery: [MulticastDNS, Bootstrap]
   },
   config: {
     peerDiscovery: {
@@ -279,6 +280,15 @@ const node = await Libp2p.create({
       // The associated object, will be passed to the service when it is instantiated.
       [MulticastDNS.tag]: {
         interval: 1000,
+        enabled: true
+      },
+      [Bootstrap.tag:] {
+        list: [ // A list of bootstrap peers to connect to starting up the node
+          "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
+          "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
+          "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
+        ],
+        interval: 2000,
         enabled: true
       }
       // .. other discovery module options.

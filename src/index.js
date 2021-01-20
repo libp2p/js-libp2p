@@ -4,7 +4,9 @@ const debug = require('debug')
 const log = Object.assign(debug('libp2p'), {
   error: debug('libp2p:err')
 })
-const { EventEmitter } = require('events')
+/** @typedef {import('./types').EventEmitterFactory} Events */
+/** @type Events */
+const EventEmitter = require('events')
 const globalThis = require('ipfs-utils/src/globalthis')
 
 const errCode = require('err-code')

@@ -22,7 +22,6 @@ async function testExample (dir) {
   await installDeps(dir)
   await build(dir)
   await runTest(dir)
-  // TODO: add browser test setup
 }
 
 async function installDeps (dir) {
@@ -89,7 +88,7 @@ async function runTest (dir) {
     return
   }
 
-  const runTest = require(testFile)
+  const test = require(testFile)
 
-  await runTest()
+  await test()
 }

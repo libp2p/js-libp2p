@@ -6,7 +6,7 @@
  */
 
 const PeerId = require('peer-id')
-const createLibp2p = require('./libp2p-bundle')
+const createLibp2p = require('./libp2p')
 const pipe = require('it-pipe')
 
 async function run() {
