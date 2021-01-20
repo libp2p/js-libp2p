@@ -12,6 +12,7 @@ This guide aims to guide you from using the public infrastructure into setting u
 * [Connecting to Nodes with connectivity limitations](#connecting-to-nodes-with-connectivity-limitations)
   * [`webrtc-star` servers](#webrtc-star-servers)
   * [Circuit Relay](#circuit-relay)
+  * [Rendezvous Servers](#rendezvous-servers)
 * [Querying the network from the browser](#querying-the-network-from-the-browser)
 * [Others](#others)
   * [SSL](#ssl)
@@ -47,6 +48,12 @@ Libp2p nodes acting as circuit relay aim to establish connectivity between libp2
 A relay is needed in situations where nodes are behind NAT, reverse proxies, firewalls and/or simply don't support the same transports (e.g. go-libp2p vs. browser-libp2p). The circuit relay protocol exists to overcome those scenarios. Nodes with the `auto-relay` feature enabled can automatically bind themselves on a relay to listen for connections on their behalf.
 
 You can use [libp2p/js-libp2p-relay-server](https://github.com/libp2p/js-libp2p-relay-server) to setup your own relay server. This also includes an easy to customize Docker setup for a HOP Relay.
+
+### Rendezvous servers
+
+During the lifetime of a libp2p node, particularly during its startup, establishing connections with other peers will be crucial to create a network topology able to fulfill the needs of the node. Node with connectivity limitations might need to find peers providing a given service or playing a given role over time, so that they can connect to them and become fully functional libp2p nodes. These services and roles can range from circuit relays to application specific routing,
+
+You can use [libp2p/js-libp2p-rendezvous](https://github.com/libp2p/js-libp2p-rendezvous) to setup your own relay server. Bear in mind, that this should be deployed as a cluster of servers to provide a healthy service.
 
 ## Querying the network from the browser
 
