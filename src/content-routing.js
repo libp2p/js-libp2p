@@ -2,9 +2,16 @@
 
 const errCode = require('err-code')
 const { messages, codes } = require('./errors')
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:content-routing'), {
+  error: debug('libp2p:content-routing:err')
+})
 
-const all = require('it-all')
-const pAny = require('p-any')
+const merge = require('it-merge')
+const filter = require('it-filter')
+const take = require('it-take')
+const map = require('it-map')
+const { pipe } = require('it-pipe')
 
 /**
  * @typedef {import('peer-id')} PeerId
@@ -36,7 +43,6 @@ class ContentRouting {
 
   /**
    * Iterates over all content routers in series to find providers of the given key.
-   * Once a content router succeeds, iteration will stop.
    *
    * @param {CID} key - The CID key of the content to find
    * @param {object} [options]
@@ -44,24 +50,69 @@ class ContentRouting {
    * @param {number} [options.maxNumProviders] - maximum number of providers to find
    * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
-  async * findProviders (key, options) {
+  async * findProviders (key, options = {}) {
     if (!this.routers.length) {
       throw errCode(new Error('No content this.routers available'), 'NO_ROUTERS_AVAILABLE')
     }
 
-    const result = await pAny(
-      this.routers.map(async (router) => {
-        const provs = await all(router.findProviders(key, options))
+    /** @type Set<string> */
+    const seen = new Set()
+    const {
+      peerStore
+    } = this.libp2p
 
-        if (!provs || !provs.length) {
-          throw errCode(new Error('not found'), 'NOT_FOUND')
+    const ignoreError = async function * (source) {
+      try {
+        for await (const prov of source) {
+          yield prov
         }
-        return provs
-      })
+      } catch (err) {
+        // we will throw an error at the end if no providers have been found
+        // so log this error but otherwise ignore it
+        log.error(err)
+      }
+    }
+
+    yield * pipe(
+      merge(
+        ...this.routers.map(router => ignoreError(router.findProviders(key, options)))
+      ),
+      function filterProviders (source) {
+        return filter(source, (provider) => {
+          // ensure we have the addresses for a given peer
+          peerStore.addressBook.add(provider.id, provider.multiaddrs)
+
+          // dedupe by peer id
+          if (seen.has(provider.id.toString())) {
+            return false
+          }
+
+          seen.add(provider.id.toString())
+
+          return true
+        })
+      },
+      function returnAllAddresses (source) {
+        return map(source, (provider) => {
+          const addresses = peerStore.addressBook.get(provider.id) || []
+
+          return {
+            id: provider.id,
+            multiaddrs: addresses.map(addr => addr.multiaddr)
+          }
+        })
+      },
+      function maybeLimitSource (source) {
+        if (options.maxNumProviders) {
+          return take(source, options.maxNumProviders)
+        }
+
+        return source
+      }
     )
 
-    for (const peer of result) {
-      yield peer
+    if (seen.size === 0) {
+      throw errCode(new Error('not found'), 'NOT_FOUND')
     }
   }
 
