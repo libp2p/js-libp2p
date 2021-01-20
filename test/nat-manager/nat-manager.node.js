@@ -11,6 +11,9 @@ const NatManager = require('../../src/nat-manager')
 const delay = require('delay')
 const peers = require('../fixtures/peers')
 const PeerId = require('peer-id')
+const {
+  codes: { ERR_INVALID_PARAMETERS }
+} = require('../../src/errors')
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
@@ -76,6 +79,12 @@ describe('Nat Manager (TCP)', () => {
       transportManager
     } = await createNatManager()
 
+    let addressChangedEventFired = false
+
+    addressManager.on('change:addresses', () => {
+      addressChangedEventFired = true
+    })
+
     natManager._client = {
       externalIp: sinon.stub().resolves('82.3.1.5'),
       map: sinon.stub(),
@@ -104,6 +113,8 @@ describe('Nat Manager (TCP)', () => {
         protocol: 'TCP'
       })
     })
+
+    expect(addressChangedEventFired).to.be.true()
   })
 
   it('should not map TCP connections when double-natted', async () => {
@@ -223,5 +234,11 @@ describe('Nat Manager (TCP)', () => {
 
     observed = addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
+  })
+
+  it('should specify large enough TTL', () => {
+    expect(() => {
+      new NatManager({ ttl: 5 }) // eslint-disable-line no-new
+    }).to.throw().with.property('code', ERR_INVALID_PARAMETERS)
   })
 })

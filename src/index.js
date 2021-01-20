@@ -138,7 +138,11 @@ class Libp2p extends EventEmitter {
     this.addressManager = new AddressManager(this.peerId, this._options.addresses)
 
     // when addresses change, update our peer record
-    this.addressManager.on('change:addresses', () => updateSelfPeerRecord(this))
+    this.addressManager.on('change:addresses', () => {
+      updateSelfPeerRecord(this).catch(err => {
+        log.error('Error updating self peer record', err)
+      })
+    })
 
     this._modules = this._options.modules
     this._config = this._options.config
@@ -459,25 +463,29 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Get peer advertising multiaddrs by concating the addresses used
-   * by transports to listen with the announce addresses.
-   * Duplicated addresses and noAnnounce addresses are filtered out.
+   * Get a deduplicated list of peer advertising multiaddrs by concatenating
+   * the listen addresses used by transports with any configured the
+   * announce addresses as well as observed addresses reported by peers.
+   *
+   * If Announce addrs are specified, configured listen addresses will be
+   * ignored though observed addresses will still be included.
    *
    * @returns {Multiaddr[]}
    */
   get multiaddrs () {
-    const announceAddrs = this.addressManager.getAnnounceAddrs()
-    if (announceAddrs.length) {
-      return announceAddrs
+    let addrs = this.addressManager.getAnnounceAddrs().map(ma => ma.toString())
+
+    if (!addrs.length) {
+      // no configured announce addrs, add configured listen addresses
+      addrs = this.transportManager.getAddrs().map(ma => ma.toString())
     }
+
+    addrs = addrs.concat(this.addressManager.getObservedAddrs().map(ma => ma.toString()))
 
     const announceFilter = this._options.addresses.announceFilter || ((multiaddrs) => multiaddrs)
 
     // dedupe multiaddrs
-    const addrSet = new Set([
-      ...this.transportManager.getAddrs().map(ma => ma.toString()),
-      ...this.addressManager.getObservedAddrs().map(ma => ma.toString())
-    ])
+    const addrSet = new Set(addrs)
 
     // Create advertising list
     return announceFilter(Array.from(addrSet).map(str => multiaddr(str)))

@@ -79,6 +79,24 @@ describe('Address Manager', () => {
     expect(am.observed).to.include(ma)
   })
 
+  it('should only emit one change:addresses event', () => {
+    const ma = '/ip4/123.123.123.123/tcp/39201'
+    const am = new AddressManager(peerId)
+    let eventCount = 0
+
+    am.on('change:addresses', () => {
+      eventCount++
+    })
+
+    am.addObservedAddr(ma)
+    am.addObservedAddr(ma)
+    am.addObservedAddr(ma)
+    am.addObservedAddr(`${ma}/p2p/${peerId}`)
+    am.addObservedAddr(`${ma}/p2p/${peerId.toB58String()}`)
+
+    expect(eventCount).to.equal(1)
+  })
+
   it('should strip our peer address from added observed addresses', () => {
     const ma = '/ip4/123.123.123.123/tcp/39201'
     const am = new AddressManager(peerId)

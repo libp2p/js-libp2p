@@ -11,6 +11,11 @@ const { isBrowser } = require('ipfs-utils/src/env')
 const retry = require('p-retry')
 const isPrivateIp = require('private-ip')
 const pkg = require('../package.json')
+const errcode = require('err-code')
+const {
+  codes: { ERR_INVALID_PARAMETERS }
+} = require('./errors')
+const isLoopback = require('libp2p-utils/src/multiaddr/is-loopback')
 
 /**
  * @typedef {import('peer-id')} PeerId
@@ -21,6 +26,8 @@ const pkg = require('../package.json')
 function highPort (min = 1024, max = 65535) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
+
+const DEFAULT_TTL = 7200
 
 class NatManager {
   /**
@@ -47,10 +54,14 @@ class NatManager {
     this._externalIp = options.externalIp
     this._options = {
       description: options.description || `${pkg.name}@${pkg.version} ${this._peerId}`,
-      ttl: options.ttl || 7200,
+      ttl: options.ttl || DEFAULT_TTL,
       autoUpdate: options.keepAlive || true,
       gateway: options.gateway,
       enablePMP: Boolean(options.pmp && options.pmp.enabled)
+    }
+
+    if (this._options.ttl < DEFAULT_TTL) {
+      throw errcode(new Error(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`), ERR_INVALID_PARAMETERS)
     }
   }
 
@@ -81,8 +92,7 @@ class NatManager {
         continue
       }
 
-      if (host === '127.0.0.1' || host === '::1') {
-        // ignore loopback addresses
+      if (isLoopback(addr)) {
         continue
       }
 
