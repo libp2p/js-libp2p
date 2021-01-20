@@ -8,6 +8,10 @@ We've seen many interesting use cases appear with this, here are some highlights
 - [IPFS PubSub (using libp2p-floodsub) for IoT](https://www.youtube.com/watch?v=qLpM5pBDGiE).
 - [Real Time distributed Applications](https://www.youtube.com/watch?v=vQrbxyDPSXg)
 
+## 0. Set up the example
+
+Before moving into the examples, you should run `npm install` on the top level `js-libp2p` folder, in order to install all the dependencies needed for this example. In addition, you will need to install the example related dependencies by doing `cd examples && npm install`. Once the install finishes, you should move into the example folder with `cd pubsub`.
+
 ## 1. Setting up a simple PubSub network on top of libp2p
 
 For this example, we will use MulticastDNS for automatic Peer Discovery. This example is based the previous examples found in [Discovery Mechanisms](../discovery-mechanisms). You can find the complete version at [1.js](./1.js).

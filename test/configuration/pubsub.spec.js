@@ -3,13 +3,12 @@
 
 const { expect } = require('aegir/utils/chai')
 const mergeOptions = require('merge-options')
-const { Multiaddr } = require('multiaddr')
+const pDefer = require('p-defer')
+const delay = require('delay')
 
 const { create } = require('../../src')
-const { baseOptions, subsystemOptions } = require('./utils')
+const { baseOptions, pubsubSubsystemOptions } = require('./utils')
 const peerUtils = require('../utils/creators/peer')
-
-const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('Pubsub subsystem is configurable', () => {
   let libp2p
@@ -24,18 +23,15 @@ describe('Pubsub subsystem is configurable', () => {
   })
 
   it('should exist if the module is provided', async () => {
-    libp2p = await create(subsystemOptions)
+    libp2p = await create(pubsubSubsystemOptions)
     expect(libp2p.pubsub).to.exist()
   })
 
   it('should start and stop by default once libp2p starts', async () => {
     const [peerId] = await peerUtils.createPeerId()
 
-    const customOptions = mergeOptions(subsystemOptions, {
-      peerId,
-      addresses: {
-        listen: [listenAddr]
-      }
+    const customOptions = mergeOptions(pubsubSubsystemOptions, {
+      peerId
     })
 
     libp2p = await create(customOptions)
@@ -51,11 +47,8 @@ describe('Pubsub subsystem is configurable', () => {
   it('should not start if disabled once libp2p starts', async () => {
     const [peerId] = await peerUtils.createPeerId()
 
-    const customOptions = mergeOptions(subsystemOptions, {
+    const customOptions = mergeOptions(pubsubSubsystemOptions, {
       peerId,
-      addresses: {
-        listen: [listenAddr]
-      },
       config: {
         pubsub: {
           enabled: false
@@ -73,11 +66,8 @@ describe('Pubsub subsystem is configurable', () => {
   it('should allow a manual start', async () => {
     const [peerId] = await peerUtils.createPeerId()
 
-    const customOptions = mergeOptions(subsystemOptions, {
+    const customOptions = mergeOptions(pubsubSubsystemOptions, {
       peerId,
-      addresses: {
-        listen: [listenAddr]
-      },
       config: {
         pubsub: {
           enabled: false
@@ -91,5 +81,45 @@ describe('Pubsub subsystem is configurable', () => {
 
     await libp2p.pubsub.start()
     expect(libp2p.pubsub.started).to.equal(true)
+  })
+})
+
+describe('Pubsub subscription handlers adapter', () => {
+  let libp2p
+
+  beforeEach(async () => {
+    const [peerId] = await peerUtils.createPeerId()
+
+    libp2p = await create(mergeOptions(pubsubSubsystemOptions, {
+      peerId
+    }))
+
+    await libp2p.start()
+  })
+
+  it('extends pubsub with subscribe handler', async () => {
+    let countMessages = 0
+    const topic = 'topic'
+    const defer = pDefer()
+
+    const handler = () => {
+      countMessages++
+      if (countMessages > 1) {
+        throw new Error('only one message should be received')
+      }
+
+      defer.resolve()
+    }
+
+    await libp2p.pubsub.subscribe(topic, handler)
+
+    libp2p.pubsub.emit(topic, 'useless-data')
+    await defer.promise
+
+    await libp2p.pubsub.unsubscribe(topic, handler)
+    libp2p.pubsub.emit(topic, 'useless-data')
+
+    // wait to guarantee that the handler is not called twice
+    await delay(100)
   })
 })
