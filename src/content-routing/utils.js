@@ -30,7 +30,7 @@ function storeAddresses (source, peerStore) {
  *
  * @param {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>} source
  */
-function uniqueProviders (source) {
+function uniquePeers (source) {
   /** @type Set<string> */
   const seen = new Set()
 
@@ -83,7 +83,7 @@ function maybeLimitSource (source, max) {
 
 module.exports = {
   storeAddresses,
-  uniqueProviders,
+  uniquePeers,
   requirePeers,
   maybeLimitSource
 }

@@ -412,6 +412,28 @@ describe('peer-routing', () => {
 
       expect(spy.calledWith(result.id, result.multiaddrs)).to.be.true()
     })
+
+    it('should dedupe closest peers', async () => {
+      const [remotePeerId] = await peerUtils.createPeerId({ fixture: false })
+      const results = [{
+        id: remotePeerId,
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/38982')
+        ]
+      }]
+
+      sinon.stub(node._dht, 'getClosestPeers').callsFake(function * () {
+        yield * results
+      })
+
+      sinon.stub(delegate, 'getClosestPeers').callsFake(function * () {
+        yield * results
+      })
+
+      const peers = await all(node.peerRouting.getClosestPeers('a cid'))
+
+      expect(peers).to.be.an('array').with.a.lengthOf(1).that.deep.equals(results)
+    })
   })
 
   describe('peer routing refresh manager service', () => {

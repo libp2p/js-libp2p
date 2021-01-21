@@ -7,7 +7,7 @@ const log = Object.assign(debug('libp2p:peer-routing'), {
 const errCode = require('err-code')
 const {
   storeAddresses,
-  uniqueProviders,
+  uniquePeers,
   requirePeers
 } = require('./content-routing/utils')
 
@@ -35,9 +35,9 @@ class PeerRouting {
     this._peerStore = libp2p.peerStore
     this._routers = libp2p._modules.peerRouting || []
 
-    // If we have the dht, make it first
+    // If we have the dht, add it to the available peer routers
     if (libp2p._dht) {
-      this._routers.unshift(libp2p._dht)
+      this._routers.push(libp2p._dht)
     }
 
     this._refreshManagerOptions = libp2p._options.peerRouting.refreshManager
@@ -124,7 +124,7 @@ class PeerRouting {
         ...this._routers.map(router => router.getClosestPeers(key, options))
       ),
       (source) => storeAddresses(source, this._peerStore),
-      (source) => uniqueProviders(source),
+      (source) => uniquePeers(source),
       (source) => requirePeers(source)
     )
   }

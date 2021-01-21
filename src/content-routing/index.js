@@ -4,7 +4,7 @@ const errCode = require('err-code')
 const { messages, codes } = require('../errors')
 const {
   storeAddresses,
-  uniqueProviders,
+  uniquePeers,
   requirePeers,
   maybeLimitSource
 } = require('./utils')
@@ -34,9 +34,9 @@ class ContentRouting {
     this.routers = libp2p._modules.contentRouting || []
     this.dht = libp2p._dht
 
-    // If we have the dht, make it first
+    // If we have the dht, add it to the available content routers
     if (this.dht) {
-      this.routers.unshift(this.dht)
+      this.routers.push(this.dht)
     }
   }
 
@@ -59,7 +59,7 @@ class ContentRouting {
         ...this.routers.map(router => router.findProviders(key, options))
       ),
       (source) => storeAddresses(source, this.libp2p.peerStore),
-      (source) => uniqueProviders(source),
+      (source) => uniquePeers(source),
       (source) => maybeLimitSource(source, options.maxNumProviders),
       (source) => requirePeers(source)
     )
