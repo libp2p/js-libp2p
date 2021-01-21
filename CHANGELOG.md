@@ -1,3 +1,13 @@
+<a name="0.20.5"></a>
+## [0.20.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.20.4...v0.20.5) (2021-01-21)
+
+
+### Bug Fixes
+
+* do not throw on empty provider list ([#212](https://github.com/libp2p/js-libp2p-kad-dht/issues/212)) ([3c2096e](https://github.com/libp2p/js-libp2p-kad-dht/commit/3c2096e))
+
+
+
 <a name="0.20.4"></a>
 ## [0.20.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.20.3...v0.20.4) (2020-12-17)
 
