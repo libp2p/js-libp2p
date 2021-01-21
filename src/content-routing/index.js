@@ -148,10 +148,6 @@ module.exports = (dht) => {
         })
       })
 
-      if (out.length === 0) {
-        throw errcode(new Error('no providers found'), 'ERR_NOT_FOUND')
-      }
-
       for (const pData of out.toArray()) {
         yield pData
       }
