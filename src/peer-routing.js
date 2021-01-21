@@ -5,16 +5,24 @@ const log = Object.assign(debug('libp2p:peer-routing'), {
   error: debug('libp2p:peer-routing:err')
 })
 const errCode = require('err-code')
+const {
+  storeAddresses,
+  uniquePeers,
+  requirePeers
+} = require('./content-routing/utils')
 
-const all = require('it-all')
-const pAny = require('p-any')
+const merge = require('it-merge')
+const { pipe } = require('it-pipe')
+const first = require('it-first')
+const drain = require('it-drain')
+const filter = require('it-filter')
 const {
   setDelayedInterval,
   clearDelayedInterval
 } = require('set-delayed-interval')
+const PeerId = require('peer-id')
 
 /**
- * @typedef {import('peer-id')} PeerId
  * @typedef {import('multiaddr')} Multiaddr
  */
 class PeerRouting {
@@ -27,9 +35,9 @@ class PeerRouting {
     this._peerStore = libp2p.peerStore
     this._routers = libp2p._modules.peerRouting || []
 
-    // If we have the dht, make it first
+    // If we have the dht, add it to the available peer routers
     if (libp2p._dht) {
-      this._routers.unshift(libp2p._dht)
+      this._routers.push(libp2p._dht)
     }
 
     this._refreshManagerOptions = libp2p._options.peerRouting.refreshManager
@@ -55,9 +63,8 @@ class PeerRouting {
    */
   async _findClosestPeersTask () {
     try {
-      for await (const { id, multiaddrs } of this.getClosestPeers(this._peerId.id)) {
-        this._peerStore.addressBook.add(id, multiaddrs)
-      }
+      // nb getClosestPeers adds the addresses to the address book
+      await drain(this.getClosestPeers(this._peerId.id))
     } catch (err) {
       log.error(err)
     }
@@ -71,7 +78,7 @@ class PeerRouting {
   }
 
   /**
-   * Iterates over all peer routers in series to find the given peer.
+   * Iterates over all peer routers in parallel to find the given peer.
    *
    * @param {PeerId} id - The id of the peer to find
    * @param {object} [options]
@@ -83,16 +90,20 @@ class PeerRouting {
       throw errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE')
     }
 
-    return pAny(this._routers.map(async (router) => {
-      const result = await router.findPeer(id, options)
+    const output = await pipe(
+      merge(
+        ...this._routers.map(router => [router.findPeer(id, options)])
+      ),
+      (source) => filter(source, Boolean),
+      (source) => storeAddresses(source, this._peerStore),
+      (source) => first(source)
+    )
 
-      // If we don't have a result, we need to provide an error to keep trying
-      if (!result || Object.keys(result).length === 0) {
-        throw errCode(new Error('not found'), 'NOT_FOUND')
-      }
+    if (output) {
+      return output
+    }
 
-      return result
-    }))
+    throw errCode(new Error('not found'), 'NOT_FOUND')
   }
 
   /**
@@ -108,20 +119,14 @@ class PeerRouting {
       throw errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE')
     }
 
-    const result = await pAny(
-      this._routers.map(async (router) => {
-        const peers = await all(router.getClosestPeers(key, options))
-
-        if (!peers || !peers.length) {
-          throw errCode(new Error('not found'), 'NOT_FOUND')
-        }
-        return peers
-      })
+    yield * pipe(
+      merge(
+        ...this._routers.map(router => router.getClosestPeers(key, options))
+      ),
+      (source) => storeAddresses(source, this._peerStore),
+      (source) => uniquePeers(source),
+      (source) => requirePeers(source)
     )
-
-    for (const peer of result) {
-      yield peer
-    }
   }
 }
 
