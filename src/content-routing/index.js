@@ -1,16 +1,20 @@
 'use strict'
 
 const errCode = require('err-code')
-const { messages, codes } = require('./errors')
+const { messages, codes } = require('../errors')
 const debug = require('debug')
 const log = Object.assign(debug('libp2p:content-routing'), {
   error: debug('libp2p:content-routing:err')
 })
+const {
+  ignoreError,
+  storeAddresses,
+  uniqueProviders,
+  requirePeers,
+  maybeLimitSource
+} = require('./utils')
 
 const merge = require('it-merge')
-const filter = require('it-filter')
-const take = require('it-take')
-const map = require('it-map')
 const { pipe } = require('it-pipe')
 
 /**
@@ -28,7 +32,7 @@ const { pipe } = require('it-pipe')
 class ContentRouting {
   /**
    * @class
-   * @param {import('./')} libp2p
+   * @param {import('..')} libp2p
    */
   constructor (libp2p) {
     this.libp2p = libp2p
@@ -42,7 +46,7 @@ class ContentRouting {
   }
 
   /**
-   * Iterates over all content routers in series to find providers of the given key.
+   * Iterates over all content routers in parallel to find providers of the given key.
    *
    * @param {CID} key - The CID key of the content to find
    * @param {object} [options]
@@ -55,65 +59,15 @@ class ContentRouting {
       throw errCode(new Error('No content this.routers available'), 'NO_ROUTERS_AVAILABLE')
     }
 
-    /** @type Set<string> */
-    const seen = new Set()
-    const {
-      peerStore
-    } = this.libp2p
-
-    const ignoreError = async function * (source) {
-      try {
-        for await (const prov of source) {
-          yield prov
-        }
-      } catch (err) {
-        // we will throw an error at the end if no providers have been found
-        // so log this error but otherwise ignore it
-        log.error(err)
-      }
-    }
-
     yield * pipe(
       merge(
-        ...this.routers.map(router => ignoreError(router.findProviders(key, options)))
+        ...this.routers.map(router => ignoreError(router.findProviders(key, options), log))
       ),
-      function filterProviders (source) {
-        return filter(source, (provider) => {
-          // ensure we have the addresses for a given peer
-          peerStore.addressBook.add(provider.id, provider.multiaddrs)
-
-          // dedupe by peer id
-          if (seen.has(provider.id.toString())) {
-            return false
-          }
-
-          seen.add(provider.id.toString())
-
-          return true
-        })
-      },
-      function returnAllAddresses (source) {
-        return map(source, (provider) => {
-          const addresses = peerStore.addressBook.get(provider.id) || []
-
-          return {
-            id: provider.id,
-            multiaddrs: addresses.map(addr => addr.multiaddr)
-          }
-        })
-      },
-      function maybeLimitSource (source) {
-        if (options.maxNumProviders) {
-          return take(source, options.maxNumProviders)
-        }
-
-        return source
-      }
+      (source) => storeAddresses(source, this.libp2p.peerStore),
+      (source) => uniqueProviders(source),
+      (source) => maybeLimitSource(source, options.maxNumProviders),
+      (source) => requirePeers(source)
     )
-
-    if (seen.size === 0) {
-      throw errCode(new Error('not found'), 'NOT_FOUND')
-    }
   }
 
   /**
