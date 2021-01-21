@@ -1,3 +1,12 @@
+## [0.30.2](https://github.com/libp2p/js-libp2p/compare/v0.30.1...v0.30.2) (2021-01-21)
+
+
+### Bug Fixes
+
+* store multiaddrs during content and peer routing queries ([#865](https://github.com/libp2p/js-libp2p/issues/865)) ([45c3367](https://github.com/libp2p/js-libp2p/commit/45c33675a7412c66d0fd4e113ef8506077b6f492))
+
+
+
 ## [0.30.1](https://github.com/libp2p/js-libp2p/compare/v0.30.0...v0.30.1) (2021-01-18)
 
 
