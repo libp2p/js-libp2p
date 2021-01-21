@@ -34,13 +34,13 @@ function uniquePeers (source) {
   /** @type Set<string> */
   const seen = new Set()
 
-  return filter(source, (provider) => {
+  return filter(source, (peer) => {
     // dedupe by peer id
-    if (seen.has(provider.id.toString())) {
+    if (seen.has(peer.id.toString())) {
       return false
     }
 
-    seen.add(provider.id.toString())
+    seen.add(peer.id.toString())
 
     return true
   })
