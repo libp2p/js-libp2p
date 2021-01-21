@@ -2,12 +2,7 @@
 
 const errCode = require('err-code')
 const { messages, codes } = require('../errors')
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:content-routing'), {
-  error: debug('libp2p:content-routing:err')
-})
 const {
-  ignoreError,
   storeAddresses,
   uniqueProviders,
   requirePeers,
@@ -61,7 +56,7 @@ class ContentRouting {
 
     yield * pipe(
       merge(
-        ...this.routers.map(router => ignoreError(router.findProviders(key, options), log))
+        ...this.routers.map(router => router.findProviders(key, options))
       ),
       (source) => storeAddresses(source, this.libp2p.peerStore),
       (source) => uniqueProviders(source),

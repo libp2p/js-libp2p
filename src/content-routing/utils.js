@@ -11,23 +11,6 @@ const take = require('it-take')
  */
 
 /**
- *
- * @param {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>} source
- * @param {*} log
- */
-async function * ignoreError (source, log) {
-  try {
-    for await (const item of source) {
-      yield item
-    }
-  } catch (err) {
-    // usually used in conjunction with requirePeers which will throw an
-    // error later in the pipe so log this error but otherwise ignore it
-    log.error(err)
-  }
-}
-
-/**
  * Store the multiaddrs from every peer in the passed peer store
  *
  * @param {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>} source
@@ -99,7 +82,6 @@ function maybeLimitSource (source, max) {
 }
 
 module.exports = {
-  ignoreError,
   storeAddresses,
   uniqueProviders,
   requirePeers,

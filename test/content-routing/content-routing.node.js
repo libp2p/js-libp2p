@@ -385,7 +385,7 @@ describe('content-routing', () => {
       ])
     })
 
-    it('should only use the dht if it finds providers', async () => {
+    it('should use the dht if the delegate fails to find providers', async () => {
       const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
       const results = [{
         id: providerPeerId,
@@ -397,7 +397,6 @@ describe('content-routing', () => {
       })
 
       sinon.stub(delegate, 'findProviders').callsFake(function * () { // eslint-disable-line require-yield
-        throw new Error('the delegate should not have been called')
       })
 
       const providers = []
