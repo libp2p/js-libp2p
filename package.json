@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.30.1",
+  "version": "0.30.2",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -156,11 +156,11 @@
     "Andrew Nesbitt <andrewnez@gmail.com>",
     "Giovanni T. Parra <fiatjaf@gmail.com>",
     "Ryan Bell <ryan@piing.net>",
+    "Samlior <samlior@foxmail.com>",
     "Thomas Eizinger <thomas@eizinger.io>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Didrik Nordström <didrik@betamos.se>",
-    "Fei Liu <liu.feiwood@gmail.com>",
-    "Ethan Lam <elmemphis2000@gmail.com>",
+    "Irakli Gozalishvili <rfobic@gmail.com>",
     "Joel Gustafson <joelg@mit.edu>",
     "Julien Bouquillon <contact@revolunet.com>",
     "Kevin Kwok <antimatter15@gmail.com>",
@@ -168,7 +168,7 @@
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "RasmusErik Voel Jensen <github@solsort.com>",
     "Diogo Silva <fsdiogo@gmail.com>",
-    "Samlior <samlior@foxmail.com>",
+    "isan_rivkin <isanrivkin@gmail.com>",
     "Smite Chow <xiaopengyou@live.com>",
     "Soeren <nikorpoulsen@gmail.com>",
     "Sönke Hahn <soenkehahn@gmail.com>",
@@ -179,13 +179,13 @@
     "robertkiel <robert.kiel@validitylabs.org>",
     "Cindy Wu <ciindy.wu@gmail.com>",
     "Chris Bratlien <chrisbratlien@gmail.com>",
-    "ebinks <elizabethjbinks@gmail.com>",
     "Florian-Merle <florian.david.merle@gmail.com>",
     "Francis Gulotta <wizard@roborooter.com>",
     "Felipe Martins <felipebrasil93@gmail.com>",
-    "Bernd Strehl <bernd.strehl@gmail.com>",
+    "ebinks <elizabethjbinks@gmail.com>",
     "Henrique Dias <hacdias@gmail.com>",
-    "isan_rivkin <isanrivkin@gmail.com>",
-    "Irakli Gozalishvili <rfobic@gmail.com>"
+    "Bernd Strehl <bernd.strehl@gmail.com>",
+    "Fei Liu <liu.feiwood@gmail.com>",
+    "Ethan Lam <elmemphis2000@gmail.com>"
   ]
 }
