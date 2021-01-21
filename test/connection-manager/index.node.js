@@ -289,19 +289,19 @@ describe('libp2p.connections', () => {
           modules: baseOptions.modules
         }
       })
-  
+
       libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
       await libp2p.dial(remoteLibp2p.peerId)
-  
+
       const totalConns = Array.from(libp2p.connections.values())
       expect(totalConns.length).to.eql(1)
-      const conns = totalConns[0];
+      const conns = totalConns[0]
       expect(conns.length).to.eql(1)
       const conn = conns[0]
 
       await libp2p.stop()
       expect(conn.stat.status).to.eql(CLOSED)
-      
+
       await remoteLibp2p.stop()
     })
   })
