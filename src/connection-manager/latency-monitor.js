@@ -5,8 +5,6 @@
  * This code is based on `latency-monitor` (https://github.com/mlucool/latency-monitor) by `mlucool` (https://github.com/mlucool), available under Apache License 2.0 (https://github.com/mlucool/latency-monitor/blob/master/LICENSE)
  */
 
-/* global window */
-const globalThis = require('ipfs-utils/src/globalthis')
 /** @typedef {import('../types').EventEmitterFactory} Events */
 /** @type Events */
 const EventEmitter = require('events')
@@ -74,9 +72,9 @@ class LatencyMonitor extends EventEmitter {
     that.asyncTestFn = asyncTestFn // If there is no asyncFn, we measure latency
 
     // If process: use high resolution timer
-    if (globalThis.process && globalThis.process.hrtime) {
+    if (globalThis.process && globalThis.process.hrtime) { // eslint-disable-line no-undef
       debug('Using process.hrtime for timing')
-      that.now = globalThis.process.hrtime
+      that.now = globalThis.process.hrtime // eslint-disable-line no-undef
       that.getDeltaMS = (startTime) => {
         const hrtime = that.now(startTime)
         return (hrtime[0] * 1000) + (hrtime[1] / 1000000)

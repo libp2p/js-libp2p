@@ -161,25 +161,36 @@ describe('content-routing', () => {
 
     it('should be able to register as a provider', async () => {
       const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
-      const mockApi = nock('http://0.0.0.0:60197')
-        // mock the refs call
-        .post('/api/v0/refs')
+      const provider = 'QmZNgCqZCvTsi3B4Vt7gsSqpkqDpE7M2Y9TDmEhbDb4ceF'
+
+      const mockBlockApi = nock('http://0.0.0.0:60197')
+        // mock the block/stat call
+        .post('/api/v0/block/stat')
         .query(true)
-        .reply(200, null, [
+        .reply(200, '{"Key":"QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB","Size":"2169"}', [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
+      const mockDhtApi = nock('http://0.0.0.0:60197')
+        // mock the dht/provide call
+        .post('/api/v0/dht/provide')
+        .query(true)
+        .reply(200, `{"Extra":"","ID":"QmWKqWXCtRXEeCQTo3FoZ7g4AfnGiauYYiczvNxFCHicbB","Responses":[{"Addrs":["/ip4/0.0.0.0/tcp/0"],"ID":"${provider}"}],"Type":4}\n`, [
           'Content-Type', 'application/json',
           'X-Chunked-Output', '1'
         ])
 
       await node.contentRouting.provide(cid)
 
-      expect(mockApi.isDone()).to.equal(true)
+      expect(mockBlockApi.isDone()).to.equal(true)
+      expect(mockDhtApi.isDone()).to.equal(true)
     })
 
     it('should handle errors when registering as a provider', async () => {
       const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
       const mockApi = nock('http://0.0.0.0:60197')
-        // mock the refs call
-        .post('/api/v0/refs')
+        // mock the block/stat call
+        .post('/api/v0/block/stat')
         .query(true)
         .reply(502, 'Bad Gateway', ['Content-Type', 'application/json'])
 

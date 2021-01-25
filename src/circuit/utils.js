@@ -12,7 +12,7 @@ const TextEncoder = require('ipfs-utils/src/text-encoder')
  * @returns {Promise<CID>}
  */
 module.exports.namespaceToCid = async (namespace) => {
-  const bytes = new TextEncoder('utf8').encode(namespace)
+  const bytes = new TextEncoder().encode(namespace)
   const hash = await multihashing(bytes, 'sha2-256')
 
   return new CID(hash)
