@@ -1,6 +1,8 @@
 'use strict'
 
-const { EventEmitter } = require('events')
+/** @typedef {import('../types').EventEmitterFactory} Events */
+/** @type Events */
+const EventEmitter = require('events')
 const multiaddr = require('multiaddr')
 const PeerId = require('peer-id')
 
@@ -12,6 +14,10 @@ const PeerId = require('peer-id')
  * @typedef {Object} AddressManagerOptions
  * @property {string[]} [listen = []] - list of multiaddrs string representation to listen.
  * @property {string[]} [announce = []] - list of multiaddrs string representation to announce.
+ */
+
+ /**
+ * @fires AddressManager#change:addresses Emitted when a addresses change.
  */
 class AddressManager extends EventEmitter {
   /**
