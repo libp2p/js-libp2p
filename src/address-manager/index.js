@@ -16,7 +16,7 @@ const PeerId = require('peer-id')
  * @property {string[]} [announce = []] - list of multiaddrs string representation to announce.
  */
 
- /**
+/**
  * @fires AddressManager#change:addresses Emitted when a addresses change.
  */
 class AddressManager extends EventEmitter {
