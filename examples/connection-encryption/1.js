@@ -1,6 +1,6 @@
 'use strict'
 
-const Libp2p = require('../../')
+const Libp2p = require('../..')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')

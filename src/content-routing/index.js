@@ -1,10 +1,16 @@
 'use strict'
 
 const errCode = require('err-code')
-const { messages, codes } = require('./errors')
+const { messages, codes } = require('../errors')
+const {
+  storeAddresses,
+  uniquePeers,
+  requirePeers,
+  maybeLimitSource
+} = require('./utils')
 
-const all = require('it-all')
-const pAny = require('p-any')
+const merge = require('it-merge')
+const { pipe } = require('it-pipe')
 
 /**
  * @typedef {import('peer-id')} PeerId
@@ -21,22 +27,21 @@ const pAny = require('p-any')
 class ContentRouting {
   /**
    * @class
-   * @param {import('./')} libp2p
+   * @param {import('..')} libp2p
    */
   constructor (libp2p) {
     this.libp2p = libp2p
     this.routers = libp2p._modules.contentRouting || []
     this.dht = libp2p._dht
 
-    // If we have the dht, make it first
+    // If we have the dht, add it to the available content routers
     if (this.dht) {
-      this.routers.unshift(this.dht)
+      this.routers.push(this.dht)
     }
   }
 
   /**
-   * Iterates over all content routers in series to find providers of the given key.
-   * Once a content router succeeds, iteration will stop.
+   * Iterates over all content routers in parallel to find providers of the given key.
    *
    * @param {CID} key - The CID key of the content to find
    * @param {object} [options]
@@ -44,25 +49,20 @@ class ContentRouting {
    * @param {number} [options.maxNumProviders] - maximum number of providers to find
    * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
-  async * findProviders (key, options) {
+  async * findProviders (key, options = {}) {
     if (!this.routers.length) {
       throw errCode(new Error('No content this.routers available'), 'NO_ROUTERS_AVAILABLE')
     }
 
-    const result = await pAny(
-      this.routers.map(async (router) => {
-        const provs = await all(router.findProviders(key, options))
-
-        if (!provs || !provs.length) {
-          throw errCode(new Error('not found'), 'NOT_FOUND')
-        }
-        return provs
-      })
+    yield * pipe(
+      merge(
+        ...this.routers.map(router => router.findProviders(key, options))
+      ),
+      (source) => storeAddresses(source, this.libp2p.peerStore),
+      (source) => uniquePeers(source),
+      (source) => maybeLimitSource(source, options.maxNumProviders),
+      (source) => requirePeers(source)
     )
-
-    for (const peer of result) {
-      yield peer
-    }
   }
 
   /**

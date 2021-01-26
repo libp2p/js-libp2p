@@ -1,4 +1,4 @@
-# Encrypted Communications
+# Connection Encryption
 
 libp2p can leverage the encrypted communications from the transports it uses (i.e WebRTC). To ensure that every connection is encrypted, independently of how it was set up, libp2p also supports a set of modules that encrypt every communication established.
 

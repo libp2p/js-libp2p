@@ -3,6 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
+const { CLOSED } = require('libp2p-interfaces/src/connection/status')
 
 const delay = require('delay')
 const pWaitFor = require('p-wait-for')
@@ -267,6 +268,41 @@ describe('libp2p.connections', () => {
       expect(libp2p.connectionManager.get(nodes[0].peerId)).to.exist()
 
       await libp2p.stop()
+    })
+
+    it('should be closed status once immediately stopping', async () => {
+      const [libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/15003/ws']
+          },
+          modules: baseOptions.modules
+        }
+      })
+      const [remoteLibp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[1],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/15004/ws']
+          },
+          modules: baseOptions.modules
+        }
+      })
+
+      libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
+      await libp2p.dial(remoteLibp2p.peerId)
+
+      const totalConns = Array.from(libp2p.connections.values())
+      expect(totalConns.length).to.eql(1)
+      const conns = totalConns[0]
+      expect(conns.length).to.eql(1)
+      const conn = conns[0]
+
+      await libp2p.stop()
+      expect(conn.stat.status).to.eql(CLOSED)
+
+      await remoteLibp2p.stop()
     })
   })
 })

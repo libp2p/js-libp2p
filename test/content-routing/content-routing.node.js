@@ -12,6 +12,8 @@ const CID = require('cids')
 const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const multiaddr = require('multiaddr')
+const drain = require('it-drain')
+const all = require('it-all')
 
 const peerUtils = require('../utils/creators/peer')
 const { baseOptions, routingOptions } = require('./utils')
@@ -78,10 +80,14 @@ describe('content-routing', () => {
 
     it('should use the nodes dht to find providers', async () => {
       const deferred = pDefer()
+      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
 
       sinon.stub(nodes[0]._dht, 'findProviders').callsFake(function * () {
         deferred.resolve()
-        yield
+        yield {
+          id: providerPeerId,
+          multiaddrs: []
+        }
       })
 
       await nodes[0].contentRouting.findProviders().next()
@@ -138,10 +144,14 @@ describe('content-routing', () => {
 
     it('should use the delegate router to find providers', async () => {
       const deferred = pDefer()
+      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
 
       sinon.stub(delegate, 'findProviders').callsFake(function * () {
         deferred.resolve()
-        yield
+        yield {
+          id: providerPeerId,
+          multiaddrs: []
+        }
       })
 
       await node.contentRouting.findProviders().next()
@@ -251,6 +261,110 @@ describe('content-routing', () => {
 
     afterEach(() => node.stop())
 
+    it('should store the multiaddrs of a peer', async () => {
+      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const result = {
+        id: providerPeerId,
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/49320')
+        ]
+      }
+
+      sinon.stub(node._dht, 'findProviders').callsFake(function * () {})
+      sinon.stub(delegate, 'findProviders').callsFake(function * () {
+        yield result
+      })
+
+      expect(node.peerStore.addressBook.get(providerPeerId)).to.not.be.ok()
+
+      await drain(node.contentRouting.findProviders('a cid'))
+
+      expect(node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
+        isCertified: false,
+        multiaddr: result.multiaddrs[0]
+      })
+    })
+
+    it('should not wait for routing findProviders to finish before returning results', async () => {
+      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const result = {
+        id: providerPeerId,
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/49320')
+        ]
+      }
+
+      const defer = pDefer()
+
+      sinon.stub(node._dht, 'findProviders').callsFake(async function * () { // eslint-disable-line require-yield
+        await defer.promise
+      })
+      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
+        yield result
+
+        await defer.promise
+      })
+
+      for await (const provider of node.contentRouting.findProviders('a cid')) {
+        expect(provider.id).to.deep.equal(providerPeerId)
+        defer.resolve()
+      }
+    })
+
+    it('should dedupe results', async () => {
+      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const result = {
+        id: providerPeerId,
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/49320')
+        ]
+      }
+
+      sinon.stub(node._dht, 'findProviders').callsFake(async function * () {
+        yield result
+      })
+      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
+        yield result
+      })
+
+      const results = await all(node.contentRouting.findProviders('a cid'))
+
+      expect(results).to.be.an('array').with.lengthOf(1).that.deep.equals([result])
+    })
+
+    it('should combine multiaddrs when different addresses are returned by different content routers', async () => {
+      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const result1 = {
+        id: providerPeerId,
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/49320')
+        ]
+      }
+      const result2 = {
+        id: providerPeerId,
+        multiaddrs: [
+          multiaddr('/ip4/213.213.213.213/tcp/2344')
+        ]
+      }
+
+      sinon.stub(node._dht, 'findProviders').callsFake(async function * () {
+        yield result1
+      })
+      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
+        yield result2
+      })
+
+      await drain(node.contentRouting.findProviders('a cid'))
+
+      expect(node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
+        isCertified: false,
+        multiaddr: result1.multiaddrs[0]
+      }).and.to.deep.include({
+        isCertified: false,
+        multiaddr: result2.multiaddrs[0]
+      })
+    })
+
     it('should use both the dht and delegate router to provide', async () => {
       const dhtDeferred = pDefer()
       const delegatedDeferred = pDefer()
@@ -271,15 +385,18 @@ describe('content-routing', () => {
       ])
     })
 
-    it('should only use the dht if it finds providers', async () => {
-      const results = [true]
+    it('should use the dht if the delegate fails to find providers', async () => {
+      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const results = [{
+        id: providerPeerId,
+        multiaddrs: []
+      }]
 
       sinon.stub(node._dht, 'findProviders').callsFake(function * () {
         yield results[0]
       })
 
       sinon.stub(delegate, 'findProviders').callsFake(function * () { // eslint-disable-line require-yield
-        throw new Error('the delegate should not have been called')
       })
 
       const providers = []
@@ -292,7 +409,11 @@ describe('content-routing', () => {
     })
 
     it('should use the delegate if the dht fails to find providers', async () => {
-      const results = [true]
+      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const results = [{
+        id: providerPeerId,
+        multiaddrs: []
+      }]
 
       sinon.stub(node._dht, 'findProviders').callsFake(function * () {})
 
