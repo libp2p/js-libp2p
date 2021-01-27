@@ -2055,6 +2055,15 @@ This event will be triggered anytime we are disconnected from another peer, rega
 - `peerId`: instance of [`PeerId`][peer-id]
 - `protocols`: array of known, supported protocols for the peer (string identifiers)
 
+### libp2p.addressManager
+
+#### Our addresses have changed
+
+This could be in response to a peer telling us about addresses they have observed, or
+the NatManager performing NAT hole punching.
+
+`libp2p.addressManager.on('change:addresses', () => {})`
+
 ## Types
 
 ### Stats

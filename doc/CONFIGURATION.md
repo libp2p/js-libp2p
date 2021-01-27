@@ -28,6 +28,9 @@
       - [Configuring Metrics](#configuring-metrics)
       - [Configuring PeerStore](#configuring-peerstore)
       - [Customizing Transports](#customizing-transports)
+      - [Configuring the NAT Manager](#configuring-the-nat-manager)
+        - [Browser support](#browser-support)
+        - [UPnP and NAT-PMP](#upnp-and-nat-pmp)
   - [Configuration examples](#configuration-examples)
 
 ## Overview
@@ -732,6 +735,40 @@ const node = await Libp2p.create({
   }
 })
 ```
+
+#### Configuring the NAT Manager
+
+Network Address Translation (NAT) is a function performed by your router to enable multiple devices on your local network to share a single IPv4 address. It's done transparently for outgoing connections, ensuring the correct response traffic is routed to your computer, but if you wish to accept incoming connections some configuration is necessary.
+
+The NAT manager can be configured as follows:
+
+```js
+const node = await Libp2p.create({
+  config: {
+    nat: {
+      description: 'my-node', // set as the port mapping description on the router, defaults the current libp2p version and your peer id
+      enabled: true, // defaults to true
+      gateway: '192.168.1.1', // leave unset to auto-discover
+      externalIp: '80.1.1.1', // leave unset to auto-discover
+      ttl: 7200, // TTL for port mappings (min 20 minutes)
+      keepAlive: true, // Refresh port mapping after TTL expires
+      pmp: {
+        enabled: false, // defaults to false
+      }
+    }
+  }
+})
+```
+
+##### Browser support
+
+Browsers cannot open TCP ports or send the UDP datagrams necessary to configure external port mapping - to accept incoming connections in the browser please use a WebRTC transport.
+
+##### UPnP and NAT-PMP
+
+By default under nodejs libp2p will attempt to use [UPnP](https://en.wikipedia.org/wiki/Universal_Plug_and_Play) to configure your router to allow incoming connections to any TCP transports that have been configured.
+
+[NAT-PMP](http://miniupnp.free.fr/nat-pmp.html) is a feature of some modern routers which performs a similar job to UPnP. NAT-PMP is disabled by default, if enabled libp2p will try to use NAT-PMP and will fall back to UPnP if it fails.
 
 ## Configuration examples
 

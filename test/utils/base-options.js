@@ -16,6 +16,9 @@ module.exports = {
       hop: {
         enabled: false
       }
+    },
+    nat: {
+      enabled: false
     }
   }
 }

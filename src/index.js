@@ -10,6 +10,7 @@ const EventEmitter = require('events')
 
 const errCode = require('err-code')
 const PeerId = require('peer-id')
+const multiaddr = require('multiaddr')
 
 const PeerRouting = require('./peer-routing')
 const ContentRouting = require('./content-routing')
@@ -33,6 +34,8 @@ const Registrar = require('./registrar')
 const ping = require('./ping')
 const IdentifyService = require('./identify')
 const IDENTIFY_PROTOCOLS = IdentifyService.multicodecs
+const NatManager = require('./nat-manager')
+const { updateSelfPeerRecord } = require('./record/utils')
 
 /**
  * @typedef {import('multiaddr')} Multiaddr
@@ -133,7 +136,14 @@ class Libp2p extends EventEmitter {
 
     // Addresses {listen, announce, noAnnounce}
     this.addresses = this._options.addresses
-    this.addressManager = new AddressManager(this._options.addresses)
+    this.addressManager = new AddressManager(this.peerId, this._options.addresses)
+
+    // when addresses change, update our peer record
+    this.addressManager.on('change:addresses', () => {
+      updateSelfPeerRecord(this).catch(err => {
+        log.error('Error updating self peer record', err)
+      })
+    })
 
     this._modules = this._options.modules
     this._config = this._options.config
@@ -185,6 +195,14 @@ class Libp2p extends EventEmitter {
       libp2p: this,
       upgrader: this.upgrader,
       faultTolerance: this._options.transportManager.faultTolerance
+    })
+
+    // Create the Nat Manager
+    this.natManager = new NatManager({
+      peerId: this.peerId,
+      addressManager: this.addressManager,
+      transportManager: this.transportManager,
+      ...this._options.config.nat
     })
 
     // Create the Registrar
@@ -350,6 +368,7 @@ class Libp2p extends EventEmitter {
         this.metrics && this.metrics.stop()
       ])
 
+      await this.natManager.stop()
       await this.transportManager.close()
 
       ping.unmount(this)
@@ -445,22 +464,32 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Get peer advertising multiaddrs by concating the addresses used
-   * by transports to listen with the announce addresses.
-   * Duplicated addresses and noAnnounce addresses are filtered out.
+   * Get a deduplicated list of peer advertising multiaddrs by concatenating
+   * the listen addresses used by transports with any configured
+   * announce addresses as well as observed addresses reported by peers.
+   *
+   * If Announce addrs are specified, configured listen addresses will be
+   * ignored though observed addresses will still be included.
    *
    * @returns {Multiaddr[]}
    */
   get multiaddrs () {
-    const announceAddrs = this.addressManager.getAnnounceAddrs()
-    if (announceAddrs.length) {
-      return announceAddrs
+    let addrs = this.addressManager.getAnnounceAddrs().map(ma => ma.toString())
+
+    if (!addrs.length) {
+      // no configured announce addrs, add configured listen addresses
+      addrs = this.transportManager.getAddrs().map(ma => ma.toString())
     }
+
+    addrs = addrs.concat(this.addressManager.getObservedAddrs().map(ma => ma.toString()))
 
     const announceFilter = this._options.addresses.announceFilter || ((multiaddrs) => multiaddrs)
 
+    // dedupe multiaddrs
+    const addrSet = new Set(addrs)
+
     // Create advertising list
-    return announceFilter(this.transportManager.getAddrs())
+    return announceFilter(Array.from(addrSet).map(str => multiaddr(str)))
   }
 
   /**
@@ -538,6 +567,9 @@ class Libp2p extends EventEmitter {
     // Listen on the provided transports for the provided addresses
     const addrs = this.addressManager.getListenAddrs()
     await this.transportManager.listen(addrs)
+
+    // Manage your NATs
+    this.natManager.start()
 
     // Start PeerStore
     await this.peerStore.start()

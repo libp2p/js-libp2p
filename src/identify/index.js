@@ -43,6 +43,7 @@ class IdentifyService {
   constructor ({ libp2p }) {
     this._libp2p = libp2p
     this.peerStore = libp2p.peerStore
+    this.addressManager = libp2p.addressManager
     this.connectionManager = libp2p.connectionManager
     this.peerId = libp2p.peerId
 
@@ -201,8 +202,9 @@ class IdentifyService {
     this.peerStore.protoBook.set(id, protocols)
     this.peerStore.metadataBook.set(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
 
-    // TODO: Track our observed address so that we can score it
+    // TODO: Score our observed addr
     log('received observed address of %s', observedAddr)
+    this.addressManager.addObservedAddr(observedAddr)
   }
 
   /**

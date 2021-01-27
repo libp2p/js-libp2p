@@ -21,14 +21,15 @@ const PeerStore = require('../../src/peer-store')
 const baseOptions = require('../utils/base-options.browser')
 const { updateSelfPeerRecord } = require('../../src/record/utils')
 const pkg = require('../../package.json')
+const AddressManager = require('../../src/address-manager')
 
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
 describe('Identify', () => {
-  let localPeer, localPeerStore
-  let remotePeer, remotePeerStore
+  let localPeer, localPeerStore, localAddressManager
+  let remotePeer, remotePeerStore, remoteAddressManager
   const protocols = [multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH]
 
   before(async () => {
@@ -42,6 +43,9 @@ describe('Identify', () => {
 
     remotePeerStore = new PeerStore({ peerId: remotePeer })
     remotePeerStore.protoBook.set(remotePeer, protocols)
+
+    localAddressManager = new AddressManager(localPeer)
+    remoteAddressManager = new AddressManager(remotePeer)
   })
 
   afterEach(() => {
@@ -110,6 +114,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
+        addressManager: localAddressManager,
         peerStore: localPeerStore,
         multiaddrs: listenMaddrs,
         isStarted: () => true,
@@ -121,6 +126,7 @@ describe('Identify', () => {
       libp2p: {
         peerId: remotePeer,
         connectionManager: new EventEmitter(),
+        addressManager: remoteAddressManager,
         peerStore: remotePeerStore,
         multiaddrs: listenMaddrs,
         isStarted: () => true,
