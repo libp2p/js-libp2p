@@ -466,7 +466,7 @@ class Libp2p extends EventEmitter {
 
   /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating
-   * the listen addresses used by transports with any configured the
+   * the listen addresses used by transports with any configured
    * announce addresses as well as observed addresses reported by peers.
    *
    * If Announce addrs are specified, configured listen addresses will be
