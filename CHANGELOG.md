@@ -1,3 +1,12 @@
+## [0.30.4](https://github.com/libp2p/js-libp2p/compare/v0.30.3...v0.30.4) (2021-01-27)
+
+
+### Features
+
+* add UPnP NAT manager ([#810](https://github.com/libp2p/js-libp2p/issues/810)) ([0a6bc0d](https://github.com/libp2p/js-libp2p/commit/0a6bc0d1013dfd80ab600e8f74c1544b433ece29))
+
+
+
 ## [0.30.3](https://github.com/libp2p/js-libp2p/compare/v0.30.2...v0.30.3) (2021-01-27)
 
 
