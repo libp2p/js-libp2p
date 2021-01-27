@@ -7,7 +7,7 @@ const log = Object.assign(debug('libp2p:dialer'), {
 const errCode = require('err-code')
 const multiaddr = require('multiaddr')
 const TimeoutController = require('timeout-abort-controller')
-const anySignal = require('any-signal')
+const { anySignal } = require('any-signal')
 
 const DialRequest = require('./dial-request')
 const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')

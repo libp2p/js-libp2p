@@ -63,9 +63,10 @@ module.exports.decodeV1PSK = (pskBuffer) => {
     const metadata = uint8ArrayToString(pskBuffer).split(/(?:\r\n|\r|\n)/g)
     const pskTag = metadata.shift()
     const codec = metadata.shift()
-    const psk = uint8ArrayFromString(metadata.shift(), 'base16')
+    const pskString = metadata.shift()
+    const psk = pskString && uint8ArrayFromString(pskString, 'base16')
 
-    if (psk.byteLength !== KEY_LENGTH) {
+    if (!psk || psk.byteLength !== KEY_LENGTH) {
       throw new Error(Errors.INVALID_PSK)
     }
 

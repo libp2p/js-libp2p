@@ -2,7 +2,7 @@
 
 const errCode = require('err-code')
 const AbortController = require('abort-controller').default
-const anySignal = require('any-signal')
+const { anySignal } = require('any-signal')
 const FIFO = require('p-fifo')
 const pAny = require('p-any')
 
@@ -67,7 +67,7 @@ class DialRequest {
         let conn
         try {
           const signal = dialAbortControllers[i].signal
-          conn = await this.dialAction(addr, { ...options, signal: anySignal([signal, options.signal]) })
+          conn = await this.dialAction(addr, { ...options, signal: options.signal ? anySignal([signal, options.signal]) : signal })
           // Remove the successful AbortController so it is not aborted
           dialAbortControllers.splice(i, 1)
         } finally {

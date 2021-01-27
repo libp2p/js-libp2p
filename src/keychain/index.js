@@ -4,10 +4,9 @@
 const sanitize = require('sanitize-filename')
 const mergeOptions = require('merge-options')
 const crypto = require('libp2p-crypto')
-const Datastore = require('interface-datastore')
+const { Key } = require('interface-datastore')
 const CMS = require('./cms')
 const errcode = require('err-code')
-const { Number } = require('ipfs-utils/src/globalthis')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
@@ -15,7 +14,7 @@ require('node-forge/lib/sha512')
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('interface-datastore/src/key')} Key
+ * @typedef {import('interface-datastore/src/types').Datastore} Datastore
  */
 
 const keyPrefix = '/pkcs8/'
@@ -72,7 +71,7 @@ async function throwDelayed (err) {
  * @private
  */
 function DsName (name) {
-  return new Datastore.Key(keyPrefix + name)
+  return new Key(keyPrefix + name)
 }
 
 /**
@@ -83,7 +82,7 @@ function DsName (name) {
  * @private
  */
 function DsInfoName (name) {
-  return new Datastore.Key(infoPrefix + name)
+  return new Key(infoPrefix + name)
 }
 
 /**
