@@ -7,7 +7,6 @@ const log = Object.assign(debug('libp2p'), {
 /** @typedef {import('./types').EventEmitterFactory} Events */
 /** @type Events */
 const EventEmitter = require('events')
-const globalThis = require('ipfs-utils/src/globalthis')
 
 const errCode = require('err-code')
 const PeerId = require('peer-id')
@@ -261,7 +260,7 @@ class Libp2p extends EventEmitter {
     // Attach private network protector
     if (this._modules.connProtector) {
       this.upgrader.protector = this._modules.connProtector
-    } else if (globalThis.process !== undefined && globalThis.process.env && globalThis.process.env.LIBP2P_FORCE_PNET) {
+    } else if (globalThis.process !== undefined && globalThis.process.env && globalThis.process.env.LIBP2P_FORCE_PNET) { // eslint-disable-line no-undef
       throw new Error('Private network is enforced, but no protector was provided')
     }
 
