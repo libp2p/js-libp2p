@@ -1,6 +1,6 @@
 'use strict'
 
-// Find this list at: https://github.com/ipfs/js-ipfs/blob/master/src/core/runtime/config-nodejs.json
+// Find this list at: https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs-core/src/runtime/config-nodejs.js
 const bootstrapers = [
   '/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
   '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
