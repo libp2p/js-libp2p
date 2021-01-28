@@ -82,10 +82,12 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {import('./transport-manager').TransportManagerOptions} [transportManager]
  * @property {PeerStoreOptions & import('./peer-store/persistent').PersistentPeerStoreOptions} [peerStore]
  * @property {Libp2pConfig} [config]
+ *
+ * @typedef {Object} constructorOptions
  * @property {PeerId} peerId
  *
  * @typedef {Object} CreateOptions
- * @property {PeerId} peerId
+ * @property {PeerId} [peerId]
  *
  * @extends {EventEmitter}
  * @fires Libp2p#error Emitted when an error occurs
@@ -101,12 +103,14 @@ class Libp2p extends EventEmitter {
    */
   static async create (options) {
     if (options.peerId) {
+      // @ts-ignore 'Libp2pOptions & CreateOptions' is not assignable to 'Libp2pOptions & constructorOptions'
       return new Libp2p(options)
     }
 
     const peerId = await PeerId.create()
 
     options.peerId = peerId
+    // @ts-ignore 'Libp2pOptions & CreateOptions' is not assignable to 'Libp2pOptions & constructorOptions'
     return new Libp2p(options)
   }
 
@@ -114,7 +118,7 @@ class Libp2p extends EventEmitter {
    * Libp2p node.
    *
    * @class
-   * @param {Libp2pOptions} _options
+   * @param {Libp2pOptions & constructorOptions} _options
    */
   constructor (_options) {
     super()
