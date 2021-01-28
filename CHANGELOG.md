@@ -1,3 +1,12 @@
+## [0.30.5](https://github.com/libp2p/js-libp2p/compare/v0.30.4...v0.30.5) (2021-01-28)
+
+
+### Bug Fixes
+
+* create has optional peer id type ([#875](https://github.com/libp2p/js-libp2p/issues/875)) ([eeda056](https://github.com/libp2p/js-libp2p/commit/eeda05688330c17b810bf47544ef977386623317))
+
+
+
 ## [0.30.4](https://github.com/libp2p/js-libp2p/compare/v0.30.3...v0.30.4) (2021-01-27)
 
 
