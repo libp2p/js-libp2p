@@ -1,3 +1,22 @@
+## [0.10.2](https://github.com/libp2p/js-libp2p-mplex/compare/v0.9.5...v0.10.2) (2021-01-29)
+
+
+### Bug Fixes
+
+* ensure stream closes on abort or reset ([#116](https://github.com/libp2p/js-libp2p-mplex/issues/116)) ([77835b3](https://github.com/libp2p/js-libp2p-mplex/commit/77835b326fbce02e3a9bf92f0084d01e4e1d9cf9))
+* replace node buffers with uint8arrays ([#114](https://github.com/libp2p/js-libp2p-mplex/issues/114)) ([d005338](https://github.com/libp2p/js-libp2p-mplex/commit/d005338154b6882a22396e921ba4a38cc4e213fc))
+
+
+### BREAKING CHANGES
+
+* - All use of node Buffers has been replaced with Uint8Arrays
+
+* fix: keep allocUnsafe for node for performance
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+
+
+
 ## [0.10.1](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.0...v0.10.1) (2020-10-22)
 
 
