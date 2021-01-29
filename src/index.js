@@ -51,9 +51,6 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {Object} PeerStoreOptions
  * @property {boolean} persistence
  *
- * @typedef {Object} PeerDiscoveryOptions
- * @property {boolean} autoDial
- *
  * @typedef {Object} RelayOptions
  * @property {boolean} enabled
  * @property {import('./circuit').RelayAdvertiseOptions} advertise
@@ -62,7 +59,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  *
  * @typedef {Object} Libp2pConfig
  * @property {Object} [dht] dht module options
- * @property {PeerDiscoveryOptions} [peerDiscovery]
+ * @property {Object} [peerDiscovery]
  * @property {Pubsub} [pubsub] pubsub module options
  * @property {RelayOptions} [relay]
  * @property {Record<string, Object>} [transport] transport options indexed by transport key
