@@ -138,9 +138,9 @@ class NatManager {
 
     this._client = {
       // these are all network operations so add a retry
-      map: (...args) => retry(() => map(...args), { onFailedAttempt: log.error }),
-      destroy: (...args) => retry(() => destroy(...args), { onFailedAttempt: log.error }),
-      externalIp: (...args) => retry(() => externalIp(...args), { onFailedAttempt: log.error })
+      map: (...args) => retry(() => map(...args), { onFailedAttempt: log.error, unref: true }),
+      destroy: (...args) => retry(() => destroy(...args), { onFailedAttempt: log.error, unref: true }),
+      externalIp: (...args) => retry(() => externalIp(...args), { onFailedAttempt: log.error, unref: true })
     }
 
     return this._client
