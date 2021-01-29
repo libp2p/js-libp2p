@@ -1,6 +1,6 @@
 {
   "name": "libp2p-mplex",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
