@@ -1,3 +1,13 @@
+## [0.30.6](https://github.com/libp2p/js-libp2p/compare/v0.30.5...v0.30.6) (2021-01-29)
+
+
+### Bug Fixes
+
+* peer discovery type in config ([#878](https://github.com/libp2p/js-libp2p/issues/878)) ([3e7594f](https://github.com/libp2p/js-libp2p/commit/3e7594f69733bf374b374a6065458fa6cae81c5f))
+* unref nat manager retries ([#877](https://github.com/libp2p/js-libp2p/issues/877)) ([ce2a624](https://github.com/libp2p/js-libp2p/commit/ce2a624a09b3107c0b2b4752e666804ecea54fb5))
+
+
+
 ## [0.30.5](https://github.com/libp2p/js-libp2p/compare/v0.30.4...v0.30.5) (2021-01-28)
 
 
