@@ -202,9 +202,9 @@ class IdentifyService {
     this.peerStore.protoBook.set(id, protocols)
     this.peerStore.metadataBook.set(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
 
-    // TODO: Score our observed addr
+    // TODO: Add and score our observed addr
     log('received observed address of %s', observedAddr)
-    this.addressManager.addObservedAddr(observedAddr)
+    // this.addressManager.addObservedAddr(observedAddr)
   }
 
   /**
