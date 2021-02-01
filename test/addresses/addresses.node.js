@@ -164,7 +164,7 @@ describe('libp2p.multiaddrs', () => {
 
     expect(libp2p.multiaddrs).to.have.lengthOf(listenAddresses.length)
 
-    libp2p.addressManager.addObservedAddr(ma)
+    libp2p.addressManager.addObservedAddr(ma, libp2p.peerId, libp2p.addressManager.config.observedAddresses.minConfidence)
 
     expect(libp2p.multiaddrs).to.have.lengthOf(listenAddresses.length + 1)
     expect(libp2p.multiaddrs.map(ma => ma.toString())).to.include(ma)

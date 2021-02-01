@@ -16,6 +16,12 @@ const DefaultConfig = {
     announce: [],
     noAnnounce: []
   },
+  addressManager: {
+    observedAddresses: {
+      minConfidence: 4,
+      maxLifetimeBeforeEviction: (60 * 10) * 1000
+    }
+  },
   connectionManager: {
     minConnections: 25
   },

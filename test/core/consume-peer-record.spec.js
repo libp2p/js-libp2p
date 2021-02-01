@@ -37,7 +37,7 @@ describe('Consume peer record', () => {
       done = resolve
     })
 
-    libp2p.addressManager.addObservedAddr('/ip4/123.123.123.123/tcp/3983')
+    libp2p.addressManager.addObservedAddr('/ip4/123.123.123.123/tcp/3983', libp2p.peerId, libp2p.addressManager.config.observedAddresses.minConfidence)
 
     await p
 

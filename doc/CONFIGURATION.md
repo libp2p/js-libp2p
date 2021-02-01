@@ -23,6 +23,7 @@
       - [Setup with Auto Relay](#setup-with-auto-relay)
       - [Setup with Keychain](#setup-with-keychain)
       - [Configuring Dialing](#configuring-dialing)
+      - [Configuring Address Manager](#configuring-address-manager)
       - [Configuring Connection Manager](#configuring-connection-manager)
       - [Configuring Transport Manager](#configuring-transport-manager)
       - [Configuring Metrics](#configuring-metrics)
@@ -547,6 +548,26 @@ const node = await Libp2p.create({
     },
     addressSorter: publicAddressesFirst
   }
+```
+
+#### Configuring Address Manager
+
+The address manager receives observed addresses from network peers. We accept observed addresses once a certain number of peers have reported the same observed address within a certain window of time.
+
+```js
+const node = await Libp2p.create({
+  addressManager: {
+    observedAddresses: {
+      // we must receive the same observed address from this many
+      // peers before we start believe it
+      minConfidence: 4,
+      // an address must reach the minimum level of confidence within
+      // this timeout otherwise it will be ignored
+      maxLifetimeBeforeEviction: (60 * 10) * 1000 // ten minutes in ms
+    }
+  },
+  // ...other options
+})
 ```
 
 #### Configuring Connection Manager

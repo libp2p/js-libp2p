@@ -137,7 +137,10 @@ class Libp2p extends EventEmitter {
 
     // Addresses {listen, announce, noAnnounce}
     this.addresses = this._options.addresses
-    this.addressManager = new AddressManager(this.peerId, this._options.addresses)
+    this.addressManager = new AddressManager(this.peerId, {
+      ...this._options.addresses,
+      ...this._options.addressManager
+    })
 
     // when addresses change, update our peer record
     this.addressManager.on('change:addresses', () => {

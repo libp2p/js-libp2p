@@ -16,11 +16,11 @@ const {
   codes: { ERR_INVALID_PARAMETERS }
 } = require('./errors')
 const isLoopback = require('libp2p-utils/src/multiaddr/is-loopback')
+const AddressManager = require('./address-manager')
 
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('./transport-manager')} TransportManager
- * @typedef {import('./address-manager')} AddressManager
  */
 
 function highPort (min = 1024, max = 65535) {
@@ -118,11 +118,12 @@ class NatManager {
         protocol: transport.toUpperCase()
       })
 
+      // add with high confidence
       this._addressManager.addObservedAddr(Multiaddr.fromNodeAddress({
         family: 'IPv4',
         address: publicIp,
         port: `${publicPort}`
-      }, transport))
+      }, transport), this._peerId, this._addressManager.config.observedAddresses.minConfidence)
     }
   }
 
