@@ -1,3 +1,12 @@
+## [0.30.7](https://github.com/libp2p/js-libp2p/compare/v0.30.6...v0.30.7) (2021-02-01)
+
+
+### Bug Fixes
+
+* do not add observed address received from peers ([#882](https://github.com/libp2p/js-libp2p/issues/882)) ([a36b211](https://github.com/libp2p/js-libp2p/commit/a36b2112aafcee309a02de0cff5440cf69cd53a7))
+
+
+
 ## [0.30.6](https://github.com/libp2p/js-libp2p/compare/v0.30.5...v0.30.6) (2021-01-29)
 
 
