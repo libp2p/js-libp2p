@@ -41,10 +41,7 @@ class AddressManager extends EventEmitter {
     this.announce = new Set(announce.map(ma => ma.toString()))
     this.observed = new Map()
     this.config = {
-      observedAddresses: {
-        minConfidence: observedAddresses.minConfidence || 4,
-        maxLifetimeBeforeEviction: observedAddresses.maxLifetimeBeforeEviction || (60 * 10) * 1000
-      }
+      observedAddresses
     }
   }
 
