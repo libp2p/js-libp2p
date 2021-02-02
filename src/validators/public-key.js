@@ -13,7 +13,6 @@ const uint8ArrayEquals = require('uint8arrays/equals')
  *
  * @param {Uint8Array} key - A valid key is of the form `'/pk/<keymultihash>'`
  * @param {Uint8Array} publicKey - The public key to validate against (protobuf encoded).
- * @returns {Promise}
  */
 const validatePublicKeyRecord = async (key, publicKey) => {
   if (!(key instanceof Uint8Array)) {

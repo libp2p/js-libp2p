@@ -1,16 +1,21 @@
 'use strict'
 
+// @ts-ignore
 const protons = require('protons')
 const pb = protons(require('./record.proto')).Record
 const utils = require('./utils')
+
+/**
+ * @typedef {{ key: Uint8Array, value: Uint8Array, timeReceived: string }} ProtobufRecord
+ */
 
 class Record {
   /**
    * @param {Uint8Array} [key]
    * @param {Uint8Array} [value]
-   * @param {Date} [recvtime]
+   * @param {Date} [timeReceived]
    */
-  constructor (key, value, recvtime) {
+  constructor (key, value, timeReceived) {
     if (!(key instanceof Uint8Array)) {
       throw new Error('key must be a Uint8Array')
     }
@@ -21,20 +26,15 @@ class Record {
 
     this.key = key
     this.value = value
-    this.timeReceived = recvtime
+    this.timeReceived = timeReceived
   }
 
-  /**
-   * @returns {Uint8Array}
-   */
   serialize () {
     return pb.encode(this.prepareSerialize())
   }
 
   /**
    * Return the object format ready to be given to the protobuf library.
-   *
-   * @returns {Object}
    */
   prepareSerialize () {
     return {
@@ -48,7 +48,6 @@ class Record {
    * Decode a protobuf encoded record.
    *
    * @param {Uint8Array} raw
-   * @returns {Record}
    */
   static deserialize (raw) {
     const dec = pb.decode(raw)
@@ -58,8 +57,7 @@ class Record {
   /**
    * Create a record from the raw object returned from the protobuf library.
    *
-   * @param {Object} obj
-   * @returns {Record}
+   * @param {ProtobufRecord} obj
    */
   static fromDeserialized (obj) {
     let recvtime

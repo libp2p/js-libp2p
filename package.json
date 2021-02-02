@@ -9,7 +9,7 @@
     "lint": "aegir lint",
     "test:node": "aegir test -t node",
     "test:browser": "aegir test -t browser -t webworker",
-    "build": "aegir build",
+    "prepare": "aegir build --no-bundle",
     "docs": "aegir docs",
     "release": "aegir release",
     "release-minor": "aegir release --type minor",
@@ -36,18 +36,26 @@
     "url": "https://github.com/libp2p/js-libp2p-record/issues"
   },
   "homepage": "https://github.com/libp2p/js-libp2p-record",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "eslintConfig": {
+    "extends": "ipfs"
+  },
+  "types": "dist/src/index.d.ts",
   "devDependencies": {
-    "aegir": "^25.0.0",
-    "libp2p-crypto": "^0.18.0",
+    "aegir": "^30.3.0",
+    "libp2p-crypto": "^0.19.0",
     "multibase": "^3.0.0",
     "peer-id": "^0.14.0"
   },
   "dependencies": {
-    "err-code": "^2.0.0",
+    "err-code": "^3.0.0",
     "multihashes": "^3.0.1",
-    "multihashing-async": "^2.0.1",
+    "multihashing-async": "^2.1.0",
     "protons": "^2.0.0",
-    "uint8arrays": "^1.1.0"
+    "uint8arrays": "^2.0.5"
   },
   "contributors": [
     "Vasco Santos <vasco.santos@moxy.studio>",

@@ -5,7 +5,6 @@
  * string.
  *
  * @param {Date} time
- * @returns {string}
  */
 module.exports.toRFC3339 = (time) => {
   const year = time.getUTCFullYear()
@@ -25,7 +24,6 @@ module.exports.toRFC3339 = (time) => {
  * JavaScript Date object.
  *
  * @param {string} time
- * @returns {Date}
  */
 module.exports.parseRFC3339 = (time) => {
   const rfc3339Matcher = new RegExp(

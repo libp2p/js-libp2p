@@ -7,7 +7,6 @@
  *
  * @param {Uint8Array} k
  * @param {Array<Uint8Array>} records
- * @returns {number}
  */
 const publicKeySelector = (k, records) => {
   return 0

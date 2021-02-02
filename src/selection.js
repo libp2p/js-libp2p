@@ -6,10 +6,9 @@ const uint8ArrayToString = require('uint8arrays/to-string')
 /**
  * Select the best record out of the given records.
  *
- * @param {Object} selectors
+ * @param {{ [key: string]: function (Uint8Array, Uint8Array[]): number }} selectors
  * @param {Uint8Array} k
  * @param {Array<Uint8Array>} records
- * @returns {number} - The index of the best record.
  */
 const bestRecord = (selectors, k, records) => {
   if (records.length === 0) {

@@ -4,13 +4,16 @@ const errcode = require('err-code')
 const uint8ArrayToString = require('uint8arrays/to-string')
 
 /**
+ * @typedef {import('./record')} Record
+ */
+
+/**
  * Checks a record and ensures it is still valid.
  * It runs the needed validators.
  * If verification fails the returned Promise will reject with the error.
  *
- * @param {Object} validators
+ * @param {{ [key: string]: { func: (key: Uint8Array, value: Uint8Array) => Promise<void> }}} validators
  * @param {Record} record
- * @returns {Promise}
  */
 const verifyRecord = (validators, record) => {
   const key = record.key
