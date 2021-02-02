@@ -1,3 +1,12 @@
+# [0.10.0](https://github.com/libp2p/js-libp2p-record/compare/v0.8.0...v0.10.0) (2021-02-02)
+
+
+### Features
+
+* add types and update deps ([#25](https://github.com/libp2p/js-libp2p-record/issues/25)) ([e2395de](https://github.com/libp2p/js-libp2p-record/commit/e2395de924a9c71d761c6ea3f5aab2844b252591))
+
+
+
 <a name="0.9.0"></a>
 # [0.9.0](https://github.com/libp2p/js-libp2p-record/compare/v0.8.0...v0.9.0) (2020-08-07)
 
