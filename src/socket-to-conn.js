@@ -78,7 +78,10 @@ module.exports = (socket, options) => {
           resolve()
         }, CLOSE_TIMEOUT)
 
-        socket.once('close', () => clearTimeout(timeout))
+        socket.once('close', () => {
+          clearTimeout(timeout)
+          resolve()
+        })
         socket.end(err => {
           maConn.timeline.close = Date.now()
           if (err) return reject(err)
