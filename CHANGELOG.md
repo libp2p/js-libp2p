@@ -1,3 +1,13 @@
+<a name="0.15.3"></a>
+## [0.15.3](https://github.com/libp2p/js-libp2p-tcp/compare/v0.15.2...v0.15.3) (2021-02-03)
+
+
+### Bug Fixes
+
+* hanging close promise ([#140](https://github.com/libp2p/js-libp2p-tcp/issues/140)) ([3813100](https://github.com/libp2p/js-libp2p-tcp/commit/3813100))
+
+
+
 <a name="0.15.2"></a>
 ## [0.15.2](https://github.com/libp2p/js-libp2p-tcp/compare/v0.14.2...v0.15.2) (2020-12-28)
 
