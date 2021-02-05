@@ -16,7 +16,7 @@
     "coverage": "nyc --reporter=lcov --reporter=text npm run test:node"
   },
   "browser": {
-    "src/listener": "./src/listener.browser.js"
+    "./src/listener.js": "./src/listener.browser.js"
   },
   "files": [
     "src",
