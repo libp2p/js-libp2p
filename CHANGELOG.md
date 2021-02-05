@@ -1,3 +1,12 @@
+## [0.15.1](https://github.com/libp2p/js-libp2p-websockets/compare/v0.15.0...v0.15.1) (2021-02-05)
+
+
+### Bug Fixes
+
+* incompatibility with @evanw/esbuild[#740](https://github.com/libp2p/js-libp2p-websockets/issues/740) ([#120](https://github.com/libp2p/js-libp2p-websockets/issues/120)) ([96244f0](https://github.com/libp2p/js-libp2p-websockets/commit/96244f048929c5225905327ae27a88961fe535f8))
+
+
+
 # [0.15.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.13.1...v0.15.0) (2020-11-24)
 
 
