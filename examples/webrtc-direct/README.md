@@ -1,15 +1,30 @@
 ### About
-Project that tries to use [js-libp2p-webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct) for IPFS node.
-- `node node.js` to run an IPFS node by nodejs.
-- Copy-paste the address from `Swarm listening on <address to copy-paste>` into the field `list` in `public/browser.js`:
-  ```js
-      peerDiscovery: {
-        [Bootstrap.tag]: {
-          enabled: true,
-          list: ['<paste the address here>']
-        }
+An example that uses [js-libp2p-webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct) for connecting a
+nodejs libp2p and a browser libp2p clients. To run the example:
+
+## 0. Run a nodejs libp2p client
+When in the root folder of this example, type `node node.js` in terminal. You should see an address that listens for
+incoming connections. Below is just an example of such address. In your case the suffix hash will be different.
+```bash
+$ node node.js 
+Listening on:
+/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct/p2p/QmUKQCzEUhhhobcNSrXU5uzxTqbvF1BjMCGNGZzZU14Kgd
+```
+
+## 1. Prepare a browser libp2p client
+Copy-paste the above address into the field `list` in `public/browser.js`:
+```js
+    peerDiscovery: {
+      [Bootstrap.tag]: {
+        enabled: true,
+        // paste the address into `list`
+        list: ['/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct/p2p/QmUKQCzEUhhhobcNSrXU5uzxTqbvF1BjMCGNGZzZU14Kgd']
       }
-  ```
-- `npm run dev` to run the browser version
-- open ` http://127.0.0.1:12345` to see the browser version. It worked in Chromium Version 88.0.4324.96 (Official Build)
-  snap (64-bit) on Ubuntu but failed to work in Firefox 84.0.2 (64-bit).
+    }
+```
+
+## 2. Run a browser libp2p client
+When in the root folder of this example, type `npm run dev` in terminal. You should see an address where you can browse
+the running client. Open this address in your browser. In my case the address was `http://127.0.0.1:12345`. In console
+logs you should see logs about successful connection with the node client. In the output of node client you should see
+a log message about successful connection as well.
