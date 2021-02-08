@@ -4,6 +4,13 @@ const uint8ArrayEquals = require('uint8arrays/equals')
 const Message = require('../../message')
 const utils = require('../../utils')
 
+/**
+ * @typedef {import('peer-id')} PeerId
+ */
+
+/**
+ * @param {import('../../index')} dht
+ */
 module.exports = (dht) => {
   const log = utils.logger(dht.peerId, 'rpc:find-node')
 
@@ -12,15 +19,15 @@ module.exports = (dht) => {
    *
    * @param {PeerId} peerId
    * @param {Message} msg
-   * @returns {Promise<Message>}
    */
-  return async function findNode (peerId, msg) {
+  async function findNode (peerId, msg) {
     log('start')
 
     let closer
     if (uint8ArrayEquals(msg.key, dht.peerId.id)) {
       closer = [{
-        id: dht.peerId
+        id: dht.peerId,
+        multiaddrs: []
       }]
     } else {
       closer = await dht._betterPeersToQuery(msg, peerId)
@@ -36,4 +43,6 @@ module.exports = (dht) => {
 
     return response
   }
+
+  return findNode
 }

@@ -27,8 +27,10 @@ class TestDHT {
   }
 
   async _spawnOne (index, options = {}, autoStart = true) {
+    const [peerId] = await createPeerId(1)
+
     const regRecord = {}
-    const peerStore = new PeerStore()
+    const peerStore = new PeerStore({ peerId })
 
     // Disable random walk by default for more controlled testing
     options = {
@@ -38,8 +40,6 @@ class TestDHT {
       protocolPrefix: '/ipfs',
       ...options
     }
-
-    const [peerId] = await createPeerId(1)
 
     const connectToPeer = (localDHT, peer) => {
       const remotePeerB58 = peer.toB58String()
@@ -156,7 +156,7 @@ class TestDHT {
 
     // Check routing tables
     return Promise.all(routingTableChecks.map(check => {
-      pRetry(check, { retries: 50 })
+      return pRetry(check, { retries: 50 })
     }))
   }
 

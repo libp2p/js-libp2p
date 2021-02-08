@@ -6,6 +6,13 @@ const errcode = require('err-code')
 const Message = require('../../message')
 const utils = require('../../utils')
 
+/**
+ * @typedef {import('peer-id')} PeerId
+ */
+
+/**
+ * @param {import('../../index')} dht
+ */
 module.exports = (dht) => {
   const log = utils.logger(dht.peerId, 'rpc:get-providers')
 
@@ -14,9 +21,8 @@ module.exports = (dht) => {
    *
    * @param {PeerId} peerId
    * @param {Message} msg
-   * @returns {Promise<Message>}
    */
-  return async function getProviders (peerId, msg) {
+  async function getProviders (peerId, msg) {
     let cid
     try {
       cid = new CID(msg.key)
@@ -33,12 +39,19 @@ module.exports = (dht) => {
       dht._betterPeersToQuery(msg, peerId)
     ])
 
-    const providerPeers = peers.map((peerId) => ({ id: peerId }))
-    const closerPeers = closer.map((c) => ({ id: c.id }))
+    const providerPeers = peers.map((peerId) => ({
+      id: peerId,
+      multiaddrs: []
+    }))
+    const closerPeers = closer.map((c) => ({
+      id: c.id,
+      multiaddrs: []
+    }))
 
     if (has) {
       providerPeers.push({
-        id: dht.peerId
+        id: dht.peerId,
+        multiaddrs: []
       })
     }
 
@@ -55,4 +68,6 @@ module.exports = (dht) => {
     log('got %s providers %s closerPeers', providerPeers.length, closerPeers.length)
     return response
   }
+
+  return getProviders
 }

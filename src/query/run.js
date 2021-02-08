@@ -4,8 +4,12 @@ const PeerDistanceList = require('../peer-list/peer-distance-list')
 const EventEmitter = require('events')
 
 const Path = require('./path')
-const WorkerQueue = require('./workerQueue')
+const WorkerQueue = require('./worker-queue')
 const utils = require('../utils')
+
+/**
+ * @typedef {import('peer-id')} PeerId
+ */
 
 /**
  * Manages a single run of the query.
@@ -14,7 +18,7 @@ class Run extends EventEmitter {
   /**
    * Creates a Run.
    *
-   * @param {Query} query
+   * @param {import('./index')} query
    */
   constructor (query) {
     super()
@@ -22,14 +26,20 @@ class Run extends EventEmitter {
     this.query = query
 
     this.running = false
+
+    /** @type {WorkerQueue[]} */
     this.workers = []
 
     // The peers that have been queried (including error responses)
     this.peersSeen = new Set()
+
     // The errors received when querying peers
+    /** @type {Error[]} */
     this.errors = []
+
     // The closest K peers that have been queried successfully
     // (this member is initialized when the worker queues start)
+    /** @type {PeerDistanceList | null} */
     this.peersQueried = null
   }
 
@@ -50,11 +60,10 @@ class Run extends EventEmitter {
   /**
    * Execute the run with the given initial set of peers.
    *
-   * @param {Array<PeerId>} peers
-   * @returns {Promise}
+   * @param {PeerId[]} peers
    */
-
   async execute (peers) {
+    /** @type {import('./path')[]} */
     const paths = [] // array of states per disjoint path
 
     // Create disjoint paths
@@ -73,7 +82,9 @@ class Run extends EventEmitter {
 
     const res = {
       // The closest K peers we were able to query successfully
-      finalSet: new Set(this.peersQueried.peers),
+      finalSet: new Set(this.peersQueried && this.peersQueried.peers),
+
+      /** @type {import('./index').QueryResult[]} */
       paths: []
     }
 
@@ -172,22 +183,22 @@ class Run extends EventEmitter {
    * stop querying on that `worker`.
    *
    * @param {WorkerQueue} worker
-   * @returns {Promise<Boolean>}
+   * @returns {Promise<boolean>}
    */
   async continueQuerying (worker) {
     // If we haven't queried K peers yet, keep going
-    if (this.peersQueried.length < this.peersQueried.capacity) {
+    if (this.peersQueried && this.peersQueried.length < this.peersQueried.capacity) {
       return true
     }
 
     // Get all the peers that are currently being queried.
     // Note that this function gets called right after a peer has been popped
     // off the head of the closest peers queue so it will include that peer.
-    const running = worker.queue.workersList().map(i => i.data)
+    const running = Array.from(worker.queuedPeerIds)
 
     // Check if any of the peers that are currently being queried are closer
     // to the key than the peers we've already queried
-    const someCloser = await this.peersQueried.anyCloser(running)
+    const someCloser = this.peersQueried && await this.peersQueried.anyCloser(running)
 
     // Some are closer, the worker should keep going
     if (someCloser) {

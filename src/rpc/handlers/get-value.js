@@ -7,6 +7,13 @@ const errcode = require('err-code')
 const Message = require('../../message')
 const utils = require('../../utils')
 
+/**
+ * @typedef {import('peer-id')} PeerId
+ */
+
+/**
+ * @param {import('../../index')} dht
+ */
 module.exports = (dht) => {
   const log = utils.logger(dht.peerId, 'rpc:get-value')
 
@@ -17,7 +24,7 @@ module.exports = (dht) => {
    * @param {Message} msg
    * @returns {Promise<Message>}
    */
-  return async function getValue (peerId, msg) {
+  async function getValue (peerId, msg) {
     const key = msg.key
 
     log('key: %b', key)
@@ -64,4 +71,6 @@ module.exports = (dht) => {
 
     return response
   }
+
+  return getValue
 }

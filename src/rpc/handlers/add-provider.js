@@ -5,6 +5,14 @@ const errcode = require('err-code')
 
 const utils = require('../../utils')
 
+/**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('../../message')} Message
+ */
+
+/**
+ * @param {import('../../index')} dht
+ */
 module.exports = (dht) => {
   const log = utils.logger(dht.peerId, 'rpc:add-provider')
   /**
@@ -12,15 +20,15 @@ module.exports = (dht) => {
    *
    * @param {PeerId} peerId
    * @param {Message} msg
-   * @returns {Promise<void>}
    */
-  return async function addProvider (peerId, msg) { // eslint-disable-line require-await
+  async function addProvider (peerId, msg) { // eslint-disable-line require-await
     log('start')
 
     if (!msg.key || msg.key.length === 0) {
       throw errcode(new Error('Missing key'), 'ERR_MISSING_KEY')
     }
 
+    /** @type {CID} */
     let cid
     try {
       cid = new CID(msg.key)
@@ -58,4 +66,6 @@ module.exports = (dht) => {
     // https://github.com/libp2p/js-libp2p-kad-dht/issues/128
     return dht.providers.addProvider(cid, peerId)
   }
+
+  return addProvider
 }

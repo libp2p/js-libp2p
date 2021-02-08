@@ -2,6 +2,7 @@
 
 /**
  * Converts BufferList messages to Uint8Arrays
+ *
  * @param {*} source
  * @returns {AsyncGenerator}
  */

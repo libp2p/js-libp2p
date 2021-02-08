@@ -46,7 +46,7 @@ describe('rpc - handlers - AddProvider', () => {
       error: 'ERR_INVALID_CID'
     }]
 
-    await Promise.all(tests.map((t) => {
+    tests.forEach((t) => {
       it(t.error.toString(), async () => {
         try {
           await handler(dht)(peerIds[0], t.message)
@@ -57,7 +57,7 @@ describe('rpc - handlers - AddProvider', () => {
         }
         throw new Error()
       })
-    }))
+    })
   })
 
   it('ignore providers that do not match the sender', async () => {

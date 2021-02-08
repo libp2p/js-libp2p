@@ -1,12 +1,18 @@
 'use strict'
 
+// @ts-ignore
 const Heap = require('heap')
+// @ts-ignore
 const distance = require('xor-distance')
 const debug = require('debug')
 
 const utils = require('../utils')
 
 const log = debug('libp2p:dht:peer-queue')
+
+/**
+ * @typedef {import('peer-id')} PeerId
+ */
 
 /**
  * PeerQueue is a heap that sorts its entries (PeerIds) by their
@@ -52,7 +58,6 @@ class PeerQueue {
    * Add a new PeerId to the queue.
    *
    * @param {PeerId} id
-   * @returns {Promise}
    */
   async enqueue (id) {
     log('enqueue %s', id.toB58String())

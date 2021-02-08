@@ -46,7 +46,7 @@ describe('Query', () => {
     })
 
     before('create a dht', () => {
-      const peerStore = new PeerStore()
+      const peerStore = new PeerStore({ peerId: ourPeerId })
       dht = new DHT({
         dialer: {},
         peerStore,

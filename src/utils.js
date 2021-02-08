@@ -4,7 +4,7 @@ const debug = require('debug')
 const multihashing = require('multihashing-async')
 const mh = multihashing.multihash
 const { Key } = require('interface-datastore')
-const base32 = require('base32.js')
+// @ts-ignore
 const distance = require('xor-distance')
 const pMap = require('p-map')
 const { Record } = require('libp2p-record')
@@ -57,10 +57,16 @@ exports.keyForPublicKey = (peer) => {
   ])
 }
 
+/**
+ * @param {Uint8Array} key
+ */
 exports.isPublicKeyKey = (key) => {
   return uint8ArrayToString(key.slice(0, 4)) === '/pk/'
 }
 
+/**
+ * @param {Uint8Array} key
+ */
 exports.fromPublicKeyKey = (key) => {
   return new PeerId(key.slice(4))
 }
@@ -76,22 +82,22 @@ exports.now = () => {
 
 /**
  * Encode a given Uint8Array into a base32 string.
+ *
  * @param {Uint8Array} buf
  * @returns {string}
  */
 exports.encodeBase32 = (buf) => {
-  const enc = new base32.Encoder()
-  return enc.write(buf).finalize()
+  return uint8ArrayToString(buf, 'base32')
 }
 
 /**
  * Decode a given base32 string into a Uint8Array.
+ *
  * @param {string} raw
  * @returns {Uint8Array}
  */
 exports.decodeBase32 = (raw) => {
-  const dec = new base32.Decoder()
-  return Uint8Array.from(dec.write(raw).finalize())
+  return uint8ArrayFromString(raw, 'base32')
 }
 
 /**
@@ -99,7 +105,6 @@ exports.decodeBase32 = (raw) => {
  *
  * @param {Array<PeerId>} peers
  * @param {Uint8Array} target
- * @returns {Array<PeerId>}
  */
 exports.sortClosestPeers = async (peers, target) => {
   const distances = await pMap(peers, async (peer) => {
@@ -117,9 +122,8 @@ exports.sortClosestPeers = async (peers, target) => {
 /**
  * Compare function to sort an array of elements which have a distance property which is the xor distance to a given element.
  *
- * @param {Object} a
- * @param {Object} b
- * @returns {number}
+ * @param {{ distance: Uint8Array }} a
+ * @param {{ distance: Uint8Array }} b
  */
 exports.xorCompare = (a, b) => {
   return distance.compare(a.distance, b.distance)
@@ -131,7 +135,6 @@ exports.xorCompare = (a, b) => {
  *
  * @param {number} resultsWanted
  * @param {number} numPaths - total number of paths
- * @returns {number}
  */
 exports.pathSize = (resultsWanted, numPaths) => {
   return Math.ceil(resultsWanted / numPaths)
@@ -156,9 +159,6 @@ exports.createPutRecord = (key, value) => {
  *
  * @param {PeerId} [id]
  * @param {string} [subsystem]
- * @returns {debug}
- *
- * @private
  */
 exports.logger = (id, subsystem) => {
   const name = ['libp2p', 'dht']
@@ -174,8 +174,9 @@ exports.logger = (id, subsystem) => {
     return mh.toB58String(v)
   }
 
-  const logger = debug(name.join(':'))
-  logger.error = debug(name.concat(['error']).join(':'))
+  const logger = Object.assign(debug(name.join(':')), {
+    error: debug(name.concat(['error']).join(':'))
+  })
 
   return logger
 }
@@ -190,14 +191,16 @@ exports.TimeoutError = class TimeoutError extends Error {
  * Creates an async function that calls the given `asyncFn` and Errors
  * if it does not resolve within `time` ms
  *
- * @param {Function} [asyncFn]
- * @param {Number} [time]
- * @returns {Function}
- *
- * @private
+ * @template T
+ * @param {(...args: any[]) => Promise<T>} asyncFn
+ * @param {number} [time]
  */
 exports.withTimeout = (asyncFn, time) => {
-  return async (...args) => { // eslint-disable-line require-await
+  /**
+   * @param  {...any} args
+   * @returns {Promise<T>}
+   */
+  function timeoutFn (...args) {
     return Promise.race([
       asyncFn(...args),
       new Promise((resolve, reject) => {
@@ -207,6 +210,8 @@ exports.withTimeout = (asyncFn, time) => {
       })
     ])
   }
+
+  return timeoutFn
 }
 
 /**
@@ -214,11 +219,11 @@ exports.withTimeout = (asyncFn, time) => {
  * Returns a promise that resolves when all items of the `asyncIterator` have been passed
  * through `asyncFn`.
  *
- * @param {AsyncIterable} [asyncIterator]
- * @param {Function} [asyncFn]
- * @returns {Array}
+ * @template T
+ * @template O
  *
- * @private
+ * @param {AsyncIterable<T>} asyncIterator
+ * @param {(arg0: T) => Promise<O>} asyncFn
  */
 exports.mapParallel = async function (asyncIterator, asyncFn) {
   const tasks = []

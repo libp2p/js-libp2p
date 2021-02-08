@@ -2,10 +2,11 @@
 
 const errcode = require('err-code')
 
-const pipe = require('it-pipe')
+const { pipe } = require('it-pipe')
 const lp = require('it-length-prefixed')
 const pTimeout = require('p-timeout')
 const { consume } = require('streaming-iterables')
+const first = require('it-first')
 
 const MulticodecTopology = require('libp2p-interfaces/src/topology/multicodec-topology')
 
@@ -15,16 +16,21 @@ const Message = require('./message')
 const utils = require('./utils')
 
 /**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ */
+
+/**
  * Handle network operations for the dht
  */
 class Network {
   /**
-   * Create a new network.
+   * Create a new network
    *
-   * @param {KadDHT} self
+   * @param {import('./index')} dht
    */
-  constructor (self) {
-    this.dht = self
+  constructor (dht) {
+    this.dht = dht
     this.readMessageTimeout = c.READ_MESSAGE_TIMEOUT
     this._log = utils.logger(this.dht.peerId, 'net')
     this._rpc = rpc(this.dht)
@@ -33,8 +39,7 @@ class Network {
   }
 
   /**
-   * Start the network.
-   * @returns {Promise<void>}
+   * Start the network
    */
   async start () {
     if (this._running) {
@@ -65,8 +70,7 @@ class Network {
   }
 
   /**
-   * Stop all network activity.
-   * @returns {Promise<void>}
+   * Stop all network activity
    */
   async stop () {
     if (!this.dht.isStarted && !this.isStarted) {
@@ -75,13 +79,15 @@ class Network {
     this._running = false
 
     // unregister protocol and handlers
-    await this.dht.registrar.unregister(this._registrarId)
+    if (this._registrarId) {
+      await this.dht.registrar.unregister(this._registrarId)
+    }
   }
 
   /**
    * Is the network online?
    *
-   * @type {bool}
+   * @type {boolean}
    */
   get isStarted () {
     return this._running
@@ -90,7 +96,7 @@ class Network {
   /**
    * Are all network components there?
    *
-   * @type {bool}
+   * @type {boolean}
    */
   get isConnected () {
     // TODO add a way to check if switch has started or not
@@ -99,9 +105,8 @@ class Network {
 
   /**
    * Registrar notifies a connection successfully with dht protocol.
-   * @private
-   * @param {PeerId} peerId remote peer id
-   * @returns {Promise<void>}
+   *
+   * @param {PeerId} peerId - remote peer id
    */
   async _onPeerConnected (peerId) {
     await this.dht._add(peerId)
@@ -110,10 +115,10 @@ class Network {
 
   /**
    * Send a request and record RTT for latency measurements.
+   *
    * @async
    * @param {PeerId} to - The peer that should receive a message
    * @param {Message} msg - The message to send.
-   * @returns {Promise<Message>}
    */
   async sendRequest (to, msg) {
     // TODO: record latency
@@ -139,7 +144,6 @@ class Network {
    *
    * @param {PeerId} to
    * @param {Message} msg
-   * @returns {Promise<void>}
    */
   async sendMessage (to, msg) {
     if (!this.isConnected) {
@@ -163,10 +167,8 @@ class Network {
    * If no response is received after the specified timeout
    * this will error out.
    *
-   * @param {DuplexIterable} stream - the stream to use
+   * @param {MuxedStream} stream - the stream to use
    * @param {Uint8Array} msg - the message to send
-   * @returns {Promise<Message>}
-   * @private
    */
   async _writeReadMessage (stream, msg) { // eslint-disable-line require-await
     return pTimeout(
@@ -178,10 +180,8 @@ class Network {
   /**
    * Write a message to the given stream.
    *
-   * @param {DuplexIterable} stream - the stream to use
+   * @param {MuxedStream} stream - the stream to use
    * @param {Uint8Array} msg - the message to send
-   * @returns {Promise<void>}
-   * @private
    */
   _writeMessage (stream, msg) {
     return pipe(
@@ -193,15 +193,24 @@ class Network {
   }
 }
 
+/**
+ * @param {MuxedStream} stream
+ * @param {Uint8Array} msg
+ */
 async function writeReadMessage (stream, msg) {
   const res = await pipe(
     [msg],
     lp.encode(),
     stream,
     lp.decode(),
+    /**
+     * @param {AsyncIterable<Uint8Array>} source
+     */
     async source => {
-      for await (const chunk of source) {
-        return chunk.slice()
+      const buf = await first(source)
+
+      if (buf) {
+        return buf.slice()
       }
     }
   )

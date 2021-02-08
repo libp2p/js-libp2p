@@ -3,6 +3,10 @@
 const PeerList = require('.')
 
 /**
+ * @typedef {import('../').PeerData} PeerData
+ */
+
+/**
  * Like PeerList but with a length restriction.
  */
 class LimitedPeerList extends PeerList {
@@ -20,12 +24,12 @@ class LimitedPeerList extends PeerList {
    * Add a PeerData if it fits in the list
    *
    * @param {PeerData} peerData
-   * @returns {bool}
    */
   push (peerData) {
     if (this.length < this.limit) {
       return super.push(peerData)
     }
+
     return false
   }
 }

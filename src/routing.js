@@ -1,12 +1,21 @@
 'use strict'
 
+// @ts-ignore
 const KBucket = require('k-bucket')
 
 const utils = require('./utils')
 
 /**
+ * @typedef {import('peer-id')} PeerId
+ *
+ * @typedef {object} KBucketPeer
+ * @property {Uint8Array} id
+ * @property {PeerId} peer
+ */
+
+/**
  * A wrapper around `k-bucket`, to provide easy store and
- * retrival for peers.
+ * retrieval for peers.
  */
 class RoutingTable {
   /**
@@ -20,7 +29,9 @@ class RoutingTable {
     this._onInit(kBucketSize)
   }
 
-  // -- Private Methods
+  /**
+   * @param {number} kBucketSize
+   */
   async _onInit (kBucketSize) {
     const selfKey = await utils.convertPeerId(this.self)
 
@@ -36,21 +47,21 @@ class RoutingTable {
   /**
    * Called on the `ping` event from `k-bucket`.
    * Currently this just removes the oldest contact from
-   * the list, without acutally pinging the individual peers.
+   * the list, without actually pinging the individual peers.
    * This is the same as go does, but should probably
    * be upgraded to actually ping the individual peers.
    *
-   * @param {Array<Object>} oldContacts
-   * @param {Object} newContact
-   * @returns {undefined}
-   * @private
+   * @param {KBucketPeer[]} oldContacts
+   * @param {KBucketPeer} newContact
    */
   _onPing (oldContacts, newContact) {
     // just use the first one (k-bucket sorts from oldest to newest)
     const oldest = oldContacts[0]
 
-    // remove the oldest one
-    this.kb.remove(oldest.id)
+    if (oldest) {
+      // remove the oldest one
+      this.kb.remove(oldest.id)
+    }
 
     // add the new one
     this.kb.add(newContact)
@@ -60,8 +71,6 @@ class RoutingTable {
 
   /**
    * Amount of currently stored peers.
-   *
-   * @type {number}
    */
   get size () {
     return this.kb.count()
@@ -71,13 +80,13 @@ class RoutingTable {
    * Find a specific peer by id.
    *
    * @param {PeerId} peer
-   * @returns {Promise<PeerId>}
+   * @returns {Promise<PeerId | undefined>}
    */
   async find (peer) {
     const key = await utils.convertPeerId(peer)
     const closest = this.closestPeer(key)
 
-    if (closest && closest.isEqual(peer)) {
+    if (closest && peer.equals(closest)) {
       return closest
     }
   }
@@ -86,7 +95,6 @@ class RoutingTable {
    * Retrieve the closest peers to the given key.
    *
    * @param {Uint8Array} key
-   * @returns {PeerId|undefined}
    */
   closestPeer (key) {
     const res = this.closestPeers(key, 1)
@@ -100,17 +108,18 @@ class RoutingTable {
    *
    * @param {Uint8Array} key
    * @param {number} count
-   * @returns {Array<PeerId>}
    */
   closestPeers (key, count) {
-    return this.kb.closest(key, count).map((p) => p.peer)
+    /** @type {KBucketPeer[]} */
+    const closest = this.kb.closest(key, count)
+
+    return closest.map(p => p.peer)
   }
 
   /**
    * Add or update the routing table with the given peer.
    *
    * @param {PeerId} peer
-   * @returns {Promise<void>}
    */
   async add (peer) {
     const id = await utils.convertPeerId(peer)
@@ -122,7 +131,6 @@ class RoutingTable {
    * Remove a given peer from the table.
    *
    * @param {PeerId} peer
-   * @returns {Promise<void>}
    */
   async remove (peer) {
     const id = await utils.convertPeerId(peer)

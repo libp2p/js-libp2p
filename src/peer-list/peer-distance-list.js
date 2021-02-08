@@ -1,9 +1,15 @@
 'use strict'
 
+// @ts-ignore
 const distance = require('xor-distance')
 const utils = require('../utils')
 const pMap = require('p-map')
 const uint8ArrayEquals = require('uint8arrays/equals')
+
+/**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('../').PeerData} PeerData
+ */
 
 /**
  * Maintains a list of peerIds sorted by distance from a DHT key.
@@ -18,6 +24,8 @@ class PeerDistanceList {
   constructor (originDhtKey, capacity) {
     this.originDhtKey = originDhtKey
     this.capacity = capacity
+
+    /** @type {{ peerId: PeerId, distance: Uint8Array }[]} */
     this.peerDistances = []
   }
 
@@ -39,7 +47,6 @@ class PeerDistanceList {
    * Add a peerId to the list.
    *
    * @param {PeerId} peerId
-   * @returns {Promise<void>}
    */
   async add (peerId) {
     if (this.peerDistances.find(pd => uint8ArrayEquals(pd.peerId.id, peerId.id))) {
@@ -61,8 +68,7 @@ class PeerDistanceList {
    * Indicates whether any of the peerIds passed as a parameter are closer
    * to the origin key than the furthest peerId in the PeerDistanceList.
    *
-   * @param {Array<PeerId>} peerIds
-   * @returns {Boolean}
+   * @param {PeerId[]} peerIds
    */
   async anyCloser (peerIds) {
     if (!peerIds.length) {
@@ -74,14 +80,16 @@ class PeerDistanceList {
     }
 
     const dhtKeys = await pMap(peerIds, (peerId) => utils.convertPeerId(peerId))
-
     const furthestDistance = this.peerDistances[this.peerDistances.length - 1].distance
+
     for (const dhtKey of dhtKeys) {
       const keyDistance = distance(this.originDhtKey, dhtKey)
+
       if (distance.compare(keyDistance, furthestDistance) < 0) {
         return true
       }
     }
+
     return false
   }
 }

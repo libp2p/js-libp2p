@@ -1,23 +1,29 @@
 'use strict'
 
-const pipe = require('it-pipe')
+const { pipe } = require('it-pipe')
 const lp = require('it-length-prefixed')
 
 const Message = require('../message')
 const handlers = require('./handlers')
 const utils = require('../utils')
 
+/**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ */
+
+/**
+ * @param {import('../index')} dht
+ */
 module.exports = (dht) => {
   const log = utils.logger(dht.peerId, 'rpc')
   const getMessageHandler = handlers(dht)
 
   /**
    * Process incoming DHT messages.
+   *
    * @param {PeerId} peerId
    * @param {Message} msg
-   * @returns {Promise<Message>}
-   *
-   * @private
    */
   async function handleMessage (peerId, msg) {
     // get handler & execute it
@@ -38,13 +44,13 @@ module.exports = (dht) => {
   }
 
   /**
-   * Handle incoming streams on the dht protocol.
-   * @param {Object} props
-   * @param {DuplexStream} props.stream
-   * @param {Connection} props.connection connection
-   * @returns {Promise<void>}
+   * Handle incoming streams on the dht protocol
+   *
+   * @param {object} props
+   * @param {MuxedStream} props.stream
+   * @param {import('libp2p-interfaces/src/connection').Connection} props.connection
    */
-  return async function onIncomingStream ({ stream, connection }) {
+  async function onIncomingStream ({ stream, connection }) {
     const peerId = connection.remotePeer
 
     try {
@@ -59,6 +65,9 @@ module.exports = (dht) => {
     await pipe(
       stream.source,
       lp.decode(),
+      /**
+       * @param {AsyncIterable<Uint8Array>} source
+       */
       source => (async function * () {
         for await (const msg of source) {
           // handle the message
@@ -75,4 +84,6 @@ module.exports = (dht) => {
       stream.sink
     )
   }
+
+  return onIncomingStream
 }

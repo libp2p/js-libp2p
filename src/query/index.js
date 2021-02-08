@@ -6,33 +6,44 @@ const utils = require('../utils')
 const Run = require('./run')
 
 /**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {{from: PeerId, val: Uint8Array}} DHTQueryValue
+ * @typedef {{from: PeerId, err: Error}} DHTQueryError
+ * @typedef {DHTQueryValue | DHTQueryError} DHTQueryResult
+ * @typedef {import('../').PeerData} PeerData
+ *
+ * @typedef {{ pathComplete?: boolean, queryComplete?: boolean, closerPeers?: PeerData[], peer?: PeerData, success?: boolean }} QueryResult
+ */
+
+/**
+ * User-supplied function to set up an individual disjoint path. Per-path
+ * query state should be held in this function's closure.
+ *
+ * Accepts the numeric index from zero to numPaths - 1 and returns a function
+ * to call on each peer in the query.
+ *
+ * @typedef {(pathIndex: number, numPaths: number) => QueryFunc } MakeQueryFunc
+ */
+
+/**
+ * Query function
+ *
+ * @typedef {(peer: PeerId) => Promise<QueryResult> } QueryFunc
+ */
+
+/**
  * Divide peers up into disjoint paths (subqueries). Any peer can only be used once over all paths.
  * Within each path, query peers from closest to farthest away.
  */
 class Query {
   /**
-   * User-supplied function to set up an individual disjoint path. Per-path
-   * query state should be held in this function's closure.
-   * @typedef {makePath} function
-   * @param {number} pathNum - Numeric index from zero to numPaths - 1
-   * @returns {queryFunc} - Function to call on each peer in the query
-   */
-
-  /**
-   * Query function.
-   * @typedef {queryFunc} function
-   * @param {PeerId} next - Peer to query
-   * @param {function(Error, Object)} callback - Query result callback
-   */
-
-  /**
    * Create a new query. The makePath function is called once per disjoint path, so that per-path
    * variables can be created in that scope. makePath then returns the actual query function (queryFunc) to
    * use when on that path.
    *
-   * @param {DHT} dht - DHT instance
+   * @param {import('../index')} dht - DHT instance
    * @param {Uint8Array} key
-   * @param {makePath} makePath - Called to set up each disjoint path. Must return the query function.
+   * @param {MakeQueryFunc} makePath - Called to set up each disjoint path. Must return the query function.
    */
   constructor (dht, key, makePath) {
     this.dht = dht
@@ -49,8 +60,7 @@ class Query {
   /**
    * Run this query, start with the given list of peers first.
    *
-   * @param {Array<PeerId>} peers
-   * @returns {Promise}
+   * @param {PeerId[]} peers
    */
   async run (peers) { // eslint-disable-line require-await
     if (!this.dht._queryManager.running) {
@@ -96,7 +106,7 @@ class Query {
    * Stop the query.
    */
   stop () {
-    this._log(`query:done in ${Date.now() - this._startTime}ms`)
+    this._log(`query:done in ${Date.now() - (this._startTime || 0)}ms`)
 
     if (this._run) {
       this._log(`${this._run.errors.length} of ${this._run.peersSeen.size} peers errored (${this._run.errors.length / this._run.peersSeen.size * 100}% fail rate)`)
@@ -106,11 +116,14 @@ class Query {
       return
     }
 
-    this._run.removeListener('start', this._onStart)
-    this._run.removeListener('complete', this._onComplete)
-
     this.running = false
-    this._run && this._run.stop()
+
+    if (this._run) {
+      this._run.removeListener('start', this._onStart)
+      this._run.removeListener('complete', this._onComplete)
+      this._run.stop()
+    }
+
     this.dht._queryManager.queryCompleted(this)
   }
 }

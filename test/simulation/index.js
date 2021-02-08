@@ -45,7 +45,7 @@ let topIds // Closest 20 peerIds in the network
   console.log('Total Nodes=%d, Dead Nodes=%d, Max Siblings per Peer=%d', NUM_PEERS, NUM_DEAD_NODES, MAX_PEERS_KNOWN)
   console.log('Starting %d runs with concurrency %d...', RUNS, ALPHA)
   const topRunIds = []
-  for (var i = 0; i < RUNS; i++) {
+  for (let i = 0; i < RUNS; i++) {
     const { closestPeers, runTime } = await GetClosestPeersSimulation()
     const foundIds = closestPeers.map(peerId => peerId.toB58String())
     const intersection = foundIds.filter(topIdFilter)
@@ -132,7 +132,8 @@ async function GetClosestPeersSimulation () {
 
 /**
  * Create `num` PeerIds
- * @param {integer} num How many peers to create
+ *
+ * @param {integer} num - How many peers to create
  * @returns {Array<PeerId>}
  */
 function createPeers (num) {
@@ -148,6 +149,7 @@ function createPeers (num) {
 
 /**
  * Creates a mock network
+ *
  * @param {Array<PeerId>} peers
  * @returns {Network}
  */
@@ -182,6 +184,7 @@ async function MockNetwork (peers) {
 
 /**
  * Returns a random integer between `min` and `max`
+ *
  * @param {number} min
  * @param {number} max
  * @returns {int}
@@ -192,8 +195,9 @@ function randomInteger (min, max) {
 
 /**
  * Return a unique array of random `num` members from `list`
- * @param {Array<any>} list array to pull random members from
- * @param {number} num number of random members to get
+ *
+ * @param {Array<any>} list - array to pull random members from
+ * @param {number} num - number of random members to get
  * @returns {Array<any>}
  */
 function randomMembers (list, num) {
@@ -213,7 +217,8 @@ function randomMembers (list, num) {
 
 /**
  * Finds the common members of all arrays
- * @param {Array<Array>} arrays An array of arrays to find common members
+ *
+ * @param {Array<Array>} arrays - An array of arrays to find common members
  * @returns {Array<any>}
  */
 function getCommonMembers (arrays) {

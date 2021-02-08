@@ -1,6 +1,10 @@
 'use strict'
 
 /**
+ * @typedef {import('./query')} Query
+ */
+
+/**
  * Keeps track of all running queries.
  */
 class QueryManager {

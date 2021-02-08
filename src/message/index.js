@@ -2,6 +2,7 @@
 
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
+// @ts-ignore
 const protons = require('protons')
 const { Record } = require('libp2p-record')
 const pbm = protons(require('./dht.proto'))
@@ -10,11 +11,22 @@ const MESSAGE_TYPE = pbm.Message.MessageType
 const CONNECTION_TYPE = pbm.Message.ConnectionType
 
 /**
+ * @typedef {0|1|2|3|4} ConnectionType
+ *
+ * @typedef {object} PBPeer
+ * @property {Uint8Array} id
+ * @property {Uint8Array[]} addrs
+ * @property {ConnectionType} connection
+ *
+ * @typedef {import('../index').PeerData} PeerData
+ */
+
+/**
  * Represents a single DHT control message.
  */
 class Message {
   /**
-   * @param {MessageType} type
+   * @param {MESSAGE_TYPE} type
    * @param {Uint8Array} key
    * @param {number} level
    */
@@ -26,8 +38,12 @@ class Message {
     this.type = type
     this.key = key
     this._clusterLevelRaw = level
+
+    /** @type {PeerData[]} */
     this.closerPeers = []
+    /** @type {PeerData[]} */
     this.providerPeers = []
+    /** @type {import('libp2p-record').Record | null} */
     this.record = null
   }
 
@@ -49,7 +65,6 @@ class Message {
 
   /**
    * Encode into protobuf
-   * @returns {Uint8Array}
    */
   serialize () {
     const obj = {
@@ -57,7 +72,10 @@ class Message {
       type: this.type,
       clusterLevelRaw: this._clusterLevelRaw,
       closerPeers: this.closerPeers.map(toPbPeer),
-      providerPeers: this.providerPeers.map(toPbPeer)
+      providerPeers: this.providerPeers.map(toPbPeer),
+
+      /** @type {Uint8Array | undefined} */
+      record: undefined
     }
 
     if (this.record) {
@@ -75,7 +93,6 @@ class Message {
    * Decode from protobuf
    *
    * @param {Uint8Array} raw
-   * @returns {Message}
    */
   static deserialize (raw) {
     const dec = pbm.Message.decode(raw)
@@ -84,6 +101,7 @@ class Message {
 
     msg.closerPeers = dec.closerPeers.map(fromPbPeer)
     msg.providerPeers = dec.providerPeers.map(fromPbPeer)
+
     if (dec.record) {
       msg.record = Record.deserialize(dec.record)
     }
@@ -95,14 +113,23 @@ class Message {
 Message.TYPES = MESSAGE_TYPE
 Message.CONNECTION_TYPES = CONNECTION_TYPE
 
+/**
+ * @param {PeerData} peer
+ */
 function toPbPeer (peer) {
-  return {
+  /** @type {PBPeer} */
+  const output = {
     id: peer.id.id,
     addrs: (peer.multiaddrs || []).map((m) => m.bytes),
     connection: CONNECTION_TYPE.CONNECTED
   }
+
+  return output
 }
 
+/**
+ * @param {PBPeer} peer
+ */
 function fromPbPeer (peer) {
   return {
     id: new PeerId(peer.id),

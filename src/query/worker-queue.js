@@ -1,16 +1,19 @@
 'use strict'
 
-const queue = require('async/queue')
-const promiseToCallback = require('promise-to-callback')
+const { default: Queue } = require('p-queue')
+
+/**
+ * @typedef {import('peer-id')} PeerId
+ */
 
 class WorkerQueue {
   /**
    * Creates a new WorkerQueue.
    *
-   * @param {DHT} dht
-   * @param {Run} run
-   * @param {Object} path
-   * @param {function} log
+   * @param {import('../index')} dht
+   * @param {import('./run')} run
+   * @param {import('./path')} path
+   * @param {Function & {error: Function}} log
    */
   constructor (dht, run, path, log) {
     this.dht = dht
@@ -22,39 +25,42 @@ class WorkerQueue {
     this.queue = this.setupQueue()
     // a container for resolve/reject functions that will be populated
     // when execute() is called
+
+    /** @type {{ resolve: (result?: any) => void, reject: (err: Error) => void} | null} */
     this.execution = null
+
+    /** @type {Set<PeerId>} */
+    this.queuedPeerIds = new Set()
   }
 
   /**
    * Create the underlying async queue.
    *
-   * @returns {Object}
+   * @returns {Queue}
    */
   setupQueue () {
-    const q = queue((peer, cb) => {
-      promiseToCallback(this.processNext(peer))(cb)
-    }, this.concurrency)
-
-    // If there's an error, stop the worker
-    q.error = (err) => {
-      this.log.error('queue', err)
-      this.stop(err)
-    }
+    const q = new Queue({
+      concurrency: this.concurrency
+    })
 
     // When all peers in the queue have been processed, stop the worker
-    q.drain = () => {
-      this.log('queue:drain')
-      this.stop()
-    }
+    q.on('idle', () => {
+      if (this.path.peersToQuery && !this.path.peersToQuery.length) {
+        this.log('queue:drain')
+        this.stop()
+      }
+    })
 
     // When a space opens up in the queue, add some more peers
-    q.unsaturated = () => {
-      if (this.running) {
+    q.on('next', () => {
+      if (!this.running) {
+        return
+      }
+
+      if (q.pending < this.concurrency) {
         this.fill()
       }
-    }
-
-    q.buffer = 0
+    })
 
     return q
   }
@@ -63,7 +69,7 @@ class WorkerQueue {
    * Stop the worker, optionally providing an error to pass to the worker's
    * callback.
    *
-   * @param {Error} err
+   * @param {Error} [err]
    */
   stop (err) {
     if (!this.running) {
@@ -71,12 +77,15 @@ class WorkerQueue {
     }
 
     this.running = false
-    this.queue.kill()
+    this.queue.clear()
     this.log('worker:stop, %d workers still running', this.run.workers.filter(w => w.running).length)
-    if (err) {
-      this.execution.reject(err)
-    } else {
-      this.execution.resolve()
+
+    if (this.execution) {
+      if (err) {
+        this.execution.reject(err)
+      } else {
+        this.execution.resolve()
+      }
     }
   }
 
@@ -84,13 +93,17 @@ class WorkerQueue {
    * Use the queue from async to keep `concurrency` amount items running
    * per path.
    *
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   async execute () {
     this.running = true
     // store the promise resolution functions to be resolved at end of queue
-    this.execution = {}
-    const execPromise = new Promise((resolve, reject) => Object.assign(this.execution, { resolve, reject }))
+    this.execution = null
+    const execPromise = new Promise((resolve, reject) => {
+      this.execution = {
+        resolve, reject
+      }
+    })
     // start queue
     this.fill()
     // await completion
@@ -102,16 +115,35 @@ class WorkerQueue {
    * worker queue concurrency.
    * Note that we don't want to take any more than those required to satisfy
    * concurrency from the peers-to-query queue, because we always want to
-   * query the closest peers to the key first, and new peers are continously
+   * query the closest peers to the key first, and new peers are continuously
    * being added to the peers-to-query queue.
    */
   fill () {
+    if (!this.path.peersToQuery) {
+      return
+    }
+
     // Note:
-    // - queue.running(): number of items that are currently running
-    // - queue.length(): the number of items that are waiting to be run
-    while (this.queue.running() + this.queue.length() < this.concurrency &&
-           this.path.peersToQuery.length > 0) {
-      this.queue.push(this.path.peersToQuery.dequeue())
+    // - queue.pending: number of items that are currently running
+    // - queue.size: the number of items that are waiting to be run
+    while (this.queue.pending + this.queue.size < this.concurrency && this.path.peersToQuery.length > 0) {
+      const peer = this.path.peersToQuery.dequeue()
+
+      // store the peer id so we can potentially abort early
+      this.queuedPeerIds.add(peer)
+
+      this.queue.add(
+        () => {
+          return this.processNext(peer)
+            .catch(err => {
+              this.log.error('queue', err)
+              this.stop(err)
+            })
+            .finally(() => {
+              this.queuedPeerIds.delete(peer)
+            })
+        }
+      )
     }
   }
 
@@ -119,7 +151,6 @@ class WorkerQueue {
    * Process the next peer in the queue
    *
    * @param {PeerId} peer
-   * @returns {Promise<void>}
    */
   async processNext (peer) {
     if (!this.running) {
@@ -203,8 +234,6 @@ class WorkerQueue {
    * Execute a query on the next peer.
    *
    * @param {PeerId} peer
-   * @returns {Promise<void>}
-   * @private
    */
   async execQuery (peer) {
     let res, queryError
@@ -225,12 +254,17 @@ class WorkerQueue {
     }
 
     // Add the peer to the closest peers we have successfully queried
-    await this.run.peersQueried.add(peer)
+    this.run.peersQueried && await this.run.peersQueried.add(peer)
+
+    if (!res) {
+      return
+    }
 
     // If the query indicates that this path or the whole query is complete
     // set the path result and bail out
     if (res.pathComplete || res.queryComplete) {
       this.path.res = res
+
       return {
         pathComplete: res.pathComplete,
         queryComplete: res.queryComplete
@@ -239,14 +273,20 @@ class WorkerQueue {
 
     // If there are closer peers to query, add them to the queue
     if (res.closerPeers && res.closerPeers.length > 0) {
-      await Promise.all(res.closerPeers.map(async (closer) => {
+      /**
+       * @param {import('../').PeerData} closer
+       */
+      const queryCloser = async (closer) => {
         // don't add ourselves
         if (this.dht._isSelf(closer.id)) {
           return
         }
+
         this.dht._peerDiscovered(closer.id, closer.multiaddrs)
         await this.path.addPeerToQuery(closer.id)
-      }))
+      }
+
+      await Promise.all(res.closerPeers.map(queryCloser))
     }
   }
 }

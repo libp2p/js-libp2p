@@ -6,6 +6,7 @@ const errcode = require('err-code')
 const libp2pRecord = require('libp2p-record')
 const { MemoryDatastore } = require('interface-datastore')
 const uint8ArrayEquals = require('uint8arrays/equals')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const RoutingTable = require('./routing')
 const utils = require('./utils')
@@ -22,42 +23,51 @@ const QueryManager = require('./query-manager')
 const Record = libp2pRecord.Record
 
 /**
+ * @typedef {import('libp2p')} Libp2p
+ * @typedef {import('libp2p/src/peer-store')} PeerStore
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('interface-datastore').Datastore} Datastore
+ * @typedef {import('libp2p/src/dialer')} Dialer
+ * @typedef {import('libp2p/src/registrar')} Registrar
+ * @typedef {import('cids')} CID
+ * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {object} PeerData
+ * @property {PeerId} id
+ * @property {Multiaddr[]} multiaddrs
+ *
+ * @typedef {object} RandomWalkOptions
+ * @property {boolean} enabled discovery enabled (default: true)
+ * @property {number} queriesPerPeriod how many queries to run per period (default: 1)
+ * @property {number} interval how often to run the the random-walk process, in milliseconds (default: 300000)
+ * @property {number} timeout how long to wait for the the random-walk query to run, in milliseconds (default: 30000)
+ * @property {number} delay how long to wait before starting the first random walk, in milliseconds (default: 10000)
+ */
+
+/**
  * A DHT implementation modeled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
 class KadDHT extends EventEmitter {
   /**
-   * Random walk options
-   * @typedef {Object} randomWalkOptions
-   * @property {boolean} enabled discovery enabled (default: true)
-   * @property {number} queriesPerPeriod how many queries to run per period (default: 1)
-   * @property {number} interval how often to run the the random-walk process, in milliseconds (default: 300000)
-   * @property {number} timeout how long to wait for the the random-walk query to run, in milliseconds (default: 30000)
-   * @property {number} delay how long to wait before starting the first random walk, in milliseconds (default: 10000)
-   */
-
-  /**
    * Create a new KadDHT.
+   *
    * @param {Object} props
-   * @param {Libp2p} [props.libp2p] the libp2p instance
-   * @param {Dialer} props.dialer libp2p dialer instance
-   * @param {PeerId} props.peerId peer's peerId
-   * @param {PeerStore} props.peerStore libp2p peerStore
-   * @param {Object} props.registrar libp2p registrar instance
-   * @param {function} props.registrar.handle
-   * @param {function} props.registrar.register
-   * @param {function} props.registrar.unregister
-   * @param {string} [props.protocolPrefix = '/ipfs'] libp2p registrar handle protocol
-   * @param {boolean} [props.forceProtocolLegacy = false] WARNING: this is not recommended and should only be used for legacy purposes
-   * @param {number} props.kBucketSize k-bucket size (default 20)
-   * @param {boolean} props.clientMode If true, the DHT will not respond to queries. This should be true if your node will not be dialable. (default: false)
-   * @param {number} props.concurrency alpha concurrency of queries (default 3)
-   * @param {Datastore} props.datastore datastore (default MemoryDatastore)
-   * @param {object} props.validators validators object with namespace as keys and function(key, record, callback)
-   * @param {object} props.selectors selectors object with namespace as keys and function(key, records)
-   * @param {randomWalkOptions} options.randomWalk randomWalk options
-   * @param {function(record: Record, peerId: PeerId)} [props.onPut = () => {}] Called when an entry is added to or changed in the datastore
-   * @param {function(record: Record)} [props.onRemove = () => {}] Called when an entry is removed from the datastore
+   * @param {Libp2p} props.libp2p - the libp2p instance
+   * @param {Dialer} props.dialer - libp2p dialer instance
+   * @param {PeerId} props.peerId - peer's peerId
+   * @param {PeerStore} props.peerStore - libp2p peerStore
+   * @param {Registrar} props.registrar - libp2p registrar instance
+   * @param {string} [props.protocolPrefix = '/ipfs'] - libp2p registrar handle protocol
+   * @param {boolean} [props.forceProtocolLegacy = false] - WARNING: this is not recommended and should only be used for legacy purposes
+   * @param {number} props.kBucketSize - k-bucket size (default 20)
+   * @param {boolean} props.clientMode - If true, the DHT will not respond to queries. This should be true if your node will not be dialable. (default: false)
+   * @param {number} props.concurrency - alpha concurrency of queries (default 3)
+   * @param {Datastore} props.datastore - datastore (default MemoryDatastore)
+   * @param {object} props.validators - validators object with namespace as keys and function(key, record, callback)
+   * @param {object} props.selectors - selectors object with namespace as keys and function(key, records)
+   * @param {RandomWalkOptions} props.randomWalk - randomWalk options
+   * @param {function(import('libp2p-record').Record, PeerId): void} [props.onPut] - Called when an entry is added to or changed in the datastore
+   * @param {function(import('libp2p-record').Record): void} [props.onRemove] - Called when an entry is removed from the datastore
    */
   constructor ({
     libp2p,
@@ -73,7 +83,13 @@ class KadDHT extends EventEmitter {
     concurrency = c.ALPHA,
     validators = {},
     selectors = {},
-    randomWalk = {},
+    randomWalk = {
+      enabled: false,
+      queriesPerPeriod: 1,
+      interval: 300000,
+      timeout: 30000,
+      delay: 10000
+    },
     onPut = () => {},
     onRemove = () => {}
   }) {
@@ -85,36 +101,42 @@ class KadDHT extends EventEmitter {
 
     /**
      * Local reference to the libp2p instance. May be undefined.
+     *
      * @type {Libp2p}
      */
     this.libp2p = libp2p
 
     /**
      * Local reference to the libp2p dialer instance
+     *
      * @type {Dialer}
      */
     this.dialer = dialer
 
     /**
      * Local peer-id
+     *
      * @type {PeerId}
      */
     this.peerId = peerId
 
     /**
      * Local PeerStore
+     *
      * @type {PeerStore}
      */
     this.peerStore = peerStore
 
     /**
      * Local peer info
+     *
      * @type {Registrar}
      */
     this.registrar = registrar
 
     /**
      * Registrar protocol
+     *
      * @type {string}
      */
     this.protocol = protocolPrefix + (forceProtocolLegacy ? '' : c.PROTOCOL_DHT)
@@ -130,6 +152,7 @@ class KadDHT extends EventEmitter {
 
     /**
      * ALPHA concurrency at which each query path with run, defaults to 3
+     *
      * @type {number}
      */
     this.concurrency = concurrency
@@ -137,6 +160,7 @@ class KadDHT extends EventEmitter {
     /**
      * Number of disjoint query paths to use
      * This is set to `kBucketSize`/2 per the S/Kademlia paper
+     *
      * @type {number}
      */
     this.disjointPaths = Math.ceil(this.kBucketSize / 2)
@@ -204,7 +228,6 @@ class KadDHT extends EventEmitter {
 
   /**
    * Is this DHT running.
-   * @type {bool}
    */
   get isStarted () {
     return this._running
@@ -212,6 +235,7 @@ class KadDHT extends EventEmitter {
 
   /**
    * Start listening to incoming connections.
+   *
    * @returns {Promise<void>}
    */
   async start () {
@@ -227,6 +251,7 @@ class KadDHT extends EventEmitter {
   /**
    * Stop accepting incoming connections and sending outgoing
    * messages.
+   *
    * @returns {Promise<void>}
    */
   stop () {
@@ -239,6 +264,7 @@ class KadDHT extends EventEmitter {
 
   /**
    * Store the given key/value  pair in the DHT.
+   *
    * @param {Uint8Array} key
    * @param {Uint8Array} value
    * @param {Object} [options] - put options
@@ -252,6 +278,7 @@ class KadDHT extends EventEmitter {
   /**
    * Get the value to the given key.
    * Times out after 1 minute by default.
+   *
    * @param {Uint8Array} key
    * @param {Object} [options] - get options
    * @param {number} [options.timeout] - optional timeout (default: 60000)
@@ -263,11 +290,11 @@ class KadDHT extends EventEmitter {
 
   /**
    * Get the `n` values to the given key without sorting.
+   *
    * @param {Uint8Array} key
    * @param {number} nvals
    * @param {Object} [options] - get options
    * @param {number} [options.timeout] - optional timeout (default: 60000)
-   * @returns {Promise<Array<{from: PeerId, val: Uint8Array}>>}
    */
   async getMany (key, nvals, options = {}) { // eslint-disable-line require-await
     return this.contentFetching.getMany(key, nvals, options)
@@ -275,11 +302,11 @@ class KadDHT extends EventEmitter {
 
   /**
    * Remove the given key from the local datastore.
+   *
    * @param {Uint8Array} key
-   * @returns {Promise<void>}
    */
   async removeLocal (key) {
-    this._log('removeLocal: %b', key)
+    this._log(`removeLocal: ${uint8ArrayToString(key, 'base32')}`)
     const dsKey = utils.bufferToKey(key)
 
     try {
@@ -292,10 +319,22 @@ class KadDHT extends EventEmitter {
     }
   }
 
+  /**
+   * @param {Uint8Array} key
+   * @param {Uint8Array} value
+   */
+  async _putLocal (key, value) {
+    this._log(`_putLocal: ${uint8ArrayToString(key, 'base32')}`)
+    const dsKey = utils.bufferToKey(key)
+
+    await this.datastore.put(dsKey, value)
+  }
+
   // ----------- Content Routing
 
   /**
    * Announce to the network that we can provide given key's value.
+   *
    * @param {CID} key
    * @returns {Promise<void>}
    */
@@ -305,13 +344,14 @@ class KadDHT extends EventEmitter {
 
   /**
    * Search the dht for up to `K` providers of the given CID.
+   *
    * @param {CID} key
-   * @param {Object} options - findProviders options
-   * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
-   * @param {number} options.maxNumProviders - maximum number of providers to find
+   * @param {Object} [options] - findProviders options
+   * @param {number} [options.timeout=60000] - how long the query should maximally run, in milliseconds (default: 60000)
+   * @param {number} [options.maxNumProviders=5] - maximum number of providers to find
    * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
-  async * findProviders (key, options = {}) {
+  async * findProviders (key, options = { timeout: 6000, maxNumProviders: 5 }) {
     for await (const peerData of this.contentRouting.findProviders(key, options)) {
       yield peerData
     }
@@ -323,38 +363,40 @@ class KadDHT extends EventEmitter {
    * Search for a peer with the given ID.
    *
    * @param {PeerId} id
-   * @param {Object} options - findPeer options
-   * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
+   * @param {Object} [options] - findPeer options
+   * @param {number} [options.timeout=60000] - how long the query should maximally run, in milliseconds (default: 60000)
    * @returns {Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
-  async findPeer (id, options = {}) { // eslint-disable-line require-await
+  async findPeer (id, options = { timeout: 60000 }) { // eslint-disable-line require-await
     return this.peerRouting.findPeer(id, options)
   }
 
   /**
    * Kademlia 'node lookup' operation.
+   *
    * @param {Uint8Array} key
    * @param {Object} [options]
-   * @param {boolean} [options.shallow] shallow query (default: false)
-   * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
+   * @param {boolean} [options.shallow = false] - shallow query
    */
   async * getClosestPeers (key, options = { shallow: false }) {
-    for await (const pId of this.peerRouting.getClosestPeers(key, options)) {
-      yield pId
-    }
+    yield * this.peerRouting.getClosestPeers(key, options)
   }
 
   /**
    * Get the public key for the given peer id.
+   *
    * @param {PeerId} peer
-   * @returns {Promise<PubKey>}
    */
-  async getPublicKey (peer) { // eslint-disable-line require-await
+  getPublicKey (peer) {
     return this.peerRouting.getPublicKey(peer)
   }
 
   // ----------- Discovery -----------
 
+  /**
+   * @param {PeerId} peerId
+   * @param {Multiaddr[]} multiaddrs
+   */
   _peerDiscovered (peerId, multiaddrs) {
     this.emit('peer', {
       id: peerId,
@@ -369,8 +411,6 @@ class KadDHT extends EventEmitter {
    * the message.
    *
    * @param {Message} msg
-   * @returns {Promise<Array<{ id: PeerId, multiaddrs: Multiaddr[] }>>}
-   * @private
    */
   async _nearestPeersToQuery (msg) {
     const key = await utils.convertBuffer(msg.key)
@@ -392,8 +432,6 @@ class KadDHT extends EventEmitter {
    *
    * @param {Message} msg
    * @param {PeerId} peerId
-   * @returns {Promise<Array<{ id: PeerId, multiaddrs: Multiaddr[] }>>}
-   * @private
    */
   async _betterPeersToQuery (msg, peerId) {
     this._log('betterPeersToQuery')
@@ -417,12 +455,10 @@ class KadDHT extends EventEmitter {
    * - it was received less than `MAX_RECORD_AGE` ago.
    *
    * @param {Uint8Array} key
-   * @returns {Promise<Record>}
-   * @private
    */
 
   async _checkLocalDatastore (key) {
-    this._log('checkLocalDatastore: %b', key)
+    this._log(`checkLocalDatastore: ${uint8ArrayToString(key)} %b`, key)
     const dsKey = utils.bufferToKey(key)
 
     // Fetch value from ds
@@ -440,12 +476,12 @@ class KadDHT extends EventEmitter {
     const record = Record.deserialize(rawRecord)
 
     if (!record) {
-      throw errcode('Invalid record', 'ERR_INVALID_RECORD')
+      throw errcode(new Error('Invalid record'), 'ERR_INVALID_RECORD')
     }
 
     // Check validity: compare time received with max record age
     if (record.timeReceived == null ||
-      utils.now() - record.timeReceived > c.MAX_RECORD_AGE) {
+      utils.now() - record.timeReceived.getTime() > c.MAX_RECORD_AGE) {
       // If record is bad delete it and return
       await this.datastore.delete(dsKey)
       this.onRemove(record)
@@ -458,9 +494,8 @@ class KadDHT extends EventEmitter {
 
   /**
    * Add the peer to the routing table and update it in the peerStore.
+   *
    * @param {PeerId} peerId
-   * @returns {Promise<void>}
-   * @private
    */
   async _add (peerId) {
     await this.routingTable.add(peerId)
@@ -469,11 +504,8 @@ class KadDHT extends EventEmitter {
   /**
    * Verify a record without searching the DHT.
    *
-   * @param {Record} record
-   * @returns {Promise<void>}
-   * @private
+   * @param {import('libp2p-record').Record} record
    */
-
   async _verifyRecordLocally (record) {
     this._log('verifyRecordLocally')
 
@@ -484,11 +516,7 @@ class KadDHT extends EventEmitter {
    * Is the given peer id our PeerId?
    *
    * @param {PeerId} other
-   * @returns {bool}
-   *
-   * @private
    */
-
   _isSelf (other) {
     return other && uint8ArrayEquals(this.peerId.id, other.id)
   }
@@ -499,18 +527,14 @@ class KadDHT extends EventEmitter {
    * @param {Uint8Array} key
    * @param {Uint8Array} rec - encoded record
    * @param {PeerId} target
-   * @returns {Promise<void>}
-   *
-   * @private
    */
-
   async _putValueToPeer (key, rec, target) {
     const msg = new Message(Message.TYPES.PUT_VALUE, key, 0)
-    msg.record = rec
+    msg.record = Record.deserialize(rec)
 
     const resp = await this.network.sendRequest(target, msg)
 
-    if (!resp.record.value.equals(Record.deserialize(rec).value)) {
+    if (resp.record && !uint8ArrayEquals(resp.record.value, Record.deserialize(rec).value)) {
       throw errcode(new Error('value not put correctly'), 'ERR_PUT_VALUE_INVALID')
     }
   }
@@ -523,10 +547,7 @@ class KadDHT extends EventEmitter {
    *
    * @param {PeerId} peer
    * @param {Uint8Array} key
-   * @returns {Promise<{Record, Array<{ id: PeerId, multiaddrs: Multiaddr[] }}>}
-   * @private
    */
-
   async _getValueOrPeers (peer, key) {
     const msg = await this._getValueSingle(peer, key)
 
@@ -558,10 +579,7 @@ class KadDHT extends EventEmitter {
    *
    * @param {PeerId} peer
    * @param {Uint8Array} key
-   * @returns {Promise<Message>}
-   * @private
    */
-
   async _getValueSingle (peer, key) { // eslint-disable-line require-await
     const msg = new Message(Message.TYPES.GET_VALUE, key, 0)
     return this.network.sendRequest(peer, msg)
@@ -571,11 +589,9 @@ class KadDHT extends EventEmitter {
    * Verify a record, fetching missing public keys from the network.
    * Calls back with an error if the record is invalid.
    *
-   * @param {Record} record
+   * @param {import('libp2p-record').Record} record
    * @returns {Promise<void>}
-   * @private
    */
-
   async _verifyRecordOnline (record) {
     await libp2pRecord.validator.verifyRecord(this.validators, record)
   }

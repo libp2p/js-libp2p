@@ -3,23 +3,22 @@
 const crypto = require('libp2p-crypto')
 const multihashing = require('multihashing-async')
 const PeerId = require('peer-id')
-const AbortController = require('abort-controller')
+const { AbortController } = require('abort-controller')
 const errcode = require('err-code')
 const times = require('p-times')
 const c = require('./constants')
 const { logger } = require('./utils')
 
+/**
+ * @typedef {import('./')} DHT
+ * @typedef {import('./').RandomWalkOptions} RandomWalkOptions
+ */
+
 class RandomWalk {
   /**
-   * @constructor
+   * @class
    * @param {DHT} dht
-   * @param {object} options
-   * @param {randomWalkOptions.enabled} options.enabled
-   * @param {randomWalkOptions.queriesPerPeriod} options.queriesPerPeriod
-   * @param {randomWalkOptions.interval} options.interval
-   * @param {randomWalkOptions.timeout} options.timeout
-   * @param {randomWalkOptions.delay} options.delay
-   * @param {DHT} options.dht
+   * @param {RandomWalkOptions} options
    */
   constructor (dht, options) {
     if (!dht) {
@@ -93,7 +92,6 @@ class RandomWalk {
    *
    * @param {number} queries
    * @param {number} walkTimeout
-   * @returns {Promise}
    *
    * @private
    */
@@ -142,8 +140,7 @@ class RandomWalk {
    * @param {PeerId} id
    * @param {object} options
    * @param {number} options.timeout
-   * @param {AbortControllerSignal} options.signal
-   * @returns {Promise}
+   * @param {AbortSignal} options.signal
    *
    * @private
    */
@@ -165,7 +162,7 @@ class RandomWalk {
     this.log('query:found', peer)
 
     // wait what, there was something found? Lucky day!
-    throw errcode(`random-walk: ACTUALLY FOUND PEER: ${peer}, ${id.toB58String()}`, 'ERR_FOUND_RANDOM_PEER')
+    throw errcode(new Error(`random-walk: ACTUALLY FOUND PEER: ${peer}, ${id.toB58String()}`), 'ERR_FOUND_RANDOM_PEER')
   }
 
   /**

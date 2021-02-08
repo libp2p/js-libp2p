@@ -2,6 +2,10 @@
 
 const T = require('../../message').TYPES
 
+/**
+ *
+ * @param {import('../../index')} dht
+ */
 module.exports = (dht) => {
   const handlers = {
     [T.GET_VALUE]: require('./get-value')(dht),
@@ -16,12 +20,10 @@ module.exports = (dht) => {
    * Get the message handler matching the passed in type.
    *
    * @param {number} type
-   *
-   * @returns {function(PeerId, Message, function(Error, Message))}
-   *
-   * @private
    */
-  return function getMessageHandler (type) {
+  function getMessageHandler (type) {
     return handlers[type]
   }
+
+  return getMessageHandler
 }

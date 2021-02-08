@@ -1,12 +1,18 @@
 'use strict'
 
 const cache = require('hashlru')
+// @ts-ignore
 const varint = require('varint')
 const PeerId = require('peer-id')
 const { Key } = require('interface-datastore')
 const { default: Queue } = require('p-queue')
 const c = require('./constants')
 const utils = require('./utils')
+
+/**
+ * @typedef {import('cids')} CID
+ * @typedef {import('interface-datastore').Datastore} Datastore
+ */
 
 /**
  * This class manages known providers.
@@ -22,7 +28,7 @@ const utils = require('./utils')
  */
 class Providers {
   /**
-   * @param {Object} datastore
+   * @param {Datastore} datastore
    * @param {PeerId} [self]
    * @param {number} [cacheSize=256]
    */
@@ -52,6 +58,7 @@ class Providers {
      */
     this.lruCacheSize = cacheSize || c.PROVIDERS_LRU_CACHE_SIZE
 
+    // @ts-ignore hashlru types are wrong
     this.providers = cache(this.lruCacheSize)
 
     this.syncQueue = new Queue({ concurrency: 1 })
@@ -59,7 +66,6 @@ class Providers {
 
   /**
    * Start the provider cleanup service
-   * @returns {void}
    */
   start () {
     this._cleaner = setInterval(
@@ -70,11 +76,12 @@ class Providers {
 
   /**
    * Release any resources.
-   * @returns {void}
    */
   stop () {
-    clearInterval(this._cleaner)
-    this._cleaner = null
+    if (this._cleaner) {
+      clearInterval(this._cleaner)
+      this._cleaner = null
+    }
   }
 
   /**
@@ -148,7 +155,7 @@ class Providers {
    * Get the currently known provider peer ids for a given CID.
    *
    * @param {CID} cid
-   * @returns {Promise<Map<String, Date>>}
+   * @returns {Promise<Map<string, Date>>}
    *
    * @private
    */
@@ -175,7 +182,7 @@ class Providers {
       const provs = await this._getProvidersMap(cid)
 
       this._log('loaded %s provs', provs.size)
-      const now = Date.now()
+      const now = new Date()
       provs.set(utils.encodeBase32(provider.id), now)
 
       const dsKey = makeProviderKey(cid)
@@ -220,10 +227,7 @@ function makeProviderKey (cid) {
  * @param {Datastore} store
  * @param {CID} cid
  * @param {PeerId} peer
- * @param {number} time
- * @returns {Promise<void>}
- *
- * @private
+ * @param {Date} time
  */
 async function writeProviderEntry (store, cid, peer, time) { // eslint-disable-line require-await
   const dsKey = [
@@ -233,17 +237,14 @@ async function writeProviderEntry (store, cid, peer, time) { // eslint-disable-l
   ].join('')
 
   const key = new Key(dsKey)
-  const buffer = Uint8Array.from(varint.encode(time))
+  const buffer = Uint8Array.from(varint.encode(time.getTime()))
   return store.put(key, buffer)
 }
 
 /**
  * Parse the CID and provider peer id from the key
  *
- * @param {DKey} key
- * @returns {Object} object with peer id and cid
- *
- * @private
+ * @param {import('interface-datastore').Key} key
  */
 function parseProviderKey (key) {
   const parts = key.toString().split('/')
@@ -276,6 +277,9 @@ async function loadProviders (store, cid) {
   return providers
 }
 
+/**
+ * @param {Uint8Array} buf
+ */
 function readTime (buf) {
   return varint.decode(buf)
 }

@@ -10,14 +10,18 @@ const utils = require('../utils')
 const QUERY_FUNC_TIMEOUT = 30e3
 
 /**
+ * @typedef {import('peer-id')} PeerId
+ */
+
+/**
  * Manages a single Path through the DHT.
  */
 class Path {
   /**
    * Creates a Path.
    *
-   * @param {Run} run
-   * @param {queryFunc} queryFunc
+   * @param {import('./run')} run
+   * @param {import('./index').QueryFunc} queryFunc
    */
   constructor (run, queryFunc) {
     this.run = run
@@ -25,19 +29,19 @@ class Path {
     if (!this.queryFunc) throw new Error('Path requires a `queryFn` to be specified')
     if (typeof this.queryFunc !== 'function') throw new Error('Path expected `queryFn` to be a function. Got ' + typeof this.queryFunc)
 
-    /**
-     * @type {Array<PeerId>}
-     */
+    /** @type {PeerId[]} */
     this.initialPeers = []
 
-    /**
-     * @type {PeerQueue}
-     */
+    /** @type {PeerQueue | null} */
     this.peersToQuery = null
+
+    /** @type {import('./index').QueryResult | null} */
+    this.res = null
   }
 
   /**
    * Add a peer to the set of peers that are used to intialize the path.
+   *
    * @param {PeerId} peer
    */
   addInitialPeer (peer) {
@@ -45,10 +49,7 @@ class Path {
   }
 
   /**
-   * Execute the path.
-   *
-   * @returns {Promise}
-   *
+   * Execute the path
    */
   async execute () {
     // Create a queue of peers ordered by distance from the key
@@ -63,7 +64,6 @@ class Path {
    * Add a peer to the peers to be queried.
    *
    * @param {PeerId} peer
-   * @returns {Promise<void>}
    */
   async addPeerToQuery (peer) {
     // Don't add self
@@ -77,7 +77,9 @@ class Path {
       return
     }
 
-    await this.peersToQuery.enqueue(peer)
+    if (this.peersToQuery) {
+      await this.peersToQuery.enqueue(peer)
+    }
   }
 }
 

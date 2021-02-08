@@ -9,13 +9,21 @@ const Message = require('../message')
 const Query = require('../query')
 const utils = require('../utils')
 
+/**
+ * @typedef {import('cids')} CID
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('multiaddr')} Multiaddr
+ */
+
+/**
+ * @param {import('../')} dht
+ */
 module.exports = (dht) => {
   /**
    * Check for providers from a single node.
    *
    * @param {PeerId} peer
    * @param {CID} key
-   * @returns {Promise<Message>}
    *
    * @private
    */
@@ -26,13 +34,14 @@ module.exports = (dht) => {
 
   return {
     /**
-     * Announce to the network that we can provide given key's value.
+     * Announce to the network that we can provide the value for a given key
+     *
      * @param {CID} key
-     * @returns {Promise<void>}
      */
     async provide (key) {
-      dht._log('provide: %s', key.toBaseEncodedString())
+      dht._log(`provide: ${key}`)
 
+      /** @type {Error[]} */
       const errors = []
 
       // Add peer as provider
@@ -45,49 +54,65 @@ module.exports = (dht) => {
         multiaddrs
       }]
 
-      // Notify closest peers
-      await utils.mapParallel(dht.getClosestPeers(key.bytes), async (peer) => {
-        dht._log('putProvider %s to %s', key.toBaseEncodedString(), peer.toB58String())
+      /**
+       * @param {PeerId} peer
+       */
+      async function mapPeer (peer) {
+        dht._log(`putProvider ${key} to ${peer.toB58String()}`)
         try {
           await dht.network.sendMessage(peer, msg)
         } catch (err) {
           errors.push(err)
         }
-      })
+      }
+
+      // Notify closest peers
+      await utils.mapParallel(dht.getClosestPeers(key.bytes), mapPeer)
 
       if (errors.length) {
         // TODO:
         // This should be infrequent. This means a peer we previously connected
         // to failed to exchange the provide message. If getClosestPeers was an
         // iterator, we could continue to pull until we announce to kBucketSize peers.
-        throw errcode(new Error(`Failed to provide to ${errors.length} of ${dht.kBucketSize} peers`, 'ERR_SOME_PROVIDES_FAILED'), { errors })
+        throw errcode(new Error(`Failed to provide to ${errors.length} of ${dht.kBucketSize} peers`), 'ERR_SOME_PROVIDES_FAILED', { errors })
       }
     },
 
     /**
      * Search the dht for up to `K` providers of the given CID.
+     *
      * @param {CID} key
-     * @param {Object} options - findProviders options
-     * @param {number} options.timeout - how long the query should maximally run, in milliseconds (default: 60000)
-     * @param {number} options.maxNumProviders - maximum number of providers to find
+     * @param {Object} [options] - findProviders options
+     * @param {number} [options.timeout=60000] - how long the query should maximally run, in milliseconds
+     * @param {number} [options.maxNumProviders=5] - maximum number of providers to find
      * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
      */
-    async * findProviders (key, options = {}) {
+    async * findProviders (key, options = { timeout: 60000, maxNumProviders: 5 }) {
       const providerTimeout = options.timeout || c.minute
       const n = options.maxNumProviders || c.K
 
-      dht._log('findProviders %s', key.toBaseEncodedString())
+      dht._log(`findProviders ${key}`)
 
       const out = new LimitedPeerList(n)
       const provs = await dht.providers.getProviders(key)
 
-      provs.forEach((id) => {
-        const peerData = dht.peerStore.get(id) || {}
-        out.push({
-          id: peerData.id || id,
-          multiaddrs: (peerData.addresses || []).map((address) => address.multiaddr)
+      provs
+        .forEach(id => {
+          const peerData = dht.peerStore.get(id)
+
+          if (peerData) {
+            out.push({
+              id: peerData.id,
+              multiaddrs: peerData.addresses
+                .map((address) => address.multiaddr)
+            })
+          } else {
+            out.push({
+              id,
+              multiaddrs: []
+            })
+          }
         })
-      })
 
       // All done
       if (out.length >= n) {
@@ -99,21 +124,34 @@ module.exports = (dht) => {
       }
 
       // need more, query the network
+      /** @type {LimitedPeerList[]} */
       const paths = []
-      const query = new Query(dht, key.bytes, (pathIndex, numPaths) => {
+
+      /**
+       *
+       * @param {number} pathIndex
+       * @param {number} numPaths
+       */
+      function makePath (pathIndex, numPaths) {
         // This function body runs once per disjoint path
         const pathSize = utils.pathSize(n - out.length, numPaths)
         const pathProviders = new LimitedPeerList(pathSize)
         paths.push(pathProviders)
 
-        // Here we return the query function to use on this particular disjoint path
-        return async (peer) => {
+        /**
+         * The query function to use on this particular disjoint path
+         *
+         * @param {PeerId} peer
+         */
+        async function queryDisjointPath (peer) {
           const msg = await findProvidersSingle(peer, key)
           const provs = msg.providerPeers
-          dht._log('(%s) found %s provider entries', dht.peerId.toB58String(), provs.length)
+          dht._log(`Found ${provs.length} provider entries for ${key}`)
 
           provs.forEach((prov) => {
-            pathProviders.push({ id: prov.id })
+            pathProviders.push({
+              ...prov
+            })
           })
 
           // hooray we have all that we want
@@ -124,8 +162,11 @@ module.exports = (dht) => {
           // it looks like we want some more
           return { closerPeers: msg.closerPeers }
         }
-      })
 
+        return queryDisjointPath
+      }
+
+      const query = new Query(dht, key.bytes, makePath)
       const peers = dht.routingTable.closestPeers(key.bytes, dht.kBucketSize)
 
       try {

@@ -3,16 +3,26 @@
 const errcode = require('err-code')
 const pTimeout = require('p-timeout')
 const uint8ArrayEquals = require('uint8arrays/equals')
+const uint8ArrayToString = require('uint8arrays/to-string')
 const libp2pRecord = require('libp2p-record')
-
 const c = require('../constants')
 const Query = require('../query')
-
 const utils = require('../utils')
-
 const Record = libp2pRecord.Record
 
+/**
+ * @typedef {import('peer-id')} PeerId
+ * @typedef {import('../query').DHTQueryResult} DHTQueryResult
+ */
+
+/**
+ * @param {import('../')} dht
+ */
 module.exports = (dht) => {
+  /**
+   * @param {Uint8Array} key
+   * @param {Uint8Array} rec
+   */
   const putLocal = async (key, rec) => { // eslint-disable-line require-await
     return dht.datastore.put(utils.bufferToKey(key), rec)
   }
@@ -22,18 +32,17 @@ module.exports = (dht) => {
    * the local datastore.
    *
    * @param {Uint8Array} key
-   * @returns {Promise<Record>}
-   *
-   * @private
    */
   const getLocal = async (key) => {
-    dht._log('getLocal %b', key)
+    dht._log(`getLocal ${uint8ArrayToString(key, 'base32')}`)
 
     const raw = await dht.datastore.get(utils.bufferToKey(key))
-    dht._log('found %b in local datastore', key)
+    dht._log(`found ${uint8ArrayToString(key, 'base32')} in local datastore`)
+
     const rec = Record.deserialize(raw)
 
     await dht._verifyRecordLocally(rec)
+
     return rec
   }
 
@@ -41,11 +50,8 @@ module.exports = (dht) => {
    * Send the best record found to any peers that have an out of date record.
    *
    * @param {Uint8Array} key
-   * @param {Array<Object>} vals - values retrieved from the DHT
-   * @param {Object} best - the best record that was found
-   * @returns {Promise}
-   *
-   * @private
+   * @param {import('../query').DHTQueryValue[]} vals - values retrieved from the DHT
+   * @param {Uint8Array} best - the best record that was found
    */
   const sendCorrectionRecord = async (key, vals, best) => {
     const fixupRec = await utils.createPutRecord(key, best)
@@ -78,10 +84,9 @@ module.exports = (dht) => {
   return {
     /**
      * Store the given key/value pair locally, in the datastore.
+     *
      * @param {Uint8Array} key
      * @param {Uint8Array} rec - encoded record
-     * @returns {Promise<void>}
-     * @private
      */
     async _putLocal (key, rec) { // eslint-disable-line require-await
       return putLocal(key, rec)
@@ -92,9 +97,8 @@ module.exports = (dht) => {
      *
      * @param {Uint8Array} key
      * @param {Uint8Array} value
-     * @param {Object} [options] - put options
+     * @param {object} [options] - put options
      * @param {number} [options.minPeers] - minimum number of peers required to successfully put (default: closestPeers.length)
-     * @returns {Promise<void>}
      */
     async put (key, value, options = {}) {
       dht._log('PutValue %b', key)
@@ -134,9 +138,8 @@ module.exports = (dht) => {
      * Times out after 1 minute by default.
      *
      * @param {Uint8Array} key
-     * @param {Object} [options] - get options
+     * @param {object} [options] - get options
      * @param {number} [options.timeout] - optional timeout (default: 60000)
-     * @returns {Promise<Uint8Array>}
      */
     async get (key, options = {}) {
       options.timeout = options.timeout || c.minute
@@ -173,16 +176,15 @@ module.exports = (dht) => {
      *
      * @param {Uint8Array} key
      * @param {number} nvals
-     * @param {Object} [options] - get options
+     * @param {object} [options] - get options
      * @param {number} [options.timeout] - optional timeout (default: 60000)
-     * @returns {Promise<Array<{from: PeerId, val: Uint8Array}>>}
      */
     async getMany (key, nvals, options = {}) {
       options.timeout = options.timeout || c.minute
 
       dht._log('getMany %b (%s)', key, nvals)
 
-      let vals = []
+      const vals = []
       let localRec
 
       try {
@@ -204,9 +206,8 @@ module.exports = (dht) => {
         return vals
       }
 
-      const paths = []
       const id = await utils.convertBuffer(key)
-      const rtp = dht.routingTable.closestPeers(id, this.kBucketSize)
+      const rtp = dht.routingTable.closestPeers(id, dht.kBucketSize)
 
       dht._log('peers in rt: %d', rtp.length)
 
@@ -220,15 +221,23 @@ module.exports = (dht) => {
         return vals
       }
 
-      // we have peers, lets do the actual query to them
-      const query = new Query(dht, key, (pathIndex, numPaths) => {
-        // This function body runs once per disjoint path
-        const pathSize = utils.pathSize(nvals - vals.length, numPaths)
-        const pathVals = []
-        paths.push(pathVals)
+      const valsLength = vals.length
 
-        // Here we return the query function to use on this particular disjoint path
-        return async (peer) => {
+      /**
+       * @param {number} pathIndex
+       * @param {number} numPaths
+       */
+      function createQuery (pathIndex, numPaths) {
+        // This function body runs once per disjoint path
+        const pathSize = utils.pathSize(nvals - valsLength, numPaths)
+        let queryResults = 0
+
+        /**
+         * Here we return the query function to use on this particular disjoint path
+         *
+         * @param {PeerId} peer
+         */
+        async function disjointPathQuery (peer) {
           let rec, peers, lookupErr
           try {
             const results = await dht._getValueOrPeers(peer, key)
@@ -242,37 +251,49 @@ module.exports = (dht) => {
             lookupErr = err
           }
 
-          const res = { closerPeers: peers }
+          /** @type {import('../query').QueryResult} */
+          const res = {
+            closerPeers: peers
+          }
 
-          if ((rec && rec.value) || lookupErr) {
-            pathVals.push({
-              val: rec && rec.value,
+          if (rec && rec.value) {
+            vals.push({
+              val: rec.value,
               from: peer
             })
+
+            queryResults++
+          } else if (lookupErr) {
+            vals.push({
+              err: lookupErr,
+              from: peer
+            })
+
+            queryResults++
           }
 
           // enough is enough
-          if (pathVals.length >= pathSize) {
+          if (queryResults >= pathSize) {
             res.pathComplete = true
           }
 
           return res
         }
-      })
 
-      let error
+        return disjointPathQuery
+      }
+
+      // we have peers, lets send the actual query to them
+      const query = new Query(dht, key, createQuery)
+
       try {
         await pTimeout(query.run(rtp), options.timeout)
       } catch (err) {
-        error = err
-      }
-      query.stop()
-
-      // combine vals from each path
-      vals = [].concat.apply(vals, paths).slice(0, nvals)
-
-      if (error && vals.length === 0) {
-        throw error
+        if (vals.length === 0) {
+          throw err
+        }
+      } finally {
+        query.stop()
       }
 
       return vals
