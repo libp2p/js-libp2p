@@ -1,6 +1,6 @@
 {
   "name": "libp2p-bootstrap",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
