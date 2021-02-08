@@ -1,3 +1,12 @@
+## [0.12.2](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.12.1...v0.12.2) (2021-02-08)
+
+
+### Features
+
+* add types and update deps ([#111](https://github.com/libp2p/js-libp2p-bootstrap/issues/111)) ([269b807](https://github.com/libp2p/js-libp2p-bootstrap/commit/269b80782c4640dbbb7d66de0345703086c03f24))
+
+
+
 <a name="0.12.1"></a>
 ## [0.12.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.11.0...v0.12.1) (2020-08-11)
 
