@@ -1,3 +1,12 @@
+## [0.15.2](https://github.com/libp2p/js-libp2p-websockets/compare/v0.15.1...v0.15.2) (2021-02-09)
+
+
+### Bug Fixes
+
+* add error event handler ([#118](https://github.com/libp2p/js-libp2p-websockets/issues/118)) ([577d350](https://github.com/libp2p/js-libp2p-websockets/commit/577d3505f559b153ec9e0bbca7d31d2f164712bc))
+
+
+
 ## [0.15.1](https://github.com/libp2p/js-libp2p-websockets/compare/v0.15.0...v0.15.1) (2021-02-05)
 
 
