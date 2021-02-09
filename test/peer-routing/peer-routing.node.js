@@ -132,6 +132,10 @@ describe('peer-routing', () => {
 
     afterEach(() => node.stop())
 
+    it('should only have one router', () => {
+      expect(node.peerRouting._routers).to.have.lengthOf(1)
+    })
+
     it('should use the delegate router to find peers', async () => {
       const deferred = pDefer()
       const [remotePeerId] = await peerUtils.createPeerId({ fixture: false })
