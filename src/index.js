@@ -4,8 +4,11 @@ const connect = require('it-ws/client')
 const withIs = require('class-is')
 const toUri = require('multiaddr-to-uri')
 const { AbortError } = require('abortable-iterator')
+const pDefer = require('p-defer')
 
-const log = require('debug')('libp2p:websockets')
+const debug = require('debug')
+const log = debug('libp2p:websockets')
+log.error = debug('libp2p:websockets:error')
 const env = require('ipfs-utils/src/env')
 
 const createListener = require('./listener')
@@ -63,10 +66,24 @@ class WebSockets {
     const cOpts = ma.toOptions()
     log('dialing %s:%s', cOpts.host, cOpts.port)
 
+    const errorPromise = pDefer()
+    const errfn = (err) => {
+      const msg = `connection error: ${err.message}`
+      log.error(msg)
+
+      errorPromise.reject(err)
+    }
+
     const rawSocket = connect(toUri(ma), Object.assign({ binary: true }, options))
 
+    if (rawSocket.socket.on) {
+      rawSocket.socket.on('error', errfn)
+    } else {
+      rawSocket.socket.onerror = errfn
+    }
+
     if (!options.signal) {
-      await rawSocket.connected()
+      await Promise.race([rawSocket.connected(), errorPromise.promise])
 
       log('connected %s', ma)
       return rawSocket
@@ -77,7 +94,10 @@ class WebSockets {
     const abort = new Promise((resolve, reject) => {
       onAbort = () => {
         reject(new AbortError())
-        rawSocket.close()
+        // FIXME: https://github.com/libp2p/js-libp2p-websockets/issues/121
+        setTimeout(() => {
+          rawSocket.close()
+        })
       }
 
       // Already aborted?
@@ -86,7 +106,7 @@ class WebSockets {
     })
 
     try {
-      await Promise.race([abort, rawSocket.connected()])
+      await Promise.race([abort, errorPromise.promise, rawSocket.connected()])
     } finally {
       options.signal.removeEventListener('abort', onAbort)
     }

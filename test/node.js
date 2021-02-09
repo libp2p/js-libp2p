@@ -5,6 +5,7 @@
 const https = require('https')
 const fs = require('fs')
 
+const AbortController = require('abort-controller').default
 const { expect } = require('aegir/utils/chai')
 const multiaddr = require('multiaddr')
 const goodbye = require('it-goodbye')
@@ -222,6 +223,16 @@ describe('dial', () => {
       const result = await pipe(s, conn, s)
 
       expect(result).to.be.eql([uint8ArrayFromString('hey')])
+    })
+
+    it('dial should throw on immediate abort', async () => {
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/0/ws')
+      const controller = new AbortController()
+
+      const conn = ws.dial(ma, { signal: controller.signal })
+      controller.abort()
+
+      await expect(conn).to.eventually.be.rejected()
     })
 
     it('should resolve port 0', async () => {
