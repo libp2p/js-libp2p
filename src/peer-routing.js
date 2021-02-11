@@ -36,7 +36,7 @@ class PeerRouting {
     this._routers = libp2p._modules.peerRouting || []
 
     // If we have the dht, add it to the available peer routers
-    if (libp2p._dht) {
+    if (libp2p._dht && libp2p._config.dht.enabled) {
       this._routers.push(libp2p._dht)
     }
 

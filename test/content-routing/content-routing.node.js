@@ -129,6 +129,10 @@ describe('content-routing', () => {
 
     afterEach(() => node.stop())
 
+    it('should only have one router', () => {
+      expect(node.contentRouting.routers).to.have.lengthOf(1)
+    })
+
     it('should use the delegate router to provide', () => {
       const deferred = pDefer()
 

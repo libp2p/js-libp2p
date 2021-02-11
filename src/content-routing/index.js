@@ -35,7 +35,7 @@ class ContentRouting {
     this.dht = libp2p._dht
 
     // If we have the dht, add it to the available content routers
-    if (this.dht) {
+    if (this.dht && libp2p._config.dht.enabled) {
       this.routers.push(this.dht)
     }
   }
