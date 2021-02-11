@@ -107,9 +107,7 @@ describe('content-routing', () => {
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
-      }), [
-        multiaddr('/ip4/0.0.0.0/tcp/60197')
-      ])
+      }))
 
       ;[node] = await peerUtils.createPeer({
         config: mergeOptions(baseOptions, {
@@ -253,9 +251,7 @@ describe('content-routing', () => {
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
-      }), [
-        multiaddr('/ip4/0.0.0.0/tcp/60197')
-      ])
+      }))
 
       ;[node] = await peerUtils.createPeer({
         config: mergeOptions(routingOptions, {
