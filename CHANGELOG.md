@@ -1,3 +1,12 @@
+## [0.30.8](https://github.com/libp2p/js-libp2p/compare/v0.30.7...v0.30.8) (2021-02-11)
+
+
+### Bug Fixes
+
+* routers should only use dht if enabled ([#885](https://github.com/libp2p/js-libp2p/issues/885)) ([a34d2bb](https://github.com/libp2p/js-libp2p/commit/a34d2bbcc3d69ec3006137a909a7e8c53b9d378e))
+
+
+
 ## [0.30.7](https://github.com/libp2p/js-libp2p/compare/v0.30.6...v0.30.7) (2021-02-01)
 
 
