@@ -119,7 +119,6 @@ describe('Dialing (direct, WebSockets)', () => {
 
     await expect(dialer.connectToPeer(unsupportedAddr))
       .to.eventually.be.rejectedWith(AggregateError)
-      .and.to.have.nested.property('._errors[0].code', ErrorCodes.ERR_TRANSPORT_DIAL_FAILED)
   })
 
   it('should be able to connect to a given peer', async () => {
@@ -151,7 +150,6 @@ describe('Dialing (direct, WebSockets)', () => {
 
     await expect(dialer.connectToPeer(peerId))
       .to.eventually.be.rejectedWith(AggregateError)
-      .and.to.have.nested.property('._errors[0].code', ErrorCodes.ERR_TRANSPORT_DIAL_FAILED)
   })
 
   it('should abort dials on queue task timeout', async () => {
