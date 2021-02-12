@@ -231,8 +231,7 @@ class AutoRelay {
 
     // Try to listen on known peers that are not connected
     for (const peerId of knownHopsToDial) {
-      const connection = await this._libp2p.dial(peerId)
-      await this._addListenRelay(connection, peerId.toB58String())
+      await this._tryToListenOnRelay(peerId)
 
       // Check if already listening on enough relays
       if (this._listenRelays.size >= this.maxListeners) {
@@ -247,12 +246,11 @@ class AutoRelay {
         if (!provider.multiaddrs.length) {
           continue
         }
+
         const peerId = provider.id
-
         this._peerStore.addressBook.add(peerId, provider.multiaddrs)
-        const connection = await this._libp2p.dial(peerId)
 
-        await this._addListenRelay(connection, peerId.toB58String())
+        await this._tryToListenOnRelay(peerId)
 
         // Check if already listening on enough relays
         if (this._listenRelays.size >= this.maxListeners) {
@@ -261,6 +259,15 @@ class AutoRelay {
       }
     } catch (err) {
       log.error(err)
+    }
+  }
+
+  async _tryToListenOnRelay (peerId) {
+    try {
+      const connection = await this._libp2p.dial(peerId)
+      await this._addListenRelay(connection, peerId.toB58String())
+    } catch (err) {
+      log.error(`could not connect and listen on known hop relay ${peerId.toB58String()}`)
     }
   }
 }

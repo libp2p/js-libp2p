@@ -186,6 +186,23 @@ describe('addressBook', () => {
       throw new Error('invalid multiaddr should throw error')
     })
 
+    it('does not emit event if no addresses are added', async () => {
+      const defer = pDefer()
+
+      peerStore.on('peer', () => {
+        defer.reject()
+      })
+
+      ab.add(peerId, [])
+
+      // Wait 50ms for incorrect second event
+      setTimeout(() => {
+        defer.resolve()
+      }, 50)
+
+      await defer.promise
+    })
+
     it('adds the new content and emits change event', () => {
       const defer = pDefer()
 

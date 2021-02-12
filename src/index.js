@@ -700,7 +700,7 @@ class Libp2p extends EventEmitter {
         try {
           await this.dialer.connectToPeer(peerId)
         } catch (err) {
-          log.error('could not connect to discovered peer', err)
+          log.error(`could not connect to discovered peer ${peerId.toB58String()} with ${err}`)
         }
       }
     }

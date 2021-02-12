@@ -3,6 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const delay = require('delay')
+const pDefer = require('p-defer')
 const pWaitFor = require('p-wait-for')
 const sinon = require('sinon')
 const nock = require('nock')
@@ -370,6 +371,50 @@ describe('auto-relay', () => {
       await pWaitFor(() => relayLibp2p1.transportManager.listen.callCount === 2)
       expect(autoRelay1._listenRelays.size).to.equal(1)
       expect(relayLibp2p1.connectionManager.size).to.eql(1)
+    })
+
+    it('should not fail when trying to dial unreachable peers to add as hop relay and replaced removed ones', async () => {
+      const defer = pDefer()
+      // Spy if a connected peer is being added as listen relay
+      sinon.spy(autoRelay1, '_addListenRelay')
+      sinon.spy(relayLibp2p1.transportManager, 'listen')
+
+      // Discover one relay and connect
+      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
+      await relayLibp2p1.dial(relayLibp2p2.peerId)
+
+      // Discover an extra relay and connect to gather its Hop support
+      relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
+      await relayLibp2p1.dial(relayLibp2p3.peerId)
+
+      // Wait for both peer to be attempted to added as listen relay
+      await pWaitFor(() => autoRelay1._addListenRelay.callCount === 2)
+      expect(autoRelay1._listenRelays.size).to.equal(1)
+      expect(relayLibp2p1.connectionManager.size).to.equal(2)
+
+      // Only one will be used for listeninng
+      expect(relayLibp2p1.transportManager.listen.callCount).to.equal(1)
+
+      // Disconnect not used listen relay
+      await relayLibp2p1.hangUp(relayLibp2p3.peerId)
+
+      expect(autoRelay1._listenRelays.size).to.equal(1)
+      expect(relayLibp2p1.connectionManager.size).to.equal(1)
+
+      // Stub dial
+      sinon.stub(relayLibp2p1, 'dial').callsFake(() => {
+        defer.resolve()
+        return Promise.reject(new Error('failed to dial'))
+      })
+
+      // Remove peer used as relay from peerStore and disconnect it
+      relayLibp2p1.peerStore.delete(relayLibp2p2.peerId)
+      await relayLibp2p1.hangUp(relayLibp2p2.peerId)
+      expect(autoRelay1._listenRelays.size).to.equal(0)
+      expect(relayLibp2p1.connectionManager.size).to.equal(0)
+
+      // Wait for failed dial
+      await defer.promise
     })
   })
 

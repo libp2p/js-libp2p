@@ -229,6 +229,11 @@ class AddressBook extends Book {
     const addresses = this._toAddresses(multiaddrs)
     const id = peerId.toB58String()
 
+    // Not add unavailable addresses
+    if (!addresses.length) {
+      return this
+    }
+
     const entry = this.data.get(id)
 
     if (entry && entry.addresses) {
