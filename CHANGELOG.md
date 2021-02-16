@@ -1,3 +1,12 @@
+# [0.21.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.20.6...v0.21.0) (2021-02-16)
+
+
+### Features
+
+* add types and update all deps ([#214](https://github.com/libp2p/js-libp2p-kad-dht/issues/214)) ([7195282](https://github.com/libp2p/js-libp2p-kad-dht/commit/71952820ef3f737204b7a615db69ae680ef652a8))
+
+
+
 <a name="0.20.6"></a>
 ## [0.20.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.20.5...v0.20.6) (2021-01-26)
 
