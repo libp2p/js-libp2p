@@ -2,13 +2,13 @@
 
 A Peer Discovery module enables libp2p to find peers to connect to. Think of these mechanisms as ways to join the rest of the network, as railing points.
 
-With these system, a libp2p node can both have a set of nodes to always connect on boot (bootstraper nodes), discover nodes through locality (e.g connected in the same LAN) or through serendipity (random walks on a DHT).
+With this system, a libp2p node can both have a set of nodes to always connect on boot (bootstraper nodes), discover nodes through locality (e.g connected in the same LAN) or through serendipity (random walks on a DHT).
 
 These mechanisms save configuration and enable a node to operate without any explicit dials, it will just work. Once new peers are discovered, their known data is stored in the peer's PeerStore.
 
 ## 1. Bootstrap list of Peers when booting a node
 
-For this demo, we will connect to IPFS default bootstrapper nodes and so, we will need to support the same set of features those nodes have, that are: TCP, mplex and NOISE. You can see the complete example at [1.js](./1.js).
+For this demo, we will connect to IPFS default bootstrapper nodes and so, we will need to support the same set of features those nodes have, that are: TCP, mplex, and NOISE. You can see the complete example at [1.js](./1.js).
 
 First, we create our libp2p node.
 
@@ -16,7 +16,7 @@ First, we create our libp2p node.
 const Libp2p = require('libp2p')
 const Bootstrap = require('libp2p-bootstrap')
 
-const node = Libp2p.create({
+const node = await Libp2p.create({
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
@@ -203,7 +203,7 @@ const createNode = async (bootstrapers) => {
 }
 ```
 
-We will use the `libp2p-relay-server` as bootstrap nodes for the libp2p nodes, so that they establish a connection with the relay after starting. As a result, after they establish a connection with the relay, the pubsub discovery will kick in an the relay will advertise them.
+We will use the `libp2p-relay-server` as bootstrap nodes for the libp2p nodes, so that they establish a connection with the relay after starting. As a result, after they establish a connection with the relay, the pubsub discovery will kick in and the relay will advertise them.
 
 ```js
 const relay = await createRelayServer({
@@ -254,5 +254,5 @@ This is really useful when running libp2p in constrained environments like a bro
 There are plenty more Peer Discovery Mechanisms out there, you can:
 
 - Find one in [libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star). Yes, a transport with discovery capabilities! This happens because WebRTC requires a rendezvous point for peers to exchange [SDP](https://tools.ietf.org/html/rfc4317) offer, which means we have one or more points that can introduce peers to each other. Think of it as MulticastDNS for the Web, as in MulticastDNS only works in LAN.
-- Any DHT will offer you a discovery capability. You can simple _random-walk_ the routing tables to find other peers to connect to. For example [libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht) can be used for peer discovery. An example how to configure it to enable random walks can be found [here](https://github.com/libp2p/js-libp2p/blob/v0.28.4/doc/CONFIGURATION.md#customizing-dht).
+- Any DHT will offer you a discovery capability. You can simple _random-walk_ the routing tables to find other peers to connect to. For example [libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht) can be used for peer discovery. An example of how to configure it to enable random walks can be found [here](https://github.com/libp2p/js-libp2p/blob/v0.28.4/doc/CONFIGURATION.md#customizing-dht).
 - You can create your own Discovery service, a registry, a list, a radio beacon, you name it!
