@@ -4,31 +4,35 @@ const path = require('path')
 const execa = require('execa')
 const pDefer = require('p-defer')
 const uint8ArrayToString = require('uint8arrays/to-string')
+const { chromium } = require('playwright');
 
-function startProcess (name, args = []) {
+function startNode (name, args = []) {
     return execa('node', [path.join(__dirname, name), ...args], {
         cwd: path.resolve(__dirname),
         all: true
     })
 }
 
+function startBrowser (name, args = []) {
+    return execa('parcel', [path.join(__dirname, name), ...args], {
+        preferLocal: true,
+        localDir: __dirname,
+        cwd: __dirname,
+        all: true
+    })
+}
+
 async function test () {
-    let listenerOutput = ''
-    let listenerAddr
-
-    const listenerProcReady = pDefer()
-
     // Step 1, listener process
+    const listenerProcReady = pDefer()
+    let listenerOutput = ''
     process.stdout.write('listener.js\n')
+    const listenerProc = startNode('listener.js')
 
-    const listenerProc = startProcess('listener.js')
     listenerProc.all.on('data', async (data) => {
         process.stdout.write(data)
-
         listenerOutput += uint8ArrayToString(data)
-        if (listenerOutput.includes('Listening on:') && listenerOutput.includes('/p2p/')) {
-            listenerAddr = listenerOutput.trim().split('Listening on:\n')[1].split('\n')[0]
-            //TODO What is the recommended way to paste `listenerAddr` into the `dialer.js`?
+        if (listenerOutput.includes('Listening on:') && listenerOutput.includes('12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m')) {
             listenerProcReady.resolve()
         }
     })
@@ -36,10 +40,48 @@ async function test () {
     await listenerProcReady.promise
     process.stdout.write('==================================================================\n')
 
+    // Step 2, dialer process
+    process.stdout.write('dialer.js\n')
+    let dialerUrl = ''
+    const dialerProc = startBrowser('index.html')
 
+    dialerProc.all.on('data', async (chunk) => {
+        /**@type {string} */
+        const out = chunk.toString()
+
+        if (out.includes('Server running at')) {
+            dialerUrl = out.replace('Server running at ', '')
+        }
+
+        if (out.includes('✨  Built in ')) {
+            try {
+                const browser = await chromium.launch();
+                const page = await browser.newPage();
+                await page.goto(dialerUrl);
+                await page.waitForFunction(selector => document.querySelector(selector).innerText === 'libp2p started!', '#status')
+                await page.waitForFunction(
+                  selector => {
+                      const text = document.querySelector(selector).innerText
+                      return text.includes('libp2p id is') &&
+                        text.includes('Found peer') &&
+                        text.includes('Connected to')
+                  },
+                  '#output',
+                  { timeout: 5000 }
+                )
+                await browser.close();
+            } catch (err) {
+                console.error(err)
+                process.exit(1)
+            } finally {
+                dialerProc.cancel()
+            }
+        }
+    })
 
     await Promise.all([
         listenerProc,
+        dialerProc,
     ]).catch((err) => {
         if (err.signal !== 'SIGTERM') {
             throw err

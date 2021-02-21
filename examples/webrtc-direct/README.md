@@ -1,7 +1,7 @@
 ### Webrtc-direct example
 
-An example that uses [js-libp2p-webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct) for connecting a
-nodejs libp2p and a browser libp2p clients. To run the example:
+An example that uses [js-libp2p-webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct) for connecting
+nodejs libp2p and browser libp2p clients. To run the example:
 
 ## 0. Run a nodejs libp2p listener
 
