@@ -53,6 +53,12 @@
   "browser": {
     "@motrix/nat-api": false
   },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "ignorePatterns": [
+      "!.aegir.js"
+    ]
+  },
   "dependencies": {
     "@motrix/nat-api": "^0.3.1",
     "abort-controller": "^3.0.0",
@@ -110,7 +116,7 @@
   "devDependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
     "abortable-iterator": "^3.0.0",
-    "aegir": "^29.2.0",
+    "aegir": "ipfs/aegir#feat/remove-webpack-karma",
     "chai-bytes": "^0.1.2",
     "chai-string": "^1.5.0",
     "delay": "^4.4.0",
@@ -141,7 +147,9 @@
     "p-wait-for": "^3.2.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.2.4",
-    "uint8arrays": "^2.0.5"
+    "uint8arrays": "^2.0.5",
+    "url": "^0.11.0",
+    "util": "^0.12.3"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
