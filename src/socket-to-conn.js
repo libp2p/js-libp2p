@@ -38,7 +38,8 @@ module.exports = (stream, options = {}) => {
     conn: stream,
 
     localAddr: options.localAddr || (stream.localAddress && stream.localPort
-      ? toMultiaddr(stream.localAddress, stream.localPort) : undefined),
+      ? toMultiaddr(stream.localAddress, stream.localPort)
+      : undefined),
 
     // If the remote address was passed, use it - it may have the peer ID encapsulated
     remoteAddr: options.remoteAddr || toMultiaddr(stream.remoteAddress, stream.remotePort),

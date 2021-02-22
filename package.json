@@ -41,26 +41,26 @@
     "abortable-iterator": "^3.0.0",
     "class-is": "^1.1.0",
     "debug": "^4.2.0",
-    "err-code": "^2.0.3",
-    "ipfs-utils": "^4.0.1",
+    "err-code": "^3.0.1",
+    "ipfs-utils": "^6.0.1",
     "it-ws": "^3.0.2",
     "libp2p-utils": "^0.2.1",
     "mafmt": "^8.0.1",
     "multiaddr": "^8.1.1",
     "multiaddr-to-uri": "^6.0.0",
     "p-defer": "^3.0.0",
-    "p-timeout": "^3.2.0"
+    "p-timeout": "^4.1.0"
   },
   "devDependencies": {
     "abort-controller": "^3.0.0",
-    "aegir": "^28.1.0",
+    "aegir": "^30.3.0",
     "bl": "^4.0.0",
     "is-loopback-addr": "^1.0.1",
     "it-goodbye": "^2.0.1",
     "it-pipe": "^1.0.1",
-    "libp2p-interfaces": "^0.7.1",
+    "libp2p-interfaces": "^0.8.3",
     "streaming-iterables": "^5.0.2",
-    "uint8arrays": "^1.1.0"
+    "uint8arrays": "^2.1.2"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
