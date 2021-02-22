@@ -67,7 +67,7 @@ async function test () {
                         text.includes('Connected to')
                   },
                   '#output',
-                  { timeout: 5000 }
+                  { timeout: 10000 }
                 )
                 await browser.close();
             } catch (err) {
@@ -75,6 +75,7 @@ async function test () {
                 process.exit(1)
             } finally {
                 dialerProc.cancel()
+                listenerProc.kill()
             }
         }
     })
