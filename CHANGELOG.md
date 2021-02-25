@@ -1,3 +1,12 @@
+## [0.30.9](https://github.com/libp2p/js-libp2p/compare/v0.30.8...v0.30.9) (2021-02-25)
+
+
+### Bug Fixes
+
+* transport manager fault tolerance should include tolerance to transport listen fail ([#893](https://github.com/libp2p/js-libp2p/issues/893)) ([3f314d5](https://github.com/libp2p/js-libp2p/commit/3f314d5e90f74583b721386d0c9c5d8363cd4de7))
+
+
+
 ## [0.30.8](https://github.com/libp2p/js-libp2p/compare/v0.30.7...v0.30.8) (2021-02-11)
 
 
