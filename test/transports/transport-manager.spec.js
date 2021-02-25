@@ -209,11 +209,29 @@ describe('libp2p.transportManager (dial only)', () => {
     throw new Error('it should fail to start if multiaddr fails to listen')
   })
 
-  it('does not fail to start if multiaddr fails to listen when supporting dial only mode', async () => {
+  it('does not fail to start if provided listen multiaddr are not compatible to configured transports (when supporting dial only mode)', async () => {
     libp2p = new Libp2p({
       peerId,
       addresses: {
         listen: [multiaddr('/ip4/127.0.0.1/tcp/0')]
+      },
+      transportManager: {
+        faultTolerance: FaultTolerance.NO_FATAL
+      },
+      modules: {
+        transport: [Transport],
+        connEncryption: [Crypto]
+      }
+    })
+
+    await libp2p.start()
+  })
+
+  it('does not fail to start if provided listen multiaddr fail to listen on configured transports (when supporting dial only mode)', async () => {
+    libp2p = new Libp2p({
+      peerId,
+      addresses: {
+        listen: [multiaddr('/ip4/127.0.0.1/tcp/12345/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3/p2p-circuit')]
       },
       transportManager: {
         faultTolerance: FaultTolerance.NO_FATAL
