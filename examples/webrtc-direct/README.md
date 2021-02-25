@@ -15,7 +15,7 @@ Listening on:
 ```
 
 ## 1. Prepare a browser libp2p dialer
-Copy-paste the above address into the field `list` in `public/dialer.js`:
+Confirm that the above address is the same as the field `list` in `public/dialer.js`:
 ```js
     peerDiscovery: {
       [Bootstrap.tag]: {
@@ -28,6 +28,6 @@ Copy-paste the above address into the field `list` in `public/dialer.js`:
 
 ## 2. Run a browser libp2p dialer
 When in the root folder of this example, type `npm run dev` in terminal. You should see an address where you can browse
-the running client. Open this address in your browser. In my case the address was `http://127.0.0.1:12345`. In console
+the running client. Open this address in your browser. In console
 logs you should see logs about successful connection with the node client. In the output of node client you should see
 a log message about successful connection as well.
