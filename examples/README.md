@@ -8,7 +8,7 @@ Let us know if you find any issues, or if you want to contribute and add a new t
 
 - [Transports](./transports)
 - [Protocol and Stream Muxing](./protocol-and-stream-muxing)
-- [Encrypted Communications](./encrypted-communications)
+- [Connection Encryption](./connection-encryption)
 - [Discovery Mechanisms](./discovery-mechanisms)
 - [Peer and Content Routing](./peer-and-content-routing)
 - [PubSub](./pubsub)
