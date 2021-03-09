@@ -1,3 +1,12 @@
+## [0.30.10](https://github.com/libp2p/js-libp2p/compare/v0.30.9...v0.30.10) (2021-03-09)
+
+
+### Bug Fixes
+
+* conn mgr access to moving averages record object ([#897](https://github.com/libp2p/js-libp2p/issues/897)) ([5f702f3](https://github.com/libp2p/js-libp2p/commit/5f702f3481afd4ad4fbc89f0e9b75a6d56b03520))
+
+
+
 ## [0.30.9](https://github.com/libp2p/js-libp2p/compare/v0.30.8...v0.30.9) (2021-02-25)
 
 
