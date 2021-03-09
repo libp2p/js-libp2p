@@ -2,7 +2,7 @@
 
 const NatAPI = require('@motrix/nat-api')
 const debug = require('debug')
-const promisify = require('promisify-es6')
+const promisify = require('es6-promisify')
 const Multiaddr = require('multiaddr')
 const log = Object.assign(debug('libp2p:nat'), {
   error: debug('libp2p:nat:err')
