@@ -82,7 +82,7 @@ class Stats extends EventEmitter {
   /**
    * Returns a clone of the internal movingAverages
    *
-   * @returns {MovingAverage}
+   * @returns {Object}
    */
   get movingAverages () {
     return Object.assign({}, this._movingAverages)
