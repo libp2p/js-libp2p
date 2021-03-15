@@ -1,3 +1,13 @@
+<a name="0.19.1"></a>
+## [0.19.1](https://github.com/libp2p/js-libp2p-crypto/compare/v0.19.0...v0.19.1) (2021-03-15)
+
+
+### Bug Fixes
+
+* ed25519 key ID generation ([bc33769](https://github.com/libp2p/js-libp2p-crypto/commit/bc33769))
+
+
+
 <a name="0.19.0"></a>
 # [0.19.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.18.0...v0.19.0) (2021-01-15)
 
