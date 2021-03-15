@@ -2,9 +2,9 @@
 
 const sha = require('multihashing-async/src/sha')
 const protobuf = require('protons')
-const multibase = require('multibase')
 const errcode = require('err-code')
 const uint8ArrayEquals = require('uint8arrays/equals')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const crypto = require('./ed25519')
 const pbm = protobuf(require('./keys.proto'))
@@ -85,7 +85,7 @@ class Ed25519PrivateKey {
    */
   async id () {
     const hash = await this.public.hash()
-    return multibase.encode('base58btc', hash).toString().slice(1)
+    return uint8ArrayToString(hash, 'base58btc')
   }
 
   /**

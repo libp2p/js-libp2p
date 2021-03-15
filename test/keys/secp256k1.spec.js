@@ -11,6 +11,7 @@ const keysPBM = crypto.keys.keysPBM
 const randomBytes = crypto.randomBytes
 const secp256k1Crypto = require('../../src/keys/secp256k1')(randomBytes)
 const uint8ArrayFromString = require('uint8arrays/from-string')
+const fixtures = require('../fixtures/go-key-secp256k1')
 
 describe('secp256k1 keys', () => {
   let key
@@ -58,9 +59,10 @@ describe('secp256k1 keys', () => {
   })
 
   it('key id', async () => {
+    const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
+    const key = await secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data)
     const id = await key.id()
-    expect(id).to.exist()
-    expect(id).to.be.a('string')
+    expect(id).to.eql('QmPCyMBGEyifPtx5aa6k6wkY9N1eBf9vHK1eKfNc35q9uq')
   })
 
   it('should export a password encrypted libp2p-key', async () => {
@@ -254,8 +256,6 @@ describe('crypto functions', () => {
 })
 
 describe('go interop', () => {
-  const fixtures = require('../fixtures/go-key-secp256k1')
-
   it('loads a private key marshaled by go-libp2p-crypto', async () => {
     // we need to first extract the key data from the protobuf, which is
     // normally handled by js-libp2p-crypto

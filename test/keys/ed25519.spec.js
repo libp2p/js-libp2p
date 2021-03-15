@@ -80,9 +80,9 @@ describe('ed25519', function () {
   })
 
   it('key id', async () => {
+    const key = await crypto.keys.unmarshalPrivateKey(fixtures.verify.privateKey)
     const id = await key.id()
-    expect(id).to.exist()
-    expect(id).to.be.a('string')
+    expect(id).to.eql('QmUawW9qzMrBBiMrWQQMvoatadKZ9F4EwZCAMKnt3STLtz')
   })
 
   it('should export a password encrypted libp2p-key', async () => {

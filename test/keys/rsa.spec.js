@@ -59,9 +59,9 @@ describe('RSA', function () {
   })
 
   it('key id', async () => {
+    const key = await crypto.keys.unmarshalPrivateKey(uint8ArrayFromString('CAASqAkwggSkAgEAAoIBAQCk0O+6oNRxhcdZe2GxEDrFBkDV4TZFZnp2ly/dL1cGMBql/8oXPZgei6h7+P5zzfDq2YCfwbjbf0IVY1AshRl6B5VGE1WS+9p1y1OZxJf5os6V1ENnTi6FTcyuBl4BN8dmIKOif0hqgqflaT5OhfYZDXfbJyVQj4vb2+Stu2Xpph3nwqAnTw/7GC/7jrt2Cq6Tu1PoZi36wSwEPYW3eQ1HAYxZjTYYDXl2iyHygnTcbkGRwAQ7vjk+mW7u60zyoolCm9f6Y7c/orJ33DDUocbaGJLlHcfd8bioBwaZy/2m7q43X8pQs0Q1/iwUt0HHZj1YARmHKbh0zR31ciFiV37dAgMBAAECggEADtJBNKnA4QKURj47r0YT2uLwkqtBi6UnDyISalQXAdXyl4n0nPlrhBewC5H9I+HZr+zmTbeIjaiYgz7el1pSy7AB4v7bG7AtWZlyx6mvtwHGjR+8/f3AXjl8Vgv5iSeAdXUq8fJ7SyS7v3wi38HZOzCEXj9bci6ud5ODMYJgLE4gZD0+i1+/V9cpuYfGpS/gLTLEMQLiw/9o8NSZ7sAnxg0UlYhotqaQY23hvXPBOe+0oa95zl2n6XTxCafa3dQl/B6CD1tUq9dhbQew4bxqMq/mhRO9pREEqZ083Uh+u4PTc1BeHgIQaS864pHPb+AY1F7KDvPtHhdojnghp8d70QKBgQDeRYFxo6sd04ohY86Z/i9icVYIyCvfXAKnaMKeGUjK7ou6sDJwFX8W97+CzXpZ/vffsk/l5GGhC50KqrITxHAy/h5IjyDODfps7NMIp0Dm9sO4PWibbw3OOVBRc8w3b3i7I8MrUUA1nLHE1T1HA1rKOTz5jYhE0fi9XKiT1ciKOQKBgQC903w+n9y7M7eaMW7Z5/13kZ7PS3HlM681eaPrk8J4J+c6miFF40/8HOsmarS38v0fgTeKkriPz5A7aLzRHhSiOnp350JNM6c3sLwPEs2qx/CRuWWx1rMERatfDdUH6mvlK6QHu0QgSfQR27EO6a6XvVSJXbvFmimjmtIaz/IpxQKBgQDWJ9HYVAGC81abZTaiWK3/A4QJYhQjWNuVwPICsgnYvI4Uib+PDqcs0ffLZ38DRw48kek5bxpBuJbOuDhro1EXUJCNCJpq7jzixituovd9kTRyR3iKii2bDM2+LPwOTXDdnk9lZRugjCEbrPkleq33Ob7uEtfAty4aBTTHe6uEwQKBgQCB+2q8RyMSXNuADhFlzOFXGrOwJm0bEUUMTPrduRQUyt4e1qOqA3klnXe3mqGcxBpnlEe/76/JacvNom6Ikxx16a0qpYRU8OWz0KU1fR6vrrEgV98241k5t6sdL4+MGA1Bo5xyXtzLb1hdUh3vpDwVU2OrnC+To3iXus/b5EBiMQKBgEI1OaBcFiyjgLGEyFKoZbtzH1mdatTExfrAQqCjOVjQByoMpGhHTXwEaosvyYu63Pa8AJPT7juSGaiKYEJFcXO9BiNyVfmQiqSHJcYeuh+fmO9IlHRHgy5xaIIC00AHS2vC/gXwmXAdPis6BZqDJeiCuOLWJ94QXn8JBT8IgGAI', 'base64pad'))
     const id = await key.id()
-    expect(id).to.exist()
-    expect(id).to.be.a('string')
+    expect(id).to.eql('QmQgsppVMDUpe83wcAqaemKbYvHeF127gnSFQ1xFnBodVw')
   })
 
   describe('key equals', () => {
