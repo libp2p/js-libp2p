@@ -45,6 +45,7 @@
     "keypair": "^1.0.1",
     "multibase": "^3.0.0",
     "multicodec": "^2.0.0",
+    "multihashes": "^4.0.2",
     "multihashing-async": "^2.0.1",
     "node-forge": "^0.10.0",
     "pem-jwk": "^2.0.0",

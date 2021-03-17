@@ -4,8 +4,7 @@ const sha = require('multihashing-async/src/sha')
 const protobuf = require('protons')
 const errcode = require('err-code')
 const uint8ArrayEquals = require('uint8arrays/equals')
-const uint8ArrayToString = require('uint8arrays/to-string')
-
+const mh = require('multihashes')
 const crypto = require('./ed25519')
 const pbm = protobuf(require('./keys.proto'))
 const exporter = require('./exporter')
@@ -84,8 +83,8 @@ class Ed25519PrivateKey {
    * @returns {Promise<String>}
    */
   async id () {
-    const hash = await this.public.hash()
-    return uint8ArrayToString(hash, 'base58btc')
+    const encoding = mh.encode(this.public.bytes, 'identity')
+    return await mh.toB58String(encoding)
   }
 
   /**
