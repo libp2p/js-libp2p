@@ -1,3 +1,13 @@
+<a name="0.19.2"></a>
+## [0.19.2](https://github.com/libp2p/js-libp2p-crypto/compare/v0.19.1...v0.19.2) (2021-03-17)
+
+
+### Bug Fixes
+
+* ed25519 PeerID generation ([#186](https://github.com/libp2p/js-libp2p-crypto/issues/186)) ([1c16dd3](https://github.com/libp2p/js-libp2p-crypto/commit/1c16dd3)), closes [ipfs/js-ipfs#3591](https://github.com/ipfs/js-ipfs/issues/3591) [libp2p/js-libp2p-crypto#185](https://github.com/libp2p/js-libp2p-crypto/issues/185)
+
+
+
 <a name="0.19.1"></a>
 ## [0.19.1](https://github.com/libp2p/js-libp2p-crypto/compare/v0.19.0...v0.19.1) (2021-03-15)
 
