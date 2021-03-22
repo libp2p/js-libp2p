@@ -201,7 +201,7 @@ class Upgrader {
    * @private
    * @param {object} options
    * @param {string} options.cryptoProtocol - The crypto protocol that was negotiated
-   * @param {string} options.direction - One of ['inbound', 'outbound']
+   * @param {'inbound' | 'outbound'} options.direction - One of ['inbound', 'outbound']
    * @param {MultiaddrConnection} options.maConn - The transport layer connection
    * @param {MuxedStream | MultiaddrConnection} options.upgradedConn - A duplex connection returned from multiplexer and/or crypto selection
    * @param {MuxerFactory} [options.Muxer] - The muxer to be used for muxing
