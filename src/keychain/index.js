@@ -14,7 +14,7 @@ require('node-forge/lib/sha512')
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('interface-datastore/src/types').Datastore} Datastore
+ * @typedef {import('interface-datastore').Datastore} Datastore
  */
 
 const keyPrefix = '/pkcs8/'
