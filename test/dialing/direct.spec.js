@@ -52,7 +52,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
   it('should have appropriate defaults', () => {
     const dialer = new Dialer({ transportManager: localTM, peerStore })
-    expect(dialer.concurrency).to.equal(Constants.MAX_PARALLEL_DIALS)
+    expect(dialer.maxParallelDials).to.equal(Constants.MAX_PARALLEL_DIALS)
     expect(dialer.timeout).to.equal(Constants.DIAL_TIMEOUT)
   })
 
@@ -155,7 +155,7 @@ describe('Dialing (direct, WebSockets)', () => {
   it('should abort dials on queue task timeout', async () => {
     const dialer = new Dialer({
       transportManager: localTM,
-      timeout: 50,
+      dialTimeout: 50,
       peerStore: {
         addressBook: {
           add: () => {},
@@ -190,7 +190,7 @@ describe('Dialing (direct, WebSockets)', () => {
     const dialer = new Dialer({
       transportManager: localTM,
       addressSorter: addressSort.publicAddressesFirst,
-      concurrency: 3,
+      maxParallelDials: 3,
       peerStore
     })
 
@@ -211,7 +211,7 @@ describe('Dialing (direct, WebSockets)', () => {
   it('should dial to the max concurrency', async () => {
     const dialer = new Dialer({
       transportManager: localTM,
-      concurrency: 2,
+      maxParallelDials: 2,
       peerStore: {
         addressBook: {
           set: () => {},
@@ -249,7 +249,7 @@ describe('Dialing (direct, WebSockets)', () => {
   it('.destroy should abort pending dials', async () => {
     const dialer = new Dialer({
       transportManager: localTM,
-      concurrency: 2,
+      maxParallelDials: 2,
       peerStore: {
         addressBook: {
           set: () => {},
@@ -318,8 +318,8 @@ describe('Dialing (direct, WebSockets)', () => {
       })
 
       expect(libp2p.dialer).to.exist()
-      expect(libp2p.dialer.concurrency).to.equal(Constants.MAX_PARALLEL_DIALS)
-      expect(libp2p.dialer.perPeerLimit).to.equal(Constants.MAX_PER_PEER_DIALS)
+      expect(libp2p.dialer.maxParallelDials).to.equal(Constants.MAX_PARALLEL_DIALS)
+      expect(libp2p.dialer.maxDialsPerPeer).to.equal(Constants.MAX_PER_PEER_DIALS)
       expect(libp2p.dialer.timeout).to.equal(Constants.DIAL_TIMEOUT)
       // Ensure the dialer also has the transport manager
       expect(libp2p.transportManager).to.equal(libp2p.dialer.transportManager)
@@ -349,8 +349,8 @@ describe('Dialing (direct, WebSockets)', () => {
       libp2p = await Libp2p.create(config)
 
       expect(libp2p.dialer).to.exist()
-      expect(libp2p.dialer.concurrency).to.equal(config.dialer.maxParallelDials)
-      expect(libp2p.dialer.perPeerLimit).to.equal(config.dialer.maxDialsPerPeer)
+      expect(libp2p.dialer.maxParallelDials).to.equal(config.dialer.maxParallelDials)
+      expect(libp2p.dialer.maxDialsPerPeer).to.equal(config.dialer.maxDialsPerPeer)
       expect(libp2p.dialer.timeout).to.equal(config.dialer.dialTimeout)
     })
 

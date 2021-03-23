@@ -24,7 +24,7 @@ const Protocols = require('./pb/proto-book.proto')
 /**
  * @typedef {Object} PersistentPeerStoreProperties
  * @property {PeerId} peerId
- * @property {any} datastore
+ * @property {import('interface-datastore').Datastore} datastore
  *
  * @typedef {Object} PersistentPeerStoreOptions
  * @property {number} [threshold = 5] - Number of dirty peers allowed before commit data.

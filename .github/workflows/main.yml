@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: yarn
-    - run: yarn lint
+    - run: npm install
+    - run: npm run lint
     - uses: gozala/typescript-error-reporter-action@v1.0.8
-    - run: yarn build
+    - run: npm run build
     - run: yarn aegir dep-check
     - uses: ipfs/aegir/actions/bundle-size@master
       name: size
@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - run: yarn
+      - run: npm install
       - run: npx nyc --reporter=lcov aegir test -t node -- --bail
       - uses: codecov/codecov-action@v1
   test-chrome:
@@ -42,103 +42,103 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: npx aegir test -t browser -t webworker --bail
   test-firefox:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: npx aegir test -t browser -t webworker --bail -- --browsers FirefoxHeadless
   test-interop:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd node_modules/interop-libp2p && yarn && LIBP2P_JS=${GITHUB_WORKSPACE}/src/index.js npx aegir test -t node --bail
   test-auto-relay-example:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- auto-relay
   test-chat-example:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- chat
   test-connection-encryption-example:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- connection-encryption
   test-discovery-mechanisms-example:
     needs: check
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- discovery-mechanisms
   test-echo-example:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- echo
   test-libp2p-in-the-browser-example:
     needs: check
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- libp2p-in-the-browser
   test-peer-and-content-routing-example:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- peer-and-content-routing
   test-pnet-example:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- pnet
   test-protocol-and-stream-muxing-example:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- protocol-and-stream-muxing
   test-pubsub-example:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- pubsub
   test-transports-example:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- transports
   test-webrtc-direct-example:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      - run: npm install
       - run: cd examples && yarn && npm run test -- webrtc-direct

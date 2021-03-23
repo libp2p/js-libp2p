@@ -17,33 +17,39 @@ const {
 } = require('./errors')
 const isLoopback = require('libp2p-utils/src/multiaddr/is-loopback')
 
+const DEFAULT_TTL = 7200
+
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('./transport-manager')} TransportManager
  * @typedef {import('./address-manager')} AddressManager
  */
 
+/**
+ * @typedef {Object} NatManagerProperties
+ * @property {PeerId} peerId - The peer ID of the current node
+ * @property {TransportManager} transportManager - A transport manager
+ * @property {AddressManager} addressManager - An address manager
+ *
+ * @typedef {Object} NatManagerOptions
+ * @property {boolean} enabled - Whether to enable the NAT manager
+ * @property {string} [externalIp] - Pass a value to use instead of auto-detection
+ * @property {string} [description] - A string value to use for the port mapping description on the gateway
+ * @property {number} [ttl = DEFAULT_TTL] - How long UPnP port mappings should last for in seconds (minimum 1200)
+ * @property {boolean} [keepAlive] - Whether to automatically refresh UPnP port mappings when their TTL is reached
+ * @property {string} [gateway] - Pass a value to use instead of auto-detection
+ * @property {object} [pmp] - PMP options
+ * @property {boolean} [pmp.enabled] - Whether to enable PMP as well as UPnP
+ */
+
 function highPort (min = 1024, max = 65535) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-const DEFAULT_TTL = 7200
-
 class NatManager {
   /**
    * @class
-   * @param {object} options
-   * @param {PeerId} options.peerId - The peer ID of the current node
-   * @param {TransportManager} options.transportManager - A transport manager
-   * @param {AddressManager} options.addressManager - An address manager
-   * @param {boolean} options.enabled - Whether to enable the NAT manager
-   * @param {string} [options.externalIp] - Pass a value to use instead of auto-detection
-   * @param {string} [options.description] - A string value to use for the port mapping description on the gateway
-   * @param {number} [options.ttl] - How long UPnP port mappings should last for in seconds (minimum 1200)
-   * @param {boolean} [options.keepAlive] - Whether to automatically refresh UPnP port mappings when their TTL is reached
-   * @param {string} [options.gateway] - Pass a value to use instead of auto-detection
-   * @param {object} [options.pmp] - PMP options
-   * @param {boolean} [options.pmp.enabled] - Whether to enable PMP as well as UPnP
+   * @param {NatManagerProperties & NatManagerOptions} options
    */
   constructor ({ peerId, addressManager, transportManager, ...options }) {
     this._peerId = peerId

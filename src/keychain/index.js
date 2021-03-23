@@ -17,6 +17,26 @@ require('node-forge/lib/sha512')
  * @typedef {import('interface-datastore').Datastore} Datastore
  */
 
+/**
+ * @typedef {Object} DekOptions
+ * @property {string} hash
+ * @property {string} salt
+ * @property {number} iterationCount
+ * @property {number} keyLength
+ *
+ * @typedef {Object} KeychainOptions
+ * @property {string} pass
+ * @property {DekOptions} [dek]
+ */
+
+/**
+ * Information about a key.
+ *
+ * @typedef {Object} KeyInfo
+ * @property {string} id - The universally unique key id.
+ * @property {string} name - The local key name.
+ */
+
 const keyPrefix = '/pkcs8/'
 const infoPrefix = '/info/'
 const privates = new WeakMap()
@@ -86,14 +106,6 @@ function DsInfoName (name) {
 }
 
 /**
- * Information about a key.
- *
- * @typedef {Object} KeyInfo
- * @property {string} id - The universally unique key id.
- * @property {string} name - The local key name.
- */
-
-/**
  * Manages the lifecycle of a key. Keys are encrypted at rest using PKCS #8.
  *
  * A key in the store has two entries
@@ -106,7 +118,7 @@ class Keychain {
    * Creates a new instance of a key chain.
    *
    * @param {Datastore} store - where the key are.
-   * @param {object} options
+   * @param {KeychainOptions} options
    * @class
    */
   constructor (store, options) {
@@ -118,8 +130,8 @@ class Keychain {
     this.opts = mergeOptions(defaultOptions, options)
 
     // Enforce NIST SP 800-132
-    if (this.opts.passPhrase && this.opts.passPhrase.length < 20) {
-      throw new Error('passPhrase must be least 20 characters')
+    if (this.opts.pass && this.opts.pass.length < 20) {
+      throw new Error('pass must be least 20 characters')
     }
     if (this.opts.dek.keyLength < NIST.minKeyLength) {
       throw new Error(`dek.keyLength must be least ${NIST.minKeyLength} bytes`)
@@ -131,8 +143,8 @@ class Keychain {
       throw new Error(`dek.iterationCount must be least ${NIST.minIterationCount}`)
     }
 
-    const dek = this.opts.passPhrase ? crypto.pbkdf2(
-      this.opts.passPhrase,
+    const dek = this.opts.pass ? crypto.pbkdf2(
+      this.opts.pass,
       this.opts.dek.salt,
       this.opts.dek.iterationCount,
       this.opts.dek.keyLength,

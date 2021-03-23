@@ -38,9 +38,9 @@ const {
  *
  * @typedef {Object} DialerOptions
  * @property {(addresses: Address[]) => Address[]} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
- * @property {number} [concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
- * @property {number} [perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
- * @property {number} [timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
+ * @property {number} [maxParallelDials = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
+ * @property {number} [maxDialsPerPeer = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
+ * @property {number} [dialTimeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
  * @property {Record<string, Resolver>} [resolvers = {}] - multiaddr resolvers to use when dialing
  *
  * @typedef DialTarget
@@ -63,18 +63,18 @@ class Dialer {
     transportManager,
     peerStore,
     addressSorter = publicAddressesFirst,
-    concurrency = MAX_PARALLEL_DIALS,
-    timeout = DIAL_TIMEOUT,
-    perPeerLimit = MAX_PER_PEER_DIALS,
+    maxParallelDials = MAX_PARALLEL_DIALS,
+    dialTimeout = DIAL_TIMEOUT,
+    maxDialsPerPeer = MAX_PER_PEER_DIALS,
     resolvers = {}
   }) {
     this.transportManager = transportManager
     this.peerStore = peerStore
     this.addressSorter = addressSorter
-    this.concurrency = concurrency
-    this.timeout = timeout
-    this.perPeerLimit = perPeerLimit
-    this.tokens = [...new Array(concurrency)].map((_, index) => index)
+    this.maxParallelDials = maxParallelDials
+    this.timeout = dialTimeout
+    this.maxDialsPerPeer = maxDialsPerPeer
+    this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
     this._pendingDials = new Map()
 
     for (const [key, value] of Object.entries(resolvers)) {
@@ -208,7 +208,7 @@ class Dialer {
   }
 
   getTokens (num) {
-    const total = Math.min(num, this.perPeerLimit, this.tokens.length)
+    const total = Math.min(num, this.maxDialsPerPeer, this.tokens.length)
     const tokens = this.tokens.splice(0, total)
     log('%d tokens request, returning %d, %d remaining', num, total, this.tokens.length)
     return tokens

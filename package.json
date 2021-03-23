@@ -18,6 +18,7 @@
     "src"
   ],
   "scripts": {
+    "prepare": "aegir build --no-bundle",
     "lint": "aegir lint",
     "build": "aegir build",
     "test": "npm run test:node && npm run test:browser",
@@ -81,7 +82,7 @@
     "it-protocol-buffers": "^0.2.0",
     "it-take": "1.0.0",
     "libp2p-crypto": "^0.19.0",
-    "libp2p-interfaces": "^0.8.1",
+    "libp2p-interfaces": "libp2p/js-libp2p-interfaces#chore/update-types",
     "libp2p-utils": "^0.2.2",
     "mafmt": "^8.0.0",
     "merge-options": "^3.0.4",

@@ -147,7 +147,7 @@ describe('Dialing (direct, TCP)', () => {
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore,
-      timeout: 50
+      dialTimeout: 50
     })
     sinon.stub(localTM, 'dial').callsFake(async (addr, options) => {
       expect(options.signal).to.exist()
@@ -171,7 +171,7 @@ describe('Dialing (direct, TCP)', () => {
     ]
     const dialer = new Dialer({
       transportManager: localTM,
-      concurrency: 2,
+      maxParallelDials: 2,
       peerStore: {
         addressBook: {
           add: () => {},

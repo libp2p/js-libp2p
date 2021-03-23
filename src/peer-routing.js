@@ -25,6 +25,17 @@ const PeerId = require('peer-id')
 /**
  * @typedef {import('multiaddr')} Multiaddr
  */
+
+/**
+ * @typedef {Object} RefreshManagerOptions
+ * @property {boolean} [enabled = true] - Whether to enable the Refresh manager
+ * @property {number} [bootDelay = 6e5] - Boot delay to start the Refresh Manager (in ms)
+ * @property {number} [interval = 10e3] - Interval between each Refresh Manager run (in ms)
+ *
+ * @typedef {Object} PeerRoutingOptions
+ * @property {RefreshManagerOptions} [refreshManager]
+ */
+
 class PeerRouting {
   /**
    * @class

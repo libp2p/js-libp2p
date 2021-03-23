@@ -34,6 +34,11 @@ const { codes } = require('../errors')
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  */
 
+/**
+ * @typedef {Object} HostProperties
+ * @property {string} agentVersion
+ */
+
 class IdentifyService {
   /**
    * @class

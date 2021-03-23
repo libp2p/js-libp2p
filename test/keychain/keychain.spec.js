@@ -27,8 +27,8 @@ describe('keychain', () => {
     datastore1 = new MemoryDatastore()
     datastore2 = new MemoryDatastore()
 
-    ks = new Keychain(datastore2, { passPhrase: passPhrase })
-    emptyKeystore = new Keychain(datastore1, { passPhrase: passPhrase })
+    ks = new Keychain(datastore2, { pass: passPhrase })
+    emptyKeystore = new Keychain(datastore1, { pass: passPhrase })
 
     await datastore1.open()
     await datastore2.open()
@@ -44,11 +44,11 @@ describe('keychain', () => {
   })
 
   it('needs a NIST SP 800-132 non-weak pass phrase', () => {
-    expect(() => new Keychain(datastore2, { passPhrase: '< 20 character' })).to.throw()
+    expect(() => new Keychain(datastore2, { pass: '< 20 character' })).to.throw()
   })
 
   it('needs a store to persist a key', () => {
-    expect(() => new Keychain(null, { passPhrase: passPhrase })).to.throw()
+    expect(() => new Keychain(null, { pass: passPhrase })).to.throw()
   })
 
   it('has default options', () => {
@@ -56,12 +56,12 @@ describe('keychain', () => {
   })
 
   it('supports supported hashing alorithms', () => {
-    const ok = new Keychain(datastore2, { passPhrase: passPhrase, dek: { hash: 'sha2-256' } })
+    const ok = new Keychain(datastore2, { pass: passPhrase, dek: { hash: 'sha2-256' } })
     expect(ok).to.exist()
   })
 
   it('does not support unsupported hashing alorithms', () => {
-    expect(() => new Keychain(datastore2, { passPhrase: passPhrase, dek: { hash: 'my-hash' } })).to.throw()
+    expect(() => new Keychain(datastore2, { pass: passPhrase, dek: { hash: 'my-hash' } })).to.throw()
   })
 
   it('can list keys without a password', async () => {
@@ -72,7 +72,7 @@ describe('keychain', () => {
 
   it('can find a key without a password', async () => {
     const keychain = new Keychain(datastore2)
-    const keychainWithPassword = new Keychain(datastore2, { passPhrase: `hello-${Date.now()}-${Date.now()}` })
+    const keychainWithPassword = new Keychain(datastore2, { pass: `hello-${Date.now()}-${Date.now()}` })
     const name = `key-${Math.random()}`
 
     const { id } = await keychainWithPassword.createKey(name, 'ed25519')
@@ -82,7 +82,7 @@ describe('keychain', () => {
 
   it('can remove a key without a password', async () => {
     const keychainWithoutPassword = new Keychain(datastore2)
-    const keychainWithPassword = new Keychain(datastore2, { passPhrase: `hello-${Date.now()}-${Date.now()}` })
+    const keychainWithPassword = new Keychain(datastore2, { pass: `hello-${Date.now()}-${Date.now()}` })
     const name = `key-${Math.random()}`
 
     expect(await keychainWithPassword.createKey(name, 'ed25519')).to.have.property('name', name)
@@ -99,7 +99,7 @@ describe('keychain', () => {
 
   it('can generate options', () => {
     const options = Keychain.generateOptions()
-    options.passPhrase = passPhrase
+    options.pass = passPhrase
     const chain = new Keychain(datastore2, options)
     expect(chain).to.exist()
   })

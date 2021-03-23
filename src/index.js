@@ -43,24 +43,50 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory} TransportFactory
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory} MuxerFactory
+ * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRouting
+ * @typedef {import('libp2p-interfaces/src/peer-discovery/types').PeerDiscovery} PeerDiscovery
+ * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRouting
  * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
  * @typedef {import('libp2p-interfaces/src/pubsub')} Pubsub
+ * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions
+ * @typedef {import('interface-datastore').Datastore} Datastore
  */
 
 /**
+ * @typedef {Object} RandomWalkOptions
+ * @property {boolean} [enabled = false]
+ * @property {number} [queriesPerPeriod = 1]
+ * @property {number} [interval = 300e3]
+ * @property {number} [timeout = 10e3]
+ *
+ * @typedef {Object} DhtOptions
+ * @property {boolean} [enabled = false]
+ * @property {number} [kBucketSize = 20]
+ * @property {RandomWalkOptions} [randomWalk]
+ *
+ * @typedef {Object} KeychainOptions
+ * @property {Datastore} [datastore]
+ *
  * @typedef {Object} PeerStoreOptions
  * @property {boolean} persistence
  *
- * @typedef {Object} RelayOptions
+ * @typedef {Object} PubsubLocalOptions
  * @property {boolean} enabled
- * @property {import('./circuit').RelayAdvertiseOptions} advertise
- * @property {import('./circuit').HopOptions} hop
- * @property {import('./circuit').AutoRelayOptions} autoRelay
+ *
+ * @typedef {Object} MetricsOptions
+ * @property {boolean} enabled
+ *
+ * @typedef {Object} RelayOptions
+ * @property {boolean} [enabled = true]
+ * @property {import('./circuit').RelayAdvertiseOptions} [advertise]
+ * @property {import('./circuit').HopOptions} [hop]
+ * @property {import('./circuit').AutoRelayOptions} [autoRelay]
  *
  * @typedef {Object} Libp2pConfig
- * @property {Object} [dht] dht module options
- * @property {Object} [peerDiscovery]
- * @property {Pubsub} [pubsub] pubsub module options
+ * @property {DhtOptions} [dht] dht module options
+ * @property {import('./nat-manager').NatManagerOptions} [nat]
+ * @property {Record<string, Object|boolean>} [peerDiscovery]
+ * @property {PubsubLocalOptions & PubsubOptions} [pubsub] pubsub module options
  * @property {RelayOptions} [relay]
  * @property {Record<string, Object>} [transport] transport options indexed by transport key
  *
@@ -68,16 +94,24 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {TransportFactory[]} transport
  * @property {MuxerFactory[]} streamMuxer
  * @property {Crypto[]} connEncryption
+ * @property {PeerDiscovery[]} [peerDiscovery]
+ * @property {PeerRouting[]} [peerRouting]
+ * @property {ContentRouting[]} [contentRouting]
+ * @property {Object} [dht]
+ * @property {Pubsub} [pubsub]
  *
  * @typedef {Object} Libp2pOptions
  * @property {Libp2pModules} modules libp2p modules to use
  * @property {import('./address-manager').AddressManagerOptions} [addresses]
  * @property {import('./connection-manager').ConnectionManagerOptions} [connectionManager]
+ * @property {Datastore} [datastore]
  * @property {import('./dialer').DialerOptions} [dialer]
- * @property {import('./metrics').MetricsOptions} [metrics]
- * @property {Object} [keychain]
- * @property {import('./transport-manager').TransportManagerOptions} [transportManager]
+ * @property {import('./identify/index').HostProperties} [host] libp2p host
+ * @property {KeychainOptions & import('./keychain/index').KeychainOptions} [keychain]
+ * @property {MetricsOptions & import('./metrics').MetricsOptions} [metrics]
+ * @property {import('./peer-routing').PeerRoutingOptions} [peerRouting]
  * @property {PeerStoreOptions & import('./peer-store/persistent').PersistentPeerStoreOptions} [peerStore]
+ * @property {import('./transport-manager').TransportManagerOptions} [transportManager]
  * @property {Libp2pConfig} [config]
  *
  * @typedef {Object} constructorOptions
@@ -175,7 +209,6 @@ class Libp2p extends EventEmitter {
       const keychainOpts = Keychain.generateOptions()
 
       this.keychain = new Keychain(this._options.keychain.datastore, {
-        passPhrase: this._options.keychain.pass,
         ...keychainOpts,
         ...this._options.keychain
       })
@@ -227,11 +260,7 @@ class Libp2p extends EventEmitter {
     this.dialer = new Dialer({
       transportManager: this.transportManager,
       peerStore: this.peerStore,
-      concurrency: this._options.dialer.maxParallelDials,
-      perPeerLimit: this._options.dialer.maxDialsPerPeer,
-      timeout: this._options.dialer.dialTimeout,
-      resolvers: this._options.dialer.resolvers,
-      addressSorter: this._options.dialer.addressSorter
+      ...this._options.dialer
     })
 
     this._modules.transport.forEach((Transport) => {
