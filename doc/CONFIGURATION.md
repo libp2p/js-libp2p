@@ -400,13 +400,13 @@ const PeerId = require('peer-id')
 const peerId = await PeerId.create()
 
 const delegatedPeerRouting = new DelegatedPeerRouter(ipfsHttpClient({
-  host: 'node0.delegate.ipfs.io' // In production you should setup your own delegates
+  host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
   protocol: 'https',
   port: 443
 }))
 
 const delegatedContentRouting = new DelegatedContentRouter(peerId, ipfsHttpClient({
-  host: 'node0.delegate.ipfs.io' // In production you should setup your own delegates
+  host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
   protocol: 'https',
   port: 443
 }))
