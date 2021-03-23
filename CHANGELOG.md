@@ -1,3 +1,13 @@
+## [0.30.11](https://github.com/libp2p/js-libp2p/compare/v0.30.10...v0.30.11) (2021-03-23)
+
+
+### Bug Fixes
+
+* connection direction should be only inbound or outbound ([9504f19](https://github.com/libp2p/js-libp2p/commit/9504f1951a3cca55bb7b4e25e4934e4024034ee8))
+* interface-datastore update ([f5c1cd1](https://github.com/libp2p/js-libp2p/commit/f5c1cd1fb07bc73cf9d9da3c2eb4327bed4279a4))
+
+
+
 ## [0.30.10](https://github.com/libp2p/js-libp2p/compare/v0.30.9...v0.30.10) (2021-03-09)
 
 
