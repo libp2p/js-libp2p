@@ -9,11 +9,11 @@
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-tcp.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-tcp)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 
-[![](https://raw.githubusercontent.com/libp2p/interface-transport/master/img/badge.png)](https://github.com/libp2p/interface-transport)
-[![](https://raw.githubusercontent.com/libp2p/interface-connection/master/img/badge.png)](https://github.com/libp2p/interface-connection)
+[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/transport/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/transport)
+[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/connection/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/connection)
 
 
-> JavaScript implementation of the TCP module for libp2p. It exposes the [interface-transport](https://github.com/libp2p/interface-connection) for dial/listen. `libp2p-tcp` is a very thin shim that adds support for dialing to a `multiaddr`. This small shim will enable libp2p to use other transports.
+> JavaScript implementation of the TCP module for libp2p. It exposes the [interface-transport](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/transport) for dial/listen. `libp2p-tcp` is a very thin shim that adds support for dialing to a `multiaddr`. This small shim will enable libp2p to use other transports.
 
 ## Lead Maintainer
 
@@ -87,7 +87,7 @@ Value: hello
 
 ### Transport
 
-[![](https://raw.githubusercontent.com/libp2p/interface-transport/master/img/badge.png)](https://github.com/libp2p/interface-transport)
+[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/transport/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/transport)
 
 `libp2p-tcp` accepts TCP addresses as both IPFS and non IPFS encapsulated addresses, i.e:
 
@@ -98,7 +98,8 @@ Value: hello
 
 ### Connection
 
-[![](https://raw.githubusercontent.com/libp2p/interface-connection/master/img/badge.png)](https://github.com/libp2p/interface-connection)
+[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/connection/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/connection)
+
 
 ## Contribute
 
