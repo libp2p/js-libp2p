@@ -2,7 +2,7 @@
 
 const NatAPI = require('@motrix/nat-api')
 const debug = require('debug')
-const promisify = require('es6-promisify')
+const { promisify } = require('es6-promisify')
 const Multiaddr = require('multiaddr')
 const log = Object.assign(debug('libp2p:nat'), {
   error: debug('libp2p:nat:err')
@@ -132,9 +132,9 @@ class NatManager {
     }
 
     const client = new NatAPI(this._options)
-    const map = promisify(client.map, { context: client })
-    const destroy = promisify(client.destroy, { context: client })
-    const externalIp = promisify(client.externalIp, { context: client })
+    const map = promisify(client.map.bind(client))
+    const destroy = promisify(client.destroy.bind(client))
+    const externalIp = promisify(client.externalIp.bind(client))
 
     this._client = {
       // these are all network operations so add a retry

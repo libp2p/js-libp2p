@@ -156,7 +156,7 @@ describe('Nat Manager (TCP)', () => {
       natManager,
       addressManager
     } = await createNatManager([
-      '/ip6/::/tcp/5001'
+      '/ip6/::/tcp/0'
     ])
 
     let observed = addressManager.getObservedAddrs().map(ma => ma.toString())
@@ -173,7 +173,7 @@ describe('Nat Manager (TCP)', () => {
       natManager,
       addressManager
     } = await createNatManager([
-      '/ip6/::1/tcp/5001'
+      '/ip6/::1/tcp/0'
     ])
 
     let observed = addressManager.getObservedAddrs().map(ma => ma.toString())
@@ -207,7 +207,7 @@ describe('Nat Manager (TCP)', () => {
       natManager,
       addressManager
     } = await createNatManager([
-      '/ip4/127.0.0.1/tcp/5900'
+      '/ip4/127.0.0.1/tcp/0'
     ])
 
     let observed = addressManager.getObservedAddrs().map(ma => ma.toString())
@@ -224,7 +224,7 @@ describe('Nat Manager (TCP)', () => {
       natManager,
       addressManager
     } = await createNatManager([
-      '/ip4/0.0.0.0/tcp/5900/sctp/49832'
+      '/ip4/0.0.0.0/tcp/0/sctp/0'
     ])
 
     let observed = addressManager.getObservedAddrs().map(ma => ma.toString())

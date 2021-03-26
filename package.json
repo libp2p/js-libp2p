@@ -109,6 +109,7 @@
   },
   "devDependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
+    "@types/es6-promisify": "^6.0.0",
     "abortable-iterator": "^3.0.0",
     "aegir": "^29.2.0",
     "chai-bytes": "^0.1.2",
