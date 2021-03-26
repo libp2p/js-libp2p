@@ -3,6 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
+const { networkInterfaces } = require('os')
 const AddressManager = require('../../src/address-manager')
 const TransportManager = require('../../src/transport-manager')
 const Transport = require('libp2p-tcp')
@@ -240,5 +241,48 @@ describe('Nat Manager (TCP)', () => {
     expect(() => {
       new NatManager({ ttl: 5 }) // eslint-disable-line no-new
     }).to.throw().with.property('code', ERR_INVALID_PARAMETERS)
+  })
+
+  it('shuts the nat api down when stopping', async function () {
+    function findRoutableAddress () {
+      const interfaces = networkInterfaces()
+
+      for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+          // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+          if (iface.family === 'IPv4' && !iface.internal) {
+            return iface.address
+          }
+        }
+      }
+    }
+
+    const addr = findRoutableAddress()
+
+    if (!addr) {
+      // skip test if no non-loopback address is found
+      this.skip()
+    }
+
+    const {
+      natManager
+    } = await createNatManager([
+      `/ip4/${addr}/tcp/0`
+    ])
+
+    // use the actual nat manager client not the stub
+    delete natManager._client
+
+    await natManager._start()
+
+    const client = natManager._client
+    expect(client).to.be.ok()
+
+    // ensure the client was stopped
+    const spy = sinon.spy(client, 'destroy')
+
+    await natManager.stop()
+
+    expect(spy.called).to.be.true()
   })
 })
