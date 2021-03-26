@@ -132,14 +132,32 @@ class NatManager {
     }
 
     const client = new NatAPI(this._options)
+
+    /** @type {(...any) => any} */
     const map = promisify(client.map.bind(client))
+    /** @type {(...any) => any} */
     const destroy = promisify(client.destroy.bind(client))
+    /** @type {(...any) => any} */
     const externalIp = promisify(client.externalIp.bind(client))
 
+    // these are all network operations so add a retry
     this._client = {
-      // these are all network operations so add a retry
+      /**
+       * @param  {...any} args
+       * @returns {Promise<void>}
+       */
       map: (...args) => retry(() => map(...args), { onFailedAttempt: log.error, unref: true }),
+
+      /**
+       * @param  {...any} args
+       * @returns {Promise<void>}
+       */
       destroy: (...args) => retry(() => destroy(...args), { onFailedAttempt: log.error, unref: true }),
+
+      /**
+       * @param  {...any} args
+       * @returns {Promise<string>}
+       */
       externalIp: (...args) => retry(() => externalIp(...args), { onFailedAttempt: log.error, unref: true })
     }
 
