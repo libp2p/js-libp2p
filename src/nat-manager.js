@@ -2,7 +2,7 @@
 
 const NatAPI = require('@motrix/nat-api')
 const debug = require('debug')
-const promisify = require('es6-promisify')
+const { promisify } = require('es6-promisify')
 const Multiaddr = require('multiaddr')
 const log = Object.assign(debug('libp2p:nat'), {
   error: debug('libp2p:nat:err')
@@ -132,14 +132,32 @@ class NatManager {
     }
 
     const client = new NatAPI(this._options)
-    const map = promisify(client.map, { context: client })
-    const destroy = promisify(client.destroy, { context: client })
-    const externalIp = promisify(client.externalIp, { context: client })
 
+    /** @type {(...any) => any} */
+    const map = promisify(client.map.bind(client))
+    /** @type {(...any) => any} */
+    const destroy = promisify(client.destroy.bind(client))
+    /** @type {(...any) => any} */
+    const externalIp = promisify(client.externalIp.bind(client))
+
+    // these are all network operations so add a retry
     this._client = {
-      // these are all network operations so add a retry
+      /**
+       * @param  {...any} args
+       * @returns {Promise<void>}
+       */
       map: (...args) => retry(() => map(...args), { onFailedAttempt: log.error, unref: true }),
+
+      /**
+       * @param  {...any} args
+       * @returns {Promise<void>}
+       */
       destroy: (...args) => retry(() => destroy(...args), { onFailedAttempt: log.error, unref: true }),
+
+      /**
+       * @param  {...any} args
+       * @returns {Promise<string>}
+       */
       externalIp: (...args) => retry(() => externalIp(...args), { onFailedAttempt: log.error, unref: true })
     }
 
