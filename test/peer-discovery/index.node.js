@@ -30,6 +30,7 @@ describe('peer discovery scenarios', () => {
   afterEach(async () => {
     libp2p && await libp2p.stop()
   })
+
   it('should ignore self on discovery', async () => {
     libp2p = new Libp2p(mergeOptions(baseOptions, {
       peerId,

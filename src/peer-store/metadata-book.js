@@ -81,6 +81,9 @@ class MetadataBook extends Book {
    * Set data into the datastructure
    *
    * @override
+   * @param {PeerId} peerId
+   * @param {string} key
+   * @param {Uint8Array} value
    */
   _setValue (peerId, key, value, { emit = true } = {}) {
     const id = peerId.toB58String()

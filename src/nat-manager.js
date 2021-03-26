@@ -1,5 +1,6 @@
 'use strict'
 
+// @ts-ignore nat-api does not export types
 const NatAPI = require('@motrix/nat-api')
 const debug = require('debug')
 const { promisify } = require('es6-promisify')
@@ -9,6 +10,7 @@ const log = Object.assign(debug('libp2p:nat'), {
 })
 const { isBrowser } = require('ipfs-utils/src/env')
 const retry = require('p-retry')
+// @ts-ignore private-api does not export types
 const isPrivateIp = require('private-ip')
 const pkg = require('../package.json')
 const errcode = require('err-code')
@@ -139,11 +141,11 @@ class NatManager {
 
     const client = new NatAPI(this._options)
 
-    /** @type {(...any) => any} */
+    /** @type {(...any: any) => any} */
     const map = promisify(client.map.bind(client))
-    /** @type {(...any) => any} */
+    /** @type {(...any: any) => any} */
     const destroy = promisify(client.destroy.bind(client))
-    /** @type {(...any) => any} */
+    /** @type {(...any: any) => any} */
     const externalIp = promisify(client.externalIp.bind(client))
 
     // these are all network operations so add a retry

@@ -1,5 +1,6 @@
 'use strict'
 
+// @ts-ignore protons do not export types
 const protobuf = require('protons')
 
 module.exports = protobuf(`

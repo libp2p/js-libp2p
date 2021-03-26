@@ -4,11 +4,13 @@ const debug = require('debug')
 const log = Object.assign(debug('libp2p:plaintext'), {
   error: debug('libp2p:plaintext:err')
 })
+// @ts-ignore it-handshake do not export types
 const handshake = require('it-handshake')
 const lp = require('it-length-prefixed')
 const PeerId = require('peer-id')
 const { UnexpectedPeerError, InvalidCryptoExchangeError } = require('libp2p-interfaces/src/crypto/errors')
 
+// @ts-ignore protons do not export types
 const { Exchange, KeyType } = require('./proto')
 const protocol = '/plaintext/2.0.0'
 
@@ -16,6 +18,9 @@ const protocol = '/plaintext/2.0.0'
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  */
 
+/**
+ * @param {{ id: Uint8Array; pubkey: { Type: any, Data: Uint8Array; }; }} exchange
+ */
 function lpEncodeExchange (exchange) {
   const pb = Exchange.encode(exchange)
   return lp.encode.single(pb)
@@ -68,12 +73,23 @@ async function encrypt (localId, conn, remoteId) {
   }
 }
 
-module.exports = {
-  protocol,
-  secureInbound: (localId, conn, remoteId) => {
-    return encrypt(localId, conn, remoteId)
-  },
-  secureOutbound: (localId, conn, remoteId) => {
-    return encrypt(localId, conn, remoteId)
-  }
-}
+module.exports =
+ {
+   protocol,
+   /**
+    * @param {PeerId} localId
+    * @param {Connection} conn
+    * @param {PeerId | undefined} remoteId
+    */
+   secureInbound: (localId, conn, remoteId) => {
+     return encrypt(localId, conn, remoteId)
+   },
+   /**
+    * @param {PeerId} localId
+    * @param {Connection} conn
+    * @param {PeerId | undefined} remoteId
+    */
+   secureOutbound: (localId, conn, remoteId) => {
+     return encrypt(localId, conn, remoteId)
+   }
+ }

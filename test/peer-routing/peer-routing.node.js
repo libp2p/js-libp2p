@@ -31,6 +31,8 @@ describe('peer-routing', () => {
       })
     })
 
+    after(() => node.stop())
+
     it('.findPeer should return an error', async () => {
       await expect(node.peerRouting.findPeer('a cid'))
         .to.eventually.be.rejected()

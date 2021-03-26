@@ -1,3 +1,4 @@
+// @ts-nocheck protons do not support types
 'use strict'
 
 const protons = require('protons')

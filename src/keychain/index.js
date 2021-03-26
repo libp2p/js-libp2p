@@ -10,6 +10,7 @@ const errcode = require('err-code')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
+// @ts-ignore node-forge sha512 types not exported
 require('node-forge/lib/sha512')
 
 /**
@@ -58,6 +59,9 @@ const defaultOptions = {
   }
 }
 
+/**
+ * @param {string} name
+ */
 function validateKeyName (name) {
   if (!name) return false
   if (typeof name !== 'string') return false
@@ -143,12 +147,14 @@ class Keychain {
       throw new Error(`dek.iterationCount must be least ${NIST.minIterationCount}`)
     }
 
-    const dek = this.opts.pass ? crypto.pbkdf2(
-      this.opts.pass,
-      this.opts.dek.salt,
-      this.opts.dek.iterationCount,
-      this.opts.dek.keyLength,
-      this.opts.dek.hash) : ''
+    const dek = this.opts.pass
+      ? crypto.pbkdf2(
+        this.opts.pass,
+        this.opts.dek.salt,
+        this.opts.dek.iterationCount,
+        this.opts.dek.keyLength,
+        this.opts.dek.hash)
+      : ''
 
     privates.set(this, { dek })
   }

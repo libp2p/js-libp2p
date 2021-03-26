@@ -3,6 +3,7 @@
 const errCode = require('err-code')
 const uint8arraysConcat = require('uint8arrays/concat')
 const uint8arraysFromString = require('uint8arrays/from-string')
+// @ts-ignore libp2p-crypto does not support types
 const cryptoKeys = require('libp2p-crypto/src/keys')
 const PeerId = require('peer-id')
 const varint = require('varint')

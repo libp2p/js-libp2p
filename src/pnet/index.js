@@ -6,6 +6,7 @@ const log = Object.assign(debug('libp2p:pnet'), {
 })
 const { pipe } = require('it-pipe')
 const errcode = require('err-code')
+// @ts-ignore it-pair has no types exported
 const duplexPair = require('it-pair/duplex')
 const crypto = require('libp2p-crypto')
 const Errors = require('./errors')
@@ -17,6 +18,7 @@ const {
   createUnboxStream,
   decodeV1PSK
 } = require('./crypto')
+// @ts-ignore it-handshake has no types exported
 const handshake = require('it-handshake')
 const { NONCE_LENGTH } = require('./key-generator')
 

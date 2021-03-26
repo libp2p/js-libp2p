@@ -1,5 +1,6 @@
 'use strict'
 
+// @ts-ignore protons does not have types
 const protons = require('protons')
 
 /* eslint-disable no-tabs */

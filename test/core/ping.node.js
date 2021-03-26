@@ -23,6 +23,8 @@ describe('ping', () => {
     nodes[1].peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
   })
 
+  afterEach(() => Promise.all(nodes.map(n => n.stop())))
+
   it('ping once from peer0 to peer1 using a multiaddr', async () => {
     const ma = `${nodes[2].multiaddrs[0]}/p2p/${nodes[2].peerId.toB58String()}`
     const latency = await nodes[0].ping(ma)
@@ -56,7 +58,7 @@ describe('ping', () => {
               if (firstInvocation) {
                 firstInvocation = false
 
-                for await (const data of stream) {
+                for await (const data of stream) { // eslint-disable-line
                   return {
                     value: data,
                     done: false

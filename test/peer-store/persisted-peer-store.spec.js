@@ -572,6 +572,11 @@ describe('libp2p.peerStore (Persisted)', () => {
           datastore: memoryDatastore,
           peerStore: {
             persistence: true
+          },
+          config: {
+            peerDiscovery: {
+              autoDial: false
+            }
           }
         }
       })

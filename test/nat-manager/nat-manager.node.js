@@ -60,6 +60,7 @@ describe('Nat Manager (TCP)', () => {
 
     teardown.push(async () => {
       await natManager.stop()
+      // await transportManager.close()
       await transportManager.removeAll()
       expect(transportManager._transports.size).to.equal(0)
     })
@@ -71,7 +72,7 @@ describe('Nat Manager (TCP)', () => {
     }
   }
 
-  afterEach(() => Promise.all(teardown))
+  afterEach(() => Promise.all(teardown.map(t => t())))
 
   it('should map TCP connections to external ports', async () => {
     const {

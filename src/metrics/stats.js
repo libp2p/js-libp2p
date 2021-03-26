@@ -32,13 +32,13 @@ class Stats extends EventEmitter {
 
     const intervals = this._options.movingAverageIntervals
 
-    for (var i = 0; i < initialCounters.length; i++) {
-      var key = initialCounters[i]
+    for (let i = 0; i < initialCounters.length; i++) {
+      const key = initialCounters[i]
       this._stats[key] = Big(0)
       this._movingAverages[key] = {}
-      for (var k = 0; k < intervals.length; k++) {
-        var interval = intervals[k]
-        var ma = this._movingAverages[key][interval] = MovingAverage(interval)
+      for (let k = 0; k < intervals.length; k++) {
+        const interval = intervals[k]
+        const ma = this._movingAverages[key][interval] = MovingAverage(interval)
         ma.push(this._frequencyLastTime, 0)
       }
     }
@@ -82,7 +82,7 @@ class Stats extends EventEmitter {
   /**
    * Returns a clone of the internal movingAverages
    *
-   * @returns {Object}
+   * @returns {typeof Object.assign}
    */
   get movingAverages () {
     return Object.assign({}, this._movingAverages)
@@ -219,9 +219,9 @@ class Stats extends EventEmitter {
 
     const intervals = this._options.movingAverageIntervals
 
-    for (var i = 0; i < intervals.length; i++) {
-      var movingAverageInterval = intervals[i]
-      var movingAverage = movingAverages[movingAverageInterval]
+    for (let i = 0; i < intervals.length; i++) {
+      const movingAverageInterval = intervals[i]
+      let movingAverage = movingAverages[movingAverageInterval]
       if (!movingAverage) {
         movingAverage = movingAverages[movingAverageInterval] = MovingAverage(movingAverageInterval)
       }

@@ -1,6 +1,7 @@
 'use strict'
 
 const mergeOptions = require('merge-options')
+// @ts-ignore no types in multiaddr
 const { dnsaddrResolver } = require('multiaddr/src/resolvers')
 
 const Constants = require('./constants')
@@ -10,11 +11,18 @@ const RelayConstants = require('./circuit/constants')
 const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 const { FaultTolerance } = require('./transport-manager')
 
+/**
+ * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('.').Libp2pOptions} Libp2pOptions
+ * @typedef {import('.').constructorOptions} constructorOptions
+ */
+
 const DefaultConfig = {
   addresses: {
     listen: [],
     announce: [],
-    noAnnounce: []
+    noAnnounce: [],
+    announceFilter: (/** @type {Multiaddr[]} */ multiaddrs) => multiaddrs
   },
   connectionManager: {
     minConnections: 25
@@ -95,10 +103,15 @@ const DefaultConfig = {
   }
 }
 
+/**
+ * @param {Libp2pOptions} opts
+ * @returns {DefaultConfig & Libp2pOptions & constructorOptions}
+ */
 module.exports.validate = (opts) => {
-  opts = mergeOptions(DefaultConfig, opts)
+  /** @type {DefaultConfig & Libp2pOptions & constructorOptions} */
+  const resultingOptions = mergeOptions(DefaultConfig, opts)
 
-  if (opts.modules.transport.length < 1) throw new Error("'options.modules.transport' must contain at least 1 transport")
+  if (resultingOptions.modules.transport.length < 1) throw new Error("'options.modules.transport' must contain at least 1 transport")
 
-  return opts
+  return resultingOptions
 }

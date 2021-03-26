@@ -5,6 +5,7 @@ const log = Object.assign(debug('libp2p:identify'), {
   error: debug('libp2p:identify:err')
 })
 const errCode = require('err-code')
+// @ts-ignore it-protocol-buffers does not have types
 const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
 const { pipe } = require('it-pipe')
@@ -13,6 +14,7 @@ const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const PeerId = require('peer-id')
 const multiaddr = require('multiaddr')
+// @ts-ignore it-buffer does not have types
 const { toBuffer } = require('it-buffer')
 
 const Message = require('./message')
@@ -23,7 +25,6 @@ const PeerRecord = require('../record/peer-record')
 const {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH,
-  AGENT_VERSION,
   PROTOCOL_VERSION
 } = require('./consts')
 
@@ -56,7 +57,6 @@ class IdentifyService {
 
     // Store self host metadata
     this._host = {
-      agentVersion: AGENT_VERSION,
       protocolVersion: PROTOCOL_VERSION,
       ...libp2p._options.host
     }
@@ -199,7 +199,7 @@ class IdentifyService {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      this.peerStore.addressBook.set(id, listenAddrs.map((addr) => multiaddr(addr)))
+      this.peerStore.addressBook.set(id, listenAddrs.map((/** @type {string} */ addr) => multiaddr(addr)))
     } catch (err) {
       log.error('received invalid addrs', err)
     }
@@ -312,7 +312,8 @@ class IdentifyService {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      this.peerStore.addressBook.set(id, message.listenAddrs.map((addr) => multiaddr(addr)))
+      this.peerStore.addressBook.set(id,
+        message.listenAddrs.map((/** @type {string} */ addr) => multiaddr(addr)))
     } catch (err) {
       log.error('received invalid addrs', err)
     }

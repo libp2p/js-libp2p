@@ -1,4 +1,6 @@
 'use strict'
+
+// @ts-ignore protons does not have types
 const protobuf = require('protons')
 
 /** @type {{CircuitRelay: import('../../types').CircuitMessageProto}} */

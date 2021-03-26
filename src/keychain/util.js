@@ -4,7 +4,6 @@
 require('node-forge/lib/x509')
 const forge = require('node-forge/lib/forge')
 const pki = forge.pki
-exports = module.exports
 
 /**
  * Gets a self-signed X.509 certificate for the key.
@@ -17,7 +16,7 @@ exports = module.exports
  * @param {RsaPrivateKey} privateKey - The naked key
  * @returns {Uint8Array}
  */
-exports.certificateForKey = (key, privateKey) => {
+const certificateForKey = (key, privateKey) => {
   const publicKey = pki.setRsaPublicKey(privateKey.n, privateKey.e)
   const cert = pki.createCertificate()
   cert.publicKey = publicKey
@@ -87,4 +86,7 @@ async function findAsync (array, asyncCompare) {
   return array[index]
 }
 
-module.exports.findAsync = findAsync
+module.exports = {
+  certificateForKey,
+  findAsync
+}

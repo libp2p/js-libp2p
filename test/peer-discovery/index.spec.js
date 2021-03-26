@@ -89,6 +89,10 @@ describe('peer discovery', () => {
       [peerId] = await createPeerId()
     })
 
+    afterEach(async () => {
+      libp2p && await libp2p.stop()
+    })
+
     it('should add discovery module if present in transports and enabled', async () => {
       libp2p = new Libp2p(mergeOptions(baseOptions, {
         peerId,

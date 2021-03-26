@@ -22,6 +22,11 @@ const Addresses = require('./pb/address-book.proto')
 const Protocols = require('./pb/proto-book.proto')
 
 /**
+ * @typedef {import('interface-datastore').Batch} Batch
+ * @typedef {import('../address-book.js').Address} Address
+ */
+
+/**
  * @typedef {Object} PersistentPeerStoreProperties
  * @property {PeerId} peerId
  * @property {import('interface-datastore').Datastore} datastore
@@ -214,7 +219,7 @@ class PersistentPeerStore extends PeerStore {
    *
    * @private
    * @param {PeerId} peerId
-   * @param {Object} batch
+   * @param {Batch} batch
    */
   _batchAddressBook (peerId, batch) {
     const b32key = peerId.toString()
@@ -234,10 +239,12 @@ class PersistentPeerStore extends PeerStore {
           multiaddr: address.multiaddr.bytes,
           isCertified: address.isCertified
         })),
-        certified_record: entry.record ? {
-          seq: entry.record.seqNumber,
-          raw: entry.record.raw
-        } : undefined
+        certified_record: entry.record
+          ? {
+              seq: entry.record.seqNumber,
+              raw: entry.record.raw
+            }
+          : undefined
       })
 
       batch.put(key, encodedData)
@@ -251,7 +258,7 @@ class PersistentPeerStore extends PeerStore {
    *
    * @private
    * @param {PeerId} peerId
-   * @param {Object} batch
+   * @param {Batch} batch
    */
   _batchKeyBook (peerId, batch) {
     const b32key = peerId.toString()
@@ -277,14 +284,14 @@ class PersistentPeerStore extends PeerStore {
    *
    * @private
    * @param {PeerId} peerId
-   * @param {Object} batch
+   * @param {Batch} batch
    */
   _batchMetadataBook (peerId, batch) {
     const b32key = peerId.toString()
     const dirtyMetada = this._dirtyMetadata.get(peerId.toB58String()) || []
 
     try {
-      dirtyMetada.forEach((dirtyKey) => {
+      dirtyMetada.forEach((/** @type {string} */ dirtyKey) => {
         const key = new Key(`${NAMESPACE_METADATA}${b32key}/${dirtyKey}`)
         const dirtyValue = this.metadataBook.getValue(peerId, dirtyKey)
 
@@ -304,7 +311,7 @@ class PersistentPeerStore extends PeerStore {
    *
    * @private
    * @param {PeerId} peerId
-   * @param {Object} batch
+   * @param {Batch} batch
    */
   _batchProtoBook (peerId, batch) {
     const b32key = peerId.toString()
@@ -350,14 +357,16 @@ class PersistentPeerStore extends PeerStore {
           this.addressBook._setData(
             peerId,
             {
-              addresses: decoded.addrs.map((address) => ({
+              addresses: decoded.addrs.map((/** @type {Address} */ address) => ({
                 multiaddr: multiaddr(address.multiaddr),
                 isCertified: Boolean(address.isCertified)
               })),
-              record: decoded.certified_record ? {
-                raw: decoded.certified_record.raw,
-                seqNumber: decoded.certified_record.seq
-              } : undefined
+              record: decoded.certified_record
+                ? {
+                    raw: decoded.certified_record.raw,
+                    seqNumber: decoded.certified_record.seq
+                  }
+                : undefined
             },
             { emit: false })
           break

@@ -18,7 +18,7 @@ const wrongSwarmKeyBuffer = new Uint8Array(95)
 generate(swarmKeyBuffer)
 generate(wrongSwarmKeyBuffer)
 
-describe('private network', () => {
+describe.skip('private network', () => {
   it('should accept a valid psk buffer', () => {
     const protector = new Protector(swarmKeyBuffer)
 

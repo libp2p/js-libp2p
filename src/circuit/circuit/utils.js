@@ -29,7 +29,7 @@ function writeResponse (streamHandler, status) {
  */
 function validateAddrs (msg, streamHandler) {
   try {
-    msg.dstPeer.addrs.forEach((addr) => {
+    msg.dstPeer.addrs.forEach((/** @type {string} */ addr) => {
       return multiaddr(addr)
     })
   } catch (err) {
@@ -40,7 +40,7 @@ function validateAddrs (msg, streamHandler) {
   }
 
   try {
-    msg.srcPeer.addrs.forEach((addr) => {
+    msg.srcPeer.addrs.forEach((/** @type {string} */ addr) => {
       return multiaddr(addr)
     })
   } catch (err) {

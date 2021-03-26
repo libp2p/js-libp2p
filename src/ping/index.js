@@ -8,6 +8,7 @@ const errCode = require('err-code')
 
 const crypto = require('libp2p-crypto')
 const { pipe } = require('it-pipe')
+// @ts-ignore it-buffer has no types exported
 const { toBuffer } = require('it-buffer')
 const { collect, take } = require('streaming-iterables')
 const equals = require('uint8arrays/equals')
@@ -18,6 +19,7 @@ const { PROTOCOL, PING_LENGTH } = require('./constants')
  * @typedef {import('../')} Libp2p
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('peer-id')} PeerId
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  */
 
 /**
@@ -31,7 +33,8 @@ async function ping (node, peer) {
   // @ts-ignore multiaddr might not have toB58String
   log('dialing %s to %s', PROTOCOL, peer.toB58String ? peer.toB58String() : peer)
 
-  const { stream } = await node.dialProtocol(peer, PROTOCOL)
+  const connection = await node.dial(peer)
+  const { stream } = await connection.newStream(PROTOCOL)
 
   const start = Date.now()
   const data = crypto.randomBytes(PING_LENGTH)
@@ -39,7 +42,7 @@ async function ping (node, peer) {
   const [result] = await pipe(
     [data],
     stream,
-    stream => take(1, stream),
+    (/** @type {MuxedStream} */ stream) => take(1, stream),
     toBuffer,
     collect
   )

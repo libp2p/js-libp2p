@@ -41,18 +41,24 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory} TransportFactory
+ * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory<any, any>} TransportFactory
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory} MuxerFactory
- * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRouting
- * @typedef {import('libp2p-interfaces/src/peer-discovery/types').PeerDiscovery} PeerDiscovery
- * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRouting
+ * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
+ * @typedef {import('libp2p-interfaces/src/peer-discovery/types').PeerDiscovery} PeerDiscoveryModule
+ * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRoutingModule
  * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
  * @typedef {import('libp2p-interfaces/src/pubsub')} Pubsub
  * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions
  * @typedef {import('interface-datastore').Datastore} Datastore
+ * @typedef {import('./pnet')} Protector
  */
 
 /**
+ * @typedef {Object} HandlerProps
+ * @property {Connection} connection
+ * @property {MuxedStream} stream
+ * @property {string} protocol
+ *
  * @typedef {Object} RandomWalkOptions
  * @property {boolean} [enabled = false]
  * @property {number} [queriesPerPeriod = 1]
@@ -94,11 +100,12 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {TransportFactory[]} transport
  * @property {MuxerFactory[]} streamMuxer
  * @property {Crypto[]} connEncryption
- * @property {PeerDiscovery[]} [peerDiscovery]
- * @property {PeerRouting[]} [peerRouting]
- * @property {ContentRouting[]} [contentRouting]
+ * @property {PeerDiscoveryModule[]} [peerDiscovery]
+ * @property {PeerRoutingModule[]} [peerRouting]
+ * @property {ContentRoutingModule[]} [contentRouting]
  * @property {Object} [dht]
  * @property {Pubsub} [pubsub]
+ * @property {Protector} [connProtector]
  *
  * @typedef {Object} Libp2pOptions
  * @property {Libp2pModules} modules libp2p modules to use
@@ -186,7 +193,9 @@ class Libp2p extends EventEmitter {
     this._discovery = new Map() // Discovery service instances/references
 
     // Create the Connection Manager
-    if (this._options.connectionManager.minPeers) { // Remove in 0.29
+    // @ts-ignore deprecated, needs to be removed on breaking change
+    if (this._options.connectionManager.minPeers) {
+      // @ts-ignore deprecated, needs to be removed on breaking change
       this._options.connectionManager.minConnections = this._options.connectionManager.minPeers
     }
     this.connectionManager = new ConnectionManager(this, {
@@ -236,6 +245,7 @@ class Libp2p extends EventEmitter {
       peerId: this.peerId,
       addressManager: this.addressManager,
       transportManager: this.transportManager,
+      // @ts-ignore Nat typedef is not understood as Object
       ...this._options.config.nat
     })
 
@@ -297,6 +307,7 @@ class Libp2p extends EventEmitter {
     // dht provided components (peerRouting, contentRouting, dht)
     if (this._modules.dht) {
       const DHT = this._modules.dht
+      // @ts-ignore Object is not constructable
       this._dht = new DHT({
         libp2p: this,
         dialer: this.dialer,
@@ -455,7 +466,7 @@ class Libp2p extends EventEmitter {
    * @returns {Promise<Connection>}
    */
   dial (peer, options) {
-    return this.dialProtocol(peer, [], options)
+    return this._dial(peer, options)
   }
 
   /**
@@ -468,9 +479,26 @@ class Libp2p extends EventEmitter {
    * @param {string[]|string} protocols
    * @param {object} [options]
    * @param {AbortSignal} [options.signal]
-   * @returns {Promise<Connection|*>}
+   * @returns {Promise<Connection|{ stream: MuxedStream; protocol: string; }>}
    */
   async dialProtocol (peer, protocols, options) {
+    const connection = await this._dial(peer, options)
+
+    // If a protocol was provided, create a new stream
+    if (protocols && protocols.length) {
+      return connection.newStream(protocols)
+    }
+
+    return connection
+  }
+
+  /**
+   * @async
+   * @param {PeerId|Multiaddr|string} peer - The peer to dial
+   * @param {object} [options]
+   * @returns {Promise<Connection>}
+   */
+  async _dial (peer, options) {
     const { id, multiaddrs } = getPeer(peer)
 
     if (id.equals(this.peerId)) {
@@ -483,11 +511,6 @@ class Libp2p extends EventEmitter {
       connection = await this.dialer.connectToPeer(peer, options)
     } else if (multiaddrs) {
       this.peerStore.addressBook.add(id, multiaddrs)
-    }
-
-    // If a protocol was provided, create a new stream
-    if (protocols && protocols.length) {
-      return connection.newStream(protocols)
     }
 
     return connection
@@ -513,7 +536,7 @@ class Libp2p extends EventEmitter {
 
     addrs = addrs.concat(this.addressManager.getObservedAddrs().map(ma => ma.toString()))
 
-    const announceFilter = this._options.addresses.announceFilter || ((multiaddrs) => multiaddrs)
+    const announceFilter = this._options.addresses.announceFilter
 
     // dedupe multiaddrs
     const addrSet = new Set(addrs)
@@ -565,7 +588,7 @@ class Libp2p extends EventEmitter {
    * Registers the `handler` for each protocol
    *
    * @param {string[]|string} protocols
-   * @param {({ connection: Connection, stream: MuxedStream, protocol: string }) => void} handler
+   * @param {(props: HandlerProps) => void} handler
    */
   handle (protocols, handler) {
     protocols = Array.isArray(protocols) ? protocols : [protocols]
@@ -698,6 +721,9 @@ class Libp2p extends EventEmitter {
    * @private
    */
   async _setupPeerDiscovery () {
+    /**
+     * @param {PeerDiscoveryModule} DiscoveryService
+     */
     const setupService = (DiscoveryService) => {
       let config = {
         enabled: true // on by default
@@ -706,6 +732,7 @@ class Libp2p extends EventEmitter {
       if (DiscoveryService.tag &&
         this._config.peerDiscovery &&
         this._config.peerDiscovery[DiscoveryService.tag]) {
+        // @ts-ignore PeerDiscovery not understood as an Object for spread
         config = { ...config, ...this._config.peerDiscovery[DiscoveryService.tag] }
       }
 
@@ -714,6 +741,7 @@ class Libp2p extends EventEmitter {
         let discoveryService
 
         if (typeof DiscoveryService === 'function') {
+          // @ts-ignore DiscoveryService has no constructor type inferred
           discoveryService = new DiscoveryService(Object.assign({}, config, {
             peerId: this.peerId,
             libp2p: this

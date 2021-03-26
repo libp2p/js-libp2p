@@ -59,7 +59,8 @@ class LatencyMonitor extends EventEmitter {
     that._latecyCheckMultiply = 2 * (that.latencyRandomPercentage / 100.0) * that.latencyCheckIntervalMs
     that._latecyCheckSubtract = that._latecyCheckMultiply / 2
 
-    that.dataEmitIntervalMs = (dataEmitIntervalMs === null || dataEmitIntervalMs === 0) ? undefined
+    that.dataEmitIntervalMs = (dataEmitIntervalMs === null || dataEmitIntervalMs === 0)
+      ? undefined
       : dataEmitIntervalMs || 5 * 1000 // 5s
     debug('latencyCheckIntervalMs: %s dataEmitIntervalMs: %s',
       that.latencyCheckIntervalMs, that.dataEmitIntervalMs)
@@ -174,7 +175,8 @@ class LatencyMonitor extends EventEmitter {
       events: this._latencyData.events,
       minMs: this._latencyData.minMs,
       maxMs: this._latencyData.maxMs,
-      avgMs: this._latencyData.events ? this._latencyData.totalMs / this._latencyData.events
+      avgMs: this._latencyData.events
+        ? this._latencyData.totalMs / this._latencyData.events
         : Number.POSITIVE_INFINITY,
       lengthMs: this.getDeltaMS(this._latencyData.startTime)
     }

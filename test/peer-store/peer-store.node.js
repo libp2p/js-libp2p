@@ -21,6 +21,8 @@ describe('libp2p.peerStore', () => {
     })
   })
 
+  afterEach(() => Promise.all([libp2p, remoteLibp2p].map(l => l.stop())))
+
   it('adds peer address to AddressBook and keys to the keybook when establishing connection', async () => {
     const remoteIdStr = remoteLibp2p.peerId.toB58String()
 

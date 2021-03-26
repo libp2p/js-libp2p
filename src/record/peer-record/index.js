@@ -11,7 +11,7 @@ const {
 } = require('./consts')
 
 /**
- * @typedef {import('peer-id')} PeerId
+ * @typedef {import('../../peer-store/address-book.js').Address} Address
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/record/types').Record} Record
  */
@@ -104,7 +104,7 @@ PeerRecord.createFromProtobuf = (buf) => {
   const peerRecord = Protobuf.PeerRecord.decode(buf)
 
   const peerId = PeerId.createFromBytes(peerRecord.peer_id)
-  const multiaddrs = (peerRecord.addresses || []).map((a) => multiaddr(a.multiaddr))
+  const multiaddrs = (peerRecord.addresses || []).map((/** @type {Address} */ a) => multiaddr(a.multiaddr))
   const seqNumber = peerRecord.seq
 
   return new PeerRecord({ peerId, multiaddrs, seqNumber })

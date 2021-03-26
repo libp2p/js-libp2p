@@ -6,16 +6,15 @@ const log = Object.assign(debug('libp2p:circuit:stream-handler'), {
 })
 
 const lp = require('it-length-prefixed')
+// @ts-ignore it-handshake does not export types
 const handshake = require('it-handshake')
 const { CircuitRelay: CircuitPB } = require('../protocol')
 
 /**
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ * @typedef {import('../../types').CircuitRequest} CircuitRequest
  */
 
-/**
- * @template T
- */
 class StreamHandler {
   /**
    * Create a stream handler for connection
@@ -36,7 +35,7 @@ class StreamHandler {
    * Read and decode message
    *
    * @async
-   * @returns {Promise<T|undefined>}
+   * @returns {Promise<CircuitRequest|undefined>}
    */
   async read () {
     const msg = await this.decoder.next()
@@ -54,7 +53,7 @@ class StreamHandler {
   /**
    * Encode and write array of buffers
    *
-   * @param {CircuitPB} msg - An unencoded CircuitRelay protobuf message
+   * @param {CircuitRequest} msg - An unencoded CircuitRelay protobuf message
    * @returns {void}
    */
   write (msg) {
@@ -73,6 +72,9 @@ class StreamHandler {
     return this.shake.stream
   }
 
+  /**
+   * @param {CircuitRequest} msg - An unencoded CircuitRelay protobuf message
+   */
   end (msg) {
     this.write(msg)
     this.close()

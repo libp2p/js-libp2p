@@ -110,6 +110,7 @@ describe('Identify', () => {
 
   // LEGACY
   it('should be able to identify another peer with no certified peer records support', async () => {
+    const agentVersion = `js-libp2p/${pkg.version}`
     const localIdentify = new IdentifyService({
       libp2p: {
         peerId: localPeer,
@@ -118,7 +119,7 @@ describe('Identify', () => {
         peerStore: localPeerStore,
         multiaddrs: listenMaddrs,
         isStarted: () => true,
-        _options: { host: {} }
+        _options: { host: { agentVersion } }
       }
     })
 
@@ -130,7 +131,7 @@ describe('Identify', () => {
         peerStore: remotePeerStore,
         multiaddrs: listenMaddrs,
         isStarted: () => true,
-        _options: { host: {} }
+        _options: { host: { agentVersion } }
       }
     })
 
@@ -162,7 +163,7 @@ describe('Identify', () => {
     const metadataArgs = localIdentify.peerStore.metadataBook.set.firstCall.args
     expect(metadataArgs[0].id.bytes).to.equal(remotePeer.bytes)
     expect(metadataArgs[1]).to.equal('AgentVersion')
-    expect(unit8ArrayToString(metadataArgs[2])).to.equal(`js-libp2p/${pkg.version}`)
+    expect(unit8ArrayToString(metadataArgs[2])).to.equal(agentVersion)
 
     // Validate the remote peer gets updated in the peer store
     const call = localIdentify.peerStore.addressBook.set.firstCall

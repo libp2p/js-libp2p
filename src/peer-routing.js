@@ -19,11 +19,13 @@ const filter = require('it-filter')
 const {
   setDelayedInterval,
   clearDelayedInterval
+// @ts-ignore module with no types
 } = require('set-delayed-interval')
-const PeerId = require('peer-id')
 
 /**
+ * @typedef {import('peer-id')} PeerId
  * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRoutingModule
  */
 
 /**
@@ -44,6 +46,7 @@ class PeerRouting {
   constructor (libp2p) {
     this._peerId = libp2p.peerId
     this._peerStore = libp2p.peerStore
+    /** @type {PeerRoutingModule[]} */
     this._routers = libp2p._modules.peerRouting || []
 
     // If we have the dht, add it to the available peer routers
@@ -106,6 +109,7 @@ class PeerRouting {
         ...this._routers.map(router => [router.findPeer(id, options)])
       ),
       (source) => filter(source, Boolean),
+      // @ts-ignore findPeer resolves a Promise
       (source) => storeAddresses(source, this._peerStore),
       (source) => first(source)
     )

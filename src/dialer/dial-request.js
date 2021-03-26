@@ -3,6 +3,7 @@
 const errCode = require('err-code')
 const AbortController = require('abort-controller').default
 const { anySignal } = require('any-signal')
+// @ts-ignore p-fifo does not export types
 const FIFO = require('p-fifo')
 const pAny = require('p-any')
 

@@ -8,13 +8,12 @@ const log = Object.assign(debug('libp2p:relay'), {
 const {
   setDelayedInterval,
   clearDelayedInterval
+// @ts-ignore set-delayed-interval does not export types
 } = require('set-delayed-interval')
 
 const AutoRelay = require('./auto-relay')
 const { namespaceToCid } = require('./utils')
 const {
-  ADVERTISE_BOOT_DELAY,
-  ADVERTISE_TTL,
   RELAY_RENDEZVOUS_NS
 } = require('./constants')
 
@@ -45,12 +44,6 @@ class Relay {
   constructor (libp2p) {
     this._libp2p = libp2p
     this._options = {
-      advertise: {
-        bootDelay: ADVERTISE_BOOT_DELAY,
-        enabled: true,
-        ttl: ADVERTISE_TTL,
-        ...libp2p._config.relay.advertise
-      },
       ...libp2p._config.relay
     }
 

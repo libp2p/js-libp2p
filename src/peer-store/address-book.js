@@ -60,7 +60,7 @@ class AddressBook extends Book {
         if (!data.addresses) {
           return []
         }
-        return data.addresses.map((address) => address.multiaddr)
+        return data.addresses.map((/** @type {Address} */ address) => address.multiaddr)
       }
     })
 
@@ -295,6 +295,7 @@ class AddressBook extends Book {
     }
 
     // create Address for each address
+    /** @type {Address[]} */
     const addresses = []
     multiaddrs.forEach((addr) => {
       if (!multiaddr.isMultiaddr(addr)) {

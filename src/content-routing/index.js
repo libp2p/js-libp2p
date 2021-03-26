@@ -16,6 +16,7 @@ const { pipe } = require('it-pipe')
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('cids')} CID
+ * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
  */
 
 /**
@@ -31,6 +32,7 @@ class ContentRouting {
    */
   constructor (libp2p) {
     this.libp2p = libp2p
+    /** @type {ContentRoutingModule[]} */
     this.routers = libp2p._modules.contentRouting || []
     this.dht = libp2p._dht
 

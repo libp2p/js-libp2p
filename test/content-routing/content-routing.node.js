@@ -28,6 +28,8 @@ describe('content-routing', () => {
       })
     })
 
+    after(() => node.stop())
+
     it('.findProviders should return an error', async () => {
       try {
         for await (const _ of node.contentRouting.findProviders('a cid')) {} // eslint-disable-line

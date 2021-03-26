@@ -54,7 +54,7 @@ class Circuit {
    * @param {MuxedStream} props.stream
    */
   async _onProtocol ({ connection, stream }) {
-    /** @type {import('./circuit/stream-handler')<CircuitRequest>} */
+    /** @type {import('./circuit/stream-handler')} */
     const streamHandler = new StreamHandler({ stream })
     const request = await streamHandler.read()
 
@@ -96,7 +96,9 @@ class Circuit {
     }
 
     if (virtualConnection) {
+      // @ts-ignore dst peer will not be undefined
       const remoteAddr = multiaddr(request.dstPeer.addrs[0])
+      // @ts-ignore src peer will not be undefined
       const localAddr = multiaddr(request.srcPeer.addrs[0])
       const maConn = toConnection({
         stream: virtualConnection,

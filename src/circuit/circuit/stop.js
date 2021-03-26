@@ -14,7 +14,7 @@ const { validateAddrs } = require('./utils')
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('../../types').CircuitRequest} CircuitRequest
- * @typedef {import('./stream-handler')<CircuitRequest>} StreamHandlerT
+ * @typedef {import('./stream-handler')} StreamHandlerT
  */
 
 /**
@@ -67,6 +67,10 @@ module.exports.stop = async function stop ({
 
   streamHandler.write(request)
   const response = await streamHandler.read()
+
+  if (!response) {
+    return streamHandler.close()
+  }
 
   if (response.code === CircuitPB.Status.SUCCESS) {
     log('stop request to %s was successful', connection.remotePeer.toB58String())

@@ -6,6 +6,7 @@ const log = Object.assign(debug('libp2p:dialer'), {
 })
 const errCode = require('err-code')
 const multiaddr = require('multiaddr')
+// @ts-ignore timeout-abourt-controles does not export types
 const TimeoutController = require('timeout-abort-controller')
 const { anySignal } = require('any-signal')
 
@@ -50,7 +51,7 @@ const {
  * @typedef PendingDial
  * @property {DialRequest} dialRequest
  * @property {TimeoutController} controller
- * @property {Promise} promise
+ * @property {Promise<Connection>} promise
  * @property {function():void} destroy
  */
 
@@ -155,6 +156,7 @@ class Dialer {
       knownAddrs.unshift(peer)
     }
 
+    /** @type {Multiaddr[]} */
     const addrs = []
     for (const a of knownAddrs) {
       const resolvedAddrs = await this._resolve(a)
@@ -177,6 +179,10 @@ class Dialer {
    * @returns {PendingDial}
    */
   _createPendingDial (dialTarget, options = {}) {
+    /**
+     * @param {multiaddr} addr
+     * @param {{ signal: { aborted: any; }; }} options
+     */
     const dialAction = (addr, options) => {
       if (options.signal.aborted) throw errCode(new Error('already aborted'), codes.ERR_ALREADY_ABORTED)
       return this.transportManager.dial(addr, options)
@@ -207,6 +213,9 @@ class Dialer {
     return pendingDial
   }
 
+  /**
+   * @param {number} num
+   */
   getTokens (num) {
     const total = Math.min(num, this.maxDialsPerPeer, this.tokens.length)
     const tokens = this.tokens.splice(0, total)
@@ -214,6 +223,9 @@ class Dialer {
     return tokens
   }
 
+  /**
+   * @param {number} token
+   */
   releaseToken (token) {
     // Guard against duplicate releases
     if (this.tokens.indexOf(token) > -1) return
