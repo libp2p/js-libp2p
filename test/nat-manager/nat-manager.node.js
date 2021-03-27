@@ -268,7 +268,10 @@ describe('Nat Manager (TCP)', () => {
       natManager
     } = await createNatManager([
       `/ip4/${addr}/tcp/0`
-    ])
+    ], {
+      // so we don't try to look up the current computer's external address
+      externalIp: '184.12.31.4'
+    })
 
     // use the actual nat manager client not the stub
     delete natManager._client
