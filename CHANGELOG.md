@@ -1,3 +1,12 @@
+## [0.30.12](https://github.com/libp2p/js-libp2p/compare/v0.30.11...v0.30.12) (2021-03-27)
+
+
+### Bug Fixes
+
+* the API of es6-promisify is not the same as promisify-es6 ([#905](https://github.com/libp2p/js-libp2p/issues/905)) ([a7128f0](https://github.com/libp2p/js-libp2p/commit/a7128f07ec8d4b729145ecfc6ad1d585ffddea46))
+
+
+
 ## [0.30.11](https://github.com/libp2p/js-libp2p/compare/v0.30.10...v0.30.11) (2021-03-23)
 
 
