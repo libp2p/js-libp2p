@@ -60,7 +60,6 @@ describe('Nat Manager (TCP)', () => {
 
     teardown.push(async () => {
       await natManager.stop()
-      // await transportManager.close()
       await transportManager.removeAll()
       expect(transportManager._transports.size).to.equal(0)
     })

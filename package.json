@@ -21,7 +21,8 @@
     "prepare": "aegir build --no-bundle",
     "lint": "aegir lint",
     "build": "aegir build",
-    "test": "npm run test:node && npm run test:browser",
+    "test": "aegir test",
+    "test:ts": "aegir build --no-bundle && npm run test --prefix test/ts-use",
     "test:node": "aegir test -t node -f \"./test/**/*.{node,spec}.js\"",
     "test:browser": "aegir test -t browser",
     "test:examples": "cd examples && npm run test:all",
@@ -57,12 +58,12 @@
   "eslintConfig": {
     "extends": "ipfs",
     "ignorePatterns": [
-      "!.aegir.js"
+      "!.aegir.js",
+      "test/ts-use"
     ]
   },
   "dependencies": {
     "@motrix/nat-api": "^0.3.1",
-    "@types/varint": "^6.0.0",
     "abort-controller": "^3.0.0",
     "aggregate-error": "^3.1.0",
     "any-signal": "^2.1.1",
@@ -119,6 +120,7 @@
     "@nodeutils/defaults-deep": "^1.1.0",
     "@types/es6-promisify": "^6.0.0",
     "@types/node-forge": "^0.9.7",
+    "@types/varint": "^6.0.0",
     "abortable-iterator": "^3.0.0",
     "aegir": "^32.1.0",
     "chai-bytes": "^0.1.2",
