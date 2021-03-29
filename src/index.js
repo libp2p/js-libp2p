@@ -43,9 +43,9 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory<any, any>} TransportFactory
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory} MuxerFactory
- * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
- * @typedef {import('libp2p-interfaces/src/peer-discovery/types').PeerDiscovery} PeerDiscoveryModule
- * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRoutingModule
+ * @typedef {import('libp2p-interfaces/src/content-routing/types')} ContentRoutingModule
+ * @typedef {import('libp2p-interfaces/src/peer-discovery/types')} PeerDiscoveryModule
+ * @typedef {import('libp2p-interfaces/src/peer-routing/types')} PeerRoutingModule
  * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
  * @typedef {import('libp2p-interfaces/src/pubsub')} Pubsub
  * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions

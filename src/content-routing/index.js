@@ -16,7 +16,7 @@ const { pipe } = require('it-pipe')
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('cids')} CID
- * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
+ * @typedef {import('libp2p-interfaces/src/content-routing/types')} ContentRoutingModule
  */
 
 /**

@@ -4,6 +4,7 @@ docs
 test/repo-tests*
 **/bundle.js
 .cache
+.parcel-cache
 
 # Logs
 logs

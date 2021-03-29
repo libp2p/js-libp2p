@@ -50,10 +50,12 @@ async function test () {
         const out = chunk.toString()
 
         if (out.includes('Server running at')) {
-            dialerUrl = out.replace('Server running at ', '')
+            dialerUrl = out.split('Server running at ')[1]
         }
 
-        if (out.includes('✨  Built in ')) {
+
+        if (out.includes('Built in ')) {
+
             try {
                 const browser = await chromium.launch();
                 const page = await browser.newPage();

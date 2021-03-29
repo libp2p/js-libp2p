@@ -1,8 +1,8 @@
 'use strict'
 
 const debug = require('debug')
-const log = Object.assign(debug('libp2p:peer-store'), {
-  error: debug('libp2p:peer-store:err')
+const log = Object.assign(debug('libp2p:registrar'), {
+  error: debug('libp2p:registrar:err')
 })
 const errcode = require('err-code')
 
