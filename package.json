@@ -43,7 +43,7 @@
     "debug": "^4.2.0",
     "err-code": "^3.0.1",
     "ipfs-utils": "^6.0.1",
-    "it-ws": "^3.0.2",
+    "it-ws": "^4.0.0",
     "libp2p-utils": "^0.2.1",
     "mafmt": "^8.0.1",
     "multiaddr": "^8.1.1",
@@ -53,14 +53,15 @@
   },
   "devDependencies": {
     "abort-controller": "^3.0.0",
-    "aegir": "^30.3.0",
+    "aegir": "^32.2.0",
     "bl": "^4.0.0",
     "is-loopback-addr": "^1.0.1",
     "it-goodbye": "^2.0.1",
     "it-pipe": "^1.0.1",
     "libp2p-interfaces": "^0.8.3",
     "streaming-iterables": "^5.0.2",
-    "uint8arrays": "^2.1.2"
+    "uint8arrays": "^2.1.2",
+    "util": "^0.12.3"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
