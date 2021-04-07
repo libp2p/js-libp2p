@@ -6,5 +6,8 @@
   "include": [
     "test",
     "src"
+  ],
+  "exclude": [
+    "src/record/record.js" // exclude generated file
   ]
 }

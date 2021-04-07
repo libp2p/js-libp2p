@@ -1,9 +1,9 @@
 'use strict'
 
-// @ts-ignore
-const protons = require('protons')
-const pb = protons(require('./record.proto')).Record
-const utils = require('./utils')
+const {
+  Record: PBRecord
+} = require('./record')
+const utils = require('../utils')
 
 /**
  * @typedef {{ key: Uint8Array, value: Uint8Array, timeReceived: string }} ProtobufRecord
@@ -30,7 +30,7 @@ class Record {
   }
 
   serialize () {
-    return pb.encode(this.prepareSerialize())
+    return PBRecord.encode(this.prepareSerialize()).finish()
   }
 
   /**
@@ -50,14 +50,19 @@ class Record {
    * @param {Uint8Array} raw
    */
   static deserialize (raw) {
-    const dec = pb.decode(raw)
-    return Record.fromDeserialized(dec)
+    const message = PBRecord.decode(raw)
+    return Record.fromDeserialized(PBRecord.toObject(message, {
+      defaults: false,
+      arrays: true,
+      longs: Number,
+      objects: false
+    }))
   }
 
   /**
    * Create a record from the raw object returned from the protobuf library.
    *
-   * @param {ProtobufRecord} obj
+   * @param {{ [k: string]: any }} obj
    */
   static fromDeserialized (obj) {
     let recvtime

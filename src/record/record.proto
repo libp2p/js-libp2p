@@ -1,5 +1,6 @@
-'use strict'
-module.exports = `// Record represents a dht record that contains a value
+syntax = "proto3";
+
+// Record represents a dht record that contains a value
 // for a key value pair
 message Record {
   // The key that references this record
@@ -15,5 +16,5 @@ message Record {
   // optional bytes signature = 4;
 
   // Time the record was received, set by receiver
-  optional string timeReceived = 5;
-}`
+  string timeReceived = 5;
+}
