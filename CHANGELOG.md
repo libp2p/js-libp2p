@@ -1,3 +1,7 @@
+## [0.10.1](https://github.com/libp2p/js-libp2p-record/compare/v0.10.0...v0.10.1) (2021-04-07)
+
+
+
 # [0.10.0](https://github.com/libp2p/js-libp2p-record/compare/v0.8.0...v0.10.0) (2021-02-02)
 
 
