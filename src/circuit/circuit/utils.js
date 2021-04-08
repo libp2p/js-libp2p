@@ -5,14 +5,14 @@ const { CircuitRelay } = require('../protocol')
 
 /**
  * @typedef {import('./stream-handler')} StreamHandler
- * @typedef {import('../../types').CircuitStatus} CircuitStatus
+ * @typedef {import('../protocol').ICircuitRelay} ICircuitRelay
  */
 
 /**
  * Write a response
  *
  * @param {StreamHandler} streamHandler
- * @param {CircuitStatus} status
+ * @param {import('../protocol').CircuitRelay.Status} status
  */
 function writeResponse (streamHandler, status) {
   streamHandler.write({
@@ -24,14 +24,16 @@ function writeResponse (streamHandler, status) {
 /**
  * Validate incomming HOP/STOP message
  *
- * @param {*} msg - A CircuitRelay unencoded protobuf message
+ * @param {ICircuitRelay} msg - A CircuitRelay unencoded protobuf message
  * @param {StreamHandler} streamHandler
  */
 function validateAddrs (msg, streamHandler) {
   try {
-    msg.dstPeer.addrs.forEach((/** @type {string} */ addr) => {
-      return multiaddr(addr)
-    })
+    if (msg.dstPeer && msg.dstPeer.addrs) {
+      msg.dstPeer.addrs.forEach((addr) => {
+        return multiaddr(addr)
+      })
+    }
   } catch (err) {
     writeResponse(streamHandler, msg.type === CircuitRelay.Type.HOP
       ? CircuitRelay.Status.HOP_DST_MULTIADDR_INVALID
@@ -40,9 +42,11 @@ function validateAddrs (msg, streamHandler) {
   }
 
   try {
-    msg.srcPeer.addrs.forEach((/** @type {string} */ addr) => {
-      return multiaddr(addr)
-    })
+    if (msg.srcPeer && msg.srcPeer.addrs) {
+      msg.srcPeer.addrs.forEach((addr) => {
+        return multiaddr(addr)
+      })
+    }
   } catch (err) {
     writeResponse(streamHandler, msg.type === CircuitRelay.Type.HOP
       ? CircuitRelay.Status.HOP_SRC_MULTIADDR_INVALID

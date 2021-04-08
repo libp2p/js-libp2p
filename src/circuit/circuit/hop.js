@@ -18,7 +18,7 @@ const { stop } = require('./stop')
 const multicodec = require('./../multicodec')
 
 /**
- * @typedef {import('../../types').CircuitRequest} CircuitRequest
+ * @typedef {import('../protocol').ICircuitRelay} ICircuitRelay
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('../transport')} Transport
@@ -27,7 +27,7 @@ const multicodec = require('./../multicodec')
 /**
  * @typedef {Object} HopRequest
  * @property {Connection} connection
- * @property {CircuitRequest} request
+ * @property {ICircuitRelay} request
  * @property {StreamHandler} streamHandler
  * @property {Transport} circuit
  */
@@ -118,7 +118,7 @@ async function handleHop ({
  *
  * @param {object} options
  * @param {Connection} options.connection - Connection to the relay
- * @param {CircuitRequest} options.request
+ * @param {ICircuitRelay} options.request
  * @returns {Promise<MuxedStream>}
  */
 async function hop ({

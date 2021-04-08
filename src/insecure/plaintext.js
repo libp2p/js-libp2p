@@ -19,10 +19,11 @@ const protocol = '/plaintext/2.0.0'
  */
 
 /**
- * @param {{ id: Uint8Array; pubkey: { Type: any, Data: Uint8Array; }; }} exchange
+ * @param {import('./proto').IExchange} exchange
  */
 function lpEncodeExchange (exchange) {
-  const pb = Exchange.encode(exchange)
+  const pb = Exchange.encode(exchange).finish()
+  // @ts-ignore TODO: Uint8Array not assignable to Buffer
   return lp.encode.single(pb)
 }
 

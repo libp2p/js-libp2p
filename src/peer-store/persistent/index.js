@@ -18,8 +18,8 @@ const {
   NAMESPACE_PROTOCOL
 } = require('./consts')
 
-const Addresses = require('./pb/address-book.proto')
-const Protocols = require('./pb/proto-book.proto')
+const { Addresses } = require('./pb/address-book')
+const { Protocols } = require('./pb/proto-book')
 
 /**
  * @typedef {import('interface-datastore').Batch} Batch
@@ -239,13 +239,13 @@ class PersistentPeerStore extends PeerStore {
           multiaddr: address.multiaddr.bytes,
           isCertified: address.isCertified
         })),
-        certified_record: entry.record
+        certifiedRecord: entry.record
           ? {
               seq: entry.record.seqNumber,
               raw: entry.record.raw
             }
           : undefined
-      })
+      }).finish()
 
       batch.put(key, encodedData)
     } catch (err) {
@@ -326,7 +326,7 @@ class PersistentPeerStore extends PeerStore {
         return
       }
 
-      const encodedData = Protocols.encode({ protocols })
+      const encodedData = Protocols.encode({ protocols }).finish()
 
       batch.put(key, encodedData)
     } catch (err) {
@@ -357,14 +357,14 @@ class PersistentPeerStore extends PeerStore {
           this.addressBook._setData(
             peerId,
             {
-              addresses: decoded.addrs.map((/** @type {Address} */ address) => ({
+              addresses: decoded.addrs.map((address) => ({
                 multiaddr: multiaddr(address.multiaddr),
                 isCertified: Boolean(address.isCertified)
               })),
-              record: decoded.certified_record
+              record: decoded.certifiedRecord
                 ? {
-                    raw: decoded.certified_record.raw,
-                    seqNumber: decoded.certified_record.seq
+                    raw: decoded.certifiedRecord.raw,
+                    seqNumber: decoded.certifiedRecord.seq
                   }
                 : undefined
             },

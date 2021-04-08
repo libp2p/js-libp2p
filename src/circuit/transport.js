@@ -24,7 +24,6 @@ const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
  * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {import('../types').CircuitRequest} CircuitRequest
  */
 
 class Circuit {

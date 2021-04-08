@@ -56,7 +56,7 @@ const esbuild = {
 /** @type {import('aegir').PartialOptions} */
 module.exports = {
   build: {
-    bundlesizeMax: '250kB'
+    bundlesizeMax: '270kB'
   },
   test: {
     before,
