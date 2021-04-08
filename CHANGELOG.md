@@ -1,3 +1,12 @@
+# [0.3.0](https://github.com/libp2p/js-libp2p-utils/compare/v0.2.3...v0.3.0) (2021-04-08)
+
+
+### Features
+
+* add types ([#16](https://github.com/libp2p/js-libp2p-utils/issues/16)) ([e0552b5](https://github.com/libp2p/js-libp2p-utils/commit/e0552b5b6b1d912a8f6f1e39b1a4b70fca91f547))
+
+
+
 <a name="0.2.3"></a>
 ## [0.2.3](https://github.com/libp2p/js-libp2p-utils/compare/v0.2.2...v0.2.3) (2020-11-30)
 
