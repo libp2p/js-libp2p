@@ -1,6 +1,11 @@
 'use strict'
 
+// @ts-ignore is-loopback-addr does not publish types
 const isLoopbackAddr = require('is-loopback-addr')
+
+/**
+ * @typedef {import('multiaddr')} Multiaddr
+ */
 
 /**
  * Check if a given multiaddr is a loopback address.

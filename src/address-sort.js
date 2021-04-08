@@ -3,6 +3,16 @@
 const isPrivate = require('./multiaddr/is-private')
 
 /**
+ * @typedef {import('multiaddr')} Multiaddr
+ */
+
+/**
+ * @typedef {Object} Address
+ * @property {Multiaddr} multiaddr peer multiaddr.
+ * @property {boolean} isCertified obtained from a signed peer record.
+ */
+
+/**
  * Compare function for array.sort().
  * This sort aims to move the private adresses to the end of the array.
  * In case of equality, a certified address will come first.

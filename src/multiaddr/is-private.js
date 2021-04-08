@@ -1,6 +1,11 @@
 'use strict'
 
+// @ts-ignore private-ip does not publish types
 const isIpPrivate = require('private-ip')
+
+/**
+ * @typedef {import('multiaddr')} Multiaddr
+ */
 
 /**
  * Check if a given multiaddr has a private address.

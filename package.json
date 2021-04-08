@@ -4,7 +4,21 @@
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "leadMaintainer": "Vasco Santos <santos.vasco10@gmail.com>",
   "main": "src/index.js",
+  "types": "dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "src/*": [
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
   "scripts": {
+    "prepare": "aegir build --no-bundle",
     "test": "aegir test",
     "test:browser": "aegir test -t browser",
     "test:node": "aegir test -t node",
@@ -29,18 +43,21 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-utils#readme",
   "devDependencies": {
-    "aegir": "^27.0.0",
+    "@types/debug": "^4.1.5",
+    "aegir": "^32.1.0",
     "it-pair": "^1.0.0",
     "it-pipe": "^1.1.0",
-    "streaming-iterables": "^5.0.3"
+    "libp2p-interfaces": "^0.9.0",
+    "streaming-iterables": "^5.0.3",
+    "util": "^0.12.3"
   },
   "dependencies": {
     "abortable-iterator": "^3.0.0",
-    "debug": "^4.2.0",
-    "err-code": "^2.0.3",
-    "ip-address": "^6.1.0",
+    "debug": "^4.3.0",
+    "err-code": "^3.0.1",
+    "ip-address": "^7.1.0",
     "is-loopback-addr": "^1.0.0",
-    "multiaddr": "^8.0.0",
+    "multiaddr": "^8.1.2",
     "private-ip": "^2.1.1"
   },
   "contributors": [
