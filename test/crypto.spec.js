@@ -51,7 +51,7 @@ describe('libp2p-crypto', function () {
   })
 
   it('generateKeyPairFromSeed', () => {
-    var seed = crypto.randomBytes(32)
+    const seed = crypto.randomBytes(32)
     return expectErrCode(crypto.keys.generateKeyPairFromSeed('invalid-key-type', seed, 512), 'ERR_UNSUPPORTED_KEY_TYPE')
   })
 

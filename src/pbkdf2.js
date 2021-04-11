@@ -23,7 +23,7 @@ const hashName = {
  * @param {string} password
  * @param {string} salt
  * @param {number} iterations
- * @param {number} keySize (in bytes)
+ * @param {number} keySize - (in bytes)
  * @param {string} hash - The hash name ('sha1', 'sha2-512, ...)
  * @returns {string} - A new password
  */

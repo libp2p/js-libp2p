@@ -28,7 +28,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
       return keysProtobuf.PublicKey.encode({
         Type: keysProtobuf.KeyType.Secp256k1,
         Data: this.marshal()
-      })
+      }).finish()
     }
 
     equals (key) {
@@ -64,7 +64,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
       return keysProtobuf.PrivateKey.encode({
         Type: keysProtobuf.KeyType.Secp256k1,
         Data: this.marshal()
-      })
+      }).finish()
     }
 
     equals (key) {

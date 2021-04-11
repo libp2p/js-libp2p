@@ -1,6 +1,10 @@
 language: node_js
-
 cache: npm
+
+branches:
+  only:
+  - master
+  - /^release\/.*$/
 
 stages:
   - check
@@ -8,8 +12,8 @@ stages:
   - cov
 
 node_js:
-  - '10'
-  - '12'
+  - 'lts/*'
+  - 'node'
 
 os:
   - linux
@@ -23,7 +27,7 @@ jobs:
   include:
     - stage: check
       script:
-        - npx aegir build --bundlesize
+        - npx aegir build --no-types
         - npx aegir dep-check
         - npm run lint
 

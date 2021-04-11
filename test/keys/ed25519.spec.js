@@ -33,7 +33,7 @@ describe('ed25519', function () {
   })
 
   it('generates a valid key from seed', async () => {
-    var seed = crypto.randomBytes(32)
+    const seed = crypto.randomBytes(32)
     const seededkey = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512)
     expect(seededkey).to.be.an.instanceof(ed25519.Ed25519PrivateKey)
     const digest = await seededkey.hash()

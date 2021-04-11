@@ -1,7 +1,6 @@
 'use strict'
 
 const sha = require('multihashing-async/src/sha')
-const protobuf = require('protons')
 const errcode = require('err-code')
 const uint8ArrayEquals = require('uint8arrays/equals')
 const uint8ArrayToString = require('uint8arrays/to-string')
@@ -11,7 +10,7 @@ require('node-forge/lib/ed25519')
 const forge = require('node-forge/lib/forge')
 
 const crypto = require('./rsa')
-const pbm = protobuf(require('./keys.proto'))
+const pbm = require('./keys')
 const exporter = require('./exporter')
 
 class RsaPublicKey {
@@ -31,7 +30,7 @@ class RsaPublicKey {
     return pbm.PublicKey.encode({
       Type: pbm.KeyType.RSA,
       Data: this.marshal()
-    })
+    }).finish()
   }
 
   encrypt (bytes) {
@@ -83,7 +82,7 @@ class RsaPrivateKey {
     return pbm.PrivateKey.encode({
       Type: pbm.KeyType.RSA,
       Data: this.marshal()
-    })
+    }).finish()
   }
 
   equals (key) {
@@ -101,7 +100,7 @@ class RsaPrivateKey {
    * The public key is a protobuf encoding containing a type and the DER encoding
    * of the PKCS SubjectPublicKeyInfo.
    *
-   * @returns {Promise<String>}
+   * @returns {Promise<string>}
    */
   async id () {
     const hash = await this.public.hash()

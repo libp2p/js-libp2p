@@ -9,7 +9,7 @@ module.exports = {
    * with the given password. The privateKey must have been exported
    * using the same password and underlying cipher (aes-gcm)
    *
-   * @param {string} privateKey A base64 encoded encrypted key
+   * @param {string} privateKey - A base64 encoded encrypted key
    * @param {string} password
    * @returns {Promise<Uint8Array>} The private key protobuf
    */

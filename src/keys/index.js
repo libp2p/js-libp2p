@@ -1,7 +1,6 @@
 'use strict'
 
-const protobuf = require('protons')
-const keysPBM = protobuf(require('./keys.proto'))
+const keysPBM = require('./keys')
 require('node-forge/lib/asn1')
 require('node-forge/lib/pbe')
 const forge = require('node-forge/lib/forge')
@@ -10,16 +9,11 @@ const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const importer = require('./importer')
 
-exports = module.exports
-
 const supportedKeys = {
   rsa: require('./rsa-class'),
   ed25519: require('./ed25519-class'),
   secp256k1: require('./secp256k1-class')(keysPBM, require('../random-bytes'))
 }
-
-exports.supportedKeys = supportedKeys
-exports.keysPBM = keysPBM
 
 const ErrMissingSecp256K1 = {
   message: 'secp256k1 support requires libp2p-crypto-secp256k1 package',
@@ -35,17 +29,14 @@ function typeToKey (type) {
   return key
 }
 
-exports.keyStretcher = require('./key-stretcher')
-exports.generateEphemeralKeyPair = require('./ephemeral-keys')
-
 // Generates a keypair of the given type and bitsize
-exports.generateKeyPair = async (type, bits) => { // eslint-disable-line require-await
+const generateKeyPair = async (type, bits) => { // eslint-disable-line require-await
   return typeToKey(type).generateKeyPair(bits)
 }
 
 // Generates a keypair of the given type and bitsize
 // seed is a 32 byte uint8array
-exports.generateKeyPairFromSeed = async (type, seed, bits) => { // eslint-disable-line require-await
+const generateKeyPairFromSeed = async (type, seed, bits) => { // eslint-disable-line require-await
   const key = typeToKey(type)
   if (type.toLowerCase() !== 'ed25519') {
     throw errcode(new Error('Seed key derivation is unimplemented for RSA or secp256k1'), 'ERR_UNSUPPORTED_KEY_DERIVATION_TYPE')
@@ -55,7 +46,7 @@ exports.generateKeyPairFromSeed = async (type, seed, bits) => { // eslint-disabl
 
 // Converts a protobuf serialized public key into its
 // representative object
-exports.unmarshalPublicKey = (buf) => {
+const unmarshalPublicKey = (buf) => {
   const decoded = keysPBM.PublicKey.decode(buf)
   const data = decoded.Data
 
@@ -76,7 +67,7 @@ exports.unmarshalPublicKey = (buf) => {
 }
 
 // Converts a public key object into a protobuf serialized public key
-exports.marshalPublicKey = (key, type) => {
+const marshalPublicKey = (key, type) => {
   type = (type || 'rsa').toLowerCase()
   typeToKey(type) // check type
   return key.bytes
@@ -84,7 +75,7 @@ exports.marshalPublicKey = (key, type) => {
 
 // Converts a protobuf serialized private key into its
 // representative object
-exports.unmarshalPrivateKey = async (buf) => { // eslint-disable-line require-await
+const unmarshalPrivateKey = async (buf) => { // eslint-disable-line require-await
   const decoded = keysPBM.PrivateKey.decode(buf)
   const data = decoded.Data
 
@@ -105,7 +96,7 @@ exports.unmarshalPrivateKey = async (buf) => { // eslint-disable-line require-aw
 }
 
 // Converts a private key object into a protobuf serialized private key
-exports.marshalPrivateKey = (key, type) => {
+const marshalPrivateKey = (key, type) => {
   type = (type || 'rsa').toLowerCase()
   typeToKey(type) // check type
   return key.bytes
@@ -116,10 +107,10 @@ exports.marshalPrivateKey = (key, type) => {
  * @param {string} encryptedKey
  * @param {string} password
  */
-exports.import = async (encryptedKey, password) => { // eslint-disable-line require-await
+const importKey = async (encryptedKey, password) => { // eslint-disable-line require-await
   try {
     const key = await importer.import(encryptedKey, password)
-    return exports.unmarshalPrivateKey(key)
+    return unmarshalPrivateKey(key)
   } catch (_) {
     // Ignore and try the old pem decrypt
   }
@@ -132,4 +123,18 @@ exports.import = async (encryptedKey, password) => { // eslint-disable-line requ
   let der = forge.asn1.toDer(forge.pki.privateKeyToAsn1(key))
   der = uint8ArrayFromString(der.getBytes(), 'ascii')
   return supportedKeys.rsa.unmarshalRsaPrivateKey(der)
+}
+
+module.exports = {
+  supportedKeys,
+  keysPBM,
+  keyStretcher: require('./key-stretcher'),
+  generateEphemeralKeyPair: require('./ephemeral-keys'),
+  generateKeyPair,
+  generateKeyPairFromSeed,
+  unmarshalPublicKey,
+  marshalPublicKey,
+  unmarshalPrivateKey,
+  marshalPrivateKey,
+  import: importKey
 }

@@ -1,12 +1,11 @@
 'use strict'
 
 const sha = require('multihashing-async/src/sha')
-const protobuf = require('protons')
 const errcode = require('err-code')
 const uint8ArrayEquals = require('uint8arrays/equals')
 const mh = require('multihashes')
 const crypto = require('./ed25519')
-const pbm = protobuf(require('./keys.proto'))
+const pbm = require('./keys')
 const exporter = require('./exporter')
 
 class Ed25519PublicKey {
@@ -26,7 +25,7 @@ class Ed25519PublicKey {
     return pbm.PublicKey.encode({
       Type: pbm.KeyType.Ed25519,
       Data: this.marshal()
-    })
+    }).finish()
   }
 
   equals (key) {
@@ -62,7 +61,7 @@ class Ed25519PrivateKey {
     return pbm.PrivateKey.encode({
       Type: pbm.KeyType.Ed25519,
       Data: this.marshal()
-    })
+    }).finish()
   }
 
   equals (key) {
@@ -80,7 +79,7 @@ class Ed25519PrivateKey {
    * The public key is a protobuf encoding containing a type and the DER encoding
    * of the PKCS SubjectPublicKeyInfo.
    *
-   * @returns {Promise<String>}
+   * @returns {Promise<string>}
    */
   async id () {
     const encoding = mh.encode(this.public.bytes, 'identity')

@@ -11,11 +11,11 @@ const webcrypto = require('../webcrypto')
  *
  * @param {object} [options]
  * @param {string} [options.algorithm=AES-GCM]
- * @param {Number} [options.nonceLength=12]
- * @param {Number} [options.keyLength=16]
+ * @param {number} [options.nonceLength=12]
+ * @param {number} [options.keyLength=16]
  * @param {string} [options.digest=sha256]
- * @param {Number} [options.saltLength=16]
- * @param {Number} [options.iterations=32767]
+ * @param {number} [options.saltLength=16]
+ * @param {number} [options.iterations=32767]
  * @returns {*}
  */
 function create ({
@@ -33,8 +33,8 @@ function create ({
    * Uses the provided password to derive a pbkdf2 key. The key
    * will then be used to encrypt the data.
    *
-   * @param {Uint8Array} data The data to decrypt
-   * @param {string} password A plain password
+   * @param {Uint8Array} data - The data to decrypt
+   * @param {string} password - A plain password
    * @returns {Promise<Uint8Array>}
    */
   async function encrypt (data, password) { // eslint-disable-line require-await
@@ -58,8 +58,8 @@ function create ({
    * this decryption cipher must be the same as those used to create
    * the encryption cipher.
    *
-   * @param {Uint8Array} data The data to decrypt
-   * @param {string} password A plain password
+   * @param {Uint8Array} data - The data to decrypt
+   * @param {string} password - A plain password
    * @returns {Promise<Uint8Array>}
    */
   async function decrypt (data, password) {
