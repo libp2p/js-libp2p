@@ -1,3 +1,28 @@
+## [0.19.3](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.7...v0.19.3) (2021-04-11)
+
+
+### Bug Fixes
+
+* ed25519 key ID generation ([bc33769](https://github.com/libp2p/js-libp2p-crypto/commit/bc337698b6124e3461c8dc4be2f264ea98351c70))
+* ed25519 PeerID generation ([#186](https://github.com/libp2p/js-libp2p-crypto/issues/186)) ([1c16dd3](https://github.com/libp2p/js-libp2p-crypto/commit/1c16dd3dec8a641f55187bd9fbb6c03ba5fafdaa)), closes [ipfs/js-ipfs#3591](https://github.com/ipfs/js-ipfs/issues/3591) [libp2p/js-libp2p-crypto#185](https://github.com/libp2p/js-libp2p-crypto/issues/185)
+* go ed25519 interop ([2f18a07](https://github.com/libp2p/js-libp2p-crypto/commit/2f18a077b47ee84c450431f7431ecdfc913c8543))
+* remove rendundant public key ([#181](https://github.com/libp2p/js-libp2p-crypto/issues/181)) ([afcffc8](https://github.com/libp2p/js-libp2p-crypto/commit/afcffc8115c8833edfe2a942d05547f418be5585))
+* replace node buffers with uint8arrays ([#180](https://github.com/libp2p/js-libp2p-crypto/issues/180)) ([a0f387a](https://github.com/libp2p/js-libp2p-crypto/commit/a0f387aeab5dff45368341d0d80a5d1a25e9f849))
+
+
+### Features
+
+* add exporting/importing of non rsa keys in libp2p-key format ([#179](https://github.com/libp2p/js-libp2p-crypto/issues/179)) ([7273739](https://github.com/libp2p/js-libp2p-crypto/commit/7273739f045b33a46aae45f5003dd09f7ea6e37e))
+
+
+### BREAKING CHANGES
+
+* The private ed25519 key will no longer include the redundant public key
+
+* chore: fix lint
+
+
+
 <a name="0.19.2"></a>
 ## [0.19.2](https://github.com/libp2p/js-libp2p-crypto/compare/v0.19.1...v0.19.2) (2021-03-17)
 
