@@ -6,7 +6,7 @@ const TCP = require('../src')
 const net = require('net')
 const os = require('os')
 const path = require('path')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const pipe = require('it-pipe')
 const { collect, map } = require('streaming-iterables')
 const isCI = process.env.CI
@@ -37,7 +37,7 @@ describe('listen', () => {
   })
 
   it('close listener with connections, through timeout', async () => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const mh = new Multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     listener = tcp.createListener((conn) => {
       pipe(conn, conn)
     })
@@ -62,14 +62,14 @@ describe('listen', () => {
 
   // Windows doesn't support unix paths
   skipOnWindows('listen on path', async () => {
-    const mh = multiaddr(`/unix${path.resolve(os.tmpdir(), '/tmp/p2pd.sock')}`)
+    const mh = new Multiaddr(`/unix${path.resolve(os.tmpdir(), '/tmp/p2pd.sock')}`)
 
     listener = tcp.createListener((conn) => {})
     await listener.listen(mh)
   })
 
   it('listen on port 0', async () => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/0')
+    const mh = new Multiaddr('/ip4/127.0.0.1/tcp/0')
     listener = tcp.createListener((conn) => {})
     await listener.listen(mh)
   })
@@ -78,19 +78,19 @@ describe('listen', () => {
     if (isCI) {
       return
     }
-    const mh = multiaddr('/ip6/::/tcp/9090')
+    const mh = new Multiaddr('/ip6/::/tcp/9090')
     listener = tcp.createListener((conn) => {})
     await listener.listen(mh)
   })
 
   it('listen on any Interface', async () => {
-    const mh = multiaddr('/ip4/0.0.0.0/tcp/9090')
+    const mh = new Multiaddr('/ip4/0.0.0.0/tcp/9090')
     listener = tcp.createListener((conn) => {})
     await listener.listen(mh)
   })
 
   it('getAddrs', async () => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090')
+    const mh = new Multiaddr('/ip4/127.0.0.1/tcp/9090')
     listener = tcp.createListener((conn) => {})
     await listener.listen(mh)
 
@@ -100,7 +100,7 @@ describe('listen', () => {
   })
 
   it('getAddrs on port 0 listen', async () => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/0')
+    const mh = new Multiaddr('/ip4/127.0.0.1/tcp/0')
     listener = tcp.createListener((conn) => {})
     await listener.listen(mh)
 
@@ -109,7 +109,7 @@ describe('listen', () => {
   })
 
   it('getAddrs from listening on 0.0.0.0', async () => {
-    const mh = multiaddr('/ip4/0.0.0.0/tcp/9090')
+    const mh = new Multiaddr('/ip4/0.0.0.0/tcp/9090')
     listener = tcp.createListener((conn) => {})
     await listener.listen(mh)
 
@@ -119,7 +119,7 @@ describe('listen', () => {
   })
 
   it('getAddrs from listening on 0.0.0.0 and port 0', async () => {
-    const mh = multiaddr('/ip4/0.0.0.0/tcp/0')
+    const mh = new Multiaddr('/ip4/0.0.0.0/tcp/0')
     listener = tcp.createListener((conn) => {})
     await listener.listen(mh)
 
@@ -129,7 +129,7 @@ describe('listen', () => {
   })
 
   it('getAddrs preserves IPFS Id', async () => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const mh = new Multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     listener = tcp.createListener((conn) => {})
     await listener.listen(mh)
 
@@ -142,7 +142,7 @@ describe('listen', () => {
 describe('dial', () => {
   let tcp
   let listener
-  const ma = multiaddr('/ip4/127.0.0.1/tcp/9090')
+  const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9090')
 
   beforeEach(async () => {
     tcp = new TCP({
@@ -177,7 +177,7 @@ describe('dial', () => {
       return
     }
 
-    const ma = multiaddr('/ip6/::/tcp/9066')
+    const ma = new Multiaddr('/ip6/::/tcp/9066')
     const listener = tcp.createListener((conn) => {
       pipe(conn, conn)
     })
@@ -195,7 +195,7 @@ describe('dial', () => {
 
   // Windows doesn't support unix paths
   skipOnWindows('dial on path', async () => {
-    const ma = multiaddr(`/unix${path.resolve(os.tmpdir(), '/tmp/p2pd.sock')}`)
+    const ma = new Multiaddr(`/unix${path.resolve(os.tmpdir(), '/tmp/p2pd.sock')}`)
 
     const listener = tcp.createListener((conn) => {
       pipe(conn, conn)
@@ -220,7 +220,7 @@ describe('dial', () => {
       handled = resolve
     })
 
-    const ma = multiaddr('/ip6/::/tcp/0')
+    const ma = new Multiaddr('/ip6/::/tcp/0')
 
     const listener = tcp.createListener(async (conn) => {
       await pipe(
@@ -248,7 +248,7 @@ describe('dial', () => {
       handled = resolve
     })
 
-    const ma = multiaddr('/ip6/::/tcp/0')
+    const ma = new Multiaddr('/ip6/::/tcp/0')
 
     const listener = tcp.createListener(async (conn) => {
       // pull(conn, pull.onEnd(destroyed))
@@ -265,7 +265,7 @@ describe('dial', () => {
   })
 
   it('dial on IPv4 with IPFS Id', async () => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const conn = await tcp.dial(ma)
 
     const res = await pipe(

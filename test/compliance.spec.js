@@ -3,7 +3,7 @@
 
 const sinon = require('sinon')
 const tests = require('libp2p-interfaces/src/transport/tests')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const net = require('net')
 const TCP = require('../src')
 
@@ -12,9 +12,9 @@ describe('interface-transport compliance', () => {
     setup ({ upgrader }) {
       const tcp = new TCP({ upgrader })
       const addrs = [
-        multiaddr('/ip4/127.0.0.1/tcp/9091'),
-        multiaddr('/ip4/127.0.0.1/tcp/9092'),
-        multiaddr('/ip4/127.0.0.1/tcp/9093')
+        new Multiaddr('/ip4/127.0.0.1/tcp/9091'),
+        new Multiaddr('/ip4/127.0.0.1/tcp/9092'),
+        new Multiaddr('/ip4/127.0.0.1/tcp/9093')
       ]
 
       // Used by the dial tests to simulate a delayed connect

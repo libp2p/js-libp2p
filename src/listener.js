@@ -15,8 +15,9 @@ const {
 
 /**
  * Attempts to close the given maConn. If a failure occurs, it will be logged.
+ *
  * @private
- * @param {MultiaddrConnection} maConn
+ * @param {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} maConn
  */
 async function attemptClose (maConn) {
   try {

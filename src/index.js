@@ -12,11 +12,13 @@ const { AbortError } = require('abortable-iterator')
 const { CODE_CIRCUIT, CODE_P2P } = require('./constants')
 
 /**
- * @class TCP
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
+ * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  */
+
 class TCP {
   /**
-   * @constructor
+   * @class
    * @param {object} options
    * @param {Upgrader} options.upgrader
    */
@@ -31,7 +33,7 @@ class TCP {
    * @async
    * @param {Multiaddr} ma
    * @param {object} options
-   * @param {AbortSignal} options.signal Used to abort dial requests
+   * @param {AbortSignal} options.signal - Used to abort dial requests
    * @returns {Connection} An upgraded Connection
    */
   async dial (ma, options) {
@@ -48,7 +50,7 @@ class TCP {
    * @private
    * @param {Multiaddr} ma
    * @param {object} options
-   * @param {AbortSignal} options.signal Used to abort dial requests
+   * @param {AbortSignal} options.signal - Used to abort dial requests
    * @returns {Promise<Socket>} Resolves a TCP Socket
    */
   _connect (ma, options = {}) {
@@ -107,6 +109,7 @@ class TCP {
    * Creates a TCP listener. The provided `handler` function will be called
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`.
+   *
    * @param {*} [options]
    * @param {function(Connection)} handler
    * @returns {Listener} A TCP listener
@@ -122,6 +125,7 @@ class TCP {
 
   /**
    * Takes a list of `Multiaddr`s and returns only valid TCP addresses
+   *
    * @param {Multiaddr[]} multiaddrs
    * @returns {Multiaddr[]} Valid TCP multiaddrs
    */

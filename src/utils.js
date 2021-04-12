@@ -1,6 +1,6 @@
 'use strict'
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const os = require('os')
 const { resolve } = require('path')
 const ProtoFamily = { ip4: 'IPv4', ip6: 'IPv6' }
@@ -16,7 +16,7 @@ function multiaddrToNetConfig (addr) {
 }
 
 function getMultiaddrs (proto, ip, port) {
-  const toMa = ip => multiaddr(`/${proto}/${ip}/tcp/${port}`)
+  const toMa = ip => new Multiaddr(`/${proto}/${ip}/tcp/${port}`)
   return (isAnyAddr(ip) ? getNetworkAddrs(ProtoFamily[proto]) : [ip]).map(toMa)
 }
 
@@ -26,7 +26,7 @@ function isAnyAddr (ip) {
 
 /**
  * @private
- * @param {string} family One of ['IPv6', 'IPv4']
+ * @param {string} family - One of ['IPv6', 'IPv4']
  * @returns {string[]} an array of ip address strings
  */
 const networks = os.networkInterfaces()

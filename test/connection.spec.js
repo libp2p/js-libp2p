@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const TCP = require('../src')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 
 describe('valid localAddr and remoteAddr', () => {
   let tcp
@@ -17,7 +17,7 @@ describe('valid localAddr and remoteAddr', () => {
     tcp = new TCP({ upgrader: mockUpgrader })
   })
 
-  const ma = multiaddr('/ip4/127.0.0.1/tcp/0')
+  const ma = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
   it('should resolve port 0', async () => {
     // Create a Promise that resolves when a connection is handled
@@ -73,7 +73,7 @@ describe('valid localAddr and remoteAddr', () => {
     // Wait for the incoming dial to be handled
     await handlerPromise
 
-    // Close the listener with two simultaneous calls to `close`
+    // Close the dialer with two simultaneous calls to `close`
     await Promise.race([
       new Promise((resolve, reject) => setTimeout(() => reject(new Error('Timed out waiting for connection close')), 500)),
       await Promise.all([
@@ -81,5 +81,7 @@ describe('valid localAddr and remoteAddr', () => {
         dialerConn.close()
       ])
     ])
+
+    await listener.close()
   })
 })
