@@ -4,7 +4,7 @@
 const isIpPrivate = require('private-ip')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  */
 
 /**

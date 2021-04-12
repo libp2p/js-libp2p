@@ -5,7 +5,7 @@ const debug = require('debug')
 const log = debug('libp2p:stream:converter')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  *
  * @typedef {Object} Timeline

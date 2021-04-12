@@ -4,7 +4,7 @@
 const isLoopbackAddr = require('is-loopback-addr')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  */
 
 /**

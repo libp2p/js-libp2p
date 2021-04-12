@@ -4,7 +4,7 @@ const debug = require('debug')
 const log = Object.assign(debug('libp2p:ip-port-to-multiaddr'), {
   error: debug('libp2p:ip-port-to-multiaddr:err')
 })
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const errCode = require('err-code')
 const { Address4, Address6 } = require('ip-address')
 
@@ -36,15 +36,15 @@ function ipPortToMultiaddr (ip, port) {
   try {
     // Test valid IPv4
     new Address4(ip) // eslint-disable-line no-new
-    return multiaddr(`/ip4/${ip}/tcp/${port}`)
+    return new Multiaddr(`/ip4/${ip}/tcp/${port}`)
   } catch {}
 
   try {
     // Test valid IPv6
     const ip6 = new Address6(ip)
     return ip6.is4()
-      ? multiaddr(`/ip4/${ip6.to4().correctForm()}/tcp/${port}`)
-      : multiaddr(`/ip6/${ip}/tcp/${port}`)
+      ? new Multiaddr(`/ip4/${ip6.to4().correctForm()}/tcp/${port}`)
+      : new Multiaddr(`/ip6/${ip}/tcp/${port}`)
   } catch (err) {
     const errMsg = `invalid ip:port for creating a multiaddr: ${ip}:${port}`
     log.error(errMsg)

@@ -3,7 +3,7 @@
 const isPrivate = require('./multiaddr/is-private')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  */
 
 /**

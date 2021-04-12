@@ -44,10 +44,10 @@
   "homepage": "https://github.com/libp2p/js-libp2p-utils#readme",
   "devDependencies": {
     "@types/debug": "^4.1.5",
-    "aegir": "^32.1.0",
+    "aegir": "^33.0.0",
     "it-pair": "^1.0.0",
     "it-pipe": "^1.1.0",
-    "libp2p-interfaces": "^0.9.0",
+    "libp2p-interfaces": "^0.10.0",
     "streaming-iterables": "^5.0.3",
     "util": "^0.12.3"
   },
@@ -57,7 +57,7 @@
     "err-code": "^3.0.1",
     "ip-address": "^7.1.0",
     "is-loopback-addr": "^1.0.0",
-    "multiaddr": "^8.1.2",
+    "multiaddr": "^9.0.1",
     "private-ip": "^2.1.1"
   },
   "contributors": [
