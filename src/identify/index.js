@@ -5,8 +5,6 @@ const log = Object.assign(debug('libp2p:identify'), {
   error: debug('libp2p:identify:err')
 })
 const errCode = require('err-code')
-// @ts-ignore it-protocol-buffers does not have types
-const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
 const { pipe } = require('it-pipe')
 const { collect, take, consume } = require('streaming-iterables')
@@ -99,12 +97,12 @@ class IdentifyService {
         const { stream } = await connection.newStream(MULTICODEC_IDENTIFY_PUSH)
 
         await pipe(
-          [{
+          [Message.Identify.encode({
             listenAddrs,
             signedPeerRecord,
             protocols
-          }],
-          pb.encode(Message),
+          }).finish()],
+          lp.encode(),
           stream,
           consume
         )
@@ -165,12 +163,12 @@ class IdentifyService {
 
     let message
     try {
-      message = Message.decode(data)
+      message = Message.Identify.decode(data)
     } catch (err) {
       throw errCode(err, codes.ERR_INVALID_MESSAGE)
     }
 
-    let {
+    const {
       publicKey,
       listenAddrs,
       protocols,
@@ -185,7 +183,7 @@ class IdentifyService {
     }
 
     // Get the observedAddr if there is one
-    observedAddr = IdentifyService.getCleanMultiaddr(observedAddr)
+    const cleanObservedAddr = IdentifyService.getCleanMultiaddr(observedAddr)
 
     try {
       const envelope = await Envelope.openAndCertify(signedPeerRecord, PeerRecord.DOMAIN)
@@ -199,7 +197,7 @@ class IdentifyService {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      this.peerStore.addressBook.set(id, listenAddrs.map((/** @type {string} */ addr) => new Multiaddr(addr)))
+      this.peerStore.addressBook.set(id, listenAddrs.map((addr) => new Multiaddr(addr)))
     } catch (err) {
       log.error('received invalid addrs', err)
     }
@@ -208,7 +206,7 @@ class IdentifyService {
     this.peerStore.metadataBook.set(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
 
     // TODO: Add and score our observed addr
-    log('received observed address of %s', observedAddr)
+    log('received observed address of %s', cleanObservedAddr)
     // this.addressManager.addObservedAddr(observedAddr)
   }
 
@@ -251,7 +249,7 @@ class IdentifyService {
     const signedPeerRecord = await this.peerStore.addressBook.getRawEnvelope(this.peerId)
     const protocols = this.peerStore.protoBook.get(this.peerId) || []
 
-    const message = Message.encode({
+    const message = Message.Identify.encode({
       protocolVersion: this._host.protocolVersion,
       agentVersion: this._host.agentVersion,
       publicKey,
@@ -259,7 +257,7 @@ class IdentifyService {
       signedPeerRecord,
       observedAddr: connection.remoteAddr.bytes,
       protocols
-    })
+    }).finish()
 
     try {
       await pipe(
@@ -293,7 +291,7 @@ class IdentifyService {
         toBuffer,
         collect
       )
-      message = Message.decode(data)
+      message = Message.Identify.decode(data)
     } catch (err) {
       return log.error('received invalid message', err)
     }
@@ -313,7 +311,7 @@ class IdentifyService {
     // LEGACY: Update peers data in PeerStore
     try {
       this.peerStore.addressBook.set(id,
-        message.listenAddrs.map((/** @type {string} */ addr) => new Multiaddr(addr)))
+        message.listenAddrs.map((addr) => new Multiaddr(addr)))
     } catch (err) {
       log.error('received invalid addrs', err)
     }
