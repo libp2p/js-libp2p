@@ -2,7 +2,7 @@
 'use strict'
 
 const tests = require('libp2p-interfaces/src/transport/tests')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const http = require('http')
 const WS = require('../src')
 const filters = require('../src/filters')
@@ -12,10 +12,10 @@ describe('interface-transport compliance', () => {
     async setup ({ upgrader }) { // eslint-disable-line require-await
       const ws = new WS({ upgrader, filter: filters.all })
       const addrs = [
-        multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
-        multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),
-        multiaddr('/dns4/ipfs.io/tcp/9092/ws'),
-        multiaddr('/dns4/ipfs.io/tcp/9092/wss')
+        new Multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
+        new Multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),
+        new Multiaddr('/dns4/ipfs.io/tcp/9092/ws'),
+        new Multiaddr('/dns4/ipfs.io/tcp/9092/wss')
       ]
 
       let delayMs = 0

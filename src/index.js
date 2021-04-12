@@ -16,6 +16,10 @@ const toConnection = require('./socket-to-conn')
 const filters = require('./filters')
 
 /**
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
+ */
+
+/**
  * @class WebSockets
  */
 class WebSockets {

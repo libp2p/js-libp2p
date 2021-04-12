@@ -2,7 +2,7 @@
 
 const EventEmitter = require('events')
 const os = require('os')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const { createServer } = require('it-ws')
 const debug = require('debug')
 const log = debug('libp2p:websockets:listener')
@@ -78,7 +78,7 @@ module.exports = ({ handler, upgrader }, options = {}) => {
         Object.keys(netInterfaces).forEach((niKey) => {
           netInterfaces[niKey].forEach((ni) => {
             if (ni.family === 'IPv4') {
-              multiaddrs.push(multiaddr(m.toString().replace('0.0.0.0', ni.address)))
+              multiaddrs.push(new Multiaddr(m.toString().replace('0.0.0.0', ni.address)))
             }
           })
         })

@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const pipe = require('it-pipe')
 const goodbye = require('it-goodbye')
 const { collect, take } = require('streaming-iterables')
@@ -17,7 +17,7 @@ const mockUpgrader = {
 }
 
 describe('libp2p-websockets', () => {
-  const ma = multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
+  const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
   let ws
   let conn
 
@@ -35,10 +35,10 @@ describe('libp2p-websockets', () => {
   })
 
   it('should filter out no DNS websocket addresses', function () {
-    const ma1 = multiaddr('/ip4/127.0.0.1/tcp/80/ws')
-    const ma2 = multiaddr('/ip4/127.0.0.1/tcp/443/wss')
-    const ma3 = multiaddr('/ip6/::1/tcp/80/ws')
-    const ma4 = multiaddr('/ip6/::1/tcp/443/wss')
+    const ma1 = new Multiaddr('/ip4/127.0.0.1/tcp/80/ws')
+    const ma2 = new Multiaddr('/ip4/127.0.0.1/tcp/443/wss')
+    const ma3 = new Multiaddr('/ip6/::1/tcp/80/ws')
+    const ma4 = new Multiaddr('/ip6/::1/tcp/443/wss')
 
     const valid = ws.filter([ma1, ma2, ma3, ma4])
     expect(valid.length).to.equal(0)
