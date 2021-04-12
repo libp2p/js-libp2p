@@ -39,6 +39,7 @@
     "test:node": "aegir test -t node -f \"./test/**/*.{node,spec}.js\"",
     "test:browser": "aegir test -t browser",
     "test:examples": "cd examples && npm run test:all",
+    "prepare": "aegir build --no-bundle",
     "release": "aegir release -t node -t browser",
     "release-minor": "aegir release --type minor -t node -t browser",
     "release-major": "aegir release --type major -t node -t browser",
