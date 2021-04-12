@@ -1,3 +1,7 @@
+## [0.3.1](https://github.com/libp2p/js-libp2p-utils/compare/v0.3.0...v0.3.1) (2021-04-12)
+
+
+
 # [0.3.0](https://github.com/libp2p/js-libp2p-utils/compare/v0.2.3...v0.3.0) (2021-04-08)
 
 
