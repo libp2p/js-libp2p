@@ -1,6 +1,6 @@
 'use strict'
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 const arrayEquals = require('libp2p-utils/src/array-equals')
 
@@ -12,7 +12,6 @@ const {
 
 /**
  * @typedef {import('../../peer-store/address-book.js').Address} Address
- * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/record/types').Record} Record
  */
 
@@ -103,7 +102,7 @@ PeerRecord.createFromProtobuf = (buf) => {
   const peerRecord = Protobuf.decode(buf)
 
   const peerId = PeerId.createFromBytes(peerRecord.peerId)
-  const multiaddrs = (peerRecord.addresses || []).map((a) => multiaddr(a.multiaddr))
+  const multiaddrs = (peerRecord.addresses || []).map((a) => new Multiaddr(a.multiaddr))
   const seqNumber = Number(peerRecord.seq)
 
   return new PeerRecord({ peerId, multiaddrs, seqNumber })

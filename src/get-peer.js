@@ -1,14 +1,10 @@
 'use strict'
 
 const PeerId = require('peer-id')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const errCode = require('err-code')
 
 const { codes } = require('./errors')
-
-/**
- * @typedef {import('multiaddr')} Multiaddr
- */
 
 /**
  * Converts the given `peer` to a `Peer` object.
@@ -19,14 +15,23 @@ const { codes } = require('./errors')
  */
 function getPeer (peer) {
   if (typeof peer === 'string') {
-    peer = multiaddr(peer)
+    peer = new Multiaddr(peer)
   }
 
   let addr
-  if (multiaddr.isMultiaddr(peer)) {
+  if (Multiaddr.isMultiaddr(peer)) {
     addr = peer
+    const idStr = peer.getPeerId()
+
+    if (!idStr) {
+      throw errCode(
+        new Error(`${peer} does not have a valid peer type`),
+        codes.ERR_INVALID_MULTIADDR
+      )
+    }
+
     try {
-      peer = PeerId.createFromB58String(peer.getPeerId())
+      peer = PeerId.createFromB58String(idStr)
     } catch (err) {
       throw errCode(
         new Error(`${peer} is not a valid peer type`),

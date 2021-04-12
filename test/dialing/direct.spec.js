@@ -10,7 +10,7 @@ const Transport = require('libp2p-websockets')
 const filters = require('libp2p-websockets/src/filters')
 const Muxer = require('libp2p-mplex')
 const { NOISE: Crypto } = require('libp2p-noise')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const AggregateError = require('aggregate-error')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 
@@ -26,7 +26,7 @@ const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const mockUpgrader = require('../utils/mockUpgrader')
 const createMockConnection = require('../utils/mockConnection')
 const { createPeerId } = require('../utils/creators/peer')
-const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
+const unsupportedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 
 describe('Dialing (direct, WebSockets)', () => {
@@ -179,9 +179,9 @@ describe('Dialing (direct, WebSockets)', () => {
 
   it('should sort addresses on dial', async () => {
     const peerMultiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/15001/ws'),
-      multiaddr('/ip4/20.0.0.1/tcp/15001/ws'),
-      multiaddr('/ip4/30.0.0.1/tcp/15001/ws')
+      new Multiaddr('/ip4/127.0.0.1/tcp/15001/ws'),
+      new Multiaddr('/ip4/20.0.0.1/tcp/15001/ws'),
+      new Multiaddr('/ip4/30.0.0.1/tcp/15001/ws')
     ]
 
     sinon.spy(addressSort, 'publicAddressesFirst')

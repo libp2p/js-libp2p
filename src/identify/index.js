@@ -13,7 +13,7 @@ const { collect, take, consume } = require('streaming-iterables')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const PeerId = require('peer-id')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 // @ts-ignore it-buffer does not have types
 const { toBuffer } = require('it-buffer')
 
@@ -199,7 +199,7 @@ class IdentifyService {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      this.peerStore.addressBook.set(id, listenAddrs.map((/** @type {string} */ addr) => multiaddr(addr)))
+      this.peerStore.addressBook.set(id, listenAddrs.map((/** @type {string} */ addr) => new Multiaddr(addr)))
     } catch (err) {
       log.error('received invalid addrs', err)
     }
@@ -313,7 +313,7 @@ class IdentifyService {
     // LEGACY: Update peers data in PeerStore
     try {
       this.peerStore.addressBook.set(id,
-        message.listenAddrs.map((/** @type {string} */ addr) => multiaddr(addr)))
+        message.listenAddrs.map((/** @type {string} */ addr) => new Multiaddr(addr)))
     } catch (err) {
       log.error('received invalid addrs', err)
     }
@@ -326,12 +326,12 @@ class IdentifyService {
    * Takes the `addr` and converts it to a Multiaddr if possible
    *
    * @param {Uint8Array | string} addr
-   * @returns {multiaddr|null}
+   * @returns {Multiaddr|null}
    */
   static getCleanMultiaddr (addr) {
     if (addr && addr.length > 0) {
       try {
-        return multiaddr(addr)
+        return new Multiaddr(addr)
       } catch (_) {
         return null
       }

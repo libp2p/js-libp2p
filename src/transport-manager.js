@@ -12,7 +12,7 @@ const errCode = require('err-code')
 const { updateSelfPeerRecord } = require('./record/utils')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory<any, any>} TransportFactory
  * @typedef {import('libp2p-interfaces/src/transport/types').Transport<any, any>} Transport

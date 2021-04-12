@@ -15,7 +15,7 @@ const all = require('it-all')
 
 const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 
 const peerUtils = require('../utils/creators/peer')
@@ -362,7 +362,7 @@ describe('peer-routing', () => {
       const results = {
         id: remotePeerId,
         multiaddrs: [
-          multiaddr('/ip4/123.123.123.123/tcp/38982')
+          new Multiaddr('/ip4/123.123.123.123/tcp/38982')
         ]
       }
 
@@ -402,7 +402,7 @@ describe('peer-routing', () => {
       const result = {
         id: remotePeerId,
         multiaddrs: [
-          multiaddr('/ip4/123.123.123.123/tcp/38982')
+          new Multiaddr('/ip4/123.123.123.123/tcp/38982')
         ]
       }
 
@@ -424,7 +424,7 @@ describe('peer-routing', () => {
       const results = [{
         id: remotePeerId,
         multiaddrs: [
-          multiaddr('/ip4/123.123.123.123/tcp/38982')
+          new Multiaddr('/ip4/123.123.123.123/tcp/38982')
         ]
       }]
 
@@ -458,8 +458,8 @@ describe('peer-routing', () => {
 
     it('should be enabled and start by default', async () => {
       const results = [
-        { id: peerIds[0], multiaddrs: [multiaddr('/ip4/30.0.0.1/tcp/2000')] },
-        { id: peerIds[1], multiaddrs: [multiaddr('/ip4/32.0.0.1/tcp/2000')] }
+        { id: peerIds[0], multiaddrs: [new Multiaddr('/ip4/30.0.0.1/tcp/2000')] },
+        { id: peerIds[1], multiaddrs: [new Multiaddr('/ip4/32.0.0.1/tcp/2000')] }
       ]
 
       ;[node] = await peerUtils.createPeer({
@@ -535,7 +535,7 @@ describe('peer-routing', () => {
       })
 
       sinon.stub(node._dht, 'getClosestPeers').callsFake(function * () {
-        yield { id: peerIds[0], multiaddrs: [multiaddr('/ip4/30.0.0.1/tcp/2000')] }
+        yield { id: peerIds[0], multiaddrs: [new Multiaddr('/ip4/30.0.0.1/tcp/2000')] }
       })
 
       await node.start()

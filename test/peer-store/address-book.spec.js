@@ -4,7 +4,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const { Buffer } = require('buffer')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const arrayEquals = require('libp2p-utils/src/array-equals')
 const addressSort = require('libp2p-utils/src/address-sort')
 const PeerId = require('peer-id')
@@ -19,9 +19,9 @@ const {
   codes: { ERR_INVALID_PARAMETERS }
 } = require('../../src/errors')
 
-const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
-const addr2 = multiaddr('/ip4/20.0.0.1/tcp/8001')
-const addr3 = multiaddr('/ip4/127.0.0.1/tcp/8002')
+const addr1 = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
+const addr2 = new Multiaddr('/ip4/20.0.0.1/tcp/8001')
+const addr3 = new Multiaddr('/ip4/127.0.0.1/tcp/8002')
 
 describe('addressBook', () => {
   let peerId

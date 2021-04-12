@@ -4,7 +4,7 @@
 const NatAPI = require('@motrix/nat-api')
 const debug = require('debug')
 const { promisify } = require('es6-promisify')
-const Multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const log = Object.assign(debug('libp2p:nat'), {
   error: debug('libp2p:nat:err')
 })
@@ -97,15 +97,18 @@ class NatManager {
 
       if (!addr.isThinWaistAddress() || transport !== 'tcp') {
         // only bare tcp addresses
+        // eslint-disable-next-line no-continue
         continue
       }
 
       if (isLoopback(addr)) {
+        // eslint-disable-next-line no-continue
         continue
       }
 
-      if (family !== 'ipv4') {
+      if (family !== 4) {
         // ignore ipv6
+        // eslint-disable-next-line no-continue
         continue
       }
 
@@ -127,9 +130,9 @@ class NatManager {
       })
 
       this._addressManager.addObservedAddr(Multiaddr.fromNodeAddress({
-        family: 'IPv4',
+        family: 4,
         address: publicIp,
-        port: `${publicPort}`
+        port: publicPort
       }, transport))
     }
   }

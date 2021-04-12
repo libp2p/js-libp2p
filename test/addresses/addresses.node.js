@@ -4,7 +4,7 @@
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const isLoopback = require('libp2p-utils/src/multiaddr/is-loopback')
 
 const { AddressesOptions } = require('./utils')
@@ -111,9 +111,9 @@ describe('libp2p.multiaddrs', () => {
     expect(libp2p.multiaddrs.length).to.equal(0)
 
     // Stub transportManager addresses to add a public address
-    const stubMa = multiaddr('/ip4/120.220.10.1/tcp/1000')
+    const stubMa = new Multiaddr('/ip4/120.220.10.1/tcp/1000')
     sinon.stub(libp2p.transportManager, 'getAddrs').returns([
-      ...listenAddresses.map((a) => multiaddr(a)),
+      ...listenAddresses.map((a) => new Multiaddr(a)),
       stubMa
     ])
 

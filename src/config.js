@@ -12,7 +12,7 @@ const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 const { FaultTolerance } = require('./transport-manager')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  * @typedef {import('.').Libp2pOptions} Libp2pOptions
  * @typedef {import('.').constructorOptions} constructorOptions
  */

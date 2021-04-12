@@ -7,7 +7,7 @@ const sinon = require('sinon')
 const defer = require('p-defer')
 const mergeOptions = require('merge-options')
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const WebRTCStar = require('libp2p-webrtc-star')
 
 const Libp2p = require('../../src')
@@ -38,7 +38,7 @@ describe('peer discovery', () => {
         }
       })
 
-      libp2p.peerStore.addressBook.set(remotePeerId, [multiaddr('/ip4/165.1.1.1/tcp/80')])
+      libp2p.peerStore.addressBook.set(remotePeerId, [new Multiaddr('/ip4/165.1.1.1/tcp/80')])
 
       const deferred = defer()
       sinon.stub(libp2p.dialer, 'connectToPeer').callsFake((remotePeerId) => {

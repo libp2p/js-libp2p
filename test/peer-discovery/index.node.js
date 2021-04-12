@@ -10,14 +10,14 @@ const Bootstrap = require('libp2p-bootstrap')
 const crypto = require('libp2p-crypto')
 const KadDht = require('libp2p-kad-dht')
 const MulticastDNS = require('libp2p-mdns')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const uint8ArrayToString = require('uint8arrays/to-string')
 
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options')
 const { createPeerId } = require('../utils/creators/peer')
 
-const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('peer discovery scenarios', () => {
   let peerId, remotePeerId1, remotePeerId2

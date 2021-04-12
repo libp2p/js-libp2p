@@ -5,10 +5,12 @@ const log = Object.assign(debug('libp2p:circuit'), {
   error: debug('libp2p:circuit:err')
 })
 
+const errCode = require('err-code')
 const mafmt = require('mafmt')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 const { CircuitRelay: CircuitPB } = require('./protocol')
+const { codes } = require('../errors')
 
 const toConnection = require('libp2p-utils/src/stream-to-ma-conn')
 
@@ -21,7 +23,6 @@ const StreamHandler = require('./circuit/stream-handler')
 const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  */
@@ -96,9 +97,9 @@ class Circuit {
 
     if (virtualConnection) {
       // @ts-ignore dst peer will not be undefined
-      const remoteAddr = multiaddr(request.dstPeer.addrs[0])
+      const remoteAddr = new Multiaddr(request.dstPeer.addrs[0])
       // @ts-ignore src peer will not be undefined
-      const localAddr = multiaddr(request.srcPeer.addrs[0])
+      const localAddr = new Multiaddr(request.srcPeer.addrs[0])
       const maConn = toConnection({
         stream: virtualConnection,
         remoteAddr,
@@ -124,10 +125,19 @@ class Circuit {
   async dial (ma, options) {
     // Check the multiaddr to see if it contains a relay and a destination peer
     const addrs = ma.toString().split('/p2p-circuit')
-    const relayAddr = multiaddr(addrs[0])
-    const destinationAddr = multiaddr(addrs[addrs.length - 1])
-    const relayPeer = PeerId.createFromCID(relayAddr.getPeerId())
-    const destinationPeer = PeerId.createFromCID(destinationAddr.getPeerId())
+    const relayAddr = new Multiaddr(addrs[0])
+    const destinationAddr = new Multiaddr(addrs[addrs.length - 1])
+    const relayId = relayAddr.getPeerId()
+    const destinationId = destinationAddr.getPeerId()
+
+    if (!relayId || !destinationId) {
+      const errMsg = 'Circuit relay dial failed as addresses did not have peer id'
+      log.error(errMsg)
+      throw errCode(new Error(errMsg), codes.ERR_RELAYED_DIAL)
+    }
+
+    const relayPeer = PeerId.createFromCID(relayId)
+    const destinationPeer = PeerId.createFromCID(destinationId)
 
     let disconnectOnFailure = false
     let relayConnection = this._connectionManager.get(relayPeer)
@@ -147,7 +157,7 @@ class Circuit {
           },
           dstPeer: {
             id: destinationPeer.toBytes(),
-            addrs: [multiaddr(destinationAddr).bytes]
+            addrs: [new Multiaddr(destinationAddr).bytes]
           }
         }
       })

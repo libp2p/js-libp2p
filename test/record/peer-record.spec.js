@@ -4,7 +4,7 @@
 const { expect } = require('aegir/utils/chai')
 
 const tests = require('libp2p-interfaces/src/record/tests')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 
 const Envelope = require('../../src/record/envelope')
@@ -60,7 +60,7 @@ describe('PeerRecord', () => {
 
   it('creates a peer record with provided data', () => {
     const multiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/2000')
+      new Multiaddr('/ip4/127.0.0.1/tcp/2000')
     ]
     const seqNumber = Date.now()
     const peerRecord = new PeerRecord({ peerId, multiaddrs, seqNumber })
@@ -75,7 +75,7 @@ describe('PeerRecord', () => {
 
   it('marshals and unmarshals a peer record', () => {
     const multiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/2000')
+      new Multiaddr('/ip4/127.0.0.1/tcp/2000')
     ]
     const seqNumber = Date.now()
     const peerRecord = new PeerRecord({ peerId, multiaddrs, seqNumber })
@@ -115,12 +115,12 @@ describe('PeerRecord', () => {
 
   it('equals returns false if the peer record has a different multiaddrs', () => {
     const multiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/2000')
+      new Multiaddr('/ip4/127.0.0.1/tcp/2000')
     ]
     const peerRecord0 = new PeerRecord({ peerId, multiaddrs })
 
     const multiaddrs1 = [
-      multiaddr('/ip4/127.0.0.1/tcp/2001')
+      new Multiaddr('/ip4/127.0.0.1/tcp/2001')
     ]
     const peerRecord1 = new PeerRecord({ peerId, multiaddrs: multiaddrs1 })
 
@@ -136,7 +136,7 @@ describe('PeerRecord inside Envelope', () => {
   before(async () => {
     [peerId] = await peerUtils.createPeerId()
     const multiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/2000')
+      new Multiaddr('/ip4/127.0.0.1/tcp/2000')
     ]
     const seqNumber = Date.now()
     peerRecord = new PeerRecord({ peerId, multiaddrs, seqNumber })

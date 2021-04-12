@@ -17,7 +17,7 @@ const { PROTOCOL, PING_LENGTH } = require('./constants')
 
 /**
  * @typedef {import('../')} Libp2p
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  */

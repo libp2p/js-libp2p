@@ -9,13 +9,13 @@ const PeerStore = require('../../src/peer-store')
 const PeerRecord = require('../../src/record/peer-record')
 const Transport = require('libp2p-tcp')
 const PeerId = require('peer-id')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const mockUpgrader = require('../utils/mockUpgrader')
 const sinon = require('sinon')
 const Peers = require('../fixtures/peers')
 const addrs = [
-  multiaddr('/ip4/127.0.0.1/tcp/0'),
-  multiaddr('/ip4/127.0.0.1/tcp/0')
+  new Multiaddr('/ip4/127.0.0.1/tcp/0'),
+  new Multiaddr('/ip4/127.0.0.1/tcp/0')
 ]
 
 describe('Transport Manager (TCP)', () => {

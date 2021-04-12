@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const pWaitFor = require('p-wait-for')
 const mergeOptions = require('merge-options')
 const uint8ArrayFromString = require('uint8arrays/from-string')
@@ -12,8 +12,8 @@ const { create } = require('../../../src')
 const { subsystemOptions, subsystemMulticodecs } = require('./utils')
 const peerUtils = require('../../utils/creators/peer')
 
-const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
-const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
+const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
+const remoteListenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/8001')
 
 describe('DHT subsystem operates correctly', () => {
   let peerId, remotePeerId

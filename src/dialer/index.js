@@ -5,7 +5,7 @@ const log = Object.assign(debug('libp2p:dialer'), {
   error: debug('libp2p:dialer:err')
 })
 const errCode = require('err-code')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 // @ts-ignore timeout-abourt-controles does not export types
 const TimeoutController = require('timeout-abort-controller')
 const { anySignal } = require('any-signal')
@@ -23,7 +23,6 @@ const {
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('../peer-store')} PeerStore
  * @typedef {import('../peer-store/address-book').Address} Address
@@ -79,7 +78,7 @@ class Dialer {
     this._pendingDials = new Map()
 
     for (const [key, value] of Object.entries(resolvers)) {
-      multiaddr.resolvers.set(key, value)
+      Multiaddr.resolvers.set(key, value)
     }
   }
 
@@ -151,7 +150,7 @@ class Dialer {
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.
-    if (multiaddr.isMultiaddr(peer)) {
+    if (Multiaddr.isMultiaddr(peer)) {
       knownAddrs = knownAddrs.filter((addr) => !peer.equals(addr))
       knownAddrs.unshift(peer)
     }
@@ -180,7 +179,7 @@ class Dialer {
    */
   _createPendingDial (dialTarget, options = {}) {
     /**
-     * @param {multiaddr} addr
+     * @param {Multiaddr} addr
      * @param {{ signal: { aborted: any; }; }} options
      */
     const dialAction = (addr, options) => {
@@ -271,7 +270,7 @@ class Dialer {
    */
   async _resolveRecord (ma) {
     try {
-      ma = multiaddr(ma.toString()) // Use current multiaddr module
+      ma = new Multiaddr(ma.toString()) // Use current multiaddr module
       const multiaddrs = await ma.resolve()
       return multiaddrs
     } catch (_) {

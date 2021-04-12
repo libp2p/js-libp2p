@@ -10,7 +10,7 @@ const EventEmitter = require('events')
 
 const errCode = require('err-code')
 const PeerId = require('peer-id')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 
 const PeerRouting = require('./peer-routing')
 const ContentRouting = require('./content-routing')
@@ -38,7 +38,6 @@ const NatManager = require('./nat-manager')
 const { updateSelfPeerRecord } = require('./record/utils')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory<any, any>} TransportFactory
@@ -542,7 +541,7 @@ class Libp2p extends EventEmitter {
     const addrSet = new Set(addrs)
 
     // Create advertising list
-    return announceFilter(Array.from(addrSet).map(str => multiaddr(str)))
+    return announceFilter(Array.from(addrSet).map(str => new Multiaddr(str)))
   }
 
   /**

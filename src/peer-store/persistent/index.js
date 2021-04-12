@@ -5,7 +5,7 @@ const log = Object.assign(debug('libp2p:persistent-peer-store'), {
   error: debug('libp2p:persistent-peer-store:err')
 })
 const { Key } = require('interface-datastore')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 
 const PeerStore = require('..')
@@ -358,7 +358,7 @@ class PersistentPeerStore extends PeerStore {
             peerId,
             {
               addresses: decoded.addrs.map((address) => ({
-                multiaddr: multiaddr(address.multiaddr),
+                multiaddr: new Multiaddr(address.multiaddr),
                 isCertified: Boolean(address.isCertified)
               })),
               record: decoded.certifiedRecord

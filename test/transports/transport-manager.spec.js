@@ -4,7 +4,7 @@
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const Transport = require('libp2p-websockets')
 const filters = require('libp2p-websockets/src/filters')
 const { NOISE: Crypto } = require('libp2p-noise')
@@ -19,7 +19,7 @@ const { FaultTolerance } = require('../../src/transport-manager')
 const Peers = require('../fixtures/peers')
 const PeerId = require('peer-id')
 
-const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('Transport Manager (WebSockets)', () => {
   let tm
@@ -76,7 +76,7 @@ describe('Transport Manager (WebSockets)', () => {
 
   it('should fail to dial an unsupported address', async () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
-    const addr = multiaddr('/ip4/127.0.0.1/tcp/0')
+    const addr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
     await expect(tm.dial(addr))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_TRANSPORT_UNAVAILABLE)
@@ -191,7 +191,7 @@ describe('libp2p.transportManager (dial only)', () => {
     libp2p = new Libp2p({
       peerId,
       addresses: {
-        listen: [multiaddr('/ip4/127.0.0.1/tcp/0')]
+        listen: [new Multiaddr('/ip4/127.0.0.1/tcp/0')]
       },
       modules: {
         transport: [Transport],
@@ -213,7 +213,7 @@ describe('libp2p.transportManager (dial only)', () => {
     libp2p = new Libp2p({
       peerId,
       addresses: {
-        listen: [multiaddr('/ip4/127.0.0.1/tcp/0')]
+        listen: [new Multiaddr('/ip4/127.0.0.1/tcp/0')]
       },
       transportManager: {
         faultTolerance: FaultTolerance.NO_FATAL
@@ -231,7 +231,7 @@ describe('libp2p.transportManager (dial only)', () => {
     libp2p = new Libp2p({
       peerId,
       addresses: {
-        listen: [multiaddr('/ip4/127.0.0.1/tcp/12345/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3/p2p-circuit')]
+        listen: [new Multiaddr('/ip4/127.0.0.1/tcp/12345/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3/p2p-circuit')]
       },
       transportManager: {
         faultTolerance: FaultTolerance.NO_FATAL

@@ -12,14 +12,14 @@ const { multicodec: floodsubMulticodec } = require('libp2p-floodsub')
 const { multicodec: gossipsubMulticodec } = require('libp2p-gossipsub')
 const uint8ArrayToString = require('uint8arrays/to-string')
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 
 const { create } = require('../../src')
 const { baseOptions } = require('./utils')
 const peerUtils = require('../utils/creators/peer')
 
-const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
-const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+const remoteListenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('Pubsub subsystem is able to use different implementations', () => {
   let peerId, remotePeerId

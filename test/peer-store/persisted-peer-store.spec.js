@@ -8,7 +8,7 @@ const Envelope = require('../../src/record/envelope')
 const PeerRecord = require('../../src/record/peer-record')
 const PeerStore = require('../../src/peer-store/persistent')
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const { MemoryDatastore } = require('interface-datastore')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
@@ -65,7 +65,7 @@ describe('Persisted PeerStore', () => {
 
     it('should store peerStore content on datastore after peer marked as dirty (threshold 1)', async () => {
       const [peer] = await peerUtils.createPeerId({ number: 2 })
-      const multiaddrs = [multiaddr('/ip4/156.10.1.22/tcp/1000')]
+      const multiaddrs = [new Multiaddr('/ip4/156.10.1.22/tcp/1000')]
       const protocols = ['/ping/1.0.0']
       const spyDirty = sinon.spy(peerStore, '_addDirtyPeer')
       const spyDs = sinon.spy(datastore, 'batch')
@@ -115,8 +115,8 @@ describe('Persisted PeerStore', () => {
       const peers = await peerUtils.createPeerId({ number: 2 })
       const commitSpy = sinon.spy(peerStore, '_commitData')
       const multiaddrs = [
-        multiaddr('/ip4/156.10.1.22/tcp/1000'),
-        multiaddr('/ip4/156.10.1.23/tcp/1000')
+        new Multiaddr('/ip4/156.10.1.22/tcp/1000'),
+        new Multiaddr('/ip4/156.10.1.23/tcp/1000')
       ]
       const protocols = ['/ping/1.0.0']
 
@@ -173,7 +173,7 @@ describe('Persisted PeerStore', () => {
 
     it('should delete content from the datastore on delete', async () => {
       const [peer] = await peerUtils.createPeerId()
-      const multiaddrs = [multiaddr('/ip4/156.10.1.22/tcp/1000')]
+      const multiaddrs = [new Multiaddr('/ip4/156.10.1.22/tcp/1000')]
       const protocols = ['/ping/1.0.0']
       const commitSpy = sinon.spy(peerStore, '_commitData')
 
@@ -221,7 +221,7 @@ describe('Persisted PeerStore', () => {
 
     it('should store certified peer records after peer marked as dirty (threshold 1)', async () => {
       const [peerId] = await peerUtils.createPeerId()
-      const multiaddrs = [multiaddr('/ip4/156.10.1.22/tcp/1000')]
+      const multiaddrs = [new Multiaddr('/ip4/156.10.1.22/tcp/1000')]
       const spyDirty = sinon.spy(peerStore, '_addDirtyPeer')
       const spyDs = sinon.spy(datastore, 'batch')
       const commitSpy = sinon.spy(peerStore, '_commitData')
@@ -266,8 +266,8 @@ describe('Persisted PeerStore', () => {
       const peers = await peerUtils.createPeerId({ number: 2 })
       const commitSpy = sinon.spy(peerStore, '_commitData')
       const multiaddrs = [
-        multiaddr('/ip4/156.10.1.22/tcp/1000'),
-        multiaddr('/ip4/156.10.1.23/tcp/1000')
+        new Multiaddr('/ip4/156.10.1.22/tcp/1000'),
+        new Multiaddr('/ip4/156.10.1.23/tcp/1000')
       ]
       const peerRecord0 = new PeerRecord({
         peerId: peers[0],
@@ -332,7 +332,7 @@ describe('Persisted PeerStore', () => {
 
     it('should delete certified peer records from the datastore on delete', async () => {
       const [peer] = await peerUtils.createPeerId()
-      const multiaddrs = [multiaddr('/ip4/156.10.1.22/tcp/1000')]
+      const multiaddrs = [new Multiaddr('/ip4/156.10.1.22/tcp/1000')]
       const commitSpy = sinon.spy(peerStore, '_commitData')
 
       await peerStore.start()
@@ -395,7 +395,7 @@ describe('Persisted PeerStore', () => {
 
       const peers = await peerUtils.createPeerId({ number: 2 })
 
-      const multiaddrs = [multiaddr('/ip4/156.10.1.22/tcp/1000')]
+      const multiaddrs = [new Multiaddr('/ip4/156.10.1.22/tcp/1000')]
       const protocols = ['/ping/1.0.0']
 
       await peerStore.start()
@@ -540,8 +540,8 @@ describe('libp2p.peerStore (Persisted)', () => {
       const commitSpy = sinon.spy(libp2p.peerStore, '_commitData')
       const peers = await peerUtils.createPeerId({ number: 3 })
       const multiaddrs = [
-        multiaddr('/ip4/156.10.1.22/tcp/1000'),
-        multiaddr('/ip4/156.10.1.23/tcp/1000')
+        new Multiaddr('/ip4/156.10.1.22/tcp/1000'),
+        new Multiaddr('/ip4/156.10.1.23/tcp/1000')
       ]
       const protocols = ['/ping/1.0.0']
 

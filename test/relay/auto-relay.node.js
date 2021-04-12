@@ -9,7 +9,7 @@ const nock = require('nock')
 
 const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const Libp2p = require('../../src')
 const { relay: relayMulticodec } = require('../../src/circuit/multicodec')
 
@@ -204,7 +204,7 @@ describe('auto-relay', () => {
       expect(relayLibp2p1.multiaddrs[originalMultiaddrs1Length].getPeerId()).to.eql(relayLibp2p2.peerId.toB58String())
 
       // Dial from the other through a relay
-      const relayedMultiaddr2 = multiaddr(`${relayLibp2p1.multiaddrs[0]}/p2p/${relayLibp2p1.peerId.toB58String()}/p2p-circuit`)
+      const relayedMultiaddr2 = new Multiaddr(`${relayLibp2p1.multiaddrs[0]}/p2p/${relayLibp2p1.peerId.toB58String()}/p2p-circuit`)
       libp2p.peerStore.addressBook.add(relayLibp2p2.peerId, [relayedMultiaddr2])
 
       await libp2p.dial(relayLibp2p2.peerId)
@@ -473,7 +473,7 @@ describe('auto-relay', () => {
           protocol: 'http',
           port: 60197
         }), [
-          multiaddr('/ip4/0.0.0.0/tcp/60197')
+          new Multiaddr('/ip4/0.0.0.0/tcp/60197')
         ])
 
         const opts = {

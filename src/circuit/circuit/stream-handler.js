@@ -28,6 +28,7 @@ class StreamHandler {
     this.stream = stream
 
     this.shake = handshake(this.stream)
+    // @ts-ignore options are not optional
     this.decoder = lp.decode.fromReader(this.shake.reader, { maxDataLength: maxLength })
   }
 

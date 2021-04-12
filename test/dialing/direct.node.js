@@ -6,7 +6,7 @@ const sinon = require('sinon')
 const Transport = require('libp2p-tcp')
 const Muxer = require('libp2p-mplex')
 const { NOISE: Crypto } = require('libp2p-noise')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 const delay = require('delay')
 const pDefer = require('p-defer')
@@ -33,8 +33,8 @@ const createMockConnection = require('../utils/mockConnection')
 const Peers = require('../fixtures/peers')
 const { createPeerId } = require('../utils/creators/peer')
 
-const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
-const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
+const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+const unsupportedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
 
 describe('Dialing (direct, TCP)', () => {
   let remoteTM
@@ -165,9 +165,9 @@ describe('Dialing (direct, TCP)', () => {
 
   it('should dial to the max concurrency', async () => {
     const addrs = [
-      multiaddr('/ip4/0.0.0.0/tcp/8000'),
-      multiaddr('/ip4/0.0.0.0/tcp/8001'),
-      multiaddr('/ip4/0.0.0.0/tcp/8002')
+      new Multiaddr('/ip4/0.0.0.0/tcp/8000'),
+      new Multiaddr('/ip4/0.0.0.0/tcp/8001'),
+      new Multiaddr('/ip4/0.0.0.0/tcp/8002')
     ]
     const dialer = new Dialer({
       transportManager: localTM,

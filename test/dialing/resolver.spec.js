@@ -4,8 +4,8 @@
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 
-const multiaddr = require('multiaddr')
-const { Resolver } = require('multiaddr/src/resolvers/dns')
+const { Multiaddr } = require('multiaddr')
+const Resolver = require('multiaddr/src/resolvers/dns')
 
 const { codes: ErrorCodes } = require('../../src/errors')
 
@@ -39,7 +39,7 @@ describe('Dialing (resolvable addresses)', () => {
       config: {
         ...baseOptions,
         addresses: {
-          listen: [multiaddr(`${relayAddr}/p2p-circuit`)]
+          listen: [new Multiaddr(`${relayAddr}/p2p-circuit`)]
         },
         config: {
           ...baseOptions.config,
@@ -60,8 +60,8 @@ describe('Dialing (resolvable addresses)', () => {
 
   it('resolves dnsaddr to ws local address', async () => {
     const remoteId = remoteLibp2p.peerId.toB58String()
-    const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
-    const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
+    const dialAddr = new Multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
+    const relayedAddrFetched = new Multiaddr(relayedAddr(remoteId))
 
     // Transport spy
     const transport = libp2p.transportManager._transports.get('Circuit')
@@ -82,8 +82,8 @@ describe('Dialing (resolvable addresses)', () => {
 
   it('resolves a dnsaddr recursively', async () => {
     const remoteId = remoteLibp2p.peerId.toB58String()
-    const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
-    const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
+    const dialAddr = new Multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
+    const relayedAddrFetched = new Multiaddr(relayedAddr(remoteId))
 
     // Transport spy
     const transport = libp2p.transportManager._transports.get('Circuit')
@@ -114,10 +114,10 @@ describe('Dialing (resolvable addresses)', () => {
   // Resolver just returns the received multiaddrs
   it('stops recursive resolve if finds dns4/dns6 and dials it', async () => {
     const remoteId = remoteLibp2p.peerId.toB58String()
-    const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
+    const dialAddr = new Multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
 
     // Stub resolver
-    const dnsMa = multiaddr(`/dns4/ams-1.remote.libp2p.io/tcp/443/wss/p2p/${remoteId}`)
+    const dnsMa = new Multiaddr(`/dns4/ams-1.remote.libp2p.io/tcp/443/wss/p2p/${remoteId}`)
     const stubResolve = sinon.stub(Resolver.prototype, 'resolveTxt')
     stubResolve.returns(Promise.resolve([
       [`dnsaddr=${dnsMa}`]
@@ -135,8 +135,8 @@ describe('Dialing (resolvable addresses)', () => {
 
   it('resolves a dnsaddr recursively not failing if one address fails to resolve', async () => {
     const remoteId = remoteLibp2p.peerId.toB58String()
-    const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
-    const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
+    const dialAddr = new Multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
+    const relayedAddrFetched = new Multiaddr(relayedAddr(remoteId))
 
     // Transport spy
     const transport = libp2p.transportManager._transports.get('Circuit')
@@ -159,7 +159,7 @@ describe('Dialing (resolvable addresses)', () => {
 
   it('fails to dial if resolve fails and there are no addresses to dial', async () => {
     const remoteId = remoteLibp2p.peerId.toB58String()
-    const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
+    const dialAddr = new Multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId}`)
 
     // Stub resolver
     const stubResolve = sinon.stub(Resolver.prototype, 'resolveTxt')

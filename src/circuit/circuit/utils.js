@@ -1,6 +1,6 @@
 'use strict'
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const { CircuitRelay } = require('../protocol')
 
 /**
@@ -31,7 +31,7 @@ function validateAddrs (msg, streamHandler) {
   try {
     if (msg.dstPeer && msg.dstPeer.addrs) {
       msg.dstPeer.addrs.forEach((addr) => {
-        return multiaddr(addr)
+        return new Multiaddr(addr)
       })
     }
   } catch (err) {
@@ -44,7 +44,7 @@ function validateAddrs (msg, streamHandler) {
   try {
     if (msg.srcPeer && msg.srcPeer.addrs) {
       msg.srcPeer.addrs.forEach((addr) => {
-        return multiaddr(addr)
+        return new Multiaddr(addr)
       })
     }
   } catch (err) {

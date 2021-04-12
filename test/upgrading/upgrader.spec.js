@@ -4,7 +4,7 @@
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 const Muxer = require('libp2p-mplex')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 const pipe = require('it-pipe')
 const { collect } = require('streaming-iterables')
@@ -22,8 +22,8 @@ const { codes } = require('../../src/errors')
 const mockMultiaddrConnPair = require('../utils/mockMultiaddrConn')
 const Peers = require('../fixtures/peers')
 const addrs = [
-  multiaddr('/ip4/127.0.0.1/tcp/0'),
-  multiaddr('/ip4/127.0.0.1/tcp/0')
+  new Multiaddr('/ip4/127.0.0.1/tcp/0'),
+  new Multiaddr('/ip4/127.0.0.1/tcp/0')
 ]
 
 describe('Upgrader', () => {
