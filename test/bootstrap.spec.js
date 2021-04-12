@@ -21,7 +21,7 @@ describe('bootstrap', () => {
     throw new Error('should throw if no peer list is provided')
   })
 
-  it('find the other peer', function () {
+  it('find the other peer', async function () {
     this.timeout(5 * 1000)
     const r = new Bootstrap({
       list: peerList,
@@ -30,10 +30,12 @@ describe('bootstrap', () => {
 
     const p = new Promise((resolve) => r.once('peer', resolve))
     r.start()
-    return p
+
+    await p
+    r.stop()
   })
 
-  it('not fail on malformed peers in peer list', function () {
+  it('not fail on malformed peers in peer list', async function () {
     this.timeout(5 * 1000)
 
     const r = new Bootstrap({
@@ -53,7 +55,8 @@ describe('bootstrap', () => {
 
     r.start()
 
-    return p
+    await p
+    r.stop()
   })
 
   it('stop emitting events when stop() called', async function () {

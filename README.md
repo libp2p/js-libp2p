@@ -8,8 +8,7 @@ js-libp2p-bootstrap
 [![](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-bootstrap.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-bootstrap)
 [![](https://img.shields.io/travis/libp2p/js-libp2p-bootstrap.svg?style=flat-square)](https://travis-ci.com/libp2p/js-libp2p-bootstrap)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
-![](https://img.shields.io/badge/npm-%3E%3D6.0.0-orange.svg?style=flat-square)
-![](https://img.shields.io/badge/Node.js-%3E%3D10.0.0-orange.svg?style=flat-square)
+![](https://img.shields.io/badge/Node.js-%3E%3D14.0.0-orange.svg?style=flat-square)
 
 > JavaScript libp2p Implementation of the railing process of a Node through a bootstrap peer list
 

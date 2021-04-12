@@ -1,7 +1,7 @@
 'use strict'
 
 const PeerId = require('peer-id')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const mafmt = require('mafmt')
 const { EventEmitter } = require('events')
 const debug = require('debug')
@@ -59,7 +59,7 @@ class Bootstrap extends EventEmitter {
         return log.error('Invalid multiaddr')
       }
 
-      const ma = multiaddr(candidate)
+      const ma = new Multiaddr(candidate)
 
       const peerId = PeerId.createFromB58String(ma.getPeerId())
 

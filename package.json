@@ -24,25 +24,20 @@
   "homepage": "https://github.com/libp2p/js-libp2p-bootstrap",
   "repository": "github:libp2p/js-libp2p-bootstrap",
   "engines": {
-    "node": ">=6.0.0",
-    "npm": ">=3.0.0"
+    "node": ">=14.0.0"
   },
   "types": "dist/src/index.d.ts",
   "devDependencies": {
     "@types/debug": "^4.1.5",
-    "aegir": "^30.3.0",
-    "libp2p-interfaces": "^0.4.0"
+    "aegir": "^33.0.0",
+    "libp2p-interfaces": "^0.9.0"
   },
   "dependencies": {
-    "debug": "^4.1.1",
-    "mafmt": "^8.0.0",
-    "multiaddr": "^8.0.0",
+    "debug": "^4.3.1",
+    "mafmt": "^9.0.0",
+    "multiaddr": "^9.0.1",
     "peer-id": "^0.14.0"
   },
-  "pre-push": [
-    "lint",
-    "test"
-  ],
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
     "Vasco Santos <vasco.santos@moxy.studio>",
