@@ -1,3 +1,33 @@
+# [0.16.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.13.3...v0.16.0) (2021-04-13)
+
+
+### Bug Fixes
+
+* actually check tcp multiaddrs ([#94](https://github.com/libp2p/js-libp2p-mdns/issues/94)) ([9f45f73](https://github.com/libp2p/js-libp2p-mdns/commit/9f45f731e91f225016d11cc3471bd0874e4b5490))
+* ensure event handlers are removed on MulticastDNS.stop ([#96](https://github.com/libp2p/js-libp2p-mdns/issues/96)) ([9fea1f6](https://github.com/libp2p/js-libp2p-mdns/commit/9fea1f6eb9d68b8e7c145e8b615ac504e0031b0e))
+
+
+### chore
+
+* peer-discovery not using peer-info ([#90](https://github.com/libp2p/js-libp2p-mdns/issues/90)) ([fca175e](https://github.com/libp2p/js-libp2p-mdns/commit/fca175e6bc706be07a14b81ef3b3c8143ce97a0a))
+
+
+### BREAKING CHANGES
+
+* peer event emitted with id and multiaddrs properties instead of peer-info
+
+* chore: add tests for peer-discovery interface
+
+* chore: apply suggestions from code review
+
+Co-Authored-By: Jacob Heun <jacobheun@gmail.com>
+
+* chore: update readme with peerData and peerId
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+
+
+
 <a name="0.15.0"></a>
 # [0.15.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.14.3...v0.15.0) (2020-08-11)
 
