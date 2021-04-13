@@ -18,9 +18,6 @@
     "release-major": "aegir release --type major -t node --no-build",
     "coverage-publish": "aegir coverage publish"
   },
-  "pre-push": [
-    "lint"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/libp2p/js-libp2p-mdns.git"
@@ -34,15 +31,15 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-mdns",
   "devDependencies": {
-    "aegir": "^25.0.0",
+    "aegir": "^33.0.0",
     "delay": "^4.3.0",
-    "libp2p-interfaces": "^0.4.0",
+    "libp2p-interfaces": "^0.10.0",
     "p-defer": "^3.0.0",
     "p-wait-for": "^3.1.0"
   },
   "dependencies": {
-    "debug": "^4.1.1",
-    "multiaddr": "^8.0.0",
+    "debug": "^4.3.1",
+    "multiaddr": "^9.0.1",
     "multicast-dns": "^7.2.0",
     "peer-id": "^0.14.0"
   },

@@ -4,7 +4,7 @@ const os = require('os')
 const debug = require('debug')
 const log = debug('libp2p:mdns')
 log.error = debug('libp2p:mdns:error')
-const Multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const Id = require('peer-id')
 
 module.exports = {
@@ -132,10 +132,10 @@ module.exports = {
       })
 
       addresses.forEach((addr) => {
-        if (['ipv4', 'ipv6'].includes(addr.family)) {
+        if ([4, 6].includes(addr.family)) {
           answers.push({
             name: os.hostname(),
-            type: addr.family === 'ipv4' ? 'A' : 'AAAA',
+            type: addr.family === 4 ? 'A' : 'AAAA',
             class: 'IN',
             ttl: 120,
             data: addr.host

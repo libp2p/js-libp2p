@@ -2,7 +2,7 @@
 'use strict'
 
 const { expect } = require('aegir/utils/chai')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 const pDefer = require('p-defer')
 
@@ -10,8 +10,8 @@ const GoMulticastDNS = require('../../src/compat')
 
 describe('GoMulticastDNS', () => {
   const peerAddrs = [
-    multiaddr('/ip4/127.0.0.1/tcp/20001'),
-    multiaddr('/ip4/127.0.0.1/tcp/20002')
+    new Multiaddr('/ip4/127.0.0.1/tcp/20001'),
+    new Multiaddr('/ip4/127.0.0.1/tcp/20002')
   ]
   let peerIds
 
@@ -77,5 +77,10 @@ describe('GoMulticastDNS', () => {
     ])
 
     await defer.promise
+
+    await Promise.all([
+      mdnsA.stop(),
+      mdnsB.stop()
+    ])
   })
 })

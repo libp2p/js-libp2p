@@ -2,7 +2,7 @@
 'use strict'
 
 const { expect } = require('aegir/utils/chai')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 const MDNS = require('multicast-dns')
 const delay = require('delay')
@@ -14,8 +14,8 @@ const { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } = require('../../src/c
 describe('Responder', () => {
   let responder, mdns
   const peerAddrs = [
-    multiaddr('/ip4/127.0.0.1/tcp/20001'),
-    multiaddr('/ip4/127.0.0.1/tcp/20002')
+    new Multiaddr('/ip4/127.0.0.1/tcp/20001'),
+    new Multiaddr('/ip4/127.0.0.1/tcp/20002')
   ]
   let peerIds
 

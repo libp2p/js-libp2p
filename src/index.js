@@ -73,7 +73,7 @@ class MulticastDNS extends EventEmitter {
   }
 
   _onPeer (peerData) {
-    this.emit('peer', peerData)
+    this.mdns && this.emit('peer', peerData)
   }
 
   /**

@@ -2,7 +2,7 @@
 'use strict'
 
 const { expect } = require('aegir/utils/chai')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 const pWaitFor = require('p-wait-for')
 
@@ -25,25 +25,25 @@ describe('MulticastDNS', () => {
     ])
 
     aMultiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/20001'),
-      multiaddr('/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star'),
-      multiaddr('/dns4/discovery.libp2p.io/tcp/8443')
+      new Multiaddr('/ip4/127.0.0.1/tcp/20001'),
+      new Multiaddr('/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star'),
+      new Multiaddr('/dns4/discovery.libp2p.io/tcp/8443')
     ]
 
     bMultiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/20002'),
-      multiaddr('/ip6/::1/tcp/20002'),
-      multiaddr('/dnsaddr/discovery.libp2p.io')
+      new Multiaddr('/ip4/127.0.0.1/tcp/20002'),
+      new Multiaddr('/ip6/::1/tcp/20002'),
+      new Multiaddr('/dnsaddr/discovery.libp2p.io')
     ]
 
     cMultiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/20003'),
-      multiaddr('/ip4/127.0.0.1/tcp/30003/ws'),
-      multiaddr('/dns4/discovery.libp2p.io')
+      new Multiaddr('/ip4/127.0.0.1/tcp/20003'),
+      new Multiaddr('/ip4/127.0.0.1/tcp/30003/ws'),
+      new Multiaddr('/dns4/discovery.libp2p.io')
     ]
 
     dMultiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/30003/ws')
+      new Multiaddr('/ip4/127.0.0.1/tcp/30003/ws')
     ]
   })
 
@@ -220,7 +220,7 @@ describe('MulticastDNS', () => {
     })
     await mdns.start()
 
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       mdns.on('peer', (peerData) => {
         if (!peerData) {
           reject(new Error('peerData was not set'))
@@ -245,5 +245,7 @@ describe('MulticastDNS', () => {
         }]
       })
     })
+
+    await mdns.stop()
   })
 })

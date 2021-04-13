@@ -237,7 +237,8 @@ describe('Querier', () => {
 
   /**
    * Ensure peerIds[1] are emitted from `querier`
-   * @param {Function} getResponse Given a query, construct a response to test the querier
+   *
+   * @param {Function} getResponse - Given a query, construct a response to test the querier
    */
   async function ensurePeer (getResponse) {
     querier = new Querier({ peerId: peerIds[0] })
@@ -264,7 +265,8 @@ describe('Querier', () => {
 
   /**
    * Ensure none of peerIds are emitted from `querier`
-   * @param {Function} getResponse Given a query, construct a response to test the querier
+   *
+   * @param {Function} getResponse - Given a query, construct a response to test the querier
    */
   async function ensureNoPeer (getResponse) {
     querier = new Querier({ peerId: peerIds[0] })

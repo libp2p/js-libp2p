@@ -2,7 +2,7 @@
 
 const EE = require('events')
 const MDNS = require('multicast-dns')
-const Multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 const debug = require('debug')
 const log = debug('libp2p:mdns:compat:querier')
@@ -127,10 +127,10 @@ module.exports = Querier
  * running it again. `fn` must return an object with a stop function, which is
  * called when the period expires.
  *
- * @param {Function} fn function to run
+ * @param {Function} fn - function to run
  * @param {Object} [options]
- * @param {Object} [options.period] Period in ms to run the function for
- * @param {Object} [options.interval] Interval in ms between runs
+ * @param {Object} [options.period] - Period in ms to run the function for
+ * @param {Object} [options.interval] - Interval in ms between runs
  * @returns {Object} handle that can be used to stop execution
  */
 function periodically (fn, options) {
