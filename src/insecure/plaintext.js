@@ -10,7 +10,6 @@ const lp = require('it-length-prefixed')
 const PeerId = require('peer-id')
 const { UnexpectedPeerError, InvalidCryptoExchangeError } = require('libp2p-interfaces/src/crypto/errors')
 
-// @ts-ignore protons do not export types
 const { Exchange, KeyType } = require('./proto')
 const protocol = '/plaintext/2.0.0'
 

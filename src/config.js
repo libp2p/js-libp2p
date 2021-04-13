@@ -1,7 +1,7 @@
 'use strict'
 
 const mergeOptions = require('merge-options')
-// @ts-ignore no types in multiaddr
+// @ts-ignore no types in multiaddr path
 const { dnsaddrResolver } = require('multiaddr/src/resolvers')
 
 const Constants = require('./constants')

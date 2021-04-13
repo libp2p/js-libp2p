@@ -72,8 +72,6 @@ class Stats extends EventEmitter {
 
   /**
    * Returns a clone of the current stats.
-   *
-   * @returns {Object}
    */
   get snapshot () {
     return Object.assign({}, this._stats)
@@ -81,8 +79,6 @@ class Stats extends EventEmitter {
 
   /**
    * Returns a clone of the internal movingAverages
-   *
-   * @returns {typeof Object.assign}
    */
   get movingAverages () {
     return Object.assign({}, this._movingAverages)
