@@ -4,6 +4,7 @@
   "description": "libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "lint": "aegir lint",
     "test": "aegir test",
@@ -42,24 +43,28 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-floodsub#readme",
   "devDependencies": {
-    "aegir": "^28.1.0",
+    "@types/debug": "^4.1.5",
+    "aegir": "^33.0.0",
     "benchmark": "^2.1.4",
-    "chai": "^4.2.0",
-    "ipfs-utils": "^4.0.1",
+    "buffer": "^6.0.3",
+    "chai": "^4.3.4",
+    "ipfs-utils": "^6.0.6",
+    "it-pair": "^1.0.0",
     "libp2p": "^0.30.0",
     "libp2p-mplex": "^0.10.1",
     "libp2p-noise": "^2.0.1",
-    "libp2p-websockets": "^0.14.0",
-    "multiaddr": "^8.1.1",
+    "libp2p-websockets": "^0.15.5",
+    "multiaddr": "^9.0.1",
+    "os": "^0.1.1",
     "p-wait-for": "^3.1.0",
     "peer-id": "^0.14.2",
-    "sinon": "^9.2.1"
+    "sinon": "^10.0.0"
   },
   "dependencies": {
     "debug": "^4.2.0",
-    "libp2p-interfaces": "^0.8.1",
+    "libp2p-interfaces": "^0.10.0",
     "time-cache": "^0.3.0",
-    "uint8arrays": "^1.1.0"
+    "uint8arrays": "^2.1.4"
   },
   "peerDependencies": {
     "libp2p": "^0.30.0"

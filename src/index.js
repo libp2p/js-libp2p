@@ -2,6 +2,7 @@
 
 const debugName = 'libp2p:floodsub'
 
+// @ts-ignore time-cache does not export types
 const TimeCache = require('time-cache')
 const toString = require('uint8arrays/to-string')
 const BaseProtocol = require('libp2p-interfaces/src/pubsub')
@@ -10,15 +11,19 @@ const { utils } = require('libp2p-interfaces/src/pubsub')
 const { multicodec } = require('./config')
 
 /**
+ * @typedef {import('libp2p-interfaces/src/pubsub').InMessage} InMessage
+ */
+
+/**
  * FloodSub (aka dumbsub is an implementation of pubsub focused on
  * delivering an API for Publish/Subscribe, but with no CastTree Forming
  * (it just floods the network).
  */
 class FloodSub extends BaseProtocol {
   /**
-   * @param {Libp2p} libp2p - instance of libp2p
+   * @param {import('libp2p')} libp2p - instance of libp2p
    * @param {Object} [options]
-   * @param {boolean} options.emitSelf - if publish should emit to self, if subscribed, defaults to false
+   * @param {boolean} [options.emitSelf] - if publish should emit to self, if subscribed, defaults to false
    * @class
    */
   constructor (libp2p, options = {}) {
@@ -64,10 +69,11 @@ class FloodSub extends BaseProtocol {
    *
    * @override
    * @param {InMessage} message
-   * @returns {void}
+   * @returns {Promise<void>}
    */
   _publish (message) {
     this._forwardMessage(message)
+    return Promise.resolve()
   }
 
   /**

@@ -9,10 +9,11 @@
  */
 
 const Libp2p = require('libp2p')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 
 const WS = require('libp2p-websockets')
+const filters = require('libp2p-websockets/src/filters')
 const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
 
@@ -20,6 +21,8 @@ const { isNode } = require('ipfs-utils/src/env')
 
 const Peers = require('../fixtures/peers')
 const RelayPeer = require('../fixtures/relay')
+
+const transportKey = WS.prototype[Symbol.toStringTag]
 
 const defaultConfig = {
   modules: {
@@ -33,6 +36,11 @@ const defaultConfig = {
     },
     peerDiscovery: {
       autoDial: false
+    },
+    transport: {
+      [transportKey]: {
+        filter: filters.all
+      }
     }
   }
 }
@@ -109,10 +117,10 @@ async function createPeers ({ number = 1, started = true, seedAddressBook = true
 function getListenAddress (peerId) {
   if (isNode) {
     // node
-    return multiaddr('/ip4/127.0.0.1/tcp/0/ws')
+    return new Multiaddr('/ip4/127.0.0.1/tcp/0/ws')
   } else {
     // browser
-    return multiaddr(`${RelayPeer.multiaddr}/p2p-circuit/p2p/${peerId.toB58String()}`)
+    return new Multiaddr(`${RelayPeer.multiaddr}/p2p-circuit/p2p/${peerId.toB58String()}`)
   }
 }
 

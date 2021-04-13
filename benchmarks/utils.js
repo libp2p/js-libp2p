@@ -7,7 +7,7 @@ if (typeof self !== 'undefined') {
   self.Benchmark = Benchmark
 }
 
-const utils = require('../src/utils')
+const { utils } = require('libp2p-interfaces/src/pubsub')
 
 const suite = new Benchmark.Suite('utils')
 

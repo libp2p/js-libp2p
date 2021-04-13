@@ -1,9 +1,9 @@
 'use strict'
 
 const debug = require('debug')
-
-const log = debug('libp2p:floodsub')
-log.err = debug('libp2p:floodsub:error')
+const log = Object.assign(debug('libp2p:floodsub'), {
+  error: debug('libp2p:floodsub:err')
+})
 
 module.exports = {
   log: log,
