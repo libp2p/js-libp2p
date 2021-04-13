@@ -60,8 +60,14 @@ class Bootstrap extends EventEmitter {
       }
 
       const ma = new Multiaddr(candidate)
+      const peerIdStr = ma.getPeerId()
 
-      const peerId = PeerId.createFromB58String(ma.getPeerId())
+      if (!peerIdStr) {
+        log.error('Invalid bootstrap multiaddr without peer id')
+        return
+      }
+
+      const peerId = PeerId.createFromB58String(peerIdStr)
 
       try {
         this.emit('peer', {
