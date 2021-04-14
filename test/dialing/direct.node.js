@@ -98,8 +98,8 @@ describe('Dialing (direct, TCP)', () => {
     const dialer = new Dialer({ transportManager: localTM, peerStore })
 
     await expect(dialer.connectToPeer(unsupportedAddr))
-      .to.eventually.be.rejectedWith(AggregateError)
-      .and.to.have.nested.property('._errors[0].code', ErrorCodes.ERR_TRANSPORT_UNAVAILABLE)
+      .to.eventually.be.rejectedWith(Error)
+      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })
 
   it('should fail to connect if peer has no known addresses', async () => {
@@ -139,8 +139,28 @@ describe('Dialing (direct, TCP)', () => {
     const peerId = await PeerId.createFromJSON(Peers[0])
 
     await expect(dialer.connectToPeer(peerId))
-      .to.eventually.be.rejectedWith(AggregateError)
-      .and.to.have.nested.property('._errors[0].code', ErrorCodes.ERR_TRANSPORT_UNAVAILABLE)
+      .to.eventually.be.rejectedWith(Error)
+      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+  })
+
+  it('should only try to connect to addresses supported by the transports configured', async () => {
+    const remoteAddrs = remoteTM.getAddrs()
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore: {
+        addressBook: {
+          add: () => { },
+          getMultiaddrsForPeer: () => [...remoteAddrs, unsupportedAddr]
+        }
+      }
+    })
+    const peerId = await PeerId.createFromJSON(Peers[0])
+
+    sinon.spy(localTM, 'dial')
+    const connection = await dialer.connectToPeer(peerId)
+    expect(localTM.dial.callCount).to.equal(remoteAddrs.length)
+    expect(connection).to.exist()
+    await connection.close()
   })
 
   it('should abort dials on queue task timeout', async () => {
