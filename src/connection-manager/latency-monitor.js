@@ -5,8 +5,6 @@
  * This code is based on `latency-monitor` (https://github.com/mlucool/latency-monitor) by `mlucool` (https://github.com/mlucool), available under Apache License 2.0 (https://github.com/mlucool/latency-monitor/blob/master/LICENSE)
  */
 
-/** @typedef {import('../types').EventEmitterFactory} Events */
-/** @type Events */
 const EventEmitter = require('events')
 const VisibilityChangeEmitter = require('./visibility-change-emitter')
 const debug = require('debug')('latency-monitor:LatencyMonitor')

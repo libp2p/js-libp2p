@@ -58,7 +58,8 @@ describe('ping', () => {
               if (firstInvocation) {
                 firstInvocation = false
 
-                for await (const data of stream) { // eslint-disable-line
+                // eslint-disable-next-line no-unreachable-loop
+                for await (const data of stream) {
                   return {
                     value: data,
                     done: false
