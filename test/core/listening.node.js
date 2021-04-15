@@ -45,7 +45,7 @@ describe('Listening', () => {
     expect(addrs.length).to.be.at.least(2)
     for (const addr of addrs) {
       const opts = addr.toOptions()
-      expect(opts.family).to.equal('ipv4')
+      expect(opts.family).to.equal(4)
       expect(opts.transport).to.equal('tcp')
       expect(opts.host).to.match(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/)
       expect(opts.port).to.be.gt(0)
