@@ -66,9 +66,6 @@
     "time-cache": "^0.3.0",
     "uint8arrays": "^2.1.4"
   },
-  "peerDependencies": {
-    "libp2p": "^0.30.0"
-  },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
     "Vasco Santos <vasco.santos@moxy.studio>",
