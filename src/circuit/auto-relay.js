@@ -262,6 +262,9 @@ class AutoRelay {
     }
   }
 
+  /**
+   * @param {PeerId} peerId
+   */
   async _tryToListenOnRelay (peerId) {
     try {
       const connection = await this._libp2p.dial(peerId)
