@@ -1,7 +1,10 @@
 'use strict'
 
+// @ts-ignore node-forge types not exported
 require('node-forge/lib/pkcs7')
+// @ts-ignore node-forge types not exported
 require('node-forge/lib/pbe')
+// @ts-ignore node-forge types not exported
 const forge = require('node-forge/lib/forge')
 const { certificateForKey, findAsync } = require('./util')
 const errcode = require('err-code')
@@ -85,6 +88,7 @@ class CMS {
     try {
       const buf = forge.util.createBuffer(uint8ArrayToString(cmsData, 'ascii'))
       const obj = forge.asn1.fromDer(buf)
+      // @ts-ignore not defined
       cms = forge.pkcs7.messageFromAsn1(obj)
     } catch (err) {
       throw errcode(new Error('Invalid CMS: ' + err.message), 'ERR_INVALID_CMS')
@@ -93,11 +97,15 @@ class CMS {
     // Find a recipient whose key we hold. We only deal with recipient certs
     // issued by ipfs (O=ipfs).
     const recipients = cms.recipients
+      // @ts-ignore cms types not defined
       .filter(r => r.issuer.find(a => a.shortName === 'O' && a.value === 'ipfs'))
+      // @ts-ignore cms types not defined
       .filter(r => r.issuer.find(a => a.shortName === 'CN'))
+      // @ts-ignore cms types not defined
       .map(r => {
         return {
           recipient: r,
+          // @ts-ignore cms types not defined
           keyId: r.issuer.find(a => a.shortName === 'CN').value
         }
       })
@@ -113,6 +121,7 @@ class CMS {
     })
 
     if (!r) {
+      // @ts-ignore cms types not defined
       const missingKeys = recipients.map(r => r.keyId)
       throw errcode(new Error('Decryption needs one of the key(s): ' + missingKeys.join(', ')), 'ERR_MISSING_KEYS', {
         missingKeys

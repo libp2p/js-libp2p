@@ -7,6 +7,7 @@ const log = Object.assign(debug('libp2p:pnet'), {
 })
 
 const Errors = require('./errors')
+// @ts-ignore xsalsa20 has no types exported
 const xsalsa20 = require('xsalsa20')
 const KEY_LENGTH = require('./key-generator').KEY_LENGTH
 const uint8ArrayFromString = require('uint8arrays/from-string')
@@ -21,7 +22,8 @@ const uint8ArrayToString = require('uint8arrays/to-string')
  */
 module.exports.createBoxStream = (nonce, psk) => {
   const xor = xsalsa20(nonce, psk)
-  return (source) => (async function * () {
+
+  return (/** @type {AsyncIterable<Uint8Array>} */ source) => (async function * () {
     for await (const chunk of source) {
       yield Uint8Array.from(xor.update(chunk.slice()))
     }
@@ -36,7 +38,7 @@ module.exports.createBoxStream = (nonce, psk) => {
  * @returns {*} a through iterable
  */
 module.exports.createUnboxStream = (nonce, psk) => {
-  return (source) => (async function * () {
+  return (/** @type {AsyncIterable<Uint8Array>} */ source) => (async function * () {
     const xor = xsalsa20(nonce, psk)
     log.trace('Decryption enabled')
 
@@ -51,7 +53,7 @@ module.exports.createUnboxStream = (nonce, psk) => {
  *
  * @param {Uint8Array} pskBuffer
  * @throws {INVALID_PSK}
- * @returns {Object} The PSK metadata (tag, codecName, psk)
+ * @returns {{ tag?: string, codecName?: string, psk: Uint8Array }} The PSK metadata (tag, codecName, psk)
  */
 module.exports.decodeV1PSK = (pskBuffer) => {
   try {

@@ -599,7 +599,7 @@ const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
 
-const { FaultTolerance } = require('libp2p/src/transport-manager')}
+const { FaultTolerance } = require('libp2p/src/transport-manager')
 
 const node = await Libp2p.create({
   modules: {

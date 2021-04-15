@@ -8,10 +8,9 @@ const log = Object.assign(debug('libp2p:connection-manager'), {
 const errcode = require('err-code')
 const mergeOptions = require('merge-options')
 const LatencyMonitor = require('./latency-monitor')
+// @ts-ignore retimer does not have types
 const retimer = require('retimer')
 
-/** @typedef {import('../types').EventEmitterFactory} Events */
-/** @type Events */
 const EventEmitter = require('events')
 
 const PeerId = require('peer-id')
@@ -188,8 +187,10 @@ class ConnectionManager extends EventEmitter {
   _checkMetrics () {
     if (this._libp2p.metrics) {
       const movingAverages = this._libp2p.metrics.global.movingAverages
+      // @ts-ignore moving averages object types
       const received = movingAverages.dataReceived[this._options.movingAverageInterval].movingAverage()
       this._checkMaxLimit('maxReceivedData', received)
+      // @ts-ignore moving averages object types
       const sent = movingAverages.dataSent[this._options.movingAverageInterval].movingAverage()
       this._checkMaxLimit('maxSentData', sent)
       const total = received + sent
@@ -362,7 +363,7 @@ class ConnectionManager extends EventEmitter {
    */
   _maybeDisconnectOne () {
     if (this._options.minConnections < this.connections.size) {
-      const peerValues = Array.from(this._peerValues).sort(byPeerValue)
+      const peerValues = Array.from(new Map([...this._peerValues.entries()].sort((a, b) => a[1] - b[1])))
       log('%s: sorted peer values: %j', this._peerId, peerValues)
       const disconnectPeer = peerValues[0]
       if (disconnectPeer) {
@@ -381,7 +382,3 @@ class ConnectionManager extends EventEmitter {
 }
 
 module.exports = ConnectionManager
-
-function byPeerValue (peerValueEntryA, peerValueEntryB) {
-  return peerValueEntryA[1] - peerValueEntryB[1]
-}

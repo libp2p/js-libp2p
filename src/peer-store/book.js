@@ -7,6 +7,9 @@ const {
   codes: { ERR_INVALID_PARAMETERS }
 } = require('../errors')
 
+/**
+ * @param {any} data
+ */
 const passthrough = data => data
 
 /**

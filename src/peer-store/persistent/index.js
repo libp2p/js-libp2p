@@ -5,7 +5,7 @@ const log = Object.assign(debug('libp2p:persistent-peer-store'), {
   error: debug('libp2p:persistent-peer-store:err')
 })
 const { Key } = require('interface-datastore')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 
 const PeerStore = require('..')
@@ -18,13 +18,18 @@ const {
   NAMESPACE_PROTOCOL
 } = require('./consts')
 
-const Addresses = require('./pb/address-book.proto')
-const Protocols = require('./pb/proto-book.proto')
+const { Addresses } = require('./pb/address-book')
+const { Protocols } = require('./pb/proto-book')
+
+/**
+ * @typedef {import('interface-datastore').Batch} Batch
+ * @typedef {import('../address-book.js').Address} Address
+ */
 
 /**
  * @typedef {Object} PersistentPeerStoreProperties
  * @property {PeerId} peerId
- * @property {any} datastore
+ * @property {import('interface-datastore').Datastore} datastore
  *
  * @typedef {Object} PersistentPeerStoreOptions
  * @property {number} [threshold = 5] - Number of dirty peers allowed before commit data.
@@ -214,7 +219,7 @@ class PersistentPeerStore extends PeerStore {
    *
    * @private
    * @param {PeerId} peerId
-   * @param {Object} batch
+   * @param {Batch} batch
    */
   _batchAddressBook (peerId, batch) {
     const b32key = peerId.toString()
@@ -234,11 +239,13 @@ class PersistentPeerStore extends PeerStore {
           multiaddr: address.multiaddr.bytes,
           isCertified: address.isCertified
         })),
-        certified_record: entry.record ? {
-          seq: entry.record.seqNumber,
-          raw: entry.record.raw
-        } : undefined
-      })
+        certifiedRecord: entry.record
+          ? {
+              seq: entry.record.seqNumber,
+              raw: entry.record.raw
+            }
+          : undefined
+      }).finish()
 
       batch.put(key, encodedData)
     } catch (err) {
@@ -251,7 +258,7 @@ class PersistentPeerStore extends PeerStore {
    *
    * @private
    * @param {PeerId} peerId
-   * @param {Object} batch
+   * @param {Batch} batch
    */
   _batchKeyBook (peerId, batch) {
     const b32key = peerId.toString()
@@ -277,14 +284,14 @@ class PersistentPeerStore extends PeerStore {
    *
    * @private
    * @param {PeerId} peerId
-   * @param {Object} batch
+   * @param {Batch} batch
    */
   _batchMetadataBook (peerId, batch) {
     const b32key = peerId.toString()
     const dirtyMetada = this._dirtyMetadata.get(peerId.toB58String()) || []
 
     try {
-      dirtyMetada.forEach((dirtyKey) => {
+      dirtyMetada.forEach((/** @type {string} */ dirtyKey) => {
         const key = new Key(`${NAMESPACE_METADATA}${b32key}/${dirtyKey}`)
         const dirtyValue = this.metadataBook.getValue(peerId, dirtyKey)
 
@@ -304,7 +311,7 @@ class PersistentPeerStore extends PeerStore {
    *
    * @private
    * @param {PeerId} peerId
-   * @param {Object} batch
+   * @param {Batch} batch
    */
   _batchProtoBook (peerId, batch) {
     const b32key = peerId.toString()
@@ -319,7 +326,7 @@ class PersistentPeerStore extends PeerStore {
         return
       }
 
-      const encodedData = Protocols.encode({ protocols })
+      const encodedData = Protocols.encode({ protocols }).finish()
 
       batch.put(key, encodedData)
     } catch (err) {
@@ -351,13 +358,15 @@ class PersistentPeerStore extends PeerStore {
             peerId,
             {
               addresses: decoded.addrs.map((address) => ({
-                multiaddr: multiaddr(address.multiaddr),
+                multiaddr: new Multiaddr(address.multiaddr),
                 isCertified: Boolean(address.isCertified)
               })),
-              record: decoded.certified_record ? {
-                raw: decoded.certified_record.raw,
-                seqNumber: decoded.certified_record.seq
-              } : undefined
+              record: decoded.certifiedRecord
+                ? {
+                    raw: decoded.certifiedRecord.raw,
+                    seqNumber: decoded.certifiedRecord.seq
+                  }
+                : undefined
             },
             { emit: false })
           break

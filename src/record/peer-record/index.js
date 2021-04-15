@@ -1,18 +1,17 @@
 'use strict'
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 const arrayEquals = require('libp2p-utils/src/array-equals')
 
-const Protobuf = require('./peer-record.proto')
+const { PeerRecord: Protobuf } = require('./peer-record')
 const {
   ENVELOPE_DOMAIN_PEER_RECORD,
   ENVELOPE_PAYLOAD_TYPE_PEER_RECORD
 } = require('./consts')
 
 /**
- * @typedef {import('peer-id')} PeerId
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('../../peer-store/address-book.js').Address} Address
  * @typedef {import('libp2p-interfaces/src/record/types').Record} Record
  */
 
@@ -52,13 +51,13 @@ class PeerRecord {
       return this._marshal
     }
 
-    this._marshal = Protobuf.PeerRecord.encode({
-      peer_id: this.peerId.toBytes(),
+    this._marshal = Protobuf.encode({
+      peerId: this.peerId.toBytes(),
       seq: this.seqNumber,
       addresses: this.multiaddrs.map((m) => ({
         multiaddr: m.bytes
       }))
-    })
+    }).finish()
 
     return this._marshal
   }
@@ -100,12 +99,11 @@ class PeerRecord {
  * @returns {PeerRecord}
  */
 PeerRecord.createFromProtobuf = (buf) => {
-  // Decode
-  const peerRecord = Protobuf.PeerRecord.decode(buf)
+  const peerRecord = Protobuf.decode(buf)
 
-  const peerId = PeerId.createFromBytes(peerRecord.peer_id)
-  const multiaddrs = (peerRecord.addresses || []).map((a) => multiaddr(a.multiaddr))
-  const seqNumber = peerRecord.seq
+  const peerId = PeerId.createFromBytes(peerRecord.peerId)
+  const multiaddrs = (peerRecord.addresses || []).map((a) => new Multiaddr(a.multiaddr))
+  const seqNumber = Number(peerRecord.seq)
 
   return new PeerRecord({ peerId, multiaddrs, seqNumber })
 }

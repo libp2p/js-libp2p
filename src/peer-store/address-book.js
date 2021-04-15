@@ -6,7 +6,7 @@ const log = Object.assign(debug('libp2p:peer-store:address-book'), {
 })
 const errcode = require('err-code')
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 
 const Book = require('./book')
@@ -18,7 +18,6 @@ const {
 const Envelope = require('../record/envelope')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('./')} PeerStore
  */
 
@@ -60,7 +59,7 @@ class AddressBook extends Book {
         if (!data.addresses) {
           return []
         }
-        return data.addresses.map((address) => address.multiaddr)
+        return data.addresses.map((/** @type {Address} */ address) => address.multiaddr)
       }
     })
 
@@ -295,9 +294,10 @@ class AddressBook extends Book {
     }
 
     // create Address for each address
+    /** @type {Address[]} */
     const addresses = []
     multiaddrs.forEach((addr) => {
-      if (!multiaddr.isMultiaddr(addr)) {
+      if (!Multiaddr.isMultiaddr(addr)) {
         log.error(`multiaddr ${addr} must be an instance of multiaddr`)
         throw errcode(new Error(`multiaddr ${addr} must be an instance of multiaddr`), ERR_INVALID_PARAMETERS)
       }

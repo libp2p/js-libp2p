@@ -1,12 +1,18 @@
 'use strict'
 
+// Pubsub adapter to keep API with handlers while not removed.
 /**
  * @typedef {import('libp2p-interfaces/src/pubsub').InMessage} InMessage
  * @typedef {import('libp2p-interfaces/src/pubsub')} PubsubRouter
  */
 
-// Pubsub adapter to keep API with handlers while not removed.
+/**
+ * @param {import("libp2p-interfaces/src/pubsub")} PubsubRouter
+ * @param {import('.')} libp2p
+ * @param {{ enabled: boolean; } & import(".").PubsubLocalOptions & import("libp2p-interfaces/src/pubsub").PubsubOptions} options
+ */
 function pubsubAdapter (PubsubRouter, libp2p, options) {
+  // @ts-ignore Pubsub constructor type not defined
   const pubsub = new PubsubRouter(libp2p, options)
   pubsub._subscribeAdapter = pubsub.subscribe
   pubsub._unsubscribeAdapter = pubsub.unsubscribe

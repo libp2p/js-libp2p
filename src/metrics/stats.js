@@ -1,8 +1,6 @@
 // @ts-nocheck
 'use strict'
 
-/** @typedef {import('../types').EventEmitterFactory} Events */
-/** @type Events */
 const EventEmitter = require('events')
 const Big = require('bignumber.js')
 const MovingAverage = require('moving-average')
@@ -32,13 +30,13 @@ class Stats extends EventEmitter {
 
     const intervals = this._options.movingAverageIntervals
 
-    for (var i = 0; i < initialCounters.length; i++) {
-      var key = initialCounters[i]
+    for (let i = 0; i < initialCounters.length; i++) {
+      const key = initialCounters[i]
       this._stats[key] = Big(0)
       this._movingAverages[key] = {}
-      for (var k = 0; k < intervals.length; k++) {
-        var interval = intervals[k]
-        var ma = this._movingAverages[key][interval] = MovingAverage(interval)
+      for (let k = 0; k < intervals.length; k++) {
+        const interval = intervals[k]
+        const ma = this._movingAverages[key][interval] = MovingAverage(interval)
         ma.push(this._frequencyLastTime, 0)
       }
     }
@@ -72,8 +70,6 @@ class Stats extends EventEmitter {
 
   /**
    * Returns a clone of the current stats.
-   *
-   * @returns {Object}
    */
   get snapshot () {
     return Object.assign({}, this._stats)
@@ -81,8 +77,6 @@ class Stats extends EventEmitter {
 
   /**
    * Returns a clone of the internal movingAverages
-   *
-   * @returns {Object}
    */
   get movingAverages () {
     return Object.assign({}, this._movingAverages)
@@ -219,9 +213,9 @@ class Stats extends EventEmitter {
 
     const intervals = this._options.movingAverageIntervals
 
-    for (var i = 0; i < intervals.length; i++) {
-      var movingAverageInterval = intervals[i]
-      var movingAverage = movingAverages[movingAverageInterval]
+    for (let i = 0; i < intervals.length; i++) {
+      const movingAverageInterval = intervals[i]
+      let movingAverage = movingAverages[movingAverageInterval]
       if (!movingAverage) {
         movingAverage = movingAverages[movingAverageInterval] = MovingAverage(movingAverageInterval)
       }

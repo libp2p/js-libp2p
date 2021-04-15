@@ -1,14 +1,8 @@
 'use strict'
 
-/** @typedef {import('../types').EventEmitterFactory} Events */
-/** @type Events */
 const EventEmitter = require('events')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
-
-/**
- * @typedef {import('multiaddr')} Multiaddr
- */
 
 /**
  * @typedef {Object} AddressManagerOptions
@@ -47,7 +41,7 @@ class AddressManager extends EventEmitter {
    * @returns {Multiaddr[]}
    */
   getListenAddrs () {
-    return Array.from(this.listen).map((a) => multiaddr(a))
+    return Array.from(this.listen).map((a) => new Multiaddr(a))
   }
 
   /**
@@ -56,7 +50,7 @@ class AddressManager extends EventEmitter {
    * @returns {Multiaddr[]}
    */
   getAnnounceAddrs () {
-    return Array.from(this.announce).map((a) => multiaddr(a))
+    return Array.from(this.announce).map((a) => new Multiaddr(a))
   }
 
   /**
@@ -65,7 +59,7 @@ class AddressManager extends EventEmitter {
    * @returns {Array<Multiaddr>}
    */
   getObservedAddrs () {
-    return Array.from(this.observed).map((a) => multiaddr(a))
+    return Array.from(this.observed).map((a) => new Multiaddr(a))
   }
 
   /**
@@ -74,7 +68,7 @@ class AddressManager extends EventEmitter {
    * @param {string | Multiaddr} addr
    */
   addObservedAddr (addr) {
-    let ma = multiaddr(addr)
+    let ma = new Multiaddr(addr)
     const remotePeer = ma.getPeerId()
 
     // strip our peer id if it has been passed
@@ -83,7 +77,7 @@ class AddressManager extends EventEmitter {
 
       // use same encoding for comparison
       if (remotePeerId.equals(this.peerId)) {
-        ma = ma.decapsulate(multiaddr(`/p2p/${this.peerId}`))
+        ma = ma.decapsulate(new Multiaddr(`/p2p/${this.peerId}`))
       }
     }
 

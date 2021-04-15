@@ -1,10 +1,9 @@
 'use strict'
 
 const { EventEmitter } = require('events')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('libp2p-interfaces/src/transport/types').Listener} Listener
  */
 
@@ -24,7 +23,7 @@ module.exports = (libp2p) => {
   async function listen (addr) {
     const addrString = String(addr).split('/p2p-circuit').find(a => a !== '')
 
-    const relayConn = await libp2p.dial(multiaddr(addrString))
+    const relayConn = await libp2p.dial(new Multiaddr(addrString))
     const relayedAddr = relayConn.remoteAddr.encapsulate('/p2p-circuit')
 
     listeningAddrs.set(relayConn.remotePeer.toB58String(), relayedAddr)

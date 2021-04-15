@@ -7,15 +7,15 @@ const sinon = require('sinon')
 const pWaitFor = require('p-wait-for')
 const pDefer = require('p-defer')
 const mergeOptions = require('merge-options')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const uint8ArrayToString = require('uint8arrays/to-string')
 
 const { create } = require('../../src')
 const { subsystemOptions, subsystemMulticodecs } = require('./utils')
 const peerUtils = require('../utils/creators/peer')
 
-const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
-const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+const remoteListenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('Pubsub subsystem operates correctly', () => {
   let peerId, remotePeerId

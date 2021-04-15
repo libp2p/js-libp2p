@@ -17,10 +17,10 @@ async function run() {
     const out = chunk.toString()
 
     if (out.includes('Server running at')) {
-      url = out.replace('Server running at ', '')
+      url = out.split('Server running at ')[1]
     }
 
-    if (out.includes('✨  Built in ')) {
+    if (out.includes('Built in')) {
       try {
         const browser = await chromium.launch();
         const page = await browser.newPage();

@@ -12,10 +12,10 @@ const errCode = require('err-code')
 const { updateSelfPeerRecord } = require('./record/utils')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory} TransportFactory
- * @typedef {import('libp2p-interfaces/src/transport/types').Transport} Transport
+ * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory<any, any>} TransportFactory
+ * @typedef {import('libp2p-interfaces/src/transport/types').Transport<any, any>} Transport
  *
  * @typedef {Object} TransportManagerProperties
  * @property {import('./')} libp2p
@@ -121,6 +121,7 @@ class TransportManager {
    * @returns {Multiaddr[]}
    */
   getAddrs () {
+    /** @type {Multiaddr[]} */
     let addrs = []
     for (const listeners of this._listeners.values()) {
       for (const listener of listeners) {

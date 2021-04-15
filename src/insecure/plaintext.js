@@ -4,6 +4,7 @@ const debug = require('debug')
 const log = Object.assign(debug('libp2p:plaintext'), {
   error: debug('libp2p:plaintext:err')
 })
+// @ts-ignore it-handshake do not export types
 const handshake = require('it-handshake')
 const lp = require('it-length-prefixed')
 const PeerId = require('peer-id')
@@ -16,8 +17,12 @@ const protocol = '/plaintext/2.0.0'
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  */
 
+/**
+ * @param {import('./proto').IExchange} exchange
+ */
 function lpEncodeExchange (exchange) {
-  const pb = Exchange.encode(exchange)
+  const pb = Exchange.encode(exchange).finish()
+  // @ts-ignore TODO: Uint8Array not assignable to Buffer
   return lp.encode.single(pb)
 }
 
@@ -68,12 +73,23 @@ async function encrypt (localId, conn, remoteId) {
   }
 }
 
-module.exports = {
-  protocol,
-  secureInbound: (localId, conn, remoteId) => {
-    return encrypt(localId, conn, remoteId)
-  },
-  secureOutbound: (localId, conn, remoteId) => {
-    return encrypt(localId, conn, remoteId)
-  }
-}
+module.exports =
+ {
+   protocol,
+   /**
+    * @param {PeerId} localId
+    * @param {Connection} conn
+    * @param {PeerId | undefined} remoteId
+    */
+   secureInbound: (localId, conn, remoteId) => {
+     return encrypt(localId, conn, remoteId)
+   },
+   /**
+    * @param {PeerId} localId
+    * @param {Connection} conn
+    * @param {PeerId | undefined} remoteId
+    */
+   secureOutbound: (localId, conn, remoteId) => {
+     return encrypt(localId, conn, remoteId)
+   }
+ }

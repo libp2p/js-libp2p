@@ -5,8 +5,6 @@
  * This code is based on `latency-monitor` (https://github.com/mlucool/latency-monitor) by `mlucool` (https://github.com/mlucool), available under Apache License 2.0 (https://github.com/mlucool/latency-monitor/blob/master/LICENSE)
  */
 
-/** @typedef {import('../types').EventEmitterFactory} Events */
-/** @type Events */
 const EventEmitter = require('events')
 const VisibilityChangeEmitter = require('./visibility-change-emitter')
 const debug = require('debug')('latency-monitor:LatencyMonitor')
@@ -59,7 +57,8 @@ class LatencyMonitor extends EventEmitter {
     that._latecyCheckMultiply = 2 * (that.latencyRandomPercentage / 100.0) * that.latencyCheckIntervalMs
     that._latecyCheckSubtract = that._latecyCheckMultiply / 2
 
-    that.dataEmitIntervalMs = (dataEmitIntervalMs === null || dataEmitIntervalMs === 0) ? undefined
+    that.dataEmitIntervalMs = (dataEmitIntervalMs === null || dataEmitIntervalMs === 0)
+      ? undefined
       : dataEmitIntervalMs || 5 * 1000 // 5s
     debug('latencyCheckIntervalMs: %s dataEmitIntervalMs: %s',
       that.latencyCheckIntervalMs, that.dataEmitIntervalMs)
@@ -174,7 +173,8 @@ class LatencyMonitor extends EventEmitter {
       events: this._latencyData.events,
       minMs: this._latencyData.minMs,
       maxMs: this._latencyData.maxMs,
-      avgMs: this._latencyData.events ? this._latencyData.totalMs / this._latencyData.events
+      avgMs: this._latencyData.events
+        ? this._latencyData.totalMs / this._latencyData.events
         : Number.POSITIVE_INFINITY,
       lengthMs: this.getDeltaMS(this._latencyData.startTime)
     }

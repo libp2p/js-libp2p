@@ -2,7 +2,7 @@
   "name": "libp2p-in-browser",
   "version": "1.0.0",
   "description": "A libp2p node running in the browser",
-  "main": "index.js",
+  "main": "dist/index.html",
   "browserslist": [
     "last 2 Chrome versions"
   ],
@@ -20,8 +20,8 @@
     "libp2p-bootstrap": "^0.12.1",
     "libp2p-mplex": "^0.10.0",
     "libp2p-noise": "^2.0.0",
-    "libp2p-webrtc-star": "^0.20.0",
-    "libp2p-websockets": "^0.14.0"
+    "libp2p-webrtc-star": "^0.22.0",
+    "libp2p-websockets": "^0.15.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.13.10",
@@ -29,6 +29,6 @@
     "babel-plugin-syntax-async-functions": "^6.13.0",
     "babel-plugin-transform-regenerator": "^6.26.0",
     "babel-polyfill": "^6.26.0",
-    "parcel-bundler": "1.12.3"
+    "parcel": "next"
   }
 }

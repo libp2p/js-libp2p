@@ -22,8 +22,12 @@ module.exports = generate
 module.exports.NONCE_LENGTH = 24
 module.exports.KEY_LENGTH = KEY_LENGTH
 
-// @ts-ignore This condition will always return 'false' since the types 'Module | undefined'
-if (require.main === module) {
-  // @ts-ignore
-  generate(process.stdout)
+try {
+  // @ts-ignore This condition will always return 'false' since the types 'Module | undefined'
+  if (require.main === module) {
+    // @ts-ignore
+    generate(process.stdout)
+  }
+} catch (error) {
+
 }

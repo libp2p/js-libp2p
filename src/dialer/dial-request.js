@@ -3,13 +3,14 @@
 const errCode = require('err-code')
 const AbortController = require('abort-controller').default
 const { anySignal } = require('any-signal')
+// @ts-ignore p-fifo does not export types
 const FIFO = require('p-fifo')
 const pAny = require('p-any')
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('./')} Dialer
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  */
 
 /**

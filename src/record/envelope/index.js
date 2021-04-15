@@ -3,13 +3,14 @@
 const errCode = require('err-code')
 const uint8arraysConcat = require('uint8arrays/concat')
 const uint8arraysFromString = require('uint8arrays/from-string')
+// @ts-ignore libp2p-crypto does not support types
 const cryptoKeys = require('libp2p-crypto/src/keys')
 const PeerId = require('peer-id')
 const varint = require('varint')
 const uint8arraysEquals = require('uint8arrays/equals')
 
 const { codes } = require('../../errors')
-const Protobuf = require('./envelope.proto')
+const { Envelope: Protobuf } = require('./envelope')
 
 /**
  * @typedef {import('libp2p-interfaces/src/record/types').Record} Record
@@ -49,12 +50,12 @@ class Envelope {
 
     const publicKey = cryptoKeys.marshalPublicKey(this.peerId.pubKey)
 
-    this._marshal = Protobuf.Envelope.encode({
-      public_key: publicKey,
-      payload_type: this.payloadType,
+    this._marshal = Protobuf.encode({
+      publicKey: publicKey,
+      payloadType: this.payloadType,
       payload: this.payload,
       signature: this.signature
-    })
+    }).finish()
 
     return this._marshal
   }
@@ -124,12 +125,12 @@ const formatSignaturePayload = (domain, payloadType, payload) => {
  * @returns {Promise<Envelope>}
  */
 Envelope.createFromProtobuf = async (data) => {
-  const envelopeData = Protobuf.Envelope.decode(data)
-  const peerId = await PeerId.createFromPubKey(envelopeData.public_key)
+  const envelopeData = Protobuf.decode(data)
+  const peerId = await PeerId.createFromPubKey(envelopeData.publicKey)
 
   return new Envelope({
     peerId,
-    payloadType: envelopeData.payload_type,
+    payloadType: envelopeData.payloadType,
     payload: envelopeData.payload,
     signature: envelopeData.signature
   })

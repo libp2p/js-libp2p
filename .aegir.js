@@ -1,5 +1,6 @@
 'use strict'
 
+const path = require('path')
 const Libp2p = require('./src')
 const { MULTIADDRS_WEBSOCKETS } = require('./test/fixtures/browser')
 const Peers = require('./test/fixtures/peers')
@@ -47,16 +48,23 @@ const after = async () => {
   await libp2p.stop()
 }
 
+/** @type {import('aegir').Options["build"]["config"]} */
+const esbuild = {
+  inject: [path.join(__dirname, './scripts/node-globals.js')]
+}
+
+/** @type {import('aegir').PartialOptions} */
 module.exports = {
-  bundlesize: { maxSize: '223kB' },
-  hooks: {
-    pre: before,
-    post: after
+  build: {
+    bundlesizeMax: '253kB'
   },
-  webpack: {
-    node: {
-      // needed by bcrypto
-      Buffer: true
+  test: {
+    before,
+    after,
+    browser: {
+      config: {
+        buildConfig: esbuild
+      }
     }
   }
 }

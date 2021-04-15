@@ -18,17 +18,17 @@ const { stop } = require('./stop')
 const multicodec = require('./../multicodec')
 
 /**
- * @typedef {import('../../types').CircuitRequest} CircuitRequest
+ * @typedef {import('../protocol').ICircuitRelay} ICircuitRelay
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('./stream-handler')<CircuitRequest>} StreamHandlerT
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('../transport')} Transport
  */
 
 /**
  * @typedef {Object} HopRequest
  * @property {Connection} connection
- * @property {CircuitRequest} request
- * @property {StreamHandlerT} streamHandler
+ * @property {ICircuitRelay} request
+ * @property {StreamHandler} streamHandler
  * @property {Transport} circuit
  */
 
@@ -56,6 +56,11 @@ async function handleHop ({
     validateAddrs(request, streamHandler)
   } catch (err) {
     return log.error('invalid hop request via peer %s', connection.remotePeer.toB58String(), err)
+  }
+
+  if (!request.dstPeer) {
+    log('HOP request received but we do not receive a dstPeer')
+    return
   }
 
   // Get the connection to the destination (stop) peer
@@ -113,8 +118,8 @@ async function handleHop ({
  *
  * @param {object} options
  * @param {Connection} options.connection - Connection to the relay
- * @param {CircuitRequest} options.request
- * @returns {Promise<Connection>}
+ * @param {ICircuitRelay} options.request
+ * @returns {Promise<MuxedStream>}
  */
 async function hop ({
   connection,
@@ -127,6 +132,10 @@ async function hop ({
   streamHandler.write(request)
 
   const response = await streamHandler.read()
+
+  if (!response) {
+    throw errCode(new Error('HOP request had no response'), Errors.ERR_HOP_REQUEST_FAILED)
+  }
 
   if (response.code === CircuitPB.Status.SUCCESS) {
     log('hop request was successful')
@@ -159,7 +168,7 @@ async function canHop ({
   const response = await streamHandler.read()
   await streamHandler.close()
 
-  if (response.code !== CircuitPB.Status.SUCCESS) {
+  if (!response || response.code !== CircuitPB.Status.SUCCESS) {
     return false
   }
 
@@ -171,7 +180,7 @@ async function canHop ({
  *
  * @param {Object} options
  * @param {Connection} options.connection
- * @param {StreamHandlerT} options.streamHandler
+ * @param {StreamHandler} options.streamHandler
  * @param {Transport} options.circuit
  * @private
  */

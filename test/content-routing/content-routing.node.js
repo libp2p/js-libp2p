@@ -11,7 +11,7 @@ const mergeOptions = require('merge-options')
 const CID = require('cids')
 const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const drain = require('it-drain')
 const all = require('it-all')
 
@@ -27,6 +27,8 @@ describe('content-routing', () => {
         config: baseOptions
       })
     })
+
+    after(() => node.stop())
 
     it('.findProviders should return an error', async () => {
       try {
@@ -277,7 +279,7 @@ describe('content-routing', () => {
       const result = {
         id: providerPeerId,
         multiaddrs: [
-          multiaddr('/ip4/123.123.123.123/tcp/49320')
+          new Multiaddr('/ip4/123.123.123.123/tcp/49320')
         ]
       }
 
@@ -301,7 +303,7 @@ describe('content-routing', () => {
       const result = {
         id: providerPeerId,
         multiaddrs: [
-          multiaddr('/ip4/123.123.123.123/tcp/49320')
+          new Multiaddr('/ip4/123.123.123.123/tcp/49320')
         ]
       }
 
@@ -327,7 +329,7 @@ describe('content-routing', () => {
       const result = {
         id: providerPeerId,
         multiaddrs: [
-          multiaddr('/ip4/123.123.123.123/tcp/49320')
+          new Multiaddr('/ip4/123.123.123.123/tcp/49320')
         ]
       }
 
@@ -348,13 +350,13 @@ describe('content-routing', () => {
       const result1 = {
         id: providerPeerId,
         multiaddrs: [
-          multiaddr('/ip4/123.123.123.123/tcp/49320')
+          new Multiaddr('/ip4/123.123.123.123/tcp/49320')
         ]
       }
       const result2 = {
         id: providerPeerId,
         multiaddrs: [
-          multiaddr('/ip4/213.213.213.213/tcp/2344')
+          new Multiaddr('/ip4/213.213.213.213/tcp/2344')
         ]
       }
 

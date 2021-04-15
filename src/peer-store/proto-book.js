@@ -74,6 +74,10 @@ class ProtoBook extends Book {
     const recSet = this.data.get(id)
     const newSet = new Set(protocols)
 
+    /**
+     * @param {Set<string>} a
+     * @param {Set<string>} b
+     */
     const isSetEqual = (a, b) => a.size === b.size && [...a].every(value => b.has(value))
 
     // Already knows the peer and the recorded protocols are the same?

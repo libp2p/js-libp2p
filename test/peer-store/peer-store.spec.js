@@ -4,15 +4,15 @@
 const { expect } = require('aegir/utils/chai')
 
 const PeerStore = require('../../src/peer-store')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const peerUtils = require('../utils/creators/peer')
 
-const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
-const addr2 = multiaddr('/ip4/127.0.0.1/tcp/8001')
-const addr3 = multiaddr('/ip4/127.0.0.1/tcp/8002')
-const addr4 = multiaddr('/ip4/127.0.0.1/tcp/8003')
+const addr1 = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
+const addr2 = new Multiaddr('/ip4/127.0.0.1/tcp/8001')
+const addr3 = new Multiaddr('/ip4/127.0.0.1/tcp/8002')
+const addr4 = new Multiaddr('/ip4/127.0.0.1/tcp/8003')
 
 const proto1 = '/protocol1'
 const proto2 = '/protocol2'

@@ -1,0 +1,102 @@
+name: examples
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: npm install
+    - run: npx aegir lint
+    - run: npx aegir ts -p check
+    - run: npx aegir build
+  test-auto-relay-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- auto-relay
+  test-chat-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- chat
+  test-connection-encryption-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- connection-encryption
+  test-discovery-mechanisms-example:
+    needs: check
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- discovery-mechanisms
+  test-echo-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- echo
+  test-libp2p-in-the-browser-example:
+    needs: check
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- libp2p-in-the-browser
+  test-peer-and-content-routing-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- peer-and-content-routing
+  test-pnet-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- pnet
+  test-protocol-and-stream-muxing-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- protocol-and-stream-muxing
+  test-pubsub-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- pubsub
+  test-transports-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- transports
+  test-webrtc-direct-example:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: cd examples && yarn && npm run test -- webrtc-direct

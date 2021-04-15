@@ -4,7 +4,7 @@
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const { collect } = require('streaming-iterables')
 const pipe = require('it-pipe')
 const AggregateError = require('aggregate-error')
@@ -67,7 +67,7 @@ describe('Dialing (via relay, TCP)', () => {
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerId.toB58String()}`)
 
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
-    sinon.stub(dstLibp2p.addressManager, 'listen').value([multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
+    sinon.stub(dstLibp2p.addressManager, 'listen').value([new Multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
 
     await dstLibp2p.transportManager.listen(dstLibp2p.addressManager.getListenAddrs())
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
@@ -152,7 +152,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     // Connect the destination peer and the relay
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
-    sinon.stub(dstLibp2p.addressManager, 'getListenAddrs').returns([multiaddr(`${relayAddr}/p2p-circuit`)])
+    sinon.stub(dstLibp2p.addressManager, 'getListenAddrs').returns([new Multiaddr(`${relayAddr}/p2p-circuit`)])
 
     await dstLibp2p.transportManager.listen(dstLibp2p.addressManager.getListenAddrs())
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])

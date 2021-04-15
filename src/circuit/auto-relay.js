@@ -7,7 +7,7 @@ const log = Object.assign(debug('libp2p:auto-relay'), {
 
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 
 const { relay: multicodec } = require('./multicodec')
@@ -157,7 +157,7 @@ class AutoRelay {
 
     // Attempt to listen on relay
     try {
-      await this._transportManager.listen([multiaddr(listenAddr)])
+      await this._transportManager.listen([new Multiaddr(listenAddr)])
       // Announce multiaddrs will update on listen success by TransportManager event being triggered
     } catch (err) {
       log.error(err)

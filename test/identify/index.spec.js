@@ -7,7 +7,7 @@ const sinon = require('sinon')
 const { EventEmitter } = require('events')
 const PeerId = require('peer-id')
 const duplexPair = require('it-pair/duplex')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const pWaitFor = require('p-wait-for')
 const unit8ArrayToString = require('uint8arrays/to-string')
 
@@ -25,7 +25,7 @@ const AddressManager = require('../../src/address-manager')
 
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
-const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
+const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
 describe('Identify', () => {
   let localPeer, localPeerStore, localAddressManager
@@ -74,7 +74,7 @@ describe('Identify', () => {
       }
     })
 
-    const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
+    const observedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/1234')
     const localConnectionMock = { newStream: () => {}, remotePeer }
     const remoteConnectionMock = { remoteAddr: observedAddr }
 
@@ -110,6 +110,7 @@ describe('Identify', () => {
 
   // LEGACY
   it('should be able to identify another peer with no certified peer records support', async () => {
+    const agentVersion = `js-libp2p/${pkg.version}`
     const localIdentify = new IdentifyService({
       libp2p: {
         peerId: localPeer,
@@ -118,7 +119,7 @@ describe('Identify', () => {
         peerStore: localPeerStore,
         multiaddrs: listenMaddrs,
         isStarted: () => true,
-        _options: { host: {} }
+        _options: { host: { agentVersion } }
       }
     })
 
@@ -130,11 +131,11 @@ describe('Identify', () => {
         peerStore: remotePeerStore,
         multiaddrs: listenMaddrs,
         isStarted: () => true,
-        _options: { host: {} }
+        _options: { host: { agentVersion } }
       }
     })
 
-    const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
+    const observedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/1234')
     const localConnectionMock = { newStream: () => {}, remotePeer }
     const remoteConnectionMock = { remoteAddr: observedAddr }
 
@@ -162,7 +163,7 @@ describe('Identify', () => {
     const metadataArgs = localIdentify.peerStore.metadataBook.set.firstCall.args
     expect(metadataArgs[0].id.bytes).to.equal(remotePeer.bytes)
     expect(metadataArgs[1]).to.equal('AgentVersion')
-    expect(unit8ArrayToString(metadataArgs[2])).to.equal(`js-libp2p/${pkg.version}`)
+    expect(unit8ArrayToString(metadataArgs[2])).to.equal(agentVersion)
 
     // Validate the remote peer gets updated in the peer store
     const call = localIdentify.peerStore.addressBook.set.firstCall
@@ -192,7 +193,7 @@ describe('Identify', () => {
       }
     })
 
-    const observedAddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
+    const observedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/1234')
     const localConnectionMock = { newStream: () => {}, remotePeer: localPeer }
     const remoteConnectionMock = { remoteAddr: observedAddr }
 
@@ -500,7 +501,7 @@ describe('Identify', () => {
       await libp2p.identifyService.identify.firstCall.returnValue
       sinon.stub(libp2p, 'isStarted').returns(true)
 
-      libp2p.peerStore.addressBook.add(libp2p.peerId, [multiaddr('/ip4/180.0.0.1/tcp/15001/ws')])
+      libp2p.peerStore.addressBook.add(libp2p.peerId, [new Multiaddr('/ip4/180.0.0.1/tcp/15001/ws')])
 
       // Verify the remote peer is notified of change
       expect(libp2p.identifyService.push.callCount).to.equal(1)

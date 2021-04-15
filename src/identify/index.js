@@ -5,14 +5,14 @@ const log = Object.assign(debug('libp2p:identify'), {
   error: debug('libp2p:identify:err')
 })
 const errCode = require('err-code')
-const pb = require('it-protocol-buffers')
 const lp = require('it-length-prefixed')
 const { pipe } = require('it-pipe')
 const { collect, take, consume } = require('streaming-iterables')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const PeerId = require('peer-id')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
+// @ts-ignore it-buffer does not have types
 const { toBuffer } = require('it-buffer')
 
 const Message = require('./message')
@@ -23,7 +23,6 @@ const PeerRecord = require('../record/peer-record')
 const {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH,
-  AGENT_VERSION,
   PROTOCOL_VERSION
 } = require('./consts')
 
@@ -32,6 +31,11 @@ const { codes } = require('../errors')
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ */
+
+/**
+ * @typedef {Object} HostProperties
+ * @property {string} agentVersion
  */
 
 class IdentifyService {
@@ -51,7 +55,6 @@ class IdentifyService {
 
     // Store self host metadata
     this._host = {
-      agentVersion: AGENT_VERSION,
       protocolVersion: PROTOCOL_VERSION,
       ...libp2p._options.host
     }
@@ -94,12 +97,12 @@ class IdentifyService {
         const { stream } = await connection.newStream(MULTICODEC_IDENTIFY_PUSH)
 
         await pipe(
-          [{
+          [Message.Identify.encode({
             listenAddrs,
             signedPeerRecord,
             protocols
-          }],
-          pb.encode(Message),
+          }).finish()],
+          lp.encode(),
           stream,
           consume
         )
@@ -160,12 +163,12 @@ class IdentifyService {
 
     let message
     try {
-      message = Message.decode(data)
+      message = Message.Identify.decode(data)
     } catch (err) {
       throw errCode(err, codes.ERR_INVALID_MESSAGE)
     }
 
-    let {
+    const {
       publicKey,
       listenAddrs,
       protocols,
@@ -180,7 +183,7 @@ class IdentifyService {
     }
 
     // Get the observedAddr if there is one
-    observedAddr = IdentifyService.getCleanMultiaddr(observedAddr)
+    const cleanObservedAddr = IdentifyService.getCleanMultiaddr(observedAddr)
 
     try {
       const envelope = await Envelope.openAndCertify(signedPeerRecord, PeerRecord.DOMAIN)
@@ -194,7 +197,7 @@ class IdentifyService {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      this.peerStore.addressBook.set(id, listenAddrs.map((addr) => multiaddr(addr)))
+      this.peerStore.addressBook.set(id, listenAddrs.map((addr) => new Multiaddr(addr)))
     } catch (err) {
       log.error('received invalid addrs', err)
     }
@@ -203,7 +206,7 @@ class IdentifyService {
     this.peerStore.metadataBook.set(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
 
     // TODO: Add and score our observed addr
-    log('received observed address of %s', observedAddr)
+    log('received observed address of %s', cleanObservedAddr)
     // this.addressManager.addObservedAddr(observedAddr)
   }
 
@@ -246,7 +249,7 @@ class IdentifyService {
     const signedPeerRecord = await this.peerStore.addressBook.getRawEnvelope(this.peerId)
     const protocols = this.peerStore.protoBook.get(this.peerId) || []
 
-    const message = Message.encode({
+    const message = Message.Identify.encode({
       protocolVersion: this._host.protocolVersion,
       agentVersion: this._host.agentVersion,
       publicKey,
@@ -254,7 +257,7 @@ class IdentifyService {
       signedPeerRecord,
       observedAddr: connection.remoteAddr.bytes,
       protocols
-    })
+    }).finish()
 
     try {
       await pipe(
@@ -288,7 +291,7 @@ class IdentifyService {
         toBuffer,
         collect
       )
-      message = Message.decode(data)
+      message = Message.Identify.decode(data)
     } catch (err) {
       return log.error('received invalid message', err)
     }
@@ -307,7 +310,8 @@ class IdentifyService {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      this.peerStore.addressBook.set(id, message.listenAddrs.map((addr) => multiaddr(addr)))
+      this.peerStore.addressBook.set(id,
+        message.listenAddrs.map((addr) => new Multiaddr(addr)))
     } catch (err) {
       log.error('received invalid addrs', err)
     }
@@ -320,12 +324,12 @@ class IdentifyService {
    * Takes the `addr` and converts it to a Multiaddr if possible
    *
    * @param {Uint8Array | string} addr
-   * @returns {multiaddr|null}
+   * @returns {Multiaddr|null}
    */
   static getCleanMultiaddr (addr) {
     if (addr && addr.length > 0) {
       try {
-        return multiaddr(addr)
+        return new Multiaddr(addr)
       } catch (_) {
         return null
       }

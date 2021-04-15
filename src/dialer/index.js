@@ -5,7 +5,8 @@ const log = Object.assign(debug('libp2p:dialer'), {
   error: debug('libp2p:dialer:err')
 })
 const errCode = require('err-code')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
+// @ts-ignore timeout-abourt-controles does not export types
 const TimeoutController = require('timeout-abort-controller')
 const { anySignal } = require('any-signal')
 
@@ -22,7 +23,6 @@ const {
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('multiaddr')} Multiaddr
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('../peer-store')} PeerStore
  * @typedef {import('../peer-store/address-book').Address} Address
@@ -38,9 +38,9 @@ const {
  *
  * @typedef {Object} DialerOptions
  * @property {(addresses: Address[]) => Address[]} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
- * @property {number} [concurrency = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
- * @property {number} [perPeerLimit = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
- * @property {number} [timeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
+ * @property {number} [maxParallelDials = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
+ * @property {number} [maxDialsPerPeer = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
+ * @property {number} [dialTimeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
  * @property {Record<string, Resolver>} [resolvers = {}] - multiaddr resolvers to use when dialing
  *
  * @typedef DialTarget
@@ -50,7 +50,7 @@ const {
  * @typedef PendingDial
  * @property {DialRequest} dialRequest
  * @property {TimeoutController} controller
- * @property {Promise} promise
+ * @property {Promise<Connection>} promise
  * @property {function():void} destroy
  */
 
@@ -63,22 +63,22 @@ class Dialer {
     transportManager,
     peerStore,
     addressSorter = publicAddressesFirst,
-    concurrency = MAX_PARALLEL_DIALS,
-    timeout = DIAL_TIMEOUT,
-    perPeerLimit = MAX_PER_PEER_DIALS,
+    maxParallelDials = MAX_PARALLEL_DIALS,
+    dialTimeout = DIAL_TIMEOUT,
+    maxDialsPerPeer = MAX_PER_PEER_DIALS,
     resolvers = {}
   }) {
     this.transportManager = transportManager
     this.peerStore = peerStore
     this.addressSorter = addressSorter
-    this.concurrency = concurrency
-    this.timeout = timeout
-    this.perPeerLimit = perPeerLimit
-    this.tokens = [...new Array(concurrency)].map((_, index) => index)
+    this.maxParallelDials = maxParallelDials
+    this.timeout = dialTimeout
+    this.maxDialsPerPeer = maxDialsPerPeer
+    this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
     this._pendingDials = new Map()
 
     for (const [key, value] of Object.entries(resolvers)) {
-      multiaddr.resolvers.set(key, value)
+      Multiaddr.resolvers.set(key, value)
     }
   }
 
@@ -150,11 +150,12 @@ class Dialer {
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.
-    if (multiaddr.isMultiaddr(peer)) {
+    if (Multiaddr.isMultiaddr(peer)) {
       knownAddrs = knownAddrs.filter((addr) => !peer.equals(addr))
       knownAddrs.unshift(peer)
     }
 
+    /** @type {Multiaddr[]} */
     const addrs = []
     for (const a of knownAddrs) {
       const resolvedAddrs = await this._resolve(a)
@@ -177,6 +178,10 @@ class Dialer {
    * @returns {PendingDial}
    */
   _createPendingDial (dialTarget, options = {}) {
+    /**
+     * @param {Multiaddr} addr
+     * @param {{ signal: { aborted: any; }; }} options
+     */
     const dialAction = (addr, options) => {
       if (options.signal.aborted) throw errCode(new Error('already aborted'), codes.ERR_ALREADY_ABORTED)
       return this.transportManager.dial(addr, options)
@@ -207,13 +212,19 @@ class Dialer {
     return pendingDial
   }
 
+  /**
+   * @param {number} num
+   */
   getTokens (num) {
-    const total = Math.min(num, this.perPeerLimit, this.tokens.length)
+    const total = Math.min(num, this.maxDialsPerPeer, this.tokens.length)
     const tokens = this.tokens.splice(0, total)
     log('%d tokens request, returning %d, %d remaining', num, total, this.tokens.length)
     return tokens
   }
 
+  /**
+   * @param {number} token
+   */
   releaseToken (token) {
     // Guard against duplicate releases
     if (this.tokens.indexOf(token) > -1) return
@@ -259,7 +270,7 @@ class Dialer {
    */
   async _resolveRecord (ma) {
     try {
-      ma = multiaddr(ma.toString()) // Use current multiaddr module
+      ma = new Multiaddr(ma.toString()) // Use current multiaddr module
       const multiaddrs = await ma.resolve()
       return multiaddrs
     } catch (_) {

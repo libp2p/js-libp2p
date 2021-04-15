@@ -2,14 +2,14 @@
 
 const pTimes = require('p-times')
 
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 
 const Libp2p = require('../../../src')
 const Peers = require('../../fixtures/peers')
 const defaultOptions = require('../base-options.browser')
 
-const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
 /**
  * Create libp2p nodes.

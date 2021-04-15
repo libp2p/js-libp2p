@@ -2,7 +2,7 @@
 
 const pipe = require('it-pipe')
 const { Connection } = require('libp2p-interfaces/src/connection')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const Muxer = require('libp2p-mplex')
 const Multistream = require('multistream-select')
 const pair = require('it-pair')
@@ -13,8 +13,8 @@ const mockMultiaddrConnPair = require('./mockMultiaddrConn')
 const peerUtils = require('./creators/peer')
 
 module.exports = async (properties = {}) => {
-  const localAddr = multiaddr('/ip4/127.0.0.1/tcp/8080')
-  const remoteAddr = multiaddr('/ip4/127.0.0.1/tcp/8081')
+  const localAddr = new Multiaddr('/ip4/127.0.0.1/tcp/8080')
+  const remoteAddr = new Multiaddr('/ip4/127.0.0.1/tcp/8081')
 
   const [localPeer, remotePeer] = await peerUtils.createPeerId({ number: 2 })
   const openStreams = []

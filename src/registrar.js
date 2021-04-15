@@ -1,8 +1,8 @@
 'use strict'
 
 const debug = require('debug')
-const log = Object.assign(debug('libp2p:peer-store'), {
-  error: debug('libp2p:peer-store:err')
+const log = Object.assign(debug('libp2p:registrar'), {
+  error: debug('libp2p:registrar:err')
 })
 const errcode = require('err-code')
 
@@ -16,7 +16,11 @@ const Topology = require('libp2p-interfaces/src/topology')
  * @typedef {import('./peer-store')} PeerStore
  * @typedef {import('./connection-manager')} ConnectionManager
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('libp2p-interfaces/src/topology')} Topology
+ * @typedef {import('./').HandlerProps} HandlerProps
+ */
+
+/**
+ *
  */
 
 /**
@@ -38,20 +42,28 @@ class Registrar {
     /**
      * Map of topologies
      *
-     * @type {Map<string, object>}
+     * @type {Map<string, Topology>}
      */
     this.topologies = new Map()
 
+    /** @type {(protocols: string[]|string, handler: (props: HandlerProps) => void) => void} */
+    // @ts-ignore handle is not optional
     this._handle = undefined
 
     this._onDisconnect = this._onDisconnect.bind(this)
     this.connectionManager.on('peer:disconnect', this._onDisconnect)
   }
 
+  /**
+   * @returns {(protocols: string[]|string, handler: (props: HandlerProps) => void) => void}
+   */
   get handle () {
     return this._handle
   }
 
+  /**
+   * @param {(protocols: string[]|string, handler: (props: HandlerProps) => void) => void} handle
+   */
   set handle (handle) {
     this._handle = handle
   }
@@ -103,12 +115,11 @@ class Registrar {
    * Remove a disconnected peer from the record
    *
    * @param {Connection} connection
-   * @param {Error} [error]
    * @returns {void}
    */
-  _onDisconnect (connection, error) {
+  _onDisconnect (connection) {
     for (const [, topology] of this.topologies) {
-      topology.disconnect(connection.remotePeer, error)
+      topology.disconnect(connection.remotePeer)
     }
   }
 }

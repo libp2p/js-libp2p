@@ -1,12 +1,9 @@
-'use strict'
+syntax = "proto3";
 
-const protons = require('protons')
-
-const message = `
 message Addresses {
   // Address represents a single multiaddr.
   message Address {
-    required bytes multiaddr = 1;
+    bytes multiaddr = 1;
 
     // Flag to indicate if the address comes from a certified source.
     optional bool isCertified = 2;
@@ -28,6 +25,3 @@ message Addresses {
   // The most recently received signed PeerRecord.
   CertifiedRecord certified_record = 2;
 }
-`
-
-module.exports = protons(message).Addresses
