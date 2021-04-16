@@ -25,7 +25,6 @@
     - [ ] [js-ipfs](https://github.com/ipfs/js-ipfs)
 - Documentation
   - [ ] Ensure that README.md is up to date
-  - [ ] Ensure that all the examples run
   - [ ] Ensure [libp2p/js-libp2p-examples](https://github.com/libp2p/js-libp2p-examples) is updated
   - [ ] Ensure that [libp2p/docs](https://github.com/libp2p/docs) is updated
 - Communication
