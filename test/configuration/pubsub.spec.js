@@ -97,6 +97,10 @@ describe('Pubsub subscription handlers adapter', () => {
     await libp2p.start()
   })
 
+  afterEach(async () => {
+    libp2p && await libp2p.stop()
+  })
+
   it('extends pubsub with subscribe handler', async () => {
     let countMessages = 0
     const topic = 'topic'
