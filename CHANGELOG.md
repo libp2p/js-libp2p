@@ -1,3 +1,17 @@
+# [0.31.0-rc.1](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.0...v0.31.0-rc.1) (2021-04-16)
+
+
+### Bug Fixes
+
+* dial protocol should throw if no protocol is provided ([#914](https://github.com/libp2p/js-libp2p/issues/914)) ([21c9aee](https://github.com/libp2p/js-libp2p/commit/21c9aeecb13440238aa6b0fb5a6731d2f87d4938))
+
+
+### BREAKING CHANGES
+
+* dialProtocol does not return connection when no protocols are provided
+
+
+
 # [0.31.0-rc.0](https://github.com/libp2p/js-libp2p/compare/v0.30.12...v0.31.0-rc.0) (2021-04-15)
 
 
