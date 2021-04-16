@@ -1,3 +1,12 @@
+# [0.31.0-rc.2](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.1...v0.31.0-rc.2) (2021-04-16)
+
+
+### Bug Fixes
+
+* metrics stats and moving averages types ([#915](https://github.com/libp2p/js-libp2p/issues/915)) ([3d0a79e](https://github.com/libp2p/js-libp2p/commit/3d0a79eff3bc34a5bdc8ffa31e9b09345a02ad9d))
+
+
+
 # [0.31.0-rc.1](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.0...v0.31.0-rc.1) (2021-04-16)
 
 
