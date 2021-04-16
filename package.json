@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.31.0-rc.1",
+  "version": "0.31.0-rc.2",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -174,8 +174,8 @@
     "David Dias <daviddias.p@gmail.com>",
     "Jacob Heun <jacobheun@gmail.com>",
     "Vasco Santos <vasco.santos@moxy.studio>",
-    "Alan Shaw <alan@tableflip.io>",
     "Alex Potsides <alex@achingbrain.net>",
+    "Alan Shaw <alan@tableflip.io>",
     "Cayman <caymannava@gmail.com>",
     "Pedro Teixeira <i@pgte.me>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
