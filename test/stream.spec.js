@@ -3,13 +3,12 @@
 
 const { expect } = require('aegir/utils/chai')
 const pipe = require('it-pipe')
-const randomBytes = require('random-bytes')
+const { randomBytes } = require('iso-random-stream')
 const randomInt = require('random-int')
 const { tap, take, collect, consume, map } = require('streaming-iterables')
 const defer = require('p-defer')
-const uint8ArrayFromString = require('uint8arrays/from-string')
-const uint8ArrayToString = require('uint8arrays/to-string')
 const uint8ArrayConcat = require('uint8arrays/concat')
+const cborg = require('cborg')
 
 const createStream = require('../src/stream')
 const { MessageTypes, MessageTypeNames } = require('../src/message-types')
@@ -30,16 +29,8 @@ const infiniteRandom = {
   }
 }
 
-const msgToBuffer = msg => uint8ArrayFromString(JSON.stringify(msg))
-
-const bufferToMessage = buf => {
-  const msg = JSON.parse(uint8ArrayToString(buf))
-  // JSON.stringify(Buffer) encodes as {"type":"Buffer","data":[1,2,3]}
-  if (msg.data && msg.data.type === 'Buffer') {
-    msg.data = new Uint8Array(msg.data.data)
-  }
-  return msg
-}
+const msgToBuffer = msg => cborg.encode(msg)
+const bufferToMessage = buf => cborg.decode(buf)
 
 describe('stream', () => {
   it('should initiate stream with NEW_STREAM message', async () => {
@@ -320,13 +311,17 @@ describe('stream', () => {
       await pipe(
         input,
         tap(msg => generatedMsgs.push(msg)),
-        tap(() => { if (i++ >= maxMsgs) initiator.abort(error) }),
         initiator,
         tap(msg => {
           if (msg.data) {
             msg.data = bufferToMessage(msg.data)
           }
+
           msgs.push(msg)
+
+          if (i++ >= maxMsgs) {
+            initiator.abort(error)
+          }
         }),
         consume
       )

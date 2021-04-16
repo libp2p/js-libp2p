@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const pipe = require('it-pipe')
-const randomBytes = require('random-bytes')
+const { randomBytes } = require('iso-random-stream')
 const { tap, consume, collect } = require('streaming-iterables')
 
 const restrictSize = require('../src/restrict-size')

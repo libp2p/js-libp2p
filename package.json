@@ -9,7 +9,8 @@
     "src"
   ],
   "browser": {
-    "./src/coder/encode.js": "./src/coder/encode.browser.js"
+    "./src/coder/encode.js": "./src/coder/encode.browser.js",
+    "libp2p-tcp": false
   },
   "scripts": {
     "lint": "aegir lint",
@@ -42,10 +43,11 @@
   },
   "homepage": "https://github.com/libp2p/js-libp2p-mplex#readme",
   "devDependencies": {
-    "aegir": "^30.3.0",
-    "libp2p-interfaces": "^0.8.3",
+    "aegir": "^33.1.0",
+    "cborg": "^1.2.1",
+    "iso-random-stream": "^2.0.0",
+    "libp2p-interfaces": "^0.10.0",
     "p-defer": "^3.0.0",
-    "random-bytes": "^1.0.0",
     "random-int": "^2.0.0",
     "streaming-iterables": "^5.0.4",
     "uint8arrays": "^2.0.5"
@@ -53,9 +55,9 @@
   "dependencies": {
     "abort-controller": "^3.0.0",
     "abortable-iterator": "^3.0.0",
-    "bl": "^4.0.0",
+    "bl": "^5.0.0",
     "debug": "^4.3.1",
-    "err-code": "^2.0.3",
+    "err-code": "^3.0.1",
     "it-pipe": "^1.1.0",
     "it-pushable": "^1.4.1",
     "varint": "^6.0.0"
