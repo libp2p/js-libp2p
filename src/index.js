@@ -471,7 +471,6 @@ class Libp2p extends EventEmitter {
    * @param {string[]|string} protocols
    * @param {object} [options]
    * @param {AbortSignal} [options.signal]
-   * @returns {Promise<{ stream: MuxedStream; protocol: string; }>}
    */
   async dialProtocol (peer, protocols, options) {
     if (!protocols || !protocols.length) {
