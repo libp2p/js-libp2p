@@ -352,6 +352,25 @@ describe('Dialing (direct, TCP)', () => {
       await pWaitFor(() => remoteConn.streams.length === 0)
     })
 
+    it('should throw when using dialProtocol with no protocols', async () => {
+      libp2p = new Libp2p({
+        peerId,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        }
+      })
+
+      await expect(libp2p.dialProtocol(remotePeerId))
+        .to.eventually.be.rejectedWith(Error)
+        .and.to.have.property('code', ErrorCodes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+
+      await expect(libp2p.dialProtocol(remotePeerId, []))
+        .to.eventually.be.rejectedWith(Error)
+        .and.to.have.property('code', ErrorCodes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+    })
+
     it('should be able to use hangup to close connections', async () => {
       libp2p = new Libp2p({
         peerId,

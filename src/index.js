@@ -462,26 +462,24 @@ class Libp2p extends EventEmitter {
   }
 
   /**
-   * Dials to the provided peer and handshakes with the given protocol.
+   * Dials to the provided peer and tries to handshake with the given protocols in order.
    * If successful, the known metadata of the peer will be added to the nodes `peerStore`,
-   * and the `Connection` will be returned
+   * and the `MuxedStream` will be returned together with the successful negotiated protocol.
    *
    * @async
    * @param {PeerId|Multiaddr|string} peer - The peer to dial
    * @param {string[]|string} protocols
    * @param {object} [options]
    * @param {AbortSignal} [options.signal]
-   * @returns {Promise<Connection|{ stream: MuxedStream; protocol: string; }>}
+   * @returns {Promise<{ stream: MuxedStream; protocol: string; }>}
    */
   async dialProtocol (peer, protocols, options) {
-    const connection = await this._dial(peer, options)
-
-    // If a protocol was provided, create a new stream
-    if (protocols && protocols.length) {
-      return connection.newStream(protocols)
+    if (!protocols || !protocols.length) {
+      throw errCode(new Error('no protocols were provided to open a stream'), codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
     }
 
-    return connection
+    const connection = await this._dial(peer, options)
+    return connection.newStream(protocols)
   }
 
   /**
