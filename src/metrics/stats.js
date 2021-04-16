@@ -19,7 +19,10 @@ class Stats extends EventEmitter {
 
     this._options = options
     this._queue = []
-    this._stats = {}
+    this._stats = {
+      dataReceived: Big(0),
+      dataSent: Big(0)
+    }
 
     this._frequencyLastTime = Date.now()
     this._frequencyAccumulators = {}
