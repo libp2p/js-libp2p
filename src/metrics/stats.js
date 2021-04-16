@@ -2,7 +2,7 @@
 'use strict'
 
 const EventEmitter = require('events')
-const Big = require('bignumber.js')
+const { BigNumber: Big } = require('bignumber.js')
 const MovingAverage = require('moving-average')
 const retimer = require('retimer')
 
@@ -19,11 +19,17 @@ class Stats extends EventEmitter {
 
     this._options = options
     this._queue = []
-    this._stats = {}
+
+    /** @type {{ dataReceived: Big, dataSent: Big }} */
+    this._stats = {
+      dataReceived: Big(0),
+      dataSent: Big(0)
+    }
 
     this._frequencyLastTime = Date.now()
     this._frequencyAccumulators = {}
 
+    /** @type {{ dataReceived: MovingAverage[], dataSent: MovingAverage[] }} */
     this._movingAverages = {}
 
     this._update = this._update.bind(this)
