@@ -1,3 +1,12 @@
+# [0.31.0-rc.3](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.2...v0.31.0-rc.3) (2021-04-19)
+
+
+### Bug Fixes
+
+* remove inline arg types from function definitions ([#916](https://github.com/libp2p/js-libp2p/issues/916)) ([2af692f](https://github.com/libp2p/js-libp2p/commit/2af692fb4de572168524ae684608fc6526de4ef7))
+
+
+
 # [0.31.0-rc.2](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.1...v0.31.0-rc.2) (2021-04-16)
 
 
