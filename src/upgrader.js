@@ -222,6 +222,7 @@ class Upgrader {
   }) {
     /** @type {import("libp2p-interfaces/src/stream-muxer/types").Muxer} */
     let muxer
+    /** @type {import("libp2p-interfaces/src/connection/connection").CreatedMuxedStream | undefined} */
     let newStream
     /** @type {Connection} */
     let connection // eslint-disable-line prefer-const
@@ -249,7 +250,7 @@ class Upgrader {
         }
       })
 
-      newStream = async (/** @type {string | string[]} */ protocols) => {
+      newStream = async (protocols) => {
         log('%s: starting new stream on %s', direction, protocols)
         const muxedStream = muxer.newStream()
         const mss = new Multistream.Dialer(muxedStream)
@@ -309,8 +310,8 @@ class Upgrader {
       },
       newStream: newStream || errConnectionNotMultiplexed,
       getStreams: () => muxer ? muxer.streams : errConnectionNotMultiplexed(),
-      close: async (/** @type {Error | undefined} */ err) => {
-        await maConn.close(err)
+      close: async () => {
+        await maConn.close()
         // Ensure remaining streams are aborted
         if (muxer) {
           muxer.streams.map(stream => stream.abort())
