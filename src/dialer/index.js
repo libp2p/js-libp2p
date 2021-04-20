@@ -110,7 +110,7 @@ class Dialer {
     const dialTarget = await this._createDialTarget(peer)
 
     if (!dialTarget.addrs.length) {
-      throw errCode(new Error('The dial request has no addresses'), codes.ERR_NO_VALID_ADDRESSES)
+      throw errCode(new Error('The dial request has no valid addresses'), codes.ERR_NO_VALID_ADDRESSES)
     }
     const pendingDial = this._pendingDials.get(dialTarget.id) || this._createPendingDial(dialTarget, options)
 
@@ -134,6 +134,7 @@ class Dialer {
    * Creates a DialTarget. The DialTarget is used to create and track
    * the DialRequest to a given peer.
    * If a multiaddr is received it should be the first address attempted.
+   * Multiaddrs not supported by the available transports will be filtered out.
    *
    * @private
    * @param {PeerId|Multiaddr|string} peer - A PeerId or Multiaddr
@@ -162,9 +163,12 @@ class Dialer {
       resolvedAddrs.forEach(ra => addrs.push(ra))
     }
 
+    // Multiaddrs not supported by the available transports will be filtered out.
+    const supportedAddrs = addrs.filter(a => this.transportManager.transportForMultiaddr(a))
+
     return {
       id: id.toB58String(),
-      addrs
+      addrs: supportedAddrs
     }
   }
 
