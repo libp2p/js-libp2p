@@ -19,7 +19,7 @@
   "scripts": {
     "lint": "aegir lint",
     "build": "npm run build:proto && aegir build --no-types",
-    "build:proto": "pbjs -t static-module -w commonjs --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/keys/keys.js ./src/keys/keys.proto",
+    "build:proto": "pbjs -t static-module -w commonjs  -r libp2p-crypto-keys --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/keys/keys.js ./src/keys/keys.proto",
     "test": "aegir test",
     "test:node": "aegir test -t node",
     "test:browser": "aegir test -t browser -t webworker",
