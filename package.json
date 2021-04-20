@@ -1,6 +1,6 @@
 {
   "name": "libp2p-record",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "libp2p record implementation",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
