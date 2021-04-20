@@ -12,7 +12,7 @@
     "prepare": "npm run build",
     "build": "run-s build:*",
     "build:types": "aegir build --no-bundle",
-    "build:proto": "pbjs -t static-module -w commonjs --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/record/record.js ./src/record/record.proto",
+    "build:proto": "pbjs -t static-module -w commonjs -r libp2p-record --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/record/record.js ./src/record/record.proto",
     "build:proto-types": "pbts -o src/record/record.d.ts src/record/record.js",
     "docs": "aegir docs",
     "release": "aegir release",
