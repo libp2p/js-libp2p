@@ -1,3 +1,14 @@
+# [0.31.0-rc.4](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.3...v0.31.0-rc.4) (2021-04-20)
+
+
+### Bug Fixes
+
+* add clientMode dht arg and upgrade interface-datastore ([#918](https://github.com/libp2p/js-libp2p/issues/918)) ([975e779](https://github.com/libp2p/js-libp2p/commit/975e77991e67dd9bff790b83df7bd6fa5ddcfc67))
+* do not add abort signals to useless addresses ([#913](https://github.com/libp2p/js-libp2p/issues/913)) ([06e8f3d](https://github.com/libp2p/js-libp2p/commit/06e8f3dd42432e4b37ab7904b02abde7d1cadda3))
+* specify pbjs root ([#917](https://github.com/libp2p/js-libp2p/issues/917)) ([b043bca](https://github.com/libp2p/js-libp2p/commit/b043bca607565cf534771e6cf975288a8ff3030b))
+
+
+
 # [0.31.0-rc.3](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.2...v0.31.0-rc.3) (2021-04-19)
 
 
