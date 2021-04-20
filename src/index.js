@@ -66,6 +66,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {boolean} [enabled = false]
  * @property {number} [kBucketSize = 20]
  * @property {RandomWalkOptions} [randomWalk]
+ * @property {boolean} [clientMode]
  *
  * @typedef {Object} KeychainOptions
  * @property {Datastore} [datastore]

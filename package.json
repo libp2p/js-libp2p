@@ -90,7 +90,7 @@
     "es6-promisify": "^6.1.1",
     "events": "^3.3.0",
     "hashlru": "^2.3.0",
-    "interface-datastore": "^3.0.3",
+    "interface-datastore": "^4.0.0",
     "ipfs-utils": "^6.0.0",
     "it-all": "^1.0.4",
     "it-buffer": "^0.1.2",
