@@ -1,3 +1,12 @@
+## [0.19.4](https://github.com/libp2p/js-libp2p-crypto/compare/v0.19.3...v0.19.4) (2021-04-20)
+
+
+### Bug Fixes
+
+* specify pbjs root ([#188](https://github.com/libp2p/js-libp2p-crypto/issues/188)) ([a3da59b](https://github.com/libp2p/js-libp2p-crypto/commit/a3da59b90e50d514d1578236e1c86f05c8cb0805))
+
+
+
 ## [0.19.3](https://github.com/libp2p/js-libp2p-crypto/compare/v0.17.7...v0.19.3) (2021-04-11)
 
 
