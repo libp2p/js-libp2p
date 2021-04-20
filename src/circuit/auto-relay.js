@@ -31,6 +31,7 @@ const {
  *
  * @typedef {Object} AutoRelayOptions
  * @property {number} [maxListeners = 1] - maximum number of relays to listen.
+ * @property {(error: Error, msg?: string) => {}} [onError]
  */
 
 class AutoRelay {
@@ -40,7 +41,7 @@ class AutoRelay {
    * @class
    * @param {AutoRelayProperties & AutoRelayOptions} props
    */
-  constructor ({ libp2p, maxListeners = 1 }) {
+  constructor ({ libp2p, maxListeners = 1, onError }) {
     this._libp2p = libp2p
     this._peerId = libp2p.peerId
     this._peerStore = libp2p.peerStore
@@ -60,6 +61,15 @@ class AutoRelay {
 
     this._peerStore.on('change:protocols', this._onProtocolChange)
     this._connectionManager.on('peer:disconnect', this._onPeerDisconnected)
+
+    /**
+     * @param {Error} error
+     * @param {string} [msg]
+     */
+    this._onError = (error, msg) => {
+      log.error(msg || error)
+      onError && onError(error, msg)
+    }
   }
 
   /**
@@ -107,7 +117,7 @@ class AutoRelay {
         await this._addListenRelay(connection, id)
       }
     } catch (err) {
-      log.error(err)
+      this._onError(err)
     }
   }
 
@@ -160,7 +170,7 @@ class AutoRelay {
       await this._transportManager.listen([new Multiaddr(listenAddr)])
       // Announce multiaddrs will update on listen success by TransportManager event being triggered
     } catch (err) {
-      log.error(err)
+      this._onError(err)
       this._listenRelays.delete(id)
     }
   }
@@ -231,8 +241,7 @@ class AutoRelay {
 
     // Try to listen on known peers that are not connected
     for (const peerId of knownHopsToDial) {
-      const connection = await this._libp2p.dial(peerId)
-      await this._addListenRelay(connection, peerId.toB58String())
+      await this._tryToListenOnRelay(peerId)
 
       // Check if already listening on enough relays
       if (this._listenRelays.size >= this.maxListeners) {
@@ -247,12 +256,11 @@ class AutoRelay {
         if (!provider.multiaddrs.length) {
           continue
         }
+
         const peerId = provider.id
-
         this._peerStore.addressBook.add(peerId, provider.multiaddrs)
-        const connection = await this._libp2p.dial(peerId)
 
-        await this._addListenRelay(connection, peerId.toB58String())
+        await this._tryToListenOnRelay(peerId)
 
         // Check if already listening on enough relays
         if (this._listenRelays.size >= this.maxListeners) {
@@ -260,7 +268,19 @@ class AutoRelay {
         }
       }
     } catch (err) {
-      log.error(err)
+      this._onError(err)
+    }
+  }
+
+  /**
+   * @param {PeerId} peerId
+   */
+  async _tryToListenOnRelay (peerId) {
+    try {
+      const connection = await this._libp2p.dial(peerId)
+      await this._addListenRelay(connection, peerId.toB58String())
+    } catch (err) {
+      this._onError(err, `could not connect and listen on known hop relay ${peerId.toB58String()}`)
     }
   }
 }
