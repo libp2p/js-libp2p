@@ -1,4 +1,5 @@
 import Libp2p = require('libp2p')
+import Libp2pRecord = require('libp2p-record')
 
 const TCP = require('libp2p-tcp')
 const WEBSOCKETS = require('libp2p-websockets')
@@ -21,6 +22,7 @@ const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const PeerId = require('peer-id')
+
 
 // Known peers addresses
 const bootstrapMultiaddrs = [
@@ -125,6 +127,13 @@ async function main() {
           enabled: true,            // Allows to disable discovery (enabled by default)
           interval: 300e3,
           timeout: 10e3
+        },
+        clientMode: true,
+        validators: {
+          pk: Libp2pRecord.validator.validators.pk
+        },
+        selectors: {
+          pk: Libp2pRecord.selection.selectors.pk
         }
       },
       nat: {
