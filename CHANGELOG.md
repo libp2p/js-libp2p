@@ -1,3 +1,12 @@
+## [0.10.2](https://github.com/libp2p/js-libp2p-record/compare/v0.10.1...v0.10.2) (2021-04-20)
+
+
+### Bug Fixes
+
+* specify pbjs root ([#27](https://github.com/libp2p/js-libp2p-record/issues/27)) ([32ddb1d](https://github.com/libp2p/js-libp2p-record/commit/32ddb1deec71543d0ef34157b6ef2d271e8408f5))
+
+
+
 ## [0.10.1](https://github.com/libp2p/js-libp2p-record/compare/v0.10.0...v0.10.1) (2021-04-07)
 
 
