@@ -107,7 +107,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {PeerRoutingModule[]} [peerRouting]
  * @property {ContentRoutingModule[]} [contentRouting]
  * @property {Object} [dht]
- * @property {Pubsub} [pubsub]
+ * @property {{new(...args: any[]): Pubsub}} [pubsub]
  * @property {Protector} [connProtector]
  *
  * @typedef {Object} Libp2pOptions
