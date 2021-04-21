@@ -4,9 +4,13 @@ This example leverages the [Parcel.js bundler](https://parceljs.org/) to compile
 
 ## Setup
 
-In order to run the example, first install the dependencies from same directory as this README:
+In order to run the example:
+
+- Install dependencey at the root of the js-libp2p repository (if not already done), 
+- then, install the dependencies from same directory as this README:
 
 ```
+npm install
 cd ./examples/libp2p-in-the-browser
 npm install
 ```
