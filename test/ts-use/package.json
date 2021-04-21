@@ -13,6 +13,7 @@
     "libp2p-kad-dht": "^0.21.0",
     "libp2p-mplex": "^0.10.2",
     "libp2p-noise": "^2.0.5",
+    "libp2p-record": "^0.10.2",
     "libp2p-tcp": "^0.15.3",
     "libp2p-websockets": "^0.15.3",
     "peer-id": "^0.14.3"
