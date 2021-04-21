@@ -1,3 +1,14 @@
+# [0.31.0-rc.5](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.4...v0.31.0-rc.5) (2021-04-21)
+
+
+### Bug Fixes
+
+* address book should not emit peer event if no addresses are known ([b4fb9b7](https://github.com/libp2p/js-libp2p/commit/b4fb9b7bf266ba03c4462c0a41b1c2691e4e88d4))
+* demand pubsub subclass instead of pubsub instance ([#922](https://github.com/libp2p/js-libp2p/issues/922)) ([086b0ec](https://github.com/libp2p/js-libp2p/commit/086b0ec0df2fac93845d0a0a6b2e2464e869afcd))
+* dht configuration selectors and validators ([#919](https://github.com/libp2p/js-libp2p/issues/919)) ([cc1f4af](https://github.com/libp2p/js-libp2p/commit/cc1f4af879a58e94538591851d0085ff98cd2641))
+
+
+
 # [0.31.0-rc.4](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.3...v0.31.0-rc.4) (2021-04-20)
 
 
