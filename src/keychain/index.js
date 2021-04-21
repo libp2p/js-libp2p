@@ -26,7 +26,7 @@ require('node-forge/lib/sha512')
  * @property {number} keyLength
  *
  * @typedef {Object} KeychainOptions
- * @property {string} pass
+ * @property {string} [pass]
  * @property {DekOptions} [dek]
  */
 

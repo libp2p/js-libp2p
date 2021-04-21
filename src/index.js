@@ -56,9 +56,6 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {MuxedStream} stream
  * @property {string} protocol
  *
- * @typedef {{ [key: string]: function (Uint8Array, Uint8Array[]): number }} DhtSelectors
- * @typedef {{ [key: string]: { func: (key: Uint8Array, value: Uint8Array) => Promise<void> }}} DhtValidators
- *
  * @typedef {Object} RandomWalkOptions
  * @property {boolean} [enabled = false]
  * @property {number} [queriesPerPeriod = 1]
@@ -70,8 +67,8 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {number} [kBucketSize = 20]
  * @property {RandomWalkOptions} [randomWalk]
  * @property {boolean} [clientMode]
- * @property {DhtSelectors} [selectors]
- * @property {DhtValidators} [validators]
+ * @property {import('libp2p-interfaces/src/types').DhtSelectors} [selectors]
+ * @property {import('libp2p-interfaces/src/types').DhtValidators} [validators]
  *
  * @typedef {Object} KeychainOptions
  * @property {Datastore} [datastore]
