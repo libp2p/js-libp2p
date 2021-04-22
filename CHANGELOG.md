@@ -1,3 +1,12 @@
+# [0.31.0-rc.6](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.5...v0.31.0-rc.6) (2021-04-22)
+
+
+### Bug Fixes
+
+* keychain optional pw and use interfaces for validators and selectors instead ([#924](https://github.com/libp2p/js-libp2p/issues/924)) ([88b0415](https://github.com/libp2p/js-libp2p/commit/88b04156bf614650c2b14d49b12e969c5eecf04d))
+
+
+
 # [0.31.0-rc.5](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.4...v0.31.0-rc.5) (2021-04-21)
 
 
