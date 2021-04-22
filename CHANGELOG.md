@@ -1,3 +1,12 @@
+## [0.10.3](https://github.com/libp2p/js-libp2p-record/compare/v0.10.2...v0.10.3) (2021-04-22)
+
+
+### Bug Fixes
+
+* use dht selectors and validators from interfaces ([#28](https://github.com/libp2p/js-libp2p-record/issues/28)) ([7b211a5](https://github.com/libp2p/js-libp2p-record/commit/7b211a528675018abbc8e4674bedbdd5ab7b5eea))
+
+
+
 ## [0.10.2](https://github.com/libp2p/js-libp2p-record/compare/v0.10.1...v0.10.2) (2021-04-20)
 
 
