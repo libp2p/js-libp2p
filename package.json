@@ -104,7 +104,7 @@
     "it-pipe": "^1.1.0",
     "it-take": "1.0.0",
     "libp2p-crypto": "^0.19.0",
-    "libp2p-interfaces": "^0.10.1",
+    "libp2p-interfaces": "^0.10.3",
     "libp2p-utils": "^0.3.1",
     "mafmt": "^9.0.0",
     "merge-options": "^3.0.4",
