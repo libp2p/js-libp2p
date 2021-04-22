@@ -12,7 +12,7 @@ const uint8ArrayToString = require('uint8arrays/to-string')
  * It runs the needed validators.
  * If verification fails the returned Promise will reject with the error.
  *
- * @param {{ [key: string]: { func: (key: Uint8Array, value: Uint8Array) => Promise<void> }}} validators
+ * @param {import('libp2p-interfaces/src/types').DhtValidators} validators
  * @param {Record} record
  */
 const verifyRecord = (validators, record) => {

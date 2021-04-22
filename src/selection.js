@@ -6,7 +6,7 @@ const uint8ArrayToString = require('uint8arrays/to-string')
 /**
  * Select the best record out of the given records.
  *
- * @param {{ [key: string]: function (Uint8Array, Uint8Array[]): number }} selectors
+ * @param {import('libp2p-interfaces/src/types').DhtSelectors} selectors
  * @param {Uint8Array} k
  * @param {Array<Uint8Array>} records
  */
