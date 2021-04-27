@@ -307,10 +307,13 @@ class AddressBook extends Book {
         throw errcode(new Error(`multiaddr ${addr} must be an instance of multiaddr`), ERR_INVALID_PARAMETERS)
       }
 
-      addresses.push({
-        multiaddr: addr,
-        isCertified
-      })
+      // Guarantee no replicates
+      if (!addresses.find((a) => a.multiaddr.equals(addr))) {
+        addresses.push({
+          multiaddr: addr,
+          isCertified
+        })
+      }
     })
 
     return addresses

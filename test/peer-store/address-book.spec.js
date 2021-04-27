@@ -287,6 +287,14 @@ describe('addressBook', () => {
 
       await defer.promise
     })
+
+    it('does not add replicated content', () => {
+      // set 1
+      ab.set(peerId, [addr1, addr1])
+
+      const addresses = ab.get(peerId)
+      expect(addresses).to.have.lengthOf(1)
+    })
   })
 
   describe('addressBook.get', () => {
