@@ -1,3 +1,12 @@
+# [0.31.0-rc.7](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.6...v0.31.0-rc.7) (2021-04-27)
+
+
+### Bug Fixes
+
+* address book guarantees no replicated entries are added ([#927](https://github.com/libp2p/js-libp2p/issues/927)) ([ac370fc](https://github.com/libp2p/js-libp2p/commit/ac370fc9679b51da8cee3791b6dd268d0695d136))
+
+
+
 # [0.31.0-rc.6](https://github.com/libp2p/js-libp2p/compare/v0.31.0-rc.5...v0.31.0-rc.6) (2021-04-22)
 
 
