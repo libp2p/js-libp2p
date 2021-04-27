@@ -1,8 +1,7 @@
 'use strict'
 /* eslint-env mocha */
 
-const { chai, expect } = require('aegir/utils/chai')
-chai.use(require('chai-bytes'))
+const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 
 const PeerStore = require('../../src/peer-store')

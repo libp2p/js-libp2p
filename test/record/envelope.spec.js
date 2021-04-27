@@ -1,8 +1,7 @@
 'use strict'
 /* eslint-env mocha */
 
-const { chai, expect } = require('aegir/utils/chai')
-chai.use(require('chai-bytes'))
+const { expect } = require('aegir/utils/chai')
 const uint8arrayFromString = require('uint8arrays/from-string')
 const uint8arrayEquals = require('uint8arrays/equals')
 const Envelope = require('../../src/record/envelope')

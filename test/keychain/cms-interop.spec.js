@@ -2,8 +2,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const { chai, expect } = require('aegir/utils/chai')
-chai.use(require('chai-string'))
+const { expect } = require('aegir/utils/chai')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const { MemoryDatastore } = require('interface-datastore')
