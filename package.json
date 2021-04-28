@@ -6,9 +6,12 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
+    "prepare": "npm run build",
+    "build": "npm run build:proto && npm run build:proto-types && aegir build",
+    "build:proto": "pbjs -t static-module -w commonjs -r libp2p-dht-message --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/message/dht.js ./src/message/dht.proto",
+    "build:proto-types": "pbts -o src/message/dht.d.ts src/message/dht.js",
     "test": "aegir test -t node",
     "test:node": "aegir test -t node",
-    "prepare": "aegir build --no-bundle",
     "docs": "aegir docs",
     "release": "aegir release --docs -t node",
     "release-minor": "aegir release --type minor --docs -t node",
@@ -17,9 +20,6 @@
     "coverage-publish": "aegir-coverage publish",
     "sim": "node test/simulation/index.js"
   },
-  "pre-push": [
-    "lint"
-  ],
   "files": [
     "src",
     "dist"
@@ -36,8 +36,7 @@
     "url": "https://github.com/libp2p/js-libp2p-kad-dht/issues"
   },
   "engines": {
-    "node": ">=12.0.0",
-    "npm": ">=6.0.0"
+    "node": ">=14.0.0"
   },
   "eslintConfig": {
     "extends": "ipfs"
@@ -51,15 +50,15 @@
     "err-code": "^3.0.0",
     "hashlru": "^2.3.0",
     "heap": "~0.2.6",
-    "interface-datastore": "^3.0.4",
+    "interface-datastore": "^4.0.0",
     "it-first": "^1.0.4",
-    "it-length-prefixed": "^3.1.0",
+    "it-length-prefixed": "^5.0.2",
     "it-pipe": "^1.1.0",
     "k-bucket": "^5.0.0",
     "libp2p-crypto": "^0.19.0",
-    "libp2p-interfaces": "^0.8.2",
+    "libp2p-interfaces": "^0.10.0",
     "libp2p-record": "^0.10.0",
-    "multiaddr": "^8.1.2",
+    "multiaddr": "^9.0.0",
     "multihashing-async": "^2.1.0",
     "p-filter": "^2.1.0",
     "p-map": "^4.0.0",
@@ -68,9 +67,9 @@
     "p-times": "^3.0.0",
     "peer-id": "^0.14.2",
     "promise-to-callback": "^1.0.0",
-    "protons": "^2.0.0",
+    "protobufjs": "^6.10.2",
     "streaming-iterables": "^5.0.4",
-    "uint8arrays": "^2.0.5",
+    "uint8arrays": "^2.1.4",
     "varint": "^6.0.0",
     "xor-distance": "^2.0.0"
   },
@@ -78,13 +77,13 @@
     "@types/debug": "^4.1.5",
     "aegir": "^30.3.0",
     "async-iterator-all": "^1.0.0",
-    "chai": "^4.2.0",
+    "chai": "^4.3.0",
     "chai-checkmark": "^1.0.1",
-    "datastore-level": "^4.0.0",
+    "datastore-level": "^5.0.0",
     "delay": "^5.0.0",
     "dirty-chai": "^2.0.1",
     "it-pair": "^1.0.0",
-    "libp2p": "^0.30.7",
+    "libp2p": "^0.31.0",
     "lodash": "^4.17.11",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
@@ -92,7 +91,7 @@
     "p-each-series": "^2.1.0",
     "p-map-series": "^2.1.0",
     "p-retry": "^4.2.0",
-    "sinon": "^9.0.0"
+    "sinon": "^10.0.0"
   },
   "contributors": [
     "Vasco Santos <vasco.santos@moxy.studio>",

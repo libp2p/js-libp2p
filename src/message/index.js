@@ -1,14 +1,12 @@
 'use strict'
 
 const PeerId = require('peer-id')
-const multiaddr = require('multiaddr')
-// @ts-ignore
-const protons = require('protons')
+const { Multiaddr } = require('multiaddr')
 const { Record } = require('libp2p-record')
-const pbm = protons(require('./dht.proto'))
+const Proto = require('./dht')
 
-const MESSAGE_TYPE = pbm.Message.MessageType
-const CONNECTION_TYPE = pbm.Message.ConnectionType
+const MESSAGE_TYPE = Proto.Message.MessageType
+const CONNECTION_TYPE = Proto.Message.ConnectionType
 
 /**
  * @typedef {0|1|2|3|4} ConnectionType
@@ -26,7 +24,7 @@ const CONNECTION_TYPE = pbm.Message.ConnectionType
  */
 class Message {
   /**
-   * @param {MESSAGE_TYPE} type
+   * @param {import('./dht').Message.MessageType} type
    * @param {Uint8Array} key
    * @param {number} level
    */
@@ -43,8 +41,8 @@ class Message {
     this.closerPeers = []
     /** @type {PeerData[]} */
     this.providerPeers = []
-    /** @type {import('libp2p-record').Record | null} */
-    this.record = null
+    /** @type {import('libp2p-record').Record | undefined} */
+    this.record = undefined
   }
 
   /**
@@ -86,7 +84,7 @@ class Message {
       }
     }
 
-    return pbm.Message.encode(obj)
+    return Proto.Message.encode(obj).finish()
   }
 
   /**
@@ -95,14 +93,14 @@ class Message {
    * @param {Uint8Array} raw
    */
   static deserialize (raw) {
-    const dec = pbm.Message.decode(raw)
+    const dec = Proto.Message.decode(raw)
 
     const msg = new Message(dec.type, dec.key, dec.clusterLevelRaw)
 
     msg.closerPeers = dec.closerPeers.map(fromPbPeer)
     msg.providerPeers = dec.providerPeers.map(fromPbPeer)
 
-    if (dec.record) {
+    if (dec.record && dec.record.length) {
       msg.record = Record.deserialize(dec.record)
     }
 
@@ -128,12 +126,13 @@ function toPbPeer (peer) {
 }
 
 /**
- * @param {PBPeer} peer
+ * @param {import('./dht').Message.IPeer} peer
  */
 function fromPbPeer (peer) {
   return {
+    // @ts-ignore id is optional on protobuf, but it will exist?
     id: new PeerId(peer.id),
-    multiaddrs: peer.addrs.map((a) => multiaddr(a))
+    multiaddrs: (peer.addrs || []).map((a) => new Multiaddr(a))
   }
 }
 

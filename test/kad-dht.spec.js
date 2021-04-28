@@ -6,7 +6,7 @@ chai.use(require('dirty-chai'))
 chai.use(require('chai-checkmark'))
 const expect = chai.expect
 const sinon = require('sinon')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const { Record } = require('libp2p-record')
 const errcode = require('err-code')
 const uint8ArrayEquals = require('uint8arrays/equals')
@@ -158,12 +158,14 @@ describe('KadDHT', () => {
 
       await dht.start()
       await dht.start()
+
+      await dht.start()
     })
 
     it('should not fail to stop when was not started', async () => {
       const [dht] = await tdht.spawn(1)
 
-      dht.stop()
+      await dht.stop()
     })
   })
 
@@ -757,7 +759,7 @@ describe('KadDHT', () => {
       const dhts = await tdht.spawn(2)
 
       const ids = dhts.map((d) => d.peerId)
-      dhts[0].peerStore.addressBook.add(dhts[1].peerId, [multiaddr('/ip4/160.1.1.1/tcp/80')])
+      dhts[0].peerStore.addressBook.add(dhts[1].peerId, [new Multiaddr('/ip4/160.1.1.1/tcp/80')])
 
       const key = await dhts[0].getPublicKey(ids[1])
       expect(key).to.eql(dhts[1].peerId.pubKey)
@@ -777,7 +779,7 @@ describe('KadDHT', () => {
 
       await tdht.connect(dhts[0], dhts[1])
 
-      dhts[0].peerStore.addressBook.add(dhts[1].peerId, [multiaddr('/ip4/160.1.1.1/tcp/80')])
+      dhts[0].peerStore.addressBook.add(dhts[1].peerId, [new Multiaddr('/ip4/160.1.1.1/tcp/80')])
 
       const key = await dhts[0].getPublicKey(ids[1])
       expect(uint8ArrayEquals(key, dhts[1].peerId.pubKey)).to.eql(true)

@@ -5,7 +5,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
 const Message = require('../../../src/message')
@@ -64,8 +64,8 @@ describe('rpc - handlers - AddProvider', () => {
     const cid = values[0].cid
     const msg = new Message(Message.TYPES.ADD_PROVIDER, cid.bytes, 0)
 
-    const ma1 = multiaddr('/ip4/127.0.0.1/tcp/1234')
-    const ma2 = multiaddr('/ip4/127.0.0.1/tcp/2345')
+    const ma1 = new Multiaddr('/ip4/127.0.0.1/tcp/1234')
+    const ma2 = new Multiaddr('/ip4/127.0.0.1/tcp/2345')
 
     msg.providerPeers = [
       {

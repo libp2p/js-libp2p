@@ -12,7 +12,7 @@ const utils = require('../utils')
 /**
  * @typedef {import('cids')} CID
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  */
 
 /**

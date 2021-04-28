@@ -14,7 +14,7 @@ const Query = require('../query')
 const utils = require('../utils')
 
 /**
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  */
 
 /**

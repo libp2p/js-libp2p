@@ -30,7 +30,7 @@ const Record = libp2pRecord.Record
  * @typedef {import('libp2p/src/dialer')} Dialer
  * @typedef {import('libp2p/src/registrar')} Registrar
  * @typedef {import('cids')} CID
- * @typedef {import('multiaddr')} Multiaddr
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  * @typedef {object} PeerData
  * @property {PeerId} id
  * @property {Multiaddr[]} multiaddrs

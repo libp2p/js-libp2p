@@ -22,6 +22,7 @@ module.exports = (dht) => {
    * @param {number} type
    */
   function getMessageHandler (type) {
+    // @ts-ignore ts does not aknowledge number as an index type
     return handlers[type]
   }
 

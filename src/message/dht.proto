@@ -1,6 +1,5 @@
-'use strict'
-
-module.exports = `// can't use, because protocol-buffers doesn't support imports
+syntax = "proto3";
+// can't use, because protocol-buffers doesn't support imports
 // so we have to duplicate for now :(
 // import "record.proto";
 
@@ -73,4 +72,4 @@ message Message {
   // Used to return Providers
   // GET_VALUE, ADD_PROVIDER, GET_PROVIDERS
   repeated Peer providerPeers = 9;
-}`
+}

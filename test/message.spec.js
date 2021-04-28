@@ -5,7 +5,7 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 const PeerId = require('peer-id')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const range = require('lodash.range')
 const random = require('lodash.random')
 const { Record } = require('libp2p-record')
@@ -35,16 +35,16 @@ describe('Message', () => {
     const closer = peers.slice(0, 5).map((p) => ({
       id: p,
       multiaddrs: [
-        multiaddr(`/ip4/198.176.1.${random(198)}/tcp/1234`),
-        multiaddr(`/ip4/100.176.1.${random(198)}`)
+        new Multiaddr(`/ip4/198.176.1.${random(198)}/tcp/1234`),
+        new Multiaddr(`/ip4/100.176.1.${random(198)}`)
       ]
     }))
 
     const provider = peers.slice(0, 5).map((p) => ({
       id: p,
       multiaddrs: [
-        multiaddr(`/ip4/98.176.1.${random(198)}/tcp/1234`),
-        multiaddr(`/ip4/10.176.1.${random(198)}`)
+        new Multiaddr(`/ip4/98.176.1.${random(198)}/tcp/1234`),
+        new Multiaddr(`/ip4/10.176.1.${random(198)}`)
       ]
     }))
 
