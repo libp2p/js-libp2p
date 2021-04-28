@@ -2,6 +2,8 @@
 
 const errcode = require('err-code')
 
+/** @typedef {import('../types').EventEmitterFactory} Events */
+/** @type Events */
 const EventEmitter = require('events')
 const PeerId = require('peer-id')
 
