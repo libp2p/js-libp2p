@@ -16,6 +16,7 @@
     "which": "^2.0.1"
   },
   "devDependencies": {
+    "https": "^1.0.0",
     "playwright": "^1.7.1"
   }
 }
