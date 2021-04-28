@@ -1,0 +1,1 @@
+{"version":3,"file":"stop.d.ts","sourceRoot":"","sources":["../../../../src/circuit/circuit/stop.js"],"names":[],"mappings":"AA4B4B;IALG,UAAU,EAA9B,UAAU;IACa,OAAO,EAA9B,aAAa;IACU,aAAa,EAApC,aAAa;IACX,QAAQ,WAAW,CAAC,GAAC,IAAI,CAqBrC;AAWqB;IAJS,UAAU,EAA9B,UAAU;IACa,OAAO,EAA9B,aAAa;IACX,QAAQ,WAAW,GAAC,IAAI,CAAC,CAwBrC;;0BAlEY,OAAO,0CAA0C,EAAE,WAAW;4BAC9D,OAAO,aAAa,EAAE,aAAa"}

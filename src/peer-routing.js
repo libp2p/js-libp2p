@@ -25,7 +25,7 @@ const {
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
- * @typedef {import('libp2p-interfaces/src/peer-routing/types')} PeerRoutingModule
+ * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRoutingModule
  */
 
 /**
