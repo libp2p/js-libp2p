@@ -20,8 +20,8 @@ declare class Stats extends Stats_base {
     _frequencyAccumulators: {};
     /** @type {{ dataReceived: MovingAverage[], dataSent: MovingAverage[] }} */
     _movingAverages: {
-        dataReceived: MovingAverage[];
-        dataSent: MovingAverage[];
+        dataReceived: (typeof MovingAverage)[];
+        dataSent: (typeof MovingAverage)[];
     };
     /**
      * If there are items in the queue, they will will be processed and
@@ -62,8 +62,8 @@ declare class Stats extends Stats_base {
      * Returns a clone of the internal movingAverages
      */
     get movingAverages(): {
-        dataReceived: MovingAverage[];
-        dataSent: MovingAverage[];
+        dataReceived: (typeof MovingAverage)[];
+        dataSent: (typeof MovingAverage)[];
     };
     /**
      * Returns a plain JSON object of the stats
