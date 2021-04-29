@@ -11,9 +11,7 @@ const LatencyMonitor = require('./latency-monitor')
 // @ts-ignore retimer does not have types
 const retimer = require('retimer')
 
-/** @typedef {import('../types').EventEmitterFactory} Events */
-/** @type Events */
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 
 const PeerId = require('peer-id')
 

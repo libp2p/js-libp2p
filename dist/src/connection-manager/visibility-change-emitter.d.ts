@@ -1,5 +1,4 @@
 export = VisibilityChangeEmitter;
-declare const VisibilityChangeEmitter_base: import("../types").EventEmitterFactory;
 /**
  * Listen to page visibility change events (i.e. when the page is focused / blurred) by an event emitter.
  *
@@ -22,7 +21,13 @@ declare const VisibilityChangeEmitter_base: import("../types").EventEmitterFacto
  *     // To access the visibility state directly, call:
  *     console.log('Am I focused now? ' + myVisibilityEmitter.isVisible());
  */
-declare class VisibilityChangeEmitter extends VisibilityChangeEmitter_base {
+declare class VisibilityChangeEmitter extends EventEmitter {
+    /**
+     * Creates a VisibilityChangeEmitter
+     *
+     * @class
+     */
+    constructor();
     /**
      * document.hidden and document.visibilityChange are the two variables we need to check for;
      * Since these variables are named differently in different browsers, this function sets
@@ -58,8 +63,5 @@ declare class VisibilityChangeEmitter extends VisibilityChangeEmitter_base {
      */
     private _handleVisibilityChange;
 }
-declare namespace VisibilityChangeEmitter {
-    export { Events };
-}
-type Events = import('../types').EventEmitterFactory;
+import { EventEmitter } from "events";
 //# sourceMappingURL=visibility-change-emitter.d.ts.map

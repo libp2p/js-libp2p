@@ -1,5 +1,4 @@
 export = PeerStore;
-declare const PeerStore_base: import("../types").EventEmitterFactory;
 /**
  * @typedef {import('./address-book').Address} Address
  */
@@ -12,7 +11,7 @@ declare const PeerStore_base: import("../types").EventEmitterFactory;
  * @fires PeerStore#change:pubkey Emitted emitted when a peer's public key is known.
  * @fires PeerStore#change:metadata Emitted when the known metadata of a peer change.
  */
-declare class PeerStore extends PeerStore_base {
+declare class PeerStore extends EventEmitter {
     /**
      * Peer object
      *
@@ -79,8 +78,9 @@ declare class PeerStore extends PeerStore_base {
     get(peerId: PeerId): Peer | undefined;
 }
 declare namespace PeerStore {
-    export { Events, Peer, Address };
+    export { Peer, Address };
 }
+import { EventEmitter } from "events";
 import PeerId = require("peer-id");
 import AddressBook = require("./address-book");
 import KeyBook = require("./key-book");
@@ -107,6 +107,5 @@ type Peer = {
      */
     metadata: Map<string, Uint8Array> | undefined;
 };
-type Events = import('../types').EventEmitterFactory;
 type Address = import('./address-book').Address;
 //# sourceMappingURL=index.d.ts.map

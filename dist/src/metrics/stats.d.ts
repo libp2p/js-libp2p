@@ -1,6 +1,5 @@
 export = Stats;
-declare const Stats_base: import("../types").EventEmitterFactory;
-declare class Stats extends Stats_base {
+declare class Stats extends EventEmitter {
     /**
      * A queue based manager for stat processing
      *
@@ -127,10 +126,7 @@ declare class Stats extends Stats_base {
      */
     private _applyOp;
 }
-declare namespace Stats {
-    export { Events };
-}
+import { EventEmitter } from "events";
 import { BigNumber as Big } from "bignumber.js";
 import MovingAverage = require("moving-average");
-type Events = import('../types').EventEmitterFactory;
 //# sourceMappingURL=stats.d.ts.map

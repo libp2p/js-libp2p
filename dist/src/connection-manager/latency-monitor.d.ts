@@ -1,5 +1,4 @@
 export = LatencyMonitor;
-declare const LatencyMonitor_base: import("../types").EventEmitterFactory;
 /**
  * @typedef {Object} SummaryObject
  * @property {number} events How many events were called
@@ -32,7 +31,7 @@ declare const LatencyMonitor_base: import("../types").EventEmitterFactory;
  * const monitor = new LatencyMonitor({latencyCheckIntervalMs: 1000, dataEmitIntervalMs: 60000, asyncTestFn:ping});
  * monitor.on('data', (summary) => console.log('Ping Pong Latency: %O', summary));
  */
-declare class LatencyMonitor extends LatencyMonitor_base {
+declare class LatencyMonitor extends EventEmitter {
     /**
      * @class
      * @param {LatencyMonitorOptions} [options]
@@ -94,8 +93,9 @@ declare class LatencyMonitor extends LatencyMonitor_base {
     };
 }
 declare namespace LatencyMonitor {
-    export { Events, SummaryObject, LatencyMonitorOptions };
+    export { SummaryObject, LatencyMonitorOptions };
 }
+import { EventEmitter } from "events";
 type SummaryObject = {
     /**
      * How many events were called
@@ -136,5 +136,4 @@ type LatencyMonitorOptions = {
      */
     latencyRandomPercentage?: number | undefined;
 };
-type Events = import('../types').EventEmitterFactory;
 //# sourceMappingURL=latency-monitor.d.ts.map
