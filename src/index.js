@@ -4,9 +4,7 @@ const debug = require('debug')
 const log = Object.assign(debug('libp2p'), {
   error: debug('libp2p:err')
 })
-/** @typedef {import('./types').EventEmitterFactory} Events */
-/** @type Events */
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 
 const errCode = require('err-code')
 const PeerId = require('peer-id')

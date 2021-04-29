@@ -6,9 +6,7 @@
  */
 'use strict'
 
-/** @typedef {import('../types').EventEmitterFactory} Events */
-/** @type Events */
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 
 const debug = require('debug')('latency-monitor:VisibilityChangeEmitter')
 

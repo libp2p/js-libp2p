@@ -1,5 +1,4 @@
 export = ConnectionManager;
-declare const ConnectionManager_base: import("../types").EventEmitterFactory;
 /**
  * @typedef {import('../')} Libp2p
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
@@ -23,7 +22,7 @@ declare const ConnectionManager_base: import("../types").EventEmitterFactory;
  * @fires ConnectionManager#peer:connect Emitted when a new peer is connected.
  * @fires ConnectionManager#peer:disconnect Emitted when a peer is disconnected.
  */
-declare class ConnectionManager extends ConnectionManager_base {
+declare class ConnectionManager extends EventEmitter {
     /**
      * Responsible for managing known connections.
      *
@@ -149,8 +148,9 @@ declare class ConnectionManager extends ConnectionManager_base {
     private _maybeDisconnectOne;
 }
 declare namespace ConnectionManager {
-    export { Events, Libp2p, Connection, ConnectionManagerOptions };
+    export { Libp2p, Connection, ConnectionManagerOptions };
 }
+import { EventEmitter } from "events";
 type Connection = import("libp2p-interfaces/src/connection/connection");
 import LatencyMonitor = require("./latency-monitor");
 import PeerId = require("peer-id");
@@ -201,5 +201,4 @@ type ConnectionManagerOptions = {
      */
     autoDialInterval?: number | undefined;
 };
-type Events = import('../types').EventEmitterFactory;
 //# sourceMappingURL=index.d.ts.map

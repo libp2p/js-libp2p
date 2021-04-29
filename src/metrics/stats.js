@@ -1,9 +1,7 @@
 // @ts-nocheck
 'use strict'
 
-/** @typedef {import('../types').EventEmitterFactory} Events */
-/** @type Events */
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 const { BigNumber: Big } = require('bignumber.js')
 const MovingAverage = require('moving-average')
 const retimer = require('retimer')

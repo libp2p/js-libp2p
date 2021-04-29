@@ -1,5 +1,4 @@
 export = Libp2p;
-declare const Libp2p_base: import("./types").EventEmitterFactory;
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
@@ -95,7 +94,7 @@ declare const Libp2p_base: import("./types").EventEmitterFactory;
  * @fires Libp2p#error Emitted when an error occurs
  * @fires Libp2p#peer:discovery Emitted when a peer is discovered
  */
-declare class Libp2p extends Libp2p_base {
+declare class Libp2p extends EventEmitter {
     /**
      * Like `new Libp2p(options)` except it will create a `PeerId`
      * instance if one is not provided in options.
@@ -408,8 +407,9 @@ declare class Libp2p extends Libp2p_base {
     private _setupPeerDiscovery;
 }
 declare namespace Libp2p {
-    export { Events, Connection, MuxedStream, TransportFactory, MuxerFactory, ContentRoutingModule, PeerDiscoveryFactory, PeerRoutingModule, Crypto, Pubsub, PubsubOptions, Datastore, Protector, HandlerProps, RandomWalkOptions, DhtOptions, KeychainOptions, PeerStoreOptions, PubsubLocalOptions, MetricsOptions, RelayOptions, Libp2pConfig, Libp2pModules, Libp2pOptions, constructorOptions, CreateOptions };
+    export { Connection, MuxedStream, TransportFactory, MuxerFactory, ContentRoutingModule, PeerDiscoveryFactory, PeerRoutingModule, Crypto, Pubsub, PubsubOptions, Datastore, Protector, HandlerProps, RandomWalkOptions, DhtOptions, KeychainOptions, PeerStoreOptions, PubsubLocalOptions, MetricsOptions, RelayOptions, Libp2pConfig, Libp2pModules, Libp2pOptions, constructorOptions, CreateOptions };
 }
+import { EventEmitter } from "events";
 import { Multiaddr } from "multiaddr";
 type Libp2pOptions = {
     /**
@@ -486,7 +486,6 @@ type Connection = import("libp2p-interfaces/src/connection/connection");
 type CreateOptions = {
     peerId?: PeerId | undefined;
 };
-type Events = import('./types').EventEmitterFactory;
 type MuxedStream = import('libp2p-interfaces/src/stream-muxer/types').MuxedStream;
 type TransportFactory = import('libp2p-interfaces/src/transport/types').TransportFactory<any, any>;
 type MuxerFactory = import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory;

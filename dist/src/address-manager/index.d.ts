@@ -1,5 +1,4 @@
 export = AddressManager;
-declare const AddressManager_base: import("../types").EventEmitterFactory;
 /**
  * @typedef {Object} AddressManagerOptions
  * @property {string[]} [listen = []] - list of multiaddrs string representation to listen.
@@ -8,7 +7,7 @@ declare const AddressManager_base: import("../types").EventEmitterFactory;
 /**
  * @fires AddressManager#change:addresses Emitted when a addresses change.
  */
-declare class AddressManager extends AddressManager_base {
+declare class AddressManager extends EventEmitter {
     /**
      * Responsible for managing the peer addresses.
      * Peers can specify their listen and announce addresses.
@@ -55,11 +54,11 @@ declare class AddressManager extends AddressManager_base {
     addObservedAddr(addr: string | Multiaddr): void;
 }
 declare namespace AddressManager {
-    export { Events, AddressManagerOptions };
+    export { AddressManagerOptions };
 }
+import { EventEmitter } from "events";
 import PeerId = require("peer-id");
 import { Multiaddr } from "multiaddr";
-type Events = import('../types').EventEmitterFactory;
 type AddressManagerOptions = {
     /**
      * - list of multiaddrs string representation to listen.
