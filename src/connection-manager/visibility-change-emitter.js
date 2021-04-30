@@ -6,7 +6,7 @@
  */
 'use strict'
 
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 
 const debug = require('debug')('latency-monitor:VisibilityChangeEmitter')
 

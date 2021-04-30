@@ -1,6 +1,6 @@
 'use strict'
 
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 

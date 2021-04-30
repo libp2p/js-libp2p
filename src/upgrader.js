@@ -137,7 +137,12 @@ class Upgrader {
    * @returns {Promise<Connection>}
    */
   async upgradeOutbound (maConn) {
-    const remotePeerId = PeerId.createFromB58String(maConn.remoteAddr.getPeerId())
+    const idStr = maConn.remoteAddr.getPeerId()
+    if (!idStr) {
+      throw errCode(new Error('outbound connection must have a peer id'), codes.ERR_INVALID_MULTIADDR)
+    }
+
+    const remotePeerId = PeerId.createFromB58String(idStr)
 
     let encryptedConn
     let remotePeer

@@ -1,9 +1,9 @@
 // @ts-nocheck
 'use strict'
 
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 const { BigNumber: Big } = require('bignumber.js')
-const MovingAverage = require('moving-average')
+const MovingAverage = require('@vascosantos/moving-average')
 const retimer = require('retimer')
 
 class Stats extends EventEmitter {

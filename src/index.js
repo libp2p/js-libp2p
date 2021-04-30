@@ -4,7 +4,7 @@ const debug = require('debug')
 const log = Object.assign(debug('libp2p'), {
   error: debug('libp2p:err')
 })
-const EventEmitter = require('events')
+const { EventEmitter } = require('events')
 
 const errCode = require('err-code')
 const PeerId = require('peer-id')
@@ -40,9 +40,9 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory<any, any>} TransportFactory
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory} MuxerFactory
- * @typedef {import('libp2p-interfaces/src/content-routing/types')} ContentRoutingModule
- * @typedef {import('libp2p-interfaces/src/peer-discovery/types')} PeerDiscoveryModule
- * @typedef {import('libp2p-interfaces/src/peer-routing/types')} PeerRoutingModule
+ * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
+ * @typedef {import('libp2p-interfaces/src/peer-discovery/types').PeerDiscoveryFactory} PeerDiscoveryFactory
+ * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRoutingModule
  * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
  * @typedef {import('libp2p-interfaces/src/pubsub')} Pubsub
  * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions
@@ -100,7 +100,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {TransportFactory[]} transport
  * @property {MuxerFactory[]} streamMuxer
  * @property {Crypto[]} connEncryption
- * @property {PeerDiscoveryModule[]} [peerDiscovery]
+ * @property {PeerDiscoveryFactory[]} [peerDiscovery]
  * @property {PeerRoutingModule[]} [peerRouting]
  * @property {ContentRoutingModule[]} [contentRouting]
  * @property {Object} [dht]
@@ -714,7 +714,7 @@ class Libp2p extends EventEmitter {
    */
   async _setupPeerDiscovery () {
     /**
-     * @param {PeerDiscoveryModule} DiscoveryService
+     * @param {PeerDiscoveryFactory} DiscoveryService
      */
     const setupService = (DiscoveryService) => {
       let config = {
