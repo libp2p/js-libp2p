@@ -1,3 +1,12 @@
+## [0.31.2](https://github.com/libp2p/js-libp2p/compare/v0.31.1...v0.31.2) (2021-04-30)
+
+
+### Bug Fixes
+
+* moving averages record types ([#935](https://github.com/libp2p/js-libp2p/issues/935)) ([b5a9eb2](https://github.com/libp2p/js-libp2p/commit/b5a9eb208763efa027d0b4caae87c515b6f5869b))
+
+
+
 ## [0.31.1](https://github.com/libp2p/js-libp2p/compare/v0.31.0...v0.31.1) (2021-04-30)
 
 
