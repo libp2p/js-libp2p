@@ -6,6 +6,10 @@ const { BigNumber: Big } = require('bignumber.js')
 const MovingAverage = require('@vascosantos/moving-average')
 const retimer = require('retimer')
 
+/**
+ * @typedef {import('@vascosantos/moving-average').IMovingAverage} IMovingAverage
+ */
+
 class Stats extends EventEmitter {
   /**
    * A queue based manager for stat processing
@@ -29,7 +33,7 @@ class Stats extends EventEmitter {
     this._frequencyLastTime = Date.now()
     this._frequencyAccumulators = {}
 
-    /** @type {{ dataReceived: MovingAverage[], dataSent: MovingAverage[] }} */
+    /** @type {{ dataReceived: IMovingAverage[], dataSent: IMovingAverage[] }} */
     this._movingAverages = {}
 
     this._update = this._update.bind(this)
