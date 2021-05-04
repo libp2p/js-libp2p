@@ -42,7 +42,7 @@
     "class-is": "^1.1.0",
     "debug": "^4.3.1",
     "err-code": "^3.0.1",
-    "ipfs-utils": "^6.0.6",
+    "ipfs-utils": "^7.0.0",
     "it-ws": "^4.0.0",
     "libp2p-utils": "^0.3.0",
     "mafmt": "^9.0.0",
