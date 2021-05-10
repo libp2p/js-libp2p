@@ -139,7 +139,7 @@
     "aegir": "^33.1.1",
     "buffer": "^6.0.3",
     "delay": "^5.0.0",
-    "interop-libp2p": "^0.3.0",
+    "interop-libp2p": "^0.4.0",
     "into-stream": "^6.0.0",
     "ipfs-http-client": "^49.0.4",
     "it-concat": "^1.0.0",
