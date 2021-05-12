@@ -454,7 +454,7 @@ describe('Identify', () => {
       await pWaitFor(() => connection.streams.length === 0)
       await connection.close()
 
-      const remotePeer = PeerId.createFromB58String('12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5')
+      const remotePeer = PeerId.createFromB58String(remoteAddr.getPeerId())
 
       const storedAgentVersion = libp2p.peerStore.metadataBook.getValue(remotePeer, 'AgentVersion')
       const storedProtocolVersion = libp2p.peerStore.metadataBook.getValue(remotePeer, 'ProtocolVersion')
