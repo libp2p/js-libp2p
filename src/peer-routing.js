@@ -104,7 +104,7 @@ class PeerRouting {
       throw errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE')
     }
 
-    if (id.toB58String()== this._peerId.toB58String()) {
+    if (id.toB58String() === this._peerId.toB58String()) {
       throw errCode(new Error('Should not try to find self'), 'ERR_FIND_SELF')
     }
 
