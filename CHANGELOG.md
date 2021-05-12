@@ -1,3 +1,12 @@
+## [0.31.4](https://github.com/libp2p/js-libp2p/compare/v0.31.3...v0.31.4) (2021-05-12)
+
+
+### Bug Fixes
+
+* peerRouting.findPeer() trying to find self ([#941](https://github.com/libp2p/js-libp2p/issues/941)) ([a79c6b5](https://github.com/libp2p/js-libp2p/commit/a79c6b50d7fddbcdb1af53efae922cecad4c9a83))
+
+
+
 ## [0.31.3](https://github.com/libp2p/js-libp2p/compare/v0.31.2...v0.31.3) (2021-05-04)
 
 
