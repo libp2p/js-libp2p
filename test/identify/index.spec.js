@@ -430,6 +430,39 @@ describe('Identify', () => {
       await connection.close()
     })
 
+    it('should store remote agent and protocol versions in metadataBook after connecting', async () => {
+      libp2p = new Libp2p({
+        ...baseOptions,
+        peerId
+      })
+
+      await libp2p.start()
+
+      sinon.spy(libp2p.identifyService, 'identify')
+      const peerStoreSpyConsumeRecord = sinon.spy(libp2p.peerStore.addressBook, 'consumePeerRecord')
+      const peerStoreSpyAdd = sinon.spy(libp2p.peerStore.addressBook, 'add')
+
+      const connection = await libp2p.dialer.connectToPeer(remoteAddr)
+      expect(connection).to.exist()
+
+      // Wait for peer store to be updated
+      // Dialer._createDialTarget (add), Identify (consume)
+      await pWaitFor(() => peerStoreSpyConsumeRecord.callCount === 1 && peerStoreSpyAdd.callCount === 1)
+      expect(libp2p.identifyService.identify.callCount).to.equal(1)
+
+      // The connection should have no open streams
+      await pWaitFor(() => connection.streams.length === 0)
+      await connection.close()
+
+      const remotePeer = PeerId.createFromB58String(remoteAddr.getPeerId())
+
+      const storedAgentVersion = libp2p.peerStore.metadataBook.getValue(remotePeer, 'AgentVersion')
+      const storedProtocolVersion = libp2p.peerStore.metadataBook.getValue(remotePeer, 'ProtocolVersion')
+
+      expect(storedAgentVersion).to.exist()
+      expect(storedProtocolVersion).to.exist()
+    })
+
     it('should push protocol updates to an already connected peer', async () => {
       libp2p = new Libp2p({
         ...baseOptions,
