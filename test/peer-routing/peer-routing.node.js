@@ -101,7 +101,7 @@ describe('peer-routing', () => {
       return deferred.promise
     })
 
-    it('should error when peer tries to find itself', async () =>{
+    it('should error when peer tries to find itself', async () => {
       await expect(nodes[0].peerRouting.findPeer(nodes[0].peerId))
         .to.eventually.be.rejected()
         .and.to.have.property('code', 'ERR_FIND_SELF')
@@ -193,7 +193,7 @@ describe('peer-routing', () => {
       expect(mockApi.isDone()).to.equal(true)
     })
 
-    it('should error when peer tries to find itself', async () =>{
+    it('should error when peer tries to find itself', async () => {
       await expect(node.peerRouting.findPeer(node.peerId))
         .to.eventually.be.rejected()
         .and.to.have.property('code', 'ERR_FIND_SELF')
