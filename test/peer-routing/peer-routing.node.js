@@ -100,6 +100,12 @@ describe('peer-routing', () => {
 
       return deferred.promise
     })
+
+    it('should error when peer tries to find itself', async () => {
+      await expect(nodes[0].peerRouting.findPeer(nodes[0].peerId))
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', 'ERR_FIND_SELF')
+    })
   })
 
   describe('via delegate router', () => {
@@ -185,6 +191,12 @@ describe('peer-routing', () => {
 
       expect(peer.id).to.equal(peerKey)
       expect(mockApi.isDone()).to.equal(true)
+    })
+
+    it('should error when peer tries to find itself', async () => {
+      await expect(node.peerRouting.findPeer(node.peerId))
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', 'ERR_FIND_SELF')
     })
 
     it('should error when a peer cannot be found', async () => {

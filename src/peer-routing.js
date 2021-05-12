@@ -104,6 +104,10 @@ class PeerRouting {
       throw errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE')
     }
 
+    if (id.toB58String() === this._peerId.toB58String()) {
+      throw errCode(new Error('Should not try to find self'), 'ERR_FIND_SELF')
+    }
+
     const output = await pipe(
       merge(
         ...this._routers.map(router => [router.findPeer(id, options)])
