@@ -1,3 +1,12 @@
+## [0.31.5](https://github.com/libp2p/js-libp2p/compare/v0.31.4...v0.31.5) (2021-05-12)
+
+
+### Bug Fixes
+
+* store remote agent and protocol version during identify ([#943](https://github.com/libp2p/js-libp2p/issues/943)) ([818d2b2](https://github.com/libp2p/js-libp2p/commit/818d2b2a98736f4242694479089396f6070cdad5))
+
+
+
 ## [0.31.4](https://github.com/libp2p/js-libp2p/compare/v0.31.3...v0.31.4) (2021-05-12)
 
 
