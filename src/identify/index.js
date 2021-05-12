@@ -189,6 +189,8 @@ class IdentifyService {
       const envelope = await Envelope.openAndCertify(signedPeerRecord, PeerRecord.DOMAIN)
       if (this.peerStore.addressBook.consumePeerRecord(envelope)) {
         this.peerStore.protoBook.set(id, protocols)
+        this.peerStore.metadataBook.set(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
+        this.peerStore.metadataBook.set(id, 'ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
         return
       }
     } catch (err) {
@@ -204,6 +206,7 @@ class IdentifyService {
 
     this.peerStore.protoBook.set(id, protocols)
     this.peerStore.metadataBook.set(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
+    this.peerStore.metadataBook.set(id, 'ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
 
     // TODO: Add and score our observed addr
     log('received observed address of %s', cleanObservedAddr)
