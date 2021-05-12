@@ -515,7 +515,7 @@ const node = await Libp2p.create({
   }
 })
 
-await libp2p.loadKeychain()
+await node.loadKeychain()
 ```
 
 #### Configuring Dialing
