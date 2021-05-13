@@ -207,6 +207,7 @@ class Libp2p extends EventEmitter {
     }
 
     // Create keychain
+      // TODO: Decide how to change these options when the keychain password is being changed
     if (this._options.keychain && this._options.keychain.datastore) {
       log('creating keychain')
 

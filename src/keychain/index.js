@@ -503,6 +503,36 @@ class Keychain {
       return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
     }
   }
+
+  async changeKeychainPassword(oldPassword, newPassword){
+    if (typeof oldPassword !== 'string' || typeof newPassword !== 'string') {
+      throw new Error(`Invalid pass type '${typeof oldPassword}'`);
+    }
+    if (newPassword.length < 20) {
+      throw new Error('pass must be least 20 characters')
+    }
+    // TODO: Need to decide on how to import/generate opts
+    const newDek = newPassword
+      ? crypto.pbkdf2(
+        newPassword,
+        this.opts.dek.salt,
+        this.opts.dek.iterationCount,
+        this.opts.dek.keyLength,
+        this.opts.dek.hash)
+      : ''
+    const oldDek = privates.get(this).dek
+    privates.set(this, { "dek":newDek })
+    var keys = await this.listKeys()
+    await keys.forEach(async key =>{
+      // TODO: Decide how to handle deleting and importing the "self" key. 
+          // importKey and removeKey throw an error when handling "self"
+      if (key.name != "self"){
+        var keyAsPEM = await this._getPrivateKey(key.name)
+        await this.removeKey(key.name)
+        this.importKey(key.name, keyAsPEM, oldDek)
+      }
+    })
+  }
 }
 
 module.exports = Keychain
