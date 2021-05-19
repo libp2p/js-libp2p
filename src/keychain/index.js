@@ -504,7 +504,7 @@ class Keychain {
     }
   }
 
-  async changeKeychainPassword(oldPassword, newPassword){
+  async rotateKeychainPass (oldPass, newPass){
     if (typeof oldPassword !== 'string' || typeof newPassword !== 'string') {
       throw new Error(`Invalid pass type '${typeof oldPassword}'`);
     }
