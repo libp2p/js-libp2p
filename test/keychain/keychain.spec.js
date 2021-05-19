@@ -494,6 +494,27 @@ describe('keychain', () => {
   })
 })
 
+describe('rotate keychain passphrase', () => {
+  it('should validate newPass is a string', async () => {
+    expect(() => ks.rotateKeychainPass(passPhrase, 1234567890)).to.throw()
+  })
+
+  it('should validate oldPass is a string', async () => {
+    expect(() => ks.rotateKeychainPass(1234, "newInsecurePassword1")).to.throw()
+  })
+
+  it('should validate newPass is at least 20 characters', async () => {
+    expect(() => ks.rotateKeychainPass(passPhrase, "new")).to.throw()
+  })
+  
+  /*
+  TODO:
+  it('can rotate keychain passphrase', async () => {
+
+  })
+  */
+});
+
 describe('libp2p.keychain', () => {
   it('needs a passphrase to be used, otherwise throws an error', async () => {
     const [libp2p] = await peerUtils.createPeer({
