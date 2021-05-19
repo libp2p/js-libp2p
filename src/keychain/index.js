@@ -511,7 +511,13 @@ class Keychain {
     if (newPass.length < 20) {
       throw new Error('pass must be least 20 characters')
     }
-    // TODO: Need to decide on how to import/generate opts
+    this.opts = {
+      dek: Keychain.generateOptions().dek,
+      pass: newPass,
+      datastore: this.store
+    }
+
+    const oldDek = privates.get(this).dek
     const newDek = newPass
       ? crypto.pbkdf2(
         newPass,
@@ -520,17 +526,27 @@ class Keychain {
         this.opts.dek.keyLength,
         this.opts.dek.hash)
       : ''
-    const oldDek = privates.get(this).dek
     privates.set(this, { "dek":newDek })
+
     var keys = await this.listKeys()
     await keys.forEach(async key =>{
-      // TODO: Decide how to handle deleting and importing the "self" key. 
-          // importKey and removeKey throw an error when handling "self"
-      if (key.name != "self"){
-        var keyAsPEM = await this._getPrivateKey(key.name)
-        await this.removeKey(key.name)
-        this.importKey(key.name, keyAsPEM, oldDek)
+      var keyAsPEM = await this._getPrivateKey(key.name)
+
+      // Remove key with old pass
+      const batch = this.store.batch()
+      batch.delete(DsName(key.name))
+      batch.delete(DsInfoName(key.name))
+      await batch.commit()    
+
+
+      // Import key with new pass
+      var keyInfo = {
+        name: key.name,
+        id: key.id
       }
+      batch.put(DsName(key.name), uint8ArrayFromString(keyAsPEM))
+      batch.put(DsInfoName(key.name), uint8ArrayFromString(JSON.stringify(keyInfo)))
+      await batch.commit()
     })
   }
 }
