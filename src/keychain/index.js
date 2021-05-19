@@ -503,7 +503,13 @@ class Keychain {
       return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
     }
   }
-
+  
+  /**
+   * Rotate keychain password and re-encrypt all assosciated keys
+   *
+   * @param {string} oldPass - The old local keychain password
+   * @param {string} newPass - The new local keychain password
+   */
   async rotateKeychainPass (oldPass, newPass){
     if (typeof oldPass !== 'string' || typeof newPass !== 'string') {
       throw new Error(`Invalid pass type '${typeof oldPass}'`);
@@ -517,7 +523,6 @@ class Keychain {
       datastore: this.store
     }
 
-    const oldDek = privates.get(this).dek
     const newDek = newPass
       ? crypto.pbkdf2(
         newPass,
