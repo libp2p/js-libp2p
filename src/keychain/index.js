@@ -505,16 +505,16 @@ class Keychain {
   }
 
   async rotateKeychainPass (oldPass, newPass){
-    if (typeof oldPassword !== 'string' || typeof newPassword !== 'string') {
-      throw new Error(`Invalid pass type '${typeof oldPassword}'`);
+    if (typeof oldPass !== 'string' || typeof newPass !== 'string') {
+      throw new Error(`Invalid pass type '${typeof oldPass}'`);
     }
-    if (newPassword.length < 20) {
+    if (newPass.length < 20) {
       throw new Error('pass must be least 20 characters')
     }
     // TODO: Need to decide on how to import/generate opts
-    const newDek = newPassword
+    const newDek = newPass
       ? crypto.pbkdf2(
-        newPassword,
+        newPass,
         this.opts.dek.salt,
         this.opts.dek.iterationCount,
         this.opts.dek.keyLength,
