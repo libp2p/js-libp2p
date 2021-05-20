@@ -492,28 +492,49 @@ describe('keychain', () => {
       expect(key).to.have.property('id', rsaKeyInfo.id)
     })
   })
-})
 
-describe('rotate keychain passphrase', () => {
-  it('should validate newPass is a string', async () => {
-    expect(() => ks.rotateKeychainPass(passPhrase, 1234567890)).to.throw()
-  })
+  describe('rotate keychain passphrase', () => {
+    let oldPass
+    let kc
+    before(async () => {
+      oldPass = `hello-${Date.now()}-${Date.now()}`
+      kc = new Keychain(datastore2, { pass: oldPass })
+    })
 
-  it('should validate oldPass is a string', async () => {
-    expect(() => ks.rotateKeychainPass(1234, "newInsecurePassword1")).to.throw()
-  })
-
-  it('should validate newPass is at least 20 characters', async () => {
-    expect(() => ks.rotateKeychainPass(passPhrase, "new")).to.throw()
-  })
+    it('should validate newPass is a string', async () => {
+      try {
+        await kc.rotateKeychainPass(oldPass, 1234567890)
+      } catch (err) {
+        expect(err).to.exist()
+      }
+    })
   
-  /*
-  TODO:
-  it('can rotate keychain passphrase', async () => {
-
+    it('should validate oldPass is a string', async () => {
+      try {
+        await kc.rotateKeychainPass(1234, "newInsecurePassword1")
+      } catch (err) {
+        expect(err).to.exist()
+      }
+    })
+  
+    it('should validate newPass is at least 20 characters', async () => {
+      try {
+        await kc.rotateKeychainPass(oldPass, "not20Chars")
+      } catch (err) {
+        expect(err).to.exist()
+      }
+    })
+    
+    it('can rotate keychain passphrase', async () => {
+      await kc.rotateKeychainPass(oldPass, "newInsecurePassphrase")
+      setTimeout(async () => {
+        var key = await kc.exportKey("self", "newInsecurePassphrase")
+        // should be able to retrieve key with the new pass if keychain pass has indeed been changed
+        expect(key).to.have.property('name', "self")
+      }, 1000);
+    })
   })
-  */
-});
+})
 
 describe('libp2p.keychain', () => {
   it('needs a passphrase to be used, otherwise throws an error', async () => {
