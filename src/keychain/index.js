@@ -1,6 +1,9 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
-
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:keychain'), {
+  error: debug('libp2p:keychain:err')
+})
 const sanitize = require('sanitize-filename')
 const mergeOptions = require('merge-options')
 const crypto = require('libp2p-crypto')
@@ -511,18 +514,22 @@ class Keychain {
    * @param {string} newPass - The new local keychain password
    */
   async rotateKeychainPass (oldPass, newPass){
-    if (typeof oldPass !== 'string' || typeof newPass !== 'string') {
-      throw new Error(`Invalid pass type '${typeof oldPass}'`);
+    if (typeof oldPass !== 'string') {
+      return throwDelayed(errcode(new Error(`Invalid old pass type '${typeof oldPass}'`), 'ERR_INVALID_OLD_PASS_TYPE'))
+    }
+    if (typeof newPass !== 'string') { 
+      return throwDelayed(errcode(new Error(`Invalid new pass type '${typeof newPass}'`), 'ERR_INVALID_NEW_PASS_TYPE'))
     }
     if (newPass.length < 20) {
-      throw new Error('pass must be least 20 characters')
+      return throwDelayed(errcode(new Error(`Invalid pass length ${newPass.length}`), 'ERR_INVALID_PASS_LENGTH'))
     }
+    log('recreating keychain')
     this.opts = {
       dek: Keychain.generateOptions().dek,
       pass: newPass,
       datastore: this.store
     }
-
+    const oldDek = privates.get(this).dek
     const newDek = newPass
       ? crypto.pbkdf2(
         newPass,
@@ -533,9 +540,12 @@ class Keychain {
       : ''
     privates.set(this, { "dek":newDek })
 
-    var keys = await this.listKeys()
+    const keys = await this.listKeys()
     await keys.forEach(async key =>{
-      var keyAsPEM = await this._getPrivateKey(key.name)
+      const res = await this.store.get(DsName(key.name))
+      const pem = uint8ArrayToString(res)
+      const privateKey = await crypto.keys.import(pem, oldDek)
+      const keyAsPEM = privateKey.export(newDek)
 
       // Remove key with old pass
       const batch = this.store.batch()
@@ -543,9 +553,8 @@ class Keychain {
       batch.delete(DsInfoName(key.name))
       await batch.commit()    
 
-
       // Import key with new pass
-      var keyInfo = {
+      const keyInfo = {
         name: key.name,
         id: key.id
       }
@@ -553,6 +562,7 @@ class Keychain {
       batch.put(DsInfoName(key.name), uint8ArrayFromString(JSON.stringify(keyInfo)))
       await batch.commit()
     })
+    log('keychain reconstructed')
   }
 }
 
