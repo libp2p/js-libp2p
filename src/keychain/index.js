@@ -506,18 +506,18 @@ class Keychain {
       return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
     }
   }
-  
+
   /**
    * Rotate keychain password and re-encrypt all assosciated keys
    *
    * @param {string} oldPass - The old local keychain password
    * @param {string} newPass - The new local keychain password
    */
-  async rotateKeychainPass (oldPass, newPass){
+  async rotateKeychainPass (oldPass, newPass) {
     if (typeof oldPass !== 'string') {
       return throwDelayed(errcode(new Error(`Invalid old pass type '${typeof oldPass}'`), 'ERR_INVALID_OLD_PASS_TYPE'))
     }
-    if (typeof newPass !== 'string') { 
+    if (typeof newPass !== 'string') {
       return throwDelayed(errcode(new Error(`Invalid new pass type '${typeof newPass}'`), 'ERR_INVALID_NEW_PASS_TYPE'))
     }
     if (newPass.length < 20) {
@@ -538,10 +538,10 @@ class Keychain {
         this.opts.dek.keyLength,
         this.opts.dek.hash)
       : ''
-    privates.set(this, { "dek":newDek })
+    privates.set(this, { dek: newDek })
 
     const keys = await this.listKeys()
-    await keys.forEach(async key =>{
+    await keys.forEach(async key => {
       const res = await this.store.get(DsName(key.name))
       const pem = uint8ArrayToString(res)
       const privateKey = await crypto.keys.import(pem, oldDek)
@@ -551,7 +551,7 @@ class Keychain {
       const batch = this.store.batch()
       batch.delete(DsName(key.name))
       batch.delete(DsInfoName(key.name))
-      await batch.commit()    
+      await batch.commit()
 
       // Import key with new pass
       const keyInfo = {

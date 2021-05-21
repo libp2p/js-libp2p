@@ -508,30 +508,30 @@ describe('keychain', () => {
         expect(err).to.exist()
       }
     })
-  
+
     it('should validate oldPass is a string', async () => {
       try {
-        await kc.rotateKeychainPass(1234, "newInsecurePassword1")
+        await kc.rotateKeychainPass(1234, 'newInsecurePassword1')
       } catch (err) {
         expect(err).to.exist()
       }
     })
-  
+
     it('should validate newPass is at least 20 characters', async () => {
       try {
-        await kc.rotateKeychainPass(oldPass, "not20Chars")
+        await kc.rotateKeychainPass(oldPass, 'not20Chars')
       } catch (err) {
         expect(err).to.exist()
       }
     })
-    
+
     it('can rotate keychain passphrase', async () => {
-      await kc.rotateKeychainPass(oldPass, "newInsecurePassphrase")
+      await kc.rotateKeychainPass(oldPass, 'newInsecurePassphrase')
       setTimeout(async () => {
-        var key = await kc.exportKey("self", "newInsecurePassphrase")
+        const key = await kc.exportKey('self', 'newInsecurePassphrase')
         // should be able to retrieve key with the new pass if keychain pass has indeed been changed
-        expect(key).to.have.property('name', "self")
-      }, 1000);
+        expect(key).to.have.property('name', 'self')
+      }, 1000)
     })
   })
 })
