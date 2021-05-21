@@ -9,9 +9,10 @@ const uint8ArrayToString = require('uint8arrays/to-string')
 
 const peerUtils = require('../utils/creators/peer')
 
-const { MemoryDatastore } = require('interface-datastore')
+const { MemoryDatastore, Key } = require('interface-datastore')
 const Keychain = require('../../src/keychain')
 const PeerId = require('peer-id')
+const crypto = require('libp2p-crypto')
 
 describe('keychain', () => {
   const passPhrase = 'this is not a secure phrase'
@@ -496,9 +497,19 @@ describe('keychain', () => {
   describe('rotate keychain passphrase', () => {
     let oldPass
     let kc
+    let options
     before(async () => {
       oldPass = `hello-${Date.now()}-${Date.now()}`
-      kc = new Keychain(datastore2, { pass: oldPass })
+      options = {
+        pass: oldPass,
+        dek: {
+          salt: '3Nd/Ya4ENB3bcByNKptb4IR',
+          iterationCount: 10000,
+          keyLength: 64,
+          hash: 'sha2-512'
+        }
+      }
+      kc = new Keychain(datastore2, options)
     })
 
     it('should validate newPass is a string', async () => {
@@ -526,11 +537,37 @@ describe('keychain', () => {
     })
 
     it('can rotate keychain passphrase', async () => {
+      await ks.createKey('keyCreatedWithOldPassword', 'rsa', 2048)
       await kc.rotateKeychainPass(oldPass, 'newInsecurePassphrase')
+
       setTimeout(async () => {
-        const key = await kc.exportKey('self', 'newInsecurePassphrase')
-        // should be able to retrieve key with the new pass if keychain pass has indeed been changed
-        expect(key).to.have.property('name', 'self')
+        // Get Key PEM from datastore
+        const dsname = new Key('/pkcs8/' + 'keyCreatedWithOldPassword')
+        const res = await datastore2.get(dsname)
+        const pem = uint8ArrayToString(res)
+
+        const oldDek = options.pass
+          ? crypto.pbkdf2(
+            options.pass,
+            options.dek.salt,
+            options.dek.iterationCount,
+            options.dek.keyLength,
+            options.dek.hash)
+          : ''
+
+        const newDek = 'newInsecurePassphrase'
+          ? crypto.pbkdf2(
+            'newInsecurePassphrase',
+            options.dek.salt,
+            options.dek.iterationCount,
+            options.dek.keyLength,
+            options.dek.hash)
+          : ''
+
+        // Dek with old password should not work:
+        expect(await kc.importKey('keyWhosePassChanged', pem, oldDek)).to.throw()
+        // Dek with new password should work:
+        expect(await kc.importKey('keyWhosePasswordChanged', pem, newDek)).to.have.property('name', 'keyWhosePasswordChanged')
       }, 1000)
     })
   })

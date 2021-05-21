@@ -524,12 +524,8 @@ class Keychain {
       return throwDelayed(errcode(new Error(`Invalid pass length ${newPass.length}`), 'ERR_INVALID_PASS_LENGTH'))
     }
     log('recreating keychain')
-    this.opts = {
-      dek: Keychain.generateOptions().dek,
-      pass: newPass,
-      datastore: this.store
-    }
     const oldDek = privates.get(this).dek
+    this.opts.pass = newPass
     const newDek = newPass
       ? crypto.pbkdf2(
         newPass,
@@ -539,13 +535,12 @@ class Keychain {
         this.opts.dek.hash)
       : ''
     privates.set(this, { dek: newDek })
-
     const keys = await this.listKeys()
     await keys.forEach(async key => {
       const res = await this.store.get(DsName(key.name))
       const pem = uint8ArrayToString(res)
       const privateKey = await crypto.keys.import(pem, oldDek)
-      const keyAsPEM = privateKey.export(newDek)
+      const keyAsPEM = await privateKey.export(newDek)
 
       // Remove key with old pass
       const batch = this.store.batch()
