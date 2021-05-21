@@ -540,7 +540,8 @@ class Keychain {
       const res = await this.store.get(DsName(key.name))
       const pem = uint8ArrayToString(res)
       const privateKey = await crypto.keys.import(pem, oldDek)
-      const keyAsPEM = await privateKey.export(newDek)
+      const password = newDek.toString()
+      const keyAsPEM = await privateKey.export(password)
 
       // Remove key with old pass
       const batch = this.store.batch()
