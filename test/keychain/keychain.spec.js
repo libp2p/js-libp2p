@@ -537,7 +537,7 @@ describe('keychain', () => {
     })
 
     it('can rotate keychain passphrase', async () => {
-      await ks.createKey('keyCreatedWithOldPassword', 'rsa', 2048)
+      await kc.createKey('keyCreatedWithOldPassword', 'rsa', 2048)
       await kc.rotateKeychainPass(oldPass, 'newInsecurePassphrase')
 
       setTimeout(async () => {
