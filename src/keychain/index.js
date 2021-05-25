@@ -526,7 +526,6 @@ class Keychain {
     log('recreating keychain')
     const oldDek = privates.get(this).dek
     this.opts.pass = newPass
-    // eslint-disable-next-line constant condition
     const newDek = newPass
       ? crypto.pbkdf2(
         newPass,

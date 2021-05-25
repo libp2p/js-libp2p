@@ -555,6 +555,7 @@ describe('keychain', () => {
             options.dek.hash)
           : ''
 
+        // eslint-disable-next-line no-constant-condition
         const newDek = 'newInsecurePassphrase'
           ? crypto.pbkdf2(
             'newInsecurePassphrase',
