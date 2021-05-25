@@ -12,7 +12,7 @@
     "fs-extra": "^8.1.0",
     "libp2p-pubsub-peer-discovery": "^4.0.0",
     "libp2p-relay-server": "^0.2.0",
-    "libp2p-gossipsub": "^0.8.0",
+    "libp2p-gossipsub": "^0.9.0",
     "p-defer": "^3.0.0",
     "which": "^2.0.1"
   },
