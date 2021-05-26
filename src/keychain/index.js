@@ -543,13 +543,8 @@ class Keychain {
       const password = newDek.toString()
       const keyAsPEM = await privateKey.export(password)
 
-      // Remove key with old pass
+      // Update stored key
       const batch = this.store.batch()
-      batch.delete(DsName(key.name))
-      batch.delete(DsInfoName(key.name))
-      await batch.commit()
-
-      // Import key with new pass
       const keyInfo = {
         name: key.name,
         id: key.id
