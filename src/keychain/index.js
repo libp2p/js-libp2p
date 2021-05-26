@@ -536,7 +536,7 @@ class Keychain {
       : ''
     privates.set(this, { dek: newDek })
     const keys = await this.listKeys()
-    await keys.forEach(async key => {
+    for (const key of keys) {
       const res = await this.store.get(DsName(key.name))
       const pem = uint8ArrayToString(res)
       const privateKey = await crypto.keys.import(pem, oldDek)
