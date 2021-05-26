@@ -557,7 +557,7 @@ class Keychain {
       batch.put(DsName(key.name), uint8ArrayFromString(keyAsPEM))
       batch.put(DsInfoName(key.name), uint8ArrayFromString(JSON.stringify(keyInfo)))
       await batch.commit()
-    })
+    }
     log('keychain reconstructed')
   }
 }
