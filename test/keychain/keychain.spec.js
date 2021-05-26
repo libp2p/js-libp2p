@@ -498,7 +498,9 @@ describe('keychain', () => {
     let oldPass
     let kc
     let options
+    let ds
     before(async () => {
+      ds = new MemoryDatastore()
       oldPass = `hello-${Date.now()}-${Date.now()}`
       options = {
         pass: oldPass,
@@ -509,7 +511,8 @@ describe('keychain', () => {
           hash: 'sha2-512'
         }
       }
-      kc = new Keychain(datastore2, options)
+      kc = new Keychain(ds, options)
+      await ds.open()
     })
 
     it('should validate newPass is a string', async () => {
@@ -540,38 +543,36 @@ describe('keychain', () => {
       await kc.createKey('keyCreatedWithOldPassword', 'rsa', 2048)
       await kc.rotateKeychainPass(oldPass, 'newInsecurePassphrase')
 
-      setTimeout(async () => {
-        // Get Key PEM from datastore
-        const dsname = new Key('/pkcs8/' + 'keyCreatedWithOldPassword')
-        const res = await datastore2.get(dsname)
-        const pem = uint8ArrayToString(res)
+      // Get Key PEM from datastore
+      const dsname = new Key('/pkcs8/' + 'keyCreatedWithOldPassword')
+      const res = await ds.get(dsname)
+      const pem = uint8ArrayToString(res)
 
-        const oldDek = options.pass
-          ? crypto.pbkdf2(
-            options.pass,
-            options.dek.salt,
-            options.dek.iterationCount,
-            options.dek.keyLength,
-            options.dek.hash)
-          : ''
+      const oldDek = options.pass
+        ? crypto.pbkdf2(
+          options.pass,
+          options.dek.salt,
+          options.dek.iterationCount,
+          options.dek.keyLength,
+          options.dek.hash)
+        : ''
 
-        // eslint-disable-next-line no-constant-condition
-        const newDek = 'newInsecurePassphrase'
-          ? crypto.pbkdf2(
-            'newInsecurePassphrase',
-            options.dek.salt,
-            options.dek.iterationCount,
-            options.dek.keyLength,
-            options.dek.hash)
-          : ''
+      // eslint-disable-next-line no-constant-condition
+      const newDek = 'newInsecurePassphrase'
+        ? crypto.pbkdf2(
+          'newInsecurePassphrase',
+          options.dek.salt,
+          options.dek.iterationCount,
+          options.dek.keyLength,
+          options.dek.hash)
+        : ''
 
-        // Dek with old password should not work:
-        await expect(kc.importKey('keyWhosePassChanged', pem, oldDek))
-          .to.eventually.be.rejected()
-        // Dek with new password should work:
-        await expect(kc.importKey('keyWhosePasswordChanged', pem, newDek))
-          .to.eventually.have.property('name', 'keyWhosePasswordChanged')
-      }, 1000)
+      // Dek with old password should not work:
+      await expect(kc.importKey('keyWhosePassChanged', pem, oldDek))
+        .to.eventually.be.rejected()
+      // Dek with new password should work:
+      await expect(kc.importKey('keyWhosePasswordChanged', pem, newDek))
+        .to.eventually.have.property('name', 'keyWhosePasswordChanged')
     })
   })
 })
