@@ -569,7 +569,8 @@ describe('keychain', () => {
         await expect(kc.importKey('keyWhosePassChanged', pem, oldDek))
           .to.eventually.be.rejected()
         // Dek with new password should work:
-        expect(await kc.importKey('keyWhosePasswordChanged', pem, newDek)).to.have.property('name', 'keyWhosePasswordChanged')
+        await expect(kc.importKey('keyWhosePasswordChanged', pem, newDek))
+          .to.eventually.have.property('name', 'keyWhosePasswordChanged')
       }, 1000)
     })
   })
