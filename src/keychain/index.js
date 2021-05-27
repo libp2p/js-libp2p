@@ -1,6 +1,9 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
-
+const debug = require('debug')
+const log = Object.assign(debug('libp2p:keychain'), {
+  error: debug('libp2p:keychain:err')
+})
 const sanitize = require('sanitize-filename')
 const mergeOptions = require('merge-options')
 const crypto = require('libp2p-crypto')
@@ -502,6 +505,55 @@ class Keychain {
     } catch (err) {
       return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
     }
+  }
+
+  /**
+   * Rotate keychain password and re-encrypt all assosciated keys
+   *
+   * @param {string} oldPass - The old local keychain password
+   * @param {string} newPass - The new local keychain password
+   */
+  async rotateKeychainPass (oldPass, newPass) {
+    if (typeof oldPass !== 'string') {
+      return throwDelayed(errcode(new Error(`Invalid old pass type '${typeof oldPass}'`), 'ERR_INVALID_OLD_PASS_TYPE'))
+    }
+    if (typeof newPass !== 'string') {
+      return throwDelayed(errcode(new Error(`Invalid new pass type '${typeof newPass}'`), 'ERR_INVALID_NEW_PASS_TYPE'))
+    }
+    if (newPass.length < 20) {
+      return throwDelayed(errcode(new Error(`Invalid pass length ${newPass.length}`), 'ERR_INVALID_PASS_LENGTH'))
+    }
+    log('recreating keychain')
+    const oldDek = privates.get(this).dek
+    this.opts.pass = newPass
+    const newDek = newPass
+      ? crypto.pbkdf2(
+        newPass,
+        this.opts.dek.salt,
+        this.opts.dek.iterationCount,
+        this.opts.dek.keyLength,
+        this.opts.dek.hash)
+      : ''
+    privates.set(this, { dek: newDek })
+    const keys = await this.listKeys()
+    for (const key of keys) {
+      const res = await this.store.get(DsName(key.name))
+      const pem = uint8ArrayToString(res)
+      const privateKey = await crypto.keys.import(pem, oldDek)
+      const password = newDek.toString()
+      const keyAsPEM = await privateKey.export(password)
+
+      // Update stored key
+      const batch = this.store.batch()
+      const keyInfo = {
+        name: key.name,
+        id: key.id
+      }
+      batch.put(DsName(key.name), uint8ArrayFromString(keyAsPEM))
+      batch.put(DsInfoName(key.name), uint8ArrayFromString(JSON.stringify(keyInfo)))
+      await batch.commit()
+    }
+    log('keychain reconstructed')
   }
 }
 
