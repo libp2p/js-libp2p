@@ -8,6 +8,7 @@ const errCode = require('err-code')
 const { Multiaddr } = require('multiaddr')
 // @ts-ignore timeout-abourt-controles does not export types
 const TimeoutController = require('timeout-abort-controller')
+const { AbortError } = require('abortable-iterator')
 const { anySignal } = require('any-signal')
 
 const DialRequest = require('./dial-request')
@@ -76,6 +77,7 @@ class Dialer {
     this.maxDialsPerPeer = maxDialsPerPeer
     this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
     this._pendingDials = new Map()
+    this._pendingDialTargets = new Map()
 
     for (const [key, value] of Object.entries(resolvers)) {
       Multiaddr.resolvers.set(key, value)
@@ -94,6 +96,11 @@ class Dialer {
       }
     }
     this._pendingDials.clear()
+
+    for (const pendingTarget of this._pendingDialTargets.values()) {
+      pendingTarget.reject(new AbortError('Dialer was destroyed'))
+    }
+    this._pendingDialTargets.clear()
   }
 
   /**
@@ -107,7 +114,7 @@ class Dialer {
    * @returns {Promise<Connection>}
    */
   async connectToPeer (peer, options = {}) {
-    const dialTarget = await this._createDialTarget(peer)
+    const dialTarget = await this._createCancellableDialTarget(peer)
 
     if (!dialTarget.addrs.length) {
       throw errCode(new Error('The dial request has no valid addresses'), codes.ERR_NO_VALID_ADDRESSES)
@@ -128,6 +135,31 @@ class Dialer {
     } finally {
       pendingDial.destroy()
     }
+  }
+
+  /**
+   * Connects to a given `peer` by dialing all of its known addresses.
+   * The dial to the first address that is successfully able to upgrade a connection
+   * will be used.
+   *
+   * @param {PeerId|Multiaddr|string} peer - The peer to dial
+   * @returns {Promise<DialTarget>}
+   */
+  async _createCancellableDialTarget (peer) {
+    // Make dial target promise cancellable
+    const id = `${(parseInt(String(Math.random() * 1e9), 10)).toString() + Date.now()}`
+    const cancellablePromise = new Promise((resolve, reject) => {
+      this._pendingDialTargets.set(id, { resolve, reject })
+    })
+
+    const dialTarget = await Promise.race([
+      this._createDialTarget(peer),
+      cancellablePromise
+    ])
+
+    this._pendingDialTargets.delete(id)
+
+    return dialTarget
   }
 
   /**
