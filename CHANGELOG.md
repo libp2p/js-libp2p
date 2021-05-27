@@ -1,3 +1,12 @@
+## [0.31.6](https://github.com/libp2p/js-libp2p/compare/v0.31.5...v0.31.6) (2021-05-27)
+
+
+### Features
+
+* keychain rotate passphrase ([#944](https://github.com/libp2p/js-libp2p/issues/944)) ([478963a](https://github.com/libp2p/js-libp2p/commit/478963ad2d195444494c0acc54cb3847a29e117c))
+
+
+
 ## [0.31.5](https://github.com/libp2p/js-libp2p/compare/v0.31.4...v0.31.5) (2021-05-12)
 
 
