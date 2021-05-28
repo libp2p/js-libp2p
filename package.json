@@ -44,27 +44,28 @@
   "homepage": "https://github.com/libp2p/js-libp2p-floodsub#readme",
   "devDependencies": {
     "@types/debug": "^4.1.5",
-    "aegir": "^33.0.0",
+    "aegir": "^33.2.0",
     "benchmark": "^2.1.4",
     "buffer": "^6.0.3",
     "chai": "^4.3.4",
-    "ipfs-utils": "^6.0.6",
+    "ipfs-utils": "^8.1.0",
     "it-pair": "^1.0.0",
-    "libp2p": "^0.30.0",
-    "libp2p-mplex": "^0.10.1",
-    "libp2p-noise": "^2.0.1",
-    "libp2p-websockets": "^0.15.5",
+    "libp2p": "^0.31.6",
+    "libp2p-mplex": "^0.10.3",
+    "libp2p-noise": "^3.0.0",
+    "libp2p-websockets": "^0.15.7",
     "multiaddr": "^9.0.1",
     "os": "^0.1.1",
     "p-wait-for": "^3.1.0",
-    "peer-id": "^0.14.2",
-    "sinon": "^10.0.0"
+    "peer-id": "^0.14.8",
+    "sinon": "^11.1.1",
+    "util": "^0.12.3"
   },
   "dependencies": {
     "debug": "^4.2.0",
-    "libp2p-interfaces": "^0.10.0",
+    "libp2p-interfaces": "^0.11.0",
     "time-cache": "^0.3.0",
-    "uint8arrays": "^2.1.4"
+    "uint8arrays": "^2.1.5"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
