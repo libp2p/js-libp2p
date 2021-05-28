@@ -2,11 +2,11 @@
 /* eslint-disable no-console */
 
 const PeerId = require('peer-id')
-const multiaddr = require('multiaddr')
+const { Multiaddr } = require('multiaddr')
 const createLibp2p = require('./libp2p')
 const { stdinToStream, streamToConsole } = require('./stream')
 
-async function run() {
+async function run () {
   const [idDialer, idListener] = await Promise.all([
     PeerId.createFromJSON(require('./peer-id-dialer')),
     PeerId.createFromJSON(require('./peer-id-listener'))
@@ -30,7 +30,7 @@ async function run() {
   })
 
   // Dial to the remote peer (the "listener")
-  const listenerMa = multiaddr(`/ip4/127.0.0.1/tcp/10333/p2p/${idListener.toB58String()}`)
+  const listenerMa = new Multiaddr(`/ip4/127.0.0.1/tcp/10333/p2p/${idListener.toB58String()}`)
   const { stream } = await nodeDialer.dialProtocol(listenerMa, '/chat/1.0.0')
 
   console.log('Dialer dialed to listener on protocol: /chat/1.0.0')
