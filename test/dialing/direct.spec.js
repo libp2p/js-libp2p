@@ -523,6 +523,7 @@ describe('Dialing (direct, WebSockets)', () => {
       await libp2p.stop()
       await expect(dialPromise)
         .to.eventually.be.rejected()
+        .and.to.have.property('code', 'ABORT_ERR')
     })
 
     it('should abort pending dials on stop', async () => {
