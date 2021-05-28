@@ -1,3 +1,12 @@
+## [0.25.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.25.2...v0.25.3) (2021-05-28)
+
+
+### Reverts
+
+* Revert "chore: update pubsub interface to run subsystem tests (#113)" ([7bd6e20](https://github.com/libp2p/js-libp2p-floodsub/commit/7bd6e200e862cfc7470de5579095f1f47eb01986)), closes [#113](https://github.com/libp2p/js-libp2p-floodsub/issues/113)
+
+
+
 ## [0.25.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.25.1...v0.25.2) (2021-05-28)
 
 
