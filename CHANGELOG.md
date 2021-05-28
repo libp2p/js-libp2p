@@ -1,3 +1,7 @@
+# [0.26.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.25.3...v0.26.0) (2021-05-28)
+
+
+
 ## [0.25.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.25.2...v0.25.3) (2021-05-28)
 
 
