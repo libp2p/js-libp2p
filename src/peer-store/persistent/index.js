@@ -7,6 +7,7 @@ const log = Object.assign(debug('libp2p:persistent-peer-store'), {
 const { Key } = require('interface-datastore')
 const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
+const { base32 } = require('multiformats/bases/base32')
 
 const PeerStore = require('..')
 
@@ -195,7 +196,7 @@ class PersistentPeerStore extends PeerStore {
     const batch = this._datastore.batch()
     for (const peerIdStr of commitPeers) {
       // PeerId
-      const peerId = this.keyBook.data.get(peerIdStr) || PeerId.createFromCID(peerIdStr)
+      const peerId = this.keyBook.data.get(peerIdStr) || PeerId.createFromB58String(peerIdStr)
 
       // Address Book
       this._batchAddressBook(peerId, batch)
@@ -346,7 +347,7 @@ class PersistentPeerStore extends PeerStore {
   async _processDatastoreEntry ({ key, value }) {
     try {
       const keyParts = key.toString().split('/')
-      const peerId = PeerId.createFromCID(keyParts[3])
+      const peerId = PeerId.createFromBytes(base32.decode(keyParts[3]))
 
       let decoded
       switch (keyParts[2]) {

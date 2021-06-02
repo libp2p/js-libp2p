@@ -222,7 +222,7 @@ class AutoRelay {
         continue
       }
 
-      const peerId = PeerId.createFromCID(id)
+      const peerId = PeerId.createFromB58String(id)
       const connection = this._connectionManager.get(peerId)
 
       // If not connected, store for possible later use.

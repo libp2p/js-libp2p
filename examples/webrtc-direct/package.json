@@ -25,7 +25,7 @@
     "libp2p-mplex": "^0.10.1",
     "libp2p-noise": "^2.0.1",
     "libp2p-webrtc-direct": "^0.6.0",
-    "peer-id": "^0.14.3"
+    "peer-id": "libp2p/js-peer-id#chore/update-to-new-multiformats"
   },
   "browser": {
     "ipfs": "ipfs/dist/index.min.js"

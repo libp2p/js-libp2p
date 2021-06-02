@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const PeerId = require('peer-id')
-const multihash = require('multihashes')
+const { base58btc } = require('multiformats/bases/base58')
 const crypto = require('libp2p-crypto')
 const rsaUtils = require('libp2p-crypto/src/keys/rsa-utils')
 const rsaClass = require('libp2p-crypto/src/keys/rsa-class')
@@ -40,7 +40,7 @@ describe('peer ID', () => {
     const jwk = rsaUtils.pkixToJwk(publicKeyDer)
     const rsa = new rsaClass.RsaPublicKey(jwk)
     const keyId = await rsa.hash()
-    const kids = multihash.toB58String(keyId)
+    const kids = base58btc.encode(keyId).substring(1)
     expect(kids).to.equal(peer.toB58String())
   })
 
@@ -54,7 +54,7 @@ describe('peer ID', () => {
     }
     const rsa = new rsaClass.RsaPublicKey(jwk)
     const keyId = await rsa.hash()
-    const kids = multihash.toB58String(keyId)
+    const kids = base58btc.encode(keyId).substring(1)
     expect(kids).to.equal(peer.toB58String())
   })
 

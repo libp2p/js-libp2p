@@ -5,7 +5,7 @@ const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
-const CID = require('cids')
+const { CID } = require('multiformats')
 const KadDHT = require('libp2p-kad-dht')
 
 const all = require('it-all')
@@ -51,7 +51,7 @@ const createNode = async () => {
   // Wait for onConnect handlers in the DHT
   await delay(100)
 
-  const cid = new CID('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL')
+  const cid = CID.parse('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL')
   await node1.contentRouting.provide(cid)
 
   console.log('Node %s is providing %s', node1.peerId.toB58String(), cid.toBaseEncodedString())
