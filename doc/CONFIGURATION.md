@@ -373,7 +373,7 @@ const node = await Libp2p.create({
   config: {
     dht: {                        // The DHT options (and defaults) can be found in its documentation
       kBucketSize: 20,
-      enabled: true,
+      enabled: true,              // This flag is required for DHT to run (disabled by default)
       randomWalk: {
         enabled: true,            // Allows to disable discovery (enabled by default)
         interval: 300e3,
