@@ -282,7 +282,7 @@ const node = await Libp2p.create({
         interval: 1000,
         enabled: true
       },
-      [Bootstrap.tag:] {
+      [Bootstrap.tag]: {
         list: [ // A list of bootstrap peers to connect to starting up the node
           "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
           "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
