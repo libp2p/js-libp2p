@@ -1,3 +1,12 @@
+## [0.15.8](https://github.com/libp2p/js-libp2p-websockets/compare/v0.15.7...v0.15.8) (2021-06-08)
+
+
+### Bug Fixes
+
+* listener get addrs with wss ([#130](https://github.com/libp2p/js-libp2p-websockets/issues/130)) ([ee47570](https://github.com/libp2p/js-libp2p-websockets/commit/ee47570ff79a51b8f3c3414934d5f7ab9d00f74d))
+
+
+
 ## [0.15.7](https://github.com/libp2p/js-libp2p-websockets/compare/v0.15.6...v0.15.7) (2021-05-04)
 
 
