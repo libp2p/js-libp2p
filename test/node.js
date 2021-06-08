@@ -311,6 +311,13 @@ describe('dial', () => {
 
     afterEach(() => listener.close())
 
+    it('should listen on wss address', () => {
+      const addrs = listener.getAddrs()
+
+      expect(addrs).to.have.lengthOf(1)
+      expect(ma.equals(addrs[0])).to.eql(true)
+    })
+
     it('dial', async () => {
       const conn = await ws.dial(ma, { websocket: { rejectUnauthorized: false } })
       const s = goodbye({ source: ['hey'], sink: collect })

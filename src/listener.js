@@ -2,7 +2,7 @@
 
 const EventEmitter = require('events')
 const os = require('os')
-const { Multiaddr } = require('multiaddr')
+const { Multiaddr, protocols } = require('multiaddr')
 const { createServer } = require('it-ws')
 const debug = require('debug')
 const log = debug('libp2p:websockets:listener')
@@ -63,12 +63,14 @@ module.exports = ({ handler, upgrader }, options = {}) => {
     }
 
     const ipfsId = listeningMultiaddr.getPeerId()
+    const protos = listeningMultiaddr.protos()
 
     // Because TCP will only return the IPv6 version
     // we need to capture from the passed multiaddr
-    if (listeningMultiaddr.toString().indexOf('ip4') !== -1) {
+    if (protos.some(proto => proto.code === protocols('ip4').code)) {
+      const wsProto = protos.some(proto => proto.code === protocols('ws').code) ? '/ws' : '/wss'
       let m = listeningMultiaddr.decapsulate('tcp')
-      m = m.encapsulate('/tcp/' + address.port + '/ws')
+      m = m.encapsulate('/tcp/' + address.port + wsProto)
       if (listeningMultiaddr.getPeerId()) {
         m = m.encapsulate('/p2p/' + ipfsId)
       }
