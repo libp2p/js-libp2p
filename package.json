@@ -1,6 +1,6 @@
 {
   "name": "libp2p-tcp",
-  "version": "0.15.4",
+  "version": "0.16.0",
   "description": "Node.js implementation of the TCP module that libp2p uses, which implements the interface-connection and interface-transport interfaces",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -67,16 +67,17 @@
     "Richard Littauer <richard.littauer@gmail.com>",
     "Tom White <tomtinkerer@gmail.com>",
     "Alan Shaw <alan@tableflip.io>",
+    "Nazar Hussain <nazarhussain@gmail.com>",
     "Pedro Teixeira <i@pgte.me>",
     "Prashanth Chandra <coolshanth94@gmail.com>",
     "Ryan Mehta <ryan.mehta@gmail.com>",
-    "João Antunes <j.goncalo.antunes@gmail.com>",
+    "Linus Unnebäck <linus@folkdatorn.se>",
     "Cayman <caymannava@gmail.com>",
     "Diogo Silva <fsdiogo@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "Drew Stone <drewstone329@gmail.com>",
     "Evan Schwartz <evan.mark.schwartz@gmail.com>",
-    "Linus Unnebäck <linus@folkdatorn.se>",
+    "João Antunes <j.goncalo.antunes@gmail.com>",
     "Mikeal Rogers <mikeal.rogers@gmail.com>"
   ]
 }
