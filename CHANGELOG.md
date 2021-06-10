@@ -1,3 +1,12 @@
+# [0.16.0](https://github.com/libp2p/js-libp2p-tcp/compare/v0.15.4...v0.16.0) (2021-06-10)
+
+
+### Features
+
+* add types ([#145](https://github.com/libp2p/js-libp2p-tcp/issues/145)) ([3249e02](https://github.com/libp2p/js-libp2p-tcp/commit/3249e0292b2ef5d818fe428ce61f689b25060d85))
+
+
+
 ## [0.15.4](https://github.com/libp2p/js-libp2p-tcp/compare/v0.15.2...v0.15.4) (2021-04-12)
 
 
