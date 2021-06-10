@@ -13,8 +13,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: npm install
-    - run: npx aegir lint
+    - run: npm run lint
     - run: npx aegir dep-check -- -i wrtc -i electron-webrtc
+    - run: npm run build
   test-node:
     needs: check
     runs-on: ${{ matrix.os }}

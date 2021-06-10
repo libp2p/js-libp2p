@@ -1,0 +1,14 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+      "outDir": "dist",
+      "baseUrl": "./",
+      "paths": {
+        "*": ["./types/*"]
+      }
+  },
+  "include": [
+    "types",
+    "src"
+  ]
+}
