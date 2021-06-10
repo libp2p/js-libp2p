@@ -8,7 +8,7 @@ const { Multiaddr } = require('multiaddr')
 const log = Object.assign(debug('libp2p:nat'), {
   error: debug('libp2p:nat:err')
 })
-const { isBrowser } = require('ipfs-utils/src/env')
+const { isBrowser } = require('wherearewe')
 const retry = require('p-retry')
 // @ts-ignore private-api does not export types
 const isPrivateIp = require('private-ip')
