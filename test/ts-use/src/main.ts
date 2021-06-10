@@ -35,13 +35,13 @@ async function main() {
   // create a peerId
   const peerId = await PeerId.create()
 
-  const delegatedPeerRouting = new DelegatedPeerRouter(ipfsHttpClient({
+  const delegatedPeerRouting = new DelegatedPeerRouter(ipfsHttpClient.create({
     host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
     protocol: 'https',
     port: 443
   }))
 
-  const delegatedContentRouting = new DelegatedContentRouter(peerId, ipfsHttpClient({
+  const delegatedContentRouting = new DelegatedContentRouter(peerId, ipfsHttpClient.create({
     host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
     protocol: 'https',
     port: 443

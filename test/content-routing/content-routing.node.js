@@ -105,7 +105,7 @@ describe('content-routing', () => {
     beforeEach(async () => {
       const [peerId] = await peerUtils.createPeerId({ fixture: true })
 
-      delegate = new DelegatedContentRouter(peerId, ipfsHttpClient({
+      delegate = new DelegatedContentRouter(peerId, ipfsHttpClient.create({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
@@ -253,7 +253,7 @@ describe('content-routing', () => {
     beforeEach(async () => {
       const [peerId] = await peerUtils.createPeerId({ fixture: true })
 
-      delegate = new DelegatedContentRouter(peerId, ipfsHttpClient({
+      delegate = new DelegatedContentRouter(peerId, ipfsHttpClient.create({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197

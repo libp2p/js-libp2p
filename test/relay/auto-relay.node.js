@@ -515,7 +515,7 @@ describe('auto-relay', () => {
 
       // Create 2 nodes, and turn HOP on for the relay
       ;[local, remote, relayLibp2p] = peerIds.map((peerId, index) => {
-        const delegate = new DelegatedContentRouter(peerId, ipfsHttpClient({
+        const delegate = new DelegatedContentRouter(peerId, ipfsHttpClient.create({
           host: '0.0.0.0',
           protocol: 'http',
           port: 60197

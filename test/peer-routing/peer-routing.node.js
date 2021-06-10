@@ -113,7 +113,7 @@ describe('peer-routing', () => {
     let delegate
 
     beforeEach(async () => {
-      delegate = new DelegatedPeerRouter(ipfsHttpClient({
+      delegate = new DelegatedPeerRouter(ipfsHttpClient.create({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
@@ -288,7 +288,7 @@ describe('peer-routing', () => {
     let delegate
 
     beforeEach(async () => {
-      delegate = new DelegatedPeerRouter(ipfsHttpClient({
+      delegate = new DelegatedPeerRouter(ipfsHttpClient.create({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
