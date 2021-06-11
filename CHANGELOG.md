@@ -1,3 +1,7 @@
+## [0.15.9](https://github.com/libp2p/js-libp2p-websockets/compare/v0.15.8...v0.15.9) (2021-06-11)
+
+
+
 ## [0.15.8](https://github.com/libp2p/js-libp2p-websockets/compare/v0.15.7...v0.15.8) (2021-06-08)
 
 
