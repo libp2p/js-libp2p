@@ -32,7 +32,12 @@ const createNode = async (addresses = []) => {
       connEncryption: [NOISE],
       streamMuxer: [MPLEX]
     },
-    config:       {
+    config: {
+      peerDiscovery: {
+        // Disable autoDial as it would fail because we are using a self-signed cert.
+        // `dialProtocol` does not fail because we pass `rejectUnauthorized: false`.
+        autoDial: false
+      },
       transport: {
         [transportKey]: {
           listenerOptions: { server: httpServer },
@@ -73,10 +78,10 @@ function print ({ stream }) {
   node1.handle('/print', print)
   node2.handle('/print', print)
 
-  node2.peerStore.addressBook.set(node1.peerId, node1.multiaddrs)
+  const targetAddr = `${node1.multiaddrs[0]}/p2p/${node1.peerId.toB58String()}`;
 
   // node 2 (Secure WebSockets) dials to node 1 (Secure Websockets)
-  const { stream } = await node2.dialProtocol(node1.peerId, '/print')
+  const { stream } = await node2.dialProtocol(targetAddr, '/print',  { websocket: { rejectUnauthorized: false } })
   await pipe(
     ['node 2 dialed to node 1 successfully'],
     stream
