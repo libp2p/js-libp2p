@@ -1,3 +1,13 @@
+## [0.31.7](https://github.com/libp2p/js-libp2p/compare/v0.31.6...v0.31.7) (2021-06-14)
+
+
+### Bug Fixes
+
+* chat example with new multiaddr ([#946](https://github.com/libp2p/js-libp2p/issues/946)) ([d8ba284](https://github.com/libp2p/js-libp2p/commit/d8ba2848833d9fb8a963d1b7c8d27062c6f829da))
+* dialer leaking resources after stopping ([#947](https://github.com/libp2p/js-libp2p/issues/947)) ([b291bc0](https://github.com/libp2p/js-libp2p/commit/b291bc06ec13feeb6e010730edfad754a3b2dc1b))
+
+
+
 ## [0.31.6](https://github.com/libp2p/js-libp2p/compare/v0.31.5...v0.31.6) (2021-05-27)
 
 
