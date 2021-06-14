@@ -69,47 +69,53 @@ class LatencyMonitor extends EventEmitter {
     }
 
     that.asyncTestFn = asyncTestFn // If there is no asyncFn, we measure latency
+  }
 
+  start () {
     // If process: use high resolution timer
     if (globalThis.process && globalThis.process.hrtime) { // eslint-disable-line no-undef
       debug('Using process.hrtime for timing')
-      that.now = globalThis.process.hrtime // eslint-disable-line no-undef
-      that.getDeltaMS = (startTime) => {
-        const hrtime = that.now(startTime)
+      this.now = globalThis.process.hrtime // eslint-disable-line no-undef
+      this.getDeltaMS = (startTime) => {
+        const hrtime = this.now(startTime)
         return (hrtime[0] * 1000) + (hrtime[1] / 1000000)
       }
       // Let's try for a timer that only monotonically increases
     } else if (typeof window !== 'undefined' && window.performance && window.performance.now) {
       debug('Using performance.now for timing')
-      that.now = window.performance.now.bind(window.performance)
-      that.getDeltaMS = (startTime) => Math.round(that.now() - startTime)
+      this.now = window.performance.now.bind(window.performance)
+      this.getDeltaMS = (startTime) => Math.round(this.now() - startTime)
     } else {
       debug('Using Date.now for timing')
-      that.now = Date.now
-      that.getDeltaMS = (startTime) => that.now() - startTime
+      this.now = Date.now
+      this.getDeltaMS = (startTime) => this.now() - startTime
     }
 
-    that._latencyData = that._initLatencyData()
+    this._latencyData = this._initLatencyData()
 
     // We check for isBrowser because of browsers set max rates of timeouts when a page is hidden,
     // so we fall back to another library
     // See: http://stackoverflow.com/questions/6032429/chrome-timeouts-interval-suspended-in-background-tabs
     if (isBrowser()) {
-      that._visibilityChangeEmitter = new VisibilityChangeEmitter()
+      this._visibilityChangeEmitter = new VisibilityChangeEmitter()
 
-      that._visibilityChangeEmitter.on('visibilityChange', (pageInFocus) => {
+      this._visibilityChangeEmitter.on('visibilityChange', (pageInFocus) => {
         if (pageInFocus) {
-          that._startTimers()
+          this._startTimers()
         } else {
-          that._emitSummary()
-          that._stopTimers()
+          this._emitSummary()
+          this._stopTimers()
         }
       })
     }
 
-    if (!that._visibilityChangeEmitter || that._visibilityChangeEmitter.isVisible()) {
-      that._startTimers()
+    if (!this._visibilityChangeEmitter || this._visibilityChangeEmitter.isVisible()) {
+      this._startTimers()
     }
+  }
+
+  stop () {
+    this._stopTimers()
   }
 
   /**

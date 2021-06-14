@@ -97,6 +97,11 @@ class ConnectionManager extends EventEmitter {
     this._autoDialTimeout = null
     this._checkMetrics = this._checkMetrics.bind(this)
     this._autoDial = this._autoDial.bind(this)
+
+    this._latencyMonitor = new LatencyMonitor({
+      latencyCheckIntervalMs: this._options.pollInterval,
+      dataEmitIntervalMs: this._options.pollInterval
+    })
   }
 
   /**
@@ -117,10 +122,7 @@ class ConnectionManager extends EventEmitter {
     }
 
     // latency monitor
-    this._latencyMonitor = new LatencyMonitor({
-      latencyCheckIntervalMs: this._options.pollInterval,
-      dataEmitIntervalMs: this._options.pollInterval
-    })
+    this._latencyMonitor.start()
     this._onLatencyMeasure = this._onLatencyMeasure.bind(this)
     this._latencyMonitor.on('data', this._onLatencyMeasure)
 
@@ -138,7 +140,9 @@ class ConnectionManager extends EventEmitter {
   async stop () {
     this._autoDialTimeout && this._autoDialTimeout.clear()
     this._timer && this._timer.clear()
-    this._latencyMonitor && this._latencyMonitor.removeListener('data', this._onLatencyMeasure)
+
+    this._latencyMonitor.removeListener('data', this._onLatencyMeasure)
+    this._latencyMonitor.stop()
 
     this._started = false
     await this._close()

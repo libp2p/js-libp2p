@@ -290,6 +290,34 @@ describe('Dialing (direct, WebSockets)', () => {
     }
   })
 
+  it('should cancel pending dial targets before proceeding', async () => {
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore: {
+        addressBook: {
+          set: () => { }
+        }
+      }
+    })
+
+    sinon.stub(dialer, '_createDialTarget').callsFake(() => {
+      const deferredDial = pDefer()
+      return deferredDial.promise
+    })
+
+    // Perform dial
+    const dialPromise = dialer.connectToPeer(peerId)
+
+    // Let the call stack run
+    await delay(0)
+
+    dialer.destroy()
+
+    await expect(dialPromise)
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', 'ABORT_ERR')
+  })
+
   describe('libp2p.dialer', () => {
     const transportKey = Transport.prototype[Symbol.toStringTag]
     let libp2p
@@ -460,6 +488,42 @@ describe('Dialing (direct, WebSockets)', () => {
       })
 
       await libp2p.hangUp(remoteAddr)
+    })
+
+    it('should cancel pending dial targets and stop', async () => {
+      const [, remotePeerId] = await createPeerId({ number: 2 })
+
+      libp2p = new Libp2p({
+        peerId,
+        modules: {
+          transport: [Transport],
+          streamMuxer: [Muxer],
+          connEncryption: [Crypto]
+        },
+        config: {
+          transport: {
+            [transportKey]: {
+              filter: filters.all
+            }
+          }
+        }
+      })
+
+      sinon.stub(libp2p.dialer, '_createDialTarget').callsFake(() => {
+        const deferredDial = pDefer()
+        return deferredDial.promise
+      })
+
+      // Perform dial
+      const dialPromise = libp2p.dial(remotePeerId)
+
+      // Let the call stack run
+      await delay(0)
+
+      await libp2p.stop()
+      await expect(dialPromise)
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', 'ABORT_ERR')
     })
 
     it('should abort pending dials on stop', async () => {
