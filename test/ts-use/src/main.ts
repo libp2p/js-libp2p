@@ -1,7 +1,7 @@
 import Libp2p = require('libp2p')
 import Libp2pRecord = require('libp2p-record')
+import TCP = require('libp2p-tcp')
 
-const TCP = require('libp2p-tcp')
 const WEBSOCKETS = require('libp2p-websockets')
 const NOISE = require('libp2p-noise')
 const MPLEX = require('libp2p-mplex')
