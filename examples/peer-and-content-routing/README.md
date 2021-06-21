@@ -81,7 +81,7 @@ Instead of calling `peerRouting.findPeer`, we will use `contentRouting.provide` 
 
 ```JavaScript
 await node1.contentRouting.provide(cid)
-console.log('Node %s is providing %s', node1.peerId.toB58String(), cid.toBaseEncodedString())
+console.log('Node %s is providing %s', node1.peerId.toB58String(), cid.toString())
 
 const provs = await all(node3.contentRouting.findProviders(cid, { timeout: 5000 }))
 
