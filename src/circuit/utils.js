@@ -1,6 +1,6 @@
 'use strict'
 
-const { CID } = require('multiformats')
+const { CID } = require('multiformats/cid')
 const { sha256 } = require('multiformats/hashes/sha2')
 
 /**

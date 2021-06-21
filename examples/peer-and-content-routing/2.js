@@ -5,7 +5,7 @@ const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
-const { CID } = require('multiformats')
+const { CID } = require('multiformats/cid')
 const KadDHT = require('libp2p-kad-dht')
 
 const all = require('it-all')

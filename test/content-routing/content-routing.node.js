@@ -8,7 +8,7 @@ const sinon = require('sinon')
 const pDefer = require('p-defer')
 const mergeOptions = require('merge-options')
 
-const { CID } = require('multiformats')
+const { CID } = require('multiformats/cid')
 const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const { Multiaddr } = require('multiaddr')
