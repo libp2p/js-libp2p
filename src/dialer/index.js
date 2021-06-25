@@ -19,7 +19,8 @@ const { codes } = require('../errors')
 const {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS,
-  MAX_PER_PEER_DIALS
+  MAX_PER_PEER_DIALS,
+  MAX_ADDRS_TO_DIAL
 } = require('../constants')
 
 /**
@@ -40,6 +41,7 @@ const {
  * @typedef {Object} DialerOptions
  * @property {(addresses: Address[]) => Address[]} [options.addressSorter = publicAddressesFirst] - Sort the known addresses of a peer before trying to dial.
  * @property {number} [maxParallelDials = MAX_PARALLEL_DIALS] - Number of max concurrent dials.
+ * @property {number} [maxAddrsToDial = MAX_ADDRS_TO_DIAL] - Number of max addresses to dial for a given peer.
  * @property {number} [maxDialsPerPeer = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
  * @property {number} [dialTimeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
  * @property {Record<string, Resolver>} [resolvers = {}] - multiaddr resolvers to use when dialing
@@ -65,6 +67,7 @@ class Dialer {
     peerStore,
     addressSorter = publicAddressesFirst,
     maxParallelDials = MAX_PARALLEL_DIALS,
+    maxAddrsToDial = MAX_ADDRS_TO_DIAL,
     dialTimeout = DIAL_TIMEOUT,
     maxDialsPerPeer = MAX_PER_PEER_DIALS,
     resolvers = {}
@@ -73,6 +76,7 @@ class Dialer {
     this.peerStore = peerStore
     this.addressSorter = addressSorter
     this.maxParallelDials = maxParallelDials
+    this.maxAddrsToDial = maxAddrsToDial
     this.timeout = dialTimeout
     this.maxDialsPerPeer = maxDialsPerPeer
     this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
@@ -197,6 +201,11 @@ class Dialer {
 
     // Multiaddrs not supported by the available transports will be filtered out.
     const supportedAddrs = addrs.filter(a => this.transportManager.transportForMultiaddr(a))
+
+    if (supportedAddrs.length > this.maxAddrsToDial) {
+      this.peerStore.delete(id)
+      throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
+    }
 
     return {
       id: id.toB58String(),
