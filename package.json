@@ -1,6 +1,6 @@
 {
   "name": "libp2p-utils",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "leadMaintainer": "Vasco Santos <santos.vasco10@gmail.com>",
   "main": "src/index.js",
@@ -62,7 +62,7 @@
   },
   "contributors": [
     "Vasco Santos <vasco.santos@moxy.studio>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "Alex Potsides <alex@achingbrain.net>"
+    "Alex Potsides <alex@achingbrain.net>",
+    "Jacob Heun <jacobheun@gmail.com>"
   ]
 }
