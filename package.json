@@ -44,9 +44,9 @@
     "err-code": "^3.0.1",
     "ipfs-utils": "^8.1.2",
     "it-ws": "^4.0.0",
-    "libp2p-utils": "^0.3.0",
-    "mafmt": "^9.0.0",
-    "multiaddr": "^9.0.1",
+    "libp2p-utils": "^0.4.0",
+    "mafmt": "^10.0.0",
+    "multiaddr": "^10.0.0",
     "multiaddr-to-uri": "^7.0.0",
     "p-defer": "^3.0.0",
     "p-timeout": "^4.1.0"
@@ -58,8 +58,8 @@
     "is-loopback-addr": "^1.0.1",
     "it-goodbye": "^3.0.0",
     "it-pipe": "^1.1.0",
-    "libp2p-interfaces": "^0.10.0",
-    "streaming-iterables": "^5.0.2",
+    "libp2p-interfaces": "^0.12.1",
+    "streaming-iterables": "^6.0.0",
     "uint8arrays": "^2.1.2",
     "util": "^0.12.3"
   },
