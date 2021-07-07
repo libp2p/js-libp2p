@@ -1,3 +1,17 @@
+# [0.16.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.15.9...v0.16.0) (2021-07-07)
+
+
+### chore
+
+* update deps ([#134](https://github.com/libp2p/js-libp2p-websockets/issues/134)) ([27f6c41](https://github.com/libp2p/js-libp2p-websockets/commit/27f6c4175bd6d5ea3e727a9a6e43136c806077cc))
+
+
+### BREAKING CHANGES
+
+* uses new major of mafmt, multiaddr, etc
+
+
+
 ## [0.15.9](https://github.com/libp2p/js-libp2p-websockets/compare/v0.15.8...v0.15.9) (2021-06-11)
 
 
