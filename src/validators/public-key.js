@@ -1,6 +1,6 @@
 'use strict'
 
-const multihashing = require('multihashing-async')
+const { sha256 } = require('multiformats/hashes/sha2')
 const errcode = require('err-code')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const uint8ArrayEquals = require('uint8arrays/equals')
@@ -31,9 +31,9 @@ const validatePublicKeyRecord = async (key, publicKey) => {
 
   const keyhash = key.slice(4)
 
-  const publicKeyHash = await multihashing(publicKey, 'sha2-256')
+  const publicKeyHash = await sha256.digest(publicKey)
 
-  if (!uint8ArrayEquals(keyhash, publicKeyHash)) {
+  if (!uint8ArrayEquals(keyhash, publicKeyHash.bytes)) {
     throw errcode(new Error('public key does not match passed in key'), 'ERR_INVALID_RECORD_HASH_MISMATCH')
   }
 }
