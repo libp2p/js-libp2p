@@ -47,17 +47,17 @@
     "aegir": "^33.0.0",
     "it-pair": "^1.0.0",
     "it-pipe": "^1.1.0",
-    "libp2p-interfaces": "^0.10.0",
-    "streaming-iterables": "^5.0.3",
+    "libp2p-interfaces": "^0.12.0",
+    "streaming-iterables": "^6.0.0",
     "util": "^0.12.3"
   },
   "dependencies": {
     "abortable-iterator": "^3.0.0",
     "debug": "^4.3.0",
     "err-code": "^3.0.1",
-    "ip-address": "^7.1.0",
+    "ip-address": "^8.0.0",
     "is-loopback-addr": "^1.0.0",
-    "multiaddr": "^9.0.1",
+    "multiaddr": "^10.0.0",
     "private-ip": "^2.1.1"
   },
   "contributors": [
