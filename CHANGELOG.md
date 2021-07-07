@@ -1,3 +1,17 @@
+# [0.4.0](https://github.com/libp2p/js-libp2p-utils/compare/v0.3.1...v0.4.0) (2021-07-07)
+
+
+### chore
+
+* update to new multiformats ([#18](https://github.com/libp2p/js-libp2p-utils/issues/18)) ([24ca72c](https://github.com/libp2p/js-libp2p-utils/commit/24ca72c95bf485af513fba59830796a5fcf71437))
+
+
+### BREAKING CHANGES
+
+* updates multiaddr which uses the new CID class
+
+
+
 ## [0.3.1](https://github.com/libp2p/js-libp2p-utils/compare/v0.3.0...v0.3.1) (2021-04-12)
 
 
