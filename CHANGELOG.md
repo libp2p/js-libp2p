@@ -1,3 +1,17 @@
+# [0.17.0](https://github.com/libp2p/js-libp2p-tcp/compare/v0.16.0...v0.17.0) (2021-07-07)
+
+
+### chore
+
+* update deps ([#147](https://github.com/libp2p/js-libp2p-tcp/issues/147)) ([b3e315a](https://github.com/libp2p/js-libp2p-tcp/commit/b3e315a6988cd4be7978e8922f275e525463bc0c))
+
+
+### BREAKING CHANGES
+
+* uses new majors of multiaddr and mafmt
+
+
+
 # [0.16.0](https://github.com/libp2p/js-libp2p-tcp/compare/v0.15.4...v0.16.0) (2021-06-10)
 
 
