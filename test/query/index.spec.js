@@ -2,10 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-chai.use(require('chai-checkmark'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 const delay = require('delay')
 const PeerStore = require('libp2p/src/peer-store')

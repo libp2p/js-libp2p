@@ -1,9 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const pDefer = require('p-defer')
 const pipe = require('it-pipe')
 const lp = require('it-length-prefixed')
@@ -24,6 +22,8 @@ describe('rpc', () => {
     peerIds = await createPeerId(2)
     tdht = new TestDHT()
   })
+
+  after(() => tdht.teardown())
 
   it('calls back with the response', async () => {
     const defer = pDefer()

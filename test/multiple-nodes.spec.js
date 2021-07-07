@@ -1,9 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const TestDHT = require('./utils/test-dht')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
@@ -29,7 +27,7 @@ describe('multiple nodes', () => {
   afterEach(function () {
     this.timeout(10 * 1000)
 
-    return tdht.teardown()
+    tdht.teardown()
   })
 
   it('put to "bootstrap" node and get with the others', async function () {

@@ -1,6 +1,6 @@
 'use strict'
 
-const mh = require('multihashing-async').multihash
+const { base58btc } = require('multiformats/bases/base58')
 
 const utils = require('../utils')
 const Run = require('./run')
@@ -49,7 +49,7 @@ class Query {
     this.dht = dht
     this.key = key
     this.makePath = makePath
-    this._log = utils.logger(this.dht.peerId, 'query:' + mh.toB58String(key))
+    this._log = utils.logger(this.dht.peerId, 'query:' + base58btc.baseEncode(key))
 
     this.running = false
 

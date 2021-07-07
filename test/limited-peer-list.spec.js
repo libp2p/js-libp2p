@@ -1,9 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 
 const LimitedPeerList = require('../src/peer-list/limited-peer-list')
 const createPeerId = require('./utils/create-peer-id')

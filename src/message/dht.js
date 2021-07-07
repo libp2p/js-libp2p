@@ -39,43 +39,101 @@ $root.Record = (function() {
 
     /**
      * Record key.
-     * @member {Uint8Array} key
+     * @member {Uint8Array|null|undefined} key
      * @memberof Record
      * @instance
      */
-    Record.prototype.key = $util.newBuffer([]);
+    Record.prototype.key = null;
 
     /**
      * Record value.
-     * @member {Uint8Array} value
+     * @member {Uint8Array|null|undefined} value
      * @memberof Record
      * @instance
      */
-    Record.prototype.value = $util.newBuffer([]);
+    Record.prototype.value = null;
 
     /**
      * Record author.
-     * @member {Uint8Array} author
+     * @member {Uint8Array|null|undefined} author
      * @memberof Record
      * @instance
      */
-    Record.prototype.author = $util.newBuffer([]);
+    Record.prototype.author = null;
 
     /**
      * Record signature.
-     * @member {Uint8Array} signature
+     * @member {Uint8Array|null|undefined} signature
      * @memberof Record
      * @instance
      */
-    Record.prototype.signature = $util.newBuffer([]);
+    Record.prototype.signature = null;
 
     /**
      * Record timeReceived.
-     * @member {string} timeReceived
+     * @member {string|null|undefined} timeReceived
      * @memberof Record
      * @instance
      */
-    Record.prototype.timeReceived = "";
+    Record.prototype.timeReceived = null;
+
+    // OneOf field names bound to virtual getters and setters
+    var $oneOfFields;
+
+    /**
+     * Record _key.
+     * @member {"key"|undefined} _key
+     * @memberof Record
+     * @instance
+     */
+    Object.defineProperty(Record.prototype, "_key", {
+        get: $util.oneOfGetter($oneOfFields = ["key"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Record _value.
+     * @member {"value"|undefined} _value
+     * @memberof Record
+     * @instance
+     */
+    Object.defineProperty(Record.prototype, "_value", {
+        get: $util.oneOfGetter($oneOfFields = ["value"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Record _author.
+     * @member {"author"|undefined} _author
+     * @memberof Record
+     * @instance
+     */
+    Object.defineProperty(Record.prototype, "_author", {
+        get: $util.oneOfGetter($oneOfFields = ["author"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Record _signature.
+     * @member {"signature"|undefined} _signature
+     * @memberof Record
+     * @instance
+     */
+    Object.defineProperty(Record.prototype, "_signature", {
+        get: $util.oneOfGetter($oneOfFields = ["signature"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Record _timeReceived.
+     * @member {"timeReceived"|undefined} _timeReceived
+     * @memberof Record
+     * @instance
+     */
+    Object.defineProperty(Record.prototype, "_timeReceived", {
+        get: $util.oneOfGetter($oneOfFields = ["timeReceived"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
 
     /**
      * Encodes the specified Record message. Does not implicitly {@link Record.verify|verify} messages.
@@ -198,51 +256,30 @@ $root.Record = (function() {
         if (!o)
             o = {};
         var d = {};
-        if (o.defaults) {
-            if (o.bytes === String)
-                d.key = "";
-            else {
-                d.key = [];
-                if (o.bytes !== Array)
-                    d.key = $util.newBuffer(d.key);
-            }
-            if (o.bytes === String)
-                d.value = "";
-            else {
-                d.value = [];
-                if (o.bytes !== Array)
-                    d.value = $util.newBuffer(d.value);
-            }
-            if (o.bytes === String)
-                d.author = "";
-            else {
-                d.author = [];
-                if (o.bytes !== Array)
-                    d.author = $util.newBuffer(d.author);
-            }
-            if (o.bytes === String)
-                d.signature = "";
-            else {
-                d.signature = [];
-                if (o.bytes !== Array)
-                    d.signature = $util.newBuffer(d.signature);
-            }
-            d.timeReceived = "";
-        }
         if (m.key != null && m.hasOwnProperty("key")) {
             d.key = o.bytes === String ? $util.base64.encode(m.key, 0, m.key.length) : o.bytes === Array ? Array.prototype.slice.call(m.key) : m.key;
+            if (o.oneofs)
+                d._key = "key";
         }
         if (m.value != null && m.hasOwnProperty("value")) {
             d.value = o.bytes === String ? $util.base64.encode(m.value, 0, m.value.length) : o.bytes === Array ? Array.prototype.slice.call(m.value) : m.value;
+            if (o.oneofs)
+                d._value = "value";
         }
         if (m.author != null && m.hasOwnProperty("author")) {
             d.author = o.bytes === String ? $util.base64.encode(m.author, 0, m.author.length) : o.bytes === Array ? Array.prototype.slice.call(m.author) : m.author;
+            if (o.oneofs)
+                d._author = "author";
         }
         if (m.signature != null && m.hasOwnProperty("signature")) {
             d.signature = o.bytes === String ? $util.base64.encode(m.signature, 0, m.signature.length) : o.bytes === Array ? Array.prototype.slice.call(m.signature) : m.signature;
+            if (o.oneofs)
+                d._signature = "signature";
         }
         if (m.timeReceived != null && m.hasOwnProperty("timeReceived")) {
             d.timeReceived = m.timeReceived;
+            if (o.oneofs)
+                d._timeReceived = "timeReceived";
         }
         return d;
     };
@@ -294,35 +331,35 @@ $root.Message = (function() {
 
     /**
      * Message type.
-     * @member {Message.MessageType} type
+     * @member {Message.MessageType|null|undefined} type
      * @memberof Message
      * @instance
      */
-    Message.prototype.type = 0;
+    Message.prototype.type = null;
 
     /**
      * Message clusterLevelRaw.
-     * @member {number} clusterLevelRaw
+     * @member {number|null|undefined} clusterLevelRaw
      * @memberof Message
      * @instance
      */
-    Message.prototype.clusterLevelRaw = 0;
+    Message.prototype.clusterLevelRaw = null;
 
     /**
      * Message key.
-     * @member {Uint8Array} key
+     * @member {Uint8Array|null|undefined} key
      * @memberof Message
      * @instance
      */
-    Message.prototype.key = $util.newBuffer([]);
+    Message.prototype.key = null;
 
     /**
      * Message record.
-     * @member {Uint8Array} record
+     * @member {Uint8Array|null|undefined} record
      * @memberof Message
      * @instance
      */
-    Message.prototype.record = $util.newBuffer([]);
+    Message.prototype.record = null;
 
     /**
      * Message closerPeers.
@@ -339,6 +376,53 @@ $root.Message = (function() {
      * @instance
      */
     Message.prototype.providerPeers = $util.emptyArray;
+
+    // OneOf field names bound to virtual getters and setters
+    var $oneOfFields;
+
+    /**
+     * Message _type.
+     * @member {"type"|undefined} _type
+     * @memberof Message
+     * @instance
+     */
+    Object.defineProperty(Message.prototype, "_type", {
+        get: $util.oneOfGetter($oneOfFields = ["type"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Message _clusterLevelRaw.
+     * @member {"clusterLevelRaw"|undefined} _clusterLevelRaw
+     * @memberof Message
+     * @instance
+     */
+    Object.defineProperty(Message.prototype, "_clusterLevelRaw", {
+        get: $util.oneOfGetter($oneOfFields = ["clusterLevelRaw"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Message _key.
+     * @member {"key"|undefined} _key
+     * @memberof Message
+     * @instance
+     */
+    Object.defineProperty(Message.prototype, "_key", {
+        get: $util.oneOfGetter($oneOfFields = ["key"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Message _record.
+     * @member {"record"|undefined} _record
+     * @memberof Message
+     * @instance
+     */
+    Object.defineProperty(Message.prototype, "_record", {
+        get: $util.oneOfGetter($oneOfFields = ["record"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
 
     /**
      * Encodes the specified Message message. Does not implicitly {@link Message.verify|verify} messages.
@@ -512,32 +596,20 @@ $root.Message = (function() {
             d.closerPeers = [];
             d.providerPeers = [];
         }
-        if (o.defaults) {
-            d.type = o.enums === String ? "PUT_VALUE" : 0;
-            if (o.bytes === String)
-                d.key = "";
-            else {
-                d.key = [];
-                if (o.bytes !== Array)
-                    d.key = $util.newBuffer(d.key);
-            }
-            if (o.bytes === String)
-                d.record = "";
-            else {
-                d.record = [];
-                if (o.bytes !== Array)
-                    d.record = $util.newBuffer(d.record);
-            }
-            d.clusterLevelRaw = 0;
-        }
         if (m.type != null && m.hasOwnProperty("type")) {
             d.type = o.enums === String ? $root.Message.MessageType[m.type] : m.type;
+            if (o.oneofs)
+                d._type = "type";
         }
         if (m.key != null && m.hasOwnProperty("key")) {
             d.key = o.bytes === String ? $util.base64.encode(m.key, 0, m.key.length) : o.bytes === Array ? Array.prototype.slice.call(m.key) : m.key;
+            if (o.oneofs)
+                d._key = "key";
         }
         if (m.record != null && m.hasOwnProperty("record")) {
             d.record = o.bytes === String ? $util.base64.encode(m.record, 0, m.record.length) : o.bytes === Array ? Array.prototype.slice.call(m.record) : m.record;
+            if (o.oneofs)
+                d._record = "record";
         }
         if (m.closerPeers && m.closerPeers.length) {
             d.closerPeers = [];
@@ -553,6 +625,8 @@ $root.Message = (function() {
         }
         if (m.clusterLevelRaw != null && m.hasOwnProperty("clusterLevelRaw")) {
             d.clusterLevelRaw = m.clusterLevelRaw;
+            if (o.oneofs)
+                d._clusterLevelRaw = "clusterLevelRaw";
         }
         return d;
     };
@@ -637,11 +711,11 @@ $root.Message = (function() {
 
         /**
          * Peer id.
-         * @member {Uint8Array} id
+         * @member {Uint8Array|null|undefined} id
          * @memberof Message.Peer
          * @instance
          */
-        Peer.prototype.id = $util.newBuffer([]);
+        Peer.prototype.id = null;
 
         /**
          * Peer addrs.
@@ -653,11 +727,36 @@ $root.Message = (function() {
 
         /**
          * Peer connection.
-         * @member {Message.ConnectionType} connection
+         * @member {Message.ConnectionType|null|undefined} connection
          * @memberof Message.Peer
          * @instance
          */
-        Peer.prototype.connection = 0;
+        Peer.prototype.connection = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        /**
+         * Peer _id.
+         * @member {"id"|undefined} _id
+         * @memberof Message.Peer
+         * @instance
+         */
+        Object.defineProperty(Peer.prototype, "_id", {
+            get: $util.oneOfGetter($oneOfFields = ["id"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Peer _connection.
+         * @member {"connection"|undefined} _connection
+         * @memberof Message.Peer
+         * @instance
+         */
+        Object.defineProperty(Peer.prototype, "_connection", {
+            get: $util.oneOfGetter($oneOfFields = ["connection"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
 
         /**
          * Encodes the specified Peer message. Does not implicitly {@link Message.Peer.verify|verify} messages.
@@ -785,18 +884,10 @@ $root.Message = (function() {
             if (o.arrays || o.defaults) {
                 d.addrs = [];
             }
-            if (o.defaults) {
-                if (o.bytes === String)
-                    d.id = "";
-                else {
-                    d.id = [];
-                    if (o.bytes !== Array)
-                        d.id = $util.newBuffer(d.id);
-                }
-                d.connection = o.enums === String ? "NOT_CONNECTED" : 0;
-            }
             if (m.id != null && m.hasOwnProperty("id")) {
                 d.id = o.bytes === String ? $util.base64.encode(m.id, 0, m.id.length) : o.bytes === Array ? Array.prototype.slice.call(m.id) : m.id;
+                if (o.oneofs)
+                    d._id = "id";
             }
             if (m.addrs && m.addrs.length) {
                 d.addrs = [];
@@ -806,6 +897,8 @@ $root.Message = (function() {
             }
             if (m.connection != null && m.hasOwnProperty("connection")) {
                 d.connection = o.enums === String ? $root.Message.ConnectionType[m.connection] : m.connection;
+                if (o.oneofs)
+                    d._connection = "connection";
             }
             return d;
         };

@@ -5,7 +5,7 @@
 'use strict'
 const PeerStore = require('libp2p/src/peer-store')
 const PeerId = require('peer-id')
-const multihashes = require('multihashing-async').multihash
+const { base58btc } = require('multiformats/bases/base58')
 const RoutingTable = require('../../src/routing')
 const Message = require('../../src/message')
 const { convertBuffer } = require('../../src/utils')
@@ -121,7 +121,7 @@ async function GetClosestPeersSimulation () {
   }
 
   // Start the dht
-  await dht.start()
+  dht.start()
 
   const startTime = Date.now()
   const closestPeers = await dht.getClosestPeers(QUERY_KEY)
@@ -140,7 +140,7 @@ function createPeers (num) {
   const crypto = require('crypto')
   const peers = [...new Array(num)].map(() => {
     return PeerId.createFromB58String(
-      multihashes.toB58String(crypto.randomBytes(34))
+      base58btc.baseEncode(crypto.randomBytes(34))
     )
   })
 

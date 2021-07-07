@@ -41,7 +41,7 @@ class Network {
   /**
    * Start the network
    */
-  async start () {
+  start () {
     if (this._running) {
       return
     }
@@ -66,13 +66,13 @@ class Network {
         onDisconnect: () => {}
       }
     })
-    this._registrarId = await this.dht.registrar.register(topology)
+    this._registrarId = this.dht.registrar.register(topology)
   }
 
   /**
    * Stop all network activity
    */
-  async stop () {
+  stop () {
     if (!this.dht.isStarted && !this.isStarted) {
       return
     }
@@ -80,7 +80,7 @@ class Network {
 
     // unregister protocol and handlers
     if (this._registrarId) {
-      await this.dht.registrar.unregister(this._registrarId)
+      this.dht.registrar.unregister(this._registrarId)
     }
   }
 

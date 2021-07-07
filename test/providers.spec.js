@@ -1,15 +1,13 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const { MemoryDatastore } = require('interface-datastore')
-const CID = require('cids')
+const { CID } = require('multiformats/cid')
+const { sha256 } = require('multiformats/hashes/sha2')
 const LevelStore = require('datastore-level')
 const path = require('path')
 const os = require('os')
-const multihashing = require('multihashing-async')
 const Providers = require('../src/providers')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 
@@ -32,7 +30,7 @@ describe('Providers', () => {
   it('simple add and get of providers', async () => {
     providers = new Providers(new MemoryDatastore(), peerIds[2])
 
-    const cid = new CID('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
+    const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
     await Promise.all([
       providers.addProvider(cid, peerIds[0]),
@@ -48,7 +46,7 @@ describe('Providers', () => {
   it('duplicate add of provider is deduped', async () => {
     providers = new Providers(new MemoryDatastore(), peerIds[2])
 
-    const cid = new CID('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
+    const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
     await Promise.all([
       providers.addProvider(cid, peerIds[0]),
@@ -69,10 +67,10 @@ describe('Providers', () => {
     providers = new Providers(new MemoryDatastore(), peerIds[2], 10)
 
     const hashes = await Promise.all([...new Array(100)].map((i) => {
-      return multihashing(uint8ArrayFromString(`hello ${i}`), 'sha2-256')
+      return sha256.digest(uint8ArrayFromString(`hello ${i}`))
     }))
 
-    const cids = hashes.map((h) => new CID(h))
+    const cids = hashes.map((h) => CID.createV0(h))
 
     await Promise.all(cids.map(cid => providers.addProvider(cid, peerIds[0])))
     const provs = await Promise.all(cids.map(cid => providers.getProviders(cid)))
@@ -90,7 +88,7 @@ describe('Providers', () => {
 
     providers.start()
 
-    const cid = new CID('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
+    const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
     await Promise.all([
       providers.addProvider(cid, peerIds[0]),
       providers.addProvider(cid, peerIds[1])

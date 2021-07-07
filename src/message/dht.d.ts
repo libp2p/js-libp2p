@@ -28,19 +28,34 @@ export class Record implements IRecord {
     constructor(p?: IRecord);
 
     /** Record key. */
-    public key: Uint8Array;
+    public key?: (Uint8Array|null);
 
     /** Record value. */
-    public value: Uint8Array;
+    public value?: (Uint8Array|null);
 
     /** Record author. */
-    public author: Uint8Array;
+    public author?: (Uint8Array|null);
 
     /** Record signature. */
-    public signature: Uint8Array;
+    public signature?: (Uint8Array|null);
 
     /** Record timeReceived. */
-    public timeReceived: string;
+    public timeReceived?: (string|null);
+
+    /** Record _key. */
+    public _key?: "key";
+
+    /** Record _value. */
+    public _value?: "value";
+
+    /** Record _author. */
+    public _author?: "author";
+
+    /** Record _signature. */
+    public _signature?: "signature";
+
+    /** Record _timeReceived. */
+    public _timeReceived?: "timeReceived";
 
     /**
      * Encodes the specified Record message. Does not implicitly {@link Record.verify|verify} messages.
@@ -114,22 +129,34 @@ export class Message implements IMessage {
     constructor(p?: IMessage);
 
     /** Message type. */
-    public type: Message.MessageType;
+    public type?: (Message.MessageType|null);
 
     /** Message clusterLevelRaw. */
-    public clusterLevelRaw: number;
+    public clusterLevelRaw?: (number|null);
 
     /** Message key. */
-    public key: Uint8Array;
+    public key?: (Uint8Array|null);
 
     /** Message record. */
-    public record: Uint8Array;
+    public record?: (Uint8Array|null);
 
     /** Message closerPeers. */
     public closerPeers: Message.IPeer[];
 
     /** Message providerPeers. */
     public providerPeers: Message.IPeer[];
+
+    /** Message _type. */
+    public _type?: "type";
+
+    /** Message _clusterLevelRaw. */
+    public _clusterLevelRaw?: "clusterLevelRaw";
+
+    /** Message _key. */
+    public _key?: "key";
+
+    /** Message _record. */
+    public _record?: "record";
 
     /**
      * Encodes the specified Message message. Does not implicitly {@link Message.verify|verify} messages.
@@ -214,13 +241,19 @@ export namespace Message {
         constructor(p?: Message.IPeer);
 
         /** Peer id. */
-        public id: Uint8Array;
+        public id?: (Uint8Array|null);
 
         /** Peer addrs. */
         public addrs: Uint8Array[];
 
         /** Peer connection. */
-        public connection: Message.ConnectionType;
+        public connection?: (Message.ConnectionType|null);
+
+        /** Peer _id. */
+        public _id?: "id";
+
+        /** Peer _connection. */
+        public _connection?: "connection";
 
         /**
          * Encodes the specified Peer message. Does not implicitly {@link Message.Peer.verify|verify} messages.

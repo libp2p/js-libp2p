@@ -1,9 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const PeerId = require('peer-id')
 const distance = require('xor-distance')
 const uint8ArrayConcat = require('uint8arrays/concat')
@@ -31,7 +29,7 @@ describe('kad utils', () => {
       const digest = await utils.convertBuffer(buf)
 
       expect(digest)
-        .to.eql(uint8ArrayFromString('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9', 'base16'))
+        .to.equalBytes(uint8ArrayFromString('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9', 'base16'))
     })
   })
 

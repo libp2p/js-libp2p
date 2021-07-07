@@ -1,10 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-chai.use(require('chai-checkmark'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 const { Multiaddr } = require('multiaddr')
 const { Record } = require('libp2p-record')
@@ -55,7 +52,7 @@ describe('KadDHT', () => {
     })
 
     afterEach(() => {
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('simple', async () => {
@@ -93,11 +90,11 @@ describe('KadDHT', () => {
     })
 
     afterEach(() => {
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('simple with defaults', async () => {
-      const [dht] = await tdht.spawn(1)
+      const [dht] = await tdht.spawn(1, null, false)
 
       sinon.spy(dht.network, 'start')
       sinon.spy(dht.randomWalk, 'start')
@@ -105,11 +102,11 @@ describe('KadDHT', () => {
       sinon.spy(dht.network, 'stop')
       sinon.spy(dht.randomWalk, 'stop')
 
-      await dht.start()
+      dht.start()
       expect(dht.network.start.calledOnce).to.equal(true)
       expect(dht.randomWalk.start.calledOnce).to.equal(true)
 
-      await dht.stop()
+      dht.stop()
       expect(dht.network.stop.calledOnce).to.equal(true)
       expect(dht.randomWalk.stop.calledOnce).to.equal(true)
     })
@@ -119,24 +116,24 @@ describe('KadDHT', () => {
       const [dht] = await tdht.spawn(1, null, false)
       sinon.spy(dht.registrar, 'handle')
 
-      await dht.start()
+      dht.start()
       expect(dht.registrar.handle.callCount).to.equal(1)
-      await dht.stop()
+      dht.stop()
     })
 
     it('client mode', async () => {
-      const [dht] = await tdht.spawn(1, { clientMode: true })
+      const [dht] = await tdht.spawn(1, { clientMode: true }, false)
       sinon.spy(dht.registrar, 'handle')
 
-      await dht.start()
+      dht.start()
       expect(dht.registrar.handle.callCount).to.equal(0)
-      await dht.stop()
+      dht.stop()
     })
 
     it('random-walk disabled', async () => {
       const [dht] = await tdht.spawn(1, {
         randomWalk: { enabled: false }
-      })
+      }, false)
 
       sinon.spy(dht.network, 'start')
       sinon.spy(dht.randomWalk, 'start')
@@ -144,28 +141,29 @@ describe('KadDHT', () => {
       sinon.spy(dht.network, 'stop')
       sinon.spy(dht.randomWalk, 'stop')
 
-      await dht.start()
+      dht.start()
       expect(dht.network.start.calledOnce).to.equal(true)
       expect(dht.randomWalk._runningHandle).to.not.exist()
 
-      await dht.stop()
+      dht.stop()
       expect(dht.network.stop.calledOnce).to.equal(true)
       expect(dht.randomWalk.stop.calledOnce).to.equal(true) // Should be always disabled, as it can be started using the instance
     })
 
     it('should not fail when already started', async () => {
-      const [dht] = await tdht.spawn(1)
+      const [dht] = await tdht.spawn(1, null, false)
 
-      await dht.start()
-      await dht.start()
+      dht.start()
+      dht.start()
+      dht.start()
 
-      await dht.start()
+      dht.stop()
     })
 
     it('should not fail to stop when was not started', async () => {
-      const [dht] = await tdht.spawn(1)
+      const [dht] = await tdht.spawn(1, null, false)
 
-      await dht.stop()
+      dht.stop()
     })
   })
 
@@ -185,7 +183,7 @@ describe('KadDHT', () => {
       const res = await dht.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })
       expect(res).to.eql(value)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('put - removeLocal', async function () {
@@ -209,7 +207,8 @@ describe('KadDHT', () => {
       } catch (err) {
         expect(err).to.exist()
         expect(err.code).to.be.eql('ERR_NOT_FOUND')
-        return tdht.teardown()
+      } finally {
+        tdht.teardown()
       }
     })
 
@@ -231,7 +230,7 @@ describe('KadDHT', () => {
       const res = await dhtB.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })
       expect(res).to.eql(value)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('put - should require a minimum number of peers to have successful puts', async function () {
@@ -259,7 +258,7 @@ describe('KadDHT', () => {
 
       expect(res).to.eql(value)
       stub.restore()
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('put - should fail if not enough peers can be written to', async function () {
@@ -284,16 +283,11 @@ describe('KadDHT', () => {
       ])
 
       // DHT operations
-      try {
-        await dhtA.put(key, value, { minPeers: 2 })
-      } catch (err) {
-        expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NOT_ENOUGH_PUT_PEERS')
-        stub.restore()
-        stub2.restore()
-        return tdht.teardown()
-      }
-      throw new Error('put - should fail if not enough peers can be written to')
+      await expect(dhtA.put(key, value, { minPeers: 2 })).to.eventually.be.rejected().property('code', 'ERR_NOT_ENOUGH_PUT_PEERS')
+
+      stub.restore()
+      stub2.restore()
+      tdht.teardown()
     })
 
     it('put - should require all peers to be put to successfully if no minPeers specified', async function () {
@@ -316,15 +310,10 @@ describe('KadDHT', () => {
       ])
 
       // DHT operations
-      try {
-        await dhtA.put(key, value)
-      } catch (err) {
-        expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NOT_ENOUGH_PUT_PEERS')
-        stub.restore()
-        return tdht.teardown()
-      }
-      throw new Error('put - should require all peers to be put to successfully if no minPeers specified')
+      await expect(dhtA.put(key, value)).to.eventually.be.rejected().property('code', 'ERR_NOT_ENOUGH_PUT_PEERS')
+
+      stub.restore()
+      tdht.teardown()
     })
 
     it('put - get using key with no prefix (no selector available)', async function () {
@@ -343,7 +332,7 @@ describe('KadDHT', () => {
       const res = await dhtB.get(key, { timeout: 1000 })
 
       expect(res).to.eql(value)
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('put - get using key from provided validator and selector', async function () {
@@ -371,7 +360,7 @@ describe('KadDHT', () => {
       const res = await dhtB.get(key, { timeout: 1000 })
 
       expect(res).to.eql(value)
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('put - get should fail if unrecognized key prefix in get', async function () {
@@ -385,14 +374,11 @@ describe('KadDHT', () => {
 
       await tdht.connect(dhtA, dhtB)
 
-      try {
-        await dhtA.put(key, value)
-        await dhtA.get(key)
-      } catch (err) {
-        expect(err).to.exist()
-        return tdht.teardown()
-      }
-      throw new Error('put - get should fail if unrecognized key prefix in get')
+      await dhtA.put(key, value)
+
+      await expect(dhtA.get(key)).to.eventually.be.rejected().property('code', 'ERR_UNRECOGNIZED_KEY_PREFIX')
+
+      tdht.teardown()
     })
 
     it('put - get with update', async function () {
@@ -425,7 +411,7 @@ describe('KadDHT', () => {
       expect(dhtASpy.callCount).to.eql(1)
       expect(dhtASpy.getCall(0).args[2].isEqual(dhtB.peerId)).to.eql(true) // inform B
 
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('layered get', async function () {
@@ -450,7 +436,7 @@ describe('KadDHT', () => {
       const res = await dhts[0].get(key, { timeout: 1000 })
 
       expect(res).to.eql(value)
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('getMany with nvals=1 goes out to swarm if there is no local value', async () => {
@@ -460,7 +446,6 @@ describe('KadDHT', () => {
 
       const tdht = new TestDHT()
       const [dht] = await tdht.spawn(1)
-      await dht.start()
 
       const stubs = [
         // Simulate returning a peer id to query
@@ -477,6 +462,8 @@ describe('KadDHT', () => {
       for (const stub of stubs) {
         stub.restore()
       }
+
+      tdht.teardown()
     })
   })
 
@@ -525,7 +512,7 @@ describe('KadDHT', () => {
         expect(provs[0].id.id).to.be.eql(ids[3].id)
       })
 
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('find providers', async function () {
@@ -554,7 +541,7 @@ describe('KadDHT', () => {
       expect(res1).to.exist()
       expect(res1).to.have.length(2)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('find providers from client', async function () {
@@ -584,7 +571,7 @@ describe('KadDHT', () => {
       expect(res1).to.exist()
       expect(res1).to.have.length(1)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('find client provider', async function () {
@@ -611,7 +598,7 @@ describe('KadDHT', () => {
       expect(res).to.exist()
       expect(res).to.have.length(1)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('find one provider locally', async function () {
@@ -628,7 +615,7 @@ describe('KadDHT', () => {
       expect(res).to.exist()
       expect(res).to.have.length(1)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
   })
 
@@ -651,7 +638,7 @@ describe('KadDHT', () => {
       const res = await dhts[0].findPeer(ids[3], { timeout: 1000 })
       expect(res.id.isEqual(ids[3])).to.eql(true)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('find peer query', async function () {
@@ -730,7 +717,7 @@ describe('KadDHT', () => {
       // to the key
       expect(countDiffPeers(exp, out)).to.eql(0)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('getClosestPeers', async function () {
@@ -747,7 +734,7 @@ describe('KadDHT', () => {
       const res = await all(dhts[1].getClosestPeers(uint8ArrayFromString('foo')))
       expect(res).to.have.length(c.K)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
   })
 
@@ -766,7 +753,7 @@ describe('KadDHT', () => {
 
       await delay(100)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('connected node', async function () {
@@ -784,7 +771,7 @@ describe('KadDHT', () => {
       const key = await dhts[0].getPublicKey(ids[1])
       expect(uint8ArrayEquals(key, dhts[1].peerId.pubKey)).to.eql(true)
 
-      return tdht.teardown()
+      tdht.teardown()
     })
   })
 
@@ -796,14 +783,14 @@ describe('KadDHT', () => {
     })
 
     afterEach(() => {
-      return tdht.teardown()
+      tdht.teardown()
     })
 
     it('_nearestPeersToQuery', async () => {
       const [dht] = await tdht.spawn(1)
 
       await dht._add(peerIds[1])
-      const res = await dht._nearestPeersToQuery({ key: 'hello' })
+      const res = await dht._nearestPeersToQuery({ key: uint8ArrayFromString('hello') })
       expect(res).to.be.eql([{
         id: peerIds[1],
         multiaddrs: []
@@ -815,7 +802,7 @@ describe('KadDHT', () => {
 
       await dht._add(peerIds[1])
       await dht._add(peerIds[2])
-      const res = await dht._betterPeersToQuery({ key: 'hello' }, peerIds[1])
+      const res = await dht._betterPeersToQuery({ key: uint8ArrayFromString('hello') }, peerIds[1])
 
       expect(res[0].id).to.be.eql(peerIds[2])
     })
@@ -828,7 +815,7 @@ describe('KadDHT', () => {
       })
 
       afterEach(() => {
-        return tdht.teardown()
+        tdht.teardown()
       })
 
       it('allow a peer record from store if recent', async () => {
@@ -902,15 +889,10 @@ describe('KadDHT', () => {
       // (invalid transition: STOPPED -> done)
       await delay(100)
 
-      try {
-        await dhts[0].getMany(uint8ArrayFromString('/v/hello'), 5)
-      } catch (err) {
-        expect(err).to.exist()
-        expect(err.code).to.be.eql('ERR_NO_PEERS_IN_ROUTING_TABLE')
+      await expect(dhts[0].getMany(uint8ArrayFromString('/v/hello'), 5)).to.eventually.be.rejected().property('code', 'ERR_NO_PEERS_IN_ROUTING_TABLE')
 
-        return tdht.teardown()
-      }
-      throw new Error('get many should fail if only has one peer')
+      tdht.teardown()
+
       // TODO: after error switch
     })
 
@@ -926,15 +908,10 @@ describe('KadDHT', () => {
 
       await tdht.connect(dhtA, dhtB)
 
-      try {
-        await dhtA.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })
-      } catch (err) {
-        expect(err).to.exist()
-        expect(err.code).to.be.eql(errCode)
-        stub.restore()
-        return tdht.teardown()
-      }
-      throw new Error('get should handle correctly an unexpected error')
+      await expect(dhtA.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })).to.eventually.be.rejected().property('code', errCode)
+
+      stub.restore()
+      tdht.teardown()
     })
 
     it('get should handle correctly an invalid record error and return not found', async function () {
@@ -948,15 +925,10 @@ describe('KadDHT', () => {
 
       await tdht.connect(dhtA, dhtB)
 
-      try {
-        await dhtA.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })
-      } catch (err) {
-        expect(err).to.exist()
-        expect(err.code).to.be.eql('ERR_NOT_FOUND')
-        stub.restore()
-        return tdht.teardown()
-      }
-      throw new Error('get should handle correctly an invalid record error and return not found')
+      await expect(dhtA.get(uint8ArrayFromString('/v/hello'), { timeout: 1000 })).to.eventually.be.rejected().property('code', 'ERR_NOT_FOUND')
+
+      stub.restore()
+      tdht.teardown()
     })
 
     it('findPeer should fail if no closest peers available', async function () {
@@ -974,15 +946,10 @@ describe('KadDHT', () => {
 
       const stub = sinon.stub(dhts[0].routingTable, 'closestPeers').returns([])
 
-      try {
-        await dhts[0].findPeer(ids[3], { timeout: 1000 })
-      } catch (err) {
-        expect(err).to.exist()
-        expect(err.code).to.eql('ERR_LOOKUP_FAILED')
-        stub.restore()
-        return tdht.teardown()
-      }
-      throw new Error('get should handle correctly an invalid record error and return not found')
+      await expect(dhts[0].findPeer(ids[3], { timeout: 1000 })).to.eventually.be.rejected().property('code', 'ERR_LOOKUP_FAILED')
+
+      stub.restore()
+      tdht.teardown()
     })
 
     it('should not find peers with different protocols', async function () {
@@ -1003,15 +970,11 @@ describe('KadDHT', () => {
         tdht.connect(dhts[2], dhts[3])
       ])
 
-      try {
-        const ids = dhts.map((d) => d.peerId)
-        await dhts[0].findPeer(ids[3], { timeout: 1000 })
-      } catch (err) {
-        expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NOT_FOUND')
-        return tdht.teardown()
-      }
-      throw new Error('seperate protocols should have their own topologies and communication streams')
+      const ids = dhts.map((d) => d.peerId)
+
+      await expect(dhts[0].findPeer(ids[3], { timeout: 1000 })).to.eventually.be.rejected().property('code', 'ERR_NOT_FOUND')
+
+      tdht.teardown()
     })
 
     it('force legacy protocol', async function () {
@@ -1023,7 +986,7 @@ describe('KadDHT', () => {
       const [dht] = await tdht.spawn(1, { protocolPrefix: protocol, forceProtocolLegacy: true })
 
       expect(dht.protocol).to.eql(protocol)
-      return tdht.teardown()
+      tdht.teardown()
     })
   })
 })

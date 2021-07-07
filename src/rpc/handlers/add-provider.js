@@ -1,6 +1,6 @@
 'use strict'
 
-const CID = require('cids')
+const { CID } = require('multiformats/cid')
 const errcode = require('err-code')
 
 const utils = require('../../utils')
@@ -31,7 +31,7 @@ module.exports = (dht) => {
     /** @type {CID} */
     let cid
     try {
-      cid = new CID(msg.key)
+      cid = CID.decode(msg.key)
     } catch (err) {
       const errMsg = `Invalid CID: ${err.message}`
       throw errcode(new Error(errMsg), 'ERR_INVALID_CID')
@@ -49,7 +49,7 @@ module.exports = (dht) => {
         return
       }
 
-      log('received provider %s for %s (addrs %s)', peerId.toB58String(), cid.toBaseEncodedString(), pi.multiaddrs.map((m) => m.toString()))
+      log('received provider %s for %s (addrs %s)', peerId.toB58String(), cid.toString(), pi.multiaddrs.map((m) => m.toString()))
 
       if (!dht._isSelf(pi.id)) {
         // Add known address to peer store

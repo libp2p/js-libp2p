@@ -1,10 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-chai.use(require('chai-checkmark'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 const RandomWalk = require('../src/random-walk')
 const { defaultRandomWalk } = require('../src/constants')
@@ -184,6 +181,7 @@ describe('Random Walk', () => {
       sinon.stub(randomWalk, '_walk').callsFake(async (queries, timeout) => { // eslint-disable-line require-await
         expect(queries).to.eql(options.queriesPerPeriod)
         expect(timeout).to.eql(options.timeout)
+        randomWalk.stop()
         done()
       })
       randomWalk.start()
@@ -200,15 +198,14 @@ describe('Random Walk', () => {
       const error = { code: 'ERR_NOT_FOUND' }
       const randomWalk = new RandomWalk(mockDHT, options)
       sinon.stub(randomWalk._kadDHT, 'findPeer').callsFake((_, opts) => {
-        expect(opts.timeout).to.eql(options.timeout).mark()
+        if (randomWalk._kadDHT.findPeer.callCount === 3) {
+          randomWalk.stop()
+          done()
+        } else {
+          expect(opts.timeout).to.eql(options.timeout).mark()
 
-        throw error
-      })
-
-      expect(3).checks(() => {
-        randomWalk.stop()
-        expect(randomWalk._kadDHT.findPeer.callCount).to.eql(3)
-        done()
+          throw error
+        }
       })
 
       randomWalk.start()
@@ -275,6 +272,6 @@ describe('Random Walk', () => {
     bootstrap(dhts)
     await waitForWellFormedTables(dhts, 7, 0, timeout)
 
-    return tdht.teardown()
+    tdht.teardown()
   })
 })

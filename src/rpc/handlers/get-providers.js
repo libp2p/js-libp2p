@@ -1,6 +1,6 @@
 'use strict'
 
-const CID = require('cids')
+const { CID } = require('multiformats/cid')
 const errcode = require('err-code')
 
 const Message = require('../../message')
@@ -25,12 +25,12 @@ module.exports = (dht) => {
   async function getProviders (peerId, msg) {
     let cid
     try {
-      cid = new CID(msg.key)
+      cid = CID.decode(msg.key)
     } catch (err) {
       throw errcode(new Error(`Invalid CID: ${err.message}`), 'ERR_INVALID_CID')
     }
 
-    log('%s', cid.toBaseEncodedString())
+    log('%s', cid.toString())
     const dsKey = utils.bufferToKey(cid.bytes)
 
     const [has, peers, closer] = await Promise.all([

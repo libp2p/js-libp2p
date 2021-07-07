@@ -108,7 +108,7 @@ class TestDHT {
     })
 
     if (autoStart) {
-      await dht.start()
+      dht.start()
     }
 
     dht.regRecord = regRecord
@@ -164,8 +164,8 @@ class TestDHT {
     }))
   }
 
-  async teardown () {
-    await Promise.all(this.nodes.map((node) => node.stop()))
+  teardown () {
+    this.nodes.forEach(node => node.stop())
     this.nodes = []
   }
 }

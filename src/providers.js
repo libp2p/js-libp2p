@@ -10,7 +10,7 @@ const c = require('./constants')
 const utils = require('./utils')
 
 /**
- * @typedef {import('cids')} CID
+ * @typedef {import('multiformats/cid').CID} CID
  * @typedef {import('interface-datastore').Datastore} Datastore
  */
 
@@ -178,7 +178,7 @@ class Providers {
    */
   async addProvider (cid, provider) { // eslint-disable-line require-await
     return this.syncQueue.add(async () => {
-      this._log('addProvider %s', cid.toBaseEncodedString())
+      this._log('addProvider %s', cid.toString())
       const provs = await this._getProvidersMap(cid)
 
       this._log('loaded %s provs', provs.size)
@@ -199,7 +199,7 @@ class Providers {
    */
   async getProviders (cid) { // eslint-disable-line require-await
     return this.syncQueue.add(async () => {
-      this._log('getProviders %s', cid.toBaseEncodedString())
+      this._log('getProviders %s', cid.toString())
       const provs = await this._getProvidersMap(cid)
       return [...provs.keys()].map((base32PeerId) => {
         return new PeerId(utils.decodeBase32(base32PeerId))

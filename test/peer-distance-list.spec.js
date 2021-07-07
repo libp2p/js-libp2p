@@ -1,9 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const PeerId = require('peer-id')
 const kadUtils = require('../src/utils')
 const PeerDistanceList = require('../src/peer-list/peer-distance-list')

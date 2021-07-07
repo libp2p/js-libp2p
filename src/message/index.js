@@ -95,7 +95,7 @@ class Message {
   static deserialize (raw) {
     const dec = Proto.Message.decode(raw)
 
-    const msg = new Message(dec.type, dec.key, dec.clusterLevelRaw)
+    const msg = new Message(dec.type || 0, dec.key || Uint8Array.from([]), dec.clusterLevelRaw || 0)
 
     msg.closerPeers = dec.closerPeers.map(fromPbPeer)
     msg.providerPeers = dec.providerPeers.map(fromPbPeer)

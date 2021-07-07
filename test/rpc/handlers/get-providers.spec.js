@@ -1,9 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
+const { expect } = require('aegir/utils/chai')
 const Message = require('../../../src/message')
 const utils = require('../../../src/utils')
 const handler = require('../../../src/rpc/handlers/get-providers')
