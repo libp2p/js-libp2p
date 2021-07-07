@@ -2,10 +2,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const expect = chai.expect
-chai.use(dirtyChai)
+const { expect } = require('aegir/utils/chai')
 const crypto = require('../src')
 const fixtures = require('./fixtures/go-key-rsa')
 const { expectErrCode } = require('./util')

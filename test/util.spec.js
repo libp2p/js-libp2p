@@ -2,10 +2,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const expect = chai.expect
-chai.use(dirtyChai)
+const { expect } = require('aegir/utils/chai')
 require('node-forge/lib/jsbn')
 const forge = require('node-forge/lib/forge')
 const util = require('../src/util')

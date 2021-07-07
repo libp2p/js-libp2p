@@ -2,11 +2,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const expect = chai.expect
-chai.use(dirtyChai)
-chai.use(require('chai-string'))
+const { expect } = require('aegir/utils/chai')
 const { expectErrCode } = require('../util')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 

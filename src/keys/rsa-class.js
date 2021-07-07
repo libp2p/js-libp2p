@@ -1,6 +1,6 @@
 'use strict'
 
-const sha = require('multihashing-async/src/sha')
+const { sha256 } = require('multiformats/hashes/sha2')
 const errcode = require('err-code')
 const uint8ArrayEquals = require('uint8arrays/equals')
 const uint8ArrayToString = require('uint8arrays/to-string')
@@ -41,8 +41,10 @@ class RsaPublicKey {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash () { // eslint-disable-line require-await
-    return sha.multihashing(this.bytes, 'sha2-256')
+  async hash () {
+    const { bytes } = await sha256.digest(this.bytes)
+
+    return bytes
   }
 }
 
@@ -89,8 +91,10 @@ class RsaPrivateKey {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash () { // eslint-disable-line require-await
-    return sha.multihashing(this.bytes, 'sha2-256')
+  async hash () {
+    const { bytes } = await sha256.digest(this.bytes)
+
+    return bytes
   }
 
   /**

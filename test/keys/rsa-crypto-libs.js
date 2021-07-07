@@ -3,11 +3,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 8] */
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const expect = chai.expect
-chai.use(dirtyChai)
-chai.use(require('chai-string'))
+const { expect } = require('aegir/utils/chai')
 
 const LIBS = ['ursa', 'keypair']
 

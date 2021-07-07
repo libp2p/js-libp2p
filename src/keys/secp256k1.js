@@ -1,8 +1,7 @@
 'use strict'
 
 const secp256k1 = require('secp256k1')
-const sha = require('multihashing-async/src/sha')
-const HASH_ALGORITHM = 'sha2-256'
+const { sha256 } = require('multiformats/hashes/sha2')
 
 module.exports = (randomBytes) => {
   const privateKeyLength = 32
@@ -16,13 +15,13 @@ module.exports = (randomBytes) => {
   }
 
   async function hashAndSign (key, msg) {
-    const digest = await sha.digest(msg, HASH_ALGORITHM)
+    const { digest } = await sha256.digest(msg)
     const sig = secp256k1.ecdsaSign(digest, key)
     return secp256k1.signatureExport(sig.signature)
   }
 
   async function hashAndVerify (key, sig, msg) {
-    const digest = await sha.digest(msg, HASH_ALGORITHM)
+    const { digest } = await sha256.digest(msg)
     sig = secp256k1.signatureImport(sig)
     return secp256k1.ecdsaVerify(sig, digest, key)
   }

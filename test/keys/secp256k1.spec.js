@@ -1,10 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const expect = chai.expect
-chai.use(dirtyChai)
+const { expect } = require('aegir/utils/chai')
 const crypto = require('../../src')
 const secp256k1 = crypto.keys.supportedKeys.secp256k1
 const keysPBM = crypto.keys.keysPBM

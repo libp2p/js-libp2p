@@ -43,10 +43,7 @@
     "is-typedarray": "^1.0.0",
     "iso-random-stream": "^2.0.0",
     "keypair": "^1.0.1",
-    "multibase": "^4.0.3",
-    "multicodec": "^3.0.1",
-    "multihashes": "^4.0.2",
-    "multihashing-async": "^2.1.2",
+    "multiformats": "^9.1.2",
     "node-forge": "^0.10.0",
     "pem-jwk": "^2.0.0",
     "protobufjs": "^6.10.2",
@@ -55,21 +52,15 @@
     "ursa-optional": "^0.10.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.12",
-    "@types/chai-string": "^1.4.2",
-    "@types/dirty-chai": "^2.0.2",
     "@types/mocha": "^8.0.1",
     "aegir": "^33.0.0",
     "benchmark": "^2.1.4",
-    "chai": "^4.2.0",
-    "chai-string": "^1.5.0",
-    "dirty-chai": "^2.0.1",
-    "sinon": "^10.0.0",
+    "sinon": "^11.1.1",
     "util": "^0.12.3"
   },
   "aegir": {
     "build": {
-      "bundlesizeMax": "118kB"
+      "bundlesizeMax": "116kB"
     }
   },
   "engines": {

@@ -1,9 +1,10 @@
 'use strict'
 
-const sha = require('multihashing-async/src/sha')
 const errcode = require('err-code')
 const uint8ArrayEquals = require('uint8arrays/equals')
-const mh = require('multihashes')
+const { sha256 } = require('multiformats/hashes/sha2')
+const { base58btc } = require('multiformats/bases/base58')
+const { identity } = require('multiformats/hashes/identity')
 const crypto = require('./ed25519')
 const pbm = require('./keys')
 const exporter = require('./exporter')
@@ -32,8 +33,10 @@ class Ed25519PublicKey {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash () { // eslint-disable-line require-await
-    return sha.multihashing(this.bytes, 'sha2-256')
+  async hash () {
+    const { bytes } = await sha256.digest(this.bytes)
+
+    return bytes
   }
 }
 
@@ -68,22 +71,24 @@ class Ed25519PrivateKey {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash () { // eslint-disable-line require-await
-    return sha.multihashing(this.bytes, 'sha2-256')
+  async hash () {
+    const { bytes } = await sha256.digest(this.bytes)
+
+    return bytes
   }
 
   /**
    * Gets the ID of the key.
    *
-   * The key id is the base58 encoding of the SHA-256 multihash of its public key.
+   * The key id is the base58 encoding of the identity multihash containing its public key.
    * The public key is a protobuf encoding containing a type and the DER encoding
    * of the PKCS SubjectPublicKeyInfo.
    *
    * @returns {Promise<string>}
    */
   async id () {
-    const encoding = mh.encode(this.public.bytes, 'identity')
-    return await mh.toB58String(encoding)
+    const encoding = await identity.digest(this.public.bytes)
+    return base58btc.encode(encoding.bytes).substring(1)
   }
 
   /**
