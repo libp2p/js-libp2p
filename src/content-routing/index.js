@@ -98,6 +98,7 @@ module.exports = (dht) => {
 
       provs
         .forEach(id => {
+          /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
           const peerData = dht.peerStore.get(id)
 
           if (peerData) {

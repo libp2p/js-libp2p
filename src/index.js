@@ -23,12 +23,12 @@ const QueryManager = require('./query-manager')
 const Record = libp2pRecord.Record
 
 /**
- * @typedef {import('libp2p')} Libp2p
- * @typedef {import('libp2p/src/peer-store')} PeerStore
+ * @typedef {*} Libp2p
+ * @typedef {*} PeerStore
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('interface-datastore').Datastore} Datastore
- * @typedef {import('libp2p/src/dialer')} Dialer
- * @typedef {import('libp2p/src/registrar')} Registrar
+ * @typedef {*} Dialer
+ * @typedef {*} Registrar
  * @typedef {import('multiformats/cid').CID} CID
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
  * @typedef {object} PeerData
@@ -417,6 +417,7 @@ class KadDHT extends EventEmitter {
     const ids = this.routingTable.closestPeers(key, this.kBucketSize)
 
     return ids.map((p) => {
+      /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
       const peer = this.peerStore.get(p)
 
       return {

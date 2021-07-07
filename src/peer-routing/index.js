@@ -31,6 +31,7 @@ module.exports = (dht) => {
     dht._log(`findPeerLocal ${peer.toB58String()}`)
     const p = await dht.routingTable.find(peer)
 
+    /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
     const peerData = p && dht.peerStore.get(p)
 
     if (peerData) {
@@ -146,6 +147,7 @@ module.exports = (dht) => {
       // sanity check
       const match = peers.find((p) => p.isEqual(id))
       if (match) {
+        /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
         const peer = dht.peerStore.get(id)
 
         if (peer) {
@@ -205,6 +207,7 @@ module.exports = (dht) => {
         throw errcode(new Error('No peer found'), 'ERR_NOT_FOUND')
       }
 
+      /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
       const peerData = dht.peerStore.get(id)
 
       if (!peerData) {
@@ -266,6 +269,7 @@ module.exports = (dht) => {
       dht._log('getPublicKey %s', peer.toB58String())
 
       // local check
+      /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
       const peerData = dht.peerStore.get(peer)
 
       if (peerData && peerData.id.pubKey) {

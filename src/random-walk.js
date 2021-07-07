@@ -32,6 +32,8 @@ class RandomWalk {
     }
 
     this.log = logger(dht.peerId, 'random-walk')
+
+    /** @type {*} */
     this._timeoutId = undefined
   }
 
