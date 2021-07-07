@@ -1,6 +1,6 @@
 {
   "name": "libp2p-kad-dht",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -91,19 +91,21 @@
     "Vasco Santos <vasco.santos@moxy.studio>",
     "David Dias <daviddias.p@gmail.com>",
     "Jacob Heun <jacobheun@gmail.com>",
-    "dirkmc <dirkmdev@gmail.com>",
+    "kumavis <kumavis@users.noreply.github.com>",
     "Alex Potsides <alex@achingbrain.net>",
+    "dirkmc <dirkmdev@gmail.com>",
     "Alan Shaw <alan.shaw@protocol.ai>",
     "Josh Field <joshfield999@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Hugo Dias <hugomrdias@gmail.com>",
-    "Blake Byrnes <blakebyrnes@gmail.com>",
     "Richard Schneider <makaretu@gmail.com>",
+    "Blake Byrnes <blakebyrnes@gmail.com>",
     "John Hiesey <jhiesey@cs.stanford.edu>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Lars Gierth <larsg@systemli.org>",
     "Marcus Bernales <mboperator@gmail.com>",
     "Pedro Teixeira <i@pgte.me>",
+    "Qmstream <51881352+Qmstream@users.noreply.github.com>",
     "Thomas Eizinger <thomas@eizinger.io>"
   ]
 }
