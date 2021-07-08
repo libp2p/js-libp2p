@@ -55,7 +55,7 @@
     "it-pipe": "^1.1.0",
     "k-bucket": "^5.0.0",
     "libp2p-crypto": "^0.19.5",
-    "libp2p-interfaces": "^0.12.1",
+    "libp2p-interfaces": "^1.0.0",
     "libp2p-record": "^0.10.4",
     "multiaddr": "^10.0.0",
     "multiformats": "^9.0.0",
