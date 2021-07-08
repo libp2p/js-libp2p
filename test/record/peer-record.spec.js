@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 
-const tests = require('libp2p-interfaces/src/record/tests')
+const tests = require('libp2p-interfaces-compliance-tests/src/record')
 const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 
