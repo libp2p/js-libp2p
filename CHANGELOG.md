@@ -1,3 +1,17 @@
+# [0.13.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.12.3...v0.13.0) (2021-07-08)
+
+
+### chore
+
+* update deps ([#114](https://github.com/libp2p/js-libp2p-bootstrap/issues/114)) ([597144f](https://github.com/libp2p/js-libp2p-bootstrap/commit/597144f9c0e0a9674c5e90595d516d191b83a11f))
+
+
+### BREAKING CHANGES
+
+* uses new peer-id, multiaddr and friends
+
+
+
 ## [0.12.3](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.12.2...v0.12.3) (2021-04-13)
 
 
