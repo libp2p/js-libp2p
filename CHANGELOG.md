@@ -1,3 +1,7 @@
+## [0.17.1](https://github.com/libp2p/js-libp2p-tcp/compare/v0.17.0...v0.17.1) (2021-07-08)
+
+
+
 # [0.17.0](https://github.com/libp2p/js-libp2p-tcp/compare/v0.16.0...v0.17.0) (2021-07-07)
 
 
