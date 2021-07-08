@@ -1,6 +1,6 @@
 {
   "name": "libp2p-mplex",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -70,8 +70,8 @@
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Alan Shaw <alan.shaw@protocol.ai>",
     "Victor Bjelkholm <victorbjelkholm@gmail.com>",
-    "Francisco Baio Dias <xicombd@gmail.com>",
     "Alex Potsides <alex@achingbrain.net>",
+    "Francisco Baio Dias <xicombd@gmail.com>",
     "Stephen Whitmore <stephen.whitmore@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
     "Hugo Dias <hugomrdias@gmail.com>",
