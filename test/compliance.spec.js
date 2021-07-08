@@ -2,7 +2,7 @@
 
 /* eslint-env mocha */
 
-const tests = require('libp2p-interfaces/src/peer-discovery/tests')
+const tests = require('libp2p-interfaces-compliance-tests/src/peer-discovery')
 
 const Bootstrap = require('../src')
 const peerList = require('./default-peers')

@@ -31,13 +31,14 @@
   "devDependencies": {
     "@types/debug": "^4.1.5",
     "aegir": "^33.0.0",
-    "libp2p-interfaces": "^0.9.0"
+    "libp2p-interfaces": "^1.0.0",
+    "libp2p-interfaces-compliance-tests": "^1.0.0"
   },
   "dependencies": {
     "debug": "^4.3.1",
-    "mafmt": "^9.0.0",
-    "multiaddr": "^9.0.1",
-    "peer-id": "^0.14.0"
+    "mafmt": "^10.0.0",
+    "multiaddr": "^10.0.0",
+    "peer-id": "^0.15.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",
