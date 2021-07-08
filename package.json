@@ -47,7 +47,7 @@
     "aegir": "^33.0.0",
     "it-pair": "^1.0.0",
     "it-pipe": "^1.1.0",
-    "libp2p-interfaces": "^0.12.0",
+    "libp2p-interfaces": "^1.0.0",
     "streaming-iterables": "^6.0.0",
     "util": "^0.12.3"
   },
