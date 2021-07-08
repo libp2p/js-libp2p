@@ -47,7 +47,7 @@
     "libp2p-utils": "^0.4.0",
     "mafmt": "^10.0.0",
     "multiaddr": "^10.0.0",
-    "multiaddr-to-uri": "^7.0.0",
+    "multiaddr-to-uri": "^8.0.0",
     "p-defer": "^3.0.0",
     "p-timeout": "^4.1.0"
   },
@@ -58,7 +58,8 @@
     "is-loopback-addr": "^1.0.1",
     "it-goodbye": "^3.0.0",
     "it-pipe": "^1.1.0",
-    "libp2p-interfaces": "^0.12.1",
+    "libp2p-interfaces": "^1.0.0",
+    "libp2p-interfaces-compliance-tests": "^1.0.0",
     "streaming-iterables": "^6.0.0",
     "uint8arrays": "^2.1.2",
     "util": "^0.12.3"

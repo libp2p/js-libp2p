@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const tests = require('libp2p-interfaces/src/transport/tests')
+const tests = require('libp2p-interfaces-compliance-tests/src/transport')
 const { Multiaddr } = require('multiaddr')
 const http = require('http')
 const WS = require('../src')
