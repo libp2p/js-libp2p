@@ -1,3 +1,17 @@
+# [0.17.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.16.0...v0.17.0) (2021-07-08)
+
+
+### chore
+
+* update deps ([#100](https://github.com/libp2p/js-libp2p-mdns/issues/100)) ([0b974bc](https://github.com/libp2p/js-libp2p-mdns/commit/0b974bc9e0d110303e2d15a173447ec5631d15f9))
+
+
+### BREAKING CHANGES
+
+* uses then new multiaddr and friends
+
+
+
 # [0.16.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.13.3...v0.16.0) (2021-04-13)
 
 
