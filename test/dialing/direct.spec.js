@@ -177,6 +177,26 @@ describe('Dialing (direct, WebSockets)', () => {
       .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
   })
 
+  it('should throw when a peer advertises more than the allowed number of peers', async () => {
+    const spy = sinon.spy()
+    const dialer = new Dialer({
+      transportManager: localTM,
+      maxAddrsToDial: 10,
+      peerStore: {
+        delete: spy,
+        addressBook: {
+          add: () => { },
+          getMultiaddrsForPeer: () => Array.from({ length: 11 }, (_, i) => new Multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`))
+        }
+      }
+    })
+
+    await expect(dialer.connectToPeer(remoteAddr))
+      .to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_TOO_MANY_ADDRESSES)
+    expect(spy.calledOnce).to.be.true()
+  })
+
   it('should sort addresses on dial', async () => {
     const peerMultiaddrs = [
       new Multiaddr('/ip4/127.0.0.1/tcp/15001/ws'),

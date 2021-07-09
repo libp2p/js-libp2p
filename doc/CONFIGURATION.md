@@ -525,6 +525,7 @@ Dialing in libp2p can be configured to limit the rate of dialing, and how long d
 | Name | Type | Description |
 |------|------|-------------|
 | maxParallelDials | `number` | How many multiaddrs we can dial in parallel. |
+| maxAddrsToDial | `number` | How many multiaddrs is the dial allowed to dial for a single peer. |
 | maxDialsPerPeer | `number` | How many multiaddrs we can dial per peer, in parallel. |
 | dialTimeout | `number` | Second dial timeout per peer in ms. |
 | resolvers | `object` | Dial [Resolvers](https://github.com/multiformats/js-multiaddr/blob/master/src/resolvers/index.js) for resolving multiaddrs |
@@ -549,6 +550,7 @@ const node = await Libp2p.create({
   },
   dialer: {
     maxParallelDials: 100,
+    maxAddrsToDial: 25,
     maxDialsPerPeer: 4,
     dialTimeout: 30e3,
     resolvers: {
