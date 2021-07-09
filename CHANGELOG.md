@@ -1,3 +1,17 @@
+# [0.27.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.26.0...v0.27.0) (2021-07-09)
+
+
+### chore
+
+* update dependencies ([#116](https://github.com/libp2p/js-libp2p-floodsub/issues/116)) ([7103cf2](https://github.com/libp2p/js-libp2p-floodsub/commit/7103cf2641b1713d1c53115a14406dcd54b1ebf4))
+
+
+### BREAKING CHANGES
+
+* uses new multiaddr, libp2p-interfaces, etc
+
+
+
 # [0.26.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.25.3...v0.26.0) (2021-05-28)
 
 
