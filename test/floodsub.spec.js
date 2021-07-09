@@ -4,107 +4,137 @@
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 const uint8ArrayFromString = require('uint8arrays/from-string')
-
+const uint8ArrayToString = require('uint8arrays/to-string')
+const { sha256 } = require('multiformats/hashes/sha2')
 const { utils } = require('libp2p-interfaces/src/pubsub')
-const pWaitFor = require('p-wait-for')
+const { SignaturePolicy } = require('libp2p-interfaces/src/pubsub/signature-policy')
+const PeerStreams = require('libp2p-interfaces/src/pubsub/peer-streams')
+const PeerId = require('peer-id')
 
 const Floodsub = require('../src')
-const { createPeers } = require('./utils/create-peer')
 
 const defOptions = {
-  emitSelf: true
+  emitSelf: true,
+  globalSignaturePolicy: SignaturePolicy.StrictNoSign
 }
 
 const topic = 'my-topic'
 const message = uint8ArrayFromString('a neat message')
 
 describe('floodsub', () => {
-  let floodsub1, floodsub2
-  let peer1, peer2
+  let floodsub
 
   before(async () => {
     expect(Floodsub.multicodec).to.exist()
 
-    ;[peer1, peer2] = await createPeers({ number: 2 })
-    floodsub1 = new Floodsub(peer1, defOptions)
-    floodsub2 = new Floodsub(peer2, defOptions)
+    const libp2p = {
+      peerId: await PeerId.create(),
+      registrar: {
+        handle: () => {},
+        register: () => {},
+        unregister: () => {}
+      }
+    }
+
+    floodsub = new Floodsub(libp2p, defOptions)
   })
 
   beforeEach(() => {
-    return Promise.all([
-      floodsub1.start(),
-      floodsub2.start()
-    ])
+    floodsub.start()
   })
 
-  afterEach(async () => {
+  afterEach(() => {
     sinon.restore()
-    await floodsub1.stop()
-    await floodsub2.stop()
-    await peer1.stop()
-    await peer2.stop()
+    floodsub.stop()
   })
 
-  it('checks cache when processing incoming message', async () => {
-    sinon.spy(floodsub2.seenCache, 'has')
-    sinon.spy(floodsub2.seenCache, 'put')
-    sinon.spy(floodsub2, '_processRpcMessage')
-    sinon.spy(floodsub2, '_publish')
+  it('checks cache when processing incoming message', async function () {
+    const otherPeer = await PeerId.create()
+    const sig = await sha256.encode(message)
+    const key = uint8ArrayToString(sig, 'base64')
+    let callCount = 0
 
-    let messageReceived = false
-    function checkMessage (msg) {
-      messageReceived = true
+    const peerStream = new PeerStreams({
+      id: otherPeer,
+      protocol: 'test'
+    })
+    const rpc = {
+      subscriptions: [],
+      msgs: [{
+        receivedFrom: peerStream.id.toB58String(),
+        data: message,
+        topicIDs: [topic]
+      }]
     }
 
-    // connect peers
-    await floodsub1._libp2p.dial(floodsub2._libp2p.peerId)
-
-    // subscribe and wait for subscription to be received in the other peer
-    floodsub2.subscribe(topic)
-    floodsub2.on(topic, checkMessage)
-    await pWaitFor(() => {
-      const subs = floodsub1.getSubscribers(topic)
-
-      return subs.length === 1
+    floodsub.subscribe(topic)
+    floodsub.on(topic, () => {
+      callCount++
     })
 
-    await floodsub1.publish(topic, message)
-    await pWaitFor(() => messageReceived === true)
+    // the message should not be in the cache
+    expect(floodsub.seenCache.has(key)).to.be.false()
 
-    expect(floodsub2.seenCache.has.callCount).to.eql(2) // Put also calls .has
-    expect(floodsub2.seenCache.put.callCount).to.eql(1)
-    expect(floodsub2._publish.callCount).to.eql(1) // Forward message
+    // receive the message once
+    await floodsub._processRpc(peerStream.id.toB58String(), peerStream, rpc)
 
-    const [msgProcessed] = floodsub2._processRpcMessage.getCall(0).args
+    // should have received the message
+    expect(callCount).to.equal(1)
 
-    // Force a second process for the message
-    await floodsub2._processRpcMessage(msgProcessed)
+    // should be in the cache now
+    expect(floodsub.seenCache.has(key)).to.be.true()
 
-    expect(floodsub2.seenCache.has.callCount).to.eql(3)
-    expect(floodsub2.seenCache.put.callCount).to.eql(1) // No new put
-    expect(floodsub2._publish.callCount).to.eql(1) // Not forwarded
+    // receive the message multiple times
+    await floodsub._processRpc(peerStream.id.toB58String(), peerStream, rpc)
+    await floodsub._processRpc(peerStream.id.toB58String(), peerStream, rpc)
+    await floodsub._processRpc(peerStream.id.toB58String(), peerStream, rpc)
+
+    // should only have emitted the message once
+    expect(callCount).to.equal(1)
   })
 
   it('forwards normalized messages on publish', async () => {
-    sinon.spy(floodsub1, '_forwardMessage')
-    sinon.spy(utils, 'randomSeqno')
+    sinon.spy(floodsub, '_forwardMessage')
 
-    await floodsub1.publish(topic, message)
-    expect(floodsub1._forwardMessage.callCount).to.eql(1)
-    const [messageToEmit] = floodsub1._forwardMessage.getCall(0).args
-
-    const computedSeqno = utils.randomSeqno.getCall(0).returnValue
-    utils.randomSeqno.restore()
-    sinon.stub(utils, 'randomSeqno').returns(computedSeqno)
+    await floodsub.publish(topic, message)
+    expect(floodsub._forwardMessage.callCount).to.equal(1)
+    const [messageToEmit] = floodsub._forwardMessage.getCall(0).args
 
     const expected = utils.normalizeInRpcMessage(
-      await floodsub1._buildMessage({
-        receivedFrom: peer1.peerId.toB58String(),
-        from: peer1.peerId.toB58String(),
+      await floodsub._buildMessage({
+        receivedFrom: floodsub.peerId.toB58String(),
         data: message,
         topicIDs: [topic]
       }))
 
     expect(messageToEmit).to.eql(expected)
+  })
+
+  it('does not send received message back to original sender', async () => {
+    sinon.spy(floodsub, '_sendRpc')
+
+    const sender = await PeerId.create()
+
+    const peerStream = new PeerStreams({
+      id: sender,
+      protocol: 'test'
+    })
+    const rpc = {
+      subscriptions: [],
+      msgs: [{
+        receivedFrom: peerStream.id.toB58String(),
+        data: message,
+        topicIDs: [topic]
+      }]
+    }
+
+    // otherPeer is subscribed to the topic
+    floodsub.topics.set(topic, new Set([sender.toB58String()]))
+
+    // receive the message
+    await floodsub._processRpc(peerStream.id.toB58String(), peerStream, rpc)
+
+    // should not forward back to the sender
+    expect(floodsub._sendRpc.called).to.be.false()
   })
 })

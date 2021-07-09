@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const tests = require('libp2p-interfaces/src/pubsub/tests')
+const tests = require('libp2p-interfaces-compliance-tests/src/pubsub')
 
 const Floodsub = require('../src')
 const { createPeers } = require('./utils/create-peer')
