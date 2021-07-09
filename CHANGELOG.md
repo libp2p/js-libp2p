@@ -1,3 +1,24 @@
+# [0.32.0-rc.0](https://github.com/libp2p/js-libp2p/compare/v0.31.7...v0.32.0-rc.0) (2021-07-09)
+
+
+### Bug Fixes
+
+* do not allow dial to large number of multiaddrs ([#954](https://github.com/libp2p/js-libp2p/issues/954)) ([af723b3](https://github.com/libp2p/js-libp2p/commit/af723b355e1ddf4aecf439f81c3aa67613d45fa4))
+
+
+### chore
+
+* update to new multiformats ([#948](https://github.com/libp2p/js-libp2p/issues/948)) ([13cf476](https://github.com/libp2p/js-libp2p/commit/13cf4761489d59b22924bb8ec2ec6dbe207b280c))
+
+
+### BREAKING CHANGES
+
+* uses the CID class from the new multiformats module
+
+Co-authored-by: Vasco Santos <vasco.santos@moxy.studio>
+
+
+
 ## [0.31.7](https://github.com/libp2p/js-libp2p/compare/v0.31.6...v0.31.7) (2021-06-14)
 
 
