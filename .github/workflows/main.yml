@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Use Node.js 14
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
     - run: npm install
     - run: npx aegir lint
     - uses: gozala/typescript-error-reporter-action@v1.0.8

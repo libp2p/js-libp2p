@@ -52,7 +52,7 @@ describe('Dialing (via relay, TCP)', () => {
       await libp2p.stop()
       // Clear the peer stores
       for (const peerIdStr of libp2p.peerStore.peers.keys()) {
-        const peerId = PeerId.createFromCID(peerIdStr)
+        const peerId = PeerId.createFromB58String(peerIdStr)
         libp2p.peerStore.delete(peerId)
       }
     }))

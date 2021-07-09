@@ -8,7 +8,7 @@ const sinon = require('sinon')
 const pDefer = require('p-defer')
 const mergeOptions = require('merge-options')
 
-const CID = require('cids')
+const { CID } = require('multiformats/cid')
 const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const { Multiaddr } = require('multiaddr')
@@ -164,7 +164,7 @@ describe('content-routing', () => {
     })
 
     it('should be able to register as a provider', async () => {
-      const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+      const cid = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
       const provider = 'QmZNgCqZCvTsi3B4Vt7gsSqpkqDpE7M2Y9TDmEhbDb4ceF'
 
       const mockBlockApi = nock('http://0.0.0.0:60197')
@@ -191,7 +191,7 @@ describe('content-routing', () => {
     })
 
     it('should handle errors when registering as a provider', async () => {
-      const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+      const cid = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
       const mockApi = nock('http://0.0.0.0:60197')
         // mock the block/stat call
         .post('/api/v0/block/stat')
@@ -205,7 +205,7 @@ describe('content-routing', () => {
     })
 
     it('should be able to find providers', async () => {
-      const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+      const cid = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
       const provider = 'QmZNgCqZCvTsi3B4Vt7gsSqpkqDpE7M2Y9TDmEhbDb4ceF'
 
       const mockApi = nock('http://0.0.0.0:60197')
@@ -227,7 +227,7 @@ describe('content-routing', () => {
     })
 
     it('should handle errors when finding providers', async () => {
-      const cid = new CID('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
+      const cid = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
       const mockApi = nock('http://0.0.0.0:60197')
         .post('/api/v0/dht/findprovs')
         .query(true)

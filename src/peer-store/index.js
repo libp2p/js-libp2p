@@ -99,7 +99,7 @@ class PeerStore extends EventEmitter {
 
     const peersData = new Map()
     storedPeers.forEach((idStr) => {
-      peersData.set(idStr, this.get(PeerId.createFromCID(idStr)))
+      peersData.set(idStr, this.get(PeerId.createFromB58String(idStr)))
     })
 
     return peersData

@@ -136,8 +136,8 @@ class Circuit {
       throw errCode(new Error(errMsg), codes.ERR_RELAYED_DIAL)
     }
 
-    const relayPeer = PeerId.createFromCID(relayId)
-    const destinationPeer = PeerId.createFromCID(destinationId)
+    const relayPeer = PeerId.createFromB58String(relayId)
+    const destinationPeer = PeerId.createFromB58String(destinationId)
 
     let disconnectOnFailure = false
     let relayConnection = this._connectionManager.get(relayPeer)
