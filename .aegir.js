@@ -58,6 +58,12 @@ module.exports = {
   build: {
     bundlesizeMax: '253kB'
   },
+  lint: {
+    files: [
+      "./src/**/*.js",
+      "./test/**/*.js"
+    ]
+  },
   test: {
     before,
     after,
