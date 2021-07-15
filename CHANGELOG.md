@@ -1,3 +1,7 @@
+## [0.19.6](https://github.com/libp2p/js-libp2p-crypto/compare/v0.19.5...v0.19.6) (2021-07-15)
+
+
+
 ## [0.19.5](https://github.com/libp2p/js-libp2p-crypto/compare/v0.19.4...v0.19.5) (2021-07-07)
 
 
