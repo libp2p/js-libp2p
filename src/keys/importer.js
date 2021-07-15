@@ -1,6 +1,6 @@
 'use strict'
 
-const multibase = require('multibase')
+const { base64 } = require('multiformats/bases/base64')
 const ciphers = require('../ciphers/aes-gcm')
 
 module.exports = {
@@ -14,7 +14,6 @@ module.exports = {
    * @returns {Promise<Uint8Array>} The private key protobuf
    */
   import: async function (privateKey, password) {
-    const base64 = multibase.names.base64
     const encryptedKey = base64.decode(privateKey)
     const cipher = ciphers.create()
     return await cipher.decrypt(encryptedKey, password)
