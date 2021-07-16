@@ -78,7 +78,7 @@
     "datastore-level": "^6.0.0",
     "delay": "^5.0.0",
     "it-pair": "^1.0.0",
-    "libp2p": "^0.31.0",
+    "libp2p": "^0.32.0",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "p-defer": "^3.0.0",
