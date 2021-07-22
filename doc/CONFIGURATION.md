@@ -781,6 +781,26 @@ By default under nodejs libp2p will attempt to use [UPnP](https://en.wikipedia.o
 
 [NAT-PMP](http://miniupnp.free.fr/nat-pmp.html) is a feature of some modern routers which performs a similar job to UPnP. NAT-PMP is disabled by default, if enabled libp2p will try to use NAT-PMP and will fall back to UPnP if it fails.
 
+#### Configuring protocol name
+
+Changing protocol name is used to isolate default public network (IPFS) for custom purposes. 
+
+```js
+const node = await Libp2p.create({
+  config: {
+    protocol: 'ipfs' // default
+  }
+})
+/*
+protocols: [
+  "/ipfs/id/1.0.0", // identify service protocol (if we have multiplexers)
+  "/ipfs/id/push/1.0.0", // identify service protocol (if we have multiplexers)
+  "/ipfs/ping/1.0.0", // built-in protocol
+]
+*/
+```
+
+
 ## Configuration examples
 
 As libp2p is designed to be a modular networking library, its usage will vary based on individual project needs. We've included links to some existing project configurations for your reference, in case you wish to replicate their configuration:

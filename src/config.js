@@ -57,6 +57,7 @@ const DefaultConfig = {
     }
   },
   config: {
+    protocol: 'ipfs',
     dht: {
       enabled: false,
       kBucketSize: 20,
