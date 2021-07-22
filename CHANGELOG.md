@@ -1,3 +1,12 @@
+## [0.32.1](https://github.com/libp2p/js-libp2p/compare/v0.32.0...v0.32.1) (2021-07-22)
+
+
+### Bug Fixes
+
+* turn compliance tests into devDependency ([#960](https://github.com/libp2p/js-libp2p/issues/960)) ([0701de4](https://github.com/libp2p/js-libp2p/commit/0701de40b1ebdf319959846d8c4fdd30b3cf34a4))
+
+
+
 # [0.32.0](https://github.com/libp2p/js-libp2p/compare/v0.32.0-rc.0...v0.32.0) (2021-07-15)
 
 
