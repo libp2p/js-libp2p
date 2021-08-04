@@ -788,7 +788,7 @@ Changing protocol name is used to isolate default public network (IPFS) for cust
 ```js
 const node = await Libp2p.create({
   config: {
-    protocol: 'ipfs' // default
+    protocolPrefix: 'ipfs' // default
   }
 })
 /*
