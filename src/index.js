@@ -289,7 +289,7 @@ class Libp2p extends EventEmitter {
 
       // Add the identify service since we can multiplex
       this.identifyService = new IdentifyService({ libp2p: this })
-      this.handle(Object.values(IDENTIFY_PROTOCOLS).map(i => `/${this._config.protocol}/${i}`), this.identifyService.handleMessage)
+      this.handle(Object.values(IDENTIFY_PROTOCOLS).map(i => `/${this._config.protocolPrefix}/${i}`), this.identifyService.handleMessage)
     }
 
     // Attach private network protector

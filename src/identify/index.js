@@ -55,7 +55,7 @@ class IdentifyService {
 
     // Store self host metadata
     this._host = {
-      protocolVersion: `${libp2p._config.protocol}/${PROTOCOL_VERSION}`,
+      protocolVersion: `${libp2p._config.protocolPrefix}/${PROTOCOL_VERSION}`,
       ...libp2p._options.host
     }
 
@@ -94,7 +94,7 @@ class IdentifyService {
 
     const pushes = connections.map(async connection => {
       try {
-        const { stream } = await connection.newStream(`/${this._libp2p._config.protocol}/${MULTICODEC_IDENTIFY_PUSH}`)
+        const { stream } = await connection.newStream(`/${this._libp2p._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH}`)
 
         await pipe(
           [Message.Identify.encode({
@@ -129,7 +129,7 @@ class IdentifyService {
     const connections = []
     let connection
     for (const peer of this.peerStore.peers.values()) {
-      if (peer.protocols.includes(`/${this._libp2p._config.protocol}/${MULTICODEC_IDENTIFY_PUSH}`) && (connection = this.connectionManager.get(peer.id))) {
+      if (peer.protocols.includes(`/${this._libp2p._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH}`) && (connection = this.connectionManager.get(peer.id))) {
         connections.push(connection)
       }
     }
@@ -147,7 +147,7 @@ class IdentifyService {
    * @returns {Promise<void>}
    */
   async identify (connection) {
-    const { stream } = await connection.newStream(`/${this._libp2p._config.protocol}/${MULTICODEC_IDENTIFY}`)
+    const { stream } = await connection.newStream(`/${this._libp2p._config.protocolPrefix}/${MULTICODEC_IDENTIFY}`)
     const [data] = await pipe(
       [],
       stream,
@@ -224,9 +224,9 @@ class IdentifyService {
    */
   handleMessage ({ connection, stream, protocol }) {
     switch (protocol) {
-      case `/${this._libp2p._config.protocol}/${MULTICODEC_IDENTIFY}`:
+      case `/${this._libp2p._config.protocolPrefix}/${MULTICODEC_IDENTIFY}`:
         return this._handleIdentify({ connection, stream })
-      case `/${this._libp2p._config.protocol}/${MULTICODEC_IDENTIFY_PUSH}`:
+      case `/${this._libp2p._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH}`:
         return this._handlePush({ connection, stream })
       default:
         log.error('cannot handle unknown protocol %s', protocol)
