@@ -296,7 +296,7 @@ class Libp2p extends EventEmitter {
       this.identifyService = new IdentifyService({ libp2p: this })
       this.handle([
         `/${this._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`,
-        `/${this._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
+        `/${this._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
       ], this.identifyService.handleMessage)
     }
 
