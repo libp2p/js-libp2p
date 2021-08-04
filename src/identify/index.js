@@ -51,7 +51,7 @@ class IdentifyService {
     this.connectionManager = libp2p.connectionManager
     this.peerId = libp2p.peerId
 
-    this.handleMessage = libp2p._config.identifyHandleMessage || this.handleMessage.bind(this)
+    this.handleMessage = this.handleMessage.bind(this)
 
     // Store self host metadata
     this._host = {
