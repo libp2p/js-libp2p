@@ -31,12 +31,6 @@ const PersistentPeerStore = require('./peer-store/persistent')
 const Registrar = require('./registrar')
 const ping = require('./ping')
 const IdentifyService = require('./identify')
-const {
-  MULTICODEC_IDENTIFY_PROTOCOL_NAME,
-  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
-  MULTICODEC_IDENTIFY_PROTOCOL_VERSION,
-  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
-} = require('./identify/consts')
 const NatManager = require('./nat-manager')
 const { updateSelfPeerRecord } = require('./record/utils')
 
@@ -294,10 +288,7 @@ class Libp2p extends EventEmitter {
 
       // Add the identify service since we can multiplex
       this.identifyService = new IdentifyService({ libp2p: this })
-      this.handle([
-        `/${this._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`,
-        `/${this._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
-      ], this.identifyService.handleMessage)
+      this.handle(Object.values(IdentifyService.getProtocolStr(this)), this.identifyService.handleMessage)
     }
 
     // Attach private network protector
