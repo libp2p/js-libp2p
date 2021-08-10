@@ -783,7 +783,7 @@ By default under nodejs libp2p will attempt to use [UPnP](https://en.wikipedia.o
 
 #### Configuring protocol name
 
-Changing protocol name is used to isolate default public network (IPFS) for custom purposes. 
+Changing the protocol name prefix can isolate default public network (IPFS) for custom purposes. 
 
 ```js
 const node = await Libp2p.create({
@@ -794,8 +794,8 @@ const node = await Libp2p.create({
 /*
 protocols: [
   "/ipfs/id/1.0.0", // identify service protocol (if we have multiplexers)
-  "/ipfs/id/push/1.0.0", // identify service protocol (if we have multiplexers)
-  "/ipfs/ping/1.0.0", // built-in protocol
+  "/ipfs/id/push/1.0.0", // identify service push protocol (if we have multiplexers)
+  "/ipfs/ping/1.0.0", // built-in ping protocol
 ]
 */
 ```
