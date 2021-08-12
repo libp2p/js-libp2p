@@ -10,7 +10,7 @@ const { baseOptions } = require('./utils')
 describe('Protocol prefix is configurable', () => {
   let libp2p
 
-  it.only('protocolPrefix is provided', async () => {
+  it('protocolPrefix is provided', async () => {
     const testProtocol = 'test-protocol'
     libp2p = await create(mergeOptions(baseOptions, {
       config: {
@@ -30,7 +30,7 @@ describe('Protocol prefix is configurable', () => {
     await libp2p.stop()
   })
 
-  it.only('protocolPrefix is not provided', async () => {
+  it('protocolPrefix is not provided', async () => {
     libp2p = await create(baseOptions)
 
     const protocols = libp2p.peerStore.protoBook.get(libp2p.peerId);
