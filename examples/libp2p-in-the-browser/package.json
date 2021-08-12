@@ -2,7 +2,6 @@
   "name": "libp2p-in-browser",
   "version": "1.0.0",
   "description": "A libp2p node running in the browser",
-  "main": "dist/index.html",
   "browserslist": [
     "last 2 Chrome versions"
   ],
