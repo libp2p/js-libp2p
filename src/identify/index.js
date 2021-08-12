@@ -68,7 +68,7 @@ class IdentifyService {
     this.handleMessage = this.handleMessage.bind(this)
 
     const protocolStr = IdentifyService.getProtocolStr(libp2p)
-    this.identifyProtocolStr = protocolStr.identifyPushProtocolStr
+    this.identifyProtocolStr = protocolStr.identifyProtocolStr
     this.identifyPushProtocolStr = protocolStr.identifyPushProtocolStr
 
     // Store self host metadata
