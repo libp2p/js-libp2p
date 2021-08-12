@@ -342,7 +342,8 @@ describe('Identify', () => {
           peerStore: localPeerStore,
           multiaddrs: listenMaddrs,
           isStarted: () => true,
-          _options: { host: {} }
+          _options: { host: {} },
+          _config: { protocolPrefix: 'ipfs' }
         }
       })
 
@@ -356,6 +357,7 @@ describe('Identify', () => {
           peerStore: new PeerStore({ peerId: remotePeer }),
           multiaddrs: [],
           _options: { host: {} },
+          _config: { protocolPrefix: 'ipfs' },
           isStarted: () => true
         }
       })
