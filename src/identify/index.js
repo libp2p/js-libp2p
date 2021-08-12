@@ -46,10 +46,10 @@ class IdentifyService {
   /**
    * @param {import('../')} libp2p
    */
-  static getProtocolStr(libp2p) {
+  static getProtocolStr (libp2p) {
     return {
       identifyProtocolStr: `/${libp2p._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`,
-      identifyPushProtocolStr: `/${libp2p._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`,
+      identifyPushProtocolStr: `/${libp2p._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
     }
   }
 

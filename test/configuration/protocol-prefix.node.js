@@ -14,7 +14,7 @@ describe('Protocol prefix is configurable', () => {
     const testProtocol = 'test-protocol'
     libp2p = await create(mergeOptions(baseOptions, {
       config: {
-        protocolPrefix: testProtocol,
+        protocolPrefix: testProtocol
       }
     }))
 

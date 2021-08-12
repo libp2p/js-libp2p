@@ -30,7 +30,7 @@ const { PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION } = require('./constants')
  * @returns {Promise<number>}
  */
 async function ping (node, peer) {
-  const protocol =  `/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`;
+  const protocol = `/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
   // @ts-ignore multiaddr might not have toB58String
   log('dialing %s to %s', protocol, peer.toB58String ? peer.toB58String() : peer)
 
