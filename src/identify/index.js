@@ -23,7 +23,11 @@ const PeerRecord = require('../record/peer-record')
 const {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH,
-  PROTOCOL_VERSION
+  IDENTIFY_PROTOCOL_VERSION,
+  MULTICODEC_IDENTIFY_PROTOCOL_NAME,
+  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
+  MULTICODEC_IDENTIFY_PROTOCOL_VERSION,
+  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
 } = require('./consts')
 
 const { codes } = require('../errors')
@@ -40,6 +44,16 @@ const { codes } = require('../errors')
 
 class IdentifyService {
   /**
+   * @param {import('../')} libp2p
+   */
+  static getProtocolStr (libp2p) {
+    return {
+      identifyProtocolStr: `/${libp2p._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`,
+      identifyPushProtocolStr: `/${libp2p._config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
+    }
+  }
+
+  /**
    * @class
    * @param {Object} options
    * @param {import('../')} options.libp2p
@@ -53,9 +67,13 @@ class IdentifyService {
 
     this.handleMessage = this.handleMessage.bind(this)
 
+    const protocolStr = IdentifyService.getProtocolStr(libp2p)
+    this.identifyProtocolStr = protocolStr.identifyProtocolStr
+    this.identifyPushProtocolStr = protocolStr.identifyPushProtocolStr
+
     // Store self host metadata
     this._host = {
-      protocolVersion: PROTOCOL_VERSION,
+      protocolVersion: `${libp2p._config.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
       ...libp2p._options.host
     }
 
@@ -94,7 +112,7 @@ class IdentifyService {
 
     const pushes = connections.map(async connection => {
       try {
-        const { stream } = await connection.newStream(MULTICODEC_IDENTIFY_PUSH)
+        const { stream } = await connection.newStream(this.identifyPushProtocolStr)
 
         await pipe(
           [Message.Identify.encode({
@@ -129,7 +147,7 @@ class IdentifyService {
     const connections = []
     let connection
     for (const peer of this.peerStore.peers.values()) {
-      if (peer.protocols.includes(MULTICODEC_IDENTIFY_PUSH) && (connection = this.connectionManager.get(peer.id))) {
+      if (peer.protocols.includes(this.identifyPushProtocolStr) && (connection = this.connectionManager.get(peer.id))) {
         connections.push(connection)
       }
     }
@@ -147,7 +165,7 @@ class IdentifyService {
    * @returns {Promise<void>}
    */
   async identify (connection) {
-    const { stream } = await connection.newStream(MULTICODEC_IDENTIFY)
+    const { stream } = await connection.newStream(this.identifyProtocolStr)
     const [data] = await pipe(
       [],
       stream,
@@ -224,9 +242,9 @@ class IdentifyService {
    */
   handleMessage ({ connection, stream, protocol }) {
     switch (protocol) {
-      case MULTICODEC_IDENTIFY:
+      case this.identifyProtocolStr:
         return this._handleIdentify({ connection, stream })
-      case MULTICODEC_IDENTIFY_PUSH:
+      case this.identifyPushProtocolStr:
         return this._handlePush({ connection, stream })
       default:
         log.error('cannot handle unknown protocol %s', protocol)

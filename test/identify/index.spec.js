@@ -60,7 +60,8 @@ describe('Identify', () => {
         peerStore: localPeerStore,
         multiaddrs: listenMaddrs,
         isStarted: () => true,
-        _options: { host: {} }
+        _options: { host: {} },
+        _config: { protocolPrefix: 'ipfs' }
       }
     })
     const remoteIdentify = new IdentifyService({
@@ -70,7 +71,8 @@ describe('Identify', () => {
         peerStore: remotePeerStore,
         multiaddrs: listenMaddrs,
         isStarted: () => true,
-        _options: { host: {} }
+        _options: { host: {} },
+        _config: { protocolPrefix: 'ipfs' }
       }
     })
 
@@ -119,7 +121,8 @@ describe('Identify', () => {
         peerStore: localPeerStore,
         multiaddrs: listenMaddrs,
         isStarted: () => true,
-        _options: { host: { agentVersion } }
+        _options: { host: { agentVersion } },
+        _config: { protocolPrefix: 'ipfs' }
       }
     })
 
@@ -131,7 +134,8 @@ describe('Identify', () => {
         peerStore: remotePeerStore,
         multiaddrs: listenMaddrs,
         isStarted: () => true,
-        _options: { host: { agentVersion } }
+        _options: { host: { agentVersion } },
+        _config: { protocolPrefix: 'ipfs' }
       }
     })
 
@@ -180,7 +184,8 @@ describe('Identify', () => {
         connectionManager: new EventEmitter(),
         peerStore: localPeerStore,
         multiaddrs: [],
-        _options: { host: {} }
+        _options: { host: {} },
+        _config: { protocolPrefix: 'ipfs' }
       }
     })
     const remoteIdentify = new IdentifyService({
@@ -189,7 +194,8 @@ describe('Identify', () => {
         connectionManager: new EventEmitter(),
         peerStore: remotePeerStore,
         multiaddrs: [],
-        _options: { host: {} }
+        _options: { host: {} },
+        _config: { protocolPrefix: 'ipfs' }
       }
     })
 
@@ -231,7 +237,8 @@ describe('Identify', () => {
           host: {
             agentVersion
           }
-        }
+        },
+        _config: { protocolPrefix: 'ipfs' }
       },
       protocols
     })
@@ -261,7 +268,8 @@ describe('Identify', () => {
           peerStore: localPeerStore,
           multiaddrs: listenMaddrs,
           isStarted: () => true,
-          _options: { host: {} }
+          _options: { host: {} },
+          _config: { protocolPrefix: 'ipfs' }
         }
       })
 
@@ -275,7 +283,8 @@ describe('Identify', () => {
           peerStore: remotePeerStore,
           multiaddrs: [],
           isStarted: () => true,
-          _options: { host: {} }
+          _options: { host: {} },
+          _config: { protocolPrefix: 'ipfs' }
         }
       })
 
@@ -333,7 +342,8 @@ describe('Identify', () => {
           peerStore: localPeerStore,
           multiaddrs: listenMaddrs,
           isStarted: () => true,
-          _options: { host: {} }
+          _options: { host: {} },
+          _config: { protocolPrefix: 'ipfs' }
         }
       })
 
@@ -347,6 +357,7 @@ describe('Identify', () => {
           peerStore: new PeerStore({ peerId: remotePeer }),
           multiaddrs: [],
           _options: { host: {} },
+          _config: { protocolPrefix: 'ipfs' },
           isStarted: () => true
         }
       })

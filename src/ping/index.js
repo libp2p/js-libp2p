@@ -13,7 +13,7 @@ const { toBuffer } = require('it-buffer')
 const { collect, take } = require('streaming-iterables')
 const equals = require('uint8arrays/equals')
 
-const { PROTOCOL, PING_LENGTH } = require('./constants')
+const { PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION } = require('./constants')
 
 /**
  * @typedef {import('../')} Libp2p
@@ -30,11 +30,12 @@ const { PROTOCOL, PING_LENGTH } = require('./constants')
  * @returns {Promise<number>}
  */
 async function ping (node, peer) {
+  const protocol = `/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
   // @ts-ignore multiaddr might not have toB58String
-  log('dialing %s to %s', PROTOCOL, peer.toB58String ? peer.toB58String() : peer)
+  log('dialing %s to %s', protocol, peer.toB58String ? peer.toB58String() : peer)
 
   const connection = await node.dial(peer)
-  const { stream } = await connection.newStream(PROTOCOL)
+  const { stream } = await connection.newStream(protocol)
 
   const start = Date.now()
   const data = crypto.randomBytes(PING_LENGTH)
@@ -61,7 +62,7 @@ async function ping (node, peer) {
  * @param {Libp2p} node
  */
 function mount (node) {
-  node.handle(PROTOCOL, ({ stream }) => pipe(stream, stream))
+  node.handle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`, ({ stream }) => pipe(stream, stream))
 }
 
 /**
@@ -70,7 +71,7 @@ function mount (node) {
  * @param {Libp2p} node
  */
 function unmount (node) {
-  node.unhandle(PROTOCOL)
+  node.unhandle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`)
 }
 
 exports = module.exports = ping
