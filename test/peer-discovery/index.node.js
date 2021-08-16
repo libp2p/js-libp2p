@@ -11,7 +11,7 @@ const crypto = require('libp2p-crypto')
 const KadDht = require('libp2p-kad-dht')
 const MulticastDNS = require('libp2p-mdns')
 const { Multiaddr } = require('multiaddr')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 const Libp2p = require('../../src')
 const baseOptions = require('../utils/base-options')

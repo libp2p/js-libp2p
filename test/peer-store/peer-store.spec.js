@@ -5,7 +5,7 @@ const { expect } = require('aegir/utils/chai')
 
 const PeerStore = require('../../src/peer-store')
 const { Multiaddr } = require('multiaddr')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const peerUtils = require('../utils/creators/peer')
 

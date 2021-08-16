@@ -17,7 +17,7 @@ You can read further about the envelope in [libp2p/specs#217](https://github.com
 ```js
 // interface-record implementation example with the "libp2p-example" namespace
 const Record = require('libp2p-interfaces/src/record')
-const fromString = require('uint8arrays/from-string')
+const { fromString } = require('uint8arrays/from-string')
 
 class ExampleRecord extends Record {
   constructor () {

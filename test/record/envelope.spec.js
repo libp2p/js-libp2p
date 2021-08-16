@@ -2,8 +2,8 @@
 /* eslint-env mocha */
 
 const { expect } = require('aegir/utils/chai')
-const uint8arrayFromString = require('uint8arrays/from-string')
-const uint8arrayEquals = require('uint8arrays/equals')
+const { fromString: uint8arrayFromString } = require('uint8arrays/from-string')
+const { equals: uint8arrayEquals } = require('uint8arrays/equals')
 const Envelope = require('../../src/record/envelope')
 const { codes: ErrorCodes } = require('../../src/errors')
 

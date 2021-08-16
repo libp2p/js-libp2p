@@ -2,7 +2,7 @@
 /* eslint-env mocha */
 
 const { expect } = require('aegir/utils/chai')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const pDefer = require('p-defer')
 const PeerStore = require('../../src/peer-store')

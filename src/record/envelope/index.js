@@ -1,13 +1,13 @@
 'use strict'
 
 const errCode = require('err-code')
-const uint8arraysConcat = require('uint8arrays/concat')
-const uint8arraysFromString = require('uint8arrays/from-string')
+const { concat: uint8arraysConcat } = require('uint8arrays/concat')
+const { fromString: uint8arraysFromString } = require('uint8arrays/from-string')
 // @ts-ignore libp2p-crypto does not support types
 const cryptoKeys = require('libp2p-crypto/src/keys')
 const PeerId = require('peer-id')
 const varint = require('varint')
-const uint8arraysEquals = require('uint8arrays/equals')
+const { equals: uint8arraysEquals } = require('uint8arrays/equals')
 
 const { codes } = require('../../errors')
 const { Envelope: Protobuf } = require('./envelope')

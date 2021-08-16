@@ -5,8 +5,8 @@ const log = Object.assign(debug('libp2p:auto-relay'), {
   error: debug('libp2p:auto-relay:err')
 })
 
-const uint8ArrayFromString = require('uint8arrays/from-string')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 

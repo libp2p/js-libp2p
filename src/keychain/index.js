@@ -10,8 +10,8 @@ const crypto = require('libp2p-crypto')
 const { Key } = require('interface-datastore')
 const CMS = require('./cms')
 const errcode = require('err-code')
-const uint8ArrayToString = require('uint8arrays/to-string')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 // @ts-ignore node-forge sha512 types not exported
 require('node-forge/lib/sha512')

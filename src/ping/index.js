@@ -11,7 +11,7 @@ const { pipe } = require('it-pipe')
 // @ts-ignore it-buffer has no types exported
 const { toBuffer } = require('it-buffer')
 const { collect, take } = require('streaming-iterables')
-const equals = require('uint8arrays/equals')
+const { equals } = require('uint8arrays/equals')
 
 const { PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION } = require('./constants')
 

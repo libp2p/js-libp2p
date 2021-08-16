@@ -17,7 +17,7 @@ const pushable = require('it-pushable')
 const AggregateError = require('aggregate-error')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const Libp2p = require('../../src')
 const Dialer = require('../../src/dialer')

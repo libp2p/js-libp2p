@@ -5,7 +5,7 @@ const { expect } = require('aegir/utils/chai')
 const duplexPair = require('it-pair/duplex')
 const pipe = require('it-pipe')
 const { collect } = require('streaming-iterables')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const Protector = require('../../src/pnet')
 const Errors = Protector.errors

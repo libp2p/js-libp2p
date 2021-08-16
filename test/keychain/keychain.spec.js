@@ -4,8 +4,8 @@
 
 const { expect } = require('aegir/utils/chai')
 const fail = expect.fail
-const uint8ArrayFromString = require('uint8arrays/from-string')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 const peerUtils = require('../utils/creators/peer')
 

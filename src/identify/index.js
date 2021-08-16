@@ -8,7 +8,7 @@ const errCode = require('err-code')
 const lp = require('it-length-prefixed')
 const { pipe } = require('it-pipe')
 const { collect, take, consume } = require('streaming-iterables')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const PeerId = require('peer-id')
 const { Multiaddr } = require('multiaddr')
