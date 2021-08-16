@@ -20,7 +20,7 @@ jobs:
     - uses: gozala/typescript-error-reporter-action@v1.0.8
     - run: npx aegir build
     - run: npx aegir dep-check
-    - uses: ipfs/aegir/actions/bundle-size@master
+    - uses: ipfs/aegir/actions/bundle-size@v32.1.0
       name: size
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
