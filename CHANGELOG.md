@@ -1,3 +1,12 @@
+## [0.32.3](https://github.com/libp2p/js-libp2p/compare/v0.32.2...v0.32.3) (2021-08-16)
+
+
+### Bug Fixes
+
+* uint8arrays is a dep ([#964](https://github.com/libp2p/js-libp2p/issues/964)) ([ba2b4d4](https://github.com/libp2p/js-libp2p/commit/ba2b4d4b28f1d9940b457de344aed44537f9eabd))
+
+
+
 ## [0.32.2](https://github.com/libp2p/js-libp2p/compare/v0.32.1...v0.32.2) (2021-08-13)
 
 
