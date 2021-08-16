@@ -2,8 +2,8 @@
 
 const crypto = require('libp2p-crypto')
 const KEY_LENGTH = 32
-const uint8ArrayToString = require('uint8arrays/to-string')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 /**
  * Generates a PSK that can be used in a libp2p-pnet private network

@@ -7,7 +7,7 @@ const { base58btc } = require('multiformats/bases/base58')
 const crypto = require('libp2p-crypto')
 const rsaUtils = require('libp2p-crypto/src/keys/rsa-utils')
 const rsaClass = require('libp2p-crypto/src/keys/rsa-class')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const sample = {
   id: '122019318b6e5e0cf93a2314bf01269a2cc23cd3dcd452d742cdb9379d8646f6e4a9',

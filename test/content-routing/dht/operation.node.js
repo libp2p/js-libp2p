@@ -6,7 +6,7 @@ const { expect } = require('aegir/utils/chai')
 const { Multiaddr } = require('multiaddr')
 const pWaitFor = require('p-wait-for')
 const mergeOptions = require('merge-options')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const { create } = require('../../../src')
 const { subsystemOptions, subsystemMulticodecs } = require('./utils')

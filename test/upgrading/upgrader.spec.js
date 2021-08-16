@@ -12,7 +12,7 @@ const pSettle = require('p-settle')
 const Transport = require('libp2p-websockets')
 const { NOISE: Crypto } = require('libp2p-noise')
 const Protector = require('../../src/pnet')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const swarmKeyBuffer = uint8ArrayFromString(require('../fixtures/swarm.key'))
 
 const Libp2p = require('../../src')

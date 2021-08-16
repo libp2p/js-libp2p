@@ -5,7 +5,7 @@ const log = Object.assign(debug('libp2p:peer-store:proto-book'), {
   error: debug('libp2p:peer-store:proto-book:err')
 })
 const errcode = require('err-code')
-const uint8ArrayEquals = require('uint8arrays/equals')
+const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
 
 const PeerId = require('peer-id')
 

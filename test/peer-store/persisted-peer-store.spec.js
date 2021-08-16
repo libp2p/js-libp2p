@@ -10,7 +10,7 @@ const PeerStore = require('../../src/peer-store/persistent')
 
 const { Multiaddr } = require('multiaddr')
 const { MemoryDatastore } = require('interface-datastore')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const peerUtils = require('../utils/creators/peer')
 

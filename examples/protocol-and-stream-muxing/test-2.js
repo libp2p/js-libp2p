@@ -3,7 +3,7 @@
 const path = require('path')
 const execa = require('execa')
 const pWaitFor = require('p-wait-for')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 const messages = [
   'protocol (a)',

@@ -3,7 +3,7 @@
 const path = require('path')
 const execa = require('execa')
 const pDefer = require('p-defer')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 function startProcess(name) {
   return execa('node', [path.join(__dirname, name)], {

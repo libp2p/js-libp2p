@@ -9,7 +9,7 @@ const PeerId = require('peer-id')
 const duplexPair = require('it-pair/duplex')
 const { Multiaddr } = require('multiaddr')
 const pWaitFor = require('p-wait-for')
-const unit8ArrayToString = require('uint8arrays/to-string')
+const { toString: unit8ArrayToString } = require('uint8arrays/to-string')
 
 const { codes: Errors } = require('../../src/errors')
 const IdentifyService = require('../../src/identify')

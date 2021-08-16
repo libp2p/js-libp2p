@@ -10,8 +10,8 @@ const Errors = require('./errors')
 // @ts-ignore xsalsa20 has no types exported
 const xsalsa20 = require('xsalsa20')
 const KEY_LENGTH = require('./key-generator').KEY_LENGTH
-const uint8ArrayFromString = require('uint8arrays/from-string')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 /**
  * Creates a stream iterable to encrypt messages in a private network
