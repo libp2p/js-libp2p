@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto",
-  "version": "0.19.6",
+  "version": "0.19.7",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -79,8 +79,8 @@
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Jacob Heun <jacobheun@gmail.com>",
     "Maciej Krüger <mkg20001@gmail.com>",
-    "dignifiedquire <dignifiedquire@users.noreply.github.com>",
     "Vasco Santos <vasco.santos@moxy.studio>",
+    "dignifiedquire <dignifiedquire@users.noreply.github.com>",
     "dryajov <dryajov@gmail.com>",
     "Alan Shaw <alan.shaw@protocol.ai>",
     "Cayman <caymannava@gmail.com>",
