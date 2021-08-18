@@ -4,9 +4,9 @@ const errcode = require('err-code')
 const webcrypto = require('../webcrypto')
 const { base64urlToBuffer } = require('../util')
 const validateCurveType = require('./validate-curve-type')
-const uint8ArrayToString = require('uint8arrays/to-string')
-const uint8ArrayConcat = require('uint8arrays/concat')
-const uint8ArrayEquals = require('uint8arrays/equals')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const { concat: uint8ArrayConcat } = require('uint8arrays/concat')
+const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
 
 const bits = {
   'P-256': 256,

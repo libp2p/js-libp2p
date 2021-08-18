@@ -5,7 +5,7 @@ require('node-forge/lib/asn1')
 require('node-forge/lib/pbe')
 const forge = require('node-forge/lib/forge')
 const errcode = require('err-code')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const importer = require('./importer')
 

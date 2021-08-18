@@ -4,7 +4,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const { expectErrCode } = require('../util')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const crypto = require('../../src')
 const rsa = crypto.keys.supportedKeys.rsa

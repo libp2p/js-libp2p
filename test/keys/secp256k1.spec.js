@@ -7,7 +7,7 @@ const secp256k1 = crypto.keys.supportedKeys.secp256k1
 const keysPBM = crypto.keys.keysPBM
 const randomBytes = crypto.randomBytes
 const secp256k1Crypto = require('../../src/keys/secp256k1')(randomBytes)
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const fixtures = require('../fixtures/go-key-secp256k1')
 
 describe('secp256k1 keys', () => {

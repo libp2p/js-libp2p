@@ -1,7 +1,7 @@
 'use strict'
 
-const concat = require('uint8arrays/concat')
-const fromString = require('uint8arrays/from-string')
+const { concat } = require('uint8arrays/concat')
+const { fromString } = require('uint8arrays/from-string')
 
 const webcrypto = require('../webcrypto')
 

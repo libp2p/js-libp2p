@@ -1,7 +1,7 @@
 'use strict'
 
 const errcode = require('err-code')
-const uint8ArrayEquals = require('uint8arrays/equals')
+const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
 const { sha256 } = require('multiformats/hashes/sha2')
 const { base58btc } = require('multiformats/bases/base58')
 const { identity } = require('multiformats/hashes/identity')

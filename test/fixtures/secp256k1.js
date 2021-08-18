@@ -1,6 +1,6 @@
 'use strict'
 
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 module.exports = {
   // protobuf marshaled key pair generated with libp2p-crypto-secp256k1

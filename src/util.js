@@ -3,9 +3,9 @@
 require('node-forge/lib/util')
 require('node-forge/lib/jsbn')
 const forge = require('node-forge/lib/forge')
-const uint8ArrayFromString = require('uint8arrays/from-string')
-const uint8ArrayToString = require('uint8arrays/to-string')
-const uint8ArrayConcat = require('uint8arrays/concat')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const { concat: uint8ArrayConcat } = require('uint8arrays/concat')
 
 exports.bigIntegerToUintBase64url = (num, len) => {
   // Call `.abs()` to convert to unsigned

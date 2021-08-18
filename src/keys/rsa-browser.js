@@ -2,8 +2,8 @@
 
 const webcrypto = require('../webcrypto')
 const randomBytes = require('../random-bytes')
-const uint8ArrayToString = require('uint8arrays/to-string')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 exports.utils = require('./rsa-utils')
 

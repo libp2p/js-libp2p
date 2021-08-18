@@ -4,8 +4,8 @@ require('node-forge/lib/asn1')
 require('node-forge/lib/rsa')
 const forge = require('node-forge/lib/forge')
 const { bigIntegerToUintBase64url, base64urlToBigInteger } = require('./../util')
-const uint8ArrayFromString = require('uint8arrays/from-string')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 // Convert a PKCS#1 in ASN1 DER format to a JWK key
 exports.pkcs1ToJwk = function (bytes) {

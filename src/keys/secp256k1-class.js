@@ -2,8 +2,8 @@
 
 const { sha256 } = require('multiformats/hashes/sha2')
 const errcode = require('err-code')
-const uint8ArrayEquals = require('uint8arrays/equals')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 const exporter = require('./exporter')
 

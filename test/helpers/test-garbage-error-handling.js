@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const util = require('util')
 const garbage = [uint8ArrayFromString('00010203040506070809', 'base16'), {}, null, false, undefined, true, 1, 0, uint8ArrayFromString(''), 'aGVsbG93b3JsZA==', 'helloworld', '']
 
