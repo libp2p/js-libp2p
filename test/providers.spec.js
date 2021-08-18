@@ -9,7 +9,7 @@ const LevelStore = require('datastore-level')
 const path = require('path')
 const os = require('os')
 const Providers = require('../src/providers')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const createPeerId = require('./utils/create-peer-id')
 const createValues = require('./utils/create-values')

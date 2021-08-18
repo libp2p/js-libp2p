@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const TestDHT = require('./utils/test-dht')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 describe('multiple nodes', () => {
   const n = 8

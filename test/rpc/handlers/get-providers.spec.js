@@ -5,7 +5,7 @@ const { expect } = require('aegir/utils/chai')
 const Message = require('../../../src/message')
 const utils = require('../../../src/utils')
 const handler = require('../../../src/rpc/handlers/get-providers')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const T = Message.TYPES.GET_PROVIDERS
 

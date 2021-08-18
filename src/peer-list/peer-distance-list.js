@@ -4,7 +4,7 @@
 const distance = require('xor-distance')
 const utils = require('../utils')
 const pMap = require('p-map')
-const uint8ArrayEquals = require('uint8arrays/equals')
+const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
 
 /**
  * @typedef {import('peer-id')} PeerId

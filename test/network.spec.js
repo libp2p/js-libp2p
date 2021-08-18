@@ -7,7 +7,7 @@ const pipe = require('it-pipe')
 const delay = require('delay')
 const lp = require('it-length-prefixed')
 const pDefer = require('p-defer')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const Message = require('../src/message')
 

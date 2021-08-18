@@ -5,7 +5,7 @@ const { expect } = require('aegir/utils/chai')
 const PeerId = require('peer-id')
 const kadUtils = require('../src/utils')
 const PeerDistanceList = require('../src/peer-list/peer-distance-list')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 describe('PeerDistanceList', () => {
   const p1 = new PeerId(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a31'))

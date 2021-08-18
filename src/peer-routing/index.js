@@ -5,7 +5,7 @@ const pTimeout = require('p-timeout')
 
 const PeerId = require('peer-id')
 const crypto = require('libp2p-crypto')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 const c = require('../constants')
 const Message = require('../message')

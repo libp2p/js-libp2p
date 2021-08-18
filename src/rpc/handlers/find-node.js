@@ -1,6 +1,7 @@
 'use strict'
 
-const uint8ArrayEquals = require('uint8arrays/equals')
+const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
+
 const Message = require('../../message')
 const utils = require('../../utils')
 

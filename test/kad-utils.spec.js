@@ -4,9 +4,9 @@
 const { expect } = require('aegir/utils/chai')
 const PeerId = require('peer-id')
 const distance = require('xor-distance')
-const uint8ArrayConcat = require('uint8arrays/concat')
-const uint8ArrayFromString = require('uint8arrays/from-string')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { concat: uint8ArrayConcat } = require('uint8arrays/concat')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 const utils = require('../src/utils')
 const createPeerId = require('./utils/create-peer-id')

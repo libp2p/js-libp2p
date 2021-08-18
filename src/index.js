@@ -5,8 +5,8 @@ const errcode = require('err-code')
 
 const libp2pRecord = require('libp2p-record')
 const { MemoryDatastore } = require('interface-datastore')
-const uint8ArrayEquals = require('uint8arrays/equals')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 const RoutingTable = require('./routing')
 const utils = require('./utils')

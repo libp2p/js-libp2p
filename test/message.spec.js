@@ -10,7 +10,7 @@ const { Record } = require('libp2p-record')
 const fs = require('fs')
 const path = require('path')
 const Message = require('../src/message')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 describe('Message', () => {
   it('create', () => {

@@ -11,7 +11,7 @@ const Message = require('../../src/message')
 const { convertBuffer } = require('../../src/utils')
 const { sortClosestPeers } = require('../../src/utils')
 const DHT = require('../../src')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const NUM_PEERS = 10e3 // Peers to create, not including us
 const LATENCY_DEAD_NODE = 120e3 // How long dead nodes should take before erroring

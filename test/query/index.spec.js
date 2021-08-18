@@ -14,7 +14,7 @@ const c = require('../../src/constants')
 const createPeerId = require('../utils/create-peer-id')
 const { sortClosestPeers } = require('../../src/utils')
 const { convertBuffer } = require('../../src/utils')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const NUM_IDS = 101
 
 describe('Query', () => {

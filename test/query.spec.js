@@ -6,7 +6,7 @@ const pDefer = require('p-defer')
 const delay = require('delay')
 const Query = require('../src/query')
 const kadUtils = require('../src/utils')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const createPeerId = require('./utils/create-peer-id')
 const TestDHT = require('./utils/test-dht')

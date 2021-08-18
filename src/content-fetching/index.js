@@ -2,8 +2,8 @@
 
 const errcode = require('err-code')
 const pTimeout = require('p-timeout')
-const uint8ArrayEquals = require('uint8arrays/equals')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const libp2pRecord = require('libp2p-record')
 const c = require('../constants')
 const Query = require('../query')

@@ -8,7 +8,7 @@ const lp = require('it-length-prefixed')
 const { collect } = require('streaming-iterables')
 const Message = require('../../src/message')
 const rpc = require('../../src/rpc')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const createPeerId = require('../utils/create-peer-id')
 const TestDHT = require('../utils/test-dht')
