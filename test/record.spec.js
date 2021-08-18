@@ -2,7 +2,7 @@
 'use strict'
 
 const { expect } = require('aegir/utils/chai')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const libp2pRecord = require('../src')
 const Record = libp2pRecord.Record
 

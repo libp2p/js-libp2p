@@ -5,7 +5,7 @@
 const { expect } = require('aegir/utils/chai')
 const crypto = require('libp2p-crypto')
 const PeerId = require('peer-id')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const libp2pRecord = require('../src')
 const validator = libp2pRecord.validator
 const Record = libp2pRecord.Record

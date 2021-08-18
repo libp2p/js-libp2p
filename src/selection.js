@@ -1,7 +1,7 @@
 'use strict'
 
 const errcode = require('err-code')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 /**
  * Select the best record out of the given records.
