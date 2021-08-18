@@ -1,3 +1,17 @@
+## [0.23.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.22.0...v0.23.2) (2021-08-18)
+
+
+### chore
+
+* update to new multiformats ([#220](https://github.com/libp2p/js-libp2p-kad-dht/issues/220)) ([565eb00](https://github.com/libp2p/js-libp2p-kad-dht/commit/565eb003c0c5d165088d113f8caecc5f7a5a12ad))
+
+
+### BREAKING CHANGES
+
+* uses new multiformats CID class
+
+
+
 ## [0.23.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.23.0...v0.23.1) (2021-07-08)
 
 
