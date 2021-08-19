@@ -2,7 +2,7 @@
 
 const Libp2p = require('libp2p')
 const Websockets = require('libp2p-websockets')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 const MPLEX = require('libp2p-mplex')
 
 async function main () {

@@ -18,7 +18,7 @@ The relay node will need to have its relay subsystem enabled, as well as its HOP
 ```js
 const Libp2p = require('libp2p')
 const Websockets = require('libp2p-websockets')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 const MPLEX = require('libp2p-mplex')
 
 const node = await Libp2p.create({
@@ -76,7 +76,7 @@ One of the typical use cases for Auto Relay is nodes behind a NAT or browser nod
 ```js
 const Libp2p = require('libp2p')
 const Websockets = require('libp2p-websockets')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 const MPLEX = require('libp2p-mplex')
 
 const relayAddr = process.argv[2]
@@ -147,7 +147,7 @@ Now that you have a relay node and a node bound to that relay, you can test conn
 ```js
 const Libp2p = require('libp2p')
 const Websockets = require('libp2p-websockets')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 const MPLEX = require('libp2p-mplex')
 
 const autoRelayNodeAddr = process.argv[2]

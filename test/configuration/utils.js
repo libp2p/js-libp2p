@@ -1,7 +1,7 @@
 'use strict'
 
 const Pubsub = require('libp2p-interfaces/src/pubsub')
-const { NOISE: Crypto } = require('libp2p-noise')
+const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
 const Muxer = require('libp2p-mplex')
 const Transport = require('libp2p-websockets')
 const filters = require('libp2p-websockets/src/filters')

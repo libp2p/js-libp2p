@@ -2,7 +2,7 @@
 /* eslint-env mocha */
 
 const Transport = require('libp2p-websockets')
-const { NOISE: Crypto } = require('libp2p-noise')
+const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
 
 const Libp2p = require('../../src')
 const { createPeerId } = require('../utils/creators/peer')
