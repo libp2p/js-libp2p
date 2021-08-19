@@ -159,7 +159,6 @@
     "libp2p-tcp": "^0.17.0",
     "libp2p-webrtc-star": "^0.23.0",
     "libp2p-websockets": "^0.16.0",
-    "multihashes": "^4.0.2",
     "nock": "^13.0.3",
     "p-defer": "^3.0.0",
     "p-times": "^3.0.0",
