@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: microsoft/playwright-github-action@v1
       - run: npm install
-      - run: npx aegir test -t browser -t webworker --bail --timeout 60000 -- --browser webkit
+      - run: npx aegir test -t browser --bail --timeout 60000 -- --browser webkit
   test-electron-main:
     needs: check
     runs-on: ubuntu-latest

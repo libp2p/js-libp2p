@@ -4,7 +4,7 @@ const debugName = 'libp2p:floodsub'
 
 // @ts-ignore time-cache does not export types
 const TimeCache = require('time-cache')
-const toString = require('uint8arrays/to-string')
+const { toString } = require('uint8arrays/to-string')
 const BaseProtocol = require('libp2p-interfaces/src/pubsub')
 const { utils } = require('libp2p-interfaces/src/pubsub')
 

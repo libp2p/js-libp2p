@@ -3,8 +3,8 @@
 
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
-const uint8ArrayFromString = require('uint8arrays/from-string')
-const uint8ArrayToString = require('uint8arrays/to-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const { sha256 } = require('multiformats/hashes/sha2')
 const { utils } = require('libp2p-interfaces/src/pubsub')
 const { SignaturePolicy } = require('libp2p-interfaces/src/pubsub/signature-policy')
