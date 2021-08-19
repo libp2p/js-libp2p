@@ -168,7 +168,7 @@ You can create your libp2p nodes as follows:
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 const Gossipsub = require('libp2p-gossipsub')
 const Bootstrap = require('libp2p-bootstrap')
 const PubsubPeerDiscovery = require('libp2p-pubsub-peer-discovery')

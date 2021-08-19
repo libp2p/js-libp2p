@@ -2,7 +2,7 @@ const Libp2p = require('libp2p')
 const Bootstrap = require('libp2p-bootstrap')
 const WebRTCDirect = require('libp2p-webrtc-direct')
 const Mplex = require('libp2p-mplex')
-const {NOISE} = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 const PeerId = require('peer-id')
 
 ;(async () => {

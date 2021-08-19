@@ -3,7 +3,7 @@
 
 const Libp2p = require('../..')
 const TCP = require('libp2p-tcp')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 
 const createNode = async () => {
   const node = await Libp2p.create({

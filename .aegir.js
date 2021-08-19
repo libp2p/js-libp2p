@@ -7,7 +7,7 @@ const Peers = require('./test/fixtures/peers')
 const PeerId = require('peer-id')
 const WebSockets = require('libp2p-websockets')
 const Muxer = require('libp2p-mplex')
-const { NOISE: Crypto } = require('libp2p-noise')
+const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
 const pipe = require('it-pipe')
 let libp2p
 

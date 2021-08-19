@@ -4,7 +4,7 @@
 const { expect } = require('aegir/utils/chai')
 
 const Transport = require('libp2p-websockets')
-const { NOISE: Crypto } = require('libp2p-noise')
+const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
 
 const Libp2p = require('../../src')
 const { codes: ErrorCodes } = require('../../src/errors')

@@ -4,7 +4,7 @@
 const { expect } = require('aegir/utils/chai')
 
 const Transport = require('libp2p-tcp')
-const { NOISE: Crypto } = require('libp2p-noise')
+const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
 
 const { create } = require('../../src')
 const peerUtils = require('../utils/creators/peer')

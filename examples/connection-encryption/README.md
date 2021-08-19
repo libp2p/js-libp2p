@@ -8,13 +8,13 @@ A byproduct of having these encrypted communications modules is that we can auth
 
 # 1. Set up encrypted communications
 
-We will build this example on top of example for [Protocol and Stream Multiplexing](../protocol-and-stream-multiplexing). You will need the `libp2p-noise` module to complete it, go ahead and `npm install libp2p-noise`.
+We will build this example on top of example for [Protocol and Stream Multiplexing](../protocol-and-stream-multiplexing). You will need the `@chainsafe/libp2p-noise` module to complete it, go ahead and `npm install @chainsafe/libp2p-noise`.
 
 To add them to your libp2p configuration, all you have to do is:
 
 ```JavaScript
 const Libp2p = require('libp2p')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 
 const createNode = () => {
   return Libp2p.create({

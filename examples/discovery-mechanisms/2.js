@@ -4,7 +4,7 @@
 const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 const MulticastDNS = require('libp2p-mdns')
 
 const createNode = async () => {

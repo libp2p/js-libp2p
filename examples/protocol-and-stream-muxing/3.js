@@ -4,7 +4,7 @@
 const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 
 const pipe = require('it-pipe')
 

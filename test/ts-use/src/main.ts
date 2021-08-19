@@ -3,7 +3,7 @@ import Libp2pRecord = require('libp2p-record')
 import TCP = require('libp2p-tcp')
 
 const WEBSOCKETS = require('libp2p-websockets')
-const NOISE = require('libp2p-noise')
+const NOISE = require('@chainsafe/libp2p-noise')
 const MPLEX = require('libp2p-mplex')
 const Gossipsub = require('libp2p-gossipsub')
 const DHT = require('libp2p-kad-dht')

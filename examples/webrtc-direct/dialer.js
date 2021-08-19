@@ -2,7 +2,7 @@ import 'babel-polyfill'
 const Libp2p = require('libp2p')
 const WebRTCDirect = require('libp2p-webrtc-direct')
 const Mplex = require('libp2p-mplex')
-const {NOISE} = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 const Bootstrap = require('libp2p-bootstrap')
 
 document.addEventListener('DOMContentLoaded', async () => {
