@@ -3,120 +3,11 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>libp2p - v0.30.13</title>
-	<meta name="description" content="Documentation for libp2p - v0.30.13">
+	<title>libp2p - v0.32.4</title>
+	<meta name="description" content="Documentation for libp2p - v0.32.4">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="assets/css/main.css">
-	<link href="https://unpkg.com/nord-highlightjs@0.1.0/dist/nord.css" rel="stylesheet" type="text/css" />
-	<style>
-        .toolbar-icon {
-            display: inline-block;
-            vertical-align: middle;
-            margin-left: 10px;
-            cursor: pointer;
-        }
-        .toolbar-icon-search {
-            box-sizing: border-box;
-            position: absolute;
-            overflow: hidden;
-            right: -40px;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            @media (min-width: 901px){
-                display: none
-            }
-        }
-            @media (min-width: 901px){
-                .toolbar-icon-menu {
-                    display: none
-                }
-                .toolbar-icon-options {
-                    display: none
-                }
-            }
-
-        .gg-menu {
-            transform: scale(var(--ggs,1))
-        }
-        .gg-menu,
-        .gg-menu::after,
-        .gg-menu::before {
-            box-sizing: border-box;
-            position: relative;
-            display: block;
-            width: 20px;
-            height: 2px;
-            border-radius: 3px;
-            background: currentColor
-        }
-        .gg-menu::after,
-        .gg-menu::before {
-            content: "";
-            position: absolute;
-            top: -6px
-        }
-        .gg-menu::after {
-            top: 6px
-        }
-        .gg-options {
-            box-sizing: border-box;
-            position: relative;
-            display: block;
-            transform: scale(var(--ggs,1));
-            width: 10px;
-            height: 2px;
-            box-shadow:
-                -3px 4px 0 0,
-                3px -4px 0 0
-        }
-        .gg-options::after,
-        .gg-options::before {
-            content: "";
-            display: block;
-            box-sizing: border-box;
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            border: 2px solid;
-            border-radius: 100%
-        }
-        .gg-options::before {
-            top: -7px;
-            left: -4px
-        }
-        .gg-options::after {
-            bottom: -7px;
-            right: -4px
-        }
-        .gg-search {
-            box-sizing: border-box;
-            position: relative;
-            display: block;
-            transform: scale(var(--ggs,1));
-            width: 16px;
-            height: 16px;
-            border: 2px solid;
-            border-radius: 100%;
-            margin-left: -4px;
-            margin-top: -4px
-        }
-        .gg-search::after {
-            content: "";
-            display: block;
-            box-sizing: border-box;
-            position: absolute;
-            border-radius: 3px;
-            width: 2px;
-            height: 8px;
-            background: currentColor;
-            transform: rotate(-45deg);
-            top: 10px;
-            left: 12px
-        }
-    </style>
+	<script async src="assets/js/search.js" id="search-script"></script>
 </head>
 <body>
 <header>
@@ -125,26 +16,41 @@
 			<div class="table-wrap">
 				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
 					<div class="field">
-						<label for="tsd-search-field" class="toolbar-icon toolbar-icon-search"><i class="gg-search"></i></label>
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
 						<input id="tsd-search-field" type="text" />
 					</div>
 					<ul class="results">
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="index.html" class="title">libp2p - v0.30.13</a>
+					<a href="index.html" class="title">libp2p - v0.32.4</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
-					<a href="#" class="toolbar-icon toolbar-icon-menu" data-toggle="menu"><i class="gg-menu"></i></a>
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
 				</div>
 			</div>
 		</div>
 	</div>
 	<div class="tsd-page-title">
 		<div class="container">
-			<ul class="tsd-breadcrumb">
-			</ul>
-			<h1>libp2p - v0.30.13</h1>
+			<h1>libp2p - v0.32.4</h1>
 		</div>
 	</div>
 </header>
@@ -235,7 +141,7 @@
 				<a href="#install" id="install" style="color: inherit; text-decoration: none;">
 					<h2>Install</h2>
 				</a>
-				<pre><code class="language-sh">npm install libp2p
+				<pre><code class="language-sh"><span style="color: #000000">npm install libp2p</span>
 </code></pre>
 				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
 					<h2>Usage</h2>
@@ -260,9 +166,9 @@
 					<h2>Development</h2>
 				</a>
 				<p><strong>Clone and install dependencies:</strong></p>
-				<pre><code class="language-sh">&gt; git <span class="hljs-built_in">clone</span> https://github.com/libp2p/js-libp2p.git
-&gt; <span class="hljs-built_in">cd</span> js-libp2p
-&gt; npm install
+				<pre><code class="language-sh"><span style="color: #000000">&gt; git clone https://github.com/libp2p/js-libp2p.git</span>
+<span style="color: #000000">&gt; </span><span style="color: #795E26">cd</span><span style="color: #000000"> js-libp2p</span>
+<span style="color: #000000">&gt; npm install</span>
 </code></pre>
 				<a href="#tests" id="tests" style="color: inherit; text-decoration: none;">
 					<h3>Tests</h3>
@@ -270,14 +176,14 @@
 				<a href="#run-unit-tests" id="run-unit-tests" style="color: inherit; text-decoration: none;">
 					<h4>Run unit tests</h4>
 				</a>
-				<pre><code class="language-sh"><span class="hljs-comment"># run all the unit tsts</span>
-&gt; npm <span class="hljs-built_in">test</span>
+				<pre><code class="language-sh"><span style="color: #008000"># run all the unit tsts</span>
+<span style="color: #000000">&gt; npm </span><span style="color: #795E26">test</span>
 
-<span class="hljs-comment"># run just Node.js tests</span>
-&gt; npm run <span class="hljs-built_in">test</span>:node
+<span style="color: #008000"># run just Node.js tests</span>
+<span style="color: #000000">&gt; npm run test:node</span>
 
-<span class="hljs-comment"># run just Browser tests (Chrome)</span>
-&gt; npm run <span class="hljs-built_in">test</span>:browser
+<span style="color: #008000"># run just Browser tests (Chrome)</span>
+<span style="color: #000000">&gt; npm run test:browser</span>
 </code></pre>
 				<a href="#packages" id="packages" style="color: inherit; text-decoration: none;">
 					<h3>Packages</h3>
@@ -620,208 +526,91 @@
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 			<nav class="tsd-navigation primary">
 				<ul>
-					<li class=" tsd-kind-module">
-						<a href="modules/__libp2p_.html"> libp2p</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_address_manager_index_.html">address-manager/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_auto_relay_.html">circuit/auto-relay</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_circuit_hop_.html">circuit/circuit/hop</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_circuit_stop_.html">circuit/circuit/stop</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_circuit_stream_handler_.html">circuit/circuit/stream-handler</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_circuit_utils_.html">circuit/circuit/utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_constants_.html">circuit/constants</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_index_.html">circuit/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_listener_.html">circuit/listener</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_multicodec_.html">circuit/multicodec</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_protocol_index_.html">circuit/protocol/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_transport_.html">circuit/transport</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_circuit_utils_.html">circuit/utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_config_.html">config</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_connection_manager_index_.html">connection-manager/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_connection_manager_latency_monitor_.html">connection-manager/latency-monitor</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_connection_manager_visibility_change_emitter_.html">connection-manager/visibility-change-emitter</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_constants_.html">constants</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_content_routing_index_.html">content-routing/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_content_routing_utils_.html">content-routing/utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_dialer_dial_request_.html">dialer/dial-request</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_dialer_index_.html">dialer/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_errors_.html">errors</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_get_peer_.html">get-peer</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_identify_consts_.html">identify/consts</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_identify_index_.html">identify/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_identify_message_.html">identify/message</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_insecure_plaintext_.html">insecure/plaintext</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_insecure_proto_.html">insecure/proto</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_keychain_cms_.html">keychain/cms</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_keychain_index_.html">keychain/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_keychain_util_.html">keychain/util</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_metrics_index_.html">metrics/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_metrics_old_peers_.html">metrics/old-peers</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_metrics_stats_.html">metrics/stats</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_nat_manager_.html">nat-manager</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_routing_.html">peer-routing</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_store_address_book_.html">peer-store/address-book</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_store_book_.html">peer-store/book</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_store_index_.html">peer-store/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_store_key_book_.html">peer-store/key-book</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_store_metadata_book_.html">peer-store/metadata-book</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_store_persistent_consts_.html">peer-store/persistent/consts</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_store_persistent_index_.html">peer-store/persistent/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_store_persistent_pb_address_book_proto_.html">peer-store/persistent/pb/address-book.proto</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_store_persistent_pb_proto_book_proto_.html">peer-store/persistent/pb/proto-book.proto</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_peer_store_proto_book_.html">peer-store/proto-book</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_ping_constants_.html">ping/constants</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_ping_index_.html">ping/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_ping_util_.html">ping/util</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_pnet_crypto_.html">pnet/crypto</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_pnet_errors_.html">pnet/errors</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_pnet_index_.html">pnet/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_pnet_key_generator_.html">pnet/key-generator</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_pubsub_adapter_.html">pubsub-adapter</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_record_envelope_envelope_proto_.html">record/envelope/envelope.proto</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_record_envelope_index_.html">record/envelope/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_record_peer_record_consts_.html">record/peer-record/consts</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_record_peer_record_index_.html">record/peer-record/index</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_record_peer_record_peer_record_proto_.html">record/peer-record/peer-record.proto</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_record_utils_.html">record/utils</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_registrar_.html">registrar</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_transport_manager_.html">transport-manager</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_types_.html">types</a>
-					</li>
-					<li class=" tsd-kind-module">
-						<a href="modules/_upgrader_.html">upgrader</a>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-class">
+						<a href="classes/libp2p.html" class="tsd-kind-icon">Libp2p</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/createoptions.html" class="tsd-kind-icon">Create<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/dhtoptions.html" class="tsd-kind-icon">Dht<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/handlerprops.html" class="tsd-kind-icon">Handler<wbr>Props</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/keychainoptions.html" class="tsd-kind-icon">Keychain<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/libp2pconfig.html" class="tsd-kind-icon">Libp2p<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/libp2pmodules.html" class="tsd-kind-icon">Libp2p<wbr>Modules</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/libp2poptions.html" class="tsd-kind-icon">Libp2p<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/metricsoptions.html" class="tsd-kind-icon">Metrics<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/peerstoreoptions.html" class="tsd-kind-icon">Peer<wbr>Store<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/pubsublocaloptions.html" class="tsd-kind-icon">Pubsub<wbr>Local<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/randomwalkoptions.html" class="tsd-kind-icon">Random<wbr>Walk<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/relayoptions.html" class="tsd-kind-icon">Relay<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/constructoroptions.html" class="tsd-kind-icon">constructor<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#connection" class="tsd-kind-icon">Connection</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#contentroutingmodule" class="tsd-kind-icon">Content<wbr>Routing<wbr>Module</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#crypto" class="tsd-kind-icon">Crypto</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#datastore" class="tsd-kind-icon">Datastore</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#muxedstream" class="tsd-kind-icon">Muxed<wbr>Stream</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#muxerfactory" class="tsd-kind-icon">Muxer<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#peerdiscoveryfactory" class="tsd-kind-icon">Peer<wbr>Discovery<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#peerroutingmodule" class="tsd-kind-icon">Peer<wbr>Routing<wbr>Module</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#protector" class="tsd-kind-icon">Protector</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#pubsub" class="tsd-kind-icon">Pubsub</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#pubsuboptions" class="tsd-kind-icon">Pubsub<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#transportfactory" class="tsd-kind-icon">Transport<wbr>Factory</a>
+					</li>
 				</ul>
 			</nav>
 		</div>
@@ -832,20 +621,18 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
-				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
-				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
-				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
-				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
 			</ul>
 		</div>
 	</div>
