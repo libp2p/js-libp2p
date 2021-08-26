@@ -44,10 +44,10 @@
 
     "utilities",
     ["libp2p/js-libp2p-crypto", "libp2p-crypto"],
-    ["libp2p/js-libp2p-crypto-secp256k1", "libp2p-crypto-secp256k1"],
 
     "data types",
     ["libp2p/js-peer-id", "peer-id"],
+    ["libp2p/js-libp2p-record", "libp2p-record"],
 
     "pubsub",
     ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"],
