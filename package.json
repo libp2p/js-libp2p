@@ -112,7 +112,7 @@
     "multistream-select": "^2.0.0",
     "mutable-proxy": "^1.0.0",
     "node-forge": "^0.10.0",
-    "p-any": "^3.0.0",
+    "p-any": "^4.0.0",
     "p-fifo": "^1.0.0",
     "p-retry": "^4.4.0",
     "p-settle": "^4.1.1",
