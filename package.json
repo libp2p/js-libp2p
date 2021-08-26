@@ -160,7 +160,7 @@
     "libp2p-webrtc-star": "^0.23.0",
     "libp2p-websockets": "^0.16.0",
     "nock": "^13.0.3",
-    "p-defer": "^3.0.0",
+    "p-defer": "^4.0.0",
     "p-times": "^3.0.0",
     "p-wait-for": "^3.2.0",
     "rimraf": "^3.0.2",
