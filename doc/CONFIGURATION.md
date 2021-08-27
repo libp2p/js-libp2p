@@ -503,6 +503,8 @@ const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
 const LevelStore = require('datastore-level')
 
+const datastore = await (new LevelStore('path/to/store')).open()
+
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
@@ -511,7 +513,7 @@ const node = await Libp2p.create({
   },
   keychain: {
     pass: 'notsafepassword123456789',
-    datastore: new LevelStore('path/to/store')
+    datastore,
   }
 })
 
@@ -673,8 +675,9 @@ const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
-
 const LevelStore = require('datastore-level')
+
+const datastore = await (new LevelStore('path/to/store')).open()
 
 const node = await Libp2p.create({
   modules: {
@@ -682,7 +685,7 @@ const node = await Libp2p.create({
     streamMuxer: [MPLEX],
     connEncryption: [NOISE]
   },
-  datastore: new LevelStore('path/to/store'),
+  datastore,
   peerStore: {
     persistence: true,
     threshold: 5
