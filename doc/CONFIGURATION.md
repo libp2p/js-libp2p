@@ -1,4 +1,4 @@
-# Configuration
+# 
 
 - [Configuration](#configuration)
   - [Overview](#overview)
@@ -503,7 +503,8 @@ const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
 const LevelStore = require('datastore-level')
 
-const datastore = await (new LevelStore('path/to/store')).open()
+const datastore = new LevelStore('path/to/store')
+const dsInstant = await datastore.open()
 
 const node = await Libp2p.create({
   modules: {
@@ -513,7 +514,7 @@ const node = await Libp2p.create({
   },
   keychain: {
     pass: 'notsafepassword123456789',
-    datastore,
+    datastore: dsInstant,
   }
 })
 
@@ -677,7 +678,8 @@ const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
 const LevelStore = require('datastore-level')
 
-const datastore = await (new LevelStore('path/to/store')).open()
+const datastore = new LevelStore('path/to/store')
+const dsInstant = await datastore.open()
 
 const node = await Libp2p.create({
   modules: {
@@ -685,7 +687,7 @@ const node = await Libp2p.create({
     streamMuxer: [MPLEX],
     connEncryption: [NOISE]
   },
-  datastore,
+  datastore: dsInstant,
   peerStore: {
     persistence: true,
     threshold: 5
