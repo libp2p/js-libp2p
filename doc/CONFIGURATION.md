@@ -504,7 +504,7 @@ const { NOISE } = require('libp2p-noise')
 const LevelStore = require('datastore-level')
 
 const datastore = new LevelStore('path/to/store')
-const dsInstant = await datastore.open()
+await datastore.open()
 
 const node = await Libp2p.create({
   modules: {
