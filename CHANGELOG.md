@@ -1,3 +1,12 @@
+## [0.31.8](https://github.com/libp2p/js-libp2p/compare/v0.31.7...v0.31.8) (2021-09-03)
+
+
+### Bug Fixes
+
+* hot fix uint8arrays 0.31.x ([172c2c7](https://github.com/libp2p/js-libp2p/commit/172c2c7f428afb54667d2789ea68b6e7e86d6b4f))
+
+
+
 ## [0.31.7](https://github.com/libp2p/js-libp2p/compare/v0.31.6...v0.31.7) (2021-06-14)
 
 
