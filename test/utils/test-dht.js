@@ -32,7 +32,11 @@ class TestDHT {
     const regRecord = {}
     const peerStore = new PeerStore({ peerId })
 
+    // Disable random walk by default for more controlled testing
     options = {
+      randomWalk: {
+        enabled: false
+      },
       protocolPrefix: '/ipfs',
       ...options
     }

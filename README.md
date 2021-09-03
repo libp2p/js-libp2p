@@ -72,15 +72,17 @@ function addDHT(libp2p) {
 Note that you may want to supply your own peer discovery function and datastore
 ### Peer Routing
 
-[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/peer-routing/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interfaces/src/peer-routing)
+[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/peer-routing/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/peer-routing)
 
 ### Content Routing
 
-[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/content-routing/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interfaces/src/content-routing)
+[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/content-routing/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/content-routing)
 
 ### Peer Discovery
 
-[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/peer-discovery/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interfaces/src/peer-discovery)
+[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/peer-discovery/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/peer-discovery)
+
+`libp2p-kad-dht` provides a discovery service called `Random Walk` (random walks on the DHT to discover more nodes). It is accessible through `dht.randomWalk` and exposes the [Peer Discovery interface](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/peer-discovery).
 
 ### Implementation Summary
 

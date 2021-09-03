@@ -6,7 +6,7 @@
 const PeerStore = require('libp2p/src/peer-store')
 const PeerId = require('peer-id')
 const { base58btc } = require('multiformats/bases/base58')
-const RoutingTable = require('../../src/routing-table')
+const RoutingTable = require('../../src/routing')
 const Message = require('../../src/message')
 const { convertBuffer } = require('../../src/utils')
 const { sortClosestPeers } = require('../../src/utils')
@@ -89,7 +89,10 @@ async function GetClosestPeersSimulation () {
     on: () => {}
   }, {
     kBucketSize: KValue,
-    concurrency: ALPHA
+    concurrency: ALPHA,
+    randomWalk: {
+      enabled: false
+    }
   })
 
   // Add random peers to our table

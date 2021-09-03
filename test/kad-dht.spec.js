@@ -97,14 +97,18 @@ describe('KadDHT', () => {
       const [dht] = await tdht.spawn(1, null, false)
 
       sinon.spy(dht.network, 'start')
+      sinon.spy(dht.randomWalk, 'start')
 
       sinon.spy(dht.network, 'stop')
+      sinon.spy(dht.randomWalk, 'stop')
 
       dht.start()
       expect(dht.network.start.calledOnce).to.equal(true)
+      expect(dht.randomWalk.start.calledOnce).to.equal(true)
 
       dht.stop()
       expect(dht.network.stop.calledOnce).to.equal(true)
+      expect(dht.randomWalk.stop.calledOnce).to.equal(true)
     })
 
     it('server mode', async () => {
@@ -124,6 +128,26 @@ describe('KadDHT', () => {
       dht.start()
       expect(dht.registrar.handle.callCount).to.equal(0)
       dht.stop()
+    })
+
+    it('random-walk disabled', async () => {
+      const [dht] = await tdht.spawn(1, {
+        randomWalk: { enabled: false }
+      }, false)
+
+      sinon.spy(dht.network, 'start')
+      sinon.spy(dht.randomWalk, 'start')
+
+      sinon.spy(dht.network, 'stop')
+      sinon.spy(dht.randomWalk, 'stop')
+
+      dht.start()
+      expect(dht.network.start.calledOnce).to.equal(true)
+      expect(dht.randomWalk._runningHandle).to.not.exist()
+
+      dht.stop()
+      expect(dht.network.stop.calledOnce).to.equal(true)
+      expect(dht.randomWalk.stop.calledOnce).to.equal(true) // Should be always disabled, as it can be started using the instance
     })
 
     it('should not fail when already started', async () => {

@@ -33,3 +33,11 @@ exports.K = 20
 
 // Alpha is the concurrency for asynchronous requests
 exports.ALPHA = 3
+
+exports.defaultRandomWalk = {
+  enabled: true,
+  queriesPerPeriod: 1,
+  interval: 5 * minute,
+  timeout: 10 * second,
+  delay: 10 * second
+}

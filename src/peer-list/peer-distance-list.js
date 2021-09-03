@@ -1,10 +1,10 @@
 'use strict'
 
+// @ts-ignore
+const distance = require('xor-distance')
 const utils = require('../utils')
 const pMap = require('p-map')
 const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
-const { compare: uint8ArrayCompare } = require('uint8arrays/compare')
-const { xor: uint8ArrayXor } = require('uint8arrays/xor')
 
 /**
  * @typedef {import('peer-id')} PeerId
@@ -56,11 +56,11 @@ class PeerDistanceList {
     const dhtKey = await utils.convertPeerId(peerId)
     const el = {
       peerId,
-      distance: uint8ArrayXor(this.originDhtKey, dhtKey)
+      distance: distance(this.originDhtKey, dhtKey)
     }
 
     this.peerDistances.push(el)
-    this.peerDistances.sort((a, b) => uint8ArrayCompare(a.distance, b.distance))
+    this.peerDistances.sort((a, b) => distance.compare(a.distance, b.distance))
     this.peerDistances = this.peerDistances.slice(0, this.capacity)
   }
 
@@ -83,9 +83,9 @@ class PeerDistanceList {
     const furthestDistance = this.peerDistances[this.peerDistances.length - 1].distance
 
     for (const dhtKey of dhtKeys) {
-      const keyDistance = uint8ArrayXor(this.originDhtKey, dhtKey)
+      const keyDistance = distance(this.originDhtKey, dhtKey)
 
-      if (uint8ArrayCompare(keyDistance, furthestDistance) < 0) {
+      if (distance.compare(keyDistance, furthestDistance) < 0) {
         return true
       }
     }

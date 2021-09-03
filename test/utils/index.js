@@ -55,6 +55,12 @@ const ConnectionPair = () => {
 
 exports.ConnectionPair = ConnectionPair
 
+exports.bootstrap = (dhts) => {
+  dhts.forEach((dht) => {
+    dht.randomWalk._walk(1, 10000)
+  })
+}
+
 exports.waitForWellFormedTables = (dhts, minPeers, avgPeers, waitTimeout) => {
   return pTimeout(pRetry(async () => {
     let totalPeers = 0
