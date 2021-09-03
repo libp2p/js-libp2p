@@ -1,3 +1,17 @@
+# [0.24.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.23.4...v0.24.0) (2021-09-03)
+
+
+### Features
+
+* periodically fill the routing table with KADIds ([#215](https://github.com/libp2p/js-libp2p-kad-dht/issues/215)) ([d812a91](https://github.com/libp2p/js-libp2p-kad-dht/commit/d812a91e7b59589e8f46b60ba23dcbb4db02d75a))
+
+
+### BREAKING CHANGES
+
+* .start() is now async and random walk has been removed
+
+
+
 ## [0.23.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.23.3...v0.23.4) (2021-09-03)
 
 
