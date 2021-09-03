@@ -1,3 +1,12 @@
+## [0.23.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.23.3...v0.23.4) (2021-09-03)
+
+
+### Reverts
+
+* Revert "feat: periodically fill the routing table with KADIds (#215)" ([dd16a28](https://github.com/libp2p/js-libp2p-kad-dht/commit/dd16a28d321e82b8c41ca942a07023b31c23f250)), closes [#215](https://github.com/libp2p/js-libp2p-kad-dht/issues/215)
+
+
+
 ## [0.23.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.23.2...v0.23.3) (2021-09-03)
 
 
