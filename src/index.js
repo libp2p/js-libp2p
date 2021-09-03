@@ -151,4 +151,6 @@ class TCP {
   }
 }
 
-module.exports = withIs(TCP, { className: 'TCP', symbolName: '@libp2p/js-libp2p-tcp/tcp' })
+const TCPWithIs = withIs(TCP, { className: 'TCP', symbolName: '@libp2p/js-libp2p-tcp/tcp' })
+
+exports = module.exports = TCPWithIs

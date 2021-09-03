@@ -41,7 +41,7 @@
   "types": "dist/src/index.d.ts",
   "devDependencies": {
     "@types/debug": "^4.1.5",
-    "aegir": "^33.2.0",
+    "aegir": "^35.0.3",
     "it-pipe": "^1.1.0",
     "libp2p-interfaces": "^1.0.0",
     "libp2p-interfaces-compliance-tests": "^1.0.0",
