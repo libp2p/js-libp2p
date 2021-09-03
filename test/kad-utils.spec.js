@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const PeerId = require('peer-id')
-const distance = require('xor-distance')
+const { xor: uint8ArrayXor } = require('uint8arrays/xor')
 const { concat: uint8ArrayConcat } = require('uint8arrays/concat')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
@@ -87,10 +87,10 @@ describe('kad utils', () => {
     it('sorts two distances', () => {
       const target = uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a90')
       const a = {
-        distance: distance(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a95'), target)
+        distance: uint8ArrayXor(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a95'), target)
       }
       const b = {
-        distance: distance(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a96'), target)
+        distance: uint8ArrayXor(uint8ArrayFromString('11140beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a96'), target)
       }
 
       expect(utils.xorCompare(a, b)).to.eql(-1)

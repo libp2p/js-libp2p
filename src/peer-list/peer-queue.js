@@ -2,8 +2,7 @@
 
 // @ts-ignore
 const Heap = require('heap')
-// @ts-ignore
-const distance = require('xor-distance')
+const { xor: uint8ArrayXor } = require('uint8arrays/xor')
 const debug = require('debug')
 
 const utils = require('../utils')
@@ -65,7 +64,7 @@ class PeerQueue {
 
     const el = {
       id: id,
-      distance: distance(this.from, key)
+      distance: uint8ArrayXor(this.from, key)
     }
 
     this.heap.push(el)

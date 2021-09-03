@@ -4,7 +4,9 @@
       "outDir": "dist"
   },
   "include": [
-    "src"
+    "src",
+    "src/routing-table/generated-prefix-list.json",
+    "src/routing-table/generated-prefix-list-browser.json"
   ],
   "exclude": [
     "src/message/dht.js" // exclude generated file

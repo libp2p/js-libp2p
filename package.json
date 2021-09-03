@@ -47,13 +47,13 @@
   "homepage": "https://github.com/libp2p/js-libp2p-kad-dht",
   "types": "dist/src/index.d.ts",
   "dependencies": {
-    "abort-controller": "^3.0.0",
     "debug": "^4.3.1",
     "err-code": "^3.0.0",
     "hashlru": "^2.3.0",
     "heap": "~0.2.6",
     "interface-datastore": "^5.1.1",
     "it-first": "^1.0.4",
+    "it-length": "^1.0.3",
     "it-length-prefixed": "^5.0.2",
     "it-pipe": "^1.1.0",
     "k-bucket": "^5.1.0",
@@ -65,21 +65,20 @@
     "p-map": "^4.0.0",
     "p-queue": "^6.6.2",
     "p-timeout": "^4.1.0",
-    "p-times": "^3.0.0",
     "peer-id": "^0.15.0",
     "protobufjs": "^6.10.2",
     "streaming-iterables": "^6.0.0",
     "uint8arrays": "^3.0.0",
-    "varint": "^6.0.0",
-    "xor-distance": "^2.0.0"
+    "varint": "^6.0.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.6.1",
     "aegir": "^35.0.1",
     "async-iterator-all": "^1.0.0",
+    "crypto-browserify": "^3.12.0",
     "datastore-level": "^6.0.2",
     "delay": "^5.0.0",
+    "execa": "^5.1.1",
     "it-pair": "^1.0.0",
     "libp2p": "^0.32.3",
     "lodash.random": "^3.2.0",
@@ -88,7 +87,8 @@
     "p-each-series": "^2.1.0",
     "p-map-series": "^2.1.0",
     "p-retry": "^4.2.0",
-    "sinon": "^11.1.1"
+    "sinon": "^11.1.1",
+    "which": "^2.0.2"
   },
   "contributors": [
     "Vasco Santos <vasco.santos@moxy.studio>",
@@ -110,5 +110,8 @@
     "Pedro Teixeira <i@pgte.me>",
     "Qmstream <51881352+Qmstream@users.noreply.github.com>",
     "Thomas Eizinger <thomas@eizinger.io>"
-  ]
+  ],
+  "browser": {
+    "src/routing-table/generated-prefix-list.json": "src/routing-table/generated-prefix-list-browser.json"
+  }
 }
