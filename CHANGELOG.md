@@ -1,3 +1,12 @@
+## [0.17.2](https://github.com/libp2p/js-libp2p-tcp/compare/v0.17.1...v0.17.2) (2021-09-03)
+
+
+### Bug Fixes
+
+* ts declaration export ([#150](https://github.com/libp2p/js-libp2p-tcp/issues/150)) ([d165fe5](https://github.com/libp2p/js-libp2p-tcp/commit/d165fe57960e2bb4a5324c372ef459c31dee1cf5))
+
+
+
 ## [0.17.1](https://github.com/libp2p/js-libp2p-tcp/compare/v0.17.0...v0.17.1) (2021-07-08)
 
 
