@@ -12,6 +12,7 @@ const { convertBuffer } = require('../../src/utils')
 const { sortClosestPeers } = require('../../src/utils')
 const DHT = require('../../src')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+const crypto = require('libp2p-crypto')
 
 const NUM_PEERS = 10e3 // Peers to create, not including us
 const LATENCY_DEAD_NODE = 120e3 // How long dead nodes should take before erroring
@@ -134,7 +135,6 @@ async function GetClosestPeersSimulation () {
  * @returns {Array<PeerId>}
  */
 function createPeers (num) {
-  const crypto = require('crypto')
   const peers = [...new Array(num)].map(() => {
     return PeerId.createFromB58String(
       base58btc.baseEncode(crypto.randomBytes(34))

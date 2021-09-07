@@ -9,9 +9,6 @@ const esbuild = {
         build.onResolve({ filter: /^stream$/ }, () => {
           return { path: require.resolve('readable-stream') }
         })
-        build.onResolve({ filter: /^crypto$/ }, () => {
-          return { path: require.resolve('crypto-browserify') }
-        })
       }
     }
   ]
