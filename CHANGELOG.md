@@ -1,3 +1,12 @@
+## [0.24.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.24.0...v0.24.1) (2021-09-07)
+
+
+### Bug Fixes
+
+* browser compatibility ([#226](https://github.com/libp2p/js-libp2p-kad-dht/issues/226)) ([01b7ec1](https://github.com/libp2p/js-libp2p-kad-dht/commit/01b7ec15c059653a83634020bc9668bd7d25c1a9))
+
+
+
 # [0.24.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.23.4...v0.24.0) (2021-09-03)
 
 
