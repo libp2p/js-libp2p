@@ -27,7 +27,7 @@ const DefaultConfig = {
   },
   connectionManager: {
     minConnections: 25,
-    gater: /** @type {ConnectionManager.gater} */ {},
+    gater: /** @type {ConnectionManager.gater} */ {}
   },
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL
