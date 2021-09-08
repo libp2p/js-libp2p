@@ -37,8 +37,8 @@ describe('Upgrader', () => {
       interceptPeerDial: async () => false,
       interceptAddrDial: async () => false,
       interceptAccept: async () => false,
-	    interceptSecured: async () => false,
-	    interceptUpgraded: async () => false,
+      interceptSecured: async () => false,
+      interceptUpgraded: async () => false
     }
   }
 
