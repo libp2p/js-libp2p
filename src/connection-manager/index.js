@@ -106,18 +106,23 @@ class ConnectionManager extends EventEmitter {
       dataEmitIntervalMs: this._options.pollInterval
     })
 
+    /**
+     * @type {{
+     *   interceptPeerDial: (peerId: PeerId) => Promise<boolean>,
+     *   interceptAddrDial: (peerId: PeerId, maddr: Multiaddr) => Promise<boolean>,
+     *   interceptAccept: (maConn: MultiaddrConnection) => Promise<boolean>,
+     *   interceptSecured: (direction: 'inbound' | 'outbound', peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>,
+     *   interceptUpgraded: (maConn: MultiaddrConnection | MuxedStream) => Promise<boolean>,
+     * }}
+     */
     this.gater = {
-      ...this.gater,
+      interceptPeerDial: async (peerId) => false,
+      interceptAddrDial: async (peerId, multiaddr) => false,
+      interceptAccept: async (maConn) => false,
+      interceptSecured: async (direction, peerId, maConn) => false,
+      interceptUpgraded: async (maConn) => false,
       ...libp2p._options.connectionManager.gater,
     }
-  }
-
-  gater = {
-    interceptPeerDial: async (/** @type {PeerId} */ peerId) => false,
-    interceptAddrDial: async (/** @type {PeerId} */ peerId, /** @type {Multiaddr} */ multiaddr) => false,
-    interceptAccept: async (/** @type {MultiaddrConnection} */ maConn) => false,
-    interceptSecured: async (/** @type {'inbound' | 'outbound'}*/ direction, /** @type {PeerId} */ peerId, /** @type {MultiaddrConnection} */ maConn) => false,
-    interceptUpgraded: async (/** @type {MultiaddrConnection | MuxedStream} */ maConn) => false,
   }
 
   /**
