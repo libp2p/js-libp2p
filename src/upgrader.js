@@ -36,6 +36,7 @@ class Upgrader {
   /**
    * @param {object} options
    * @param {PeerId} options.localPeer
+   * @param {import('./connection-manager')} options.connectionManager
    * @param {import('./metrics')} [options.metrics]
    * @param {Map<string, Crypto>} [options.cryptos]
    * @param {Map<string, MuxerFactory>} [options.muxers]
@@ -45,11 +46,13 @@ class Upgrader {
   constructor ({
     localPeer,
     metrics,
+    connectionManager,
     cryptos = new Map(),
     muxers = new Map(),
     onConnectionEnd = () => {},
     onConnection = () => {}
   }) {
+    this.connectionManager = connectionManager
     this.localPeer = localPeer
     this.metrics = metrics
     this.cryptos = cryptos
@@ -77,6 +80,10 @@ class Upgrader {
     let setPeer
     let proxyPeer
 
+    if (await this.connectionManager.gater.interceptAccept(maConn)) {
+      throw errCode(new Error('The multiaddr connection is blocked by gater.interceptAccept'), codes.ERR_CONNECTION_FAILED)
+    }
+
     if (this.metrics) {
       ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
       const idString = (Math.random() * 1e9).toString(36) + Date.now()
@@ -100,6 +107,10 @@ class Upgrader {
         protocol: cryptoProtocol
       } = await this._encryptInbound(this.localPeer, protectedConn, this.cryptos))
 
+      if (await this.connectionManager.gater.interceptSecured('inbound', remotePeer, encryptedConn)) {
+        throw errCode(new Error('The multiaddr connection is blocked by gater.interceptSecured'), codes.ERR_CONNECTION_FAILED)
+      }
+
       // Multiplex the connection
       if (this.muxers.size) {
         ({ stream: upgradedConn, Muxer } = await this._multiplexInbound(encryptedConn, this.muxers))
@@ -110,6 +121,10 @@ class Upgrader {
       log.error('Failed to upgrade inbound connection', err)
       await maConn.close(err)
       throw err
+    }
+
+    if (await this.connectionManager.gater.interceptUpgraded(upgradedConn)) {
+      throw errCode(new Error('The multiaddr connection is blocked by gater.interceptUpgraded'), codes.ERR_CONNECTION_FAILED)
     }
 
     if (this.metrics) {

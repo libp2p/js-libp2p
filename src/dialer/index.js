@@ -1,6 +1,8 @@
 'use strict'
 
 const debug = require('debug')
+const all = require('it-all')
+const filter = require('it-filter')
 const log = Object.assign(debug('libp2p:dialer'), {
   error: debug('libp2p:dialer:err')
 })
@@ -29,12 +31,14 @@ const {
  * @typedef {import('../peer-store')} PeerStore
  * @typedef {import('../peer-store/address-book').Address} Address
  * @typedef {import('../transport-manager')} TransportManager
+ * @typedef {import('../connection-manager')} ConnectionManager
  */
 
 /**
  * @typedef {Object} DialerProperties
  * @property {PeerStore} peerStore
  * @property {TransportManager} transportManager
+ * @property {ConnectionManager} connectionManager
  *
  * @typedef {(addr:Multiaddr) => Promise<string[]>} Resolver
  *
@@ -65,6 +69,7 @@ class Dialer {
   constructor ({
     transportManager,
     peerStore,
+    connectionManager,
     addressSorter = publicAddressesFirst,
     maxParallelDials = MAX_PARALLEL_DIALS,
     maxAddrsToDial = MAX_ADDRS_TO_DIAL,
@@ -72,6 +77,7 @@ class Dialer {
     maxDialsPerPeer = MAX_PER_PEER_DIALS,
     resolvers = {}
   }) {
+    this.connectionManager = connectionManager;
     this.transportManager = transportManager
     this.peerStore = peerStore
     this.addressSorter = addressSorter
@@ -118,6 +124,10 @@ class Dialer {
    * @returns {Promise<Connection>}
    */
   async connectToPeer (peer, options = {}) {
+    const { id } = getPeer(peer)
+    if (await this.connectionManager.gater.interceptPeerDial(id)) {
+      throw errCode(new Error('The dial request is blocked by connection gater'), codes.ERR_INVALID_PEER)
+    }
     const dialTarget = await this._createCancellableDialTarget(peer)
 
     if (!dialTarget.addrs.length) {
@@ -177,9 +187,10 @@ class Dialer {
    * @returns {Promise<DialTarget>}
    */
   async _createDialTarget (peer) {
-    const { id, multiaddrs } = getPeer(peer)
+    let { id, multiaddrs } = getPeer(peer)
 
     if (multiaddrs) {
+      multiaddrs = await all(filter(multiaddrs, async (multiaddr) => !(await this.connectionManager.gater.interceptAddrDial(id, multiaddr))))
       this.peerStore.addressBook.add(id, multiaddrs)
     }
 

@@ -34,6 +34,9 @@ const defaultOptions = {
 
 /**
  * @typedef {import('../')} Libp2p
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
+ * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  */
 
@@ -102,6 +105,45 @@ class ConnectionManager extends EventEmitter {
       latencyCheckIntervalMs: this._options.pollInterval,
       dataEmitIntervalMs: this._options.pollInterval
     })
+
+    this.gater = {
+      ...this.gater,
+      ...libp2p._options.connectionManager.gater,
+    }
+  }
+
+  gater = {
+
+	  // InterceptPeerDial tests whether we're permitted to Dial the specified peer.
+	  //
+	  // This is called by the dialer.connectToPeer implementation when dialling a peer.
+    interceptPeerDial: async (/** @type {PeerId} */ peerId) => false,
+
+    // InterceptAddrDial tests whether we're permitted to dial the specified
+	  // multiaddr for the given peer.
+	  //
+	  // This is called by the dialer.connectToPeer implementation after it has
+	  // resolved the peer's addrs, and prior to dialling each.
+    interceptAddrDial: async (/** @type {PeerId} */ peerId, /** @type {Multiaddr} */ multiaddr) => false,
+
+
+	  // InterceptAccept tests whether an incipient inbound connection is allowed.
+	  //
+	  // This is called by the upgrader, or by the transport directly (e.g. QUIC,
+	  // Bluetooth), straight after it has accepted a connection from its socket.
+    interceptAccept: async (/** @type {MultiaddrConnection} */ maConn) => false,
+
+	  // InterceptSecured tests whether a given connection, now authenticated,
+	  // is allowed.
+	  //
+	  // This is called by the upgrader, after it has performed the security
+	  // handshake, and before it negotiates the muxer, or by the directly by the
+	  // transport, at the exact same checkpoint.
+	  interceptSecured: async (/** @type {'inbound' | 'outbound'}*/ direction, /** @type {PeerId} */ peerId, /** @type {MultiaddrConnection} */ maConn) => false,
+
+	  // InterceptUpgraded tests whether a fully capable connection is allowed.
+	  interceptUpgraded: async (/** @type {MultiaddrConnection | MuxedStream} */ maConn) => false,
+
   }
 
   /**

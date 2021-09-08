@@ -221,6 +221,7 @@ class Libp2p extends EventEmitter {
 
     // Setup the Upgrader
     this.upgrader = new Upgrader({
+      connectionManager: this.connectionManager,
       localPeer: this.peerId,
       metrics: this.metrics,
       onConnection: (connection) => this.connectionManager.onConnect(connection),
@@ -263,6 +264,7 @@ class Libp2p extends EventEmitter {
 
     this.dialer = new Dialer({
       transportManager: this.transportManager,
+      connectionManager: this.connectionManager,
       peerStore: this.peerStore,
       ...this._options.dialer
     })
