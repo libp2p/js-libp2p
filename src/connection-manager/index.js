@@ -107,6 +107,8 @@ class ConnectionManager extends EventEmitter {
     })
 
     /**
+     * Connection Gater
+     * 
      * @type {{
      *   interceptPeerDial: (peerId: PeerId) => Promise<boolean>,
      *   interceptAddrDial: (peerId: PeerId, maddr: Multiaddr) => Promise<boolean>,
