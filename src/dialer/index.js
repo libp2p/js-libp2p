@@ -125,8 +125,8 @@ class Dialer {
    */
   async connectToPeer (peer, options = {}) {
     const { id } = getPeer(peer)
-    if (await this.connectionManager.gater.interceptPeerDial(id)) {
-      throw errCode(new Error('The dial request is blocked by connection gater'), codes.ERR_INVALID_PEER)
+    if (this.connectionManager && await this.connectionManager.gater.interceptPeerDial(id)) {
+      throw errCode(new Error('The dial request is blocked by gater.interceptPeerDial'), codes.ERR_PEER_DIAL_INTERCEPTED)
     }
     const dialTarget = await this._createCancellableDialTarget(peer)
 
@@ -187,14 +187,15 @@ class Dialer {
    * @returns {Promise<DialTarget>}
    */
   async _createDialTarget (peer) {
-    let { id, multiaddrs } = getPeer(peer)
+    const { id, multiaddrs } = getPeer(peer)
 
     if (multiaddrs) {
-      multiaddrs = await all(filter(multiaddrs, async (multiaddr) => !(await this.connectionManager.gater.interceptAddrDial(id, multiaddr))))
-      this.peerStore.addressBook.add(id, multiaddrs)
+      const filteredMultiaddrs = await all(filter(multiaddrs, async (multiaddr) => !(this.connectionManager && await this.connectionManager.gater.interceptAddrDial(id, multiaddr))))
+      this.peerStore.addressBook.add(id, filteredMultiaddrs)
     }
 
     let knownAddrs = this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter) || []
+    knownAddrs = await all(filter(knownAddrs, async (multiaddr) => !(this.connectionManager && await this.connectionManager.gater.interceptAddrDial(id, multiaddr))))
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.

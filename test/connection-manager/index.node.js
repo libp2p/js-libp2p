@@ -11,6 +11,8 @@ const pWaitFor = require('p-wait-for')
 const peerUtils = require('../utils/creators/peer')
 const mockConnection = require('../utils/mockConnection')
 const baseOptions = require('../utils/base-options.browser')
+const { codes } = require('../../src/errors')
+const { Multiaddr } = require('multiaddr')
 
 const listenMultiaddr = '/ip4/127.0.0.1/tcp/15002/ws'
 
@@ -305,4 +307,200 @@ describe('libp2p.connections', () => {
       await remoteLibp2p.stop()
     })
   })
+
+  describe('connection gater', () => {
+    let remoteLibp2p
+    let port = 15004
+
+    beforeEach(async () => {
+      [remoteLibp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[1],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/' + (port++) + '/ws']
+          },
+          modules: baseOptions.modules
+        }
+      })
+    })
+    it('intercept peer dial', async () => {
+      const [libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/' + (port++) + '/ws']
+          },
+          modules: baseOptions.modules,
+          connectionManager: {
+            gater: {
+              interceptPeerDial: async (peer) => {
+                return peer.toB58String() === remoteLibp2p.peerId.toB58String()
+              }
+            }
+          }
+        },
+      })
+      try{
+        await libp2p.dial(remoteLibp2p.peerId)
+      } catch (e) {
+        expect(e.code).to.equal(codes.ERR_PEER_DIAL_INTERCEPTED)
+      }
+    })
+    it('intercept addr dial', async () => {
+      const testAddr = new Multiaddr('/ip4/99.99.99.88/tcp/12345/ws/p2p/' + remoteLibp2p.peerId.toB58String());
+      const [libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/' + (port++) + '/ws']
+          },
+          modules: baseOptions.modules,
+          connectionManager: {
+            gater: {
+              interceptAddrDial: async (peerId, maddr) => {
+                return peerId.toB58String() === remoteLibp2p.peerId.toB58String() && maddr.toString() == testAddr.toString()
+              }
+            }
+          }
+        },
+      })
+      libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, [
+        ...remoteLibp2p.multiaddrs,
+        testAddr
+      ])
+      const { addrs } = await libp2p.dialer._createCancellableDialTarget(remoteLibp2p.peerId);
+      expect(addrs.length > 0 && addrs.filter(i => i.toString() === testAddr.toString()).length === 0).to.equal(true)
+    })
+    it('intercept accept', async () => {
+      const [libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/' + (port++) + '/ws']
+          },
+          modules: baseOptions.modules,
+          connectionManager: {
+            gater: {
+              interceptAccept: async (maConn) => {
+                return maConn.remoteAddr.toString().indexOf('127.0.0.1') >= 0
+              }
+            }
+          }
+        },
+      })
+      remoteLibp2p.peerStore.addressBook.set(libp2p.peerId, libp2p.multiaddrs);
+      const upgradeInbound = libp2p.upgrader.upgradeInbound.bind(libp2p.upgrader);
+      expect(await new Promise(async resolve => {
+        libp2p.upgrader.upgradeInbound = async function(maConn) {
+          try {
+            return await upgradeInbound(maConn)
+          } catch (e) {
+            if (e.toString().indexOf('interceptAccept') >= 0 && e.code === codes.ERR_CONNECTION_INTERCEPTED) {
+             resolve(true)
+            }
+          }
+        }
+        try {
+          await remoteLibp2p.dial(libp2p.peerId)
+        } catch (e) {
+        }
+      })).to.equal(true);
+    })
+    it('intercept secured (inbound)', async () => {
+      const [libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/' + (port++) + '/ws']
+          },
+          modules: baseOptions.modules,
+          connectionManager: {
+            gater: {
+              interceptSecured: async (type, remotePeer, encryptedConn) => {
+                return remotePeer.toB58String() === remoteLibp2p.peerId.toB58String() && type === 'inbound'
+              }
+            }
+          }
+        },
+      })
+      remoteLibp2p.peerStore.addressBook.set(libp2p.peerId, libp2p.multiaddrs);
+      const upgradeInbound = libp2p.upgrader.upgradeInbound.bind(libp2p.upgrader);
+      expect(await new Promise(async resolve => {
+        libp2p.upgrader.upgradeInbound = async function(maConn) {
+          try {
+            return await upgradeInbound(maConn)
+          } catch (e) {
+            if (e.toString().indexOf('interceptSecured') >= 0 && e.code === codes.ERR_CONNECTION_INTERCEPTED) {
+             resolve(true)
+            }
+          }
+        }
+        try {
+          await remoteLibp2p.dial(libp2p.peerId)
+        } catch (e) {
+        }
+      })).to.equal(true);
+    })
+    it('intercept secured (outbound)', async () => {
+      const [libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/' + (port++) + '/ws']
+          },
+          modules: baseOptions.modules,
+          connectionManager: {
+            gater: {
+              interceptSecured: async (type, remotePeer, encryptedConn) => {
+                return remotePeer.toB58String() === remoteLibp2p.peerId.toB58String() && type === 'outbound'
+              }
+            }
+          }
+        },
+      })
+      libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs);
+      expect(await new Promise(async resolve => {
+        try {
+          await libp2p.dial(remoteLibp2p.peerId)
+        } catch (e) {
+          resolve(e.toString().indexOf('interceptSecured') >= 0)
+        }
+      })).to.equal(true);
+    })
+    it('intercept upgraded', async () => {
+      const [libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/' + (port++) + '/ws']
+          },
+          modules: baseOptions.modules,
+          connectionManager: {
+            gater: {
+              interceptUpgraded: async (upgradedConn) => {
+                return true
+              }
+            }
+          }
+        },
+      })
+      remoteLibp2p.peerStore.addressBook.set(libp2p.peerId, libp2p.multiaddrs);
+      const upgradeInbound = libp2p.upgrader.upgradeInbound.bind(libp2p.upgrader);
+      expect(await new Promise(async resolve => {
+        libp2p.upgrader.upgradeInbound = async function(maConn) {
+          try {
+            return await upgradeInbound(maConn)
+          } catch (e) {
+            if (e.toString().indexOf('interceptUpgraded') >= 0 && e.code === codes.ERR_CONNECTION_INTERCEPTED) {
+             resolve(true)
+            }
+          }
+        }
+        try {
+          await remoteLibp2p.dial(libp2p.peerId)
+        } catch (e) {
+        }
+      })).to.equal(true);
+    })
+  });
 })

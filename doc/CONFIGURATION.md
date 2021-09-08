@@ -592,21 +592,20 @@ const node = await Libp2p.create({
 	    // InterceptPeerDial tests whether we're permitted to Dial the specified peer.
 	    //
 	    // This is called by the dialer.connectToPeer implementation when dialling a peer.
-     interceptPeerDial: async (/** @type {PeerId} */ peerId) => false,
+      interceptPeerDial: async (/** @type {PeerId} */ peerId) => false,
 
-     // InterceptAddrDial tests whether we're permitted to dial the specified
+      // InterceptAddrDial tests whether we're permitted to dial the specified
 	    // multiaddr for the given peer.
 	    //
 	    // This is called by the dialer.connectToPeer implementation after it has
 	    // resolved the peer's addrs, and prior to dialling each.
-     interceptAddrDial: async (/** @type {PeerId} */ peerId, /** @type {Multiaddr} */ multiaddr) => false,
-
+      interceptAddrDial: async (/** @type {PeerId} */ peerId, /** @type {Multiaddr} */ multiaddr) => false,
 
 	    // InterceptAccept tests whether an incipient inbound connection is allowed.
 	    //
 	    // This is called by the upgrader, or by the transport directly (e.g. QUIC,
 	    // Bluetooth), straight after it has accepted a connection from its socket.
-     interceptAccept: async (/** @type {MultiaddrConnection} */ maConn) => false,
+      interceptAccept: async (/** @type {MultiaddrConnection} */ maConn) => false,
 
 	    // InterceptSecured tests whether a given connection, now authenticated,
 	    // is allowed.

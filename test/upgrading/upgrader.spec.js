@@ -32,6 +32,16 @@ describe('Upgrader', () => {
   let localPeer
   let remotePeer
 
+  const mockConnectionManager = {
+    gater: {
+      interceptPeerDial: async () => false,
+      interceptAddrDial: async () => false,
+      interceptAccept: async () => false,
+	    interceptSecured: async () => false,
+	    interceptUpgraded: async () => false,
+    }
+  }
+
   before(async () => {
     ([
       localPeer,
@@ -42,9 +52,11 @@ describe('Upgrader', () => {
     ]))
 
     localUpgrader = new Upgrader({
+      connectionManager: mockConnectionManager,
       localPeer
     })
     remoteUpgrader = new Upgrader({
+      connectionManager: mockConnectionManager,
       localPeer: remotePeer
     })
 
@@ -392,6 +404,7 @@ describe('libp2p.upgrader', () => {
 
     const remoteUpgrader = new Upgrader({
       localPeer: remotePeer,
+      connectionManager: libp2p.connectionManager,
       muxers: new Map([[Muxer.multicodec, Muxer]]),
       cryptos: new Map([[Crypto.protocol, Crypto]])
     })
@@ -424,6 +437,7 @@ describe('libp2p.upgrader', () => {
 
     const remoteUpgrader = new Upgrader({
       localPeer: remotePeer,
+      connectionManager: libp2p.connectionManager,
       muxers: new Map([[Muxer.multicodec, Muxer]]),
       cryptos: new Map([[Crypto.protocol, Crypto]])
     })

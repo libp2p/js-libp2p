@@ -243,7 +243,7 @@ describe('Nat Manager (TCP)', () => {
     }).to.throw().with.property('code', ERR_INVALID_PARAMETERS)
   })
 
-  it('shuts the nat api down when stopping', async function () {
+  it.only('shuts the nat api down when stopping', async function () {
     function findRoutableAddress () {
       const interfaces = networkInterfaces()
 

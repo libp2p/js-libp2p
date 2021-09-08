@@ -35,7 +35,6 @@ gater = {
 	// resolved the peer's addrs, and prior to dialling each.
   interceptAddrDial: async (/** @type {PeerId} */ peerId, /** @type {Multiaddr} */ multiaddr) => false,
 
-
 	// InterceptAccept tests whether an incipient inbound connection is allowed.
 	//
 	// This is called by the upgrader, or by the transport directly (e.g. QUIC,
