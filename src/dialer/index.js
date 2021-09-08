@@ -77,7 +77,7 @@ class Dialer {
     maxDialsPerPeer = MAX_PER_PEER_DIALS,
     resolvers = {}
   }) {
-    this.connectionManager = connectionManager;
+    this.connectionManager = connectionManager
     this.transportManager = transportManager
     this.peerStore = peerStore
     this.addressSorter = addressSorter

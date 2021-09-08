@@ -110,11 +110,11 @@ class ConnectionManager extends EventEmitter {
      * Connection Gater
      *
      * @type {{
-     *   interceptPeerDial: (peerId: PeerId) => Promise<boolean>,
-     *   interceptAddrDial: (peerId: PeerId, maddr: Multiaddr) => Promise<boolean>,
-     *   interceptAccept: (maConn: MultiaddrConnection) => Promise<boolean>,
-     *   interceptSecured: (direction: 'inbound' | 'outbound', peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>,
-     *   interceptUpgraded: (maConn: MultiaddrConnection | MuxedStream) => Promise<boolean>,
+     * interceptPeerDial: (peerId: PeerId) => Promise<boolean>,
+     * interceptAddrDial: (peerId: PeerId, maddr: Multiaddr) => Promise<boolean>,
+     * interceptAccept: (maConn: MultiaddrConnection) => Promise<boolean>,
+     * interceptSecured: (direction: 'inbound' | 'outbound', peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>,
+     * interceptUpgraded: (maConn: MultiaddrConnection | MuxedStream) => Promise<boolean>,
      * }}
      */
     this.gater = {
@@ -123,7 +123,7 @@ class ConnectionManager extends EventEmitter {
       interceptAccept: async (maConn) => false,
       interceptSecured: async (direction, peerId, maConn) => false,
       interceptUpgraded: async (maConn) => false,
-      ...libp2p._options.connectionManager.gater,
+      ...libp2p._options.connectionManager.gater
     }
   }
 
