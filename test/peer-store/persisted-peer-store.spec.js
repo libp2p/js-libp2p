@@ -9,7 +9,7 @@ const PeerRecord = require('../../src/record/peer-record')
 const PeerStore = require('../../src/peer-store/persistent')
 
 const { Multiaddr } = require('multiaddr')
-const { MemoryDatastore } = require('interface-datastore')
+const { MemoryDatastore } = require('datastore-core/memory')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const peerUtils = require('../utils/creators/peer')
