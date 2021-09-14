@@ -1,3 +1,12 @@
+## [0.24.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.24.1...v0.24.2) (2021-09-14)
+
+
+### Bug Fixes
+
+* browser override path ([#228](https://github.com/libp2p/js-libp2p-kad-dht/issues/228)) ([3c737c1](https://github.com/libp2p/js-libp2p-kad-dht/commit/3c737c16399ac7e541b417f0e8b76157ed2f86ff))
+
+
+
 ## [0.24.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.24.0...v0.24.1) (2021-09-07)
 
 
