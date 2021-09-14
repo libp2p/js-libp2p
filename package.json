@@ -112,6 +112,6 @@
     "Thomas Eizinger <thomas@eizinger.io>"
   ],
   "browser": {
-    "src/routing-table/generated-prefix-list.json": "src/routing-table/generated-prefix-list-browser.json"
+    "./src/routing-table/generated-prefix-list.json": "./src/routing-table/generated-prefix-list-browser.json"
   }
 }
