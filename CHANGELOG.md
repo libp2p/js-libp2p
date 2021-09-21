@@ -1,3 +1,12 @@
+## [0.32.5](https://github.com/libp2p/js-libp2p/compare/v0.32.4...v0.32.5) (2021-09-21)
+
+
+### Bug Fixes
+
+* move abortable-iterator to dependencies ([#992](https://github.com/libp2p/js-libp2p/issues/992)) ([122c89d](https://github.com/libp2p/js-libp2p/commit/122c89dd0df55a59edaae078e3dc7c31b5603715)), closes [#986](https://github.com/libp2p/js-libp2p/issues/986)
+
+
+
 ## [0.32.4](https://github.com/libp2p/js-libp2p/compare/v0.32.3...v0.32.4) (2021-08-20)
 
 
