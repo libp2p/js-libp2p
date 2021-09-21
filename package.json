@@ -78,6 +78,7 @@
     ]
   },
   "dependencies": {
+    "abortable-iterator": "^3.0.0",
     "@motrix/nat-api": "^0.3.1",
     "@vascosantos/moving-average": "^1.1.0",
     "abort-controller": "^3.0.0",
@@ -136,7 +137,6 @@
     "@types/node": "^16.0.1",
     "@types/node-forge": "^0.10.1",
     "@types/varint": "^6.0.0",
-    "abortable-iterator": "^3.0.0",
     "aegir": "^33.1.1",
     "buffer": "^6.0.3",
     "delay": "^5.0.0",
