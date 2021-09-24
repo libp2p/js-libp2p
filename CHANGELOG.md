@@ -1,3 +1,17 @@
+# [0.33.0](https://github.com/libp2p/js-libp2p/compare/v0.32.5...v0.33.0) (2021-09-24)
+
+
+### chore
+
+* update datastore ([#990](https://github.com/libp2p/js-libp2p/issues/990)) ([83734ef](https://github.com/libp2p/js-libp2p/commit/83734ef52061ad61ddb5ca49aae27e3a8b937058))
+
+
+### BREAKING CHANGES
+
+* datastore implementations provided to libp2p must be compliant with interface-datastore@6.0.0
+
+
+
 ## [0.32.5](https://github.com/libp2p/js-libp2p/compare/v0.32.4...v0.32.5) (2021-09-21)
 
 
