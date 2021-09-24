@@ -61,5 +61,13 @@ describe('selection', () => {
         0
       )
     })
+
+    it('returns the first record when there is only one to select', () => {
+      expect(
+        selection.selectors.pk(uint8ArrayFromString('/hello/world'), [records[0]])
+      ).to.equal(
+        0
+      )
+    })
   })
 })

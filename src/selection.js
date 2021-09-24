@@ -34,6 +34,10 @@ const bestRecord = (selectors, k, records) => {
     throw errcode(new Error(errMsg), 'ERR_UNRECOGNIZED_KEY_PREFIX')
   }
 
+  if (records.length === 1) {
+    return 0
+  }
+
   return selector(k, records)
 }
 
