@@ -1,3 +1,12 @@
+## [0.10.6](https://github.com/libp2p/js-libp2p-record/compare/v0.10.5...v0.10.6) (2021-09-24)
+
+
+### Bug Fixes
+
+* auto select if only one record ([#31](https://github.com/libp2p/js-libp2p-record/issues/31)) ([53bc7f2](https://github.com/libp2p/js-libp2p-record/commit/53bc7f2627a95256337033977a05df54a534f951))
+
+
+
 ## [0.10.5](https://github.com/libp2p/js-libp2p-record/compare/v0.10.4...v0.10.5) (2021-08-18)
 
 
