@@ -4,7 +4,7 @@ const debug = require('debug')
 const log = Object.assign(debug('libp2p:persistent-peer-store'), {
   error: debug('libp2p:persistent-peer-store:err')
 })
-const { Key } = require('interface-datastore')
+const { Key } = require('interface-datastore/key')
 const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
 const { base32 } = require('multiformats/bases/base32')

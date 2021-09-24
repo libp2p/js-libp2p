@@ -9,7 +9,8 @@ const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 const peerUtils = require('../utils/creators/peer')
 
-const { MemoryDatastore, Key } = require('interface-datastore')
+const { Key } = require('interface-datastore/key')
+const { MemoryDatastore } = require('datastore-core/memory')
 const Keychain = require('../../src/keychain')
 const PeerId = require('peer-id')
 const crypto = require('libp2p-crypto')
