@@ -13,7 +13,7 @@ const {
 const passthrough = data => data
 
 /**
- * @typedef {import('./')} PeerStore
+ * @typedef {import('.')} PeerStore
  */
 
 class Book {

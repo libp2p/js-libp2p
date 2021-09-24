@@ -18,7 +18,7 @@ const {
 const Envelope = require('../record/envelope')
 
 /**
- * @typedef {import('./')} PeerStore
+ * @typedef {import('.')} PeerStore
  */
 
 /**

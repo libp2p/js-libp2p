@@ -16,7 +16,7 @@ const {
 } = require('../errors')
 
 /**
- * @typedef {import('./')} PeerStore
+ * @typedef {import('.')} PeerStore
  */
 
 /**

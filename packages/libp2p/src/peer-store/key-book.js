@@ -15,7 +15,7 @@ const {
 } = require('../errors')
 
 /**
- * @typedef {import('./')} PeerStore
+ * @typedef {import('.')} PeerStore
  * @typedef {import('libp2p-crypto').PublicKey} PublicKey
  */
 
