@@ -137,7 +137,7 @@
     "@types/node": "^16.0.1",
     "@types/node-forge": "^0.10.1",
     "@types/varint": "^6.0.0",
-    "aegir": "^33.1.1",
+    "aegir": "^35.1.0",
     "buffer": "^6.0.3",
     "datastore-core": "^6.0.7",
     "delay": "^5.0.0",
