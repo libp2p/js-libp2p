@@ -1,3 +1,23 @@
+# [0.25.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.24.0...v0.25.0) (2021-09-24)
+
+
+### Bug Fixes
+
+* browser compatibility ([#226](https://github.com/libp2p/js-libp2p-kad-dht/issues/226)) ([01b7ec1](https://github.com/libp2p/js-libp2p-kad-dht/commit/01b7ec15c059653a83634020bc9668bd7d25c1a9))
+* browser override path ([#228](https://github.com/libp2p/js-libp2p-kad-dht/issues/228)) ([3c737c1](https://github.com/libp2p/js-libp2p-kad-dht/commit/3c737c16399ac7e541b417f0e8b76157ed2f86ff))
+
+
+### chore
+
+* update datastore ([#227](https://github.com/libp2p/js-libp2p-kad-dht/issues/227)) ([64a3044](https://github.com/libp2p/js-libp2p-kad-dht/commit/64a304432ecc69c5a13b2af17781ea8b833295d0))
+
+
+### BREAKING CHANGES
+
+* provided datastore must implement interface-datastore@6.0.0
+
+
+
 ## [0.24.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.24.1...v0.24.2) (2021-09-14)
 
 
