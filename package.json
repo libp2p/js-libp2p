@@ -40,7 +40,6 @@
   "license": "MIT",
   "dependencies": {
     "err-code": "^3.0.1",
-    "is-typedarray": "^1.0.0",
     "iso-random-stream": "^2.0.0",
     "keypair": "^1.0.1",
     "multiformats": "^9.4.5",
