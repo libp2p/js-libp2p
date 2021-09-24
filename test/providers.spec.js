@@ -2,7 +2,7 @@
 'use strict'
 
 const { expect } = require('aegir/utils/chai')
-const { MemoryDatastore } = require('interface-datastore')
+const { MemoryDatastore } = require('datastore-core/memory')
 const { CID } = require('multiformats/cid')
 const { sha256 } = require('multiformats/hashes/sha2')
 const LevelStore = require('datastore-level')

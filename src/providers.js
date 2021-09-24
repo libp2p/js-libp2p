@@ -4,7 +4,7 @@ const cache = require('hashlru')
 // @ts-ignore
 const varint = require('varint')
 const PeerId = require('peer-id')
-const { Key } = require('interface-datastore')
+const { Key } = require('interface-datastore/key')
 const { default: Queue } = require('p-queue')
 const c = require('./constants')
 const utils = require('./utils')
@@ -252,7 +252,7 @@ async function writeProviderEntry (store, cid, peer, time) { // eslint-disable-l
 /**
  * Parse the CID and provider peer id from the key
  *
- * @param {import('interface-datastore').Key} key
+ * @param {import('interface-datastore/key').Key} key
  */
 function parseProviderKey (key) {
   const parts = key.toString().split('/')
