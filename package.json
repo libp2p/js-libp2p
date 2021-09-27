@@ -143,7 +143,7 @@
     "delay": "^5.0.0",
     "interop-libp2p": "^0.4.0",
     "into-stream": "^7.0.0",
-    "ipfs-http-client": "^52.0.2",
+    "ipfs-http-client": "^53.0.0",
     "it-concat": "^2.0.0",
     "it-pair": "^1.0.0",
     "it-pushable": "^1.4.0",
