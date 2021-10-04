@@ -31,7 +31,7 @@ module.exports = (dht) => {
 
     try {
       await dht._add(peerId)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error('Failed to update the kbucket store', err)
     }
 
@@ -55,7 +55,7 @@ module.exports = (dht) => {
 
     try {
       await dht._add(peerId)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error(err)
     }
 

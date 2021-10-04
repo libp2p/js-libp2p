@@ -40,7 +40,7 @@ describe('kad utils', () => {
       let err
       try {
         await asyncFn()
-      } catch (_err) {
+      } catch (/** @type {any} */ _err) {
         err = _err
       }
 

@@ -180,7 +180,7 @@ describe('KadDHT', () => {
       await dht.removeLocal(key)
       try {
         await dht.datastore.get(key)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
         expect(err.code).to.be.eql('ERR_NOT_FOUND')
       } finally {

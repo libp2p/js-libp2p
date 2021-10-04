@@ -66,7 +66,7 @@ module.exports = (dht) => {
       if (dht._isSelf(v.from)) {
         try {
           await dht._putLocal(key, fixupRec)
-        } catch (err) {
+        } catch (/** @type {any} */ err) {
           dht._log.error('Failed error correcting self', err)
         }
         return
@@ -75,7 +75,7 @@ module.exports = (dht) => {
       // send correction
       try {
         await dht._putValueToPeer(key, fixupRec, v.from)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         dht._log.error('Failed error correcting entry', err)
       }
     }))
@@ -118,7 +118,7 @@ module.exports = (dht) => {
           counterAll += 1
           await dht._putValueToPeer(key, record, peer)
           counterSuccess += 1
-        } catch (err) {
+        } catch (/** @type {any} */ err) {
           dht._log.error('Failed to put to peer (%b): %s', peer.id, err)
         }
       })
@@ -152,7 +152,7 @@ module.exports = (dht) => {
 
       try {
         i = libp2pRecord.selection.bestRecord(dht.selectors, key, recs)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         // Assume the first record if no selector available
         if (err.code !== 'ERR_NO_SELECTOR_FUNCTION_FOR_RECORD_KEY') {
           throw err
@@ -189,7 +189,7 @@ module.exports = (dht) => {
 
       try {
         localRec = await getLocal(key)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         if (nvals === 0) {
           throw err
         }
@@ -243,7 +243,7 @@ module.exports = (dht) => {
             const results = await dht._getValueOrPeers(peer, key)
             rec = results.record
             peers = results.peers
-          } catch (err) {
+          } catch (/** @type {any} */ err) {
             // If we have an invalid record we just want to continue and fetch a new one.
             if (err.code !== 'ERR_INVALID_RECORD') {
               throw err
@@ -288,7 +288,7 @@ module.exports = (dht) => {
 
       try {
         await pTimeout(query.run(rtp), options.timeout)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         if (vals.length === 0) {
           throw err
         }

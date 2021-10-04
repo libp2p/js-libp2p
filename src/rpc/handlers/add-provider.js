@@ -32,7 +32,7 @@ module.exports = (dht) => {
     let cid
     try {
       cid = CID.decode(msg.key)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       const errMsg = `Invalid CID: ${err.message}`
       throw errcode(new Error(errMsg), 'ERR_INVALID_CID')
     }

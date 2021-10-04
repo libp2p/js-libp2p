@@ -48,7 +48,7 @@ describe('rpc - handlers - AddProvider', () => {
       it(t.error.toString(), async () => {
         try {
           await handler(dht)(peerIds[0], t.message)
-        } catch (err) {
+        } catch (/** @type {any} */ err) {
           expect(err).to.exist()
           expect(err.code).to.eql(t.error)
           return

@@ -167,7 +167,7 @@ class WorkerQueue {
     let continueQuerying, continueQueryingError
     try {
       continueQuerying = await this.run.continueQuerying(this)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       continueQueryingError = err
     }
 
@@ -199,7 +199,7 @@ class WorkerQueue {
     let state, execError
     try {
       state = await this.execQuery(peer)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       execError = err
     }
 
@@ -239,7 +239,7 @@ class WorkerQueue {
     let res, queryError
     try {
       res = await this.path.queryFunc(peer)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       queryError = err
     }
 

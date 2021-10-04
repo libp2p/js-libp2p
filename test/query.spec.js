@@ -105,7 +105,7 @@ describe('Query', () => {
 
     try {
       await q.run([peerIds[1]])
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err).to.exist()
       expect(err.message).to.eql('fail')
       return

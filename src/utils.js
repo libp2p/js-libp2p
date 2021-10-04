@@ -210,7 +210,7 @@ exports.withTimeout = (asyncFn, time) => {
 
     try {
       res = await pTimeout(asyncFn(...args), time)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       if (err instanceof pTimeout.TimeoutError) {
         throw errcode(err, 'ETIMEDOUT')
       }

@@ -282,7 +282,7 @@ module.exports = (dht) => {
 
       try {
         pk = await getPublicKeyFromNode(peer)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         // try dht directly
         const pkKey = utils.keyForPublicKey(peer)
         const value = await dht.get(pkKey)

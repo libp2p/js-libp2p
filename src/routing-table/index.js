@@ -130,12 +130,12 @@ class RoutingTable {
             for (let n = index + 1; n < lastCpl + 1; n++) {
               try {
                 await this._refreshCommonPrefixLength(n, lastRefresh, force === true)
-              } catch (err) {
+              } catch (/** @type {any} */ err) {
                 log.error(err)
               }
             }
           }
-        } catch (err) {
+        } catch (/** @type {any} */ err) {
           log.error(err)
         }
       })

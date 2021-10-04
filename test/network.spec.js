@@ -149,7 +149,7 @@ describe('Network', () => {
 
       try {
         await dht.network.sendRequest(dht.peerId, msg)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
         expect(err.message).to.match(/timed out/)
 

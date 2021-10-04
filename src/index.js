@@ -288,7 +288,7 @@ class KadDHT extends EventEmitter {
 
     try {
       await this.datastore.delete(dsKey)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       if (err.code === 'ERR_NOT_FOUND') {
         return undefined
       }
@@ -443,7 +443,7 @@ class KadDHT extends EventEmitter {
     let rawRecord
     try {
       rawRecord = await this.datastore.get(dsKey)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       if (err.code === 'ERR_NOT_FOUND') {
         return undefined
       }
@@ -536,7 +536,7 @@ class KadDHT extends EventEmitter {
       // We have a record
       try {
         await this._verifyRecordOnline(record)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         const errMsg = 'invalid record received, discarded'
         this._log(errMsg)
         throw errcode(new Error(errMsg), 'ERR_INVALID_RECORD')

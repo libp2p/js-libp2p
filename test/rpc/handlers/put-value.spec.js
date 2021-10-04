@@ -39,7 +39,7 @@ describe('rpc - handlers - PutValue', () => {
 
     try {
       await handler(dht)(peerIds[0], msg)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err.code).to.eql('ERR_EMPTY_RECORD')
       return
     }

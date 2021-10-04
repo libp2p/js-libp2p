@@ -128,7 +128,7 @@ class Providers {
             deleted.set(cid, peers)
           }
           count++
-        } catch (err) {
+        } catch (/** @type {any} */ err) {
           this._log.error(err.message)
         }
       }

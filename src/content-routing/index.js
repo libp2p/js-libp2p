@@ -61,7 +61,7 @@ module.exports = (dht) => {
         dht._log(`putProvider ${key} to ${peer.toB58String()}`)
         try {
           await dht.network.sendMessage(peer, msg)
-        } catch (err) {
+        } catch (/** @type {any} */ err) {
           errors.push(err)
         }
       }
@@ -175,7 +175,7 @@ module.exports = (dht) => {
           query.run(peers),
           providerTimeout
         )
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         if (err.name !== pTimeout.TimeoutError.name) {
           throw err
         }
