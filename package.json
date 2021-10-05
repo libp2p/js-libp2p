@@ -78,10 +78,10 @@
     ]
   },
   "dependencies": {
-    "abortable-iterator": "^3.0.0",
     "@motrix/nat-api": "^0.3.1",
     "@vascosantos/moving-average": "^1.1.0",
     "abort-controller": "^3.0.0",
+    "abortable-iterator": "^3.0.0",
     "aggregate-error": "^3.1.0",
     "any-signal": "^2.1.1",
     "bignumber.js": "^9.0.1",
@@ -104,7 +104,6 @@
     "it-pipe": "^1.1.0",
     "it-take": "^1.0.0",
     "libp2p-crypto": "^0.19.4",
-    "libp2p-interfaces": "^1.0.0",
     "libp2p-utils": "^0.4.0",
     "mafmt": "^10.0.0",
     "merge-options": "^3.0.4",
@@ -149,7 +148,7 @@
     "it-pushable": "^1.4.0",
     "libp2p": ".",
     "libp2p-bootstrap": "^0.13.0",
-    "libp2p-delegated-content-routing": "^0.11.0",
+    "libp2p-delegated-content-routing": "git+ssh://git@github.com/libp2p/js-libp2p-delegated-content-routing#362cd00988e717f6fc49b0a1f2fa7bbaabbfcc53",
     "libp2p-delegated-peer-routing": "^0.10.0",
     "libp2p-floodsub": "^0.27.0",
     "libp2p-gossipsub": "^0.11.0",

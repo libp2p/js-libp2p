@@ -3,7 +3,8 @@
 exports.messages = {
   NOT_STARTED_YET: 'The libp2p node is not started yet',
   DHT_DISABLED: 'DHT is not available',
-  CONN_ENCRYPTION_REQUIRED: 'At least one connection encryption module is required'
+  CONN_ENCRYPTION_REQUIRED: 'At least one connection encryption module is required',
+  VALUE_STORE_REQUIRED: 'At least one value storage module is required for this operation if the DHT is not enabled.'
 }
 
 exports.codes = {
@@ -34,5 +35,6 @@ exports.codes = {
   ERR_TRANSPORT_DIAL_FAILED: 'ERR_TRANSPORT_DIAL_FAILED',
   ERR_UNSUPPORTED_PROTOCOL: 'ERR_UNSUPPORTED_PROTOCOL',
   ERR_INVALID_MULTIADDR: 'ERR_INVALID_MULTIADDR',
-  ERR_SIGNATURE_NOT_VALID: 'ERR_SIGNATURE_NOT_VALID'
+  ERR_SIGNATURE_NOT_VALID: 'ERR_SIGNATURE_NOT_VALID',
+  ERR_VALUE_STORE_UNAVAILABLE: 'ERR_VALUE_STORE_UNAVAILABLE'
 }
