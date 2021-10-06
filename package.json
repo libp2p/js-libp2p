@@ -69,6 +69,7 @@
     "peer-id": "^0.15.0",
     "protobufjs": "^6.10.2",
     "streaming-iterables": "^6.0.0",
+    "timeout-abort-controller": "^1.1.1",
     "uint8arrays": "^3.0.0",
     "varint": "^6.0.0"
   },

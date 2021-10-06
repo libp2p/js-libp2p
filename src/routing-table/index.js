@@ -14,6 +14,10 @@ const log = Object.assign(debug('libp2p:dht:routing-table'), {
 })
 // @ts-ignore
 const length = require('it-length')
+const { default: Queue } = require('p-queue')
+const { PROTOCOL_DHT } = require('../constants')
+// @ts-expect-error no types
+const TimeoutController = require('timeout-abort-controller')
 
 /**
  * @typedef {object} KBucketPeer
@@ -54,12 +58,14 @@ class RoutingTable {
    * @param {object} [options]
    * @param {number} [options.kBucketSize=20]
    * @param {number} [options.refreshInterval=30000]
+   * @param {number} [options.pingTimeout=10000]
    */
-  constructor (dht, { kBucketSize, refreshInterval } = {}) {
+  constructor (dht, { kBucketSize, refreshInterval, pingTimeout } = {}) {
     this.peerId = dht.peerId
     this.dht = dht
     this._kBucketSize = kBucketSize || 20
     this._refreshInterval = refreshInterval || 30000
+    this._pingTimeout = pingTimeout || 10000
 
     /** @type {KBucketTree} */
     this.kb = new KBuck({
@@ -72,6 +78,7 @@ class RoutingTable {
 
     this._refreshTable = this._refreshTable.bind(this)
     this._onPing = this._onPing.bind(this)
+    this._pingQueue = new Queue({ concurrency: 1 })
   }
 
   async start () {
@@ -85,6 +92,8 @@ class RoutingTable {
     if (this._refreshTimeoutId) {
       clearTimeout(this._refreshTimeoutId)
     }
+
+    this._pingQueue.clear()
   }
 
   /**
@@ -295,26 +304,58 @@ class RoutingTable {
   }
 
   /**
-   * Called on the `ping` event from `k-bucket`.
-   * Currently this just removes the oldest contact from
-   * the list, without actually pinging the individual peers.
-   * This is the same as go does, but should probably
-   * be upgraded to actually ping the individual peers.
+   * Called on the `ping` event from `k-bucket` when a bucket is full
+   * and cannot split.
+   *
+   * `oldContacts.length` is defined by the `numberOfNodesToPing` param
+   * passed to the `k-bucket` constructor.
+   *
+   * `oldContacts` will not be empty and is the list of contacts that
+   * have not been contacted for the longest.
    *
    * @param {KBucketPeer[]} oldContacts
    * @param {KBucketPeer} newContact
    */
   _onPing (oldContacts, newContact) {
-    // just use the first one (k-bucket sorts from oldest to newest)
-    const oldest = oldContacts[0]
+    // add to a queue so multiple ping requests do not overlap and we don't
+    // flood the network with ping requests if lots of newContact requests
+    // are received
+    this._pingQueue.add(async () => {
+      let responded = 0
 
-    if (oldest) {
-      // remove the oldest one
-      this.kb.remove(oldest.id)
-    }
+      try {
+        await Promise.all(
+          oldContacts.map(async oldContact => {
+            let timeoutController
 
-    // add the new one
-    this.kb.add(newContact)
+            try {
+              timeoutController = new TimeoutController(this._pingTimeout)
+              log(`Pinging old contact ${oldContact.peer.toB58String()}`)
+              const conn = await this.dht.libp2p.dialProtocol(oldContact.peer, PROTOCOL_DHT, {
+                signal: timeoutController.signal
+              })
+              await conn.close()
+              responded++
+            } catch (err) {
+              log.error('Could not ping peer', err)
+              log(`Evicting old contact after ping failed ${oldContact.peer.toB58String()}`)
+              this.kb.remove(oldContact.id)
+            } finally {
+              if (timeoutController) {
+                timeoutController.clear()
+              }
+            }
+          })
+        )
+
+        if (responded < oldContacts.length) {
+          log(`Adding new contact ${newContact.peer.toB58String()}`)
+          this.kb.add(newContact)
+        }
+      } catch (err) {
+        log.error('Could not process k-bucket ping event', err)
+      }
+    })
   }
 
   // -- Public Interface
