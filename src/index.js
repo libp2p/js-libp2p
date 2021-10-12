@@ -302,13 +302,8 @@ class Libp2p extends EventEmitter {
     if (this._modules.dht) {
       const DHT = this._modules.dht
       // @ts-ignore Object is not constructable
-      this._dht = new DHT({
+      this._dht = DHT.create({
         libp2p: this,
-        dialer: this.dialer,
-        peerId: this.peerId,
-        peerStore: this.peerStore,
-        registrar: this.registrar,
-        datastore: this.datastore,
         ...this._config.dht
       })
     }
