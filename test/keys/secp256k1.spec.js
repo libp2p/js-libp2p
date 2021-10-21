@@ -6,7 +6,7 @@ const crypto = require('../../src')
 const secp256k1 = crypto.keys.supportedKeys.secp256k1
 const keysPBM = crypto.keys.keysPBM
 const randomBytes = crypto.randomBytes
-const secp256k1Crypto = require('../../src/keys/secp256k1')(randomBytes)
+const secp256k1Crypto = require('../../src/keys/secp256k1')()
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const fixtures = require('../fixtures/go-key-secp256k1')
 
@@ -155,7 +155,7 @@ describe('handles generation of invalid key', () => {
     try {
       await secp256k1.generateKeyPair()
     } catch (err) {
-      return expect(err.message).to.equal('Expected private key to be an Uint8Array with length 32')
+      return expect(err.code).to.equal('ERR_INVALID_PRIVATE_KEY')
     }
     throw new Error('Expected error to be thrown')
   })
@@ -188,8 +188,15 @@ describe('crypto functions', () => {
     expect(valid).to.equal(true)
   })
 
+  it('does not validate when validating a message with an invalid signature', async () => {
+    const result = await secp256k1Crypto.hashAndVerify(pubKey, uint8ArrayFromString('invalid-sig'), uint8ArrayFromString('hello'))
+
+    expect(result).to.be.false()
+  })
+
   it('errors if given a null Uint8Array to sign', async () => {
     try {
+      // @ts-ignore
       await secp256k1Crypto.hashAndSign(privKey, null)
     } catch (err) {
       return // expected
@@ -201,7 +208,7 @@ describe('crypto functions', () => {
     try {
       await secp256k1Crypto.hashAndSign(uint8ArrayFromString('42'), uint8ArrayFromString('Hello'))
     } catch (err) {
-      return expect(err.message).to.equal('Expected private key to be an Uint8Array with length 32')
+      return expect(err.code).to.equal('ERR_INVALID_INPUT')
     }
     throw new Error('Expected error to be thrown')
   })
@@ -210,18 +217,10 @@ describe('crypto functions', () => {
     const sig = await secp256k1Crypto.hashAndSign(privKey, uint8ArrayFromString('hello'))
 
     try {
+      // @ts-ignore
       await secp256k1Crypto.hashAndVerify(privKey, sig, null)
     } catch (err) {
       return // expected
-    }
-    throw new Error('Expected error to be thrown')
-  })
-
-  it('errors when validating a message with an invalid signature', async () => {
-    try {
-      await secp256k1Crypto.hashAndVerify(pubKey, uint8ArrayFromString('invalid-sig'), uint8ArrayFromString('hello'))
-    } catch (err) {
-      return expect(err.message).to.equal('Signature could not be parsed')
     }
     throw new Error('Expected error to be thrown')
   })
@@ -230,7 +229,7 @@ describe('crypto functions', () => {
     try {
       await secp256k1Crypto.hashAndSign(uint8ArrayFromString('42'), uint8ArrayFromString('Hello'))
     } catch (err) {
-      return expect(err.message).to.equal('Expected private key to be an Uint8Array with length 32')
+      return expect(err.code).to.equal('ERR_INVALID_INPUT')
     }
     throw new Error('Expected error to be thrown')
   })

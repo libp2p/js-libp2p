@@ -8,7 +8,7 @@ const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const exporter = require('./exporter')
 
 module.exports = (keysProtobuf, randomBytes, crypto) => {
-  crypto = crypto || require('./secp256k1')(randomBytes)
+  crypto = crypto || require('./secp256k1')()
 
   class Secp256k1PublicKey {
     constructor (key) {

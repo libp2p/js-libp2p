@@ -28,7 +28,7 @@
     "release-minor": "aegir release --type minor",
     "release-major": "aegir release --type major",
     "coverage": "aegir coverage --ignore src/keys/keys.proto.js",
-    "size": "aegir build --bundlesize",
+    "size": "aegir build --bundlesize --no-types",
     "test:types": "npx tsc"
   },
   "keywords": [
@@ -44,10 +44,11 @@
     "iso-random-stream": "^2.0.0",
     "keypair": "^1.0.4",
     "multiformats": "^9.4.5",
+    "noble-ed25519": "^1.2.6",
+    "noble-secp256k1": "^1.2.10",
     "node-forge": "^0.10.0",
     "pem-jwk": "^2.0.0",
     "protobufjs": "^6.11.2",
-    "secp256k1": "^4.0.0",
     "uint8arrays": "^3.0.0",
     "ursa-optional": "^0.10.1"
   },
@@ -60,7 +61,7 @@
   },
   "aegir": {
     "build": {
-      "bundlesizeMax": "117kB"
+      "bundlesizeMax": "71kB"
     }
   },
   "engines": {

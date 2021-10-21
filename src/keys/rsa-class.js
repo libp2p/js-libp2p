@@ -6,7 +6,6 @@ const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 require('node-forge/lib/sha512')
-require('node-forge/lib/ed25519')
 const forge = require('node-forge/lib/forge')
 
 const crypto = require('./rsa')
