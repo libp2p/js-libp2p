@@ -1,6 +1,6 @@
 {
   "name": "libp2p-crypto",
-  "version": "0.19.7",
+  "version": "0.20.0",
   "description": "Crypto primitives for libp2p",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -79,14 +79,14 @@
     "David Dias <daviddias.p@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Jacob Heun <jacobheun@gmail.com>",
-    "Maciej Krüger <mkg20001@gmail.com>",
     "Vasco Santos <vasco.santos@moxy.studio>",
+    "Maciej Krüger <mkg20001@gmail.com>",
     "dignifiedquire <dignifiedquire@users.noreply.github.com>",
     "dryajov <dryajov@gmail.com>",
+    "Alex Potsides <alex@achingbrain.net>",
+    "Hugo Dias <hugomrdias@gmail.com>",
     "Alan Shaw <alan.shaw@protocol.ai>",
     "Cayman <caymannava@gmail.com>",
-    "Hugo Dias <hugomrdias@gmail.com>",
-    "Alex Potsides <alex@achingbrain.net>",
     "Yusef Napora <yusef@napora.org>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
     "Arve Knudsen <arve.knudsen@gmail.com>",
@@ -97,8 +97,9 @@
     "Richard Schneider <makaretu@gmail.com>",
     "dirkmc <dirkmdev@gmail.com>",
     "nikuda <nikuda@gmail.com>",
-    "Joao Santos <jrmsantos15@gmail.com>",
+    "Jimmy Wärting <jimmy@warting.se>",
     "Carson Farmer <carson.farmer@gmail.com>",
-    "Tom Swindell <t.swindell@rubyx.co.uk>"
+    "Tom Swindell <t.swindell@rubyx.co.uk>",
+    "Joao Santos <jrmsantos15@gmail.com>"
   ]
 }
