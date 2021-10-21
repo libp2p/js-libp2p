@@ -1,3 +1,22 @@
+# [0.20.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.19.7...v0.20.0) (2021-10-21)
+
+
+### Bug Fixes
+
+* demand up to date keypair ([#201](https://github.com/libp2p/js-libp2p-crypto/issues/201)) ([2e40aea](https://github.com/libp2p/js-libp2p-crypto/commit/2e40aeaaa6735a4f2bea58f568d937b60561868b))
+
+
+### Features
+
+* use noble-secp256k1 and noble-ed25519 ([#202](https://github.com/libp2p/js-libp2p-crypto/issues/202)) ([167eace](https://github.com/libp2p/js-libp2p-crypto/commit/167eaceb61a779904ff006602ce58d7065d126b7))
+
+
+### BREAKING CHANGES
+
+* keys function hashAndVerify returns boolean false when fail, instead of throwing error
+
+
+
 ## [0.19.7](https://github.com/libp2p/js-libp2p-crypto/compare/v0.19.6...v0.19.7) (2021-08-18)
 
 
