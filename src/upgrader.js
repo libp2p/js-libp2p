@@ -32,11 +32,19 @@ const { codes } = require('./errors')
  * @property {string} protocol
  */
 
+/**
+ * @typedef {Object} MultistreamOption
+ * @property {string} PROTOCOL_ID
+ * @property {any} Dialer
+ * @property {any} Listener
+ */
+
 class Upgrader {
   /**
    * @param {object} options
    * @param {PeerId} options.localPeer
    * @param {import('./metrics')} [options.metrics]
+   * @param {MultistreamOption} [options.multistream]
    * @param {Map<string, Crypto>} [options.cryptos]
    * @param {Map<string, MuxerFactory>} [options.muxers]
    * @param {(connection: Connection) => void} options.onConnection - Called when a connection is upgraded
@@ -45,11 +53,13 @@ class Upgrader {
   constructor ({
     localPeer,
     metrics,
+    multistream = Multistream, 
     cryptos = new Map(),
     muxers = new Map(),
     onConnectionEnd = () => {},
     onConnection = () => {}
   }) {
+    this.multistream = multistream
     this.localPeer = localPeer
     this.metrics = metrics
     this.cryptos = cryptos
@@ -238,7 +248,7 @@ class Upgrader {
         // Run anytime a remote stream is created
         onStream: async muxedStream => {
           if (!connection) return
-          const mss = new Multistream.Listener(muxedStream)
+          const mss = new this.multistream.Listener(muxedStream)
           try {
             const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
             log('%s: incoming stream opened on %s', direction, protocol)
@@ -258,7 +268,7 @@ class Upgrader {
       newStream = async (protocols) => {
         log('%s: starting new stream on %s', direction, protocols)
         const muxedStream = muxer.newStream()
-        const mss = new Multistream.Dialer(muxedStream)
+        const mss = new this.multistream.Dialer(muxedStream)
         try {
           const { stream, protocol } = await mss.select(protocols)
           if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
@@ -354,7 +364,7 @@ class Upgrader {
    * @returns {Promise<CryptoResult>} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
    */
   async _encryptInbound (localPeer, connection, cryptos) {
-    const mss = new Multistream.Listener(connection)
+    const mss = new this.multistream.Listener(connection)
     const protocols = Array.from(cryptos.keys())
     log('handling inbound crypto protocol selection', protocols)
 
@@ -389,7 +399,7 @@ class Upgrader {
    * @returns {Promise<CryptoResult>} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
    */
   async _encryptOutbound (localPeer, connection, remotePeerId, cryptos) {
-    const mss = new Multistream.Dialer(connection)
+    const mss = new this.multistream.Dialer(connection)
     const protocols = Array.from(cryptos.keys())
     log('selecting outbound crypto protocol', protocols)
 
@@ -422,7 +432,7 @@ class Upgrader {
    * @returns {Promise<{ stream: MuxedStream, Muxer?: MuxerFactory}>} A muxed connection
    */
   async _multiplexOutbound (connection, muxers) {
-    const dialer = new Multistream.Dialer(connection)
+    const dialer = new this.multistream.Dialer(connection)
     const protocols = Array.from(muxers.keys())
     log('outbound selecting muxer %s', protocols)
     try {
@@ -446,7 +456,7 @@ class Upgrader {
    * @returns {Promise<{ stream: MuxedStream, Muxer?: MuxerFactory}>} A muxed connection
    */
   async _multiplexInbound (connection, muxers) {
-    const listener = new Multistream.Listener(connection)
+    const listener = new this.multistream.Listener(connection)
     const protocols = Array.from(muxers.keys())
     log('inbound handling muxers %s', protocols)
     try {

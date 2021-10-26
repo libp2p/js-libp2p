@@ -105,6 +105,8 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {Object} [dht]
  * @property {{new(...args: any[]): Pubsub}} [pubsub]
  * @property {Protector} [connProtector]
+ * @property {import('./upgrader').MultistreamOption} [multistream]
+
  *
  * @typedef {Object} Libp2pOptions
  * @property {Libp2pModules} modules libp2p modules to use
@@ -221,6 +223,7 @@ class Libp2p extends EventEmitter {
 
     // Setup the Upgrader
     this.upgrader = new Upgrader({
+      multistream: this._options.modules.multistream,
       localPeer: this.peerId,
       metrics: this.metrics,
       onConnection: (connection) => this.connectionManager.onConnect(connection),
