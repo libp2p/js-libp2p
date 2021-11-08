@@ -43,7 +43,6 @@ class ContentRouting {
       this.routers.push({
         /**
          * @param {CID} cid
-         * @param {*} options
          */
         provide: async (cid) => {
           await drain(dht.provide(cid))
