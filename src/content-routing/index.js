@@ -38,12 +38,22 @@ class ContentRouting {
 
     // If we have the dht, add it to the available content routers
     if (this.dht && libp2p._config.dht.enabled) {
+      const dht = this.dht
+
       this.routers.push({
+        /**
+         * @param {CID} cid
+         * @param {*} options
+         */
         provide: async (cid, options) => {
-          await drain(this.dht.provide(cid, options))
+          await drain(dht.provide(cid, options))
         },
+        /**
+         * @param {CID} cid
+         * @param {*} options
+         */
         findProviders: async function * (cid, options) {
-          for await (const event of this.dht.findProviders(cid, options)) {
+          for await (const event of dht.findProviders(cid, options)) {
             if (event.name === 'provider') {
               yield * event.providers
             }
