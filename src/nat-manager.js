@@ -10,7 +10,6 @@ const log = Object.assign(debug('libp2p:nat'), {
 })
 const { isBrowser } = require('wherearewe')
 const retry = require('p-retry')
-// @ts-ignore private-api does not export types
 const isPrivateIp = require('private-ip')
 const pkg = require('../package.json')
 const errcode = require('err-code')
@@ -115,6 +114,7 @@ class NatManager {
       const client = this._getClient()
       const publicIp = this._externalIp || await client.externalIp()
 
+      // @ts-expect-error types are wrong
       if (isPrivateIp(publicIp)) {
         throw new Error(`${publicIp} is private - please set config.nat.externalIp to an externally routable IP or ensure you are not behind a double NAT`)
       }
