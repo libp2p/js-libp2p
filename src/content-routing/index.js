@@ -8,7 +8,7 @@ const {
   requirePeers,
   maybeLimitSource
 } = require('./utils')
-
+const drain = require('it-drain')
 const merge = require('it-merge')
 const { pipe } = require('it-pipe')
 
@@ -38,7 +38,18 @@ class ContentRouting {
 
     // If we have the dht, add it to the available content routers
     if (this.dht && libp2p._config.dht.enabled) {
-      this.routers.push(this.dht)
+      this.routers.push({
+        provide: async (cid, options) => {
+          await drain(this.dht.provide(cid, options))
+        },
+        findProviders: async function * (cid, options) {
+          for await (const event of this.dht.findProviders(cid, options)) {
+            if (event.name === 'provider') {
+              yield * event.providers
+            }
+          }
+        }
+      })
     }
   }
 
