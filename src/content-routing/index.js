@@ -45,8 +45,8 @@ class ContentRouting {
          * @param {CID} cid
          * @param {*} options
          */
-        provide: async (cid, options) => {
-          await drain(dht.provide(cid, options))
+        provide: async (cid) => {
+          await drain(dht.provide(cid))
         },
         /**
          * @param {CID} cid
