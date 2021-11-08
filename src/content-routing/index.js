@@ -111,12 +111,12 @@ class ContentRouting {
    * @param {number} [options.minPeers] - minimum number of peers required to successfully put
    * @returns {Promise<void>}
    */
-  put (key, value, options) {
+  async put (key, value, options) {
     if (!this.libp2p.isStarted() || !this.dht.isStarted) {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
 
-    return this.dht.put(key, value, options)
+    await drain(this.dht.put(key, value, options))
   }
 
   /**
@@ -128,12 +128,18 @@ class ContentRouting {
    * @param {number} [options.timeout] - optional timeout (default: 60000)
    * @returns {Promise<GetData>}
    */
-  get (key, options) {
+  async get (key, options) {
     if (!this.libp2p.isStarted() || !this.dht.isStarted) {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
 
-    return this.dht.get(key, options)
+    for await (const event of this.dht.get(key, options)) {
+      if (event.name === 'value') {
+        return { from: event.peerId, val: event.value }
+      }
+    }
+
+    throw errCode(new Error(messages.NOT_FOUND), codes.NOT_FOUND)
   }
 
   /**
@@ -143,14 +149,33 @@ class ContentRouting {
    * @param {number} nVals
    * @param {Object} [options] - get options
    * @param {number} [options.timeout] - optional timeout (default: 60000)
-   * @returns {Promise<GetData[]>}
    */
-  async getMany (key, nVals, options) { // eslint-disable-line require-await
+  async * getMany (key, nVals, options) { // eslint-disable-line require-await
     if (!this.libp2p.isStarted() || !this.dht.isStarted) {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
 
-    return this.dht.getMany(key, nVals, options)
+    if (!nVals) {
+      return
+    }
+
+    let gotValues = 0
+
+    for await (const event of this.dht.get(key, options)) {
+      if (event.name === 'value') {
+        yield { from: event.peerId, val: event.value }
+
+        gotValues++
+
+        if (gotValues === nVals) {
+          break
+        }
+      }
+    }
+
+    if (gotValues === 0) {
+      throw errCode(new Error(messages.NOT_FOUND), codes.NOT_FOUND)
+    }
   }
 }
 

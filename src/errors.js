@@ -3,7 +3,8 @@
 exports.messages = {
   NOT_STARTED_YET: 'The libp2p node is not started yet',
   DHT_DISABLED: 'DHT is not available',
-  CONN_ENCRYPTION_REQUIRED: 'At least one connection encryption module is required'
+  CONN_ENCRYPTION_REQUIRED: 'At least one connection encryption module is required',
+  NOT_FOUND: 'Not found'
 }
 
 exports.codes = {
@@ -29,6 +30,7 @@ exports.codes = {
   ERR_INVALID_PARAMETERS: 'ERR_INVALID_PARAMETERS',
   ERR_INVALID_PEER: 'ERR_INVALID_PEER',
   ERR_MUXER_UNAVAILABLE: 'ERR_MUXER_UNAVAILABLE',
+  ERR_NOT_FOUND: 'ERR_NOT_FOUND',
   ERR_TIMEOUT: 'ERR_TIMEOUT',
   ERR_TRANSPORT_UNAVAILABLE: 'ERR_TRANSPORT_UNAVAILABLE',
   ERR_TRANSPORT_DIAL_FAILED: 'ERR_TRANSPORT_DIAL_FAILED',
