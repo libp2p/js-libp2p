@@ -139,7 +139,7 @@ class ContentRouting {
       }
     }
 
-    throw errCode(new Error(messages.NOT_FOUND), codes.NOT_FOUND)
+    throw errCode(new Error(messages.NOT_FOUND), codes.ERR_NOT_FOUND)
   }
 
   /**
@@ -174,7 +174,7 @@ class ContentRouting {
     }
 
     if (gotValues === 0) {
-      throw errCode(new Error(messages.NOT_FOUND), codes.NOT_FOUND)
+      throw errCode(new Error(messages.NOT_FOUND), codes.ERR_NOT_FOUND)
     }
   }
 }
