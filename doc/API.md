@@ -2086,7 +2086,7 @@ the NatManager performing NAT hole punching.
 
 [address]: https://github.com/libp2p/js-libp2p/tree/master/src/peer-store/address-book.js
 [cid]: https://github.com/multiformats/js-cid
-[connection]: https://github.com/libp2p/js-interfaces/tree/master/src/connection
+[connection]: https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interfaces/src/connection
 [multiaddr]: https://github.com/multiformats/js-multiaddr
 [peer-id]: https://github.com/libp2p/js-peer-id
 [keys]: https://github.com/libp2p/js-libp2p-crypto/tree/master/src/keys
