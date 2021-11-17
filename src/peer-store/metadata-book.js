@@ -84,7 +84,7 @@ class MetadataBook extends Book {
    * @param {string} key
    * @param {Uint8Array} value
    * @param {object} root0
-   * @param {boolean} root0.emit
+   * @param {boolean} [root0.emit]
    */
   _setValue (peerId, key, value, { emit = true } = {}) {
     const id = peerId.toB58String()

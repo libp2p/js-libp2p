@@ -5,6 +5,7 @@ const drain = require('it-drain')
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
+ * @typedef {import('multiformats/cid').CID} CID
  */
 
 /**

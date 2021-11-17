@@ -1,5 +1,8 @@
 'use strict'
 
+const errCode = require('err-code')
+const { messages, codes } = require('../errors')
+
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRoutingModule
@@ -28,6 +31,8 @@ class DHTPeerRouting {
         return event.peer
       }
     }
+
+    throw errCode(new Error(messages.NOT_FOUND), codes.ERR_NOT_FOUND)
   }
 
   /**
