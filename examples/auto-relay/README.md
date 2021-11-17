@@ -125,7 +125,7 @@ As you can see in the code, we need to provide the relay address, `relayAddr`, a
 You should now run the following to start the node running Auto Relay:
 
 ```sh
-node listener.js /ip4/192.168.1.120/tcp/58941/ws/p2p/QmQKCBm87HQMbFqy14oqC85pMmnRrj6iD46ggM6reqNpsd
+node listener.js /ip4/192.168.1.120/tcp/61592/ws/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3
 ```
 
 This should print out something similar to the following:
@@ -173,7 +173,7 @@ console.log(`Connected to the auto relay node via ${conn.remoteAddr.toString()}`
 You should now run the following to start the relay node using the listen address from step 2:
 
 ```sh
-node dialer.js /ip4/192.168.1.120/tcp/58941/ws/p2p/QmQKCBm87HQMbFqy14oqC85pMmnRrj6iD46ggM6reqNpsd
+node dialer.js /ip4/192.168.1.120/tcp/61592/ws/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3
 ```
 
 Once you start your test node, it should print out something similar to the following:
