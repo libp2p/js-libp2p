@@ -43,7 +43,7 @@ describe('peer-routing', () => {
       try {
         for await (const _ of node.peerRouting.getClosestPeers('a cid')) { } // eslint-disable-line
         throw new Error('.getClosestPeers should return an error')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
         expect(err.code).to.equal('NO_ROUTERS_AVAILABLE')
       }
@@ -275,7 +275,7 @@ describe('peer-routing', () => {
       try {
         for await (const _ of node.peerRouting.getClosestPeers(peerId.id)) { } // eslint-disable-line
         throw new Error('should handle errors when getting the closest peers')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
       }
 

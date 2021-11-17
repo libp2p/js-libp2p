@@ -23,7 +23,7 @@ describe('keyBook', () => {
   it('throws invalid parameters error if invalid PeerId is provided in set', () => {
     try {
       kb.set('invalid peerId')
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
       return
     }
@@ -33,7 +33,7 @@ describe('keyBook', () => {
   it('throws invalid parameters error if invalid PeerId is provided in get', () => {
     try {
       kb.get('invalid peerId')
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
       return
     }

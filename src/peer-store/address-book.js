@@ -83,7 +83,7 @@ class AddressBook extends Book {
     let peerRecord
     try {
       peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error('invalid peer record received')
       return false
     }
@@ -223,7 +223,7 @@ class AddressBook extends Book {
   add (peerId, multiaddrs) {
     if (!PeerId.isPeerId(peerId)) {
       log.error('peerId must be an instance of peer-id to store data')
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+      throw errcode(new Error('peerId must be an instance of peer-id ' + peerId), ERR_INVALID_PARAMETERS)
     }
 
     const addresses = this._toAddresses(multiaddrs)

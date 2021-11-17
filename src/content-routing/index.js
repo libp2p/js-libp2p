@@ -11,6 +11,7 @@ const {
 const drain = require('it-drain')
 const merge = require('it-merge')
 const { pipe } = require('it-pipe')
+const { DHTContentRouting } = require('../dht/dht-content-routing')
 
 /**
  * @typedef {import('peer-id')} PeerId
@@ -38,27 +39,7 @@ class ContentRouting {
 
     // If we have the dht, add it to the available content routers
     if (this.dht && libp2p._config.dht.enabled) {
-      const dht = this.dht
-
-      this.routers.push({
-        /**
-         * @param {CID} cid
-         */
-        provide: async (cid) => {
-          await drain(dht.provide(cid))
-        },
-        /**
-         * @param {CID} cid
-         * @param {*} options
-         */
-        findProviders: async function * (cid, options) {
-          for await (const event of dht.findProviders(cid, options)) {
-            if (event.name === 'provider') {
-              yield * event.providers
-            }
-          }
-        }
-      })
+      this.routers.push(new DHTContentRouting(this.dht))
     }
   }
 
@@ -134,7 +115,7 @@ class ContentRouting {
     }
 
     for await (const event of this.dht.get(key, options)) {
-      if (event.name === 'value') {
+      if (event.name === 'VALUE') {
         return { from: event.peerId, val: event.value }
       }
     }
@@ -162,7 +143,7 @@ class ContentRouting {
     let gotValues = 0
 
     for await (const event of this.dht.get(key, options)) {
-      if (event.name === 'value') {
+      if (event.name === 'VALUE') {
         yield { from: event.peerId, val: event.value }
 
         gotValues++

@@ -91,7 +91,7 @@ const concat = require('it-concat')
 const MPLEX = require('libp2p-mplex')
 ```
 
-We are going to reuse the `createNode` function from step 1, but this time add a stream multiplexer from `libp2p-mplex`. 
+We are going to reuse the `createNode` function from step 1, but this time add a stream multiplexer from `libp2p-mplex`.
 ```js
 const createNode = async () => {
   const node = await Libp2p.create({
@@ -245,7 +245,7 @@ await pipe(
 // node 3 (WebSockets) attempts to dial to node 1 (TCP)
 try {
   await node3.dialProtocol(node1.peerId, '/print')
-} catch (err) {
+} catch (/** @type {any} */ err) {
   console.log('node 3 failed to dial to node 1 with:', err.message)
 }
 ```

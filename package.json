@@ -41,6 +41,7 @@
     "test:node": "aegir test -t node -f \"./test/**/*.{node,spec}.js\"",
     "test:browser": "aegir test -t browser",
     "test:examples": "cd examples && npm run test:all",
+    "test:interop": "LIBP2P_JS=$PWD npx aegir test -t node -f ./node_modules/interop-libp2p/test/*",
     "prepare": "aegir build --no-bundle",
     "release": "aegir release -t node -t browser",
     "release-minor": "aegir release --type minor -t node -t browser",
@@ -74,7 +75,8 @@
     "extends": "ipfs",
     "ignorePatterns": [
       "!.aegir.js",
-      "test/ts-use"
+      "test/ts-use",
+      "*.d.ts"
     ]
   },
   "dependencies": {
@@ -137,11 +139,11 @@
     "@types/node": "^16.0.1",
     "@types/node-forge": "^0.10.1",
     "@types/varint": "^6.0.0",
-    "aegir": "^33.1.1",
+    "aegir": "^36.0.0",
     "buffer": "^6.0.3",
     "datastore-core": "^6.0.7",
     "delay": "^5.0.0",
-    "interop-libp2p": "^0.4.0",
+    "interop-libp2p": "libp2p/interop#chore/update-dht",
     "into-stream": "^7.0.0",
     "ipfs-http-client": "^52.0.2",
     "it-concat": "^2.0.0",

@@ -95,7 +95,7 @@ class Dialer {
     for (const dial of this._pendingDials.values()) {
       try {
         dial.controller.abort()
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         log.error(err)
       }
     }
@@ -129,7 +129,7 @@ class Dialer {
       const connection = await pendingDial.promise
       log('dial succeeded to %s', dialTarget.id)
       return connection
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       // Error is a timeout
       if (pendingDial.controller.signal.aborted) {
         err.code = codes.ERR_TIMEOUT

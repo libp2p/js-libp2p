@@ -188,7 +188,7 @@ class NatManager {
     try {
       await this._client.destroy()
       this._client = null
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error(err)
     }
   }

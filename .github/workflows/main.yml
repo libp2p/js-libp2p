@@ -67,4 +67,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: npm install
-      - run: cd node_modules/interop-libp2p && yarn && LIBP2P_JS=${GITHUB_WORKSPACE}/src/index.js npx aegir test -t node --bail -- --exit
+      - run: npm run test:interop -- --bail -- --exit

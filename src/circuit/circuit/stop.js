@@ -34,7 +34,7 @@ module.exports.handleStop = function handleStop ({
   // Validate the STOP request has the required input
   try {
     validateAddrs(request, streamHandler)
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     return log.error('invalid stop request via peer %s', connection.remotePeer.toB58String(), err)
   }
 

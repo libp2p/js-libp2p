@@ -171,7 +171,7 @@ class Circuit {
       log('new outbound connection %s', maConn.remoteAddr)
 
       return this._upgrader.upgradeOutbound(maConn)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error('Circuit relay dial failed', err)
       disconnectOnFailure && await relayConnection.close()
       throw err

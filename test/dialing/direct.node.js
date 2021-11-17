@@ -277,7 +277,7 @@ describe('Dialing (direct, TCP)', () => {
 
       try {
         await libp2p.dial(remoteLibp2p.transportManager.getAddrs()[0])
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.have.property('code', ErrorCodes.ERR_INVALID_MULTIADDR)
         return
       }

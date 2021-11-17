@@ -34,7 +34,7 @@ function validateAddrs (msg, streamHandler) {
         return new Multiaddr(addr)
       })
     }
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     writeResponse(streamHandler, msg.type === CircuitRelay.Type.HOP
       ? CircuitRelay.Status.HOP_DST_MULTIADDR_INVALID
       : CircuitRelay.Status.STOP_DST_MULTIADDR_INVALID)
@@ -47,7 +47,7 @@ function validateAddrs (msg, streamHandler) {
         return new Multiaddr(addr)
       })
     }
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     writeResponse(streamHandler, msg.type === CircuitRelay.Type.HOP
       ? CircuitRelay.Status.HOP_SRC_MULTIADDR_INVALID
       : CircuitRelay.Status.STOP_SRC_MULTIADDR_INVALID)

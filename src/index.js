@@ -301,7 +301,7 @@ class Libp2p extends EventEmitter {
     // dht provided components (peerRouting, contentRouting, dht)
     if (this._modules.dht) {
       const DHT = this._modules.dht
-      // @ts-ignore Object is not constructable
+      // @ts-ignore TODO: types need fixing - DHT is an `object` which has no `create` method
       this._dht = DHT.create({
         libp2p: this,
         ...this._config.dht
@@ -358,7 +358,7 @@ class Libp2p extends EventEmitter {
       await this._onStarting()
       await this._onDidStart()
       log('libp2p has started')
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this.emit('error', err)
       log.error('An error occurred starting libp2p', err)
       await this.stop()
@@ -403,7 +403,7 @@ class Libp2p extends EventEmitter {
 
       ping.unmount(this)
       this.dialer.destroy()
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       if (err) {
         log.error(err)
         this.emit('error', err)
@@ -426,7 +426,7 @@ class Libp2p extends EventEmitter {
 
     try {
       await this.keychain.findKeyByName('self')
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       await this.keychain.importPeer('self', this.peerId)
     }
   }
@@ -693,7 +693,7 @@ class Libp2p extends EventEmitter {
         log('connecting to discovered peer %s', peerId.toB58String())
         try {
           await this.dialer.connectToPeer(peerId)
-        } catch (err) {
+        } catch (/** @type {any} */ err) {
           log.error(`could not connect to discovered peer ${peerId.toB58String()} with ${err}`)
         }
       }
