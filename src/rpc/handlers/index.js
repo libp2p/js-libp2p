@@ -1,19 +1,37 @@
 'use strict'
 
-const T = require('../../message').TYPES
+const { Message } = require('../../message')
+const { AddProviderHandler } = require('./add-provider')
+const { FindNodeHandler } = require('./find-node')
+const { GetProvidersHandler } = require('./get-providers')
+const { GetValueHandler } = require('./get-value')
+const { PingHandler } = require('./ping')
+const { PutValueHandler } = require('./put-value')
 
 /**
- *
- * @param {import('../../index')} dht
+ * @typedef {import('../types').DHTMessageHandler} DHTMessageHandler
  */
-module.exports = (dht) => {
+
+/**
+ * @param {object} params
+ * @param {import('peer-id')} params.peerId
+ * @param {import('../../providers').Providers} params.providers
+ * @param {import('../../types').PeerStore} params.peerStore
+ * @param {import('../../types').Addressable} params.addressable
+ * @param {import('../../peer-routing').PeerRouting} params.peerRouting
+ * @param {import('interface-datastore').Datastore} params.datastore
+ * @param {import('libp2p-interfaces/src/types').DhtValidators} params.validators
+ * @param {boolean} [params.lan]
+ */
+module.exports = ({ peerId, providers, peerStore, addressable, peerRouting, datastore, validators, lan }) => {
+  /** @type {Record<number, DHTMessageHandler>} */
   const handlers = {
-    [T.GET_VALUE]: require('./get-value')(dht),
-    [T.PUT_VALUE]: require('./put-value')(dht),
-    [T.FIND_NODE]: require('./find-node')(dht),
-    [T.ADD_PROVIDER]: require('./add-provider')(dht),
-    [T.GET_PROVIDERS]: require('./get-providers')(dht),
-    [T.PING]: require('./ping')(dht)
+    [Message.TYPES.GET_VALUE]: new GetValueHandler({ peerId, peerStore, peerRouting, datastore }),
+    [Message.TYPES.PUT_VALUE]: new PutValueHandler({ validators, datastore }),
+    [Message.TYPES.FIND_NODE]: new FindNodeHandler({ peerId, addressable, peerRouting, lan }),
+    [Message.TYPES.ADD_PROVIDER]: new AddProviderHandler({ peerId, providers, peerStore }),
+    [Message.TYPES.GET_PROVIDERS]: new GetProvidersHandler({ peerId, peerRouting, providers, datastore, peerStore, addressable, lan }),
+    [Message.TYPES.PING]: new PingHandler()
   }
 
   /**
@@ -22,7 +40,6 @@ module.exports = (dht) => {
    * @param {number} type
    */
   function getMessageHandler (type) {
-    // @ts-ignore ts does not aknowledge number as an index type
     return handlers[type]
   }
 

@@ -6,8 +6,16 @@ const varint = require('varint')
 const PeerId = require('peer-id')
 const { Key } = require('interface-datastore/key')
 const { default: Queue } = require('p-queue')
-const c = require('./constants')
+const {
+  PROVIDERS_CLEANUP_INTERVAL,
+  PROVIDERS_VALIDITY,
+  PROVIDERS_LRU_CACHE_SIZE,
+  PROVIDERS_KEY_PREFIX
+} = require('./constants')
 const utils = require('./utils')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+
+const log = utils.logger('libp2p:kad-dht:providers')
 
 /**
  * @typedef {import('multiformats/cid').CID} CID
@@ -29,34 +37,31 @@ const utils = require('./utils')
 class Providers {
   /**
    * @param {Datastore} datastore
-   * @param {PeerId} [self]
    * @param {number} [cacheSize=256]
    */
-  constructor (datastore, self, cacheSize) {
+  constructor (datastore, cacheSize) {
     this.datastore = datastore
-
-    this._log = utils.logger(self, 'providers')
 
     /**
      * How often invalid records are cleaned. (in seconds)
      *
      * @type {number}
      */
-    this.cleanupInterval = c.PROVIDERS_CLEANUP_INTERVAL
+    this.cleanupInterval = PROVIDERS_CLEANUP_INTERVAL
 
     /**
      * How long is a provider valid for. (in seconds)
      *
      * @type {number}
      */
-    this.provideValidity = c.PROVIDERS_VALIDITY
+    this.provideValidity = PROVIDERS_VALIDITY
 
     /**
      * LRU cache size
      *
      * @type {number}
      */
-    this.lruCacheSize = cacheSize || c.PROVIDERS_LRU_CACHE_SIZE
+    this.lruCacheSize = cacheSize || PROVIDERS_LRU_CACHE_SIZE
 
     // @ts-ignore hashlru types are wrong
     this.providers = cache(this.lruCacheSize)
@@ -100,7 +105,6 @@ class Providers {
    */
   _cleanup () {
     return this.syncQueue.add(async () => {
-      this._log('start cleanup')
       const start = Date.now()
 
       let count = 0
@@ -109,7 +113,8 @@ class Providers {
       const batch = this.datastore.batch()
 
       // Get all provider entries from the datastore
-      const query = this.datastore.query({ prefix: c.PROVIDERS_KEY_PREFIX })
+      const query = this.datastore.query({ prefix: PROVIDERS_KEY_PREFIX })
+
       for await (const entry of query) {
         try {
           // Add a delete to the batch for each expired entry
@@ -118,8 +123,9 @@ class Providers {
           const now = Date.now()
           const delta = now - time
           const expired = delta > this.provideValidity
-          this._log('comparing: %d - %d = %d > %d %s',
-            now, time, delta, this.provideValidity, expired ? '(expired)' : '')
+
+          log('comparing: %d - %d = %d > %d %s', now, time, delta, this.provideValidity, expired ? '(expired)' : '')
+
           if (expired) {
             deleteCount++
             batch.delete(entry.key)
@@ -129,24 +135,28 @@ class Providers {
           }
           count++
         } catch (/** @type {any} */ err) {
-          this._log.error(err.message)
+          log.error(err.message)
         }
       }
-      this._log('deleting %d / %d entries', deleteCount, count)
 
       // Commit the deletes to the datastore
       if (deleted.size) {
+        log('deleting %d / %d entries', deleteCount, count)
         await batch.commit()
+      } else {
+        log('nothing to delete')
       }
 
       // Clear expired entries from the cache
       for (const [cid, peers] of deleted) {
         const key = makeProviderKey(cid)
         const provs = this.providers.get(key)
+
         if (provs) {
           for (const peerId of peers) {
             provs.delete(peerId)
           }
+
           if (provs.size === 0) {
             this.providers.remove(key)
           } else {
@@ -155,7 +165,7 @@ class Providers {
         }
       }
 
-      this._log('Cleanup successful (%dms)', Date.now() - start)
+      log('Cleanup successful (%dms)', Date.now() - start)
     })
   }
 
@@ -170,10 +180,12 @@ class Providers {
   async _getProvidersMap (cid) {
     const cacheKey = makeProviderKey(cid)
     let provs = this.providers.get(cacheKey)
+
     if (!provs) {
       provs = await loadProviders(this.datastore, cid)
       this.providers.set(cacheKey, provs)
     }
+
     return provs
   }
 
@@ -186,15 +198,16 @@ class Providers {
    */
   async addProvider (cid, provider) { // eslint-disable-line require-await
     return this.syncQueue.add(async () => {
-      this._log('addProvider %s', cid.toString())
+      log('addProvider %s', cid.toString())
       const provs = await this._getProvidersMap(cid)
 
-      this._log('loaded %s provs', provs.size)
+      log('loaded %s provs', provs.size)
       const now = new Date()
-      provs.set(utils.encodeBase32(provider.id), now)
+      provs.set(provider.toString(), now)
 
       const dsKey = makeProviderKey(cid)
       this.providers.set(dsKey, provs)
+
       return writeProviderEntry(this.datastore, cid, provider, now)
     })
   }
@@ -207,10 +220,11 @@ class Providers {
    */
   async getProviders (cid) { // eslint-disable-line require-await
     return this.syncQueue.add(async () => {
-      this._log('getProviders %s', cid.toString())
+      log('getProviders %s', cid.toString())
       const provs = await this._getProvidersMap(cid)
-      return [...provs.keys()].map((base32PeerId) => {
-        return new PeerId(utils.decodeBase32(base32PeerId))
+
+      return [...provs.keys()].map(peerIdStr => {
+        return PeerId.parse(peerIdStr)
       })
     })
   }
@@ -225,8 +239,9 @@ class Providers {
  * @private
  */
 function makeProviderKey (cid) {
-  cid = typeof cid === 'string' ? cid : utils.encodeBase32(cid.bytes)
-  return c.PROVIDERS_KEY_PREFIX + cid
+  cid = typeof cid === 'string' ? cid : uint8ArrayToString(cid.multihash.bytes, 'base32')
+
+  return PROVIDERS_KEY_PREFIX + cid
 }
 
 /**
@@ -241,11 +256,12 @@ async function writeProviderEntry (store, cid, peer, time) { // eslint-disable-l
   const dsKey = [
     makeProviderKey(cid),
     '/',
-    utils.encodeBase32(peer.id)
+    peer.toString()
   ].join('')
 
   const key = new Key(dsKey)
   const buffer = Uint8Array.from(varint.encode(time.getTime()))
+
   return store.put(key, buffer)
 }
 
@@ -256,6 +272,7 @@ async function writeProviderEntry (store, cid, peer, time) { // eslint-disable-l
  */
 function parseProviderKey (key) {
   const parts = key.toString().split('/')
+
   if (parts.length !== 4) {
     throw new Error('incorrectly formatted provider entry key in datastore: ' + key)
   }
@@ -278,10 +295,12 @@ function parseProviderKey (key) {
 async function loadProviders (store, cid) {
   const providers = new Map()
   const query = store.query({ prefix: makeProviderKey(cid) })
+
   for await (const entry of query) {
     const { peerId } = parseProviderKey(entry.key)
     providers.set(peerId, readTime(entry.value))
   }
+
   return providers
 }
 
@@ -292,4 +311,4 @@ function readTime (buf) {
   return varint.decode(buf)
 }
 
-module.exports = Providers
+module.exports.Providers = Providers

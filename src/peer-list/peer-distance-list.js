@@ -2,13 +2,11 @@
 
 const utils = require('../utils')
 const pMap = require('p-map')
-const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
 const { compare: uint8ArrayCompare } = require('uint8arrays/compare')
 const { xor: uint8ArrayXor } = require('uint8arrays/xor')
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('../').PeerData} PeerData
  */
 
 /**
@@ -49,7 +47,7 @@ class PeerDistanceList {
    * @param {PeerId} peerId
    */
   async add (peerId) {
-    if (this.peerDistances.find(pd => uint8ArrayEquals(pd.peerId.id, peerId.id))) {
+    if (this.peerDistances.find(pd => pd.peerId.equals(peerId))) {
       return
     }
 

@@ -2,17 +2,28 @@
 
 const utils = require('../../utils')
 const errcode = require('err-code')
+const Libp2pRecord = require('libp2p-record')
+const log = utils.logger('libp2p:kad-dht:rpc:handlers:put-value')
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('../../message')} Message
+ * @typedef {import('../../message').Message} Message
+ * @typedef {import('../types').DHTMessageHandler} DHTMessageHandler
  */
 
 /**
- * @param {import('../../index')} dht
+ * @implements {DHTMessageHandler}
  */
-module.exports = (dht) => {
-  const log = utils.logger(dht.peerId, 'rpc:put-value')
+class PutValueHandler {
+  /**
+   * @param {object} params
+   * @param {import('libp2p-interfaces/src/types').DhtValidators} params.validators
+   * @param {import('interface-datastore').Datastore} params.datastore
+   */
+  constructor ({ validators, datastore }) {
+    this._validators = validators
+    this._datastore = datastore
+  }
 
   /**
    * Process `PutValue` DHT messages.
@@ -20,9 +31,9 @@ module.exports = (dht) => {
    * @param {PeerId} peerId
    * @param {Message} msg
    */
-  async function putValue (peerId, msg) {
+  async handle (peerId, msg) {
     const key = msg.key
-    log('key: %b', key)
+    log('%p asked to store value for key %b', peerId, key)
 
     const record = msg.record
 
@@ -33,16 +44,14 @@ module.exports = (dht) => {
       throw errcode(new Error(errMsg), 'ERR_EMPTY_RECORD')
     }
 
-    await dht._verifyRecordLocally(record)
+    await Libp2pRecord.validator.verifyRecord(this._validators, record)
 
     record.timeReceived = new Date()
     const recordKey = utils.bufferToKey(record.key)
-    await dht.datastore.put(recordKey, record.serialize())
-
-    dht.onPut(record, peerId)
+    await this._datastore.put(recordKey, record.serialize())
 
     return msg
   }
-
-  return putValue
 }
+
+module.exports.PutValueHandler = PutValueHandler

@@ -4,12 +4,12 @@
 const { expect } = require('aegir/utils/chai')
 const pair = require('it-pair')
 const pipe = require('it-pipe')
-const delay = require('delay')
 const lp = require('it-length-prefixed')
 const pDefer = require('p-defer')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+const all = require('it-all')
 
-const Message = require('../src/message')
+const { Message } = require('../src/message')
 
 const TestDHT = require('./utils/test-dht')
 
@@ -20,7 +20,9 @@ describe('Network', () => {
   before(async function () {
     this.timeout(10 * 1000)
     tdht = new TestDHT()
-    ;[dht] = await tdht.spawn(1)
+    ;[dht] = await tdht.spawn(1, {
+      clientMode: false
+    })
   })
 
   after(() => tdht.teardown())
@@ -30,16 +32,15 @@ describe('Network', () => {
       const msg = new Message(Message.TYPES.PING, uint8ArrayFromString('hello'), 0)
 
       // mock dial
-      dht.dialer.connectToPeer = () => {
-        return {
-          newStream: () => {
-            return { stream: pair() } // {source, sink} streams that are internally connected
-          }
-        }
+      dht._libp2p.dialProtocol = () => {
+        return { stream: pair() } // {source, sink} streams that are internally connected
       }
 
-      const response = await dht.network.sendRequest(dht.peerId, msg)
-      expect(response.type).to.eql(Message.TYPES.PING)
+      const events = await all(dht._lan._network.sendRequest(dht._libp2p.peerId, msg))
+      const response = events
+        .filter(event => event.name === 'PEER_RESPONSE')
+        .pop()
+      expect(response.messageType).to.eql(Message.TYPES.PING)
     })
 
     it('send and response different messages', async () => {
@@ -54,7 +55,7 @@ describe('Network', () => {
       const msg = new Message(Message.TYPES.PING, uint8ArrayFromString('hello'), 0)
 
       // mock it
-      dht.dialer.connectToPeer = async () => {
+      dht._libp2p.dialProtocol = async () => {
         const msg = new Message(Message.TYPES.FIND_NODE, uint8ArrayFromString('world'), 0)
 
         const data = []
@@ -91,70 +92,16 @@ describe('Network', () => {
           finish()
         }
 
-        return {
-          newStream: () => {
-            return { stream: { source, sink } }
-          }
-        }
+        return { stream: { source, sink } }
       }
 
-      const response = await dht.network.sendRequest(dht.peerId, msg)
+      const events = await all(dht._lan._network.sendRequest(dht._libp2p.peerId, msg))
+      const response = events
+        .filter(event => event.name === 'PEER_RESPONSE')
+        .pop()
 
-      expect(response.type).to.eql(Message.TYPES.FIND_NODE)
+      expect(response.messageType).to.eql(Message.TYPES.FIND_NODE)
       finish()
-
-      return defer.promise
-    })
-
-    it('timeout on no message', async () => {
-      const defer = pDefer()
-      let i = 0
-      const finish = () => {
-        if (i++ === 1) {
-          defer.resolve()
-        }
-      }
-
-      const msg = new Message(Message.TYPES.PING, uint8ArrayFromString('hello'), 0)
-
-      // mock it
-      dht.dialer.connectToPeer = () => {
-        const source = (async function * () { // eslint-disable-line require-yield
-          await delay(1000)
-        })()
-
-        const sink = async source => {
-          const res = []
-          await pipe(
-            source,
-            lp.decode(),
-            async source => {
-              for await (const chunk of source) {
-                res.push(chunk.slice())
-              }
-            }
-          )
-          expect(Message.deserialize(res[0]).type).to.eql(Message.TYPES.PING)
-          finish()
-        }
-
-        return {
-          newStream: () => {
-            return { stream: { source, sink } }
-          }
-        }
-      }
-
-      dht.network.readMessageTimeout = 100
-
-      try {
-        await dht.network.sendRequest(dht.peerId, msg)
-      } catch (/** @type {any} */ err) {
-        expect(err).to.exist()
-        expect(err.message).to.match(/timed out/)
-
-        finish()
-      }
 
       return defer.promise
     })

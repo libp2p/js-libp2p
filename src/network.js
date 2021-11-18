@@ -1,41 +1,46 @@
 'use strict'
 
 const errcode = require('err-code')
-
 const { pipe } = require('it-pipe')
 const lp = require('it-length-prefixed')
-const pTimeout = require('p-timeout')
-const { consume } = require('streaming-iterables')
+const drain = require('it-drain')
 const first = require('it-first')
-
-const MulticodecTopology = require('libp2p-interfaces/src/topology/multicodec-topology')
-
-const rpc = require('./rpc')
-const c = require('./constants')
-const Message = require('./message')
+const { Message, MESSAGE_TYPE_LOOKUP } = require('./message')
 const utils = require('./utils')
+const { EventEmitter } = require('events')
+const {
+  dialingPeerEvent,
+  sendingQueryEvent,
+  peerResponseEvent,
+  queryErrorEvent
+} = require('./query/events')
 
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
+ * @typedef {import('./types').QueryEvent} QueryEvent
+ * @typedef {import('./types').PeerData} PeerData
  */
 
 /**
  * Handle network operations for the dht
  */
-class Network {
+class Network extends EventEmitter {
   /**
    * Create a new network
    *
-   * @param {import('./index')} dht
+   * @param {object} params
+   * @param {import('./types').Dialer} params.dialer
+   * @param {string} params.protocol
+   * @param {boolean} params.lan
    */
-  constructor (dht) {
-    this.dht = dht
-    this.readMessageTimeout = c.READ_MESSAGE_TIMEOUT
-    this._log = utils.logger(this.dht.peerId, 'net')
-    this._rpc = rpc(this.dht)
-    this._onPeerConnected = this._onPeerConnected.bind(this)
+  constructor ({ dialer, protocol, lan }) {
+    super()
+
+    this._log = utils.logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:network`)
     this._running = false
+    this._dialer = dialer
+    this._protocol = protocol
   }
 
   /**
@@ -46,42 +51,14 @@ class Network {
       return
     }
 
-    if (!this.dht.isStarted) {
-      throw errcode(new Error('Can not start network'), 'ERR_CANNOT_START_NETWORK')
-    }
-
     this._running = true
-
-    // Only respond to queries when not in client mode
-    if (this.dht._clientMode === false) {
-      // Incoming streams
-      this.dht.registrar.handle(this.dht.protocol, this._rpc)
-    }
-
-    // register protocol with topology
-    const topology = new MulticodecTopology({
-      multicodecs: [this.dht.protocol],
-      handlers: {
-        onConnect: this._onPeerConnected,
-        onDisconnect: () => {}
-      }
-    })
-    this._registrarId = this.dht.registrar.register(topology)
   }
 
   /**
    * Stop all network activity
    */
   stop () {
-    if (!this.dht.isStarted && !this.isStarted) {
-      return
-    }
     this._running = false
-
-    // unregister protocol and handlers
-    if (this._registrarId) {
-      this.dht.registrar.unregister(this._registrarId)
-    }
   }
 
   /**
@@ -94,49 +71,35 @@ class Network {
   }
 
   /**
-   * Are all network components there?
+   * Send a request and record RTT for latency measurements
    *
-   * @type {boolean}
-   */
-  get isConnected () {
-    // TODO add a way to check if switch has started or not
-    return this.dht.isStarted && this.isStarted
-  }
-
-  /**
-   * Registrar notifies a connection successfully with dht protocol.
-   *
-   * @param {PeerId} peerId - remote peer id
-   */
-  async _onPeerConnected (peerId) {
-    await this.dht._add(peerId)
-    this._log('added to the routing table: %s', peerId.toB58String())
-  }
-
-  /**
-   * Send a request and record RTT for latency measurements.
-   *
-   * @async
    * @param {PeerId} to - The peer that should receive a message
-   * @param {Message} msg - The message to send.
+   * @param {Message} msg - The message to send
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
    */
-  async sendRequest (to, msg) {
-    // TODO: record latency
-    if (!this.isConnected) {
-      throw errcode(new Error('Network is offline'), 'ERR_NETWORK_OFFLINE')
+  async * sendRequest (to, msg, options = {}) {
+    this._log('sending %s to %p', MESSAGE_TYPE_LOOKUP[msg.type], to)
+
+    try {
+      yield dialingPeerEvent({ peer: to })
+
+      const { stream } = await this._dialer.dialProtocol(to, this._protocol, options)
+
+      yield sendingQueryEvent({ to, type: msg.type })
+
+      const response = await this._writeReadMessage(stream, msg.serialize(), options)
+
+      yield peerResponseEvent({
+        from: to,
+        messageType: response.type,
+        closer: response.closerPeers,
+        providers: response.providerPeers,
+        record: response.record
+      })
+    } catch (/** @type {any} */ err) {
+      yield queryErrorEvent({ from: to, error: err })
     }
-
-    const id = to.toB58String()
-    this._log('sending to: %s', id)
-
-    let conn = this.dht.registrar.connectionManager.get(to)
-    if (!conn) {
-      conn = await this.dht.dialer.connectToPeer(to)
-    }
-
-    const { stream } = await conn.newStream(this.dht.protocol)
-
-    return this._writeReadMessage(stream, msg.serialize())
   }
 
   /**
@@ -144,22 +107,42 @@ class Network {
    *
    * @param {PeerId} to
    * @param {Message} msg
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
    */
-  async sendMessage (to, msg) {
-    if (!this.isConnected) {
-      throw errcode(new Error('Network is offline'), 'ERR_NETWORK_OFFLINE')
+  async * sendMessage (to, msg, options = {}) {
+    this._log('sending %s to %p', MESSAGE_TYPE_LOOKUP[msg.type], to)
+
+    yield dialingPeerEvent({ peer: to })
+
+    const { stream } = await this._dialer.dialProtocol(to, this._protocol, options)
+
+    yield sendingQueryEvent({ to, type: msg.type })
+
+    try {
+      await this._writeMessage(stream, msg.serialize(), options)
+
+      yield peerResponseEvent({ from: to, messageType: msg.type })
+    } catch (/** @type {any} */ err) {
+      yield queryErrorEvent({ from: to, error: err })
     }
+  }
 
-    const id = to.toB58String()
-    this._log('sending to: %s', id)
-
-    let conn = this.dht.registrar.connectionManager.get(to)
-    if (!conn) {
-      conn = await this.dht.dialer.connectToPeer(to)
-    }
-    const { stream } = await conn.newStream(this.dht.protocol)
-
-    return this._writeMessage(stream, msg.serialize())
+  /**
+   * Write a message to the given stream
+   *
+   * @param {MuxedStream} stream - the stream to use
+   * @param {Uint8Array} msg - the message to send
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
+   */
+  async _writeMessage (stream, msg, options = {}) {
+    await pipe(
+      [msg],
+      lp.encode(),
+      stream,
+      drain
+    )
   }
 
   /**
@@ -169,57 +152,43 @@ class Network {
    *
    * @param {MuxedStream} stream - the stream to use
    * @param {Uint8Array} msg - the message to send
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
    */
-  async _writeReadMessage (stream, msg) { // eslint-disable-line require-await
-    return pTimeout(
-      writeReadMessage(stream, msg),
-      this.readMessageTimeout
-    )
-  }
-
-  /**
-   * Write a message to the given stream.
-   *
-   * @param {MuxedStream} stream - the stream to use
-   * @param {Uint8Array} msg - the message to send
-   */
-  _writeMessage (stream, msg) {
-    return pipe(
+  async _writeReadMessage (stream, msg, options = {}) {
+    const res = await pipe(
       [msg],
       lp.encode(),
       stream,
-      consume
-    )
-  }
-}
+      lp.decode(),
+      /**
+       * @param {AsyncIterable<Uint8Array>} source
+       */
+      async source => {
+        const buf = await first(source)
 
-/**
- * @param {MuxedStream} stream
- * @param {Uint8Array} msg
- */
-async function writeReadMessage (stream, msg) {
-  const res = await pipe(
-    [msg],
-    lp.encode(),
-    stream,
-    lp.decode(),
-    /**
-     * @param {AsyncIterable<Uint8Array>} source
-     */
-    async source => {
-      const buf = await first(source)
-
-      if (buf) {
-        return buf.slice()
+        if (buf) {
+          return buf.slice()
+        }
       }
+    )
+
+    if (res.length === 0) {
+      throw errcode(new Error('No message received'), 'ERR_NO_MESSAGE_RECEIVED')
     }
-  )
 
-  if (res.length === 0) {
-    throw errcode(new Error('No message received'), 'ERR_NO_MESSAGE_RECEIVED')
+    const message = Message.deserialize(res)
+
+    // tell any listeners about new peers we've seen
+    message.closerPeers.forEach(peerData => {
+      this.emit('peer', peerData)
+    })
+    message.providerPeers.forEach(peerData => {
+      this.emit('peer', peerData)
+    })
+
+    return message
   }
-
-  return Message.deserialize(res)
 }
 
-module.exports = Network
+module.exports.Network = Network

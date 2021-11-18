@@ -1,40 +1,67 @@
 'use strict'
 
 const errcode = require('err-code')
-const pTimeout = require('p-timeout')
-
+const { validator } = require('libp2p-record')
 const PeerId = require('peer-id')
-const crypto = require('libp2p-crypto')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
-
-const c = require('../constants')
-const Message = require('../message')
-const Query = require('../query')
-
+const { Message } = require('../message')
 const utils = require('../utils')
+const {
+  queryErrorEvent,
+  finalPeerEvent,
+  valueEvent
+} = require('../query/events')
+const PeerDistanceList = require('../peer-list/peer-distance-list')
+const { Record } = require('libp2p-record')
 
 /**
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
+ * @typedef {import('../types').PeerData} PeerData
  */
 
-/**
- * @param {import('../index')} dht
- */
-module.exports = (dht) => {
+class PeerRouting {
+  /**
+   * @param {object} params
+   * @param {import('peer-id')} params.peerId
+   * @param {import('../routing-table').RoutingTable} params.routingTable
+   * @param {import('../types').PeerStore} params.peerStore
+   * @param {import('../network').Network} params.network
+   * @param {import('libp2p-interfaces/src/types').DhtValidators} params.validators
+   * @param {import('../query/manager').QueryManager} params.queryManager
+   * @param {boolean} params.lan
+   */
+  constructor ({ peerId, routingTable, peerStore, network, validators, queryManager, lan }) {
+    this._peerId = peerId
+    this._routingTable = routingTable
+    this._peerStore = peerStore
+    this._network = network
+    this._validators = validators
+    this._queryManager = queryManager
+    this._log = utils.logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:peer-routing`)
+  }
+
   /**
    * Look if we are connected to a peer with the given id.
    * Returns its id and addresses, if found, otherwise `undefined`.
    *
    * @param {PeerId} peer
    */
-  const findPeerLocal = async (peer) => {
-    dht._log(`findPeerLocal ${peer.toB58String()}`)
-    const p = await dht.routingTable.find(peer)
+  async findPeerLocal (peer) {
+    let peerData
+    const p = await this._routingTable.find(peer)
 
-    /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
-    const peerData = p && dht.peerStore.get(p)
+    if (p) {
+      this._log('findPeerLocal found %p in routing table', peer)
+      peerData = this._peerStore.get(p)
+    }
+
+    if (!peerData) {
+      peerData = this._peerStore.get(peer)
+    }
 
     if (peerData) {
+      this._log('findPeerLocal found %p in peer store', peer)
+
       return {
         id: peerData.id,
         multiaddrs: peerData.addresses.map((address) => address.multiaddr)
@@ -47,254 +74,245 @@ module.exports = (dht) => {
    *
    * @param {PeerId} peer
    * @param {Uint8Array} key
-   * @returns {Promise<Message>}
-   * @private
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
    */
-  const getValueSingle = async (peer, key) => { // eslint-disable-line require-await
+  async * _getValueSingle (peer, key, options = {}) { // eslint-disable-line require-await
     const msg = new Message(Message.TYPES.GET_VALUE, key, 0)
-    return dht.network.sendRequest(peer, msg)
-  }
-
-  /**
-   * Find close peers for a given peer
-   *
-   * @param {Uint8Array} key
-   * @param {PeerId} peer
-   * @returns {Promise<Array<{ id: PeerId, multiaddrs: Multiaddr[] }>>}
-   * @private
-   */
-
-  const closerPeersSingle = async (key, peer) => {
-    dht._log(`closerPeersSingle ${uint8ArrayToString(key, 'base32')} from ${peer.toB58String()}`)
-    const msg = await dht.peerRouting._findPeerSingle(peer, new PeerId(key))
-
-    return msg.closerPeers
-      .filter((peerData) => !dht._isSelf(peerData.id))
-      .map((peerData) => {
-        dht.peerStore.addressBook.add(peerData.id, peerData.multiaddrs)
-
-        return peerData
-      })
+    yield * this._network.sendRequest(peer, msg, options)
   }
 
   /**
    * Get the public key directly from a node.
    *
    * @param {PeerId} peer
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
    */
-  const getPublicKeyFromNode = async (peer) => {
+  async * getPublicKeyFromNode (peer, options) {
     const pkKey = utils.keyForPublicKey(peer)
-    const msg = await getValueSingle(peer, pkKey)
 
-    if (!msg.record || !msg.record.value) {
-      throw errcode(new Error(`Node not responding with its public key: ${peer.toB58String()}`), 'ERR_INVALID_RECORD')
+    for await (const event of this._getValueSingle(peer, pkKey, options)) {
+      yield event
+
+      if (event.name === 'PEER_RESPONSE' && event.record) {
+        const recPeer = await PeerId.createFromPubKey(event.record.value)
+
+        // compare hashes of the pub key
+        if (!recPeer.equals(peer)) {
+          throw errcode(new Error('public key does not match id'), 'ERR_PUBLIC_KEY_DOES_NOT_MATCH_ID')
+        }
+
+        yield valueEvent({ from: peer, value: recPeer.pubKey.bytes })
+      }
     }
 
-    const recPeer = await PeerId.createFromPubKey(msg.record.value)
-
-    // compare hashes of the pub key
-    if (!recPeer.equals(peer)) {
-      throw errcode(new Error('public key does not match id'), 'ERR_PUBLIC_KEY_DOES_NOT_MATCH_ID')
-    }
-
-    return recPeer.pubKey
+    throw errcode(new Error(`Node not responding with its public key: ${peer.toB58String()}`), 'ERR_INVALID_RECORD')
   }
 
-  return {
   /**
-   * Ask peer `peer` if they know where the peer with id `target` is.
+   * Search for a peer with the given ID.
    *
-   * @param {PeerId} peer
-   * @param {PeerId} target
-   * @returns {Promise<Message>}
-   * @private
+   * @param {PeerId} id
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
+   * @param {number} [options.queryFuncTimeout]
    */
-    async _findPeerSingle (peer, target) { // eslint-disable-line require-await
-      dht._log('findPeerSingle %s', peer.toB58String())
-      const msg = new Message(Message.TYPES.FIND_NODE, target.id, 0)
+  async * findPeer (id, options = {}) {
+    this._log('findPeer %p', id)
 
-      return dht.network.sendRequest(peer, msg)
-    },
+    // Try to find locally
+    const pi = await this.findPeerLocal(id)
 
-    /**
-     * Search for a peer with the given ID.
-     *
-     * @param {PeerId} id
-     * @param {Object} [options] - findPeer options
-     * @param {number} [options.timeout=60000] - how long the query should maximally run, in milliseconds
-     * @returns {Promise<{ id: PeerId, multiaddrs: Multiaddr[] }>}
-     */
-    async findPeer (id, options = { timeout: 60000 }) {
-      options.timeout = options.timeout || c.minute
-      dht._log('findPeer %s', id.toB58String())
+    // already got it
+    if (pi != null) {
+      this._log('found local')
+      yield finalPeerEvent({
+        from: this._peerId,
+        peer: pi
+      })
+      return
+    }
 
-      // Try to find locally
-      const pi = await findPeerLocal(id)
+    const key = await utils.convertPeerId(id)
+    const peers = this._routingTable.closestPeers(key)
 
-      // already got it
-      if (pi != null) {
-        dht._log('found local')
-        return pi
-      }
+    // sanity check
+    const match = peers.find((p) => p.equals(id))
 
-      const key = await utils.convertPeerId(id)
-      const peers = dht.routingTable.closestPeers(key, dht.kBucketSize)
+    if (match) {
+      const peer = this._peerStore.get(id)
 
-      if (peers.length === 0) {
-        throw errcode(new Error('Peer lookup failed'), 'ERR_LOOKUP_FAILED')
-      }
-
-      // sanity check
-      const match = peers.find((p) => p.isEqual(id))
-      if (match) {
-        /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
-        const peer = dht.peerStore.get(id)
-
-        if (peer) {
-          dht._log('found in peerStore')
-          return {
+      if (peer) {
+        this._log('found in peerStore')
+        yield finalPeerEvent({
+          from: this._peerId,
+          peer: {
             id: peer.id,
             multiaddrs: peer.addresses.map((address) => address.multiaddr)
           }
-        }
+        })
+        return
       }
+    }
 
-      // query the network
-      const query = new Query(dht, id.id, () => {
-        /**
-         * There is no distinction between the disjoint paths, so there are no per-path
-         * variables in dht scope. Just return the actual query function.
-         *
-         * @param {PeerId} peer
-         */
-        const queryFn = async (peer) => {
-          const msg = await this._findPeerSingle(peer, id)
-          const match = msg.closerPeers.find((p) => p.id.isEqual(id))
+    const self = this
 
-          // found it
+    /**
+     * @type {import('../query/types').QueryFunc}
+     */
+    const findPeerQuery = async function * ({ peer, signal }) {
+      const request = new Message(Message.TYPES.FIND_NODE, id.toBytes(), 0)
+
+      for await (const event of self._network.sendRequest(peer, request, { signal })) {
+        yield event
+
+        if (event.name === 'PEER_RESPONSE') {
+          const match = event.closer.find((p) => p.id.equals(id))
+
+          // found the peer
           if (match) {
-            return {
-              peer: match,
-              queryComplete: true
-            }
-          }
-
-          return {
-            closerPeers: msg.closerPeers
+            yield finalPeerEvent({ from: event.from, peer: match })
           }
         }
+      }
+    }
 
-        return queryFn
-      })
+    let foundPeer = false
 
-      let result
-      try {
-        result = await pTimeout(query.run(peers), options.timeout)
-      } finally {
-        query.stop()
+    for await (const event of this._queryManager.run(id.id, peers, findPeerQuery, options)) {
+      if (event.name === 'FINAL_PEER') {
+        foundPeer = true
       }
 
-      let success = false
-      result.paths.forEach((result) => {
-        if (result.success && result.peer) {
-          success = true
-          dht.peerStore.addressBook.add(result.peer.id, result.peer.multiaddrs)
-        }
-      })
-      dht._log('findPeer %s: %s', id.toB58String(), success)
+      yield event
+    }
 
-      if (!success) {
-        throw errcode(new Error('No peer found'), 'ERR_NOT_FOUND')
-      }
-
-      /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
-      const peerData = dht.peerStore.get(id)
-
-      if (!peerData) {
-        throw errcode(new Error('No peer found in peer store'), 'ERR_NOT_FOUND')
-      }
-
-      return {
-        id: peerData.id,
-        multiaddrs: peerData.addresses.map((address) => address.multiaddr)
-      }
-    },
-
-    /**
-     * Kademlia 'node lookup' operation.
-     *
-     * @param {Uint8Array} key
-     * @param {Object} [options]
-     * @param {boolean} [options.shallow=false] - shallow query
-     * @returns {AsyncIterable<PeerId>}
-     */
-    async * getClosestPeers (key, options = { shallow: false }) {
-      dht._log('getClosestPeers to %b', key)
-
-      const id = await utils.convertBuffer(key)
-      const tablePeers = dht.routingTable.closestPeers(id, dht.kBucketSize)
-
-      const q = new Query(dht, key, () => {
-        // There is no distinction between the disjoint paths,
-        // so there are no per-path variables in dht scope.
-        // Just return the actual query function.
-        return async (peer) => {
-          const closer = await closerPeersSingle(key, peer)
-
-          return {
-            closerPeers: closer,
-            pathComplete: options.shallow ? true : undefined
-          }
-        }
-      })
-
-      const res = await q.run(tablePeers)
-      if (!res || !res.finalSet) {
-        return []
-      }
-
-      const sorted = await utils.sortClosestPeers(Array.from(res.finalSet), id)
-
-      for (const pId of sorted.slice(0, dht.kBucketSize)) {
-        yield pId
-      }
-    },
-
-    /**
-     * Get the public key for the given peer id.
-     *
-     * @param {PeerId} peer
-     */
-    async getPublicKey (peer) {
-      dht._log('getPublicKey %s', peer.toB58String())
-
-      // local check
-      /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
-      const peerData = dht.peerStore.get(peer)
-
-      if (peerData && peerData.id.pubKey) {
-        dht._log('getPublicKey: found local copy')
-        return peerData.id.pubKey
-      }
-
-      // try the node directly
-      let pk
-
-      try {
-        pk = await getPublicKeyFromNode(peer)
-      } catch (/** @type {any} */ err) {
-        // try dht directly
-        const pkKey = utils.keyForPublicKey(peer)
-        const value = await dht.get(pkKey)
-        pk = crypto.keys.unmarshalPublicKey(value)
-      }
-
-      const peerId = new PeerId(peer.id, undefined, pk)
-      const addrs = ((peerData && peerData.addresses) || []).map((address) => address.multiaddr)
-      dht.peerStore.addressBook.add(peerId, addrs)
-      dht.peerStore.keyBook.set(peerId, pk)
-
-      return pk
+    if (!foundPeer) {
+      yield queryErrorEvent({ from: this._peerId, error: errcode(new Error('Not found'), 'ERR_NOT_FOUND') })
     }
   }
+
+  /**
+   * Kademlia 'node lookup' operation
+   *
+   * @param {Uint8Array} key - the key to look up, could be a the bytes from a multihash or a peer ID
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
+   * @param {number} [options.queryFuncTimeout]
+   */
+  async * getClosestPeers (key, options = {}) {
+    this._log('getClosestPeers to %b', key)
+    const id = await utils.convertBuffer(key)
+    const tablePeers = this._routingTable.closestPeers(id)
+    const self = this
+
+    const peers = new PeerDistanceList(id, this._routingTable._kBucketSize)
+    tablePeers.forEach(peer => peers.add(peer))
+
+    /**
+     * @type {import('../query/types').QueryFunc}
+     */
+    const getCloserPeersQuery = async function * ({ peer, signal }) {
+      self._log('closerPeersSingle %s from %p', uint8ArrayToString(key, 'base32'), peer)
+      const request = new Message(Message.TYPES.FIND_NODE, key, 0)
+
+      yield * self._network.sendRequest(peer, request, { signal })
+    }
+
+    for await (const event of this._queryManager.run(key, tablePeers, getCloserPeersQuery, options)) {
+      yield event
+
+      if (event.name === 'PEER_RESPONSE') {
+        event.closer.forEach(peerData => {
+          peers.add(peerData.id)
+        })
+      }
+    }
+
+    this._log('found %d peers close to %b', peers.length, key)
+
+    yield * peers.peers.map(peer => finalPeerEvent({
+      from: this._peerId,
+      peer: {
+        id: peer,
+        multiaddrs: (this._peerStore.addressBook.get(peer) || []).map(addr => addr.multiaddr)
+      }
+    }))
+  }
+
+  /**
+   * Query a particular peer for the value for the given key.
+   * It will either return the value or a list of closer peers.
+   *
+   * Note: The peerStore is updated with new addresses found for the given peer.
+   *
+   * @param {PeerId} peer
+   * @param {Uint8Array} key
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
+   */
+  async * getValueOrPeers (peer, key, options = {}) {
+    for await (const event of this._getValueSingle(peer, key, options)) {
+      if (event.name === 'PEER_RESPONSE') {
+        if (event.record) {
+          // We have a record
+          try {
+            await this._verifyRecordOnline(event.record)
+          } catch (/** @type {any} */ err) {
+            const errMsg = 'invalid record received, discarded'
+            this._log(errMsg)
+
+            yield queryErrorEvent({ from: event.from, error: errcode(new Error(errMsg), 'ERR_INVALID_RECORD') })
+            continue
+          }
+        }
+      }
+
+      yield event
+    }
+  }
+
+  /**
+   * Verify a record, fetching missing public keys from the network.
+   * Calls back with an error if the record is invalid.
+   *
+   * @param {import('../types').DHTRecord} record
+   * @returns {Promise<void>}
+   */
+  async _verifyRecordOnline ({ key, value, timeReceived }) {
+    await validator.verifyRecord(this._validators, new Record(key, value, timeReceived))
+  }
+
+  /**
+   * Get the nearest peers to the given query, but if closer
+   * than self
+   *
+   * @param {Uint8Array} key
+   * @param {PeerId} closerThan
+   */
+  async getCloserPeersOffline (key, closerThan) {
+    const id = await utils.convertBuffer(key)
+    const ids = this._routingTable.closestPeers(id)
+    const output = ids
+      .map((p) => {
+        const peer = this._peerStore.get(p)
+
+        return {
+          id: p,
+          multiaddrs: peer ? peer.addresses.map((address) => address.multiaddr) : []
+        }
+      })
+      .filter((closer) => !closer.id.equals(closerThan))
+
+    if (output.length) {
+      this._log('getCloserPeersOffline found %d peer(s) closer to %b than %p', output.length, key, closerThan)
+    } else {
+      this._log('getCloserPeersOffline could not find peer closer to %b than %p', key, closerThan)
+    }
+
+    return output
+  }
 }
+
+module.exports.PeerRouting = PeerRouting

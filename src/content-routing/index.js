@@ -1,13 +1,17 @@
 'use strict'
 
-const errcode = require('err-code')
-const pTimeout = require('p-timeout')
-
-const c = require('../constants')
-const LimitedPeerList = require('../peer-list/limited-peer-list')
-const Message = require('../message')
-const Query = require('../query')
-const utils = require('../utils')
+const { Message } = require('../message')
+const parallel = require('it-parallel')
+const map = require('it-map')
+const { convertBuffer, logger } = require('../utils')
+const { ALPHA } = require('../constants')
+const { pipe } = require('it-pipe')
+const {
+  queryErrorEvent,
+  peerResponseEvent,
+  providerEvent
+} = require('../query/events')
+const { Message: { MessageType } } = require('../message/dht')
 
 /**
  * @typedef {import('multiformats/cid').CID} CID
@@ -15,184 +19,178 @@ const utils = require('../utils')
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
  */
 
-/**
- * @param {import('../')} dht
- */
-module.exports = (dht) => {
+class ContentRouting {
   /**
-   * Check for providers from a single node.
-   *
-   * @param {PeerId} peer
-   * @param {CID} key
-   *
-   * @private
+   * @param {object} params
+   * @param {import('peer-id')} params.peerId
+   * @param {import('../network').Network} params.network
+   * @param {import('../peer-routing').PeerRouting} params.peerRouting
+   * @param {import('../query/manager').QueryManager} params.queryManager
+   * @param {import('../routing-table').RoutingTable} params.routingTable
+   * @param {import('../providers').Providers} params.providers
+   * @param {import('../types').PeerStore} params.peerStore
+   * @param {boolean} params.lan
    */
-  const findProvidersSingle = async (peer, key) => { // eslint-disable-line require-await
-    const msg = new Message(Message.TYPES.GET_PROVIDERS, key.bytes, 0)
-    return dht.network.sendRequest(peer, msg)
+  constructor ({ peerId, network, peerRouting, queryManager, routingTable, providers, peerStore, lan }) {
+    this._log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-routing`)
+    this._peerId = peerId
+    this._network = network
+    this._peerRouting = peerRouting
+    this._queryManager = queryManager
+    this._routingTable = routingTable
+    this._providers = providers
+    this._peerStore = peerStore
   }
 
-  return {
+  /**
+   * Announce to the network that we can provide the value for a given key and
+   * are contactable on the given multiaddrs
+   *
+   * @param {CID} key
+   * @param {Multiaddr[]} multiaddrs
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
+   */
+  async * provide (key, multiaddrs, options = {}) {
+    this._log('provide %s', key)
+
+    // Add peer as provider
+    await this._providers.addProvider(key, this._peerId)
+
+    const msg = new Message(Message.TYPES.ADD_PROVIDER, key.bytes, 0)
+    msg.providerPeers = [{
+      id: this._peerId,
+      multiaddrs
+    }]
+
+    let sent = 0
+
     /**
-     * Announce to the network that we can provide the value for a given key
-     *
-     * @param {CID} key
+     * @param {import('../types').QueryEvent} event
      */
-    async provide (key) {
-      dht._log(`provide: ${key}`)
+    const maybeNotifyPeer = (event) => {
+      return async () => {
+        if (event.name !== 'FINAL_PEER') {
+          return [event]
+        }
 
-      /** @type {Error[]} */
-      const errors = []
+        const events = []
 
-      // Add peer as provider
-      await dht.providers.addProvider(key, dht.peerId)
+        this._log('putProvider %s to %p', key, event.peer.id)
 
-      const multiaddrs = dht.libp2p ? dht.libp2p.multiaddrs : []
-      const msg = new Message(Message.TYPES.ADD_PROVIDER, key.bytes, 0)
-      msg.providerPeers = [{
-        id: dht.peerId,
-        multiaddrs
-      }]
-
-      /**
-       * @param {PeerId} peer
-       */
-      async function mapPeer (peer) {
-        dht._log(`putProvider ${key} to ${peer.toB58String()}`)
         try {
-          await dht.network.sendMessage(peer, msg)
+          this._log('sending provider record for %s to %p', key, event.peer.id)
+
+          for await (const sendEvent of this._network.sendMessage(event.peer.id, msg, options)) {
+            if (sendEvent.name === 'PEER_RESPONSE') {
+              this._log('sent provider record for %s to %p', key, event.peer.id)
+              sent++
+            }
+
+            events.push(sendEvent)
+          }
         } catch (/** @type {any} */ err) {
-          errors.push(err)
+          this._log.error('error sending provide record to peer %p', event.peer.id, err)
+          events.push(queryErrorEvent({ from: event.peer.id, error: err }))
+        }
+
+        return events
+      }
+    }
+
+    // Notify closest peers
+    yield * pipe(
+      this._peerRouting.getClosestPeers(key.multihash.bytes, options),
+      (source) => map(source, (event) => maybeNotifyPeer(event)),
+      (source) => parallel(source, {
+        ordered: false,
+        concurrency: ALPHA
+      }),
+      async function * (source) {
+        for await (const events of source) {
+          yield * events
         }
       }
+    )
 
-      // Notify closest peers
-      await utils.mapParallel(dht.getClosestPeers(key.bytes), mapPeer)
+    this._log('sent provider records to %d peers', sent)
+  }
 
-      if (errors.length) {
-        // TODO:
-        // This should be infrequent. This means a peer we previously connected
-        // to failed to exchange the provide message. If getClosestPeers was an
-        // iterator, we could continue to pull until we announce to kBucketSize peers.
-        throw errcode(new Error(`Failed to provide to ${errors.length} of ${dht.kBucketSize} peers`), 'ERR_SOME_PROVIDES_FAILED', { errors })
-      }
-    },
+  /**
+   * Search the dht for up to `K` providers of the given CID.
+   *
+   * @param {CID} key
+   * @param {object} [options] - findProviders options
+   * @param {number} [options.maxNumProviders=5] - maximum number of providers to find
+   * @param {AbortSignal} [options.signal]
+   * @param {number} [options.queryFuncTimeout]
+   */
+  async * findProviders (key, options = { maxNumProviders: 5 }) {
+    const toFind = options.maxNumProviders || this._routingTable._kBucketSize
+    const target = key.multihash.bytes
+    const id = await convertBuffer(target)
+    const self = this
+
+    this._log(`findProviders ${key}`)
+
+    const provs = await this._providers.getProviders(key)
+
+    // yield values if we have some, also slice because maybe we got lucky and already have too many?
+    if (provs.length) {
+      const providers = provs.slice(0, toFind).map(peerId => ({
+        id: peerId,
+        multiaddrs: (this._peerStore.addressBook.get(peerId) || []).map(address => address.multiaddr)
+      }))
+
+      yield peerResponseEvent({ from: this._peerId, messageType: MessageType.GET_PROVIDERS, providers })
+      yield providerEvent({ from: this._peerId, providers: providers })
+    }
+
+    // All done
+    if (provs.length >= toFind) {
+      return
+    }
 
     /**
-     * Search the dht for up to `K` providers of the given CID.
+     * The query function to use on this particular disjoint path
      *
-     * @param {CID} key
-     * @param {Object} [options] - findProviders options
-     * @param {number} [options.timeout=60000] - how long the query should maximally run, in milliseconds
-     * @param {number} [options.maxNumProviders=5] - maximum number of providers to find
-     * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
+     * @type {import('../query/types').QueryFunc}
      */
-    async * findProviders (key, options = { timeout: 60000, maxNumProviders: 5 }) {
-      const providerTimeout = options.timeout || c.minute
-      const n = options.maxNumProviders || c.K
+    const findProvidersQuery = async function * ({ peer, signal }) {
+      const request = new Message(Message.TYPES.GET_PROVIDERS, target, 0)
 
-      dht._log(`findProviders ${key}`)
+      yield * self._network.sendRequest(peer, request, { signal })
+    }
 
-      const out = new LimitedPeerList(n)
-      const provs = await dht.providers.getProviders(key)
+    const providers = new Set(provs.map(p => p.toB58String()))
 
-      provs
-        .forEach(id => {
-          /** @type {{ id: PeerId, addresses: { multiaddr: Multiaddr }[] }} */
-          const peerData = dht.peerStore.get(id)
+    for await (const event of this._queryManager.run(target, this._routingTable.closestPeers(id), findProvidersQuery, options)) {
+      yield event
 
-          if (peerData) {
-            out.push({
-              id: peerData.id,
-              multiaddrs: peerData.addresses
-                .map((address) => address.multiaddr)
-            })
-          } else {
-            out.push({
-              id,
-              multiaddrs: []
-            })
-          }
-        })
+      if (event.name === 'PEER_RESPONSE') {
+        this._log(`Found ${event.providers.length} provider entries for ${key} and ${event.closer.length} closer peers`)
 
-      // All done
-      if (out.length >= n) {
-        // yield values
-        for (const pData of out.toArray()) {
-          yield pData
-        }
-        return
-      }
+        const newProviders = []
 
-      // need more, query the network
-      /** @type {LimitedPeerList[]} */
-      const paths = []
-
-      /**
-       *
-       * @param {number} pathIndex
-       * @param {number} numPaths
-       */
-      function makePath (pathIndex, numPaths) {
-        // This function body runs once per disjoint path
-        const pathSize = utils.pathSize(n - out.length, numPaths)
-        const pathProviders = new LimitedPeerList(pathSize)
-        paths.push(pathProviders)
-
-        /**
-         * The query function to use on this particular disjoint path
-         *
-         * @param {PeerId} peer
-         */
-        async function queryDisjointPath (peer) {
-          const msg = await findProvidersSingle(peer, key)
-          const provs = msg.providerPeers
-          dht._log(`Found ${provs.length} provider entries for ${key}`)
-
-          provs.forEach((prov) => {
-            pathProviders.push({
-              ...prov
-            })
-          })
-
-          // hooray we have all that we want
-          if (pathProviders.length >= pathSize) {
-            return { pathComplete: true }
+        for (const peer of event.providers) {
+          if (providers.has(peer.id.toB58String())) {
+            continue
           }
 
-          // it looks like we want some more
-          return { closerPeers: msg.closerPeers }
+          providers.add(peer.id.toB58String())
+          newProviders.push(peer)
         }
 
-        return queryDisjointPath
-      }
-
-      const query = new Query(dht, key.bytes, makePath)
-      const peers = dht.routingTable.closestPeers(key.bytes, dht.kBucketSize)
-
-      try {
-        await pTimeout(
-          query.run(peers),
-          providerTimeout
-        )
-      } catch (/** @type {any} */ err) {
-        if (err.name !== pTimeout.TimeoutError.name) {
-          throw err
+        if (newProviders.length) {
+          yield providerEvent({ from: event.from, providers: newProviders })
         }
-      } finally {
-        query.stop()
-      }
 
-      // combine peers from each path
-      paths.forEach((path) => {
-        path.toArray().forEach((peer) => {
-          out.push(peer)
-        })
-      })
-
-      for (const pData of out.toArray()) {
-        yield pData
+        if (providers.size === toFind) {
+          return
+        }
       }
     }
   }
 }
+
+module.exports.ContentRouting = ContentRouting

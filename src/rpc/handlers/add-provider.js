@@ -2,26 +2,36 @@
 
 const { CID } = require('multiformats/cid')
 const errcode = require('err-code')
-
 const utils = require('../../utils')
+const log = utils.logger('libp2p:kad-dht:rpc:handlers:add-provider')
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('../../message')} Message
+ * @typedef {import('../../message').Message} Message
+ * @typedef {import('../types').DHTMessageHandler} DHTMessageHandler
  */
 
 /**
- * @param {import('../../index')} dht
+ * @implements {DHTMessageHandler}
  */
-module.exports = (dht) => {
-  const log = utils.logger(dht.peerId, 'rpc:add-provider')
+class AddProviderHandler {
   /**
-   * Process `AddProvider` DHT messages.
-   *
+   * @param {object} params
+   * @param {PeerId} params.peerId
+   * @param {import('../../providers').Providers} params.providers
+   * @param {import('../../types').PeerStore} params.peerStore
+   */
+  constructor ({ peerId, providers, peerStore }) {
+    this._peerId = peerId
+    this._providers = providers
+    this._peerStore = peerStore
+  }
+
+  /**
    * @param {PeerId} peerId
    * @param {Message} msg
    */
-  async function addProvider (peerId, msg) { // eslint-disable-line require-await
+  async handle (peerId, msg) {
     log('start')
 
     if (!msg.key || msg.key.length === 0) {
@@ -31,41 +41,43 @@ module.exports = (dht) => {
     /** @type {CID} */
     let cid
     try {
+      // this is actually just the multihash, not the whole CID
       cid = CID.decode(msg.key)
     } catch (/** @type {any} */ err) {
       const errMsg = `Invalid CID: ${err.message}`
       throw errcode(new Error(errMsg), 'ERR_INVALID_CID')
     }
 
-    msg.providerPeers.forEach((pi) => {
-      // Ignore providers not from the originator
-      if (!pi.id.isEqual(peerId)) {
-        log('invalid provider peer %s from %s', pi.id.toB58String(), peerId.toB58String())
-        return
-      }
+    if (!msg.providerPeers || !msg.providerPeers.length) {
+      log.error('no providers found in message')
+    }
 
-      if (pi.multiaddrs.length < 1) {
-        log('no valid addresses for provider %s. Ignore', peerId.toB58String())
-        return
-      }
+    await Promise.all(
+      msg.providerPeers.map(async (pi) => {
+        // Ignore providers not from the originator
+        if (!pi.id.equals(peerId)) {
+          log('invalid provider peer %p from %p', pi.id, peerId)
+          return
+        }
 
-      log('received provider %s for %s (addrs %s)', peerId.toB58String(), cid.toString(), pi.multiaddrs.map((m) => m.toString()))
+        if (pi.multiaddrs.length < 1) {
+          log('no valid addresses for provider %p. Ignore', peerId)
+          return
+        }
 
-      if (!dht._isSelf(pi.id)) {
-        // Add known address to peer store
-        dht.peerStore.addressBook.add(pi.id, pi.multiaddrs)
-        return dht.providers.addProvider(cid, pi.id)
-      }
-    })
+        log('received provider %p for %s (addrs %s)', peerId, cid, pi.multiaddrs.map((m) => m.toString()))
 
-    // Previous versions of the JS DHT sent erroneous providers in the
-    // `providerPeers` field. In order to accommodate older clients that have
-    // this bug, we fall back to assuming the originator is the provider if
-    // we can't find any valid providers in the payload.
-    // https://github.com/libp2p/js-libp2p-kad-dht/pull/127
-    // https://github.com/libp2p/js-libp2p-kad-dht/issues/128
-    return dht.providers.addProvider(cid, peerId)
+        if (!this._peerId.equals(pi.id)) {
+          // Add known address to peer store
+          this._peerStore.addressBook.add(pi.id, pi.multiaddrs)
+          await this._providers.addProvider(cid, pi.id)
+        }
+      })
+    )
+
+    // typescript requires a return value
+    return undefined
   }
-
-  return addProvider
 }
+
+module.exports.AddProviderHandler = AddProviderHandler

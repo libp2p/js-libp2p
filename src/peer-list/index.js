@@ -2,7 +2,6 @@
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('../').PeerData} PeerData
  */
 
 /**
@@ -10,18 +9,18 @@
  */
 class PeerList {
   constructor () {
-    /** @type {PeerData[]} */
+    /** @type {PeerId[]} */
     this.list = []
   }
 
   /**
    * Add a new peer. Returns `true` if it was a new one
    *
-   * @param {PeerData} peerData
+   * @param {PeerId} peerId
    */
-  push (peerData) {
-    if (!this.has(peerData.id)) {
-      this.list.push(peerData)
+  push (peerId) {
+    if (!this.has(peerId)) {
+      this.list.push(peerId)
 
       return true
     }
@@ -35,7 +34,7 @@ class PeerList {
    * @param {PeerId} peerId
    */
   has (peerId) {
-    const match = this.list.find((i) => i.id.equals(peerId))
+    const match = this.list.find((i) => i.equals(peerId))
     return Boolean(match)
   }
 

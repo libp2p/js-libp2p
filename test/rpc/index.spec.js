@@ -6,8 +6,8 @@ const pDefer = require('p-defer')
 const pipe = require('it-pipe')
 const lp = require('it-length-prefixed')
 const { collect } = require('streaming-iterables')
-const Message = require('../../src/message')
-const rpc = require('../../src/rpc')
+const { Message } = require('../../src/message')
+const { RPC } = require('../../src/rpc')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const createPeerId = require('../utils/create-peer-id')
@@ -17,18 +17,34 @@ const toBuffer = require('../utils/to-buffer')
 describe('rpc', () => {
   let peerIds
   let tdht
+  let rpc
+  let dht
 
   before(async () => {
     peerIds = await createPeerId(2)
     tdht = new TestDHT()
   })
 
-  after(() => tdht.teardown())
+  beforeEach(async () => {
+    const dhts = await tdht.spawn(1)
+    dht = dhts[0]
+
+    rpc = new RPC({
+      routingTable: dht._lan._routingTable,
+      peerId: dht._libp2p.peerId,
+      providers: dht._lan._providers,
+      peerStore: dht._libp2p.peerStore,
+      addressable: dht._libp2p,
+      peerRouting: dht._lan._peerRouting,
+      datastore: dht._lan._datastore,
+      validators: dht._lan._validators
+    })
+  })
+
+  afterEach(() => tdht.teardown())
 
   it('calls back with the response', async () => {
     const defer = pDefer()
-    const [dht] = await tdht.spawn(1)
-
     const msg = new Message(Message.TYPES.GET_VALUE, uint8ArrayFromString('hello'), 5)
 
     const validateMessage = (res) => {
@@ -57,7 +73,7 @@ describe('rpc', () => {
       }
     }
 
-    rpc(dht)({
+    rpc.onIncomingStream({
       protocol: 'protocol',
       stream: duplexStream,
       connection: {

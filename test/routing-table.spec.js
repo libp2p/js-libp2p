@@ -6,7 +6,7 @@ const PeerId = require('peer-id')
 const random = require('lodash.random')
 const sinon = require('sinon')
 
-const RoutingTable = require('../src/routing-table')
+const { RoutingTable } = require('../src/routing-table')
 const kadUtils = require('../src/utils')
 const createPeerId = require('./utils/create-peer-id')
 const { PROTOCOL_DHT } = require('../src/constants')
@@ -17,16 +17,14 @@ describe('Routing Table', () => {
   beforeEach(async function () {
     this.timeout(20 * 1000)
 
-    const dht = {
+    const lipbp2p = {
       peerId: await PeerId.create({ bits: 512 }),
-      libp2p: {
-        dialProtocol: sinon.stub()
-      }
+      dialProtocol: sinon.stub()
     }
 
-    table = new RoutingTable(dht, {
-      kBucketSize: 20,
-      refreshInterval: 30000
+    table = new RoutingTable({
+      peerId: lipbp2p.peerId,
+      dialer: lipbp2p
     })
   })
 
@@ -115,13 +113,13 @@ describe('Routing Table', () => {
     table.kb.add(oldPeer)
 
     // simulate connection succeeding
-    table.dht.libp2p.dialProtocol.withArgs(oldPeer.peer, PROTOCOL_DHT).resolves({ close: sinon.stub() })
+    table._dialer.dialProtocol.withArgs(oldPeer.peer, PROTOCOL_DHT).resolves({ stream: { close: sinon.stub() } })
 
     // perform the ping
     await fn()
 
-    expect(table.dht.libp2p.dialProtocol.callCount).to.equal(1)
-    expect(table.dht.libp2p.dialProtocol.calledWith(oldPeer.peer)).to.be.true()
+    expect(table._dialer.dialProtocol.callCount).to.equal(1)
+    expect(table._dialer.dialProtocol.calledWith(oldPeer.peer)).to.be.true()
 
     // did not add the new peer
     expect(table.kb.get(newPeer.id)).to.be.null()
@@ -160,13 +158,13 @@ describe('Routing Table', () => {
     table.kb.add(oldPeer)
 
     // libp2p fails to dial the old peer
-    table.dht.libp2p.dialProtocol = sinon.stub().withArgs(oldPeer.peer, PROTOCOL_DHT).rejects(new Error('Could not dial peer'))
+    table._dialer.dialProtocol = sinon.stub().withArgs(oldPeer.peer, PROTOCOL_DHT).rejects(new Error('Could not dial peer'))
 
     // perform the ping
     await fn()
 
-    expect(table.dht.libp2p.dialProtocol.callCount).to.equal(1)
-    expect(table.dht.libp2p.dialProtocol.calledWith(oldPeer.peer)).to.be.true()
+    expect(table._dialer.dialProtocol.callCount).to.equal(1)
+    expect(table._dialer.dialProtocol.calledWith(oldPeer.peer)).to.be.true()
 
     // added the new peer
     expect(table.kb.get(newPeer.id)).to.not.be.null()

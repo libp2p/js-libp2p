@@ -7,8 +7,8 @@ const { Record } = require('libp2p-record')
 const delay = require('delay')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
-const Message = require('../../../src/message')
-const handler = require('../../../src/rpc/handlers/put-value')
+const { Message } = require('../../../src/message')
+const { PutValueHandler } = require('../../../src/rpc/handlers/put-value')
 const utils = require('../../../src/utils')
 
 const createPeerId = require('../../utils/create-peer-id')
@@ -20,6 +20,7 @@ describe('rpc - handlers - PutValue', () => {
   let peerIds
   let tdht
   let dht
+  let handler
 
   before(async () => {
     peerIds = await createPeerId(2)
@@ -30,6 +31,11 @@ describe('rpc - handlers - PutValue', () => {
 
     const dhts = await tdht.spawn(1)
     dht = dhts[0]
+
+    handler = new PutValueHandler({
+      validators: dht._lan._validators,
+      datastore: dht._datastore
+    })
   })
 
   afterEach(() => tdht.teardown())
@@ -38,7 +44,7 @@ describe('rpc - handlers - PutValue', () => {
     const msg = new Message(T, uint8ArrayFromString('hello'), 5)
 
     try {
-      await handler(dht)(peerIds[0], msg)
+      await handler.handle(peerIds[0], msg)
     } catch (/** @type {any} */ err) {
       expect(err.code).to.eql('ERR_EMPTY_RECORD')
       return
@@ -55,19 +61,11 @@ describe('rpc - handlers - PutValue', () => {
     )
     msg.record = record
 
-    let eventResponse
-    dht.onPut = (record, peerId) => {
-      eventResponse = { record, peerId }
-    }
-
-    const response = await handler(dht)(peerIds[1], msg)
+    const response = await handler.handle(peerIds[1], msg)
     expect(response).to.be.eql(msg)
 
-    expect(eventResponse).to.have.property('record').eql(record)
-    expect(eventResponse).to.have.property('peerId').eql(peerIds[1])
-
     const key = utils.bufferToKey(uint8ArrayFromString('hello'))
-    const res = await dht.datastore.get(key)
+    const res = await dht._datastore.get(key)
 
     const rec = Record.deserialize(res)
 

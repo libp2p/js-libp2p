@@ -1,49 +1,69 @@
 'use strict'
 
-const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
-
-const Message = require('../../message')
+const { Message } = require('../../message')
 const utils = require('../../utils')
+const log = utils.logger('libp2p:kad-dht:rpc:handlers:find-node')
+const {
+  removePrivateAddresses,
+  removePublicAddresses
+} = require('../../utils')
 
 /**
  * @typedef {import('peer-id')} PeerId
+ * @typedef {import('../types').DHTMessageHandler} DHTMessageHandler
  */
 
 /**
- * @param {import('../../index')} dht
+ * @implements {DHTMessageHandler}
  */
-module.exports = (dht) => {
-  const log = utils.logger(dht.peerId, 'rpc:find-node')
+class FindNodeHandler {
+  /**
+   * @param {object} params
+   * @param {PeerId} params.peerId
+   * @param {import('../../types').Addressable} params.addressable
+   * @param {import('../../peer-routing').PeerRouting} params.peerRouting
+   * @param {boolean} [params.lan]
+   */
+  constructor ({ peerId, addressable, peerRouting, lan }) {
+    this._peerId = peerId
+    this._addressable = addressable
+    this._peerRouting = peerRouting
+    this._lan = Boolean(lan)
+  }
 
   /**
-   * Process `FindNode` DHT messages.
+   * Process `FindNode` DHT messages
    *
    * @param {PeerId} peerId
    * @param {Message} msg
    */
-  async function findNode (peerId, msg) {
-    log('start')
+  async handle (peerId, msg) {
+    log('incoming request from %p for peers closer to %b', peerId, msg.key)
 
     let closer
-    if (uint8ArrayEquals(msg.key, dht.peerId.id)) {
+    if (this._peerId.equals(msg.key)) {
       closer = [{
-        id: dht.peerId,
-        multiaddrs: dht.libp2p.multiaddrs
+        id: this._peerId,
+        multiaddrs: this._addressable.multiaddrs
       }]
     } else {
-      closer = await dht._betterPeersToQuery(msg, peerId)
+      closer = await this._peerRouting.getCloserPeersOffline(msg.key, peerId)
     }
+
+    closer = closer
+      .map(this._lan ? removePublicAddresses : removePrivateAddresses)
+      .filter(({ multiaddrs }) => multiaddrs.length)
 
     const response = new Message(msg.type, new Uint8Array(0), msg.clusterLevel)
 
     if (closer.length > 0) {
       response.closerPeers = closer
     } else {
-      log('handle FindNode %s: could not find anything', peerId.toB58String())
+      log('could not find any peers closer to %p', peerId)
     }
 
     return response
   }
-
-  return findNode
 }
+
+module.exports.FindNodeHandler = FindNodeHandler

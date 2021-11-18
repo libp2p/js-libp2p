@@ -4,10 +4,7 @@ const PeerStore = require('libp2p/src/peer-store')
 const pRetry = require('p-retry')
 const delay = require('delay')
 const { Multiaddr } = require('multiaddr')
-
-const KadDHT = require('../../src')
-const { PROTOCOL_DHT } = require('../../src/constants')
-
+const { create } = require('../../src')
 const createPeerId = require('./create-peer-id')
 const {
   createMockRegistrar,
@@ -37,52 +34,64 @@ class TestDHT {
       ...options
     }
 
-    const connectToPeer = (localDHT, peer) => {
-      const remotePeerB58 = peer.toB58String()
+    const connectToPeer = async (localDHT, peer, protocol) => {
       const remoteDht = this.nodes.find(
-        (node) => node.peerId.toB58String() === remotePeerB58
+        (node) => node._libp2p.peerId.equals(peer)
       )
 
-      const localOnConnect = regRecord[options.protocolPrefix + PROTOCOL_DHT].onConnect
-      const remoteOnConnect = remoteDht.regRecord[options.protocolPrefix + PROTOCOL_DHT].onConnect
+      if (remoteDht._clientMode) {
+        throw new Error('Cannot connect to remote DHT client')
+      }
 
-      const remoteHandler = remoteDht.regRecord[options.protocolPrefix + PROTOCOL_DHT].handler
+      const localOnConnect = regRecord[protocol].onConnect
+      const remoteOnConnect = remoteDht.regRecord[protocol].onConnect
+      const remoteHandler = remoteDht.regRecord[protocol].handler
 
       // Notice peers of connection
       const [c0, c1] = ConnectionPair()
 
-      return {
-        newStream: async () => {
-          if (remoteDht._clientMode) {
-            throw new Error('unsupported protocol')
-          }
+      // Trigger on connect for servers connecting
+      await localOnConnect(remoteDht._libp2p.peerId, c1)
 
-          // Trigger on connect for servers connecting
-          if (!remoteDht._clientMode) await localOnConnect(remoteDht.peerId, c1)
-          if (!localDHT._clientMode) await remoteOnConnect(peerId, c0)
-
-          await remoteHandler({
-            protocol: options.protocolPrefix + PROTOCOL_DHT,
-            stream: c0.stream,
-            connection: {
-              remotePeer: peerId
-            }
-          })
-          return { stream: c1.stream }
-        }
+      if (!localDHT._clientMode) {
+        await remoteOnConnect(peerId, c0)
       }
+
+      await remoteHandler({
+        protocol: protocol,
+        stream: c0.stream,
+        connection: {
+          remotePeer: peerId
+        }
+      })
+
+      return { stream: c1.stream }
     }
 
-    const dht = new KadDHT({
+    const registrar = createMockRegistrar(regRecord)
+
+    const dht = create({
       libp2p: {
-        multiaddrs: [new Multiaddr('/ip4/0.0.0.0/tcp/4002')]
+        peerId,
+        multiaddrs: [
+          new Multiaddr('/ip4/127.0.0.1/tcp/4002'),
+          new Multiaddr('/ip4/192.168.1.1/tcp/4002'),
+          new Multiaddr('/ip4/85.3.31.0/tcp/4002')
+        ],
+        peerStore,
+        dialProtocol: (peer, protocol, options) => connectToPeer(dht, peer, protocol, options),
+        registrar,
+        handle: (protocol, fn) => {
+          registrar.handle(protocol, fn)
+        },
+        unhandle: (protocol) => {
+          registrar.unhandle(protocol)
+        },
+        on: () => {},
+        connectionManager: {
+          on: () => {}
+        }
       },
-      dialer: {
-        connectToPeer: (peer) => connectToPeer(dht, peer)
-      },
-      registrar: createMockRegistrar(regRecord),
-      peerStore,
-      peerId: peerId,
       validators: {
         v: {
           func () {
@@ -103,29 +112,38 @@ class TestDHT {
       ...options
     })
 
+    // simulate libp2p._onDiscoveryPeer
+    dht.on('peer', (peerData) => {
+      if (peerData.id.toB58String() === peerId.toB58String()) {
+        return
+      }
+
+      peerData.multiaddrs && peerStore.addressBook.add(peerData.id, peerData.multiaddrs)
+      peerData.protocols && peerStore.protoBook.set(peerData.id, peerData.protocols)
+    })
+
     if (autoStart) {
       dht.start()
     }
 
     dht.regRecord = regRecord
     this.nodes.push(dht)
+
     return dht
   }
 
   async connect (dhtA, dhtB) {
-    const onConnectA = dhtA.regRecord[dhtA.protocol].onConnect
-    const onConnectB = dhtB.regRecord[dhtB.protocol].onConnect
-
+    const onConnectA = dhtA.regRecord[dhtA._lan._protocol].onConnect
+    const onConnectB = dhtB.regRecord[dhtB._lan._protocol].onConnect
     const [c0, c1] = ConnectionPair()
-
     const routingTableChecks = []
 
     // Notice peers of connection
     if (!dhtB._clientMode) {
       // B is a server, trigger connect events on A
-      await onConnectA(dhtB.peerId, c0)
+      await onConnectA(dhtB._libp2p.peerId, c0)
       routingTableChecks.push(async () => {
-        const match = await dhtA.routingTable.find(dhtB.peerId)
+        const match = await dhtA._lan._routingTable.find(dhtB._libp2p.peerId)
 
         if (!match) {
           await delay(100)
@@ -135,11 +153,12 @@ class TestDHT {
         return match
       })
     }
+
     if (!dhtA._clientMode) {
       // A is a server, trigger connect events on B
-      await onConnectB(dhtA.peerId, c1)
+      await onConnectB(dhtA._libp2p.peerId, c1)
       routingTableChecks.push(async () => {
-        const match = await dhtB.routingTable.find(dhtA.peerId)
+        const match = await dhtB._lan._routingTable.find(dhtA._libp2p.peerId)
 
         if (!match) {
           await delay(100)
@@ -151,8 +170,8 @@ class TestDHT {
     }
 
     // Libp2p dial adds multiaddrs to the addressBook
-    dhtA.peerStore.addressBook.add(dhtB.peerId, dhtB.libp2p.multiaddrs)
-    dhtB.peerStore.addressBook.add(dhtA.peerId, dhtA.libp2p.multiaddrs)
+    dhtA._libp2p.peerStore.addressBook.add(dhtB._libp2p.peerId, dhtB._libp2p.multiaddrs)
+    dhtB._libp2p.peerStore.addressBook.add(dhtA._libp2p.peerId, dhtA._libp2p.multiaddrs)
 
     // Check routing tables
     return Promise.all(routingTableChecks.map(check => {

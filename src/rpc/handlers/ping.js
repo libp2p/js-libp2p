@@ -1,28 +1,28 @@
 'use strict'
 
 const utils = require('../../utils')
+const log = utils.logger('libp2p:kad-dht:rpc:handlers:ping')
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('../../message')} Message
+ * @typedef {import('../../message').Message} Message
+ * @typedef {import('../types').DHTMessageHandler} DHTMessageHandler
  */
 
 /**
- * @param {import('../../index')} dht
+ * @implements {DHTMessageHandler}
  */
-module.exports = (dht) => {
-  const log = utils.logger(dht.peerId, 'rpc:ping')
-
+class PingHandler {
   /**
    * Process `Ping` DHT messages.
    *
    * @param {PeerId} peerId
    * @param {Message} msg
    */
-  function ping (peerId, msg) {
-    log('from %s', peerId.toB58String())
+  async handle (peerId, msg) {
+    log(`ping from ${peerId}`)
     return msg
   }
-
-  return ping
 }
+
+module.exports.PingHandler = PingHandler
