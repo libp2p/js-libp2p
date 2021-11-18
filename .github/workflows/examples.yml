@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 16
     - run: npm install
     - run: npx aegir lint
     - run: npx aegir ts -p check
@@ -21,6 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- auto-relay
   test-chat-example:
@@ -28,6 +34,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- chat
   test-connection-encryption-example:
@@ -35,6 +44,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- connection-encryption
   test-discovery-mechanisms-example:
@@ -42,6 +54,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- discovery-mechanisms
   test-echo-example:
@@ -49,6 +64,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- echo
   test-libp2p-in-the-browser-example:
@@ -56,6 +74,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- libp2p-in-the-browser
   test-peer-and-content-routing-example:
@@ -63,6 +84,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+            node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- peer-and-content-routing
   test-pnet-example:
@@ -70,6 +94,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+            node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- pnet
   test-protocol-and-stream-muxing-example:
@@ -77,6 +104,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+            node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- protocol-and-stream-muxing
   test-pubsub-example:
@@ -84,6 +114,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+            node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- pubsub
   test-transports-example:
@@ -91,6 +124,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+            node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- transports
   test-webrtc-direct-example:
@@ -98,5 +134,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+            node-version: 16
       - run: npm install
       - run: cd examples && npm i && npm run test -- webrtc-direct
