@@ -1,3 +1,17 @@
+# [0.26.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.25.0...v0.26.0) (2021-11-18)
+
+
+### Bug Fixes
+
+* refactor query logic ([#237](https://github.com/libp2p/js-libp2p-kad-dht/issues/237)) ([1f8bc6a](https://github.com/libp2p/js-libp2p-kad-dht/commit/1f8bc6a23d3db592606c789648f13199078e176c))
+
+
+### Features
+
+* ping old DHT peers before eviction ([#229](https://github.com/libp2p/js-libp2p-kad-dht/issues/229)) ([eff54bf](https://github.com/libp2p/js-libp2p-kad-dht/commit/eff54bf0c40f03dcff03d139d0bb275e2af175b0))
+
+
+
 # [0.25.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.24.0...v0.25.0) (2021-09-24)
 
 
