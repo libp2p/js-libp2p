@@ -83,7 +83,7 @@ class AddressBook extends Book {
     let peerRecord
     try {
       peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error('invalid peer record received')
       return false
     }

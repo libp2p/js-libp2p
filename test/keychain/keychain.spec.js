@@ -519,7 +519,7 @@ describe('keychain', () => {
     it('should validate newPass is a string', async () => {
       try {
         await kc.rotateKeychainPass(oldPass, 1234567890)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
       }
     })
@@ -527,7 +527,7 @@ describe('keychain', () => {
     it('should validate oldPass is a string', async () => {
       try {
         await kc.rotateKeychainPass(1234, 'newInsecurePassword1')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
       }
     })
@@ -535,7 +535,7 @@ describe('keychain', () => {
     it('should validate newPass is at least 20 characters', async () => {
       try {
         await kc.rotateKeychainPass(oldPass, 'not20Chars')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
       }
     })
@@ -586,7 +586,7 @@ describe('libp2p.keychain', () => {
 
     try {
       await libp2p.keychain.createKey('keyName', 'rsa', 2048)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err).to.exist()
       return
     }

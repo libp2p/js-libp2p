@@ -248,7 +248,7 @@ class Keychain {
       batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
 
       await batch.commit()
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       return throwDelayed(err)
     }
 
@@ -284,7 +284,7 @@ class Keychain {
     try {
       const keys = await this.listKeys()
       return keys.find((k) => k.id === id)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       return throwDelayed(err)
     }
   }
@@ -304,7 +304,7 @@ class Keychain {
     try {
       const res = await this.store.get(dsname)
       return JSON.parse(uint8ArrayToString(res))
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
     }
   }
@@ -365,7 +365,7 @@ class Keychain {
       batch.delete(oldInfoName)
       await batch.commit()
       return keyInfo
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       return throwDelayed(err)
     }
   }
@@ -393,7 +393,7 @@ class Keychain {
       const dek = privates.get(this).dek
       const privateKey = await crypto.keys.import(pem, dek)
       return privateKey.export(password)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       return throwDelayed(err)
     }
   }
@@ -421,7 +421,7 @@ class Keychain {
     let privateKey
     try {
       privateKey = await crypto.keys.import(pem, password)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       return throwDelayed(errcode(new Error('Cannot read the key, most likely the password is wrong'), 'ERR_CANNOT_READ_KEY'))
     }
 
@@ -431,7 +431,7 @@ class Keychain {
       /** @type {string} */
       const dek = privates.get(this).dek
       pem = await privateKey.export(dek)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       return throwDelayed(err)
     }
 
@@ -482,7 +482,7 @@ class Keychain {
       batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
       await batch.commit()
       return keyInfo
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       return throwDelayed(err)
     }
   }
@@ -502,7 +502,7 @@ class Keychain {
       const dsname = DsName(name)
       const res = await this.store.get(dsname)
       return uint8ArrayToString(res)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
     }
   }

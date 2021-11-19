@@ -304,7 +304,7 @@ describe('Dialing (direct, WebSockets)', () => {
       dialer.destroy()
       await dialPromise
       expect.fail('should have failed')
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err).to.be.an.instanceof(AggregateError)
       expect(dialer._pendingDials.size).to.equal(0) // 1 dial request
     }

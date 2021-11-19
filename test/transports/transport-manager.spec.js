@@ -201,7 +201,7 @@ describe('libp2p.transportManager (dial only)', () => {
 
     try {
       await libp2p.start()
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err).to.exist()
       expect(err.code).to.equal(ErrorCodes.ERR_NO_VALID_ADDRESSES)
       return

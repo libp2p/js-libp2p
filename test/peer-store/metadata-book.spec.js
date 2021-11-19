@@ -34,7 +34,7 @@ describe('metadataBook', () => {
     it('throws invalid parameters error if invalid PeerId is provided', () => {
       try {
         mb.set('invalid peerId')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -44,7 +44,7 @@ describe('metadataBook', () => {
     it('throws invalid parameters error if no key provided', () => {
       try {
         mb.set(peerId)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -54,7 +54,7 @@ describe('metadataBook', () => {
     it('throws invalid parameters error if no value provided', () => {
       try {
         mb.set(peerId, 'location')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -64,7 +64,7 @@ describe('metadataBook', () => {
     it('throws invalid parameters error if value is not a buffer', () => {
       try {
         mb.set(peerId, 'location', 'mars')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -163,7 +163,7 @@ describe('metadataBook', () => {
     it('throws invalid parameters error if invalid PeerId is provided', () => {
       try {
         mb.get('invalid peerId')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -199,7 +199,7 @@ describe('metadataBook', () => {
     it('throws invalid parameters error if invalid PeerId is provided', () => {
       try {
         mb.getValue('invalid peerId')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -248,7 +248,7 @@ describe('metadataBook', () => {
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
       try {
         mb.delete('invalid peerId')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -305,7 +305,7 @@ describe('metadataBook', () => {
     it('throws invalid parameters error if invalid PeerId is provided', () => {
       try {
         mb.deleteValue('invalid peerId')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }

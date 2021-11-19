@@ -55,7 +55,7 @@ async function encrypt (localId, conn, remoteId) {
   let peerId
   try {
     peerId = await PeerId.createFromPubKey(id.pubkey.Data)
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     log.error(err)
     throw new InvalidCryptoExchangeError('Remote did not provide its public key')
   }

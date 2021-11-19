@@ -79,7 +79,7 @@ class PeerRouting {
     try {
       // nb getClosestPeers adds the addresses to the address book
       await drain(this.getClosestPeers(this._peerId.id))
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error(err)
     }
   }

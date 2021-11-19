@@ -350,7 +350,7 @@ class ConnectionManager extends EventEmitter {
           if (!this._started) {
             return
           }
-        } catch (err) {
+        } catch (/** @type {any} */ err) {
           log.error('could not connect to peerStore stored peer', err)
         }
       }

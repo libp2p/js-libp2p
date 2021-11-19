@@ -32,7 +32,7 @@ function getPeer (peer) {
 
     try {
       peer = PeerId.createFromB58String(idStr)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       throw errCode(
         new Error(`${peer} is not a valid peer type`),
         codes.ERR_INVALID_MULTIADDR
