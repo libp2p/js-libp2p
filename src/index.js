@@ -619,7 +619,7 @@ class Libp2p extends EventEmitter {
 
     // DHT subsystem
     if (this._config.dht.enabled) {
-      this._dht && this._dht.start()
+      this._dht && await this._dht.start()
 
       // TODO: this should be modified once random-walk is used as
       // the other discovery modules
