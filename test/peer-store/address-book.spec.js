@@ -45,7 +45,7 @@ describe('addressBook', () => {
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
       try {
         ab.set('invalid peerId')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -55,7 +55,7 @@ describe('addressBook', () => {
     it('throwns invalid parameters error if no addresses provided', () => {
       try {
         ab.set(peerId)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -65,7 +65,7 @@ describe('addressBook', () => {
     it('throwns invalid parameters error if invalid multiaddrs are provided', () => {
       try {
         ab.set(peerId, ['invalid multiaddr'])
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -159,7 +159,7 @@ describe('addressBook', () => {
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
       try {
         ab.add('invalid peerId')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -169,7 +169,7 @@ describe('addressBook', () => {
     it('throwns invalid parameters error if no addresses provided', () => {
       try {
         ab.add(peerId)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -179,7 +179,7 @@ describe('addressBook', () => {
     it('throwns invalid parameters error if invalid multiaddrs are provided', () => {
       try {
         ab.add(peerId, ['invalid multiaddr'])
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -308,7 +308,7 @@ describe('addressBook', () => {
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
       try {
         ab.get('invalid peerId')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -343,7 +343,7 @@ describe('addressBook', () => {
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
       try {
         ab.getMultiaddrsForPeer('invalid peerId')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
@@ -391,7 +391,7 @@ describe('addressBook', () => {
     it('throwns invalid parameters error if invalid PeerId is provided', () => {
       try {
         ab.delete('invalid peerId')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }

@@ -81,7 +81,7 @@ function print ({ stream }) {
   // node 3 (listening WebSockets) can dial node 1 (TCP)
   try {
     await node3.dialProtocol(node1.peerId, '/print')
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     console.log('node 3 failed to dial to node 1 with:', err.message)
   }
 })();

@@ -116,7 +116,7 @@ class AutoRelay {
         this._peerStore.metadataBook.set(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
         await this._addListenRelay(connection, id)
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this._onError(err)
     }
   }
@@ -169,7 +169,7 @@ class AutoRelay {
     try {
       await this._transportManager.listen([new Multiaddr(listenAddr)])
       // Announce multiaddrs will update on listen success by TransportManager event being triggered
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this._onError(err)
       this._listenRelays.delete(id)
     }
@@ -267,7 +267,7 @@ class AutoRelay {
           return
         }
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this._onError(err)
     }
   }
@@ -279,7 +279,7 @@ class AutoRelay {
     try {
       const connection = await this._libp2p.dial(peerId)
       await this._addListenRelay(connection, peerId.toB58String())
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this._onError(err, `could not connect and listen on known hop relay ${peerId.toB58String()}`)
     }
   }

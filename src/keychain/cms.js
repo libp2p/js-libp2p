@@ -90,7 +90,7 @@ class CMS {
       const obj = forge.asn1.fromDer(buf)
       // @ts-ignore not defined
       cms = forge.pkcs7.messageFromAsn1(obj)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       throw errcode(new Error('Invalid CMS: ' + err.message), 'ERR_INVALID_CMS')
     }
 
@@ -114,7 +114,7 @@ class CMS {
       try {
         const key = await this.keychain.findKeyById(recipient.keyId)
         if (key) return true
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         return false
       }
       return false

@@ -108,7 +108,7 @@ function createConnection ({
         // Need to be able to notify a peer of this this._onStream({ connection, stream, protocol })
         const handler = protocols.get(protocol)
         handler({ connection, stream, protocol })
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         // Do nothing
       }
     },
@@ -124,7 +124,7 @@ function createConnection ({
     try {
       const { stream, protocol } = await mss.select(protocols)
       return { stream: { ...muxedStream, ...stream }, protocol }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
     }
   }

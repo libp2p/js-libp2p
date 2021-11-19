@@ -34,7 +34,7 @@ describe('content-routing', () => {
       try {
         for await (const _ of node.contentRouting.findProviders('a cid')) {} // eslint-disable-line
         throw new Error('.findProviders should return an error')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
         expect(err.code).to.equal('NO_ROUTERS_AVAILABLE')
       }
@@ -238,7 +238,7 @@ describe('content-routing', () => {
       try {
         for await (const _ of node.contentRouting.findProviders(cid)) { } // eslint-disable-line
         throw new Error('should handle errors when finding providers')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
       }
 

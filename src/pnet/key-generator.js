@@ -28,6 +28,6 @@ try {
     // @ts-ignore
     generate(process.stdout)
   }
-} catch (error) {
+} catch (/** @type {any} */ error) {
 
 }

@@ -249,7 +249,7 @@ class PersistentPeerStore extends PeerStore {
       }).finish()
 
       batch.put(key, encodedData)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error(err)
     }
   }
@@ -275,7 +275,7 @@ class PersistentPeerStore extends PeerStore {
       const encodedData = peerId.marshalPubKey()
 
       batch.put(key, encodedData)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error(err)
     }
   }
@@ -302,7 +302,7 @@ class PersistentPeerStore extends PeerStore {
           batch.delete(key)
         }
       })
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error(err)
     }
   }
@@ -330,7 +330,7 @@ class PersistentPeerStore extends PeerStore {
       const encodedData = Protocols.encode({ protocols }).finish()
 
       batch.put(key, encodedData)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error(err)
     }
   }
@@ -399,7 +399,7 @@ class PersistentPeerStore extends PeerStore {
         default:
           log('invalid data persisted for: ', key.toString())
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error(err)
     }
   }

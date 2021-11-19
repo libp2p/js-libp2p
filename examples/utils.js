@@ -9,7 +9,7 @@ async function isExecutable (command) {
     await fs.access(command, fs.constants.X_OK)
 
     return true
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     if (err.code === 'ENOENT') {
       return isExecutable(await which(command))
     }
@@ -49,7 +49,7 @@ async function waitForOutput (expectedOutput, command, args = [], opts = {}) {
 
   try {
     await proc
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     if (!err.killed) {
       throw err
     }

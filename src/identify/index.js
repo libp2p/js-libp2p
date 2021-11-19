@@ -124,7 +124,7 @@ class IdentifyService {
           stream,
           consume
         )
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         // Just log errors
         log.error('could not push identify update to peer', err)
       }
@@ -182,7 +182,7 @@ class IdentifyService {
     let message
     try {
       message = Message.Identify.decode(data)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       throw errCode(err, codes.ERR_INVALID_MESSAGE)
     }
 
@@ -211,14 +211,14 @@ class IdentifyService {
         this.peerStore.metadataBook.set(id, 'ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
         return
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log('received invalid envelope, discard it and fallback to listenAddrs is available', err)
     }
 
     // LEGACY: Update peers data in PeerStore
     try {
       this.peerStore.addressBook.set(id, listenAddrs.map((addr) => new Multiaddr(addr)))
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error('received invalid addrs', err)
     }
 
@@ -287,7 +287,7 @@ class IdentifyService {
         stream,
         consume
       )
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error('could not respond to identify request', err)
     }
   }
@@ -313,7 +313,7 @@ class IdentifyService {
         collect
       )
       message = Message.Identify.decode(data)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       return log.error('received invalid message', err)
     }
 
@@ -325,7 +325,7 @@ class IdentifyService {
         this.peerStore.protoBook.set(id, message.protocols)
         return
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log('received invalid envelope, discard it and fallback to listenAddrs is available', err)
     }
 
@@ -333,7 +333,7 @@ class IdentifyService {
     try {
       this.peerStore.addressBook.set(id,
         message.listenAddrs.map((addr) => new Multiaddr(addr)))
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error('received invalid addrs', err)
     }
 
