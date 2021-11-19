@@ -245,7 +245,7 @@ await pipe(
 // node 3 (WebSockets) attempts to dial to node 1 (TCP)
 try {
   await node3.dialProtocol(node1.peerId, '/print')
-} catch (/** @type {any} */ err) {
+} catch (err) {
   console.log('node 3 failed to dial to node 1 with:', err.message)
 }
 ```
