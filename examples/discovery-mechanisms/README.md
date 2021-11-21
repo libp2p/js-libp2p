@@ -55,7 +55,7 @@ const node = await Libp2p.create({
   peerId,
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
-  }
+  },
   modules: {
     transport: [ TCP ],
     streamMuxer: [ Mplex ],
@@ -117,7 +117,7 @@ const createNode = () => {
   return Libp2p.create({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
-    }
+    },
     modules: {
       transport: [ TCP ],
       streamMuxer: [ Mplex ],
@@ -144,8 +144,13 @@ const [node1, node2] = await Promise.all([
   createNode()
 ])
 
-node1.on('peer:discovery', (peer) => console.log('Discovered:', peer.id.toB58String()))
-node2.on('peer:discovery', (peer) => console.log('Discovered:', peer.id.toB58String()))
+node1.on('peer:discovery', (peer) => console.log('Discovered:', peerId.toB58String()))
+node2.on('peer:discovery', (peer) => console.log('Discovered:', peerId.toB58String()))
+
+await Promise.all([
+  node1.start(),
+  node2.start()
+])
 ```
 
 If you run this example, you will see the other peers being discovered.
