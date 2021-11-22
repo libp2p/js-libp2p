@@ -29,7 +29,7 @@
   - [Peer Routing](#peer-routing)
   - [Content Routing](#content-routing)
   - [Peer Discovery](#peer-discovery)
-  - [Implementation Summary](#implementation-summary)
+- [Spec](#spec)
 - [Contribute](#contribute)
 - [License](#license)
 ## Install
@@ -84,9 +84,9 @@ Note that you may want to supply your own peer discovery function and datastore
 
 [![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/peer-discovery/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interfaces/src/peer-discovery)
 
-### Implementation Summary
+## Spec
 
-A [summary](docs/IMPL_SUMMARY.MD) of the algorithms and API for this implementation of Kademlia.
+js-libp2p-kad-dht follows the [libp2p/kad-dht spec](https://github.com/libp2p/specs/tree/master/kad-dht) and implements the algorithms described in the [IPFS DHT documentation](https://docs.ipfs.io/concepts/dht/).
 
 ## Contribute
 

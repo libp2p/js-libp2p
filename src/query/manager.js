@@ -7,7 +7,7 @@ const {
 } = require('../constants')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const { logger } = require('../utils')
-const { disjointPathQuery } = require('./disjoint-path')
+const { queryPath } = require('./query-path')
 const merge = require('it-merge')
 const {
   EventEmitter,
@@ -106,17 +106,12 @@ class QueryManager {
         return
       }
 
-      // The paths must be disjoint, meaning that no two paths in the query may
-      // traverse the same peer
-      const peersSeen = new Set()
-
-      // Create disjoint paths
+      // Create query paths from the starting peers
       const paths = peersToQuery.map((peer, index) => {
-        return disjointPathQuery({
+        return queryPath({
           key,
           startingPeer: peer,
           ourPeerId: this._peerId,
-          peersSeen,
           signal,
           query: queryFunc,
           pathIndex: index,
@@ -128,24 +123,14 @@ class QueryManager {
         })
       })
 
-      /** @type {Error[]} */
-      const errors = []
-
       // Execute the query along each disjoint path and yield their results as they become available
       for await (const event of merge(...paths)) {
-        if (!event) {
-          continue
-        }
-
         yield event
 
         if (event.name === 'QUERY_ERROR' && event.error) {
           log('error', event.error)
-          errors.push(event.error)
         }
       }
-
-      log(`${errors.length} of ${peersSeen.size} peers errored (${errors.length / peersSeen.size * 100}% fail rate)`)
     } catch (/** @type {any} */ err) {
       if (!this._running && err.code === 'ERR_QUERY_ABORTED') {
         // ignore query aborted errors that were thrown during query manager shutdown

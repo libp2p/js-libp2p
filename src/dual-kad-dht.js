@@ -2,10 +2,10 @@
 
 const { EventEmitter } = require('events')
 const PeerId = require('peer-id')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const utils = require('./utils')
 const errCode = require('err-code')
 const merge = require('it-merge')
+const { queryErrorEvent } = require('./query/events')
 
 const log = utils.logger('libp2p:kad-dht')
 
@@ -57,7 +57,6 @@ class DualKadDHT extends EventEmitter {
     this._wan = wan
     this._lan = lan
     this._libp2p = libp2p
-    this._datastore = libp2p.datastore || this._wan._datastore
 
     // handle peers being discovered during processing of DHT messages
     this._wan.on('peer', (peerData) => {
@@ -159,6 +158,7 @@ class DualKadDHT extends EventEmitter {
    */
   async * get (key, options = {}) { // eslint-disable-line require-await
     let queriedPeers = false
+    let foundValue = false
 
     for await (const event of merge(
       this._lan.get(key, options),
@@ -172,6 +172,10 @@ class DualKadDHT extends EventEmitter {
 
       if (event.name === 'VALUE') {
         queriedPeers = true
+
+        if (event.value != null) {
+          foundValue = true
+        }
       }
 
       if (event.name === 'SENDING_QUERY') {
@@ -182,24 +186,12 @@ class DualKadDHT extends EventEmitter {
     if (!queriedPeers) {
       throw errCode(new Error('No peers found in routing table!'), 'ERR_NO_PEERS_IN_ROUTING_TABLE')
     }
-  }
 
-  /**
-   * Remove the given key from the local datastore
-   *
-   * @param {Uint8Array} key
-   */
-  async removeLocal (key) {
-    log(`removeLocal: ${uint8ArrayToString(key, 'base32')}`)
-    const dsKey = utils.bufferToKey(key)
-
-    try {
-      await this._datastore.delete(dsKey)
-    } catch (/** @type {any} */ err) {
-      if (err.code === 'ERR_NOT_FOUND') {
-        return undefined
-      }
-      throw err
+    if (!foundValue) {
+      yield queryErrorEvent({
+        from: this._libp2p.peerId,
+        error: errCode(new Error('Not found'), 'ERR_NOT_FOUND')
+      })
     }
   }
 

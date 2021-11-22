@@ -27,7 +27,7 @@ class ContentFetching {
   /**
    * @param {object} params
    * @param {import('peer-id')} params.peerId
-   * @param {import('interface-datastore').Datastore} params.datastore
+   * @param {import('interface-datastore').Datastore} params.records
    * @param {import('libp2p-interfaces/src/types').DhtValidators} params.validators
    * @param {import('libp2p-interfaces/src/types').DhtSelectors} params.selectors
    * @param {import('../peer-routing').PeerRouting} params.peerRouting
@@ -36,10 +36,10 @@ class ContentFetching {
    * @param {import('../network').Network} params.network
    * @param {boolean} params.lan
    */
-  constructor ({ peerId, datastore, validators, selectors, peerRouting, queryManager, routingTable, network, lan }) {
+  constructor ({ peerId, records, validators, selectors, peerRouting, queryManager, routingTable, network, lan }) {
     this._log = utils.logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-fetching`)
     this._peerId = peerId
-    this._datastore = datastore
+    this._records = records
     this._validators = validators
     this._selectors = selectors
     this._peerRouting = peerRouting
@@ -53,7 +53,7 @@ class ContentFetching {
    * @param {Uint8Array} rec
    */
   async putLocal (key, rec) { // eslint-disable-line require-await
-    return this._datastore.put(utils.bufferToKey(key), rec)
+    return this._records.put(utils.bufferToKey(key), rec)
   }
 
   /**
@@ -68,7 +68,7 @@ class ContentFetching {
     const dsKey = utils.bufferToKey(key)
 
     this._log(`fetching record for key ${dsKey}`)
-    const raw = await this._datastore.get(dsKey)
+    const raw = await this._records.get(dsKey)
     this._log(`found ${dsKey} in local datastore`)
 
     const rec = Record.deserialize(raw)
@@ -103,7 +103,7 @@ class ContentFetching {
         try {
           const dsKey = utils.bufferToKey(key)
           this._log(`Storing corrected record for key ${dsKey}`)
-          await this._datastore.put(dsKey, fixupRec)
+          await this._records.put(dsKey, fixupRec)
         } catch (/** @type {any} */ err) {
           this._log.error('Failed error correcting self', err)
         }
@@ -149,7 +149,7 @@ class ContentFetching {
     // store the record locally
     const dsKey = utils.bufferToKey(key)
     this._log(`storing record for key ${dsKey}`)
-    await this._datastore.put(dsKey, record)
+    await this._records.put(dsKey, record)
 
     // put record to the closest peers
     yield * pipe(

@@ -19,14 +19,12 @@ describe('rpc - handlers - FindNode', () => {
   let handler
 
   before(async () => {
+    tdht = new TestDHT()
     peerIds = await createPeerId(3)
   })
 
   beforeEach(async () => {
-    tdht = new TestDHT()
-
-    const dhts = await tdht.spawn(1)
-    dht = dhts[0]
+    [dht] = await tdht.spawn(1)
 
     handler = new FindNodeHandler({
       peerId: dht._libp2p.peerId,

@@ -145,7 +145,6 @@ export interface DHT {
   enableClientMode: () => void
 
   // housekeeping
-  removeLocal: (key: Uint8Array) => Promise<void>
   refreshRoutingTable: () => Promise<void>
 
   // events

@@ -6,6 +6,7 @@ const delay = require('delay')
 const { Multiaddr } = require('multiaddr')
 const { create } = require('../../src')
 const createPeerId = require('./create-peer-id')
+const { MemoryDatastore } = require('datastore-core/memory')
 const {
   createMockRegistrar,
   ConnectionPair
@@ -79,6 +80,7 @@ class TestDHT {
           new Multiaddr('/ip4/85.3.31.0/tcp/4002')
         ],
         peerStore,
+        datastore: new MemoryDatastore(),
         dialProtocol: (peer, protocol, options) => connectToPeer(dht, peer, protocol, options),
         registrar,
         handle: (protocol, fn) => {

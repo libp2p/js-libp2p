@@ -21,17 +21,15 @@ describe('rpc - handlers - AddProvider', () => {
   let handler
 
   before(async () => {
-    [peerIds, values] = await Promise.all([
+    tdht = new TestDHT()
+    ;[peerIds, values] = await Promise.all([
       createPeerId(3),
       createValues(2)
     ])
   })
 
   beforeEach(async () => {
-    tdht = new TestDHT()
-
-    const dhts = await tdht.spawn(1)
-    dht = dhts[0]
+    [dht] = await tdht.spawn(1)
 
     handler = new AddProviderHandler({
       peerId: dht._libp2p.peerId,

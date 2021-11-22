@@ -26,8 +26,7 @@ describe('rpc', () => {
   })
 
   beforeEach(async () => {
-    const dhts = await tdht.spawn(1)
-    dht = dhts[0]
+    [dht] = await tdht.spawn(1)
 
     rpc = new RPC({
       routingTable: dht._lan._routingTable,
@@ -36,7 +35,7 @@ describe('rpc', () => {
       peerStore: dht._libp2p.peerStore,
       addressable: dht._libp2p,
       peerRouting: dht._lan._peerRouting,
-      datastore: dht._lan._datastore,
+      records: dht._lan._contentFetching._records,
       validators: dht._lan._validators
     })
   })

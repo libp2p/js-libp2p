@@ -28,7 +28,9 @@ describe('Providers', () => {
   })
 
   it('simple add and get of providers', async () => {
-    providers = new Providers(new MemoryDatastore(), peers[2])
+    providers = new Providers({
+      providers: new MemoryDatastore()
+    })
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
@@ -43,7 +45,9 @@ describe('Providers', () => {
   })
 
   it('duplicate add of provider is deduped', async () => {
-    providers = new Providers(new MemoryDatastore(), peers[2])
+    providers = new Providers({
+      providers: new MemoryDatastore()
+    })
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
@@ -62,7 +66,10 @@ describe('Providers', () => {
   })
 
   it('more providers than space in the lru cache', async () => {
-    providers = new Providers(new MemoryDatastore(), peers[2], 10)
+    providers = new Providers({
+      providers: new MemoryDatastore(),
+      cacheSize: 10
+    })
 
     const hashes = await Promise.all([...new Array(100)].map((i) => {
       return sha256.digest(uint8ArrayFromString(`hello ${i}`))
@@ -80,10 +87,11 @@ describe('Providers', () => {
   })
 
   it('expires', async () => {
-    providers = new Providers(new MemoryDatastore(), peers[2])
-    providers.cleanupInterval = 100
-    providers.provideValidity = 200
-
+    providers = new Providers({
+      providers: new MemoryDatastore(),
+      cleanupInterval: 100,
+      provideValidity: 200
+    })
     providers.start()
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
@@ -112,7 +120,10 @@ describe('Providers', () => {
     )
     const store = new LevelDatastore(p)
     await store.open()
-    providers = new Providers(store, peers[2], 10)
+    providers = new Providers({
+      providers: new MemoryDatastore(),
+      cacheSize: 10
+    })
 
     console.log('starting') // eslint-disable-line no-console
     const [createdValues, createdPeers] = await Promise.all([

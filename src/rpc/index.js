@@ -26,7 +26,7 @@ class RPC {
    * @param {import('../types').PeerStore} params.peerStore
    * @param {import('../types').Addressable} params.addressable
    * @param {import('../peer-routing').PeerRouting} params.peerRouting
-   * @param {import('interface-datastore').Datastore} params.datastore
+   * @param {import('interface-datastore').Datastore} params.records
    * @param {import('libp2p-interfaces/src/types').DhtValidators} params.validators
    * @param {boolean} [params.lan]
    */

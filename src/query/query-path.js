@@ -26,7 +26,6 @@ const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
  * @param {Uint8Array} context.key - what are we trying to find
  * @param {PeerId} context.startingPeer - where we start our query
  * @param {PeerId} context.ourPeerId - who we are
- * @param {Set<string>} context.peersSeen - list of base58btc peer IDs all paths have traversed
  * @param {AbortSignal} context.signal - when to stop querying
  * @param {QueryFunc} context.query - the query function to run with each peer
  * @param {number} context.alpha - how many concurrent node/value lookups to run
@@ -36,7 +35,7 @@ const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
  * @param {number} [context.queryFuncTimeout] - a timeout for queryFunc in ms
  * @param {ReturnType<import('../utils').logger>} context.log
  */
-module.exports.disjointPathQuery = async function * disjointPathQuery ({ key, startingPeer, ourPeerId, peersSeen, signal, query, alpha, pathIndex, numPaths, cleanUp, queryFuncTimeout, log }) {
+module.exports.queryPath = async function * queryPath ({ key, startingPeer, ourPeerId, signal, query, alpha, pathIndex, numPaths, cleanUp, queryFuncTimeout, log }) {
   // Only ALPHA node/value lookups are allowed at any given time for each process
   // https://github.com/libp2p/specs/tree/master/kad-dht#alpha-concurrency-parameter-%CE%B1
   const queue = new Queue({
@@ -45,6 +44,9 @@ module.exports.disjointPathQuery = async function * disjointPathQuery ({ key, st
 
   // perform lookups on kadId, not the actual value
   const kadId = await convertBuffer(key)
+
+  // make sure we don't get trapped in a loop
+  const peersSeen = new Set()
 
   /**
    * Adds the passed peer to the query queue if it's not us and no

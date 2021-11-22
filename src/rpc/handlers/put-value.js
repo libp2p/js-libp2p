@@ -18,11 +18,11 @@ class PutValueHandler {
   /**
    * @param {object} params
    * @param {import('libp2p-interfaces/src/types').DhtValidators} params.validators
-   * @param {import('interface-datastore').Datastore} params.datastore
+   * @param {import('interface-datastore').Datastore} params.records
    */
-  constructor ({ validators, datastore }) {
+  constructor ({ validators, records }) {
     this._validators = validators
-    this._datastore = datastore
+    this._records = records
   }
 
   /**
@@ -48,7 +48,7 @@ class PutValueHandler {
 
     record.timeReceived = new Date()
     const recordKey = utils.bufferToKey(record.key)
-    await this._datastore.put(recordKey, record.serialize())
+    await this._records.put(recordKey, record.serialize())
 
     return msg
   }

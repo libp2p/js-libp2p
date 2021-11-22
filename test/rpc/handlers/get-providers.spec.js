@@ -3,10 +3,10 @@
 
 const { expect } = require('aegir/utils/chai')
 const { Message } = require('../../../src/message')
-const utils = require('../../../src/utils')
 const { GetProvidersHandler } = require('../../../src/rpc/handlers/get-providers')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const { Multiaddr } = require('multiaddr')
+const drain = require('it-drain')
 
 const T = Message.TYPES.GET_PROVIDERS
 
@@ -31,14 +31,13 @@ describe('rpc - handlers - GetProviders', () => {
   })
 
   beforeEach(async () => {
-    const dhts = await tdht.spawn(1)
-    dht = dhts[0]
+    [dht] = await tdht.spawn(1)
 
     handler = new GetProvidersHandler({
       peerId: dht._libp2p.peerId,
       peerRouting: dht._lan._peerRouting,
       providers: dht._lan._providers,
-      datastore: dht._datastore,
+      datastore: dht._libp2p._datastore,
       peerStore: dht._libp2p.peerStore,
       addressable: dht._libp2p
     })
@@ -52,13 +51,14 @@ describe('rpc - handlers - GetProviders', () => {
     await expect(handler.handle(peerIds[0], msg)).to.eventually.be.rejected().with.property('code', 'ERR_INVALID_CID')
   })
 
-  it('responds with self if the value is in the datastore', async () => {
+  it('responds with self if we are a provider', async () => {
     const v = values[0]
 
-    const msg = new Message(T, v.cid.bytes, 0)
-    const dsKey = utils.bufferToKey(v.cid.bytes)
+    try {
+      await drain(dht.provide(v.cid))
+    } catch {}
 
-    await dht._datastore.put(dsKey, v.value)
+    const msg = new Message(T, v.cid.bytes, 0)
     const response = await handler.handle(peerIds[0], msg)
 
     expect(response.key).to.be.eql(v.cid.bytes)

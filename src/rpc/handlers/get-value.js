@@ -24,13 +24,13 @@ class GetValueHandler {
    * @param {PeerId} params.peerId
    * @param {import('../../types').PeerStore} params.peerStore
    * @param {import('../../peer-routing').PeerRouting} params.peerRouting
-   * @param {import('interface-datastore').Datastore} params.datastore
+   * @param {import('interface-datastore').Datastore} params.records
    */
-  constructor ({ peerId, peerStore, peerRouting, datastore }) {
+  constructor ({ peerId, peerStore, peerRouting, records }) {
     this._peerId = peerId
     this._peerStore = peerStore
     this._peerRouting = peerRouting
-    this._datastore = datastore
+    this._records = records
   }
 
   /**
@@ -102,7 +102,7 @@ class GetValueHandler {
     // Fetch value from ds
     let rawRecord
     try {
-      rawRecord = await this._datastore.get(dsKey)
+      rawRecord = await this._records.get(dsKey)
     } catch (/** @type {any} */ err) {
       if (err.code === 'ERR_NOT_FOUND') {
         return undefined
@@ -121,7 +121,7 @@ class GetValueHandler {
     if (record.timeReceived == null ||
       Date.now() - record.timeReceived.getTime() > MAX_RECORD_AGE) {
       // If record is bad delete it and return
-      await this._datastore.delete(dsKey)
+      await this._records.delete(dsKey)
       return undefined
     }
 

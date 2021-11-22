@@ -169,25 +169,6 @@ describe('KadDHT', () => {
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
-    it('put - removeLocal', async function () {
-      this.timeout(10 * 1000)
-
-      const key = uint8ArrayFromString('/v/hello')
-      const value = uint8ArrayFromString('world')
-
-      const [dht] = await tdht.spawn(1)
-
-      await drain(dht.put(key, value))
-
-      const res = await last(dht.get(key))
-      expect(res).to.have.property('value').that.equalBytes(value)
-
-      // remove from the local datastore
-      await dht.removeLocal(key)
-
-      await expect(dht._datastore.get(key)).to.eventually.be.rejected().with.property('code', 'ERR_NOT_FOUND')
-    })
-
     it('put - get', async function () {
       this.timeout(10 * 1000)
 
@@ -766,9 +747,9 @@ describe('KadDHT', () => {
       await tdht.connect(dhtA, dhtB)
 
       const errors = await all(filter(dhtA.get(uint8ArrayFromString('/v/hello')), event => event.name === 'QUERY_ERROR'))
-
-      expect(errors).to.have.lengthOf(1)
+      expect(errors).to.have.lengthOf(2)
       expect(errors).to.have.nested.property('[0].error.code', errCode)
+      expect(errors).to.have.nested.property('[1].error.code', 'ERR_NOT_FOUND')
 
       stub.restore()
     })

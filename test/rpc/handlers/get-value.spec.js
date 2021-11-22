@@ -20,20 +20,18 @@ describe('rpc - handlers - GetValue', () => {
   let handler
 
   before(async () => {
+    tdht = new TestDHT()
     peerIds = await createPeerId(2)
   })
 
   beforeEach(async () => {
-    tdht = new TestDHT()
-
-    const dhts = await tdht.spawn(1)
-    dht = dhts[0]
+    [dht] = await tdht.spawn(1)
 
     handler = new GetValueHandler({
       peerId: dht._libp2p.peerId,
       peerStore: dht._libp2p.peerStore,
       peerRouting: dht._lan._peerRouting,
-      datastore: dht._datastore
+      records: dht._lan._contentFetching._records
     })
   })
 
@@ -55,9 +53,10 @@ describe('rpc - handlers - GetValue', () => {
   it('responds with a local value', async () => {
     const key = uint8ArrayFromString('hello')
     const value = uint8ArrayFromString('world')
-    const msg = new Message(T, key, 0)
 
     await drain(dht.put(key, value))
+
+    const msg = new Message(T, key, 0)
     const response = await handler.handle(peerIds[0], msg)
 
     expect(response.record).to.exist()

@@ -23,18 +23,16 @@ describe('rpc - handlers - PutValue', () => {
   let handler
 
   before(async () => {
+    tdht = new TestDHT()
     peerIds = await createPeerId(2)
   })
 
   beforeEach(async () => {
-    tdht = new TestDHT()
-
-    const dhts = await tdht.spawn(1)
-    dht = dhts[0]
+    [dht] = await tdht.spawn(1)
 
     handler = new PutValueHandler({
       validators: dht._lan._validators,
-      datastore: dht._datastore
+      records: dht._lan._contentFetching._records
     })
   })
 
@@ -65,7 +63,7 @@ describe('rpc - handlers - PutValue', () => {
     expect(response).to.be.eql(msg)
 
     const key = utils.bufferToKey(uint8ArrayFromString('hello'))
-    const res = await dht._datastore.get(key)
+    const res = await dht._lan._contentFetching._records.get(key)
 
     const rec = Record.deserialize(res)
 

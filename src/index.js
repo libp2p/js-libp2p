@@ -6,6 +6,15 @@ const { DualKadDHT } = require('./dual-kad-dht')
 /**
  * @typedef {import('./types').DHT} DHT
  * @typedef {import('./kad-dht').KadDHTOps} KadDHTOps
+ * @typedef {import('./types').QueryEvent} QueryEvent
+ * @typedef {import('./types').SendingQueryEvent} SendingQueryEvent
+ * @typedef {import('./types').PeerResponseEvent} PeerResponseEvent
+ * @typedef {import('./types').FinalPeerEvent} FinalPeerEvent
+ * @typedef {import('./types').QueryErrorEvent} QueryErrorEvent
+ * @typedef {import('./types').ProviderEvent} ProviderEvent
+ * @typedef {import('./types').ValueEvent} ValueEvent
+ * @typedef {import('./types').AddingPeerEvent} AddingPeerEvent
+ * @typedef {import('./types').DialingPeerEvent} DialingPeerEvent
  */
 
 module.exports = {
