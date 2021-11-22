@@ -1,3 +1,12 @@
+## [0.26.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.0...v0.26.1) (2021-11-22)
+
+
+### Bug Fixes
+
+* prefix records with key, remove disjoint queries ([#239](https://github.com/libp2p/js-libp2p-kad-dht/issues/239)) ([e31696c](https://github.com/libp2p/js-libp2p-kad-dht/commit/e31696c3a4363f2fa7c6a6534d67b57252bafe36))
+
+
+
 # [0.26.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.25.0...v0.26.0) (2021-11-18)
 
 
