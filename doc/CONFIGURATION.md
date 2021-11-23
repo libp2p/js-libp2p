@@ -190,6 +190,23 @@ If you want to know more about libp2p pubsub, you should read the following cont
 - https://docs.libp2p.io/concepts/publish-subscribe
 - https://github.com/libp2p/specs/tree/master/pubsub
 
+### Value Storage
+
+Some libp2p components are able to provide Key/Value storage capabilities that can be used by other libp2p components. A Value Storage module implements the [ValueStore interface](https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interfaces/src/value-store/types.d.ts), which provides `put`
+and `get` methods for storing arbitrary binary data.
+
+Some available peer routing modules are:
+
+- [js-libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
+- [js-libp2p-delegated-content-routing](https://github.com/libp2p/js-libp2p-delegated-content-routing)
+  - via `DelgatedValueStore`
+
+The current [DHT](#dht) implementation implements the `ValueStore` interface, and if the DHT is enabled
+there is no need to separately enable the value storage capability.
+
+Other implementations of value storage may be enabled by including a `ValueStore` implementation in
+the `modules.valueStorage` configuration as shown below.
+
 ## Customizing libp2p
 
 When [creating a libp2p node](./API.md#create), the modules needed should be specified as follows:
@@ -202,6 +219,7 @@ const modules = {
   contentRouting: [],
   peerRouting: [],
   peerDiscovery: [],
+  valueStorage: [],
   dht: dhtImplementation,
   pubsub: pubsubImplementation
 }
@@ -394,6 +412,7 @@ const { NOISE } = require('libp2p-noise')
 const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
+const DelegatedValueStore = require('libp2p-delegated-content-routing/value-store')
 const PeerId = require('peer-id')
 
 // create a peerId
@@ -411,6 +430,12 @@ const delegatedContentRouting = new DelegatedContentRouter(peerId, ipfsHttpClien
   port: 443
 }))
 
+const delegatedValueStore = new DelegatedValueStore(ipfsHttpClient.create({
+  host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
+  protocol: 'https',
+  port: 443
+}))
+
 const node = await Libp2p.create({
   modules: {
     transport: [TCP],
@@ -418,6 +443,7 @@ const node = await Libp2p.create({
     connEncryption: [NOISE],
     contentRouting: [delegatedContentRouting],
     peerRouting: [delegatedPeerRouting],
+    valueStorage: [delegatedValueStore],
   },
   peerId,
   peerRouting: { // Peer routing configuration

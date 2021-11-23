@@ -40,6 +40,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory<any, any>} TransportFactory
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory} MuxerFactory
  * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
+ * @typedef {import('libp2p-interfaces/src/value-store/types').ValueStore} ValueStoreModule
  * @typedef {import('libp2p-interfaces/src/peer-discovery/types').PeerDiscoveryFactory} PeerDiscoveryFactory
  * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRoutingModule
  * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
@@ -102,6 +103,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {PeerDiscoveryFactory[]} [peerDiscovery]
  * @property {PeerRoutingModule[]} [peerRouting]
  * @property {ContentRoutingModule[]} [contentRouting]
+ * @property {ValueStoreModule[]} [valueStorage]
  * @property {Object} [dht]
  * @property {{new(...args: any[]): Pubsub}} [pubsub]
  * @property {Protector} [connProtector]

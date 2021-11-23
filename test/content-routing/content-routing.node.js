@@ -11,12 +11,14 @@ const mergeOptions = require('merge-options')
 const { CID } = require('multiformats/cid')
 const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
+const DelegatedValueStore = require('libp2p-delegated-content-routing/src/value-store')
 const { Multiaddr } = require('multiaddr')
 const drain = require('it-drain')
 const all = require('it-all')
 
 const peerUtils = require('../utils/creators/peer')
 const { baseOptions, routingOptions } = require('./utils')
+const uint8arrays = require('uint8arrays')
 
 describe('content-routing', () => {
   describe('no routers', () => {
@@ -96,25 +98,58 @@ describe('content-routing', () => {
 
       return deferred.promise
     })
+
+    it('should put a key/value pair to the DHT', async () => {
+      const deferred = pDefer()
+
+      sinon.stub(nodes[0]._dht, 'put').callsFake(async () => {
+        deferred.resolve()
+      })
+
+      const key = new TextEncoder().encode('/foo/bar')
+      const val = new TextEncoder().encode('hello-world')
+      await nodes[0].contentRouting.put(key, val)
+
+      return deferred.promise
+    })
+
+    it('should get a value by key from the DHT', async () => {
+      const deferred = pDefer()
+      sinon.stub(nodes[0]._dht, 'get').callsFake(async () => {
+        const val = new TextEncoder().encode('hello-world')
+        deferred.resolve(val)
+        return { from: nodes[0].id, val }
+      })
+      const key = new TextEncoder().encode('/foo/bar')
+      const res = await nodes[0].contentRouting.get(key)
+      expect(res.from).to.equal(nodes[0].id)
+      return deferred.promise
+    })
   })
 
   describe('via delegate router', () => {
     let node
     let delegate
+    let valueStore
 
     beforeEach(async () => {
       const [peerId] = await peerUtils.createPeerId({ fixture: true })
+      const [delegateId] = await peerUtils.createPeerId({ fixture: true })
 
-      delegate = new DelegatedContentRouter(peerId, ipfsHttpClient.create({
+      const ipfsClient = ipfsHttpClient.create({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
-      }))
+      })
+
+      delegate = new DelegatedContentRouter(peerId, ipfsClient)
+      valueStore = new DelegatedValueStore(delegateId, ipfsClient)
 
       ;[node] = await peerUtils.createPeer({
         config: mergeOptions(baseOptions, {
           modules: {
-            contentRouting: [delegate]
+            contentRouting: [delegate],
+            valueStorage: [valueStore]
           },
           config: {
             dht: {
@@ -244,25 +279,67 @@ describe('content-routing', () => {
 
       expect(mockApi.isDone()).to.equal(true)
     })
+
+    it('should put a key/value pair using the delegated node', async () => {
+      const mockApi = nock('http://0.0.0.0:60197')
+        .post('/api/v0/dht/put')
+        .query(true)
+        .reply(200, '', [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
+
+      const key = new TextEncoder().encode('/foo/bar')
+      const val = new TextEncoder().encode('a-value')
+      await node.contentRouting.put(key, val)
+
+      expect(mockApi.isDone()).to.equal(true)
+    })
+
+    it('should get a value by key using the delegated node', async () => {
+      const val = new TextEncoder().encode('hello-world')
+      const valueBase64 = uint8arrays.toString(val, 'base64pad')
+      const mockApi = nock('http://0.0.0.0:60197')
+        .post('/api/v0/dht/get')
+        .query(true)
+        .reply(200, `{"Extra":"${valueBase64}","Type":5}`, [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
+
+      const key = new TextEncoder().encode('/foo/bar')
+      await node.contentRouting.get(key)
+
+      expect(mockApi.isDone()).to.equal(true)
+    })
   })
 
   describe('via dht and delegate routers', () => {
     let node
+    let nodeId
     let delegate
+    let delegateId
+    let valueStore
 
     beforeEach(async () => {
       const [peerId] = await peerUtils.createPeerId({ fixture: true })
+      const [delegatePeerId] = await peerUtils.createPeerId({ fixture: true })
+      nodeId = peerId
+      delegateId = delegatePeerId
 
-      delegate = new DelegatedContentRouter(peerId, ipfsHttpClient.create({
+      const ipfsClient = ipfsHttpClient.create({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
-      }))
+      })
+      delegate = new DelegatedContentRouter(peerId, ipfsClient)
+      valueStore = new DelegatedValueStore(delegateId, ipfsClient)
 
       ;[node] = await peerUtils.createPeer({
         config: mergeOptions(routingOptions, {
           modules: {
-            contentRouting: [delegate]
+            contentRouting: [delegate],
+            valueStorage: [valueStore]
           }
         })
       })
@@ -441,6 +518,113 @@ describe('content-routing', () => {
 
       expect(providers).to.have.length.above(0)
       expect(providers).to.eql(results)
+    })
+
+    it('should put values to the DHT and delegated node', async () => {
+      const deferredDHT = pDefer()
+      sinon.stub(node._dht, 'put').callsFake(async () => {
+        deferredDHT.resolve()
+      })
+
+      const mockApi = nock('http://0.0.0.0:60197')
+        .post('/api/v0/dht/put')
+        .query(true)
+        .reply(200, '', [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
+
+      const key = new TextEncoder().encode('/foo/bar')
+      const val = new TextEncoder().encode('hello-world')
+      await node.contentRouting.put(key, val)
+
+      expect(mockApi.isDone()).to.equal(true)
+      return deferredDHT.promise
+    })
+
+    it('should try to get values by key from both DHT and delegated node', async () => {
+      const deferred = pDefer()
+      sinon.stub(node._dht, 'get').callsFake(async () => {
+        // small delay to allow delegate call to go through before dht promise resolves
+        await new Promise(resolve => setTimeout(resolve, 10))
+        const val = new TextEncoder().encode('hello-world')
+        deferred.resolve(val)
+        const from = nodeId
+        return { from, val }
+      })
+
+      const val = new TextEncoder().encode('hello-world')
+      const valueBase64 = uint8arrays.toString(val, 'base64pad')
+      const mockApi = nock('http://0.0.0.0:60197')
+        .post('/api/v0/dht/get')
+        .query(true)
+        .reply(200, `{"Extra":"${valueBase64}","Type":5}`, [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
+
+      const key = new TextEncoder().encode('/foo/bar')
+      await node.contentRouting.get(key)
+
+      expect(mockApi.isDone()).to.equal(true)
+      return deferred.promise
+    })
+
+    it('should return a value for a key from the delegate node if the DHT fails', async () => {
+      const deferred = pDefer()
+      sinon.stub(node._dht, 'get').callsFake(async () => {
+        deferred.resolve()
+        throw new Error('bang!')
+      })
+
+      const val = new TextEncoder().encode('hello-world')
+      const valueBase64 = uint8arrays.toString(val, 'base64pad')
+      const mockApi = nock('http://0.0.0.0:60197')
+        .post('/api/v0/dht/get')
+        .query(true)
+        .reply(200, `{"Extra":"${valueBase64}","Type":5}`, [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
+
+      const key = new TextEncoder().encode('/foo/bar')
+      const res = await node.contentRouting.get(key)
+      const returnedValue = new TextDecoder().decode(res.val)
+
+      expect(mockApi.isDone()).to.equal(true)
+      expect(res.from).to.equal(delegateId)
+      expect(returnedValue).to.equal('hello-world')
+      return deferred.promise
+    })
+
+    it('should return a value for key from the DHT if the delegate node fails', async () => {
+      const deferred = pDefer()
+      sinon.stub(node._dht, 'get').callsFake(async () => {
+        // small delay to allow delegate call to go through before dht promise resolves
+        await new Promise(resolve => setTimeout(resolve, 10))
+        const val = new TextEncoder().encode('hello-world')
+        deferred.resolve(val)
+        const from = nodeId
+        return { from, val }
+      })
+
+      const mockApi = nock('http://0.0.0.0:60197')
+        .post('/api/v0/dht/get')
+        .query(true)
+        .reply(503, 'No soup for you!', [
+          'Content-Type', 'application/json',
+          'X-Chunked-Output', '1'
+        ])
+
+      const key = new TextEncoder().encode('/foo/bar')
+      const res = await node.contentRouting.get(key)
+      const valueString = new TextDecoder().decode(res.val)
+
+      expect(mockApi.isDone()).to.equal(true)
+      expect(res.from).to.deep.equal(nodeId)
+      expect(valueString).to.equal('hello-world')
+
+      return deferred.promise
     })
   })
 })

@@ -6,7 +6,8 @@ const {
   storeAddresses,
   uniquePeers,
   requirePeers,
-  maybeLimitSource
+  maybeLimitSource,
+  raceToSuccess
 } = require('./utils')
 
 const merge = require('it-merge')
@@ -17,12 +18,8 @@ const { pipe } = require('it-pipe')
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
  * @typedef {import('multiformats/cid').CID} CID
  * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
- */
-
-/**
- * @typedef {Object} GetData
- * @property {PeerId} from
- * @property {Uint8Array} val
+ * @typedef {import('libp2p-interfaces/src/value-store/types').ValueStore} ValueStoreModule
+ * @typedef {import('libp2p-interfaces/src/value-store/types').GetValueResult} GetData
  */
 
 class ContentRouting {
@@ -34,11 +31,16 @@ class ContentRouting {
     this.libp2p = libp2p
     /** @type {ContentRoutingModule[]} */
     this.routers = libp2p._modules.contentRouting || []
+    /** @type {ValueStoreModule[]} */
+    this.valueStores = libp2p._modules.valueStorage || []
     this.dht = libp2p._dht
 
-    // If we have the dht, add it to the available content routers
+    // If we have the dht, add it to the available content routers and value stores
     if (this.dht && libp2p._config.dht.enabled) {
       this.routers.push(this.dht)
+      if (!this.valueStores.includes(this.dht)) {
+        this.valueStores.push(this.dht)
+      }
     }
   }
 
@@ -83,7 +85,7 @@ class ContentRouting {
   }
 
   /**
-   * Store the given key/value pair in the DHT.
+   * Store the given key/value pair in the DHT and/or configured ValueStore.
    *
    * @param {Uint8Array} key
    * @param {Uint8Array} value
@@ -91,12 +93,25 @@ class ContentRouting {
    * @param {number} [options.minPeers] - minimum number of peers required to successfully put
    * @returns {Promise<void>}
    */
-  put (key, value, options) {
-    if (!this.libp2p.isStarted() || !this.dht.isStarted) {
+  async put (key, value, options) {
+    if (!this.libp2p.isStarted()) {
+      throw errCode(new Error(messages.NOT_STARTED_YET), codes.ERR_NODE_NOT_STARTED)
+    }
+
+    if (this.libp2p._config.dht.enabled && !this.dht.isStarted) {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
 
-    return this.dht.put(key, value, options)
+    if (this.valueStores.length === 0) {
+      throw errCode(new Error(messages.VALUE_STORE_REQUIRED), codes.ERR_VALUE_STORE_UNAVAILABLE)
+    }
+
+    const promises = []
+    for (const store of this.valueStores) {
+      promises.push(store.put(key, value, options))
+    }
+
+    await Promise.all(promises)
   }
 
   /**
@@ -109,11 +124,24 @@ class ContentRouting {
    * @returns {Promise<GetData>}
    */
   get (key, options) {
-    if (!this.libp2p.isStarted() || !this.dht.isStarted) {
+    if (!this.libp2p.isStarted()) {
+      throw errCode(new Error(messages.NOT_STARTED_YET), codes.ERR_NODE_NOT_STARTED)
+    }
+
+    if (this.libp2p._config.dht.enabled && !this.dht.isStarted) {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
 
-    return this.dht.get(key, options)
+    if (this.valueStores.length === 0) {
+      throw errCode(new Error(messages.VALUE_STORE_REQUIRED), codes.ERR_VALUE_STORE_UNAVAILABLE)
+    }
+
+    const promises = []
+    for (const store of this.valueStores) {
+      promises.push(store.get(key, options))
+    }
+
+    return raceToSuccess(promises)
   }
 
   /**

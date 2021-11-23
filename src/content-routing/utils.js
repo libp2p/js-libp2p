@@ -81,9 +81,39 @@ function maybeLimitSource (source, max) {
   return source
 }
 
+/**
+ * Like Promise.race, but only fails if all input promises fail.
+ *
+ * Returns a promise that will resolve with the value of the first promise
+ * to resolve, but will only fail if all promises fail.
+ *
+ * @template {any} T
+ * @param {Promise<T>[]} promises - an array of promises.
+ * @returns {Promise<T>} the resolved value of the first promise that succeeded, or an Error if _all_ promises fail.
+ */
+function raceToSuccess (promises) {
+  const combineErrors = (/** @type Error[] */ errors) => {
+    if (errors.length === 1) {
+      return errors[0]
+    }
+    return new Error(`${errors.length} operations failed: ` + errors.map(e => e.message).join(', '))
+  }
+
+  return Promise.all(promises.map(p => {
+    return p.then(
+      val => Promise.reject(val),
+      err => Promise.resolve(err)
+    )
+  })).then(
+    errors => Promise.reject(combineErrors(errors)),
+    val => Promise.resolve(val)
+  )
+}
+
 module.exports = {
   storeAddresses,
   uniquePeers,
   requirePeers,
-  maybeLimitSource
+  maybeLimitSource,
+  raceToSuccess
 }
