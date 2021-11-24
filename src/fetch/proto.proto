@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message FetchRequest {
+	string identifier = 1;
+}
+
+message FetchResponse {
+	StatusCode status = 1;
+	enum StatusCode {
+		OK = 0;
+		NOT_FOUND = 1;
+		ERROR = 2;
+	}
+	bytes data = 2;
+}
