@@ -84,7 +84,7 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
-    "aegir": "^35.0.1",
+    "aegir": "^36.0.1",
     "async-iterator-all": "^1.0.0",
     "datastore-level": "^7.0.1",
     "delay": "^5.0.0",

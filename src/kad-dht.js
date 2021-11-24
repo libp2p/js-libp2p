@@ -303,7 +303,7 @@ class KadDHT extends EventEmitter {
       if (!has) {
         await this._routingTable.add(peerData.id)
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this._log.error('Could not add %p to routing table', peerData.id, err)
     }
   }

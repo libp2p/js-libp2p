@@ -67,7 +67,7 @@ class QuerySelf extends EventEmitter {
       }), this._count))
 
       this._log('query ran successfully - found %d peers', found)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this._log('query error', err)
     } finally {
       this._timeoutId = setTimeout(this._querySelf.bind(this), this._interval)

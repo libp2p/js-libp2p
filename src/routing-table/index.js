@@ -89,7 +89,7 @@ class RoutingTable {
               })
               await stream.close()
               responded++
-            } catch (err) {
+            } catch (/** @type {any} */ err) {
               this._log.error('Could not ping peer %p', oldContact.peer, err)
               this._log(`Evicting old contact after ping failed ${oldContact.peer}`)
               this.kb.remove(oldContact.id)
@@ -105,7 +105,7 @@ class RoutingTable {
           this._log(`Adding new contact ${newContact.peer}`)
           this.kb.add(newContact)
         }
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         this._log.error('Could not process k-bucket ping event', err)
       }
     })
