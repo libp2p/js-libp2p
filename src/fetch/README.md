@@ -20,7 +20,7 @@ var Fetch = require('libp2p/src/fetch')
  * @returns value - a Uint8Array value that corresponds to the given key, or null if the key doesn't 
  *   have a corresponding value.
  */
-function lookup(key) {
+async function lookup(key) {
     // app specific callback to lookup key-value pairs.
 }
 
