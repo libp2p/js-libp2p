@@ -36,11 +36,11 @@ $root.Exchange = (function() {
 
     /**
      * Exchange id.
-     * @member {Uint8Array} id
+     * @member {Uint8Array|null|undefined} id
      * @memberof Exchange
      * @instance
      */
-    Exchange.prototype.id = $util.newBuffer([]);
+    Exchange.prototype.id = null;
 
     /**
      * Exchange pubkey.
@@ -49,6 +49,31 @@ $root.Exchange = (function() {
      * @instance
      */
     Exchange.prototype.pubkey = null;
+
+    // OneOf field names bound to virtual getters and setters
+    var $oneOfFields;
+
+    /**
+     * Exchange _id.
+     * @member {"id"|undefined} _id
+     * @memberof Exchange
+     * @instance
+     */
+    Object.defineProperty(Exchange.prototype, "_id", {
+        get: $util.oneOfGetter($oneOfFields = ["id"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Exchange _pubkey.
+     * @member {"pubkey"|undefined} _pubkey
+     * @memberof Exchange
+     * @instance
+     */
+    Object.defineProperty(Exchange.prototype, "_pubkey", {
+        get: $util.oneOfGetter($oneOfFields = ["pubkey"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
 
     /**
      * Encodes the specified Exchange message. Does not implicitly {@link Exchange.verify|verify} messages.
@@ -140,21 +165,15 @@ $root.Exchange = (function() {
         if (!o)
             o = {};
         var d = {};
-        if (o.defaults) {
-            if (o.bytes === String)
-                d.id = "";
-            else {
-                d.id = [];
-                if (o.bytes !== Array)
-                    d.id = $util.newBuffer(d.id);
-            }
-            d.pubkey = null;
-        }
         if (m.id != null && m.hasOwnProperty("id")) {
             d.id = o.bytes === String ? $util.base64.encode(m.id, 0, m.id.length) : o.bytes === Array ? Array.prototype.slice.call(m.id) : m.id;
+            if (o.oneofs)
+                d._id = "id";
         }
         if (m.pubkey != null && m.hasOwnProperty("pubkey")) {
             d.pubkey = $root.PublicKey.toObject(m.pubkey, o);
+            if (o.oneofs)
+                d._pubkey = "pubkey";
         }
         return d;
     };
