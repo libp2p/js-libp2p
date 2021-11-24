@@ -223,7 +223,7 @@ class Providers {
 function makeProviderKey (cid) {
   cid = typeof cid === 'string' ? cid : uint8ArrayToString(cid.multihash.bytes, 'base32')
 
-  return PROVIDER_KEY_PREFIX + cid
+  return `${PROVIDER_KEY_PREFIX}/${cid}`
 }
 
 /**

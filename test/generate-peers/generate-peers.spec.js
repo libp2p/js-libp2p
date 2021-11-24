@@ -27,6 +27,7 @@ async function fromGo (targetCpl, randPrefix, localKadId) {
 }
 
 describe('generate peers', function () {
+  this.timeout(540 * 1000)
   const go = which.sync('go', { nothrow: true })
 
   if (!go) {
@@ -43,8 +44,7 @@ describe('generate peers', function () {
     })
   })
 
-  beforeEach(async function () {
-    this.timeout(540 * 1000)
+  beforeEach(async () => {
     const id = await PeerId.create({ bits: 512 })
 
     const table = new RoutingTable({
@@ -73,7 +73,7 @@ describe('generate peers', function () {
     randPrefix: 49898
   }]
 
-  TEST_CASES.forEach(({ targetCpl, randPrefix }, index) => {
+  TEST_CASES.forEach(({ targetCpl, randPrefix }) => {
     it(`should generate peers targetCpl ${targetCpl} randPrefix ${randPrefix}`, async () => {
       const peerId = await PeerId.create({ bits: 512 })
       const localKadId = await convertPeerId(peerId)

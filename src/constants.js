@@ -15,9 +15,9 @@ exports.MAX_RECORD_AGE = 36 * hour
 
 exports.PROTOCOL_DHT = '/kad/1.0.0'
 
-exports.RECORD_KEY_PREFIX = '/dht/record/'
+exports.RECORD_KEY_PREFIX = '/dht/record'
 
-exports.PROVIDER_KEY_PREFIX = '/dht/provider/'
+exports.PROVIDER_KEY_PREFIX = '/dht/provider'
 
 exports.PROVIDERS_LRU_CACHE_SIZE = 256
 
