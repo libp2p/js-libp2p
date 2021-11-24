@@ -1,3 +1,12 @@
+## [0.26.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.1...v0.26.2) (2021-11-24)
+
+
+### Bug Fixes
+
+* remove trailing slash from datastore prefixes ([#241](https://github.com/libp2p/js-libp2p-kad-dht/issues/241)) ([2d26f9b](https://github.com/libp2p/js-libp2p-kad-dht/commit/2d26f9bbf77ceabf6cdc7904896454b82b2a8b38))
+
+
+
 ## [0.26.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.0...v0.26.1) (2021-11-22)
 
 
