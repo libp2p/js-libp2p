@@ -83,15 +83,15 @@ class RoutingTable {
 
             try {
               timeoutController = new TimeoutController(this._pingTimeout)
-              this._log(`Pinging old contact ${oldContact.peer}`)
+              this._log(`pinging old contact ${oldContact.peer}`)
               const { stream } = await this._dialer.dialProtocol(oldContact.peer, PROTOCOL_DHT, {
                 signal: timeoutController.signal
               })
               await stream.close()
               responded++
             } catch (/** @type {any} */ err) {
-              this._log.error('Could not ping peer %p', oldContact.peer, err)
-              this._log(`Evicting old contact after ping failed ${oldContact.peer}`)
+              this._log.error('could not ping peer %p', oldContact.peer, err)
+              this._log(`evicting old contact after ping failed ${oldContact.peer}`)
               this.kb.remove(oldContact.id)
             } finally {
               if (timeoutController) {
@@ -102,11 +102,11 @@ class RoutingTable {
         )
 
         if (responded < oldContacts.length) {
-          this._log(`Adding new contact ${newContact.peer}`)
+          this._log(`adding new contact ${newContact.peer}`)
           this.kb.add(newContact)
         }
       } catch (/** @type {any} */ err) {
-        this._log.error('Could not process k-bucket ping event', err)
+        this._log.error('could not process k-bucket ping event', err)
       }
     })
   }
@@ -168,6 +168,8 @@ class RoutingTable {
     const id = await utils.convertPeerId(peer)
 
     this.kb.add({ id: id, peer: peer })
+
+    this._log('added %p with kad id %b', peer, id)
   }
 
   /**

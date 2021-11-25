@@ -140,6 +140,10 @@ class TestDHT {
     const [c0, c1] = ConnectionPair()
     const routingTableChecks = []
 
+    // Libp2p dial adds multiaddrs to the addressBook
+    dhtA._libp2p.peerStore.addressBook.add(dhtB._libp2p.peerId, dhtB._libp2p.multiaddrs)
+    dhtB._libp2p.peerStore.addressBook.add(dhtA._libp2p.peerId, dhtA._libp2p.multiaddrs)
+
     // Notice peers of connection
     if (!dhtB._clientMode) {
       // B is a server, trigger connect events on A
@@ -170,10 +174,6 @@ class TestDHT {
         return match
       })
     }
-
-    // Libp2p dial adds multiaddrs to the addressBook
-    dhtA._libp2p.peerStore.addressBook.add(dhtB._libp2p.peerId, dhtB._libp2p.multiaddrs)
-    dhtB._libp2p.peerStore.addressBook.add(dhtA._libp2p.peerId, dhtA._libp2p.multiaddrs)
 
     // Check routing tables
     return Promise.all(routingTableChecks.map(check => {

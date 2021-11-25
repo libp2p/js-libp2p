@@ -257,7 +257,8 @@ class KadDHT extends EventEmitter {
     })
     this._topologyListener = new TopologyListener({
       registrar: libp2p.registrar,
-      protocol: this._protocol
+      protocol: this._protocol,
+      lan
     })
     this._querySelf = new QuerySelf({
       peerId: libp2p.peerId,
@@ -268,8 +269,8 @@ class KadDHT extends EventEmitter {
 
     // handle peers being discovered during processing of DHT messages
     this._network.on('peer', (peerData) => {
-      this._routingTable.add(peerData.id).catch(err => {
-        this._log.error(`Could not add ${peerData.id} to routing table`, err)
+      this.onPeerConnect(peerData).catch(err => {
+        this._log.error(`could not add ${peerData.id} to routing table`, err)
       })
 
       this.emit('peer', peerData)
@@ -277,8 +278,13 @@ class KadDHT extends EventEmitter {
 
     // handle peers being discovered via other peer discovery mechanisms
     this._topologyListener.on('peer', async (peerId) => {
-      this._routingTable.add(peerId).catch(err => {
-        this._log.error(`Could not add ${peerId} to routing table`, err)
+      const peerData = {
+        id: peerId,
+        multiaddrs: (this._libp2p.peerStore.addressBook.get(peerId) || []).map((/** @type {{ multiaddr: Multiaddr }} */ addr) => addr.multiaddr)
+      }
+
+      this.onPeerConnect(peerData).catch(err => {
+        this._log.error(`could not add ${peerData.id} to routing table`, err)
       })
     })
   }
@@ -287,6 +293,8 @@ class KadDHT extends EventEmitter {
    * @param {PeerData} peerData
    */
   async onPeerConnect (peerData) {
+    this._log('peer %p connected', peerData.id)
+
     if (this._lan) {
       peerData = removePublicAddresses(peerData)
     } else {
@@ -294,17 +302,14 @@ class KadDHT extends EventEmitter {
     }
 
     if (!peerData.multiaddrs.length) {
+      this._log('ignoring %p as they do not have any %s addresses in %s', peerData.id, this._lan ? 'private' : 'public', peerData.multiaddrs.map(addr => addr.toString()))
       return
     }
 
     try {
-      const has = await this._routingTable.find(peerData.id)
-
-      if (!has) {
-        await this._routingTable.add(peerData.id)
-      }
+      await this._routingTable.add(peerData.id)
     } catch (/** @type {any} */ err) {
-      this._log.error('Could not add %p to routing table', peerData.id, err)
+      this._log.error('could not add %p to routing table', peerData.id, err)
     }
   }
 

@@ -51,7 +51,7 @@ class GetProvidersHandler {
       throw errcode(new Error(`Invalid CID: ${err.message}`), 'ERR_INVALID_CID')
     }
 
-    log('%p asking for providers for %s', peerId, cid.toString())
+    log('%p asking for providers for %s', peerId, cid)
 
     const [peers, closer] = await Promise.all([
       this._providers.getProviders(cid),

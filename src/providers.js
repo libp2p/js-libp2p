@@ -180,7 +180,7 @@ class Providers {
    */
   async addProvider (cid, provider) { // eslint-disable-line require-await
     return this.syncQueue.add(async () => {
-      log('addProvider %s', cid.toString())
+      log('%p provides %s', provider, cid)
       const provs = await this._getProvidersMap(cid)
 
       log('loaded %s provs', provs.size)
@@ -202,7 +202,7 @@ class Providers {
    */
   async getProviders (cid) { // eslint-disable-line require-await
     return this.syncQueue.add(async () => {
-      log('getProviders %s', cid.toString())
+      log('get providers for %s', cid)
       const provs = await this._getProvidersMap(cid)
 
       return [...provs.keys()].map(peerIdStr => {
