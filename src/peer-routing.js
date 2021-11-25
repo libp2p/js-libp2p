@@ -21,6 +21,7 @@ const {
   clearDelayedInterval
 // @ts-ignore module with no types
 } = require('set-delayed-interval')
+const { DHTPeerRouting } = require('./dht/dht-peer-routing')
 
 /**
  * @typedef {import('peer-id')} PeerId
@@ -51,7 +52,7 @@ class PeerRouting {
 
     // If we have the dht, add it to the available peer routers
     if (libp2p._dht && libp2p._config.dht.enabled) {
-      this._routers.push(libp2p._dht)
+      this._routers.push(new DHTPeerRouting(libp2p._dht))
     }
 
     this._refreshManagerOptions = libp2p._options.peerRouting.refreshManager

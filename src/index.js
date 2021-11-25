@@ -301,14 +301,9 @@ class Libp2p extends EventEmitter {
     // dht provided components (peerRouting, contentRouting, dht)
     if (this._modules.dht) {
       const DHT = this._modules.dht
-      // @ts-ignore Object is not constructable
-      this._dht = new DHT({
+      // @ts-ignore TODO: types need fixing - DHT is an `object` which has no `create` method
+      this._dht = DHT.create({
         libp2p: this,
-        dialer: this.dialer,
-        peerId: this.peerId,
-        peerStore: this.peerStore,
-        registrar: this.registrar,
-        datastore: this.datastore,
         ...this._config.dht
       })
     }
@@ -624,7 +619,7 @@ class Libp2p extends EventEmitter {
 
     // DHT subsystem
     if (this._config.dht.enabled) {
-      this._dht && this._dht.start()
+      this._dht && await this._dht.start()
 
       // TODO: this should be modified once random-walk is used as
       // the other discovery modules

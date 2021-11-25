@@ -17,7 +17,6 @@ jobs:
         node-version: 14
     - run: npm install
     - run: npx aegir lint
-    - uses: gozala/typescript-error-reporter-action@v1.0.8
     - run: npx aegir build
     - run: npx aegir dep-check
     - uses: ipfs/aegir/actions/bundle-size@v32.1.0
@@ -67,4 +66,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: npm install
-      - run: cd node_modules/interop-libp2p && yarn && LIBP2P_JS=${GITHUB_WORKSPACE}/src/index.js npx aegir test -t node --bail -- --exit
+      - run: npm run test:interop -- --bail -- --exit

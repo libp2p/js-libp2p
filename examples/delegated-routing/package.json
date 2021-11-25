@@ -7,7 +7,7 @@
     "libp2p": "github:libp2p/js-libp2p#master",
     "libp2p-delegated-content-routing": "~0.2.2",
     "libp2p-delegated-peer-routing": "~0.2.2",
-    "libp2p-kad-dht": "~0.14.12",
+    "libp2p-kad-dht": "^0.26.5",
     "libp2p-mplex": "~0.8.5",
     "libp2p-secio": "~0.11.1",
     "libp2p-webrtc-star": "~0.15.8",
