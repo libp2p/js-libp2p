@@ -1,3 +1,12 @@
+## [0.26.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.4...v0.26.5) (2021-11-25)
+
+
+### Bug Fixes
+
+* do not pollute routing table with useless peers ([#254](https://github.com/libp2p/js-libp2p-kad-dht/issues/254)) ([4f79899](https://github.com/libp2p/js-libp2p-kad-dht/commit/4f7989900c6239fa449841be90ebe7f0ed517316))
+
+
+
 ## [0.26.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.3...v0.26.4) (2021-11-25)
 
 
