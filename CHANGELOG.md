@@ -1,3 +1,22 @@
+# [0.34.0](https://github.com/libp2p/js-libp2p/compare/v0.33.0...v0.34.0) (2021-11-25)
+
+
+### Bug Fixes
+
+* private ip ts compile has no call signatures ([#1020](https://github.com/libp2p/js-libp2p/issues/1020)) ([77d7cb8](https://github.com/libp2p/js-libp2p/commit/77d7cb8f0815f2cdd3bfdfa8b641a7a186fe9520))
+
+
+### Features
+
+* update dht ([#1009](https://github.com/libp2p/js-libp2p/issues/1009)) ([2f598eb](https://github.com/libp2p/js-libp2p/commit/2f598eba09cff4301474af08196158065e3602d8))
+
+
+### BREAKING CHANGES
+
+* libp2p-kad-dht has a new event-based API which is exposed as `_dht`
+
+
+
 # [0.33.0](https://github.com/libp2p/js-libp2p/compare/v0.32.5...v0.33.0) (2021-09-24)
 
 
