@@ -120,7 +120,7 @@ class DualKadDHT extends EventEmitter {
    */
   async * put (key, value, options = {}) { // eslint-disable-line require-await
     let counterAll = 0
-    let counterErrors = 0
+    let counterSuccess = 0
 
     for await (const event of merge(
       this._lan.put(key, value, options),
@@ -132,14 +132,13 @@ class DualKadDHT extends EventEmitter {
         counterAll++
       }
 
-      if (event.name === 'QUERY_ERROR') {
-        counterErrors++
+      if (event.name === 'PEER_RESPONSE' && event.messageName === 'PUT_VALUE') {
+        counterSuccess++
       }
     }
 
     // verify if we were able to put to enough peers
     const minPeers = options.minPeers || counterAll // Ensure we have a default `minPeers`
-    const counterSuccess = counterAll - counterErrors
 
     if (counterSuccess < minPeers) {
       const error = errCode(new Error(`Failed to put value to enough peers: ${counterSuccess}/${minPeers}`), 'ERR_NOT_ENOUGH_PUT_PEERS')
