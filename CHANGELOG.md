@@ -1,3 +1,12 @@
+## [0.26.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.3...v0.26.4) (2021-11-25)
+
+
+### Bug Fixes
+
+* require at least one successful put ([#253](https://github.com/libp2p/js-libp2p-kad-dht/issues/253)) ([f7a2a02](https://github.com/libp2p/js-libp2p-kad-dht/commit/f7a2a02ef49c35bf7de1fc0d7a8256281819a740))
+
+
+
 ## [0.26.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.2...v0.26.3) (2021-11-25)
 
 
