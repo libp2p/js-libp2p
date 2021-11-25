@@ -163,7 +163,7 @@ describe('KadDHT', () => {
       const [dht] = await tdht.spawn(1)
 
       // Exchange data through the dht
-      await drain(dht.put(key, value))
+      await drain(dht.put(key, value, { minPeers: 0 }))
 
       const res = await last(dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)
@@ -341,8 +341,8 @@ describe('KadDHT', () => {
       const dhtASpy = sinon.spy(dhtA._lan._network, 'sendRequest')
 
       // Put before peers connected
-      await drain(dhtA.put(key, valueA))
-      await drain(dhtB.put(key, valueB))
+      await drain(dhtA.put(key, valueA, { minPeers: 0 }))
+      await drain(dhtB.put(key, valueB, { minPeers: 0 }))
 
       // Connect peers
       await tdht.connect(dhtA, dhtB)

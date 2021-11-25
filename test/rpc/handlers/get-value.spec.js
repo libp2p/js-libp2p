@@ -54,7 +54,7 @@ describe('rpc - handlers - GetValue', () => {
     const key = uint8ArrayFromString('hello')
     const value = uint8ArrayFromString('world')
 
-    await drain(dht.put(key, value))
+    await drain(dht.put(key, value, { minPeers: 0 }))
 
     const msg = new Message(T, key, 0)
     const response = await handler.handle(peerIds[0], msg)

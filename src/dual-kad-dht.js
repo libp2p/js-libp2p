@@ -137,9 +137,10 @@ class DualKadDHT extends EventEmitter {
       }
     }
 
-    // verify if we were able to put to enough peers
-    const minPeers = options.minPeers || counterAll // Ensure we have a default `minPeers`
+    // Ensure we have a default `minPeers`
+    const minPeers = options.minPeers == null ? counterAll || 1 : options.minPeers
 
+    // verify if we were able to put to enough peers
     if (counterSuccess < minPeers) {
       const error = errCode(new Error(`Failed to put value to enough peers: ${counterSuccess}/${minPeers}`), 'ERR_NOT_ENOUGH_PUT_PEERS')
       log.error(error)
