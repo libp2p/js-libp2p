@@ -1,6 +1,6 @@
 {
   "name": "libp2p-kad-dht",
-  "version": "0.26.2",
+  "version": "0.26.3",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
