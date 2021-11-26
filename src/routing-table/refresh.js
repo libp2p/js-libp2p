@@ -8,6 +8,7 @@ const PeerId = require('peer-id')
 const utils = require('../utils')
 const length = require('it-length')
 const { TimeoutController } = require('timeout-abort-controller')
+const { TABLE_REFRESH_INTERVAL } = require('../constants')
 
 /**
  * @typedef {import('./types').KBucketPeer} KBucketPeer
@@ -30,13 +31,13 @@ class RoutingTableRefresh {
    * @param {import('../peer-routing').PeerRouting} params.peerRouting
    * @param {import('./').RoutingTable} params.routingTable
    * @param {boolean} params.lan
-   * @param {number} [params.refreshInterval=30000]
+   * @param {number} [params.refreshInterval]
    */
   constructor ({ peerRouting, routingTable, refreshInterval, lan }) {
     this._log = utils.logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table:refresh`)
     this._peerRouting = peerRouting
     this._routingTable = routingTable
-    this._refreshInterval = refreshInterval || 30000
+    this._refreshInterval = refreshInterval || TABLE_REFRESH_INTERVAL
 
     /** @type {Date[]} */
     this.commonPrefixLengthRefreshedAt = []

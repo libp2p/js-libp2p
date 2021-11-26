@@ -38,3 +38,6 @@ exports.ALPHA = 3
 
 // How often we look for our closest DHT neighbours
 exports.QUERY_SELF_INTERVAL = Number(5 * minute)
+
+// How often we try to find new peers
+exports.TABLE_REFRESH_INTERVAL = Number(5 * minute)
