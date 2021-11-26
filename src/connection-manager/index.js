@@ -340,20 +340,20 @@ class ConnectionManager extends EventEmitter {
         return -1
       })
 
-    for (let i = 0; i < peers.length && this.size < minConnections; i++) {
+    for (let i = 0; i < peers.length && this.size < minConnections && this._started; i++) {
       if (!this.get(peers[i].id)) {
         log('connecting to a peerStore stored peer %s', peers[i].id.toB58String())
         try {
           await this._libp2p.dialer.connectToPeer(peers[i].id)
-
-          // Connection Manager was stopped
-          if (!this._started) {
-            return
-          }
         } catch (/** @type {any} */ err) {
           log.error('could not connect to peerStore stored peer', err)
         }
       }
+    }
+
+    // Connection Manager was stopped
+    if (!this._started) {
+      return
     }
 
     this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
