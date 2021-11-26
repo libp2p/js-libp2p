@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "description": "",
-  "main": "dist/index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "parcel build index.html",
@@ -16,7 +15,7 @@
     "babel-plugin-syntax-async-functions": "^6.13.0",
     "babel-plugin-transform-regenerator": "^6.26.0",
     "babel-polyfill": "^6.26.0",
-    "parcel-bundler": "1.12.3",
+    "parcel": "^2.0.1",
     "util": "^0.12.3"
   },
   "dependencies": {
