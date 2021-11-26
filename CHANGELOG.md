@@ -1,3 +1,12 @@
+## [0.26.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.5...v0.26.6) (2021-11-26)
+
+
+### Bug Fixes
+
+* increase time between table refresh ([#256](https://github.com/libp2p/js-libp2p-kad-dht/issues/256)) ([1471fb9](https://github.com/libp2p/js-libp2p-kad-dht/commit/1471fb94000c6f80c8a7d64b4a9ca342275a7ec8))
+
+
+
 ## [0.26.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.4...v0.26.5) (2021-11-25)
 
 
