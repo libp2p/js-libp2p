@@ -1,6 +1,6 @@
 'use strict'
 
-const ed = require('noble-ed25519')
+const ed = require('@noble/ed25519')
 
 const PUBLIC_KEY_BYTE_LENGTH = 32
 const PRIVATE_KEY_BYTE_LENGTH = 64 // private key is actually 32 bytes but for historical reasons we concat private and public keys

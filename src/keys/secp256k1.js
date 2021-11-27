@@ -1,7 +1,7 @@
 'use strict'
 
 const errcode = require('err-code')
-const secp = require('noble-secp256k1')
+const secp = require('@noble/secp256k1')
 const { sha256 } = require('multiformats/hashes/sha2')
 
 module.exports = () => {
