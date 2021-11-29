@@ -27,7 +27,7 @@ const { PROTOCOL_NAME, PROTOCOL_VERSION } = require('./constants')
  */
 class FetchProtocol {
   constructor () {
-    this.lookupFunctions = new Map() // Maps key prefix to value lookup function
+    this._lookupFunctions = new Map() // Maps key prefix to value lookup function
   }
 
   /**
@@ -77,12 +77,12 @@ class FetchProtocol {
    *
    * @param {MuxedStream} stream
    */
-  async handleRequest (stream) {
+  async _handleRequest (stream) {
     const shake = handshake(stream)
     const request = FetchRequest.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
 
     let response
-    const lookup = this.getLookupFunction(request.identifier)
+    const lookup = this._getLookupFunction(request.identifier)
     if (lookup) {
       const data = await lookup(request.identifier)
       if (data) {
@@ -104,10 +104,10 @@ class FetchProtocol {
    *
    * @param {string} key
    */
-  getLookupFunction (key) {
-    for (const prefix of this.lookupFunctions.keys()) {
+  _getLookupFunction (key) {
+    for (const prefix of this._lookupFunctions.keys()) {
       if (key.startsWith(prefix)) {
-        return this.lookupFunctions.get(prefix)
+        return this._lookupFunctions.get(prefix)
       }
     }
     return null
@@ -121,10 +121,10 @@ class FetchProtocol {
    * @param {LookupFunction} lookupFunc
    */
   registerLookupFunction (prefix, lookupFunc) {
-    if (this.lookupFunctions.has(prefix)) {
+    if (this._lookupFunctions.has(prefix)) {
       throw new Error("Fetch protocol handler for key prefix '" + prefix + "' already registered")
     }
-    this.lookupFunctions.set(prefix, lookupFunc)
+    this._lookupFunctions.set(prefix, lookupFunc)
   }
 
   /**
@@ -135,7 +135,7 @@ class FetchProtocol {
    * @param {Libp2p} node
    */
   mount (node) {
-    node.handle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`, ({ stream }) => this.handleRequest(stream))
+    node.handle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`, ({ stream }) => this._handleRequest(stream))
   }
 
   /**
