@@ -26,23 +26,25 @@ async function createLibp2pNode (lookupFunc) {
 describe('Fetch Protocol', () => {
   let sender
   let receiver
-  const DATA = { '/moduleA/foobar': 'hello world' }
+  const PREFIX_A = '/moduleA/'
+  const PREFIX_B = '/moduleB/'
+  const DATA_A = { 'foobar': 'hello world' }
+  const DATA_B = { 'foobar': 'goodnight moon' }
 
-  before(async () => {
-    sender = await createLibp2pNode()
-    receiver = await createLibp2pNode()
-
-    const lookupFunc = async function (key) {
-      const val = DATA[key]
+  const generateLookupFunction = function (prefix, data) {
+    return async function (key) {
+      key = key.slice(prefix.length) // strip prefix from key
+      const val = data[key]
       if (val) {
         return (new TextEncoder()).encode(val)
       }
       return null
     }
+  }
 
-    const fetch = new Fetch()
-    fetch.registerLookupFunction('/moduleA/', lookupFunc)
-    fetch.mount(receiver)
+  before(async () => {
+    sender = await createLibp2pNode()
+    receiver = await createLibp2pNode()
 
     await sender.start()
     await receiver.start()
@@ -54,15 +56,56 @@ describe('Fetch Protocol', () => {
   })
 
   it('fetch key that exists in receivers datastore', async () => {
+    const fetch = new Fetch()
+    fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
+    fetch.mount(receiver)
+
     const rawData = await Fetch.fetch(sender, receiver.peerId, '/moduleA/foobar')
     const value = (new TextDecoder()).decode(rawData)
-
     expect(value).to.equal('hello world')
   })
 
+  it('Different lookups for different prefixes', async () => {
+    const fetch = new Fetch()
+    fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
+    fetch.registerLookupFunction(PREFIX_B, generateLookupFunction(PREFIX_B, DATA_B))
+    fetch.mount(receiver)
+
+    const rawDataA = await Fetch.fetch(sender, receiver.peerId, '/moduleA/foobar')
+    const valueA = (new TextDecoder()).decode(rawDataA)
+    expect(valueA).to.equal('hello world')
+
+    // Different lookup functions can be registered on different prefixes, and have different
+    // values for the same key underneath the different prefix.
+    const rawDataB = await Fetch.fetch(sender, receiver.peerId, '/moduleB/foobar')
+    const valueB = (new TextDecoder()).decode(rawDataB)
+    expect(valueB).to.equal('goodnight moon')
+  })
+
   it('fetch key that does not exist in receivers datastore', async () => {
+    const fetch = new Fetch()
+    fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
+    fetch.mount(receiver)
     const result = await Fetch.fetch(sender, receiver.peerId, '/moduleA/garbage')
 
     expect(result).to.equal(null)
+  })
+
+  it('fetch key with unknown prefix returns null', async () => {
+    const fetch = new Fetch()
+    fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
+    fetch.mount(receiver)
+
+    const result = await Fetch.fetch(sender, receiver.peerId, '/moduleC/foobar')
+
+    expect(result).to.equal(null)
+  })
+
+  it('Registering multiple handlers for same prefix errors', async () => {
+    const fetch = new Fetch()
+    fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
+    expect(function () {
+      fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_B))
+    }).to.throw('already registered')
   })
 })
