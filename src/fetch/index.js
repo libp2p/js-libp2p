@@ -118,13 +118,13 @@ class FetchProtocol {
    * share the same prefix.
    *
    * @param {string} prefix
-   * @param {LookupFunction} lookupFunc
+   * @param {LookupFunction} lookup
    */
-  registerLookupFunction (prefix, lookupFunc) {
+  registerLookupFunction (prefix, lookup) {
     if (this._lookupFunctions.has(prefix)) {
       throw new Error("Fetch protocol handler for key prefix '" + prefix + "' already registered")
     }
-    this._lookupFunctions.set(prefix, lookupFunc)
+    this._lookupFunctions.set(prefix, lookup)
   }
 
   /**
