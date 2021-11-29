@@ -61,7 +61,8 @@ class FetchProtocol {
         return null
       }
       case (FetchResponse.StatusCode.ERROR): {
-        throw new Error('Error in fetch protocol response')
+        const errmsg = (new TextDecoder()).decode(response.data)
+        throw new Error('Error in fetch protocol response: ' + errmsg)
       }
       default: {
         throw new Error('Unreachable case')
@@ -90,7 +91,8 @@ class FetchProtocol {
         response = new FetchResponse({ status: FetchResponse.StatusCode.NOT_FOUND })
       }
     } else {
-      response = new FetchResponse({ status: FetchResponse.StatusCode.NOT_FOUND })
+      const errmsg = (new TextEncoder()).encode('No lookup function registered for key: ' + request.identifier)
+      response = new FetchResponse({ status: FetchResponse.StatusCode.ERROR, data: errmsg })
     }
 
     shake.write(lp.encode.single(FetchResponse.encode(response).finish()))

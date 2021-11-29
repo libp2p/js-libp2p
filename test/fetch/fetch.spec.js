@@ -91,14 +91,18 @@ describe('Fetch Protocol', () => {
     expect(result).to.equal(null)
   })
 
-  it('fetch key with unknown prefix returns null', async () => {
+  it('fetch key with unknown prefix throws error', async () => {
     const fetch = new Fetch()
     fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
     fetch.mount(receiver)
 
-    const result = await Fetch.fetch(sender, receiver.peerId, '/moduleC/foobar')
-
-    expect(result).to.equal(null)
+    try {
+      await Fetch.fetch(sender, receiver.peerId, '/moduleUNKNOWN/foobar')
+      expect.fail("didn't throw")
+    } catch (err) {
+      expect(err).to.be.an('Error')
+      expect(err.message).to.equal('Error in fetch protocol response: No lookup function registered for key: /moduleUNKNOWN/foobar')
+    }
   })
 
   it('Registering multiple handlers for same prefix errors', async () => {
