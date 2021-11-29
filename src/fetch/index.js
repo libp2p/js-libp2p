@@ -128,9 +128,7 @@ class FetchProtocol {
   }
 
   /**
-   * Subscribe fetch protocol handler. Must be given a lookup function callback that can be used
-   * to lookup a value (of type Uint8Array) from a given key (of type string).  The lookup function
-   * should return null if the key isn't found.
+   * Subscribe fetch protocol handler.
    *
    * @param {Libp2p} node
    */
