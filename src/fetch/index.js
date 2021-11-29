@@ -20,7 +20,10 @@ const { PROTOCOL_NAME, PROTOCOL_VERSION } = require('./constants')
  */
 
 /**
- * TODO comments
+ * A simple libp2p protocol for requesting a value corresponding to a key from a peer.
+ * Developers can register one or more lookup function for retrieving the value corresponding to
+ * a given key.  Each lookup function must act on a distinct part of the overall key space, defined
+ * by a fixed prefix that all keys that should be routed to that lookup function will start with.
  */
 class FetchProtocol {
   constructor () {
@@ -68,7 +71,8 @@ class FetchProtocol {
 
   /**
    * Invoked when a fetch request is received.  Reads the request message off the given stream and
-   * responds based on looking up the key in the request via the lookup callback.
+   * responds based on looking up the key in the request via the lookup callback that corresponds
+   * to the key's prefix.
    *
    * @param {MuxedStream} stream
    */
@@ -93,7 +97,8 @@ class FetchProtocol {
   }
 
   /**
-   * TODO
+   * Given a key, finds the appropriate function for looking up its corresponding value, based on
+   * the key's prefix.
    *
    * @param {string} key
    */
@@ -107,7 +112,8 @@ class FetchProtocol {
   }
 
   /**
-   * TODO rename and comments
+   * Registers a new lookup callback that can map keys to values, for a given set of keys that
+   * share the same prefix.
    *
    * @param {string} prefix
    * @param {LookupFunction} lookupFunc
@@ -135,7 +141,7 @@ class FetchProtocol {
    *
    * @param {Libp2p} node
    */
-  unmount (node) {
+  static unmount (node) {
     node.unhandle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`)
   }
 }
