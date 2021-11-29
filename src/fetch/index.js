@@ -21,7 +21,7 @@ const { PROTOCOL_NAME, PROTOCOL_VERSION } = require('./constants')
  */
 
 /**
- * Ping a given peer and wait for its response, getting the operation latency.
+ * Sends a request to fetch the value associated with the given key from the given peer.
  *
  * @param {Libp2p} node
  * @param {PeerId|Multiaddr} peer
