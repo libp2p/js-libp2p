@@ -40,7 +40,9 @@ describe('Fetch Protocol', () => {
       return null
     }
 
-    Fetch.mount(receiver, lookupFunc)
+    const fetch = new Fetch()
+    fetch.registerLookupFunction(lookupFunc)
+    fetch.mount(receiver)
 
     await sender.start()
     await receiver.start()
@@ -52,14 +54,14 @@ describe('Fetch Protocol', () => {
   })
 
   it('fetch key that exists in receivers datastore', async () => {
-    const rawData = await Fetch(sender, receiver.peerId, 'foobar')
+    const rawData = await Fetch.fetch(sender, receiver.peerId, 'foobar')
     const value = (new TextDecoder()).decode(rawData)
 
     expect(value).to.equal('hello world')
   })
 
   it('fetch key that does not exist in receivers datastore', async () => {
-    const result = await Fetch(sender, receiver.peerId, 'garbage')
+    const result = await Fetch.fetch(sender, receiver.peerId, 'garbage')
 
     expect(result).to.equal(null)
   })

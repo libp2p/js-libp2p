@@ -11,7 +11,6 @@ const handshake = require('it-handshake')
 
 const { PROTOCOL_NAME, PROTOCOL_VERSION } = require('./constants')
 
-
 /**
  * @typedef {import('../')} Libp2p
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
@@ -20,87 +19,103 @@ const { PROTOCOL_NAME, PROTOCOL_VERSION } = require('./constants')
  * @typedef {(key: string) => Promise<Uint8Array | null>} LookupFunction
  */
 
-/**
- * Sends a request to fetch the value associated with the given key from the given peer.
- *
- * @param {Libp2p} node
- * @param {PeerId|Multiaddr} peer
- * @param {string} key
- * @returns {Promise<Uint8Array | null>}
- */
-async function fetch (node, peer, key) {
-  const protocol = `/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
-  // @ts-ignore multiaddr might not have toB58String
-  log('dialing %s to %s', protocol, peer.toB58String ? peer.toB58String() : peer)
+class FetchProtocol {
+  constructor () {
+    this.lookup = null
+  }
 
-  const connection = await node.dial(peer)
-  const { stream } = await connection.newStream(protocol)
-  const shake = handshake(stream)
+  /**
+   * Sends a request to fetch the value associated with the given key from the given peer.
+   *
+   * @param {Libp2p} node
+   * @param {PeerId|Multiaddr} peer
+   * @param {string} key
+   * @returns {Promise<Uint8Array | null>}
+   */
+  static async fetch (node, peer, key) {
+    const protocol = `/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    // @ts-ignore multiaddr might not have toB58String
+    log('dialing %s to %s', protocol, peer.toB58String ? peer.toB58String() : peer)
 
-  // send message
-  const request = new FetchRequest({ identifier: key })
-  shake.write(lp.encode.single(FetchRequest.encode(request).finish()))
+    const connection = await node.dial(peer)
+    const { stream } = await connection.newStream(protocol)
+    const shake = handshake(stream)
 
-  // read response
-  const response = FetchResponse.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
-  switch (response.status) {
-    case (FetchResponse.StatusCode.OK): {
-      return response.data
+    // send message
+    const request = new FetchRequest({ identifier: key })
+    shake.write(lp.encode.single(FetchRequest.encode(request).finish()))
+
+    // read response
+    const response = FetchResponse.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
+    switch (response.status) {
+      case (FetchResponse.StatusCode.OK): {
+        return response.data
+      }
+      case (FetchResponse.StatusCode.NOT_FOUND): {
+        return null
+      }
+      case (FetchResponse.StatusCode.ERROR): {
+        throw new Error('Error in fetch protocol response')
+      }
+      default: {
+        throw new Error('Unreachable case')
+      }
     }
-    case (FetchResponse.StatusCode.NOT_FOUND): {
-      return null
+  }
+
+  /**
+   * Invoked when a fetch request is received.  Reads the request message off the given stream and
+   * responds based on looking up the key in the request via the lookup callback.
+   *
+   * @param {MuxedStream} stream
+   */
+  async handleRequest (stream) {
+    const shake = handshake(stream)
+    const request = FetchRequest.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
+
+    let response
+    if (this.lookup) {
+      const data = await this.lookup(request.identifier)
+      if (data) {
+        response = new FetchResponse({ status: FetchResponse.StatusCode.OK, data })
+      } else {
+        response = new FetchResponse({ status: FetchResponse.StatusCode.NOT_FOUND })
+      }
+    } else {
+      response = new FetchResponse({ status: FetchResponse.StatusCode.NOT_FOUND })
     }
-    case (FetchResponse.StatusCode.ERROR): {
-      throw new Error('Error in fetch protocol response')
-    }
-    default: {
-      throw new Error('Unreachable case')
-    }
+
+    shake.write(lp.encode.single(FetchResponse.encode(response).finish()))
+  }
+
+  /**
+   * TODO rename and comments
+   *
+   * @param {LookupFunction} lookupFunc
+   */
+  registerLookupFunction (lookupFunc) {
+    this.lookup = lookupFunc
+  }
+
+  /**
+   * Subscribe fetch protocol handler. Must be given a lookup function callback that can be used
+   * to lookup a value (of type Uint8Array) from a given key (of type string).  The lookup function
+   * should return null if the key isn't found.
+   *
+   * @param {Libp2p} node
+   */
+  mount (node) {
+    node.handle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`, ({ stream }) => this.handleRequest(stream))
+  }
+
+  /**
+   * Unsubscribe fetch protocol handler.
+   *
+   * @param {Libp2p} node
+   */
+  unmount (node) {
+    node.unhandle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`)
   }
 }
 
-/**
- * Invoked when a fetch request is received.  Reads the request message off the given stream and
- * responds based on looking up the key in the request via the lookup callback.
- * @param {MuxedStream} stream
- * @param {LookupFunction} lookup
- */
-async function handleRequest(stream, lookup) {
-  const shake = handshake(stream)
-  const request = FetchRequest.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
-
-  let response
-  const data = await lookup(request.identifier)
-  if (data) {
-    response = new FetchResponse({ status: FetchResponse.StatusCode.OK, data })
-  } else {
-    response = new FetchResponse({ status: FetchResponse.StatusCode.NOT_FOUND })
-  }
-
-  shake.write(lp.encode.single(FetchResponse.encode(response).finish()))
-}
-
-/**
- * Subscribe fetch protocol handler. Must be given a lookup function callback that can be used
- * to lookup a value (of type Uint8Array) from a given key (of type string).  The lookup function
- * should return null if the key isn't found.
- *
- * @param {Libp2p} node
- * @param {LookupFunction} lookup
- */
-function mount (node, lookup) {
-  node.handle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`, ({ stream }) => handleRequest(stream, lookup))
-}
-
-/**
- * Unsubscribe fetch protocol handler.
- *
- * @param {Libp2p} node
- */
-function unmount (node) {
-  node.unhandle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`)
-}
-
-exports = module.exports = fetch
-exports.mount = mount
-exports.unmount = unmount
+exports = module.exports = FetchProtocol
