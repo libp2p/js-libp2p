@@ -26,7 +26,7 @@ async function createLibp2pNode (lookupFunc) {
 describe('Fetch Protocol', () => {
   let sender
   let receiver
-  const DATA = { foobar: 'hello world' }
+  const DATA = { '/moduleA/foobar': 'hello world' }
 
   before(async () => {
     sender = await createLibp2pNode()
@@ -41,7 +41,7 @@ describe('Fetch Protocol', () => {
     }
 
     const fetch = new Fetch()
-    fetch.registerLookupFunction(lookupFunc)
+    fetch.registerLookupFunction('/moduleA/', lookupFunc)
     fetch.mount(receiver)
 
     await sender.start()
@@ -54,14 +54,14 @@ describe('Fetch Protocol', () => {
   })
 
   it('fetch key that exists in receivers datastore', async () => {
-    const rawData = await Fetch.fetch(sender, receiver.peerId, 'foobar')
+    const rawData = await Fetch.fetch(sender, receiver.peerId, '/moduleA/foobar')
     const value = (new TextDecoder()).decode(rawData)
 
     expect(value).to.equal('hello world')
   })
 
   it('fetch key that does not exist in receivers datastore', async () => {
-    const result = await Fetch.fetch(sender, receiver.peerId, 'garbage')
+    const result = await Fetch.fetch(sender, receiver.peerId, '/moduleA/garbage')
 
     expect(result).to.equal(null)
   })

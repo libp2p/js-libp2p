@@ -19,9 +19,12 @@ const { PROTOCOL_NAME, PROTOCOL_VERSION } = require('./constants')
  * @typedef {(key: string) => Promise<Uint8Array | null>} LookupFunction
  */
 
+/**
+ * TODO comments
+ */
 class FetchProtocol {
   constructor () {
-    this.lookup = null
+    this.lookupFunctions = new Map() // Maps key prefix to value lookup function
   }
 
   /**
@@ -74,8 +77,9 @@ class FetchProtocol {
     const request = FetchRequest.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
 
     let response
-    if (this.lookup) {
-      const data = await this.lookup(request.identifier)
+    const lookup = this.getLookupFunction(request.identifier)
+    if (lookup) {
+      const data = await lookup(request.identifier)
       if (data) {
         response = new FetchResponse({ status: FetchResponse.StatusCode.OK, data })
       } else {
@@ -89,12 +93,30 @@ class FetchProtocol {
   }
 
   /**
+   * TODO
+   *
+   * @param {string} key
+   */
+  getLookupFunction (key) {
+    for (const prefix of this.lookupFunctions.keys()) {
+      if (key.startsWith(prefix)) {
+        return this.lookupFunctions.get(prefix)
+      }
+    }
+    return null
+  }
+
+  /**
    * TODO rename and comments
    *
+   * @param {string} prefix
    * @param {LookupFunction} lookupFunc
    */
-  registerLookupFunction (lookupFunc) {
-    this.lookup = lookupFunc
+  registerLookupFunction (prefix, lookupFunc) {
+    if (this.lookupFunctions.has(prefix)) {
+      throw new Error("Fetch protocol handler for key prefix '" + prefix + "' already registered")
+    }
+    this.lookupFunctions.set(prefix, lookupFunc)
   }
 
   /**
