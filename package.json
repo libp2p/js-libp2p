@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check",
+    "dep-check": "aegir dep-check package.json dep-check src/**/*.js test/**/*.js",
     "build": "npm run build:proto && aegir build --no-types",
     "build:proto": "pbjs -t static-module -w commonjs  -r libp2p-crypto-keys --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/keys/keys.js ./src/keys/keys.proto",
     "test": "aegir test",
