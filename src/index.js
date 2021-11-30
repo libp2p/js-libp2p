@@ -380,6 +380,7 @@ class Libp2p extends EventEmitter {
 
       this.relay && this.relay.stop()
       this.peerRouting.stop()
+      await (this._dht && this._dht.stop())
 
       for (const service of this._discovery.values()) {
         service.removeListener('peer', this._onDiscoveryPeer)
@@ -394,7 +395,6 @@ class Libp2p extends EventEmitter {
 
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
-        this._dht && this._dht.stop(),
         this.metrics && this.metrics.stop()
       ])
 
