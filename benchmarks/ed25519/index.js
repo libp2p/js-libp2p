@@ -10,6 +10,7 @@ require('node-forge/lib/ed25519')
 const forge = require('node-forge/lib/forge')
 const stable = require('@stablelib/ed25519')
 const supercopWasm = require('supercop.wasm')
+const ed25519WasmPro = require('ed25519-wasm-pro')
 
 const suite = new Benchmark.Suite('ed25519 implementations')
 
@@ -62,7 +63,21 @@ suite.add('supercop.wasm', async (d) => {
   const isSigned = await supercopWasm.verify(signature, message, keys.publicKey)
 
   if (!isSigned) {
-    throw new Error('could not verify noble signature')
+    throw new Error('could not verify supercop.wasm signature')
+  }
+
+  d.resolve()
+}, { defer: true })
+
+suite.add('ed25519-wasm-pro', async (d) => {
+  const message = Buffer.from('hello world ' + Math.random())
+  const seed = ed25519WasmPro.createSeed()
+  const keys = ed25519WasmPro.createKeyPair(seed)
+  const signature = ed25519WasmPro.sign(message, keys.publicKey, keys.secretKey)
+  const isSigned = await ed25519WasmPro.verify(signature, message, keys.publicKey)
+
+  if (!isSigned) {
+    throw new Error('could not verify ed25519-wasm-pro signature')
   }
 
   d.resolve()
@@ -100,14 +115,22 @@ suite.add('node.js web-crypto', async (d) => {
 }, { defer: true })
 
 async function main () {
-  supercopWasm.ready(() => {
-    suite
-      .on('cycle', (event) => console.log(String(event.target)))
-      .on('complete', function () {
-        console.log('fastest is ' + this.filter('fastest').map('name'))
-      })
-      .run({ async: true })
-  })
+  await Promise.all([
+    new Promise((resolve) => {
+      supercopWasm.ready(() => resolve())
+    }),
+    new Promise((resolve) => {
+      ed25519WasmPro.ready(() => resolve())
+    })
+  ])
+  noble.utils.precompute(8)
+
+  suite
+    .on('cycle', (event) => console.log(String(event.target)))
+    .on('complete', function () {
+      console.log('fastest is ' + this.filter('fastest').map('name'))
+    })
+    .run({ async: true })
 }
 
 main()

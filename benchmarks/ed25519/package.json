@@ -12,6 +12,7 @@
     "@stablelib/ed25519": "^1.0.2",
     "benchmark": "^2.1.4",
     "ed25519": "^0.0.5",
+    "ed25519-wasm-pro": "^1.1.1",
     "iso-random-stream": "^2.0.0",
     "node-forge": "^0.10.0",
     "supercop.wasm": "^5.0.1"
