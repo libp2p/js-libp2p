@@ -18,6 +18,7 @@ const { codes, messages } = require('./errors')
 
 const AddressManager = require('./address-manager')
 const ConnectionManager = require('./connection-manager')
+const AutoDialler = require('./connection-manager/auto-dialler')
 const Circuit = require('./circuit/transport')
 const Relay = require('./circuit')
 const Dialer = require('./dialer')
@@ -193,8 +194,12 @@ class Libp2p extends EventEmitter {
 
     // Create the Connection Manager
     this.connectionManager = new ConnectionManager(this, {
-      autoDial: this._config.peerDiscovery.autoDial,
       ...this._options.connectionManager
+    })
+    this._autodialler = new AutoDialler(this, {
+      enabled: this._config.peerDiscovery.autoDial,
+      minConnections: this._options.connectionManager.minConnections,
+      autoDialInterval: this._options.connectionManager.autoDialInterval
     })
 
     // Create Metrics
@@ -380,6 +385,8 @@ class Libp2p extends EventEmitter {
 
       this.relay && this.relay.stop()
       this.peerRouting.stop()
+      this._autodialler.stop()
+      await (this._dht && this._dht.stop())
 
       for (const service of this._discovery.values()) {
         service.removeListener('peer', this._onDiscoveryPeer)
@@ -394,7 +401,6 @@ class Libp2p extends EventEmitter {
 
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
-        this._dht && this._dht.stop(),
         this.metrics && this.metrics.stop()
       ])
 
@@ -650,6 +656,7 @@ class Libp2p extends EventEmitter {
     }
 
     this.connectionManager.start()
+    this._autodialler.start()
 
     // Peer discovery
     await this._setupPeerDiscovery()
