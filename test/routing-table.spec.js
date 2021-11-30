@@ -26,6 +26,11 @@ describe('Routing Table', () => {
       peerId: lipbp2p.peerId,
       dialer: lipbp2p
     })
+    await table.start()
+  })
+
+  afterEach(async () => {
+    await table.stop()
   })
 
   it('add', async function () {
@@ -90,7 +95,8 @@ describe('Routing Table', () => {
     table._pingQueue = {
       add: (f) => {
         fn = f
-      }
+      },
+      clear: () => {}
     }
 
     const peerIds = [
@@ -135,7 +141,8 @@ describe('Routing Table', () => {
     table._pingQueue = {
       add: (f) => {
         fn = f
-      }
+      },
+      clear: () => {}
     }
 
     const peerIds = [

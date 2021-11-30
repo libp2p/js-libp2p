@@ -35,24 +35,29 @@ class RoutingTable {
     this._pingTimeout = pingTimeout || 10000
 
     /** @type {KBucketTree} */
-    this.kb = new KBuck({
-      numberOfNodesPerKBucket: this._kBucketSize,
-      numberOfNodesToPing: 1
-    })
+    this.kb // eslint-disable-line no-unused-expressions
 
     /** @type {Date[]} */
     this.commonPrefixLengthRefreshedAt = []
 
     this._onPing = this._onPing.bind(this)
     this._pingQueue = new Queue({ concurrency: 1 })
+    this._running = false
   }
 
   async start () {
-    this.kb.localNodeId = await utils.convertPeerId(this._peerId)
+    this._running = true
+
+    this.kb = new KBuck({
+      localNodeId: await utils.convertPeerId(this._peerId),
+      numberOfNodesPerKBucket: this._kBucketSize,
+      numberOfNodesToPing: 1
+    })
     this.kb.on('ping', this._onPing)
   }
 
   async stop () {
+    this._running = false
     this._pingQueue.clear()
   }
 
@@ -74,6 +79,10 @@ class RoutingTable {
     // flood the network with ping requests if lots of newContact requests
     // are received
     this._pingQueue.add(async () => {
+      if (!this._running) {
+        return
+      }
+
       let responded = 0
 
       try {
@@ -83,6 +92,7 @@ class RoutingTable {
 
             try {
               timeoutController = new TimeoutController(this._pingTimeout)
+
               this._log(`pinging old contact ${oldContact.peer}`)
               const { stream } = await this._dialer.dialProtocol(oldContact.peer, PROTOCOL_DHT, {
                 signal: timeoutController.signal
@@ -90,9 +100,13 @@ class RoutingTable {
               await stream.close()
               responded++
             } catch (/** @type {any} */ err) {
-              this._log.error('could not ping peer %p', oldContact.peer, err)
-              this._log(`evicting old contact after ping failed ${oldContact.peer}`)
-              this.kb.remove(oldContact.id)
+              if (this._running) {
+                // only evict peers if we are still running, otherwise we evict when dialing is
+                // cancelled due to shutdown in progress
+                this._log.error('could not ping peer %p', oldContact.peer, err)
+                this._log(`evicting old contact after ping failed ${oldContact.peer}`)
+                this.kb.remove(oldContact.id)
+              }
             } finally {
               if (timeoutController) {
                 timeoutController.clear()
@@ -101,7 +115,7 @@ class RoutingTable {
           })
         )
 
-        if (responded < oldContacts.length) {
+        if (this._running && responded < oldContacts.length) {
           this._log(`adding new contact ${newContact.peer}`)
           this.kb.add(newContact)
         }

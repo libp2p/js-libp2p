@@ -218,10 +218,6 @@ class RoutingTableRefresh {
    * and the current peer
    */
   _maxCommonPrefix () {
-    if (!this._routingTable.kb.localNodeId) {
-      return 0
-    }
-
     // xor our KadId with every KadId in the k-bucket tree,
     // return the longest id prefix that is the same
     let prefixLength = 0
@@ -256,6 +252,10 @@ class RoutingTableRefresh {
    * Yields the common prefix length of every peer in the table
    */
   * _prefixLengths () {
+    if (!this._routingTable.kb) {
+      return
+    }
+
     for (const { id } of this._routingTable.kb.toIterable()) {
       const distance = uint8ArrayXor(this._routingTable.kb.localNodeId, id)
       let leadingZeros = 0

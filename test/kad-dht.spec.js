@@ -766,11 +766,10 @@ describe('KadDHT', () => {
         tdht.connect(dhts[2], dhts[3])
       ])
 
-      const stub = sinon.stub(dhts[0]._lan._routingTable, 'closestPeers').returns([])
+      dhts[0]._lan.findPeer = sinon.stub().returns([])
+      dhts[0]._wan.findPeer = sinon.stub().returns([])
 
       await expect(drain(dhts[0].findPeer(ids[3]))).to.eventually.be.rejected().property('code', 'ERR_LOOKUP_FAILED')
-
-      stub.restore()
     })
   })
 })
