@@ -1,3 +1,22 @@
+# [0.27.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.7...v0.27.0) (2021-12-01)
+
+
+### Bug Fixes
+
+* do not send messages if the network is not running ([#259](https://github.com/libp2p/js-libp2p-kad-dht/issues/259)) ([50ea7aa](https://github.com/libp2p/js-libp2p-kad-dht/commit/50ea7aaa5b22fc7269ec73bf269abfcf6f35b657))
+
+
+### chore
+
+* update libp2p-crypto ([#260](https://github.com/libp2p/js-libp2p-kad-dht/issues/260)) ([64f775b](https://github.com/libp2p/js-libp2p-kad-dht/commit/64f775b34397d02eec6eb3c2ccde05abab551722))
+
+
+### BREAKING CHANGES
+
+* requires node 15+
+
+
+
 ## [0.26.7](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.6...v0.26.7) (2021-11-26)
 
 
