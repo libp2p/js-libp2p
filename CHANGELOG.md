@@ -1,3 +1,17 @@
+# [0.21.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.20.0...v0.21.0) (2021-12-01)
+
+
+### Features
+
+* replace keypair and ursa-optional with node crypto ([#219](https://github.com/libp2p/js-libp2p-crypto/issues/219)) ([759535c](https://github.com/libp2p/js-libp2p-crypto/commit/759535cef65f0141c540524b77c72783288cc0a0))
+
+
+### BREAKING CHANGES
+
+* requires node 15+
+
+
+
 # [0.20.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.19.7...v0.20.0) (2021-10-21)
 
 
