@@ -79,6 +79,10 @@ class Network extends EventEmitter {
    * @param {AbortSignal} [options.signal]
    */
   async * sendRequest (to, msg, options = {}) {
+    if (!this._running) {
+      return
+    }
+
     this._log('sending %s to %p', MESSAGE_TYPE_LOOKUP[msg.type], to)
 
     try {
@@ -111,6 +115,10 @@ class Network extends EventEmitter {
    * @param {AbortSignal} [options.signal]
    */
   async * sendMessage (to, msg, options = {}) {
+    if (!this._running) {
+      return
+    }
+
     this._log('sending %s to %p', MESSAGE_TYPE_LOOKUP[msg.type], to)
 
     yield dialingPeerEvent({ peer: to })
