@@ -74,7 +74,7 @@
     "p-defer": "^3.0.0",
     "p-map": "^4.0.0",
     "p-queue": "^6.6.2",
-    "peer-id": "^0.15.4",
+    "peer-id": "^0.16.0",
     "private-ip": "^2.3.3",
     "protobufjs": "^6.10.2",
     "streaming-iterables": "^6.0.0",
