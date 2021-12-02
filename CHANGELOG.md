@@ -1,3 +1,17 @@
+# [0.14.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.13.0...v0.14.0) (2021-12-02)
+
+
+### chore
+
+* update peer id, interfaces, etc ([#115](https://github.com/libp2p/js-libp2p-bootstrap/issues/115)) ([f7b8ce0](https://github.com/libp2p/js-libp2p-bootstrap/commit/f7b8ce0cea136f7258bc57ccdb294d9cf40ba811))
+
+
+### BREAKING CHANGES
+
+* requires node 15+
+
+
+
 # [0.13.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.12.3...v0.13.0) (2021-07-08)
 
 
