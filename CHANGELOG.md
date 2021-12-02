@@ -1,3 +1,17 @@
+# [0.28.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.27.1...v0.28.0) (2021-12-02)
+
+
+### chore
+
+* update peer-id ([#119](https://github.com/libp2p/js-libp2p-floodsub/issues/119)) ([50eb30c](https://github.com/libp2p/js-libp2p-floodsub/commit/50eb30cfaf56f6a95204e1a9584fc11829f08d71))
+
+
+### BREAKING CHANGES
+
+* requires node 15+
+
+
+
 ## [0.27.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.27.0...v0.27.1) (2021-08-19)
 
 
