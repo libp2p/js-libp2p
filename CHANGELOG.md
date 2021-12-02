@@ -1,3 +1,7 @@
+## [0.27.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.0...v0.27.1) (2021-12-02)
+
+
+
 # [0.27.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.26.7...v0.27.0) (2021-12-01)
 
 
