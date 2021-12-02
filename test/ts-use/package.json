@@ -16,7 +16,7 @@
     "libp2p-record": "^0.10.4",
     "libp2p-tcp": "^0.17.1",
     "libp2p-websockets": "^0.16.1",
-    "peer-id": "^0.15.4"
+    "peer-id": "^0.16.0"
   },
   "scripts": {
     "build": "npx tsc",

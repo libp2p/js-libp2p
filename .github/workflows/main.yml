@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
       with:
-        node-version: 14
+        node-version: 16
     - run: npm install
     - run: npx aegir lint
     - run: npx aegir build
@@ -29,7 +29,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        node: [14, 16]
+        node: [16]
       fail-fast: true
     steps:
       - uses: actions/checkout@v2
@@ -44,6 +44,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
       - run: npm install
       - run: npx aegir test -t browser -t webworker --bail
   test-firefox:
@@ -51,6 +54,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
       - run: npm install
       - run: npx aegir test -t browser -t webworker --bail -- --browser firefox
   test-ts:
@@ -58,6 +64,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
       - run: npm install
       - run: npm run test:ts
   test-interop:
@@ -65,5 +74,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
       - run: npm install
       - run: npm run test:interop -- --bail -- --exit

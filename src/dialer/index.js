@@ -6,8 +6,7 @@ const log = Object.assign(debug('libp2p:dialer'), {
 })
 const errCode = require('err-code')
 const { Multiaddr } = require('multiaddr')
-// @ts-ignore timeout-abourt-controles does not export types
-const TimeoutController = require('timeout-abort-controller')
+const { TimeoutController } = require('timeout-abort-controller')
 const { AbortError } = require('abortable-iterator')
 const { anySignal } = require('any-signal')
 
