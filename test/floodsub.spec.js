@@ -77,6 +77,7 @@ describe('floodsub', () => {
 
     // receive the message once
     await floodsub._processRpc(peerStream.id.toB58String(), peerStream, rpc)
+    await floodsub.queue.onIdle()
 
     // should have received the message
     expect(callCount).to.equal(1)

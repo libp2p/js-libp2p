@@ -12,7 +12,7 @@ const PeerId = require('peer-id')
 
 const WS = require('libp2p-websockets')
 const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 
 const RelayPeer = require('./test/fixtures/relay')
 

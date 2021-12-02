@@ -22,11 +22,11 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        node: [14, 16]
+        node: [16]
       fail-fast: true
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
       - run: npm install @mapbox/node-pre-gyp -g
@@ -38,6 +38,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
       - run: npm install
       - run: npx aegir test -t browser -t webworker --bail --timeout 60000
   test-firefox:
@@ -45,6 +48,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
       - run: npm install
       - run: npx aegir test -t browser -t webworker --bail --timeout 60000 -- --browser firefox
   test-webkit:
@@ -52,6 +58,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
       - uses: microsoft/playwright-github-action@v1
       - run: npm install
       - run: npx aegir test -t browser --bail --timeout 60000 -- --browser webkit
@@ -60,6 +69,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
       - run: npm install
       - run: npx xvfb-maybe aegir test -t electron-main --bail --timeout 60000
   test-electron-renderer:
@@ -67,5 +79,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
       - run: npm install
       - run: npx xvfb-maybe aegir test -t electron-renderer --bail --timeout 60000

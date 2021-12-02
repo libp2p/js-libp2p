@@ -15,7 +15,7 @@ const PeerId = require('peer-id')
 const WS = require('libp2p-websockets')
 const filters = require('libp2p-websockets/src/filters')
 const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 
 const { isNode } = require('ipfs-utils/src/env')
 
