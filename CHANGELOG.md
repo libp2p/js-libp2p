@@ -1,3 +1,17 @@
+# [0.18.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.17.0...v0.18.0) (2021-12-02)
+
+
+### chore
+
+* update to new peer-id ([#102](https://github.com/libp2p/js-libp2p-mdns/issues/102)) ([d88eda5](https://github.com/libp2p/js-libp2p-mdns/commit/d88eda5fca9a589ecba519be89150f25a36271e6))
+
+
+### BREAKING CHANGES
+
+* requires node 15+
+
+
+
 # [0.17.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.16.0...v0.17.0) (2021-07-08)
 
 
