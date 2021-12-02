@@ -1,3 +1,22 @@
+# [0.35.0](https://github.com/libp2p/js-libp2p/compare/v0.34.0...v0.35.0) (2021-12-02)
+
+
+### Bug Fixes
+
+* stop dht before connection manager ([#1041](https://github.com/libp2p/js-libp2p/issues/1041)) ([3a9d5f6](https://github.com/libp2p/js-libp2p/commit/3a9d5f64d96719ebb4d3b083c4f5832db4fa0816)), closes [#1039](https://github.com/libp2p/js-libp2p/issues/1039)
+
+
+### chore
+
+* update peer id and libp2p crypto ([#1042](https://github.com/libp2p/js-libp2p/issues/1042)) ([9cbf36f](https://github.com/libp2p/js-libp2p/commit/9cbf36fcb54099e6fed35ceccc4a2376f0926c1f))
+
+
+### BREAKING CHANGES
+
+* requires node 15+
+
+
+
 # [0.34.0](https://github.com/libp2p/js-libp2p/compare/v0.33.0...v0.34.0) (2021-11-25)
 
 
