@@ -1,3 +1,12 @@
+## [0.35.1](https://github.com/libp2p/js-libp2p/compare/v0.35.0...v0.35.1) (2021-12-03)
+
+
+### Bug Fixes
+
+* do not let closest peers run forever ([#1047](https://github.com/libp2p/js-libp2p/issues/1047)) ([91c2ec9](https://github.com/libp2p/js-libp2p/commit/91c2ec9856a3e972b7b2c9c4d9a4eda1d431c7ef))
+
+
+
 # [0.35.0](https://github.com/libp2p/js-libp2p/compare/v0.34.0...v0.35.0) (2021-12-02)
 
 
