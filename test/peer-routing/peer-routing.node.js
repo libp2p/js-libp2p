@@ -106,6 +106,14 @@ describe('peer-routing', () => {
         .to.eventually.be.rejected()
         .and.to.have.property('code', 'ERR_FIND_SELF')
     })
+
+    it('should handle error', async () => {
+      const unknownPeers = await peerUtils.createPeerId({ number: 1, fixture: false})
+
+      await expect(nodes[0].peerRouting.findPeer(unknownPeers[0]))
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', 'NOT_FOUND')
+    })
   })
 
   describe('via delegate router', () => {
