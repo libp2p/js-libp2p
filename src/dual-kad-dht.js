@@ -209,10 +209,14 @@ class DualKadDHT extends EventEmitter {
     let success = 0
     const errors = []
 
-    for await (const event of merge(
-      this._lan.provide(key, options),
-      this._wan.provide(key, options)
-    )) {
+    const dhts = [this._lan]
+
+    // only run provide on the wan if we are in server mode
+    if (this._wan.isServer()) {
+      dhts.push(this._wan)
+    }
+
+    for await (const event of merge(...dhts.map(dht => dht.provide(key, options)))) {
       yield event
 
       if (event.name === 'SENDING_QUERY') {

@@ -461,6 +461,46 @@ describe('KadDHT', () => {
       }
     })
 
+    it('does not provide to wan if in client mode', async function () {
+      const dhts = await tdht.spawn(4)
+
+      // connect peers
+      await Promise.all([
+        tdht.connect(dhts[0], dhts[1]),
+        tdht.connect(dhts[1], dhts[2]),
+        tdht.connect(dhts[2], dhts[3])
+      ])
+
+      const wanSpy = sinon.spy(dhts[0]._wan, 'provide')
+      const lanSpy = sinon.spy(dhts[0]._lan, 'provide')
+
+      await drain(dhts[0].provide(values[0].cid))
+
+      expect(wanSpy.called).to.be.false()
+      expect(lanSpy.called).to.be.true()
+    })
+
+    it('provides to wan if in server mode', async function () {
+      const dhts = await tdht.spawn(4)
+
+      // connect peers
+      await Promise.all([
+        tdht.connect(dhts[0], dhts[1]),
+        tdht.connect(dhts[1], dhts[2]),
+        tdht.connect(dhts[2], dhts[3])
+      ])
+
+      const wanSpy = sinon.spy(dhts[0]._wan, 'provide')
+      const lanSpy = sinon.spy(dhts[0]._lan, 'provide')
+
+      dhts[0].enableServerMode()
+
+      await drain(dhts[0].provide(values[0].cid))
+
+      expect(wanSpy.called).to.be.true()
+      expect(lanSpy.called).to.be.true()
+    })
+
     it('find providers', async function () {
       this.timeout(20 * 1000)
 
