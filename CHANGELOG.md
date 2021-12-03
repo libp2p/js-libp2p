@@ -1,3 +1,12 @@
+## [0.27.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.1...v0.27.2) (2021-12-03)
+
+
+### Bug Fixes
+
+* only provide to wan in server mode ([#264](https://github.com/libp2p/js-libp2p-kad-dht/issues/264)) ([79c0bdb](https://github.com/libp2p/js-libp2p-kad-dht/commit/79c0bdb6471adbea69383f3537c73cf8c5797de8))
+
+
+
 ## [0.27.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.0...v0.27.1) (2021-12-02)
 
 
