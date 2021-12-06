@@ -82,7 +82,6 @@
   "dependencies": {
     "@motrix/nat-api": "^0.3.1",
     "@vascosantos/moving-average": "^1.1.0",
-    "abort-controller": "^3.0.0",
     "abortable-iterator": "^3.0.0",
     "aggregate-error": "^3.1.0",
     "any-signal": "^2.1.1",
@@ -136,7 +135,6 @@
     "@chainsafe/libp2p-noise": "^4.0.0",
     "@nodeutils/defaults-deep": "^1.1.0",
     "@types/es6-promisify": "^6.0.0",
-    "@types/node": "^16.0.1",
     "@types/node-forge": "^0.10.1",
     "@types/varint": "^6.0.0",
     "aegir": "^36.0.0",

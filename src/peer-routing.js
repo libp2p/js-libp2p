@@ -1,9 +1,5 @@
 'use strict'
 
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:peer-routing'), {
-  error: debug('libp2p:peer-routing:err')
-})
 const errCode = require('err-code')
 const {
   storeAddresses,
@@ -15,13 +11,7 @@ const { TimeoutController } = require('timeout-abort-controller')
 const merge = require('it-merge')
 const { pipe } = require('it-pipe')
 const first = require('it-first')
-const drain = require('it-drain')
 const filter = require('it-filter')
-const {
-  setDelayedInterval,
-  clearDelayedInterval
-// @ts-ignore module with no types
-} = require('set-delayed-interval')
 const { DHTPeerRouting } = require('./dht/dht-peer-routing')
 
 /**
@@ -31,14 +21,7 @@ const { DHTPeerRouting } = require('./dht/dht-peer-routing')
  */
 
 /**
- * @typedef {Object} RefreshManagerOptions
- * @property {boolean} [enabled = true] - Whether to enable the Refresh manager
- * @property {number} [bootDelay = 6e5] - Boot delay to start the Refresh Manager (in ms)
- * @property {number} [interval = 10e3] - Interval between each Refresh Manager run (in ms)
- * @property {number} [timeout = 10e3] - How long to let each refresh run (in ms)
- *
  * @typedef {Object} PeerRoutingOptions
- * @property {RefreshManagerOptions} [refreshManager]
  */
 
 class PeerRouting {
@@ -56,42 +39,6 @@ class PeerRouting {
     if (libp2p._dht && libp2p._config.dht.enabled) {
       this._routers.push(new DHTPeerRouting(libp2p._dht))
     }
-
-    this._refreshManagerOptions = libp2p._options.peerRouting.refreshManager
-
-    this._findClosestPeersTask = this._findClosestPeersTask.bind(this)
-  }
-
-  /**
-   * Start peer routing service.
-   */
-  start () {
-    if (!this._routers.length || this._timeoutId || !this._refreshManagerOptions.enabled) {
-      return
-    }
-
-    this._timeoutId = setDelayedInterval(
-      this._findClosestPeersTask, this._refreshManagerOptions.interval, this._refreshManagerOptions.bootDelay
-    )
-  }
-
-  /**
-   * Recurrent task to find closest peers and add their addresses to the Address Book.
-   */
-  async _findClosestPeersTask () {
-    try {
-      // nb getClosestPeers adds the addresses to the address book
-      await drain(this.getClosestPeers(this._peerId.id, { timeout: this._refreshManagerOptions.timeout || 10e3 }))
-    } catch (/** @type {any} */ err) {
-      log.error(err)
-    }
-  }
-
-  /**
-   * Stop peer routing service.
-   */
-  stop () {
-    clearDelayedInterval(this._timeoutId)
   }
 
   /**

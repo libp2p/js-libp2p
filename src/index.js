@@ -384,7 +384,6 @@ class Libp2p extends EventEmitter {
       this._isStarted = false
 
       this.relay && this.relay.stop()
-      this.peerRouting.stop()
       this._autodialler.stop()
       await (this._dht && this._dht.stop())
 
@@ -663,8 +662,6 @@ class Libp2p extends EventEmitter {
 
     // Relay
     this.relay && this.relay.start()
-
-    this.peerRouting.start()
   }
 
   /**

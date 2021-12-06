@@ -62,13 +62,6 @@ async function main() {
       contentRouting: [delegatedContentRouting],
       peerRouting: [delegatedPeerRouting]
     },
-    peerRouting: {
-      refreshManager: {
-        enabled: true,
-        interval: 1000,
-        bootDelay: 11111
-      }
-    },
     dialer: {
       maxParallelDials: 100,
       maxDialsPerPeer: 4,

@@ -6,9 +6,7 @@ const nock = require('nock')
 const sinon = require('sinon')
 const intoStream = require('into-stream')
 
-const delay = require('delay')
 const pDefer = require('p-defer')
-const pWaitFor = require('p-wait-for')
 const mergeOptions = require('merge-options')
 const drain = require('it-drain')
 const all = require('it-all')
@@ -451,111 +449,6 @@ describe('peer-routing', () => {
       const peers = await all(node.peerRouting.getClosestPeers('a cid'))
 
       expect(peers).to.be.an('array').with.a.lengthOf(1).that.deep.equals(results)
-    })
-  })
-
-  describe('peer routing refresh manager service', () => {
-    let node
-    let peerIds
-
-    before(async () => {
-      peerIds = await peerUtils.createPeerId({ number: 2 })
-    })
-
-    afterEach(() => {
-      sinon.restore()
-
-      return node && node.stop()
-    })
-
-    it('should be enabled and start by default', async () => {
-      const results = [
-        { id: peerIds[0], multiaddrs: [new Multiaddr('/ip4/30.0.0.1/tcp/2000')] },
-        { id: peerIds[1], multiaddrs: [new Multiaddr('/ip4/32.0.0.1/tcp/2000')] }
-      ]
-
-      ;[node] = await peerUtils.createPeer({
-        config: mergeOptions(routingOptions, {
-          peerRouting: {
-            refreshManager: {
-              bootDelay: 100
-            }
-          }
-        }),
-        started: false
-      })
-
-      sinon.spy(node.peerStore.addressBook, 'add')
-      sinon.stub(node._dht, 'getClosestPeers').callsFake(function * () {
-        yield results[0]
-        yield results[1]
-      })
-
-      await node.start()
-
-      await pWaitFor(() => node._dht.getClosestPeers.callCount === 1)
-      await pWaitFor(() => node.peerStore.addressBook.add.callCount === results.length)
-
-      const call0 = node.peerStore.addressBook.add.getCall(0)
-      expect(call0.args[0].equals(results[0].id))
-      call0.args[1].forEach((m, index) => {
-        expect(m.equals(results[0].multiaddrs[index]))
-      })
-
-      const call1 = node.peerStore.addressBook.add.getCall(1)
-      expect(call1.args[0].equals(results[1].id))
-      call0.args[1].forEach((m, index) => {
-        expect(m.equals(results[1].multiaddrs[index]))
-      })
-    })
-
-    it('should support being disabled', async () => {
-      [node] = await peerUtils.createPeer({
-        config: mergeOptions(routingOptions, {
-          peerRouting: {
-            refreshManager: {
-              bootDelay: 100,
-              enabled: false
-            }
-          }
-        }),
-        started: false
-      })
-
-      sinon.stub(node._dht, 'getClosestPeers').callsFake(function * () {
-        yield
-        throw new Error('should not be called')
-      })
-
-      await node.start()
-      await delay(100)
-
-      expect(node._dht.getClosestPeers.callCount === 0)
-    })
-
-    it('should start and run recurrently on interval', async () => {
-      [node] = await peerUtils.createPeer({
-        config: mergeOptions(routingOptions, {
-          peerRouting: {
-            refreshManager: {
-              interval: 500,
-              bootDelay: 200
-            }
-          }
-        }),
-        started: false
-      })
-
-      sinon.stub(node._dht, 'getClosestPeers').callsFake(function * () {
-        yield { id: peerIds[0], multiaddrs: [new Multiaddr('/ip4/30.0.0.1/tcp/2000')] }
-      })
-
-      await node.start()
-
-      await delay(300)
-      expect(node._dht.getClosestPeers.callCount).to.eql(1)
-      await delay(500)
-      expect(node._dht.getClosestPeers.callCount).to.eql(2)
     })
   })
 })
