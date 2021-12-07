@@ -8,7 +8,7 @@ const PeerId = require('peer-id')
 const utils = require('../utils')
 const length = require('it-length')
 const { TimeoutController } = require('timeout-abort-controller')
-const { TABLE_REFRESH_INTERVAL } = require('../constants')
+const { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } = require('../constants')
 
 /**
  * @typedef {import('./types').KBucketPeer} KBucketPeer
@@ -32,12 +32,14 @@ class RoutingTableRefresh {
    * @param {import('./').RoutingTable} params.routingTable
    * @param {boolean} params.lan
    * @param {number} [params.refreshInterval]
+   * @param {number} [params.refreshQueryTimeout]
    */
-  constructor ({ peerRouting, routingTable, refreshInterval, lan }) {
+  constructor ({ peerRouting, routingTable, refreshInterval, refreshQueryTimeout, lan }) {
     this._log = utils.logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table:refresh`)
     this._peerRouting = peerRouting
     this._routingTable = routingTable
     this._refreshInterval = refreshInterval || TABLE_REFRESH_INTERVAL
+    this._refreshQueryTimeout = refreshQueryTimeout || TABLE_REFRESH_QUERY_TIMEOUT
 
     /** @type {Date[]} */
     this.commonPrefixLengthRefreshedAt = []
@@ -135,7 +137,7 @@ class RoutingTableRefresh {
 
     this._log('starting refreshing cpl %s with key %p (routing table size was %s)', cpl, peerId, this._routingTable.kb.count())
 
-    const controller = new TimeoutController(60000)
+    const controller = new TimeoutController(this._refreshQueryTimeout)
 
     try {
       const peers = await length(this._peerRouting.getClosestPeers(peerId.toBytes(), { signal: controller.signal }))

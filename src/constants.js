@@ -39,5 +39,14 @@ exports.ALPHA = 3
 // How often we look for our closest DHT neighbours
 exports.QUERY_SELF_INTERVAL = Number(5 * minute)
 
+// How long to look for our closest DHT neighbours for
+exports.QUERY_SELF_TIMEOUT = Number(30 * second)
+
 // How often we try to find new peers
 exports.TABLE_REFRESH_INTERVAL = Number(5 * minute)
+
+// How how long to look for new peers for
+exports.TABLE_REFRESH_QUERY_TIMEOUT = Number(30 * second)
+
+// When a timeout is not specified, run a query for this long
+exports.DEFAULT_QUERY_TIMEOUT = Number(30 * second)

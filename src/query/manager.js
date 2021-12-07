@@ -1,9 +1,10 @@
 'use strict'
 
 const { AbortController } = require('native-abort-controller')
+const { TimeoutController } = require('timeout-abort-controller')
 const { anySignal } = require('any-signal')
 const {
-  ALPHA, K
+  ALPHA, K, DEFAULT_QUERY_TIMEOUT
 } = require('../constants')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const { logger } = require('../utils')
@@ -78,6 +79,14 @@ class QueryManager {
       throw new Error('QueryManager not started')
     }
 
+    let timeoutController
+
+    if (!options.signal) {
+      // don't let queries run forever
+      timeoutController = new TimeoutController(DEFAULT_QUERY_TIMEOUT)
+      options.signal = timeoutController.signal
+    }
+
     // allow us to stop queries on shut down
     const abortController = new AbortController()
     this._controllers.add(abortController)
@@ -139,6 +148,11 @@ class QueryManager {
       }
     } finally {
       this._controllers.delete(abortController)
+
+      if (timeoutController) {
+        timeoutController.clear()
+      }
+
       cleanUp.emit('cleanup')
       log(`query:done in ${Date.now() - (startTime || 0)}ms`)
     }

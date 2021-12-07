@@ -363,7 +363,6 @@ class KadDHT extends EventEmitter {
       this._queryManager.start(),
       this._network.start(),
       this._routingTable.start(),
-      this._routingTableRefresh.start(),
       this._topologyListener.start(),
       this._querySelf.start()
     ])
@@ -372,6 +371,7 @@ class KadDHT extends EventEmitter {
       this._bootstrapPeers.map(peerData => this._routingTable.add(peerData.id))
     )
 
+    await this._routingTableRefresh.start()
     await this.refreshRoutingTable()
   }
 
