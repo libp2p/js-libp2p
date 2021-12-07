@@ -1,7 +1,7 @@
 'use strict'
 
 // @ts-ignore nat-api does not export types
-const NatAPI = require('@motrix/nat-api')
+const NatAPI = require('nat-api')
 const debug = require('debug')
 const { promisify } = require('es6-promisify')
 const { Multiaddr } = require('multiaddr')

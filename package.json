@@ -69,7 +69,7 @@
     "node": ">=15.0.0"
   },
   "browser": {
-    "@motrix/nat-api": false
+    "nat-api": false
   },
   "eslintConfig": {
     "extends": "ipfs",
@@ -80,7 +80,6 @@
     ]
   },
   "dependencies": {
-    "@motrix/nat-api": "^0.3.1",
     "@vascosantos/moving-average": "^1.1.0",
     "abort-controller": "^3.0.0",
     "abortable-iterator": "^3.0.0",
@@ -114,6 +113,7 @@
     "multiformats": "^9.0.0",
     "multistream-select": "^2.0.0",
     "mutable-proxy": "^1.0.0",
+    "nat-api": "^0.3.1",
     "node-forge": "^0.10.0",
     "p-any": "^3.0.0",
     "p-fifo": "^1.0.0",
