@@ -15,7 +15,6 @@ const { TimeoutController } = require('timeout-abort-controller')
 const merge = require('it-merge')
 const { pipe } = require('it-pipe')
 const first = require('it-first')
-const drain = require('it-drain')
 const filter = require('it-filter')
 const {
   setDelayedInterval,
@@ -77,13 +76,25 @@ class PeerRouting {
 
   /**
    * Recurrent task to find closest peers and add their addresses to the Address Book.
+   * Does not include the DHT (if present) as it has it's own method of periodically
+   * finding the closest peers
    */
   async _findClosestPeersTask () {
+    const timeout = new TimeoutController(this._refreshManagerOptions.timeout || 10e3)
+
     try {
-      // nb getClosestPeers adds the addresses to the address book
-      await drain(this.getClosestPeers(this._peerId.id, { timeout: this._refreshManagerOptions.timeout || 10e3 }))
+      const routers = this._routers.filter(router => !(router instanceof DHTPeerRouting))
+
+      await pipe(
+        merge(
+          ...routers.map(router => router.getClosestPeers(this._peerId.id, { signal: timeout.signal }))
+        ),
+        (source) => storeAddresses(source, this._peerStore)
+      )
     } catch (/** @type {any} */ err) {
       log.error(err)
+    } finally {
+      timeout.clear()
     }
   }
 
