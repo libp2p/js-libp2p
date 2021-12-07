@@ -1,3 +1,12 @@
+## [0.10.5](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.4...v0.10.5) (2021-12-07)
+
+
+### Performance Improvements
+
+* do not call varint.decode() if buffer has 0 length ([#125](https://github.com/libp2p/js-libp2p-mplex/issues/125)) ([92f1727](https://github.com/libp2p/js-libp2p-mplex/commit/92f1727342c278a8dd025623cc4fe6cb265485e9))
+
+
+
 ## [0.10.4](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.3...v0.10.4) (2021-07-08)
 
 
