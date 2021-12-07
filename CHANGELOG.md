@@ -1,3 +1,12 @@
+## [0.27.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.2...v0.27.3) (2021-12-07)
+
+
+### Bug Fixes
+
+* add default query timeouts ([#266](https://github.com/libp2p/js-libp2p-kad-dht/issues/266)) ([4df2c3f](https://github.com/libp2p/js-libp2p-kad-dht/commit/4df2c3f1f1a8de7583e71acecb64a03e050263d4))
+
+
+
 ## [0.27.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.1...v0.27.2) (2021-12-03)
 
 
