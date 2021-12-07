@@ -516,13 +516,13 @@ class Keychain {
    */
   async rotateKeychainPass (oldPass, newPass) {
     if (typeof oldPass !== 'string') {
-      return throwDelayed(errcode(new Error(`Invalid old pass type '${typeof oldPass}'`), 'ERR_INVALID_OLD_PASS_TYPE'))
+      return throwDelayed(errcode(new Error(`Invalid old pass type '${typeof oldPass}'`), codes.ERR_INVALID_OLD_PASS_TYPE))
     }
     if (typeof newPass !== 'string') {
-      return throwDelayed(errcode(new Error(`Invalid new pass type '${typeof newPass}'`), 'ERR_INVALID_NEW_PASS_TYPE'))
+      return throwDelayed(errcode(new Error(`Invalid new pass type '${typeof newPass}'`), codes.ERR_INVALID_NEW_PASS_TYPE))
     }
     if (newPass.length < 20) {
-      return throwDelayed(errcode(new Error(`Invalid pass length ${newPass.length}`), 'ERR_INVALID_PASS_LENGTH'))
+      return throwDelayed(errcode(new Error(`Invalid pass length ${newPass.length}`), codes.ERR_INVALID_PASS_LENGTH))
     }
     log('recreating keychain')
     const oldDek = privates.get(this).dek
