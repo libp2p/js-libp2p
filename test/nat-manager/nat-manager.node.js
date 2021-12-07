@@ -244,6 +244,10 @@ describe('Nat Manager (TCP)', () => {
   })
 
   it('shuts the nat api down when stopping', async function () {
+    if (process.env.CI) {
+      return this.skip('CI environments will not let us map external ports')
+    }
+
     function findRoutableAddress () {
       const interfaces = networkInterfaces()
 
@@ -264,7 +268,6 @@ describe('Nat Manager (TCP)', () => {
       return this.skip()
     }
 
-    console.info('creating nat manager') // eslint-disable-line no-console
     const {
       natManager
     } = await createNatManager([
@@ -277,7 +280,6 @@ describe('Nat Manager (TCP)', () => {
     // use the actual nat manager client not the stub
     delete natManager._client
 
-    console.info('starting nat manager') // eslint-disable-line no-console
     await natManager._start()
 
     const client = natManager._client
@@ -286,7 +288,6 @@ describe('Nat Manager (TCP)', () => {
     // ensure the client was stopped
     const spy = sinon.spy(client, 'destroy')
 
-    console.info('stopping nat manager') // eslint-disable-line no-console
     await natManager.stop()
 
     expect(spy.called).to.be.true()
