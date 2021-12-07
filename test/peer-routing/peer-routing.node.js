@@ -106,6 +106,95 @@ describe('peer-routing', () => {
         .to.eventually.be.rejected()
         .and.to.have.property('code', 'ERR_FIND_SELF')
     })
+
+    it('should handle error thrown synchronously during find peer', async () => {
+      const unknownPeers = await peerUtils.createPeerId({ number: 1, fixture: false })
+
+      nodes[0].peerRouting._routers = [{
+        findPeer () {
+          throw new Error('Thrown sync')
+        }
+      }]
+
+      await expect(nodes[0].peerRouting.findPeer(unknownPeers[0]))
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', 'ERR_NOT_FOUND')
+    })
+
+    it('should handle error thrown asynchronously during find peer', async () => {
+      const unknownPeers = await peerUtils.createPeerId({ number: 1, fixture: false })
+
+      nodes[0].peerRouting._routers = [{
+        async findPeer () {
+          throw new Error('Thrown async')
+        }
+      }]
+
+      await expect(nodes[0].peerRouting.findPeer(unknownPeers[0]))
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', 'ERR_NOT_FOUND')
+    })
+
+    it('should handle error thrown asynchronously after delay during find peer', async () => {
+      const unknownPeers = await peerUtils.createPeerId({ number: 1, fixture: false })
+
+      nodes[0].peerRouting._routers = [{
+        async findPeer () {
+          await delay(100)
+          throw new Error('Thrown async after delay')
+        }
+      }]
+
+      await expect(nodes[0].peerRouting.findPeer(unknownPeers[0]))
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', 'ERR_NOT_FOUND')
+    })
+
+    it('should return value when one router errors synchronously and another returns a value', async () => {
+      const [peer] = await peerUtils.createPeerId({ number: 1, fixture: false })
+
+      nodes[0].peerRouting._routers = [{
+        findPeer () {
+          throw new Error('Thrown sync')
+        }
+      }, {
+        async findPeer () {
+          return Promise.resolve({
+            id: peer,
+            multiaddrs: []
+          })
+        }
+      }]
+
+      await expect(nodes[0].peerRouting.findPeer(peer))
+        .to.eventually.deep.equal({
+          id: peer,
+          multiaddrs: []
+        })
+    })
+
+    it('should return value when one router errors asynchronously and another returns a value', async () => {
+      const [peer] = await peerUtils.createPeerId({ number: 1, fixture: false })
+
+      nodes[0].peerRouting._routers = [{
+        async findPeer () {
+          throw new Error('Thrown sync')
+        }
+      }, {
+        async findPeer () {
+          return Promise.resolve({
+            id: peer,
+            multiaddrs: []
+          })
+        }
+      }]
+
+      await expect(nodes[0].peerRouting.findPeer(peer))
+        .to.eventually.deep.equal({
+          id: peer,
+          multiaddrs: []
+        })
+    })
   })
 
   describe('via delegate router', () => {

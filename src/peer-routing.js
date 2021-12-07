@@ -114,10 +114,15 @@ class PeerRouting {
 
     const output = await pipe(
       merge(
-        ...this._routers.map(router => [router.findPeer(id, options)])
+        ...this._routers.map(router => (async function * () {
+          try {
+            yield await router.findPeer(id, options)
+          } catch (err) {
+            log.error(err)
+          }
+        })())
       ),
       (source) => filter(source, Boolean),
-      // @ts-ignore findPeer resolves a Promise
       (source) => storeAddresses(source, this._peerStore),
       (source) => first(source)
     )
