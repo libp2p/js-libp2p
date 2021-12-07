@@ -10,6 +10,7 @@ const {
   uniquePeers,
   requirePeers
 } = require('./content-routing/utils')
+const { TimeoutController } = require('timeout-abort-controller')
 
 const merge = require('it-merge')
 const { pipe } = require('it-pipe')
@@ -34,6 +35,7 @@ const { DHTPeerRouting } = require('./dht/dht-peer-routing')
  * @property {boolean} [enabled = true] - Whether to enable the Refresh manager
  * @property {number} [bootDelay = 6e5] - Boot delay to start the Refresh Manager (in ms)
  * @property {number} [interval = 10e3] - Interval between each Refresh Manager run (in ms)
+ * @property {number} [timeout = 10e3] - How long to let each refresh run (in ms)
  *
  * @typedef {Object} PeerRoutingOptions
  * @property {RefreshManagerOptions} [refreshManager]
@@ -79,7 +81,7 @@ class PeerRouting {
   async _findClosestPeersTask () {
     try {
       // nb getClosestPeers adds the addresses to the address book
-      await drain(this.getClosestPeers(this._peerId.id))
+      await drain(this.getClosestPeers(this._peerId.id, { timeout: this._refreshManagerOptions.timeout || 10e3 }))
     } catch (/** @type {any} */ err) {
       log.error(err)
     }
@@ -137,12 +139,17 @@ class PeerRouting {
    *
    * @param {Uint8Array} key - A CID like key
    * @param {Object} [options]
-   * @param {number} [options.timeout=30e3] - How long the query can take.
+   * @param {number} [options.timeout=30e3] - How long the query can take
+   * @param {AbortSignal} [options.signal] - An AbortSignal to abort the request
    * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
   async * getClosestPeers (key, options = { timeout: 30e3 }) {
     if (!this._routers.length) {
       throw errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE')
+    }
+
+    if (options.timeout) {
+      options.signal = new TimeoutController(options.timeout).signal
     }
 
     yield * pipe(
