@@ -123,11 +123,6 @@ async function main() {
       dht: {
         enabled: true,
         kBucketSize: 20,
-        randomWalk: {
-          enabled: true,            // Allows to disable discovery (enabled by default)
-          interval: 300e3,
-          timeout: 10e3
-        },
         clientMode: true,
         validators: {
           pk: Libp2pRecord.validator.validators.pk

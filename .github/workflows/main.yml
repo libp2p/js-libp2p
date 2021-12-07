@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
-      - run: npx aegir test -t node --cov --bail
+      - run: npm run test:node -- --cov --bail
       - uses: codecov/codecov-action@v1
   test-chrome:
     needs: check
@@ -48,7 +48,7 @@ jobs:
         with:
           node-version: lts/*
       - run: npm install
-      - run: npx aegir test -t browser -t webworker --bail
+      - run: npm run test:browser -- -t browser -t webworker --bail
   test-firefox:
     needs: check
     runs-on: ubuntu-latest
@@ -58,7 +58,7 @@ jobs:
         with:
           node-version: lts/*
       - run: npm install
-      - run: npx aegir test -t browser -t webworker --bail -- --browser firefox
+      - run: npm run test:browser -- -t browser -t webworker --bail -- --browser firefox
   test-ts:
     needs: check
     runs-on: ubuntu-latest

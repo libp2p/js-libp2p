@@ -105,7 +105,7 @@ class PeerRouting {
    */
   async findPeer (id, options) { // eslint-disable-line require-await
     if (!this._routers.length) {
-      throw errCode(new Error('No peer routers available'), errors.codes.ERR_NO_ROUTERS)
+      throw errCode(new Error('No peer routers available'), errors.codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     if (id.toB58String() === this._peerId.toB58String()) {
@@ -145,7 +145,7 @@ class PeerRouting {
    */
   async * getClosestPeers (key, options = { timeout: 30e3 }) {
     if (!this._routers.length) {
-      throw errCode(new Error('No peer routers available'), errors.codes.ERR_NO_ROUTERS)
+      throw errCode(new Error('No peer routers available'), errors.codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     if (options.timeout) {

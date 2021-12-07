@@ -7,7 +7,7 @@
     "libp2p": "file:../..",
     "libp2p-bootstrap": "^0.13.0",
     "libp2p-delegated-content-routing": "^0.11.0",
-    "libp2p-delegated-peer-routing": "^0.10.0",
+    "libp2p-delegated-peer-routing": "^0.11.1",
     "libp2p-gossipsub": "^0.9.0",
     "libp2p-interfaces": "^1.0.1",
     "libp2p-kad-dht": "^0.26.5",

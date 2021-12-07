@@ -13,9 +13,6 @@ const routingOptions = mergeOptions(baseOptions, {
   config: {
     dht: {
       kBucketSize: 20,
-      randomWalk: {
-        enabled: true
-      },
       enabled: true
     }
   }
