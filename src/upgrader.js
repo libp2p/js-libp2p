@@ -297,7 +297,7 @@ class Upgrader {
     maConn.timeline.upgraded = Date.now()
 
     const errConnectionNotMultiplexed = () => {
-      throw errCode(new Error('connection is not multiplexed'), 'ERR_CONNECTION_NOT_MULTIPLEXED')
+      throw errCode(new Error('connection is not multiplexed'), codes.ERR_CONNECTION_NOT_MULTIPLEXED)
     }
 
     // Create the connection

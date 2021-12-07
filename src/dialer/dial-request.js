@@ -7,6 +7,7 @@ const FIFO = require('p-fifo')
 const pAny = require('p-any')
 // @ts-expect-error setMaxListeners is missing from the types
 const { setMaxListeners } = require('events')
+const { codes } = require('../errors')
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
@@ -55,7 +56,7 @@ class DialRequest {
     const tokens = this.dialer.getTokens(this.addrs.length)
     // If no tokens are available, throw
     if (tokens.length < 1) {
-      throw errCode(new Error('No dial tokens available'), 'ERR_NO_DIAL_TOKENS')
+      throw errCode(new Error('No dial tokens available'), codes.ERR_NO_DIAL_TOKENS)
     }
 
     const tokenHolder = new FIFO()

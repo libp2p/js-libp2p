@@ -296,7 +296,7 @@ describe('keychain', () => {
     it('requires plain data as a Uint8Array', async () => {
       const err = await ks.cms.encrypt(rsaKeyName, 'plain data').then(fail, err => err)
       expect(err).to.exist()
-      expect(err).to.have.property('code', 'ERR_INVALID_PARAMS')
+      expect(err).to.have.property('code', 'ERR_INVALID_PARAMETERS')
     })
 
     it('encrypts', async () => {
@@ -308,7 +308,7 @@ describe('keychain', () => {
     it('is a PKCS #7 message', async () => {
       const err = await ks.cms.decrypt('not CMS').then(fail, err => err)
       expect(err).to.exist()
-      expect(err).to.have.property('code', 'ERR_INVALID_PARAMS')
+      expect(err).to.have.property('code', 'ERR_INVALID_PARAMETERS')
     })
 
     it('is a PKCS #7 binary message', async () => {

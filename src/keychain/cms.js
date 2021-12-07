@@ -10,6 +10,7 @@ const { certificateForKey, findAsync } = require('./util')
 const errcode = require('err-code')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const { codes } = require('../errors')
 
 const privates = new WeakMap()
 
@@ -31,7 +32,7 @@ class CMS {
    */
   constructor (keychain, dek) {
     if (!keychain) {
-      throw errcode(new Error('keychain is required'), 'ERR_KEYCHAIN_REQUIRED')
+      throw errcode(new Error('keychain is required'), codes.ERR_KEYCHAIN_REQUIRED)
     }
 
     this.keychain = keychain
@@ -49,7 +50,7 @@ class CMS {
    */
   async encrypt (name, plain) {
     if (!(plain instanceof Uint8Array)) {
-      throw errcode(new Error('Plain data must be a Uint8Array'), 'ERR_INVALID_PARAMS')
+      throw errcode(new Error('Plain data must be a Uint8Array'), codes.ERR_INVALID_PARAMETERS)
     }
 
     const key = await this.keychain.findKeyByName(name)
@@ -81,7 +82,7 @@ class CMS {
    */
   async decrypt (cmsData) {
     if (!(cmsData instanceof Uint8Array)) {
-      throw errcode(new Error('CMS data is required'), 'ERR_INVALID_PARAMS')
+      throw errcode(new Error('CMS data is required'), codes.ERR_INVALID_PARAMETERS)
     }
 
     let cms
@@ -91,7 +92,7 @@ class CMS {
       // @ts-ignore not defined
       cms = forge.pkcs7.messageFromAsn1(obj)
     } catch (/** @type {any} */ err) {
-      throw errcode(new Error('Invalid CMS: ' + err.message), 'ERR_INVALID_CMS')
+      throw errcode(new Error('Invalid CMS: ' + err.message), codes.ERR_INVALID_CMS)
     }
 
     // Find a recipient whose key we hold. We only deal with recipient certs
@@ -123,7 +124,7 @@ class CMS {
     if (!r) {
       // @ts-ignore cms types not defined
       const missingKeys = recipients.map(r => r.keyId)
-      throw errcode(new Error('Decryption needs one of the key(s): ' + missingKeys.join(', ')), 'ERR_MISSING_KEYS', {
+      throw errcode(new Error('Decryption needs one of the key(s): ' + missingKeys.join(', ')), codes.ERR_MISSING_KEYS, {
         missingKeys
       })
     }
@@ -131,7 +132,7 @@ class CMS {
     const key = await this.keychain.findKeyById(r.keyId)
 
     if (!key) {
-      throw errcode(new Error('No key available to decrypto'), 'ERR_NO_KEY')
+      throw errcode(new Error('No key available to decrypto'), codes.ERR_NO_KEY)
     }
 
     const pem = await this.keychain._getPrivateKey(key.name)

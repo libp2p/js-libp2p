@@ -5,6 +5,7 @@ const log = Object.assign(debug('libp2p:peer-routing'), {
   error: debug('libp2p:peer-routing:err')
 })
 const errCode = require('err-code')
+const errors = require('./errors')
 const {
   storeAddresses,
   uniquePeers,
@@ -104,11 +105,11 @@ class PeerRouting {
    */
   async findPeer (id, options) { // eslint-disable-line require-await
     if (!this._routers.length) {
-      throw errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE')
+      throw errCode(new Error('No peer routers available'), errors.codes.ERR_NO_ROUTERS)
     }
 
     if (id.toB58String() === this._peerId.toB58String()) {
-      throw errCode(new Error('Should not try to find self'), 'ERR_FIND_SELF')
+      throw errCode(new Error('Should not try to find self'), errors.codes.ERR_FIND_SELF)
     }
 
     const output = await pipe(
@@ -131,7 +132,7 @@ class PeerRouting {
       return output
     }
 
-    throw errCode(new Error('not found'), 'NOT_FOUND')
+    throw errCode(new Error(errors.messages.NOT_FOUND), errors.codes.ERR_NOT_FOUND)
   }
 
   /**
@@ -145,7 +146,7 @@ class PeerRouting {
    */
   async * getClosestPeers (key, options = { timeout: 30e3 }) {
     if (!this._routers.length) {
-      throw errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE')
+      throw errCode(new Error('No peer routers available'), errors.codes.ERR_NO_ROUTERS)
     }
 
     if (options.timeout) {

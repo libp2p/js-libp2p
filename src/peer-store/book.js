@@ -2,10 +2,7 @@
 
 const errcode = require('err-code')
 const PeerId = require('peer-id')
-
-const {
-  codes: { ERR_INVALID_PARAMETERS }
-} = require('../errors')
+const { codes } = require('../errors')
 
 /**
  * @param {any} data
@@ -48,7 +45,7 @@ class Book {
    * @param {any[]|any} data
    */
   set (peerId, data) {
-    throw errcode(new Error('set must be implemented by the subclass'), 'ERR_NOT_IMPLEMENTED')
+    throw errcode(new Error('set must be implemented by the subclass'), codes.ERR_NOT_IMPLEMENTED)
   }
 
   /**
@@ -94,7 +91,7 @@ class Book {
    */
   get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
     }
 
     const rec = this.data.get(peerId.toB58String())
@@ -111,7 +108,7 @@ class Book {
    */
   delete (peerId) {
     if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
     }
 
     if (!this.data.delete(peerId.toB58String())) {
