@@ -111,11 +111,11 @@ class PeerRouting {
 
     const output = await pipe(
       merge(
-        ...this._routers.map(router => (async function* () {
+        ...this._routers.map(router => (async function * () {
           try {
-            yield [await router.findPeer(id, options)];
+            yield [await router.findPeer(id, options)]
           } catch (err) {
-            yield;
+            yield
           }
         })())
       ),

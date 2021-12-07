@@ -108,11 +108,38 @@ describe('peer-routing', () => {
     })
 
     it('should handle error', async () => {
-      const unknownPeers = await peerUtils.createPeerId({ number: 1, fixture: false})
+      const node = (await peerUtils.createPeer({
+        started: true,
+        fixture: true,
+        number: 1,
+        populateAddressBooks: false,
+        config: routingOptions
+      })
+      )[0]
 
-      await expect(nodes[0].peerRouting.findPeer(unknownPeers[0]))
-        .to.eventually.be.rejected()
-        .and.to.have.property('code', 'NOT_FOUND')
+      // throw the exception in next process tick
+      node.peerRouting._routers = [{ findPeer: () => { return new Promise((_, reject) => setImmediate(() => reject('boom'))) } }]
+
+      // Sample an unknown peer
+      const unknownPeer = (await peerUtils.createPeerId({
+        number: 2,
+        fixture: false
+      }))[0]
+
+      let errThrown = false
+      // manually catch unhandled promise to make
+      // sure it does not get caught by aegir
+      try {
+      // provocate a synchronous exception
+        await node.peerRouting.findPeer(unknownPeer)
+      } catch (err) {
+        errThrown = true
+        expect(err.message).to.be.eql('not found')
+      }
+
+      expect(errThrown).to.be.eql(true)
+
+      await node.stop()
     })
   })
 
