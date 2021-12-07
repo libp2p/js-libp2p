@@ -261,7 +261,7 @@ describe('Nat Manager (TCP)', () => {
 
     if (!addr) {
       // skip test if no non-loopback address is found
-      this.skip()
+      return this.skip()
     }
 
     const {
