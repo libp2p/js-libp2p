@@ -1,6 +1,6 @@
 {
   "name": "libp2p-mplex",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -69,8 +69,8 @@
     "Jacob Heun <jacobheun@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Alan Shaw <alan.shaw@protocol.ai>",
-    "Victor Bjelkholm <victorbjelkholm@gmail.com>",
     "Alex Potsides <alex@achingbrain.net>",
+    "Victor Bjelkholm <victorbjelkholm@gmail.com>",
     "Francisco Baio Dias <xicombd@gmail.com>",
     "Stephen Whitmore <stephen.whitmore@gmail.com>",
     "Dmitriy Ryajov <dryajov@gmail.com>",
@@ -78,6 +78,7 @@
     "Pedro Teixeira <pedro@protocol.ai>",
     "Pius Nyakoojo <piusnyakoojo@gmail.com>",
     "Richard Littauer <richard.littauer@gmail.com>",
-    "Steven Allen <steven@stebalien.com>"
+    "Steven Allen <steven@stebalien.com>",
+    "tuyennhv <vutuyen2636@gmail.com>"
   ]
 }
