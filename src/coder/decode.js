@@ -32,7 +32,7 @@ class Decoder {
     this._buffer.append(chunk)
     const msgs = []
 
-    while (true) {
+    while (this._buffer.length) {
       if (!this._headerInfo) {
         try {
           this._headerInfo = this._decodeHeader(this._bufferProxy)
