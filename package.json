@@ -153,7 +153,7 @@
     "libp2p-delegated-content-routing": "^0.11.0",
     "libp2p-delegated-peer-routing": "^0.11.0",
     "libp2p-floodsub": "^0.27.0",
-    "libp2p-gossipsub": "^0.11.0",
+    "libp2p-gossipsub": "^0.12.1",
     "libp2p-interfaces-compliance-tests": "^2.0.1",
     "libp2p-interop": "^0.5.0",
     "libp2p-kad-dht": "^0.27.1",
