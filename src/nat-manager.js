@@ -123,6 +123,7 @@ class NatManager {
 
       log(`opening uPnP connection from ${publicIp}:${publicPort} to ${host}:${port}`)
 
+      console.info('creating mapping', publicIp, publicPort, port, transport.toUpperCase()) // eslint-disable-line no-console
       await client.map({
         publicPort,
         privatePort: port,
@@ -135,6 +136,8 @@ class NatManager {
         port: publicPort
       }, transport))
     }
+
+    console.info('done') // eslint-disable-line no-console
   }
 
   _getClient () {
