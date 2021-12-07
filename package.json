@@ -133,7 +133,7 @@
     "xsalsa20": "^1.1.0"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-noise": "^4.0.0",
+    "@chainsafe/libp2p-noise": "^5.0.0",
     "@nodeutils/defaults-deep": "^1.1.0",
     "@types/es6-promisify": "^6.0.0",
     "@types/node": "^16.0.1",
