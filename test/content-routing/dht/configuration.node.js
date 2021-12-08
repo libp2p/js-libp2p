@@ -38,13 +38,13 @@ describe('DHT subsystem is configurable', () => {
     })
 
     libp2p = await create(customOptions)
-    expect(libp2p._dht.isStarted).to.equal(false)
+    expect(libp2p._dht.isStarted()).to.equal(false)
 
     await libp2p.start()
-    expect(libp2p._dht.isStarted).to.equal(true)
+    expect(libp2p._dht.isStarted()).to.equal(true)
 
     await libp2p.stop()
-    expect(libp2p._dht.isStarted).to.equal(false)
+    expect(libp2p._dht.isStarted()).to.equal(false)
   })
 
   it('should not start if disabled once libp2p starts', async () => {
@@ -63,10 +63,10 @@ describe('DHT subsystem is configurable', () => {
     })
 
     libp2p = await create(customOptions)
-    expect(libp2p._dht.isStarted).to.equal(false)
+    expect(libp2p._dht.isStarted()).to.equal(false)
 
     await libp2p.start()
-    expect(libp2p._dht.isStarted).to.equal(false)
+    expect(libp2p._dht.isStarted()).to.equal(false)
   })
 
   it('should allow a manual start', async () => {
@@ -86,9 +86,9 @@ describe('DHT subsystem is configurable', () => {
 
     libp2p = await create(customOptions)
     await libp2p.start()
-    expect(libp2p._dht.isStarted).to.equal(false)
+    expect(libp2p._dht.isStarted()).to.equal(false)
 
     await libp2p._dht.start()
-    expect(libp2p._dht.isStarted).to.equal(true)
+    expect(libp2p._dht.isStarted()).to.equal(true)
   })
 })

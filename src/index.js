@@ -56,16 +56,9 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {MuxedStream} stream
  * @property {string} protocol
  *
- * @typedef {Object} RandomWalkOptions
- * @property {boolean} [enabled = false]
- * @property {number} [queriesPerPeriod = 1]
- * @property {number} [interval = 300e3]
- * @property {number} [timeout = 10e3]
- *
  * @typedef {Object} DhtOptions
  * @property {boolean} [enabled = false]
  * @property {number} [kBucketSize = 20]
- * @property {RandomWalkOptions} [randomWalk]
  * @property {boolean} [clientMode]
  * @property {import('libp2p-interfaces/src/types').DhtSelectors} [selectors]
  * @property {import('libp2p-interfaces/src/types').DhtValidators} [validators]
