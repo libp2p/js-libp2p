@@ -10,7 +10,6 @@ const duplexPair = require('it-pair/duplex')
 const { Multiaddr } = require('multiaddr')
 const pWaitFor = require('p-wait-for')
 const { toString: unit8ArrayToString } = require('uint8arrays/to-string')
-
 const { codes: Errors } = require('../../src/errors')
 const IdentifyService = require('../../src/identify')
 const multicodecs = IdentifyService.multicodecs
@@ -22,7 +21,7 @@ const baseOptions = require('../utils/base-options.browser')
 const { updateSelfPeerRecord } = require('../../src/record/utils')
 const pkg = require('../../package.json')
 const AddressManager = require('../../src/address-manager')
-
+const { MemoryDatastore } = require('datastore-core/memory')
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
@@ -38,10 +37,16 @@ describe('Identify', () => {
       PeerId.createFromJSON(Peers[1])
     ]))
 
-    localPeerStore = new PeerStore({ peerId: localPeer })
+    localPeerStore = new PeerStore({
+      peerId: localPeer,
+      datastore: new MemoryDatastore()
+    })
     localPeerStore.protoBook.set(localPeer, protocols)
 
-    remotePeerStore = new PeerStore({ peerId: remotePeer })
+    remotePeerStore = new PeerStore({
+      peerId: remotePeer,
+      datastore: new MemoryDatastore()
+    })
     remotePeerStore.protoBook.set(remotePeer, protocols)
 
     localAddressManager = new AddressManager(localPeer)
@@ -103,7 +108,7 @@ describe('Identify', () => {
     expect(localIdentify.peerStore.protoBook.set.callCount).to.equal(1)
 
     // Validate the remote peer gets updated in the peer store
-    const addresses = localIdentify.peerStore.addressBook.get(remotePeer)
+    const addresses = await localIdentify.peerStore.addressBook.get(remotePeer)
     expect(addresses).to.exist()
     expect(addresses).have.lengthOf(listenMaddrs.length)
     expect(addresses.map((a) => a.multiaddr)[0].equals(listenMaddrs[0]))
@@ -149,7 +154,7 @@ describe('Identify', () => {
 
     sinon.spy(localIdentify.peerStore.addressBook, 'set')
     sinon.spy(localIdentify.peerStore.protoBook, 'set')
-    sinon.spy(localIdentify.peerStore.metadataBook, 'set')
+    sinon.spy(localIdentify.peerStore.metadataBook, 'setValue')
 
     // Run identify
     await Promise.all([
@@ -164,7 +169,7 @@ describe('Identify', () => {
     expect(localIdentify.peerStore.addressBook.set.callCount).to.equal(1)
     expect(localIdentify.peerStore.protoBook.set.callCount).to.equal(1)
 
-    const metadataArgs = localIdentify.peerStore.metadataBook.set.firstCall.args
+    const metadataArgs = localIdentify.peerStore.metadataBook.setValue.firstCall.args
     expect(metadataArgs[0].id.bytes).to.equal(remotePeer.bytes)
     expect(metadataArgs[1]).to.equal('AgentVersion')
     expect(unit8ArrayToString(metadataArgs[2])).to.equal(agentVersion)
@@ -221,13 +226,16 @@ describe('Identify', () => {
       .and.to.have.property('code', Errors.ERR_INVALID_PEER)
   })
 
-  it('should store host data and protocol version into metadataBook', () => {
+  it('should store host data and protocol version into metadataBook', async () => {
     const agentVersion = 'js-project/1.0.0'
-    const peerStore = new PeerStore({ peerId: localPeer })
+    const peerStore = new PeerStore({
+      peerId: localPeer,
+      datastore: new MemoryDatastore()
+    })
 
-    sinon.spy(peerStore.metadataBook, 'set')
+    sinon.spy(peerStore.metadataBook, 'setValue')
 
-    new IdentifyService({ // eslint-disable-line no-new
+    const service = new IdentifyService({ // eslint-disable-line no-new
       libp2p: {
         peerId: localPeer,
         connectionManager: new EventEmitter(),
@@ -243,13 +251,17 @@ describe('Identify', () => {
       protocols
     })
 
-    expect(peerStore.metadataBook.set.callCount).to.eql(2)
+    await service.start()
 
-    const storedAgentVersion = peerStore.metadataBook.getValue(localPeer, 'AgentVersion')
-    const storedProtocolVersion = peerStore.metadataBook.getValue(localPeer, 'ProtocolVersion')
+    expect(peerStore.metadataBook.setValue.callCount).to.eql(2)
+
+    const storedAgentVersion = await peerStore.metadataBook.getValue(localPeer, 'AgentVersion')
+    const storedProtocolVersion = await peerStore.metadataBook.getValue(localPeer, 'ProtocolVersion')
 
     expect(agentVersion).to.eql(unit8ArrayToString(storedAgentVersion))
     expect(storedProtocolVersion).to.exist()
+
+    await service.stop()
   })
 
   describe('push', () => {
@@ -258,8 +270,11 @@ describe('Identify', () => {
       const connectionManager = new EventEmitter()
       connectionManager.getConnection = () => { }
 
-      const localPeerStore = new PeerStore({ peerId: localPeer })
-      localPeerStore.protoBook.set(localPeer, storedProtocols)
+      const localPeerStore = new PeerStore({
+        peerId: localPeer,
+        datastore: new MemoryDatastore()
+      })
+      await localPeerStore.protoBook.set(localPeer, storedProtocols)
 
       const localIdentify = new IdentifyService({
         libp2p: {
@@ -273,8 +288,11 @@ describe('Identify', () => {
         }
       })
 
-      const remotePeerStore = new PeerStore({ peerId: remotePeer })
-      remotePeerStore.protoBook.set(remotePeer, storedProtocols)
+      const remotePeerStore = new PeerStore({
+        peerId: remotePeer,
+        datastore: new MemoryDatastore()
+      })
+      await remotePeerStore.protoBook.set(remotePeer, storedProtocols)
 
       const remoteIdentify = new IdentifyService({
         libp2p: {
@@ -316,7 +334,7 @@ describe('Identify', () => {
       expect(remoteIdentify.peerStore.addressBook.consumePeerRecord.callCount).to.equal(2)
       expect(remoteIdentify.peerStore.protoBook.set.callCount).to.equal(1)
 
-      const addresses = localIdentify.peerStore.addressBook.get(localPeer)
+      const addresses = await localIdentify.peerStore.addressBook.get(localPeer)
       expect(addresses).to.exist()
       expect(addresses).have.lengthOf(listenMaddrs.length)
       expect(addresses.map((a) => a.multiaddr)).to.eql(listenMaddrs)
@@ -332,8 +350,11 @@ describe('Identify', () => {
       const connectionManager = new EventEmitter()
       connectionManager.getConnection = () => { }
 
-      const localPeerStore = new PeerStore({ peerId: localPeer })
-      localPeerStore.protoBook.set(localPeer, storedProtocols)
+      const localPeerStore = new PeerStore({
+        peerId: localPeer,
+        datastore: new MemoryDatastore()
+      })
+      await localPeerStore.protoBook.set(localPeer, storedProtocols)
 
       const localIdentify = new IdentifyService({
         libp2p: {
@@ -347,14 +368,17 @@ describe('Identify', () => {
         }
       })
 
-      const remotePeerStore = new PeerStore({ peerId: remotePeer })
+      const remotePeerStore = new PeerStore({
+        peerId: remotePeer,
+        datastore: new MemoryDatastore()
+      })
       remotePeerStore.protoBook.set(remotePeer, storedProtocols)
 
       const remoteIdentify = new IdentifyService({
         libp2p: {
           peerId: remotePeer,
           connectionManager,
-          peerStore: new PeerStore({ peerId: remotePeer }),
+          peerStore: remotePeerStore,
           multiaddrs: [],
           _options: { host: {} },
           _config: { protocolPrefix: 'ipfs' },
@@ -492,11 +516,15 @@ describe('Identify', () => {
       await libp2p.identifyService.identify.firstCall.returnValue
       sinon.stub(libp2p, 'isStarted').returns(true)
 
-      libp2p.handle('/echo/2.0.0', () => {})
-      libp2p.unhandle('/echo/2.0.0')
+      await libp2p.handle('/echo/2.0.0', () => {})
+      await libp2p.unhandle('/echo/2.0.0')
+
+      // the protocol change event listener in the identity service is async
+      await pWaitFor(() => libp2p.identifyService.push.callCount === 2)
 
       // Verify the remote peer is notified of both changes
       expect(libp2p.identifyService.push.callCount).to.equal(2)
+
       for (const call of libp2p.identifyService.push.getCalls()) {
         const [connections] = call.args
         expect(connections.length).to.equal(1)
@@ -509,7 +537,7 @@ describe('Identify', () => {
       await pWaitFor(() => connection.streams.length === 0)
     })
 
-    it('should store host data and protocol version into metadataBook', () => {
+    it('should store host data and protocol version into metadataBook', async () => {
       const agentVersion = 'js-project/1.0.0'
 
       libp2p = new Libp2p({
@@ -519,9 +547,10 @@ describe('Identify', () => {
           agentVersion
         }
       })
+      await libp2p.start()
 
-      const storedAgentVersion = libp2p.peerStore.metadataBook.getValue(localPeer, 'AgentVersion')
-      const storedProtocolVersion = libp2p.peerStore.metadataBook.getValue(localPeer, 'ProtocolVersion')
+      const storedAgentVersion = await libp2p.peerStore.metadataBook.getValue(localPeer, 'AgentVersion')
+      const storedProtocolVersion = await libp2p.peerStore.metadataBook.getValue(localPeer, 'ProtocolVersion')
 
       expect(agentVersion).to.eql(unit8ArrayToString(storedAgentVersion))
       expect(storedProtocolVersion).to.exist()
@@ -545,7 +574,10 @@ describe('Identify', () => {
       await libp2p.identifyService.identify.firstCall.returnValue
       sinon.stub(libp2p, 'isStarted').returns(true)
 
-      libp2p.peerStore.addressBook.add(libp2p.peerId, [new Multiaddr('/ip4/180.0.0.1/tcp/15001/ws')])
+      await libp2p.peerStore.addressBook.add(libp2p.peerId, [new Multiaddr('/ip4/180.0.0.1/tcp/15001/ws')])
+
+      // the protocol change event listener in the identity service is async
+      await pWaitFor(() => libp2p.identifyService.push.callCount === 1)
 
       // Verify the remote peer is notified of change
       expect(libp2p.identifyService.push.callCount).to.equal(1)

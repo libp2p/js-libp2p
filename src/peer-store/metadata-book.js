@@ -1,120 +1,56 @@
 'use strict'
 
 const debug = require('debug')
-const log = Object.assign(debug('libp2p:peer-store:proto-book'), {
-  error: debug('libp2p:peer-store:proto-book:err')
-})
 const errcode = require('err-code')
+const { codes } = require('../errors')
+const PeerId = require('peer-id')
 const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
 
-const PeerId = require('peer-id')
-
-const Book = require('./book')
-
-const {
-  codes: { ERR_INVALID_PARAMETERS }
-} = require('../errors')
+const log = Object.assign(debug('libp2p:peer-store:metadata-book'), {
+  error: debug('libp2p:peer-store:metadata-book:err')
+})
 
 /**
- * @typedef {import('./')} PeerStore
+ * @typedef {import('./types').PeerStore} PeerStore
+ * @typedef {import('./types').MetadataBook} MetadataBook
  */
 
+const EVENT_NAME = 'change:metadata'
+
 /**
- * @extends {Book}
- *
- * @fires MetadataBook#change:metadata
+ * @implements {MetadataBook}
  */
-class MetadataBook extends Book {
+class PeerStoreMetadataBook {
   /**
    * The MetadataBook is responsible for keeping the known supported
-   * protocols of a peer.
+   * protocols of a peer
    *
-   * @class
-   * @param {PeerStore} peerStore
+   * @param {PeerStore["emit"]} emit
+   * @param {import('./types').Store} store
    */
-  constructor (peerStore) {
-    /**
-     * PeerStore Event emitter, used by the MetadataBook to emit:
-     * "change:metadata" - emitted when the known metadata of a peer change.
-     */
-    super({
-      peerStore,
-      eventName: 'change:metadata',
-      eventProperty: 'metadata'
-    })
-
-    /**
-     * Map known peers to their known protocols.
-     *
-     * @type {Map<string, Map<string, Uint8Array>>}
-     */
-    this.data = new Map()
+  constructor (emit, store) {
+    this._emit = emit
+    this._store = store
   }
 
   /**
-   * Set metadata key and value of a provided peer.
-   *
-   * @override
-   * @param {PeerId} peerId
-   * @param {string} key - metadata key
-   * @param {Uint8Array} value - metadata value
-   * @returns {MetadataBook}
-   */
-  // @ts-ignore override with more then the parameters expected in Book
-  set (peerId, key, value) {
-    if (!PeerId.isPeerId(peerId)) {
-      log.error('peerId must be an instance of peer-id to store data')
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    if (typeof key !== 'string' || !(value instanceof Uint8Array)) {
-      log.error('valid key and value must be provided to store data')
-      throw errcode(new Error('valid key and value must be provided'), ERR_INVALID_PARAMETERS)
-    }
-
-    this._setValue(peerId, key, value)
-
-    return this
-  }
-
-  /**
-   * Set data into the datastructure
+   * Get the known data of a provided peer
    *
    * @param {PeerId} peerId
-   * @param {string} key
-   * @param {Uint8Array} value
-   * @param {object} [opts]
-   * @param {boolean} [opts.emit]
    */
-  _setValue (peerId, key, value, { emit = true } = {}) {
-    const id = peerId.toB58String()
-    const rec = this.data.get(id) || new Map()
-    const recMap = rec.get(key)
+  async get (peerId) {
+    log('get await read lock')
+    const release = await this._store.lock.readLock()
+    log('get got read lock')
 
-    // Already exists and is equal
-    if (recMap && uint8ArrayEquals(value, recMap)) {
-      log(`the metadata provided to store is equal to the already stored for ${id} on ${key}`)
-      return
+    try {
+      const peer = await this._store.load(peerId)
+
+      return peer.metadata
+    } finally {
+      log('get release read lock')
+      release()
     }
-
-    rec.set(key, value)
-    this.data.set(id, rec)
-
-    emit && this._emit(peerId, key)
-  }
-
-  /**
-   * Get the known data of a provided peer.
-   *
-   * @param {PeerId} peerId
-   * @returns {Map<string, Uint8Array>|undefined}
-   */
-  get (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    return this.data.get(peerId.toB58String())
   }
 
   /**
@@ -122,59 +58,149 @@ class MetadataBook extends Book {
    *
    * @param {PeerId} peerId
    * @param {string} key
-   * @returns {Uint8Array | undefined}
    */
-  getValue (peerId, key) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
+  async getValue (peerId, key) {
+    log('getValue await read lock')
+    const release = await this._store.lock.readLock()
+    log('getValue got read lock')
 
-    const rec = this.data.get(peerId.toB58String())
-    return rec && rec.get(key)
+    try {
+      const peer = await this._store.load(peerId)
+
+      return peer.metadata.get(key)
+    } finally {
+      log('getValue release write lock')
+      release()
+    }
   }
 
   /**
-   * Deletes the provided peer from the book.
+   * @param {PeerId} peerId
+   * @param {Map<string, Uint8Array>} metadata
+   */
+  async set (peerId, metadata) {
+    log('set await write lock')
+    const release = await this._store.lock.writeLock()
+    log('set got write lock')
+
+    try {
+      if (!metadata || !(metadata instanceof Map)) {
+        log.error('valid metadata must be provided to store data')
+        throw errcode(new Error('valid metadata must be provided'), codes.ERR_INVALID_PARAMETERS)
+      }
+
+      await this._store.merge(peerId, {
+        metadata
+      })
+
+      this._emit(EVENT_NAME, { peerId, metadata })
+    } finally {
+      log('set release write lock')
+      release()
+    }
+  }
+
+  /**
+   * Set metadata key and value of a provided peer
    *
    * @param {PeerId} peerId
-   * @returns {boolean}
+   * @param {string} key - metadata key
+   * @param {Uint8Array} value - metadata value
    */
-  delete (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+  async setValue (peerId, key, value) {
+    log('setValue await write lock')
+    const release = await this._store.lock.writeLock()
+    log('setValue got write lock')
+
+    try {
+      if (!PeerId.isPeerId(peerId)) {
+        log.error('peerId must be an instance of peer-id to store data')
+        throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+      }
+
+      if (typeof key !== 'string' || !(value instanceof Uint8Array)) {
+        log.error('valid key and value must be provided to store data')
+        throw errcode(new Error('valid key and value must be provided'), codes.ERR_INVALID_PARAMETERS)
+      }
+
+      const peer = await this._store.load(peerId)
+      const existingValue = peer.metadata.get(key)
+
+      if (existingValue && uint8ArrayEquals(existingValue, value)) {
+        return
+      }
+
+      peer.metadata.set(key, value)
+
+      await this._store.merge(peerId, {
+        metadata: peer.metadata
+      })
+
+      this._emit(EVENT_NAME, { peerId, metadata: peer.metadata })
+    } finally {
+      log('setValue release write lock')
+      release()
     }
-
-    if (!this.data.delete(peerId.toB58String())) {
-      return false
-    }
-
-    this._emit(peerId)
-
-    return true
   }
 
   /**
-   * Deletes the provided peer metadata key from the book.
-   *
+   * @param {PeerId} peerId
+   */
+  async delete (peerId) {
+    log('delete await write lock')
+    const release = await this._store.lock.writeLock()
+    log('delete got write lock')
+
+    let metadata
+
+    try {
+      if (await this._store.has(peerId)) {
+        metadata = new Map()
+
+        await this._store.merge(peerId, {
+          metadata
+        })
+      }
+    } finally {
+      log('delete release write lock')
+      release()
+    }
+
+    if (metadata) {
+      this._emit(EVENT_NAME, { peerId, metadata: metadata })
+    }
+  }
+
+  /**
    * @param {PeerId} peerId
    * @param {string} key
-   * @returns {boolean}
    */
-  deleteValue (peerId, key) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+  async deleteValue (peerId, key) {
+    log('deleteValue await write lock')
+    const release = await this._store.lock.writeLock()
+    log('deleteValue got write lock')
+
+    let metadata
+
+    try {
+      if (await this._store.has(peerId)) {
+        const peer = await this._store.load(peerId)
+        peer.metadata.delete(key)
+        metadata = peer.metadata
+
+        await this._store.merge(peerId, {
+          metadata
+        })
+      }
+    } finally {
+      log('deleteValue release write lock')
+      release()
     }
 
-    const rec = this.data.get(peerId.toB58String())
-
-    if (!rec || !rec.delete(key)) {
-      return false
+    if (metadata) {
+      this._emit(EVENT_NAME, { peerId, metadata })
     }
-
-    this._emit(peerId, key)
-
-    return true
   }
 }
 
-module.exports = MetadataBook
+module.exports = PeerStoreMetadataBook

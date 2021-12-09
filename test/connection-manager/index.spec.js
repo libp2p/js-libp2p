@@ -77,7 +77,7 @@ describe('Connection Manager', () => {
       const value = Math.random()
       spies.set(value, spy)
       libp2p.connectionManager.setPeerValue(connection.remotePeer, value)
-      libp2p.connectionManager.onConnect(connection)
+      await libp2p.connectionManager.onConnect(connection)
     }))
 
     // get the lowest value
@@ -109,8 +109,8 @@ describe('Connection Manager', () => {
     const spy = sinon.spy()
     await Promise.all([...new Array(max + 1)].map(async () => {
       const connection = await mockConnection()
-      sinon.stub(connection, 'close').callsFake(() => spy()) // eslint-disable-line
-      libp2p.connectionManager.onConnect(connection)
+      sinon.stub(connection, 'close').callsFake(async () => spy()) // eslint-disable-line
+      await libp2p.connectionManager.onConnect(connection)
     }))
 
     expect(libp2p.connectionManager._maybeDisconnectOne).to.have.property('callCount', 1)

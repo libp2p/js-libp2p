@@ -1,171 +1,204 @@
 'use strict'
 
 const debug = require('debug')
+const errcode = require('err-code')
+const { codes } = require('../errors')
+
+/**
+ * @typedef {import('./types').PeerStore} PeerStore
+ * @typedef {import('./types').ProtoBook} ProtoBook
+ * @typedef {import('peer-id')} PeerId
+ */
+
 const log = Object.assign(debug('libp2p:peer-store:proto-book'), {
   error: debug('libp2p:peer-store:proto-book:err')
 })
-const errcode = require('err-code')
-const PeerId = require('peer-id')
 
-const Book = require('./book')
-
-const {
-  codes: { ERR_INVALID_PARAMETERS }
-} = require('../errors')
+const EVENT_NAME = 'change:protocols'
 
 /**
- * @typedef {import('./')} PeerStore
+ * @param {Set<string>} a
+ * @param {Set<string>} b
  */
+function isSetEqual (a, b) {
+  return a.size === b.size && [...a].every(value => b.has(value))
+}
 
 /**
- * @extends {Book}
- *
- * @fires ProtoBook#change:protocols
+ * @implements {ProtoBook}
  */
-class ProtoBook extends Book {
+class PersistentProtoBook {
   /**
-   * The ProtoBook is responsible for keeping the known supported
-   * protocols of a peer.
-   *
-   * @class
-   * @param {PeerStore} peerStore
+   * @param {PeerStore["emit"]} emit
+   * @param {import('./types').Store} store
    */
-  constructor (peerStore) {
-    /**
-     * PeerStore Event emitter, used by the ProtoBook to emit:
-     * "change:protocols" - emitted when the known protocols of a peer change.
-     */
-    super({
-      peerStore,
-      eventName: 'change:protocols',
-      eventProperty: 'protocols',
-      eventTransformer: (data) => Array.from(data)
-    })
-
-    /**
-     * Map known peers to their known protocols.
-     *
-     * @type {Map<string, Set<string>>}
-     */
-    this.data = new Map()
+  constructor (emit, store) {
+    this._emit = emit
+    this._store = store
   }
 
   /**
-   * Set known protocols of a provided peer.
-   * If the peer was not known before, it will be added.
-   *
-   * @override
    * @param {PeerId} peerId
-   * @param {string[]} protocols
-   * @returns {ProtoBook}
    */
-  set (peerId, protocols) {
-    if (!PeerId.isPeerId(peerId)) {
-      log.error('peerId must be an instance of peer-id to store data')
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+  async get (peerId) {
+    log('get wait for read lock')
+    const release = await this._store.lock.readLock()
+    log('get got read lock')
+
+    try {
+      const peer = await this._store.load(peerId)
+
+      return peer.protocols
+    } finally {
+      log('get release read lock')
+      release()
     }
-
-    if (!protocols) {
-      log.error('protocols must be provided to store data')
-      throw errcode(new Error('protocols must be provided'), ERR_INVALID_PARAMETERS)
-    }
-
-    const id = peerId.toB58String()
-    const recSet = this.data.get(id)
-    const newSet = new Set(protocols)
-
-    /**
-     * @param {Set<string>} a
-     * @param {Set<string>} b
-     */
-    const isSetEqual = (a, b) => a.size === b.size && [...a].every(value => b.has(value))
-
-    // Already knows the peer and the recorded protocols are the same?
-    // If yes, no changes needed!
-    if (recSet && isSetEqual(recSet, newSet)) {
-      log(`the protocols provided to store are equal to the already stored for ${id}`)
-      return this
-    }
-
-    this._setData(peerId, newSet)
-    log(`stored provided protocols for ${id}`)
-
-    return this
   }
 
   /**
-   * Adds known protocols of a provided peer.
-   * If the peer was not known before, it will be added.
-   *
    * @param {PeerId} peerId
    * @param {string[]} protocols
-   * @returns {ProtoBook}
    */
-  add (peerId, protocols) {
-    if (!PeerId.isPeerId(peerId)) {
-      log.error('peerId must be an instance of peer-id to store data')
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
+  async set (peerId, protocols) {
+    log('set await write lock')
+    const release = await this._store.lock.writeLock()
+    log('set got write lock')
 
-    if (!protocols) {
-      log.error('protocols must be provided to store data')
-      throw errcode(new Error('protocols must be provided'), ERR_INVALID_PARAMETERS)
-    }
-
-    const id = peerId.toB58String()
-    const recSet = this.data.get(id) || new Set()
-    const newSet = new Set([...recSet, ...protocols]) // Set Union
-
-    // Any new protocol added?
-    if (recSet.size === newSet.size) {
-      log(`the protocols provided to store are already stored for ${id}`)
-      return this
-    }
-
-    this._setData(peerId, newSet)
-    log(`added provided protocols for ${id}`)
-
-    return this
-  }
-
-  /**
-   * Removes known protocols of a provided peer.
-   * If the protocols did not exist before, nothing will be done.
-   *
-   * @param {PeerId} peerId
-   * @param {string[]} protocols
-   * @returns {ProtoBook}
-   */
-  remove (peerId, protocols) {
-    if (!PeerId.isPeerId(peerId)) {
-      log.error('peerId must be an instance of peer-id to store data')
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    if (!protocols) {
-      log.error('protocols must be provided to store data')
-      throw errcode(new Error('protocols must be provided'), ERR_INVALID_PARAMETERS)
-    }
-
-    const id = peerId.toB58String()
-    const recSet = this.data.get(id)
-
-    if (recSet) {
-      const newSet = new Set([
-        ...recSet
-      ].filter((p) => !protocols.includes(p)))
-
-      // Any protocol removed?
-      if (recSet.size === newSet.size) {
-        return this
+    try {
+      if (!protocols) {
+        log.error('protocols must be provided to store data')
+        throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
       }
 
-      this._setData(peerId, newSet)
-      log(`removed provided protocols for ${id}`)
+      const peer = await this._store.load(peerId)
+
+      if (isSetEqual(new Set(peer.protocols), new Set(protocols))) {
+        log(`the protocols provided to set are equal to those already stored for ${peerId.toB58String()}`)
+        return
+      }
+
+      await this._store.merge(peerId, {
+        protocols
+      })
+
+      log(`stored provided protocols for ${peerId.toB58String()}`)
+    } finally {
+      log('set release write lock')
+      release()
     }
 
-    return this
+    this._emit(EVENT_NAME, { peerId, protocols })
+  }
+
+  /**
+   * @param {PeerId} peerId
+   * @param {string[]} protocols
+   */
+  async add (peerId, protocols) {
+    log('add await write lock')
+    const release = await this._store.lock.writeLock()
+    log('add got write lock')
+
+    try {
+      if (!protocols) {
+        log.error('protocols must be provided to store data')
+        throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+      }
+
+      const peer = await this._store.load(peerId)
+      const existingProtocols = new Set(peer.protocols)
+      const allProtocols = new Set([...existingProtocols, ...protocols])
+
+      if (isSetEqual(new Set(allProtocols), existingProtocols)) {
+        log(`the protocols provided to add are equal to those already stored for ${peerId.toB58String()}`)
+        return
+      }
+
+      protocols = Array.from(allProtocols)
+
+      await this._store.merge(peerId, {
+        protocols
+      })
+
+      log(`added provided protocols for ${peerId.toB58String()}`)
+    } finally {
+      log('add release write lock')
+      release()
+    }
+
+    this._emit(EVENT_NAME, { peerId, protocols })
+  }
+
+  /**
+   * @param {PeerId} peerId
+   * @param {string[]} protocols
+   */
+  async remove (peerId, protocols) {
+    log('remove await write lock')
+    const release = await this._store.lock.writeLock()
+    log('remove got write lock')
+
+    try {
+      if (!Array.isArray(protocols)) {
+        log.error('protocols must be provided to store data')
+        throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+      }
+
+      if (!(await this._store.has(peerId))) {
+        return
+      }
+
+      const peer = await this._store.load(peerId)
+      const finalProtocols = new Set(peer.protocols)
+
+      for (const protocol of protocols) {
+        finalProtocols.delete(protocol)
+      }
+
+      if (isSetEqual(new Set(peer.protocols), new Set(finalProtocols))) {
+        log(`the protocols after removing are equal to those already stored for ${peerId.toB58String()}`)
+        return
+      }
+
+      protocols = Array.from(finalProtocols)
+
+      await this._store.merge(peerId, {
+        protocols
+      })
+    } finally {
+      log('remove release write lock')
+      release()
+    }
+
+    this._emit(EVENT_NAME, { peerId, protocols })
+  }
+
+  /**
+   * @param {PeerId} peerId
+   */
+  async delete (peerId) {
+    log('delete await write lock')
+    const release = await this._store.lock.writeLock()
+    log('delete got write lock')
+    let has
+
+    try {
+      has = await this._store.has(peerId)
+
+      if (has) {
+        await this._store.merge(peerId, {
+          protocols: []
+        })
+      }
+    } finally {
+      log('delete release write lock')
+      release()
+    }
+
+    if (has) {
+      this._emit(EVENT_NAME, { peerId, protocols: [] })
+    }
   }
 }
 
-module.exports = ProtoBook
+module.exports = PersistentProtoBook

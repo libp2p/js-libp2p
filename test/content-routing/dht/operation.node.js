@@ -45,8 +45,8 @@ describe('DHT subsystem operates correctly', () => {
         remoteLibp2p.start()
       ])
 
-      libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
-      remAddr = libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId)[0]
+      await libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr]);
+      [ remAddr ] = await libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId)
     })
 
     afterEach(() => Promise.all([
@@ -65,18 +65,22 @@ describe('DHT subsystem operates correctly', () => {
       ])
     })
 
-    it('should put on a peer and get from the other', async () => {
+    it.only('should put on a peer and get from the other', async () => {
       const key = uint8ArrayFromString('hello')
       const value = uint8ArrayFromString('world')
 
+      console.info('dial protocol')
       await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
+      console.info('wait for routing table')
       await Promise.all([
         pWaitFor(() => libp2p._dht._lan._routingTable.size === 1),
         pWaitFor(() => remoteLibp2p._dht._lan._routingTable.size === 1)
       ])
 
+      console.info('put a thing')
       await libp2p.contentRouting.put(key, value)
 
+      console.info('get a thing')
       const fetchedValue = await remoteLibp2p.contentRouting.get(key)
       expect(fetchedValue).to.have.property('val').that.equalBytes(value)
     })
@@ -106,8 +110,8 @@ describe('DHT subsystem operates correctly', () => {
       await libp2p.start()
       await remoteLibp2p.start()
 
-      libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
-      remAddr = libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId)[0]
+      await libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
+      remAddr = await libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId)[0]
     })
 
     afterEach(() => Promise.all([

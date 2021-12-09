@@ -77,8 +77,6 @@ class IdentifyService {
       ...libp2p._options.host
     }
 
-    this.peerStore.metadataBook.set(this.peerId, 'AgentVersion', uint8ArrayFromString(this._host.agentVersion))
-    this.peerStore.metadataBook.set(this.peerId, 'ProtocolVersion', uint8ArrayFromString(this._host.protocolVersion))
     // When a new connection happens, trigger identify
     this.connectionManager.on('peer:connect', (connection) => {
       this.identify(connection).catch(log.error)
@@ -87,16 +85,25 @@ class IdentifyService {
     // When self multiaddrs change, trigger identify-push
     this.peerStore.on('change:multiaddrs', ({ peerId }) => {
       if (peerId.toString() === this.peerId.toString()) {
-        this.pushToPeerStore()
+        this.pushToPeerStore().catch(err => log.error(err))
       }
     })
 
     // When self protocols change, trigger identify-push
     this.peerStore.on('change:protocols', ({ peerId }) => {
       if (peerId.toString() === this.peerId.toString()) {
-        this.pushToPeerStore()
+        this.pushToPeerStore().catch(err => log.error(err))
       }
     })
+  }
+
+  async start () {
+    await this.peerStore.metadataBook.setValue(this.peerId, 'AgentVersion', uint8ArrayFromString(this._host.agentVersion))
+    await this.peerStore.metadataBook.setValue(this.peerId, 'ProtocolVersion', uint8ArrayFromString(this._host.protocolVersion))
+  }
+
+  async stop () {
+
   }
 
   /**
@@ -108,7 +115,7 @@ class IdentifyService {
   async push (connections) {
     const signedPeerRecord = await this.peerStore.addressBook.getRawEnvelope(this.peerId)
     const listenAddrs = this._libp2p.multiaddrs.map((ma) => ma.bytes)
-    const protocols = this.peerStore.protoBook.get(this.peerId) || []
+    const protocols = await this.peerStore.protoBook.get(this.peerId)
 
     const pushes = connections.map(async connection => {
       try {
@@ -135,10 +142,8 @@ class IdentifyService {
 
   /**
    * Calls `push` for all peers in the `peerStore` that are connected
-   *
-   * @returns {void}
    */
-  pushToPeerStore () {
+  async pushToPeerStore () {
     // Do not try to push if libp2p node is not running
     if (!this._libp2p.isStarted()) {
       return
@@ -146,7 +151,7 @@ class IdentifyService {
 
     const connections = []
     let connection
-    for (const peer of this.peerStore.peers.values()) {
+    for await (const peer of this.peerStore.getPeers()) {
       if (peer.protocols.includes(this.identifyPushProtocolStr) && (connection = this.connectionManager.get(peer.id))) {
         connections.push(connection)
       }
@@ -205,10 +210,10 @@ class IdentifyService {
 
     try {
       const envelope = await Envelope.openAndCertify(signedPeerRecord, PeerRecord.DOMAIN)
-      if (this.peerStore.addressBook.consumePeerRecord(envelope)) {
-        this.peerStore.protoBook.set(id, protocols)
-        this.peerStore.metadataBook.set(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
-        this.peerStore.metadataBook.set(id, 'ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
+      if (await this.peerStore.addressBook.consumePeerRecord(envelope)) {
+        await this.peerStore.protoBook.set(id, protocols)
+        await this.peerStore.metadataBook.setValue(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
+        await this.peerStore.metadataBook.setValue(id, 'ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
         return
       }
     } catch (/** @type {any} */ err) {
@@ -217,14 +222,14 @@ class IdentifyService {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      this.peerStore.addressBook.set(id, listenAddrs.map((addr) => new Multiaddr(addr)))
+      await this.peerStore.addressBook.set(id, listenAddrs.map((addr) => new Multiaddr(addr)))
     } catch (/** @type {any} */ err) {
       log.error('received invalid addrs', err)
     }
 
-    this.peerStore.protoBook.set(id, protocols)
-    this.peerStore.metadataBook.set(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
-    this.peerStore.metadataBook.set(id, 'ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
+    await this.peerStore.protoBook.set(id, protocols)
+    await this.peerStore.metadataBook.setValue(id, 'AgentVersion', uint8ArrayFromString(message.agentVersion))
+    await this.peerStore.metadataBook.setValue(id, 'ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
 
     // TODO: Add and score our observed addr
     log('received observed address of %s', cleanObservedAddr)
@@ -268,7 +273,7 @@ class IdentifyService {
     }
 
     const signedPeerRecord = await this.peerStore.addressBook.getRawEnvelope(this.peerId)
-    const protocols = this.peerStore.protoBook.get(this.peerId) || []
+    const protocols = await this.peerStore.protoBook.get(this.peerId)
 
     const message = Message.Identify.encode({
       protocolVersion: this._host.protocolVersion,
@@ -321,8 +326,8 @@ class IdentifyService {
 
     try {
       const envelope = await Envelope.openAndCertify(message.signedPeerRecord, PeerRecord.DOMAIN)
-      if (this.peerStore.addressBook.consumePeerRecord(envelope)) {
-        this.peerStore.protoBook.set(id, message.protocols)
+      if (await this.peerStore.addressBook.consumePeerRecord(envelope)) {
+        await this.peerStore.protoBook.set(id, message.protocols)
         return
       }
     } catch (/** @type {any} */ err) {
@@ -331,14 +336,14 @@ class IdentifyService {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      this.peerStore.addressBook.set(id,
+      await this.peerStore.addressBook.set(id,
         message.listenAddrs.map((addr) => new Multiaddr(addr)))
     } catch (/** @type {any} */ err) {
       log.error('received invalid addrs', err)
     }
 
     // Update the protocols
-    this.peerStore.protoBook.set(id, message.protocols)
+    await this.peerStore.protoBook.set(id, message.protocols)
   }
 
   /**

@@ -18,7 +18,7 @@ const AggregateError = require('aggregate-error')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
-
+const { MemoryDatastore } = require('datastore-core/memory')
 const Libp2p = require('../../src')
 const Dialer = require('../../src/dialer')
 const AddressManager = require('../../src/address-manager')
@@ -48,7 +48,10 @@ describe('Dialing (direct, TCP)', () => {
       PeerId.createFromJSON(Peers[1])
     ])
 
-    peerStore = new PeerStore({ peerId: remotePeerId })
+    peerStore = new PeerStore({
+      peerId: remotePeerId,
+      datastore: new MemoryDatastore()
+    })
     remoteTM = new TransportManager({
       libp2p: {
         addressManager: new AddressManager(remotePeerId, { listen: [listenAddr] }),
@@ -62,7 +65,10 @@ describe('Dialing (direct, TCP)', () => {
     localTM = new TransportManager({
       libp2p: {
         peerId: localPeerId,
-        peerStore: new PeerStore({ peerId: localPeerId })
+        peerStore: new PeerStore({
+          peerId: localPeerId,
+          datastore: new MemoryDatastore()
+        })
       },
       upgrader: mockUpgrader
     })
@@ -113,7 +119,10 @@ describe('Dialing (direct, TCP)', () => {
 
   it('should be able to connect to a given peer id', async () => {
     const peerId = await PeerId.createFromJSON(Peers[0])
-    const peerStore = new PeerStore({ peerId })
+    const peerStore = new PeerStore({
+      peerId,
+      datastore: new MemoryDatastore()
+    })
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore

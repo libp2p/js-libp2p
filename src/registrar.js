@@ -13,7 +13,7 @@ const Topology = require('libp2p-interfaces/src/topology')
 
 /**
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('./peer-store')} PeerStore
+ * @typedef {import('./peer-store/types').PeerStore} PeerStore
  * @typedef {import('./connection-manager')} ConnectionManager
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('./').HandlerProps} HandlerProps

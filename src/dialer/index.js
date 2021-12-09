@@ -25,8 +25,8 @@ const {
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('../peer-store')} PeerStore
- * @typedef {import('../peer-store/address-book').Address} Address
+ * @typedef {import('../peer-store/types').PeerStore} PeerStore
+ * @typedef {import('../peer-store/types').Address} Address
  * @typedef {import('../transport-manager')} TransportManager
  */
 
@@ -181,10 +181,10 @@ class Dialer {
     const { id, multiaddrs } = getPeer(peer)
 
     if (multiaddrs) {
-      this.peerStore.addressBook.add(id, multiaddrs)
+      await this.peerStore.addressBook.add(id, multiaddrs)
     }
 
-    let knownAddrs = this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter) || []
+    let knownAddrs = await this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter) || []
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.
@@ -204,7 +204,7 @@ class Dialer {
     const supportedAddrs = addrs.filter(a => this.transportManager.transportForMultiaddr(a))
 
     if (supportedAddrs.length > this.maxAddrsToDial) {
-      this.peerStore.delete(id)
+      await this.peerStore.delete(id)
       throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
     }
 

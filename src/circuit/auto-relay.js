@@ -22,7 +22,7 @@ const {
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('../peer-store/address-book').Address} Address
+ * @typedef {import('../peer-store/types').Address} Address
  */
 
 /**
@@ -113,7 +113,7 @@ class AutoRelay {
       const supportsHop = await canHop({ connection })
 
       if (supportsHop) {
-        this._peerStore.metadataBook.set(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
+        await this._peerStore.metadataBook.setValue(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
         await this._addListenRelay(connection, id)
       }
     } catch (/** @type {any} */ err) {
@@ -154,7 +154,7 @@ class AutoRelay {
     }
 
     // Get peer known addresses and sort them per public addresses first
-    const remoteAddrs = this._peerStore.addressBook.getMultiaddrsForPeer(
+    const remoteAddrs = await this._peerStore.addressBook.getMultiaddrsForPeer(
       connection.remotePeer, this._addressSorter
     )
 
@@ -209,29 +209,30 @@ class AutoRelay {
     const knownHopsToDial = []
 
     // Check if we have known hop peers to use and attempt to listen on the already connected
-    for (const [id, metadataMap] of this._peerStore.metadataBook.data.entries()) {
+    for await (const { id, metadata } of this._peerStore.getPeers()) {
+      const idStr = id.toB58String()
+
       // Continue to next if listening on this or peer to ignore
-      if (this._listenRelays.has(id) || peersToIgnore.includes(id)) {
+      if (this._listenRelays.has(idStr) || peersToIgnore.includes(idStr)) {
         continue
       }
 
-      const supportsHop = metadataMap.get(HOP_METADATA_KEY)
+      const supportsHop = metadata.get(HOP_METADATA_KEY)
 
       // Continue to next if it does not support Hop
       if (!supportsHop || uint8ArrayToString(supportsHop) !== HOP_METADATA_VALUE) {
         continue
       }
 
-      const peerId = PeerId.createFromB58String(id)
-      const connection = this._connectionManager.get(peerId)
+      const connection = this._connectionManager.get(id)
 
       // If not connected, store for possible later use.
       if (!connection) {
-        knownHopsToDial.push(peerId)
+        knownHopsToDial.push(id)
         continue
       }
 
-      await this._addListenRelay(connection, id)
+      await this._addListenRelay(connection, idStr)
 
       // Check if already listening on enough relays
       if (this._listenRelays.size >= this.maxListeners) {
@@ -258,7 +259,7 @@ class AutoRelay {
         }
 
         const peerId = provider.id
-        this._peerStore.addressBook.add(peerId, provider.multiaddrs)
+        await this._peerStore.addressBook.add(peerId, provider.multiaddrs)
 
         await this._tryToListenOnRelay(peerId)
 

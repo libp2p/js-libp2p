@@ -5,7 +5,7 @@ const { expect } = require('aegir/utils/chai')
 const pDefer = require('p-defer')
 
 const { EventEmitter } = require('events')
-
+const { MemoryDatastore } = require('datastore-core/memory')
 const Topology = require('libp2p-interfaces/src/topology/multicodec-topology')
 const PeerStore = require('../../src/peer-store')
 const Registrar = require('../../src/registrar')
@@ -27,7 +27,10 @@ describe('registrar', () => {
 
   describe('errors', () => {
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       registrar = new Registrar({ peerStore, connectionManager: new EventEmitter() })
     })
 
@@ -100,12 +103,6 @@ describe('registrar', () => {
       const conn = await createMockConnection()
       const remotePeerId = conn.remotePeer
 
-      // Add connected peer with protocol to peerStore and registrar
-      libp2p.peerStore.protoBook.add(remotePeerId, [multicodec])
-
-      libp2p.connectionManager.onConnect(conn)
-      expect(libp2p.connectionManager.size).to.eql(1)
-
       const topologyProps = new Topology({
         multicodecs: multicodec,
         handlers: {
@@ -129,6 +126,12 @@ describe('registrar', () => {
 
       // Topology created
       expect(topology).to.exist()
+
+      // Add connected peer with protocol to peerStore and registrar
+      await libp2p.peerStore.protoBook.add(remotePeerId, [multicodec])
+
+      await libp2p.connectionManager.onConnect(conn)
+      expect(libp2p.connectionManager.size).to.eql(1)
 
       await conn.close()
 
@@ -171,16 +174,16 @@ describe('registrar', () => {
       const remotePeerId = conn.remotePeer
 
       // Add connected peer to peerStore and registrar
-      libp2p.peerStore.protoBook.set(remotePeerId, [])
-      libp2p.connectionManager.onConnect(conn)
+      await libp2p.peerStore.protoBook.set(remotePeerId, [])
 
       // Add protocol to peer and update it
-      libp2p.peerStore.protoBook.add(remotePeerId, [multicodec])
+      await libp2p.peerStore.protoBook.add(remotePeerId, [multicodec])
 
+      await libp2p.connectionManager.onConnect(conn)
       await onConnectDefer.promise
 
       // Remove protocol to peer and update it
-      libp2p.peerStore.protoBook.set(remotePeerId, [])
+      await libp2p.peerStore.protoBook.set(remotePeerId, [])
 
       await onDisconnectDefer.promise
     })
