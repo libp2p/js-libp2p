@@ -8,7 +8,6 @@ const log = Object.assign(debug('libp2p:auto-relay'), {
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const { Multiaddr } = require('multiaddr')
-const PeerId = require('peer-id')
 
 const { relay: multicodec } = require('./multicodec')
 const { canHop } = require('./circuit/hop')
@@ -23,6 +22,7 @@ const {
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('../peer-store/types').Address} Address
+ * @typedef {import('peer-id')} PeerId
  */
 
 /**
@@ -91,7 +91,7 @@ class AutoRelay {
 
     // If no protocol, check if we were keeping the peer before as a listenRelay
     if (!hasProtocol && this._listenRelays.has(id)) {
-      this._removeListenRelay(id)
+      await this._removeListenRelay(id)
       return
     } else if (!hasProtocol || this._listenRelays.has(id)) {
       return
@@ -125,7 +125,6 @@ class AutoRelay {
    * Peer disconnects.
    *
    * @param {Connection} connection - connection to the peer
-   * @returns {void}
    */
   _onPeerDisconnected (connection) {
     const peerId = connection.remotePeer
@@ -136,7 +135,9 @@ class AutoRelay {
       return
     }
 
-    this._removeListenRelay(id)
+    this._removeListenRelay(id).catch(err => {
+      log.error(err)
+    })
   }
 
   /**
@@ -180,12 +181,11 @@ class AutoRelay {
    *
    * @private
    * @param {string} id - peer identifier string.
-   * @returns {void}
    */
-  _removeListenRelay (id) {
+  async _removeListenRelay (id) {
     if (this._listenRelays.delete(id)) {
       // TODO: this should be responsibility of the connMgr
-      this._listenOnAvailableHopRelays([id])
+      await this._listenOnAvailableHopRelays([id])
     }
   }
 
@@ -197,7 +197,6 @@ class AutoRelay {
    * 3. Search the network.
    *
    * @param {string[]} [peersToIgnore]
-   * @returns {Promise<void>}
    */
   async _listenOnAvailableHopRelays (peersToIgnore = []) {
     // TODO: The peer redial issue on disconnect should be handled by connection gating

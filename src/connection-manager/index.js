@@ -183,19 +183,22 @@ class ConnectionManager extends EventEmitter {
    *
    * @private
    */
-  _checkMetrics () {
+  async _checkMetrics () {
     if (this._libp2p.metrics) {
-      const movingAverages = this._libp2p.metrics.global.movingAverages
-      // @ts-ignore moving averages object types
-      const received = movingAverages.dataReceived[this._options.movingAverageInterval].movingAverage()
-      this._checkMaxLimit('maxReceivedData', received)
-      // @ts-ignore moving averages object types
-      const sent = movingAverages.dataSent[this._options.movingAverageInterval].movingAverage()
-      this._checkMaxLimit('maxSentData', sent)
-      const total = received + sent
-      this._checkMaxLimit('maxData', total)
-      log('metrics update', total)
-      this._timer = retimer(this._checkMetrics, this._options.pollInterval)
+      try {
+        const movingAverages = this._libp2p.metrics.global.movingAverages
+        // @ts-ignore moving averages object types
+        const received = movingAverages.dataReceived[this._options.movingAverageInterval].movingAverage()
+        await this._checkMaxLimit('maxReceivedData', received)
+        // @ts-ignore moving averages object types
+        const sent = movingAverages.dataSent[this._options.movingAverageInterval].movingAverage()
+        await this._checkMaxLimit('maxSentData', sent)
+        const total = received + sent
+        await this._checkMaxLimit('maxData', total)
+        log('metrics update', total)
+      } finally {
+        this._timer = retimer(this._checkMetrics, this._options.pollInterval)
+      }
     }
   }
 

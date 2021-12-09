@@ -157,7 +157,7 @@ class IdentifyService {
       }
     }
 
-    this.push(connections)
+    await this.push(connections)
   }
 
   /**

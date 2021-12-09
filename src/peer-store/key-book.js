@@ -68,7 +68,6 @@ class PeerStoreKeyBook {
 
         log(`stored provided public key for ${peerId.toB58String()}`)
       }
-
     } finally {
       log('set release write lock')
       release()

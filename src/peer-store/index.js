@@ -14,7 +14,7 @@ const Store = require('./store')
  * @typedef {import('peer-id')} PeerId
  */
 
- const log = Object.assign(debug('libp2p:peer-store'), {
+const log = Object.assign(debug('libp2p:peer-store'), {
   error: debug('libp2p:peer-store:err')
 })
 

@@ -51,14 +51,14 @@ class AutoDialler {
   /**
    * Starts the auto dialer
    */
-  start () {
+  async start () {
     if (!this._options.enabled) {
       log('not enabled')
       return
     }
 
     this._running = true
-    this._autoDial()
+    await this._autoDial()
     log('started')
   }
 

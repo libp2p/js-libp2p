@@ -382,7 +382,7 @@ class Libp2p extends EventEmitter {
 
       this.relay && this.relay.stop()
       this.peerRouting.stop()
-      this._autodialler.stop()
+      await this._autodialler.stop()
       await (this._dht && this._dht.stop())
 
       for (const service of this._discovery.values()) {
@@ -643,7 +643,9 @@ class Libp2p extends EventEmitter {
 
     this.peerStore.on('peer', peerId => {
       this.emit('peer:discovery', peerId)
-      this._maybeConnect(peerId)
+      this._maybeConnect(peerId).catch(err => {
+        log.error(err)
+      })
     })
 
     // Once we start, emit any peers we may have already discovered
@@ -653,7 +655,7 @@ class Libp2p extends EventEmitter {
     }
 
     this.connectionManager.start()
-    this._autodialler.start()
+    await this._autodialler.start()
 
     // Peer discovery
     await this._setupPeerDiscovery()

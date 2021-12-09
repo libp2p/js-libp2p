@@ -106,7 +106,7 @@ class PersistentStore {
   /**
    * @param {Peer} peer
    */
-   async save (peer) {
+  async save (peer) {
     const buf = PeerPB.encode({
       ...peer,
       pubKey: peer.pubKey ? marshalPublicKey(peer.pubKey) : undefined,
@@ -124,7 +124,7 @@ class PersistentStore {
    * @param {PeerId} peerId
    * @param {Partial<Peer>} data
    */
-   async merge (peerId, data) {
+  async merge (peerId, data) {
     const peer = await this.load(peerId)
     const merged = {
       ...peer,
