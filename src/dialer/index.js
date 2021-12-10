@@ -155,14 +155,16 @@ class Dialer {
       this._pendingDialTargets.set(id, { resolve, reject })
     })
 
-    const dialTarget = await Promise.race([
-      this._createDialTarget(peer),
-      cancellablePromise
-    ])
+    try {
+      const dialTarget = await Promise.race([
+        this._createDialTarget(peer),
+        cancellablePromise
+      ])
 
-    this._pendingDialTargets.delete(id)
-
-    return dialTarget
+      return dialTarget
+    } finally {
+      this._pendingDialTargets.delete(id)
+    }
   }
 
   /**
