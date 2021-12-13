@@ -197,10 +197,16 @@ class Libp2p extends EventEmitter {
 
     // Create Metrics
     if (this._options.metrics.enabled) {
-      this.metrics = new Metrics({
-        ...this._options.metrics,
-        connectionManager: this.connectionManager
+      const metrics = new Metrics({
+        ...this._options.metrics
       })
+
+      // listen for peer disconnect events
+      this.connectionManager.on('peer:disconnect', (connection) => {
+        metrics.onPeerDisconnected(connection.remotePeer)
+      })
+
+      this.metrics = metrics
     }
 
     // Create keychain
@@ -262,6 +268,7 @@ class Libp2p extends EventEmitter {
     this.dialer = new Dialer({
       transportManager: this.transportManager,
       peerStore: this.peerStore,
+      metrics: this.metrics,
       ...this._options.dialer
     })
 

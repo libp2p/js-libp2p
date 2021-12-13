@@ -22,6 +22,10 @@ const {
   MAX_ADDRS_TO_DIAL
 } = require('../constants')
 
+const METRICS_COMPONENT = 'dialler'
+const METRICS_PENDING_DIALS = 'pending-dials'
+const METRICS_PENDING_DIAL_TARGETS = 'pending-dials-targers'
+
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('peer-id')} PeerId
@@ -44,6 +48,7 @@ const {
  * @property {number} [maxDialsPerPeer = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
  * @property {number} [dialTimeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
  * @property {Record<string, Resolver>} [resolvers = {}] - multiaddr resolvers to use when dialing
+ * @property {import('../metrics')} [metrics]
  *
  * @typedef DialTarget
  * @property {string} id
@@ -69,7 +74,8 @@ class Dialer {
     maxAddrsToDial = MAX_ADDRS_TO_DIAL,
     dialTimeout = DIAL_TIMEOUT,
     maxDialsPerPeer = MAX_PER_PEER_DIALS,
-    resolvers = {}
+    resolvers = {},
+    metrics
   }) {
     this.transportManager = transportManager
     this.peerStore = peerStore
@@ -81,6 +87,7 @@ class Dialer {
     this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
     this._pendingDials = new Map()
     this._pendingDialTargets = new Map()
+    this._metrics = metrics
 
     for (const [key, value] of Object.entries(resolvers)) {
       Multiaddr.resolvers.set(key, value)
@@ -104,6 +111,9 @@ class Dialer {
       pendingTarget.reject(new AbortError('Dialer was destroyed'))
     }
     this._pendingDialTargets.clear()
+
+    this._metrics && this._metrics.updateMetric(METRICS_COMPONENT, METRICS_PENDING_DIALS, 0)
+    this._metrics && this._metrics.updateMetric(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, 0)
   }
 
   /**
@@ -153,6 +163,7 @@ class Dialer {
     const id = `${(parseInt(String(Math.random() * 1e9), 10)).toString() + Date.now()}`
     const cancellablePromise = new Promise((resolve, reject) => {
       this._pendingDialTargets.set(id, { resolve, reject })
+      this._metrics && this._metrics.updateMetric(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, this._pendingDialTargets.size)
     })
 
     try {
@@ -164,6 +175,7 @@ class Dialer {
       return dialTarget
     } finally {
       this._pendingDialTargets.delete(id)
+      this._metrics && this._metrics.updateMetric(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, this._pendingDialTargets.size)
     }
   }
 
@@ -252,9 +264,13 @@ class Dialer {
       destroy: () => {
         timeoutController.clear()
         this._pendingDials.delete(dialTarget.id)
+        this._metrics && this._metrics.updateMetric(METRICS_COMPONENT, METRICS_PENDING_DIALS, this._pendingDials.size)
       }
     }
     this._pendingDials.set(dialTarget.id, pendingDial)
+
+    this._metrics && this._metrics.updateMetric(METRICS_COMPONENT, METRICS_PENDING_DIALS, this._pendingDials.size)
+
     return pendingDial
   }
 
