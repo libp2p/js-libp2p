@@ -95,7 +95,7 @@ class Metrics {
     return this._componentMetrics
   }
 
-  updateMetric (component, metric, value) {
+  updateComponentMetric (component, metric, value) {
     if (!this._componentMetrics.has(component)) {
       this._componentMetrics.set(component, new Map())
     }

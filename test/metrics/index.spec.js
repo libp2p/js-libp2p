@@ -266,7 +266,7 @@ describe('Metrics', () => {
     const metric = 'some-metric'
     const value = 1
 
-    metrics.updateMetric(component, metric, value)
+    metrics.updateComponentMetric(component, metric, value)
 
     expect(metrics.getComponentMetrics()).to.have.lengthOf(1)
     expect(metrics.getComponentMetrics().get(component)).to.have.lengthOf(1)

@@ -19,7 +19,7 @@ jobs:
     - run: npx aegir lint
     - run: npx aegir build
     - run: npx aegir dep-check
-    - uses: ipfs/aegir/actions/bundle-size@fix/use-node-16-for-bundle-size
+    - uses: ipfs/aegir/actions/bundle-size
       name: size
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
