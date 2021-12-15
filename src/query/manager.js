@@ -18,7 +18,10 @@ const {
 
 /**
  * @typedef {import('peer-id')} PeerId
+ * @typedef {import('../types').Metrics} Metrics
  */
+
+const METRIC_RUNNING_QUERIES = 'running-queries'
 
 /**
  * Keeps track of all running queries
@@ -30,16 +33,19 @@ class QueryManager {
    * @param {object} params
    * @param {PeerId} params.peerId
    * @param {boolean} params.lan
+   * @param {Metrics} [params.metrics]
    * @param {number} [params.disjointPaths]
    * @param {number} [params.alpha]
    */
-  constructor ({ peerId, lan, disjointPaths = K, alpha = ALPHA }) {
+  constructor ({ peerId, lan, metrics, disjointPaths = K, alpha = ALPHA }) {
     this._peerId = peerId
     this._disjointPaths = disjointPaths || K
     this._controllers = new Set()
     this._running = false
     this._alpha = alpha || ALPHA
     this._lan = lan
+    this._metrics = metrics
+    this._queries = 0
   }
 
   /**
@@ -109,6 +115,8 @@ class QueryManager {
 
     try {
       log('query:start')
+      this._queries++
+      this._metrics && this._metrics.updateComponentMetric(`kad-dht-${this._lan ? 'lan' : 'wan'}`, METRIC_RUNNING_QUERIES, this._queries)
 
       if (peers.length === 0) {
         log.error('Running query with no peers')
@@ -152,6 +160,9 @@ class QueryManager {
       if (timeoutController) {
         timeoutController.clear()
       }
+
+      this._queries--
+      this._metrics && this._metrics.updateComponentMetric(`kad-dht-${this._lan ? 'lan' : 'wan'}`, METRIC_RUNNING_QUERIES, this._queries)
 
       cleanUp.emit('cleanup')
       log(`query:done in ${Date.now() - (startTime || 0)}ms`)

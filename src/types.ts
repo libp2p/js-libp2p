@@ -178,3 +178,7 @@ export interface AddressBook {
   add: (peerId: PeerId, addresses: Multiaddr[]) => void
   get: (peerId: PeerId) => Array<{ multiaddr: Multiaddr }> | undefined
 }
+
+export interface Metrics {
+  updateComponentMetric: (component: string, metric: string, value: number) => void
+}

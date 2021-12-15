@@ -12,7 +12,10 @@ const { TimeoutController } = require('timeout-abort-controller')
  * @typedef {import('./types').KBucket} KBucket
  * @typedef {import('./types').KBucketTree} KBucketTree
  * @typedef {import('peer-id')} PeerId
+ * @typedef {import('../types').Metrics} Metrics
  */
+
+const METRIC_ROUTING_TABLE_SIZE = 'routing-table-size'
 
 /**
  * A wrapper around `k-bucket`, to provide easy store and
@@ -24,15 +27,18 @@ class RoutingTable {
    * @param {import('peer-id')} params.peerId
    * @param {import('../types').Dialer} params.dialer
    * @param {boolean} params.lan
+   * @param {Metrics} [params.metrics]
    * @param {number} [params.kBucketSize=20]
    * @param {number} [params.pingTimeout=10000]
    */
-  constructor ({ peerId, dialer, kBucketSize, pingTimeout, lan }) {
+  constructor ({ peerId, dialer, kBucketSize, pingTimeout, lan, metrics }) {
     this._log = utils.logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table`)
     this._peerId = peerId
     this._dialer = dialer
     this._kBucketSize = kBucketSize || 20
     this._pingTimeout = pingTimeout || 10000
+    this._lan = lan
+    this._metrics = metrics
 
     /** @type {KBucketTree} */
     this.kb // eslint-disable-line no-unused-expressions
@@ -111,6 +117,8 @@ class RoutingTable {
               if (timeoutController) {
                 timeoutController.clear()
               }
+
+              this._metrics && this._metrics.updateComponentMetric(`kad-dht-${this._lan ? 'lan' : 'wan'}`, METRIC_ROUTING_TABLE_SIZE, this.size)
             }
           })
         )
@@ -184,6 +192,8 @@ class RoutingTable {
     this.kb.add({ id: id, peer: peer })
 
     this._log('added %p with kad id %b', peer, id)
+
+    this._metrics && this._metrics.updateComponentMetric(`kad-dht-${this._lan ? 'lan' : 'wan'}`, METRIC_ROUTING_TABLE_SIZE, this.size)
   }
 
   /**
@@ -195,6 +205,8 @@ class RoutingTable {
     const id = await utils.convertPeerId(peer)
 
     this.kb.remove(id)
+
+    this._metrics && this._metrics.updateComponentMetric(`kad-dht-${this._lan ? 'lan' : 'wan'}`, METRIC_ROUTING_TABLE_SIZE, this.size)
   }
 }
 

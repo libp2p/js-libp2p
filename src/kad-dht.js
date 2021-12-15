@@ -161,6 +161,7 @@ class KadDHT extends EventEmitter {
       peerId: libp2p.peerId,
       dialer: libp2p,
       kBucketSize,
+      metrics: libp2p.metrics,
       lan
     })
 
@@ -205,6 +206,7 @@ class KadDHT extends EventEmitter {
       peerId: libp2p.peerId,
       // Number of disjoint query paths to use - This is set to `kBucketSize/2` per the S/Kademlia paper
       disjointPaths: Math.ceil(kBucketSize / 2),
+      metrics: libp2p.metrics,
       lan
     })
 

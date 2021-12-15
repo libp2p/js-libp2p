@@ -106,8 +106,7 @@ module.exports.queryPath = async function * queryPath ({ key, startingPeer, ourP
               // only continue query if closer peer is actually closer
               if (closerPeerXor > peerXor) { // eslint-disable-line max-depth
                 log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
-                // TODO: uncomment this
-                // continue
+                continue
               }
 
               log('querying closer peer %p', closerPeer.id)
