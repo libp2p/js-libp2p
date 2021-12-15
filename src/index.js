@@ -201,11 +201,6 @@ class Libp2p extends EventEmitter {
         ...this._options.metrics
       })
 
-      // listen for peer disconnect events
-      this.connectionManager.on('peer:disconnect', (connection) => {
-        metrics.onPeerDisconnected(connection.remotePeer)
-      })
-
       this.metrics = metrics
     }
 

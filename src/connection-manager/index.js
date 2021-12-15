@@ -54,7 +54,6 @@ const METRICS_ALL_CONNECTIONS = 'all-connections'
  * @property {number} [defaultPeerValue = 1] - The value of the peer.
  * @property {boolean} [autoDial = true] - Should preemptively guarantee connections are above the low watermark.
  * @property {number} [autoDialInterval = 10000] - How often, in milliseconds, it should preemptively guarantee connections are above the low watermark.
- * @property {import('../metrics')} [metrics]
  */
 
 /**
@@ -100,7 +99,6 @@ class ConnectionManager extends EventEmitter {
     this._started = false
     this._timer = null
     this._checkMetrics = this._checkMetrics.bind(this)
-    this._metrics = this._options.metrics
 
     this._latencyMonitor = new LatencyMonitor({
       latencyCheckIntervalMs: this._options.pollInterval,
@@ -166,8 +164,8 @@ class ConnectionManager extends EventEmitter {
 
     await Promise.all(tasks)
     this.connections.clear()
-    this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, 0)
-    this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, 0)
+    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, 0)
+    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, 0)
   }
 
   /**
@@ -219,12 +217,13 @@ class ConnectionManager extends EventEmitter {
     const storedConn = this.connections.get(peerIdStr)
 
     this.emit('peer:connect', connection)
+
     if (storedConn) {
       storedConn.push(connection)
     } else {
       this.connections.set(peerIdStr, [connection])
-      this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, this.connections.size)
-      this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, this.size)
+      this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, this.connections.size)
+      this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, this.size)
     }
 
     this._libp2p.peerStore.keyBook.set(peerId, peerId.pubKey)
@@ -253,10 +252,12 @@ class ConnectionManager extends EventEmitter {
       this.connections.delete(peerId)
       this._peerValues.delete(connection.remotePeer.toB58String())
       this.emit('peer:disconnect', connection)
+
+      this._libp2p.metrics && this._libp2p.metrics.onPeerDisconnected(connection.remotePeer)
     }
 
-    this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, this.connections.size)
-    this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, this.size)
+    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, this.connections.size)
+    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, this.size)
   }
 
   /**
