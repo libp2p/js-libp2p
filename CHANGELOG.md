@@ -1,3 +1,7 @@
+## [0.35.5](https://github.com/libp2p/js-libp2p/compare/v0.35.4...v0.35.5) (2021-12-15)
+
+
+
 ## [0.35.4](https://github.com/libp2p/js-libp2p/compare/v0.35.3...v0.35.4) (2021-12-15)
 
 
