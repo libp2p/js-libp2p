@@ -24,7 +24,7 @@ const {
 
 const METRICS_COMPONENT = 'dialler'
 const METRICS_PENDING_DIALS = 'pending-dials'
-const METRICS_PENDING_DIAL_TARGETS = 'pending-dials-targers'
+const METRICS_PENDING_DIAL_TARGETS = 'pending-dial-targets'
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
