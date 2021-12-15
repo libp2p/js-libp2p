@@ -1,3 +1,12 @@
+## [0.27.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.3...v0.27.4) (2021-12-15)
+
+
+### Features
+
+* log component metrics ([#269](https://github.com/libp2p/js-libp2p-kad-dht/issues/269)) ([db4f7f7](https://github.com/libp2p/js-libp2p-kad-dht/commit/db4f7f7e56ff7f146112c06f18ffe93f359b8856))
+
+
+
 ## [0.27.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.2...v0.27.3) (2021-12-07)
 
 
