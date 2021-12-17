@@ -9,7 +9,8 @@ const { Multiaddr } = require('multiaddr')
 const { TimeoutController } = require('timeout-abort-controller')
 const { AbortError } = require('abortable-iterator')
 const { anySignal } = require('any-signal')
-
+// @ts-expect-error setMaxListeners is missing from the types
+const { setMaxListeners } = require('events')
 const DialRequest = require('./dial-request')
 const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 const getPeer = require('../get-peer')
@@ -253,6 +254,10 @@ class Dialer {
 
     // Combine the timeout signal and options.signal, if provided
     const timeoutController = new TimeoutController(this.timeout)
+    // this controller will potentially be used while dialing lots of
+    // peers so prevent MaxListenersExceededWarning appearing in the console
+    setMaxListeners && setMaxListeners(Infinity, timeoutController.signal)
+
     const signals = [timeoutController.signal]
     options.signal && signals.push(options.signal)
     const signal = anySignal(signals)

@@ -24,6 +24,8 @@ const {
 // @ts-ignore module with no types
 } = require('set-delayed-interval')
 const { DHTPeerRouting } = require('./dht/dht-peer-routing')
+// @ts-expect-error setMaxListeners is missing from the types
+const { setMaxListeners } = require('events')
 
 /**
  * @typedef {import('peer-id')} PeerId
@@ -149,7 +151,12 @@ class PeerRouting {
     }
 
     if (options.timeout) {
-      options.signal = new TimeoutController(options.timeout).signal
+      const controller = new TimeoutController(options.timeout).signal
+      // this controller will potentially be used while dialing lots of
+      // peers so prevent MaxListenersExceededWarning appearing in the console
+      setMaxListeners && setMaxListeners(Infinity, controller.signal)
+
+      options.signal = controller.signal
     }
 
     yield * pipe(
