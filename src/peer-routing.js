@@ -5,11 +5,13 @@ const log = Object.assign(debug('libp2p:peer-routing'), {
   error: debug('libp2p:peer-routing:err')
 })
 const errCode = require('err-code')
+const errors = require('./errors')
 const {
   storeAddresses,
   uniquePeers,
   requirePeers
 } = require('./content-routing/utils')
+const { TimeoutController } = require('timeout-abort-controller')
 
 const merge = require('it-merge')
 const { pipe } = require('it-pipe')
@@ -22,6 +24,8 @@ const {
 // @ts-ignore module with no types
 } = require('set-delayed-interval')
 const { DHTPeerRouting } = require('./dht/dht-peer-routing')
+// @ts-expect-error setMaxListeners is missing from the types
+const { setMaxListeners } = require('events')
 
 /**
  * @typedef {import('peer-id')} PeerId
@@ -34,6 +38,7 @@ const { DHTPeerRouting } = require('./dht/dht-peer-routing')
  * @property {boolean} [enabled = true] - Whether to enable the Refresh manager
  * @property {number} [bootDelay = 6e5] - Boot delay to start the Refresh Manager (in ms)
  * @property {number} [interval = 10e3] - Interval between each Refresh Manager run (in ms)
+ * @property {number} [timeout = 10e3] - How long to let each refresh run (in ms)
  *
  * @typedef {Object} PeerRoutingOptions
  * @property {RefreshManagerOptions} [refreshManager]
@@ -79,7 +84,7 @@ class PeerRouting {
   async _findClosestPeersTask () {
     try {
       // nb getClosestPeers adds the addresses to the address book
-      await drain(this.getClosestPeers(this._peerId.id))
+      await drain(this.getClosestPeers(this._peerId.id, { timeout: this._refreshManagerOptions.timeout || 10e3 }))
     } catch (/** @type {any} */ err) {
       log.error(err)
     }
@@ -102,11 +107,11 @@ class PeerRouting {
    */
   async findPeer (id, options) { // eslint-disable-line require-await
     if (!this._routers.length) {
-      throw errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE')
+      throw errCode(new Error('No peer routers available'), errors.codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     if (id.toB58String() === this._peerId.toB58String()) {
-      throw errCode(new Error('Should not try to find self'), 'ERR_FIND_SELF')
+      throw errCode(new Error('Should not try to find self'), errors.codes.ERR_FIND_SELF)
     }
 
     const output = await pipe(
@@ -115,12 +120,11 @@ class PeerRouting {
           try {
             yield await router.findPeer(id, options)
           } catch (err) {
-            yield
+            log.error(err)
           }
         })())
       ),
       (source) => filter(source, Boolean),
-      // @ts-ignore findPeer resolves a Promise
       (source) => storeAddresses(source, this._peerStore),
       (source) => first(source)
     )
@@ -129,7 +133,7 @@ class PeerRouting {
       return output
     }
 
-    throw errCode(new Error('not found'), 'NOT_FOUND')
+    throw errCode(new Error(errors.messages.NOT_FOUND), errors.codes.ERR_NOT_FOUND)
   }
 
   /**
@@ -137,12 +141,22 @@ class PeerRouting {
    *
    * @param {Uint8Array} key - A CID like key
    * @param {Object} [options]
-   * @param {number} [options.timeout=30e3] - How long the query can take.
+   * @param {number} [options.timeout=30e3] - How long the query can take
+   * @param {AbortSignal} [options.signal] - An AbortSignal to abort the request
    * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
   async * getClosestPeers (key, options = { timeout: 30e3 }) {
     if (!this._routers.length) {
-      throw errCode(new Error('No peer routers available'), 'NO_ROUTERS_AVAILABLE')
+      throw errCode(new Error('No peer routers available'), errors.codes.ERR_NO_ROUTERS_AVAILABLE)
+    }
+
+    if (options.timeout) {
+      const controller = new TimeoutController(options.timeout)
+      // this controller will potentially be used while dialing lots of
+      // peers so prevent MaxListenersExceededWarning appearing in the console
+      setMaxListeners && setMaxListeners(Infinity, controller.signal)
+
+      options.signal = controller.signal
     }
 
     yield * pipe(

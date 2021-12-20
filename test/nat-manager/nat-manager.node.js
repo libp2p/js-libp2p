@@ -244,6 +244,10 @@ describe('Nat Manager (TCP)', () => {
   })
 
   it('shuts the nat api down when stopping', async function () {
+    if (process.env.CI) {
+      return this.skip('CI environments will not let us map external ports')
+    }
+
     function findRoutableAddress () {
       const interfaces = networkInterfaces()
 
@@ -261,7 +265,7 @@ describe('Nat Manager (TCP)', () => {
 
     if (!addr) {
       // skip test if no non-loopback address is found
-      this.skip()
+      return this.skip()
     }
 
     const {

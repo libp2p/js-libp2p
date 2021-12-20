@@ -24,9 +24,6 @@ const directionToEvent = {
  */
 
 /**
- * @typedef MetricsProperties
- * @property {import('../connection-manager')} connectionManager
- *
  * @typedef MetricsOptions
  * @property {number} [computeThrottleMaxQueueSize = defaultOptions.computeThrottleMaxQueueSize]
  * @property {number} [computeThrottleTimeout = defaultOptions.computeThrottleTimeout]
@@ -37,7 +34,7 @@ const directionToEvent = {
 class Metrics {
   /**
    * @class
-   * @param {MetricsProperties & MetricsOptions} options
+   * @param {MetricsOptions} options
    */
   constructor (options) {
     this._options = mergeOptions(defaultOptions, options)
@@ -47,10 +44,7 @@ class Metrics {
     this._oldPeers = oldPeerLRU(this._options.maxOldPeersRetention)
     this._running = false
     this._onMessage = this._onMessage.bind(this)
-    this._connectionManager = options.connectionManager
-    this._connectionManager.on('peer:disconnect', (connection) => {
-      this.onPeerDisconnected(connection.remotePeer)
-    })
+    this._componentMetrics = new Map()
   }
 
   /**
@@ -92,6 +86,22 @@ class Metrics {
    */
   get peers () {
     return Array.from(this._peerStats.keys())
+  }
+
+  /**
+   * @returns {Map}
+   */
+  getComponentMetrics () {
+    return this._componentMetrics
+  }
+
+  updateComponentMetric (component, metric, value) {
+    if (!this._componentMetrics.has(component)) {
+      this._componentMetrics.set(component, new Map())
+    }
+
+    const map = this._componentMetrics.get(component)
+    map.set(metric, value)
   }
 
   /**

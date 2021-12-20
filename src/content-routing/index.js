@@ -54,7 +54,7 @@ class ContentRouting {
    */
   async * findProviders (key, options = {}) {
     if (!this.routers.length) {
-      throw errCode(new Error('No content this.routers available'), 'NO_ROUTERS_AVAILABLE')
+      throw errCode(new Error('No content this.routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     yield * pipe(
@@ -77,7 +77,7 @@ class ContentRouting {
    */
   async provide (key) {
     if (!this.routers.length) {
-      throw errCode(new Error('No content routers available'), 'NO_ROUTERS_AVAILABLE')
+      throw errCode(new Error('No content routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     await Promise.all(this.routers.map((router) => router.provide(key)))

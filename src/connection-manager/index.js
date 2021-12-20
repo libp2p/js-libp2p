@@ -32,6 +32,10 @@ const defaultOptions = {
   defaultPeerValue: 1
 }
 
+const METRICS_COMPONENT = 'connection-manager'
+const METRICS_PEER_CONNECTIONS = 'peer-connections'
+const METRICS_ALL_CONNECTIONS = 'all-connections'
+
 /**
  * @typedef {import('../')} Libp2p
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
@@ -160,6 +164,8 @@ class ConnectionManager extends EventEmitter {
 
     await Promise.all(tasks)
     this.connections.clear()
+    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, 0)
+    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, 0)
   }
 
   /**
@@ -211,10 +217,13 @@ class ConnectionManager extends EventEmitter {
     const storedConn = this.connections.get(peerIdStr)
 
     this.emit('peer:connect', connection)
+
     if (storedConn) {
       storedConn.push(connection)
     } else {
       this.connections.set(peerIdStr, [connection])
+      this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, this.connections.size)
+      this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, this.size)
     }
 
     this._libp2p.peerStore.keyBook.set(peerId, peerId.pubKey)
@@ -243,7 +252,12 @@ class ConnectionManager extends EventEmitter {
       this.connections.delete(peerId)
       this._peerValues.delete(connection.remotePeer.toB58String())
       this.emit('peer:disconnect', connection)
+
+      this._libp2p.metrics && this._libp2p.metrics.onPeerDisconnected(connection.remotePeer)
     }
+
+    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, this.connections.size)
+    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, this.size)
   }
 
   /**

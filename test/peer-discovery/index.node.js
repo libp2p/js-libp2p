@@ -161,20 +161,13 @@ describe('peer discovery scenarios', () => {
           autoDial: false
         },
         dht: {
-          randomWalk: {
-            enabled: false,
-            delay: 1000, // start the first query quickly
-            interval: 10000,
-            timeout: 5000
-          },
           enabled: true
         }
       }
     })
 
     const localConfig = getConfig(peerId)
-    // Only run random walk on our local node
-    localConfig.config.dht.randomWalk.enabled = true
+
     libp2p = new Libp2p(localConfig)
 
     const remoteLibp2p1 = new Libp2p(getConfig(remotePeerId1))

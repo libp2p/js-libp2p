@@ -10,6 +10,7 @@ const crypto = require('libp2p-crypto')
 const { Key } = require('interface-datastore/key')
 const CMS = require('./cms')
 const errcode = require('err-code')
+const { codes } = require('../errors')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
@@ -210,21 +211,21 @@ class Keychain {
     const self = this
 
     if (!validateKeyName(name) || name === 'self') {
-      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), codes.ERR_INVALID_KEY_NAME))
     }
 
     if (typeof type !== 'string') {
-      return throwDelayed(errcode(new Error(`Invalid key type '${type}'`), 'ERR_INVALID_KEY_TYPE'))
+      return throwDelayed(errcode(new Error(`Invalid key type '${type}'`), codes.ERR_INVALID_KEY_TYPE))
     }
 
     const dsname = DsName(name)
     const exists = await self.store.has(dsname)
-    if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
+    if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), codes.ERR_KEY_ALREADY_EXISTS))
 
     switch (type.toLowerCase()) {
       case 'rsa':
         if (!Number.isSafeInteger(size) || size < 2048) {
-          return throwDelayed(errcode(new Error(`Invalid RSA key size ${size}`), 'ERR_INVALID_KEY_SIZE'))
+          return throwDelayed(errcode(new Error(`Invalid RSA key size ${size}`), codes.ERR_INVALID_KEY_SIZE))
         }
         break
       default:
@@ -297,7 +298,7 @@ class Keychain {
    */
   async findKeyByName (name) {
     if (!validateKeyName(name)) {
-      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), codes.ERR_INVALID_KEY_NAME))
     }
 
     const dsname = DsInfoName(name)
@@ -305,7 +306,7 @@ class Keychain {
       const res = await this.store.get(dsname)
       return JSON.parse(uint8ArrayToString(res))
     } catch (/** @type {any} */ err) {
-      return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
+      return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), codes.ERR_KEY_NOT_FOUND))
     }
   }
 
@@ -318,7 +319,7 @@ class Keychain {
   async removeKey (name) {
     const self = this
     if (!validateKeyName(name) || name === 'self') {
-      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), codes.ERR_INVALID_KEY_NAME))
     }
     const dsname = DsName(name)
     const keyInfo = await self.findKeyByName(name)
@@ -339,10 +340,10 @@ class Keychain {
   async renameKey (oldName, newName) {
     const self = this
     if (!validateKeyName(oldName) || oldName === 'self') {
-      return throwDelayed(errcode(new Error(`Invalid old key name '${oldName}'`), 'ERR_OLD_KEY_NAME_INVALID'))
+      return throwDelayed(errcode(new Error(`Invalid old key name '${oldName}'`), codes.ERR_OLD_KEY_NAME_INVALID))
     }
     if (!validateKeyName(newName) || newName === 'self') {
-      return throwDelayed(errcode(new Error(`Invalid new key name '${newName}'`), 'ERR_NEW_KEY_NAME_INVALID'))
+      return throwDelayed(errcode(new Error(`Invalid new key name '${newName}'`), codes.ERR_NEW_KEY_NAME_INVALID))
     }
     const oldDsname = DsName(oldName)
     const newDsname = DsName(newName)
@@ -350,7 +351,7 @@ class Keychain {
     const newInfoName = DsInfoName(newName)
 
     const exists = await self.store.has(newDsname)
-    if (exists) return throwDelayed(errcode(new Error(`Key '${newName}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
+    if (exists) return throwDelayed(errcode(new Error(`Key '${newName}' already exists`), codes.ERR_KEY_ALREADY_EXISTS))
 
     try {
       const pem = await self.store.get(oldDsname)
@@ -379,10 +380,10 @@ class Keychain {
    */
   async exportKey (name, password) {
     if (!validateKeyName(name)) {
-      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), codes.ERR_INVALID_KEY_NAME))
     }
     if (!password) {
-      return throwDelayed(errcode(new Error('Password is required'), 'ERR_PASSWORD_REQUIRED'))
+      return throwDelayed(errcode(new Error('Password is required'), codes.ERR_PASSWORD_REQUIRED))
     }
 
     const dsname = DsName(name)
@@ -409,20 +410,20 @@ class Keychain {
   async importKey (name, pem, password) {
     const self = this
     if (!validateKeyName(name) || name === 'self') {
-      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), codes.ERR_INVALID_KEY_NAME))
     }
     if (!pem) {
-      return throwDelayed(errcode(new Error('PEM encoded key is required'), 'ERR_PEM_REQUIRED'))
+      return throwDelayed(errcode(new Error('PEM encoded key is required'), codes.ERR_PEM_REQUIRED))
     }
     const dsname = DsName(name)
     const exists = await self.store.has(dsname)
-    if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
+    if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), codes.ERR_KEY_ALREADY_EXISTS))
 
     let privateKey
     try {
       privateKey = await crypto.keys.import(pem, password)
     } catch (/** @type {any} */ err) {
-      return throwDelayed(errcode(new Error('Cannot read the key, most likely the password is wrong'), 'ERR_CANNOT_READ_KEY'))
+      return throwDelayed(errcode(new Error('Cannot read the key, most likely the password is wrong'), codes.ERR_CANNOT_READ_KEY))
     }
 
     let kid
@@ -457,16 +458,16 @@ class Keychain {
   async importPeer (name, peer) {
     const self = this
     if (!validateKeyName(name)) {
-      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), codes.ERR_INVALID_KEY_NAME))
     }
     if (!peer || !peer.privKey) {
-      return throwDelayed(errcode(new Error('Peer.privKey is required'), 'ERR_MISSING_PRIVATE_KEY'))
+      return throwDelayed(errcode(new Error('Peer.privKey is required'), codes.ERR_MISSING_PRIVATE_KEY))
     }
 
     const privateKey = peer.privKey
     const dsname = DsName(name)
     const exists = await self.store.has(dsname)
-    if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), 'ERR_KEY_ALREADY_EXISTS'))
+    if (exists) return throwDelayed(errcode(new Error(`Key '${name}' already exists`), codes.ERR_KEY_ALREADY_EXISTS))
 
     try {
       const kid = await privateKey.id()
@@ -495,7 +496,7 @@ class Keychain {
    */
   async _getPrivateKey (name) {
     if (!validateKeyName(name)) {
-      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), 'ERR_INVALID_KEY_NAME'))
+      return throwDelayed(errcode(new Error(`Invalid key name '${name}'`), codes.ERR_INVALID_KEY_NAME))
     }
 
     try {
@@ -503,7 +504,7 @@ class Keychain {
       const res = await this.store.get(dsname)
       return uint8ArrayToString(res)
     } catch (/** @type {any} */ err) {
-      return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), 'ERR_KEY_NOT_FOUND'))
+      return throwDelayed(errcode(new Error(`Key '${name}' does not exist. ${err.message}`), codes.ERR_KEY_NOT_FOUND))
     }
   }
 
@@ -515,13 +516,13 @@ class Keychain {
    */
   async rotateKeychainPass (oldPass, newPass) {
     if (typeof oldPass !== 'string') {
-      return throwDelayed(errcode(new Error(`Invalid old pass type '${typeof oldPass}'`), 'ERR_INVALID_OLD_PASS_TYPE'))
+      return throwDelayed(errcode(new Error(`Invalid old pass type '${typeof oldPass}'`), codes.ERR_INVALID_OLD_PASS_TYPE))
     }
     if (typeof newPass !== 'string') {
-      return throwDelayed(errcode(new Error(`Invalid new pass type '${typeof newPass}'`), 'ERR_INVALID_NEW_PASS_TYPE'))
+      return throwDelayed(errcode(new Error(`Invalid new pass type '${typeof newPass}'`), codes.ERR_INVALID_NEW_PASS_TYPE))
     }
     if (newPass.length < 20) {
-      return throwDelayed(errcode(new Error(`Invalid pass length ${newPass.length}`), 'ERR_INVALID_PASS_LENGTH'))
+      return throwDelayed(errcode(new Error(`Invalid pass length ${newPass.length}`), codes.ERR_INVALID_PASS_LENGTH))
     }
     log('recreating keychain')
     const oldDek = privates.get(this).dek
