@@ -1,8 +1,10 @@
 export type PeerId = import('peer-id');
 export type PeerRoutingModule = import('libp2p-interfaces/src/peer-routing/types').PeerRouting;
+export type PeerData = import('libp2p-kad-dht/dist/src/types').PeerData;
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRoutingModule
+ * @typedef {import('libp2p-kad-dht/dist/src/types').PeerData} PeerData
  */
 /**
  * Wrapper class to convert events into returned values
