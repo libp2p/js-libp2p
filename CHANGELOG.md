@@ -1,3 +1,73 @@
+## [0.35.6](https://github.com/libp2p/js-libp2p/compare/v0.35.5...v0.35.6) (2021-12-18)
+
+
+### Bug Fixes
+
+* increase the maxlisteners for timeout controllers ([#1065](https://github.com/libp2p/js-libp2p/issues/1065)) ([09a0f94](https://github.com/libp2p/js-libp2p/commit/09a0f940df7fdb4ece34604e85693709df5c213e))
+
+
+
+## [0.35.5](https://github.com/libp2p/js-libp2p/compare/v0.35.4...v0.35.5) (2021-12-15)
+
+
+
+## [0.35.4](https://github.com/libp2p/js-libp2p/compare/v0.35.3...v0.35.4) (2021-12-15)
+
+
+### Features
+
+* allow per-component metrics to be collected ([#1061](https://github.com/libp2p/js-libp2p/issues/1061)) ([2f0b311](https://github.com/libp2p/js-libp2p/commit/2f0b311df7127aa44512c2008142d4ca30268986)), closes [#1060](https://github.com/libp2p/js-libp2p/issues/1060)
+
+
+
+## [0.35.3](https://github.com/libp2p/js-libp2p/compare/v0.35.2...v0.35.3) (2021-12-13)
+
+
+### Bug Fixes
+
+* clean up pending dial targets ([#1059](https://github.com/libp2p/js-libp2p/issues/1059)) ([bdc9f16](https://github.com/libp2p/js-libp2p/commit/bdc9f16d0cbe56ccf26822f11068e7795bcef046))
+* fix uncaught promise rejection when finding peers ([#1044](https://github.com/libp2p/js-libp2p/issues/1044)) ([3b683e7](https://github.com/libp2p/js-libp2p/commit/3b683e715686163e229b7b5c3a892327dfd4fc63))
+* make error codes consistent ([#1054](https://github.com/libp2p/js-libp2p/issues/1054)) ([b25e0fe](https://github.com/libp2p/js-libp2p/commit/b25e0fe5312db58a06c39500ae84c50fed3a93bd))
+
+
+
+## [0.35.2](https://github.com/libp2p/js-libp2p/compare/v0.33.0...v0.35.2) (2021-12-06)
+
+
+### Bug Fixes
+
+* do not let closest peers run forever ([#1047](https://github.com/libp2p/js-libp2p/issues/1047)) ([91c2ec9](https://github.com/libp2p/js-libp2p/commit/91c2ec9856a3e972b7b2c9c4d9a4eda1d431c7ef))
+* increase maxlisteners on event target ([#1050](https://github.com/libp2p/js-libp2p/issues/1050)) ([b70fb43](https://github.com/libp2p/js-libp2p/commit/b70fb43427b47df079b55929ec8956f69cbda966)), closes [#900](https://github.com/libp2p/js-libp2p/issues/900)
+* private ip ts compile has no call signatures ([#1020](https://github.com/libp2p/js-libp2p/issues/1020)) ([77d7cb8](https://github.com/libp2p/js-libp2p/commit/77d7cb8f0815f2cdd3bfdfa8b641a7a186fe9520))
+* stop dht before connection manager ([#1041](https://github.com/libp2p/js-libp2p/issues/1041)) ([3a9d5f6](https://github.com/libp2p/js-libp2p/commit/3a9d5f64d96719ebb4d3b083c4f5832db4fa0816)), closes [#1039](https://github.com/libp2p/js-libp2p/issues/1039)
+
+
+### chore
+
+* update peer id and libp2p crypto ([#1042](https://github.com/libp2p/js-libp2p/issues/1042)) ([9cbf36f](https://github.com/libp2p/js-libp2p/commit/9cbf36fcb54099e6fed35ceccc4a2376f0926c1f))
+
+
+### Features
+
+* update dht ([#1009](https://github.com/libp2p/js-libp2p/issues/1009)) ([2f598eb](https://github.com/libp2p/js-libp2p/commit/2f598eba09cff4301474af08196158065e3602d8))
+
+
+### BREAKING CHANGES
+
+* requires node 15+
+* libp2p-kad-dht has a new event-based API which is exposed as `_dht`
+
+
+
+## [0.35.1](https://github.com/libp2p/js-libp2p/compare/v0.35.0...v0.35.1) (2021-12-03)
+
+
+### Bug Fixes
+
+* do not let closest peers run forever ([#1047](https://github.com/libp2p/js-libp2p/issues/1047)) ([91c2ec9](https://github.com/libp2p/js-libp2p/commit/91c2ec9856a3e972b7b2c9c4d9a4eda1d431c7ef))
+
+
+
 # [0.35.0](https://github.com/libp2p/js-libp2p/compare/v0.34.0...v0.35.0) (2021-12-02)
 
 

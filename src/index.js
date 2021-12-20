@@ -56,16 +56,9 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {MuxedStream} stream
  * @property {string} protocol
  *
- * @typedef {Object} RandomWalkOptions
- * @property {boolean} [enabled = false]
- * @property {number} [queriesPerPeriod = 1]
- * @property {number} [interval = 300e3]
- * @property {number} [timeout = 10e3]
- *
  * @typedef {Object} DhtOptions
  * @property {boolean} [enabled = false]
  * @property {number} [kBucketSize = 20]
- * @property {RandomWalkOptions} [randomWalk]
  * @property {boolean} [clientMode]
  * @property {import('libp2p-interfaces/src/types').DhtSelectors} [selectors]
  * @property {import('libp2p-interfaces/src/types').DhtValidators} [validators]
@@ -204,10 +197,11 @@ class Libp2p extends EventEmitter {
 
     // Create Metrics
     if (this._options.metrics.enabled) {
-      this.metrics = new Metrics({
-        ...this._options.metrics,
-        connectionManager: this.connectionManager
+      const metrics = new Metrics({
+        ...this._options.metrics
       })
+
+      this.metrics = metrics
     }
 
     // Create keychain
@@ -269,6 +263,7 @@ class Libp2p extends EventEmitter {
     this.dialer = new Dialer({
       transportManager: this.transportManager,
       peerStore: this.peerStore,
+      metrics: this.metrics,
       ...this._options.dialer
     })
 
