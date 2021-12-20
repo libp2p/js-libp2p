@@ -89,6 +89,38 @@ describe('peer-routing', () => {
       nodes[0]._dht.findPeer.restore()
     })
 
+    it('should use the nodes dht and forward all results', async () => {
+      sinon.stub(nodes[0]._dht, 'findPeer').callsFake(async function * () {
+        yield {
+          name: 'PEER_RESPONSE',
+          closer: [{
+            id: nodes[1].peerId,
+            multiaddrs: [new Multiaddr('/ip4/123.124.123.123/tcp/38982')]
+          }]
+        }
+        yield {
+          name: 'PEER_RESPONSE',
+          closer: [{
+            id: nodes[1].peerId,
+            multiaddrs: [new Multiaddr('/ip4/123.123.123.123/tcp/38982')]
+          }]
+        }
+        yield {
+          name: 'FINAL_PEER',
+          peer: {
+            id: nodes[1].peerId,
+            multiaddrs: [new Multiaddr('/ip4/123.123.123.123/tcp/38982')
+          ]
+          }
+        }
+      })
+
+      expect(nodes[0]._dht.findPeer.called).to.be.false()
+      expect((await nodes[0].peerRouting.findPeer(nodes[1].peerId)).multiaddrs.length).to.be.equal(2)
+      expect(nodes[0]._dht.findPeer.called).to.be.true()
+      nodes[0]._dht.findPeer.restore()
+    })
+
     it('should use the nodes dht to get the closest peers', async () => {
       sinon.stub(nodes[0]._dht, 'getClosestPeers').callsFake(async function * () {
         yield {
