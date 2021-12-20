@@ -9,6 +9,7 @@ export = PeerRouting;
  * @property {boolean} [enabled = true] - Whether to enable the Refresh manager
  * @property {number} [bootDelay = 6e5] - Boot delay to start the Refresh Manager (in ms)
  * @property {number} [interval = 10e3] - Interval between each Refresh Manager run (in ms)
+ * @property {number} [timeout = 10e3] - How long to let each refresh run (in ms)
  *
  * @typedef {Object} PeerRoutingOptions
  * @property {RefreshManagerOptions} [refreshManager]
@@ -60,11 +61,13 @@ declare class PeerRouting {
      *
      * @param {Uint8Array} key - A CID like key
      * @param {Object} [options]
-     * @param {number} [options.timeout=30e3] - How long the query can take.
+     * @param {number} [options.timeout=30e3] - How long the query can take
+     * @param {AbortSignal} [options.signal] - An AbortSignal to abort the request
      * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
      */
     getClosestPeers(key: Uint8Array, options?: {
         timeout?: number | undefined;
+        signal?: AbortSignal | undefined;
     } | undefined): AsyncIterable<{
         id: PeerId;
         multiaddrs: Multiaddr[];
@@ -87,6 +90,10 @@ type RefreshManagerOptions = {
      * - Interval between each Refresh Manager run (in ms)
      */
     interval?: number | undefined;
+    /**
+     * - How long to let each refresh run (in ms)
+     */
+    timeout?: number | undefined;
 };
 type PeerId = import('peer-id');
 type Multiaddr = import('multiaddr').Multiaddr;

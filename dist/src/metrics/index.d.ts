@@ -4,9 +4,6 @@ export = Metrics;
  * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
  */
 /**
- * @typedef MetricsProperties
- * @property {import('../connection-manager')} connectionManager
- *
  * @typedef MetricsOptions
  * @property {number} [computeThrottleMaxQueueSize = defaultOptions.computeThrottleMaxQueueSize]
  * @property {number} [computeThrottleTimeout = defaultOptions.computeThrottleTimeout]
@@ -25,9 +22,9 @@ declare class Metrics {
     static mergeStats(target: Stats, other: Stats): Stats;
     /**
      * @class
-     * @param {MetricsProperties & MetricsOptions} options
+     * @param {MetricsOptions} options
      */
-    constructor(options: MetricsProperties & MetricsOptions);
+    constructor(options: MetricsOptions);
     _options: any;
     _globalStats: Stats;
     _peerStats: Map<any, any>;
@@ -48,7 +45,7 @@ declare class Metrics {
      * @returns {void}
      */
     private _onMessage;
-    _connectionManager: import("../connection-manager");
+    _componentMetrics: Map<any, any>;
     /**
      * Must be called for stats to saved. Any data pushed for tracking
      * will be ignored.
@@ -71,6 +68,11 @@ declare class Metrics {
      * @returns {string[]}
      */
     get peers(): string[];
+    /**
+     * @returns {Map}
+     */
+    getComponentMetrics(): Map<any, any>;
+    updateComponentMetric(component: any, metric: any, value: any): void;
     /**
      * Returns the `Stats` object for the given `PeerId` whether it
      * is a live peer, or in the disconnected peer LRU cache.
@@ -130,14 +132,11 @@ declare class Metrics {
     }): MultiaddrConnection;
 }
 declare namespace Metrics {
-    export { PeerId, MultiaddrConnection, MetricsProperties, MetricsOptions };
+    export { PeerId, MultiaddrConnection, MetricsOptions };
 }
 import Stats = require("./stats");
 type PeerId = import('peer-id');
 type MultiaddrConnection = import('libp2p-interfaces/src/transport/types').MultiaddrConnection;
-type MetricsProperties = {
-    connectionManager: import('../connection-manager');
-};
 type MetricsOptions = {
     computeThrottleMaxQueueSize?: number | undefined;
     computeThrottleTimeout?: number | undefined;

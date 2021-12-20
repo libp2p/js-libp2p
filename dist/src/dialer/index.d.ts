@@ -20,6 +20,7 @@ export = Dialer;
  * @property {number} [maxDialsPerPeer = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
  * @property {number} [dialTimeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
  * @property {Record<string, Resolver>} [resolvers = {}] - multiaddr resolvers to use when dialing
+ * @property {import('../metrics')} [metrics]
  *
  * @typedef DialTarget
  * @property {string} id
@@ -36,7 +37,7 @@ declare class Dialer {
      * @class
      * @param {DialerProperties & DialerOptions} options
      */
-    constructor({ transportManager, peerStore, addressSorter, maxParallelDials, maxAddrsToDial, dialTimeout, maxDialsPerPeer, resolvers }: DialerProperties & DialerOptions);
+    constructor({ transportManager, peerStore, addressSorter, maxParallelDials, maxAddrsToDial, dialTimeout, maxDialsPerPeer, resolvers, metrics }: DialerProperties & DialerOptions);
     transportManager: import("../transport-manager");
     peerStore: import("../peer-store");
     addressSorter: (addresses: Address[]) => Address[];
@@ -47,6 +48,7 @@ declare class Dialer {
     tokens: number[];
     _pendingDials: Map<any, any>;
     _pendingDialTargets: Map<any, any>;
+    _metrics: import("../metrics") | undefined;
     /**
      * Clears any pending dials
      */
@@ -156,6 +158,7 @@ type DialerOptions = {
      * - multiaddr resolvers to use when dialing
      */
     resolvers?: Record<string, Resolver> | undefined;
+    metrics?: import("../metrics") | undefined;
 };
 type PeerStore = import('../peer-store');
 type Address = import('../peer-store/address-book').Address;

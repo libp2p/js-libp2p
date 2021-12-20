@@ -19,16 +19,9 @@ export = Libp2p;
  * @property {MuxedStream} stream
  * @property {string} protocol
  *
- * @typedef {Object} RandomWalkOptions
- * @property {boolean} [enabled = false]
- * @property {number} [queriesPerPeriod = 1]
- * @property {number} [interval = 300e3]
- * @property {number} [timeout = 10e3]
- *
  * @typedef {Object} DhtOptions
  * @property {boolean} [enabled = false]
  * @property {number} [kBucketSize = 20]
- * @property {RandomWalkOptions} [randomWalk]
  * @property {boolean} [clientMode]
  * @property {import('libp2p-interfaces/src/types').DhtSelectors} [selectors]
  * @property {import('libp2p-interfaces/src/types').DhtValidators} [validators]
@@ -154,12 +147,6 @@ declare class Libp2p extends EventEmitter {
             dht: {
                 enabled: boolean;
                 kBucketSize: number;
-                randomWalk: {
-                    enabled: boolean;
-                    queriesPerPeriod: number;
-                    interval: number;
-                    timeout: number;
-                };
             };
             nat: {
                 enabled: boolean;
@@ -213,12 +200,6 @@ declare class Libp2p extends EventEmitter {
         dht: {
             enabled: boolean;
             kBucketSize: number;
-            randomWalk: {
-                enabled: boolean;
-                queriesPerPeriod: number;
-                interval: number;
-                timeout: number;
-            };
         };
         nat: {
             enabled: boolean;
@@ -410,7 +391,7 @@ declare class Libp2p extends EventEmitter {
     private _setupPeerDiscovery;
 }
 declare namespace Libp2p {
-    export { Connection, MuxedStream, TransportFactory, MuxerFactory, ContentRoutingModule, PeerDiscoveryFactory, PeerRoutingModule, Crypto, Pubsub, PubsubOptions, Datastore, Protector, HandlerProps, RandomWalkOptions, DhtOptions, KeychainOptions, PeerStoreOptions, PubsubLocalOptions, MetricsOptions, RelayOptions, Libp2pConfig, Libp2pModules, Libp2pOptions, constructorOptions, CreateOptions };
+    export { Connection, MuxedStream, TransportFactory, MuxerFactory, ContentRoutingModule, PeerDiscoveryFactory, PeerRoutingModule, Crypto, Pubsub, PubsubOptions, Datastore, Protector, HandlerProps, DhtOptions, KeychainOptions, PeerStoreOptions, PubsubLocalOptions, MetricsOptions, RelayOptions, Libp2pConfig, Libp2pModules, Libp2pOptions, constructorOptions, CreateOptions };
 }
 import { EventEmitter } from "events";
 type Libp2pOptions = {
@@ -501,16 +482,9 @@ type Pubsub = import('libp2p-interfaces/src/pubsub');
 type PubsubOptions = import('libp2p-interfaces/src/pubsub').PubsubOptions;
 type Datastore = import('interface-datastore').Datastore;
 type Protector = import('./pnet');
-type RandomWalkOptions = {
-    enabled?: boolean | undefined;
-    queriesPerPeriod?: number | undefined;
-    interval?: number | undefined;
-    timeout?: number | undefined;
-};
 type DhtOptions = {
     enabled?: boolean | undefined;
     kBucketSize?: number | undefined;
-    randomWalk?: RandomWalkOptions | undefined;
     clientMode?: boolean | undefined;
     selectors?: import("libp2p-interfaces/src/types").DhtSelectors | undefined;
     validators?: import("libp2p-interfaces/src/types").DhtValidators | undefined;

@@ -29,10 +29,7 @@ class DHTPeerRouting {
     for await (const event of this._dht.findPeer(peerId, options)) {
       switch (event.name) {
         case 'FINAL_PEER':
-          if (event.peer) {
-            return event.peer
-          }
-          break
+          return event.peer
         case 'PEER_RESPONSE':
           const peer = event.closer.find(peerData => peerData.id.equals(peerId))
 

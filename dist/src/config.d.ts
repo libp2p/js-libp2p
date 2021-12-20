@@ -42,12 +42,6 @@ export function validate(opts: Libp2pOptions): {
         dht: {
             enabled: boolean;
             kBucketSize: number;
-            randomWalk: {
-                enabled: boolean;
-                queriesPerPeriod: number;
-                interval: number;
-                timeout: number;
-            };
         };
         nat: {
             enabled: boolean;

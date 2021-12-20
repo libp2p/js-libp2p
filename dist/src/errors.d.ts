@@ -36,5 +36,29 @@ export namespace codes {
     export const ERR_UNSUPPORTED_PROTOCOL: string;
     export const ERR_INVALID_MULTIADDR: string;
     export const ERR_SIGNATURE_NOT_VALID: string;
+    export const ERR_FIND_SELF: string;
+    export const ERR_NO_ROUTERS_AVAILABLE: string;
+    export const ERR_CONNECTION_NOT_MULTIPLEXED: string;
+    export const ERR_NO_DIAL_TOKENS: string;
+    export const ERR_KEYCHAIN_REQUIRED: string;
+    export const ERR_INVALID_CMS: string;
+    export const ERR_MISSING_KEYS: string;
+    export const ERR_NO_KEY: string;
+    export const ERR_INVALID_KEY_NAME: string;
+    export const ERR_INVALID_KEY_TYPE: string;
+    export const ERR_KEY_ALREADY_EXISTS: string;
+    export const ERR_INVALID_KEY_SIZE: string;
+    export const ERR_KEY_NOT_FOUND: string;
+    export const ERR_OLD_KEY_NAME_INVALID: string;
+    export const ERR_NEW_KEY_NAME_INVALID: string;
+    export const ERR_PASSWORD_REQUIRED: string;
+    export const ERR_PEM_REQUIRED: string;
+    export const ERR_CANNOT_READ_KEY: string;
+    export const ERR_MISSING_PRIVATE_KEY: string;
+    export const ERR_INVALID_OLD_PASS_TYPE: string;
+    export const ERR_INVALID_NEW_PASS_TYPE: string;
+    export const ERR_INVALID_PASS_LENGTH: string;
+    export const ERR_NOT_IMPLEMENTED: string;
+    export const ERR_WRONG_PING_ACK: string;
 }
 //# sourceMappingURL=errors.d.ts.map
