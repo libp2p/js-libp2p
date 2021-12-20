@@ -95,7 +95,7 @@ describe('peer-routing', () => {
           name: 'PEER_RESPONSE',
           closer: [{
             id: nodes[1].peerId,
-            multiaddrs: [new Multiaddr('/ip4/123.124.123.123/tcp/38982')]
+            multiaddrs: [new Multiaddr('/ip4/234.234.234.234/tcp/38982')]
           }]
         }
         yield {
