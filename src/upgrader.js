@@ -5,7 +5,6 @@ const log = Object.assign(debug('libp2p:upgrader'), {
   error: debug('libp2p:upgrader:err')
 })
 const errCode = require('err-code')
-// @ts-ignore multistream-select does not export types
 const Multistream = require('multistream-select')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const PeerId = require('peer-id')
