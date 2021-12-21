@@ -14,7 +14,7 @@ const { setMaxListeners } = require('events')
 const DialRequest = require('./dial-request')
 const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 const getPeer = require('../get-peer')
-
+const trackedMap = require('../metrics/tracked-map')
 const { codes } = require('../errors')
 const {
   DIAL_TIMEOUT,
@@ -86,9 +86,12 @@ class Dialer {
     this.timeout = dialTimeout
     this.maxDialsPerPeer = maxDialsPerPeer
     this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
-    this._pendingDials = new Map()
-    this._pendingDialTargets = new Map()
-    this._metrics = metrics
+
+    /** @type {Map<string, PendingDial>} */
+    this._pendingDials = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIALS, metrics)
+
+    /** @type {Map<string, { resolve: (value: any) => void, reject: (err: Error) => void}>} */
+    this._pendingDialTargets = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, metrics)
 
     for (const [key, value] of Object.entries(resolvers)) {
       Multiaddr.resolvers.set(key, value)
@@ -112,9 +115,6 @@ class Dialer {
       pendingTarget.reject(new AbortError('Dialer was destroyed'))
     }
     this._pendingDialTargets.clear()
-
-    this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIALS, 0)
-    this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, 0)
   }
 
   /**
@@ -164,7 +164,6 @@ class Dialer {
     const id = `${(parseInt(String(Math.random() * 1e9), 10)).toString() + Date.now()}`
     const cancellablePromise = new Promise((resolve, reject) => {
       this._pendingDialTargets.set(id, { resolve, reject })
-      this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, this._pendingDialTargets.size)
     })
 
     try {
@@ -176,7 +175,6 @@ class Dialer {
       return dialTarget
     } finally {
       this._pendingDialTargets.delete(id)
-      this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, this._pendingDialTargets.size)
     }
   }
 
@@ -269,12 +267,9 @@ class Dialer {
       destroy: () => {
         timeoutController.clear()
         this._pendingDials.delete(dialTarget.id)
-        this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIALS, this._pendingDials.size)
       }
     }
     this._pendingDials.set(dialTarget.id, pendingDial)
-
-    this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIALS, this._pendingDials.size)
 
     return pendingDial
   }
