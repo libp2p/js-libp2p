@@ -21,9 +21,11 @@ const {
 // @ts-ignore it-handshake has no types exported
 const handshake = require('it-handshake')
 const { NONCE_LENGTH } = require('./key-generator')
+const { raceSignal } = require('../utils')
 
 /**
  * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
+ * @typedef {import('libp2p-interfaces/src/types').AbortOptions} AbortOptions
  */
 
 class Protector {
@@ -46,9 +48,10 @@ class Protector {
    * created with.
    *
    * @param {MultiaddrConnection} connection - The connection to protect
+   * @param {AbortOptions} [options]
    * @returns {Promise<MultiaddrConnection>} A protected duplex iterable
    */
-  async protect (connection) {
+  async protect (connection, options) {
     if (!connection) {
       throw errcode(new Error(Errors.NO_HANDSHAKE_CONNECTION), ERR_INVALID_PARAMETERS)
     }
@@ -60,7 +63,7 @@ class Protector {
     const shake = handshake(connection)
     shake.write(localNonce)
 
-    const result = await shake.reader.next(NONCE_LENGTH)
+    const result = await raceSignal(shake.reader.next(NONCE_LENGTH), options && options.signal)
     const remoteNonce = result.value.slice()
     shake.rest()
 
