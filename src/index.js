@@ -161,6 +161,15 @@ class Libp2p extends EventEmitter {
     this.peerId = this._options.peerId
     this.datastore = this._options.datastore
 
+    // Create Metrics
+    if (this._options.metrics.enabled) {
+      const metrics = new Metrics({
+        ...this._options.metrics
+      })
+
+      this.metrics = metrics
+    }
+
     this.peerStore = (this.datastore && this._options.peerStore.persistence)
       ? new PersistentPeerStore({
         peerId: this.peerId,
@@ -194,15 +203,6 @@ class Libp2p extends EventEmitter {
       minConnections: this._options.connectionManager.minConnections,
       autoDialInterval: this._options.connectionManager.autoDialInterval
     })
-
-    // Create Metrics
-    if (this._options.metrics.enabled) {
-      const metrics = new Metrics({
-        ...this._options.metrics
-      })
-
-      this.metrics = metrics
-    }
 
     // Create keychain
     if (this._options.keychain && this._options.keychain.datastore) {
