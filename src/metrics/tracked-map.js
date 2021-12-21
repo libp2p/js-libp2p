@@ -19,10 +19,6 @@ class TrackedMap extends Map {
     this._metrics.updateComponentMetric(this._component, this._name, this.size)
   }
 
-  get size () {
-    return super.size
-  }
-
   /**
    * @param {K} key
    * @param {V} value
