@@ -1,3 +1,12 @@
+## [0.27.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.4...v0.27.5) (2021-12-21)
+
+
+### Bug Fixes
+
+* silence max listeners exceeded warning ([#270](https://github.com/libp2p/js-libp2p-kad-dht/issues/270)) ([7b6c90f](https://github.com/libp2p/js-libp2p-kad-dht/commit/7b6c90fa76207a028c14609b4f8834ae9be2bf76))
+
+
+
 ## [0.27.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.3...v0.27.4) (2021-12-15)
 
 
