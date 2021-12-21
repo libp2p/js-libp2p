@@ -21,7 +21,7 @@ const {
 // @ts-ignore it-handshake has no types exported
 const handshake = require('it-handshake')
 const { NONCE_LENGTH } = require('./key-generator')
-const { raceSignal } = require('../utils')
+const { raceSignal } = require('race-signal')
 
 /**
  * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
