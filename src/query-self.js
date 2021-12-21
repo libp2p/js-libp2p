@@ -7,6 +7,8 @@ const { QUERY_SELF_INTERVAL, QUERY_SELF_TIMEOUT, K } = require('./constants')
 const utils = require('./utils')
 const { TimeoutController } = require('timeout-abort-controller')
 const { anySignal } = require('any-signal')
+// @ts-expect-error setMaxListeners is missing from the types
+const { setMaxListeners } = require('events')
 
 /**
  * Receives notifications of new peers joining the network that support the DHT protocol
@@ -67,8 +69,11 @@ class QuerySelf extends EventEmitter {
 
     try {
       this._controller = new AbortController()
+      const signal = anySignal([this._controller.signal, timeoutController.signal])
+      // this controller will get used for lots of dial attempts so make sure we don't cause warnings to be logged
+      setMaxListeners && setMaxListeners(Infinity, signal)
       const found = await length(await take(this._peerRouting.getClosestPeers(this._peerId.toBytes(), {
-        signal: anySignal([this._controller.signal, timeoutController.signal])
+        signal
       }), this._count))
 
       this._log('query ran successfully - found %d peers', found)

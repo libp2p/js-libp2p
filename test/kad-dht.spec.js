@@ -627,13 +627,12 @@ describe('KadDHT', () => {
 
       await Promise.all([
         tdht.connect(dhts[0], dhts[1]),
-        tdht.connect(dhts[1], dhts[2]),
-        tdht.connect(dhts[2], dhts[3])
+        tdht.connect(dhts[0], dhts[2]),
+        tdht.connect(dhts[0], dhts[3])
       ])
 
       const ids = dhts.map((d) => d._libp2p.peerId)
 
-      // ask the peer at the start of the line for the id of the peer at the end of the line
       const finalPeer = await findEvent(dhts[0].findPeer(ids[ids.length - 1]), 'FINAL_PEER')
 
       expect(finalPeer.peer.id.isEqual(ids[ids.length - 1])).to.eql(true)
