@@ -1,3 +1,4 @@
+'use strict'
 
 /**
  * @template K
@@ -40,13 +41,13 @@ class TrackedMap extends Map {
 }
 
 /**
-  * @template K
-  * @template V
-  * @param {string} component
-  * @param {string} name
-  * @param {import('.')} [metrics]
-  * @returns {Map<K, V>}
-  */
+ * @template K
+ * @template V
+ * @param {string} component
+ * @param {string} name
+ * @param {import('.')} [metrics]
+ * @returns {Map<K, V>}
+ */
 module.exports = (component, name, metrics) => {
   /** @type {Map<K, V>} */
   let map
