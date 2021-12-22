@@ -675,15 +675,15 @@ const { NOISE } = require('libp2p-noise')
 const LevelDatastore = require('datastore-level')
 
 const datastore = new LevelDatastore('path/to/store')
-const dsInstant = await datastore.open()
+await datastore.open() // level database must be ready before node boot
 
 const node = await Libp2p.create({
+  datastore, // pass the opened datastore
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
     connEncryption: [NOISE]
   },
-  datastore: dsInstant,
   peerStore: {
     persistence: true,
     threshold: 5
