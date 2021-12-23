@@ -41,6 +41,8 @@ const node = await Libp2p.create({
 Once that is done, we only need to create a few libp2p nodes, connect them and everything is ready to start using pubsub.
 
 ```JavaScript
+const { fromString } = require('uint8arrays/from-string')
+const { toString } = require('uint8arrays/to-string')
 const topic = 'news'
 
 const node1 = nodes[0]
@@ -51,19 +53,19 @@ node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
 await node1.dial(node2.peerId)
 
 node1.pubsub.on(topic, (msg) => {
-  console.log(`node1 received: ${uint8ArrayToString(msg.data)}`)
+  console.log(`node1 received: ${toString(msg.data)}`)
 })
 await node1.pubsub.subscribe(topic)
 
 // Will not receive own published messages by default
 node2.pubsub.on(topic, (msg) => {
-  console.log(`node2 received: ${uint8ArrayToString(msg.data)}`)
+  console.log(`node2 received: ${toString(msg.data)}`)
 })
 await node2.pubsub.subscribe(topic)
 
 // node2 publishes "news" every second
 setInterval(() => {
-  node2.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!'))
+  node2.pubsub.publish(topic, fromString('Bird bird bird, bird is the word!'))
 }, 1000)
 ```
 
