@@ -47,6 +47,8 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions
  * @typedef {import('interface-datastore').Datastore} Datastore
  * @typedef {import('./pnet')} Protector
+ * @typedef {Object} PersistentPeerStoreOptions
+ * @property {number} [threshold]
  */
 
 /**
@@ -160,6 +162,15 @@ class Libp2p extends EventEmitter {
     this.peerId = this._options.peerId
     this.datastore = this._options.datastore
 
+    // Create Metrics
+    if (this._options.metrics.enabled) {
+      const metrics = new Metrics({
+        ...this._options.metrics
+      })
+
+      this.metrics = metrics
+    }
+
     /** @type {import('./peer-store/types').PeerStore} */
     this.peerStore = new PeerStore({
       peerId: this.peerId,
@@ -191,14 +202,6 @@ class Libp2p extends EventEmitter {
       minConnections: this._options.connectionManager.minConnections,
       autoDialInterval: this._options.connectionManager.autoDialInterval
     })
-
-    // Create Metrics
-    if (this._options.metrics.enabled) {
-      this.metrics = new Metrics({
-        ...this._options.metrics,
-        connectionManager: this.connectionManager
-      })
-    }
 
     // Create keychain
     if (this._options.keychain && this._options.keychain.datastore) {
@@ -259,6 +262,7 @@ class Libp2p extends EventEmitter {
     this.dialer = new Dialer({
       transportManager: this.transportManager,
       peerStore: this.peerStore,
+      metrics: this.metrics,
       ...this._options.dialer
     })
 
