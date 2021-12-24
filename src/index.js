@@ -48,6 +48,8 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions
  * @typedef {import('interface-datastore').Datastore} Datastore
  * @typedef {import('./pnet')} Protector
+ * @typedef {Object} PersistentPeerStoreOptions
+ * @property {number} [threshold]
  */
 
 /**
@@ -110,7 +112,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {KeychainOptions & import('./keychain/index').KeychainOptions} [keychain]
  * @property {MetricsOptions & import('./metrics').MetricsOptions} [metrics]
  * @property {import('./peer-routing').PeerRoutingOptions} [peerRouting]
- * @property {PeerStoreOptions & import('./peer-store/persistent').PersistentPeerStoreOptions} [peerStore]
+ * @property {PeerStoreOptions & PersistentPeerStoreOptions} [peerStore]
  * @property {import('./transport-manager').TransportManagerOptions} [transportManager]
  * @property {Libp2pConfig} [config]
  *

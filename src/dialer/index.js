@@ -56,8 +56,8 @@ const METRICS_PENDING_DIAL_TARGETS = 'pending-dial-targets'
  * @property {Multiaddr[]} addrs
  *
  * @typedef PendingDial
- * @property {DialRequest} dialRequest
- * @property {TimeoutController} controller
+ * @property {import('./dial-request')} dialRequest
+ * @property {import('timeout-abort-controller').TimeoutController} controller
  * @property {Promise<Connection>} promise
  * @property {function():void} destroy
  */

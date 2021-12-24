@@ -8,6 +8,7 @@ const retimer = require('retimer')
 
 /**
  * @typedef {import('@vascosantos/moving-average').IMovingAverage} IMovingAverage
+ * @typedef {import('bignumber.js').BigNumber} Big
  */
 
 class Stats extends EventEmitter {
