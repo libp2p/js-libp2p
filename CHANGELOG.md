@@ -1,3 +1,23 @@
+## [0.35.7](https://github.com/libp2p/js-libp2p/compare/v0.35.2...v0.35.7) (2021-12-24)
+
+
+### Bug Fixes
+
+* add tracked map ([#1069](https://github.com/libp2p/js-libp2p/issues/1069)) ([b425fa1](https://github.com/libp2p/js-libp2p/commit/b425fa12304def2a007d43a0aa445c28b766ed02))
+* clean up pending dial targets ([#1059](https://github.com/libp2p/js-libp2p/issues/1059)) ([bdc9f16](https://github.com/libp2p/js-libp2p/commit/bdc9f16d0cbe56ccf26822f11068e7795bcef046))
+* fix uncaught promise rejection when finding peers ([#1044](https://github.com/libp2p/js-libp2p/issues/1044)) ([3b683e7](https://github.com/libp2p/js-libp2p/commit/3b683e715686163e229b7b5c3a892327dfd4fc63))
+* increase the maxlisteners for timeout controllers ([#1065](https://github.com/libp2p/js-libp2p/issues/1065)) ([09a0f94](https://github.com/libp2p/js-libp2p/commit/09a0f940df7fdb4ece34604e85693709df5c213e))
+* main ci ([#1079](https://github.com/libp2p/js-libp2p/issues/1079)) ([d1c48dc](https://github.com/libp2p/js-libp2p/commit/d1c48dcbeded828f2dd3044cc9aed3f17f02846d))
+* make error codes consistent ([#1054](https://github.com/libp2p/js-libp2p/issues/1054)) ([b25e0fe](https://github.com/libp2p/js-libp2p/commit/b25e0fe5312db58a06c39500ae84c50fed3a93bd))
+* type definitions for big dialrequest and persistent peerstore ([#1078](https://github.com/libp2p/js-libp2p/issues/1078)) ([cb0d7d6](https://github.com/libp2p/js-libp2p/commit/cb0d7d6c99d179498f04e76df76e70e4f7d41c4c))
+
+
+### Features
+
+* allow per-component metrics to be collected ([#1061](https://github.com/libp2p/js-libp2p/issues/1061)) ([2f0b311](https://github.com/libp2p/js-libp2p/commit/2f0b311df7127aa44512c2008142d4ca30268986)), closes [#1060](https://github.com/libp2p/js-libp2p/issues/1060)
+
+
+
 ## [0.35.6](https://github.com/libp2p/js-libp2p/compare/v0.35.5...v0.35.6) (2021-12-18)
 
 
