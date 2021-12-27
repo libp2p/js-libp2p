@@ -82,9 +82,9 @@ class Registrar {
    * Register handlers for a set of multicodecs given
    *
    * @param {Topology} topology - protocol topology
-   * @returns {string} registrar identifier
+   * @returns {Promise<string>} registrar identifier
    */
-  register (topology) {
+  async register (topology) {
     if (!Topology.isTopology(topology)) {
       log.error('topology must be an instance of interfaces/topology')
       throw errcode(new Error('topology must be an instance of interfaces/topology'), ERR_INVALID_PARAMETERS)
@@ -96,7 +96,7 @@ class Registrar {
     this.topologies.set(id, topology)
 
     // Set registrar
-    topology.registrar = this
+    await topology.setRegistrar(this)
 
     return id
   }
