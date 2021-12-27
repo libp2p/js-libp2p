@@ -38,6 +38,12 @@ class TrackedMap extends Map {
     this._metrics.updateComponentMetric(this._component, this._name, this.size)
     return deleted
   }
+
+  clear () {
+    super.clear()
+
+    this._metrics.updateComponentMetric(this._component, this._name, this.size)
+  }
 }
 
 /**
