@@ -1,3 +1,15 @@
+## [0.35.8](https://github.com/libp2p/js-libp2p/compare/v0.35.7...v0.35.8) (2021-12-29)
+
+
+### Bug Fixes
+
+* do not wait for autodial start ([#1089](https://github.com/libp2p/js-libp2p/issues/1089)) ([79b3cfc](https://github.com/libp2p/js-libp2p/commit/79b3cfc6ad02ecc76fe23a3c3ff2d0b32a0ae4a8))
+* increase listeners on any-signal ([#1084](https://github.com/libp2p/js-libp2p/issues/1084)) ([f18fc80](https://github.com/libp2p/js-libp2p/commit/f18fc80b70bf7b6b26fffa70b0a8d0502a6c4801))
+* look for final peer event instead of peer response ([#1092](https://github.com/libp2p/js-libp2p/issues/1092)) ([d2b7ec0](https://github.com/libp2p/js-libp2p/commit/d2b7ec0f6be0ee80f2c963279a8ec2385059a889))
+* record tracked map clears ([#1085](https://github.com/libp2p/js-libp2p/issues/1085)) ([b4b4324](https://github.com/libp2p/js-libp2p/commit/b4b432406ebc08ef2fc3a1922c64cde7c9060cae))
+
+
+
 ## [0.35.7](https://github.com/libp2p/js-libp2p/compare/v0.35.2...v0.35.7) (2021-12-24)
 
 
