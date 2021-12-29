@@ -75,11 +75,11 @@ describe('peer-routing', () => {
     it('should use the nodes dht', async () => {
       sinon.stub(nodes[0]._dht, 'findPeer').callsFake(async function * () {
         yield {
-          name: 'PEER_RESPONSE',
-          closer: [{
+          name: 'FINAL_PEER',
+          peer: {
             id: nodes[1].peerId,
             multiaddrs: []
-          }]
+          }
         }
       })
 
@@ -448,10 +448,8 @@ describe('peer-routing', () => {
 
       sinon.stub(node._dht, 'findPeer').callsFake(async function * () {
         yield {
-          name: 'PEER_RESPONSE',
-          closer: [
-            result
-          ]
+          name: 'FINAL_PEER',
+          peer: result
         }
       })
       sinon.stub(delegate, 'findPeer').callsFake(async () => {
@@ -477,10 +475,8 @@ describe('peer-routing', () => {
 
       sinon.stub(node._dht, 'findPeer').callsFake(async function * () {
         yield {
-          name: 'PEER_RESPONSE',
-          closer: [
-            result
-          ]
+          name: 'FINAL_PEER',
+          peer: result
         }
       })
       sinon.stub(delegate, 'findPeer').callsFake(() => {})
