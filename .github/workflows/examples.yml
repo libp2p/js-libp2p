@@ -21,6 +21,7 @@ jobs:
         CACHE_NAME: cache-node-modules
       with:
         path: |
+          ~/.cache
           ~/.npm
           ./node_modules
           ./dist
@@ -48,6 +49,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -74,6 +76,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -100,6 +103,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -126,6 +130,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -152,6 +157,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -178,6 +184,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -204,6 +211,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -230,6 +238,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -256,6 +265,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -282,6 +292,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -308,6 +319,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
@@ -334,6 +346,7 @@ jobs:
           CACHE_NAME: cache-node-modules
         with:
           path: |
+            ~/.cache
             ~/.npm
             ./node_modules
             ./dist
