@@ -9,7 +9,6 @@ on:
 
 jobs:
   build:
-    name: Build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -37,7 +36,6 @@ jobs:
            npm run build
 
   check:
-    name: Check
     needs: build
     runs-on: ubuntu-latest
     steps:
