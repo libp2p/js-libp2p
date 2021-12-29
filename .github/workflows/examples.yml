@@ -8,7 +8,33 @@ on:
       - '**'
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 16
+    - uses: actions/cache@v2
+      id: cache
+      env:
+        CACHE_NAME: cache-node-modules
+      with:
+        path: |
+          ~/.cache
+          ~/.npm
+          ./node_modules
+          ./dist
+          ./examples/node_modules
+        key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+    - name: Install Dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        npm install
+        npm run build
+        cd examples && npm i
   check:
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
