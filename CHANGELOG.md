@@ -1,3 +1,12 @@
+## [0.27.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.5...v0.27.6) (2021-12-29)
+
+
+### Bug Fixes
+
+* return pk when found ([#273](https://github.com/libp2p/js-libp2p-kad-dht/issues/273)) ([e7d2d7f](https://github.com/libp2p/js-libp2p-kad-dht/commit/e7d2d7ff6744fda4d984bf1ca802027427726809))
+
+
+
 ## [0.27.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.4...v0.27.5) (2021-12-21)
 
 
