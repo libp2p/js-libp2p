@@ -57,7 +57,9 @@ class AutoDialler {
     }
 
     this._running = true
-    this._autoDial()
+    this._autoDial().catch(err => {
+      log.error('could start autodial', err)
+    })
     log('started')
   }
 
