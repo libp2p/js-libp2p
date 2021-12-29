@@ -483,26 +483,20 @@ class KadDHT extends EventEmitter {
     this._log('getPublicKey %p', peer)
 
     // try the node directly
-    let pk
-
     for await (const event of this._peerRouting.getPublicKeyFromNode(peer, options)) {
       if (event.name === 'VALUE') {
-        pk = crypto.keys.unmarshalPublicKey(event.value)
+        return crypto.keys.unmarshalPublicKey(event.value)
       }
     }
 
-    if (!pk) {
-      // try dht directly
-      const pkKey = utils.keyForPublicKey(peer)
+    // search the dht
+    const pkKey = utils.keyForPublicKey(peer)
 
-      for await (const event of this.get(pkKey, options)) {
-        if (event.name === 'VALUE') {
-          pk = crypto.keys.unmarshalPublicKey(event.value)
-        }
+    for await (const event of this.get(pkKey, options)) {
+      if (event.name === 'VALUE') {
+        return crypto.keys.unmarshalPublicKey(event.value)
       }
     }
-
-    return pk
   }
 
   async refreshRoutingTable () {
