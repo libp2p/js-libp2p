@@ -97,11 +97,11 @@ describe('KadDHT', () => {
       sinon.spy(dht._lan._network, 'start')
       sinon.spy(dht._lan._network, 'stop')
 
-      dht.start()
+      await dht.start()
       expect(dht._wan._network.start.calledOnce).to.equal(true)
       expect(dht._lan._network.start.calledOnce).to.equal(true)
 
-      dht.stop()
+      await dht.stop()
       expect(dht._wan._network.stop.calledOnce).to.equal(true)
       expect(dht._lan._network.stop.calledOnce).to.equal(true)
     })
@@ -112,15 +112,15 @@ describe('KadDHT', () => {
 
       dht._libp2p.handle = sinon.stub()
 
-      dht.start()
+      await dht.start()
       // lan dht is always in server mode
       expect(dht._libp2p.handle.callCount).to.equal(1)
 
-      dht.enableServerMode()
+      await dht.enableServerMode()
       // now wan dht should be in server mode too
       expect(dht._libp2p.handle.callCount).to.equal(2)
 
-      dht.stop()
+      await dht.stop()
     })
 
     it('client mode', async () => {
@@ -129,8 +129,8 @@ describe('KadDHT', () => {
 
       dht._libp2p.handle = sinon.stub()
 
-      dht.start()
-      dht.stop()
+      await dht.start()
+      await dht.stop()
 
       // lan dht is always in server mode
       expect(dht._libp2p.handle.callCount).to.equal(1)
@@ -139,17 +139,17 @@ describe('KadDHT', () => {
     it('should not fail when already started', async () => {
       const [dht] = await tdht.spawn(1, null, false)
 
-      dht.start()
-      dht.start()
-      dht.start()
+      await dht.start()
+      await dht.start()
+      await dht.start()
 
-      dht.stop()
+      await dht.stop()
     })
 
     it('should not fail to stop when was not started', async () => {
       const [dht] = await tdht.spawn(1, null, false)
 
-      dht.stop()
+      await dht.stop()
     })
   })
 
@@ -493,7 +493,7 @@ describe('KadDHT', () => {
       const wanSpy = sinon.spy(dhts[0]._wan, 'provide')
       const lanSpy = sinon.spy(dhts[0]._lan, 'provide')
 
-      dhts[0].enableServerMode()
+      await dhts[0].enableServerMode()
 
       await drain(dhts[0].provide(values[0].cid))
 
@@ -736,7 +736,7 @@ describe('KadDHT', () => {
       const dhts = await tdht.spawn(2)
 
       const ids = dhts.map((d) => d._libp2p.peerId)
-      dhts[0]._libp2p.peerStore.addressBook.add(dhts[1]._libp2p.peerId, [new Multiaddr('/ip4/160.1.1.1/tcp/80')])
+      await dhts[0]._libp2p.peerStore.addressBook.add(dhts[1]._libp2p.peerId, [new Multiaddr('/ip4/160.1.1.1/tcp/80')])
 
       const key = await dhts[0].getPublicKey(ids[1])
       expect(key).to.eql(dhts[1]._libp2p.peerId.pubKey)
@@ -753,7 +753,7 @@ describe('KadDHT', () => {
 
       await tdht.connect(dhts[0], dhts[1])
 
-      dhts[0]._libp2p.peerStore.addressBook.add(dhts[1]._libp2p.peerId, [new Multiaddr('/ip4/160.1.1.1/tcp/80')])
+      await dhts[0]._libp2p.peerStore.addressBook.add(dhts[1]._libp2p.peerId, [new Multiaddr('/ip4/160.1.1.1/tcp/80')])
 
       const key = await dhts[0].getPublicKey(ids[1])
       expect(uint8ArrayEquals(key, dhts[1]._libp2p.peerId.pubKey)).to.eql(true)

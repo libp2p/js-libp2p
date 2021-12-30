@@ -93,8 +93,8 @@ describe('rpc - handlers - GetValue', () => {
 
       const msg = new Message(T, key, 0)
 
-      dht._libp2p.peerStore.addressBook.add(other, [])
-      dht._libp2p.peerStore.keyBook.set(other, other.pubKey)
+      await dht._libp2p.peerStore.addressBook.add(other, [])
+      await dht._libp2p.peerStore.keyBook.set(other, other.pubKey)
 
       await dht._lan._routingTable.add(other)
       const response = await handler.handle(peerIds[0], msg)

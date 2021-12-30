@@ -13,6 +13,7 @@ const {
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('../types').DHTMessageHandler} DHTMessageHandler
+ * @typedef {import('../../types').PeerData} PeerData
  */
 
 /**
@@ -24,7 +25,7 @@ class GetProvidersHandler {
    * @param {PeerId} params.peerId
    * @param {import('../../peer-routing').PeerRouting} params.peerRouting
    * @param {import('../../providers').Providers} params.providers
-   * @param {import('../../types').PeerStore} params.peerStore
+   * @param {import('libp2p/src/peer-store/types').PeerStore} params.peerStore
    * @param {import('../../types').Addressable} params.addressable
    * @param {boolean} [params.lan]
    */
@@ -58,8 +59,8 @@ class GetProvidersHandler {
       this._peerRouting.getCloserPeersOffline(msg.key, peerId)
     ])
 
-    const providerPeers = this._getPeers(peers)
-    const closerPeers = this._getPeers(closer.map(({ id }) => id))
+    const providerPeers = await this._getPeers(peers)
+    const closerPeers = await this._getPeers(closer.map(({ id }) => id))
     const response = new Message(msg.type, msg.key, msg.clusterLevel)
 
     if (providerPeers.length > 0) {
@@ -77,22 +78,30 @@ class GetProvidersHandler {
   /**
    * @param {PeerId} peerId
    */
-  _getAddresses (peerId) {
-    return this._peerId.equals(peerId) ? this._addressable.multiaddrs : (this._peerStore.addressBook.get(peerId) || []).map(address => address.multiaddr)
+  async _getAddresses (peerId) {
+    return this._peerId.equals(peerId) ? this._addressable.multiaddrs : (await (this._peerStore.addressBook.get(peerId)) || []).map(address => address.multiaddr)
   }
 
   /**
    * @param {PeerId[]} peerIds
-   * @returns
    */
-  _getPeers (peerIds) {
-    return peerIds
-      .map((peerId) => ({
+  async _getPeers (peerIds) {
+    /** @type {PeerData[]} */
+    const output = []
+    const addrFilter = this._lan ? removePublicAddresses : removePrivateAddresses
+
+    for (const peerId of peerIds) {
+      const peer = addrFilter({
         id: peerId,
-        multiaddrs: this._getAddresses(peerId)
-      }))
-      .map(this._lan ? removePublicAddresses : removePrivateAddresses)
-      .filter(({ multiaddrs }) => multiaddrs.length)
+        multiaddrs: await this._getAddresses(peerId)
+      })
+
+      if (peer.multiaddrs.length) {
+        output.push(peer)
+      }
+    }
+
+    return output
   }
 }
 

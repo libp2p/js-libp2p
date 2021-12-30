@@ -13,6 +13,7 @@ const log = utils.logger('libp2p:kad-dht:rpc:handlers:get-value')
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('../types').DHTMessageHandler} DHTMessageHandler
+ * @typedef {import('libp2p-interfaces/src/keys/types').PublicKey} PublicKey
  */
 
 /**
@@ -22,7 +23,7 @@ class GetValueHandler {
   /**
    * @param {object} params
    * @param {PeerId} params.peerId
-   * @param {import('../../types').PeerStore} params.peerStore
+   * @param {import('libp2p/src/peer-store/types').PeerStore} params.peerStore
    * @param {import('../../peer-routing').PeerRouting} params.peerRouting
    * @param {import('interface-datastore').Datastore} params.records
    */
@@ -53,18 +54,18 @@ class GetValueHandler {
     if (utils.isPublicKeyKey(key)) {
       log('is public key')
       const idFromKey = utils.fromPublicKeyKey(key)
-      let id
+      /** @type {PublicKey | undefined} */
+      let pubKey
 
       if (this._peerId.equals(idFromKey)) {
-        id = this._peerId
+        pubKey = this._peerId.pubKey
       } else {
-        const peerData = this._peerStore.get(idFromKey)
-        id = peerData && peerData.id
+        pubKey = await this._peerStore.keyBook.get(idFromKey)
       }
 
-      if (id && id.pubKey) {
+      if (pubKey != null) {
         log('returning found public key')
-        response.record = new Record(key, id.pubKey.bytes)
+        response.record = new Record(key, pubKey.bytes)
         return response
       }
     }

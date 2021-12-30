@@ -280,9 +280,11 @@ class KadDHT extends EventEmitter {
 
     // handle peers being discovered via other peer discovery mechanisms
     this._topologyListener.on('peer', async (peerId) => {
+      const multiaddrs = await this._libp2p.peerStore.addressBook.get(peerId)
+
       const peerData = {
         id: peerId,
-        multiaddrs: (this._libp2p.peerStore.addressBook.get(peerId) || []).map((/** @type {{ multiaddr: Multiaddr }} */ addr) => addr.multiaddr)
+        multiaddrs: multiaddrs.map(addr => addr.multiaddr)
       }
 
       this.onPeerConnect(peerData).catch(err => {
@@ -332,19 +334,19 @@ class KadDHT extends EventEmitter {
   /**
    * Whether we are in client or server mode
    */
-  enableServerMode () {
+  async enableServerMode () {
     this._log('enabling server mode')
     this._clientMode = false
-    this._libp2p.handle(this._protocol, this._rpc.onIncomingStream.bind(this._rpc))
+    await this._libp2p.handle(this._protocol, this._rpc.onIncomingStream.bind(this._rpc))
   }
 
   /**
    * Whether we are in client or server mode
    */
-  enableClientMode () {
+  async enableClientMode () {
     this._log('enabling client mode')
     this._clientMode = true
-    this._libp2p.unhandle(this._protocol)
+    await this._libp2p.unhandle(this._protocol)
   }
 
   /**
@@ -355,9 +357,9 @@ class KadDHT extends EventEmitter {
 
     // Only respond to queries when not in client mode
     if (this._clientMode) {
-      this.enableClientMode()
+      await this.enableClientMode()
     } else {
-      this.enableServerMode()
+      await this.enableServerMode()
     }
 
     await Promise.all([

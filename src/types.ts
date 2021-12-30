@@ -2,7 +2,6 @@ import type PeerId from 'peer-id'
 import type { Multiaddr } from 'multiaddr'
 import type { CID } from 'multiformats/cid'
 import type { MuxedStream } from 'libp2p/src/upgrader'
-import type Topology from 'libp2p-interfaces/src/topology'
 import type { PublicKey } from 'libp2p-crypto'
 import type { Message } from './message/dht'
 
@@ -141,8 +140,8 @@ export interface DHT {
   put: (key: Uint8Array, value: Uint8Array, options?: QueryOptions) => AsyncIterable<QueryEvent>
 
   // enable/disable publishing
-  enableServerMode: () => void
-  enableClientMode: () => void
+  enableServerMode: () => Promise<void>
+  enableClientMode: () => Promise<void>
 
   // housekeeping
   refreshRoutingTable: () => Promise<void>
@@ -159,24 +158,6 @@ export interface Dialer {
 // Implemented by libp2p, should be moved to libp2p-interfaces eventually
 export interface Addressable {
   multiaddrs: Multiaddr[]
-}
-
-// Implemented by libp2p.registrar, should be moved to libp2p-interfaces eventually
-export interface Registrar {
-  register: (topology: Topology) => string
-  unregister: (id: string) => boolean
-}
-
-// Implemented by libp2p.peerStore, should be moved to libp2p-interfaces eventually
-export interface PeerStore {
-  addressBook: AddressBook
-  get: (peerId: PeerId) => { id: PeerId, addresses: Array<{ multiaddr: Multiaddr }> } | undefined
-}
-
-// Implemented by libp2p.peerStore.addressStore, should be moved to libp2p-interfaces eventually
-export interface AddressBook {
-  add: (peerId: PeerId, addresses: Multiaddr[]) => void
-  get: (peerId: PeerId) => Array<{ multiaddr: Multiaddr }> | undefined
 }
 
 export interface Metrics {

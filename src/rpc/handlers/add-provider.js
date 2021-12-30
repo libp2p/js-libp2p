@@ -19,7 +19,7 @@ class AddProviderHandler {
    * @param {object} params
    * @param {PeerId} params.peerId
    * @param {import('../../providers').Providers} params.providers
-   * @param {import('../../types').PeerStore} params.peerStore
+   * @param {import('libp2p/src/peer-store/types').PeerStore} params.peerStore
    */
   constructor ({ peerId, providers, peerStore }) {
     this._peerId = peerId
@@ -69,7 +69,7 @@ class AddProviderHandler {
 
         if (!this._peerId.equals(pi.id)) {
           // Add known address to peer store
-          this._peerStore.addressBook.add(pi.id, pi.multiaddrs)
+          await this._peerStore.addressBook.add(pi.id, pi.multiaddrs)
           await this._providers.addProvider(cid, pi.id)
         }
       })

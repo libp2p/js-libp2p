@@ -28,7 +28,8 @@ class TestDHT {
     const [peerId] = await createPeerId(1)
 
     const regRecord = {}
-    const peerStore = new PeerStore({ peerId })
+    const datastore = new MemoryDatastore()
+    const peerStore = new PeerStore({ peerId, datastore })
 
     options = {
       protocolPrefix: '/ipfs',
@@ -80,7 +81,7 @@ class TestDHT {
           new Multiaddr('/ip4/85.3.31.0/tcp/4002')
         ],
         peerStore,
-        datastore: new MemoryDatastore(),
+        datastore,
         dialProtocol: (peer, protocol, options) => connectToPeer(dht, peer, protocol, options),
         registrar,
         handle: (protocol, fn) => {
@@ -115,13 +116,13 @@ class TestDHT {
     })
 
     // simulate libp2p._onDiscoveryPeer
-    dht.on('peer', (peerData) => {
+    dht.on('peer', async (peerData) => {
       if (peerData.id.toB58String() === peerId.toB58String()) {
         return
       }
 
-      peerData.multiaddrs && peerStore.addressBook.add(peerData.id, peerData.multiaddrs)
-      peerData.protocols && peerStore.protoBook.set(peerData.id, peerData.protocols)
+      peerData.multiaddrs && await peerStore.addressBook.add(peerData.id, peerData.multiaddrs)
+      peerData.protocols && await peerStore.protoBook.set(peerData.id, peerData.protocols)
     })
 
     if (autoStart) {
@@ -141,8 +142,8 @@ class TestDHT {
     const routingTableChecks = []
 
     // Libp2p dial adds multiaddrs to the addressBook
-    dhtA._libp2p.peerStore.addressBook.add(dhtB._libp2p.peerId, dhtB._libp2p.multiaddrs)
-    dhtB._libp2p.peerStore.addressBook.add(dhtA._libp2p.peerId, dhtA._libp2p.multiaddrs)
+    await dhtA._libp2p.peerStore.addressBook.add(dhtB._libp2p.peerId, dhtB._libp2p.multiaddrs)
+    await dhtB._libp2p.peerStore.addressBook.add(dhtA._libp2p.peerId, dhtA._libp2p.multiaddrs)
 
     // Notice peers of connection
     if (!dhtB._clientMode) {

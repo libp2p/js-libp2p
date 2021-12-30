@@ -77,15 +77,15 @@ class DualKadDHT extends EventEmitter {
   /**
    * Whether we are in client or server mode
    */
-  enableServerMode () {
-    this._wan.enableServerMode()
+  async enableServerMode () {
+    await this._wan.enableServerMode()
   }
 
   /**
    * Whether we are in client or server mode
    */
-  enableClientMode () {
-    this._wan.enableClientMode()
+  async enableClientMode () {
+    await this._wan.enableClientMode()
   }
 
   /**
@@ -314,7 +314,7 @@ class DualKadDHT extends EventEmitter {
     log('getPublicKey %p', peer)
 
     // local check
-    const peerData = this._libp2p.peerStore.get(peer)
+    const peerData = await this._libp2p.peerStore.get(peer)
 
     if (peerData && peerData.id.pubKey) {
       log('getPublicKey: found local copy')
@@ -339,8 +339,8 @@ class DualKadDHT extends EventEmitter {
 
     const peerId = new PeerId(peer.id, undefined, pk)
     const addrs = ((peerData && peerData.addresses) || []).map((address) => address.multiaddr)
-    this._libp2p.peerStore.addressBook.add(peerId, addrs)
-    this._libp2p.peerStore.keyBook.set(peerId, pk)
+    await this._libp2p.peerStore.addressBook.add(peerId, addrs)
+    await this._libp2p.peerStore.keyBook.set(peerId, pk)
 
     return pk
   }

@@ -28,7 +28,7 @@ class ContentRouting {
    * @param {import('../query/manager').QueryManager} params.queryManager
    * @param {import('../routing-table').RoutingTable} params.routingTable
    * @param {import('../providers').Providers} params.providers
-   * @param {import('../types').PeerStore} params.peerStore
+   * @param {import('libp2p/src/peer-store/types').PeerStore} params.peerStore
    * @param {boolean} params.lan
    */
   constructor ({ peerId, network, peerRouting, queryManager, routingTable, providers, peerStore, lan }) {
@@ -137,10 +137,15 @@ class ContentRouting {
 
     // yield values if we have some, also slice because maybe we got lucky and already have too many?
     if (provs.length) {
-      const providers = provs.slice(0, toFind).map(peerId => ({
-        id: peerId,
-        multiaddrs: (this._peerStore.addressBook.get(peerId) || []).map(address => address.multiaddr)
-      }))
+      /** @type {{ id: PeerId, multiaddrs: Multiaddr[] }[]} */
+      const providers = []
+
+      for (const peerId of provs.slice(0, toFind)) {
+        providers.push({
+          id: peerId,
+          multiaddrs: ((await this._peerStore.addressBook.get(peerId)) || []).map(address => address.multiaddr)
+        })
+      }
 
       yield peerResponseEvent({ from: this._peerId, messageType: MessageType.GET_PROVIDERS, providers })
       yield providerEvent({ from: this._peerId, providers: providers })

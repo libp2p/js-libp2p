@@ -87,7 +87,7 @@ describe('rpc - handlers - AddProvider', () => {
     expect(provs).to.have.length(1)
     expect(provs[0].id).to.eql(peerIds[0].id)
 
-    const bookEntry = dht._libp2p.peerStore.get(peerIds[0])
+    const bookEntry = await dht._libp2p.peerStore.get(peerIds[0])
     expect(bookEntry.addresses.map((address) => address.multiaddr)).to.eql([ma1])
   })
 })

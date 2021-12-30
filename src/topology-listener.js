@@ -12,7 +12,7 @@ class TopologyListener extends EventEmitter {
    * Create a new network
    *
    * @param {object} params
-   * @param {import('./types').Registrar} params.registrar
+   * @param {import('libp2p/src/registrar')} params.registrar
    * @param {string} params.protocol
    * @param {boolean} params.lan
    */
@@ -28,7 +28,7 @@ class TopologyListener extends EventEmitter {
   /**
    * Start the network
    */
-  start () {
+  async start () {
     if (this._running) {
       return
     }
@@ -46,7 +46,7 @@ class TopologyListener extends EventEmitter {
         onDisconnect: () => {}
       }
     })
-    this._registrarId = this._registrar.register(topology)
+    this._registrarId = await this._registrar.register(topology)
   }
 
   /**

@@ -24,7 +24,7 @@ class PeerRouting {
    * @param {object} params
    * @param {import('peer-id')} params.peerId
    * @param {import('../routing-table').RoutingTable} params.routingTable
-   * @param {import('../types').PeerStore} params.peerStore
+   * @param {import('libp2p/src/peer-store/types').PeerStore} params.peerStore
    * @param {import('../network').Network} params.network
    * @param {import('libp2p-interfaces/src/types').DhtValidators} params.validators
    * @param {import('../query/manager').QueryManager} params.queryManager
@@ -52,11 +52,11 @@ class PeerRouting {
 
     if (p) {
       this._log('findPeerLocal found %p in routing table', peer)
-      peerData = this._peerStore.get(p)
+      peerData = await this._peerStore.get(p)
     }
 
     if (!peerData) {
-      peerData = this._peerStore.get(peer)
+      peerData = await this._peerStore.get(peer)
     }
 
     if (peerData) {
@@ -141,7 +141,7 @@ class PeerRouting {
     const match = peers.find((p) => p.equals(id))
 
     if (match) {
-      const peer = this._peerStore.get(id)
+      const peer = await this._peerStore.get(id)
 
       if (peer) {
         this._log('found in peerStore')
@@ -232,13 +232,15 @@ class PeerRouting {
 
     this._log('found %d peers close to %b', peers.length, key)
 
-    yield * peers.peers.map(peer => finalPeerEvent({
-      from: this._peerId,
-      peer: {
-        id: peer,
-        multiaddrs: (this._peerStore.addressBook.get(peer) || []).map(addr => addr.multiaddr)
-      }
-    }))
+    for (const peer of peers.peers) {
+      yield finalPeerEvent({
+        from: this._peerId,
+        peer: {
+          id: peer,
+          multiaddrs: (await (this._peerStore.addressBook.get(peer)) || []).map(addr => addr.multiaddr)
+        }
+      })
+    }
   }
 
   /**
@@ -294,16 +296,20 @@ class PeerRouting {
   async getCloserPeersOffline (key, closerThan) {
     const id = await utils.convertBuffer(key)
     const ids = this._routingTable.closestPeers(id)
-    const output = ids
-      .map((p) => {
-        const peer = this._peerStore.get(p)
+    const output = []
 
-        return {
-          id: p,
-          multiaddrs: peer ? peer.addresses.map((address) => address.multiaddr) : []
-        }
+    for (const peerId of ids) {
+      if (peerId.equals(closerThan)) {
+        continue
+      }
+
+      const peer = await this._peerStore.get(peerId)
+
+      output.push({
+        id: peerId,
+        multiaddrs: peer ? peer.addresses.map((address) => address.multiaddr) : []
       })
-      .filter((closer) => !closer.id.equals(closerThan))
+    }
 
     if (output.length) {
       this._log('getCloserPeersOffline found %d peer(s) closer to %b than %p', output.length, key, closerThan)
