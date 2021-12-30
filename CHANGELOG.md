@@ -1,3 +1,17 @@
+# [0.28.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.6...v0.28.0) (2021-12-30)
+
+
+### Features
+
+* async peer store ([#272](https://github.com/libp2p/js-libp2p-kad-dht/issues/272)) ([12804e2](https://github.com/libp2p/js-libp2p-kad-dht/commit/12804e260e76ac9b990244ff437e9147795fde3d))
+
+
+### BREAKING CHANGES
+
+* peerstore methods are now all async
+
+
+
 ## [0.27.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.5...v0.27.6) (2021-12-29)
 
 
