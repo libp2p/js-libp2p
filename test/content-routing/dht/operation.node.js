@@ -107,7 +107,7 @@ describe('DHT subsystem operates correctly', () => {
       await remoteLibp2p.start()
 
       await libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
-      remAddr = await libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId)[0]
+      remAddr = (await libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId))[0]
     })
 
     afterEach(() => Promise.all([

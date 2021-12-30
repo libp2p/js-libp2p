@@ -8,7 +8,6 @@ const { Multiaddr } = require('multiaddr')
 const { collect } = require('streaming-iterables')
 const pipe = require('it-pipe')
 const AggregateError = require('aggregate-error')
-const PeerId = require('peer-id')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const { createPeerId } = require('../utils/creators/peer')
@@ -46,14 +45,13 @@ describe('Dialing (via relay, TCP)', () => {
     return Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(libp2p => libp2p.start()))
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     // Stop each node
     return Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(async libp2p => {
       await libp2p.stop()
       // Clear the peer stores
-      for (const peerIdStr of libp2p.peerStore.peers.keys()) {
-        const peerId = PeerId.createFromB58String(peerIdStr)
-        libp2p.peerStore.delete(peerId)
+      for await (const peer of libp2p.peerStore.getPeers()) {
+        libp2p.peerStore.delete(peer.id)
       }
     }))
   })

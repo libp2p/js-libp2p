@@ -258,7 +258,7 @@ describe('Dialing (direct, TCP)', () => {
           connEncryption: [Crypto]
         }
       })
-      remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
+      await remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
 
       await remoteLibp2p.start()
       remoteAddr = remoteLibp2p.transportManager.getAddrs()[0].encapsulate(`/p2p/${remotePeerId.toB58String()}`)
@@ -348,12 +348,12 @@ describe('Dialing (direct, TCP)', () => {
       })
 
       // register some stream handlers to simulate several protocols
-      libp2p.handle('/stream-count/1', ({ stream }) => pipe(stream, stream))
-      libp2p.handle('/stream-count/2', ({ stream }) => pipe(stream, stream))
-      remoteLibp2p.handle('/stream-count/3', ({ stream }) => pipe(stream, stream))
-      remoteLibp2p.handle('/stream-count/4', ({ stream }) => pipe(stream, stream))
+      await libp2p.handle('/stream-count/1', ({ stream }) => pipe(stream, stream))
+      await libp2p.handle('/stream-count/2', ({ stream }) => pipe(stream, stream))
+      await remoteLibp2p.handle('/stream-count/3', ({ stream }) => pipe(stream, stream))
+      await remoteLibp2p.handle('/stream-count/4', ({ stream }) => pipe(stream, stream))
 
-      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
+      await libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
       const connection = await libp2p.dial(remotePeerId)
 
       // Create local to remote streams
@@ -372,8 +372,8 @@ describe('Dialing (direct, TCP)', () => {
 
       // Verify stream count
       const remoteConn = remoteLibp2p.connectionManager.get(libp2p.peerId)
-      expect(connection.streams).to.have.length(5)
-      expect(remoteConn.streams).to.have.length(5)
+      expect(connection.streams).to.have.length(6)
+      expect(remoteConn.streams).to.have.length(6)
 
       // Close the connection and verify all streams have been closed
       await connection.close()

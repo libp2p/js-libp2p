@@ -283,7 +283,7 @@ describe('auto-relay', () => {
       expect(autoRelay1._listenRelays.size).to.equal(0)
 
       // Identify push for removing listen relay multiaddr
-      expect(relayLibp2p1.identifyService.pushToPeerStore.callCount).to.equal(2)
+      await pWaitFor(() => relayLibp2p1.identifyService.pushToPeerStore.callCount === 2)
     })
 
     it('should try to listen on other connected peers relayed address if one used relay disconnects', async () => {

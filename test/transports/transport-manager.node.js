@@ -79,7 +79,7 @@ describe('Transport Manager (TCP)', () => {
     // Should created Self Peer record on new listen address, but it is done async
     // with no event so we have to wait a bit
     await pWaitFor(async () => {
-      signedPeerRecord = await tm.libp2p.peerStore.addressBook.getRawEnvelope(localPeer)
+      signedPeerRecord = await tm.libp2p.peerStore.addressBook.getPeerRecord(localPeer)
 
       return signedPeerRecord != null
     }, { interval: 100, timeout: 2000 })
