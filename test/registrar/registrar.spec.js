@@ -35,14 +35,15 @@ describe('registrar', () => {
     })
 
     it('should fail to register a protocol if no multicodec is provided', () => {
-      expect(() => registrar.register()).to.throw()
+      return expect(registrar.register()).to.eventually.be.rejected()
     })
 
     it('should fail to register a protocol if an invalid topology is provided', () => {
       const fakeTopology = {
         random: 1
       }
-      expect(() => registrar.register(fakeTopology)).to.throw()
+
+      return expect(registrar.register(fakeTopology)).to.eventually.be.rejected()
     })
   })
 
@@ -60,7 +61,7 @@ describe('registrar', () => {
 
     afterEach(() => libp2p.stop())
 
-    it('should be able to register a protocol', () => {
+    it('should be able to register a protocol', async () => {
       const topologyProps = new Topology({
         multicodecs: multicodec,
         handlers: {
@@ -69,12 +70,12 @@ describe('registrar', () => {
         }
       })
 
-      const identifier = libp2p.registrar.register(topologyProps)
+      const identifier = await libp2p.registrar.register(topologyProps)
 
       expect(identifier).to.exist()
     })
 
-    it('should be able to unregister a protocol', () => {
+    it('should be able to unregister a protocol', async () => {
       const topologyProps = new Topology({
         multicodecs: multicodec,
         handlers: {
@@ -83,7 +84,7 @@ describe('registrar', () => {
         }
       })
 
-      const identifier = libp2p.registrar.register(topologyProps)
+      const identifier = await libp2p.registrar.register(topologyProps)
       const success = libp2p.registrar.unregister(identifier)
 
       expect(success).to.eql(true)
@@ -121,7 +122,7 @@ describe('registrar', () => {
       })
 
       // Register protocol
-      const identifier = libp2p.registrar.register(topologyProps)
+      const identifier = await libp2p.registrar.register(topologyProps)
       const topology = libp2p.registrar.topologies.get(identifier)
 
       // Topology created
@@ -162,7 +163,7 @@ describe('registrar', () => {
       })
 
       // Register protocol
-      const identifier = libp2p.registrar.register(topologyProps)
+      const identifier = await libp2p.registrar.register(topologyProps)
       const topology = libp2p.registrar.topologies.get(identifier)
 
       // Topology created

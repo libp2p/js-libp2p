@@ -155,7 +155,7 @@
     "libp2p-gossipsub": "^0.12.1",
     "libp2p-interfaces-compliance-tests": "^4.0.0",
     "libp2p-interop": "^0.6.0",
-    "libp2p-kad-dht": "^0.27.1",
+    "libp2p-kad-dht": "^0.28.0",
     "libp2p-mdns": "^0.18.0",
     "libp2p-mplex": "^0.10.1",
     "libp2p-tcp": "^0.17.0",
