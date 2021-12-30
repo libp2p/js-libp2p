@@ -252,13 +252,14 @@ class Dialer {
 
     // Combine the timeout signal and options.signal, if provided
     const timeoutController = new TimeoutController(this.timeout)
-    // this controller will potentially be used while dialing lots of
-    // peers so prevent MaxListenersExceededWarning appearing in the console
-    setMaxListeners && setMaxListeners(Infinity, timeoutController.signal)
 
     const signals = [timeoutController.signal]
     options.signal && signals.push(options.signal)
     const signal = anySignal(signals)
+
+    // this signal will potentially be used while dialing lots of
+    // peers so prevent MaxListenersExceededWarning appearing in the console
+    setMaxListeners && setMaxListeners(Infinity, signal)
 
     const pendingDial = {
       dialRequest,
