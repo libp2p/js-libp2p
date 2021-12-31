@@ -95,7 +95,7 @@ export interface AddressBook {
    * Get an Envelope containing a PeerRecord for the given peer.
    * Returns undefined if no record exists.
    */
-  getPeerRecord (peerId: PeerId): Promise<Envelope | undefined>
+  getPeerRecord: (peerId: PeerId) => Promise<Envelope | undefined>
 
   /**
    * Add known addresses of a provided peer.
