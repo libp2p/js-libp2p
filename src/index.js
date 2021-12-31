@@ -617,7 +617,7 @@ class Libp2p extends EventEmitter {
     this.natManager.start()
 
     if (this._config.pubsub.enabled) {
-      this.pubsub && this.pubsub.start()
+      this.pubsub && await this.pubsub.start()
     }
 
     // DHT subsystem

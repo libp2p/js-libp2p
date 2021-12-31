@@ -259,7 +259,10 @@ class Dialer {
 
     // this signal will potentially be used while dialing lots of
     // peers so prevent MaxListenersExceededWarning appearing in the console
-    setMaxListeners && setMaxListeners(Infinity, signal)
+    try {
+      // fails on node < 15.4
+      setMaxListeners && setMaxListeners(Infinity, signal)
+    } catch {}
 
     const pendingDial = {
       dialRequest,
