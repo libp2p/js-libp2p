@@ -1,3 +1,17 @@
+# [0.29.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.28.0...v0.29.0) (2021-12-31)
+
+
+### Features
+
+* async peerstore ([#124](https://github.com/libp2p/js-libp2p-floodsub/issues/124)) ([ac2e2b7](https://github.com/libp2p/js-libp2p-floodsub/commit/ac2e2b7801c12952d83678514602f8f13df873ee))
+
+
+### BREAKING CHANGES
+
+* peerstore methods are now all async
+
+
+
 # [0.28.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.27.1...v0.28.0) (2021-12-02)
 
 
