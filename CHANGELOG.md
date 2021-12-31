@@ -1,3 +1,12 @@
+## [0.28.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.28.0...v0.28.1) (2021-12-31)
+
+
+### Bug Fixes
+
+* catch errors from setMaxListeners ([#275](https://github.com/libp2p/js-libp2p-kad-dht/issues/275)) ([de2c601](https://github.com/libp2p/js-libp2p-kad-dht/commit/de2c601632bac41cc8b85b2d3a122f4ed24a7aed))
+
+
+
 # [0.28.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.27.6...v0.28.0) (2021-12-30)
 
 
