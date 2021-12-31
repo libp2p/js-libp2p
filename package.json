@@ -81,7 +81,6 @@
   },
   "dependencies": {
     "@vascosantos/moving-average": "^1.1.0",
-    "abort-controller": "^3.0.0",
     "abortable-iterator": "^3.0.0",
     "aggregate-error": "^3.1.0",
     "any-signal": "^2.1.1",
