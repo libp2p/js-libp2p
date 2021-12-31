@@ -71,7 +71,9 @@ class QuerySelf extends EventEmitter {
       this._controller = new AbortController()
       const signal = anySignal([this._controller.signal, timeoutController.signal])
       // this controller will get used for lots of dial attempts so make sure we don't cause warnings to be logged
-      setMaxListeners && setMaxListeners(Infinity, signal)
+      try {
+        setMaxListeners && setMaxListeners(Infinity, signal)
+      } catch {} // fails on node < 15.4
       const found = await length(await take(this._peerRouting.getClosestPeers(this._peerId.toBytes(), {
         signal
       }), this._count))

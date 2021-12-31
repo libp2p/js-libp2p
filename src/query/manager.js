@@ -104,7 +104,7 @@ class QueryManager {
     // so make sure we don't make a lot of noise in the logs
     try {
       setMaxListeners && setMaxListeners(0, signal)
-    } catch {} // fails on node < 15
+    } catch {} // fails on node < 15.4
 
     const log = logger(`libp2p:kad-dht:${this._lan ? 'lan' : 'wan'}:query:` + uint8ArrayToString(key, 'base58btc'))
 
