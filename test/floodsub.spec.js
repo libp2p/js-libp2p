@@ -39,13 +39,13 @@ describe('floodsub', () => {
     floodsub = new Floodsub(libp2p, defOptions)
   })
 
-  beforeEach(() => {
-    floodsub.start()
+  beforeEach(async () => {
+    await floodsub.start()
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     sinon.restore()
-    floodsub.stop()
+    await floodsub.stop()
   })
 
   it('checks cache when processing incoming message', async function () {
