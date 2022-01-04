@@ -27,7 +27,7 @@ jobs:
           ./node_modules
           ./packages/*/dist
           ./packages/*/node_modules
-        key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+        key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
     - name: Install Dependencies
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
@@ -60,7 +60,7 @@ jobs:
             ./node_modules
             ./packages/*/dist
             ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -88,7 +88,7 @@ jobs:
             ./node_modules
             ./packages/*/dist
             ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -115,7 +115,7 @@ jobs:
             ./node_modules
             ./packages/*/dist
             ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -142,7 +142,7 @@ jobs:
             ./node_modules
             ./packages/*/dist
             ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -168,7 +168,7 @@ jobs:
   #           ./node_modules
   #           ./packages/*/node_modules
   #           ./packages/*/dist
-  #         key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+  #         key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
   #     - name: Install Dependencies
   #       if: steps.cache.outputs.cache-hit != 'true'
   #       run: |
@@ -198,7 +198,7 @@ jobs:
             ./node_modules
             ./packages/*/dist
             ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
