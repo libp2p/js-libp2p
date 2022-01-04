@@ -1,1 +1,0 @@
-{"version":3,"file":"pubsub-adapter.d.ts","sourceRoot":"","sources":["../../src/pubsub-adapter.js"],"names":[],"mappings":";AAGA;;;GAGG;AAEH;;;;GAIG;AACH,2DAJyB,GAAG,EAAE,KAAG,YAAY,UAClC,OAAO,GAAG,CAAC,WACX;IAAE,OAAO,EAAE,OAAO,CAAC;CAAE,GAAG,OAAO,GAAG,EAAE,kBAAkB,GAAG,OAAO,8BAA8B,EAAE,aAAa;;;EA+CvH;;;;oBArDY,OAAO,8BAA8B,CAAC;iBADtC,OAAO,8BAA8B,EAAE,SAAS"}
