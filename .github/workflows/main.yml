@@ -150,31 +150,32 @@ jobs:
             npm run --if-present build
       - run: npx xvfb-maybe npm run --if-present test:electron-main --bail
 
-  # test-electron-renderer:
-  #   needs: check
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v2
-  #      with:
-  #        node-version: lts/*
-  #     - uses: actions/cache@v2
-  #       id: cache
-  #       env:
-  #         CACHE_NAME: cache-node-modules
-  #       with:
-  #         path: |
-  #           ~/.npm
-  #           ./node_modules
-  #           ./packages/*/node_modules
-  #           ./packages/*/dist
-  #         key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
-  #     - name: Install Dependencies
-  #       if: steps.cache.outputs.cache-hit != 'true'
-  #       run: |
-  #           npm run --if-present build
-  #           npm install
-  #     - run: npx xvfb-maybe npm run --if-present test:electron-renderer --bail
+  test-electron-renderer:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./dist
+            ./node_modules
+            ./packages/*/dist
+            ./packages/*/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+            npm install
+            npm run --if-present build
+      - run: npx xvfb-maybe npm run --if-present test:electron-renderer --bail
 
   release:
     needs: [test-node, test-chrome, test-firefox, test-electron-main]
