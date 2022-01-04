@@ -164,8 +164,6 @@ class ConnectionManager extends EventEmitter {
 
     await Promise.all(tasks)
     this.connections.clear()
-    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, 0)
-    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, 0)
   }
 
   /**
@@ -222,8 +220,6 @@ class ConnectionManager extends EventEmitter {
       storedConn.push(connection)
     } else {
       this.connections.set(peerIdStr, [connection])
-      this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, this.connections.size)
-      this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, this.size)
     }
 
     this._libp2p.peerStore.keyBook.set(peerId, peerId.pubKey)
@@ -255,9 +251,6 @@ class ConnectionManager extends EventEmitter {
 
       this._libp2p.metrics && this._libp2p.metrics.onPeerDisconnected(connection.remotePeer)
     }
-
-    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, this.connections.size)
-    this._libp2p.metrics && this._libp2p.metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_ALL_CONNECTIONS, this.size)
   }
 
   /**

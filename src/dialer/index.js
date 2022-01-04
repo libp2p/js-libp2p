@@ -115,9 +115,6 @@ class Dialer {
       pendingTarget.reject(new AbortError('Dialer was destroyed'))
     }
     this._pendingDialTargets.clear()
-
-    this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIALS, 0)
-    this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, 0)
   }
 
   /**
@@ -167,7 +164,6 @@ class Dialer {
     const id = `${(parseInt(String(Math.random() * 1e9), 10)).toString() + Date.now()}`
     const cancellablePromise = new Promise((resolve, reject) => {
       this._pendingDialTargets.set(id, { resolve, reject })
-      this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, this._pendingDialTargets.size)
     })
 
     try {
@@ -272,7 +268,6 @@ class Dialer {
       destroy: () => {
         timeoutController.clear()
         this._pendingDials.delete(dialTarget.id)
-        this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIALS, this._pendingDials.size)
       }
     }
     this._pendingDials.set(dialTarget.id, pendingDial)
