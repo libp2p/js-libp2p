@@ -24,6 +24,7 @@
   "files": [
     "src",
     "dist/src",
+    "!dist/test",
     "!**/*.tsbuildinfo"
   ],
   "eslintConfig": {
