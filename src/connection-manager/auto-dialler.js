@@ -98,6 +98,9 @@ class AutoDialler {
       })
 
     for (let i = 0; this._running && i < peers.length && this._libp2p.connections.size < minConnections; i++) {
+      if (peers[i].id.equals(this._libp2p.peerId)) {
+        continue
+      }
       if (!this._libp2p.connectionManager.get(peers[i].id)) {
         log('connecting to a peerStore stored peer %s', peers[i].id.toB58String())
         try {
