@@ -1,3 +1,12 @@
+# [0.22.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.21.0...v0.22.0) (2022-01-04)
+
+
+### Features
+
+* convert to typescript ([#222](https://github.com/libp2p/js-libp2p-crypto/issues/222)) ([7875906](https://github.com/libp2p/js-libp2p-crypto/commit/7875906c71fa9fe695889d57061937dd6494b15a))
+
+
+
 # [0.21.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.20.0...v0.21.0) (2021-12-01)
 
 
