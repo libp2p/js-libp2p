@@ -16,10 +16,6 @@ jobs:
     - run: npm run lint
     - run: npm run build
     - run: npm run dep-check
-    - uses: ipfs/aegir/actions/bundle-size@master
-      name: size
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
   test-node:
     needs: check
     runs-on: ${{ matrix.os }}
@@ -30,37 +26,53 @@ jobs:
       fail-fast: true
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
-      - run: npx nyc --reporter=lcov aegir test -t node -- --bail
+      - run: npm run build
+      - run: npm run test:node -- --bail --cov
       - uses: codecov/codecov-action@v1
   test-chrome:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
       - run: npm install
-      - run: npm run test -- -t browser -t webworker --bail
+      - run: npm run build
+      - run: npm run test:browser -- -t browser -t webworker --bail
   test-firefox:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
       - run: npm install
-      - run: npm run test -- -t browser -t webworker --bail -- --browsers FirefoxHeadless
+      - run: npm run build
+      - run: npm run test:browser -- -t browser -t webworker --bail -- --browser firefox
   test-electron-main:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
       - run: npm install
-      - run: npx xvfb-maybe aegir test -t electron-main --bail
-  test-electron-renderer:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: npm install
-      - run: npx xvfb-maybe aegir test -t electron-renderer --bail
+      - run: npm run build
+      - run: npx xvfb-maybe npm run test:electron --bail
+  # test-electron-renderer:
+  #   needs: check
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-node@v2
+  #      with:
+  #        node-version: 16
+  #     - run: npm install
+  #     - run: npx xvfb-maybe aegir test -t electron-renderer --bail
