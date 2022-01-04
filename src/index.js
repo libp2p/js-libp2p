@@ -48,6 +48,8 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions
  * @typedef {import('interface-datastore').Datastore} Datastore
  * @typedef {import('./pnet')} Protector
+ * @typedef {Object} PersistentPeerStoreOptions
+ * @property {number} [threshold]
  */
 
 /**
@@ -110,7 +112,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {KeychainOptions & import('./keychain/index').KeychainOptions} [keychain]
  * @property {MetricsOptions & import('./metrics').MetricsOptions} [metrics]
  * @property {import('./peer-routing').PeerRoutingOptions} [peerRouting]
- * @property {PeerStoreOptions & import('./peer-store/persistent').PersistentPeerStoreOptions} [peerStore]
+ * @property {PeerStoreOptions & PersistentPeerStoreOptions} [peerStore]
  * @property {import('./transport-manager').TransportManagerOptions} [transportManager]
  * @property {Libp2pConfig} [config]
  *
@@ -161,6 +163,15 @@ class Libp2p extends EventEmitter {
     this.peerId = this._options.peerId
     this.datastore = this._options.datastore
 
+    // Create Metrics
+    if (this._options.metrics.enabled) {
+      const metrics = new Metrics({
+        ...this._options.metrics
+      })
+
+      this.metrics = metrics
+    }
+
     this.peerStore = (this.datastore && this._options.peerStore.persistence)
       ? new PersistentPeerStore({
         peerId: this.peerId,
@@ -194,15 +205,6 @@ class Libp2p extends EventEmitter {
       minConnections: this._options.connectionManager.minConnections,
       autoDialInterval: this._options.connectionManager.autoDialInterval
     })
-
-    // Create Metrics
-    if (this._options.metrics.enabled) {
-      const metrics = new Metrics({
-        ...this._options.metrics
-      })
-
-      this.metrics = metrics
-    }
 
     // Create keychain
     if (this._options.keychain && this._options.keychain.datastore) {

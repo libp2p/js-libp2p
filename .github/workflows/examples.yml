@@ -8,17 +8,59 @@ on:
       - '**'
 
 jobs:
-  check:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
       with:
         node-version: 16
-    - run: npm install
+    - uses: actions/cache@v2
+      id: cache
+      env:
+        CACHE_NAME: cache-node-modules
+      with:
+        path: |
+          ~/.cache
+          ~/.npm
+          ./node_modules
+          ./dist
+          ./examples/node_modules
+        key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+    - name: Install Dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        npm install
+        npm run build
+        cd examples && npm i
+  check:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 16
+    - uses: actions/cache@v2
+      id: cache
+      env:
+        CACHE_NAME: cache-node-modules
+      with:
+        path: |
+          ~/.cache
+          ~/.npm
+          ./node_modules
+          ./dist
+          ./examples/node_modules
+        key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+    - name: Install Dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        npm install
+        npm run build
+        cd examples && npm i
     - run: npx aegir lint
     - run: npx aegir ts -p check
-    - run: npx aegir build
   test-auto-relay-example:
     needs: check
     runs-on: ubuntu-latest
@@ -27,8 +69,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- auto-relay
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- auto-relay
   test-chat-example:
     needs: check
     runs-on: ubuntu-latest
@@ -37,8 +96,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- chat
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- chat
   test-connection-encryption-example:
     needs: check
     runs-on: ubuntu-latest
@@ -47,8 +123,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- connection-encryption
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- connection-encryption
   test-discovery-mechanisms-example:
     needs: check
     runs-on: macos-latest
@@ -57,8 +150,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- discovery-mechanisms
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- discovery-mechanisms
   test-echo-example:
     needs: check
     runs-on: ubuntu-latest
@@ -67,8 +177,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- echo
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- echo
   test-libp2p-in-the-browser-example:
     needs: check
     runs-on: macos-latest
@@ -77,8 +204,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- libp2p-in-the-browser
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- libp2p-in-the-browser
   test-peer-and-content-routing-example:
     needs: check
     runs-on: ubuntu-latest
@@ -87,8 +231,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- peer-and-content-routing
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- peer-and-content-routing
   test-pnet-example:
     needs: check
     runs-on: ubuntu-latest
@@ -97,8 +258,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- pnet
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- pnet
   test-protocol-and-stream-muxing-example:
     needs: check
     runs-on: ubuntu-latest
@@ -107,8 +285,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- protocol-and-stream-muxing
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- protocol-and-stream-muxing
   test-pubsub-example:
     needs: check
     runs-on: ubuntu-latest
@@ -117,8 +312,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- pubsub
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- pubsub
   test-transports-example:
     needs: check
     runs-on: ubuntu-latest
@@ -127,8 +339,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 16
-      - run: npm install
-      - run: cd examples && npm i && npm run test -- transports
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- transports
   test-webrtc-direct-example:
     needs: check
     runs-on: ubuntu-latest
@@ -137,5 +366,22 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 16
-      - run: npm install -g @mapbox/node-pre-gyp && npm install
-      - run: cd examples && npm i && npm run test -- webrtc-direct
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+            ./examples/node_modules
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+          cd examples && npm i
+      - run: cd examples && npm run test -- webrtc-direct

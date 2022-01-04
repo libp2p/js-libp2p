@@ -14,7 +14,7 @@ const { setMaxListeners } = require('events')
 const DialRequest = require('./dial-request')
 const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 const getPeer = require('../get-peer')
-
+const trackedMap = require('../metrics/tracked-map')
 const { codes } = require('../errors')
 const {
   DIAL_TIMEOUT,
@@ -56,8 +56,8 @@ const METRICS_PENDING_DIAL_TARGETS = 'pending-dial-targets'
  * @property {Multiaddr[]} addrs
  *
  * @typedef PendingDial
- * @property {DialRequest} dialRequest
- * @property {TimeoutController} controller
+ * @property {import('./dial-request')} dialRequest
+ * @property {import('timeout-abort-controller').TimeoutController} controller
  * @property {Promise<Connection>} promise
  * @property {function():void} destroy
  */
@@ -86,9 +86,12 @@ class Dialer {
     this.timeout = dialTimeout
     this.maxDialsPerPeer = maxDialsPerPeer
     this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
-    this._pendingDials = new Map()
-    this._pendingDialTargets = new Map()
-    this._metrics = metrics
+
+    /** @type {Map<string, PendingDial>} */
+    this._pendingDials = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIALS, metrics)
+
+    /** @type {Map<string, { resolve: (value: any) => void, reject: (err: Error) => void}>} */
+    this._pendingDialTargets = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, metrics)
 
     for (const [key, value] of Object.entries(resolvers)) {
       Multiaddr.resolvers.set(key, value)
@@ -176,7 +179,6 @@ class Dialer {
       return dialTarget
     } finally {
       this._pendingDialTargets.delete(id)
-      this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, this._pendingDialTargets.size)
     }
   }
 
@@ -254,13 +256,14 @@ class Dialer {
 
     // Combine the timeout signal and options.signal, if provided
     const timeoutController = new TimeoutController(this.timeout)
-    // this controller will potentially be used while dialing lots of
-    // peers so prevent MaxListenersExceededWarning appearing in the console
-    setMaxListeners && setMaxListeners(Infinity, timeoutController.signal)
 
     const signals = [timeoutController.signal]
     options.signal && signals.push(options.signal)
     const signal = anySignal(signals)
+
+    // this signal will potentially be used while dialing lots of
+    // peers so prevent MaxListenersExceededWarning appearing in the console
+    setMaxListeners && setMaxListeners(Infinity, signal)
 
     const pendingDial = {
       dialRequest,
@@ -273,8 +276,6 @@ class Dialer {
       }
     }
     this._pendingDials.set(dialTarget.id, pendingDial)
-
-    this._metrics && this._metrics.updateComponentMetric(METRICS_COMPONENT, METRICS_PENDING_DIALS, this._pendingDials.size)
 
     return pendingDial
   }

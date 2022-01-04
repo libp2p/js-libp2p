@@ -12,7 +12,7 @@ const LatencyMonitor = require('./latency-monitor')
 const retimer = require('retimer')
 
 const { EventEmitter } = require('events')
-
+const trackedMap = require('../metrics/tracked-map')
 const PeerId = require('peer-id')
 
 const {
@@ -34,7 +34,7 @@ const defaultOptions = {
 
 const METRICS_COMPONENT = 'connection-manager'
 const METRICS_PEER_CONNECTIONS = 'peer-connections'
-const METRICS_ALL_CONNECTIONS = 'all-connections'
+const METRICS_PEER_VALUES = 'peer-values'
 
 /**
  * @typedef {import('../')} Libp2p
@@ -87,14 +87,14 @@ class ConnectionManager extends EventEmitter {
      *
      * @type {Map<string, number>}
      */
-    this._peerValues = new Map()
+    this._peerValues = trackedMap(METRICS_COMPONENT, METRICS_PEER_VALUES, this._libp2p.metrics)
 
     /**
      * Map of connections per peer
      *
      * @type {Map<string, Connection[]>}
      */
-    this.connections = new Map()
+    this.connections = trackedMap(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, this._libp2p.metrics)
 
     this._started = false
     this._timer = null
