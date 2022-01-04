@@ -29,7 +29,7 @@ export class Ed25519PublicKey {
     }).finish()
   }
 
-  equals (key: Ed25519PublicKey) {
+  equals (key: any) {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
@@ -70,7 +70,7 @@ export class Ed25519PrivateKey {
     }).finish()
   }
 
-  equals (key: Ed25519PrivateKey) {
+  equals (key: any) {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 

@@ -36,7 +36,7 @@ export class RsaPublicKey {
     return crypto.encrypt(this._key, bytes)
   }
 
-  equals (key: RsaPublicKey) {
+  equals (key: any) {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
@@ -87,7 +87,7 @@ export class RsaPrivateKey {
     }).finish()
   }
 
-  equals (key: RsaPrivateKey) {
+  equals (key: any) {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 

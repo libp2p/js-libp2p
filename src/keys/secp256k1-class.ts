@@ -29,7 +29,7 @@ export class Secp256k1PublicKey {
     }).finish()
   }
 
-  equals (key: Secp256k1PublicKey) {
+  equals (key: any) {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
@@ -70,7 +70,7 @@ export class Secp256k1PrivateKey {
     }).finish()
   }
 
-  equals (key: Secp256k1PrivateKey) {
+  equals (key: any) {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
