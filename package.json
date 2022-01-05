@@ -5,33 +5,37 @@
   "leadMaintainer": "Vasco Santos <santos.vasco10@gmail.com>",
   "type": "module",
   "exports": {
-    "multiaddr/is-loopback": {
+    "./multiaddr/is-loopback": {
       "import": "./dist/src/multiaddr/is-loopback.js",
       "types": "./dist/src/multiaddr/is-loopback.d.ts"
     },
-    "multiaddr/is-private": {
+    "./multiaddr/is-private": {
       "import": "./dist/src/multiaddr/is-private.js",
       "types": "./dist/src/multiaddr/is-private.d.ts"
     },
-    "address-sort": {
+    "./address-sort": {
       "import": "./dist/src/address-sort.js",
       "types": "./dist/src/address-sort.d.ts"
     },
-    "array-equals": {
+    "./array-equals": {
       "import": "./dist/src/array-equals.js",
       "types": "./dist/src/array-equals.d.ts"
     },
-    "ip-port-to-multiaddr": {
+    "./ip-port-to-multiaddr": {
       "import": "./dist/src/ip-port-to-multiaddr.js",
       "types": "./dist/src/ip-port-to-multiaddr.d.ts"
     },
-    "stream-to-ma-conn": {
+    "./stream-to-ma-conn": {
       "import": "./dist/src/stream-to-ma-connr.js",
       "types": "./dist/src/stream-to-ma-connr.d.ts"
     }
   },
   "typesVersions": {
     "*": {
+      "*": [
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
       "src/*": [
         "dist/src/*",
         "dist/src/*/index"
