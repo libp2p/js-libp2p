@@ -16,23 +16,7 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: lts/*
-    - uses: actions/cache@v2
-      id: cache
-      env:
-        CACHE_NAME: cache-node-modules
-      with:
-        path: |
-          ~/.npm
-          ./dist
-          ./node_modules
-          ./packages/*/dist
-          ./packages/*/node_modules
-        key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
-    - name: Install Dependencies
-      if: steps.cache.outputs.cache-hit != 'true'
-      run: |
-          npm install
-          npm run --if-present build
+    - uses: ipfs/aegir/actions/cache-node-modules@master
     - run: npm run --if-present lint
     - run: npm run --if-present dep-check
 
@@ -49,23 +33,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/cache@v2
-        id: cache
-        env:
-          CACHE_NAME: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./dist
-            ./node_modules
-            ./packages/*/dist
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-            npm install
-            npm run --if-present build
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:node
       - uses: codecov/codecov-action@v1
 
@@ -77,23 +45,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: lts/*
-      - uses: actions/cache@v2
-        id: cache
-        env:
-          CACHE_NAME: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./dist
-            ./node_modules
-            ./packages/*/dist
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-            npm install
-            npm run --if-present build
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:chrome
 
   test-chrome-webworker:
@@ -104,23 +56,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: lts/*
-      - uses: actions/cache@v2
-        id: cache
-        env:
-          CACHE_NAME: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./dist
-            ./node_modules
-            ./packages/*/dist
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-            npm install
-            npm run --if-present build
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:chrome-webworker
 
   test-firefox:
@@ -131,23 +67,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: lts/*
-      - uses: actions/cache@v2
-        id: cache
-        env:
-          CACHE_NAME: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./dist
-            ./node_modules
-            ./packages/*/dist
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-            npm install
-            npm run --if-present build
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:firefox
 
   test-firefox-webworker:
@@ -158,23 +78,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: lts/*
-      - uses: actions/cache@v2
-        id: cache
-        env:
-          CACHE_NAME: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./dist
-            ./node_modules
-            ./packages/*/dist
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-            npm install
-            npm run --if-present build
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:firefox-webworker
 
   test-electron-main:
@@ -185,23 +89,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: lts/*
-      - uses: actions/cache@v2
-        id: cache
-        env:
-          CACHE_NAME: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./dist
-            ./node_modules
-            ./packages/*/dist
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-            npm install
-            npm run --if-present build
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npx xvfb-maybe npm run --if-present test:electron-main
 
   test-electron-renderer:
@@ -212,23 +100,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: lts/*
-      - uses: actions/cache@v2
-        id: cache
-        env:
-          CACHE_NAME: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./dist
-            ./node_modules
-            ./packages/*/dist
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-            npm install
-            npm run --if-present build
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
 
   release:
@@ -242,30 +114,12 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: lts/*
-      - uses: actions/cache@v2
-        id: cache
-        env:
-          CACHE_NAME: cache-node-modules
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/docker-login@master
         with:
-          path: |
-            ~/.npm
-            ./dist
-            ./node_modules
-            ./packages/*/dist
-            ./packages/*/node_modules
-          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.sha }}
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-            npm install
-            npm run --if-present build
-      - run: |
-            if [[ -n "${DOCKER_TOKEN}" ]] && [[ -n "${DOCKER_USERNAME}" ]]; then
-              echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            fi
-            npm run --if-present release
+          docker-token: ${{ secrets.DOCKER_USERNAME }}
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+      - run: npm run --if-present release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
