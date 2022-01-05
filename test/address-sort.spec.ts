@@ -1,10 +1,8 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-const { Multiaddr } = require('multiaddr')
-
-const { publicAddressesFirst } = require('../src/address-sort')
+import { expect } from 'aegir/utils/chai.js'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { publicAddressesFirst } from '../src/address-sort.js'
 
 describe('address-sort', () => {
   it('should sort public addresses first', () => {

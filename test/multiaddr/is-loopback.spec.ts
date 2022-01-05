@@ -1,10 +1,8 @@
 /* eslint-env mocha */
-'use strict'
 
-const { expect } = require('aegir/utils/chai')
-const { Multiaddr } = require('multiaddr')
-
-const isLoopback = require('../../src/multiaddr/is-loopback')
+import { expect } from 'aegir/utils/chai.js'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { isLoopback } from '../../src/multiaddr/is-loopback.js'
 
 describe('multiaddr isLoopback', () => {
   it('identifies loopback ip4 multiaddrs', () => {

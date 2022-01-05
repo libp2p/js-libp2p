@@ -1,21 +1,21 @@
 /* eslint-env mocha */
-'use strict'
 
-const { expect } = require('aegir/utils/chai')
-const pair = require('it-pair')
-const pipe = require('it-pipe')
-const { collect } = require('streaming-iterables')
-const { Multiaddr } = require('multiaddr')
-
-const streamToMaConn = require('../src/stream-to-ma-conn')
+import { expect } from 'aegir/utils/chai.js'
+// @ts-expect-error no types
+import pair from 'it-pair'
+import pipe from 'it-pipe'
+import { collect } from 'streaming-iterables'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { streamToMaConnection } from '../src/stream-to-ma-conn.js'
 
 describe('Convert stream into a multiaddr connection', () => {
-  it('converts a stream and adds the provided metadata', () => {
-    const stream = pair()
-    const localAddr = new Multiaddr('/ip4/101.45.75.219/tcp/6000')
-    const remoteAddr = new Multiaddr('/ip4/100.46.74.201/tcp/6002')
+  const localAddr = new Multiaddr('/ip4/101.45.75.219/tcp/6000')
+  const remoteAddr = new Multiaddr('/ip4/100.46.74.201/tcp/6002')
 
-    const maConn = streamToMaConn({
+  it('converts a stream and adds the provided metadata', async () => {
+    const stream = pair()
+
+    const maConn = streamToMaConnection({
       stream,
       localAddr,
       remoteAddr
@@ -30,13 +30,17 @@ describe('Convert stream into a multiaddr connection', () => {
     expect(maConn.timeline.open).to.exist()
     expect(maConn.timeline.close).to.not.exist()
 
-    maConn.close()
+    await maConn.close()
     expect(maConn.timeline.close).to.exist()
   })
 
   it('can stream data over the multiaddr connection', async () => {
     const stream = pair()
-    const maConn = streamToMaConn({ stream })
+    const maConn = streamToMaConnection({
+      stream,
+      localAddr,
+      remoteAddr
+    })
 
     const data = 'hey'
     const streamData = await pipe(

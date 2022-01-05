@@ -12,7 +12,7 @@
 > This package serves as a central repository for shared logic and dependencies for all libp2p packages, using `libp2p-utils` helps to easily re-use small scoped blocks of logic across all libp2p modules and also as a dependency proxy (think `aegir` for domain logic dependencies).
 
 
-The libp2p ecosystem has lots of repos with it comes several problems like: 
+The libp2p ecosystem has lots of repos with it comes several problems like:
 - Domain logic dedupe - all modules shared a lot of logic like validation, streams handling, etc.
 - Dependencies management - it's really easy with so many repos for dependencies to go out of control, they become outdated, different repos use different modules to do the same thing (like merging defaults options), browser bundles ends up with multiple versions of the same package, bumping versions is cumbersome to do because we need to go through several repos, etc.
 
@@ -26,14 +26,14 @@ These problems are the motivation for this package, having shared logic in this 
 
 
 ```bash
-$ npm install --save libp2p-utils
+$ npm install --save @libp2p/utils
 ```
 
 ## Usage
 Each function should be imported directly.
 
 ```js
-const ipAndPortToMultiaddr = require('libp2p-utils/src/ip-port-to-multiaddr')
+import ipAndPortToMultiaddr from '@libp2p/utils/ip-port-to-multiaddr'
 
 const ma = ipAndPortToMultiaddr('127.0.0.1', 9000)
 ```

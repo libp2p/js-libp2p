@@ -1,14 +1,13 @@
-'use strict'
+import debug from 'debug'
+import { Multiaddr } from '@multiformats/multiaddr'
+import errCode from 'err-code'
+import { Address4, Address6 } from '@achingbrain/ip-address'
 
-const debug = require('debug')
 const log = Object.assign(debug('libp2p:ip-port-to-multiaddr'), {
   error: debug('libp2p:ip-port-to-multiaddr:err')
 })
-const { Multiaddr } = require('multiaddr')
-const errCode = require('err-code')
-const { Address4, Address6 } = require('ip-address')
 
-const errors = {
+export const Errors = {
   ERR_INVALID_IP_PARAMETER: 'ERR_INVALID_IP_PARAMETER',
   ERR_INVALID_PORT_PARAMETER: 'ERR_INVALID_PORT_PARAMETER',
   ERR_INVALID_IP: 'ERR_INVALID_IP'
@@ -16,13 +15,10 @@ const errors = {
 
 /**
  * Transform an IP, Port pair into a multiaddr
- *
- * @param {string} ip
- * @param {number|string} port
  */
-function ipPortToMultiaddr (ip, port) {
+export function ipPortToMultiaddr (ip: string, port: number | string) {
   if (typeof ip !== 'string') {
-    throw errCode(new Error(`invalid ip provided: ${ip}`), errors.ERR_INVALID_IP_PARAMETER)
+    throw errCode(new Error(`invalid ip provided: ${ip}`), Errors.ERR_INVALID_IP_PARAMETER) // eslint-disable-line @typescript-eslint/restrict-template-expressions
   }
 
   if (typeof port === 'string') {
@@ -30,7 +26,7 @@ function ipPortToMultiaddr (ip, port) {
   }
 
   if (isNaN(port)) {
-    throw errCode(new Error(`invalid port provided: ${port}`), errors.ERR_INVALID_PORT_PARAMETER)
+    throw errCode(new Error(`invalid port provided: ${port}`), Errors.ERR_INVALID_PORT_PARAMETER)
   }
 
   try {
@@ -48,10 +44,6 @@ function ipPortToMultiaddr (ip, port) {
   } catch (err) {
     const errMsg = `invalid ip:port for creating a multiaddr: ${ip}:${port}`
     log.error(errMsg)
-    throw errCode(new Error(errMsg), errors.ERR_INVALID_IP)
+    throw errCode(new Error(errMsg), Errors.ERR_INVALID_IP)
   }
 }
-
-module.exports = ipPortToMultiaddr
-
-module.exports.Errors = errors

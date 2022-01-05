@@ -1,10 +1,10 @@
-'use strict'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { isPrivate } from './multiaddr/is-private.js'
 
-const isPrivate = require('./multiaddr/is-private')
-
-/**
- * @typedef {import('multiaddr').Multiaddr} Multiaddr
- */
+interface Address {
+  multiaddr: Multiaddr
+  isCertified: boolean
+}
 
 /**
  * @typedef {Object} Address
@@ -21,7 +21,7 @@ const isPrivate = require('./multiaddr/is-private')
  * @param {Address} b
  * @returns {number}
  */
-function addressesPublicFirstCompareFunction (a, b) {
+function addressesPublicFirstCompareFunction (a: Address, b: Address) {
   const isAPrivate = isPrivate(a.multiaddr)
   const isBPrivate = isPrivate(b.multiaddr)
 
@@ -43,12 +43,7 @@ function addressesPublicFirstCompareFunction (a, b) {
 /**
  * Sort given addresses by putting public addresses first.
  * In case of equality, a certified address will come first.
- *
- * @param {Array<Address>} addresses
- * @returns {Array<Address>}
  */
-function publicAddressesFirst (addresses) {
+export function publicAddressesFirst (addresses: Address[]) {
   return [...addresses].sort(addressesPublicFirstCompareFunction)
 }
-
-module.exports.publicAddressesFirst = publicAddressesFirst

@@ -1,10 +1,8 @@
 /* eslint-env mocha */
-'use strict'
 
-const { expect } = require('aegir/utils/chai')
-const { Multiaddr } = require('multiaddr')
-
-const arrayEquals = require('../src/array-equals')
+import { expect } from 'aegir/utils/chai.js'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { arrayEquals } from '../src/array-equals.js'
 
 describe('non primitive array equals', () => {
   it('returns true if two arrays of multiaddrs are equal', () => {

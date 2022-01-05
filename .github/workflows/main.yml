@@ -1,4 +1,4 @@
-name: ci
+name: test & maybe release
 on:
   push:
     branches:
@@ -8,67 +8,118 @@ on:
       - master
 
 jobs:
+
   check:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: npm install
-    - run: npx aegir lint
-    - run: npx aegir ts -p check
-    - run: npx aegir build
-    - run: npx aegir dep-check
-    - uses: ipfs/aegir/actions/bundle-size@master
+    - uses: actions/setup-node@v2
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        node-version: lts/*
+    - uses: ipfs/aegir/actions/cache-node-modules@master
+    - run: npm run --if-present lint
+    - run: npm run --if-present dep-check
+
   test-node:
     needs: check
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        node: [14, 15]
+        node: [16]
       fail-fast: true
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
-      - run: npm install
-      - run: npx nyc --reporter=lcov aegir test -t node -- --bail
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npm run --if-present test:node
       - uses: codecov/codecov-action@v1
+
   test-chrome:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
-      - run: npx aegir test -t browser -t webworker --bail
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npm run --if-present test:chrome
+
+  test-chrome-webworker:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npm run --if-present test:chrome-webworker
+
   test-firefox:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
-      - run: npx aegir test -t browser -t webworker --bail -- --browsers FirefoxHeadless
-  test-webkit:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npm run --if-present test:firefox
+
+  test-firefox-webworker:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: microsoft/playwright-github-action@v1
-      - run: npm install
-      - run: npx aegir test -t browser -t webworker --bail -- --browser webkit
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npm run --if-present test:firefox-webworker
+
   test-electron-main:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
-      - run: npx xvfb-maybe aegir test -t electron-main --bail
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npx xvfb-maybe npm run --if-present test:electron-main
+
   test-electron-renderer:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
-      - run: npx xvfb-maybe aegir test -t electron-renderer --bail
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npx xvfb-maybe npm run --if-present test:electron-renderer
+
+  release:
+    needs: [test-node, test-chrome, test-chrome-webworker, test-firefox, test-firefox-webworker, test-electron-main, test-electron-renderer]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v2.4.0
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/docker-login@master
+        with:
+          docker-token: ${{ secrets.DOCKER_USERNAME }}
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+      - run: npm run --if-present release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
