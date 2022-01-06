@@ -1,18 +1,16 @@
-/* eslint-env mocha */
-'use strict'
-
-const { expect } = require('aegir/utils/chai')
-const TCP = require('../src')
-const { Multiaddr } = require('multiaddr')
+import { expect } from 'aegir/utils/chai.js'
+import { TCP } from '../src/index.js'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { mockUpgrader } from '@libp2p/interface-compliance-tests/transport/utils'
 
 describe('filter addrs', () => {
   const base = '/ip4/127.0.0.1'
   const ipfs = '/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw'
 
-  let tcp
+  let tcp: TCP
 
   before(() => {
-    tcp = new TCP({ upgrader: {} })
+    tcp = new TCP({ upgrader: mockUpgrader() })
   })
 
   it('filter valid addrs for this transport', () => {
@@ -34,7 +32,7 @@ describe('filter addrs', () => {
   it('filter a single addr for this transport', () => {
     const ma1 = new Multiaddr(base + '/tcp/9090')
 
-    const valid = tcp.filter(ma1)
+    const valid = tcp.filter([ma1])
     expect(valid.length).to.equal(1)
     expect(valid[0]).to.eql(ma1)
   })

@@ -1,15 +1,18 @@
-/* eslint-env mocha */
-'use strict'
-
-const sinon = require('sinon')
-const tests = require('libp2p-interfaces-compliance-tests/src/transport')
-const { Multiaddr } = require('multiaddr')
-const net = require('net')
-const TCP = require('../src')
+import sinon from 'sinon'
+import tests from '@libp2p/interface-compliance-tests/transport'
+import { Multiaddr } from '@multiformats/multiaddr'
+import net from 'net'
+import { TCP } from '../src/index.js'
 
 describe('interface-transport compliance', () => {
   tests({
-    setup ({ upgrader }) {
+    async setup (args) {
+      if (args == null) {
+        throw new Error('No args')
+      }
+
+      const { upgrader } = args
+
       const tcp = new TCP({ upgrader })
       const addrs = [
         new Multiaddr('/ip4/127.0.0.1/tcp/9091'),
@@ -19,14 +22,15 @@ describe('interface-transport compliance', () => {
 
       // Used by the dial tests to simulate a delayed connect
       const connector = {
-        delay (delayMs) {
+        delay (delayMs: number) {
           const netConnect = net.connect
-          sinon.replace(net, 'connect', (opts) => {
+          sinon.replace(net, 'connect', (opts: any) => {
             const socket = netConnect(opts)
             const socketEmit = socket.emit.bind(socket)
-            sinon.replace(socket, 'emit', (...args) => {
+            sinon.replace(socket, 'emit', (...args: [string]) => {
               const time = args[0] === 'connect' ? delayMs : 0
               setTimeout(() => socketEmit(...args), time)
+              return true
             })
             return socket
           })
@@ -37,6 +41,7 @@ describe('interface-transport compliance', () => {
       }
 
       return { transport: tcp, addrs, connector }
-    }
+    },
+    async teardown () {}
   })
 })

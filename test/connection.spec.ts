@@ -1,33 +1,27 @@
-/* eslint-env mocha */
-'use strict'
-
-const { expect } = require('aegir/utils/chai')
-const TCP = require('../src')
-const { Multiaddr } = require('multiaddr')
+import { expect } from 'aegir/utils/chai.js'
+import { TCP } from '../src/index.js'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { mockUpgrader } from '@libp2p/interface-compliance-tests/transport/utils'
+import type { Connection } from '@libp2p/interfaces/connection'
 
 describe('valid localAddr and remoteAddr', () => {
-  let tcp
-
-  const mockUpgrader = {
-    upgradeInbound: maConn => maConn,
-    upgradeOutbound: maConn => maConn
-  }
+  let tcp: TCP
 
   beforeEach(() => {
-    tcp = new TCP({ upgrader: mockUpgrader })
+    tcp = new TCP({ upgrader: mockUpgrader() })
   })
 
   const ma = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
   it('should resolve port 0', async () => {
     // Create a Promise that resolves when a connection is handled
-    let handled
-    const handlerPromise = new Promise(resolve => { handled = resolve })
+    let handled: (conn: Connection) => void
+    const handlerPromise = new Promise<Connection>(resolve => { handled = resolve })
 
-    const handler = conn => handled(conn)
+    const handler = (conn: Connection) => handled(conn)
 
     // Create a listener with the handler
-    const listener = tcp.createListener(handler)
+    const listener = tcp.createListener({}, handler)
 
     // Listen on the multi-address
     await listener.listen(ma)
@@ -53,13 +47,13 @@ describe('valid localAddr and remoteAddr', () => {
 
   it('should handle multiple simultaneous closes', async () => {
     // Create a Promise that resolves when a connection is handled
-    let handled
-    const handlerPromise = new Promise(resolve => { handled = resolve })
+    let handled: (conn: Connection) => void
+    const handlerPromise = new Promise<Connection>(resolve => { handled = resolve })
 
-    const handler = conn => handled(conn)
+    const handler = (conn: Connection) => handled(conn)
 
     // Create a listener with the handler
-    const listener = tcp.createListener(handler)
+    const listener = tcp.createListener({}, handler)
 
     // Listen on the multi-address
     await listener.listen(ma)

@@ -1,52 +1,43 @@
-'use strict'
+import abortable from 'abortable-iterator'
+import debug from 'debug'
+// @ts-expect-error no types
+import toIterable from 'stream-to-it'
+import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
+import { CLOSE_TIMEOUT } from './constants.js'
+import type { Socket } from 'net'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { MultiaddrConnection } from '@libp2p/interfaces/transport'
 
-const abortable = require('abortable-iterator')
-const log = require('debug')('libp2p:tcp:socket')
-// Missing Type
-// @ts-ignore
-const toIterable = require('stream-to-it')
-const toMultiaddr = require('libp2p-utils/src/ip-port-to-multiaddr')
-const { CLOSE_TIMEOUT } = require('./constants')
+const log = debug('libp2p:tcp:socket')
 
-/**
- * @typedef {import('multiaddr').Multiaddr} Multiaddr
- * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
- * @typedef {import('net').Socket} Socket
- */
+interface ToConnectionOptions {
+  listeningAddr?: Multiaddr
+  remoteAddr?: Multiaddr
+  localAddr?: Multiaddr
+  signal?: AbortSignal
+}
 
 /**
  * Convert a socket into a MultiaddrConnection
  * https://github.com/libp2p/interface-transport#multiaddrconnection
- *
- * @private
- * @param {Socket} socket
- * @param {object} options
- * @param {Multiaddr} [options.listeningAddr]
- * @param {Multiaddr} [options.remoteAddr]
- * @param {Multiaddr} [options.localAddr]
- * @param {AbortSignal} [options.signal]
- * @returns {MultiaddrConnection}
  */
-const toConnection = (socket, options) => {
-  options = options || {}
+export const toConnection = (socket: Socket, options?: ToConnectionOptions) => {
+  options = options ?? {}
 
   // Check if we are connected on a unix path
-  if (options.listeningAddr && options.listeningAddr.getPath()) {
+  if (options.listeningAddr?.getPath() != null) {
     options.remoteAddr = options.listeningAddr
   }
 
-  if (options.remoteAddr && options.remoteAddr.getPath()) {
+  if (options.remoteAddr?.getPath() != null) {
     options.localAddr = options.remoteAddr
   }
 
   const { sink, source } = toIterable.duplex(socket)
 
-  /** @type {MultiaddrConnection} */
-  const maConn = {
+  const maConn: MultiaddrConnection = {
     async sink (source) {
-      if (options.signal) {
-        // Missing Type for "abortable"
-        // @ts-ignore
+      if ((options?.signal) != null) {
         source = abortable(source, options.signal)
       }
 
@@ -55,11 +46,10 @@ const toConnection = (socket, options) => {
           for await (const chunk of source) {
             // Convert BufferList to Buffer
             // Sink in StreamMuxer define argument as Uint8Array so chunk type infers as number which can't be sliced
-            // @ts-ignore
             yield Buffer.isBuffer(chunk) ? chunk : chunk.slice()
           }
         })())
-      } catch (err) {
+      } catch (err: any) {
         // If aborted we can safely ignore
         if (err.type !== 'aborted') {
           // If the source errored the socket will already have been destroyed by
@@ -71,22 +61,21 @@ const toConnection = (socket, options) => {
     },
 
     // Missing Type for "abortable"
-    // @ts-ignore
-    source: options.signal ? abortable(source, options.signal) : source,
+    source: (options.signal != null) ? abortable(source, options.signal) : source,
 
     conn: socket,
 
-    localAddr: options.localAddr || toMultiaddr(socket.localAddress, socket.localPort),
+    localAddr: options.localAddr ?? toMultiaddr(socket.localAddress ?? '', socket.localPort ?? ''),
 
     // If the remote address was passed, use it - it may have the peer ID encapsulated
-    remoteAddr: options.remoteAddr || toMultiaddr(socket.remoteAddress || '', socket.remotePort || ''),
+    remoteAddr: options.remoteAddr ?? toMultiaddr(socket.remoteAddress ?? '', socket.remotePort ?? ''),
 
     timeline: { open: Date.now() },
 
     async close () {
       if (socket.destroyed) return
 
-      return new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         const start = Date.now()
 
         // Attempt to end the socket. If it takes longer to close than the
@@ -107,15 +96,18 @@ const toConnection = (socket, options) => {
           }
 
           resolve()
-        }, CLOSE_TIMEOUT)
+        }, CLOSE_TIMEOUT).unref()
 
         socket.once('close', () => {
           clearTimeout(timeout)
           resolve()
         })
-        socket.end(/** @param {Error} [err] */(err) => {
+        socket.end((err?: Error & { code?: string }) => {
+          clearTimeout(timeout)
           maConn.timeline.close = Date.now()
-          if (err) return reject(err)
+          if (err != null) {
+            return reject(err)
+          }
           resolve()
         })
       })
@@ -126,12 +118,10 @@ const toConnection = (socket, options) => {
     // In instances where `close` was not explicitly called,
     // such as an iterable stream ending, ensure we have set the close
     // timeline
-    if (!maConn.timeline.close) {
+    if (maConn.timeline.close == null) {
       maConn.timeline.close = Date.now()
     }
   })
 
   return maConn
 }
-
-module.exports = toConnection

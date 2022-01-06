@@ -1,4 +1,4 @@
-# js-libp2p-tcp
+# js-libp2p-tcp <!-- omit in toc -->
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
 [![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
@@ -12,19 +12,16 @@
 [![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/transport/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/transport)
 [![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/connection/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/connection)
 
-
 > JavaScript implementation of the TCP module for libp2p. It exposes the [interface-transport](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/transport) for dial/listen. `libp2p-tcp` is a very thin shim that adds support for dialing to a `multiaddr`. This small shim will enable libp2p to use other transports.
 
-## Lead Maintainer
-
-[Jacob Heun](https://github.com/jacobheun)
-
-## Table of Contents
+## Table of Contents <!-- omit in toc -->
 
 - [Install](#install)
   - [npm](#npm)
 - [Usage](#usage)
 - [API](#api)
+  - [Transport](#transport)
+  - [Connection](#connection)
 - [Contribute](#contribute)
 - [License](#license)
 
@@ -33,16 +30,16 @@
 ### npm
 
 ```sh
-> npm install libp2p-tcp
+> npm install @libp2p/tcp
 ```
 
 ## Usage
 
 ```js
-const TCP = require('libp2p-tcp')
-const multiaddr = require('multiaddr')
-const pipe = require('it-pipe')
-const { collect } = require('streaming-iterables')
+import { TCP } from '@libp2p/tcp'
+import { Multiaddr } from '@multiformats/multiaddr'
+import pipe from 'it-pipe'
+import { collect } from 'streaming-iterables'
 
 // A simple upgrader that just returns the MultiaddrConnection
 const upgrader = {
@@ -52,7 +49,7 @@ const upgrader = {
 
 const tcp = new TCP({ upgrader })
 
-const listener = tcp.createListener((socket) => {
+const listener = tcp.createListener({}, (socket) => {
   console.log('new connection opened')
   pipe(
     ['hello'],
@@ -99,7 +96,6 @@ Value: hello
 ### Connection
 
 [![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/connection/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/connection)
-
 
 ## Contribute
 

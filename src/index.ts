@@ -1,17 +1,18 @@
-'use strict'
+import net from 'net'
+import * as mafmt from '@multiformats/mafmt'
+import errCode from 'err-code'
+import debug from 'debug'
+import { toConnection } from './socket-to-conn.js'
+import { createListener } from './listener.js'
+import { multiaddrToNetConfig } from './utils.js'
+import { AbortError } from 'abortable-iterator'
+import { CODE_CIRCUIT, CODE_P2P } from './constants.js'
+import type { Transport, Upgrader } from '@libp2p/interfaces/transport'
+import type { Connection } from '@libp2p/interfaces/connection'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Socket } from 'net'
 
-const net = require('net')
-const mafmt = require('mafmt')
-// Missing Type
-// @ts-ignore
-const withIs = require('class-is')
-const errCode = require('err-code')
-const log = require('debug')('libp2p:tcp')
-const toConnection = require('./socket-to-conn')
-const createListener = require('./listener')
-const { multiaddrToNetConfig } = require('./utils')
-const { AbortError } = require('abortable-iterator')
-const { CODE_CIRCUIT, CODE_P2P } = require('./constants')
+const log = debug('libp2p:tcp')
 
 /**
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
@@ -21,29 +22,35 @@ const { CODE_CIRCUIT, CODE_P2P } = require('./constants')
  * @typedef {import('net').Socket} Socket
  */
 
-class TCP {
-  /**
-   * @class
-   * @param {object} options
-   * @param {Upgrader} options.upgrader
-   */
-  constructor ({ upgrader }) {
-    if (!upgrader) {
+interface TCPOptions {
+  upgrader: Upgrader
+}
+
+interface DialOptions {
+  signal?: AbortSignal
+}
+
+export class TCP implements Transport<DialOptions, {}> {
+  private readonly _upgrader: Upgrader
+
+  constructor (options: TCPOptions) {
+    const { upgrader } = options
+
+    if (upgrader == null) {
       throw new Error('An upgrader must be provided. See https://github.com/libp2p/interface-transport#upgrader.')
     }
+
     this._upgrader = upgrader
   }
 
-  /**
-   * @async
-   * @param {Multiaddr} ma
-   * @param {object} options
-   * @param {AbortSignal} [options.signal] - Used to abort dial requests
-   * @returns {Promise<Connection>} An upgraded Connection
-   */
-  async dial (ma, options) {
-    options = options || {}
+  async dial (ma: Multiaddr, options: DialOptions = {}) {
     const socket = await this._connect(ma, options)
+
+    // Avoid uncaught errors caused by unstable connections
+    socket.on('error', err => {
+      log('socket error', err)
+    })
+
     const maConn = toConnection(socket, { remoteAddr: ma, signal: options.signal })
     log('new outbound connection %s', maConn.remoteAddr)
     const conn = await this._upgrader.upgradeOutbound(maConn)
@@ -51,32 +58,27 @@ class TCP {
     return conn
   }
 
-  /**
-   * @private
-   * @param {Multiaddr} ma
-   * @param {object} options
-   * @param {AbortSignal} [options.signal] - Used to abort dial requests
-   * @returns {Promise<Socket>} Resolves a TCP Socket
-   */
-  _connect (ma, options = {}) {
-    if (options.signal && options.signal.aborted) {
+  async _connect (ma: Multiaddr, options: DialOptions = {}) {
+    if (options.signal?.aborted === true) {
       throw new AbortError()
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise<Socket>((resolve, reject) => {
       const start = Date.now()
       const cOpts = multiaddrToNetConfig(ma)
 
       log('dialing %j', cOpts)
       const rawSocket = net.connect(cOpts)
 
-      const onError = /** @param {Error} err */ err => {
+      const onError = (err: Error) => {
         err.message = `connection error ${cOpts.host}:${cOpts.port}: ${err.message}`
+
         done(err)
       }
 
       const onTimeout = () => {
         log('connection timeout %s:%s', cOpts.host, cOpts.port)
+
         const err = errCode(new Error(`connection timeout after ${Date.now() - start}ms`), 'ERR_CONNECT_TIMEOUT')
         // Note: this will result in onError() being called
         rawSocket.emit('error', err)
@@ -93,20 +95,29 @@ class TCP {
         done(new AbortError())
       }
 
-      const done = /** @param {Error} [err] */ err => {
+      const done = (err?: any) => {
         rawSocket.removeListener('error', onError)
         rawSocket.removeListener('timeout', onTimeout)
         rawSocket.removeListener('connect', onConnect)
-        options.signal && options.signal.removeEventListener('abort', onAbort)
 
-        if (err) return reject(err)
+        if (options.signal != null) {
+          options.signal.removeEventListener('abort', onAbort)
+        }
+
+        if (err != null) {
+          return reject(err)
+        }
+
         resolve(rawSocket)
       }
 
       rawSocket.on('error', onError)
       rawSocket.on('timeout', onTimeout)
       rawSocket.on('connect', onConnect)
-      options.signal && options.signal.addEventListener('abort', onAbort)
+
+      if (options.signal != null) {
+        options.signal.addEventListener('abort', onAbort)
+      }
     })
   }
 
@@ -114,31 +125,15 @@ class TCP {
    * Creates a TCP listener. The provided `handler` function will be called
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`.
-   *
-   * @param {* | function(Connection):void} options
-   * @param {function(Connection):void} [handler]
-   * @returns {Listener} A TCP listener
    */
-  createListener (options, handler) {
-    let listenerHandler
-
-    if (typeof options === 'function') {
-      listenerHandler = options
-      options = {}
-    } else {
-      listenerHandler = handler
-    }
-    options = options || {}
-    return createListener({ handler: listenerHandler, upgrader: this._upgrader }, options)
+  createListener (options: {}, handler?: (connection: Connection) => void) {
+    return createListener({ handler: handler, upgrader: this._upgrader })
   }
 
   /**
    * Takes a list of `Multiaddr`s and returns only valid TCP addresses
-   *
-   * @param {Multiaddr[]} multiaddrs
-   * @returns {Multiaddr[]} Valid TCP multiaddrs
    */
-  filter (multiaddrs) {
+  filter (multiaddrs: Multiaddr[]) {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     return multiaddrs.filter(ma => {
@@ -150,7 +145,3 @@ class TCP {
     })
   }
 }
-
-const TCPWithIs = withIs(TCP, { className: 'TCP', symbolName: '@libp2p/js-libp2p-tcp/tcp' })
-
-exports = module.exports = TCPWithIs
