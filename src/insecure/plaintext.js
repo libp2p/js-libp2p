@@ -8,6 +8,9 @@ const log = Object.assign(debug('libp2p:plaintext'), {
 const handshake = require('it-handshake')
 const lp = require('it-length-prefixed')
 const PeerId = require('peer-id')
+// @ts-ignore libp2p-crypto does not support types
+const pbm = require('libp2p-crypto/src/keys/keys')
+
 const { UnexpectedPeerError, InvalidCryptoExchangeError } = require('libp2p-interfaces/src/crypto/errors')
 
 const { Exchange, KeyType } = require('./proto')
@@ -41,7 +44,7 @@ async function encrypt (localId, conn, remoteId) {
     id: localId.toBytes(),
     pubkey: {
       Type: KeyType.RSA, // TODO: dont hard code
-      Data: localId.marshalPubKey()
+      Data: localId.pubKey.marshal()
     }
   }))
 
@@ -54,7 +57,8 @@ async function encrypt (localId, conn, remoteId) {
 
   let peerId
   try {
-    peerId = await PeerId.createFromPubKey(id.pubkey.Data)
+    // PeerId expects a protobuf so encode it first
+    peerId = await PeerId.createFromPubKey(pbm.PublicKey.encode(id.pubkey).finish())
   } catch (/** @type {any} */ err) {
     log.error(err)
     throw new InvalidCryptoExchangeError('Remote did not provide its public key')

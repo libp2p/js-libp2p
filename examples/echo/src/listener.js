@@ -27,7 +27,26 @@ async function run() {
 
   // Handle incoming connections for the protocol by piping from the stream
   // back to itself (an echo)
-  await listenerNode.handle('/echo/1.0.0', ({ stream }) => pipe(stream.source, stream.sink))
+  await listenerNode.handle('/echo/1.0.0', async ({ stream }) => {
+
+    pipe(
+      stream.source,
+      source => (async function * () {
+        for await (const data of source) {
+          console.log('received message : ' + data)
+
+          let msg = data.toString()
+
+          yield msg
+
+          if(msg[msg.length-1]==='\n') {
+            return
+          }
+        }
+      })(),
+      stream.sink
+    )
+  })
 
   // Start listening
   await listenerNode.start()
