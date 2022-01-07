@@ -9,6 +9,7 @@ const { NOISE } = require('@chainsafe/libp2p-noise')
 const MDNS = require('libp2p-mdns')
 const { createPeerId } = require('../utils/creators/peer')
 const Fetch = require('../../src/fetch')
+const { codes } = require('../../src/errors')
 
 async function createLibp2pNode (peerId) {
   return await Libp2p.create({
@@ -99,20 +100,19 @@ describe('Fetch Protocol', () => {
     fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
     fetch.mount(receiver)
 
-    try {
-      await Fetch.fetch(sender, receiver.peerId, '/moduleUNKNOWN/foobar')
-      expect.fail("didn't throw")
-    } catch (err) {
-      expect(err).to.be.an('Error')
-      expect(err.message).to.equal('Error in fetch protocol response: No lookup function registered for key: /moduleUNKNOWN/foobar')
-    }
+    await expect(Fetch.fetch(sender, receiver.peerId, '/moduleUNKNOWN/foobar')).to.eventually.be.rejected.with.property('code', codes.ERR_INVALID_PARAMETERS)
   })
 
   it('Registering multiple handlers for same prefix errors', async () => {
     const fetch = new Fetch()
     fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
-    expect(function () {
+
+    try {
       fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_B))
-    }).to.throw('already registered')
+      expect.fail("didn't throw")
+    } catch (err) {
+      expect(err).to.be.an('Error')
+      expect(err.code).to.equal(codes.ERR_KEY_ALREADY_EXISTS)
+    }
   })
 })

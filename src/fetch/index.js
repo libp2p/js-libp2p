@@ -4,6 +4,8 @@ const debug = require('debug')
 const log = Object.assign(debug('libp2p:fetch'), {
   error: debug('libp2p:fetch:err')
 })
+const errCode = require('err-code')
+const { codes } = require('../errors')
 const lp = require('it-length-prefixed')
 const { FetchRequest, FetchResponse } = require('./proto')
 // @ts-ignore it-handshake does not export types
@@ -62,10 +64,10 @@ class FetchProtocol {
       }
       case (FetchResponse.StatusCode.ERROR): {
         const errmsg = (new TextDecoder()).decode(response.data)
-        throw new Error('Error in fetch protocol response: ' + errmsg)
+        throw errCode(new Error('Error in fetch protocol response: ' + errmsg), codes.ERR_INVALID_PARAMETERS)
       }
       default: {
-        throw new Error('Unreachable case')
+        throw errCode(new Error('Unreachable case'), codes.ERR_UNHANDLED_CASE)
       }
     }
   }
@@ -122,7 +124,7 @@ class FetchProtocol {
    */
   registerLookupFunction (prefix, lookup) {
     if (this._lookupFunctions.has(prefix)) {
-      throw new Error("Fetch protocol handler for key prefix '" + prefix + "' already registered")
+      throw errCode(new Error("Fetch protocol handler for key prefix '" + prefix + "' already registered"), codes.ERR_KEY_ALREADY_EXISTS)
     }
     this._lookupFunctions.set(prefix, lookup)
   }
