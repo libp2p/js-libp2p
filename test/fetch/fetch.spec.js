@@ -7,10 +7,12 @@ const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const { NOISE } = require('@chainsafe/libp2p-noise')
 const MDNS = require('libp2p-mdns')
+const { createPeerId } = require('../utils/creators/peer')
 const Fetch = require('../../src/fetch')
 
-async function createLibp2pNode (lookupFunc) {
+async function createLibp2pNode (peerId) {
   return await Libp2p.create({
+    peerId,
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
@@ -43,8 +45,9 @@ describe('Fetch Protocol', () => {
   }
 
   before(async () => {
-    sender = await createLibp2pNode()
-    receiver = await createLibp2pNode()
+    const [peerIdA, peerIdB] = await createPeerId({ number: 2 })
+    sender = await createLibp2pNode(peerIdA)
+    receiver = await createLibp2pNode(peerIdB)
 
     await sender.start()
     await receiver.start()
