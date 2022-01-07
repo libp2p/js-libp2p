@@ -13,6 +13,7 @@ const { Multiaddr } = require('multiaddr')
 const mockUpgrader = require('../utils/mockUpgrader')
 const sinon = require('sinon')
 const Peers = require('../fixtures/peers')
+const pWaitFor = require('p-wait-for')
 const addrs = [
   new Multiaddr('/ip4/127.0.0.1/tcp/0'),
   new Multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -72,9 +73,13 @@ describe('Transport Manager (TCP)', () => {
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)
     await tm.listen(addrs)
 
-    // Should created Self Peer record on new listen address
-    signedPeerRecord = await tm.libp2p.peerStore.addressBook.getPeerRecord(localPeer)
-    expect(signedPeerRecord).to.exist()
+    // Should created Self Peer record on new listen address, but it is done async
+    // with no event so we have to wait a bit
+    await pWaitFor(async () => {
+      signedPeerRecord = await tm.libp2p.peerStore.addressBook.getPeerRecord(localPeer)
+
+      return signedPeerRecord != null
+    }, { interval: 100, timeout: 2000 })
 
     const record = PeerRecord.createFromProtobuf(signedPeerRecord.payload)
     expect(record).to.exist()

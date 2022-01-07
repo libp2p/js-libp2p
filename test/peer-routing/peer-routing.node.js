@@ -36,7 +36,7 @@ describe('peer-routing', () => {
     it('.findPeer should return an error', async () => {
       await expect(node.peerRouting.findPeer('a cid'))
         .to.eventually.be.rejected()
-        .and.to.have.property('code', 'NO_ROUTERS_AVAILABLE')
+        .and.to.have.property('code', 'ERR_NO_ROUTERS_AVAILABLE')
     })
 
     it('.getClosestPeers should return an error', async () => {
@@ -45,7 +45,7 @@ describe('peer-routing', () => {
         throw new Error('.getClosestPeers should return an error')
       } catch (/** @type {any} */ err) {
         expect(err).to.exist()
-        expect(err.code).to.equal('NO_ROUTERS_AVAILABLE')
+        expect(err.code).to.equal('ERR_NO_ROUTERS_AVAILABLE')
       }
     })
   })
@@ -72,39 +72,133 @@ describe('peer-routing', () => {
 
     after(() => Promise.all(nodes.map((n) => n.stop())))
 
-    it('should use the nodes dht', () => {
-      const deferred = pDefer()
-
-      sinon.stub(nodes[0]._dht, 'findPeer').callsFake(() => {
-        deferred.resolve()
-        return nodes[1].peerId
-      })
-
-      nodes[0].peerRouting.findPeer()
-      return deferred.promise
-    })
-
-    it('should use the nodes dht to get the closest peers', async () => {
-      const deferred = pDefer()
-      const [remotePeerId] = await peerUtils.createPeerId({ fixture: false })
-
-      sinon.stub(nodes[0]._dht, 'getClosestPeers').callsFake(function * () {
-        deferred.resolve()
+    it('should use the nodes dht', async () => {
+      sinon.stub(nodes[0]._dht, 'findPeer').callsFake(async function * () {
         yield {
-          id: remotePeerId,
-          multiaddrs: []
+          name: 'FINAL_PEER',
+          peer: {
+            id: nodes[1].peerId,
+            multiaddrs: []
+          }
         }
       })
 
-      await nodes[0].peerRouting.getClosestPeers().next()
+      expect(nodes[0]._dht.findPeer.called).to.be.false()
+      await nodes[0].peerRouting.findPeer(nodes[1].peerId)
+      expect(nodes[0]._dht.findPeer.called).to.be.true()
+      nodes[0]._dht.findPeer.restore()
+    })
 
-      return deferred.promise
+    it('should use the nodes dht to get the closest peers', async () => {
+      sinon.stub(nodes[0]._dht, 'getClosestPeers').callsFake(async function * () {
+        yield {
+          name: 'PEER_RESPONSE',
+          closer: [{
+            id: nodes[1].peerId,
+            multiaddrs: []
+          }]
+        }
+      })
+
+      expect(nodes[0]._dht.getClosestPeers.called).to.be.false()
+      await drain(nodes[0].peerRouting.getClosestPeers(nodes[1].peerId))
+      expect(nodes[0]._dht.getClosestPeers.called).to.be.true()
+      nodes[0]._dht.getClosestPeers.restore()
     })
 
     it('should error when peer tries to find itself', async () => {
       await expect(nodes[0].peerRouting.findPeer(nodes[0].peerId))
         .to.eventually.be.rejected()
         .and.to.have.property('code', 'ERR_FIND_SELF')
+    })
+
+    it('should handle error thrown synchronously during find peer', async () => {
+      const unknownPeers = await peerUtils.createPeerId({ number: 1, fixture: false })
+
+      nodes[0].peerRouting._routers = [{
+        findPeer () {
+          throw new Error('Thrown sync')
+        }
+      }]
+
+      await expect(nodes[0].peerRouting.findPeer(unknownPeers[0]))
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', 'ERR_NOT_FOUND')
+    })
+
+    it('should handle error thrown asynchronously during find peer', async () => {
+      const unknownPeers = await peerUtils.createPeerId({ number: 1, fixture: false })
+
+      nodes[0].peerRouting._routers = [{
+        async findPeer () {
+          throw new Error('Thrown async')
+        }
+      }]
+
+      await expect(nodes[0].peerRouting.findPeer(unknownPeers[0]))
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', 'ERR_NOT_FOUND')
+    })
+
+    it('should handle error thrown asynchronously after delay during find peer', async () => {
+      const unknownPeers = await peerUtils.createPeerId({ number: 1, fixture: false })
+
+      nodes[0].peerRouting._routers = [{
+        async findPeer () {
+          await delay(100)
+          throw new Error('Thrown async after delay')
+        }
+      }]
+
+      await expect(nodes[0].peerRouting.findPeer(unknownPeers[0]))
+        .to.eventually.be.rejected()
+        .and.to.have.property('code', 'ERR_NOT_FOUND')
+    })
+
+    it('should return value when one router errors synchronously and another returns a value', async () => {
+      const [peer] = await peerUtils.createPeerId({ number: 1, fixture: false })
+
+      nodes[0].peerRouting._routers = [{
+        findPeer () {
+          throw new Error('Thrown sync')
+        }
+      }, {
+        async findPeer () {
+          return Promise.resolve({
+            id: peer,
+            multiaddrs: []
+          })
+        }
+      }]
+
+      await expect(nodes[0].peerRouting.findPeer(peer))
+        .to.eventually.deep.equal({
+          id: peer,
+          multiaddrs: []
+        })
+    })
+
+    it('should return value when one router errors asynchronously and another returns a value', async () => {
+      const [peer] = await peerUtils.createPeerId({ number: 1, fixture: false })
+
+      nodes[0].peerRouting._routers = [{
+        async findPeer () {
+          throw new Error('Thrown sync')
+        }
+      }, {
+        async findPeer () {
+          return Promise.resolve({
+            id: peer,
+            multiaddrs: []
+          })
+        }
+      }]
+
+      await expect(nodes[0].peerRouting.findPeer(peer))
+        .to.eventually.deep.equal({
+          id: peer,
+          multiaddrs: []
+        })
     })
   })
 
@@ -145,36 +239,35 @@ describe('peer-routing', () => {
     })
 
     it('should use the delegate router to find peers', async () => {
-      const deferred = pDefer()
       const [remotePeerId] = await peerUtils.createPeerId({ fixture: false })
 
       sinon.stub(delegate, 'findPeer').callsFake(() => {
-        deferred.resolve()
         return {
           id: remotePeerId,
           multiaddrs: []
         }
       })
 
-      await node.peerRouting.findPeer()
-      return deferred.promise
+      expect(delegate.findPeer.called).to.be.false()
+      await node.peerRouting.findPeer(remotePeerId)
+      expect(delegate.findPeer.called).to.be.true()
+      delegate.findPeer.restore()
     })
 
     it('should use the delegate router to get the closest peers', async () => {
-      const deferred = pDefer()
       const [remotePeerId] = await peerUtils.createPeerId({ fixture: false })
 
       sinon.stub(delegate, 'getClosestPeers').callsFake(function * () {
-        deferred.resolve()
         yield {
           id: remotePeerId,
           multiaddrs: []
         }
       })
 
-      await node.peerRouting.getClosestPeers().next()
-
-      return deferred.promise
+      expect(delegate.getClosestPeers.called).to.be.false()
+      await drain(node.peerRouting.getClosestPeers(remotePeerId))
+      expect(delegate.getClosestPeers.called).to.be.true()
+      delegate.getClosestPeers.restore()
     })
 
     it('should be able to find a peer', async () => {
@@ -200,7 +293,7 @@ describe('peer-routing', () => {
     })
 
     it('should error when a peer cannot be found', async () => {
-      const peerKey = 'key of a peer not on the network'
+      const peerId = await PeerId.create({ keyType: 'ed25519' })
       const mockApi = nock('http://0.0.0.0:60197')
         .post('/api/v0/dht/findpeer')
         .query(true)
@@ -209,20 +302,20 @@ describe('peer-routing', () => {
           'X-Chunked-Output', '1'
         ])
 
-      await expect(node.peerRouting.findPeer(peerKey))
+      await expect(node.peerRouting.findPeer(peerId))
         .to.eventually.be.rejected()
 
       expect(mockApi.isDone()).to.equal(true)
     })
 
     it('should handle errors from the api', async () => {
-      const peerKey = 'key of a peer not on the network'
+      const peerId = await PeerId.create({ keyType: 'ed25519' })
       const mockApi = nock('http://0.0.0.0:60197')
         .post('/api/v0/dht/findpeer')
         .query(true)
         .reply(502)
 
-      await expect(node.peerRouting.findPeer(peerKey))
+      await expect(node.peerRouting.findPeer(peerId))
         .to.eventually.be.rejected()
 
       expect(mockApi.isDone()).to.equal(true)
@@ -230,7 +323,6 @@ describe('peer-routing', () => {
 
     it('should be able to get the closest peers', async () => {
       const peerId = await PeerId.create({ keyType: 'ed25519' })
-
       const closest1 = '12D3KooWLewYMMdGWAtuX852n4rgCWkK7EBn4CWbwwBzhsVoKxk3'
       const closest2 = '12D3KooWDtoQbpKhtnWddfj72QmpFvvLDTsBLTFkjvgQm6cde2AK'
 
@@ -249,15 +341,12 @@ describe('peer-routing', () => {
             'X-Chunked-Output', '1'
           ])
 
-      const closestPeers = []
-      for await (const peer of node.peerRouting.getClosestPeers(peerId.id, { timeout: 1000 })) {
-        closestPeers.push(peer)
-      }
+      const closestPeers = await all(node.peerRouting.getClosestPeers(peerId.id, { timeout: 1000 }))
 
       expect(closestPeers).to.have.length(2)
-      expect(closestPeers[0].id.toB58String()).to.equal(closest2)
+      expect(closestPeers[0].id.toB58String()).to.equal(closest1)
       expect(closestPeers[0].multiaddrs).to.have.lengthOf(2)
-      expect(closestPeers[1].id.toB58String()).to.equal(closest1)
+      expect(closestPeers[1].id.toB58String()).to.equal(closest2)
       expect(closestPeers[1].multiaddrs).to.have.lengthOf(2)
       expect(mockApi.isDone()).to.equal(true)
     })
@@ -316,7 +405,7 @@ describe('peer-routing', () => {
         multiaddrs: []
       }
 
-      sinon.stub(node._dht, 'findPeer').callsFake(() => {})
+      sinon.stub(node._dht, 'findPeer').callsFake(async function * () {})
       sinon.stub(delegate, 'findPeer').callsFake(() => {
         return results
       })
@@ -334,7 +423,8 @@ describe('peer-routing', () => {
 
       const defer = pDefer()
 
-      sinon.stub(node._dht, 'findPeer').callsFake(async () => {
+      sinon.stub(node._dht, 'findPeer').callsFake(async function * () {
+        yield
         await defer.promise
       })
       sinon.stub(delegate, 'findPeer').callsFake(() => {
@@ -349,29 +439,32 @@ describe('peer-routing', () => {
 
     it('should not wait for the delegate to return if the dht does first', async () => {
       const [remotePeerId] = await peerUtils.createPeerId({ fixture: false })
-      const results = {
+      const result = {
         id: remotePeerId,
         multiaddrs: []
       }
 
       const defer = pDefer()
 
-      sinon.stub(node._dht, 'findPeer').callsFake(() => {
-        return results
+      sinon.stub(node._dht, 'findPeer').callsFake(async function * () {
+        yield {
+          name: 'FINAL_PEER',
+          peer: result
+        }
       })
       sinon.stub(delegate, 'findPeer').callsFake(async () => {
         await defer.promise
       })
 
       const peer = await node.peerRouting.findPeer(remotePeerId)
-      expect(peer).to.eql(results)
+      expect(peer).to.eql(result)
 
       defer.resolve()
     })
 
     it('should store the addresses of the found peer', async () => {
       const [remotePeerId] = await peerUtils.createPeerId({ fixture: false })
-      const results = {
+      const result = {
         id: remotePeerId,
         multiaddrs: [
           new Multiaddr('/ip4/123.123.123.123/tcp/38982')
@@ -380,14 +473,17 @@ describe('peer-routing', () => {
 
       const spy = sinon.spy(node.peerStore.addressBook, 'add')
 
-      sinon.stub(node._dht, 'findPeer').callsFake(() => {
-        return results
+      sinon.stub(node._dht, 'findPeer').callsFake(async function * () {
+        yield {
+          name: 'FINAL_PEER',
+          peer: result
+        }
       })
       sinon.stub(delegate, 'findPeer').callsFake(() => {})
 
       await node.peerRouting.findPeer(remotePeerId)
 
-      expect(spy.calledWith(results.id, results.multiaddrs)).to.be.true()
+      expect(spy.calledWith(result.id, result.multiaddrs)).to.be.true()
     })
 
     it('should use the delegate if the dht fails to get the closest peer', async () => {
@@ -487,8 +583,18 @@ describe('peer-routing', () => {
 
       sinon.spy(node.peerStore.addressBook, 'add')
       sinon.stub(node._dht, 'getClosestPeers').callsFake(function * () {
-        yield results[0]
-        yield results[1]
+        yield {
+          name: 'PEER_RESPONSE',
+          closer: [
+            results[0]
+          ]
+        }
+        yield {
+          name: 'PEER_RESPONSE',
+          closer: [
+            results[1]
+          ]
+        }
       })
 
       await node.start()
@@ -522,7 +628,7 @@ describe('peer-routing', () => {
         started: false
       })
 
-      sinon.stub(node._dht, 'getClosestPeers').callsFake(function * () {
+      sinon.stub(node._dht, 'getClosestPeers').callsFake(async function * () {
         yield
         throw new Error('should not be called')
       })

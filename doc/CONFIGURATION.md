@@ -1,37 +1,37 @@
-# 
+#
 
-- [Configuration](#configuration)
-  - [Overview](#overview)
-  - [Modules](#modules)
-    - [Transport](#transport)
-    - [Stream Multiplexing](#stream-multiplexing)
-    - [Connection Encryption](#connection-encryption)
-    - [Peer Discovery](#peer-discovery)
-    - [Content Routing](#content-routing)
-    - [Peer Routing](#peer-routing)
-    - [DHT](#dht)
-    - [Pubsub](#pubsub)
-  - [Customizing libp2p](#customizing-libp2p)
-    - [Examples](#examples)
-      - [Basic setup](#basic-setup)
-      - [Customizing Peer Discovery](#customizing-peer-discovery)
-      - [Setup webrtc transport and discovery](#setup-webrtc-transport-and-discovery)
-      - [Customizing Pubsub](#customizing-pubsub)
-      - [Customizing DHT](#customizing-dht)
-      - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
-      - [Setup with Relay](#setup-with-relay)
-      - [Setup with Auto Relay](#setup-with-auto-relay)
-      - [Setup with Keychain](#setup-with-keychain)
-      - [Configuring Dialing](#configuring-dialing)
-      - [Configuring Connection Manager](#configuring-connection-manager)
-      - [Configuring Transport Manager](#configuring-transport-manager)
-      - [Configuring Metrics](#configuring-metrics)
-      - [Configuring PeerStore](#configuring-peerstore)
-      - [Customizing Transports](#customizing-transports)
-      - [Configuring the NAT Manager](#configuring-the-nat-manager)
-        - [Browser support](#browser-support)
-        - [UPnP and NAT-PMP](#upnp-and-nat-pmp)
-  - [Configuration examples](#configuration-examples)
+- [Overview](#overview)
+- [Modules](#modules)
+  - [Transport](#transport)
+  - [Stream Multiplexing](#stream-multiplexing)
+  - [Connection Encryption](#connection-encryption)
+  - [Peer Discovery](#peer-discovery)
+  - [Content Routing](#content-routing)
+  - [Peer Routing](#peer-routing)
+  - [DHT](#dht)
+  - [Pubsub](#pubsub)
+- [Customizing libp2p](#customizing-libp2p)
+  - [Examples](#examples)
+    - [Basic setup](#basic-setup)
+    - [Customizing Peer Discovery](#customizing-peer-discovery)
+    - [Setup webrtc transport and discovery](#setup-webrtc-transport-and-discovery)
+    - [Customizing Pubsub](#customizing-pubsub)
+    - [Customizing DHT](#customizing-dht)
+    - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
+    - [Setup with Relay](#setup-with-relay)
+    - [Setup with Auto Relay](#setup-with-auto-relay)
+    - [Setup with Keychain](#setup-with-keychain)
+    - [Configuring Dialing](#configuring-dialing)
+    - [Configuring Connection Manager](#configuring-connection-manager)
+    - [Configuring Transport Manager](#configuring-transport-manager)
+    - [Configuring Metrics](#configuring-metrics)
+    - [Configuring PeerStore](#configuring-peerstore)
+    - [Customizing Transports](#customizing-transports)
+    - [Configuring the NAT Manager](#configuring-the-nat-manager)
+      - [Browser support](#browser-support)
+      - [UPnP and NAT-PMP](#upnp-and-nat-pmp)
+    - [Configuring protocol name](#configuring-protocol-name)
+- [Configuration examples](#configuration-examples)
 
 ## Overview
 
@@ -374,11 +374,7 @@ const node = await Libp2p.create({
     dht: {                        // The DHT options (and defaults) can be found in its documentation
       kBucketSize: 20,
       enabled: true,              // This flag is required for DHT to run (disabled by default)
-      randomWalk: {
-        enabled: true,            // Allows to disable discovery (enabled by default)
-        interval: 300e3,
-        timeout: 10e3
-      }
+      clientMode: false           // Whether to run the WAN DHT in client or server mode (default: client mode)
     }
   }
 })
@@ -501,9 +497,9 @@ const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
-const LevelStore = require('datastore-level')
+const LevelDatastore = require('datastore-level')
 
-const datastore = new LevelStore('path/to/store')
+const datastore = new LevelDatastore('path/to/store')
 await datastore.open()
 
 const node = await Libp2p.create({
@@ -676,18 +672,18 @@ const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
-const LevelStore = require('datastore-level')
+const LevelDatastore = require('datastore-level')
 
-const datastore = new LevelStore('path/to/store')
-const dsInstant = await datastore.open()
+const datastore = new LevelDatastore('path/to/store')
+await datastore.open() // level database must be ready before node boot
 
 const node = await Libp2p.create({
+  datastore, // pass the opened datastore
   modules: {
     transport: [TCP],
     streamMuxer: [MPLEX],
     connEncryption: [NOISE]
   },
-  datastore: dsInstant,
   peerStore: {
     persistence: true,
     threshold: 5
@@ -788,7 +784,7 @@ By default under nodejs libp2p will attempt to use [UPnP](https://en.wikipedia.o
 
 #### Configuring protocol name
 
-Changing the protocol name prefix can isolate default public network (IPFS) for custom purposes. 
+Changing the protocol name prefix can isolate default public network (IPFS) for custom purposes.
 
 ```js
 const node = await Libp2p.create({
@@ -810,8 +806,8 @@ protocols: [
 
 As libp2p is designed to be a modular networking library, its usage will vary based on individual project needs. We've included links to some existing project configurations for your reference, in case you wish to replicate their configuration:
 
-- [libp2p-ipfs-nodejs](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs/src/core/runtime/libp2p-nodejs.js) - libp2p configuration used by js-ipfs when running in Node.js
-- [libp2p-ipfs-browser](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs/src/core/runtime/libp2p-browser.js) - libp2p configuration used by js-ipfs when running in a Browser (that supports WebRTC)
+- [libp2p-ipfs-nodejs](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs-core-config/src/libp2p.js) - libp2p configuration used by js-ipfs when running in Node.js
+- [libp2p-ipfs-browser](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs-core-config/src/libp2p.browser.js) - libp2p configuration used by js-ipfs when running in a Browser (that supports WebRTC)
 
 If you have developed a project using `js-libp2p`, please consider submitting your configuration to this list so that it can be found easily by other users.
 

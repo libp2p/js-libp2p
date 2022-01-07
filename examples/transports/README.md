@@ -91,7 +91,7 @@ const concat = require('it-concat')
 const MPLEX = require('libp2p-mplex')
 ```
 
-We are going to reuse the `createNode` function from step 1, but this time add a stream multiplexer from `libp2p-mplex`. 
+We are going to reuse the `createNode` function from step 1, but this time add a stream multiplexer from `libp2p-mplex`.
 ```js
 const createNode = async () => {
   const node = await Libp2p.create({

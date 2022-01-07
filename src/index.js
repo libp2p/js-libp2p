@@ -18,6 +18,7 @@ const { codes, messages } = require('./errors')
 
 const AddressManager = require('./address-manager')
 const ConnectionManager = require('./connection-manager')
+const AutoDialler = require('./connection-manager/auto-dialler')
 const Circuit = require('./circuit/transport')
 const Relay = require('./circuit')
 const Dialer = require('./dialer')
@@ -47,6 +48,8 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions
  * @typedef {import('interface-datastore').Datastore} Datastore
  * @typedef {import('./pnet')} Protector
+ * @typedef {Object} PersistentPeerStoreOptions
+ * @property {number} [threshold]
  */
 
 /**
@@ -55,16 +58,9 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {MuxedStream} stream
  * @property {string} protocol
  *
- * @typedef {Object} RandomWalkOptions
- * @property {boolean} [enabled = false]
- * @property {number} [queriesPerPeriod = 1]
- * @property {number} [interval = 300e3]
- * @property {number} [timeout = 10e3]
- *
  * @typedef {Object} DhtOptions
  * @property {boolean} [enabled = false]
  * @property {number} [kBucketSize = 20]
- * @property {RandomWalkOptions} [randomWalk]
  * @property {boolean} [clientMode]
  * @property {import('libp2p-interfaces/src/types').DhtSelectors} [selectors]
  * @property {import('libp2p-interfaces/src/types').DhtValidators} [validators]
@@ -116,7 +112,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {KeychainOptions & import('./keychain/index').KeychainOptions} [keychain]
  * @property {MetricsOptions & import('./metrics').MetricsOptions} [metrics]
  * @property {import('./peer-routing').PeerRoutingOptions} [peerRouting]
- * @property {PeerStoreOptions & import('./peer-store/persistent').PersistentPeerStoreOptions} [peerStore]
+ * @property {PeerStoreOptions & PersistentPeerStoreOptions} [peerStore]
  * @property {import('./transport-manager').TransportManagerOptions} [transportManager]
  * @property {Libp2pConfig} [config]
  *
@@ -167,6 +163,15 @@ class Libp2p extends EventEmitter {
     this.peerId = this._options.peerId
     this.datastore = this._options.datastore
 
+    // Create Metrics
+    if (this._options.metrics.enabled) {
+      const metrics = new Metrics({
+        ...this._options.metrics
+      })
+
+      this.metrics = metrics
+    }
+
     this.peerStore = (this.datastore && this._options.peerStore.persistence)
       ? new PersistentPeerStore({
         peerId: this.peerId,
@@ -193,17 +198,13 @@ class Libp2p extends EventEmitter {
 
     // Create the Connection Manager
     this.connectionManager = new ConnectionManager(this, {
-      autoDial: this._config.peerDiscovery.autoDial,
       ...this._options.connectionManager
     })
-
-    // Create Metrics
-    if (this._options.metrics.enabled) {
-      this.metrics = new Metrics({
-        ...this._options.metrics,
-        connectionManager: this.connectionManager
-      })
-    }
+    this._autodialler = new AutoDialler(this, {
+      enabled: this._config.peerDiscovery.autoDial,
+      minConnections: this._options.connectionManager.minConnections,
+      autoDialInterval: this._options.connectionManager.autoDialInterval
+    })
 
     // Create keychain
     if (this._options.keychain && this._options.keychain.datastore) {
@@ -264,6 +265,7 @@ class Libp2p extends EventEmitter {
     this.dialer = new Dialer({
       transportManager: this.transportManager,
       peerStore: this.peerStore,
+      metrics: this.metrics,
       ...this._options.dialer
     })
 
@@ -301,14 +303,9 @@ class Libp2p extends EventEmitter {
     // dht provided components (peerRouting, contentRouting, dht)
     if (this._modules.dht) {
       const DHT = this._modules.dht
-      // @ts-ignore Object is not constructable
-      this._dht = new DHT({
+      // @ts-ignore TODO: types need fixing - DHT is an `object` which has no `create` method
+      this._dht = DHT.create({
         libp2p: this,
-        dialer: this.dialer,
-        peerId: this.peerId,
-        peerStore: this.peerStore,
-        registrar: this.registrar,
-        datastore: this.datastore,
         ...this._config.dht
       })
     }
@@ -385,6 +382,8 @@ class Libp2p extends EventEmitter {
 
       this.relay && this.relay.stop()
       this.peerRouting.stop()
+      this._autodialler.stop()
+      await (this._dht && this._dht.stop())
 
       for (const service of this._discovery.values()) {
         service.removeListener('peer', this._onDiscoveryPeer)
@@ -399,7 +398,6 @@ class Libp2p extends EventEmitter {
 
       await Promise.all([
         this.pubsub && this.pubsub.stop(),
-        this._dht && this._dht.stop(),
         this.metrics && this.metrics.stop()
       ])
 
@@ -624,7 +622,7 @@ class Libp2p extends EventEmitter {
 
     // DHT subsystem
     if (this._config.dht.enabled) {
-      this._dht && this._dht.start()
+      this._dht && await this._dht.start()
 
       // TODO: this should be modified once random-walk is used as
       // the other discovery modules
@@ -655,6 +653,7 @@ class Libp2p extends EventEmitter {
     }
 
     this.connectionManager.start()
+    this._autodialler.start()
 
     // Peer discovery
     await this._setupPeerDiscovery()

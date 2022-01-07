@@ -8,63 +8,194 @@ on:
       - '**'
 
 jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [16]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+           npm install
+           npm run build
+
   check:
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
       with:
-        node-version: 14
-    - run: npm install
+        node-version: 16
+    - uses: actions/cache@v2
+      id: cache
+      env:
+        CACHE_NAME: cache-node-modules
+      with:
+        path: |
+          ~/.cache
+          ~/.npm
+          ./node_modules
+          ./dist
+        key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+    - name: Install Dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        npm install
+        npm run build
     - run: npx aegir lint
-    - uses: gozala/typescript-error-reporter-action@v1.0.8
-    - run: npx aegir build
     - run: npx aegir dep-check
-    - uses: ipfs/aegir/actions/bundle-size@v32.1.0
+    - uses: ipfs/aegir/actions/bundle-size@master
       name: size
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+
   test-node:
     needs: check
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        node: [14, 16]
+        node: [16]
       fail-fast: true
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
-      - run: npm install
-      - run: npx aegir test -t node --cov --bail
+      - uses: actions/cache@v2
+        id: cache
+        if: matrix.os != 'windows-latest'
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+      - run: npm run test:node -- --cov --bail
       - uses: codecov/codecov-action@v1
   test-chrome:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
-      - run: npx aegir test -t browser -t webworker --bail
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+      - run: npm run test:browser -- -t browser -t webworker --bail
   test-firefox:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
-      - run: npx aegir test -t browser -t webworker --bail -- --browser firefox
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+      - run: npm run test:browser -- -t browser -t webworker --bail -- --browser firefox
   test-ts:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
       - run: npm run test:ts
   test-interop:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
-      - run: cd node_modules/interop-libp2p && yarn && LIBP2P_JS=${GITHUB_WORKSPACE}/src/index.js npx aegir test -t node --bail -- --exit
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: actions/cache@v2
+        id: cache
+        env:
+          CACHE_NAME: cache-node-modules
+        with:
+          path: |
+            ~/.cache
+            ~/.npm
+            ./node_modules
+            ./dist
+          key: ${{ runner.os }}-build-${{ env.CACHE_NAME }}-${{ github.event.pull_request.head.sha }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install
+          npm run build
+      - run: npm run test:interop -- --bail -- --exit

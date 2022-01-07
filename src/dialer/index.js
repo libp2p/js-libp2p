@@ -6,15 +6,15 @@ const log = Object.assign(debug('libp2p:dialer'), {
 })
 const errCode = require('err-code')
 const { Multiaddr } = require('multiaddr')
-// @ts-ignore timeout-abourt-controles does not export types
-const TimeoutController = require('timeout-abort-controller')
+const { TimeoutController } = require('timeout-abort-controller')
 const { AbortError } = require('abortable-iterator')
 const { anySignal } = require('any-signal')
-
+// @ts-expect-error setMaxListeners is missing from the types
+const { setMaxListeners } = require('events')
 const DialRequest = require('./dial-request')
 const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 const getPeer = require('../get-peer')
-
+const trackedMap = require('../metrics/tracked-map')
 const { codes } = require('../errors')
 const {
   DIAL_TIMEOUT,
@@ -22,6 +22,10 @@ const {
   MAX_PER_PEER_DIALS,
   MAX_ADDRS_TO_DIAL
 } = require('../constants')
+
+const METRICS_COMPONENT = 'dialler'
+const METRICS_PENDING_DIALS = 'pending-dials'
+const METRICS_PENDING_DIAL_TARGETS = 'pending-dial-targets'
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
@@ -45,14 +49,15 @@ const {
  * @property {number} [maxDialsPerPeer = MAX_PER_PEER_DIALS] - Number of max concurrent dials per peer.
  * @property {number} [dialTimeout = DIAL_TIMEOUT] - How long a dial attempt is allowed to take.
  * @property {Record<string, Resolver>} [resolvers = {}] - multiaddr resolvers to use when dialing
+ * @property {import('../metrics')} [metrics]
  *
  * @typedef DialTarget
  * @property {string} id
  * @property {Multiaddr[]} addrs
  *
  * @typedef PendingDial
- * @property {DialRequest} dialRequest
- * @property {TimeoutController} controller
+ * @property {import('./dial-request')} dialRequest
+ * @property {import('timeout-abort-controller').TimeoutController} controller
  * @property {Promise<Connection>} promise
  * @property {function():void} destroy
  */
@@ -70,7 +75,8 @@ class Dialer {
     maxAddrsToDial = MAX_ADDRS_TO_DIAL,
     dialTimeout = DIAL_TIMEOUT,
     maxDialsPerPeer = MAX_PER_PEER_DIALS,
-    resolvers = {}
+    resolvers = {},
+    metrics
   }) {
     this.transportManager = transportManager
     this.peerStore = peerStore
@@ -80,8 +86,12 @@ class Dialer {
     this.timeout = dialTimeout
     this.maxDialsPerPeer = maxDialsPerPeer
     this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
-    this._pendingDials = new Map()
-    this._pendingDialTargets = new Map()
+
+    /** @type {Map<string, PendingDial>} */
+    this._pendingDials = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIALS, metrics)
+
+    /** @type {Map<string, { resolve: (value: any) => void, reject: (err: Error) => void}>} */
+    this._pendingDialTargets = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, metrics)
 
     for (const [key, value] of Object.entries(resolvers)) {
       Multiaddr.resolvers.set(key, value)
@@ -156,14 +166,16 @@ class Dialer {
       this._pendingDialTargets.set(id, { resolve, reject })
     })
 
-    const dialTarget = await Promise.race([
-      this._createDialTarget(peer),
-      cancellablePromise
-    ])
+    try {
+      const dialTarget = await Promise.race([
+        this._createDialTarget(peer),
+        cancellablePromise
+      ])
 
-    this._pendingDialTargets.delete(id)
-
-    return dialTarget
+      return dialTarget
+    } finally {
+      this._pendingDialTargets.delete(id)
+    }
   }
 
   /**
@@ -240,9 +252,14 @@ class Dialer {
 
     // Combine the timeout signal and options.signal, if provided
     const timeoutController = new TimeoutController(this.timeout)
+
     const signals = [timeoutController.signal]
     options.signal && signals.push(options.signal)
     const signal = anySignal(signals)
+
+    // this signal will potentially be used while dialing lots of
+    // peers so prevent MaxListenersExceededWarning appearing in the console
+    setMaxListeners && setMaxListeners(Infinity, signal)
 
     const pendingDial = {
       dialRequest,
@@ -254,6 +271,7 @@ class Dialer {
       }
     }
     this._pendingDials.set(dialTarget.id, pendingDial)
+
     return pendingDial
   }
 

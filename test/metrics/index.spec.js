@@ -3,9 +3,6 @@
 
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
-
-const { EventEmitter } = require('events')
-
 const { randomBytes } = require('libp2p-crypto')
 const duplexPair = require('it-pair/duplex')
 const pipe = require('it-pipe')
@@ -34,8 +31,7 @@ describe('Metrics', () => {
     const [local, remote] = duplexPair()
     const metrics = new Metrics({
       computeThrottleMaxQueueSize: 1, // compute after every message
-      movingAverageIntervals: [10, 100, 1000],
-      connectionManager: new EventEmitter()
+      movingAverageIntervals: [10, 100, 1000]
     })
 
     metrics.trackStream({
@@ -70,8 +66,7 @@ describe('Metrics', () => {
     const [local, remote] = duplexPair()
     const metrics = new Metrics({
       computeThrottleMaxQueueSize: 1, // compute after every message
-      movingAverageIntervals: [10, 100, 1000],
-      connectionManager: new EventEmitter()
+      movingAverageIntervals: [10, 100, 1000]
     })
 
     metrics.trackStream({
@@ -119,8 +114,7 @@ describe('Metrics', () => {
     const [local2, remote2] = duplexPair()
     const metrics = new Metrics({
       computeThrottleMaxQueueSize: 1, // compute after every message
-      movingAverageIntervals: [10, 100, 1000],
-      connectionManager: new EventEmitter()
+      movingAverageIntervals: [10, 100, 1000]
     })
     const protocol = '/echo/1.0.0'
     metrics.start()
@@ -175,8 +169,7 @@ describe('Metrics', () => {
     const [local, remote] = duplexPair()
     const metrics = new Metrics({
       computeThrottleMaxQueueSize: 1, // compute after every message
-      movingAverageIntervals: [10, 100, 1000],
-      connectionManager: new EventEmitter()
+      movingAverageIntervals: [10, 100, 1000]
     })
     metrics.start()
 
@@ -231,8 +224,7 @@ describe('Metrics', () => {
     }))
 
     const metrics = new Metrics({
-      maxOldPeersRetention: 5, // Only keep track of 5
-      connectionManager: new EventEmitter()
+      maxOldPeersRetention: 5 // Only keep track of 5
     })
 
     // Clone so trackedPeers isn't modified
@@ -261,5 +253,23 @@ describe('Metrics', () => {
     for (const spy of spies) {
       expect(spy).to.have.property('callCount', 1)
     }
+  })
+
+  it('should allow components to track metrics', () => {
+    const metrics = new Metrics({
+      maxOldPeersRetention: 5 // Only keep track of 5
+    })
+
+    expect(metrics.getComponentMetrics()).to.be.empty()
+
+    const component = 'my-component'
+    const metric = 'some-metric'
+    const value = 1
+
+    metrics.updateComponentMetric(component, metric, value)
+
+    expect(metrics.getComponentMetrics()).to.have.lengthOf(1)
+    expect(metrics.getComponentMetrics().get(component)).to.have.lengthOf(1)
+    expect(metrics.getComponentMetrics().get(component).get(metric)).to.equal(value)
   })
 })
