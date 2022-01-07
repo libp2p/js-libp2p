@@ -34,40 +34,25 @@ export class Identify implements IIdentify {
     constructor(p?: IIdentify);
 
     /** Identify protocolVersion. */
-    public protocolVersion?: (string|null);
+    public protocolVersion: string;
 
     /** Identify agentVersion. */
-    public agentVersion?: (string|null);
+    public agentVersion: string;
 
     /** Identify publicKey. */
-    public publicKey?: (Uint8Array|null);
+    public publicKey: Uint8Array;
 
     /** Identify listenAddrs. */
     public listenAddrs: Uint8Array[];
 
     /** Identify observedAddr. */
-    public observedAddr?: (Uint8Array|null);
+    public observedAddr: Uint8Array;
 
     /** Identify protocols. */
     public protocols: string[];
 
     /** Identify signedPeerRecord. */
-    public signedPeerRecord?: (Uint8Array|null);
-
-    /** Identify _protocolVersion. */
-    public _protocolVersion?: "protocolVersion";
-
-    /** Identify _agentVersion. */
-    public _agentVersion?: "agentVersion";
-
-    /** Identify _publicKey. */
-    public _publicKey?: "publicKey";
-
-    /** Identify _observedAddr. */
-    public _observedAddr?: "observedAddr";
-
-    /** Identify _signedPeerRecord. */
-    public _signedPeerRecord?: "signedPeerRecord";
+    public signedPeerRecord: Uint8Array;
 
     /**
      * Encodes the specified Identify message. Does not implicitly {@link Identify.verify|verify} messages.

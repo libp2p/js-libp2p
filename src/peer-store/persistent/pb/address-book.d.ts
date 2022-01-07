@@ -89,10 +89,7 @@ export namespace Addresses {
         public multiaddr: Uint8Array;
 
         /** Address isCertified. */
-        public isCertified?: (boolean|null);
-
-        /** Address _isCertified. */
-        public _isCertified?: "isCertified";
+        public isCertified: boolean;
 
         /**
          * Encodes the specified Address message. Does not implicitly {@link Addresses.Address.verify|verify} messages.

@@ -43,27 +43,27 @@ $root.Identify = (function() {
 
     /**
      * Identify protocolVersion.
-     * @member {string|null|undefined} protocolVersion
+     * @member {string} protocolVersion
      * @memberof Identify
      * @instance
      */
-    Identify.prototype.protocolVersion = null;
+    Identify.prototype.protocolVersion = "";
 
     /**
      * Identify agentVersion.
-     * @member {string|null|undefined} agentVersion
+     * @member {string} agentVersion
      * @memberof Identify
      * @instance
      */
-    Identify.prototype.agentVersion = null;
+    Identify.prototype.agentVersion = "";
 
     /**
      * Identify publicKey.
-     * @member {Uint8Array|null|undefined} publicKey
+     * @member {Uint8Array} publicKey
      * @memberof Identify
      * @instance
      */
-    Identify.prototype.publicKey = null;
+    Identify.prototype.publicKey = $util.newBuffer([]);
 
     /**
      * Identify listenAddrs.
@@ -75,11 +75,11 @@ $root.Identify = (function() {
 
     /**
      * Identify observedAddr.
-     * @member {Uint8Array|null|undefined} observedAddr
+     * @member {Uint8Array} observedAddr
      * @memberof Identify
      * @instance
      */
-    Identify.prototype.observedAddr = null;
+    Identify.prototype.observedAddr = $util.newBuffer([]);
 
     /**
      * Identify protocols.
@@ -91,69 +91,11 @@ $root.Identify = (function() {
 
     /**
      * Identify signedPeerRecord.
-     * @member {Uint8Array|null|undefined} signedPeerRecord
+     * @member {Uint8Array} signedPeerRecord
      * @memberof Identify
      * @instance
      */
-    Identify.prototype.signedPeerRecord = null;
-
-    // OneOf field names bound to virtual getters and setters
-    var $oneOfFields;
-
-    /**
-     * Identify _protocolVersion.
-     * @member {"protocolVersion"|undefined} _protocolVersion
-     * @memberof Identify
-     * @instance
-     */
-    Object.defineProperty(Identify.prototype, "_protocolVersion", {
-        get: $util.oneOfGetter($oneOfFields = ["protocolVersion"]),
-        set: $util.oneOfSetter($oneOfFields)
-    });
-
-    /**
-     * Identify _agentVersion.
-     * @member {"agentVersion"|undefined} _agentVersion
-     * @memberof Identify
-     * @instance
-     */
-    Object.defineProperty(Identify.prototype, "_agentVersion", {
-        get: $util.oneOfGetter($oneOfFields = ["agentVersion"]),
-        set: $util.oneOfSetter($oneOfFields)
-    });
-
-    /**
-     * Identify _publicKey.
-     * @member {"publicKey"|undefined} _publicKey
-     * @memberof Identify
-     * @instance
-     */
-    Object.defineProperty(Identify.prototype, "_publicKey", {
-        get: $util.oneOfGetter($oneOfFields = ["publicKey"]),
-        set: $util.oneOfSetter($oneOfFields)
-    });
-
-    /**
-     * Identify _observedAddr.
-     * @member {"observedAddr"|undefined} _observedAddr
-     * @memberof Identify
-     * @instance
-     */
-    Object.defineProperty(Identify.prototype, "_observedAddr", {
-        get: $util.oneOfGetter($oneOfFields = ["observedAddr"]),
-        set: $util.oneOfSetter($oneOfFields)
-    });
-
-    /**
-     * Identify _signedPeerRecord.
-     * @member {"signedPeerRecord"|undefined} _signedPeerRecord
-     * @memberof Identify
-     * @instance
-     */
-    Object.defineProperty(Identify.prototype, "_signedPeerRecord", {
-        get: $util.oneOfGetter($oneOfFields = ["signedPeerRecord"]),
-        set: $util.oneOfSetter($oneOfFields)
-    });
+    Identify.prototype.signedPeerRecord = $util.newBuffer([]);
 
     /**
      * Encodes the specified Identify message. Does not implicitly {@link Identify.verify|verify} messages.
@@ -314,10 +256,33 @@ $root.Identify = (function() {
             d.listenAddrs = [];
             d.protocols = [];
         }
+        if (o.defaults) {
+            if (o.bytes === String)
+                d.publicKey = "";
+            else {
+                d.publicKey = [];
+                if (o.bytes !== Array)
+                    d.publicKey = $util.newBuffer(d.publicKey);
+            }
+            if (o.bytes === String)
+                d.observedAddr = "";
+            else {
+                d.observedAddr = [];
+                if (o.bytes !== Array)
+                    d.observedAddr = $util.newBuffer(d.observedAddr);
+            }
+            d.protocolVersion = "";
+            d.agentVersion = "";
+            if (o.bytes === String)
+                d.signedPeerRecord = "";
+            else {
+                d.signedPeerRecord = [];
+                if (o.bytes !== Array)
+                    d.signedPeerRecord = $util.newBuffer(d.signedPeerRecord);
+            }
+        }
         if (m.publicKey != null && m.hasOwnProperty("publicKey")) {
             d.publicKey = o.bytes === String ? $util.base64.encode(m.publicKey, 0, m.publicKey.length) : o.bytes === Array ? Array.prototype.slice.call(m.publicKey) : m.publicKey;
-            if (o.oneofs)
-                d._publicKey = "publicKey";
         }
         if (m.listenAddrs && m.listenAddrs.length) {
             d.listenAddrs = [];
@@ -333,23 +298,15 @@ $root.Identify = (function() {
         }
         if (m.observedAddr != null && m.hasOwnProperty("observedAddr")) {
             d.observedAddr = o.bytes === String ? $util.base64.encode(m.observedAddr, 0, m.observedAddr.length) : o.bytes === Array ? Array.prototype.slice.call(m.observedAddr) : m.observedAddr;
-            if (o.oneofs)
-                d._observedAddr = "observedAddr";
         }
         if (m.protocolVersion != null && m.hasOwnProperty("protocolVersion")) {
             d.protocolVersion = m.protocolVersion;
-            if (o.oneofs)
-                d._protocolVersion = "protocolVersion";
         }
         if (m.agentVersion != null && m.hasOwnProperty("agentVersion")) {
             d.agentVersion = m.agentVersion;
-            if (o.oneofs)
-                d._agentVersion = "agentVersion";
         }
         if (m.signedPeerRecord != null && m.hasOwnProperty("signedPeerRecord")) {
             d.signedPeerRecord = o.bytes === String ? $util.base64.encode(m.signedPeerRecord, 0, m.signedPeerRecord.length) : o.bytes === Array ? Array.prototype.slice.call(m.signedPeerRecord) : m.signedPeerRecord;
-            if (o.oneofs)
-                d._signedPeerRecord = "signedPeerRecord";
         }
         return d;
     };

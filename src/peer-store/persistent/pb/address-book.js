@@ -213,25 +213,11 @@ $root.Addresses = (function() {
 
         /**
          * Address isCertified.
-         * @member {boolean|null|undefined} isCertified
+         * @member {boolean} isCertified
          * @memberof Addresses.Address
          * @instance
          */
-        Address.prototype.isCertified = null;
-
-        // OneOf field names bound to virtual getters and setters
-        var $oneOfFields;
-
-        /**
-         * Address _isCertified.
-         * @member {"isCertified"|undefined} _isCertified
-         * @memberof Addresses.Address
-         * @instance
-         */
-        Object.defineProperty(Address.prototype, "_isCertified", {
-            get: $util.oneOfGetter($oneOfFields = ["isCertified"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
+        Address.prototype.isCertified = false;
 
         /**
          * Encodes the specified Address message. Does not implicitly {@link Addresses.Address.verify|verify} messages.
@@ -329,14 +315,13 @@ $root.Addresses = (function() {
                     if (o.bytes !== Array)
                         d.multiaddr = $util.newBuffer(d.multiaddr);
                 }
+                d.isCertified = false;
             }
             if (m.multiaddr != null && m.hasOwnProperty("multiaddr")) {
                 d.multiaddr = o.bytes === String ? $util.base64.encode(m.multiaddr, 0, m.multiaddr.length) : o.bytes === Array ? Array.prototype.slice.call(m.multiaddr) : m.multiaddr;
             }
             if (m.isCertified != null && m.hasOwnProperty("isCertified")) {
                 d.isCertified = m.isCertified;
-                if (o.oneofs)
-                    d._isCertified = "isCertified";
             }
             return d;
         };
