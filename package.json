@@ -74,7 +74,7 @@
     "err-code": "^3.0.1",
     "iso-random-stream": "^2.0.0",
     "multiformats": "^9.4.5",
-    "node-forge": "^0.10.0",
+    "node-forge": "^1.1.0",
     "protobufjs": "^6.11.2",
     "uint8arrays": "^3.0.0"
   },
