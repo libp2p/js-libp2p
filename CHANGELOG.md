@@ -1,3 +1,11 @@
+### [0.22.4](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.3...v0.22.4) (2022-01-08)
+
+
+### Trivial Changes
+
+* change min node support to 16 ([#230](https://github.com/libp2p/js-libp2p-crypto/issues/230)) ([9aabfe6](https://github.com/libp2p/js-libp2p-crypto/commit/9aabfe6c885b132366c2772e834f8396c96081e9)), closes [#221](https://github.com/libp2p/js-libp2p-crypto/issues/221)
+* **deps:** bump node-forge from 0.10.0 to 1.1.0 ([#231](https://github.com/libp2p/js-libp2p-crypto/issues/231)) ([d33eea1](https://github.com/libp2p/js-libp2p-crypto/commit/d33eea1137c538668f1a54b3bc493e5fb4d1c035))
+
 ### [0.22.3](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.2...v0.22.3) (2022-01-08)
 
 
