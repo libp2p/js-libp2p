@@ -497,7 +497,7 @@ const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
-const LevelDatastore = require('datastore-level')
+const { LevelDatastore } = require('datastore-level')
 
 const datastore = new LevelDatastore('path/to/store')
 await datastore.open()
