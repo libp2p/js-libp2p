@@ -64,7 +64,7 @@
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p-utils.git"
   },
-  "license": "(Apache-2.0 OR MIT)",
+  "license": "Apache-2.0 OR MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p-utils/issues"
   },
@@ -87,9 +87,68 @@
     "is-loopback-addr": "^1.0.0",
     "private-ip": "^2.1.1"
   },
-  "contributors": [
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "Alex Potsides <alex@achingbrain.net>",
-    "Jacob Heun <jacobheun@gmail.com>"
-  ]
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer", {
+          "preset": "conventionalcommits",
+          "releaseRules": [{
+            "breaking": true,
+            "release": "major"
+          }, {
+            "revert": true,
+            "release": "patch"
+          }, {
+            "type": "feat",
+            "release": "minor"
+          }, {
+            "type": "fix",
+            "release": "patch"
+          }, {
+            "type": "chore",
+            "release": "patch"
+          }, {
+            "type": "docs",
+            "release": "patch"
+          }, {
+            "type": "test",
+            "release": "patch"
+          }, {
+            "scope": "no-release",
+            "release": false
+          }]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator", {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [{
+              "type": "feat",
+              "section": "Features"
+            }, {
+              "type": "fix",
+              "section": "Bug Fixes"
+            }, {
+              "type": "chore",
+              "section": "Trivial Changes"
+            }, {
+              "type": "docs",
+              "section": "Trivial Changes"
+            }, {
+              "type": "test",
+              "section": "Tests"
+            }]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  }
 }
