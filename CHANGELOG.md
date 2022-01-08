@@ -1,3 +1,10 @@
+### [1.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.0...v1.0.1) (2022-01-08)
+
+
+### Trivial Changes
+
+* add semantic release config ([#155](https://github.com/libp2p/js-libp2p-tcp/issues/155)) ([def9ad7](https://github.com/libp2p/js-libp2p-tcp/commit/def9ad759d39da21639358b06bd847ab30b3cb7b))
+
 ## [0.17.2](https://github.com/libp2p/js-libp2p-tcp/compare/v0.17.1...v0.17.2) (2021-09-03)
 
 
@@ -448,6 +455,3 @@
 
 <a name="0.1.0"></a>
 # 0.1.0 (2015-09-16)
-
-
-
