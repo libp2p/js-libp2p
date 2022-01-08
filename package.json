@@ -60,27 +60,68 @@
     "err-code": "^3.0.1",
     "stream-to-it": "^0.2.2"
   },
-  "contributors": [
-    "David Dias <daviddias.p@gmail.com>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "Stephen Whitmore <stephen.whitmore@gmail.com>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "Alex Potsides <alex@achingbrain.net>",
-    "Richard Littauer <richard.littauer@gmail.com>",
-    "Tom White <tomtinkerer@gmail.com>",
-    "Alan Shaw <alan@tableflip.io>",
-    "Nazar Hussain <nazarhussain@gmail.com>",
-    "Pedro Teixeira <i@pgte.me>",
-    "Prashanth Chandra <coolshanth94@gmail.com>",
-    "Ryan Mehta <ryan.mehta@gmail.com>",
-    "Linus Unnebäck <linus@folkdatorn.se>",
-    "Cayman <caymannava@gmail.com>",
-    "Diogo Silva <fsdiogo@gmail.com>",
-    "Dmitriy Ryajov <dryajov@gmail.com>",
-    "Drew Stone <drewstone329@gmail.com>",
-    "Evan Schwartz <evan.mark.schwartz@gmail.com>",
-    "João Antunes <j.goncalo.antunes@gmail.com>",
-    "Mikeal Rogers <mikeal.rogers@gmail.com>"
-  ]
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer", {
+          "preset": "conventionalcommits",
+          "releaseRules": [{
+            "breaking": true,
+            "release": "major"
+          }, {
+            "revert": true,
+            "release": "patch"
+          }, {
+            "type": "feat",
+            "release": "minor"
+          }, {
+            "type": "fix",
+            "release": "patch"
+          }, {
+            "type": "chore",
+            "release": "patch"
+          }, {
+            "type": "docs",
+            "release": "patch"
+          }, {
+            "type": "test",
+            "release": "patch"
+          }, {
+            "scope": "no-release",
+            "release": false
+          }]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator", {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [{
+              "type": "feat",
+              "section": "Features"
+            }, {
+              "type": "fix",
+              "section": "Bug Fixes"
+            }, {
+              "type": "chore",
+              "section": "Trivial Changes"
+            }, {
+              "type": "docs",
+              "section": "Trivial Changes"
+            }, {
+              "type": "test",
+              "section": "Tests"
+            }]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  }
 }
