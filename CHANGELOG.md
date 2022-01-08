@@ -1,3 +1,10 @@
+### [1.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.1...v1.0.2) (2022-01-08)
+
+
+### Trivial Changes
+
+* add dependabot ([#154](https://github.com/libp2p/js-libp2p-tcp/issues/154)) ([02974b3](https://github.com/libp2p/js-libp2p-tcp/commit/02974b3e41a1618a9ffb8e4a03edecc1c7fcd1f5))
+
 ### [1.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.0...v1.0.1) (2022-01-08)
 
 
