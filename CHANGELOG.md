@@ -1,3 +1,13 @@
+### [0.22.3](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.2...v0.22.3) (2022-01-08)
+
+
+### Trivial Changes
+
+* add semantic release config ([#232](https://github.com/libp2p/js-libp2p-crypto/issues/232)) ([d1b9961](https://github.com/libp2p/js-libp2p-crypto/commit/d1b99617da775ffed7a7e1a20de740338c0c6159))
+* uncomment renderer build ([#226](https://github.com/libp2p/js-libp2p-crypto/issues/226)) ([cecad66](https://github.com/libp2p/js-libp2p-crypto/commit/cecad669aa7dda5e5eed178099ae0191a500e543))
+* update build ([#227](https://github.com/libp2p/js-libp2p-crypto/issues/227)) ([1642c1b](https://github.com/libp2p/js-libp2p-crypto/commit/1642c1b4386a6d28ed945ffb96ce68ef8a2aed35))
+* update build ([#229](https://github.com/libp2p/js-libp2p-crypto/issues/229)) ([3544d9c](https://github.com/libp2p/js-libp2p-crypto/commit/3544d9c63a7fba0b39e7cbf23bc44b4e196ad52b))
+
 # [0.22.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.21.0...v0.22.0) (2022-01-04)
 
 
@@ -485,6 +495,3 @@ chore: update deps
 ### Features
 
 * **keys:** implement generateKeyPairFromSeed for ed25519  ([e5b7c1f](https://github.com/libp2p/js-libp2p-crypto/commit/e5b7c1f))
-
-
-
