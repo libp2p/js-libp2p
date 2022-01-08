@@ -1,3 +1,10 @@
+### [1.0.2](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.1...v1.0.2) (2022-01-08)
+
+
+### Trivial Changes
+
+* add semantic release config ([#22](https://github.com/libp2p/js-libp2p-utils/issues/22)) ([5fcf8c7](https://github.com/libp2p/js-libp2p-utils/commit/5fcf8c7f57864e4e92f6606656cf3ea1f214f0c4))
+
 ## [0.4.1](https://github.com/libp2p/js-libp2p-utils/compare/v0.4.0...v0.4.1) (2021-07-08)
 
 
@@ -117,6 +124,3 @@
 ### Features
 
 * ip port to multiaddr ([#1](https://github.com/libp2p/js-libp2p-utils/issues/1)) ([426b421](https://github.com/libp2p/js-libp2p-utils/commit/426b421))
-
-
-
