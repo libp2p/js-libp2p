@@ -102,7 +102,7 @@
     "it-length-prefixed": "^5.0.2",
     "it-map": "^1.0.4",
     "it-merge": "^1.0.0",
-    "it-pipe": "^1.1.0",
+    "it-pipe": "^2.0.0",
     "it-take": "^1.0.0",
     "libp2p-crypto": "^0.21.0",
     "libp2p-interfaces": "^2.0.1",
