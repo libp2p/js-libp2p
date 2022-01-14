@@ -7,7 +7,7 @@ const { randomBytes } = require('iso-random-stream')
 const randomInt = require('random-int')
 const { tap, take, collect, consume, map } = require('streaming-iterables')
 const defer = require('p-defer')
-const uint8ArrayConcat = require('uint8arrays/concat')
+const { concat: uint8ArrayConcat } = require('uint8arrays/concat')
 const cborg = require('cborg')
 
 const createStream = require('../src/stream')

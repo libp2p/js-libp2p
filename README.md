@@ -5,7 +5,7 @@
 [![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
 [![](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-mplex.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-mplex)
-[![](https://img.shields.io/travis/libp2p/js-libp2p-mplex.svg?style=flat-square)](https://travis-ci.com/libp2p/js-libp2p-mplex)
+[![Build Status](https://github.com/libp2p/js-libp2p-mplex/actions/workflows/js-test-and-release.yml/badge.svg?branch=main)](https://github.com/libp2p/js-libp2p-mplex/actions/workflows/js-test-and-release.yml)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-mplex.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-mplex)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 ![](https://img.shields.io/badge/npm-%3E%3D6.0.0-orange.svg?style=flat-square)
@@ -14,10 +14,6 @@
 > JavaScript implementation of [mplex](https://github.com/libp2p/specs/tree/master/mplex).
 
 [![](https://github.com/libp2p/interface-stream-muxer/raw/master/img/badge.png)](https://github.com/libp2p/interface-stream-muxer)
-
-## Lead Maintainer
-
-[Vasco Santos](https://github.com/vasco-santos)
 
 ## Install
 
