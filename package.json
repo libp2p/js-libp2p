@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/utils",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "homepage": "https://github.com/libp2p/js-libp2p-utils#readme",
   "license": "Apache-2.0 OR MIT",

@@ -1,3 +1,10 @@
+### [1.0.3](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.2...v1.0.3) (2022-01-14)
+
+
+### Trivial Changes
+
+* project updates ([#23](https://github.com/libp2p/js-libp2p-utils/issues/23)) ([cb7ea61](https://github.com/libp2p/js-libp2p-utils/commit/cb7ea61e6df7a721863ad8fba7c73d376b2c3ab8))
+
 ### [1.0.2](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.1...v1.0.2) (2022-01-08)
 
 
