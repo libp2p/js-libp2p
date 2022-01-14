@@ -1,3 +1,10 @@
+### [0.10.6](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.5...v0.10.6) (2022-01-14)
+
+
+### Trivial Changes
+
+* switch to unified ci ([#151](https://github.com/libp2p/js-libp2p-mplex/issues/151)) ([f14c349](https://github.com/libp2p/js-libp2p-mplex/commit/f14c34974c8b298179782f5ce3de93fb439fd764))
+
 ## [0.10.5](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.4...v0.10.5) (2021-12-07)
 
 
@@ -311,6 +318,3 @@ Signed-off-by: Alan Shaw <alan.shaw@protocol.ai>
 
 <a name="0.1.0"></a>
 # 0.1.0 (2016-03-07)
-
-
-
