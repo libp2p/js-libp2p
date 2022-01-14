@@ -1,7 +1,6 @@
 'use strict'
 
 const abortable = require('abortable-iterator')
-const AbortController = require('abort-controller')
 const log = require('debug')('libp2p:mplex:stream')
 const pushable = require('it-pushable')
 const BufferList = require('bl/BufferList')

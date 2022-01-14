@@ -132,7 +132,6 @@
     "uint8arrays": "^3.0.0"
   },
   "dependencies": {
-    "abort-controller": "^3.0.0",
     "abortable-iterator": "^3.0.2",
     "bl": "^5.0.0",
     "debug": "^4.3.1",

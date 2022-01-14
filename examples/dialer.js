@@ -3,7 +3,6 @@
 
 const tcp = require('net')
 const pipe = require('it-pipe')
-const AbortController = require('abort-controller')
 const { toIterable } = require('./util')
 const Mplex = require('../src')
 
