@@ -1,3 +1,10 @@
+### [0.10.7](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.6...v0.10.7) (2022-01-14)
+
+
+### Bug Fixes
+
+* remove abort controller dep ([#152](https://github.com/libp2p/js-libp2p-mplex/issues/152)) ([96943cb](https://github.com/libp2p/js-libp2p-mplex/commit/96943cb68bc01efffd7045f0c5a9a3ed978fbf0e))
+
 ### [0.10.6](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.5...v0.10.6) (2022-01-14)
 
 
