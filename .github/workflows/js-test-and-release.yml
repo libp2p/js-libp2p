@@ -147,7 +147,7 @@ jobs:
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - uses: ipfs/aegir/actions/docker-login@master
         with:
-          docker-token: ${{ secrets.DOCKER_USERNAME }}
+          docker-token: ${{ secrets.DOCKER_TOKEN }}
           docker-username: ${{ secrets.DOCKER_USERNAME }}
       - run: npm run --if-present release
         env:
