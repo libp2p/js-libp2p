@@ -2,9 +2,43 @@
   "name": "@libp2p/utils",
   "version": "1.0.2",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
-  "leadMaintainer": "Vasco Santos <santos.vasco10@gmail.com>",
+  "homepage": "https://github.com/libp2p/js-libp2p-utils#readme",
+  "license": "Apache-2.0 OR MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-utils.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-utils/issues"
+  },
   "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
   "exports": {
+    ".": {
+      "import": "./dist/src/index.js"
+    },
     "./multiaddr/is-loopback": {
       "import": "./dist/src/multiaddr/is-loopback.js",
       "types": "./dist/src/multiaddr/is-loopback.d.ts"
@@ -30,62 +64,11 @@
       "types": "./dist/src/stream-to-ma-connr.d.ts"
     }
   },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
     }
-  },
-  "files": [
-    "src",
-    "dist/src"
-  ],
-  "scripts": {
-    "lint": "aegir lint",
-    "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
-    "build": "tsc",
-    "pretest": "npm run build",
-    "test": "aegir test -f ./dist/test/**/*.js",
-    "test:chrome": "npm run test -- -t browser",
-    "test:chrome-webworker": "npm run test -- -t webworker",
-    "test:firefox": "npm run test -- -t browser -- --browser firefox",
-    "test:firefox-webworker": "npm run test -- -t webworker -- --browser firefox",
-    "test:node": "npm run test -- -t node --cov",
-    "test:electron-main": "npm run test -- -t electron-main",
-    "release": "semantic-release"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p-utils.git"
-  },
-  "license": "Apache-2.0 OR MIT",
-  "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-utils/issues"
-  },
-  "homepage": "https://github.com/libp2p/js-libp2p-utils#readme",
-  "devDependencies": {
-    "@libp2p/interfaces": "^0.2.0",
-    "@types/debug": "^4.1.5",
-    "aegir": "^36.1.2",
-    "it-pair": "^1.0.0",
-    "it-pipe": "^1.1.0",
-    "streaming-iterables": "^6.0.0",
-    "util": "^0.12.3"
-  },
-  "dependencies": {
-    "@achingbrain/ip-address": "^8.1.0",
-    "@multiformats/multiaddr": "^10.1.1",
-    "abortable-iterator": "^3.0.0",
-    "debug": "^4.3.0",
-    "err-code": "^3.0.1",
-    "is-loopback-addr": "^1.0.0",
-    "private-ip": "^2.1.1"
   },
   "release": {
     "branches": [
@@ -167,5 +150,37 @@
       "@semantic-release/github",
       "@semantic-release/git"
     ]
+  },
+  "scripts": {
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
+    "build": "tsc",
+    "pretest": "npm run build",
+    "test": "aegir test -f ./dist/test/**/*.js",
+    "test:chrome": "npm run test -- -t browser",
+    "test:chrome-webworker": "npm run test -- -t webworker",
+    "test:firefox": "npm run test -- -t browser -- --browser firefox",
+    "test:firefox-webworker": "npm run test -- -t webworker -- --browser firefox",
+    "test:node": "npm run test -- -t node --cov",
+    "test:electron-main": "npm run test -- -t electron-main",
+    "release": "semantic-release"
+  },
+  "dependencies": {
+    "@achingbrain/ip-address": "^8.1.0",
+    "@multiformats/multiaddr": "^10.1.1",
+    "abortable-iterator": "^3.0.0",
+    "debug": "^4.3.0",
+    "err-code": "^3.0.1",
+    "is-loopback-addr": "^1.0.0",
+    "private-ip": "^2.1.1"
+  },
+  "devDependencies": {
+    "@libp2p/interfaces": "^0.2.0",
+    "@types/debug": "^4.1.5",
+    "aegir": "^36.1.2",
+    "it-pair": "^1.0.0",
+    "it-pipe": "^1.1.0",
+    "streaming-iterables": "^6.0.0",
+    "util": "^0.12.3"
   }
 }
