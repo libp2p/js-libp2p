@@ -1,22 +1,39 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/utils/chai.js'
-// @ts-expect-error no types
-import pair from 'it-pair'
-import pipe from 'it-pipe'
+import { pair } from 'it-pair'
+import { pipe } from 'it-pipe'
 import { collect } from 'streaming-iterables'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { streamToMaConnection } from '../src/stream-to-ma-conn.js'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import type { MuxedStream } from '@libp2p/interfaces/stream-muxer'
+import type { Duplex } from 'it-stream-types'
+
+function toMuxedStream (stream: Duplex<Uint8Array>) {
+  const muxedStream: MuxedStream = {
+    ...stream,
+    close: () => {},
+    abort: () => {},
+    reset: () => {},
+    timeline: {
+      open: Date.now()
+    },
+    id: `muxed-stream-${Math.random()}`
+  }
+
+  return muxedStream
+}
 
 describe('Convert stream into a multiaddr connection', () => {
   const localAddr = new Multiaddr('/ip4/101.45.75.219/tcp/6000')
   const remoteAddr = new Multiaddr('/ip4/100.46.74.201/tcp/6002')
 
   it('converts a stream and adds the provided metadata', async () => {
-    const stream = pair()
+    const stream = pair<Uint8Array>()
 
     const maConn = streamToMaConnection({
-      stream,
+      stream: toMuxedStream(stream),
       localAddr,
       remoteAddr
     })
@@ -35,14 +52,14 @@ describe('Convert stream into a multiaddr connection', () => {
   })
 
   it('can stream data over the multiaddr connection', async () => {
-    const stream = pair()
+    const stream = pair<Uint8Array>()
     const maConn = streamToMaConnection({
-      stream,
+      stream: toMuxedStream(stream),
       localAddr,
       remoteAddr
     })
 
-    const data = 'hey'
+    const data = uint8ArrayFromString('hey')
     const streamData = await pipe(
       [data],
       maConn,

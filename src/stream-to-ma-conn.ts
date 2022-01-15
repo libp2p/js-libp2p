@@ -1,4 +1,4 @@
-import { source as abortable } from 'abortable-iterator'
+import { abortableSource } from 'abortable-iterator'
 import debug from 'debug'
 import type { MuxedStream } from '@libp2p/interfaces/stream-muxer'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -36,7 +36,7 @@ interface StreamOptions {
 }
 
 interface StreamProperties {
-  stream: MuxedStream<Uint8Array>
+  stream: MuxedStream
   remoteAddr: Multiaddr
   localAddr: Multiaddr
 }
@@ -51,7 +51,7 @@ export function streamToMaConnection (props: StreamProperties, options: StreamOp
   const maConn: MultiaddrConnection = {
     async sink (source) {
       if (options.signal != null) {
-        source = abortable(source, options.signal)
+        source = abortableSource(source, options.signal)
       }
 
       try {
@@ -67,7 +67,7 @@ export function streamToMaConnection (props: StreamProperties, options: StreamOp
         }
       }
     },
-    source: (options.signal != null) ? abortable(source, options.signal) : source,
+    source: (options.signal != null) ? abortableSource(source, options.signal) : source,
     conn: stream,
     localAddr,
     remoteAddr,

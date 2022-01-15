@@ -1,5 +1,4 @@
-// @ts-expect-error is-loopback-addr does not publish types
-import isLoopbackAddr from 'is-loopback-addr'
+import { isLoopbackAddr } from 'is-loopback-addr'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**

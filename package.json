@@ -172,18 +172,18 @@
   "dependencies": {
     "@achingbrain/ip-address": "^8.1.0",
     "@multiformats/multiaddr": "^10.1.1",
-    "abortable-iterator": "^3.0.0",
+    "abortable-iterator": "^4.0.2",
     "debug": "^4.3.0",
     "err-code": "^3.0.1",
-    "is-loopback-addr": "^1.0.0",
+    "is-loopback-addr": "^2.0.1",
     "private-ip": "^2.1.1"
   },
   "devDependencies": {
-    "@libp2p/interfaces": "^0.2.0",
+    "@libp2p/interfaces": "^1.0.3",
     "@types/debug": "^4.1.5",
     "aegir": "^36.1.2",
-    "it-pair": "^1.0.0",
-    "it-pipe": "^1.1.0",
+    "it-pair": "^2.0.2",
+    "it-pipe": "^2.0.2",
     "streaming-iterables": "^6.0.0",
     "util": "^0.12.3"
   }
