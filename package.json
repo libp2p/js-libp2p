@@ -1,6 +1,6 @@
 {
   "name": "libp2p-kad-dht",
-  "version": "0.28.1",
+  "version": "0.28.2",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-kad-dht#readme",
@@ -195,5 +195,26 @@
   },
   "browser": {
     "./src/routing-table/generated-prefix-list.json": "./src/routing-table/generated-prefix-list-browser.json"
-  }
+  },
+  "contributors": [
+    "Vasco Santos <vasco.santos@moxy.studio>",
+    "achingbrain <alex@achingbrain.net>",
+    "David Dias <daviddias.p@gmail.com>",
+    "Jacob Heun <jacobheun@gmail.com>",
+    "kumavis <kumavis@users.noreply.github.com>",
+    "dirkmc <dirkmdev@gmail.com>",
+    "Alan Shaw <alan.shaw@protocol.ai>",
+    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
+    "Josh Field <joshfield999@gmail.com>",
+    "Hugo Dias <hugomrdias@gmail.com>",
+    "Blake Byrnes <blakebyrnes@gmail.com>",
+    "Richard Schneider <makaretu@gmail.com>",
+    "John Hiesey <jhiesey@cs.stanford.edu>",
+    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
+    "Lars Gierth <larsg@systemli.org>",
+    "Marcus Bernales <mboperator@gmail.com>",
+    "Pedro Teixeira <i@pgte.me>",
+    "Qmstream <51881352+Qmstream@users.noreply.github.com>",
+    "Thomas Eizinger <thomas@eizinger.io>"
+  ]
 }
