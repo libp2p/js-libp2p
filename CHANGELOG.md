@@ -1,3 +1,10 @@
+### [1.0.5](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.4...v1.0.5) (2022-01-15)
+
+
+### Bug Fixes
+
+* update it-* deps to typed versions ([#30](https://github.com/libp2p/js-libp2p-utils/issues/30)) ([b65ae5c](https://github.com/libp2p/js-libp2p-utils/commit/b65ae5c813efdc20ac11a13f349dc914ffc64c48))
+
 ### [1.0.4](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.3...v1.0.4) (2022-01-15)
 
 
