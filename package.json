@@ -2,57 +2,161 @@
   "name": "libp2p-floodsub",
   "version": "0.29.0",
   "description": "libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
-  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-floodsub#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-floodsub.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-floodsub/issues"
+  },
+  "keywords": [
+    "IPFS",
+    "flood",
+    "flooding",
+    "gossip",
+    "libp2p",
+    "pubsub"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
   "main": "src/index.js",
   "types": "dist/src/index.d.ts",
-  "scripts": {
-    "lint": "aegir ts -p check && aegir lint",
-    "test": "aegir test",
-    "test:node": "aegir test -t node",
-    "test:browser": "aegir test -t browser",
-    "build": "aegir build",
-    "docs": "aegir-docs",
-    "release": "aegir release --docs",
-    "release-minor": "aegir release --type minor --docs",
-    "release-major": "aegir release --type major --docs",
-    "coverage": "aegir coverage",
-    "coverage-publish": "aegir coverage --provider coveralls"
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*"
+      ]
+    }
   },
   "files": [
     "src",
     "dist"
   ],
-  "pre-push": [
-    "lint"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p-floodsub.git"
+  "eslintConfig": {
+    "extends": "ipfs"
   },
-  "keywords": [
-    "IPFS",
-    "libp2p",
-    "pubsub",
-    "gossip",
-    "flood",
-    "flooding"
-  ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-floodsub/issues"
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "chore",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
   },
-  "homepage": "https://github.com/libp2p/js-libp2p-floodsub#readme",
+  "scripts": {
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "npm run test -- -t browser --cov",
+    "test:chrome-webworker": "npm run test -- -t webworker",
+    "test:firefox": "npm run test -- -t browser -- --browser firefox",
+    "test:firefox-webworker": "npm run test -- -t webworker -- --browser firefox",
+    "test:node": "npm run test -- -t node --cov",
+    "test:electron-main": "npm run test -- -t electron-main",
+    "release": "semantic-release"
+  },
+  "dependencies": {
+    "debug": "^4.2.0",
+    "libp2p-interfaces": "^4.0.5",
+    "time-cache": "^0.3.0",
+    "uint8arrays": "^3.0.0"
+  },
   "devDependencies": {
     "@chainsafe/libp2p-noise": "^5.0.0",
     "@types/debug": "^4.1.5",
-    "aegir": "^36.0.2",
+    "aegir": "^36.1.1",
     "benchmark": "^2.1.4",
     "buffer": "^6.0.3",
     "chai": "^4.3.4",
     "ipfs-utils": "^9.0.2",
     "it-pair": "^1.0.0",
     "libp2p": "libp2p/js-libp2p#feat/async-peerstore",
-    "libp2p-interfaces-compliance-tests": "^4.0.2",
+    "libp2p-interfaces-compliance-tests": "^4.0.7",
     "libp2p-mplex": "^0.10.3",
     "libp2p-websockets": "^0.16.0",
     "multiaddr": "^10.0.0",
@@ -62,33 +166,5 @@
     "peer-id": "^0.16.0",
     "sinon": "^12.0.1",
     "util": "^0.12.3"
-  },
-  "dependencies": {
-    "debug": "^4.2.0",
-    "libp2p-interfaces": "^4.0.2",
-    "time-cache": "^0.3.0",
-    "uint8arrays": "^3.0.0"
-  },
-  "contributors": [
-    "David Dias <daviddias.p@gmail.com>",
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "Alex Potsides <alex@achingbrain.net>",
-    "dirkmc <dirk@mccormick.cx>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "Haad <haadcode@users.noreply.github.com>",
-    "Cayman <caymannava@gmail.com>",
-    "Gavin McDermott <gavinmcdermott@gmail.com>",
-    "Pedro Teixeira <i@pgte.me>",
-    "Richard Schneider <makaretu@gmail.com>",
-    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
-    "Hugo Dias <hugomrdias@gmail.com>",
-    "Dmitriy Ryajov <dryajov@gmail.com>",
-    "Mikerah <mikerah14@gmail.com>",
-    "Yusef Napora <yusef@napora.org>",
-    "bruinxs <bruinxs@users.noreply.github.com>",
-    "kumavis <kumavis@users.noreply.github.com>",
-    "wanderer <mjbecze@gmail.com>",
-    "Alan Shaw <alan.shaw@protocol.ai>"
-  ]
+  }
 }
