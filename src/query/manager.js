@@ -1,6 +1,5 @@
 'use strict'
 
-const { AbortController } = require('native-abort-controller')
 const { TimeoutController } = require('timeout-abort-controller')
 const { anySignal } = require('any-signal')
 const {

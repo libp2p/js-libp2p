@@ -143,7 +143,7 @@
     "dep-check": "aegir dep-check"
   },
   "dependencies": {
-    "any-signal": "^2.1.2",
+    "any-signal": "^3.0.0",
     "datastore-core": "^6.0.7",
     "debug": "^4.3.1",
     "err-code": "^3.0.0",
@@ -165,7 +165,6 @@
     "libp2p-record": "^0.10.4",
     "multiaddr": "^10.0.0",
     "multiformats": "^9.4.5",
-    "native-abort-controller": "^1.0.4",
     "p-defer": "^3.0.0",
     "p-map": "^4.0.0",
     "p-queue": "^6.6.2",
@@ -173,7 +172,7 @@
     "private-ip": "^2.3.3",
     "protobufjs": "^6.10.2",
     "streaming-iterables": "^6.0.0",
-    "timeout-abort-controller": "^2.0.0",
+    "timeout-abort-controller": "^3.0.0",
     "uint8arrays": "^3.0.0",
     "varint": "^6.0.0"
   },

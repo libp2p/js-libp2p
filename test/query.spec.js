@@ -8,7 +8,6 @@ const { QueryManager } = require('../src/query/manager')
 const createPeerId = require('./utils/create-peer-id')
 const all = require('it-all')
 const drain = require('it-drain')
-const { AbortController, AbortSignal } = require('native-abort-controller')
 const { sortClosestPeers } = require('./utils/sort-closest-peers')
 const { convertBuffer } = require('../src/utils')
 const {
