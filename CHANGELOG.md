@@ -1,3 +1,10 @@
+### [0.22.5](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.4...v0.22.5) (2022-01-15)
+
+
+### Trivial Changes
+
+* update project config ([#237](https://github.com/libp2p/js-libp2p-crypto/issues/237)) ([0f28984](https://github.com/libp2p/js-libp2p-crypto/commit/0f28984dee75d446d03911e271d242f1dbc2e8f9))
+
 ### [0.22.4](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.3...v0.22.4) (2022-01-08)
 
 
