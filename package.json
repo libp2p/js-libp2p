@@ -2,8 +2,129 @@
   "name": "libp2p-kad-dht",
   "version": "0.28.1",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
-  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-kad-dht#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-kad-dht.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-kad-dht/issues"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
   "main": "src/index.js",
+  "types": "dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "eslintConfig": {
+    "extends": "ipfs",
+    "ignorePatterns": [
+      "src/message/dht.d.ts"
+    ]
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "chore",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
   "scripts": {
     "prepare": "npm run build",
     "lint": "aegir ts -p check && aegir lint",
@@ -21,32 +142,6 @@
     "sim": "node test/simulation/index.js",
     "dep-check": "aegir dep-check"
   },
-  "files": [
-    "src",
-    "dist"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/libp2p/js-libp2p-kad-dht.git"
-  },
-  "keywords": [
-    "IPFS"
-  ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-kad-dht/issues"
-  },
-  "engines": {
-    "node": ">=15.0.0"
-  },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "ignorePatterns": [
-      "src/message/dht.d.ts"
-    ]
-  },
-  "homepage": "https://github.com/libp2p/js-libp2p-kad-dht",
-  "types": "dist/src/index.d.ts",
   "dependencies": {
     "any-signal": "^2.1.2",
     "datastore-core": "^6.0.7",
@@ -99,27 +194,6 @@
     "sinon": "^12.0.1",
     "which": "^2.0.2"
   },
-  "contributors": [
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "achingbrain <alex@achingbrain.net>",
-    "David Dias <daviddias.p@gmail.com>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "kumavis <kumavis@users.noreply.github.com>",
-    "dirkmc <dirkmdev@gmail.com>",
-    "Alan Shaw <alan.shaw@protocol.ai>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "Josh Field <joshfield999@gmail.com>",
-    "Hugo Dias <hugomrdias@gmail.com>",
-    "Blake Byrnes <blakebyrnes@gmail.com>",
-    "Richard Schneider <makaretu@gmail.com>",
-    "John Hiesey <jhiesey@cs.stanford.edu>",
-    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
-    "Lars Gierth <larsg@systemli.org>",
-    "Marcus Bernales <mboperator@gmail.com>",
-    "Pedro Teixeira <i@pgte.me>",
-    "Qmstream <51881352+Qmstream@users.noreply.github.com>",
-    "Thomas Eizinger <thomas@eizinger.io>"
-  ],
   "browser": {
     "./src/routing-table/generated-prefix-list.json": "./src/routing-table/generated-prefix-list-browser.json"
   }
