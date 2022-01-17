@@ -1,3 +1,12 @@
+## [0.28.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.28.2...v0.28.3) (2022-01-17)
+
+
+### Bug Fixes
+
+* catch not found errors ([#291](https://github.com/libp2p/js-libp2p-kad-dht/issues/291)) ([f0a4307](https://github.com/libp2p/js-libp2p-kad-dht/commit/f0a430731d5b026d80495ec1c8fc457d77c29451))
+
+
+
 ## [0.28.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.28.1...v0.28.2) (2022-01-15)
 
 
