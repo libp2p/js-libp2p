@@ -102,6 +102,10 @@ class PeerStoreKeyBook {
       const peer = await this._store.load(peerId)
 
       return peer.pubKey
+    } catch (/** @type {any} */ err) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
+      }
     } finally {
       log('get release write lock')
       release()
