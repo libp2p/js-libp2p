@@ -115,6 +115,10 @@ class PeerStoreAddressBook {
       const peer = await this._store.load(peerId)
 
       return peer.peerRecordEnvelope
+    } catch (/** @type {any} */ err) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
+      }
     } finally {
       log('getRawEnvelope release read lock')
       release()
