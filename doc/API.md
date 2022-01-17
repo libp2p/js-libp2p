@@ -3,6 +3,7 @@
 * [Static Functions](#static-functions)
   * [`create`](#create)
 * [Instance Methods](#libp2p-instance-methods)
+  * [`loadkeychain`](#loadkeychain)
   * [`start`](#start)
   * [`stop`](#stop)
   * [`dial`](#dial)
