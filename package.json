@@ -186,7 +186,7 @@
     "it-filter": "^1.0.3",
     "it-last": "^1.0.6",
     "it-pair": "^1.0.0",
-    "libp2p": "libp2p/js-libp2p#feat/async-peerstore",
+    "libp2p": "next",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "p-retry": "^4.2.0",
