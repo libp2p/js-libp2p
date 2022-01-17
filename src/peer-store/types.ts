@@ -230,9 +230,12 @@ export interface PeerStore {
 
 export interface Store {
   has: (peerId: PeerId) => Promise<boolean>
-  save: (peer: Peer) => Promise<void>
+  save: (peer: Peer) => Promise<Peer>
   load: (peerId: PeerId) => Promise<Peer>
-  merge: (peerId: PeerId, data: Partial<Peer>) => Promise<void>
+  merge: (peerId: PeerId, data: Partial<Peer>) => Promise<Peer>
+  mergeOrCreate: (peerId: PeerId, data: Partial<Peer>) => Promise<Peer>
+  patch: (peerId: PeerId, data: Partial<Peer>) => Promise<Peer>
+  patchOrCreate: (peerId: PeerId, data: Partial<Peer>) => Promise<Peer>
   all: () => AsyncIterable<Peer>
 
   lock: {

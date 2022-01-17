@@ -6,13 +6,12 @@ const errcode = require('err-code')
 const { codes } = require('../errors')
 const { Key } = require('interface-datastore/key')
 const { base32 } = require('multiformats/bases/base32')
-const map = require('it-map')
-const all = require('it-all')
 const { keys: { unmarshalPublicKey, marshalPublicKey } } = require('libp2p-crypto')
 const { Multiaddr } = require('multiaddr')
 const { Peer: PeerPB } = require('./pb/peer')
 // @ts-expect-error no types
 const mortice = require('mortice')
+const { equals: uint8arrayEquals } = require('uint8arrays/equals')
 
 const log = Object.assign(debug('libp2p:peer-store:store'), {
   error: debug('libp2p:peer-store:store:err')
@@ -70,17 +69,6 @@ class PersistentStore {
    * @returns {Promise<import('./types').Peer>} peer
    */
   async load (peerId) {
-    const dsKey = this._peerIdToDatastoreKey(peerId)
-
-    if (!(await this._datastore.has(dsKey))) {
-      return {
-        id: peerId,
-        addresses: [],
-        protocols: [],
-        metadata: new Map()
-      }
-    }
-
     const buf = await this._datastore.get(this._peerIdToDatastoreKey(peerId))
     const peer = PeerPB.decode(buf)
     const pubKey = peer.pubKey ? unmarshalPublicKey(peer.pubKey) : peerId.pubKey
@@ -107,17 +95,71 @@ class PersistentStore {
    * @param {Peer} peer
    */
   async save (peer) {
+    if (peer.pubKey != null && peer.id.pubKey != null && !uint8arrayEquals(peer.pubKey.bytes, peer.id.pubKey.bytes)) {
+      log.error('peer publicKey bytes do not match peer id publicKey bytes')
+      throw errcode(new Error('publicKey bytes do not match peer id publicKey bytes'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     const buf = PeerPB.encode({
-      ...peer,
-      pubKey: peer.pubKey ? marshalPublicKey(peer.pubKey) : undefined,
-      addresses: peer.addresses.map(({ multiaddr, isCertified }) => ({
+      addresses: peer.addresses.sort((a, b) => {
+        return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
+      }).map(({ multiaddr, isCertified }) => ({
         multiaddr: multiaddr.bytes,
         isCertified
       })),
-      metadata: await all(map(peer.metadata.entries(), ([key, value]) => ({ key, value })))
+      protocols: peer.protocols.sort(),
+      pubKey: peer.pubKey ? marshalPublicKey(peer.pubKey) : undefined,
+      metadata: [...peer.metadata.keys()].sort().map(key => ({ key, value: peer.metadata.get(key) })),
+      peerRecordEnvelope: peer.peerRecordEnvelope
     }).finish()
 
     await this._datastore.put(this._peerIdToDatastoreKey(peer.id), buf)
+
+    return this.load(peer.id)
+  }
+
+  /**
+   * @param {PeerId} peerId
+   * @param {Partial<Peer>} data
+   */
+  async patch (peerId, data) {
+    const peer = await this.load(peerId)
+
+    return await this._patch(peerId, data, peer)
+  }
+
+  /**
+   * @param {PeerId} peerId
+   * @param {Partial<Peer>} data
+   */
+  async patchOrCreate (peerId, data) {
+    /** @type {Peer} */
+    let peer
+
+    try {
+      peer = await this.load(peerId)
+    } catch (/** @type {any} */ err) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
+      }
+
+      peer = { id: peerId, addresses: [], protocols: [], metadata: new Map() }
+    }
+
+    return await this._patch(peerId, data, peer)
+  }
+
+  /**
+   * @param {PeerId} peerId
+   * @param {Partial<Peer>} data
+   * @param {Peer} peer
+   */
+  async _patch (peerId, data, peer) {
+    return await this.save({
+      ...peer,
+      ...data,
+      id: peerId
+    })
   }
 
   /**
@@ -126,12 +168,70 @@ class PersistentStore {
    */
   async merge (peerId, data) {
     const peer = await this.load(peerId)
-    const merged = {
-      ...peer,
-      ...data
+
+    return this._merge(peerId, data, peer)
+  }
+
+  /**
+   * @param {PeerId} peerId
+   * @param {Partial<Peer>} data
+   */
+  async mergeOrCreate (peerId, data) {
+    /** @type {Peer} */
+    let peer
+
+    try {
+      peer = await this.load(peerId)
+    } catch (/** @type {any} */ err) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
+      }
+
+      peer = { id: peerId, addresses: [], protocols: [], metadata: new Map() }
     }
 
-    await this.save(merged)
+    return await this._merge(peerId, data, peer)
+  }
+
+  /**
+   * @param {PeerId} peerId
+   * @param {Partial<Peer>} data
+   * @param {Peer} peer
+   */
+  async _merge (peerId, data, peer) {
+    // if the peer has certified addresses, use those in
+    // favour of the supplied versions
+    /** @type {Map<string, boolean>} */
+    const addresses = new Map()
+
+    ;(data.addresses || []).forEach(addr => {
+      addresses.set(addr.multiaddr.toString(), addr.isCertified)
+    })
+
+    peer.addresses.forEach(({ multiaddr, isCertified }) => {
+      const addrStr = multiaddr.toString()
+      addresses.set(addrStr, Boolean(addresses.get(addrStr) || isCertified))
+    })
+
+    return await this.save({
+      id: peerId,
+      addresses: Array.from(addresses.entries()).map(([addrStr, isCertified]) => {
+        return {
+          multiaddr: new Multiaddr(addrStr),
+          isCertified
+        }
+      }),
+      protocols: Array.from(new Set([
+        ...(peer.protocols || []),
+        ...(data.protocols || [])
+      ])),
+      metadata: new Map([
+        ...(peer.metadata ? peer.metadata.entries() : []),
+        ...(data.metadata ? data.metadata.entries() : [])
+      ]),
+      pubKey: data.pubKey || (peer != null ? peer.pubKey : undefined),
+      peerRecordEnvelope: data.peerRecordEnvelope || (peer != null ? peer.peerRecordEnvelope : undefined)
+    })
   }
 
   async * all () {

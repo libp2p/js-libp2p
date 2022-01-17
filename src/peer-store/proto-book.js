@@ -3,11 +3,11 @@
 const debug = require('debug')
 const errcode = require('err-code')
 const { codes } = require('../errors')
+const PeerId = require('peer-id')
 
 /**
  * @typedef {import('./types').PeerStore} PeerStore
  * @typedef {import('./types').ProtoBook} ProtoBook
- * @typedef {import('peer-id')} PeerId
  */
 
 const log = Object.assign(debug('libp2p:peer-store:proto-book'), {
@@ -15,14 +15,6 @@ const log = Object.assign(debug('libp2p:peer-store:proto-book'), {
 })
 
 const EVENT_NAME = 'change:protocols'
-
-/**
- * @param {Set<string>} a
- * @param {Set<string>} b
- */
-function isSetEqual (a, b) {
-  return a.size === b.size && [...a].every(value => b.has(value))
-}
 
 /**
  * @implements {ProtoBook}
@@ -49,10 +41,16 @@ class PersistentProtoBook {
       const peer = await this._store.load(peerId)
 
       return peer.protocols
+    } catch (/** @type {any} */ err) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
+      }
     } finally {
       log('get release read lock')
       release()
     }
+
+    return []
   }
 
   /**
@@ -60,24 +58,38 @@ class PersistentProtoBook {
    * @param {string[]} protocols
    */
   async set (peerId, protocols) {
+    if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+    }
+
+    if (!Array.isArray(protocols)) {
+      log.error('protocols must be provided to store data')
+      throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     log('set await write lock')
     const release = await this._store.lock.writeLock()
     log('set got write lock')
 
+    let updatedPeer
+
     try {
-      if (!protocols) {
-        log.error('protocols must be provided to store data')
-        throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+      try {
+        const peer = await this._store.load(peerId)
+
+        if (new Set([
+          ...protocols
+        ]).size === peer.protocols.length) {
+          return
+        }
+      } catch (/** @type {any} */ err) {
+        if (err.code !== codes.ERR_NOT_FOUND) {
+          throw err
+        }
       }
 
-      const peer = await this._store.load(peerId)
-
-      if (isSetEqual(new Set(peer.protocols), new Set(protocols))) {
-        log(`the protocols provided to set are equal to those already stored for ${peerId.toB58String()}`)
-        return
-      }
-
-      await this._store.merge(peerId, {
+      updatedPeer = await this._store.patchOrCreate(peerId, {
         protocols
       })
 
@@ -87,7 +99,7 @@ class PersistentProtoBook {
       release()
     }
 
-    this._emit(EVENT_NAME, { peerId, protocols })
+    this._emit(EVENT_NAME, { peerId, protocols: updatedPeer.protocols })
   }
 
   /**
@@ -95,28 +107,39 @@ class PersistentProtoBook {
    * @param {string[]} protocols
    */
   async add (peerId, protocols) {
+    if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+    }
+
+    if (!Array.isArray(protocols)) {
+      log.error('protocols must be provided to store data')
+      throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     log('add await write lock')
     const release = await this._store.lock.writeLock()
     log('add got write lock')
 
+    let updatedPeer
+
     try {
-      if (!protocols) {
-        log.error('protocols must be provided to store data')
-        throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+      try {
+        const peer = await this._store.load(peerId)
+
+        if (new Set([
+          ...peer.protocols,
+          ...protocols
+        ]).size === peer.protocols.length) {
+          return
+        }
+      } catch (/** @type {any} */ err) {
+        if (err.code !== codes.ERR_NOT_FOUND) {
+          throw err
+        }
       }
 
-      const peer = await this._store.load(peerId)
-      const existingProtocols = new Set(peer.protocols)
-      const allProtocols = new Set([...existingProtocols, ...protocols])
-
-      if (isSetEqual(new Set(allProtocols), existingProtocols)) {
-        log(`the protocols provided to add are equal to those already stored for ${peerId.toB58String()}`)
-        return
-      }
-
-      protocols = Array.from(allProtocols)
-
-      await this._store.merge(peerId, {
+      updatedPeer = await this._store.mergeOrCreate(peerId, {
         protocols
       })
 
@@ -126,7 +149,7 @@ class PersistentProtoBook {
       release()
     }
 
-    this._emit(EVENT_NAME, { peerId, protocols })
+    this._emit(EVENT_NAME, { peerId, protocols: updatedPeer.protocols })
   }
 
   /**
@@ -134,35 +157,43 @@ class PersistentProtoBook {
    * @param {string[]} protocols
    */
   async remove (peerId, protocols) {
+    if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+    }
+
+    if (!Array.isArray(protocols)) {
+      log.error('protocols must be provided to store data')
+      throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     log('remove await write lock')
     const release = await this._store.lock.writeLock()
     log('remove got write lock')
 
+    let updatedPeer
+
     try {
-      if (!Array.isArray(protocols)) {
-        log.error('protocols must be provided to store data')
-        throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+      try {
+        const peer = await this._store.load(peerId)
+        const protocolSet = new Set(peer.protocols)
+
+        for (const protocol of protocols) {
+          protocolSet.delete(protocol)
+        }
+
+        if (peer.protocols.length === protocolSet.size) {
+          return
+        }
+
+        protocols = Array.from(protocolSet)
+      } catch (/** @type {any} */ err) {
+        if (err.code !== codes.ERR_NOT_FOUND) {
+          throw err
+        }
       }
 
-      if (!(await this._store.has(peerId))) {
-        return
-      }
-
-      const peer = await this._store.load(peerId)
-      const finalProtocols = new Set(peer.protocols)
-
-      for (const protocol of protocols) {
-        finalProtocols.delete(protocol)
-      }
-
-      if (isSetEqual(new Set(peer.protocols), new Set(finalProtocols))) {
-        log(`the protocols after removing are equal to those already stored for ${peerId.toB58String()}`)
-        return
-      }
-
-      protocols = Array.from(finalProtocols)
-
-      await this._store.merge(peerId, {
+      updatedPeer = await this._store.patchOrCreate(peerId, {
         protocols
       })
     } finally {
@@ -170,7 +201,7 @@ class PersistentProtoBook {
       release()
     }
 
-    this._emit(EVENT_NAME, { peerId, protocols })
+    this._emit(EVENT_NAME, { peerId, protocols: updatedPeer.protocols })
   }
 
   /**
@@ -185,10 +216,12 @@ class PersistentProtoBook {
     try {
       has = await this._store.has(peerId)
 
-      if (has) {
-        await this._store.merge(peerId, {
-          protocols: []
-        })
+      await this._store.patchOrCreate(peerId, {
+        protocols: []
+      })
+    } catch (/** @type {any} */ err) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
       }
     } finally {
       log('delete release write lock')

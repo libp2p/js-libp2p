@@ -277,7 +277,7 @@ describe('metadataBook', () => {
       mb = peerStore.metadataBook
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', async () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
         await mb.delete('invalid peerId')
       } catch (/** @type {any} */ err) {

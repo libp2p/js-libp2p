@@ -375,7 +375,7 @@ describe('protoBook', () => {
       pb = peerStore.protoBook
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', async () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       await expect(pb.delete('invalid peerId')).to.eventually.be.rejected().with.property('code', ERR_INVALID_PARAMETERS)
     })
 

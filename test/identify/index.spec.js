@@ -266,7 +266,7 @@ describe('Identify', () => {
 
   describe('push', () => {
     it('should be able to push identify updates to another peer', async () => {
-      const storedProtocols = [multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH, '/echo/1.0.0']
+      const storedProtocols = [multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH, '/echo/1.0.0'].sort()
       const connectionManager = new EventEmitter()
       connectionManager.getConnection = () => { }
 
@@ -346,7 +346,7 @@ describe('Identify', () => {
 
     // LEGACY
     it('should be able to push identify updates to another peer with no certified peer records support', async () => {
-      const storedProtocols = [multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH, '/echo/1.0.0']
+      const storedProtocols = [multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH, '/echo/1.0.0'].sort()
       const connectionManager = new EventEmitter()
       connectionManager.getConnection = () => { }
 

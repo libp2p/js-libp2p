@@ -92,7 +92,7 @@ class DefaultPeerStore extends EventEmitter {
     try {
       return this._store.load(peerId)
     } finally {
-      log('has relase read lock')
+      log('get release read lock')
       release()
     }
   }

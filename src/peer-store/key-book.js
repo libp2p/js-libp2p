@@ -40,34 +40,39 @@ class PeerStoreKeyBook {
    * @param {PublicKey} publicKey
    */
   async set (peerId, publicKey) {
+    if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+    }
+
+    if (!publicKey) {
+      log.error('publicKey must be an instance of PublicKey to store data')
+      throw errcode(new Error('publicKey must be an instance of PublicKey'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     log('set await write lock')
     const release = await this._store.lock.writeLock()
     log('set got write lock')
 
-    let updatedKey
+    let updatedKey = false
 
     try {
-      if (!publicKey) {
-        log.error('publicKey must be an instance of PublicKey to store data')
-        throw errcode(new Error('publicKey must be an instance of PublicKey'), codes.ERR_INVALID_PARAMETERS)
+      try {
+        const existing = await this._store.load(peerId)
+
+        if (existing.pubKey && uint8arrayEquals(existing.pubKey.bytes, publicKey.bytes)) {
+          return
+        }
+      } catch (/** @type {any} */ err) {
+        if (err.code !== codes.ERR_NOT_FOUND) {
+          throw err
+        }
       }
 
-      if (peerId.pubKey && !uint8arrayEquals(peerId.pubKey.bytes, publicKey.bytes)) {
-        log.error('publicKey bytes do not match peer id publicKey bytes')
-        throw errcode(new Error('publicKey bytes do not match peer id publicKey bytes'), codes.ERR_INVALID_PARAMETERS)
-      }
-
-      const peer = await this._store.load(peerId)
-
-      if (!peer.pubKey || !uint8arrayEquals(peer.pubKey.bytes, publicKey.bytes)) {
-        await this._store.merge(peerId, {
-          pubKey: publicKey
-        })
-
-        updatedKey = true
-
-        log(`stored provided public key for ${peerId.toB58String()}`)
-      }
+      await this._store.patchOrCreate(peerId, {
+        pubKey: publicKey
+      })
+      updatedKey = true
     } finally {
       log('set release write lock')
       release()
@@ -84,16 +89,16 @@ class PeerStoreKeyBook {
    * @param {PeerId} peerId
    */
   async get (peerId) {
+    if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     log('get await write lock')
     const release = await this._store.lock.readLock()
     log('get got write lock')
 
     try {
-      if (!PeerId.isPeerId(peerId)) {
-        log.error('peerId must be an instance of peer-id to store data')
-        throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
-      }
-
       const peer = await this._store.load(peerId)
 
       return peer.pubKey
@@ -107,33 +112,25 @@ class PeerStoreKeyBook {
    * @param {PeerId} peerId
    */
   async delete (peerId) {
+    if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     log('delete await write lock')
     const release = await this._store.lock.writeLock()
     log('delete got write lock')
 
-    let has
-
     try {
-      has = await this._store.has(peerId)
-
-      if (has) {
-        const peer = await this._store.load(peerId)
-        has = Boolean(peer.pubKey)
-
-        if (has) {
-          await this._store.merge(peerId, {
-            pubKey: undefined
-          })
-        }
-      }
+      await this._store.patchOrCreate(peerId, {
+        pubKey: undefined
+      })
     } finally {
       log('delete release write lock')
       release()
     }
 
-    if (has) {
-      this._emit(EVENT_NAME, { peerId, pubKey: undefined })
-    }
+    this._emit(EVENT_NAME, { peerId, pubKey: undefined })
   }
 }
 

@@ -53,7 +53,7 @@ describe('addressBook', () => {
       peerStore.removeAllListeners()
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', async () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
         await ab.set('invalid peerId')
       } catch (/** @type {any} */ err) {
@@ -63,7 +63,7 @@ describe('addressBook', () => {
       throw new Error('invalid peerId should throw error')
     })
 
-    it('throwns invalid parameters error if no addresses provided', async () => {
+    it('throws invalid parameters error if no addresses provided', async () => {
       try {
         await ab.set(peerId)
       } catch (/** @type {any} */ err) {
@@ -73,7 +73,7 @@ describe('addressBook', () => {
       throw new Error('no addresses should throw error')
     })
 
-    it('throwns invalid parameters error if invalid multiaddrs are provided', async () => {
+    it('throws invalid parameters error if invalid multiaddrs are provided', async () => {
       try {
         await ab.set(peerId, ['invalid multiaddr'])
       } catch (/** @type {any} */ err) {
@@ -173,7 +173,7 @@ describe('addressBook', () => {
       peerStore.removeAllListeners()
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', async () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
         await ab.add('invalid peerId')
       } catch (/** @type {any} */ err) {
@@ -183,7 +183,7 @@ describe('addressBook', () => {
       throw new Error('invalid peerId should throw error')
     })
 
-    it('throwns invalid parameters error if no addresses provided', async () => {
+    it('throws invalid parameters error if no addresses provided', async () => {
       try {
         await ab.add(peerId)
       } catch (/** @type {any} */ err) {
@@ -193,7 +193,7 @@ describe('addressBook', () => {
       throw new Error('no addresses provided should throw error')
     })
 
-    it('throwns invalid parameters error if invalid multiaddrs are provided', async () => {
+    it('throws invalid parameters error if invalid multiaddrs are provided', async () => {
       try {
         await ab.add(peerId, ['invalid multiaddr'])
       } catch (/** @type {any} */ err) {
@@ -328,7 +328,7 @@ describe('addressBook', () => {
       ab = peerStore.addressBook
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', async () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
         await ab.get('invalid peerId')
       } catch (/** @type {any} */ err) {
@@ -369,7 +369,7 @@ describe('addressBook', () => {
       ab = peerStore.addressBook
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', async () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
         await ab.getMultiaddrsForPeer('invalid peerId')
       } catch (/** @type {any} */ err) {
@@ -423,7 +423,7 @@ describe('addressBook', () => {
       ab = peerStore.addressBook
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', async () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
         await ab.delete('invalid peerId')
       } catch (/** @type {any} */ err) {
