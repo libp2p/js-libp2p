@@ -52,11 +52,24 @@ class PeerRouting {
 
     if (p) {
       this._log('findPeerLocal found %p in routing table', peer)
-      peerData = await this._peerStore.get(p)
+
+      try {
+        peerData = await this._peerStore.get(p)
+      } catch (/** @type {any} */ err) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          throw err
+        }
+      }
     }
 
     if (!peerData) {
-      peerData = await this._peerStore.get(peer)
+      try {
+        peerData = await this._peerStore.get(peer)
+      } catch (/** @type {any} */ err) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          throw err
+        }
+      }
     }
 
     if (peerData) {
@@ -141,9 +154,9 @@ class PeerRouting {
     const match = peers.find((p) => p.equals(id))
 
     if (match) {
-      const peer = await this._peerStore.get(id)
+      try {
+        const peer = await this._peerStore.get(id)
 
-      if (peer) {
         this._log('found in peerStore')
         yield finalPeerEvent({
           from: this._peerId,
@@ -152,7 +165,12 @@ class PeerRouting {
             multiaddrs: peer.addresses.map((address) => address.multiaddr)
           }
         })
+
         return
+      } catch (/** @type {any} */ err) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          throw err
+        }
       }
     }
 
@@ -303,12 +321,18 @@ class PeerRouting {
         continue
       }
 
-      const peer = await this._peerStore.get(peerId)
+      try {
+        const addresses = await this._peerStore.addressBook.get(peerId)
 
-      output.push({
-        id: peerId,
-        multiaddrs: peer ? peer.addresses.map((address) => address.multiaddr) : []
-      })
+        output.push({
+          id: peerId,
+          multiaddrs: addresses.map((address) => address.multiaddr)
+        })
+      } catch (/** @type {any} */ err) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          throw err
+        }
+      }
     }
 
     if (output.length) {

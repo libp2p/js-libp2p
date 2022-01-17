@@ -60,7 +60,13 @@ class GetValueHandler {
       if (this._peerId.equals(idFromKey)) {
         pubKey = this._peerId.pubKey
       } else {
-        pubKey = await this._peerStore.keyBook.get(idFromKey)
+        try {
+          pubKey = await this._peerStore.keyBook.get(idFromKey)
+        } catch (/** @type {any} */ err) {
+          if (err.code !== 'ERR_NOT_FOUND') {
+            throw err
+          }
+        }
       }
 
       if (pubKey != null) {

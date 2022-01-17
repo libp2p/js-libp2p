@@ -313,12 +313,25 @@ class DualKadDHT extends EventEmitter {
   async getPublicKey (peer, options = {}) {
     log('getPublicKey %p', peer)
 
-    // local check
-    const peerData = await this._libp2p.peerStore.get(peer)
+    let peerData
 
-    if (peerData && peerData.id.pubKey) {
-      log('getPublicKey: found local copy')
-      return peerData.id.pubKey
+    // local check
+    try {
+      peerData = await this._libp2p.peerStore.get(peer)
+
+      if (peerData.pubKey) {
+        log('getPublicKey: found local copy')
+        return peerData.pubKey
+      }
+
+      if (peerData.id.pubKey) {
+        log('getPublicKey: found local copy')
+        return peerData.id.pubKey
+      }
+    } catch (/** @type {any} */ err) {
+      if (err.code !== 'ERR_NOT_FOUND') {
+        throw err
+      }
     }
 
     // try the node directly
