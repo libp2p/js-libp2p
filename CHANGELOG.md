@@ -1,3 +1,10 @@
+### [0.22.6](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.5...v0.22.6) (2022-01-17)
+
+
+### Trivial Changes
+
+* update benchmark deps ([#238](https://github.com/libp2p/js-libp2p-crypto/issues/238)) ([21ffe04](https://github.com/libp2p/js-libp2p-crypto/commit/21ffe0428fa040088f1b91f4e454418f436ed690))
+
 ### [0.22.5](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.4...v0.22.5) (2022-01-15)
 
 
