@@ -30,7 +30,7 @@ async function waitForOutput (expectedOutput, command, args = [], opts = {}) {
 
   const proc = execa(command, args, opts)
   let output = ''
-  let time = 120000
+  let time = 600000
 
   let timeout = setTimeout(() => {
     throw new Error(`Did not see "${expectedOutput}" in output from "${[command].concat(args).join(' ')}" after ${time/1000}s`)

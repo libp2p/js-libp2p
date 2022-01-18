@@ -87,14 +87,22 @@ class ConnectionManager extends EventEmitter {
      *
      * @type {Map<string, number>}
      */
-    this._peerValues = trackedMap(METRICS_COMPONENT, METRICS_PEER_VALUES, this._libp2p.metrics)
+    this._peerValues = trackedMap({
+      component: METRICS_COMPONENT,
+      metric: METRICS_PEER_VALUES,
+      metrics: this._libp2p.metrics
+    })
 
     /**
      * Map of connections per peer
      *
      * @type {Map<string, Connection[]>}
      */
-    this.connections = trackedMap(METRICS_COMPONENT, METRICS_PEER_CONNECTIONS, this._libp2p.metrics)
+    this.connections = trackedMap({
+      component: METRICS_COMPONENT,
+      metric: METRICS_PEER_CONNECTIONS,
+      metrics: this._libp2p.metrics
+    })
 
     this._started = false
     this._timer = null

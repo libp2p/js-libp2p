@@ -155,7 +155,7 @@
     "libp2p-interop": "^0.7.1",
     "libp2p-kad-dht": "^0.28.4",
     "libp2p-mdns": "^0.18.0",
-    "libp2p-mplex": "^0.10.1",
+    "libp2p-mplex": "^0.10.4",
     "libp2p-tcp": "^0.17.0",
     "libp2p-webrtc-star": "^0.25.0",
     "libp2p-websockets": "^0.16.0",

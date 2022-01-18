@@ -88,10 +88,18 @@ class Dialer {
     this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
 
     /** @type {Map<string, PendingDial>} */
-    this._pendingDials = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIALS, metrics)
+    this._pendingDials = trackedMap({
+      component: METRICS_COMPONENT,
+      metric: METRICS_PENDING_DIALS,
+      metrics
+    })
 
     /** @type {Map<string, { resolve: (value: any) => void, reject: (err: Error) => void}>} */
-    this._pendingDialTargets = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, metrics)
+    this._pendingDialTargets = trackedMap({
+      component: METRICS_COMPONENT,
+      metric: METRICS_PENDING_DIAL_TARGETS,
+      metrics
+    })
 
     for (const [key, value] of Object.entries(resolvers)) {
       Multiaddr.resolvers.set(key, value)
