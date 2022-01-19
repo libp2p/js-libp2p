@@ -144,7 +144,7 @@
   },
   "dependencies": {
     "any-signal": "^3.0.0",
-    "datastore-core": "^6.0.7",
+    "datastore-core": "^7.0.0",
     "debug": "^4.3.1",
     "err-code": "^3.0.0",
     "hashlru": "^2.3.0",
