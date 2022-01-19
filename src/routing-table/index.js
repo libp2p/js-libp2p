@@ -118,7 +118,7 @@ class RoutingTable {
                 timeoutController.clear()
               }
 
-              this._metrics && this._metrics.updateComponentMetric(`kad-dht-${this._lan ? 'lan' : 'wan'}`, METRIC_ROUTING_TABLE_SIZE, this.size)
+              this._metrics && this._metrics.updateComponentMetric({ component: `kad-dht-${this._lan ? 'lan' : 'wan'}`, metric: METRIC_ROUTING_TABLE_SIZE, value: this.size })
             }
           })
         )
@@ -193,7 +193,7 @@ class RoutingTable {
 
     this._log('added %p with kad id %b', peer, id)
 
-    this._metrics && this._metrics.updateComponentMetric(`kad-dht-${this._lan ? 'lan' : 'wan'}`, METRIC_ROUTING_TABLE_SIZE, this.size)
+    this._metrics && this._metrics.updateComponentMetric({ component: `kad-dht-${this._lan ? 'lan' : 'wan'}`, metric: METRIC_ROUTING_TABLE_SIZE, value: this.size })
   }
 
   /**
@@ -206,7 +206,7 @@ class RoutingTable {
 
     this.kb.remove(id)
 
-    this._metrics && this._metrics.updateComponentMetric(`kad-dht-${this._lan ? 'lan' : 'wan'}`, METRIC_ROUTING_TABLE_SIZE, this.size)
+    this._metrics && this._metrics.updateComponentMetric({ component: `kad-dht-${this._lan ? 'lan' : 'wan'}`, metric: METRIC_ROUTING_TABLE_SIZE, value: this.size })
   }
 }
 

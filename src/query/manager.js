@@ -115,7 +115,7 @@ class QueryManager {
     try {
       log('query:start')
       this._queries++
-      this._metrics && this._metrics.updateComponentMetric(`kad-dht-${this._lan ? 'lan' : 'wan'}`, METRIC_RUNNING_QUERIES, this._queries)
+      this._metrics && this._metrics.updateComponentMetric({ component: `kad-dht-${this._lan ? 'lan' : 'wan'}`, metric: METRIC_RUNNING_QUERIES, value: this._queries })
 
       if (peers.length === 0) {
         log.error('Running query with no peers')
@@ -161,7 +161,7 @@ class QueryManager {
       }
 
       this._queries--
-      this._metrics && this._metrics.updateComponentMetric(`kad-dht-${this._lan ? 'lan' : 'wan'}`, METRIC_RUNNING_QUERIES, this._queries)
+      this._metrics && this._metrics.updateComponentMetric({ component: `kad-dht-${this._lan ? 'lan' : 'wan'}`, metric: METRIC_RUNNING_QUERIES, value: this._queries })
 
       cleanUp.emit('cleanup')
       log(`query:done in ${Date.now() - (startTime || 0)}ms`)

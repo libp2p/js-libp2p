@@ -161,5 +161,5 @@ export interface Addressable {
 }
 
 export interface Metrics {
-  updateComponentMetric: (component: string, metric: string, value: number) => void
+  updateComponentMetric: (options: { component: string, metric: string, value: number }) => void
 }
