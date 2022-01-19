@@ -1,3 +1,12 @@
+## [0.28.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.28.4...v0.28.5) (2022-01-19)
+
+
+### Bug Fixes
+
+* update component metric API use ([#293](https://github.com/libp2p/js-libp2p-kad-dht/issues/293)) ([c026f03](https://github.com/libp2p/js-libp2p-kad-dht/commit/c026f0389373718131ee26424b786e55285c1c5e))
+
+
+
 ## [0.28.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.28.3...v0.28.4) (2022-01-17)
 
 
