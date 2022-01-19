@@ -30,7 +30,7 @@ const createNode = async () => {
     createNode()
   ])
 
-  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
 
   node2.handle('/a-protocol', ({ stream }) => {
     pipe(

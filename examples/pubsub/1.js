@@ -35,7 +35,7 @@ const createNode = async () => {
   ])
 
   // Add node's 2 data to the PeerStore
-  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
   await node1.dial(node2.peerId)
 
   node1.pubsub.on(topic, (msg) => {
