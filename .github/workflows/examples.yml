@@ -216,4 +216,7 @@ jobs:
             ./examples/node_modules
           build: |
             cd examples && npm i
-      - run: cd examples && npm run test -- webrtc-direct
+      - run: |
+            cd examples
+            npx playwright install
+            npm run test -- webrtc-direct
