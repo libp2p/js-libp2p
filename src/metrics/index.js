@@ -44,7 +44,7 @@ class Metrics {
     this._oldPeers = oldPeerLRU(this._options.maxOldPeersRetention)
     this._running = false
     this._onMessage = this._onMessage.bind(this)
-    this._componentMetrics = new Map()
+    this._systems = new Map()
   }
 
   /**
@@ -89,19 +89,26 @@ class Metrics {
   }
 
   /**
-   * @returns {Map}
+   * @returns {Map<string, Map<string, Map<string, any>>>}
    */
   getComponentMetrics () {
-    return this._componentMetrics
+    return this._systems
   }
 
-  updateComponentMetric (component, metric, value) {
-    if (!this._componentMetrics.has(component)) {
-      this._componentMetrics.set(component, new Map())
+  updateComponentMetric ({ system = 'libp2p', component, metric, value }) {
+    if (!this._systems.has(system)) {
+      this._systems.set(system, new Map())
     }
 
-    const map = this._componentMetrics.get(component)
-    map.set(metric, value)
+    const systemMetrics = this._systems.get(system)
+
+    if (!systemMetrics.has(component)) {
+      systemMetrics.set(component, new Map())
+    }
+
+    const componentMetrics = systemMetrics.get(component)
+
+    componentMetrics.set(metric, value)
   }
 
   /**

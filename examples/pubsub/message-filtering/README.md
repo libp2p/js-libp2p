@@ -32,10 +32,10 @@ const [node1, node2, node3] = await Promise.all([
   createNode(),
 ])
 
-node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
 await node1.dial(node2.peerId)
 
-node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
 await node2.dial(node3.peerId)
 ```
 

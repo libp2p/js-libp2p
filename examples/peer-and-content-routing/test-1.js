@@ -2,35 +2,28 @@
 
 const path = require('path')
 const execa = require('execa')
-const pWaitFor = require('p-wait-for')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 async function test() {
   process.stdout.write('1.js\n')
 
-  const addrs = []
-  let foundIt = false
   const proc = execa('node', [path.join(__dirname, '1.js')], {
     cwd: path.resolve(__dirname),
     all: true
   })
 
+  let output = ''
+
   proc.all.on('data', async (data) => {
     process.stdout.write(data)
 
-    const line = uint8ArrayToString(data)
+    output += uint8ArrayToString(data)
 
-    // Discovered peer
-    if (!foundIt && line.includes('Found it, multiaddrs are:')) {
-      foundIt = true
+    // Discovered peers
+    if (output.includes('Found it, multiaddrs are:')) {
+      proc.kill()
     }
-
-    addrs.push(line)
   })
-
-  await pWaitFor(() => addrs.length === 2)
-
-  proc.kill()
 }
 
 module.exports = test

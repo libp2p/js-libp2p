@@ -71,7 +71,7 @@ describe('Connection Manager', () => {
     sinon.spy(libp2p.connectionManager, 'emit')
     sinon.spy(remoteLibp2p.connectionManager, 'emit')
 
-    libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
+    await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
     await libp2p.dial(remoteLibp2p.peerId)
 
     // check connect event
@@ -219,9 +219,9 @@ describe('libp2p.connections', () => {
       })
 
       // Populate PeerStore before starting
-      libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
-      libp2p.peerStore.addressBook.set(nodes[1].peerId, nodes[1].multiaddrs)
-      libp2p.peerStore.protoBook.set(nodes[1].peerId, ['/protocol-min-conns'])
+      await libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
+      await libp2p.peerStore.addressBook.set(nodes[1].peerId, nodes[1].multiaddrs)
+      await libp2p.peerStore.protoBook.set(nodes[1].peerId, ['/protocol-min-conns'])
 
       await libp2p.start()
 

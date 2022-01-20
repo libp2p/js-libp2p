@@ -82,7 +82,7 @@ describe('auto-relay', () => {
       const originalMultiaddrsLength = relayLibp2p.multiaddrs.length
 
       // Discover relay
-      libp2p.peerStore.addressBook.add(relayLibp2p.peerId, relayLibp2p.multiaddrs)
+      await libp2p.peerStore.addressBook.add(relayLibp2p.peerId, relayLibp2p.multiaddrs)
       await libp2p.dial(relayLibp2p.peerId)
 
       // Wait for peer added as listen relay
@@ -94,7 +94,7 @@ describe('auto-relay', () => {
       expect(libp2p.multiaddrs[originalMultiaddrsLength].getPeerId()).to.eql(relayLibp2p.peerId.toB58String())
 
       // Peer has relay multicodec
-      const knownProtocols = libp2p.peerStore.protoBook.get(relayLibp2p.peerId)
+      const knownProtocols = await libp2p.peerStore.protoBook.get(relayLibp2p.peerId)
       expect(knownProtocols).to.include(relayMulticodec)
     })
   })
@@ -165,7 +165,7 @@ describe('auto-relay', () => {
       sinon.spy(autoRelay1, '_addListenRelay')
 
       // Discover relay
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
 
       const originalMultiaddrs1Length = relayLibp2p1.multiaddrs.length
       const originalMultiaddrs2Length = relayLibp2p2.multiaddrs.length
@@ -184,7 +184,7 @@ describe('auto-relay', () => {
       expect(relayLibp2p1.multiaddrs[originalMultiaddrs1Length].getPeerId()).to.eql(relayLibp2p2.peerId.toB58String())
 
       // Peer has relay multicodec
-      const knownProtocols = relayLibp2p1.peerStore.protoBook.get(relayLibp2p2.peerId)
+      const knownProtocols = await relayLibp2p1.peerStore.protoBook.get(relayLibp2p2.peerId)
       expect(knownProtocols).to.include(relayMulticodec)
     })
 
@@ -193,7 +193,7 @@ describe('auto-relay', () => {
       const originalMultiaddrs2Length = relayLibp2p2.multiaddrs.length
 
       // Discover relay
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
 
       await relayLibp2p1.dial(relayLibp2p2.peerId)
 
@@ -206,7 +206,7 @@ describe('auto-relay', () => {
 
       // Dial from the other through a relay
       const relayedMultiaddr2 = new Multiaddr(`${relayLibp2p1.multiaddrs[0]}/p2p/${relayLibp2p1.peerId.toB58String()}/p2p-circuit`)
-      libp2p.peerStore.addressBook.add(relayLibp2p2.peerId, [relayedMultiaddr2])
+      await libp2p.peerStore.addressBook.add(relayLibp2p2.peerId, [relayedMultiaddr2])
 
       await libp2p.dial(relayLibp2p2.peerId)
     })
@@ -220,7 +220,7 @@ describe('auto-relay', () => {
       sinon.spy(autoRelay1._listenRelays, 'add')
 
       // Discover one relay and connect
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p2.peerId)
 
       expect(relayLibp2p1.connectionManager.size).to.eql(1)
@@ -237,11 +237,11 @@ describe('auto-relay', () => {
       expect(relayLibp2p1.multiaddrs[originalMultiaddrs1Length].getPeerId()).to.eql(relayLibp2p2.peerId.toB58String())
 
       // Relay2 has relay multicodec
-      const knownProtocols2 = relayLibp2p1.peerStore.protoBook.get(relayLibp2p2.peerId)
+      const knownProtocols2 = await relayLibp2p1.peerStore.protoBook.get(relayLibp2p2.peerId)
       expect(knownProtocols2).to.include(relayMulticodec)
 
       // Discover an extra relay and connect
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p3.peerId)
 
       // Wait to guarantee the dialed peer is not added as a listen relay
@@ -253,7 +253,7 @@ describe('auto-relay', () => {
       expect(relayLibp2p1.connectionManager.size).to.eql(2)
 
       // Relay2 has relay multicodec
-      const knownProtocols3 = relayLibp2p1.peerStore.protoBook.get(relayLibp2p3.peerId)
+      const knownProtocols3 = await relayLibp2p1.peerStore.protoBook.get(relayLibp2p3.peerId)
       expect(knownProtocols3).to.include(relayMulticodec)
     })
 
@@ -264,7 +264,7 @@ describe('auto-relay', () => {
       sinon.spy(relayLibp2p1.identifyService, 'pushToPeerStore')
 
       // Discover one relay and connect
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p2.peerId)
 
       // Wait for listenning on the relay
@@ -283,7 +283,7 @@ describe('auto-relay', () => {
       expect(autoRelay1._listenRelays.size).to.equal(0)
 
       // Identify push for removing listen relay multiaddr
-      expect(relayLibp2p1.identifyService.pushToPeerStore.callCount).to.equal(2)
+      await pWaitFor(() => relayLibp2p1.identifyService.pushToPeerStore.callCount === 2)
     })
 
     it('should try to listen on other connected peers relayed address if one used relay disconnects', async () => {
@@ -294,11 +294,11 @@ describe('auto-relay', () => {
       sinon.spy(relayLibp2p1.transportManager, 'listen')
 
       // Discover one relay and connect
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p2.peerId)
 
       // Discover an extra relay and connect
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p3.peerId)
 
       // Wait for both peer to be attempted to added as listen relay
@@ -337,11 +337,11 @@ describe('auto-relay', () => {
       sinon.spy(relayLibp2p1.transportManager, 'listen')
 
       // Discover one relay and connect
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p2.peerId)
 
       // Discover an extra relay and connect to gather its Hop support
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p3.peerId)
 
       // Wait for both peer to be attempted to added as listen relay
@@ -382,11 +382,11 @@ describe('auto-relay', () => {
       sinon.spy(relayLibp2p1.transportManager, 'listen')
 
       // Discover one relay and connect
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p2.peerId)
 
       // Discover an extra relay and connect to gather its Hop support
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p3.peerId)
 
       // Wait for both peer to be attempted to added as listen relay
@@ -479,7 +479,7 @@ describe('auto-relay', () => {
       sinon.spy(autoRelay2, '_addListenRelay')
 
       // Relay 1 discovers Relay 3 and connect
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p3.peerId)
 
       // Wait for peer added as listen relay
@@ -487,7 +487,7 @@ describe('auto-relay', () => {
       expect(autoRelay1._listenRelays.size).to.equal(1)
 
       // Relay 2 discovers Relay 3 and connect
-      relayLibp2p2.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
+      await relayLibp2p2.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
       await relayLibp2p2.dial(relayLibp2p3.peerId)
 
       // Wait for peer added as listen relay
@@ -496,7 +496,7 @@ describe('auto-relay', () => {
 
       // Relay 1 discovers Relay 2 relayed multiaddr via Relay 3
       const ma2RelayedBy3 = relayLibp2p2.multiaddrs[relayLibp2p2.multiaddrs.length - 1]
-      relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, [ma2RelayedBy3])
+      await relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, [ma2RelayedBy3])
       await relayLibp2p1.dial(relayLibp2p2.peerId)
 
       // Peer not added as listen relay

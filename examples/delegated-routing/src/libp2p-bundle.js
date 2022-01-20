@@ -6,7 +6,7 @@ const Websockets = require('libp2p-websockets')
 const WebSocketStar = require('libp2p-websocket-star')
 const WebRTCStar = require('libp2p-webrtc-star')
 const MPLEX = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 const KadDHT = require('libp2p-kad-dht')
 const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
@@ -48,7 +48,7 @@ export default function Libp2pBundle ({peerInfo, peerBook}) {
         MPLEX
       ],
       connEncryption: [
-        SECIO
+        NOISE
       ],
       dht: KadDHT
     },

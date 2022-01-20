@@ -288,7 +288,9 @@ class Upgrader {
             } finally {
               this.onConnectionEnd(connection)
             }
-          })()
+          })().catch(err => {
+            log.error(err)
+          })
         }
 
         return Reflect.set(...args)

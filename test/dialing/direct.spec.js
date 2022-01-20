@@ -13,7 +13,7 @@ const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
 const { Multiaddr } = require('multiaddr')
 const AggregateError = require('aggregate-error')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
-
+const { MemoryDatastore } = require('datastore-core/memory')
 const { codes: ErrorCodes } = require('../../src/errors')
 const Constants = require('../../src/constants')
 const Dialer = require('../../src/dialer')
@@ -36,7 +36,10 @@ describe('Dialing (direct, WebSockets)', () => {
 
   before(async () => {
     [peerId] = await createPeerId()
-    peerStore = new PeerStore({ peerId })
+    peerStore = new PeerStore({
+      peerId,
+      datastore: new MemoryDatastore()
+    })
     localTM = new TransportManager({
       libp2p: {},
       upgrader: mockUpgrader,
@@ -215,7 +218,7 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     // Inject data in the AddressBook
-    peerStore.addressBook.add(peerId, peerMultiaddrs)
+    await peerStore.addressBook.add(peerId, peerMultiaddrs)
 
     // Perform 3 multiaddr dials
     await dialer.connectToPeer(peerId)

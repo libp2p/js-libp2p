@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
-
+const { MemoryDatastore } = require('datastore-core/memory')
 const pDefer = require('p-defer')
 const pWaitFor = require('p-wait-for')
 
@@ -11,12 +11,19 @@ const PeerStore = require('../../src/peer-store')
 
 const peerUtils = require('../utils/creators/peer')
 const {
-  ERR_INVALID_PARAMETERS
+  codes: { ERR_INVALID_PARAMETERS }
 } = require('../../src/errors')
+
+/**
+ * @typedef {import('../../src/peer-store/types').PeerStore} PeerStore
+ * @typedef {import('../../src/peer-store/types').ProtoBook} ProtoBook
+ * @typedef {import('peer-id')} PeerId
+ */
 
 const arraysAreEqual = (a, b) => a.length === b.length && a.sort().every((item, index) => b[index] === item)
 
 describe('protoBook', () => {
+  /** @type {PeerId} */
   let peerId
 
   before(async () => {
@@ -24,10 +31,16 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.set', () => {
-    let peerStore, pb
+    /** @type {PeerStore} */
+    let peerStore
+    /** @type {ProtoBook} */
+    let pb
 
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       pb = peerStore.protoBook
     })
 
@@ -35,19 +48,15 @@ describe('protoBook', () => {
       peerStore.removeAllListeners()
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
-        pb.set('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
+      await expect(pb.set('invalid peerId')).to.eventually.be.rejected().with.property('code', ERR_INVALID_PARAMETERS)
     })
 
-    it('throwns invalid parameters error if no protocols provided', () => {
-      expect(() => {
-        pb.set(peerId)
-      }).to.throw(ERR_INVALID_PARAMETERS)
+    it('throws invalid parameters error if no protocols provided', async () => {
+      await expect(pb.set(peerId)).to.eventually.be.rejected().with.property('code', ERR_INVALID_PARAMETERS)
     })
 
-    it('replaces the stored content by default and emit change event', () => {
+    it('replaces the stored content by default and emit change event', async () => {
       const defer = pDefer()
       const supportedProtocols = ['protocol1', 'protocol2']
 
@@ -57,14 +66,14 @@ describe('protoBook', () => {
         defer.resolve()
       })
 
-      pb.set(peerId, supportedProtocols)
-      const protocols = pb.get(peerId)
+      await pb.set(peerId, supportedProtocols)
+      const protocols = await pb.get(peerId)
       expect(protocols).to.have.deep.members(supportedProtocols)
 
-      return defer.promise
+      await defer.promise
     })
 
-    it('emits on set if not storing the exact same content', () => {
+    it('emits on set if not storing the exact same content', async () => {
       const defer = pDefer()
 
       const supportedProtocolsA = ['protocol1', 'protocol2']
@@ -79,17 +88,17 @@ describe('protoBook', () => {
       })
 
       // set 1
-      pb.set(peerId, supportedProtocolsA)
+      await pb.set(peerId, supportedProtocolsA)
 
       // set 2 (same content)
-      pb.set(peerId, supportedProtocolsB)
-      const protocols = pb.get(peerId)
+      await pb.set(peerId, supportedProtocolsB)
+      const protocols = await pb.get(peerId)
       expect(protocols).to.have.deep.members(supportedProtocolsB)
 
-      return defer.promise
+      await defer.promise
     })
 
-    it('does not emit on set if it is storing the exact same content', () => {
+    it('does not emit on set if it is storing the exact same content', async () => {
       const defer = pDefer()
 
       const supportedProtocols = ['protocol1', 'protocol2']
@@ -103,10 +112,10 @@ describe('protoBook', () => {
       })
 
       // set 1
-      pb.set(peerId, supportedProtocols)
+      await pb.set(peerId, supportedProtocols)
 
       // set 2 (same content)
-      pb.set(peerId, supportedProtocols)
+      await pb.set(peerId, supportedProtocols)
 
       // Wait 50ms for incorrect second event
       setTimeout(() => {
@@ -118,10 +127,16 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.add', () => {
-    let peerStore, pb
+    /** @type {PeerStore} */
+    let peerStore
+    /** @type {ProtoBook} */
+    let pb
 
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       pb = peerStore.protoBook
     })
 
@@ -129,19 +144,15 @@ describe('protoBook', () => {
       peerStore.removeAllListeners()
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
-        pb.add('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
+      await expect(pb.add('invalid peerId')).to.eventually.be.rejected().with.property('code', ERR_INVALID_PARAMETERS)
     })
 
-    it('throwns invalid parameters error if no protocols provided', () => {
-      expect(() => {
-        pb.add(peerId)
-      }).to.throw(ERR_INVALID_PARAMETERS)
+    it('throws invalid parameters error if no protocols provided', async () => {
+      await expect(pb.add(peerId)).to.eventually.be.rejected().with.property('code', ERR_INVALID_PARAMETERS)
     })
 
-    it('adds the new content and emits change event', () => {
+    it('adds the new content and emits change event', async () => {
       const defer = pDefer()
 
       const supportedProtocolsA = ['protocol1', 'protocol2']
@@ -157,19 +168,19 @@ describe('protoBook', () => {
       })
 
       // Replace
-      pb.set(peerId, supportedProtocolsA)
-      let protocols = pb.get(peerId)
+      await pb.set(peerId, supportedProtocolsA)
+      let protocols = await pb.get(peerId)
       expect(protocols).to.have.deep.members(supportedProtocolsA)
 
       // Add
-      pb.add(peerId, supportedProtocolsB)
-      protocols = pb.get(peerId)
+      await pb.add(peerId, supportedProtocolsB)
+      protocols = await pb.get(peerId)
       expect(protocols).to.have.deep.members(finalProtocols)
 
       return defer.promise
     })
 
-    it('emits on add if the content to add not exists', () => {
+    it('emits on add if the content to add not exists', async () => {
       const defer = pDefer()
 
       const supportedProtocolsA = ['protocol1']
@@ -185,17 +196,17 @@ describe('protoBook', () => {
       })
 
       // set 1
-      pb.set(peerId, supportedProtocolsA)
+      await pb.set(peerId, supportedProtocolsA)
 
       // set 2 (content already existing)
-      pb.add(peerId, supportedProtocolsB)
-      const protocols = pb.get(peerId)
+      await pb.add(peerId, supportedProtocolsB)
+      const protocols = await pb.get(peerId)
       expect(protocols).to.have.deep.members(finalProtocols)
 
       return defer.promise
     })
 
-    it('does not emit on add if the content to add already exists', () => {
+    it('does not emit on add if the content to add already exists', async () => {
       const defer = pDefer()
 
       const supportedProtocolsA = ['protocol1', 'protocol2']
@@ -210,10 +221,10 @@ describe('protoBook', () => {
       })
 
       // set 1
-      pb.set(peerId, supportedProtocolsA)
+      await pb.set(peerId, supportedProtocolsA)
 
       // set 2 (content already existing)
-      pb.add(peerId, supportedProtocolsB)
+      await pb.add(peerId, supportedProtocolsB)
 
       // Wait 50ms for incorrect second event
       setTimeout(() => {
@@ -225,10 +236,16 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.remove', () => {
-    let peerStore, pb
+    /** @type {PeerStore} */
+    let peerStore
+    /** @type {ProtoBook} */
+    let pb
 
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       pb = peerStore.protoBook
     })
 
@@ -236,16 +253,12 @@ describe('protoBook', () => {
       peerStore.removeAllListeners()
     })
 
-    it('throws invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
-        pb.remove('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
+      await expect(pb.remove('invalid peerId')).to.eventually.be.rejected().with.property('code', ERR_INVALID_PARAMETERS)
     })
 
-    it('throws invalid parameters error if no protocols provided', () => {
-      expect(() => {
-        pb.remove(peerId)
-      }).to.throw(ERR_INVALID_PARAMETERS)
+    it('throws invalid parameters error if no protocols provided', async () => {
+      await expect(pb.remove(peerId)).to.eventually.be.rejected().with.property('code', ERR_INVALID_PARAMETERS)
     })
 
     it('removes the given protocol and emits change event', async () => {
@@ -258,13 +271,13 @@ describe('protoBook', () => {
       peerStore.on('change:protocols', spy)
 
       // Replace
-      pb.set(peerId, supportedProtocols)
-      let protocols = pb.get(peerId)
+      await pb.set(peerId, supportedProtocols)
+      let protocols = await pb.get(peerId)
       expect(protocols).to.have.deep.members(supportedProtocols)
 
       // Remove
-      pb.remove(peerId, removedProtocols)
-      protocols = pb.get(peerId)
+      await pb.remove(peerId, removedProtocols)
+      protocols = await pb.get(peerId)
       expect(protocols).to.have.deep.members(finalProtocols)
 
       await pWaitFor(() => spy.callCount === 2)
@@ -275,7 +288,7 @@ describe('protoBook', () => {
       expect(arraysAreEqual(secondCallArgs.protocols, finalProtocols))
     })
 
-    it('emits on remove if the content changes', () => {
+    it('emits on remove if the content changes', async () => {
       const spy = sinon.spy()
 
       const supportedProtocols = ['protocol1', 'protocol2']
@@ -285,17 +298,17 @@ describe('protoBook', () => {
       peerStore.on('change:protocols', spy)
 
       // set
-      pb.set(peerId, supportedProtocols)
+      await pb.set(peerId, supportedProtocols)
 
       // remove (content already existing)
-      pb.remove(peerId, removedProtocols)
-      const protocols = pb.get(peerId)
+      await pb.remove(peerId, removedProtocols)
+      const protocols = await pb.get(peerId)
       expect(protocols).to.have.deep.members(finalProtocols)
 
       return pWaitFor(() => spy.callCount === 2)
     })
 
-    it('does not emit on remove if the content does not change', () => {
+    it('does not emit on remove if the content does not change', async () => {
       const spy = sinon.spy()
 
       const supportedProtocols = ['protocol1', 'protocol2']
@@ -304,10 +317,10 @@ describe('protoBook', () => {
       peerStore.on('change:protocols', spy)
 
       // set
-      pb.set(peerId, supportedProtocols)
+      await pb.set(peerId, supportedProtocols)
 
       // remove
-      pb.remove(peerId, removedProtocols)
+      await pb.remove(peerId, removedProtocols)
 
       // Only one event
       expect(spy.callCount).to.eql(1)
@@ -315,73 +328,79 @@ describe('protoBook', () => {
   })
 
   describe('protoBook.get', () => {
-    let peerStore, pb
+    /** @type {PeerStore} */
+    let peerStore
+    /** @type {ProtoBook} */
+    let pb
 
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       pb = peerStore.protoBook
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
-        pb.get('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
+      await expect(pb.get('invalid peerId')).to.eventually.be.rejected().with.property('code', ERR_INVALID_PARAMETERS)
     })
 
-    it('returns undefined if no protocols are known for the provided peer', () => {
-      const protocols = pb.get(peerId)
+    it('returns empty if no protocols are known for the provided peer', async () => {
+      const protocols = await pb.get(peerId)
 
-      expect(protocols).to.not.exist()
+      expect(protocols).to.be.empty()
     })
 
-    it('returns the protocols stored', () => {
+    it('returns the protocols stored', async () => {
       const supportedProtocols = ['protocol1', 'protocol2']
 
-      pb.set(peerId, supportedProtocols)
+      await pb.set(peerId, supportedProtocols)
 
-      const protocols = pb.get(peerId)
+      const protocols = await pb.get(peerId)
       expect(protocols).to.have.deep.members(supportedProtocols)
     })
   })
 
   describe('protoBook.delete', () => {
-    let peerStore, pb
+    /** @type {PeerStore} */
+    let peerStore
+    /** @type {ProtoBook} */
+    let pb
 
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       pb = peerStore.protoBook
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', () => {
-      expect(() => {
-        pb.delete('invalid peerId')
-      }).to.throw(ERR_INVALID_PARAMETERS)
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
+      await expect(pb.delete('invalid peerId')).to.eventually.be.rejected().with.property('code', ERR_INVALID_PARAMETERS)
     })
 
-    it('returns false if no records exist for the peer and no event is emitted', () => {
+    it('should not emit event if no records exist for the peer', async () => {
       const defer = pDefer()
 
       peerStore.on('change:protocols', () => {
         defer.reject()
       })
 
-      const deleted = pb.delete(peerId)
-
-      expect(deleted).to.equal(false)
+      await pb.delete(peerId)
 
       // Wait 50ms for incorrect invalid event
       setTimeout(() => {
         defer.resolve()
       }, 50)
 
-      return defer.promise
+      await defer.promise
     })
 
-    it('returns true if the record exists and an event is emitted', () => {
+    it('should emit event if a record exists for the peer', async () => {
       const defer = pDefer()
 
       const supportedProtocols = ['protocol1', 'protocol2']
-      pb.set(peerId, supportedProtocols)
+      await pb.set(peerId, supportedProtocols)
 
       // Listen after set
       peerStore.on('change:protocols', ({ protocols }) => {
@@ -389,11 +408,9 @@ describe('protoBook', () => {
         defer.resolve()
       })
 
-      const deleted = pb.delete(peerId)
+      await pb.delete(peerId)
 
-      expect(deleted).to.equal(true)
-
-      return defer.promise
+      await defer.promise
     })
   })
 })

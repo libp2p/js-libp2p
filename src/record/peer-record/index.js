@@ -11,7 +11,7 @@ const {
 } = require('./consts')
 
 /**
- * @typedef {import('../../peer-store/address-book.js').Address} Address
+ * @typedef {import('../../peer-store/types').Address} Address
  * @typedef {import('libp2p-interfaces/src/record/types').Record} Record
  */
 

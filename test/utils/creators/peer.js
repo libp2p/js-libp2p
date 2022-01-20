@@ -58,12 +58,13 @@ function _populateAddressBooks (peers) {
  * @param {Object} [properties]
  * @param {number} [properties.number] - number of peers (default: 1).
  * @param {boolean} [properties.fixture] - use fixture for peer-id generation (default: true)
+ * @param {PeerId.CreateOptions} [properties.opts]
  * @returns {Promise<Array<PeerId>>}
  */
-function createPeerId ({ number = 1, fixture = true } = {}) {
+function createPeerId ({ number = 1, fixture = true, opts = {} } = {}) {
   return pTimes(number, (i) => fixture
     ? PeerId.createFromJSON(Peers[i])
-    : PeerId.create()
+    : PeerId.create(opts)
   )
 }
 

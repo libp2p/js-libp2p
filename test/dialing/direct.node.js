@@ -18,7 +18,7 @@ const AggregateError = require('aggregate-error')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
-
+const { MemoryDatastore } = require('datastore-core/memory')
 const Libp2p = require('../../src')
 const Dialer = require('../../src/dialer')
 const AddressManager = require('../../src/address-manager')
@@ -48,7 +48,10 @@ describe('Dialing (direct, TCP)', () => {
       PeerId.createFromJSON(Peers[1])
     ])
 
-    peerStore = new PeerStore({ peerId: remotePeerId })
+    peerStore = new PeerStore({
+      peerId: remotePeerId,
+      datastore: new MemoryDatastore()
+    })
     remoteTM = new TransportManager({
       libp2p: {
         addressManager: new AddressManager(remotePeerId, { listen: [listenAddr] }),
@@ -62,7 +65,10 @@ describe('Dialing (direct, TCP)', () => {
     localTM = new TransportManager({
       libp2p: {
         peerId: localPeerId,
-        peerStore: new PeerStore({ peerId: localPeerId })
+        peerStore: new PeerStore({
+          peerId: localPeerId,
+          datastore: new MemoryDatastore()
+        })
       },
       upgrader: mockUpgrader
     })
@@ -113,7 +119,10 @@ describe('Dialing (direct, TCP)', () => {
 
   it('should be able to connect to a given peer id', async () => {
     const peerId = await PeerId.createFromJSON(Peers[0])
-    const peerStore = new PeerStore({ peerId })
+    const peerStore = new PeerStore({
+      peerId,
+      datastore: new MemoryDatastore()
+    })
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore
@@ -249,7 +258,7 @@ describe('Dialing (direct, TCP)', () => {
           connEncryption: [Crypto]
         }
       })
-      remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
+      await remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
 
       await remoteLibp2p.start()
       remoteAddr = remoteLibp2p.transportManager.getAddrs()[0].encapsulate(`/p2p/${remotePeerId.toB58String()}`)
@@ -339,12 +348,12 @@ describe('Dialing (direct, TCP)', () => {
       })
 
       // register some stream handlers to simulate several protocols
-      libp2p.handle('/stream-count/1', ({ stream }) => pipe(stream, stream))
-      libp2p.handle('/stream-count/2', ({ stream }) => pipe(stream, stream))
-      remoteLibp2p.handle('/stream-count/3', ({ stream }) => pipe(stream, stream))
-      remoteLibp2p.handle('/stream-count/4', ({ stream }) => pipe(stream, stream))
+      await libp2p.handle('/stream-count/1', ({ stream }) => pipe(stream, stream))
+      await libp2p.handle('/stream-count/2', ({ stream }) => pipe(stream, stream))
+      await remoteLibp2p.handle('/stream-count/3', ({ stream }) => pipe(stream, stream))
+      await remoteLibp2p.handle('/stream-count/4', ({ stream }) => pipe(stream, stream))
 
-      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
+      await libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
       const connection = await libp2p.dial(remotePeerId)
 
       // Create local to remote streams
@@ -363,8 +372,8 @@ describe('Dialing (direct, TCP)', () => {
 
       // Verify stream count
       const remoteConn = remoteLibp2p.connectionManager.get(libp2p.peerId)
-      expect(connection.streams).to.have.length(5)
-      expect(remoteConn.streams).to.have.length(5)
+      expect(connection.streams).to.have.length(6)
+      expect(remoteConn.streams).to.have.length(6)
 
       // Close the connection and verify all streams have been closed
       await connection.close()

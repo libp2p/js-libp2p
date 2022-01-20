@@ -20,7 +20,7 @@ const node1 = nodes[0]
 const node2 = nodes[1]
 
 // Add node's 2 data to the PeerStore
-node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
 
 // Here we are telling libp2p that if someone dials this node to talk with the `/your-protocol`
 // multicodec, the protocol identifier, please call this handler and give it the stream

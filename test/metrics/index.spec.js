@@ -266,10 +266,10 @@ describe('Metrics', () => {
     const metric = 'some-metric'
     const value = 1
 
-    metrics.updateComponentMetric(component, metric, value)
+    metrics.updateComponentMetric({ component, metric, value })
 
     expect(metrics.getComponentMetrics()).to.have.lengthOf(1)
-    expect(metrics.getComponentMetrics().get(component)).to.have.lengthOf(1)
-    expect(metrics.getComponentMetrics().get(component).get(metric)).to.equal(value)
+    expect(metrics.getComponentMetrics().get('libp2p').get(component)).to.have.lengthOf(1)
+    expect(metrics.getComponentMetrics().get('libp2p').get(component).get(metric)).to.equal(value)
   })
 })

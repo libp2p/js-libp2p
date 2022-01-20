@@ -48,7 +48,7 @@ module.exports = async (properties = {}) => {
         protocol: protocols[0]
       }
     },
-    close: () => { },
+    close: async () => { },
     getStreams: () => openStreams,
     ...properties
   })
