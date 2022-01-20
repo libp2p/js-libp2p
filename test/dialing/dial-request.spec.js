@@ -5,7 +5,6 @@ const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
-const AbortController = require('abort-controller')
 const AggregateError = require('aggregate-error')
 const pDefer = require('p-defer')
 const delay = require('delay')
