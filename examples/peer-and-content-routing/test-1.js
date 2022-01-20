@@ -30,6 +30,7 @@ async function test() {
 
   await pWaitFor(() => addrs.length === 2)
 
+  process.stdout.write('kill process\n')
   proc.kill()
 }
 
