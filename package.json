@@ -81,7 +81,6 @@
   },
   "dependencies": {
     "@vascosantos/moving-average": "^1.1.0",
-    "abort-controller": "^3.0.0",
     "abortable-iterator": "^3.0.0",
     "aggregate-error": "^3.1.0",
     "any-signal": "^2.1.1",
@@ -147,7 +146,7 @@
     "ipfs-http-client": "^54.0.2",
     "it-concat": "^2.0.0",
     "it-pair": "^1.0.0",
-    "it-pushable": "^1.4.0",
+    "it-pushable": "^2.0.1",
     "libp2p": ".",
     "libp2p-bootstrap": "^0.14.0",
     "libp2p-delegated-content-routing": "^0.11.0",
