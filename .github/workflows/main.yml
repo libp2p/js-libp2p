@@ -114,13 +114,13 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm publish
+      - if: ${{ steps.release.outputs.release_created }}
+        run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-        if: ${{ steps.release.outputs.release_created }}
-      - run: |
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - if: ${{ !steps.release.outputs.release_created }}
+        run: |
             npm version `node -p -e "require('./package.json').version"`-`git rev-parse --short HEAD` --no-git-tag-version
             npm publish --tag next
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-        if: ${{ !steps.release.outputs.release_created }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
