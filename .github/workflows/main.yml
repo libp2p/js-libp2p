@@ -110,11 +110,9 @@ jobs:
           release-type: node
           bump-minor-pre-major: true
       - uses: actions/checkout@v2
-        if: ${{ steps.release.outputs.release_created }}
       - uses: actions/setup-node@v2
         with:
           node-version: lts/*
-        if: ${{ steps.release.outputs.release_created }}
       - uses: ipfs/aegir/actions/cache-node-modules@master
         if: ${{ steps.release.outputs.release_created }}
       - run: npm publish
