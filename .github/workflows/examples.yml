@@ -25,6 +25,7 @@ jobs:
           cd examples
           npm i
           npx playwright install
+        cache_name: cache-examples
 
   test-example:
     needs: build
@@ -58,6 +59,7 @@ jobs:
             cd examples
             npm i
             npx playwright install
+          cache_name: cache-examples
       - run: |
           cd examples
           npm run test -- ${{ matrix.example }}
