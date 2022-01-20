@@ -55,6 +55,7 @@ jobs:
         with:
           directories: |
             ./examples/node_modules
+            ~/.cache
           build: |
             cd examples
             npm i
