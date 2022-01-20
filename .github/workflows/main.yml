@@ -116,7 +116,7 @@ jobs:
           node-version: lts/*
           registry-url: 'https://registry.npmjs.org'
         if: ${{ steps.release.outputs.release_created }}
-      - uses: bahmutov/npm-install@v1
+      - uses: ipfs/aegir/actions/cache-node-modules@master
         if: ${{ steps.release.outputs.release_created }}
       - run: npm publish
         env:
