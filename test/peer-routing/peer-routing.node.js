@@ -658,10 +658,8 @@ describe('peer-routing', () => {
 
       await node.start()
 
-      await delay(300)
-      expect(node._dht.getClosestPeers.callCount).to.eql(1)
-      await delay(500)
-      expect(node._dht.getClosestPeers.callCount).to.eql(2)
+      // should run more than once
+      await pWaitFor(() => node._dht.getClosestPeers.callCount === 2)
     })
   })
 })
