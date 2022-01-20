@@ -12,15 +12,15 @@ async function test() {
     all: true
   })
 
-  let contents = ''
+  let output = ''
 
   proc.all.on('data', async (data) => {
     process.stdout.write(data)
 
-    contents += uint8ArrayToString(data)
+    output += uint8ArrayToString(data)
 
-    // Discovered peer
-    if (contents.includes('Found it, multiaddrs are:')) {
+    // Discovered peers
+    if (output.includes('Found it, multiaddrs are:')) {
       proc.kill()
     }
   })
