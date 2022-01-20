@@ -52,7 +52,10 @@ jobs:
           node-version: ${{ matrix.node }}
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run test:node -- --cov --bail
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: node
 
   test-chrome:
     needs: build
@@ -63,7 +66,26 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm run test:browser -- -t browser -t webworker --bail
+      - run: npm run test:browser -- -t browser --cov --bail
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: chrome
+
+  test-chrome-webworker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npm run test:browser -- -t webworker --cov --bail
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: chrome-webworker
 
   test-firefox:
     needs: build
@@ -74,7 +96,18 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm run test:browser -- -t browser -t webworker --bail -- --browser firefox
+      - run: npm run test:browser -- -t browser --bail -- --browser firefox
+
+  test-firefox-webworker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npm run test:browser -- -t webworker --bail -- --browser firefox
 
   test-ts:
     needs: build
@@ -113,14 +146,15 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: lts/*
+          registry-url: 'https://registry.npmjs.org'
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - if: ${{ steps.release.outputs.release_created }}
         run: npm publish
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - if: ${{ !steps.release.outputs.release_created }}
         run: |
             npm version `node -p -e "require('./package.json').version"`-`git rev-parse --short HEAD` --no-git-tag-version
             npm publish --tag next
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
