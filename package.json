@@ -80,7 +80,7 @@
   "dependencies": {
     "@vascosantos/moving-average": "^1.1.0",
     "abortable-iterator": "^3.0.0",
-    "aggregate-error": "^3.1.0",
+    "aggregate-error": "^4.0.0",
     "any-signal": "^3.0.0",
     "bignumber.js": "^9.0.1",
     "class-is": "^1.1.0",
