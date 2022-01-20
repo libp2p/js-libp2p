@@ -8,6 +8,7 @@ on:
       - '**'
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -20,26 +21,29 @@ jobs:
         directories: |
           ./examples/node_modules
         build: |
-          cd examples && npm i
-  check:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-      with:
-        node-version: lts/*
-    - uses: ipfs/aegir/actions/cache-node-modules@master
-      with:
-        directories: |
-          ./examples/node_modules
-        build: |
-          cd examples && npm i
-    - run: npx aegir lint
-    - run: npx aegir ts -p check
-  test-auto-relay-example:
+          cd examples
+          npm i
+          npx playwright install
+
+  test-example:
     needs: check
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example: [
+          chat,
+          connection-encryption,
+          discovery-mechanisms,
+          echo,
+          libp2p-in-the-browser,
+          peer-and-content-routing,
+          pnet,
+          protocol-and-stream-muxing,
+          pubsub,
+          transports,
+          webrtc-direct
+        ]
+      fail-fast: true
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -50,173 +54,9 @@ jobs:
           directories: |
             ./examples/node_modules
           build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- auto-relay
-  test-chat-example:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- chat
-  test-connection-encryption-example:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- connection-encryption
-  test-discovery-mechanisms-example:
-    needs: check
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- discovery-mechanisms
-  test-echo-example:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- echo
-  test-libp2p-in-the-browser-example:
-    needs: check
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- libp2p-in-the-browser
-  test-peer-and-content-routing-example:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-            node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- peer-and-content-routing
-  test-pnet-example:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-            node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- pnet
-  test-protocol-and-stream-muxing-example:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-            node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- protocol-and-stream-muxing
-  test-pubsub-example:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-            node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- pubsub
-  test-transports-example:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-            node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: cd examples && npm run test -- transports
-  test-webrtc-direct-example:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-            node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./examples/node_modules
-          build: |
-            cd examples && npm i
-      - run: |
             cd examples
+            npm i
             npx playwright install
-            npm run test -- webrtc-direct
+      - run: |
+          cd examples
+          npm run test -- ${{ matrix.example }}
