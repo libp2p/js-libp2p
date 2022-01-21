@@ -76,7 +76,7 @@
   },
   "dependencies": {
     "@vascosantos/moving-average": "^1.1.0",
-    "abortable-iterator": "^3.0.0",
+    "abortable-iterator": "^4.0.2",
     "aggregate-error": "^3.1.0",
     "any-signal": "^3.0.0",
     "bignumber.js": "^9.0.1",
@@ -107,7 +107,7 @@
     "mortice": "^2.0.1",
     "multiaddr": "^10.0.0",
     "multiformats": "^9.0.0",
-    "multistream-select": "^2.0.0",
+    "multistream-select": "^3.0.0",
     "mutable-proxy": "^1.0.0",
     "nat-api": "^0.3.1",
     "node-forge": "^1.2.1",
