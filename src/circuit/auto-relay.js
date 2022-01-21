@@ -8,6 +8,7 @@ const log = Object.assign(debug('libp2p:auto-relay'), {
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const { Multiaddr } = require('multiaddr')
+const all = require('it-all')
 
 const { relay: multicodec } = require('./multicodec')
 const { canHop } = require('./circuit/hop')
@@ -149,26 +150,27 @@ class AutoRelay {
    * @returns {Promise<void>}
    */
   async _addListenRelay (connection, id) {
-    // Check if already listening on enough relays
-    if (this._listenRelays.size >= this.maxListeners) {
-      return
-    }
-
-    // Get peer known addresses and sort them per public addresses first
-    const remoteAddrs = await this._peerStore.addressBook.getMultiaddrsForPeer(
-      connection.remotePeer, this._addressSorter
-    )
-
-    if (!remoteAddrs || !remoteAddrs.length) {
-      return
-    }
-
-    const listenAddr = `${remoteAddrs[0].toString()}/p2p-circuit`
-    this._listenRelays.add(id)
-
-    // Attempt to listen on relay
     try {
+      // Check if already listening on enough relays
+      if (this._listenRelays.size >= this.maxListeners) {
+        return
+      }
+
+      // Get peer known addresses and sort them per public addresses first
+      const remoteAddrs = await this._peerStore.addressBook.getMultiaddrsForPeer(
+        connection.remotePeer, this._addressSorter
+      )
+
+      if (!remoteAddrs || !remoteAddrs.length) {
+        return
+      }
+
+      const listenAddr = `${remoteAddrs[0].toString()}/p2p-circuit`
+      this._listenRelays.add(id)
+
+      // Attempt to listen on relay
       await this._transportManager.listen([new Multiaddr(listenAddr)])
+
       // Announce multiaddrs will update on listen success by TransportManager event being triggered
     } catch (/** @type {any} */ err) {
       this._onError(err)
@@ -206,13 +208,18 @@ class AutoRelay {
     }
 
     const knownHopsToDial = []
+    const peers = await all(this._peerStore.getPeers())
 
     // Check if we have known hop peers to use and attempt to listen on the already connected
-    for await (const { id, metadata } of this._peerStore.getPeers()) {
+    for await (const { id, metadata } of peers) {
       const idStr = id.toB58String()
 
       // Continue to next if listening on this or peer to ignore
-      if (this._listenRelays.has(idStr) || peersToIgnore.includes(idStr)) {
+      if (this._listenRelays.has(idStr)) {
+        continue
+      }
+
+      if (peersToIgnore.includes(idStr)) {
         continue
       }
 
