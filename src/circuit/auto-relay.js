@@ -161,17 +161,24 @@ class AutoRelay {
         connection.remotePeer, this._addressSorter
       )
 
-      if (!remoteAddrs || !remoteAddrs.length) {
-        return
-      }
-
-      const listenAddr = `${remoteAddrs[0].toString()}/p2p-circuit`
-      this._listenRelays.add(id)
-
       // Attempt to listen on relay
-      await this._transportManager.listen([new Multiaddr(listenAddr)])
+      const result = await Promise.all(
+        remoteAddrs.map(async addr => {
+          try {
+            // Announce multiaddrs will update on listen success by TransportManager event being triggered
+            await this._transportManager.listen([new Multiaddr(`${addr.toString()}/p2p-circuit`)])
+            return true
+          } catch (/** @type {any} */ err) {
+            this._onError(err)
+          }
 
-      // Announce multiaddrs will update on listen success by TransportManager event being triggered
+          return false
+        })
+      )
+
+      if (result.includes(true)) {
+        this._listenRelays.add(id)
+      }
     } catch (/** @type {any} */ err) {
       this._onError(err)
       this._listenRelays.delete(id)
