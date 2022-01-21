@@ -267,25 +267,25 @@ class IdentifyService {
    * @returns {Promise<void>}
    */
   async _handleIdentify ({ connection, stream }) {
-    let publicKey = new Uint8Array(0)
-    if (this.peerId.pubKey) {
-      publicKey = this.peerId.pubKey.bytes
-    }
-
-    const signedPeerRecord = await this.peerStore.addressBook.getRawEnvelope(this.peerId)
-    const protocols = await this.peerStore.protoBook.get(this.peerId)
-
-    const message = Message.Identify.encode({
-      protocolVersion: this._host.protocolVersion,
-      agentVersion: this._host.agentVersion,
-      publicKey,
-      listenAddrs: this._libp2p.multiaddrs.map((ma) => ma.bytes),
-      signedPeerRecord,
-      observedAddr: connection.remoteAddr.bytes,
-      protocols
-    }).finish()
-
     try {
+      let publicKey = new Uint8Array(0)
+      if (this.peerId.pubKey) {
+        publicKey = this.peerId.pubKey.bytes
+      }
+
+      const signedPeerRecord = await this.peerStore.addressBook.getRawEnvelope(this.peerId)
+      const protocols = await this.peerStore.protoBook.get(this.peerId)
+
+      const message = Message.Identify.encode({
+        protocolVersion: this._host.protocolVersion,
+        agentVersion: this._host.agentVersion,
+        publicKey,
+        listenAddrs: this._libp2p.multiaddrs.map((ma) => ma.bytes),
+        signedPeerRecord,
+        observedAddr: connection.remoteAddr.bytes,
+        protocols
+      }).finish()
+
       await pipe(
         [message],
         lp.encode(),
@@ -343,7 +343,11 @@ class IdentifyService {
     }
 
     // Update the protocols
-    await this.peerStore.protoBook.set(id, message.protocols)
+    try {
+      await this.peerStore.protoBook.set(id, message.protocols)
+    } catch (/** @type {any} */ err) {
+      log.error('received invalid protocols', err)
+    }
   }
 
   /**
