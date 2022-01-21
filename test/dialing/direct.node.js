@@ -128,7 +128,7 @@ describe('Dialing (direct, TCP)', () => {
       peerStore
     })
 
-    peerStore.addressBook.set(peerId, remoteTM.getAddrs())
+    await peerStore.addressBook.set(peerId, remoteTM.getAddrs())
 
     const connection = await dialer.connectToPeer(peerId)
     expect(connection).to.exist()
@@ -326,7 +326,7 @@ describe('Dialing (direct, TCP)', () => {
       })
 
       sinon.spy(libp2p.dialer, 'connectToPeer')
-      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
+      await libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
 
       const connection = await libp2p.dial(remotePeerId)
       expect(connection).to.exist()
@@ -471,7 +471,7 @@ describe('Dialing (direct, TCP)', () => {
 
       const fullAddress = remoteAddr.encapsulate(`/p2p/${remoteLibp2p.peerId.toB58String()}`)
 
-      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
+      await libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
       const dialResults = await Promise.all([...new Array(dials)].map((_, index) => {
         if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerId)
         return libp2p.dial(fullAddress)
@@ -501,7 +501,7 @@ describe('Dialing (direct, TCP)', () => {
       const error = new Error('Boom')
       sinon.stub(libp2p.transportManager, 'dial').callsFake(() => Promise.reject(error))
 
-      libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
+      await libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
       const dialResults = await pSettle([...new Array(dials)].map((_, index) => {
         if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerId)
         return libp2p.dial(remoteAddr)

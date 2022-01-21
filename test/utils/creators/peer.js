@@ -36,17 +36,17 @@ async function createPeer ({ number = 1, fixture = true, started = true, populat
   if (started) {
     await Promise.all(peers.map((p) => p.start()))
 
-    populateAddressBooks && _populateAddressBooks(peers)
+    populateAddressBooks && await _populateAddressBooks(peers)
   }
 
   return peers
 }
 
-function _populateAddressBooks (peers) {
+async function _populateAddressBooks (peers) {
   for (let i = 0; i < peers.length; i++) {
     for (let j = 0; j < peers.length; j++) {
       if (i !== j) {
-        peers[i].peerStore.addressBook.set(peers[j].peerId, peers[j].multiaddrs)
+        await peers[i].peerStore.addressBook.set(peers[j].peerId, peers[j].multiaddrs)
       }
     }
   }

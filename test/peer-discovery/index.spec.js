@@ -38,7 +38,7 @@ describe('peer discovery', () => {
         }
       })
 
-      libp2p.peerStore.addressBook.set(remotePeerId, [new Multiaddr('/ip4/165.1.1.1/tcp/80')])
+      await libp2p.peerStore.addressBook.set(remotePeerId, [new Multiaddr('/ip4/165.1.1.1/tcp/80')])
 
       const deferred = defer()
       sinon.stub(libp2p.dialer, 'connectToPeer').callsFake((remotePeerId) => {
