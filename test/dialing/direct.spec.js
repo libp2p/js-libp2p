@@ -48,8 +48,8 @@ describe('Dialing (direct, WebSockets)', () => {
     localTM.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
   })
 
-  afterEach(() => {
-    peerStore.delete(peerId)
+  afterEach(async () => {
+    await peerStore.delete(peerId)
     sinon.restore()
   })
 

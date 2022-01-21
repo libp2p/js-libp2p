@@ -51,7 +51,7 @@ describe('Dialing (via relay, TCP)', () => {
       await libp2p.stop()
       // Clear the peer stores
       for await (const peer of libp2p.peerStore.getPeers()) {
-        libp2p.peerStore.delete(peer.id)
+        await libp2p.peerStore.delete(peer.id)
       }
     }))
   })

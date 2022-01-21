@@ -310,7 +310,7 @@ describe('auto-relay', () => {
       await pWaitFor(() => relayLibp2p1.multiaddrs.length === originalMultiaddrs1Length + 1)
       expect(relayLibp2p1.multiaddrs[originalMultiaddrs1Length].getPeerId()).to.eql(relayLibp2p2.peerId.toB58String())
 
-      // Only one will be used for listeninng
+      // Only one will be used for listening
       expect(relayLibp2p1.transportManager.listen.callCount).to.equal(1)
 
       // Spy if relay from listen map was removed
@@ -349,7 +349,7 @@ describe('auto-relay', () => {
       expect(autoRelay1._listenRelays.size).to.equal(1)
       expect(relayLibp2p1.connectionManager.size).to.equal(2)
 
-      // Only one will be used for listeninng
+      // Only one will be used for listening
       expect(relayLibp2p1.transportManager.listen.callCount).to.equal(1)
 
       // Disconnect not used listen relay
@@ -363,7 +363,7 @@ describe('auto-relay', () => {
       sinon.spy(relayLibp2p1, 'dial')
 
       // Remove peer used as relay from peerStore and disconnect it
-      relayLibp2p1.peerStore.delete(relayLibp2p2.peerId)
+      await relayLibp2p1.peerStore.delete(relayLibp2p2.peerId)
       await relayLibp2p1.hangUp(relayLibp2p2.peerId)
       expect(autoRelay1._listenRelays.size).to.equal(0)
       expect(relayLibp2p1.connectionManager.size).to.equal(0)
@@ -394,7 +394,7 @@ describe('auto-relay', () => {
       expect(autoRelay1._listenRelays.size).to.equal(1)
       expect(relayLibp2p1.connectionManager.size).to.equal(2)
 
-      // Only one will be used for listeninng
+      // Only one will be used for listening
       expect(relayLibp2p1.transportManager.listen.callCount).to.equal(1)
 
       // Disconnect not used listen relay
@@ -410,7 +410,7 @@ describe('auto-relay', () => {
       })
 
       // Remove peer used as relay from peerStore and disconnect it
-      relayLibp2p1.peerStore.delete(relayLibp2p2.peerId)
+      await relayLibp2p1.peerStore.delete(relayLibp2p2.peerId)
       await relayLibp2p1.hangUp(relayLibp2p2.peerId)
       expect(autoRelay1._listenRelays.size).to.equal(0)
       expect(relayLibp2p1.connectionManager.size).to.equal(0)
@@ -619,7 +619,7 @@ describe('auto-relay', () => {
       await pWaitFor(() => local.multiaddrs.length === originalMultiaddrsLength + 1)
 
       const relayedAddr = local.multiaddrs[local.multiaddrs.length - 1]
-      remote.peerStore.addressBook.set(local.peerId, [relayedAddr])
+      await remote.peerStore.addressBook.set(local.peerId, [relayedAddr])
 
       // Dial from remote through the relayed address
       const conn = await remote.dial(local.peerId)
