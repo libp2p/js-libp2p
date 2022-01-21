@@ -41,13 +41,13 @@ describe('Identify', () => {
       peerId: localPeer,
       datastore: new MemoryDatastore()
     })
-    localPeerStore.protoBook.set(localPeer, protocols)
+    await localPeerStore.protoBook.set(localPeer, protocols)
 
     remotePeerStore = new PeerStore({
       peerId: remotePeer,
       datastore: new MemoryDatastore()
     })
-    remotePeerStore.protoBook.set(remotePeer, protocols)
+    await remotePeerStore.protoBook.set(remotePeer, protocols)
 
     localAddressManager = new AddressManager(localPeer)
     remoteAddressManager = new AddressManager(remotePeer)
@@ -372,7 +372,7 @@ describe('Identify', () => {
         peerId: remotePeer,
         datastore: new MemoryDatastore()
       })
-      remotePeerStore.protoBook.set(remotePeer, storedProtocols)
+      await remotePeerStore.protoBook.set(remotePeer, storedProtocols)
 
       const remoteIdentify = new IdentifyService({
         libp2p: {
