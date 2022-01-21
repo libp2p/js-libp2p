@@ -112,6 +112,9 @@ class ConnectionManager extends EventEmitter {
       latencyCheckIntervalMs: this._options.pollInterval,
       dataEmitIntervalMs: this._options.pollInterval
     })
+
+    // This emitter gets listened to a lot
+    this.setMaxListeners(Infinity)
   }
 
   /**

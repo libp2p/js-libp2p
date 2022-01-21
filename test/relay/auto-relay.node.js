@@ -224,7 +224,7 @@ describe('auto-relay', () => {
       expect(knownProtocols3).to.include(relayMulticodec)
     })
 
-    it('should not listen on a relayed address if peer disconnects', async () => {
+    it('should not listen on a relayed address we disconnect from peer', async () => {
       // Spy if identify push is fired on adding/removing listen addr
       sinon.spy(relayLibp2p1.identifyService, 'pushToPeerStore')
 
@@ -236,9 +236,6 @@ describe('auto-relay', () => {
       // Wait for listening on the relay
       await usingAsRelay(relayLibp2p1, relayLibp2p2)
 
-      // Identify push for adding listen relay multiaddr
-      expect(relayLibp2p1.identifyService.pushToPeerStore.callCount).to.equal(1)
-
       // Disconnect from peer used for relay
       await relayLibp2p1.hangUp(relayLibp2p2.peerId)
 
@@ -246,9 +243,6 @@ describe('auto-relay', () => {
       await expect(usingAsRelay(relayLibp2p1, relayLibp2p2, {
         timeout: 1000
       })).to.eventually.be.rejected()
-
-      // Identify push for removing listen relay multiaddr
-      await pWaitFor(() => relayLibp2p1.identifyService.pushToPeerStore.callCount === 2)
     })
 
     it('should try to listen on other connected peers relayed address if one used relay disconnects', async () => {
@@ -270,6 +264,11 @@ describe('auto-relay', () => {
 
       // Disconnect from peer used for relay
       await relayLibp2p2.stop()
+
+      // Should not be using the relay any more
+      await expect(usingAsRelay(relayLibp2p1, relayLibp2p2, {
+        timeout: 1000
+      })).to.eventually.be.rejected()
 
       // Wait for other peer connected to be added as listen addr
       await usingAsRelay(relayLibp2p1, relayLibp2p3)
