@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const delay = require('delay')
-const pDefer = require('p-defer')
+const defer = require('p-defer')
 const pWaitFor = require('p-wait-for')
 const sinon = require('sinon')
 const nock = require('nock')
@@ -18,6 +18,31 @@ const { createPeerId } = require('../utils/creators/peer')
 const baseOptions = require('../utils/base-options')
 
 const listenAddr = '/ip4/0.0.0.0/tcp/0'
+
+async function usingAsRelay (node, relay) {
+  // Wait for peer to be used as a relay
+  await pWaitFor(() => {
+    for (const addr of node.multiaddrs) {
+      if (addr.toString().includes(`${relay.peerId.toB58String()}/p2p-circuit`)) {
+        return true
+      }
+    }
+
+    return false
+  })
+}
+
+async function discoveredRelayConfig (node, relay) {
+  await pWaitFor(async () => {
+    const protos = await node.peerStore.protoBook.get(relay.peerId)
+    const supportsRelay = protos.includes('/libp2p/circuit/relay/0.1.0')
+
+    const metadata = await node.peerStore.metadataBook.get(relay.peerId)
+    const supportsHop = metadata.has('hop_relay')
+
+    return supportsRelay && supportsHop
+  })
+}
 
 describe('auto-relay', () => {
   describe('basics', () => {
@@ -332,54 +357,34 @@ describe('auto-relay', () => {
     })
 
     it('should try to listen on stored peers relayed address if one used relay disconnects and there are not enough connected', async () => {
-      // Spy if a connected peer is being added as listen relay
-      sinon.spy(autoRelay1, '_addListenRelay')
-      sinon.spy(relayLibp2p1.transportManager, 'listen')
-
       // Discover one relay and connect
       await relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p2.peerId)
+
+      // Wait for peer to be used as a relay
+      await usingAsRelay(relayLibp2p1, relayLibp2p2)
 
       // Discover an extra relay and connect to gather its Hop support
       await relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p3.peerId)
 
-      // Wait for both peer to be attempted to added as listen relay
-      await pWaitFor(() => autoRelay1._addListenRelay.callCount === 2)
-      expect(autoRelay1._listenRelays.size).to.equal(1)
-      expect(relayLibp2p1.connectionManager.size).to.equal(2)
-
-      // Only one will be used for listening
-      expect(relayLibp2p1.transportManager.listen.callCount).to.equal(1)
+      // wait for identify for newly dialled peer
+      await discoveredRelayConfig(relayLibp2p1, relayLibp2p3)
 
       // Disconnect not used listen relay
       await relayLibp2p1.hangUp(relayLibp2p3.peerId)
 
-      expect(autoRelay1._listenRelays.size).to.equal(1)
-      expect(relayLibp2p1.connectionManager.size).to.equal(1)
-
-      // Spy on dial
-      sinon.spy(autoRelay1, '_tryToListenOnRelay')
-      sinon.spy(relayLibp2p1, 'dial')
-
       // Remove peer used as relay from peerStore and disconnect it
-      await relayLibp2p1.peerStore.delete(relayLibp2p2.peerId)
       await relayLibp2p1.hangUp(relayLibp2p2.peerId)
-      expect(autoRelay1._listenRelays.size).to.equal(0)
-      expect(relayLibp2p1.connectionManager.size).to.equal(0)
+      await relayLibp2p1.peerStore.delete(relayLibp2p2.peerId)
+      await pWaitFor(() => relayLibp2p1.connectionManager.size === 0)
 
       // Wait for other peer connected to be added as listen addr
-      await pWaitFor(() => relayLibp2p1.transportManager.listen.callCount === 2)
-      await pWaitFor(() => autoRelay1._tryToListenOnRelay.callCount === 1)
-      await pWaitFor(() => autoRelay1._listenRelays.size === 1)
-      await pWaitFor(() => relayLibp2p1.connectionManager.size === 1)
+      await usingAsRelay(relayLibp2p1, relayLibp2p3)
     })
 
     it('should not fail when trying to dial unreachable peers to add as hop relay and replaced removed ones', async () => {
-      const defer = pDefer()
-      // Spy if a connected peer is being added as listen relay
-      sinon.spy(autoRelay1, '_addListenRelay')
-      sinon.spy(relayLibp2p1.transportManager, 'listen')
+      const deferred = defer()
 
       // Discover one relay and connect
       await relayLibp2p1.peerStore.addressBook.add(relayLibp2p2.peerId, relayLibp2p2.multiaddrs)
@@ -389,34 +394,28 @@ describe('auto-relay', () => {
       await relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
       await relayLibp2p1.dial(relayLibp2p3.peerId)
 
-      // Wait for both peer to be attempted to added as listen relay
-      await pWaitFor(() => autoRelay1._addListenRelay.callCount === 2)
-      expect(autoRelay1._listenRelays.size).to.equal(1)
-      expect(relayLibp2p1.connectionManager.size).to.equal(2)
+      // Wait for peer to be used as a relay
+      await usingAsRelay(relayLibp2p1, relayLibp2p2)
 
-      // Only one will be used for listening
-      expect(relayLibp2p1.transportManager.listen.callCount).to.equal(1)
+      // wait for identify for newly dialled peer
+      await discoveredRelayConfig(relayLibp2p1, relayLibp2p3)
 
       // Disconnect not used listen relay
       await relayLibp2p1.hangUp(relayLibp2p3.peerId)
 
-      expect(autoRelay1._listenRelays.size).to.equal(1)
-      expect(relayLibp2p1.connectionManager.size).to.equal(1)
-
       // Stub dial
       sinon.stub(relayLibp2p1, 'dial').callsFake(() => {
-        defer.resolve()
+        deferred.resolve()
         return Promise.reject(new Error('failed to dial'))
       })
 
       // Remove peer used as relay from peerStore and disconnect it
-      await relayLibp2p1.peerStore.delete(relayLibp2p2.peerId)
       await relayLibp2p1.hangUp(relayLibp2p2.peerId)
-      expect(autoRelay1._listenRelays.size).to.equal(0)
+      await relayLibp2p1.peerStore.delete(relayLibp2p2.peerId)
       expect(relayLibp2p1.connectionManager.size).to.equal(0)
 
       // Wait for failed dial
-      await defer.promise
+      await deferred.promise
     })
   })
 
