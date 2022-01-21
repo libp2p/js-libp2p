@@ -370,9 +370,9 @@ describe('auto-relay', () => {
 
       // Wait for other peer connected to be added as listen addr
       await pWaitFor(() => relayLibp2p1.transportManager.listen.callCount === 2)
-      expect(autoRelay1._tryToListenOnRelay.callCount).to.equal(1)
-      expect(autoRelay1._listenRelays.size).to.equal(1)
-      expect(relayLibp2p1.connectionManager.size).to.eql(1)
+      await pWaitFor(() => autoRelay1._tryToListenOnRelay.callCount === 1)
+      await pWaitFor(() => autoRelay1._listenRelays.size === 1)
+      await pWaitFor(() => relayLibp2p1.connectionManager.size === 1)
     })
 
     it('should not fail when trying to dial unreachable peers to add as hop relay and replaced removed ones', async () => {
@@ -492,7 +492,7 @@ describe('auto-relay', () => {
 
       // Wait for peer added as listen relay
       await pWaitFor(() => autoRelay2._addListenRelay.callCount === 1)
-      expect(autoRelay2._listenRelays.size).to.equal(1)
+      await pWaitFor(() => autoRelay2._listenRelays.size === 1)
 
       // Relay 1 discovers Relay 2 relayed multiaddr via Relay 3
       const ma2RelayedBy3 = relayLibp2p2.multiaddrs[relayLibp2p2.multiaddrs.length - 1]
