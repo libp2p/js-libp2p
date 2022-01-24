@@ -13,6 +13,8 @@
   * [`unhandle`](#unhandle)
   * [`ping`](#ping)
   * [`fetch`](#fetch)
+  * [`fetchService.registerLookupFunction`](#fetchserviceregisterlookupfunction)
+  * [`fetchService.unRegisterLookupFunction`](#fetchserviceunregisterlookupfunction)
   * [`multiaddrs`](#multiaddrs)
   * [`addressManager.getListenAddrs`](#addressmanagergetlistenaddrs)
   * [`addressManager.getAnnounceAddrs`](#addressmanagergetannounceaddrs)
@@ -474,6 +476,53 @@ Fetch a value from a remote node
 | Type | Description |
 |------|-------------|
 | `Promise<Uint8Array | null>` | The value for the key or null if it cannot be found |
+
+#### Example
+
+```js
+// ...
+const value = await libp2p.fetch(otherPeerId, '/some/key')
+```
+
+## fetchService.registerLookupFunction
+
+Register a function to look up values requested by remote nodes
+
+`libp2p.fetchService.registerLookupFunction(prefix, lookup)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| prefix | `string` | All queries below this prefix will be passed to the lookup function |
+| lookup | `(key: string) => Promise<Uint8Array | null>` | A function that takes a key and returns a Uint8Array or null |
+
+#### Example
+
+```js
+// ...
+const value = await libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
+```
+
+## fetchService.unregisterLookupFunction
+
+Removes the passed lookup function or any function registered for the passed prefix
+
+`libp2p.fetchService.unregisterLookupFunction(prefix, lookup)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| prefix | `string` | All queries below this prefix will be passed to the lookup function |
+| lookup | `(key: string) => Promise<Uint8Array | null>` | Optional: A function that takes a key and returns a Uint8Array or null |
+
+#### Example
+
+```js
+// ...
+libp2p.fetchService.unregisterLookupFunction('/prefix')
+```
 
 ## multiaddrs
 
