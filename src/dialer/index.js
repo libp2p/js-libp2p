@@ -216,7 +216,7 @@ class Dialer {
       await this.peerStore.addressBook.add(id, filteredMultiaddrs)
     }
 
-    let knownAddrs =  await this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter)
+    let knownAddrs = await this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter)
     knownAddrs = await all(filter(knownAddrs, async (multiaddr) => !(this.connectionManager && await this.connectionManager.gater.interceptAddrDial(id, multiaddr))))
 
     // If received a multiaddr to dial, it should be the first to use
