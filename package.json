@@ -42,7 +42,6 @@
     "test:browser": "aegir test -t browser",
     "test:examples": "cd examples && npm run test:all",
     "test:interop": "LIBP2P_JS=$PWD npx aegir test -t node -f ./node_modules/libp2p-interop/test/*",
-    "prepare": "npm run build",
     "coverage": "nyc --reporter=text --reporter=lcov npm run test:node"
   },
   "repository": {

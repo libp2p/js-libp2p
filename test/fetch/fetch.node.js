@@ -26,13 +26,13 @@ async function createLibp2pNode (peerId) {
   })
 }
 
-describe('Fetch Protocol', () => {
+describe('Fetch', () => {
   let sender
   let receiver
   const PREFIX_A = '/moduleA/'
   const PREFIX_B = '/moduleB/'
-  const DATA_A = { 'foobar': 'hello world' }
-  const DATA_B = { 'foobar': 'goodnight moon' }
+  const DATA_A = { foobar: 'hello world' }
+  const DATA_B = { foobar: 'goodnight moon' }
 
   const generateLookupFunction = function (prefix, data) {
     return async function (key) {
@@ -103,16 +103,11 @@ describe('Fetch Protocol', () => {
     await expect(Fetch.fetch(sender, receiver.peerId, '/moduleUNKNOWN/foobar')).to.eventually.be.rejected.with.property('code', codes.ERR_INVALID_PARAMETERS)
   })
 
-  it('Registering multiple handlers for same prefix errors', async () => {
+  it('registering multiple handlers for same prefix errors', async () => {
     const fetch = new Fetch()
     fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
 
-    try {
-      fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_B))
-      expect.fail("didn't throw")
-    } catch (err) {
-      expect(err).to.be.an('Error')
-      expect(err.code).to.equal(codes.ERR_KEY_ALREADY_EXISTS)
-    }
+    expect(() => fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_B)))
+      .to.throw().with.property('code', codes.ERR_KEY_ALREADY_EXISTS)
   })
 })
