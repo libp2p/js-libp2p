@@ -30,8 +30,8 @@ const METRICS_PENDING_DIAL_TARGETS = 'pending-dial-targets'
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('../peer-store')} PeerStore
- * @typedef {import('../peer-store/address-book').Address} Address
+ * @typedef {import('../peer-store/types').PeerStore} PeerStore
+ * @typedef {import('../peer-store/types').Address} Address
  * @typedef {import('../transport-manager')} TransportManager
  */
 
@@ -88,10 +88,18 @@ class Dialer {
     this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
 
     /** @type {Map<string, PendingDial>} */
-    this._pendingDials = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIALS, metrics)
+    this._pendingDials = trackedMap({
+      component: METRICS_COMPONENT,
+      metric: METRICS_PENDING_DIALS,
+      metrics
+    })
 
     /** @type {Map<string, { resolve: (value: any) => void, reject: (err: Error) => void}>} */
-    this._pendingDialTargets = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, metrics)
+    this._pendingDialTargets = trackedMap({
+      component: METRICS_COMPONENT,
+      metric: METRICS_PENDING_DIAL_TARGETS,
+      metrics
+    })
 
     for (const [key, value] of Object.entries(resolvers)) {
       Multiaddr.resolvers.set(key, value)
@@ -192,10 +200,10 @@ class Dialer {
     const { id, multiaddrs } = getPeer(peer)
 
     if (multiaddrs) {
-      this.peerStore.addressBook.add(id, multiaddrs)
+      await this.peerStore.addressBook.add(id, multiaddrs)
     }
 
-    let knownAddrs = this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter) || []
+    let knownAddrs = await this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter) || []
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.
@@ -215,7 +223,7 @@ class Dialer {
     const supportedAddrs = addrs.filter(a => this.transportManager.transportForMultiaddr(a))
 
     if (supportedAddrs.length > this.maxAddrsToDial) {
-      this.peerStore.delete(id)
+      await this.peerStore.delete(id)
       throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
     }
 
@@ -259,7 +267,10 @@ class Dialer {
 
     // this signal will potentially be used while dialing lots of
     // peers so prevent MaxListenersExceededWarning appearing in the console
-    setMaxListeners && setMaxListeners(Infinity, signal)
+    try {
+      // fails on node < 15.4
+      setMaxListeners && setMaxListeners(Infinity, signal)
+    } catch {}
 
     const pendingDial = {
       dialRequest,

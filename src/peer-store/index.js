@@ -1,152 +1,119 @@
 'use strict'
 
-const errcode = require('err-code')
-
+const debug = require('debug')
 const { EventEmitter } = require('events')
-const PeerId = require('peer-id')
-
 const AddressBook = require('./address-book')
 const KeyBook = require('./key-book')
 const MetadataBook = require('./metadata-book')
 const ProtoBook = require('./proto-book')
-
-const {
-  codes: { ERR_INVALID_PARAMETERS }
-} = require('../errors')
+const Store = require('./store')
 
 /**
- * @typedef {import('./address-book').Address} Address
+ * @typedef {import('./types').PeerStore} PeerStore
+ * @typedef {import('./types').Peer} Peer
+ * @typedef {import('peer-id')} PeerId
  */
 
+const log = Object.assign(debug('libp2p:peer-store'), {
+  error: debug('libp2p:peer-store:err')
+})
+
 /**
- * @extends {EventEmitter}
+ * An implementation of PeerStore that stores data in a Datastore
  *
- * @fires PeerStore#peer Emitted when a new peer is added.
- * @fires PeerStore#change:protocols Emitted when a known peer supports a different set of protocols.
- * @fires PeerStore#change:multiaddrs Emitted when a known peer has a different set of multiaddrs.
- * @fires PeerStore#change:pubkey Emitted emitted when a peer's public key is known.
- * @fires PeerStore#change:metadata Emitted when the known metadata of a peer change.
+ * @implements {PeerStore}
  */
-class PeerStore extends EventEmitter {
+class DefaultPeerStore extends EventEmitter {
   /**
-   * Peer object
-   *
-   * @typedef {Object} Peer
-   * @property {PeerId} id peer's peer-id instance.
-   * @property {Address[]} addresses peer's addresses containing its multiaddrs and metadata.
-   * @property {string[]} protocols peer's supported protocols.
-   * @property {Map<string, Uint8Array>|undefined} metadata peer's metadata map.
+   * @param {object} properties
+   * @param {PeerId} properties.peerId
+   * @param {import('interface-datastore').Datastore} properties.datastore
    */
-
-  /**
-   * Responsible for managing known peers, as well as their addresses, protocols and metadata.
-   *
-   * @param {object} options
-   * @param {PeerId} options.peerId
-   * @class
-   */
-  constructor ({ peerId }) {
+  constructor ({ peerId, datastore }) {
     super()
 
     this._peerId = peerId
+    this._store = new Store(datastore)
 
-    /**
-     * AddressBook containing a map of peerIdStr to Address.
-     */
-    this.addressBook = new AddressBook(this)
+    this.addressBook = new AddressBook(this.emit.bind(this), this._store)
+    this.keyBook = new KeyBook(this.emit.bind(this), this._store)
+    this.metadataBook = new MetadataBook(this.emit.bind(this), this._store)
+    this.protoBook = new ProtoBook(this.emit.bind(this), this._store)
+  }
 
-    /**
-     * KeyBook containing a map of peerIdStr to their PeerId with public keys.
-     */
-    this.keyBook = new KeyBook(this)
+  async * getPeers () {
+    log('getPeers await read lock')
+    const release = await this._store.lock.readLock()
+    log('getPeers got read lock')
 
-    /**
-     * MetadataBook containing a map of peerIdStr to their metadata Map.
-     */
-    this.metadataBook = new MetadataBook(this)
+    try {
+      for await (const peer of this._store.all()) {
+        if (peer.id.toB58String() === this._peerId.toB58String()) {
+          // Remove self peer if present
+          continue
+        }
 
-    /**
-     * ProtoBook containing a map of peerIdStr to supported protocols.
-     */
-    this.protoBook = new ProtoBook(this)
+        yield peer
+      }
+    } finally {
+      log('getPeers release read lock')
+      release()
+    }
   }
 
   /**
-   * Start the PeerStore.
-   */
-  start () {}
-
-  /**
-   * Stop the PeerStore.
-   */
-  stop () {}
-
-  /**
-   * Get all the stored information of every peer known.
-   *
-   * @returns {Map<string, Peer>}
-   */
-  get peers () {
-    const storedPeers = new Set([
-      ...this.addressBook.data.keys(),
-      ...this.keyBook.data.keys(),
-      ...this.protoBook.data.keys(),
-      ...this.metadataBook.data.keys()
-    ])
-
-    // Remove self peer if present
-    this._peerId && storedPeers.delete(this._peerId.toB58String())
-
-    const peersData = new Map()
-    storedPeers.forEach((idStr) => {
-      peersData.set(idStr, this.get(PeerId.createFromB58String(idStr)))
-    })
-
-    return peersData
-  }
-
-  /**
-   * Delete the information of the given peer in every book.
+   * Delete the information of the given peer in every book
    *
    * @param {PeerId} peerId
-   * @returns {boolean} true if found and removed
    */
-  delete (peerId) {
-    const addressesDeleted = this.addressBook.delete(peerId)
-    const keyDeleted = this.keyBook.delete(peerId)
-    const protocolsDeleted = this.protoBook.delete(peerId)
-    const metadataDeleted = this.metadataBook.delete(peerId)
+  async delete (peerId) {
+    log('delete await write lock')
+    const release = await this._store.lock.writeLock()
+    log('delete got write lock')
 
-    return addressesDeleted || keyDeleted || protocolsDeleted || metadataDeleted
+    try {
+      await this._store.delete(peerId)
+    } finally {
+      log('delete release write lock')
+      release()
+    }
   }
 
   /**
-   * Get the stored information of a given peer.
+   * Get the stored information of a given peer
    *
    * @param {PeerId} peerId
-   * @returns {Peer|undefined}
    */
-  get (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+  async get (peerId) {
+    log('get await read lock')
+    const release = await this._store.lock.readLock()
+    log('get got read lock')
+
+    try {
+      return this._store.load(peerId)
+    } finally {
+      log('get release read lock')
+      release()
     }
+  }
 
-    const id = this.keyBook.data.get(peerId.toB58String())
-    const addresses = this.addressBook.get(peerId)
-    const metadata = this.metadataBook.get(peerId)
-    const protocols = this.protoBook.get(peerId)
+  /**
+   * Returns true if we have a record of the peer
+   *
+   * @param {PeerId} peerId
+   */
+  async has (peerId) {
+    log('has await read lock')
+    const release = await this._store.lock.readLock()
+    log('has got read lock')
 
-    if (!id && !addresses && !metadata && !protocols) {
-      return undefined
-    }
-
-    return {
-      id: id || peerId,
-      addresses: addresses || [],
-      protocols: protocols || [],
-      metadata: metadata
+    try {
+      return this._store.has(peerId)
+    } finally {
+      log('has release read lock')
+      release()
     }
   }
 }
 
-module.exports = PeerStore
+module.exports = DefaultPeerStore

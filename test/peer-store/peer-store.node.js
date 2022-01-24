@@ -6,6 +6,7 @@ const sinon = require('sinon')
 
 const baseOptions = require('../utils/base-options')
 const peerUtils = require('../utils/creators/peer')
+const all = require('it-all')
 
 describe('libp2p.peerStore', () => {
   let libp2p, remoteLibp2p
@@ -35,13 +36,14 @@ describe('libp2p.peerStore', () => {
     expect(spyAddressBook).to.have.property('called', true)
     expect(spyKeyBook).to.have.property('called', true)
 
-    const localPeers = libp2p.peerStore.peers
-    expect(localPeers.size).to.equal(1)
+    const localPeers = await all(libp2p.peerStore.getPeers())
 
-    const publicKeyInLocalPeer = localPeers.get(remoteIdStr).id.pubKey
+    expect(localPeers.length).to.equal(1)
+
+    const publicKeyInLocalPeer = localPeers[0].id.pubKey
     expect(publicKeyInLocalPeer.bytes).to.equalBytes(remoteLibp2p.peerId.pubKey.bytes)
 
-    const publicKeyInRemotePeer = remoteLibp2p.peerStore.keyBook.get(libp2p.peerId)
+    const publicKeyInRemotePeer = await remoteLibp2p.peerStore.keyBook.get(libp2p.peerId)
     expect(publicKeyInRemotePeer).to.exist()
     expect(publicKeyInRemotePeer.bytes).to.equalBytes(libp2p.peerId.pubKey.bytes)
   })

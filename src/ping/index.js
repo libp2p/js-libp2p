@@ -63,6 +63,9 @@ async function ping (node, peer) {
  */
 function mount (node) {
   node.handle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`, ({ stream }) => pipe(stream, stream))
+    .catch(err => {
+      log.error(err)
+    })
 }
 
 /**
@@ -72,6 +75,9 @@ function mount (node) {
  */
 function unmount (node) {
   node.unhandle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`)
+    .catch(err => {
+      log.error(err)
+    })
 }
 
 exports = module.exports = ping
