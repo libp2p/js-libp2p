@@ -78,7 +78,7 @@ class FetchProtocol {
         throw errCode(new Error('Error in fetch protocol response: ' + errmsg), codes.ERR_INVALID_PARAMETERS)
       }
       default: {
-        throw errCode(new Error('Unreachable case'), codes.ERR_UNHANDLED_CASE)
+        throw errCode(new Error('Unknown response status'), codes.ERR_INVALID_MESSAGE)
       }
     }
   }
