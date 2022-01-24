@@ -27,8 +27,6 @@ const { PROTOCOL } = require('./constants')
  * by a fixed prefix that all keys that should be routed to that lookup function will start with.
  */
 class FetchProtocol {
-  static PROTOCOL = PROTOCOL
-
   /**
    * @param {Libp2p} libp2p
    */
@@ -155,5 +153,7 @@ class FetchProtocol {
     this._lookupFunctions.delete(prefix)
   }
 }
+
+FetchProtocol.PROTOCOL = PROTOCOL
 
 exports = module.exports = FetchProtocol
