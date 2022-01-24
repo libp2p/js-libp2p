@@ -360,7 +360,7 @@ class Libp2p extends EventEmitter {
     }
 
     if (this.fetchService) {
-      await this.handle(FetchService.getProtocolStr(this), this.fetchService.handleMessage)
+      await this.handle(FetchService.PROTOCOL, this.fetchService.handleMessage)
     }
 
     try {
@@ -414,7 +414,7 @@ class Libp2p extends EventEmitter {
       await this.natManager.stop()
       await this.transportManager.close()
 
-      this.unhandle(FetchService.getProtocolStr(this))
+      this.unhandle(FetchService.PROTOCOL)
 
       ping.unmount(this)
       this.dialer.destroy()

@@ -10,8 +10,7 @@ const lp = require('it-length-prefixed')
 const { FetchRequest, FetchResponse } = require('./proto')
 // @ts-ignore it-handshake does not export types
 const handshake = require('it-handshake')
-
-const { PROTOCOL_NAME, PROTOCOL_VERSION } = require('./constants')
+const { PROTOCOL } = require('./constants')
 
 /**
  * @typedef {import('../')} Libp2p
@@ -28,12 +27,7 @@ const { PROTOCOL_NAME, PROTOCOL_VERSION } = require('./constants')
  * by a fixed prefix that all keys that should be routed to that lookup function will start with.
  */
 class FetchProtocol {
-  /**
-   * @param {Libp2p} libp2p
-   */
-  static getProtocolStr (libp2p) {
-    return `/${libp2p._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
-  }
+  static PROTOCOL = PROTOCOL
 
   /**
    * @param {Libp2p} libp2p
@@ -41,7 +35,6 @@ class FetchProtocol {
   constructor (libp2p) {
     this._lookupFunctions = new Map() // Maps key prefix to value lookup function
     this._libp2p = libp2p
-    this._protocol = `/${this._libp2p._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.handleMessage = this.handleMessage.bind(this)
   }
 
@@ -57,7 +50,7 @@ class FetchProtocol {
     log('dialing %s to %s', this._protocol, peer.toB58String ? peer.toB58String() : peer)
 
     const connection = await this._libp2p.dial(peer)
-    const { stream } = await connection.newStream(this._protocol)
+    const { stream } = await connection.newStream(FetchProtocol.PROTOCOL)
     const shake = handshake(stream)
 
     // send message

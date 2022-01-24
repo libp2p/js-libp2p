@@ -1,7 +1,6 @@
 'use strict'
 
 module.exports = {
-  PROTOCOL: '/ipfs/fetch/0.0.1', // deprecated
-  PROTOCOL_VERSION: '0.0.1',
-  PROTOCOL_NAME: 'fetch'
+  // https://github.com/libp2p/specs/tree/master/fetch#wire-protocol
+  PROTOCOL: '/libp2p/fetch/0.0.1'
 }
