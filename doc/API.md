@@ -12,6 +12,7 @@
   * [`handle`](#handle)
   * [`unhandle`](#unhandle)
   * [`ping`](#ping)
+  * [`fetch`](#fetch)
   * [`multiaddrs`](#multiaddrs)
   * [`addressManager.getListenAddrs`](#addressmanagergetlistenaddrs)
   * [`addressManager.getAnnounceAddrs`](#addressmanagergetannounceaddrs)
@@ -454,6 +455,25 @@ Pings a given peer and get the operation's latency.
 // ...
 const latency = await libp2p.ping(otherPeerId)
 ```
+
+## fetch
+
+Fetch a value from a remote node
+
+`libp2p.fetch(peer, key)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peer | [`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | peer to ping |
+| key | `string` | A key that corresponds to a value on the remote node |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<Uint8Array | null>` | The value for the key or null if it cannot be found |
 
 ## multiaddrs
 
