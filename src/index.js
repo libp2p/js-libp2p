@@ -31,6 +31,7 @@ const PubsubAdapter = require('./pubsub-adapter')
 const Registrar = require('./registrar')
 const ping = require('./ping')
 const IdentifyService = require('./identify')
+const FetchService = require('./fetch')
 const NatManager = require('./nat-manager')
 const { updateSelfPeerRecord } = require('./record/utils')
 
@@ -323,6 +324,8 @@ class Libp2p extends EventEmitter {
     ping.mount(this)
 
     this._onDiscoveryPeer = this._onDiscoveryPeer.bind(this)
+
+    this.fetchService = new FetchService(this)
   }
 
   /**
@@ -354,6 +357,10 @@ class Libp2p extends EventEmitter {
 
     if (this.identifyService) {
       await this.handle(Object.values(IdentifyService.getProtocolStr(this)), this.identifyService.handleMessage)
+    }
+
+    if (this.fetchService) {
+      await this.handle(FetchService.PROTOCOL, this.fetchService.handleMessage)
     }
 
     try {
@@ -406,6 +413,8 @@ class Libp2p extends EventEmitter {
 
       await this.natManager.stop()
       await this.transportManager.close()
+
+      this.unhandle(FetchService.PROTOCOL)
 
       ping.unmount(this)
       this.dialer.destroy()
@@ -557,6 +566,17 @@ class Libp2p extends EventEmitter {
         return connection.close()
       })
     )
+  }
+
+  /**
+   * Sends a request to fetch the value associated with the given key from the given peer.
+   *
+   * @param {PeerId|Multiaddr} peer
+   * @param {string} key
+   * @returns {Promise<Uint8Array | null>}
+   */
+  fetch (peer, key) {
+    return this.fetchService.fetch(peer, key)
   }
 
   /**
