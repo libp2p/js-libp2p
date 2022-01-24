@@ -42,6 +42,7 @@ const METRICS_PEER_VALUES = 'peer-values'
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
+ * @typedef {import('./types').ConnectionGater} ConnectionGater
  */
 
 /**
@@ -119,20 +120,14 @@ class ConnectionManager extends EventEmitter {
     /**
      * Connection Gater
      *
-     * @type {{
-     * interceptPeerDial: (peerId: PeerId) => Promise<boolean>,
-     * interceptAddrDial: (peerId: PeerId, maddr: Multiaddr) => Promise<boolean>,
-     * interceptAccept: (maConn: MultiaddrConnection) => Promise<boolean>,
-     * interceptSecured: (direction: 'inbound' | 'outbound', peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>,
-     * interceptUpgraded: (maConn: MultiaddrConnection | MuxedStream) => Promise<boolean>,
-     * }}
+     * @type {ConnectionGater}
      */
     this.gater = {
-      interceptPeerDial: async (peerId) => false,
-      interceptAddrDial: async (peerId, multiaddr) => false,
-      interceptAccept: async (maConn) => false,
-      interceptSecured: async (direction, peerId, maConn) => false,
-      interceptUpgraded: async (maConn) => false,
+      interceptPeerDial: async () => Promise.resolve(false),
+      interceptAddrDial: async () => Promise.resolve(false),
+      interceptAccept: async () => Promise.resolve(false),
+      interceptSecured: async () => Promise.resolve(false),
+      interceptUpgraded: async () => Promise.resolve(false),
       ...libp2p._options.connectionManager.gater
     }
 

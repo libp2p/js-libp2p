@@ -143,9 +143,11 @@ class Dialer {
    */
   async connectToPeer (peer, options = {}) {
     const { id } = getPeer(peer)
+
     if (this.connectionManager && await this.connectionManager.gater.interceptPeerDial(id)) {
       throw errCode(new Error('The dial request is blocked by gater.interceptPeerDial'), codes.ERR_PEER_DIAL_INTERCEPTED)
     }
+
     const dialTarget = await this._createCancellableDialTarget(peer)
 
     if (!dialTarget.addrs.length) {
