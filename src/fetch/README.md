@@ -12,14 +12,14 @@ The fetch protocol is a simple protocol for requesting a value corresponding to 
 ## Usage
 
 ```javascript
-var FetchProtocol = require('libp2p/src/fetch')
+const Libp2p = require('libp2p')
 
 /**
  * Given a key (as a string) returns a value (as a Uint8Array), or null if the key isn't found.
  * All keys must be prefixed my the same prefix, which will be used to find the appropriate key
  * lookup function.
  * @param key - a string
- * @returns value - a Uint8Array value that corresponds to the given key, or null if the key doesn't 
+ * @returns value - a Uint8Array value that corresponds to the given key, or null if the key doesn't
  *   have a corresponding value.
  */
 async function my_subsystem_key_lookup(key) {
@@ -27,12 +27,10 @@ async function my_subsystem_key_lookup(key) {
 }
 
 // Enable this peer to respond to fetch requests for keys that begin with '/my_subsystem_key_prefix/'
-const fetch = new FetchProtocol()
-fetch.registerLookupFunction('/my_subsystem_key_prefix/', my_subsystem_key_lookup)
-fetch.mount(libp2p)
+const libp2p = Libp2p.create(...)
+libp2p.fetchService.registerLookupFunction('/my_subsystem_key_prefix/', my_subsystem_key_lookup)
 
 const key = '/my_subsystem_key_prefix/{...}'
-const value = await FetchProtocol.fetch(libp2p, peerDst, key)
-
-FetchProtocol.unmount(libp2p)
+const peerDst = PeerId.parse('Qmfoo...') // or Multiaddr instance
+const value = await libp2p.fetchService.fetch(libp2p, peerDst, key)
 ```

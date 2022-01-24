@@ -28,25 +28,36 @@ const { PROTOCOL_NAME, PROTOCOL_VERSION } = require('./constants')
  * by a fixed prefix that all keys that should be routed to that lookup function will start with.
  */
 class FetchProtocol {
-  constructor () {
+  /**
+   * @param {Libp2p} libp2p
+   */
+  static getProtocolStr (libp2p) {
+    return `/${libp2p._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+  }
+
+  /**
+   * @param {Libp2p} libp2p
+   */
+  constructor (libp2p) {
     this._lookupFunctions = new Map() // Maps key prefix to value lookup function
+    this._libp2p = libp2p
+    this._protocol = `/${this._libp2p._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.handleMessage = this.handleMessage.bind(this)
   }
 
   /**
    * Sends a request to fetch the value associated with the given key from the given peer.
    *
-   * @param {Libp2p} node
    * @param {PeerId|Multiaddr} peer
    * @param {string} key
    * @returns {Promise<Uint8Array | null>}
    */
-  static async fetch (node, peer, key) {
-    const protocol = `/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+  async fetch (peer, key) {
     // @ts-ignore multiaddr might not have toB58String
-    log('dialing %s to %s', protocol, peer.toB58String ? peer.toB58String() : peer)
+    log('dialing %s to %s', this._protocol, peer.toB58String ? peer.toB58String() : peer)
 
-    const connection = await node.dial(peer)
-    const { stream } = await connection.newStream(protocol)
+    const connection = await this._libp2p.dial(peer)
+    const { stream } = await connection.newStream(this._protocol)
     const shake = handshake(stream)
 
     // send message
@@ -77,9 +88,12 @@ class FetchProtocol {
    * responds based on looking up the key in the request via the lookup callback that corresponds
    * to the key's prefix.
    *
-   * @param {MuxedStream} stream
+   * @param {object} options
+   * @param {MuxedStream} options.stream
+   * @param {string} options.protocol
    */
-  async _handleRequest (stream) {
+  async handleMessage (options) {
+    const { stream } = options
     const shake = handshake(stream)
     const request = FetchRequest.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
 
@@ -130,21 +144,22 @@ class FetchProtocol {
   }
 
   /**
-   * Subscribe fetch protocol handler.
+   * Registers a new lookup callback that can map keys to values, for a given set of keys that
+   * share the same prefix.
    *
-   * @param {Libp2p} node
+   * @param {string} prefix
+   * @param {LookupFunction} [lookup]
    */
-  mount (node) {
-    node.handle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`, ({ stream }) => this._handleRequest(stream))
-  }
+  unregisterLookupFunction (prefix, lookup) {
+    if (lookup != null) {
+      const existingLookup = this._lookupFunctions.get(prefix)
 
-  /**
-   * Unsubscribe fetch protocol handler.
-   *
-   * @param {Libp2p} node
-   */
-  static unmount (node) {
-    node.unhandle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`)
+      if (existingLookup !== lookup) {
+        return
+      }
+    }
+
+    this._lookupFunctions.delete(prefix)
   }
 }
 
