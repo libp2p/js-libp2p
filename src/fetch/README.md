@@ -32,5 +32,5 @@ libp2p.fetchService.registerLookupFunction('/my_subsystem_key_prefix/', my_subsy
 
 const key = '/my_subsystem_key_prefix/{...}'
 const peerDst = PeerId.parse('Qmfoo...') // or Multiaddr instance
-const value = await libp2p.fetchService.fetch(libp2p, peerDst, key)
+const value = await libp2p.fetch(peerDst, key)
 ```

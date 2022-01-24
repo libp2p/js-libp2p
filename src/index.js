@@ -569,6 +569,17 @@ class Libp2p extends EventEmitter {
   }
 
   /**
+   * Sends a request to fetch the value associated with the given key from the given peer.
+   *
+   * @param {PeerId|Multiaddr} peer
+   * @param {string} key
+   * @returns {Promise<Uint8Array | null>}
+   */
+  fetch (peer, key) {
+    return this.fetchService.fetch(peer, key)
+  }
+
+  /**
    * Pings the given peer in order to obtain the operation latency.
    *
    * @param {PeerId|Multiaddr|string} peer - The peer to ping
