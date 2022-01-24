@@ -32,8 +32,8 @@ const createNode = async () => {
   ])
 
   // Add node's 2 data to the PeerStore
-  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-  
+  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+
   node1.handle('/node-1', ({ stream }) => {
     pipe(
       stream,

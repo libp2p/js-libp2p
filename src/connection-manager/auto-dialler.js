@@ -4,6 +4,7 @@ const debug = require('debug')
 const mergeOptions = require('merge-options')
 // @ts-ignore retimer does not have types
 const retimer = require('retimer')
+const all = require('it-all')
 
 const log = Object.assign(debug('libp2p:connection-manager:auto-dialler'), {
   error: debug('libp2p:connection-manager:auto-dialler:err')
@@ -50,7 +51,7 @@ class AutoDialler {
   /**
    * Starts the auto dialer
    */
-  start () {
+  async start () {
     if (!this._options.enabled) {
       log('not enabled')
       return
@@ -86,8 +87,10 @@ class AutoDialler {
       return
     }
 
-    // Sort peers on wether we know protocols of public keys for them
-    const peers = Array.from(this._libp2p.peerStore.peers.values())
+    // Sort peers on whether we know protocols of public keys for them
+    // TODO: assuming the `peerStore.getPeers()` order is stable this will mean
+    // we keep trying to connect to the same peers?
+    const peers = (await all(this._libp2p.peerStore.getPeers()))
       .sort((a, b) => {
         if (b.protocols && b.protocols.length && (!a.protocols || !a.protocols.length)) {
           return 1

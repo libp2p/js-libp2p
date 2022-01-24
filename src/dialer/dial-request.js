@@ -63,7 +63,10 @@ class DialRequest {
     tokens.forEach(token => tokenHolder.push(token))
     const dialAbortControllers = this.addrs.map(() => {
       const controller = new AbortController()
-      setMaxListeners && setMaxListeners(Infinity, controller.signal)
+      try {
+        // fails on node < 15.4
+        setMaxListeners && setMaxListeners(Infinity, controller.signal)
+      } catch {}
 
       return controller
     })

@@ -14,12 +14,12 @@ const take = require('it-take')
  * Store the multiaddrs from every peer in the passed peer store
  *
  * @param {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>} source
- * @param {import('../peer-store')} peerStore
+ * @param {import('../peer-store/types').PeerStore} peerStore
  */
-function storeAddresses (source, peerStore) {
-  return map(source, (peer) => {
+async function * storeAddresses (source, peerStore) {
+  yield * map(source, async (peer) => {
     // ensure we have the addresses for a given peer
-    peerStore.addressBook.add(peer.id, peer.multiaddrs)
+    await peerStore.addressBook.add(peer.id, peer.multiaddrs)
 
     return peer
   })

@@ -1,74 +1,36 @@
 'use strict'
 
 const debug = require('debug')
-const log = Object.assign(debug('libp2p:peer-store:address-book'), {
-  error: debug('libp2p:peer-store:address-book:err')
-})
 const errcode = require('err-code')
-
 const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
-
-const Book = require('./book')
+const { codes } = require('../errors')
 const PeerRecord = require('../record/peer-record')
-
-const {
-  codes: { ERR_INVALID_PARAMETERS }
-} = require('../errors')
 const Envelope = require('../record/envelope')
 
 /**
- * @typedef {import('./')} PeerStore
+ * @typedef {import('./types').PeerStore} PeerStore
+ * @typedef {import('./types').Address} Address
+ * @typedef {import('./types').AddressBook} AddressBook
  */
 
-/**
- * @typedef {Object} Address
- * @property {Multiaddr} multiaddr peer multiaddr.
- * @property {boolean} isCertified obtained from a signed peer record.
- *
- * @typedef {Object} CertifiedRecord
- * @property {Uint8Array} raw raw envelope.
- * @property {number} seqNumber seq counter.
- *
- * @typedef {Object} Entry
- * @property {Address[]} addresses peer Addresses.
- * @property {CertifiedRecord} record certified peer record.
- */
+const log = Object.assign(debug('libp2p:peer-store:address-book'), {
+  error: debug('libp2p:peer-store:address-book:err')
+})
+
+const EVENT_NAME = 'change:multiaddrs'
 
 /**
- * @extends {Book}
+ * @implements {AddressBook}
  */
-class AddressBook extends Book {
+class PeerStoreAddressBook {
   /**
-   * The AddressBook is responsible for keeping the known multiaddrs of a peer.
-   *
-   * @class
-   * @param {PeerStore} peerStore
+   * @param {PeerStore["emit"]} emit
+   * @param {import('./types').Store} store
    */
-  constructor (peerStore) {
-    /**
-     * PeerStore Event emitter, used by the AddressBook to emit:
-     * "peer" - emitted when a peer is discovered by the node.
-     * "change:multiaddrs" - emitted when the known multiaddrs of a peer change.
-     */
-    super({
-      peerStore,
-      eventName: 'change:multiaddrs',
-      eventProperty: 'multiaddrs',
-      eventTransformer: (data) => {
-        if (!data.addresses) {
-          return []
-        }
-        return data.addresses.map((/** @type {Address} */ address) => address.multiaddr)
-      }
-    })
-
-    /**
-     * Map known peers to their known Address Entries.
-     *
-     * @type {Map<string, Entry>}
-     */
-    this.data = new Map()
+  constructor (emit, store) {
+    this._emit = emit
+    this._store = store
   }
 
   /**
@@ -77,69 +39,90 @@ class AddressBook extends Book {
    * into the AddressBook.
    *
    * @param {Envelope} envelope
-   * @returns {boolean}
    */
-  consumePeerRecord (envelope) {
-    let peerRecord
+  async consumePeerRecord (envelope) {
+    log('consumePeerRecord await write lock')
+    const release = await this._store.lock.writeLock()
+    log('consumePeerRecord got write lock')
+
+    let peerId
+    let updatedPeer
+
     try {
-      peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
-    } catch (/** @type {any} */ err) {
-      log.error('invalid peer record received')
-      return false
-    }
-
-    // Verify peerId
-    if (!peerRecord.peerId.equals(envelope.peerId)) {
-      log('signing key does not match PeerId in the PeerRecord')
-      return false
-    }
-
-    // ensure the record has multiaddrs
-    if (!peerRecord.multiaddrs || !peerRecord.multiaddrs.length) {
-      return false
-    }
-
-    const peerId = peerRecord.peerId
-    const id = peerId.toB58String()
-    const entry = this.data.get(id) || { record: undefined }
-    const storedRecord = entry.record
-
-    // ensure seq is greater than, or equal to, the last received
-    if (storedRecord && storedRecord.seqNumber >= peerRecord.seqNumber) {
-      return false
-    }
-
-    const addresses = this._toAddresses(peerRecord.multiaddrs, true)
-
-    // Replace unsigned addresses by the new ones from the record
-    // TODO: Once we have ttls for the addresses, we should merge these in.
-    this._setData(peerId, {
-      addresses,
-      record: {
-        raw: envelope.marshal(),
-        seqNumber: peerRecord.seqNumber
+      let peerRecord
+      try {
+        peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+      } catch (/** @type {any} */ err) {
+        log.error('invalid peer record received')
+        return false
       }
-    })
-    log(`stored provided peer record for ${id}`)
+
+      peerId = peerRecord.peerId
+      const multiaddrs = peerRecord.multiaddrs
+
+      // Verify peerId
+      if (!peerId.equals(envelope.peerId)) {
+        log('signing key does not match PeerId in the PeerRecord')
+        return false
+      }
+
+      // ensure the record has multiaddrs
+      if (!multiaddrs || !multiaddrs.length) {
+        return false
+      }
+
+      if (await this._store.has(peerId)) {
+        const peer = await this._store.load(peerId)
+
+        if (peer.peerRecordEnvelope) {
+          const storedEnvelope = await Envelope.createFromProtobuf(peer.peerRecordEnvelope)
+          const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
+
+          // ensure seq is greater than, or equal to, the last received
+          if (storedRecord.seqNumber >= peerRecord.seqNumber) {
+            return false
+          }
+        }
+      }
+
+      // Replace unsigned addresses by the new ones from the record
+      // TODO: Once we have ttls for the addresses, we should merge these in
+      updatedPeer = await this._store.patchOrCreate(peerId, {
+        addresses: convertMultiaddrsToAddresses(multiaddrs, true),
+        peerRecordEnvelope: envelope.marshal()
+      })
+
+      log(`stored provided peer record for ${peerRecord.peerId.toB58String()}`)
+    } finally {
+      log('consumePeerRecord release write lock')
+      release()
+    }
+
+    this._emit(EVENT_NAME, { peerId, multiaddrs: updatedPeer.addresses.map(({ multiaddr }) => multiaddr) })
 
     return true
   }
 
   /**
-   * Get the raw Envelope for a peer. Returns
-   * undefined if no Envelope is found.
-   *
    * @param {PeerId} peerId
-   * @returns {Uint8Array|undefined}
    */
-  getRawEnvelope (peerId) {
-    const entry = this.data.get(peerId.toB58String())
+  async getRawEnvelope (peerId) {
+    log('getRawEnvelope await read lock')
+    const release = await this._store.lock.readLock()
+    log('getRawEnvelope got read lock')
 
-    if (!entry || !entry.record || !entry.record.raw) {
-      return undefined
+    try {
+      const peer = await this._store.load(peerId)
+
+      return peer.peerRecordEnvelope
+    } catch (/** @type {any} */ err) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
+      }
+    } finally {
+      log('getRawEnvelope release read lock')
+      release()
     }
-
-    return entry.record.raw
   }
 
   /**
@@ -147,10 +130,9 @@ class AddressBook extends Book {
    * Returns undefined if no record exists.
    *
    * @param {PeerId} peerId
-   * @returns {Promise<Envelope|void>|undefined}
    */
-  getPeerRecord (peerId) {
-    const raw = this.getRawEnvelope(peerId)
+  async getPeerRecord (peerId) {
+    const raw = await this.getRawEnvelope(peerId)
 
     if (!raw) {
       return undefined
@@ -160,186 +142,189 @@ class AddressBook extends Book {
   }
 
   /**
-   * Set known multiaddrs of a provided peer.
-   * This will replace previously stored multiaddrs, if available.
-   * Replacing stored multiaddrs might result in losing obtained certified addresses.
-   * If you are not sure, it's recommended to use `add` instead.
-   *
-   * @override
    * @param {PeerId} peerId
-   * @param {Multiaddr[]} multiaddrs
-   * @returns {AddressBook}
    */
-  set (peerId, multiaddrs) {
+  async get (peerId) {
     if (!PeerId.isPeerId(peerId)) {
       log.error('peerId must be an instance of peer-id to store data')
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
     }
 
-    const addresses = this._toAddresses(multiaddrs)
+    log('get wait for read lock')
+    const release = await this._store.lock.readLock()
+    log('get got read lock')
 
-    // Not replace multiaddrs
-    if (!addresses.length) {
-      return this
-    }
+    try {
+      const peer = await this._store.load(peerId)
 
-    const id = peerId.toB58String()
-    const entry = this.data.get(id)
-
-    // Already knows the peer
-    if (entry && entry.addresses && entry.addresses.length === addresses.length) {
-      const intersection = entry.addresses.filter((addr) => addresses.some((newAddr) => addr.multiaddr.equals(newAddr.multiaddr)))
-
-      // Are new addresses equal to the old ones?
-      // If yes, no changes needed!
-      if (intersection.length === entry.addresses.length) {
-        log(`the addresses provided to store are equal to the already stored for ${id}`)
-        return this
+      return peer.addresses
+    } catch (/** @type {any} */ err) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
       }
+    } finally {
+      log('get release read lock')
+      release()
     }
 
-    this._setData(peerId, {
-      addresses,
-      record: entry && entry.record
-    })
-    log(`stored provided multiaddrs for ${id}`)
-
-    // Notify the existance of a new peer
-    if (!entry) {
-      this._ps.emit('peer', peerId)
-    }
-
-    return this
+    return []
   }
 
   /**
-   * Add known addresses of a provided peer.
-   * If the peer is not known, it is set with the given addresses.
-   *
    * @param {PeerId} peerId
    * @param {Multiaddr[]} multiaddrs
-   * @returns {AddressBook}
    */
-  add (peerId, multiaddrs) {
+  async set (peerId, multiaddrs) {
     if (!PeerId.isPeerId(peerId)) {
       log.error('peerId must be an instance of peer-id to store data')
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
     }
 
-    const addresses = this._toAddresses(multiaddrs)
-    const id = peerId.toB58String()
+    log('set await write lock')
+    const release = await this._store.lock.writeLock()
+    log('set got write lock')
 
-    // No addresses to be added
-    if (!addresses.length) {
-      return this
-    }
+    let hasPeer = false
+    let updatedPeer
 
-    const entry = this.data.get(id)
+    try {
+      const addresses = convertMultiaddrsToAddresses(multiaddrs)
 
-    if (entry && entry.addresses) {
-      // Add recorded uniquely to the new array (Union)
-      entry.addresses.forEach((addr) => {
-        if (!addresses.find(r => r.multiaddr.equals(addr.multiaddr))) {
-          addresses.push(addr)
+      // No valid addresses found
+      if (!addresses.length) {
+        return
+      }
+
+      try {
+        const peer = await this._store.load(peerId)
+        hasPeer = true
+
+        if (new Set([
+          ...addresses.map(({ multiaddr }) => multiaddr.toString()),
+          ...peer.addresses.map(({ multiaddr }) => multiaddr.toString())
+        ]).size === peer.addresses.length && addresses.length === peer.addresses.length) {
+          // not changing anything, no need to update
+          return
         }
-      })
-
-      // If the recorded length is equal to the new after the unique union
-      // The content is the same, no need to update.
-      if (entry.addresses.length === addresses.length) {
-        log(`the addresses provided to store are already stored for ${id}`)
-        return this
+      } catch (/** @type {any} */ err) {
+        if (err.code !== codes.ERR_NOT_FOUND) {
+          throw err
+        }
       }
+
+      updatedPeer = await this._store.patchOrCreate(peerId, { addresses })
+
+      log(`set multiaddrs for ${peerId.toB58String()}`)
+    } finally {
+      log('set release write lock')
+      release()
     }
 
-    this._setData(peerId, {
-      addresses,
-      record: entry && entry.record
-    })
+    this._emit(EVENT_NAME, { peerId, multiaddrs: updatedPeer.addresses.map(addr => addr.multiaddr) })
 
-    log(`added provided multiaddrs for ${id}`)
-
-    // Notify the existance of a new peer
-    if (!(entry && entry.addresses)) {
-      this._ps.emit('peer', peerId)
+    // Notify the existence of a new peer
+    if (!hasPeer) {
+      this._emit('peer', peerId)
     }
-
-    return this
   }
 
   /**
-   * Get the known data of a provided peer.
-   *
-   * @override
    * @param {PeerId} peerId
-   * @returns {Address[]|undefined}
-   */
-  get (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    const entry = this.data.get(peerId.toB58String())
-
-    return entry && entry.addresses ? [...entry.addresses] : undefined
-  }
-
-  /**
-   * Transforms received multiaddrs into Address.
-   *
-   * @private
    * @param {Multiaddr[]} multiaddrs
-   * @param {boolean} [isCertified]
-   * @returns {Address[]}
    */
-  _toAddresses (multiaddrs, isCertified = false) {
-    if (!multiaddrs) {
-      log.error('multiaddrs must be provided to store data')
-      throw errcode(new Error('multiaddrs must be provided'), ERR_INVALID_PARAMETERS)
+  async add (peerId, multiaddrs) {
+    if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
     }
 
-    // create Address for each address
-    /** @type {Address[]} */
-    const addresses = []
-    multiaddrs.forEach((addr) => {
-      if (!Multiaddr.isMultiaddr(addr)) {
-        log.error(`multiaddr ${addr} must be an instance of multiaddr`)
-        throw errcode(new Error(`multiaddr ${addr} must be an instance of multiaddr`), ERR_INVALID_PARAMETERS)
+    log('add await write lock')
+    const release = await this._store.lock.writeLock()
+    log('add got write lock')
+
+    let hasPeer
+    let updatedPeer
+
+    try {
+      const addresses = convertMultiaddrsToAddresses(multiaddrs)
+
+      // No valid addresses found
+      if (!addresses.length) {
+        return
       }
 
-      // Guarantee no replicates
-      if (!addresses.find((a) => a.multiaddr.equals(addr))) {
-        addresses.push({
-          multiaddr: addr,
-          isCertified
-        })
-      }
-    })
+      try {
+        const peer = await this._store.load(peerId)
+        hasPeer = true
 
-    return addresses
+        if (new Set([
+          ...addresses.map(({ multiaddr }) => multiaddr.toString()),
+          ...peer.addresses.map(({ multiaddr }) => multiaddr.toString())
+        ]).size === peer.addresses.length) {
+          return
+        }
+      } catch (/** @type {any} */ err) {
+        if (err.code !== codes.ERR_NOT_FOUND) {
+          throw err
+        }
+      }
+
+      updatedPeer = await this._store.mergeOrCreate(peerId, { addresses })
+
+      log(`added multiaddrs for ${peerId}`)
+    } finally {
+      log('set release write lock')
+      release()
+    }
+
+    this._emit(EVENT_NAME, { peerId, multiaddrs: updatedPeer.addresses.map(addr => addr.multiaddr) })
+
+    // Notify the existence of a new peer
+    if (!hasPeer) {
+      this._emit('peer', peerId)
+    }
   }
 
   /**
-   * Get the known multiaddrs for a given peer. All returned multiaddrs
-   * will include the encapsulated `PeerId` of the peer.
-   * Returns `undefined` if there are no known multiaddrs for the given peer.
-   *
+   * @param {PeerId} peerId
+   */
+  async delete (peerId) {
+    if (!PeerId.isPeerId(peerId)) {
+      log.error('peerId must be an instance of peer-id to store data')
+      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+    }
+
+    log('delete await write lock')
+    const release = await this._store.lock.writeLock()
+    log('delete got write lock')
+
+    let has
+
+    try {
+      has = await this._store.has(peerId)
+
+      await this._store.patchOrCreate(peerId, {
+        addresses: []
+      })
+    } finally {
+      log('delete release write lock')
+      release()
+    }
+
+    if (has) {
+      this._emit(EVENT_NAME, { peerId, multiaddrs: [] })
+    }
+  }
+
+  /**
    * @param {PeerId} peerId
    * @param {(addresses: Address[]) => Address[]} [addressSorter]
-   * @returns {Multiaddr[]|undefined}
    */
-  getMultiaddrsForPeer (peerId, addressSorter = (ms) => ms) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
-    }
-
-    const entry = this.data.get(peerId.toB58String())
-    if (!entry || !entry.addresses) {
-      return undefined
-    }
+  async getMultiaddrsForPeer (peerId, addressSorter = (ms) => ms) {
+    const addresses = await this.get(peerId)
 
     return addressSorter(
-      entry.addresses || []
+      addresses
     ).map((address) => {
       const multiaddr = address.multiaddr
 
@@ -351,4 +336,34 @@ class AddressBook extends Book {
   }
 }
 
-module.exports = AddressBook
+/**
+ * Transforms received multiaddrs into Address.
+ *
+ * @private
+ * @param {Multiaddr[]} multiaddrs
+ * @param {boolean} [isCertified]
+ * @returns {Address[]}
+ */
+function convertMultiaddrsToAddresses (multiaddrs, isCertified = false) {
+  if (!multiaddrs) {
+    log.error('multiaddrs must be provided to store data')
+    throw errcode(new Error('multiaddrs must be provided'), codes.ERR_INVALID_PARAMETERS)
+  }
+
+  // create Address for each address with no duplicates
+  return Array.from(
+    new Set(multiaddrs.map(ma => ma.toString()))
+  )
+    .map(addr => {
+      try {
+        return {
+          multiaddr: new Multiaddr(addr),
+          isCertified
+        }
+      } catch (err) {
+        throw errcode(err, codes.ERR_INVALID_PARAMETERS)
+      }
+    })
+}
+
+module.exports = PeerStoreAddressBook

@@ -6,18 +6,27 @@
  */
 class TrackedMap extends Map {
   /**
-   * @param {string} component
-   * @param {string} name
-   * @param {import('.')} metrics
+   * @param {object} options
+   * @param {string} options.system
+   * @param {string} options.component
+   * @param {string} options.metric
+   * @param {import('.')} options.metrics
    */
-  constructor (component, name, metrics) {
+  constructor (options) {
     super()
 
+    const { system, component, metric, metrics } = options
+    this._system = system
     this._component = component
-    this._name = name
+    this._metric = metric
     this._metrics = metrics
 
-    this._metrics.updateComponentMetric(this._component, this._name, this.size)
+    this._metrics.updateComponentMetric({
+      system: this._system,
+      component: this._component,
+      metric: this._metric,
+      value: this.size
+    })
   }
 
   /**
@@ -26,7 +35,12 @@ class TrackedMap extends Map {
    */
   set (key, value) {
     super.set(key, value)
-    this._metrics.updateComponentMetric(this._component, this._name, this.size)
+    this._metrics.updateComponentMetric({
+      system: this._system,
+      component: this._component,
+      metric: this._metric,
+      value: this.size
+    })
     return this
   }
 
@@ -35,31 +49,43 @@ class TrackedMap extends Map {
    */
   delete (key) {
     const deleted = super.delete(key)
-    this._metrics.updateComponentMetric(this._component, this._name, this.size)
+    this._metrics.updateComponentMetric({
+      system: this._system,
+      component: this._component,
+      metric: this._metric,
+      value: this.size
+    })
     return deleted
   }
 
   clear () {
     super.clear()
 
-    this._metrics.updateComponentMetric(this._component, this._name, this.size)
+    this._metrics.updateComponentMetric({
+      system: this._system,
+      component: this._component,
+      metric: this._metric,
+      value: this.size
+    })
   }
 }
 
 /**
  * @template K
  * @template V
- * @param {string} component
- * @param {string} name
- * @param {import('.')} [metrics]
+ * @param {object} options
+ * @param {string} [options.system]
+ * @param {string} options.component
+ * @param {string} options.metric
+ * @param {import('.')} [options.metrics]
  * @returns {Map<K, V>}
  */
-module.exports = (component, name, metrics) => {
+module.exports = ({ system = 'libp2p', component, metric, metrics }) => {
   /** @type {Map<K, V>} */
   let map
 
   if (metrics) {
-    map = new TrackedMap(component, name, metrics)
+    map = new TrackedMap({ system, component, metric, metrics })
   } else {
     map = new Map()
   }

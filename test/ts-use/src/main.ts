@@ -105,8 +105,7 @@ async function main() {
     },
     datastore: new LevelStore('path/to/store'),
     peerStore: {
-      persistence: false,
-      threshold: 5
+      persistence: false
     },
     keychain: {
       pass: 'notsafepassword123456789',

@@ -19,8 +19,8 @@ describe('ping', () => {
       config: baseOptions
     })
 
-    nodes[0].peerStore.addressBook.set(nodes[1].peerId, nodes[1].multiaddrs)
-    nodes[1].peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
+    await nodes[0].peerStore.addressBook.set(nodes[1].peerId, nodes[1].multiaddrs)
+    await nodes[1].peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
   })
 
   afterEach(() => Promise.all(nodes.map(n => n.stop())))
