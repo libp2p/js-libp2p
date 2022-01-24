@@ -2,7 +2,7 @@
 'use strict'
 
 import React from 'react'
-import Ipfs from 'ipfs'
+import Ipfs from 'ipfs-core'
 import libp2pBundle from './libp2p-bundle'
 const Component = React.Component
 
@@ -70,7 +70,7 @@ class App extends Component {
   }
 
   componentDidMount () {
-    window.ipfs = this.ipfs = new Ipfs({
+    window.ipfs = this.ipfs = Ipfs.create({
       config: {
         Addresses: {
           Swarm: []

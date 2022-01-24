@@ -54,7 +54,7 @@ async function handleHop ({
   // Validate the HOP request has the required input
   try {
     validateAddrs(request, streamHandler)
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     return log.error('invalid hop request via peer %s', connection.remotePeer.toB58String(), err)
   }
 
@@ -93,7 +93,7 @@ async function handleHop ({
       connection: destinationConnection,
       request: stopRequest
     })
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     return log.error(err)
   }
 

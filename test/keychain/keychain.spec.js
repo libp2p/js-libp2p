@@ -9,7 +9,8 @@ const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 const peerUtils = require('../utils/creators/peer')
 
-const { MemoryDatastore, Key } = require('interface-datastore')
+const { Key } = require('interface-datastore/key')
+const { MemoryDatastore } = require('datastore-core/memory')
 const Keychain = require('../../src/keychain')
 const PeerId = require('peer-id')
 const crypto = require('libp2p-crypto')
@@ -295,7 +296,7 @@ describe('keychain', () => {
     it('requires plain data as a Uint8Array', async () => {
       const err = await ks.cms.encrypt(rsaKeyName, 'plain data').then(fail, err => err)
       expect(err).to.exist()
-      expect(err).to.have.property('code', 'ERR_INVALID_PARAMS')
+      expect(err).to.have.property('code', 'ERR_INVALID_PARAMETERS')
     })
 
     it('encrypts', async () => {
@@ -307,7 +308,7 @@ describe('keychain', () => {
     it('is a PKCS #7 message', async () => {
       const err = await ks.cms.decrypt('not CMS').then(fail, err => err)
       expect(err).to.exist()
-      expect(err).to.have.property('code', 'ERR_INVALID_PARAMS')
+      expect(err).to.have.property('code', 'ERR_INVALID_PARAMETERS')
     })
 
     it('is a PKCS #7 binary message', async () => {
@@ -518,7 +519,7 @@ describe('keychain', () => {
     it('should validate newPass is a string', async () => {
       try {
         await kc.rotateKeychainPass(oldPass, 1234567890)
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
       }
     })
@@ -526,7 +527,7 @@ describe('keychain', () => {
     it('should validate oldPass is a string', async () => {
       try {
         await kc.rotateKeychainPass(1234, 'newInsecurePassword1')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
       }
     })
@@ -534,7 +535,7 @@ describe('keychain', () => {
     it('should validate newPass is at least 20 characters', async () => {
       try {
         await kc.rotateKeychainPass(oldPass, 'not20Chars')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
       }
     })
@@ -585,7 +586,7 @@ describe('libp2p.keychain', () => {
 
     try {
       await libp2p.keychain.createKey('keyName', 'rsa', 2048)
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err).to.exist()
       return
     }

@@ -5,7 +5,7 @@
 const { expect } = require('aegir/utils/chai')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
-const { MemoryDatastore } = require('interface-datastore')
+const { MemoryDatastore } = require('datastore-core/memory')
 const Keychain = require('../../src/keychain')
 
 describe('cms interop', () => {

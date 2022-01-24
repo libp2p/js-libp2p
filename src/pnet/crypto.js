@@ -77,7 +77,7 @@ module.exports.decodeV1PSK = (pskBuffer) => {
       codecName: codec,
       psk: psk
     }
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     log.error(err)
     throw new Error(Errors.INVALID_PSK)
   }

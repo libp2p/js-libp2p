@@ -60,9 +60,9 @@ function print ({ stream }) {
   node2.handle('/print', print)
   node3.handle('/print', print)
 
-  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-  node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
-  node3.peerStore.addressBook.set(node1.peerId, node1.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+  await node3.peerStore.addressBook.set(node1.peerId, node1.multiaddrs)
 
   // node 1 (TCP) dials to node 2 (TCP+WebSockets)
   const { stream } = await node1.dialProtocol(node2.peerId, '/print')
@@ -81,7 +81,7 @@ function print ({ stream }) {
   // node 3 (listening WebSockets) can dial node 1 (TCP)
   try {
     await node3.dialProtocol(node1.peerId, '/print')
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     console.log('node 3 failed to dial to node 1 with:', err.message)
   }
 })();

@@ -45,8 +45,8 @@ describe('DHT subsystem operates correctly', () => {
         remoteLibp2p.start()
       ])
 
-      libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
-      remAddr = libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId)[0]
+      await libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr]);
+      [remAddr] = await libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId)
     })
 
     afterEach(() => Promise.all([
@@ -60,8 +60,8 @@ describe('DHT subsystem operates correctly', () => {
       expect(connection).to.exist()
 
       return Promise.all([
-        pWaitFor(() => libp2p._dht.routingTable.size === 1),
-        pWaitFor(() => remoteLibp2p._dht.routingTable.size === 1)
+        pWaitFor(() => libp2p._dht._lan._routingTable.size === 1),
+        pWaitFor(() => remoteLibp2p._dht._lan._routingTable.size === 1)
       ])
     })
 
@@ -71,14 +71,14 @@ describe('DHT subsystem operates correctly', () => {
 
       await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
       await Promise.all([
-        pWaitFor(() => libp2p._dht.routingTable.size === 1),
-        pWaitFor(() => remoteLibp2p._dht.routingTable.size === 1)
+        pWaitFor(() => libp2p._dht._lan._routingTable.size === 1),
+        pWaitFor(() => remoteLibp2p._dht._lan._routingTable.size === 1)
       ])
 
       await libp2p.contentRouting.put(key, value)
-      const fetchedValue = await remoteLibp2p.contentRouting.get(key)
 
-      expect(fetchedValue).to.eql(value)
+      const fetchedValue = await remoteLibp2p.contentRouting.get(key)
+      expect(fetchedValue).to.have.property('val').that.equalBytes(value)
     })
   })
 
@@ -106,8 +106,8 @@ describe('DHT subsystem operates correctly', () => {
       await libp2p.start()
       await remoteLibp2p.start()
 
-      libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
-      remAddr = libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId)[0]
+      await libp2p.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
+      remAddr = (await libp2p.peerStore.addressBook.getMultiaddrsForPeer(remotePeerId))[0]
     })
 
     afterEach(() => Promise.all([
@@ -119,11 +119,13 @@ describe('DHT subsystem operates correctly', () => {
       const connection = await libp2p.dial(remAddr)
 
       expect(connection).to.exist()
-      expect(libp2p._dht.routingTable.size).to.be.eql(0)
-      expect(remoteLibp2p._dht.routingTable.size).to.be.eql(0)
+      expect(libp2p._dht._lan._routingTable.size).to.be.eql(0)
 
       await remoteLibp2p._dht.start()
-      return pWaitFor(() => libp2p._dht.routingTable.size === 1)
+      // should be 0 directly after start - TODO this may be susceptible to timing bugs, we should have
+      // the ability to report stats on the DHT routing table instead of reaching into it's heart like this
+      expect(remoteLibp2p._dht._lan._routingTable.size).to.be.eql(0)
+      return pWaitFor(() => libp2p._dht._lan._routingTable.size === 1)
     })
 
     it('should put on a peer and get from the other', async () => {
@@ -133,12 +135,12 @@ describe('DHT subsystem operates correctly', () => {
       const value = uint8ArrayFromString('world')
 
       await remoteLibp2p._dht.start()
-      await pWaitFor(() => libp2p._dht.routingTable.size === 1)
+      await pWaitFor(() => libp2p._dht._lan._routingTable.size === 1)
 
       await libp2p.contentRouting.put(key, value)
 
       const fetchedValue = await remoteLibp2p.contentRouting.get(key)
-      expect(fetchedValue).to.eql(value)
+      expect(fetchedValue).to.have.property('val').that.equalBytes(value)
     })
   })
 })

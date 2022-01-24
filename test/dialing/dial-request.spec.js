@@ -5,7 +5,6 @@ const { expect } = require('aegir/utils/chai')
 const sinon = require('sinon')
 
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
-const AbortController = require('abort-controller')
 const AggregateError = require('aggregate-error')
 const pDefer = require('p-defer')
 const delay = require('delay')
@@ -125,7 +124,7 @@ describe('Dial Request', () => {
     try {
       await dialRequest.run({ signal: controller.signal })
       expect.fail('Should have thrown')
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err).to.be.an.instanceof(AggregateError)
     }
 
@@ -162,7 +161,7 @@ describe('Dial Request', () => {
     try {
       await dialRequest.run({ signal: controller.signal })
       expect.fail('Should have thrown')
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err).to.be.an.instanceof(AggregateError)
     }
 
@@ -212,7 +211,7 @@ describe('Dial Request', () => {
       setTimeout(() => controller.abort(), 100)
       await dialRequest.run({ signal: controller.signal })
       expect.fail('dial should have failed')
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       expect(err).to.be.an.instanceof(AggregateError)
     }
 

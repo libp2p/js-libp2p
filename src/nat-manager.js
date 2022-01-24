@@ -1,7 +1,7 @@
 'use strict'
 
 // @ts-ignore nat-api does not export types
-const NatAPI = require('@motrix/nat-api')
+const NatAPI = require('nat-api')
 const debug = require('debug')
 const { promisify } = require('es6-promisify')
 const { Multiaddr } = require('multiaddr')
@@ -10,7 +10,6 @@ const log = Object.assign(debug('libp2p:nat'), {
 })
 const { isBrowser } = require('wherearewe')
 const retry = require('p-retry')
-// @ts-ignore private-api does not export types
 const isPrivateIp = require('private-ip')
 const pkg = require('../package.json')
 const errcode = require('err-code')
@@ -115,6 +114,7 @@ class NatManager {
       const client = this._getClient()
       const publicIp = this._externalIp || await client.externalIp()
 
+      // @ts-expect-error types are wrong
       if (isPrivateIp(publicIp)) {
         throw new Error(`${publicIp} is private - please set config.nat.externalIp to an externally routable IP or ensure you are not behind a double NAT`)
       }
@@ -188,7 +188,7 @@ class NatManager {
     try {
       await this._client.destroy()
       this._client = null
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error(err)
     }
   }

@@ -34,16 +34,16 @@ describe('content-routing', () => {
       try {
         for await (const _ of node.contentRouting.findProviders('a cid')) {} // eslint-disable-line
         throw new Error('.findProviders should return an error')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
-        expect(err.code).to.equal('NO_ROUTERS_AVAILABLE')
+        expect(err.code).to.equal('ERR_NO_ROUTERS_AVAILABLE')
       }
     })
 
     it('.provide should return an error', async () => {
       await expect(node.contentRouting.provide('a cid'))
         .to.eventually.be.rejected()
-        .and.to.have.property('code', 'NO_ROUTERS_AVAILABLE')
+        .and.to.have.property('code', 'ERR_NO_ROUTERS_AVAILABLE')
     })
   })
 
@@ -87,8 +87,11 @@ describe('content-routing', () => {
       sinon.stub(nodes[0]._dht, 'findProviders').callsFake(function * () {
         deferred.resolve()
         yield {
-          id: providerPeerId,
-          multiaddrs: []
+          name: 'PROVIDER',
+          providers: [{
+            id: providerPeerId,
+            multiaddrs: []
+          }]
         }
       })
 
@@ -238,7 +241,7 @@ describe('content-routing', () => {
       try {
         for await (const _ of node.contentRouting.findProviders(cid)) { } // eslint-disable-line
         throw new Error('should handle errors when finding providers')
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         expect(err).to.exist()
       }
 
@@ -288,11 +291,11 @@ describe('content-routing', () => {
         yield result
       })
 
-      expect(node.peerStore.addressBook.get(providerPeerId)).to.not.be.ok()
+      expect(await node.peerStore.has(providerPeerId)).to.not.be.ok()
 
       await drain(node.contentRouting.findProviders('a cid'))
 
-      expect(node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
+      expect(await node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
         isCertified: false,
         multiaddr: result.multiaddrs[0]
       })
@@ -361,7 +364,12 @@ describe('content-routing', () => {
       }
 
       sinon.stub(node._dht, 'findProviders').callsFake(async function * () {
-        yield result1
+        yield {
+          name: 'PROVIDER',
+          providers: [
+            result1
+          ]
+        }
       })
       sinon.stub(delegate, 'findProviders').callsFake(async function * () {
         yield result2
@@ -369,7 +377,7 @@ describe('content-routing', () => {
 
       await drain(node.contentRouting.findProviders('a cid'))
 
-      expect(node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
+      expect(await node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
         isCertified: false,
         multiaddr: result1.multiaddrs[0]
       }).and.to.deep.include({
@@ -382,7 +390,8 @@ describe('content-routing', () => {
       const dhtDeferred = pDefer()
       const delegatedDeferred = pDefer()
 
-      sinon.stub(node._dht, 'provide').callsFake(() => {
+      sinon.stub(node._dht, 'provide').callsFake(async function * () {
+        yield
         dhtDeferred.resolve()
       })
 
@@ -406,7 +415,12 @@ describe('content-routing', () => {
       }]
 
       sinon.stub(node._dht, 'findProviders').callsFake(function * () {
-        yield results[0]
+        yield {
+          name: 'PROVIDER',
+          providers: [
+            results[0]
+          ]
+        }
       })
 
       sinon.stub(delegate, 'findProviders').callsFake(function * () { // eslint-disable-line require-yield

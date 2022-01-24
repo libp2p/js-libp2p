@@ -4,7 +4,7 @@ const debug = require('debug')
 const log = Object.assign(debug('libp2p:relay'), {
   error: debug('libp2p:relay:err')
 })
-
+const { codes } = require('./../errors')
 const {
   setDelayedInterval,
   clearDelayedInterval
@@ -87,8 +87,8 @@ class Relay {
     try {
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
       await this._libp2p.contentRouting.provide(cid)
-    } catch (err) {
-      if (err.code === 'NO_ROUTERS_AVAILABLE') {
+    } catch (/** @type {any} */ err) {
+      if (err.code === codes.ERR_NO_ROUTERS_AVAILABLE) {
         log.error('a content router, such as a DHT, must be provided in order to advertise the relay service', err)
         // Stop the advertise
         this.stop()

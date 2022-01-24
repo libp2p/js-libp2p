@@ -3,7 +3,7 @@
 
 const { expect } = require('aegir/utils/chai')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
-
+const { MemoryDatastore } = require('datastore-core/memory')
 const pDefer = require('p-defer')
 const PeerStore = require('../../src/peer-store')
 
@@ -12,7 +12,14 @@ const {
   codes: { ERR_INVALID_PARAMETERS }
 } = require('../../src/errors')
 
+/**
+ * @typedef {import('../../src/peer-store/types').PeerStore} PeerStore
+ * @typedef {import('../../src/peer-store/types').MetadataBook} MetadataBook
+ * @typedef {import('peer-id')} PeerId
+ */
+
 describe('metadataBook', () => {
+  /** @type {PeerId} */
   let peerId
 
   before(async () => {
@@ -20,10 +27,16 @@ describe('metadataBook', () => {
   })
 
   describe('metadataBook.set', () => {
-    let peerStore, mb
+    /** @type {PeerStore} */
+    let peerStore
+    /** @type {MetadataBook} */
+    let mb
 
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       mb = peerStore.metadataBook
     })
 
@@ -31,70 +44,70 @@ describe('metadataBook', () => {
       peerStore.removeAllListeners()
     })
 
-    it('throws invalid parameters error if invalid PeerId is provided', () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
-        mb.set('invalid peerId')
-      } catch (err) {
+        await mb.set('invalid peerId')
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
       throw new Error('invalid peerId should throw error')
     })
 
-    it('throws invalid parameters error if no key provided', () => {
+    it('throws invalid parameters error if no metadata provided', async () => {
       try {
-        mb.set(peerId)
-      } catch (err) {
+        await mb.set(peerId)
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
       throw new Error('no key provided should throw error')
     })
 
-    it('throws invalid parameters error if no value provided', () => {
+    it('throws invalid parameters error if no value provided', async () => {
       try {
-        mb.set(peerId, 'location')
-      } catch (err) {
+        await mb.setValue(peerId, 'location')
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
       throw new Error('no value provided should throw error')
     })
 
-    it('throws invalid parameters error if value is not a buffer', () => {
+    it('throws invalid parameters error if value is not a buffer', async () => {
       try {
-        mb.set(peerId, 'location', 'mars')
-      } catch (err) {
+        await mb.setValue(peerId, 'location', 'mars')
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
       throw new Error('invalid value provided should throw error')
     })
 
-    it('stores the content and emit change event', () => {
+    it('stores the content and emit change event', async () => {
       const defer = pDefer()
       const metadataKey = 'location'
       const metadataValue = uint8ArrayFromString('mars')
 
       peerStore.once('change:metadata', ({ peerId, metadata }) => {
         expect(peerId).to.exist()
-        expect(metadata).to.equal(metadataKey)
+        expect(metadata.get(metadataKey)).to.equalBytes(metadataValue)
         defer.resolve()
       })
 
-      mb.set(peerId, metadataKey, metadataValue)
+      await mb.setValue(peerId, metadataKey, metadataValue)
 
-      const value = mb.getValue(peerId, metadataKey)
+      const value = await mb.getValue(peerId, metadataKey)
       expect(value).to.equalBytes(metadataValue)
 
-      const peerMetadata = mb.get(peerId)
+      const peerMetadata = await mb.get(peerId)
       expect(peerMetadata).to.exist()
       expect(peerMetadata.get(metadataKey)).to.equalBytes(metadataValue)
 
       return defer.promise
     })
 
-    it('emits on set if not storing the exact same content', () => {
+    it('emits on set if not storing the exact same content', async () => {
       const defer = pDefer()
       const metadataKey = 'location'
       const metadataValue1 = uint8ArrayFromString('mars')
@@ -109,22 +122,22 @@ describe('metadataBook', () => {
       })
 
       // set 1
-      mb.set(peerId, metadataKey, metadataValue1)
+      await mb.setValue(peerId, metadataKey, metadataValue1)
 
       // set 2 (same content)
-      mb.set(peerId, metadataKey, metadataValue2)
+      await mb.setValue(peerId, metadataKey, metadataValue2)
 
-      const value = mb.getValue(peerId, metadataKey)
+      const value = await mb.getValue(peerId, metadataKey)
       expect(value).to.equalBytes(metadataValue2)
 
-      const peerMetadata = mb.get(peerId)
+      const peerMetadata = await mb.get(peerId)
       expect(peerMetadata).to.exist()
       expect(peerMetadata.get(metadataKey)).to.equalBytes(metadataValue2)
 
       return defer.promise
     })
 
-    it('does not emit on set if it is storing the exact same content', () => {
+    it('does not emit on set if it is storing the exact same content', async () => {
       const defer = pDefer()
       const metadataKey = 'location'
       const metadataValue = uint8ArrayFromString('mars')
@@ -138,10 +151,10 @@ describe('metadataBook', () => {
       })
 
       // set 1
-      mb.set(peerId, metadataKey, metadataValue)
+      await mb.setValue(peerId, metadataKey, metadataValue)
 
       // set 2 (same content)
-      mb.set(peerId, metadataKey, metadataValue)
+      await mb.setValue(peerId, metadataKey, metadataValue)
 
       // Wait 50ms for incorrect second event
       setTimeout(() => {
@@ -153,118 +166,135 @@ describe('metadataBook', () => {
   })
 
   describe('metadataBook.get', () => {
-    let peerStore, mb
+    /** @type {PeerStore} */
+    let peerStore
+    /** @type {MetadataBook} */
+    let mb
 
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       mb = peerStore.metadataBook
     })
 
-    it('throws invalid parameters error if invalid PeerId is provided', () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
-        mb.get('invalid peerId')
-      } catch (err) {
+        await mb.get('invalid peerId')
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
       throw new Error('invalid peerId should throw error')
     })
 
-    it('returns undefined if no metadata is known for the provided peer', () => {
-      const metadata = mb.get(peerId)
+    it('returns empty if no metadata is known for the provided peer', async () => {
+      const metadata = await mb.get(peerId)
 
-      expect(metadata).to.not.exist()
+      expect(metadata).to.be.empty()
     })
 
-    it('returns the metadata stored', () => {
+    it('returns the metadata stored', async () => {
       const metadataKey = 'location'
       const metadataValue = uint8ArrayFromString('mars')
+      const metadata = new Map()
+      metadata.set(metadataKey, metadataValue)
 
-      mb.set(peerId, metadataKey, metadataValue)
+      await mb.set(peerId, metadata)
 
-      const peerMetadata = mb.get(peerId)
+      const peerMetadata = await mb.get(peerId)
       expect(peerMetadata).to.exist()
       expect(peerMetadata.get(metadataKey)).to.equalBytes(metadataValue)
     })
   })
 
   describe('metadataBook.getValue', () => {
-    let peerStore, mb
+    /** @type {PeerStore} */
+    let peerStore
+    /** @type {MetadataBook} */
+    let mb
 
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       mb = peerStore.metadataBook
     })
 
-    it('throws invalid parameters error if invalid PeerId is provided', () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
-        mb.getValue('invalid peerId')
-      } catch (err) {
+        await mb.getValue('invalid peerId')
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
       throw new Error('invalid peerId should throw error')
     })
 
-    it('returns undefined if no metadata is known for the provided peer', () => {
+    it('returns undefined if no metadata is known for the provided peer', async () => {
       const metadataKey = 'location'
-      const metadata = mb.getValue(peerId, metadataKey)
+      const metadata = await mb.getValue(peerId, metadataKey)
 
       expect(metadata).to.not.exist()
     })
 
-    it('returns the metadata value stored for the given key', () => {
+    it('returns the metadata value stored for the given key', async () => {
       const metadataKey = 'location'
       const metadataValue = uint8ArrayFromString('mars')
 
-      mb.set(peerId, metadataKey, metadataValue)
+      await mb.setValue(peerId, metadataKey, metadataValue)
 
-      const value = mb.getValue(peerId, metadataKey)
+      const value = await mb.getValue(peerId, metadataKey)
       expect(value).to.exist()
       expect(value).to.equalBytes(metadataValue)
     })
 
-    it('returns undefined if no metadata is known for the provided peer and key', () => {
+    it('returns undefined if no metadata is known for the provided peer and key', async () => {
       const metadataKey = 'location'
       const metadataBadKey = 'nickname'
       const metadataValue = uint8ArrayFromString('mars')
 
-      mb.set(peerId, metadataKey, metadataValue)
+      await mb.setValue(peerId, metadataKey, metadataValue)
 
-      const metadata = mb.getValue(peerId, metadataBadKey)
-
+      const metadata = await mb.getValue(peerId, metadataBadKey)
       expect(metadata).to.not.exist()
     })
   })
 
   describe('metadataBook.delete', () => {
-    let peerStore, mb
+    /** @type {PeerStore} */
+    let peerStore
+    /** @type {MetadataBook} */
+    let mb
 
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       mb = peerStore.metadataBook
     })
 
-    it('throwns invalid parameters error if invalid PeerId is provided', () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
-        mb.delete('invalid peerId')
-      } catch (err) {
+        await mb.delete('invalid peerId')
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
       throw new Error('invalid peerId should throw error')
     })
 
-    it('returns false if no records exist for the peer and no event is emitted', () => {
+    it('should not emit event if no records exist for the peer', async () => {
       const defer = pDefer()
 
       peerStore.on('change:metadata', () => {
         defer.reject()
       })
 
-      const deleted = mb.delete(peerId)
-
-      expect(deleted).to.equal(false)
+      await mb.delete(peerId)
 
       // Wait 50ms for incorrect invalid event
       setTimeout(() => {
@@ -274,45 +304,49 @@ describe('metadataBook', () => {
       return defer.promise
     })
 
-    it('returns true if the record exists and an event is emitted', () => {
+    it('should emit an event if the record exists for the peer', async () => {
       const defer = pDefer()
       const metadataKey = 'location'
       const metadataValue = uint8ArrayFromString('mars')
 
-      mb.set(peerId, metadataKey, metadataValue)
+      await mb.setValue(peerId, metadataKey, metadataValue)
 
       // Listen after set
       peerStore.on('change:metadata', () => {
         defer.resolve()
       })
 
-      const deleted = mb.delete(peerId)
-
-      expect(deleted).to.equal(true)
+      await mb.delete(peerId)
 
       return defer.promise
     })
   })
 
   describe('metadataBook.deleteValue', () => {
-    let peerStore, mb
+    /** @type {PeerStore} */
+    let peerStore
+    /** @type {MetadataBook} */
+    let mb
 
     beforeEach(() => {
-      peerStore = new PeerStore({ peerId })
+      peerStore = new PeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
       mb = peerStore.metadataBook
     })
 
-    it('throws invalid parameters error if invalid PeerId is provided', () => {
+    it('throws invalid parameters error if invalid PeerId is provided', async () => {
       try {
-        mb.deleteValue('invalid peerId')
-      } catch (err) {
+        await mb.deleteValue('invalid peerId')
+      } catch (/** @type {any} */ err) {
         expect(err.code).to.equal(ERR_INVALID_PARAMETERS)
         return
       }
       throw new Error('invalid peerId should throw error')
     })
 
-    it('returns false if no records exist for the peer and no event is emitted', () => {
+    it('should not emit event if no records exist for the peer', async () => {
       const defer = pDefer()
       const metadataKey = 'location'
 
@@ -320,9 +354,7 @@ describe('metadataBook', () => {
         defer.reject()
       })
 
-      const deleted = mb.deleteValue(peerId, metadataKey)
-
-      expect(deleted).to.equal(false)
+      await mb.deleteValue(peerId, metadataKey)
 
       // Wait 50ms for incorrect invalid event
       setTimeout(() => {
@@ -332,45 +364,19 @@ describe('metadataBook', () => {
       return defer.promise
     })
 
-    it('returns true if the record exists and an event is emitted', () => {
+    it('should emit event if a record exists for the peer', async () => {
       const defer = pDefer()
       const metadataKey = 'location'
       const metadataValue = uint8ArrayFromString('mars')
 
-      mb.set(peerId, metadataKey, metadataValue)
+      await mb.setValue(peerId, metadataKey, metadataValue)
 
       // Listen after set
       peerStore.on('change:metadata', () => {
         defer.resolve()
       })
 
-      const deleted = mb.deleteValue(peerId, metadataKey)
-
-      expect(deleted).to.equal(true)
-
-      return defer.promise
-    })
-
-    it('returns false if there is a record for the peer but not the given metadata key', () => {
-      const defer = pDefer()
-      const metadataKey = 'location'
-      const metadataBadKey = 'nickname'
-      const metadataValue = uint8ArrayFromString('mars')
-
-      mb.set(peerId, metadataKey, metadataValue)
-
-      peerStore.on('change:metadata', () => {
-        defer.reject()
-      })
-
-      const deleted = mb.deleteValue(peerId, metadataBadKey)
-
-      expect(deleted).to.equal(false)
-
-      // Wait 50ms for incorrect invalid event
-      setTimeout(() => {
-        defer.resolve()
-      }, 50)
+      await mb.deleteValue(peerId, metadataKey)
 
       return defer.promise
     })

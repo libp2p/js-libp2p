@@ -62,13 +62,7 @@ const DefaultConfig = {
     protocolPrefix: 'ipfs',
     dht: {
       enabled: false,
-      kBucketSize: 20,
-      randomWalk: {
-        enabled: false, // disabled waiting for https://github.com/libp2p/js-libp2p-kad-dht/issues/86
-        queriesPerPeriod: 1,
-        interval: 300e3,
-        timeout: 10e3
-      }
+      kBucketSize: 20
     },
     nat: {
       enabled: true,

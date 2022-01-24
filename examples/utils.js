@@ -9,7 +9,7 @@ async function isExecutable (command) {
     await fs.access(command, fs.constants.X_OK)
 
     return true
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     if (err.code === 'ENOENT') {
       return isExecutable(await which(command))
     }
@@ -30,7 +30,7 @@ async function waitForOutput (expectedOutput, command, args = [], opts = {}) {
 
   const proc = execa(command, args, opts)
   let output = ''
-  let time = 120000
+  let time = 600000
 
   let timeout = setTimeout(() => {
     throw new Error(`Did not see "${expectedOutput}" in output from "${[command].concat(args).join(' ')}" after ${time/1000}s`)
@@ -49,7 +49,7 @@ async function waitForOutput (expectedOutput, command, args = [], opts = {}) {
 
   try {
     await proc
-  } catch (err) {
+  } catch (/** @type {any} */ err) {
     if (!err.killed) {
       throw err
     }

@@ -72,7 +72,7 @@ async function test () {
                   { timeout: 10000 }
                 )
                 await browser.close();
-            } catch (err) {
+            } catch (/** @type {any} */ err) {
                 console.error(err)
                 process.exit(1)
             } finally {

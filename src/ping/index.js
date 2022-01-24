@@ -5,7 +5,7 @@ const log = Object.assign(debug('libp2p:ping'), {
   error: debug('libp2p:ping:err')
 })
 const errCode = require('err-code')
-
+const { codes } = require('../errors')
 const crypto = require('libp2p-crypto')
 const { pipe } = require('it-pipe')
 // @ts-ignore it-buffer has no types exported
@@ -50,7 +50,7 @@ async function ping (node, peer) {
   const end = Date.now()
 
   if (!equals(data, result)) {
-    throw errCode(new Error('Received wrong ping ack'), 'ERR_WRONG_PING_ACK')
+    throw errCode(new Error('Received wrong ping ack'), codes.ERR_WRONG_PING_ACK)
   }
 
   return end - start
@@ -63,6 +63,9 @@ async function ping (node, peer) {
  */
 function mount (node) {
   node.handle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`, ({ stream }) => pipe(stream, stream))
+    .catch(err => {
+      log.error(err)
+    })
 }
 
 /**
@@ -72,6 +75,9 @@ function mount (node) {
  */
 function unmount (node) {
   node.unhandle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`)
+    .catch(err => {
+      log.error(err)
+    })
 }
 
 exports = module.exports = ping

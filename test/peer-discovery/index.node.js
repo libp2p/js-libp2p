@@ -161,20 +161,13 @@ describe('peer discovery scenarios', () => {
           autoDial: false
         },
         dht: {
-          randomWalk: {
-            enabled: false,
-            delay: 1000, // start the first query quickly
-            interval: 10000,
-            timeout: 5000
-          },
           enabled: true
         }
       }
     })
 
     const localConfig = getConfig(peerId)
-    // Only run random walk on our local node
-    localConfig.config.dht.randomWalk.enabled = true
+
     libp2p = new Libp2p(localConfig)
 
     const remoteLibp2p1 = new Libp2p(getConfig(remotePeerId1))
@@ -193,8 +186,8 @@ describe('peer discovery scenarios', () => {
       remoteLibp2p2.start()
     ])
 
-    libp2p.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.multiaddrs)
-    remoteLibp2p2.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.multiaddrs)
+    await libp2p.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.multiaddrs)
+    await remoteLibp2p2.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.multiaddrs)
 
     // Topology:
     // A -> B

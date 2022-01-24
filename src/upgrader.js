@@ -5,7 +5,6 @@ const log = Object.assign(debug('libp2p:upgrader'), {
   error: debug('libp2p:upgrader:err')
 })
 const errCode = require('err-code')
-// @ts-ignore multistream-select does not export types
 const Multistream = require('multistream-select')
 const { Connection } = require('libp2p-interfaces/src/connection')
 const PeerId = require('peer-id')
@@ -117,7 +116,7 @@ class Upgrader {
       } else {
         upgradedConn = encryptedConn
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error('Failed to upgrade inbound connection', err)
       await maConn.close(err)
       throw err
@@ -200,7 +199,7 @@ class Upgrader {
       } else {
         upgradedConn = encryptedConn
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       log.error('Failed to upgrade outbound connection', err)
       await maConn.close(err)
       throw err
@@ -264,7 +263,7 @@ class Upgrader {
             if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
             connection.addStream(muxedStream, { protocol })
             this._onStream({ connection, stream: { ...muxedStream, ...stream }, protocol })
-          } catch (err) {
+          } catch (/** @type {any} */ err) {
             log.error(err)
           }
         },
@@ -282,7 +281,7 @@ class Upgrader {
           const { stream, protocol } = await mss.select(protocols)
           if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
           return { stream: { ...muxedStream, ...stream }, protocol }
-        } catch (err) {
+        } catch (/** @type {any} */ err) {
           log.error('could not create new stream', err)
           throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
         }
@@ -302,12 +301,14 @@ class Upgrader {
               if (connection.stat.status === 'open') {
                 await connection.close()
               }
-            } catch (err) {
+            } catch (/** @type {any} */ err) {
               log.error(err)
             } finally {
               this.onConnectionEnd(connection)
             }
-          })()
+          })().catch(err => {
+            log.error(err)
+          })
         }
 
         return Reflect.set(...args)
@@ -316,7 +317,7 @@ class Upgrader {
     maConn.timeline.upgraded = Date.now()
 
     const errConnectionNotMultiplexed = () => {
-      throw errCode(new Error('connection is not multiplexed'), 'ERR_CONNECTION_NOT_MULTIPLEXED')
+      throw errCode(new Error('connection is not multiplexed'), codes.ERR_CONNECTION_NOT_MULTIPLEXED)
     }
 
     // Create the connection
@@ -390,7 +391,7 @@ class Upgrader {
         ...await crypto.secureInbound(localPeer, stream),
         protocol
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       throw errCode(err, codes.ERR_ENCRYPTION_FAILED)
     }
   }
@@ -425,7 +426,7 @@ class Upgrader {
         ...await crypto.secureOutbound(localPeer, stream, remotePeerId),
         protocol
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       throw errCode(err, codes.ERR_ENCRYPTION_FAILED)
     }
   }
@@ -449,7 +450,7 @@ class Upgrader {
       log('%s selected as muxer protocol', protocol)
       const Muxer = muxers.get(protocol)
       return { stream, Muxer }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       throw errCode(err, codes.ERR_MUXER_UNAVAILABLE)
     }
   }
@@ -472,7 +473,7 @@ class Upgrader {
       const { stream, protocol } = await listener.handle(protocols)
       const Muxer = muxers.get(protocol)
       return { stream, Muxer }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       throw errCode(err, codes.ERR_MUXER_UNAVAILABLE)
     }
   }
