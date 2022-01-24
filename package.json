@@ -100,6 +100,7 @@
     "it-map": "^1.0.4",
     "it-merge": "^1.0.0",
     "it-pipe": "^1.1.0",
+    "it-sort": "^1.0.1",
     "it-take": "^1.0.0",
     "libp2p-crypto": "^0.21.2",
     "libp2p-interfaces": "^4.0.0",
