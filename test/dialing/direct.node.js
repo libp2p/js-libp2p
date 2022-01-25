@@ -27,7 +27,7 @@ const TransportManager = require('../../src/transport-manager')
 const { codes: ErrorCodes } = require('../../src/errors')
 const Protector = require('../../src/pnet')
 const swarmKeyBuffer = uint8ArrayFromString(require('../fixtures/swarm.key'))
-
+const { mockConnectionGater } = require('../utils/mock-connection-gater')
 const mockUpgrader = require('../utils/mockUpgrader')
 const createMockConnection = require('../utils/mockConnection')
 const Peers = require('../fixtures/peers')
@@ -37,6 +37,7 @@ const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 const unsupportedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
 
 describe('Dialing (direct, TCP)', () => {
+  const connectionGater = mockConnectionGater()
   let remoteTM
   let localTM
   let peerStore
@@ -50,7 +51,8 @@ describe('Dialing (direct, TCP)', () => {
 
     peerStore = new PeerStore({
       peerId: remotePeerId,
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      addressFilter: connectionGater.filterMultiaddrForPeer
     })
     remoteTM = new TransportManager({
       libp2p: {
@@ -67,7 +69,8 @@ describe('Dialing (direct, TCP)', () => {
         peerId: localPeerId,
         peerStore: new PeerStore({
           peerId: localPeerId,
-          datastore: new MemoryDatastore()
+          datastore: new MemoryDatastore(),
+          addressFilter: connectionGater.filterMultiaddrForPeer
         })
       },
       upgrader: mockUpgrader
@@ -86,7 +89,11 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should be able to connect to a remote node via its multiaddr', async () => {
-    const dialer = new Dialer({ transportManager: localTM, peerStore })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore,
+      connectionGater
+    })
 
     const connection = await dialer.connectToPeer(remoteAddr)
     expect(connection).to.exist()
@@ -94,14 +101,22 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should be able to connect to a remote node via its stringified multiaddr', async () => {
-    const dialer = new Dialer({ transportManager: localTM, peerStore })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore,
+      connectionGater
+    })
     const connection = await dialer.connectToPeer(remoteAddr.toString())
     expect(connection).to.exist()
     await connection.close()
   })
 
   it('should fail to connect to an unsupported multiaddr', async () => {
-    const dialer = new Dialer({ transportManager: localTM, peerStore })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore,
+      connectionGater
+    })
 
     await expect(dialer.connectToPeer(unsupportedAddr))
       .to.eventually.be.rejectedWith(Error)
@@ -109,7 +124,11 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should fail to connect if peer has no known addresses', async () => {
-    const dialer = new Dialer({ transportManager: localTM, peerStore })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore,
+      connectionGater
+    })
     const peerId = await PeerId.createFromJSON(Peers[1])
 
     await expect(dialer.connectToPeer(peerId))
@@ -121,11 +140,13 @@ describe('Dialing (direct, TCP)', () => {
     const peerId = await PeerId.createFromJSON(Peers[0])
     const peerStore = new PeerStore({
       peerId,
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      addressFilter: connectionGater.filterMultiaddrForPeer
     })
     const dialer = new Dialer({
       transportManager: localTM,
-      peerStore
+      peerStore,
+      connectionGater
     })
 
     await peerStore.addressBook.set(peerId, remoteTM.getAddrs())
@@ -143,7 +164,8 @@ describe('Dialing (direct, TCP)', () => {
           add: () => {},
           getMultiaddrsForPeer: () => [unsupportedAddr]
         }
-      }
+      },
+      connectionGater
     })
     const peerId = await PeerId.createFromJSON(Peers[0])
 
@@ -161,7 +183,8 @@ describe('Dialing (direct, TCP)', () => {
           add: () => { },
           getMultiaddrsForPeer: () => [...remoteAddrs, unsupportedAddr]
         }
-      }
+      },
+      connectionGater
     })
     const peerId = await PeerId.createFromJSON(Peers[0])
 
@@ -176,7 +199,8 @@ describe('Dialing (direct, TCP)', () => {
     const dialer = new Dialer({
       transportManager: localTM,
       peerStore,
-      dialTimeout: 50
+      dialTimeout: 50,
+      connectionGater
     })
     sinon.stub(localTM, 'dial').callsFake(async (addr, options) => {
       expect(options.signal).to.exist()
@@ -206,7 +230,8 @@ describe('Dialing (direct, TCP)', () => {
           add: () => {},
           getMultiaddrsForPeer: () => addrs
         }
-      }
+      },
+      connectionGater
     })
 
     expect(dialer.tokens).to.have.length(2)

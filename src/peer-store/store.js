@@ -100,13 +100,26 @@ class PersistentStore {
       throw errcode(new Error('publicKey bytes do not match peer id publicKey bytes'), codes.ERR_INVALID_PARAMETERS)
     }
 
+    // dedupe addresses
+    const addressSet = new Set()
+
     const buf = PeerPB.encode({
-      addresses: peer.addresses.sort((a, b) => {
-        return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
-      }).map(({ multiaddr, isCertified }) => ({
-        multiaddr: multiaddr.bytes,
-        isCertified
-      })),
+      addresses: peer.addresses
+        .filter(address => {
+          if (addressSet.has(address.multiaddr.toString())) {
+            return false
+          }
+
+          addressSet.add(address.multiaddr.toString())
+          return true
+        })
+        .sort((a, b) => {
+          return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
+        })
+        .map(({ multiaddr, isCertified }) => ({
+          multiaddr: multiaddr.bytes,
+          isCertified
+        })),
       protocols: peer.protocols.sort(),
       pubKey: peer.pubKey ? marshalPublicKey(peer.pubKey) : undefined,
       metadata: [...peer.metadata.keys()].sort().map(key => ({ key, value: peer.metadata.get(key) })),

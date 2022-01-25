@@ -48,6 +48,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions
  * @typedef {import('interface-datastore').Datastore} Datastore
  * @typedef {import('./pnet')} Protector
+ * @typedef {import('./types').ConnectionGater} ConnectionGater
  * @typedef {Object} PersistentPeerStoreOptions
  * @property {number} [threshold]
  */
@@ -106,6 +107,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {Libp2pModules} modules libp2p modules to use
  * @property {import('./address-manager').AddressManagerOptions} [addresses]
  * @property {import('./connection-manager').ConnectionManagerOptions} [connectionManager]
+ * @property {Partial<import('./types').ConnectionGater>} [connectionGater]
  * @property {Datastore} [datastore]
  * @property {import('./dialer').DialerOptions} [dialer]
  * @property {import('./identify/index').HostProperties} [host] libp2p host
@@ -172,10 +174,25 @@ class Libp2p extends EventEmitter {
       this.metrics = metrics
     }
 
+    /** @type {ConnectionGater} */
+    this.connectionGater = {
+      denyDialPeer: async () => Promise.resolve(false),
+      denyDialMultiaddr: async () => Promise.resolve(false),
+      denyInboundConnection: async () => Promise.resolve(false),
+      denyOutboundConnection: async () => Promise.resolve(false),
+      denyInboundEncryptedConnection: async () => Promise.resolve(false),
+      denyOutboundEncryptedConnection: async () => Promise.resolve(false),
+      denyInboundUpgradedConnection: async () => Promise.resolve(false),
+      denyOutboundUpgradedConnection: async () => Promise.resolve(false),
+      filterMultiaddrForPeer: async () => Promise.resolve(true),
+      ...this._options.connectionGater
+    }
+
     /** @type {import('./peer-store/types').PeerStore} */
     this.peerStore = new PeerStore({
       peerId: this.peerId,
-      datastore: (this.datastore && this._options.peerStore.persistence) ? this.datastore : new MemoryDatastore()
+      datastore: (this.datastore && this._options.peerStore.persistence) ? this.datastore : new MemoryDatastore(),
+      addressFilter: this.connectionGater.filterMultiaddrForPeer
     })
 
     // Addresses {listen, announce, noAnnounce}
@@ -220,7 +237,7 @@ class Libp2p extends EventEmitter {
 
     // Setup the Upgrader
     this.upgrader = new Upgrader({
-      connectionManager: this.connectionManager,
+      connectionGater: this.connectionGater,
       localPeer: this.peerId,
       metrics: this.metrics,
       onConnection: (connection) => this.connectionManager.onConnect(connection),
@@ -263,7 +280,7 @@ class Libp2p extends EventEmitter {
 
     this.dialer = new Dialer({
       transportManager: this.transportManager,
-      connectionManager: this.connectionManager,
+      connectionGater: this.connectionGater,
       peerStore: this.peerStore,
       metrics: this.metrics,
       ...this._options.dialer

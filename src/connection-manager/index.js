@@ -42,7 +42,6 @@ const METRICS_PEER_VALUES = 'peer-values'
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('./types').ConnectionGater} ConnectionGater
  */
 
 /**
@@ -116,20 +115,6 @@ class ConnectionManager extends EventEmitter {
       latencyCheckIntervalMs: this._options.pollInterval,
       dataEmitIntervalMs: this._options.pollInterval
     })
-
-    /**
-     * Connection Gater
-     *
-     * @type {ConnectionGater}
-     */
-    this.gater = {
-      interceptPeerDial: async () => Promise.resolve(false),
-      interceptAddrDial: async () => Promise.resolve(false),
-      interceptAccept: async () => Promise.resolve(false),
-      interceptSecured: async () => Promise.resolve(false),
-      interceptUpgraded: async () => Promise.resolve(false),
-      ...libp2p._options.connectionManager.gater
-    }
 
     // This emitter gets listened to a lot
     this.setMaxListeners(Infinity)

@@ -23,6 +23,9 @@
     - [Setup with Keychain](#setup-with-keychain)
     - [Configuring Dialing](#configuring-dialing)
     - [Configuring Connection Manager](#configuring-connection-manager)
+    - [Configuring Connection Gater](#configuring-connection-gater)
+      - [Outgoing connections](#outgoing-connections)
+      - [Incoming connections](#incoming-connections)
     - [Configuring Transport Manager](#configuring-transport-manager)
     - [Configuring Metrics](#configuring-metrics)
     - [Configuring PeerStore](#configuring-peerstore)
@@ -585,59 +588,128 @@ const node = await Libp2p.create({
     maxSentData: Infinity,
     maxReceivedData: Infinity,
     maxEventLoopDelay: Infinity,
-    movingAverageInterval: 60000,
-    gater: {
-      /**
-       * InterceptPeerDial tests whether we're permitted to Dial the
-       * specified peer.
-       *
-       * This is called by the dialer.connectToPeer implementation when
-       * dialling a peer.
-       *
-       * Return true to deny dialing the passed peer.
-       */
-      interceptPeerDial: async (/** @type {PeerId} */ peerId) => false,
+    movingAverageInterval: 60000
+  }
+})
+```
 
-      /**
-       * InterceptAddrDial tests whether we're permitted to dial the specified
-       * multiaddr for the given peer.
-       *
-       * This is called by the dialer.connectToPeer implementation after it has
-       * resolved the peer's addrs, and prior to dialling each.
-       *
-       * Return true to deny dialing the passed peer on the passed multiaddr.
-       */
-      interceptAddrDial: async (/** @type {PeerId} */ peerId, /** @type {Multiaddr} */ multiaddr) => false,
+#### Configuring Connection Gater
 
-      /**
-       * InterceptAccept tests whether an incipient inbound connection is allowed.
-       *
-       * This is called by the upgrader, or by the transport directly (e.g. QUIC,
-       * Bluetooth), straight after it has accepted a connection from its socket.
-       *
-       * Return true to deny accepting the passed connection.
-       */
-      interceptAccept: async (/** @type {MultiaddrConnection} */ maConn) => false,
+The Connection Gater allows us to prevent making incoming and outgoing connections to peers and storing
+multiaddrs in the address book.
 
-      /**
-       * InterceptSecured tests whether a given connection, now authenticated,
-       * is allowed.
-       *
-       * This is called by the upgrader, after it has performed the security
-       * handshake, and before it negotiates the muxer, or by the directly by the
-       * transport, at the exact same checkpoint.
-       *
-       * Return true to deny accepting the passed connection.
-       */
-      interceptSecured: async (/** @type {'inbound' | 'outbound'}*/ direction, /** @type {PeerId} */ peerId, /** @type {MultiaddrConnection} */ maConn) => false,
+The order in which methods are called is as follows:
 
-      /**
-       * InterceptUpgraded tests whether a fully capable connection is allowed.
-       *
-       * Return true to deny accepting the passed connection.
-       */
-      interceptUpgraded: async (/** @type {MultiaddrConnection | MuxedStream} */ maConn) => false
-    }
+##### Outgoing connections
+
+1. `connectionGater.denyDialPeer(...)`
+2. `connectionGater.denyDialMultiaddr(...)`
+3. `connectionGater.denyOutboundConnection(...)`
+4. `connectionGater.denyOutboundEncryptedConnection(...)`
+5. `connectionGater.denyOutboundUpgradedConnection(...)`
+
+##### Incoming connections
+
+1. `connectionGater.denyInboundConnection(...)`
+2. `connectionGater.denyInboundEncryptedConnection(...)`
+3. `connectionGater.denyInboundUpgradedConnection(...)`
+
+```js
+const node = await Libp2p.create({
+  // .. other config
+  connectionGater: {
+    /**
+     * denyDialMultiaddr tests whether we're permitted to Dial the
+     * specified peer.
+     *
+     * This is called by the dialer.connectToPeer implementation before
+     * dialling a peer.
+     *
+     * Return true to prevent dialing the passed peer.
+     */
+    denyDialPeer: (peerId: PeerId) => Promise<boolean>
+
+    /**
+     * denyDialMultiaddr tests whether we're permitted to dial the specified
+     * multiaddr for the given peer.
+     *
+     * This is called by the dialer.connectToPeer implementation after it has
+     * resolved the peer's addrs, and prior to dialling each.
+     *
+     * Return true to prevent dialing the passed peer on the passed multiaddr.
+     */
+    denyDialMultiaddr: (peerId: PeerId, multiaddr: Multiaddr) => Promise<boolean>
+
+    /**
+     * denyInboundConnection tests whether an incipient inbound connection is allowed.
+     *
+     * This is called by the upgrader, or by the transport directly (e.g. QUIC,
+     * Bluetooth), straight after it has accepted a connection from its socket.
+     *
+     * Return true to deny the incoming passed connection.
+     */
+    denyInboundConnection: (maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyOutboundConnection tests whether an incipient outbound connection is allowed.
+     *
+     * This is called by the upgrader, or by the transport directly (e.g. QUIC,
+     * Bluetooth), straight after it has created a connection with its socket.
+     *
+     * Return true to deny the incoming passed connection.
+     */
+    denyOutboundConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyInboundEncryptedConnection tests whether a given connection, now encrypted,
+     * is allowed.
+     *
+     * This is called by the upgrader, after it has performed the security
+     * handshake, and before it negotiates the muxer, or by the directly by the
+     * transport, at the exact same checkpoint.
+     *
+     * Return true to deny the passed secured connection.
+     */
+    denyInboundEncryptedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyOutboundEncryptedConnection tests whether a given connection, now encrypted,
+     * is allowed.
+     *
+     * This is called by the upgrader, after it has performed the security
+     * handshake, and before it negotiates the muxer, or by the directly by the
+     * transport, at the exact same checkpoint.
+     *
+     * Return true to deny the passed secured connection.
+     */
+    denyOutboundEncryptedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyInboundUpgradedConnection tests whether a fully capable connection is allowed.
+     *
+     * This is called after encryption has been negotiated and the connection has been
+     * multiplexed, if a multiplexer is configured.
+     *
+     * Return true to deny the passed upgraded connection.
+     */
+    denyInboundUpgradedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyOutboundUpgradedConnection tests whether a fully capable connection is allowed.
+     *
+     * This is called after encryption has been negotiated and the connection has been
+     * multiplexed, if a multiplexer is configured.
+     *
+     * Return true to deny the passed upgraded connection.
+     */
+    denyOutboundUpgradedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * Used by the address book to filter passed addresses.
+     *
+     * Return true to allow storing the passed multiaddr for the passed peer.
+     */
+    filterMultiaddrForPeer: (peer: PeerId, multiaddr: Multiaddr) => Promise<boolean>
   }
 })
 ```

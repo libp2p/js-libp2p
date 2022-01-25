@@ -14,12 +14,14 @@ const mockUpgrader = require('../utils/mockUpgrader')
 const sinon = require('sinon')
 const Peers = require('../fixtures/peers')
 const pWaitFor = require('p-wait-for')
+const { mockConnectionGater } = require('../utils/mock-connection-gater')
 const addrs = [
   new Multiaddr('/ip4/127.0.0.1/tcp/0'),
   new Multiaddr('/ip4/127.0.0.1/tcp/0')
 ]
 
 describe('Transport Manager (TCP)', () => {
+  const connectionGater = mockConnectionGater()
   let tm
   let localPeer
 
@@ -35,7 +37,8 @@ describe('Transport Manager (TCP)', () => {
         addressManager: new AddressManager({ listen: addrs }),
         peerStore: new PeerStore({
           peerId: localPeer,
-          datastore: new MemoryDatastore()
+          datastore: new MemoryDatastore(),
+          addressFilter: connectionGater.filterMultiaddrForPeer
         })
       },
       upgrader: mockUpgrader,
