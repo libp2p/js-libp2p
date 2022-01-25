@@ -13,7 +13,7 @@ const { MemoryDatastore } = require('datastore-core/memory')
 const PeerStore = require('../../src/peer-store')
 const Envelope = require('../../src/record/envelope')
 const PeerRecord = require('../../src/record/peer-record')
-
+const { mockConnectionGater } = require('../utils/mock-connection-gater')
 const peerUtils = require('../utils/creators/peer')
 const {
   codes: { ERR_INVALID_PARAMETERS }
@@ -29,6 +29,7 @@ const addr2 = new Multiaddr('/ip4/20.0.0.1/tcp/8001')
 const addr3 = new Multiaddr('/ip4/127.0.0.1/tcp/8002')
 
 describe('addressBook', () => {
+  const connectionGater = mockConnectionGater()
   let peerId
 
   before(async () => {
@@ -44,7 +45,8 @@ describe('addressBook', () => {
     beforeEach(() => {
       peerStore = new PeerStore({
         peerId,
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
       ab = peerStore.addressBook
     })
@@ -164,7 +166,8 @@ describe('addressBook', () => {
     beforeEach(() => {
       peerStore = new PeerStore({
         peerId,
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
       ab = peerStore.addressBook
     })
@@ -323,7 +326,8 @@ describe('addressBook', () => {
     beforeEach(() => {
       peerStore = new PeerStore({
         peerId,
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
       ab = peerStore.addressBook
     })
@@ -364,7 +368,8 @@ describe('addressBook', () => {
     beforeEach(() => {
       peerStore = new PeerStore({
         peerId,
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
       ab = peerStore.addressBook
     })
@@ -418,7 +423,8 @@ describe('addressBook', () => {
     beforeEach(() => {
       peerStore = new PeerStore({
         peerId,
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
       ab = peerStore.addressBook
     })
@@ -478,7 +484,8 @@ describe('addressBook', () => {
       beforeEach(() => {
         peerStore = new PeerStore({
           peerId,
-          datastore: new MemoryDatastore()
+          datastore: new MemoryDatastore(),
+          addressFilter: connectionGater.filterMultiaddrForPeer
         })
         ab = peerStore.addressBook
       })
@@ -670,7 +677,8 @@ describe('addressBook', () => {
       beforeEach(() => {
         peerStore = new PeerStore({
           peerId,
-          datastore: new MemoryDatastore()
+          datastore: new MemoryDatastore(),
+          addressFilter: connectionGater.filterMultiaddrForPeer
         })
         ab = peerStore.addressBook
       })

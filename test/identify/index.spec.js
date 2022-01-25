@@ -23,10 +23,12 @@ const pkg = require('../../package.json')
 const AddressManager = require('../../src/address-manager')
 const { MemoryDatastore } = require('datastore-core/memory')
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
+const { mockConnectionGater } = require('../utils/mock-connection-gater')
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
 describe('Identify', () => {
+  const connectionGater = mockConnectionGater()
   let localPeer, localPeerStore, localAddressManager
   let remotePeer, remotePeerStore, remoteAddressManager
   const protocols = [multicodecs.IDENTIFY, multicodecs.IDENTIFY_PUSH]
@@ -39,13 +41,15 @@ describe('Identify', () => {
 
     localPeerStore = new PeerStore({
       peerId: localPeer,
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      addressFilter: connectionGater.filterMultiaddrForPeer
     })
     await localPeerStore.protoBook.set(localPeer, protocols)
 
     remotePeerStore = new PeerStore({
       peerId: remotePeer,
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      addressFilter: connectionGater.filterMultiaddrForPeer
     })
     await remotePeerStore.protoBook.set(remotePeer, protocols)
 
@@ -230,7 +234,8 @@ describe('Identify', () => {
     const agentVersion = 'js-project/1.0.0'
     const peerStore = new PeerStore({
       peerId: localPeer,
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      addressFilter: connectionGater.filterMultiaddrForPeer
     })
 
     sinon.spy(peerStore.metadataBook, 'setValue')
@@ -272,7 +277,8 @@ describe('Identify', () => {
 
       const localPeerStore = new PeerStore({
         peerId: localPeer,
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
       await localPeerStore.protoBook.set(localPeer, storedProtocols)
 
@@ -290,7 +296,8 @@ describe('Identify', () => {
 
       const remotePeerStore = new PeerStore({
         peerId: remotePeer,
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
       await remotePeerStore.protoBook.set(remotePeer, storedProtocols)
 
@@ -352,7 +359,8 @@ describe('Identify', () => {
 
       const localPeerStore = new PeerStore({
         peerId: localPeer,
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
       await localPeerStore.protoBook.set(localPeer, storedProtocols)
 
@@ -370,7 +378,8 @@ describe('Identify', () => {
 
       const remotePeerStore = new PeerStore({
         peerId: remotePeer,
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
       await remotePeerStore.protoBook.set(remotePeer, storedProtocols)
 

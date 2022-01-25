@@ -22,6 +22,7 @@ const { codes } = require('./errors')
  * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
+ * @typedef {import('./types').ConnectionGater} ConnectionGater
  */
 
 /**
@@ -35,6 +36,8 @@ class Upgrader {
   /**
    * @param {object} options
    * @param {PeerId} options.localPeer
+   * @param {ConnectionGater} options.connectionGater
+   *
    * @param {import('./metrics')} [options.metrics]
    * @param {Map<string, Crypto>} [options.cryptos]
    * @param {Map<string, MuxerFactory>} [options.muxers]
@@ -44,11 +47,13 @@ class Upgrader {
   constructor ({
     localPeer,
     metrics,
+    connectionGater,
     cryptos = new Map(),
     muxers = new Map(),
     onConnectionEnd = () => {},
     onConnection = () => {}
   }) {
+    this.connectionGater = connectionGater
     this.localPeer = localPeer
     this.metrics = metrics
     this.cryptos = cryptos
@@ -76,6 +81,10 @@ class Upgrader {
     let setPeer
     let proxyPeer
 
+    if (await this.connectionGater.denyInboundConnection(maConn)) {
+      throw errCode(new Error('The multiaddr connection is blocked by gater.acceptConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+    }
+
     if (this.metrics) {
       ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
       const idString = (Math.random() * 1e9).toString(36) + Date.now()
@@ -99,6 +108,10 @@ class Upgrader {
         protocol: cryptoProtocol
       } = await this._encryptInbound(this.localPeer, protectedConn, this.cryptos))
 
+      if (await this.connectionGater.denyInboundEncryptedConnection(remotePeer, encryptedConn)) {
+        throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+      }
+
       // Multiplex the connection
       if (this.muxers.size) {
         ({ stream: upgradedConn, Muxer } = await this._multiplexInbound(encryptedConn, this.muxers))
@@ -109,6 +122,10 @@ class Upgrader {
       log.error('Failed to upgrade inbound connection', err)
       await maConn.close(err)
       throw err
+    }
+
+    if (await this.connectionGater.denyInboundUpgradedConnection(remotePeer, encryptedConn)) {
+      throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
     }
 
     if (this.metrics) {
@@ -143,6 +160,10 @@ class Upgrader {
 
     const remotePeerId = PeerId.createFromB58String(idStr)
 
+    if (await this.connectionGater.denyOutboundConnection(remotePeerId, maConn)) {
+      throw errCode(new Error('The multiaddr connection is blocked by connectionGater.denyOutboundConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+    }
+
     let encryptedConn
     let remotePeer
     let upgradedConn
@@ -174,6 +195,10 @@ class Upgrader {
         protocol: cryptoProtocol
       } = await this._encryptOutbound(this.localPeer, protectedConn, remotePeerId, this.cryptos))
 
+      if (await this.connectionGater.denyOutboundEncryptedConnection(remotePeer, encryptedConn)) {
+        throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+      }
+
       // Multiplex the connection
       if (this.muxers.size) {
         ({ stream: upgradedConn, Muxer } = await this._multiplexOutbound(encryptedConn, this.muxers))
@@ -184,6 +209,10 @@ class Upgrader {
       log.error('Failed to upgrade outbound connection', err)
       await maConn.close(err)
       throw err
+    }
+
+    if (await this.connectionGater.denyOutboundUpgradedConnection(remotePeer, encryptedConn)) {
+      throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
     }
 
     if (this.metrics) {

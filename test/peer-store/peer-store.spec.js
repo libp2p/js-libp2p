@@ -8,6 +8,7 @@ const { Multiaddr } = require('multiaddr')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const { MemoryDatastore } = require('datastore-core/memory')
 const peerUtils = require('../utils/creators/peer')
+const { mockConnectionGater } = require('../utils/mock-connection-gater')
 
 const addr1 = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = new Multiaddr('/ip4/127.0.0.1/tcp/8001')
@@ -23,6 +24,7 @@ const proto3 = '/protocol3'
  */
 
 describe('peer-store', () => {
+  const connectionGater = mockConnectionGater()
   let peerIds
   before(async () => {
     peerIds = await peerUtils.createPeerId({
@@ -37,7 +39,8 @@ describe('peer-store', () => {
     beforeEach(() => {
       peerStore = new PeerStore({
         peerId: peerIds[4],
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
     })
 
@@ -66,7 +69,8 @@ describe('peer-store', () => {
     beforeEach(async () => {
       peerStore = new PeerStore({
         peerId: peerIds[4],
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
 
       // Add peer0 with { addr1, addr2 } and { proto1 }
@@ -170,7 +174,8 @@ describe('peer-store', () => {
     beforeEach(() => {
       peerStore = new PeerStore({
         peerId: peerIds[4],
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
     })
 

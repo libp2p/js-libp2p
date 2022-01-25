@@ -7,12 +7,11 @@ const { CLOSED } = require('libp2p-interfaces/src/connection/status')
 
 const delay = require('delay')
 const pWaitFor = require('p-wait-for')
-
 const peerUtils = require('../utils/creators/peer')
 const mockConnection = require('../utils/mockConnection')
 const baseOptions = require('../utils/base-options.browser')
-
-const listenMultiaddr = '/ip4/127.0.0.1/tcp/15002/ws'
+const { codes } = require('../../src/errors')
+const { Multiaddr } = require('multiaddr')
 
 describe('Connection Manager', () => {
   let libp2p
@@ -27,7 +26,7 @@ describe('Connection Manager', () => {
       config: {
         peerId: peerIds[0],
         addresses: {
-          listen: [listenMultiaddr]
+          listen: ['/ip4/127.0.0.1/tcp/0/ws']
         },
         modules: baseOptions.modules
       }
@@ -303,6 +302,232 @@ describe('libp2p.connections', () => {
       expect(conn.stat.status).to.eql(CLOSED)
 
       await remoteLibp2p.stop()
+    })
+  })
+
+  describe('connection gater', () => {
+    let libp2p
+    let remoteLibp2p
+
+    beforeEach(async () => {
+      [remoteLibp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[1],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          modules: baseOptions.modules
+        }
+      })
+    })
+
+    afterEach(async () => {
+      remoteLibp2p && await remoteLibp2p.stop()
+      libp2p && await libp2p.stop()
+    })
+
+    it('intercept peer dial', async () => {
+      const denyDialPeer = sinon.stub().returns(true)
+
+      ;[libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          modules: baseOptions.modules,
+          connectionGater: {
+            denyDialPeer
+          }
+        }
+      })
+      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
+
+      await expect(libp2p.dial(remoteLibp2p.peerId))
+        .to.eventually.be.rejected().with.property('code', codes.ERR_PEER_DIAL_INTERCEPTED)
+    })
+
+    it('intercept addr dial', async () => {
+      const denyDialMultiaddr = sinon.stub().returns(false)
+
+      ;[libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          modules: baseOptions.modules,
+          connectionGater: {
+            denyDialMultiaddr
+          }
+        }
+      })
+      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
+      await libp2p.dialer.connectToPeer(remoteLibp2p.peerId)
+
+      const peerIdMultiaddr = new Multiaddr(`/p2p/${remoteLibp2p.peerId}`)
+
+      for (const multiaddr of remoteLibp2p.multiaddrs) {
+        expect(denyDialMultiaddr.calledWith(remoteLibp2p.peerId, multiaddr.encapsulate(peerIdMultiaddr))).to.be.true()
+      }
+    })
+
+    it('intercept multiaddr store during multiaddr dial', async () => {
+      const filterMultiaddrForPeer = sinon.stub().returns(true)
+
+      ;[libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          modules: baseOptions.modules,
+          connectionGater: {
+            filterMultiaddrForPeer
+          }
+        }
+      })
+
+      const peerIdMultiaddr = new Multiaddr(`/p2p/${remoteLibp2p.peerId}`)
+      const fullMultiaddr = remoteLibp2p.multiaddrs[0].encapsulate(peerIdMultiaddr)
+
+      await libp2p.dialer.connectToPeer(fullMultiaddr)
+
+      expect(filterMultiaddrForPeer.callCount).to.equal(2)
+
+      const args = filterMultiaddrForPeer.getCall(1).args
+      expect(args[0].toString()).to.equal(remoteLibp2p.peerId.toString())
+      expect(args[1].toString()).to.equal(fullMultiaddr.toString())
+    })
+
+    it('intercept accept inbound connection', async () => {
+      const denyInboundConnection = sinon.stub().returns(false)
+
+      ;[libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          modules: baseOptions.modules,
+          connectionGater: {
+            denyInboundConnection
+          }
+        }
+      })
+      await remoteLibp2p.peerStore.addressBook.set(libp2p.peerId, libp2p.multiaddrs)
+      await remoteLibp2p.dial(libp2p.peerId)
+
+      expect(denyInboundConnection.called).to.be.true()
+    })
+
+    it('intercept accept outbound connection', async () => {
+      const denyOutboundConnection = sinon.stub().returns(false)
+
+      ;[libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          modules: baseOptions.modules,
+          connectionGater: {
+            denyOutboundConnection
+          }
+        }
+      })
+      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
+      await libp2p.dial(remoteLibp2p.peerId)
+
+      expect(denyOutboundConnection.called).to.be.true()
+    })
+
+    it('intercept inbound encrypted', async () => {
+      const denyInboundEncryptedConnection = sinon.stub().returns(false)
+
+      ;[libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          modules: baseOptions.modules,
+          connectionGater: {
+            denyInboundEncryptedConnection
+          }
+        }
+      })
+      await remoteLibp2p.peerStore.addressBook.set(libp2p.peerId, libp2p.multiaddrs)
+      await remoteLibp2p.dial(libp2p.peerId)
+
+      expect(denyInboundEncryptedConnection.called).to.be.true()
+      expect(denyInboundEncryptedConnection.getCall(0)).to.have.nested.property('args[0].id').that.equalBytes(remoteLibp2p.peerId.id)
+    })
+
+    it('intercept outbound encrypted', async () => {
+      const denyOutboundEncryptedConnection = sinon.stub().returns(false)
+
+      ;[libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          modules: baseOptions.modules,
+          connectionGater: {
+            denyOutboundEncryptedConnection
+          }
+        }
+      })
+      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
+      await libp2p.dial(remoteLibp2p.peerId)
+
+      expect(denyOutboundEncryptedConnection.called).to.be.true()
+      expect(denyOutboundEncryptedConnection.getCall(0)).to.have.nested.property('args[0].id').that.equalBytes(remoteLibp2p.peerId.id)
+    })
+
+    it('intercept inbound upgraded', async () => {
+      const denyInboundUpgradedConnection = sinon.stub().returns(false)
+
+      ;[libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          modules: baseOptions.modules,
+          connectionGater: {
+            denyInboundUpgradedConnection
+          }
+        }
+      })
+      await remoteLibp2p.peerStore.addressBook.set(libp2p.peerId, libp2p.multiaddrs)
+      await remoteLibp2p.dial(libp2p.peerId)
+
+      expect(denyInboundUpgradedConnection.called).to.be.true()
+      expect(denyInboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].id').that.equalBytes(remoteLibp2p.peerId.id)
+    })
+
+    it('intercept outbound upgraded', async () => {
+      const denyOutboundUpgradedConnection = sinon.stub().returns(false)
+
+      ;[libp2p] = await peerUtils.createPeer({
+        config: {
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          modules: baseOptions.modules,
+          connectionGater: {
+            denyOutboundUpgradedConnection
+          }
+        }
+      })
+      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.multiaddrs)
+      await libp2p.dial(remoteLibp2p.peerId)
+
+      expect(denyOutboundUpgradedConnection.called).to.be.true()
+      expect(denyOutboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].id').that.equalBytes(remoteLibp2p.peerId.id)
     })
   })
 })

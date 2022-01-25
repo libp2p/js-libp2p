@@ -12,6 +12,7 @@ const Store = require('./store')
  * @typedef {import('./types').PeerStore} PeerStore
  * @typedef {import('./types').Peer} Peer
  * @typedef {import('peer-id')} PeerId
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
  */
 
 const log = Object.assign(debug('libp2p:peer-store'), {
@@ -28,14 +29,15 @@ class DefaultPeerStore extends EventEmitter {
    * @param {object} properties
    * @param {PeerId} properties.peerId
    * @param {import('interface-datastore').Datastore} properties.datastore
+   * @param {(peerId: PeerId, multiaddr: Multiaddr) => Promise<boolean>} properties.addressFilter
    */
-  constructor ({ peerId, datastore }) {
+  constructor ({ peerId, datastore, addressFilter }) {
     super()
 
     this._peerId = peerId
     this._store = new Store(datastore)
 
-    this.addressBook = new AddressBook(this.emit.bind(this), this._store)
+    this.addressBook = new AddressBook(this.emit.bind(this), this._store, addressFilter)
     this.keyBook = new KeyBook(this.emit.bind(this), this._store)
     this.metadataBook = new MetadataBook(this.emit.bind(this), this._store)
     this.protoBook = new ProtoBook(this.emit.bind(this), this._store)

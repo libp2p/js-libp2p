@@ -1,6 +1,9 @@
 'use strict'
 
 const debug = require('debug')
+const all = require('it-all')
+const filter = require('it-filter')
+const { pipe } = require('it-pipe')
 const log = Object.assign(debug('libp2p:dialer'), {
   error: debug('libp2p:dialer:err')
 })
@@ -33,12 +36,14 @@ const METRICS_PENDING_DIAL_TARGETS = 'pending-dial-targets'
  * @typedef {import('../peer-store/types').PeerStore} PeerStore
  * @typedef {import('../peer-store/types').Address} Address
  * @typedef {import('../transport-manager')} TransportManager
+ * @typedef {import('../types').ConnectionGater} ConnectionGater
  */
 
 /**
  * @typedef {Object} DialerProperties
  * @property {PeerStore} peerStore
  * @property {TransportManager} transportManager
+ * @property {ConnectionGater} connectionGater
  *
  * @typedef {(addr:Multiaddr) => Promise<string[]>} Resolver
  *
@@ -70,6 +75,7 @@ class Dialer {
   constructor ({
     transportManager,
     peerStore,
+    connectionGater,
     addressSorter = publicAddressesFirst,
     maxParallelDials = MAX_PARALLEL_DIALS,
     maxAddrsToDial = MAX_ADDRS_TO_DIAL,
@@ -78,6 +84,7 @@ class Dialer {
     resolvers = {},
     metrics
   }) {
+    this.connectionGater = connectionGater
     this.transportManager = transportManager
     this.peerStore = peerStore
     this.addressSorter = addressSorter
@@ -136,6 +143,12 @@ class Dialer {
    * @returns {Promise<Connection>}
    */
   async connectToPeer (peer, options = {}) {
+    const { id } = getPeer(peer)
+
+    if (await this.connectionGater.denyDialPeer(id)) {
+      throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
+    }
+
     const dialTarget = await this._createCancellableDialTarget(peer)
 
     if (!dialTarget.addrs.length) {
@@ -203,7 +216,13 @@ class Dialer {
       await this.peerStore.addressBook.add(id, multiaddrs)
     }
 
-    let knownAddrs = await this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter) || []
+    let knownAddrs = await pipe(
+      await this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter),
+      (source) => filter(source, async (multiaddr) => {
+        return !(await this.connectionGater.denyDialMultiaddr(id, multiaddr))
+      }),
+      (source) => all(source)
+    )
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.

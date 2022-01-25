@@ -7,6 +7,11 @@ const PeerId = require('peer-id')
 const { codes } = require('../errors')
 const PeerRecord = require('../record/peer-record')
 const Envelope = require('../record/envelope')
+const { pipe } = require('it-pipe')
+const all = require('it-all')
+const filter = require('it-filter')
+const map = require('it-map')
+const each = require('it-foreach')
 
 /**
  * @typedef {import('./types').PeerStore} PeerStore
@@ -27,10 +32,12 @@ class PeerStoreAddressBook {
   /**
    * @param {PeerStore["emit"]} emit
    * @param {import('./types').Store} store
+   * @param {(peerId: PeerId, multiaddr: Multiaddr) => Promise<boolean>} addressFilter
    */
-  constructor (emit, store) {
+  constructor (emit, store, addressFilter) {
     this._emit = emit
     this._store = store
+    this._addressFilter = addressFilter
   }
 
   /**
@@ -88,7 +95,7 @@ class PeerStoreAddressBook {
       // Replace unsigned addresses by the new ones from the record
       // TODO: Once we have ttls for the addresses, we should merge these in
       updatedPeer = await this._store.patchOrCreate(peerId, {
-        addresses: convertMultiaddrsToAddresses(multiaddrs, true),
+        addresses: await filterMultiaddrs(peerId, multiaddrs, this._addressFilter, true),
         peerRecordEnvelope: envelope.marshal()
       })
 
@@ -180,6 +187,11 @@ class PeerStoreAddressBook {
       throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
     }
 
+    if (!Array.isArray(multiaddrs)) {
+      log.error('multiaddrs must be an array of Multiaddrs')
+      throw errcode(new Error('multiaddrs must be an array of Multiaddrs'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     log('set await write lock')
     const release = await this._store.lock.writeLock()
     log('set got write lock')
@@ -188,7 +200,7 @@ class PeerStoreAddressBook {
     let updatedPeer
 
     try {
-      const addresses = convertMultiaddrsToAddresses(multiaddrs)
+      const addresses = await filterMultiaddrs(peerId, multiaddrs, this._addressFilter)
 
       // No valid addresses found
       if (!addresses.length) {
@@ -238,6 +250,11 @@ class PeerStoreAddressBook {
       throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
     }
 
+    if (!Array.isArray(multiaddrs)) {
+      log.error('multiaddrs must be an array of Multiaddrs')
+      throw errcode(new Error('multiaddrs must be an array of Multiaddrs'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     log('add await write lock')
     const release = await this._store.lock.writeLock()
     log('add got write lock')
@@ -246,7 +263,7 @@ class PeerStoreAddressBook {
     let updatedPeer
 
     try {
-      const addresses = convertMultiaddrsToAddresses(multiaddrs)
+      const addresses = await filterMultiaddrs(peerId, multiaddrs, this._addressFilter)
 
       // No valid addresses found
       if (!addresses.length) {
@@ -337,33 +354,29 @@ class PeerStoreAddressBook {
 }
 
 /**
- * Transforms received multiaddrs into Address.
- *
- * @private
+ * @param {PeerId} peerId
  * @param {Multiaddr[]} multiaddrs
- * @param {boolean} [isCertified]
- * @returns {Address[]}
+ * @param {(peerId: PeerId, multiaddr: Multiaddr) => Promise<boolean>} addressFilter
+ * @param {boolean} isCertified
  */
-function convertMultiaddrsToAddresses (multiaddrs, isCertified = false) {
-  if (!multiaddrs) {
-    log.error('multiaddrs must be provided to store data')
-    throw errcode(new Error('multiaddrs must be provided'), codes.ERR_INVALID_PARAMETERS)
-  }
-
-  // create Address for each address with no duplicates
-  return Array.from(
-    new Set(multiaddrs.map(ma => ma.toString()))
-  )
-    .map(addr => {
-      try {
-        return {
-          multiaddr: new Multiaddr(addr),
-          isCertified
-        }
-      } catch (err) {
-        throw errcode(err, codes.ERR_INVALID_PARAMETERS)
+function filterMultiaddrs (peerId, multiaddrs, addressFilter, isCertified = false) {
+  return pipe(
+    multiaddrs,
+    (source) => each(source, (multiaddr) => {
+      if (!Multiaddr.isMultiaddr(multiaddr)) {
+        log.error('multiaddr must be an instance of Multiaddr')
+        throw errcode(new Error('multiaddr must be an instance of Multiaddr'), codes.ERR_INVALID_PARAMETERS)
       }
-    })
+    }),
+    (source) => filter(source, (multiaddr) => addressFilter(peerId, multiaddr)),
+    (source) => map(source, (multiaddr) => {
+      return {
+        multiaddr: new Multiaddr(multiaddr.toString()),
+        isCertified
+      }
+    }),
+    (source) => all(source)
+  )
 }
 
 module.exports = PeerStoreAddressBook

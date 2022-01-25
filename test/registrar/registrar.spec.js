@@ -9,7 +9,7 @@ const { MemoryDatastore } = require('datastore-core/memory')
 const Topology = require('libp2p-interfaces/src/topology/multicodec-topology')
 const PeerStore = require('../../src/peer-store')
 const Registrar = require('../../src/registrar')
-
+const { mockConnectionGater } = require('../utils/mock-connection-gater')
 const createMockConnection = require('../utils/mockConnection')
 const peerUtils = require('../utils/creators/peer')
 const baseOptions = require('../utils/base-options.browser')
@@ -17,6 +17,7 @@ const baseOptions = require('../utils/base-options.browser')
 const multicodec = '/test/1.0.0'
 
 describe('registrar', () => {
+  const connectionGater = mockConnectionGater()
   let peerStore
   let registrar
   let peerId
@@ -29,7 +30,8 @@ describe('registrar', () => {
     beforeEach(() => {
       peerStore = new PeerStore({
         peerId,
-        datastore: new MemoryDatastore()
+        datastore: new MemoryDatastore(),
+        addressFilter: connectionGater.filterMultiaddrForPeer
       })
       registrar = new Registrar({ peerStore, connectionManager: new EventEmitter() })
     })
