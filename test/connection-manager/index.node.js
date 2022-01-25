@@ -309,6 +309,7 @@ describe('libp2p.connections', () => {
   })
 
   describe('connection gater', () => {
+    let libp2p
     let remoteLibp2p
     let port = 15004
 
@@ -323,8 +324,14 @@ describe('libp2p.connections', () => {
         }
       })
     })
+
+    afterEach(async () => {
+      remoteLibp2p && await remoteLibp2p.stop()
+      libp2p && await libp2p.stop()
+    })
+
     it('intercept peer dial', async () => {
-      const [libp2p] = await peerUtils.createPeer({
+      [libp2p] = await peerUtils.createPeer({
         config: {
           peerId: peerIds[0],
           addresses: {
@@ -346,9 +353,10 @@ describe('libp2p.connections', () => {
         expect(e.code).to.equal(codes.ERR_PEER_DIAL_INTERCEPTED)
       }
     })
-    it('intercept addr dial', async () => {
+
+    it.only('intercept addr dial', async () => {
       const testAddr = new Multiaddr('/ip4/99.99.99.88/tcp/12345/ws/p2p/' + remoteLibp2p.peerId.toB58String())
-      const [libp2p] = await peerUtils.createPeer({
+      [libp2p] = await peerUtils.createPeer({
         config: {
           peerId: peerIds[0],
           addresses: {
@@ -371,8 +379,9 @@ describe('libp2p.connections', () => {
       const { addrs } = await libp2p.dialer._createCancellableDialTarget(remoteLibp2p.peerId)
       expect(addrs.length > 0 && addrs.filter(i => i.toString() === testAddr.toString()).length === 0).to.equal(true)
     })
+
     it('intercept accept', async () => {
-      const [libp2p] = await peerUtils.createPeer({
+      [libp2p] = await peerUtils.createPeer({
         config: {
           peerId: peerIds[0],
           addresses: {
@@ -402,8 +411,9 @@ describe('libp2p.connections', () => {
       } catch (e) {
       }
     })
+
     it('intercept secured (inbound)', async () => {
-      const [libp2p] = await peerUtils.createPeer({
+      [libp2p] = await peerUtils.createPeer({
         config: {
           peerId: peerIds[0],
           addresses: {
@@ -433,8 +443,9 @@ describe('libp2p.connections', () => {
       } catch (e) {
       }
     })
+
     it('intercept secured (outbound)', async () => {
-      const [libp2p] = await peerUtils.createPeer({
+      [libp2p] = await peerUtils.createPeer({
         config: {
           peerId: peerIds[0],
           addresses: {
@@ -457,8 +468,9 @@ describe('libp2p.connections', () => {
         expect(e.toString().indexOf('interceptSecured') >= 0).to.equal(true)
       }
     })
+
     it('intercept upgraded', async () => {
-      const [libp2p] = await peerUtils.createPeer({
+      [libp2p] = await peerUtils.createPeer({
         config: {
           peerId: peerIds[0],
           addresses: {
