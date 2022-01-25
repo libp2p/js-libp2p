@@ -371,7 +371,7 @@ describe('libp2p.upgrader', () => {
     expect(libp2p.upgrader).to.equal(libp2p.transportManager.upgrader)
   })
 
-  it('should be able to register and unregister a handler', () => {
+  it('should be able to register and unregister a handler', async () => {
     libp2p = new Libp2p({
       peerId: peers[0],
       modules: {
@@ -384,11 +384,11 @@ describe('libp2p.upgrader', () => {
     expect(libp2p.upgrader.protocols).to.not.have.any.keys(['/echo/1.0.0', '/echo/1.0.1'])
 
     const echoHandler = () => {}
-    libp2p.handle(['/echo/1.0.0', '/echo/1.0.1'], echoHandler)
+    await libp2p.handle(['/echo/1.0.0', '/echo/1.0.1'], echoHandler)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.0')).to.equal(echoHandler)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.1')).to.equal(echoHandler)
 
-    libp2p.unhandle(['/echo/1.0.0'])
+    await libp2p.unhandle(['/echo/1.0.0'])
     expect(libp2p.upgrader.protocols.get('/echo/1.0.0')).to.equal(undefined)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.1')).to.equal(echoHandler)
   })
