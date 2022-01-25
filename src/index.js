@@ -29,9 +29,9 @@ const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
 const PubsubAdapter = require('./pubsub-adapter')
 const Registrar = require('./registrar')
-const ping = require('./ping')
 const IdentifyService = require('./identify')
 const FetchService = require('./fetch')
+const PingService = require('./ping')
 const NatManager = require('./nat-manager')
 const { updateSelfPeerRecord } = require('./record/utils')
 
@@ -339,12 +339,10 @@ class Libp2p extends EventEmitter {
     this.peerRouting = new PeerRouting(this)
     this.contentRouting = new ContentRouting(this)
 
-    // Mount default protocols
-    ping.mount(this)
-
     this._onDiscoveryPeer = this._onDiscoveryPeer.bind(this)
 
     this.fetchService = new FetchService(this)
+    this.pingService = new PingService(this)
   }
 
   /**
@@ -380,6 +378,10 @@ class Libp2p extends EventEmitter {
 
     if (this.fetchService) {
       await this.handle(FetchService.PROTOCOL, this.fetchService.handleMessage)
+    }
+
+    if (this.pingService) {
+      await this.handle(PingService.getProtocolStr(this), this.pingService.handleMessage)
     }
 
     try {
@@ -433,9 +435,9 @@ class Libp2p extends EventEmitter {
       await this.natManager.stop()
       await this.transportManager.close()
 
-      this.unhandle(FetchService.PROTOCOL)
+      await this.unhandle(FetchService.PROTOCOL)
+      await this.unhandle(PingService.getProtocolStr(this))
 
-      ping.unmount(this)
       this.dialer.destroy()
     } catch (/** @type {any} */ err) {
       if (err) {
@@ -609,10 +611,10 @@ class Libp2p extends EventEmitter {
 
     // If received multiaddr, ping it
     if (multiaddrs) {
-      return ping(this, multiaddrs[0])
+      return this.pingService.ping(multiaddrs[0])
     }
 
-    return ping(this, id)
+    return this.pingService.ping(id)
   }
 
   /**
