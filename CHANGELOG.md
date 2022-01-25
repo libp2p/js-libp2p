@@ -10,6 +10,13 @@
 
 
 
+### [0.36.1](https://www.github.com/libp2p/js-libp2p/compare/v0.36.0...v0.36.1) (2022-01-25)
+
+
+### Bug Fixes
+
+* await unhandle of protocols ([#1144](https://www.github.com/libp2p/js-libp2p/issues/1144)) ([d44bd90](https://www.github.com/libp2p/js-libp2p/commit/d44bd9094fe9545054eb8eff68f81bc52ece03e7))
+
 ## [0.36.0](https://www.github.com/libp2p/js-libp2p/compare/v0.35.8...v0.36.0) (2022-01-25)
 
 
