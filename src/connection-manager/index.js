@@ -38,9 +38,6 @@ const METRICS_PEER_VALUES = 'peer-values'
 
 /**
  * @typedef {import('../')} Libp2p
- * @typedef {import('multiaddr').Multiaddr} Multiaddr
- * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  */
 

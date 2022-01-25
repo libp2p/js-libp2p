@@ -13,7 +13,7 @@ const { FaultTolerance } = require('./transport-manager')
 
 /**
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
- * @typedef {import('./connection-manager') } ConnectionManager
+ * @typedef {import('./types').ConnectionGater} ConnectionGater
  * @typedef {import('.').Libp2pOptions} Libp2pOptions
  * @typedef {import('.').constructorOptions} constructorOptions
  */
@@ -26,9 +26,9 @@ const DefaultConfig = {
     announceFilter: (/** @type {Multiaddr[]} */ multiaddrs) => multiaddrs
   },
   connectionManager: {
-    minConnections: 25,
-    gater: /** @type {ConnectionManager.gater} */ {}
+    minConnections: 25
   },
+  connectionGater: /** @type {ConnectionGater} */ {},
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL
   },
