@@ -10,6 +10,13 @@
 
 
 
+### [0.36.2](https://www.github.com/libp2p/js-libp2p/compare/v0.36.1...v0.36.2) (2022-01-26)
+
+
+### Bug Fixes
+
+* reject connections when not running ([#1146](https://www.github.com/libp2p/js-libp2p/issues/1146)) ([902f10d](https://www.github.com/libp2p/js-libp2p/commit/902f10d58d1062e812eb27aa0e2256e3fde5d3f6))
+
 ### [0.36.1](https://www.github.com/libp2p/js-libp2p/compare/v0.36.0...v0.36.1) (2022-01-25)
 
 
