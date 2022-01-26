@@ -459,14 +459,18 @@ describe('Dialing (direct, WebSockets)', () => {
       sinon.spy(libp2p.dialer, 'connectToPeer')
       sinon.spy(libp2p.peerStore.addressBook, 'add')
 
+      await libp2p.start()
+
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
       const { stream, protocol } = await connection.newStream('/echo/1.0.0')
       expect(stream).to.exist()
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
-      expect(libp2p.dialer.connectToPeer.callCount).to.equal(1)
+      expect(libp2p.dialer.connectToPeer.callCount).to.be.at.least(1)
       expect(libp2p.peerStore.addressBook.add.callCount).to.be.at.least(1)
+
+      await libp2p.stop()
     })
 
     it('should run identify automatically after connecting', async () => {
@@ -489,6 +493,8 @@ describe('Dialing (direct, WebSockets)', () => {
       sinon.spy(libp2p.identifyService, 'identify')
       sinon.spy(libp2p.upgrader, 'onConnection')
 
+      await libp2p.start()
+
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
 
@@ -501,6 +507,8 @@ describe('Dialing (direct, WebSockets)', () => {
       await libp2p.identifyService.identify.firstCall.returnValue
 
       expect(libp2p.peerStore.protoBook.set.callCount).to.equal(1)
+
+      await libp2p.stop()
     })
 
     it('should be able to use hangup to close connections', async () => {
@@ -520,11 +528,15 @@ describe('Dialing (direct, WebSockets)', () => {
         }
       })
 
+      await libp2p.start()
+
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
       expect(connection.stat.timeline.close).to.not.exist()
       await libp2p.hangUp(connection.remotePeer)
       expect(connection.stat.timeline.close).to.exist()
+
+      await libp2p.stop()
     })
 
     it('should be able to use hangup when no connection exists', async () => {

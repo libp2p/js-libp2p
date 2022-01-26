@@ -307,6 +307,8 @@ describe('Dialing (direct, TCP)', () => {
         }
       })
 
+      await libp2p.start()
+
       sinon.spy(libp2p.dialer, 'connectToPeer')
 
       try {
@@ -329,6 +331,8 @@ describe('Dialing (direct, TCP)', () => {
         }
       })
 
+      await libp2p.start()
+
       sinon.spy(libp2p.dialer, 'connectToPeer')
 
       const connection = await libp2p.dial(remoteAddr)
@@ -337,7 +341,7 @@ describe('Dialing (direct, TCP)', () => {
       expect(stream).to.exist()
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
-      expect(libp2p.dialer.connectToPeer.callCount).to.equal(1)
+      expect(libp2p.dialer.connectToPeer.callCount).to.be.greaterThan(0)
     })
 
     it('should use the dialer for connecting to a peer', async () => {
@@ -350,6 +354,8 @@ describe('Dialing (direct, TCP)', () => {
         }
       })
 
+      await libp2p.start()
+
       sinon.spy(libp2p.dialer, 'connectToPeer')
       await libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
 
@@ -359,7 +365,7 @@ describe('Dialing (direct, TCP)', () => {
       expect(stream).to.exist()
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
-      expect(libp2p.dialer.connectToPeer.callCount).to.equal(1)
+      expect(libp2p.dialer.connectToPeer.callCount).to.be.greaterThan(0)
     })
 
     it('should close all streams when the connection closes', async () => {
@@ -371,6 +377,8 @@ describe('Dialing (direct, TCP)', () => {
           connEncryption: [Crypto]
         }
       })
+
+      await libp2p.start()
 
       // register some stream handlers to simulate several protocols
       await libp2p.handle('/stream-count/1', ({ stream }) => pipe(stream, stream))
@@ -397,8 +405,8 @@ describe('Dialing (direct, TCP)', () => {
 
       // Verify stream count
       const remoteConn = remoteLibp2p.connectionManager.get(libp2p.peerId)
-      expect(connection.streams).to.have.length(6)
-      expect(remoteConn.streams).to.have.length(6)
+      expect(connection.streams).to.have.length(5)
+      expect(remoteConn.streams).to.have.length(5)
 
       // Close the connection and verify all streams have been closed
       await connection.close()
@@ -415,6 +423,8 @@ describe('Dialing (direct, TCP)', () => {
           connEncryption: [Crypto]
         }
       })
+
+      await libp2p.start()
 
       await expect(libp2p.dialProtocol(remotePeerId))
         .to.eventually.be.rejectedWith(Error)
@@ -435,6 +445,8 @@ describe('Dialing (direct, TCP)', () => {
         }
       })
 
+      await libp2p.start()
+
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
       expect(connection.stat.timeline.close).to.not.exist()
@@ -451,6 +463,8 @@ describe('Dialing (direct, TCP)', () => {
           connEncryption: [Crypto]
         }
       })
+
+      await libp2p.start()
 
       const connection = await libp2p.dial(`${remoteAddr.toString()}`)
       expect(connection).to.exist()
@@ -474,6 +488,8 @@ describe('Dialing (direct, TCP)', () => {
       sinon.spy(libp2p.upgrader.protector, 'protect')
       sinon.stub(remoteLibp2p.upgrader, 'protector').value(new Protector(swarmKeyBuffer))
 
+      await libp2p.start()
+
       const connection = await libp2p.dialer.connectToPeer(remoteAddr)
       expect(connection).to.exist()
       const { stream, protocol } = await connection.newStream('/echo/1.0.0')
@@ -492,8 +508,10 @@ describe('Dialing (direct, TCP)', () => {
           connEncryption: [Crypto]
         }
       })
-      const dials = 10
 
+      await libp2p.start()
+
+      const dials = 10
       const fullAddress = remoteAddr.encapsulate(`/p2p/${remoteLibp2p.peerId.toB58String()}`)
 
       await libp2p.peerStore.addressBook.set(remotePeerId, remoteLibp2p.multiaddrs)
@@ -522,6 +540,9 @@ describe('Dialing (direct, TCP)', () => {
           connEncryption: [Crypto]
         }
       })
+
+      await libp2p.start()
+
       const dials = 10
       const error = new Error('Boom')
       sinon.stub(libp2p.transportManager, 'dial').callsFake(() => Promise.reject(error))

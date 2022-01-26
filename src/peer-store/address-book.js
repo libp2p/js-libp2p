@@ -288,7 +288,7 @@ class PeerStoreAddressBook {
 
       updatedPeer = await this._store.mergeOrCreate(peerId, { addresses })
 
-      log(`added multiaddrs for ${peerId}`)
+      log(`added multiaddrs for ${peerId.toB58String()}`)
     } finally {
       log('set release write lock')
       release()

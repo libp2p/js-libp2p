@@ -403,6 +403,7 @@ describe('libp2p.upgrader', () => {
         connEncryption: [Crypto]
       }
     })
+    await libp2p.start()
     const echoHandler = () => {}
     libp2p.handle(['/echo/1.0.0'], echoHandler)
 
@@ -447,6 +448,8 @@ describe('libp2p.upgrader', () => {
       cryptos: new Map([[Crypto.protocol, Crypto]]),
       connectionGater
     })
+
+    await libp2p.start()
 
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 

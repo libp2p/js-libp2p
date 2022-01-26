@@ -123,6 +123,8 @@ describe('registrar', () => {
         }
       })
 
+      await libp2p.start()
+
       // Register protocol
       const identifier = await libp2p.registrar.register(topologyProps)
       const topology = libp2p.registrar.topologies.get(identifier)
@@ -163,6 +165,8 @@ describe('registrar', () => {
           }
         }
       })
+
+      await libp2p.start()
 
       // Register protocol
       const identifier = await libp2p.registrar.register(topologyProps)

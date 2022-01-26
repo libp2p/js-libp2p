@@ -223,6 +223,12 @@ class ConnectionManager extends EventEmitter {
    * @param {Connection} connection
    */
   async onConnect (connection) {
+    if (!this._started) {
+      // This can happen when we are in the process of shutting down the node
+      await connection.close()
+      return
+    }
+
     const peerId = connection.remotePeer
     const peerIdStr = peerId.toB58String()
     const storedConn = this.connections.get(peerIdStr)
@@ -251,6 +257,11 @@ class ConnectionManager extends EventEmitter {
    * @returns {void}
    */
   onDisconnect (connection) {
+    if (!this._started) {
+      // This can happen when we are in the process of shutting down the node
+      return
+    }
+
     const peerId = connection.remotePeer.toB58String()
     let storedConn = this.connections.get(peerId)
 
