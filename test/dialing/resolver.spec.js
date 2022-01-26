@@ -51,6 +51,9 @@ describe('Dialing (resolvable addresses)', () => {
       started: true,
       populateAddressBooks: false
     })
+
+    await libp2p.start()
+    await remoteLibp2p.start()
   })
 
   afterEach(async () => {
