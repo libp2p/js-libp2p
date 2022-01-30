@@ -1,7 +1,7 @@
 import net from 'net'
 import { EventEmitter } from 'events'
 import debug from 'debug'
-import { toConnection } from './socket-to-conn.js'
+import { toMultiaddrConnection } from './socket-to-conn.js'
 import { CODE_P2P } from './constants.js'
 import {
   getMultiaddrs,
@@ -55,7 +55,7 @@ export function createListener (context: Context) {
 
     let maConn: MultiaddrConnection
     try {
-      maConn = toConnection(socket, { listeningAddr })
+      maConn = toMultiaddrConnection(socket, { listeningAddr })
     } catch (err) {
       log.error('inbound connection failed', err)
       return
@@ -66,8 +66,7 @@ export function createListener (context: Context) {
       upgrader.upgradeInbound(maConn)
         .then((conn) => {
           log('inbound connection %s upgraded', maConn.remoteAddr)
-
-          trackConn(server, maConn)
+          trackConn(server, maConn, socket)
 
           if (handler != null) {
             handler(conn)
@@ -160,13 +159,12 @@ export function createListener (context: Context) {
   return listener
 }
 
-function trackConn (server: ServerWithMultiaddrConnections, maConn: MultiaddrConnection) {
+function trackConn (server: ServerWithMultiaddrConnections, maConn: MultiaddrConnection, socket: net.Socket) {
   server.__connections.push(maConn)
 
   const untrackConn = () => {
     server.__connections = server.__connections.filter(c => c !== maConn)
   }
 
-  // @ts-expect-error
-  maConn.conn.once('close', untrackConn)
+  socket.once('close', untrackConn)
 }

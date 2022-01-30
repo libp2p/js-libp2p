@@ -3,9 +3,10 @@ import { TCP } from '../src/index.js'
 import os from 'os'
 import path from 'path'
 import { Multiaddr } from '@multiformats/multiaddr'
-import pipe from 'it-pipe'
+import { pipe } from 'it-pipe'
 import { collect } from 'streaming-iterables'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/transport/utils'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 const isCI = process.env.CI
 
@@ -132,12 +133,12 @@ describe('dial', () => {
     const { stream } = await conn.newStream(['/test/stream'])
 
     const values = await pipe(
-      ['hey'],
+      [uint8ArrayFromString('hey')],
       stream,
       collect
     )
 
-    expect(values).to.deep.equal(['hey'])
+    expect(values[0]).to.equalBytes(uint8ArrayFromString('hey'))
     await conn.close()
     await listener.close()
   })
@@ -154,11 +155,11 @@ describe('dial', () => {
     const { stream } = await conn.newStream(['/test/stream'])
 
     const values = await pipe(
-      ['hey'],
+      [uint8ArrayFromString('hey')],
       stream,
       collect
     )
-    expect(values).to.deep.equal(['hey'])
+    expect(values[0]).to.equalBytes(uint8ArrayFromString('hey'))
     await conn.close()
     await listener.close()
   })
@@ -173,7 +174,7 @@ describe('dial', () => {
     const { stream } = await conn.newStream(['/test/stream'])
 
     const values = await pipe(
-      ['hey'],
+      [uint8ArrayFromString('hey')],
       stream,
       collect
     )
@@ -189,8 +190,10 @@ describe('dial', () => {
 
     const ma = new Multiaddr('/ip6/::/tcp/9090')
 
-    const listener = tcp.createListener({}, (conn) => {
-      conn.close().then(() => handled()).catch(() => {})
+    const listener = tcp.createListener({
+      handler: (conn) => {
+        conn.close().then(() => handled()).catch(() => {})
+      }
     })
 
     await listener.listen(ma)
@@ -215,8 +218,10 @@ describe('dial', () => {
 
     const ma = new Multiaddr('/ip6/::/tcp/9090')
 
-    const listener = tcp.createListener({}, () => {
-      handled()
+    const listener = tcp.createListener({
+      handler: () => {
+        handled()
+      }
     })
 
     await listener.listen(ma)
@@ -237,11 +242,11 @@ describe('dial', () => {
     const { stream } = await conn.newStream(['/test/stream'])
 
     const values = await pipe(
-      ['hey'],
+      [uint8ArrayFromString('hey')],
       stream,
       collect
     )
-    expect(values).to.deep.equal(['hey'])
+    expect(values[0]).to.equalBytes(uint8ArrayFromString('hey'))
 
     await conn.close()
     await listener.close()

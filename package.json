@@ -2,63 +2,59 @@
   "name": "@libp2p/tcp",
   "version": "1.0.2",
   "description": "Node.js implementation of the TCP module that libp2p uses, which implements the interface-connection and interface-transport interfaces",
-  "main": "./dist/src/index.js",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-tcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-tcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-tcp/issues"
+  },
+  "keywords": [
+    "IPFS",
+    "TCP",
+    "libp2p",
+    "network",
+    "p2p",
+    "peer",
+    "peer-to-peer"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "main": "src/index.js",
   "type": "module",
+  "types": "types/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "types/*",
+        "types/src/*"
+      ],
+      "types/*": [
+        "types/*",
+        "types/src/*"
+      ]
+    }
+  },
+  "files": [
+    "*",
+    "!**/*.tsbuildinfo",
+    "!**/browser-test",
+    "!**/node-test"
+  ],
   "exports": {
     ".": {
       "import": "./dist/src/index.js"
     }
   },
-  "scripts": {
-    "lint": "aegir lint",
-    "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
-    "build": "tsc",
-    "pretest": "npm run build",
-    "test": "aegir test -f ./dist/test/**/*.js",
-    "test:node": "npm run test -- -t node --cov",
-    "test:electron-main": "npm run test -- -t electron-main",
-    "release": "semantic-release"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/libp2p/js-libp2p-tcp.git"
-  },
-  "keywords": [
-    "libp2p",
-    "network",
-    "p2p",
-    "peer",
-    "peer-to-peer",
-    "IPFS",
-    "TCP"
-  ],
-  "license": "(Apache-2.0 OR MIT)",
-  "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-tcp/issues"
-  },
-  "homepage": "https://github.com/libp2p/js-libp2p-tcp",
-  "engines": {
-    "node": ">=14.0.0"
-  },
-  "types": "dist/src/index.d.ts",
-  "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^1.0.1",
-    "@libp2p/interfaces": "^1.0.0",
-    "@types/debug": "^4.1.5",
-    "@types/mocha": "^9.0.0",
-    "aegir": "^36.1.3",
-    "it-pipe": "^1.1.0",
-    "sinon": "^12.0.0",
-    "streaming-iterables": "^6.0.0"
-  },
-  "dependencies": {
-    "@libp2p/utils": "^1.0.1",
-    "@multiformats/mafmt": "^11.0.0",
-    "@multiformats/multiaddr": "^10.1.1",
-    "abortable-iterator": "^3.0.1",
-    "debug": "^4.3.1",
-    "err-code": "^3.0.1",
-    "stream-to-it": "^0.2.2"
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
   },
   "release": {
     "branches": [
@@ -136,9 +132,44 @@
         }
       ],
       "@semantic-release/changelog",
-      "@semantic-release/npm",
+      [
+        "@semantic-release/npm",
+        {
+          "pkgRoot": "dist"
+        }
+      ],
       "@semantic-release/github",
       "@semantic-release/git"
     ]
+  },
+  "scripts": {
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
+    "build": "tsc",
+    "pretest": "npm run build",
+    "test": "aegir test -f ./dist/test/**/*.js",
+    "test:node": "npm run test -- -t node --cov",
+    "test:electron-main": "npm run test -- -t electron-main",
+    "release": "semantic-release"
+  },
+  "dependencies": {
+    "@libp2p/utils": "^1.0.1",
+    "@multiformats/mafmt": "^11.0.0",
+    "@multiformats/multiaddr": "^10.1.1",
+    "abortable-iterator": "^4.0.2",
+    "debug": "^4.3.1",
+    "err-code": "^3.0.1",
+    "stream-to-it": "^0.2.2"
+  },
+  "devDependencies": {
+    "@libp2p/interface-compliance-tests": "^1.0.1",
+    "@libp2p/interfaces": "^1.0.0",
+    "@types/debug": "^4.1.5",
+    "@types/mocha": "^9.0.0",
+    "aegir": "^36.1.3",
+    "it-pipe": "^2.0.3",
+    "sinon": "^13.0.0",
+    "streaming-iterables": "^6.0.0",
+    "uint8arrays": "^3.0.0"
   }
 }

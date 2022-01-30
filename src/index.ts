@@ -2,13 +2,12 @@ import net from 'net'
 import * as mafmt from '@multiformats/mafmt'
 import errCode from 'err-code'
 import debug from 'debug'
-import { toConnection } from './socket-to-conn.js'
+import { toMultiaddrConnection } from './socket-to-conn.js'
 import { createListener } from './listener.js'
 import { multiaddrToNetConfig } from './utils.js'
 import { AbortError } from 'abortable-iterator'
 import { CODE_CIRCUIT, CODE_P2P } from './constants.js'
-import type { Transport, Upgrader } from '@libp2p/interfaces/transport'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Transport, Upgrader, ListenerOptions } from '@libp2p/interfaces/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
 
@@ -30,7 +29,7 @@ interface DialOptions {
   signal?: AbortSignal
 }
 
-export class TCP implements Transport<DialOptions, {}> {
+export class TCP implements Transport<DialOptions, ListenerOptions> {
   private readonly _upgrader: Upgrader
 
   constructor (options: TCPOptions) {
@@ -51,7 +50,7 @@ export class TCP implements Transport<DialOptions, {}> {
       log('socket error', err)
     })
 
-    const maConn = toConnection(socket, { remoteAddr: ma, signal: options.signal })
+    const maConn = toMultiaddrConnection(socket, { remoteAddr: ma, signal: options.signal })
     log('new outbound connection %s', maConn.remoteAddr)
     const conn = await this._upgrader.upgradeOutbound(maConn)
     log('outbound connection %s upgraded', maConn.remoteAddr)
@@ -126,8 +125,8 @@ export class TCP implements Transport<DialOptions, {}> {
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`.
    */
-  createListener (options: {}, handler?: (connection: Connection) => void) {
-    return createListener({ handler: handler, upgrader: this._upgrader })
+  createListener (options: ListenerOptions = {}) {
+    return createListener({ upgrader: this._upgrader, ...options })
   }
 
   /**

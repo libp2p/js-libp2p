@@ -1,4 +1,4 @@
-import abortable from 'abortable-iterator'
+import { abortableSource } from 'abortable-iterator'
 import debug from 'debug'
 // @ts-expect-error no types
 import toIterable from 'stream-to-it'
@@ -21,7 +21,7 @@ interface ToConnectionOptions {
  * Convert a socket into a MultiaddrConnection
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
-export const toConnection = (socket: Socket, options?: ToConnectionOptions) => {
+export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOptions) => {
   options = options ?? {}
 
   // Check if we are connected on a unix path
@@ -38,7 +38,7 @@ export const toConnection = (socket: Socket, options?: ToConnectionOptions) => {
   const maConn: MultiaddrConnection = {
     async sink (source) {
       if ((options?.signal) != null) {
-        source = abortable(source, options.signal)
+        source = abortableSource(source, options.signal)
       }
 
       try {
@@ -61,11 +61,7 @@ export const toConnection = (socket: Socket, options?: ToConnectionOptions) => {
     },
 
     // Missing Type for "abortable"
-    source: (options.signal != null) ? abortable(source, options.signal) : source,
-
-    conn: socket,
-
-    localAddr: options.localAddr ?? toMultiaddr(socket.localAddress ?? '', socket.localPort ?? ''),
+    source: (options.signal != null) ? abortableSource(source, options.signal) : source,
 
     // If the remote address was passed, use it - it may have the peer ID encapsulated
     remoteAddr: options.remoteAddr ?? toMultiaddr(socket.remoteAddress ?? '', socket.remotePort ?? ''),
