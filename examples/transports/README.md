@@ -1,10 +1,10 @@
 # [Transports](http://libp2p.io/implementations/#transports)
 
-libp2p doesn't make assumptions for you, instead, it enables you as the developer of the application to pick the modules you need to run your application, which can vary depending on the runtime you are executing. A libp2p node can use one or more Transports to dial and listen for Connections. These transports are modules that offer a clean interface for dialing and listening, defined by the [interface-transport](https://github.com/libp2p/js-interfaces/tree/master/src/transport) specification. Some examples of possible transports are: TCP, UTP, WebRTC, QUIC, HTTP, Pigeon and so on.
+libp2p doesn't make assumptions for you, instead, it enables you as the developer of the application to pick the modules you need to run your application, which can vary depending on the runtime you are executing. A libp2p node can use one or more Transports to dial and listen for Connections. These transports are modules that offer a clean interface for dialing and listening, defined by the [interface-transport] specification. Some examples of possible transports are: TCP, UTP, WebRTC, QUIC, HTTP, Pigeon and so on.
 
-A more complete definition of what is a transport can be found on the [interface-transport](https://github.com/libp2p/js-interfaces/tree/master/src/transport) specification. A way to recognize a candidate transport is through the badge:
+A more complete definition of what is a transport can be found on the [interface-transport] specification. A way to recognize a candidate transport is through the badge:
 
-[![](https://raw.githubusercontent.com/diasdavid/interface-transport/master/img/badge.png)](https://raw.githubusercontent.com/diasdavid/interface-transport/master/img/badge.png)
+![][interface-transport badge]
 
 ## 1. Creating a libp2p node with TCP
 
@@ -288,10 +288,15 @@ As expected, we created 3 nodes: node 1 with TCP, node 2 with TCP+WebSockets and
 
 ## 4. How to create a new libp2p transport
 
-Today there are already several transports available and plenty to come. You can find these at [interface-transport implementations](https://github.com/libp2p/js-interfaces/tree/master/src/transport#modules-that-implement-the-interface) list.
+Today there are already several transports available and plenty to come. You can find these at [interface-transport implementations] list.
 
-Adding more transports is done through the same way as you added TCP and WebSockets. Some transports might offer extra functionalities, but as far as libp2p is concerned, if it follows the interface defined in the [spec](https://github.com/libp2p/js-interfaces/tree/master/src/transport#api) it will be able to use it.
+Adding more transports is done through the same way as you added TCP and WebSockets. Some transports might offer extra functionalities, but as far as libp2p is concerned, if it follows the interface defined in the [spec][interface-transport api] it will be able to use it.
 
 If you decide to implement a transport yourself, please consider adding to the list so that others can use it as well.
 
 Hope this tutorial was useful. We are always looking to improve it, so contributions are welcome!
+
+[interface-transport]: https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport
+[interface-transport badge]: https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/packages/libp2p-interfaces/src/transport/img/badge.png
+[interface-transport implementations]: https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#modules-that-implement-the-interface
+[interface-transport api]: https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#api
