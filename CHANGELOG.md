@@ -1,3 +1,16 @@
+## [1.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.14.0...v1.0.0) (2022-02-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* switch to named exports, ESM only
+
+Co-authored-by: Alan Shaw <alan@tableflip.io>
+
+### Features
+
+* convert to typescript ([#119](https://github.com/libp2p/js-libp2p-bootstrap/issues/119)) ([e4a0326](https://github.com/libp2p/js-libp2p-bootstrap/commit/e4a0326b6de88d36b752fa7143814da464252ce0))
+
 # [0.14.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v0.13.0...v0.14.0) (2021-12-02)
 
 
@@ -281,6 +294,3 @@
 
 <a name="0.4.2"></a>
 ## [0.4.2](https://github.com/libp2p/js-ipfs-railing/compare/v0.4.1...v0.4.2) (2017-03-21)
-
-
-
