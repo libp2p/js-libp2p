@@ -5,7 +5,7 @@
 [![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
 [![](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-tcp.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-tcp)
-[![](https://img.shields.io/travis/libp2p/js-libp2p-tcp.svg?style=flat-square)](https://travis-ci.com/libp2p/js-libp2p-tcp)
+[![Build Status](https://github.com/libp2p/js-libp2p-tcp/actions/workflows/js-test-and-release.yml/badge.svg?branch=main)](https://github.com/libp2p/js-libp2p-tcp/actions/workflows/js-test-and-release.yml)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-tcp.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-tcp)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 
@@ -23,7 +23,9 @@
   - [Transport](#transport)
   - [Connection](#connection)
 - [Contribute](#contribute)
+- [Contribute](#contribute-1)
 - [License](#license)
+  - [Contribution](#contribution)
 
 ## Install
 
@@ -109,6 +111,20 @@ Please be aware that all interactions related to libp2p are subject to the IPFS 
 
 Small note: If editing the README, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
 
+## Contribute
+
+The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
+
+ - Go through the modules and **check out existing issues**. This is especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
+ - **Perform code reviews**. More eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
+
 ## License
 
-[MIT](LICENSE) © 2015-2016 David Dias
+Licensed under either of
+
+ * Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT ([LICENSE-MIT](LICENSE-MIT) / http://opensource.org/licenses/MIT)
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
