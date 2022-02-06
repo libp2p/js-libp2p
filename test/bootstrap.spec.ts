@@ -1,24 +1,17 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-
-const mafmt = require('mafmt')
-const PeerId = require('peer-id')
-
-const Bootstrap = require('../src')
-const peerList = require('./default-peers')
-const partialValidPeerList = require('./some-invalid-peers')
+import { expect } from 'aegir/utils/chai.js'
+import { IPFS } from '@multiformats/mafmt'
+import { PeerId } from '@libp2p/peer-id'
+import { Bootstrap } from '../src/index.js'
+import peerList from './fixtures/default-peers.js'
+import partialValidPeerList from './fixtures/some-invalid-peers.js'
+import type { PeerData } from '@libp2p/interfaces/peer-data'
 
 describe('bootstrap', () => {
   it('should throw if no peer list is provided', () => {
-    try {
-      const b = new Bootstrap() // eslint-disable-line no-unused-vars
-    } catch (err) {
-      expect(err).to.exist()
-      return
-    }
-    throw new Error('should throw if no peer list is provided')
+    expect(() => new Bootstrap())
+      .to.throw('Bootstrap requires a list of peer addresses')
   })
 
   it('find the other peer', async function () {
@@ -43,12 +36,12 @@ describe('bootstrap', () => {
       interval: 2000
     })
 
-    const p = new Promise((resolve) => {
+    const p = new Promise<void>((resolve) => {
       r.once('peer', ({ id, multiaddrs }) => {
         expect(id).to.exist()
-        expect(PeerId.isPeerId(id)).to.eql(true)
+        expect(id).to.be.an.instanceOf(PeerId)
         expect(multiaddrs.length).to.eq(1)
-        expect(mafmt.IPFS.matches(multiaddrs[0].toString())).equals(true)
+        expect(IPFS.matches(multiaddrs[0].toString())).equals(true)
         resolve()
       })
     })
@@ -66,7 +59,7 @@ describe('bootstrap', () => {
       interval
     })
 
-    let emitted = []
+    let emitted: PeerData[] = []
     r.on('peer', p => emitted.push(p))
 
     // Should fire emit event for each peer in list on start,

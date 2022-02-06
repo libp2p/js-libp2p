@@ -1,6 +1,5 @@
-'use strict'
+import { Bootstrap } from './../src/index.js'
 
-var Bootstrap = require('./../src')
-var b = new Bootstrap(Bootstrap.default)
+const b = new Bootstrap()
 
 console.log(b)

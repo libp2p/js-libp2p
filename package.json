@@ -1,64 +1,147 @@
 {
-  "name": "libp2p-bootstrap",
+  "name": "@libp2p/bootstrap",
   "version": "0.14.0",
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
-  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
-  "main": "src/index.js",
-  "scripts": {
-    "lint": "aegir lint",
-    "build": "aegir build",
-    "test": "aegir test",
-    "test:node": "aegir test -t node",
-    "test:browser": "aegir test -t browser",
-    "test:webworker": "aegir test -t webworker",
-    "release": "aegir release -t node",
-    "release-minor": "aegir release --type minor -t node",
-    "release-major": "aegir release --type major -t node",
-    "coverage": "aegir coverage",
-    "coverage-publish": "aegir coverage publish"
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-bootstrap#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-bootstrap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-bootstrap/issues"
   },
   "keywords": [
     "IPFS"
   ],
-  "license": "MIT",
-  "bugs": "https://github.com/libp2p/js-libp2p-bootstrap/issues",
-  "homepage": "https://github.com/libp2p/js-libp2p-bootstrap",
-  "repository": "github:libp2p/js-libp2p-bootstrap",
   "engines": {
-    "node": ">=15.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
   },
-  "types": "dist/src/index.d.ts",
-  "devDependencies": {
-    "@types/debug": "^4.1.5",
-    "aegir": "^36.0.2",
-    "libp2p-interfaces": "^2.0.1",
-    "libp2p-interfaces-compliance-tests": "^2.0.1"
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "chore",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check dist/**/*.js",
+    "build": "tsc",
+    "pretest": "npm run build",
+    "test": "aegir test -f ./dist/test",
+    "test:chrome": "npm run test -- -t browser --cov",
+    "test:chrome-webworker": "npm run test -- -t webworker",
+    "test:firefox": "npm run test -- -t browser -- --browser firefox",
+    "test:firefox-webworker": "npm run test -- -t webworker -- --browser firefox",
+    "test:node": "npm run test -- -t node --cov",
+    "test:electron-main": "npm run test -- -t electron-main",
+    "release": "semantic-release"
   },
   "dependencies": {
-    "debug": "^4.3.1",
-    "mafmt": "^10.0.0",
-    "multiaddr": "^10.0.0",
-    "peer-id": "^0.16.0"
+    "@libp2p/peer-id": "^1.0.4",
+    "@multiformats/mafmt": "^11.0.2",
+    "@multiformats/multiaddr": "^10.1.2",
+    "debug": "^4.3.1"
   },
-  "contributors": [
-    "David Dias <daviddias.p@gmail.com>",
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "Alex Potsides <alex@achingbrain.net>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-    "Alan Shaw <alan.shaw@protocol.ai>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "Victor Bjelkholm <victorbjelkholm@gmail.com>",
-    "Abraham Elmahrek <abe@apache.org>",
-    "ころ <koropicot@gmail.com>",
-    "Dmitriy Ryajov <dryajov@gmail.com>",
-    "Hugo Dias <mail@hugodias.me>",
-    "Kevin Kwok <antimatter15@gmail.com>",
-    "Michael Burns <5170+mburns@users.noreply.github.com>",
-    "Nuno Nogueira <nunofmn@gmail.com>",
-    "Richard Littauer <richard.littauer@gmail.com>",
-    "Zane Starr <zcstarr@gmail.com>",
-    "dirkmc <dirkmdev@gmail.com>",
-    "victorbjelkholm <victor@protocol.ai>"
-  ]
+  "devDependencies": {
+    "@libp2p/interface-compliance-tests": "^1.0.8",
+    "@libp2p/interfaces": "^1.1.1",
+    "@types/debug": "^4.1.5",
+    "aegir": "^36.1.3"
+  }
 }
