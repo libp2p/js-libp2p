@@ -24,26 +24,13 @@
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   },
-  "main": "src/index.js",
   "type": "module",
-  "types": "types/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "types/*",
-        "types/src/*"
-      ],
-      "types/*": [
-        "types/*",
-        "types/src/*"
-      ]
-    }
-  },
+  "types": "./dist/src/index.d.ts",
   "files": [
-    "*",
-    "!**/*.tsbuildinfo",
-    "!**/browser-test",
-    "!**/node-test"
+    "src",
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
   ],
   "exports": {
     ".": {
@@ -132,12 +119,7 @@
         }
       ],
       "@semantic-release/changelog",
-      [
-        "@semantic-release/npm",
-        {
-          "pkgRoot": "dist"
-        }
-      ],
+      "@semantic-release/npm",
       "@semantic-release/github",
       "@semantic-release/git"
     ]
@@ -147,7 +129,7 @@
     "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
     "build": "tsc",
     "pretest": "npm run build",
-    "test": "aegir test -f ./dist/test/**/*.js",
+    "test": "aegir test -f ./dist/test",
     "test:node": "npm run test -- -t node --cov",
     "test:electron-main": "npm run test -- -t electron-main",
     "release": "semantic-release"
