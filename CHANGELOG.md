@@ -1,3 +1,14 @@
+## [1.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.16.2...v1.0.0) (2022-02-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* switch to named exports, ESM only
+
+### Features
+
+* convert to typescript ([#76](https://github.com/libp2p/js-libp2p-websockets/issues/76)) ([#140](https://github.com/libp2p/js-libp2p-websockets/issues/140)) ([c4f6508](https://github.com/libp2p/js-libp2p-websockets/commit/c4f65082a97def50524e56231ce6c84eddf99521)), closes [#139](https://github.com/libp2p/js-libp2p-websockets/issues/139)
+
 ## [0.16.2](https://github.com/libp2p/js-libp2p-websockets/compare/v0.16.1...v0.16.2) (2021-09-28)
 
 
@@ -402,6 +413,3 @@
 
 <a name="0.1.0"></a>
 # 0.1.0 (2016-02-26)
-
-
-
