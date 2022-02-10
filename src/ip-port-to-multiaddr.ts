@@ -1,11 +1,9 @@
-import debug from 'debug'
+import { logger } from '@libp2p/logger'
 import { Multiaddr } from '@multiformats/multiaddr'
 import errCode from 'err-code'
 import { Address4, Address6 } from '@achingbrain/ip-address'
 
-const log = Object.assign(debug('libp2p:ip-port-to-multiaddr'), {
-  error: debug('libp2p:ip-port-to-multiaddr:err')
-})
+const log = logger('libp2p:ip-port-to-multiaddr')
 
 export const Errors = {
   ERR_INVALID_IP_PARAMETER: 'ERR_INVALID_IP_PARAMETER',

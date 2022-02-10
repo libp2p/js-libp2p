@@ -43,14 +43,6 @@
     ".": {
       "import": "./dist/src/index.js"
     },
-    "./multiaddr/is-loopback": {
-      "import": "./dist/src/multiaddr/is-loopback.js",
-      "types": "./dist/src/multiaddr/is-loopback.d.ts"
-    },
-    "./multiaddr/is-private": {
-      "import": "./dist/src/multiaddr/is-private.js",
-      "types": "./dist/src/multiaddr/is-private.d.ts"
-    },
     "./address-sort": {
       "import": "./dist/src/address-sort.js",
       "types": "./dist/src/address-sort.d.ts"
@@ -62,6 +54,14 @@
     "./ip-port-to-multiaddr": {
       "import": "./dist/src/ip-port-to-multiaddr.js",
       "types": "./dist/src/ip-port-to-multiaddr.d.ts"
+    },
+    "./multiaddr/is-loopback": {
+      "import": "./dist/src/multiaddr/is-loopback.js",
+      "types": "./dist/src/multiaddr/is-loopback.d.ts"
+    },
+    "./multiaddr/is-private": {
+      "import": "./dist/src/multiaddr/is-private.js",
+      "types": "./dist/src/multiaddr/is-private.d.ts"
     },
     "./stream-to-ma-conn": {
       "import": "./dist/src/stream-to-ma-connr.js",
@@ -160,8 +160,8 @@
     "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
     "build": "tsc",
     "pretest": "npm run build",
-    "test": "aegir test -f ./dist/test/**/*.js",
-    "test:chrome": "npm run test -- -t browser",
+    "test": "aegir test -f ./dist/test/*.js -f ./dist/test/**/*.js",
+    "test:chrome": "npm run test -- -t browser --cov",
     "test:chrome-webworker": "npm run test -- -t webworker",
     "test:firefox": "npm run test -- -t browser -- --browser firefox",
     "test:firefox-webworker": "npm run test -- -t webworker -- --browser firefox",
@@ -171,20 +171,18 @@
   },
   "dependencies": {
     "@achingbrain/ip-address": "^8.1.0",
+    "@libp2p/logger": "^1.0.1",
     "@multiformats/multiaddr": "^10.1.1",
     "abortable-iterator": "^4.0.2",
-    "debug": "^4.3.0",
     "err-code": "^3.0.1",
     "is-loopback-addr": "^2.0.1",
     "private-ip": "^2.1.1"
   },
   "devDependencies": {
     "@libp2p/interfaces": "^1.0.3",
-    "@types/debug": "^4.1.5",
     "aegir": "^36.1.2",
+    "it-all": "^1.0.6",
     "it-pair": "^2.0.2",
-    "it-pipe": "^2.0.2",
-    "streaming-iterables": "^6.0.0",
-    "util": "^0.12.3"
+    "it-pipe": "^2.0.2"
   }
 }
