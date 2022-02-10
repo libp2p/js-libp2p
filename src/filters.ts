@@ -1,16 +1,15 @@
-'use strict'
-
-const mafmt = require('mafmt')
-const {
+import * as mafmt from '@multiformats/mafmt'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import {
   CODE_CIRCUIT,
   CODE_P2P,
   CODE_TCP,
   CODE_WS,
   CODE_WSS
-} = require('./constants')
+} from './constants.js'
 
-module.exports = {
-  all: (multiaddrs) => multiaddrs.filter((ma) => {
+export function all (multiaddrs: Multiaddr[]) {
+  return multiaddrs.filter((ma) => {
     if (ma.protoCodes().includes(CODE_CIRCUIT)) {
       return false
     }
@@ -19,8 +18,11 @@ module.exports = {
 
     return mafmt.WebSockets.matches(testMa) ||
       mafmt.WebSocketsSecure.matches(testMa)
-  }),
-  dnsWss: (multiaddrs) => multiaddrs.filter((ma) => {
+  })
+}
+
+export function dnsWss (multiaddrs: Multiaddr[]) {
+  return multiaddrs.filter((ma) => {
     if (ma.protoCodes().includes(CODE_CIRCUIT)) {
       return false
     }
@@ -29,8 +31,11 @@ module.exports = {
 
     return mafmt.WebSocketsSecure.matches(testMa) &&
       mafmt.DNS.matches(testMa.decapsulateCode(CODE_TCP).decapsulateCode(CODE_WSS))
-  }),
-  dnsWsOrWss: (multiaddrs) => multiaddrs.filter((ma) => {
+  })
+}
+
+export function dnsWsOrWss (multiaddrs: Multiaddr[]) {
+  return multiaddrs.filter((ma) => {
     if (ma.protoCodes().includes(CODE_CIRCUIT)) {
       return false
     }

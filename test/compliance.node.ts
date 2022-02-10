@@ -1,16 +1,21 @@
 /* eslint-env mocha */
-'use strict'
 
-const tests = require('libp2p-interfaces-compliance-tests/src/transport')
-const { Multiaddr } = require('multiaddr')
-const http = require('http')
-const WS = require('../src')
-const filters = require('../src/filters')
+import tests from '@libp2p/interface-compliance-tests/transport'
+import { Multiaddr } from '@multiformats/multiaddr'
+import http from 'http'
+import { WebSockets } from '../src/index.js'
+import * as filters from '../src/filters.js'
+import type { WebSocketListenerOptions } from '../src/listener.js'
 
 describe('interface-transport compliance', () => {
   tests({
-    async setup ({ upgrader }) { // eslint-disable-line require-await
-      const ws = new WS({ upgrader, filter: filters.all })
+    async setup (args) {
+      if (args == null) {
+        throw new Error('No args')
+      }
+
+      const { upgrader } = args
+      const ws = new WebSockets({ upgrader, filter: filters.all })
       const addrs = [
         new Multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
         new Multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),
@@ -19,41 +24,38 @@ describe('interface-transport compliance', () => {
       ]
 
       let delayMs = 0
-      const delayedCreateListener = (options, handler) => {
-        if (typeof options === 'function') {
-          handler = options
-          options = {}
-        }
-
-        options = options || {}
+      const delayedCreateListener = (options?: WebSocketListenerOptions) => {
+        options = options ?? {}
 
         // A server that will delay the upgrade event by delayMs
         options.server = new Proxy(http.createServer(), {
           get (server, prop) {
             if (prop === 'on') {
-              return (event, handler) => {
+              return (event: string, handler: (...args: any[]) => void) => {
                 server.on(event, (...args) => {
-                  if (event !== 'upgrade' || !delayMs) {
+                  if (event !== 'upgrade' || delayMs === 0) {
                     return handler(...args)
                   }
                   setTimeout(() => handler(...args), delayMs)
                 })
               }
             }
+            // @ts-expect-error cannot access props with a string
             return server[prop]
           }
         })
 
-        return ws.createListener(options, handler)
+        return ws.createListener(options)
       }
 
       const wsProxy = new Proxy(ws, {
+        // @ts-expect-error cannot access props with a string
         get: (_, prop) => prop === 'createListener' ? delayedCreateListener : ws[prop]
       })
 
       // Used by the dial tests to simulate a delayed connect
       const connector = {
-        delay (ms) { delayMs = ms },
+        delay (ms: number) { delayMs = ms },
         restore () { delayMs = 0 }
       }
 
