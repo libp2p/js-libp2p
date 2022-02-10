@@ -1,5 +1,5 @@
 import { abortableSource } from 'abortable-iterator'
-import debug from 'debug'
+import { logger } from '@libp2p/logger'
 // @ts-expect-error no types
 import toIterable from 'stream-to-it'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
@@ -8,7 +8,7 @@ import type { Socket } from 'net'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrConnection } from '@libp2p/interfaces/transport'
 
-const log = debug('libp2p:tcp:socket')
+const log = logger('libp2p:tcp:socket')
 
 interface ToConnectionOptions {
   listeningAddr?: Multiaddr

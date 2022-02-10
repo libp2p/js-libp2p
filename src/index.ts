@@ -1,17 +1,17 @@
 import net from 'net'
 import * as mafmt from '@multiformats/mafmt'
 import errCode from 'err-code'
-import debug from 'debug'
+import { logger } from '@libp2p/logger'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { createListener } from './listener.js'
 import { multiaddrToNetConfig } from './utils.js'
 import { AbortError } from 'abortable-iterator'
 import { CODE_CIRCUIT, CODE_P2P } from './constants.js'
-import type { Transport, Upgrader, ListenerOptions } from '@libp2p/interfaces/transport'
+import type { Transport, Upgrader, ListenerOptions, Listener } from '@libp2p/interfaces/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
 
-const log = debug('libp2p:tcp')
+const log = logger('libp2p:tcp')
 
 /**
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
@@ -125,7 +125,7 @@ export class TCP implements Transport<DialOptions, ListenerOptions> {
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`.
    */
-  createListener (options: ListenerOptions = {}) {
+  createListener (options: ListenerOptions = {}): Listener {
     return createListener({ upgrader: this._upgrader, ...options })
   }
 
