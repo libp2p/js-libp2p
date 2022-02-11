@@ -1,62 +1,148 @@
 {
-  "name": "libp2p-mdns",
+  "name": "@libp2p/mdns",
   "version": "0.18.0",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
-  "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
-  "main": "src/index.js",
-  "files": [
-    "dist",
-    "src"
-  ],
-  "scripts": {
-    "lint": "aegir lint",
-    "coverage": "nyc --reporter=lcov --reporter=text npm run test:node",
-    "test": "aegir test -t node",
-    "test:node": "aegir test -t node",
-    "release": "aegir release -t node --no-build",
-    "release-minor": "aegir release --type minor -t node --no-build",
-    "release-major": "aegir release --type major -t node --no-build",
-    "coverage-publish": "aegir coverage publish"
-  },
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-mdns#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/libp2p/js-libp2p-mdns.git"
+    "url": "git+https://github.com/libp2p/js-libp2p-mdns.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-mdns/issues"
   },
   "keywords": [
     "IPFS"
   ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-mdns/issues"
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
   },
-  "homepage": "https://github.com/libp2p/js-libp2p-mdns",
-  "devDependencies": {
-    "aegir": "^36.0.2",
-    "delay": "^5.0.0",
-    "libp2p-interfaces": "^2.0.1",
-    "libp2p-interfaces-compliance-tests": "^2.0.1",
-    "p-defer": "^3.0.0",
-    "p-wait-for": "^3.1.0"
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "chore",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
+    "build": "tsc",
+    "pretest": "npm run build",
+    "test": "aegir test -f ./dist/test",
+    "test:node": "npm run test -- -t node --cov",
+    "test:electron-main": "npm run test -- -t electron-main",
+    "release": "semantic-release"
   },
   "dependencies": {
-    "debug": "^4.3.1",
-    "multiaddr": "^10.0.0",
+    "@libp2p/logger": "^1.0.2",
+    "@libp2p/peer-id": "^1.1.1",
+    "@multiformats/multiaddr": "^10.0.0",
     "multicast-dns": "^7.2.0",
-    "peer-id": "^0.16.0"
+    "multiformats": "^9.6.3"
   },
-  "contributors": [
-    "David Dias <daviddias.p@gmail.com>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "Nuno Nogueira <nunofmn@gmail.com>",
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "Alex Potsides <alex@achingbrain.net>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "Richard Schneider <makaretu@gmail.com>",
-    "Alan Shaw <alan.shaw@protocol.ai>",
-    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
-    "Richard Littauer <richard.littauer@gmail.com>",
-    "Hubertus Hohl <hubertus.hohl@siemens.com>",
-    "dirkmc <dirkmdev@gmail.com>",
-    "emersion <contact@emersion.fr>"
-  ]
+  "devDependencies": {
+    "@libp2p/interface-compliance-tests": "^1.1.3",
+    "@libp2p/interfaces": "^1.3.3",
+    "@libp2p/peer-id-factory": "^1.0.4",
+    "@types/multicast-dns": "^7.2.1",
+    "aegir": "^36.1.0",
+    "delay": "^5.0.0",
+    "p-defer": "^4.0.0",
+    "p-wait-for": "^4.1.0"
+  }
 }
