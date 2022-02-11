@@ -1,3 +1,14 @@
+## [1.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.18.0...v1.0.0) (2022-02-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* switch to named exports, ESM only
+
+### Features
+
+* convert to typescript ([#113](https://github.com/libp2p/js-libp2p-mdns/issues/113)) ([296791e](https://github.com/libp2p/js-libp2p-mdns/commit/296791ec3364199ea5a2de6ee6fec0aadf318392))
+
 # [0.18.0](https://github.com/libp2p/js-libp2p-mdns/compare/v0.17.0...v0.18.0) (2021-12-02)
 
 
@@ -271,6 +282,3 @@ Co-authored-by: Jacob Heun <jacobheun@gmail.com>
 
 <a name="0.6.2"></a>
 ## [0.6.2](https://github.com/libp2p/js-libp2p-mdns/compare/v0.6.1...v0.6.2) (2017-03-21)
-
-
-
