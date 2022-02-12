@@ -2,7 +2,8 @@ import os from 'os'
 import { logger } from '@libp2p/logger'
 import { Multiaddr, MultiaddrObject } from '@multiformats/multiaddr'
 import { base58btc } from 'multiformats/bases/base58'
-import { PeerId } from '@libp2p/peer-id'
+import { peerIdFromString } from '@libp2p/peer-id'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
 import type { MulticastDNS, ResponsePacket, QueryPacket } from 'multicast-dns'
 import type { SrvAnswer, StringAnswer, TxtAnswer, Answer } from 'dns-packet'
@@ -88,7 +89,7 @@ export function gotResponse (rsp: ResponsePacket, localPeerId: PeerId, serviceTa
   log('peer found -', b58Id)
 
   return {
-    id: PeerId.fromString(b58Id),
+    id: peerIdFromString(b58Id),
     multiaddrs,
     protocols: []
   }

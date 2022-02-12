@@ -1,10 +1,11 @@
 import { EventEmitter } from '@libp2p/interfaces'
 import MDNS from 'multicast-dns'
 import { Multiaddr } from '@multiformats/multiaddr'
-import { PeerId } from '@libp2p/peer-id'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { logger } from '@libp2p/logger'
 import { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } from './constants.js'
 import { base58btc } from 'multiformats/bases/base58'
+import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
 import type { ResponsePacket } from 'multicast-dns'
 import type { RemoteInfo } from 'dgram'
@@ -114,7 +115,7 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
 
     let peerId
     try {
-      peerId = PeerId.fromString(peerIdStr)
+      peerId = peerIdFromString(peerIdStr)
     } catch (err) {
       return log('failed to create peer ID from TXT record data', peerIdStr, err)
     }
