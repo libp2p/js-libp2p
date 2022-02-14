@@ -1,3 +1,16 @@
+## [1.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.7...v1.0.0) (2022-02-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* switch to named exports, ESM only
+
+Co-authored-by: Marin Petrunić <mpetrunic@users.noreply.github.com>
+
+### Features
+
+* convert to typescript ([#158](https://github.com/libp2p/js-libp2p-mplex/issues/158)) ([0cf727a](https://github.com/libp2p/js-libp2p-mplex/commit/0cf727ae101b3006400701b781d05a12eada59b7))
+
 ### [0.10.7](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.6...v0.10.7) (2022-01-14)
 
 
