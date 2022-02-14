@@ -2,7 +2,7 @@
 'use strict'
 
 const tcp = require('net')
-const pipe = require('it-pipe')
+import { pipe } from 'it-pipe'
 const { toIterable } = require('./util')
 const Mplex = require('../src')
 

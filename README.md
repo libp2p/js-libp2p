@@ -18,14 +18,14 @@
 ## Install
 
 ```sh
-npm install libp2p-mplex
+npm install @libp2p/mplex
 ```
 
 ## Usage
 
 ```js
-const Mplex = require('libp2p-mplex')
-const pipe = require('it-pipe')
+import { Mplex } from '@libp2p/mplex'
+import { pipe } from 'it-pipe'
 
 const muxer = new Mplex({
   onStream: stream => { // Receive a duplex stream from the remote
@@ -53,8 +53,8 @@ Create a new _duplex_ stream that can be piped together with a connection in ord
 e.g.
 
 ```js
-const Mplex = require('libp2p-mplex')
-const pipe = require('it-pipe')
+import { Mplex } from '@libp2p/mplex'
+import { pipe } from 'it-pipe'
 
 // Create a duplex muxer
 const muxer = new Mplex()
@@ -173,8 +173,14 @@ The libp2p implementation in JavaScript is a work in progress. As such, there ar
 
  - Go through the modules and **check out existing issues**. This is especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
  - **Perform code reviews**. More eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
- - **Add tests**. There can never be enough tests.
 
 ## License
 
-[MIT](LICENSE) © Protocol Labs
+Licensed under either of
+
+ * Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT ([LICENSE-MIT](LICENSE-MIT) / http://opensource.org/licenses/MIT)
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
