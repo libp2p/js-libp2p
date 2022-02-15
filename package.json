@@ -1,5 +1,5 @@
 {
-  "name": "libp2p-mplex",
+  "name": "@libp2p/mplex",
   "version": "1.0.0",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "license": "Apache-2.0 OR MIT",
