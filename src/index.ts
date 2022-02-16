@@ -33,6 +33,8 @@ export class WebSockets implements Transport<AbortOptions & WebSocketOptions, We
     this._filter = filter
   }
 
+  [Symbol.toStringTag] = 'WebSockets'
+
   async dial (ma: Multiaddr, options?: AbortOptions & WebSocketOptions) {
     log('dialing %s', ma)
     options = options ?? {}

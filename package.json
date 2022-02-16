@@ -29,6 +29,9 @@
   "exports": {
     ".": {
       "import": "./dist/src/index.js"
+    },
+    "./filters": {
+      "import": "./dist/src/filters.js"
     }
   },
   "eslintConfig": {
