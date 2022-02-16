@@ -1,3 +1,11 @@
+### [1.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.0...v1.0.1) (2022-02-16)
+
+
+### Bug Fixes
+
+* add toStringTag and export filters ([#142](https://github.com/libp2p/js-libp2p-websockets/issues/142)) ([03fd000](https://github.com/libp2p/js-libp2p-websockets/commit/03fd000088ac78ea25f8cdf123fbbe8923257ca4))
+* update typesversions ([1cfbc28](https://github.com/libp2p/js-libp2p-websockets/commit/1cfbc28f93adecb1a9b60f53ef5815c87d00c93c))
+
 ## [1.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v0.16.2...v1.0.0) (2022-02-10)
 
 
