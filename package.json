@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/record",
-  "version": "0.10.6",
+  "version": "1.0.0",
   "description": "libp2p record implementation",
   "author": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "license": "Apache-2.0 OR MIT",

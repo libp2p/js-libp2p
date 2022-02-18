@@ -1,3 +1,14 @@
+## [1.0.0](https://github.com/libp2p/js-libp2p-record/compare/v0.10.6...v1.0.0) (2022-02-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* switch to named exports, ESM only
+
+### Features
+
+* convert to typescript ([#32](https://github.com/libp2p/js-libp2p-record/issues/32)) ([89cc2ef](https://github.com/libp2p/js-libp2p-record/commit/89cc2ef5234835c82ea29ff54a4887d630921ae3))
+
 ## [0.10.6](https://github.com/libp2p/js-libp2p-record/compare/v0.10.5...v0.10.6) (2021-09-24)
 
 
@@ -173,6 +184,3 @@
 
 <a name="0.3.0"></a>
 # 0.3.0 (2017-03-29)
-
-
-
