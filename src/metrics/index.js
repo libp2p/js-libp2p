@@ -21,10 +21,12 @@ const directionToEvent = {
 /**
  * @typedef {import('peer-id')} PeerId
  * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
+ * @typedef {import('./stats').StatsOptions} StatsOptions
  */
 
 /**
  * @typedef MetricsOptions
+ * @extends {StatsOptions}
  * @property {number} [computeThrottleMaxQueueSize = defaultOptions.computeThrottleMaxQueueSize]
  * @property {number} [computeThrottleTimeout = defaultOptions.computeThrottleTimeout]
  * @property {number[]} [movingAverageIntervals = defaultOptions.movingAverageIntervals]

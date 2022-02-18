@@ -11,13 +11,21 @@ const retimer = require('retimer')
  * @typedef {import('bignumber.js').BigNumber} Big
  */
 
+/**
+ * @typedef StatsOptions
+ * @property {number} computeThrottleMaxQueueSize
+ * @property {number} computeThrottleTimeout
+ * @property {number[]} movingAverageIntervals
+ * @property {number} maxOldPeersRetention
+ */
+
 class Stats extends EventEmitter {
   /**
    * A queue based manager for stat processing
    *
    * @class
    * @param {string[]} initialCounters
-   * @param {any} options
+   * @param {StatsOptions} options
    */
   constructor (initialCounters, options) {
     super()
