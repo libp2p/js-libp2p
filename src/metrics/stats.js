@@ -33,7 +33,7 @@ class Stats extends EventEmitter {
     this._options = options
     this._queue = []
 
-    /** @type {{ dataReceived: Big, dataSent: Big }} */
+    /** @type {{ dataReceived: Big, dataSent: Big, [key: string]: Big }} */
     this._stats = {
       dataReceived: Big(0),
       dataSent: Big(0)
