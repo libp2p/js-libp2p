@@ -1,9 +1,35 @@
-'use strict'
+import errcode from 'err-code'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import type { Libp2pRecord } from './index.js'
+import type { Validators } from '@libp2p/interfaces/dht'
+import { sha256 } from 'multiformats/hashes/sha2'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 
-const { sha256 } = require('multiformats/hashes/sha2')
-const errcode = require('err-code')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
-const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
+/**
+ * Checks a record and ensures it is still valid.
+ * It runs the needed validators.
+ * If verification fails the returned Promise will reject with the error.
+ */
+export function verifyRecord (validators: Validators, record: Libp2pRecord) {
+  const key = record.key
+  const keyString = uint8ArrayToString(key)
+  const parts = keyString.split('/')
+
+  if (parts.length < 3) {
+    // No validator available
+    return
+  }
+
+  const validator = validators[parts[1].toString()]
+
+  if (validator == null) {
+    const errMsg = 'Invalid record keytype'
+
+    throw errcode(new Error(errMsg), 'ERR_INVALID_RECORD_KEY_TYPE')
+  }
+
+  return validator.func(key, record.value)
+}
 
 /**
  * Validator for public key records.
@@ -14,7 +40,7 @@ const { equals: uint8ArrayEquals } = require('uint8arrays/equals')
  * @param {Uint8Array} key - A valid key is of the form `'/pk/<keymultihash>'`
  * @param {Uint8Array} publicKey - The public key to validate against (protobuf encoded).
  */
-const validatePublicKeyRecord = async (key, publicKey) => {
+const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array) => {
   if (!(key instanceof Uint8Array)) {
     throw errcode(new Error('"key" must be a Uint8Array'), 'ERR_INVALID_RECORD_KEY_NOT_BUFFER')
   }
@@ -38,7 +64,11 @@ const validatePublicKeyRecord = async (key, publicKey) => {
   }
 }
 
-module.exports = {
+const publicKey = {
   func: validatePublicKeyRecord,
   sign: false
+}
+
+export const validators = {
+  publicKey
 }

@@ -1,12 +1,15 @@
 {
   "extends": "aegir/src/config/tsconfig.aegir.json",
   "compilerOptions": {
-      "outDir": "dist"
+    "outDir": "dist",
+    "emitDeclarationOnly": false,
+    "module": "ES2020"
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ],
   "exclude": [
-    "src/record/record.js" // exclude generated file
+    "src/record.js" // exclude generated file
   ]
 }

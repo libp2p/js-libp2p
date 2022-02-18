@@ -1,16 +1,11 @@
-'use strict'
-
-const errcode = require('err-code')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+import errcode from 'err-code'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import type { Selectors } from '@libp2p/interfaces/dht'
 
 /**
- * Select the best record out of the given records.
- *
- * @param {import('libp2p-interfaces/src/types').DhtSelectors} selectors
- * @param {Uint8Array} k
- * @param {Array<Uint8Array>} records
+ * Select the best record out of the given records
  */
-const bestRecord = (selectors, k, records) => {
+export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8Array[]) {
   if (records.length === 0) {
     const errMsg = 'No records given'
 
@@ -28,7 +23,7 @@ const bestRecord = (selectors, k, records) => {
 
   const selector = selectors[parts[1].toString()]
 
-  if (!selector) {
+  if (selector == null) {
     const errMsg = `Unrecognized key prefix: ${parts[1]}`
 
     throw errcode(new Error(errMsg), 'ERR_UNRECOGNIZED_KEY_PREFIX')
@@ -41,7 +36,15 @@ const bestRecord = (selectors, k, records) => {
   return selector(k, records)
 }
 
-module.exports = {
-  bestRecord: bestRecord,
-  selectors: require('./selectors')
+/**
+ * Best record selector, for public key records.
+ * Simply returns the first record, as all valid public key
+ * records are equal
+ */
+function publickKey (k: Uint8Array, records: Uint8Array[]) {
+  return 0
+}
+
+export const selectors = {
+  publickKey
 }

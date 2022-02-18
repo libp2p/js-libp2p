@@ -1,12 +1,8 @@
-'use strict'
-
 /**
  * Convert a JavaScript date into an `RFC3339Nano` formatted
- * string.
- *
- * @param {Date} time
+ * string
  */
-module.exports.toRFC3339 = (time) => {
+export function toRFC3339 (time: Date) {
   const year = time.getUTCFullYear()
   const month = String(time.getUTCMonth() + 1).padStart(2, '0')
   const day = String(time.getUTCDate()).padStart(2, '0')
@@ -21,11 +17,9 @@ module.exports.toRFC3339 = (time) => {
 
 /**
  * Parses a date string formatted as `RFC3339Nano` into a
- * JavaScript Date object.
- *
- * @param {string} time
+ * JavaScript Date object
  */
-module.exports.parseRFC3339 = (time) => {
+export function parseRFC3339 (time: string) {
   const rfc3339Matcher = new RegExp(
     // 2006-01-02T
     '(\\d{4})-(\\d{2})-(\\d{2})T' +
@@ -36,7 +30,7 @@ module.exports.parseRFC3339 = (time) => {
   )
   const m = String(time).trim().match(rfc3339Matcher)
 
-  if (!m) {
+  if (m == null) {
     throw new Error('Invalid format')
   }
 

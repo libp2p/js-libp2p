@@ -1,15 +1,13 @@
 /*eslint-disable*/
-"use strict";
-
-var $protobuf = require("protobufjs/minimal");
+import $protobuf from "protobufjs/minimal.js";
 
 // Common aliases
-var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
+const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
 
 // Exported root namespace
-var $root = $protobuf.roots["libp2p-record"] || ($protobuf.roots["libp2p-record"] = {});
+const $root = $protobuf.roots["libp2p-record"] || ($protobuf.roots["libp2p-record"] = {});
 
-$root.Record = (function() {
+export const Record = $root.Record = (() => {
 
     /**
      * Properties of a Record.
@@ -201,4 +199,4 @@ $root.Record = (function() {
     return Record;
 })();
 
-module.exports = $root;
+export { $root as default };

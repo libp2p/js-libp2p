@@ -1,11 +1,10 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
-'use strict'
 
-const { expect } = require('aegir/utils/chai')
-const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
-const libp2pRecord = require('../src')
-const selection = libp2pRecord.selection
+import { expect } from 'aegir/utils/chai.js'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import * as selection from '../src/selectors.js'
+import type { Selectors } from '@libp2p/interfaces/dht'
 
 const records = [new Uint8Array(), uint8ArrayFromString('hello')]
 
@@ -29,6 +28,7 @@ describe('selection', () => {
 
     it('throws on unknown key prefix', () => {
       expect(
+        // @ts-expect-error invalid input
         () => selection.bestRecord({ world () {} }, uint8ArrayFromString('/hello/'), records)
       ).to.throw(
         /Unrecognized key prefix: hello/
@@ -36,7 +36,7 @@ describe('selection', () => {
     })
 
     it('returns the index from the matching selector', () => {
-      const selectors = {
+      const selectors: Selectors = {
         hello (k, recs) {
           expect(k).to.be.eql(uint8ArrayFromString('/hello/world'))
           expect(recs).to.be.eql(records)
@@ -56,7 +56,7 @@ describe('selection', () => {
   describe('selectors', () => {
     it('public key', () => {
       expect(
-        selection.selectors.pk(uint8ArrayFromString('/hello/world'), records)
+        selection.selectors.publickKey(uint8ArrayFromString('/hello/world'), records)
       ).to.equal(
         0
       )
@@ -64,7 +64,7 @@ describe('selection', () => {
 
     it('returns the first record when there is only one to select', () => {
       expect(
-        selection.selectors.pk(uint8ArrayFromString('/hello/world'), [records[0]])
+        selection.selectors.publickKey(uint8ArrayFromString('/hello/world'), [records[0]])
       ).to.equal(
         0
       )
