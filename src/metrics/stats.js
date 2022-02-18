@@ -91,7 +91,9 @@ class Stats extends EventEmitter {
    * Returns a clone of the current stats.
    */
   get snapshot () {
-    return Object.assign({}, this._stats)
+    return Object.fromEntries(
+      Object.entries(this._stats).map(([k, v]) => [k, new Big(v)])
+    )
   }
 
   /**
