@@ -1,3 +1,10 @@
+### [0.29.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.29.0...v0.29.1) (2022-02-18)
+
+
+### Trivial Changes
+
+* update project config ([#131](https://github.com/libp2p/js-libp2p-floodsub/issues/131)) ([4605edd](https://github.com/libp2p/js-libp2p-floodsub/commit/4605edd2e4383800a32d81671cf066f5e695de61))
+
 # [0.29.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.28.0...v0.29.0) (2021-12-31)
 
 
@@ -631,6 +638,3 @@
 
 <a name="0.1.0"></a>
 # 0.1.0 (2016-09-14)
-
-
-
