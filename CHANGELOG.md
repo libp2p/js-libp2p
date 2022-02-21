@@ -1,3 +1,10 @@
+### [1.0.2](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.1...v1.0.2) (2022-02-21)
+
+
+### Bug Fixes
+
+* update interfaces ([#145](https://github.com/libp2p/js-libp2p-websockets/issues/145)) ([213ebc5](https://github.com/libp2p/js-libp2p-websockets/commit/213ebc5f85c749d712e1441b5fe49dc636e25f64))
+
 ### [1.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.0...v1.0.1) (2022-02-16)
 
 
