@@ -1,3 +1,10 @@
+### [0.22.8](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.7...v0.22.8) (2022-02-21)
+
+
+### Bug Fixes
+
+* bump noble-ed25519 to an audited version ([#245](https://github.com/libp2p/js-libp2p-crypto/issues/245)) ([a104a4f](https://github.com/libp2p/js-libp2p-crypto/commit/a104a4f0a0fa5b2ecefd8928c3963dfa1019355b))
+
 ### [0.22.7](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.6...v0.22.7) (2022-02-03)
 
 
