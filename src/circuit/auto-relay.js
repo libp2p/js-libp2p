@@ -10,8 +10,8 @@ const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const { Multiaddr } = require('multiaddr')
 const all = require('it-all')
 
-const { relay: multicodec } = require('./multicodec')
-const { canHop } = require('./circuit/hop')
+const { relayV1: multicodec } = require('./multicodec')
+const { canHop } = require('./v1/hop')
 const { namespaceToCid } = require('./utils')
 const {
   CIRCUIT_PROTO_CODE,

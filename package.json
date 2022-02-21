@@ -20,8 +20,9 @@
   "scripts": {
     "lint": "aegir lint",
     "build": "aegir build",
-    "build:proto": "npm run build:proto:circuit && npm run build:proto:fetch && npm run build:proto:identify && npm run build:proto:plaintext && npm run build:proto:address-book && npm run build:proto:proto-book && npm run build:proto:peer && npm run build:proto:peer-record && npm run build:proto:envelope",
-    "build:proto:circuit": "pbjs -t static-module -w commonjs -r libp2p-circuit --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/circuit/protocol/index.js ./src/circuit/protocol/index.proto",
+    "build:proto": "npm run build:proto:circuit && npm run build:proto:circuitv2 && npm run build:proto:fetch && npm run build:proto:identify && npm run build:proto:plaintext && npm run build:proto:address-book && npm run build:proto:proto-book && npm run build:proto:peer && npm run build:proto:peer-record && npm run build:proto:envelope",
+    "build:proto:circuit": "pbjs -t static-module -w commonjs -r libp2p-circuit --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/circuit/v1/protocol/index.js ./src/circuit/v1/protocol/index.proto",
+    "build:proto:circuitv2": "pbjs -t static-module -w commonjs -r libp2p-circuit --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/circuit/v2/protocol/index.js ./src/circuit/v2/protocol/index.proto && pbts --out src/circuit/v2/protocol/index.d.ts src/circuit/v2/protocol/index.js",
     "build:proto:fetch": "pbjs -t static-module -w commonjs -r libp2p-fetch --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/fetch/proto.js ./src/fetch/proto.proto",
     "build:proto:identify": "pbjs -t static-module -w commonjs -r libp2p-identify --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/identify/message.js ./src/identify/message.proto",
     "build:proto:plaintext": "pbjs -t static-module -w commonjs -r libp2p-plaintext --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/insecure/proto.js ./src/insecure/proto.proto",

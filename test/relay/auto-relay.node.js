@@ -11,7 +11,7 @@ const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const { Multiaddr } = require('multiaddr')
 const Libp2p = require('../../src')
-const { relay: relayMulticodec } = require('../../src/circuit/multicodec')
+const { relayV1: relayMulticodec } = require('../../src/circuit/multicodec')
 
 const { createPeerId } = require('../utils/creators/peer')
 const baseOptions = require('../utils/base-options')

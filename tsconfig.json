@@ -7,7 +7,8 @@
     "src"
   ],
   "exclude": [
-    "src/circuit/protocol/index.js", // exclude generated file
+    "src/circuit/v1/protocol/index.js", // exclude generated file
+    "src/circuit/v2/protocol/index.js", // exclude generated file
     "src/fetch/proto.js", // exclude generated file
     "src/identify/message.js", // exclude generated file
     "src/insecure/proto.js", // exclude generated file

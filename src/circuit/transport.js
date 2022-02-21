@@ -9,16 +9,16 @@ const errCode = require('err-code')
 const mafmt = require('mafmt')
 const { Multiaddr } = require('multiaddr')
 const PeerId = require('peer-id')
-const { CircuitRelay: CircuitPB } = require('./protocol')
+const { CircuitRelay: CircuitPB } = require('./v1/protocol')
 const { codes } = require('../errors')
 
 const toConnection = require('libp2p-utils/src/stream-to-ma-conn')
 
-const { relay: multicodec } = require('./multicodec')
+const { relayV1: multicodec } = require('./multicodec')
 const createListener = require('./listener')
-const { handleCanHop, handleHop, hop } = require('./circuit/hop')
-const { handleStop } = require('./circuit/stop')
-const StreamHandler = require('./circuit/stream-handler')
+const { handleCanHop, handleHop, hop } = require('./v1/hop')
+const { handleStop } = require('./v1/stop')
+const StreamHandler = require('./v1/stream-handler')
 
 const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
 
@@ -54,7 +54,7 @@ class Circuit {
    * @param {MuxedStream} props.stream
    */
   async _onProtocol ({ connection, stream }) {
-    /** @type {import('./circuit/stream-handler')} */
+    /** @type {import('./v1/stream-handler')} */
     const streamHandler = new StreamHandler({ stream })
     const request = await streamHandler.read()
 

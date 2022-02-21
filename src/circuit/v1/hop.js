@@ -9,16 +9,16 @@ const errCode = require('err-code')
 const PeerId = require('peer-id')
 const { validateAddrs } = require('./utils')
 const StreamHandler = require('./stream-handler')
-const { CircuitRelay: CircuitPB } = require('../protocol')
+const { CircuitRelay: CircuitPB } = require('./protocol')
 const { pipe } = require('it-pipe')
 const { codes: Errors } = require('../../errors')
 
 const { stop } = require('./stop')
 
-const multicodec = require('./../multicodec')
+const multicodec = require('../multicodec')
 
 /**
- * @typedef {import('../protocol').ICircuitRelay} ICircuitRelay
+ * @typedef {import('./protocol').ICircuitRelay} ICircuitRelay
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  * @typedef {import('../transport')} Transport
@@ -126,7 +126,7 @@ async function hop ({
   request
 }) {
   // Create a new stream to the relay
-  const { stream } = await connection.newStream([multicodec.relay])
+  const { stream } = await connection.newStream([multicodec.relayV1])
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })
   streamHandler.write(request)
@@ -158,7 +158,7 @@ async function canHop ({
   connection
 }) {
   // Create a new stream to the relay
-  const { stream } = await connection.newStream([multicodec.relay])
+  const { stream } = await connection.newStream([multicodec.relayV1])
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })
   streamHandler.write({

@@ -8,11 +8,9 @@ const log = Object.assign(debug('libp2p:circuit:stream-handler'), {
 const lp = require('it-length-prefixed')
 // @ts-ignore it-handshake does not export types
 const handshake = require('it-handshake')
-const { CircuitRelay } = require('../protocol')
 
 /**
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {import('../protocol').ICircuitRelay} ICircuitRelay
  */
 
 class StreamHandler {
@@ -40,9 +38,7 @@ class StreamHandler {
   async read () {
     const msg = await this.decoder.next()
     if (msg.value) {
-      const value = CircuitRelay.decode(msg.value.slice())
-      log('read message type', value.type)
-      return value
+      return msg.value.slice()
     }
 
     log('read received no value, closing stream')
@@ -53,13 +49,12 @@ class StreamHandler {
   /**
    * Encode and write array of buffers
    *
-   * @param {ICircuitRelay} msg - An unencoded CircuitRelay protobuf message
+   * @param {Uint8Array} msg - An encoded Uint8Array protobuf message
    * @returns {void}
    */
   write (msg) {
-    log('write message type %s', msg.type)
     // @ts-ignore lp.encode expects type type 'Buffer | BufferList', not 'Uint8Array'
-    this.shake.write(lp.encode.single(CircuitRelay.encode(msg).finish()))
+    this.shake.write(lp.encode.single(msg))
   }
 
   /**
@@ -73,7 +68,7 @@ class StreamHandler {
   }
 
   /**
-   * @param {ICircuitRelay} msg - An unencoded CircuitRelay protobuf message
+   * @param {Uint8Array} msg - An encoded Uint8Array protobuf message
    */
   end (msg) {
     this.write(msg)

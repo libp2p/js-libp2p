@@ -1,18 +1,18 @@
 'use strict'
 
 const { Multiaddr } = require('multiaddr')
-const { CircuitRelay } = require('../protocol')
+const { CircuitRelay } = require('./protocol')
 
 /**
  * @typedef {import('./stream-handler')} StreamHandler
- * @typedef {import('../protocol').ICircuitRelay} ICircuitRelay
+ * @typedef {import('./protocol').ICircuitRelay} ICircuitRelay
  */
 
 /**
  * Write a response
  *
  * @param {StreamHandler} streamHandler
- * @param {import('../protocol').CircuitRelay.Status} status
+ * @param {import('./protocol').CircuitRelay.Status} status
  */
 function writeResponse (streamHandler, status) {
   streamHandler.write({

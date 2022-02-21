@@ -5,7 +5,7 @@ const log = Object.assign(debug('libp2p:circuit:stop'), {
   error: debug('libp2p:circuit:stop:err')
 })
 
-const { CircuitRelay: CircuitPB } = require('../protocol')
+const { CircuitRelay: CircuitPB } = require('./protocol')
 const multicodec = require('../multicodec')
 const StreamHandler = require('./stream-handler')
 const { validateAddrs } = require('./utils')
@@ -13,7 +13,7 @@ const { validateAddrs } = require('./utils')
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {import('../protocol').ICircuitRelay} ICircuitRelay
+ * @typedef {import('./protocol').ICircuitRelay} ICircuitRelay
  */
 
 /**
@@ -60,7 +60,7 @@ module.exports.stop = async function stop ({
   connection,
   request
 }) {
-  const { stream } = await connection.newStream([multicodec.relay])
+  const { stream } = await connection.newStream([multicodec.relayV1])
   log('starting stop request to %s', connection.remotePeer.toB58String())
   const streamHandler = new StreamHandler({ stream })
 
