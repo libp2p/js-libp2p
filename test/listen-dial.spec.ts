@@ -4,8 +4,8 @@ import os from 'os'
 import path from 'path'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
-import { collect } from 'streaming-iterables'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/transport/utils'
+import all from 'it-all'
+import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 const isCI = process.env.CI
@@ -116,26 +116,38 @@ describe('listen', () => {
 })
 
 describe('dial', () => {
+  const protocol = '/echo/1.0.0'
   let tcp: TCP
 
   beforeEach(async () => {
+    const registrar = mockRegistrar()
+    void registrar.handle(protocol, (evt) => {
+      void pipe(
+        evt.detail.stream,
+        evt.detail.stream
+      )
+    })
+    const upgrader = mockUpgrader({
+      registrar
+    })
+
     tcp = new TCP({
-      upgrader: mockUpgrader()
+      upgrader
     })
   })
 
   it('dial on IPv4', async () => {
     const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9090')
-    const listener = tcp.createListener({})
+    const listener = tcp.createListener()
     await listener.listen(ma)
 
     const conn = await tcp.dial(ma)
-    const { stream } = await conn.newStream(['/test/stream'])
+    const { stream } = await conn.newStream([protocol])
 
     const values = await pipe(
       [uint8ArrayFromString('hey')],
       stream,
-      collect
+      async (source) => await all(source)
     )
 
     expect(values[0]).to.equalBytes(uint8ArrayFromString('hey'))
@@ -152,12 +164,12 @@ describe('dial', () => {
     const listener = tcp.createListener({})
     await listener.listen(ma)
     const conn = await tcp.dial(ma)
-    const { stream } = await conn.newStream(['/test/stream'])
+    const { stream } = await conn.newStream([protocol])
 
     const values = await pipe(
       [uint8ArrayFromString('hey')],
       stream,
-      collect
+      async (source) => await all(source)
     )
     expect(values[0]).to.equalBytes(uint8ArrayFromString('hey'))
     await conn.close()
@@ -171,12 +183,12 @@ describe('dial', () => {
     const listener = tcp.createListener({})
     await listener.listen(ma)
     const conn = await tcp.dial(ma)
-    const { stream } = await conn.newStream(['/test/stream'])
+    const { stream } = await conn.newStream([protocol])
 
     const values = await pipe(
       [uint8ArrayFromString('hey')],
       stream,
-      collect
+      async (source) => await all(source)
     )
 
     expect(values).to.deep.equal(['hey'])
@@ -192,7 +204,11 @@ describe('dial', () => {
 
     const listener = tcp.createListener({
       handler: (conn) => {
-        conn.close().then(() => handled()).catch(() => {})
+        // let multistream select finish before closing
+        setTimeout(() => {
+          void conn.close()
+            .then(() => handled())
+        }, 100)
       }
     })
 
@@ -200,7 +216,7 @@ describe('dial', () => {
     const addrs = listener.getAddrs()
 
     const conn = await tcp.dial(addrs[0])
-    const { stream } = await conn.newStream(['/test/stream'])
+    const { stream } = await conn.newStream([protocol])
     await pipe(stream)
 
     await handledPromise
@@ -239,12 +255,12 @@ describe('dial', () => {
     await listener.listen(ma)
 
     const conn = await tcp.dial(ma)
-    const { stream } = await conn.newStream(['/test/stream'])
+    const { stream } = await conn.newStream([protocol])
 
     const values = await pipe(
       [uint8ArrayFromString('hey')],
       stream,
-      collect
+      async (source) => await all(source)
     )
     expect(values[0]).to.equalBytes(uint8ArrayFromString('hey'))
 

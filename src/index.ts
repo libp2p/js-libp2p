@@ -7,7 +7,7 @@ import { createListener } from './listener.js'
 import { multiaddrToNetConfig } from './utils.js'
 import { AbortError } from 'abortable-iterator'
 import { CODE_CIRCUIT, CODE_P2P } from './constants.js'
-import type { Transport, Upgrader, ListenerOptions, Listener } from '@libp2p/interfaces/transport'
+import type { Transport, Upgrader, ListenerOptions } from '@libp2p/interfaces/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
 
@@ -125,7 +125,7 @@ export class TCP implements Transport<DialOptions, ListenerOptions> {
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`.
    */
-  createListener (options: ListenerOptions = {}): Listener {
+  createListener (options: ListenerOptions = {}) {
     return createListener({ upgrader: this._upgrader, ...options })
   }
 

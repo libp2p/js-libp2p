@@ -41,7 +41,7 @@
 import { TCP } from '@libp2p/tcp'
 import { Multiaddr } from '@multiformats/multiaddr'
 import pipe from 'it-pipe'
-import { collect } from 'streaming-iterables'
+import all from 'it-all'
 
 // A simple upgrader that just returns the MultiaddrConnection
 const upgrader = {
@@ -66,7 +66,7 @@ console.log('listening')
 const socket = await tcp.dial(addr)
 const values = await pipe(
   socket,
-  collect
+  all
 )
 console.log(`Value: ${values.toString()}`)
 

@@ -1,7 +1,7 @@
 import { expect } from 'aegir/utils/chai.js'
 import { TCP } from '../src/index.js'
 import { Multiaddr } from '@multiformats/multiaddr'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/transport/utils'
+import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 
 describe('filter addrs', () => {
   const base = '/ip4/127.0.0.1'
