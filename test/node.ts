@@ -10,16 +10,29 @@ import { isLoopbackAddr } from 'is-loopback-addr'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/transport/utils'
+import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import defer from 'p-defer'
 import waitFor from 'p-wait-for'
 import { WebSockets } from '../src/index.js'
 import * as filters from '../src/filters.js'
+import drain from 'it-drain'
 import type { Listener } from '@libp2p/interfaces/transport'
 
 import './compliance.node.js'
 
-const upgrader = mockUpgrader()
+const protocol = '/say-hello/1.0.0'
+const registrar = mockRegistrar()
+void registrar.handle(protocol, (evt) => {
+  void pipe([
+    uint8ArrayFromString('hey')
+  ],
+  evt.detail.stream,
+  drain
+  )
+})
+const upgrader = mockUpgrader({
+  registrar
+})
 
 describe('instantiate the transport', () => {
   it('create', () => {
@@ -35,7 +48,7 @@ describe('listen', () => {
     const ws = new WebSockets({ upgrader })
     const listener = ws.createListener({
       handler: (conn) => {
-        void conn.newStream(['echo']).then(async ({ stream }) => {
+        void conn.newStream([protocol]).then(async ({ stream }) => {
           return await pipe(stream, stream)
         })
       }
@@ -43,7 +56,7 @@ describe('listen', () => {
     await listener.listen(ma)
 
     const conn = await ws.dial(ma)
-    const { stream } = await conn.newStream(['echo'])
+    const { stream } = await conn.newStream([protocol])
     void pipe(stream, stream)
 
     await listener.close()
@@ -212,13 +225,7 @@ describe('dial', () => {
 
     beforeEach(async () => {
       ws = new WebSockets({ upgrader })
-      listener = ws.createListener({
-        handler: (conn) => {
-          void conn.newStream(['echo']).then(async ({ stream }) => {
-            return await pipe(stream, stream)
-          })
-        }
-      })
+      listener = ws.createListener()
       return await listener.listen(ma)
     })
 
@@ -226,19 +233,19 @@ describe('dial', () => {
 
     it('dial', async () => {
       const conn = await ws.dial(ma)
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
-      const { stream } = await conn.newStream(['echo'])
+      const { stream } = await conn.newStream([protocol])
 
-      await expect(pipe(s, stream, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(all(stream.source)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await conn.close()
     })
 
     it('dial with p2p Id', async () => {
       const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
       const conn = await ws.dial(ma)
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
-      const { stream } = await conn.newStream(['echo'])
+      const { stream } = await conn.newStream([protocol])
 
-      await expect(pipe(s, stream, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(all(stream.source)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await conn.close()
     })
 
     it('dial should throw on immediate abort', async () => {
@@ -286,7 +293,7 @@ describe('dial', () => {
       ws = new WebSockets({ upgrader })
       listener = ws.createListener({
         handler: (conn) => {
-          void conn.newStream(['echo']).then(async ({ stream }) => {
+          void conn.newStream([protocol]).then(async ({ stream }) => {
             return await pipe(stream, stream)
           })
         }
@@ -306,7 +313,7 @@ describe('dial', () => {
       // Dial first no loopback address
       const conn = await ws.dial(addrs[0])
       const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
-      const { stream } = await conn.newStream(['echo'])
+      const { stream } = await conn.newStream([protocol])
 
       await expect(pipe(s, stream, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
     })
@@ -327,7 +334,7 @@ describe('dial', () => {
       listener = ws.createListener({
         server,
         handler: (conn) => {
-          void conn.newStream(['echo']).then(async ({ stream }) => {
+          void conn.newStream([protocol]).then(async ({ stream }) => {
             return await pipe(stream, stream)
           })
         }
@@ -350,7 +357,7 @@ describe('dial', () => {
     it('dial ip4', async () => {
       const conn = await ws.dial(ma, { websocket: { rejectUnauthorized: false } })
       const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
-      const { stream } = await conn.newStream(['echo'])
+      const { stream } = await conn.newStream([protocol])
 
       const res = await pipe(s, stream, s)
 
@@ -368,7 +375,7 @@ describe('dial', () => {
       ws = new WebSockets({ upgrader })
       listener = ws.createListener({
         handler: (conn) => {
-          void conn.newStream(['echo']).then(async ({ stream }) => {
+          void conn.newStream([protocol]).then(async ({ stream }) => {
             return await pipe(stream, stream)
           })
         }
@@ -381,7 +388,7 @@ describe('dial', () => {
     it('dial ip6', async () => {
       const conn = await ws.dial(ma)
       const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
-      const { stream } = await conn.newStream(['echo'])
+      const { stream } = await conn.newStream([protocol])
 
       await expect(pipe(s, stream, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
     })
@@ -394,7 +401,7 @@ describe('dial', () => {
         source: [uint8ArrayFromString('hey')],
         sink: all
       })
-      const { stream } = await conn.newStream(['echo'])
+      const { stream } = await conn.newStream([protocol])
 
       await expect(pipe(s, stream, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
     })

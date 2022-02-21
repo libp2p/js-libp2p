@@ -5,13 +5,25 @@ module.exports = {
   test: {
     async before () {
       const { Multiaddr } = await import('@multiformats/multiaddr')
-      const { mockUpgrader } = await import('@libp2p/interface-compliance-tests/transport/utils')
+      const { mockRegistrar, mockUpgrader } = await import('@libp2p/interface-compliance-tests/mocks')
       const { WebSockets } = await import('./dist/src/index.js')
       const { pipe } = await import('it-pipe')
 
-      const ws = new WebSockets({ upgrader: mockUpgrader() })
+      const protocol = '/echo/1.0.0'
+      const registrar = mockRegistrar()
+      registrar.handle(protocol, (evt) => {
+        void pipe(
+          evt.detail.stream,
+          evt.detail.stream
+        )
+      })
+      const upgrader = mockUpgrader({
+        registrar
+      })
+
+      const ws = new WebSockets({ upgrader })
       const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
-      const listener = ws.createListener(conn => pipe(conn, conn))
+      const listener = ws.createListener()
       await listener.listen(ma)
       listener.addEventListener('error', (evt) => {
         console.error(evt.detail)

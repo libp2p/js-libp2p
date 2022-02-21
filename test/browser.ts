@@ -3,16 +3,14 @@
 import { expect } from 'aegir/utils/chai.js'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
-import { goodbye } from 'it-goodbye'
-import take from 'it-take'
 import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { WebSockets } from '../src/index.js'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/transport/utils'
+import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import env from 'wherearewe'
 import type { Connection } from '@libp2p/interfaces/connection'
 
-const upgrader = mockUpgrader()
+const protocol = '/echo/1.0.0'
 
 describe('libp2p-websockets', () => {
   const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
@@ -20,7 +18,7 @@ describe('libp2p-websockets', () => {
   let conn: Connection
 
   beforeEach(async () => {
-    ws = new WebSockets({ upgrader })
+    ws = new WebSockets({ upgrader: mockUpgrader() })
     conn = await ws.dial(ma)
   })
 
@@ -29,12 +27,16 @@ describe('libp2p-websockets', () => {
   })
 
   it('echo', async () => {
-    const message = uint8ArrayFromString('Hello World!')
-    const s = goodbye({ source: [message], sink: all })
-    const { stream } = await conn.newStream(['echo'])
+    const data = uint8ArrayFromString('hey')
+    const { stream } = await conn.newStream([protocol])
 
-    const results = await pipe(s, stream, s)
-    expect(results).to.eql([message])
+    const res = await pipe(
+      [data],
+      stream,
+      async (source) => await all(source)
+    )
+
+    expect(res).to.deep.equal([data])
   })
 
   it('should filter out no DNS websocket addresses', function () {
@@ -54,37 +56,36 @@ describe('libp2p-websockets', () => {
 
   describe('stress', () => {
     it('one big write', async () => {
-      const rawMessage = new Uint8Array(1000000).fill(5)
+      const data = new Uint8Array(1000000).fill(5)
+      const { stream } = await conn.newStream([protocol])
 
-      const s = goodbye({ source: [rawMessage], sink: all })
-      const { stream } = await conn.newStream(['echo'])
+      const res = await pipe(
+        [data],
+        stream,
+        async (source) => await all(source)
+      )
 
-      const results = await pipe(s, stream, s)
-      expect(results).to.eql([rawMessage])
+      expect(res).to.deep.equal([data])
     })
 
     it('many writes', async function () {
-      this.timeout(10000)
-      const s = goodbye({
-        source: pipe(
-          (function * () {
-            while (true) {
-              yield uint8ArrayFromString(Math.random().toString())
-            }
-          }()),
-          (source) => take(source, 20000)
-        ),
-        sink: all
-      })
+      this.timeout(30000)
 
-      const { stream } = await conn.newStream(['echo'])
+      const count = 20000
+      const data = Array(count).fill(0).map(() => uint8ArrayFromString(Math.random().toString()))
+      const { stream } = await conn.newStream([protocol])
 
-      const results = await pipe(s, stream, s)
-      expect(results).to.have.length(20000)
+      const res = await pipe(
+        data,
+        stream,
+        async (source) => await all(source)
+      )
+
+      expect(res).to.deep.equal(data)
     })
   })
 
   it('.createServer throws in browser', () => {
-    expect(new WebSockets({ upgrader }).createListener).to.throw()
+    expect(new WebSockets({ upgrader: mockUpgrader() }).createListener).to.throw()
   })
 })
