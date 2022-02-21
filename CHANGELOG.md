@@ -1,3 +1,15 @@
+### [1.0.1](https://github.com/libp2p/js-libp2p-mplex/compare/v1.0.0...v1.0.1) (2022-02-21)
+
+
+### Bug Fixes
+
+* update interfaces ([#160](https://github.com/libp2p/js-libp2p-mplex/issues/160)) ([43db1cb](https://github.com/libp2p/js-libp2p-mplex/commit/43db1cb61440859abc2cdefe5a9a362d0bf19497))
+
+
+### Trivial Changes
+
+* module name ([0137b94](https://github.com/libp2p/js-libp2p-mplex/commit/0137b9451e554a32d7e1f1c10eaacc00df225762))
+
 ## [1.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v0.10.7...v1.0.0) (2022-02-14)
 
 
