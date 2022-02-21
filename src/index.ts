@@ -9,9 +9,8 @@ import { createStream } from './stream.js'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { trackedMap } from '@libp2p/tracked-map'
 import { logger } from '@libp2p/logger'
-import type { AbortOptions } from '@libp2p/interfaces'
 import type { Sink } from 'it-stream-types'
-import type { Muxer } from '@libp2p/interfaces/stream-muxer'
+import type { Muxer, MuxerOptions } from '@libp2p/interfaces/stream-muxer'
 import type { Stream } from '@libp2p/interfaces/connection'
 import type { ComponentMetricsTracker } from '@libp2p/interfaces/metrics'
 import each from 'it-foreach'
@@ -39,9 +38,7 @@ export interface MplexStream extends Stream {
   source: Pushable<Uint8Array>
 }
 
-export interface MplexOptions extends AbortOptions {
-  onStream?: (...args: any[]) => void
-  onStreamEnd?: (...args: any[]) => void
+export interface MplexOptions extends MuxerOptions {
   maxMsgSize?: number
   metrics?: ComponentMetricsTracker
 }
@@ -207,28 +204,7 @@ export class Mplex implements Muxer {
       }
     }
     const source = pushableV<Message>({ onEnd })
-    /*
-    const p = pipe(
-      source,
-      source => each(source, (msgs) => {
-        if (log.enabled) {
-          msgs.forEach(msg => {
-            log('outgoing message', printMessage(msg))
-          })
-        }
-      }),
-      source => encode(source),
-      source => each(source, (buf) => {
-        console.info('outgoing', uint8ArrayToString(buf, 'base64'))
-      })
-    )
 
-    return Object.assign(p, {
-      push: source.push,
-      end: source.end,
-      return: source.return
-    })
-*/
     return Object.assign(encode(source), {
       push: source.push,
       end: source.end,
@@ -247,8 +223,8 @@ export class Mplex implements Muxer {
     if (message.type === MessageTypes.NEW_STREAM) {
       const stream = this._newReceiverStream({ id, name: uint8ArrayToString(message.data instanceof Uint8Array ? message.data : message.data.slice()) })
 
-      if (this._options.onStream != null) {
-        this._options.onStream(stream)
+      if (this._options.onIncomingStream != null) {
+        this._options.onIncomingStream(stream)
       }
 
       return
