@@ -50,9 +50,15 @@ describe('Dialing (via relay, TCP)', () => {
     return Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(libp2p => libp2p.stop()))
   })
 
-  it('should be able to connect to a peer over a relay with active connections', async () => {
+  it.only('should be able to connect to a peer over a relay with active connections', async () => {
     const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
     const relayIdString = relayLibp2p.peerId.toB58String()
+
+    console.log({
+      source: srcLibp2p.peerId.toB58String(),
+      relay: relayLibp2p.peerId.toB58String(),
+      destination: dstLibp2p.peerId.toB58String()
+    })
 
     const dialAddr = relayAddr
       .encapsulate(`/p2p/${relayIdString}`)
@@ -63,7 +69,6 @@ describe('Dialing (via relay, TCP)', () => {
 
     await dstLibp2p.transportManager.listen(dstLibp2p.addressManager.getListenAddrs())
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
-
     const connection = await srcLibp2p.dial(dialAddr)
     expect(connection).to.exist()
     expect(connection.remotePeer.toBytes()).to.eql(dstLibp2p.peerId.toBytes())

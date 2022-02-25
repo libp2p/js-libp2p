@@ -117,16 +117,14 @@ async function handleHop ({
  * peer. A new, virtual, connection will be created between the two via the relay.
  *
  * @param {object} options
- * @param {Connection} options.connection - Connection to the relay
+ * @param {MuxedStream} options.stream - Stream to the relay
  * @param {ICircuitRelay} options.request
  * @returns {Promise<MuxedStream>}
  */
 async function hop ({
-  connection,
+  stream,
   request
 }) {
-  // Create a new stream to the relay
-  const { stream } = await connection.newStream([multicodec.relayV1])
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })
   streamHandler.write(request)

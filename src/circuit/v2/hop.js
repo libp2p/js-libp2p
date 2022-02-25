@@ -8,9 +8,11 @@ const multicodec = require('../multicodec')
 const log = Object.assign(debug('libp2p:circuitv2:hop'), {
   error: debug('libp2p:circuitv2:hop:err')
 })
-const { HopMessage, Status } = require('./protocol')
+const { HopMessage, Status, StopMessage } = require('./protocol')
+const { stop } = require('./stop')
 const { ReservationVoucherRecord } = require('./reservation-voucher')
 const { validateHopConnectRequest } = require('./validation')
+const { Multiaddr } = require('multiaddr')
 
 /**
  * @typedef {import('./protocol').IHopMessage} IHopMessage
@@ -36,17 +38,19 @@ const { validateHopConnectRequest } = require('./validation')
  * @param {ILimit|null} options.limit
  * @param {Acl?} options.acl
  * @param {ReservationStore} options.reservationStore
+ * @returns {Promise<import('../..').MuxedStream|null>}
  */
 module.exports.handleHopProtocol = async function (options) {
   switch (options.request.type) {
     case HopMessage.Type.RESERVE: await handleReserve(options); break
-    case HopMessage.Type.CONNECT: await handleConnect(options); break
+    case HopMessage.Type.CONNECT: return await handleConnect(options)
     default: {
       log.error('invalid hop request type %s via peer %s', options.request.type, options.connection.remotePeer.toB58String())
       writeErrorResponse(options.streamHandler, Status.MALFORMED_MESSAGE)
       options.streamHandler.close()
     }
   }
+  return null
 }
 
 /**
@@ -105,6 +109,7 @@ async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs
  * @param {StreamHandler} options.streamHandler
  * @param {Transport} options.circuit
  * @param {Acl?} options.acl
+ * @returns {Promise<import('../..').MuxedStream>}
  */
 async function handleConnect ({ connection, streamHandler, request, reservationStore, circuit, acl }) {
   log('hop connect request from %s', connection.remotePeer.toB58String())
@@ -112,9 +117,11 @@ async function handleConnect ({ connection, streamHandler, request, reservationS
   try {
     validateHopConnectRequest(request, streamHandler)
   } catch (/** @type {any} */ err) {
-    return log.error('invalid hop connect request via peer %s', connection.remotePeer.toB58String(), err)
+    log.error('invalid hop connect request via peer %s', connection.remotePeer.toB58String(), err)
+    throw err
   }
 
+  // @ts-ignore peer is defined at this point
   const dstPeer = new PeerId(request.peer.id)
 
   if (acl && acl.allowConnect) {
@@ -132,20 +139,37 @@ async function handleConnect ({ connection, streamHandler, request, reservationS
 
   const destinationConnection = circuit._connectionManager.get(dstPeer)
   if (!destinationConnection) {
-    log('hop connect denied for %s as there is no destincation connection', connection.remotePeer.toB58String())
+    log('hop connect denied for %s as there is no destination connection', connection.remotePeer.toB58String())
     writeErrorResponse(streamHandler, Status.NO_RESERVATION)
   }
 
   log('hop connect request from %s to %s is valid', connection.remotePeer.toB58String(), dstPeer.toB58String())
 
+  const destinationStream = await stop({
+    connection: destinationConnection,
+    request: {
+      type: StopMessage.Type.CONNECT,
+      peer: {
+        id: connection.remotePeer.id,
+        addrs: [new Multiaddr(connection.remoteAddr).bytes]
+      }
+    }
+  })
+
+  if (!destinationStream) {
+    log.error('failed to open stream to destination peer %s', destinationConnection?.remotePeer.toB58String())
+    writeErrorResponse(streamHandler, Status.CONNECTION_FAILED)
+    throw new Error('failed to open stream to destination peer')
+  }
+
   writeResponse(streamHandler, { type: HopMessage.Type.STATUS, status: Status.OK })
 
   const sourceStream = streamHandler.rest()
-
+  log('connection to destination established, short circuiting streams...')
   // Short circuit the two streams to create the relayed connection
-  pipe([
+  return pipe([
     sourceStream,
-    destinationConnection?.newStream([multicodec.protocolIDv2Stop]),
+    destinationStream,
     sourceStream
   ])
 }

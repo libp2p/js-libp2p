@@ -86,4 +86,5 @@ class StreamHandler {
   }
 }
 
+module.exports.StreamHandler = StreamHandler
 module.exports = StreamHandler

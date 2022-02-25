@@ -14,11 +14,15 @@ const { codes } = require('../errors')
 
 const toConnection = require('libp2p-utils/src/stream-to-ma-conn')
 
-const { relayV1: multicodec } = require('./multicodec')
+const { relayV1: protocolIDv1, protocolIDv2Hop, protocolIDv2Stop } = require('./multicodec')
 const createListener = require('./listener')
 const { handleCanHop, handleHop, hop } = require('./v1/hop')
-const { handleStop } = require('./v1/stop')
+const { handleStop: handleStopV1 } = require('./v1/stop')
 const StreamHandler = require('./v1/stream-handler')
+const StreamHandlerV2 = require('./v2/stream-handler')
+const { handleHopProtocol } = require('./v2/hop')
+const { handleStop: handleStopV2 } = require('./v2/stop')
+const { Status, HopMessage, StopMessage, Peer } = require('./v2/protocol')
 
 const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
 
@@ -45,7 +49,9 @@ class Circuit {
     this._libp2p = libp2p
     this.peerId = libp2p.peerId
 
-    this._registrar.handle(multicodec, this._onProtocol.bind(this))
+    this._registrar.handle(protocolIDv1, this._onV1Protocol.bind(this))
+    this._registrar.handle(protocolIDv2Hop, this._onV2ProtocolHop.bind(this))
+    this._registrar.handle(protocolIDv2Stop, this._onV2ProtocolStop.bind(this))
   }
 
   /**
@@ -53,7 +59,7 @@ class Circuit {
    * @param {Connection} props.connection
    * @param {MuxedStream} props.stream
    */
-  async _onProtocol ({ connection, stream }) {
+  async _onV1Protocol ({ connection, stream }) {
     /** @type {import('./v1/stream-handler')} */
     const streamHandler = new StreamHandler({ stream })
     const request = await streamHandler.read()
@@ -83,7 +89,7 @@ class Circuit {
       }
       case CircuitPB.Type.STOP: {
         log('received STOP request from %s', connection.remotePeer.toB58String())
-        virtualConnection = await handleStop({
+        virtualConnection = await handleStopV1({
           connection,
           request,
           streamHandler
@@ -110,6 +116,77 @@ class Circuit {
 
       const conn = await this._upgrader.upgradeInbound(maConn)
       log('%s connection %s upgraded', type, maConn.remoteAddr)
+      this.handler && this.handler(conn)
+    }
+  }
+
+  /**
+   * As a relay it handles hop connect and reserve request
+   *
+   * @param {Object} props
+   * @param {Connection} props.connection
+   * @param {MuxedStream} props.stream
+   */
+  async _onV2ProtocolHop ({ connection, stream }) {
+    log('received circuit v2 hop protocol stream from %s', connection.remotePeer.toB58String())
+    const streamHandler = new StreamHandlerV2({ stream })
+    const request = HopMessage.decode(await streamHandler.read())
+
+    if (!request) {
+      return
+    }
+
+    await handleHopProtocol({
+      connection,
+      streamHandler,
+      circuit: this,
+      relayPeer: this._libp2p.peerId,
+      relayAddrs: this._libp2p.multiaddrs,
+      // TODO: replace with real reservation store
+      reservationStore: {
+        reserve: async function () { return { status: Status.OK, expire: (new Date().getTime() / 1000 + 21600) } },
+        hasReservation: async function () { return true },
+        removeReservation: async function () { }
+      },
+      request,
+      limit: null,
+      acl: null
+    })
+  }
+
+  /**
+   * As a client this is used to
+   *
+   * @param {Object} props
+   * @param {Connection} props.connection
+   * @param {MuxedStream} props.stream
+   */
+  async _onV2ProtocolStop ({ connection, stream }) {
+    const streamHandler = new StreamHandlerV2({ stream })
+    const request = StopMessage.decode(await streamHandler.read())
+    log('received circuit v2 stop protocol request from %s', connection.remotePeer.toB58String())
+    if (!request) {
+      return
+    }
+
+    const mStream = await handleStopV2({
+      connection,
+      streamHandler,
+      request
+    })
+
+    if (mStream) {
+      // @ts-ignore dst peer will not be undefined
+      const remoteAddr = new Multiaddr(request.peer.addrs[0])
+      const localAddr = this._libp2p.addressManager.getListenAddrs()[0]
+      const maConn = toConnection({
+        stream: mStream,
+        remoteAddr,
+        localAddr
+      })
+
+      const conn = await this._upgrader.upgradeInbound(maConn)
+      log('%s connection %s upgraded', 'inbound', maConn.remoteAddr)
       this.handler && this.handler(conn)
     }
   }
@@ -146,9 +223,49 @@ class Circuit {
       disconnectOnFailure = true
     }
 
+    const stream = await relayConnection.newStream([protocolIDv2Hop, protocolIDv1])
+
+    switch (stream.protocol) {
+      case protocolIDv1: return await this.connectV1({
+        stream: stream.stream,
+        connection: relayConnection,
+        destinationPeer,
+        destinationAddr,
+        relayAddr,
+        ma,
+        disconnectOnFailure
+      })
+      case protocolIDv2Hop: return await this.connectV2({
+        stream: stream.stream,
+        connection: relayConnection,
+        destinationPeer,
+        destinationAddr,
+        relayAddr,
+        ma,
+        disconnectOnFailure
+      })
+      default:
+        stream.stream.reset()
+        throw new Error('Unexpected stream protocol')
+    }
+  }
+
+  /**
+   *
+   * @param {Object} params
+   * @param {MuxedStream} params.stream
+   * @param {Connection} params.connection
+   * @param {PeerId} params.destinationPeer
+   * @param {Multiaddr} params.destinationAddr
+   * @param {Multiaddr} params.relayAddr
+   * @param {Multiaddr} params.ma
+   * @param {boolean} params.disconnectOnFailure
+   * @returns {Promise<Connection>}
+   */
+  async connectV1 ({ stream, connection, destinationPeer, destinationAddr, relayAddr, ma, disconnectOnFailure }) {
     try {
       const virtualConnection = await hop({
-        connection: relayConnection,
+        stream,
         request: {
           type: CircuitPB.Type.HOP,
           srcPeer: {
@@ -173,7 +290,54 @@ class Circuit {
       return this._upgrader.upgradeOutbound(maConn)
     } catch (/** @type {any} */ err) {
       log.error('Circuit relay dial failed', err)
-      disconnectOnFailure && await relayConnection.close()
+      disconnectOnFailure && await connection.close()
+      throw err
+    }
+  }
+
+  /**
+   *
+   * @param {Object} params
+   * @param {MuxedStream} params.stream
+   * @param {Connection} params.connection
+   * @param {PeerId} params.destinationPeer
+   * @param {Multiaddr} params.destinationAddr
+   * @param {Multiaddr} params.relayAddr
+   * @param {Multiaddr} params.ma
+   * @param {boolean} params.disconnectOnFailure
+   * @returns {Promise<Connection>}
+   */
+  async connectV2 ({ stream, connection, destinationPeer, destinationAddr, relayAddr, ma, disconnectOnFailure }) {
+    try {
+      const streamHandler = new StreamHandlerV2({ stream })
+      streamHandler.write(HopMessage.encode({
+        type: HopMessage.Type.CONNECT,
+        peer: {
+          id: destinationPeer.toBytes(),
+          addrs: [new Multiaddr(destinationAddr).bytes]
+        }
+      }).finish())
+
+      const status = HopMessage.decode(await streamHandler.read())
+      if (status.status !== Status.OK) {
+        throw new Error('failed to connect via realy with status ' + status.status)
+      }
+
+      // TODO: do something with limit and transient connection
+
+      let localAddr = connection.localAddr ?? relayAddr
+      localAddr = localAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toB58String()}`)
+      const maConn = toConnection({
+        stream: streamHandler.rest(),
+        remoteAddr: ma,
+        localAddr
+      })
+      log('new outbound connection %s', maConn.remoteAddr)
+      const conn = await this._upgrader.upgradeOutbound(maConn)
+      return conn
+    } catch (/** @type {any} */ err) {
+      log.error('Circuit relay dial failed', err)
+      disconnectOnFailure && await connection.close()
       throw err
     }
   }
