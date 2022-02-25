@@ -22,7 +22,7 @@ const StreamHandler = require('./v1/stream-handler')
 const StreamHandlerV2 = require('./v2/stream-handler')
 const { handleHopProtocol } = require('./v2/hop')
 const { handleStop: handleStopV2 } = require('./v2/stop')
-const { Status, HopMessage, StopMessage, Peer } = require('./v2/protocol')
+const { Status, HopMessage, StopMessage } = require('./v2/protocol')
 
 const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
 
