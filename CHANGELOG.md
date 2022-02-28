@@ -1,3 +1,14 @@
+## [1.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.29.1...v1.0.0) (2022-02-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* switch to named exports, ESM only
+
+### Features
+
+* convert to typescript ([#139](https://github.com/libp2p/js-libp2p-floodsub/issues/139)) ([5064483](https://github.com/libp2p/js-libp2p-floodsub/commit/5064483a232951f911b925549c78d20dbb3f9d1f))
+
 ### [0.29.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v0.29.0...v0.29.1) (2022-02-18)
 
 
