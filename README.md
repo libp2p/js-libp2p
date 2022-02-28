@@ -1,45 +1,36 @@
-js-libp2p-floodsub
-==================
+# js-libp2p-floodsub <!-- omit in toc -->
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
 [![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
 [![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-floodsub/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-floodsub?branch=master)
-[![Travis CI](https://travis-ci.org/libp2p/js-libp2p-floodsub.svg?branch=master)](https://travis-ci.org/libp2p/js-libp2p-floodsub)
-[![Circle CI](https://circleci.com/gh/libp2p/js-libp2p-floodsub.svg?style=svg)](https://circleci.com/gh/libp2p/js-libp2p-floodsub)
+[![Build Status](https://github.com/libp2p/js-libp2p-floodsub/actions/workflows/js-test-and-release.yml/badge.svg?branch=main)](https://github.com/libp2p/js-libp2p-floodsub/actions/workflows/js-test-and-release.yml)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-floodsub.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-floodsub) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 [![](https://img.shields.io/badge/pm-waffle-yellow.svg?style=flat-square)](https://waffle.io/libp2p/js-libp2p-floodsub)
 
 > libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).
 
-## Lead Maintainer
+## Table of Contents <!-- omit in toc -->
 
-[Vasco Santos](https://github.com/vasco-santos).
-
-## Table of Contents
-
-- [js-libp2p-floodsub](#js-libp2p-floodsub)
-  - [Lead Maintainer](#lead-maintainer)
-  - [Table of Contents](#table-of-contents)
-  - [Install](#install)
-  - [Usage](#usage)
-  - [API](#api)
-    - [Create a floodsub implementation](#create-a-floodsub-implementation)
-  - [Events](#events)
-  - [Contribute](#contribute)
-  - [License](#license)
+- [Install](#install)
+- [Usage](#usage)
+- [API](#api)
+  - [Create a floodsub implementation](#create-a-floodsub-implementation)
+- [Events](#events)
+- [Contribute](#contribute)
+- [License](#license)
 
 ## Install
 
 ```sh
-> npm install libp2p-floodsub
+> npm install @libp2p/floodsub
 ```
 
 ## Usage
 
 ```JavaScript
-const FloodSub = require('libp2p-floodsub')
+import { FloodSub } from '@libp2p/floodsub'
 
 // registrar is provided by libp2p
 const fsub = new FloodSub(peerId, registrar, options)
@@ -94,4 +85,4 @@ This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/c
 
 ## License
 
-Copyright (c) Protocol Labs, Inc. under the **MIT License**. See [LICENSE file](./LICENSE) for details.
+[Apache-2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT) © Protocol Labs

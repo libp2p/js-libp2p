@@ -1,5 +1,5 @@
 {
-  "name": "libp2p-floodsub",
+  "name": "@libp2p/floodsub",
   "version": "0.29.1",
   "description": "libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
   "license": "Apache-2.0 OR MIT",
@@ -23,28 +23,24 @@
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   },
-  "main": "src/index.js",
-  "types": "dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*"
-      ]
-    }
-  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
   "files": [
     "src",
-    "dist"
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js"
+    }
+  },
   "eslintConfig": {
-    "extends": "ipfs"
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
   },
   "release": {
     "branches": [
@@ -129,9 +125,10 @@
   },
   "scripts": {
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check",
-    "build": "aegir build",
-    "test": "aegir test",
+    "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
+    "build": "tsc",
+    "pretest": "npm run build",
+    "test": "aegir test -f dist/test",
     "test:chrome": "npm run test -- -t browser --cov",
     "test:chrome-webworker": "npm run test -- -t webworker",
     "test:firefox": "npm run test -- -t browser -- --browser firefox",
@@ -141,30 +138,20 @@
     "release": "semantic-release"
   },
   "dependencies": {
-    "debug": "^4.2.0",
-    "libp2p-interfaces": "^4.0.5",
-    "time-cache": "^0.3.0",
+    "@libp2p/interfaces": "^1.3.6",
+    "@libp2p/logger": "^1.0.3",
+    "@libp2p/pubsub": "^1.2.4",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-noise": "^5.0.0",
-    "@types/debug": "^4.1.5",
+    "@libp2p/interface-compliance-tests": "^1.0.8",
+    "@libp2p/peer-id": "^1.1.3",
+    "@libp2p/peer-id-factory": "^1.0.5",
+    "@multiformats/multiaddr": "^10.1.5",
     "aegir": "^36.1.1",
-    "benchmark": "^2.1.4",
-    "buffer": "^6.0.3",
-    "chai": "^4.3.4",
-    "ipfs-utils": "^9.0.2",
-    "it-pair": "^1.0.0",
-    "libp2p": "libp2p/js-libp2p#feat/async-peerstore",
-    "libp2p-interfaces-compliance-tests": "^4.0.7",
-    "libp2p-mplex": "^0.10.3",
-    "libp2p-websockets": "^0.16.0",
-    "multiaddr": "^10.0.0",
     "multiformats": "^9.4.5",
-    "os": "^0.1.1",
-    "p-wait-for": "^3.1.0",
-    "peer-id": "^0.16.0",
-    "sinon": "^12.0.1",
-    "util": "^0.12.3"
+    "p-wait-for": "^4.1.0",
+    "sinon": "^13.0.1",
+    "wherearewe": "^1.0.0"
   }
 }

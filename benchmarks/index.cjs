@@ -1,4 +1,3 @@
-'use strict'
 
 const Benchmark = require('benchmark')
 const crypto = require('crypto')
