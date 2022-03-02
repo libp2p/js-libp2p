@@ -1,3 +1,10 @@
+### [1.0.7](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.6...v1.0.7) (2022-03-02)
+
+
+### Bug Fixes
+
+* pass duplex to stream-to-ma-conn not stream ([#33](https://github.com/libp2p/js-libp2p-utils/issues/33)) ([ebc5c60](https://github.com/libp2p/js-libp2p-utils/commit/ebc5c6074c971e39c6e5c5c51e251aa00c544b50))
+
 ### [1.0.6](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.5...v1.0.6) (2022-02-10)
 
 
