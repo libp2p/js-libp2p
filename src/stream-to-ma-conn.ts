@@ -1,17 +1,10 @@
 import { abortableSource } from 'abortable-iterator'
 import { logger } from '@libp2p/logger'
-import type { Stream } from '@libp2p/interfaces/connection'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrConnection } from '@libp2p/interfaces/transport'
+import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:stream:converter')
-
-/**
- * @typedef {Object} Timeline
- * @property {number} open -
- * @property {number} [upgraded] - .
- * @property {number} [close]
- */
 
 export interface Timeline {
   /**
@@ -36,7 +29,7 @@ interface StreamOptions {
 }
 
 interface StreamProperties {
-  stream: Stream
+  stream: Duplex<Uint8Array>
   remoteAddr: Multiaddr
   localAddr: Multiaddr
 }

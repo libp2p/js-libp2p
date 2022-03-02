@@ -176,6 +176,7 @@
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "is-loopback-addr": "^2.0.1",
+    "it-stream-types": "^1.0.4",
     "private-ip": "^2.1.1"
   },
   "devDependencies": {

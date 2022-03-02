@@ -7,19 +7,9 @@ interface Address {
 }
 
 /**
- * @typedef {Object} Address
- * @property {Multiaddr} multiaddr peer multiaddr.
- * @property {boolean} isCertified obtained from a signed peer record.
- */
-
-/**
  * Compare function for array.sort().
  * This sort aims to move the private adresses to the end of the array.
  * In case of equality, a certified address will come first.
- *
- * @param {Address} a
- * @param {Address} b
- * @returns {number}
  */
 function addressesPublicFirstCompareFunction (a: Address, b: Address) {
   const isAPrivate = isPrivate(a.multiaddr)
