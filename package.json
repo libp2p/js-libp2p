@@ -64,8 +64,8 @@
       "types": "./dist/src/multiaddr/is-private.d.ts"
     },
     "./stream-to-ma-conn": {
-      "import": "./dist/src/stream-to-ma-connr.js",
-      "types": "./dist/src/stream-to-ma-connr.d.ts"
+      "import": "./dist/src/stream-to-ma-conn.js",
+      "types": "./dist/src/stream-to-ma-conn.d.ts"
     }
   },
   "eslintConfig": {
