@@ -1,3 +1,10 @@
+### [1.0.8](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.7...v1.0.8) (2022-03-03)
+
+
+### Bug Fixes
+
+* correct update path for stream-to-ma-conn ([#34](https://github.com/libp2p/js-libp2p-utils/issues/34)) ([90cc6f5](https://github.com/libp2p/js-libp2p-utils/commit/90cc6f563c8640ba52ebfe2f8794999664ccd7eb))
+
 ### [1.0.7](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.6...v1.0.7) (2022-03-02)
 
 
