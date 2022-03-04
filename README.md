@@ -4,7 +4,7 @@
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
 [![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
-[![Build status](https://github.com/libp2p/js-libp2p-kad-dht/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/libp2p/js-libp2p-kad-dht/actions/workflows/test.yml)
+[![Build Status](https://github.com/libp2p/js-libp2p-kad-dht/actions/workflows/js-test-and-release.yml/badge.svg?branch=main)](https://github.com/libp2p/js-libp2p-kad-dht/actions/workflows/js-test-and-release.yml)
 [![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-kad-dht/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-kad-dht?branch=master)
 [![Dependency Status](https://david-dm.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-kad-dht)
 [![Bundle Size](https://flat.badgen.net/bundlephobia/minzip/libp2p-kad-dht)](https://bundlephobia.com/result?p=libp2p-kad-dht)
@@ -14,10 +14,6 @@
 ![](https://img.shields.io/badge/Node.js-%3E%3D6.0.0-orange.svg?style=flat-square)
 
 > JavaScript implementation of the Kademlia DHT for libp2p, based on [go-libp2p-kad-dht](https://github.com/libp2p/go-libp2p-kad-dht).
-
-## Lead Maintainer  <!-- omit in toc -->
-
-[Vasco Santos](https://github.com/vasco-santos).
 
 ## Table of Contents  <!-- omit in toc -->
 
@@ -32,18 +28,19 @@
 - [Spec](#spec)
 - [Contribute](#contribute)
 - [License](#license)
+  - [Contribution](#contribution)
 ## Install
 
 ### npm
 
 ```sh
-> npm i libp2p-kad-dht
+> npm i @libp2p/kad-dht
 ```
 
 ### Use in Node.js
 
 ```js
-import { create } from 'libp2p-kad-dht'
+import { create } from '@libp2p/kad-dht'
 ```
 
 ## API
@@ -55,7 +52,7 @@ The libp2p-kad-dht module offers 3 APIs: Peer Routing, Content Routing and Peer 
 ### Custom secondary DHT in libp2p
 
 ```js
-import { create } from 'libp2p-kad-dht'
+import { create } from '@libp2p/kad-dht'
 
 /**
  * @param {Libp2p} libp2p
@@ -98,4 +95,11 @@ This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/c
 
 ## License
 
-MIT - Protocol Labs 2017
+Licensed under either of
+
+ * Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT ([LICENSE-MIT](LICENSE-MIT) / http://opensource.org/licenses/MIT)
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

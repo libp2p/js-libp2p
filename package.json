@@ -1,5 +1,5 @@
 {
-  "name": "libp2p-kad-dht",
+  "name": "@libp2p/kad-dht",
   "version": "0.28.6",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "license": "Apache-2.0 OR MIT",
@@ -18,28 +18,24 @@
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   },
-  "main": "src/index.js",
-  "types": "dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*"
-      ]
-    }
-  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
   "files": [
     "src",
-    "dist"
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js"
+    }
+  },
   "eslintConfig": {
     "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    },
     "ignorePatterns": [
       "src/message/dht.d.ts"
     ]
@@ -126,26 +122,29 @@
     ]
   },
   "scripts": {
-    "prepare": "npm run build",
-    "lint": "aegir ts -p check && aegir lint",
-    "build": "npm run build:proto && npm run build:proto-types && aegir build",
-    "build:proto": "pbjs -t static-module -w commonjs -r libp2p-dht-message --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/message/dht.js ./src/message/dht.proto",
-    "build:proto-types": "pbts -o src/message/dht.d.ts src/message/dht.js",
-    "test": "aegir test -t node",
-    "test:node": "aegir test -t node",
-    "docs": "aegir docs",
-    "release": "aegir release --docs -t node",
-    "release-minor": "aegir release --type minor --docs -t node",
-    "release-major": "aegir release --type major --docs -t node",
-    "coverage": "aegir coverage",
-    "coverage-publish": "aegir-coverage publish",
-    "sim": "node test/simulation/index.js",
-    "dep-check": "aegir dep-check"
+    "lint": "aegir lint",
+    "build": "tsc",
+    "postbuild": "npm run build:copy-proto-files",
+    "generate": "npm run generate:proto && npm run generate:proto-types",
+    "generate:proto": "pbjs -t static-module -w es6 -r libp2p-dht-message --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/message/dht.js ./src/message/dht.proto",
+    "generate:proto-types": "pbts -o src/message/dht.d.ts src/message/dht.js",
+    "build:copy-proto-files": "cp src/message/dht.js src/message/dht.d.ts dist/src/message",
+    "pretest": "npm run build",
+    "test": "aegir test -t node -f ./dist/test",
+    "test:node": "aegir test -t node -f ./dist/test",
+    "dep-check": "aegir dep-check",
+    "release": "semantic-release"
   },
   "dependencies": {
+    "@libp2p/crypto": "^0.22.7",
+    "@libp2p/interfaces": "^1.3.2",
+    "@libp2p/logger": "^1.0.2",
+    "@libp2p/peer-id": "^1.0.4",
+    "@libp2p/record": "^1.0.0",
+    "@libp2p/topology": "^1.0.3",
+    "@multiformats/multiaddr": "^10.0.0",
     "any-signal": "^3.0.0",
     "datastore-core": "^7.0.0",
-    "debug": "^4.3.1",
     "err-code": "^3.0.0",
     "hashlru": "^2.3.0",
     "interface-datastore": "^6.0.2",
@@ -153,22 +152,18 @@
     "it-drain": "^1.0.4",
     "it-first": "^1.0.4",
     "it-length": "^1.0.3",
-    "it-length-prefixed": "^5.0.2",
+    "it-length-prefixed": "^7.0.0",
     "it-map": "^1.0.5",
     "it-merge": "^1.0.3",
     "it-parallel": "^2.0.1",
-    "it-pipe": "^1.1.0",
+    "it-pipe": "^2.0.3",
+    "it-stream-types": "^1.0.4",
     "it-take": "^1.0.2",
     "k-bucket": "^5.1.0",
-    "libp2p-crypto": "^0.21.0",
-    "libp2p-interfaces": "^4.0.0",
-    "libp2p-record": "^0.10.4",
-    "multiaddr": "^10.0.0",
     "multiformats": "^9.4.5",
-    "p-defer": "^3.0.0",
-    "p-map": "^4.0.0",
-    "p-queue": "^6.6.2",
-    "peer-id": "^0.16.0",
+    "p-defer": "^4.0.0",
+    "p-map": "^5.3.0",
+    "p-queue": "^7.2.0",
     "private-ip": "^2.3.3",
     "protobufjs": "^6.10.2",
     "streaming-iterables": "^6.0.0",
@@ -177,44 +172,29 @@
     "varint": "^6.0.0"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.7",
-    "aegir": "^36.0.1",
-    "async-iterator-all": "^1.0.0",
-    "datastore-level": "^7.0.1",
+    "@libp2p/interface-compliance-tests": "^1.1.3",
+    "@libp2p/peer-id-factory": "^1.0.4",
+    "@libp2p/peer-store": "^1.0.1",
+    "@types/lodash.random": "^3.2.6",
+    "@types/lodash.range": "^3.2.6",
+    "@types/node": "^16.11.7",
+    "@types/varint": "^6.0.0",
+    "@types/which": "^2.0.1",
+    "aegir": "^36.1.3",
+    "datastore-level": "^8.0.0",
     "delay": "^5.0.0",
-    "execa": "^5.1.1",
+    "execa": "^6.0.0",
     "it-filter": "^1.0.3",
     "it-last": "^1.0.6",
-    "it-pair": "^1.0.0",
-    "libp2p": "next",
+    "it-pair": "^2.0.2",
+    "libp2p": "^0.36.2",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
-    "p-retry": "^4.2.0",
-    "sinon": "^12.0.1",
+    "p-retry": "^5.0.0",
+    "sinon": "^13.0.1",
     "which": "^2.0.2"
   },
   "browser": {
-    "./src/routing-table/generated-prefix-list.json": "./src/routing-table/generated-prefix-list-browser.json"
-  },
-  "contributors": [
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "achingbrain <alex@achingbrain.net>",
-    "David Dias <daviddias.p@gmail.com>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "kumavis <kumavis@users.noreply.github.com>",
-    "dirkmc <dirkmdev@gmail.com>",
-    "Alan Shaw <alan.shaw@protocol.ai>",
-    "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
-    "Josh Field <joshfield999@gmail.com>",
-    "Hugo Dias <hugomrdias@gmail.com>",
-    "Blake Byrnes <blakebyrnes@gmail.com>",
-    "Richard Schneider <makaretu@gmail.com>",
-    "John Hiesey <jhiesey@cs.stanford.edu>",
-    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
-    "Lars Gierth <larsg@systemli.org>",
-    "Marcus Bernales <mboperator@gmail.com>",
-    "Pedro Teixeira <i@pgte.me>",
-    "Qmstream <51881352+Qmstream@users.noreply.github.com>",
-    "Thomas Eizinger <thomas@eizinger.io>"
-  ]
+    "./dist/src/routing-table/generated-prefix-list.js": "./dist/src/routing-table/generated-prefix-list-browser.js"
+  }
 }

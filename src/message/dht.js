@@ -1,15 +1,13 @@
 /*eslint-disable*/
-"use strict";
-
-var $protobuf = require("protobufjs/minimal");
+import $protobuf from "protobufjs/minimal.js";
 
 // Common aliases
-var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
+const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
 
 // Exported root namespace
-var $root = $protobuf.roots["libp2p-dht-message"] || ($protobuf.roots["libp2p-dht-message"] = {});
+const $root = $protobuf.roots["libp2p-dht-message"] || ($protobuf.roots["libp2p-dht-message"] = {});
 
-$root.Record = (function() {
+export const Record = $root.Record = (() => {
 
     /**
      * Properties of a Record.
@@ -78,7 +76,7 @@ $root.Record = (function() {
     Record.prototype.timeReceived = null;
 
     // OneOf field names bound to virtual getters and setters
-    var $oneOfFields;
+    let $oneOfFields;
 
     /**
      * Record _key.
@@ -298,7 +296,7 @@ $root.Record = (function() {
     return Record;
 })();
 
-$root.Message = (function() {
+export const Message = $root.Message = (() => {
 
     /**
      * Properties of a Message.
@@ -378,7 +376,7 @@ $root.Message = (function() {
     Message.prototype.providerPeers = $util.emptyArray;
 
     // OneOf field names bound to virtual getters and setters
-    var $oneOfFields;
+    let $oneOfFields;
 
     /**
      * Message _type.
@@ -654,7 +652,7 @@ $root.Message = (function() {
      * @property {number} PING=5 PING value
      */
     Message.MessageType = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
+        const valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "PUT_VALUE"] = 0;
         values[valuesById[1] = "GET_VALUE"] = 1;
         values[valuesById[2] = "ADD_PROVIDER"] = 2;
@@ -674,7 +672,7 @@ $root.Message = (function() {
      * @property {number} CANNOT_CONNECT=3 CANNOT_CONNECT value
      */
     Message.ConnectionType = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
+        const valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "NOT_CONNECTED"] = 0;
         values[valuesById[1] = "CONNECTED"] = 1;
         values[valuesById[2] = "CAN_CONNECT"] = 2;
@@ -734,7 +732,7 @@ $root.Message = (function() {
         Peer.prototype.connection = null;
 
         // OneOf field names bound to virtual getters and setters
-        var $oneOfFields;
+        let $oneOfFields;
 
         /**
          * Peer _id.
@@ -920,4 +918,4 @@ $root.Message = (function() {
     return Message;
 })();
 
-module.exports = $root;
+export { $root as default };

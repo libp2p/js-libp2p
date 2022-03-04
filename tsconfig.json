@@ -1,12 +1,13 @@
 {
   "extends": "aegir/src/config/tsconfig.aegir.json",
   "compilerOptions": {
-      "outDir": "dist"
+    "outDir": "dist",
+    "emitDeclarationOnly": false,
+    "module": "ES2020"
   },
   "include": [
     "src",
-    "src/routing-table/generated-prefix-list.json",
-    "src/routing-table/generated-prefix-list-browser.json"
+    "test"
   ],
   "exclude": [
     "src/message/dht.js" // exclude generated file
