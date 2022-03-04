@@ -1,3 +1,14 @@
+## [1.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.28.6...v1.0.0) (2022-03-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* switch to named exports, ESM only
+
+### Features
+
+* convert to typescript ([#300](https://github.com/libp2p/js-libp2p-kad-dht/issues/300)) ([9696346](https://github.com/libp2p/js-libp2p-kad-dht/commit/9696346bcf48e882c0126268bdec99ec01ec2023))
+
 ## [0.28.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v0.28.5...v0.28.6) (2022-01-19)
 
 
@@ -1068,6 +1079,3 @@ Co-Authored-By: vasco-santos <vasco.santos@ua.pt>
 ### Features
 
 * v0.1.0 ([4bd1fbc](https://github.com/libp2p/js-libp2p-kad-dht/commit/4bd1fbc))
-
-
-
