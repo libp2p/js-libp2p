@@ -49,7 +49,7 @@ function printAddrs (node, number) {
     console.log(result.toString())
   })
 
-  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
   const { stream } = await node1.dialProtocol(node2.peerId, '/print')
 
   await pipe(

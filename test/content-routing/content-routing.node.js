@@ -291,11 +291,11 @@ describe('content-routing', () => {
         yield result
       })
 
-      expect(node.peerStore.addressBook.get(providerPeerId)).to.not.be.ok()
+      expect(await node.peerStore.has(providerPeerId)).to.not.be.ok()
 
       await drain(node.contentRouting.findProviders('a cid'))
 
-      expect(node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
+      expect(await node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
         isCertified: false,
         multiaddr: result.multiaddrs[0]
       })
@@ -377,7 +377,7 @@ describe('content-routing', () => {
 
       await drain(node.contentRouting.findProviders('a cid'))
 
-      expect(node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
+      expect(await node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
         isCertified: false,
         multiaddr: result1.multiaddrs[0]
       }).and.to.deep.include({

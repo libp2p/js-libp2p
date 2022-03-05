@@ -1,4 +1,3 @@
 {
-  "presets": ["@babel/preset-env"],
   "plugins": ["syntax-async-functions","transform-regenerator"]
 }

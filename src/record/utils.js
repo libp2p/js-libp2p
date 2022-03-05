@@ -19,7 +19,7 @@ async function updateSelfPeerRecord (libp2p) {
     multiaddrs: libp2p.multiaddrs
   })
   const envelope = await Envelope.seal(peerRecord, libp2p.peerId)
-  libp2p.peerStore.addressBook.consumePeerRecord(envelope)
+  await libp2p.peerStore.addressBook.consumePeerRecord(envelope)
 }
 
 module.exports.updateSelfPeerRecord = updateSelfPeerRecord

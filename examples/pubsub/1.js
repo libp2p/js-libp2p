@@ -5,7 +5,7 @@ const Libp2p = require('../../')
 const TCP = require('libp2p-tcp')
 const Mplex = require('libp2p-mplex')
 const { NOISE } = require('@chainsafe/libp2p-noise')
-const Gossipsub = require('libp2p-gossipsub')
+const Gossipsub = require('@achingbrain/libp2p-gossipsub')
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
@@ -35,7 +35,7 @@ const createNode = async () => {
   ])
 
   // Add node's 2 data to the PeerStore
-  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
   await node1.dial(node2.peerId)
 
   node1.pubsub.on(topic, (msg) => {

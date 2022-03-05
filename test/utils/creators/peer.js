@@ -36,17 +36,17 @@ async function createPeer ({ number = 1, fixture = true, started = true, populat
   if (started) {
     await Promise.all(peers.map((p) => p.start()))
 
-    populateAddressBooks && _populateAddressBooks(peers)
+    populateAddressBooks && await _populateAddressBooks(peers)
   }
 
   return peers
 }
 
-function _populateAddressBooks (peers) {
+async function _populateAddressBooks (peers) {
   for (let i = 0; i < peers.length; i++) {
     for (let j = 0; j < peers.length; j++) {
       if (i !== j) {
-        peers[i].peerStore.addressBook.set(peers[j].peerId, peers[j].multiaddrs)
+        await peers[i].peerStore.addressBook.set(peers[j].peerId, peers[j].multiaddrs)
       }
     }
   }
@@ -58,12 +58,13 @@ function _populateAddressBooks (peers) {
  * @param {Object} [properties]
  * @param {number} [properties.number] - number of peers (default: 1).
  * @param {boolean} [properties.fixture] - use fixture for peer-id generation (default: true)
+ * @param {PeerId.CreateOptions} [properties.opts]
  * @returns {Promise<Array<PeerId>>}
  */
-function createPeerId ({ number = 1, fixture = true } = {}) {
+function createPeerId ({ number = 1, fixture = true, opts = {} } = {}) {
   return pTimes(number, (i) => fixture
     ? PeerId.createFromJSON(Peers[i])
-    : PeerId.create()
+    : PeerId.create(opts)
   )
 }
 

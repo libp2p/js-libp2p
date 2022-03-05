@@ -2,7 +2,6 @@
 
 const duplexPair = require('it-pair/duplex')
 const abortable = require('abortable-iterator')
-const AbortController = require('abort-controller')
 
 /**
  * Returns both sides of a mocked MultiaddrConnection

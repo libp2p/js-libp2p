@@ -22,58 +22,63 @@ const { PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION } = require('./constants')
  * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
  */
 
-/**
- * Ping a given peer and wait for its response, getting the operation latency.
- *
- * @param {Libp2p} node
- * @param {PeerId|Multiaddr} peer
- * @returns {Promise<number>}
- */
-async function ping (node, peer) {
-  const protocol = `/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
-  // @ts-ignore multiaddr might not have toB58String
-  log('dialing %s to %s', protocol, peer.toB58String ? peer.toB58String() : peer)
-
-  const connection = await node.dial(peer)
-  const { stream } = await connection.newStream(protocol)
-
-  const start = Date.now()
-  const data = crypto.randomBytes(PING_LENGTH)
-
-  const [result] = await pipe(
-    [data],
-    stream,
-    (/** @type {MuxedStream} */ stream) => take(1, stream),
-    toBuffer,
-    collect
-  )
-  const end = Date.now()
-
-  if (!equals(data, result)) {
-    throw errCode(new Error('Received wrong ping ack'), codes.ERR_WRONG_PING_ACK)
+class PingService {
+  /**
+   * @param {import('../')} libp2p
+   */
+  static getProtocolStr (libp2p) {
+    return `/${libp2p._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
   }
 
-  return end - start
+  /**
+   * @param {Libp2p} libp2p
+   */
+  constructor (libp2p) {
+    this._libp2p = libp2p
+  }
+
+  /**
+   * A handler to register with Libp2p to process ping messages
+   *
+   * @param {Object} options
+   * @param {MuxedStream} options.stream
+   */
+  handleMessage ({ stream }) {
+    return pipe(stream, stream)
+  }
+
+  /**
+   * Ping a given peer and wait for its response, getting the operation latency.
+   *
+   * @param {PeerId|Multiaddr} peer
+   * @returns {Promise<number>}
+   */
+  async ping (peer) {
+    const protocol = `/${this._libp2p._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    // @ts-ignore multiaddr might not have toB58String
+    log('dialing %s to %s', protocol, peer.toB58String ? peer.toB58String() : peer)
+
+    const connection = await this._libp2p.dial(peer)
+    const { stream } = await connection.newStream(protocol)
+
+    const start = Date.now()
+    const data = crypto.randomBytes(PING_LENGTH)
+
+    const [result] = await pipe(
+      [data],
+      stream,
+      (/** @type {MuxedStream} */ stream) => take(1, stream),
+      toBuffer,
+      collect
+    )
+    const end = Date.now()
+
+    if (!equals(data, result)) {
+      throw errCode(new Error('Received wrong ping ack'), codes.ERR_WRONG_PING_ACK)
+    }
+
+    return end - start
+  }
 }
 
-/**
- * Subscribe ping protocol handler.
- *
- * @param {Libp2p} node
- */
-function mount (node) {
-  node.handle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`, ({ stream }) => pipe(stream, stream))
-}
-
-/**
- * Unsubscribe ping protocol handler.
- *
- * @param {Libp2p} node
- */
-function unmount (node) {
-  node.unhandle(`/${node._config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`)
-}
-
-exports = module.exports = ping
-exports.mount = mount
-exports.unmount = unmount
+module.exports = PingService

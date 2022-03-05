@@ -4,6 +4,10 @@ const debug = require('debug')
 const mergeOptions = require('merge-options')
 // @ts-ignore retimer does not have types
 const retimer = require('retimer')
+const all = require('it-all')
+const { pipe } = require('it-pipe')
+const filter = require('it-filter')
+const sort = require('it-sort')
 
 const log = Object.assign(debug('libp2p:connection-manager:auto-dialler'), {
   error: debug('libp2p:connection-manager:auto-dialler:err')
@@ -50,7 +54,7 @@ class AutoDialler {
   /**
    * Starts the auto dialer
    */
-  start () {
+  async start () {
     if (!this._options.enabled) {
       log('not enabled')
       return
@@ -86,22 +90,30 @@ class AutoDialler {
       return
     }
 
-    // Sort peers on wether we know protocols of public keys for them
-    const peers = Array.from(this._libp2p.peerStore.peers.values())
-      .sort((a, b) => {
+    // Sort peers on whether we know protocols of public keys for them
+    // TODO: assuming the `peerStore.getPeers()` order is stable this will mean
+    // we keep trying to connect to the same peers?
+    const peers = await pipe(
+      this._libp2p.peerStore.getPeers(),
+      (source) => filter(source, (peer) => !peer.id.equals(this._libp2p.peerId)),
+      (source) => sort(source, (a, b) => {
         if (b.protocols && b.protocols.length && (!a.protocols || !a.protocols.length)) {
           return 1
         } else if (b.id.pubKey && !a.id.pubKey) {
           return 1
         }
         return -1
-      })
+      }),
+      (source) => all(source)
+    )
 
     for (let i = 0; this._running && i < peers.length && this._libp2p.connections.size < minConnections; i++) {
-      if (!this._libp2p.connectionManager.get(peers[i].id)) {
-        log('connecting to a peerStore stored peer %s', peers[i].id.toB58String())
+      const peer = peers[i]
+
+      if (!this._libp2p.connectionManager.get(peer.id)) {
+        log('connecting to a peerStore stored peer %s', peer.id.toB58String())
         try {
-          await this._libp2p.dialer.connectToPeer(peers[i].id)
+          await this._libp2p.dialer.connectToPeer(peer.id)
         } catch (/** @type {any} */ err) {
           log.error('could not connect to peerStore stored peer', err)
         }
