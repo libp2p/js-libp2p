@@ -12,7 +12,7 @@ const pipe = require('it-pipe')
 async function run() {
   const [dialerId, listenerId] = await Promise.all([
     PeerId.createFromJSON(require('./id-d')),
-    PeerId.createFromJSON(require('./id-l'))
+    PeerId.createFromB58String(require('./id-l').id)
   ])
 
   // Dialer
@@ -39,9 +39,26 @@ async function run() {
 
   console.log('nodeA dialed to nodeB on protocol: /echo/1.0.0')
 
+  const sayHeyFiveTimes = {
+    [Symbol.asyncIterator]() {
+      return {
+        i:0,
+        next() {
+          if(this.i < 5) {
+            this.i++
+            return Promise.resolve({value:'hey: ' + this.i + (this.i===5?'\n':','), done:false})
+          } else {
+            console.log('message sent')
+            return Promise.resolve({done:true})
+          }
+        }
+      }
+    }
+  }
+
   pipe(
+    sayHeyFiveTimes,
     // Source data
-    ['hey'],
     // Write to the stream, and pass its output to the next function
     stream,
     // Sink function
