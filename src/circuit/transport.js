@@ -23,6 +23,7 @@ const StreamHandlerV2 = require('./v2/stream-handler')
 const { handleHopProtocol } = require('./v2/hop')
 const { handleStop: handleStopV2 } = require('./v2/stop')
 const { Status, HopMessage, StopMessage } = require('./v2/protocol')
+const createError = require('err-code')
 
 const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
 
@@ -178,13 +179,13 @@ class Circuit {
     if (mStream) {
       // @ts-ignore dst peer will not be undefined
       const remoteAddr = new Multiaddr(request.peer.addrs[0])
-      const localAddr = this._libp2p.addressManager.getListenAddrs()[0]
+      const localAddr = this._libp2p.transportManager.getAddrs()[0]
       const maConn = toConnection({
         stream: mStream,
         remoteAddr,
         localAddr
       })
-
+      log('new inbound connection %s', maConn.remoteAddr)
       const conn = await this._upgrader.upgradeInbound(maConn)
       log('%s connection %s upgraded', 'inbound', maConn.remoteAddr)
       this.handler && this.handler(conn)
@@ -320,12 +321,12 @@ class Circuit {
 
       const status = HopMessage.decode(await streamHandler.read())
       if (status.status !== Status.OK) {
-        throw new Error('failed to connect via realy with status ' + status.status)
+        throw createError(new Error('failed to connect via realy with status ' + status.status), codes.ERR_HOP_REQUEST_FAILED)
       }
 
       // TODO: do something with limit and transient connection
 
-      let localAddr = connection.localAddr ?? relayAddr
+      let localAddr = relayAddr
       localAddr = localAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toB58String()}`)
       const maConn = toConnection({
         stream: streamHandler.rest(),

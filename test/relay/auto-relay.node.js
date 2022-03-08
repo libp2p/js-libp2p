@@ -43,7 +43,8 @@ async function discoveredRelayConfig (node, relay) {
   })
 }
 
-describe('auto-relay', () => {
+// TODO: replace with circuit v2 stuff
+describe.skip('auto-relay', () => {
   describe('basics', () => {
     let libp2p
     let relayLibp2p

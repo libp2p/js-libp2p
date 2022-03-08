@@ -50,19 +50,13 @@ describe('Dialing (via relay, TCP)', () => {
     return Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(libp2p => libp2p.stop()))
   })
 
-  it.only('should be able to connect to a peer over a relay with active connections', async () => {
+  it('should be able to connect to a peer over a relay with active connections', async () => {
     const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
     const relayIdString = relayLibp2p.peerId.toB58String()
 
-    console.log({
-      source: srcLibp2p.peerId.toB58String(),
-      relay: relayLibp2p.peerId.toB58String(),
-      destination: dstLibp2p.peerId.toB58String()
-    })
-
     const dialAddr = relayAddr
       .encapsulate(`/p2p/${relayIdString}`)
-      .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerId.toB58String()}`)
+      .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerId}`)
 
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
     sinon.stub(dstLibp2p.addressManager, 'listen').value([new Multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
@@ -95,7 +89,7 @@ describe('Dialing (via relay, TCP)', () => {
   it('should fail to connect to a peer over a relay with inactive connections', async () => {
     const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
     const relayIdString = relayLibp2p.peerId.toB58String()
-
+    sinon.stub(relayLibp2p.connectionManager, 'get').withArgs(dstLibp2p.peerId).returns(null)
     const dialAddr = relayAddr
       .encapsulate(`/p2p/${relayIdString}`)
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerId.toB58String()}`)
@@ -154,10 +148,7 @@ describe('Dialing (via relay, TCP)', () => {
     await dstLibp2p.transportManager.listen(dstLibp2p.addressManager.getListenAddrs())
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
-    // Tamper with the our multiaddrs for the circuit message
-    sinon.stub(srcLibp2p, 'multiaddrs').value([{
-      bytes: uint8ArrayFromString('an invalid multiaddr')
-    }])
+    sinon.stub(relayLibp2p.connectionManager, 'get').withArgs(dstLibp2p.peerId).returns(null)
 
     await expect(srcLibp2p.dial(dialAddr))
       .to.eventually.be.rejectedWith(AggregateError)

@@ -150,7 +150,7 @@ async function handleConnect ({ connection, streamHandler, request, reservationS
       type: StopMessage.Type.CONNECT,
       peer: {
         id: connection.remotePeer.id,
-        addrs: [new Multiaddr(connection.remoteAddr).bytes]
+        addrs: [new Multiaddr('/p2p/' + connection.remotePeer.toB58String()).bytes]
       }
     }
   })
@@ -166,11 +166,11 @@ async function handleConnect ({ connection, streamHandler, request, reservationS
   const sourceStream = streamHandler.rest()
   log('connection to destination established, short circuiting streams...')
   // Short circuit the two streams to create the relayed connection
-  return pipe([
+  return pipe(
     sourceStream,
     destinationStream,
     sourceStream
-  ])
+  )
 }
 
 /**
