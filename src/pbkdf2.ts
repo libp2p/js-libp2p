@@ -20,7 +20,7 @@ const hashName = {
 /**
  * Computes the Password-Based Key Derivation Function 2.
  */
-export default function pbkdf2 (password: string, salt: string, iterations: number, keySize: number, hash: string) {
+export default function pbkdf2 (password: string, salt: string, iterations: number, keySize: number, hash: string): string {
   if (hash !== 'sha1' && hash !== 'sha2-256' && hash !== 'sha2-512') {
     const types = Object.keys(hashName).join(' / ')
     throw errcode(new Error(`Hash '${hash}' is unknown or not supported. Must be ${types}`), 'ERR_UNSUPPORTED_HASH_TYPE')
