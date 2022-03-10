@@ -1,3 +1,10 @@
+### [0.22.9](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.8...v0.22.9) (2022-03-10)
+
+
+### Bug Fixes
+
+* fix broken return type ([#247](https://github.com/libp2p/js-libp2p-crypto/issues/247)) ([afa5b6d](https://github.com/libp2p/js-libp2p-crypto/commit/afa5b6d5a4a5e34e4fcac07803439f32555cb748))
+
 ### [0.22.8](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.7...v0.22.8) (2022-02-21)
 
 
