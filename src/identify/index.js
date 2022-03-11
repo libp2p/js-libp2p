@@ -78,8 +78,8 @@ class IdentifyService {
     }
 
     // When a new connection happens, trigger identify
-    this.connectionManager.on('peer:connect', (connection) => {
-      this.identify(connection).catch(log.error)
+    this.connectionManager.on('peer:connect', async (connection) => {
+      await this.identify(connection).catch(log.error)
     })
 
     // When self multiaddrs change, trigger identify-push
