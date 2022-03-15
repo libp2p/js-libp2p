@@ -1,3 +1,10 @@
+### [1.0.9](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.8...v1.0.9) (2022-03-15)
+
+
+### Bug Fixes
+
+* refactor address sort to be a regular sort function ([#35](https://github.com/libp2p/js-libp2p-utils/issues/35)) ([8d4e3d6](https://github.com/libp2p/js-libp2p-utils/commit/8d4e3d6f1b56d24e4e58df16ded87d3ca4f82a3f))
+
 ### [1.0.8](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.7...v1.0.8) (2022-03-03)
 
 
