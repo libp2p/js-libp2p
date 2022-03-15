@@ -1,17 +1,12 @@
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Address } from '@libp2p/interfaces/peer-store'
 import { isPrivate } from './multiaddr/is-private.js'
-
-interface Address {
-  multiaddr: Multiaddr
-  isCertified: boolean
-}
 
 /**
  * Compare function for array.sort().
- * This sort aims to move the private adresses to the end of the array.
+ * This sort aims to move the private addresses to the end of the array.
  * In case of equality, a certified address will come first.
  */
-function addressesPublicFirstCompareFunction (a: Address, b: Address) {
+export function publicAddressesFirst (a: Address, b: Address): -1 | 0 | 1 {
   const isAPrivate = isPrivate(a.multiaddr)
   const isBPrivate = isPrivate(b.multiaddr)
 
@@ -28,12 +23,4 @@ function addressesPublicFirstCompareFunction (a: Address, b: Address) {
   }
 
   return 0
-}
-
-/**
- * Sort given addresses by putting public addresses first.
- * In case of equality, a certified address will come first.
- */
-export function publicAddressesFirst (addresses: Address[]) {
-  return [...addresses].sort(addressesPublicFirstCompareFunction)
 }

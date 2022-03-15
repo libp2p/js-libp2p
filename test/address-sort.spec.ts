@@ -21,7 +21,7 @@ describe('address-sort', () => {
       }
     ]
 
-    const sortedAddresses = publicAddressesFirst(addresses)
+    const sortedAddresses = addresses.sort(publicAddressesFirst)
     expect(sortedAddresses[0].multiaddr.equals(new Multiaddr('/ip4/30.0.0.1/tcp/4000'))).to.eql(true)
     expect(sortedAddresses[1].multiaddr.equals(new Multiaddr('/ip4/31.0.0.1/tcp/4000'))).to.eql(true)
     expect(sortedAddresses[2].multiaddr.equals(new Multiaddr('/ip4/127.0.0.1/tcp/4000'))).to.eql(true)
@@ -43,7 +43,7 @@ describe('address-sort', () => {
       }
     ]
 
-    const sortedAddresses = publicAddressesFirst(addresses)
+    const sortedAddresses = addresses.sort(publicAddressesFirst)
     expect(sortedAddresses[0].multiaddr.equals(new Multiaddr('/ip4/31.0.0.1/tcp/4000'))).to.eql(true)
     expect(sortedAddresses[1].multiaddr.equals(new Multiaddr('/ip4/30.0.0.1/tcp/4000'))).to.eql(true)
     expect(sortedAddresses[2].multiaddr.equals(new Multiaddr('/ip4/127.0.0.1/tcp/4000'))).to.eql(true)
