@@ -1,15 +1,17 @@
 import { toString } from 'uint8arrays/to-string'
-import { PubsubBaseProtocol } from '@libp2p/pubsub'
+import { PubSubBaseProtocol } from '@libp2p/pubsub'
 import { multicodec } from './config.js'
 import { SimpleTimeCache } from './cache.js'
-import type { PubSub, PubSubEvents, PubSubOptions, Message } from '@libp2p/interfaces/pubsub'
+import type { PubSub, PubSubEvents, PubSubInit, Message, PubSubRPC, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
+import { logger } from '@libp2p/logger'
+import { RPC } from './message/rpc.js'
 
-const debugName = 'libp2p:floodsub'
+const log = logger('libp2p:floodsub')
 
 export { multicodec }
 
-export interface FloodSubOptions extends PubSubOptions {
+export interface FloodSubInit extends PubSubInit {
   seenTTL?: number
 }
 
@@ -18,13 +20,12 @@ export interface FloodSubOptions extends PubSubOptions {
  * delivering an API for Publish/Subscribe, but with no CastTree Forming
  * (it just floods the network).
  */
-export class FloodSub <EventMap extends PubSubEvents = PubSubEvents> extends PubsubBaseProtocol<EventMap> implements PubSub<EventMap & PubSubEvents> {
+export class FloodSub <EventMap extends PubSubEvents = PubSubEvents> extends PubSubBaseProtocol<EventMap> implements PubSub<EventMap & PubSubEvents> {
   public seenCache: SimpleTimeCache<boolean>
 
-  constructor (options: FloodSubOptions) {
+  constructor (init?: FloodSubInit) {
     super({
-      ...options,
-      debugName: debugName,
+      ...init,
       canRelayMessage: true,
       multicodecs: [multicodec]
     })
@@ -35,8 +36,30 @@ export class FloodSub <EventMap extends PubSubEvents = PubSubEvents> extends Pub
      * @type {TimeCache}
      */
     this.seenCache = new SimpleTimeCache<boolean>({
-      validityMs: options.seenTTL ?? 30000
+      validityMs: init?.seenTTL ?? 30000
     })
+  }
+
+  /**
+   * Decode a Uint8Array into an RPC object
+   */
+  decodeRpc (bytes: Uint8Array): PubSubRPC {
+    return RPC.decode(bytes)
+  }
+
+  /**
+   * Encode an RPC object into a Uint8Array
+   */
+  encodeRpc (rpc: PubSubRPC): Uint8Array {
+    return RPC.encode(rpc).finish()
+  }
+
+  decodeMessage (bytes: Uint8Array): PubSubRPCMessage {
+    return RPC.Message.decode(bytes)
+  }
+
+  encodeMessage (rpc: PubSubRPCMessage): Uint8Array {
+    return RPC.Message.encode(rpc).finish()
   }
 
   /**
@@ -64,22 +87,22 @@ export class FloodSub <EventMap extends PubSubEvents = PubSubEvents> extends Pub
     const peers = this.getSubscribers(message.topic)
 
     if (peers == null || peers.length === 0) {
-      this.log('no peers are subscribed to topic %s', message.topic)
+      log('no peers are subscribed to topic %s', message.topic)
       return
     }
 
     peers.forEach(id => {
-      if (this.peerId.equals(id)) {
-        this.log('not sending message on topic %s to myself', message.topic)
+      if (this.components.getPeerId().equals(id)) {
+        log('not sending message on topic %s to myself', message.topic)
         return
       }
 
       if (id.equals(from)) {
-        this.log('not sending message on topic %s to sender %p', message.topic, id)
+        log('not sending message on topic %s to sender %p', message.topic, id)
         return
       }
 
-      this.log('publish msgs on topics %s %p', message.topic, id)
+      log('publish msgs on topics %s %p', message.topic, id)
 
       this.send(id, { messages: [message] })
     })

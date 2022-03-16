@@ -5,14 +5,15 @@ import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { Message, PubSubEvents, StrictNoSign } from '@libp2p/interfaces/pubsub'
+import { Message, PubSubEvents, PubSubRPC, StrictNoSign } from '@libp2p/interfaces/pubsub'
 import { PeerStreams } from '@libp2p/pubsub/peer-streams'
 import { FloodSub, multicodec } from '../src/index.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
-import type { RPC } from '@libp2p/interfaces/pubsub'
 import { CustomEvent } from '@libp2p/interfaces'
 import pWaitFor from 'p-wait-for'
+import { Components } from '@libp2p/interfaces/components'
+import { PeerSet } from '@libp2p/peer-collections'
 
 const topic = 'my-topic'
 const message = uint8ArrayFromString('a neat message')
@@ -29,10 +30,12 @@ describe('floodsub', () => {
 
     floodsub = new FloodSub({
       emitSelf: true,
-      globalSignaturePolicy: StrictNoSign,
+      globalSignaturePolicy: StrictNoSign
+    })
+    floodsub.init(new Components({
       peerId: await createEd25519PeerId(),
       registrar: mockRegistrar()
-    })
+    }))
   })
 
   beforeEach(async () => {
@@ -54,7 +57,7 @@ describe('floodsub', () => {
       id: otherPeer,
       protocol: 'test'
     })
-    const rpc: RPC = {
+    const rpc: PubSubRPC = {
       subscriptions: [],
       messages: [{
         from: otherPeer.multihash.bytes,
@@ -107,7 +110,7 @@ describe('floodsub', () => {
     const [to, rpc] = spy.getCall(0).args
 
     const expected: Message = {
-      from: floodsub.peerId,
+      from: floodsub.components.getPeerId(),
       data: message,
       topic
     }
@@ -125,7 +128,7 @@ describe('floodsub', () => {
       id: sender,
       protocol: 'test'
     })
-    const rpc: RPC = {
+    const rpc: PubSubRPC = {
       subscriptions: [],
       messages: [{
         from: sender.multihash.bytes,
@@ -135,7 +138,9 @@ describe('floodsub', () => {
     }
 
     // otherPeer is subscribed to the topic
-    floodsub.topics.set(topic, new Set([sender.toString()]))
+    const peerSet = new PeerSet()
+    peerSet.add(sender)
+    floodsub.topics.set(topic, peerSet)
 
     // receive the message
     await floodsub.processRpc(peerStream.id, peerStream, rpc)

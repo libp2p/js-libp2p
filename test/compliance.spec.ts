@@ -10,7 +10,10 @@ describe('interface compliance', () => {
         throw new Error('PubSubOptions is required')
       }
 
-      return new FloodSub(args)
+      const pubsub = new FloodSub(args.init)
+      pubsub.init(args.components)
+
+      return pubsub
     },
     async teardown () {
 

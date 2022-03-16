@@ -8,5 +8,9 @@
   "include": [
     "src",
     "test"
+  ],
+  "exclude": [
+    "src/message/rpc.js",
+    "src/message/topic-descriptor.js"
   ]
 }
