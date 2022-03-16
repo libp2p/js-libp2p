@@ -1,14 +1,12 @@
-import { PeerId } from '@libp2p/peer-id'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/mafmt'
-import { EventEmitter } from 'events'
-import debug from 'debug'
-import type PeerDiscovery from '@libp2p/interfaces/peer-discovery'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { logger } from '@libp2p/logger'
+import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
+import { peerIdFromString } from '@libp2p/peer-id'
 
-const log = Object.assign(debug('libp2p:bootstrap'), {
-  error: debug('libp2p:bootstrap:error')
-})
+const log = logger('libp2p:bootstrap')
 
 export interface BootstrapOptions {
   /**
@@ -25,10 +23,10 @@ export interface BootstrapOptions {
 /**
  * Emits 'peer' events on a regular interval for each peer in the provided list.
  */
-export class Bootstrap extends EventEmitter implements PeerDiscovery {
+export class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
   static tag = 'bootstrap'
 
-  private timer?: NodeJS.Timer
+  private timer?: ReturnType<typeof setInterval>
   private readonly list: PeerData[]
   private readonly interval: number
 
@@ -56,7 +54,7 @@ export class Bootstrap extends EventEmitter implements PeerDiscovery {
       }
 
       const peerData: PeerData = {
-        id: PeerId.fromString(peerIdStr),
+        id: peerIdFromString(peerIdStr),
         multiaddrs: [ma],
         protocols: []
       }
@@ -91,7 +89,7 @@ export class Bootstrap extends EventEmitter implements PeerDiscovery {
     }
 
     this.list.forEach((peerData) => {
-      this.emit('peer', peerData)
+      this.dispatchEvent(new CustomEvent<PeerData>('peer', { detail: peerData }))
     })
   }
 

@@ -2,11 +2,11 @@
 
 import { expect } from 'aegir/utils/chai.js'
 import { IPFS } from '@multiformats/mafmt'
-import { PeerId } from '@libp2p/peer-id'
 import { Bootstrap } from '../src/index.js'
 import peerList from './fixtures/default-peers.js'
 import partialValidPeerList from './fixtures/some-invalid-peers.js'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
+import { isPeerId } from '@libp2p/interfaces/peer-id'
 
 describe('bootstrap', () => {
   it('should throw if no peer list is provided', () => {
@@ -21,7 +21,9 @@ describe('bootstrap', () => {
       interval: 2000
     })
 
-    const p = new Promise((resolve) => r.once('peer', resolve))
+    const p = new Promise((resolve) => r.addEventListener('peer', resolve, {
+      once: true
+    }))
     r.start()
 
     await p
@@ -37,9 +39,11 @@ describe('bootstrap', () => {
     })
 
     const p = new Promise<void>((resolve) => {
-      r.once('peer', ({ id, multiaddrs }) => {
+      r.addEventListener('peer', (evt) => {
+        const { id, multiaddrs } = evt.detail
+
         expect(id).to.exist()
-        expect(id).to.be.an.instanceOf(PeerId)
+        expect(isPeerId(id)).to.be.true()
         expect(multiaddrs.length).to.eq(1)
         expect(IPFS.matches(multiaddrs[0].toString())).equals(true)
         resolve()
@@ -60,7 +64,7 @@ describe('bootstrap', () => {
     })
 
     let emitted: PeerData[] = []
-    r.on('peer', p => emitted.push(p))
+    r.addEventListener('peer', p => emitted.push(p.detail))
 
     // Should fire emit event for each peer in list on start,
     // so wait 50 milliseconds then check
