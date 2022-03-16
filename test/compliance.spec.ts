@@ -6,14 +6,8 @@ import { TCP } from '../src/index.js'
 
 describe('interface-transport compliance', () => {
   tests({
-    async setup (args) {
-      if (args == null) {
-        throw new Error('No args')
-      }
-
-      const { upgrader } = args
-
-      const tcp = new TCP({ upgrader })
+    async setup () {
+      const tcp = new TCP()
       const addrs = [
         new Multiaddr('/ip4/127.0.0.1/tcp/9091'),
         new Multiaddr('/ip4/127.0.0.1/tcp/9092'),

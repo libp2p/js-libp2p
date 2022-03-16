@@ -7,24 +7,18 @@ import { pipe } from 'it-pipe'
 import all from 'it-all'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import type { Upgrader } from '@libp2p/interfaces/transport'
 
 const isCI = process.env.CI
-
-describe('construction', () => {
-  it('requires an upgrader', () => {
-    // @ts-expect-error missing args
-    expect(() => new TCP()).to.throw()
-  })
-})
 
 describe('listen', () => {
   let tcp: TCP
   let listener: any
+  let upgrader: Upgrader
 
   beforeEach(() => {
-    tcp = new TCP({
-      upgrader: mockUpgrader()
-    })
+    tcp = new TCP()
+    upgrader = mockUpgrader()
   })
   afterEach(async () => {
     try {
@@ -40,13 +34,17 @@ describe('listen', () => {
   it.skip('listen on path', async () => {
     const mh = new Multiaddr(`/unix${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
 
-    listener = tcp.createListener({})
+    listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(mh)
   })
 
   it('listen on port 0', async () => {
     const mh = new Multiaddr('/ip4/127.0.0.1/tcp/0')
-    listener = tcp.createListener({})
+    listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(mh)
   })
 
@@ -55,19 +53,25 @@ describe('listen', () => {
       return
     }
     const mh = new Multiaddr('/ip6/::/tcp/9090')
-    listener = tcp.createListener({})
+    listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(mh)
   })
 
   it('listen on any Interface', async () => {
     const mh = new Multiaddr('/ip4/0.0.0.0/tcp/9090')
-    listener = tcp.createListener({})
+    listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(mh)
   })
 
   it('getAddrs', async () => {
     const mh = new Multiaddr('/ip4/127.0.0.1/tcp/9090')
-    listener = tcp.createListener({})
+    listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(mh)
 
     const multiaddrs = listener.getAddrs()
@@ -77,7 +81,9 @@ describe('listen', () => {
 
   it('getAddrs on port 0 listen', async () => {
     const mh = new Multiaddr('/ip4/127.0.0.1/tcp/0')
-    listener = tcp.createListener({})
+    listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(mh)
 
     const multiaddrs = listener.getAddrs()
@@ -86,7 +92,9 @@ describe('listen', () => {
 
   it('getAddrs from listening on 0.0.0.0', async () => {
     const mh = new Multiaddr('/ip4/0.0.0.0/tcp/9090')
-    listener = tcp.createListener({})
+    listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(mh)
 
     const multiaddrs = listener.getAddrs()
@@ -96,7 +104,9 @@ describe('listen', () => {
 
   it('getAddrs from listening on 0.0.0.0 and port 0', async () => {
     const mh = new Multiaddr('/ip4/0.0.0.0/tcp/0')
-    listener = tcp.createListener({})
+    listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(mh)
 
     const multiaddrs = listener.getAddrs()
@@ -106,7 +116,9 @@ describe('listen', () => {
 
   it('getAddrs preserves IPFS Id', async () => {
     const mh = new Multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-    listener = tcp.createListener({})
+    listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(mh)
 
     const multiaddrs = listener.getAddrs()
@@ -118,30 +130,33 @@ describe('listen', () => {
 describe('dial', () => {
   const protocol = '/echo/1.0.0'
   let tcp: TCP
+  let upgrader: Upgrader
 
   beforeEach(async () => {
     const registrar = mockRegistrar()
     void registrar.handle(protocol, (evt) => {
       void pipe(
-        evt.detail.stream,
-        evt.detail.stream
+        evt.stream,
+        evt.stream
       )
     })
-    const upgrader = mockUpgrader({
+    upgrader = mockUpgrader({
       registrar
     })
 
-    tcp = new TCP({
-      upgrader
-    })
+    tcp = new TCP()
   })
 
   it('dial on IPv4', async () => {
     const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9090')
-    const listener = tcp.createListener()
+    const listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(ma)
 
-    const conn = await tcp.dial(ma)
+    const conn = await tcp.dial(ma, {
+      upgrader
+    })
     const { stream } = await conn.newStream([protocol])
 
     const values = await pipe(
@@ -161,9 +176,13 @@ describe('dial', () => {
     }
 
     const ma = new Multiaddr('/ip6/::/tcp/9090')
-    const listener = tcp.createListener({})
+    const listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(ma)
-    const conn = await tcp.dial(ma)
+    const conn = await tcp.dial(ma, {
+      upgrader
+    })
     const { stream } = await conn.newStream([protocol])
 
     const values = await pipe(
@@ -180,9 +199,13 @@ describe('dial', () => {
   it.skip('dial on path', async () => {
     const ma = new Multiaddr(`/unix${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
 
-    const listener = tcp.createListener({})
+    const listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(ma)
-    const conn = await tcp.dial(ma)
+    const conn = await tcp.dial(ma, {
+      upgrader
+    })
     const { stream } = await conn.newStream([protocol])
 
     const values = await pipe(
@@ -209,13 +232,16 @@ describe('dial', () => {
           void conn.close()
             .then(() => handled())
         }, 100)
-      }
+      },
+      upgrader
     })
 
     await listener.listen(ma)
     const addrs = listener.getAddrs()
 
-    const conn = await tcp.dial(addrs[0])
+    const conn = await tcp.dial(addrs[0], {
+      upgrader
+    })
     const { stream } = await conn.newStream([protocol])
     await pipe(stream)
 
@@ -237,12 +263,15 @@ describe('dial', () => {
     const listener = tcp.createListener({
       handler: () => {
         handled()
-      }
+      },
+      upgrader
     })
 
     await listener.listen(ma)
     const addrs = listener.getAddrs()
-    const conn = await tcp.dial(addrs[0])
+    const conn = await tcp.dial(addrs[0], {
+      upgrader
+    })
 
     await conn.close()
     await handledPromise
@@ -251,10 +280,14 @@ describe('dial', () => {
 
   it('dials on IPv4 with IPFS Id', async () => {
     const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-    const listener = tcp.createListener({})
+    const listener = tcp.createListener({
+      upgrader
+    })
     await listener.listen(ma)
 
-    const conn = await tcp.dial(ma)
+    const conn = await tcp.dial(ma, {
+      upgrader
+    })
     const { stream } = await conn.newStream([protocol])
 
     const values = await pipe(

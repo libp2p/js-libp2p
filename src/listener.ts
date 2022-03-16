@@ -70,7 +70,7 @@ export function createListener (context: Context) {
             handler(conn)
           }
 
-          listener.dispatchEvent(new CustomEvent('connection', { detail: conn }))
+          listener.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn }))
         })
         .catch(async err => {
           log.error('inbound connection failed', err)
@@ -98,7 +98,7 @@ export function createListener (context: Context) {
       const address = server.address()
 
       if (address == null) {
-        throw new Error('Listener is not ready yet')
+        return []
       }
 
       if (typeof address === 'string') {
@@ -151,7 +151,7 @@ export function createListener (context: Context) {
 
   server
     .on('listening', () => listener.dispatchEvent(new CustomEvent('listening')))
-    .on('error', err => listener.dispatchEvent(new CustomEvent('error', { detail: err })))
+    .on('error', err => listener.dispatchEvent(new CustomEvent<Error>('error', { detail: err })))
     .on('close', () => listener.dispatchEvent(new CustomEvent('close')))
 
   return listener

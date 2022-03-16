@@ -5,44 +5,25 @@ import { logger } from '@libp2p/logger'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { createListener } from './listener.js'
 import { multiaddrToNetConfig } from './utils.js'
-import { AbortError } from 'abortable-iterator'
+import { AbortError } from '@libp2p/interfaces/errors'
 import { CODE_CIRCUIT, CODE_P2P } from './constants.js'
-import type { Transport, Upgrader, ListenerOptions } from '@libp2p/interfaces/transport'
+import { CreateListenerOptions, DialOptions, symbol, Transport } from '@libp2p/interfaces/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
+import type { AbortOptions } from '@libp2p/interfaces'
 
 const log = logger('libp2p:tcp')
 
-/**
- * @typedef {import('multiaddr').Multiaddr} Multiaddr
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('libp2p-interfaces/src/transport/types').Upgrader} Upgrader
- * @typedef {import('libp2p-interfaces/src/transport/types').Listener} Listener
- * @typedef {import('net').Socket} Socket
- */
-
-interface TCPOptions {
-  upgrader: Upgrader
-}
-
-interface DialOptions {
-  signal?: AbortSignal
-}
-
-export class TCP implements Transport<DialOptions, ListenerOptions> {
-  private readonly _upgrader: Upgrader
-
-  constructor (options: TCPOptions) {
-    const { upgrader } = options
-
-    if (upgrader == null) {
-      throw new Error('An upgrader must be provided. See https://github.com/libp2p/interface-transport#upgrader.')
-    }
-
-    this._upgrader = upgrader
+export class TCP implements Transport {
+  get [symbol] (): true {
+    return true
   }
 
-  async dial (ma: Multiaddr, options: DialOptions = {}) {
+  get [Symbol.toStringTag] () {
+    return this.constructor.name
+  }
+
+  async dial (ma: Multiaddr, options: DialOptions) {
     const socket = await this._connect(ma, options)
 
     // Avoid uncaught errors caused by unstable connections
@@ -52,12 +33,12 @@ export class TCP implements Transport<DialOptions, ListenerOptions> {
 
     const maConn = toMultiaddrConnection(socket, { remoteAddr: ma, signal: options.signal })
     log('new outbound connection %s', maConn.remoteAddr)
-    const conn = await this._upgrader.upgradeOutbound(maConn)
+    const conn = await options.upgrader.upgradeOutbound(maConn)
     log('outbound connection %s upgraded', maConn.remoteAddr)
     return conn
   }
 
-  async _connect (ma: Multiaddr, options: DialOptions = {}) {
+  async _connect (ma: Multiaddr, options: AbortOptions = {}) {
     if (options.signal?.aborted === true) {
       throw new AbortError()
     }
@@ -125,8 +106,8 @@ export class TCP implements Transport<DialOptions, ListenerOptions> {
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`.
    */
-  createListener (options: ListenerOptions = {}) {
-    return createListener({ upgrader: this._upgrader, ...options })
+  createListener (options: CreateListenerOptions) {
+    return createListener(options)
   }
 
   /**

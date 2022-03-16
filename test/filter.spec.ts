@@ -1,7 +1,6 @@
 import { expect } from 'aegir/utils/chai.js'
 import { TCP } from '../src/index.js'
 import { Multiaddr } from '@multiformats/multiaddr'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 
 describe('filter addrs', () => {
   const base = '/ip4/127.0.0.1'
@@ -10,7 +9,7 @@ describe('filter addrs', () => {
   let tcp: TCP
 
   before(() => {
-    tcp = new TCP({ upgrader: mockUpgrader() })
+    tcp = new TCP()
   })
 
   it('filter valid addrs for this transport', () => {

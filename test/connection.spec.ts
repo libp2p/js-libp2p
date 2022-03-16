@@ -3,12 +3,15 @@ import { TCP } from '../src/index.js'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import type { Connection } from '@libp2p/interfaces/connection'
+import type { Upgrader } from '@libp2p/interfaces/transport'
 
 describe('valid localAddr and remoteAddr', () => {
   let tcp: TCP
+  let upgrader: Upgrader
 
   beforeEach(() => {
-    tcp = new TCP({ upgrader: mockUpgrader() })
+    tcp = new TCP()
+    upgrader = mockUpgrader()
   })
 
   const ma = new Multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -22,7 +25,8 @@ describe('valid localAddr and remoteAddr', () => {
 
     // Create a listener with the handler
     const listener = tcp.createListener({
-      handler
+      handler,
+      upgrader
     })
 
     // Listen on the multi-address
@@ -32,7 +36,9 @@ describe('valid localAddr and remoteAddr', () => {
     expect(localAddrs.length).to.equal(1)
 
     // Dial to that address
-    await tcp.dial(localAddrs[0])
+    await tcp.dial(localAddrs[0], {
+      upgrader
+    })
 
     // Wait for the incoming dial to be handled
     await handlerPromise
@@ -50,7 +56,8 @@ describe('valid localAddr and remoteAddr', () => {
 
     // Create a listener with the handler
     const listener = tcp.createListener({
-      handler
+      handler,
+      upgrader
     })
 
     // Listen on the multi-address
@@ -60,7 +67,9 @@ describe('valid localAddr and remoteAddr', () => {
     expect(localAddrs.length).to.equal(1)
 
     // Dial to that address
-    const dialerConn = await tcp.dial(localAddrs[0])
+    const dialerConn = await tcp.dial(localAddrs[0], {
+      upgrader
+    })
 
     // Wait for the incoming dial to be handled
     await handlerPromise
