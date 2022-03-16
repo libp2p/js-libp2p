@@ -10,8 +10,7 @@ import { RPC } from '../../src/rpc/index.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createPeerId } from '../utils/create-peer-id.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PeerStore } from '@libp2p/interfaces/peer-store'
-import { createPeerStore } from '@libp2p/peer-store'
+import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import Sinon, { SinonStubbedInstance } from 'sinon'
 import { Providers } from '../../src/providers.js'
@@ -20,14 +19,13 @@ import type { Validators } from '@libp2p/interfaces/dht'
 import type { Datastore } from 'interface-datastore'
 import { RoutingTable } from '../../src/routing-table/index.js'
 import type { Duplex } from 'it-stream-types'
-import { CustomEvent } from '@libp2p/interfaces'
 import { mockStream, mockConnection, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { Components } from '@libp2p/interfaces/components'
 
 describe('rpc', () => {
   let peerId: PeerId
   let otherPeerId: PeerId
   let rpc: RPC
-  let peerStore: PeerStore
   let providers: SinonStubbedInstance<Providers>
   let peerRouting: SinonStubbedInstance<PeerRouting>
   let validators: Validators
@@ -38,26 +36,27 @@ describe('rpc', () => {
     peerId = await createPeerId()
     otherPeerId = await createPeerId()
     datastore = new MemoryDatastore()
-    peerStore = createPeerStore({
+
+    const components = new Components({
       peerId,
       datastore
     })
+
+    components.setPeerStore(new PersistentPeerStore(components))
+
     providers = Sinon.createStubInstance(Providers)
     peerRouting = Sinon.createStubInstance(PeerRouting)
     routingTable = Sinon.createStubInstance(RoutingTable)
     validators = {}
 
     rpc = new RPC({
-      peerId,
       routingTable,
-      keyBook: peerStore.keyBook,
-      addressBook: peerStore.addressBook,
       providers,
       peerRouting,
-      datastore,
       validators,
       lan: false
     })
+    rpc.init(components)
   })
 
   it('calls back with the response', async () => {
@@ -89,13 +88,11 @@ describe('rpc', () => {
       }
     }
 
-    await rpc.onIncomingStream(new CustomEvent('incomingStream', {
-      detail: {
-        protocol: 'protocol',
-        stream: mockStream(duplexStream),
-        connection: await mockConnection(mockMultiaddrConnection(duplexStream, otherPeerId))
-      }
-    }))
+    await rpc.onIncomingStream({
+      protocol: 'protocol',
+      stream: mockStream(duplexStream),
+      connection: await mockConnection(mockMultiaddrConnection(duplexStream, otherPeerId))
+    })
 
     return await defer.promise
   })

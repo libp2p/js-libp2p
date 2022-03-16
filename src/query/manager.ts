@@ -13,10 +13,10 @@ import {
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces'
 import { logger } from '@libp2p/logger'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { ComponentMetricsTracker } from '@libp2p/interfaces/metrics'
 import type { Startable } from '@libp2p/interfaces'
 import type { QueryFunc } from './types.js'
 import type { QueryOptions } from '@libp2p/interfaces/dht'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
 const METRIC_RUNNING_QUERIES = 'running-queries'
 
@@ -24,10 +24,8 @@ export interface CleanUpEvents {
   'cleanup': CustomEvent
 }
 
-export interface QueryManagerOptions {
-  peerId: PeerId
+export interface QueryManagerInit {
   lan?: boolean
-  metrics?: ComponentMetricsTracker
   disjointPaths?: number
   alpha?: number
 }
@@ -35,26 +33,27 @@ export interface QueryManagerOptions {
 /**
  * Keeps track of all running queries
  */
-export class QueryManager implements Startable {
-  private readonly peerId: PeerId
+export class QueryManager implements Startable, Initializable {
+  private components: Components = new Components()
   private readonly lan: boolean
-  private readonly metrics?: ComponentMetricsTracker
   public disjointPaths: number
   private readonly alpha: number
   private readonly controllers: Set<AbortController>
   private running: boolean
   private queries: number
 
-  constructor (options: QueryManagerOptions) {
-    const { peerId, lan = false, metrics, disjointPaths = K, alpha = ALPHA } = options
-    this.peerId = peerId
+  constructor (init: QueryManagerInit) {
+    const { lan = false, disjointPaths = K, alpha = ALPHA } = init
     this.disjointPaths = disjointPaths ?? K
     this.controllers = new Set()
     this.running = false
     this.alpha = alpha ?? ALPHA
     this.lan = lan
-    this.metrics = metrics
     this.queries = 0
+  }
+
+  init (components: Components): void {
+    this.components = components
   }
 
   isStarted () {
@@ -123,7 +122,7 @@ export class QueryManager implements Startable {
     try {
       log('query:start')
       this.queries++
-      this.metrics?.updateComponentMetric({
+      this.components.getMetrics()?.updateComponentMetric({
         system: 'libp2p',
         component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
         metric: METRIC_RUNNING_QUERIES,
@@ -140,7 +139,7 @@ export class QueryManager implements Startable {
         return queryPath({
           key,
           startingPeer: peer,
-          ourPeerId: this.peerId,
+          ourPeerId: this.components.getPeerId(),
           signal,
           query: queryFunc,
           pathIndex: index,
@@ -174,7 +173,7 @@ export class QueryManager implements Startable {
       }
 
       this.queries--
-      this.metrics?.updateComponentMetric({
+      this.components.getMetrics()?.updateComponentMetric({
         system: 'libp2p',
         component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
         metric: METRIC_RUNNING_QUERIES,

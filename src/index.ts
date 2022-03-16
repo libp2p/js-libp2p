@@ -1,21 +1,29 @@
-import { KadDHT, KadDHTOptions } from './kad-dht.js'
+import { KadDHT as SingleKadDHT } from './kad-dht.js'
 import { DualKadDHT } from './dual-kad-dht.js'
-import type { DHT } from '@libp2p/interfaces/dht'
+import type { Selectors, Validators } from '@libp2p/interfaces/dht'
 
-export function createKadDHT (opts: KadDHTOptions): DHT {
-  return new DualKadDHT(
-    new KadDHT({
-      ...opts,
-      protocol: '/ipfs/kad/1.0.0',
+export interface KadDHTInit {
+  kBucketSize?: number
+  clientMode?: boolean
+  selectors?: Selectors
+  validators?: Validators
+  querySelfInterval?: number
+  lan?: boolean
+  protocolPrefix?: string
+}
+
+export class KadDHT extends DualKadDHT {
+  constructor (init?: KadDHTInit) {
+    super(new SingleKadDHT({
+      protocolPrefix: '/ipfs',
+      ...init,
       lan: false
     }),
-    new KadDHT({
-      ...opts,
-      protocol: '/ipfs/lan/kad/1.0.0',
+    new SingleKadDHT({
+      protocolPrefix: '/ipfs',
+      ...init,
       clientMode: false,
       lan: true
-    }),
-    opts.peerId,
-    opts.peerStore
-  )
+    }))
+  }
 }

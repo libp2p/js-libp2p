@@ -7,30 +7,28 @@ import {
 import { bufferToRecordKey, isPublicKeyKey, fromPublicKeyKey } from '../../utils.js'
 import { logger } from '@libp2p/logger'
 import type { DHTMessageHandler } from '../index.js'
-import type { Datastore } from 'interface-datastore'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { KeyBook } from '@libp2p/interfaces/peer-store'
 import type { PeerRouting } from '../../peer-routing/index.js'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:get-value')
 
-export interface GetValueHandlerOptions {
-  keyBook: KeyBook
+export interface GetValueHandlerInit {
   peerRouting: PeerRouting
-  datastore: Datastore
 }
 
-export class GetValueHandler implements DHTMessageHandler {
-  private readonly keyBook: KeyBook
+export class GetValueHandler implements DHTMessageHandler, Initializable {
+  private components: Components = new Components()
   private readonly peerRouting: PeerRouting
-  private readonly datastore: Datastore
 
-  constructor (options: GetValueHandlerOptions) {
-    const { keyBook, peerRouting, datastore } = options
+  constructor (init: GetValueHandlerInit) {
+    const { peerRouting } = init
 
-    this.keyBook = keyBook
     this.peerRouting = peerRouting
-    this.datastore = datastore
+  }
+
+  init (components: Components): void {
+    this.components = components
   }
 
   async handle (peerId: PeerId, msg: Message) {
@@ -50,7 +48,7 @@ export class GetValueHandler implements DHTMessageHandler {
       let pubKey: Uint8Array | undefined
 
       try {
-        const key = await this.keyBook.get(idFromKey)
+        const key = await this.components.getPeerStore().keyBook.get(idFromKey)
 
         if (key == null) {
           throw errcode(new Error('No public key found in key book'), 'ERR_NOT_FOUND')
@@ -101,7 +99,7 @@ export class GetValueHandler implements DHTMessageHandler {
     // Fetch value from ds
     let rawRecord
     try {
-      rawRecord = await this.datastore.get(dsKey)
+      rawRecord = await this.components.getDatastore().get(dsKey)
     } catch (err: any) {
       if (err.code === 'ERR_NOT_FOUND') {
         return undefined
@@ -120,7 +118,7 @@ export class GetValueHandler implements DHTMessageHandler {
     if (record.timeReceived == null ||
       Date.now() - record.timeReceived.getTime() > MAX_RECORD_AGE) {
       // If record is bad delete it and return
-      await this.datastore.delete(dsKey)
+      await this.components.getDatastore().delete(dsKey)
       return undefined
     }
 

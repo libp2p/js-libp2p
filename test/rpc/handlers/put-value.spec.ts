@@ -9,17 +9,17 @@ import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { PutValueHandler } from '../../../src/rpc/handlers/put-value.js'
 import * as utils from '../../../src/utils.js'
 import { createPeerId } from '../../utils/create-peer-id.js'
-import type { DHTMessageHandler } from '../../../src/rpc/index.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Datastore } from 'interface-datastore'
 import { MemoryDatastore } from 'datastore-core'
 import type { Validators } from '@libp2p/interfaces/dht'
+import { Components } from '@libp2p/interfaces/components'
 
 const T = MESSAGE_TYPE.PUT_VALUE
 
 describe('rpc - handlers - PutValue', () => {
   let sourcePeer: PeerId
-  let handler: DHTMessageHandler
+  let handler: PutValueHandler
   let datastore: Datastore
   let validators: Validators
 
@@ -28,11 +28,14 @@ describe('rpc - handlers - PutValue', () => {
     datastore = new MemoryDatastore()
     validators = {}
 
-    // @ts-expect-error
-    handler = new PutValueHandler({
-      validators,
-      datastore
+    const components = new Components({
+      datastore: new MemoryDatastore()
     })
+
+    handler = new PutValueHandler({
+      validators
+    })
+    handler.init(components)
   })
 
   it('errors on missing record', async () => {

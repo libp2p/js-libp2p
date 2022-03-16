@@ -13,16 +13,15 @@ import {
 } from './query/events.js'
 import { logger } from '@libp2p/logger'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { AbortOptions, Dialer, Startable } from '@libp2p/interfaces'
+import type { AbortOptions, Startable } from '@libp2p/interfaces'
 import type { Logger } from '@libp2p/logger'
 import type { Duplex } from 'it-stream-types'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
-export interface NetworkOptions {
-  dialer: Dialer
+export interface NetworkInit {
   protocol: string
   lan: boolean
-  peerId: PeerId
 }
 
 interface NetworkEvents {
@@ -32,23 +31,26 @@ interface NetworkEvents {
 /**
  * Handle network operations for the dht
  */
-export class Network extends EventEmitter<NetworkEvents> implements Startable {
+export class Network extends EventEmitter<NetworkEvents> implements Startable, Initializable {
   private readonly log: Logger
-  public dialer: Dialer
   private readonly protocol: string
   private running: boolean
+  private components: Components = new Components()
 
   /**
    * Create a new network
    */
-  constructor (options: NetworkOptions) {
+  constructor (init: NetworkInit) {
     super()
 
-    const { dialer, protocol, lan, peerId } = options
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:network:${peerId.toString()}`)
+    const { protocol, lan } = init
+    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:network`)
     this.running = false
-    this.dialer = dialer
     this.protocol = protocol
+  }
+
+  init (components: Components): void {
+    this.components = components
   }
 
   /**
@@ -89,7 +91,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
     try {
       yield dialingPeerEvent({ peer: to })
 
-      const { stream } = await this.dialer.dialProtocol(to, this.protocol, options)
+      const { stream } = await this.components.getDialer().dialProtocol(to, this.protocol, options)
 
       yield sendingQueryEvent({ to, type: msg.type })
 
@@ -119,7 +121,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
 
     yield dialingPeerEvent({ peer: to })
 
-    const { stream } = await this.dialer.dialProtocol(to, this.protocol, options)
+    const { stream } = await this.components.getDialer().dialProtocol(to, this.protocol, options)
 
     yield sendingQueryEvent({ to, type: msg.type })
 

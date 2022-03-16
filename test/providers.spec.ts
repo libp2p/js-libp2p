@@ -12,8 +12,8 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createValues } from './utils/create-values.js'
 import { createPeerIds } from './utils/create-peer-id.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import { base58btc } from 'multiformats/bases/base58'
 import delay from 'delay'
+import { Components } from '@libp2p/interfaces/components'
 
 describe('Providers', () => {
   let peers: PeerId[]
@@ -29,9 +29,10 @@ describe('Providers', () => {
   })
 
   it('simple add and get of providers', async () => {
-    providers = new Providers({
+    providers = new Providers()
+    providers.init(new Components({
       datastore: new MemoryDatastore()
-    })
+    }))
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
@@ -41,14 +42,15 @@ describe('Providers', () => {
     ])
 
     const provs = await providers.getProviders(cid)
-    const ids = new Set(provs.map((peerId) => peerId.toString(base58btc)))
-    expect(ids.has(peers[0].toString(base58btc))).to.be.eql(true)
+    const ids = new Set(provs.map((peerId) => peerId.toString()))
+    expect(ids.has(peers[0].toString())).to.be.eql(true)
   })
 
   it('duplicate add of provider is deduped', async () => {
-    providers = new Providers({
+    providers = new Providers()
+    providers.init(new Components({
       datastore: new MemoryDatastore()
-    })
+    }))
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
@@ -62,15 +64,17 @@ describe('Providers', () => {
 
     const provs = await providers.getProviders(cid)
     expect(provs).to.have.length(2)
-    const ids = new Set(provs.map((peerId) => peerId.toString(base58btc)))
-    expect(ids.has(peers[0].toString(base58btc))).to.be.eql(true)
+    const ids = new Set(provs.map((peerId) => peerId.toString()))
+    expect(ids.has(peers[0].toString())).to.be.eql(true)
   })
 
   it('more providers than space in the lru cache', async () => {
     providers = new Providers({
-      datastore: new MemoryDatastore(),
       cacheSize: 10
     })
+    providers.init(new Components({
+      datastore: new MemoryDatastore()
+    }))
 
     const hashes = await Promise.all([...new Array(100)].map((i: number) => {
       return sha256.digest(uint8ArrayFromString(`hello ${i}`))
@@ -89,10 +93,12 @@ describe('Providers', () => {
 
   it('expires', async () => {
     providers = new Providers({
-      datastore: new MemoryDatastore(),
       cleanupInterval: 100,
       provideValidity: 200
     })
+    providers.init(new Components({
+      datastore: new MemoryDatastore()
+    }))
     await providers.start()
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
@@ -122,9 +128,11 @@ describe('Providers', () => {
     const store = new LevelDatastore(p)
     await store.open()
     providers = new Providers({
-      datastore: new MemoryDatastore(),
       cacheSize: 10
     })
+    providers.init(new Components({
+      datastore: store
+    }))
 
     console.log('starting') // eslint-disable-line no-console
     const [createdValues, createdPeers] = await Promise.all([

@@ -8,28 +8,27 @@ import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { PROTOCOL_DHT } from '../src/constants.js'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { Components } from '@libp2p/interfaces/components'
 
 describe('Routing Table', () => {
   let table: RoutingTable
+  let components: Components
 
   beforeEach(async function () {
     this.timeout(20 * 1000)
 
-    const lipbp2p = {
+    components = new Components({
       peerId: await createPeerId(),
-      dialProtocol: sinon.stub()
-    }
-
-    table = new RoutingTable({
-      peerId: lipbp2p.peerId,
       dialer: {
         dialProtocol: sinon.stub(),
-        dial: sinon.stub(),
-        getTokens: sinon.stub(),
-        releaseToken: sinon.stub()
-      },
+        dial: sinon.stub()
+      }
+    })
+
+    table = new RoutingTable({
       lan: false
     })
+    table.init(components)
     await table.start()
   })
 
@@ -128,8 +127,8 @@ describe('Routing Table', () => {
     table.kb.add(oldPeer)
 
     // simulate connection succeeding
-    // @ts-expect-error dialProtocol is a stub
-    table.dialer.dialProtocol.withArgs(oldPeer.peer, PROTOCOL_DHT).resolves({ stream: { close: sinon.stub() } })
+    const dialProtocolStub = sinon.stub().withArgs(oldPeer.peer, PROTOCOL_DHT).resolves({ stream: { close: sinon.stub() } })
+    components.getDialer().dialProtocol = dialProtocolStub
 
     if (fn == null) {
       throw new Error('nothing added to queue')
@@ -138,10 +137,8 @@ describe('Routing Table', () => {
     // perform the ping
     await fn()
 
-    // @ts-expect-error dialProtocol is a stub
-    expect(table.dialer.dialProtocol.callCount).to.equal(1)
-    // @ts-expect-error dialProtocol is a stub
-    expect(table.dialer.dialProtocol.calledWith(oldPeer.peer)).to.be.true()
+    expect(dialProtocolStub.callCount).to.equal(1)
+    expect(dialProtocolStub.calledWith(oldPeer.peer)).to.be.true()
 
     // did not add the new peer
     expect(table.kb.get(newPeer.id)).to.be.null()
@@ -186,7 +183,8 @@ describe('Routing Table', () => {
     table.kb.add(oldPeer)
 
     // libp2p fails to dial the old peer
-    table.dialer.dialProtocol = sinon.stub().withArgs(oldPeer.peer, PROTOCOL_DHT).rejects(new Error('Could not dial peer'))
+    const dialProtocolStub = sinon.stub().withArgs(oldPeer.peer, PROTOCOL_DHT).rejects(new Error('Could not dial peer'))
+    components.getDialer().dialProtocol = dialProtocolStub
 
     if (fn == null) {
       throw new Error('nothing added to queue')
@@ -195,10 +193,8 @@ describe('Routing Table', () => {
     // perform the ping
     await fn()
 
-    // @ts-expect-error dialProtocol is a stub
-    expect(table.dialer.dialProtocol.callCount).to.equal(1)
-    // @ts-expect-error dialProtocol is a stub
-    expect(table.dialer.dialProtocol.calledWith(oldPeer.peer)).to.be.true()
+    expect(dialProtocolStub.callCount).to.equal(1)
+    expect(dialProtocolStub.calledWith(oldPeer.peer)).to.be.true()
 
     // added the new peer
     expect(table.kb.get(newPeer.id)).to.not.be.null()

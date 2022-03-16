@@ -10,7 +10,6 @@ import {
   providerEvent
 } from '../query/events.js'
 import { logger } from '@libp2p/logger'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { QueryEvent, QueryOptions } from '@libp2p/interfaces/dht'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
@@ -18,46 +17,44 @@ import type { RoutingTable } from '../routing-table/index.js'
 import type { Network } from '../network.js'
 import type { Logger } from '@libp2p/logger'
 import type { Providers } from '../providers.js'
-import type { PeerStore } from '@libp2p/interfaces/peer-store'
 import type { QueryFunc } from '../query/types.js'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
-import { base58btc } from 'multiformats/bases/base58'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
-export interface ContentRoutingOptions {
-  peerId: PeerId
+export interface ContentRoutingInit {
   network: Network
   peerRouting: PeerRouting
   queryManager: QueryManager
   routingTable: RoutingTable
   providers: Providers
-  peerStore: PeerStore
   lan: boolean
 }
 
-export class ContentRouting {
+export class ContentRouting implements Initializable {
   private readonly log: Logger
-  private readonly peerId: PeerId
+  private components: Components = new Components()
   private readonly network: Network
   private readonly peerRouting: PeerRouting
   private readonly queryManager: QueryManager
   private readonly routingTable: RoutingTable
   private readonly providers: Providers
-  private readonly peerStore: PeerStore
 
-  constructor (options: ContentRoutingOptions) {
-    const { peerId, network, peerRouting, queryManager, routingTable, providers, peerStore, lan } = options
+  constructor (init: ContentRoutingInit) {
+    const { network, peerRouting, queryManager, routingTable, providers, lan } = init
 
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-routing`)
-    this.peerId = peerId
     this.network = network
     this.peerRouting = peerRouting
     this.queryManager = queryManager
     this.routingTable = routingTable
     this.providers = providers
-    this.peerStore = peerStore
+  }
+
+  init (components: Components): void {
+    this.components = components
   }
 
   /**
@@ -68,11 +65,11 @@ export class ContentRouting {
     this.log('provide %s', key)
 
     // Add peer as provider
-    await this.providers.addProvider(key, this.peerId)
+    await this.providers.addProvider(key, this.components.getPeerId())
 
     const msg = new Message(MESSAGE_TYPE.ADD_PROVIDER, key.bytes, 0)
     msg.providerPeers = [{
-      id: this.peerId,
+      id: this.components.getPeerId(),
       multiaddrs,
       protocols: []
     }]
@@ -147,13 +144,13 @@ export class ContentRouting {
       for (const peerId of provs.slice(0, toFind)) {
         providers.push({
           id: peerId,
-          multiaddrs: ((await this.peerStore.addressBook.get(peerId)) ?? []).map(address => address.multiaddr),
+          multiaddrs: ((await this.components.getPeerStore().addressBook.get(peerId)) ?? []).map(address => address.multiaddr),
           protocols: []
         })
       }
 
-      yield peerResponseEvent({ from: this.peerId, messageType: MESSAGE_TYPE.GET_PROVIDERS, providers })
-      yield providerEvent({ from: this.peerId, providers: providers })
+      yield peerResponseEvent({ from: this.components.getPeerId(), messageType: MESSAGE_TYPE.GET_PROVIDERS, providers })
+      yield providerEvent({ from: this.components.getPeerId(), providers: providers })
     }
 
     // All done
@@ -170,7 +167,7 @@ export class ContentRouting {
       yield * self.network.sendRequest(peer, request, { signal })
     }
 
-    const providers = new Set(provs.map(p => p.toString(base58btc)))
+    const providers = new Set(provs.map(p => p.toString()))
 
     for await (const event of this.queryManager.run(target, this.routingTable.closestPeers(id), findProvidersQuery, options)) {
       yield event
@@ -181,11 +178,11 @@ export class ContentRouting {
         const newProviders = []
 
         for (const peer of event.providers) {
-          if (providers.has(peer.id.toString(base58btc))) {
+          if (providers.has(peer.id.toString())) {
             continue
           }
 
-          providers.add(peer.id.toString(base58btc))
+          providers.add(peer.id.toString())
           newProviders.push(peer)
         }
 

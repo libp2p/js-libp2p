@@ -9,6 +9,9 @@ import { createRSAPeerId } from '@libp2p/peer-id-factory'
 import {
   convertPeerId
 } from '../../src/utils.js'
+import { Components } from '@libp2p/interfaces/components'
+import { stubInterface } from 'ts-sinon'
+import type { Dialer } from '@libp2p/interfaces/dialer'
 
 async function fromGo (targetCpl: number, randPrefix: number, localKadId: string) {
   const { stdout } = await execa('./generate-peer', [targetCpl.toString(), randPrefix.toString(), localKadId], {
@@ -45,19 +48,22 @@ describe('generate peers', function () {
   beforeEach(async () => {
     const id = await createRSAPeerId({ bits: 512 })
 
-    const table = new RoutingTable({
+    const components = new Components({
       peerId: id,
+      dialer: stubInterface<Dialer>()
+    })
+    const table = new RoutingTable({
       kBucketSize: 20,
-      // @ts-expect-error not a full implementation
-      dialer: {},
       lan: false
     })
+    table.init(components)
     refresh = new RoutingTableRefresh({
       routingTable: table,
       // @ts-expect-error not a full implementation
       peerRouting: {},
       lan: false
     })
+    refresh.init(components)
   })
 
   const TEST_CASES = [{

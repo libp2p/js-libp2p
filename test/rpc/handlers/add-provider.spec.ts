@@ -12,6 +12,7 @@ import type { CID } from 'multiformats'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
 import { Providers } from '../../../src/providers.js'
 import { MemoryDatastore } from 'datastore-core'
+import { Components } from '@libp2p/interfaces/components'
 
 describe('rpc - handlers - AddProvider', () => {
   let peerIds: PeerId[]
@@ -29,7 +30,8 @@ describe('rpc - handlers - AddProvider', () => {
   beforeEach(async () => {
     const datastore = new MemoryDatastore()
 
-    providers = new Providers({ datastore })
+    providers = new Providers()
+    providers.init(new Components({ datastore }))
 
     handler = new AddProviderHandler({
       providers

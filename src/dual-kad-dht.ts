@@ -3,12 +3,12 @@ import errCode from 'err-code'
 import merge from 'it-merge'
 import { queryErrorEvent } from './query/events.js'
 import type { KadDHT } from './kad-dht.js'
-import type { DHT, QueryOptions } from '@libp2p/interfaces/dht'
+import type { DualDHT, QueryOptions } from '@libp2p/interfaces/dht'
 import { AbortOptions, EventEmitter, CustomEvent } from '@libp2p/interfaces'
 import type { CID } from 'multiformats'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
-import type { PeerStore } from '@libp2p/interfaces/peer-store'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:kad-dht')
 
@@ -16,19 +16,16 @@ const log = logger('libp2p:kad-dht')
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
-export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
+export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DualDHT, Initializable {
   public wan: KadDHT
   public lan: KadDHT
-  public peerId: PeerId
-  public peerStore: PeerStore
+  public components: Components = new Components()
 
-  constructor (wan: KadDHT, lan: KadDHT, peerId: PeerId, peerStore: PeerStore) {
+  constructor (wan: KadDHT, lan: KadDHT) {
     super()
 
     this.wan = wan
     this.lan = lan
-    this.peerId = peerId
-    this.peerStore = peerStore
 
     // handle peers being discovered during processing of DHT messages
     this.wan.addEventListener('peer', (evt) => {
@@ -41,6 +38,12 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT
         detail: evt.detail
       }))
     })
+  }
+
+  init (components: Components): void {
+    this.components = components
+    this.wan.init(components)
+    this.lan.init(components)
   }
 
   /**
@@ -133,7 +136,7 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT
 
     if (!foundValue) {
       yield queryErrorEvent({
-        from: this.peerId,
+        from: this.components.getPeerId(),
         error: errCode(new Error('Not found'), 'ERR_NOT_FOUND')
       })
     }

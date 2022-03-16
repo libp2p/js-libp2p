@@ -12,10 +12,10 @@ import type { AddressBook } from '@libp2p/interfaces/peer-store'
 import { Providers } from '../../../src/providers.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { DHTMessageHandler } from '../../../src/rpc/index.js'
-import { createPeerStore } from '@libp2p/peer-store'
+import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
+import { Components } from '@libp2p/interfaces/components'
 
 const T = MESSAGE_TYPE.GET_PROVIDERS
 
@@ -27,7 +27,7 @@ describe('rpc - handlers - GetProviders', () => {
   let addressBook: AddressBook
   let providers: SinonStubbedInstance<Providers>
   let peerRouting: SinonStubbedInstance<PeerRouting>
-  let handler: DHTMessageHandler
+  let handler: GetProvidersHandler
   let values: Value[]
 
   beforeEach(async () => {
@@ -40,18 +40,18 @@ describe('rpc - handlers - GetProviders', () => {
     peerRouting = Sinon.createStubInstance(PeerRouting)
     providers = Sinon.createStubInstance(Providers)
 
-    const peerStore = createPeerStore({
+    const components = new Components({
       peerId,
       datastore: new MemoryDatastore()
     })
-    addressBook = peerStore.addressBook
+    components.setPeerStore(new PersistentPeerStore(components))
 
     handler = new GetProvidersHandler({
       peerRouting,
       providers,
-      addressBook,
       lan: false
     })
+    handler.init(components)
   })
 
   it('errors with an invalid key ', async () => {

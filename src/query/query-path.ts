@@ -12,7 +12,6 @@ import type { EventEmitter } from '@libp2p/interfaces'
 import type { CleanUpEvents } from './manager.js'
 import type { Logger } from '@libp2p/logger'
 import type { QueryFunc } from '../query/types.js'
-import { base58btc } from 'multiformats/bases/base58'
 import type { QueryEvent } from '@libp2p/interfaces/dht'
 
 const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
@@ -101,7 +100,7 @@ export async function * queryPath (options: QueryPathOptions) {
       return
     }
 
-    peersSeen.add(peer.toString(base58btc))
+    peersSeen.add(peer.toString())
 
     const peerXor = BigInt('0x' + toString(xor(peerKadId, kadId), 'base16'))
 
@@ -131,7 +130,7 @@ export async function * queryPath (options: QueryPathOptions) {
           // if there are closer peers and the query has not completed, continue the query
           if (event.name === 'PEER_RESPONSE') {
             for (const closerPeer of event.closer) {
-              if (peersSeen.has(closerPeer.id.toString(base58btc))) { // eslint-disable-line max-depth
+              if (peersSeen.has(closerPeer.id.toString())) { // eslint-disable-line max-depth
                 log('already seen %p in query', closerPeer.id)
                 continue
               }

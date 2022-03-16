@@ -12,6 +12,8 @@ import { TestDHT } from './utils/test-dht.js'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import type { DualKadDHT } from '../src/dual-kad-dht.js'
 import type { Sink } from 'it-stream-types'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
 
 describe('Network', () => {
   let dht: DualKadDHT
@@ -32,7 +34,9 @@ describe('Network', () => {
       const msg = new Message(MESSAGE_TYPE.PING, uint8ArrayFromString('hello'), 0)
 
       // mock dial
-      dht.wan.network.dialer.dialProtocol = async (peer, protocol) => {
+      dht.components.getDialer().dialProtocol = async (peer: PeerId | Multiaddr, protocols: string | string[]) => {
+        const protocol = Array.isArray(protocols) ? protocols[0] : protocols
+
         // {source, sink} streams that are internally connected
         return {
           stream: mockStream(pair()),
@@ -40,7 +44,7 @@ describe('Network', () => {
         }
       }
 
-      const events = await all(dht.lan.network.sendRequest(dht.peerId, msg))
+      const events = await all(dht.lan.network.sendRequest(dht.components.getPeerId(), msg))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
         .pop()
@@ -59,7 +63,8 @@ describe('Network', () => {
       const msg = new Message(MESSAGE_TYPE.PING, uint8ArrayFromString('hello'), 0)
 
       // mock it
-      dht.wan.network.dialer.dialProtocol = async (peer, protocol) => {
+      dht.components.getDialer().dialProtocol = async (peer: PeerId | Multiaddr, protocols: string | string[]) => {
+        const protocol = Array.isArray(protocols) ? protocols[0] : protocols
         const msg = new Message(MESSAGE_TYPE.FIND_NODE, uint8ArrayFromString('world'), 0)
 
         const data = await pipe(
@@ -90,7 +95,7 @@ describe('Network', () => {
         }
       }
 
-      const events = await all(dht.lan.network.sendRequest(dht.peerId, msg))
+      const events = await all(dht.lan.network.sendRequest(dht.components.getPeerId(), msg))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
         .pop()

@@ -10,13 +10,14 @@ import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constant
 import type { RoutingTable } from './index.js'
 import type { Logger } from '@libp2p/logger'
 import type { PeerRouting } from '../peer-routing/index.js'
+import type { Components, Initializable } from '@libp2p/interfaces/components'
 
 /**
  * Cannot generate random KadIds longer than this + 1
  */
 const MAX_COMMON_PREFIX_LENGTH = 15
 
-export interface RoutingTableRefreshOptions {
+export interface RoutingTableRefreshInit {
   peerRouting: PeerRouting
   routingTable: RoutingTable
   lan: boolean
@@ -28,7 +29,7 @@ export interface RoutingTableRefreshOptions {
  * A wrapper around `k-bucket`, to provide easy store and
  * retrieval for peers.
  */
-export class RoutingTableRefresh {
+export class RoutingTableRefresh implements Initializable {
   private readonly log: Logger
   private readonly peerRouting: PeerRouting
   private readonly routingTable: RoutingTable
@@ -37,8 +38,8 @@ export class RoutingTableRefresh {
   private readonly commonPrefixLengthRefreshedAt: Date[]
   private refreshTimeoutId?: NodeJS.Timer
 
-  constructor (options: RoutingTableRefreshOptions) {
-    const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, lan } = options
+  constructor (init: RoutingTableRefreshInit) {
+    const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, lan } = init
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table:refresh`)
     this.peerRouting = peerRouting
     this.routingTable = routingTable
@@ -47,6 +48,10 @@ export class RoutingTableRefresh {
     this.commonPrefixLengthRefreshedAt = []
 
     this.refreshTable = this.refreshTable.bind(this)
+  }
+
+  init (components: Components): void {
+
   }
 
   async start () {

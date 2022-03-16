@@ -7,14 +7,14 @@ import * as utils from '../../../src/utils.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { DHTMessageHandler } from '../../../src/rpc/index.js'
 import type { SinonStubbedInstance } from 'sinon'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import Sinon from 'sinon'
 import type { KeyBook } from '@libp2p/interfaces/peer-store'
-import { createPeerStore } from '@libp2p/peer-store'
+import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import type { Datastore } from 'interface-datastore'
+import { Components } from '@libp2p/interfaces/components'
 
 const T = MESSAGE_TYPE.GET_VALUE
 
@@ -23,7 +23,7 @@ describe('rpc - handlers - GetValue', () => {
   let sourcePeer: PeerId
   let closerPeer: PeerId
   let targetPeer: PeerId
-  let handler: DHTMessageHandler
+  let handler: GetValueHandler
   let peerRouting: SinonStubbedInstance<PeerRouting>
   let keyBook: KeyBook
   let datastore: Datastore
@@ -36,17 +36,16 @@ describe('rpc - handlers - GetValue', () => {
     peerRouting = Sinon.createStubInstance(PeerRouting)
     datastore = new MemoryDatastore()
 
-    const peerStore = createPeerStore({
+    const components = new Components({
       peerId,
-      datastore
+      datastore: new MemoryDatastore()
     })
-    keyBook = peerStore.keyBook
+    components.setPeerStore(new PersistentPeerStore(components))
 
     handler = new GetValueHandler({
-      keyBook,
-      peerRouting,
-      datastore
+      peerRouting
     })
+    handler.init(components)
   })
 
   it('errors when missing key', async () => {

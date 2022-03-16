@@ -11,46 +11,47 @@ import { GetValueHandler } from './handlers/get-value.js'
 import { PingHandler } from './handlers/ping.js'
 import { PutValueHandler } from './handlers/put-value.js'
 import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
-import type { KeyBook, AddressBook } from '@libp2p/interfaces/peer-store'
 import type { Providers } from '../providers'
 import type { PeerRouting } from '../peer-routing'
-import type { Datastore } from 'interface-datastore'
 import type { Validators } from '@libp2p/interfaces/dht'
+import type { Components, Initializable } from '@libp2p/interfaces/components'
 
 export interface DHTMessageHandler {
   handle: (peerId: PeerId, msg: Message) => Promise<Message | undefined>
 }
 
-export interface RPCOptions {
-  peerId: PeerId
+export interface RPCInit {
   routingTable: RoutingTable
-  keyBook: KeyBook
-  addressBook: AddressBook
   providers: Providers
   peerRouting: PeerRouting
-  datastore: Datastore
   validators: Validators
   lan: boolean
 }
 
-export class RPC {
-  private readonly handlers: Record<number, DHTMessageHandler>
+export class RPC implements Initializable {
+  private readonly handlers: Record<number, DHTMessageHandler & Initializable>
   private readonly routingTable: RoutingTable
   private readonly log: Logger
 
-  constructor (options: RPCOptions) {
-    const { keyBook, addressBook, providers, peerRouting, datastore, validators, lan, peerId } = options
+  constructor (init: RPCInit) {
+    const { providers, peerRouting, validators, lan } = init
 
-    this.log = logger('libp2p:kad-dht:rpc:' + peerId.toString())
+    this.log = logger('libp2p:kad-dht:rpc')
 
-    this.routingTable = options.routingTable
+    this.routingTable = init.routingTable
     this.handlers = {
-      [MESSAGE_TYPE.GET_VALUE]: new GetValueHandler({ keyBook, peerRouting, datastore }),
-      [MESSAGE_TYPE.PUT_VALUE]: new PutValueHandler({ peerId, validators, datastore }),
+      [MESSAGE_TYPE.GET_VALUE]: new GetValueHandler({ peerRouting }),
+      [MESSAGE_TYPE.PUT_VALUE]: new PutValueHandler({ validators }),
       [MESSAGE_TYPE.FIND_NODE]: new FindNodeHandler({ peerRouting, lan }),
       [MESSAGE_TYPE.ADD_PROVIDER]: new AddProviderHandler({ providers }),
-      [MESSAGE_TYPE.GET_PROVIDERS]: new GetProvidersHandler({ peerRouting, providers, addressBook, lan }),
+      [MESSAGE_TYPE.GET_PROVIDERS]: new GetProvidersHandler({ peerRouting, providers, lan }),
       [MESSAGE_TYPE.PING]: new PingHandler()
+    }
+  }
+
+  init (components: Components): void {
+    for (const handler of Object.values(this.handlers)) {
+      handler.init(components)
     }
   }
 
@@ -78,9 +79,9 @@ export class RPC {
   /**
    * Handle incoming streams on the dht protocol
    */
-  onIncomingStream (evt: CustomEvent<IncomingStreamData>) {
+  onIncomingStream (data: IncomingStreamData) {
     Promise.resolve().then(async () => {
-      const { stream, connection } = evt.detail
+      const { stream, connection } = data
       const peerId = connection.remotePeer
 
       try {

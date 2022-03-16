@@ -8,33 +8,35 @@ import {
 import { logger } from '@libp2p/logger'
 import type { DHTMessageHandler } from '../index.js'
 import type { Providers } from '../../providers.js'
-import type { AddressBook } from '@libp2p/interfaces/peer-store'
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:get-providers')
 
-export interface GetProvidersHandlerOptions {
+export interface GetProvidersHandlerInit {
   peerRouting: PeerRouting
   providers: Providers
-  addressBook: AddressBook
   lan: boolean
 }
 
-export class GetProvidersHandler implements DHTMessageHandler {
+export class GetProvidersHandler implements DHTMessageHandler, Initializable {
+  private components: Components = new Components()
   private readonly peerRouting: PeerRouting
   private readonly providers: Providers
-  private readonly addressBook: AddressBook
   private readonly lan: boolean
 
-  constructor (options: GetProvidersHandlerOptions) {
-    const { peerRouting, providers, addressBook, lan } = options
+  constructor (init: GetProvidersHandlerInit) {
+    const { peerRouting, providers, lan } = init
 
     this.peerRouting = peerRouting
     this.providers = providers
-    this.addressBook = addressBook
     this.lan = Boolean(lan)
+  }
+
+  init (components: Components): void {
+    this.components = components
   }
 
   async handle (peerId: PeerId, msg: Message) {
@@ -69,7 +71,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
   }
 
   async _getAddresses (peerId: PeerId) {
-    const addrs = await this.addressBook.get(peerId)
+    const addrs = await this.components.getPeerStore().addressBook.get(peerId)
 
     return addrs.map(address => address.multiaddr)
   }

@@ -10,13 +10,11 @@ import {
 } from '../query/events.js'
 import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
 import { Libp2pRecord } from '@libp2p/record'
-import { base58btc } from 'multiformats/bases/base58'
 import { logger } from '@libp2p/logger'
 import { keys } from '@libp2p/crypto'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import type { DHTRecord, QueryOptions, Validators } from '@libp2p/interfaces/dht'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { PeerStore } from '@libp2p/interfaces/peer-store'
 import type { QueryManager } from '../query/manager.js'
 import type { Network } from '../network.js'
 import type { Logger } from '@libp2p/logger'
@@ -24,36 +22,36 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { QueryFunc } from '../query/types.js'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
-export interface PeerRoutingOptions {
-  peerId: PeerId
+export interface PeerRoutingInit {
   routingTable: RoutingTable
-  peerStore: PeerStore
   network: Network
   validators: Validators
   queryManager: QueryManager
   lan: boolean
 }
 
-export class PeerRouting {
+export class PeerRouting implements Initializable {
+  private components: Components = new Components()
   private readonly log: Logger
-  private readonly peerId: PeerId
   private readonly routingTable: RoutingTable
-  private readonly peerStore: PeerStore
   private readonly network: Network
   private readonly validators: Validators
   private readonly queryManager: QueryManager
 
-  constructor (options: PeerRoutingOptions) {
-    const { peerId, routingTable, peerStore, network, validators, queryManager, lan } = options
+  constructor (init: PeerRoutingInit) {
+    const { routingTable, network, validators, queryManager, lan } = init
 
-    this.peerId = peerId
     this.routingTable = routingTable
-    this.peerStore = peerStore
     this.network = network
     this.validators = validators
     this.queryManager = queryManager
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:peer-routing`)
+  }
+
+  init (components: Components): void {
+    this.components = components
   }
 
   /**
@@ -68,7 +66,7 @@ export class PeerRouting {
       this.log('findPeerLocal found %p in routing table', peer)
 
       try {
-        peerData = await this.peerStore.get(p)
+        peerData = await this.components.getPeerStore().get(p)
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
           throw err
@@ -78,7 +76,7 @@ export class PeerRouting {
 
     if (peerData == null) {
       try {
-        peerData = await this.peerStore.get(peer)
+        peerData = await this.components.getPeerStore().get(peer)
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
           throw err
@@ -130,7 +128,7 @@ export class PeerRouting {
       }
     }
 
-    throw errcode(new Error(`Node not responding with its public key: ${peer.toString(base58btc)}`), 'ERR_INVALID_RECORD')
+    throw errcode(new Error(`Node not responding with its public key: ${peer.toString()}`), 'ERR_INVALID_RECORD')
   }
 
   /**
@@ -146,7 +144,7 @@ export class PeerRouting {
     if (pi != null) {
       this.log('found local')
       yield finalPeerEvent({
-        from: this.peerId,
+        from: this.components.getPeerId(),
         peer: pi
       })
       return
@@ -160,11 +158,11 @@ export class PeerRouting {
 
     if (match != null) {
       try {
-        const peer = await this.peerStore.get(id)
+        const peer = await this.components.getPeerStore().get(id)
 
         this.log('found in peerStore')
         yield finalPeerEvent({
-          from: this.peerId,
+          from: this.components.getPeerId(),
           peer: {
             id: peer.id,
             multiaddrs: peer.addresses.map((address) => address.multiaddr),
@@ -210,7 +208,7 @@ export class PeerRouting {
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({ from: this.peerId, error: errcode(new Error('Not found'), 'ERR_NOT_FOUND') })
+      yield queryErrorEvent({ from: this.components.getPeerId(), error: errcode(new Error('Not found'), 'ERR_NOT_FOUND') })
     }
   }
 
@@ -246,10 +244,10 @@ export class PeerRouting {
 
     for (const peer of peers.peers) {
       yield finalPeerEvent({
-        from: this.peerId,
+        from: this.components.getPeerId(),
         peer: {
           id: peer,
-          multiaddrs: (await (this.peerStore.addressBook.get(peer)) ?? []).map(addr => addr.multiaddr),
+          multiaddrs: (await (this.components.getPeerStore().addressBook.get(peer)) ?? []).map(addr => addr.multiaddr),
           protocols: []
         }
       })
@@ -306,8 +304,8 @@ export class PeerRouting {
       }
 
       try {
-        const addresses = await this.peerStore.addressBook.get(peerId)
-        const protocols = await this.peerStore.protoBook.get(peerId)
+        const addresses = await this.components.getPeerStore().addressBook.get(peerId)
+        const protocols = await this.components.getPeerStore().protoBook.get(peerId)
 
         output.push({
           id: peerId,

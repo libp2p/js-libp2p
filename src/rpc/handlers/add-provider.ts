@@ -5,19 +5,24 @@ import type { Providers } from '../../providers'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { DHTMessageHandler } from '../index.js'
 import type { Message } from '../../message/index.js'
+import type { Initializable } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:add-provider')
 
-export interface AddProviderHandlerOptions {
+export interface AddProviderHandlerInit {
   providers: Providers
 }
 
-export class AddProviderHandler implements DHTMessageHandler {
+export class AddProviderHandler implements DHTMessageHandler, Initializable {
   private readonly providers: Providers
 
-  constructor (options: AddProviderHandlerOptions) {
-    const { providers } = options
+  constructor (init: AddProviderHandlerInit) {
+    const { providers } = init
     this.providers = providers
+  }
+
+  init (): void {
+
   }
 
   async handle (peerId: PeerId, msg: Message) {

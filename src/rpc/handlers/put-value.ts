@@ -4,29 +4,28 @@ import { verifyRecord } from '@libp2p/record/validators'
 import { Logger, logger } from '@libp2p/logger'
 import type { DHTMessageHandler } from '../index.js'
 import type { Validators } from '@libp2p/interfaces/dht'
-import type { Datastore } from 'interface-datastore'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Message } from '../../message/index.js'
-import { base58btc } from 'multiformats/bases/base58'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
-export interface PutValueHandlerOptions {
-  peerId: PeerId
+export interface PutValueHandlerInit {
   validators: Validators
-  datastore: Datastore
 }
 
-export class PutValueHandler implements DHTMessageHandler {
-  private readonly validators: Validators
-  private readonly datastore: Datastore
+export class PutValueHandler implements DHTMessageHandler, Initializable {
   private readonly log: Logger
+  private components: Components = new Components()
+  private readonly validators: Validators
 
-  constructor (options: PutValueHandlerOptions) {
-    const { validators, datastore, peerId } = options
+  constructor (init: PutValueHandlerInit) {
+    const { validators } = init
 
-    this.log = logger('libp2p:kad-dht:rpc:handlers:put-value:' + peerId.toString())
-
+    this.log = logger('libp2p:kad-dht:rpc:handlers:put-value')
     this.validators = validators
-    this.datastore = datastore
+  }
+
+  init (components: Components): void {
+    this.components = components
   }
 
   async handle (peerId: PeerId, msg: Message) {
@@ -36,7 +35,7 @@ export class PutValueHandler implements DHTMessageHandler {
     const record = msg.record
 
     if (record == null) {
-      const errMsg = `Empty record from: ${peerId.toString(base58btc)}`
+      const errMsg = `Empty record from: ${peerId.toString()}`
 
       this.log.error(errMsg)
       throw errcode(new Error(errMsg), 'ERR_EMPTY_RECORD')
@@ -47,7 +46,7 @@ export class PutValueHandler implements DHTMessageHandler {
 
       record.timeReceived = new Date()
       const recordKey = bufferToRecordKey(record.key)
-      await this.datastore.put(recordKey, record.serialize())
+      await this.components.getDatastore().put(recordKey, record.serialize())
       this.log('put record for %b into datastore under key %k', key, recordKey)
     } catch (err: any) {
       this.log('did not put record for key %b into datastore %o', key, err)

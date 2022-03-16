@@ -16,9 +16,7 @@ import {
 } from '../constants.js'
 import { createPutRecord, convertBuffer, bufferToRecordKey } from '../utils.js'
 import { logger } from '@libp2p/logger'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Validators, Selectors, ValueEvent, QueryOptions } from '@libp2p/interfaces/dht'
-import type { Datastore } from 'interface-datastore'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { RoutingTable } from '../routing-table/index.js'
@@ -26,10 +24,9 @@ import type { Network } from '../network.js'
 import type { Logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { QueryFunc } from '../query/types.js'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
-export interface ContentFetchingOptions {
-  peerId: PeerId
-  datastore: Datastore
+export interface ContentFetchingInit {
   validators: Validators
   selectors: Selectors
   peerRouting: PeerRouting
@@ -39,10 +36,9 @@ export interface ContentFetchingOptions {
   lan: boolean
 }
 
-export class ContentFetching {
+export class ContentFetching implements Initializable {
   private readonly log: Logger
-  private readonly peerId: PeerId
-  private readonly datastore: Datastore
+  private components: Components = new Components()
   private readonly validators: Validators
   private readonly selectors: Selectors
   private readonly peerRouting: PeerRouting
@@ -50,11 +46,9 @@ export class ContentFetching {
   private readonly routingTable: RoutingTable
   private readonly network: Network
 
-  constructor (options: ContentFetchingOptions) {
-    const { peerId, datastore, validators, selectors, peerRouting, queryManager, routingTable, network, lan } = options
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-fetching:${peerId.toString()}`)
-    this.peerId = peerId
-    this.datastore = datastore
+  constructor (init: ContentFetchingInit) {
+    const { validators, selectors, peerRouting, queryManager, routingTable, network, lan } = init
+    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-fetching`)
     this.validators = validators
     this.selectors = selectors
     this.peerRouting = peerRouting
@@ -63,9 +57,13 @@ export class ContentFetching {
     this.network = network
   }
 
+  init (components: Components): void {
+    this.components = components
+  }
+
   async putLocal (key: Uint8Array, rec: Uint8Array) { // eslint-disable-line require-await
     const dsKey = bufferToRecordKey(key)
-    await this.datastore.put(dsKey, rec)
+    await this.components.getDatastore().put(dsKey, rec)
   }
 
   /**
@@ -79,7 +77,7 @@ export class ContentFetching {
 
     this.log('fetching record for key %k', dsKey)
 
-    const raw = await this.datastore.get(dsKey)
+    const raw = await this.components.getDatastore().get(dsKey)
     this.log('found %k in local datastore', dsKey)
 
     const rec = Libp2pRecord.deserialize(raw)
@@ -104,11 +102,11 @@ export class ContentFetching {
       }
 
       // correct ourself
-      if (this.peerId.equals(from)) {
+      if (this.components.getPeerId().equals(from)) {
         try {
           const dsKey = bufferToRecordKey(key)
           this.log(`Storing corrected record for key ${dsKey.toString()}`)
-          await this.datastore.put(dsKey, fixupRec)
+          await this.components.getDatastore().put(dsKey, fixupRec)
         } catch (err: any) {
           this.log.error('Failed error correcting self', err)
         }
@@ -149,7 +147,7 @@ export class ContentFetching {
     // store the record locally
     const dsKey = bufferToRecordKey(key)
     this.log(`storing record for key ${dsKey.toString()}`)
-    await this.datastore.put(dsKey, record)
+    await this.components.getDatastore().put(dsKey, record)
 
     // put record to the closest peers
     yield * pipe(
@@ -247,7 +245,7 @@ export class ContentFetching {
 
       yield valueEvent({
         value: localRec.value,
-        from: this.peerId
+        from: this.components.getPeerId()
       })
     } catch (err: any) {
       this.log('error getting local value for %b', key, err)

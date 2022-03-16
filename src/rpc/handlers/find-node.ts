@@ -11,22 +11,27 @@ import type { PeerId } from '@libp2p/interfaces/peer-id'
 import map from 'it-map'
 import filter from 'it-filter'
 import all from 'it-all'
+import type { Initializable } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:find-node')
 
-export interface FindNodeHandlerOptions {
+export interface FindNodeHandlerInit {
   peerRouting: PeerRouting
   lan: boolean
 }
 
-export class FindNodeHandler implements DHTMessageHandler {
+export class FindNodeHandler implements DHTMessageHandler, Initializable {
   private readonly peerRouting: PeerRouting
   private readonly lan: boolean
 
-  constructor (options: FindNodeHandlerOptions) {
-    const { peerRouting, lan } = options
+  constructor (init: FindNodeHandlerInit) {
+    const { peerRouting, lan } = init
     this.peerRouting = peerRouting
     this.lan = Boolean(lan)
+  }
+
+  init (): void {
+
   }
 
   /**

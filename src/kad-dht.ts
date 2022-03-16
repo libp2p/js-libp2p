@@ -14,92 +14,46 @@ import {
   removePublicAddresses
 } from './utils.js'
 import { Logger, logger } from '@libp2p/logger'
-import type { DHT, QueryOptions, Validators, Selectors } from '@libp2p/interfaces/dht'
+import type { QueryOptions, Validators, Selectors, DHT } from '@libp2p/interfaces/dht'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
-import type { Addressable, Dialer } from '@libp2p/interfaces'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PeerStore } from '@libp2p/interfaces/peer-store'
-import type { ComponentMetricsTracker } from '@libp2p/interfaces/metrics'
-import type { Datastore } from 'interface-datastore'
-import type { Registrar } from '@libp2p/interfaces/registrar'
 import type { CID } from 'multiformats/cid'
 import type { PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
-
-export interface KadDHTOptions {
-  /**
-   * libp2p registrar handle protocol
-   */
-  protocol: string
-
-  /**
-   * k-bucket size (default 20)
-   */
-  kBucketSize?: number
-
-  /**
-   * If true, the DHT will not respond to queries. This should be true if your node will not be dialable. (default: false)
-   */
-  clientMode?: boolean
-
-  /**
-   * validators object with namespace as keys and function(key, record, callback)
-   */
-  validators: Validators
-
-  /**
-   * selectors object with namespace as keys and function(key, records)
-   */
-  selectors: Selectors
-
-  /**
-   * how often to search the network for peers close to ourselves
-   */
-  querySelfInterval: number
-  lan: boolean
-  bootstrapPeers: PeerData[]
-  dialer: Dialer
-  addressable: Addressable
-  peerStore: PeerStore
-  peerId: PeerId
-  datastore: Datastore
-  registrar: Registrar
-  metrics?: ComponentMetricsTracker
-}
+import { Components, Initializable } from '@libp2p/interfaces/components'
+import type { KadDHTInit } from './index.js'
 
 /**
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
-export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
-  private readonly log: Logger
-  private running: boolean
+export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, Initializable {
   public protocol: string
-  private readonly kBucketSize: number
-  private clientMode: boolean
-  private readonly bootstrapPeers: PeerData[]
   public routingTable: RoutingTable
   public providers: Providers
+  public network: Network
+  public peerRouting: PeerRouting
+
+  public components: Components = new Components()
+  private readonly log: Logger
+  private running: boolean
+  private readonly kBucketSize: number
+  private clientMode: boolean
   private readonly lan: boolean
   private readonly validators: Validators
   private readonly selectors: Selectors
-  public network: Network
   private readonly queryManager: QueryManager
-  public peerRouting: PeerRouting
   private readonly contentFetching: ContentFetching
   private readonly contentRouting: ContentRouting
   private readonly routingTableRefresh: RoutingTableRefresh
   private readonly rpc: RPC
   private readonly topologyListener: TopologyListener
   private readonly querySelf: QuerySelf
-  public addressable: Addressable
-  public registrar: Registrar
-  private registrarHandleId?: string
 
   /**
    * Create a new KadDHT
    */
-  constructor (options: KadDHTOptions) {
+  constructor (init: KadDHTInit) {
     super()
 
     const {
@@ -109,110 +63,79 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
       selectors,
       querySelfInterval,
       lan,
-      protocol,
-      bootstrapPeers,
-      dialer,
-      addressable,
-      peerId,
-      peerStore,
-      metrics,
-      datastore,
-      registrar
-    } = options
+      protocolPrefix
+    } = init
 
     this.running = false
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}`)
-    this.protocol = protocol ?? '/ipfs/kad/1.0.0'
+    this.lan = Boolean(lan)
+    this.log = logger(`libp2p:kad-dht:${lan === true ? 'lan' : 'wan'}`)
+    this.protocol = `${protocolPrefix ?? '/ipfs'}${lan === true ? '/lan' : ''}/kad/1.0.0`
     this.kBucketSize = kBucketSize ?? 20
     this.clientMode = clientMode ?? true
-    this.bootstrapPeers = bootstrapPeers ?? []
-    this.addressable = addressable
-    this.registrar = registrar
     this.routingTable = new RoutingTable({
-      peerId,
-      dialer,
       kBucketSize,
-      metrics,
-      lan
+      lan: this.lan
     })
 
-    this.providers = new Providers({
-      datastore
-    })
-    this.lan = lan
+    this.providers = new Providers()
+
     this.validators = validators ?? {}
     this.selectors = selectors ?? {}
     this.network = new Network({
-      dialer,
       protocol: this.protocol,
-      lan,
-      peerId
+      lan: this.lan
     })
     this.queryManager = new QueryManager({
-      peerId: peerId,
       // Number of disjoint query paths to use - This is set to `kBucketSize/2` per the S/Kademlia paper
       disjointPaths: Math.ceil(this.kBucketSize / 2),
-      metrics,
       lan
     })
 
     // DHT components
     this.peerRouting = new PeerRouting({
-      peerId,
       routingTable: this.routingTable,
-      peerStore,
       network: this.network,
       validators: this.validators,
       queryManager: this.queryManager,
-      lan
+      lan: this.lan
     })
     this.contentFetching = new ContentFetching({
-      peerId,
-      datastore,
       validators: this.validators,
       selectors: this.selectors,
       peerRouting: this.peerRouting,
       queryManager: this.queryManager,
       routingTable: this.routingTable,
       network: this.network,
-      lan
+      lan: this.lan
     })
     this.contentRouting = new ContentRouting({
-      peerId,
       network: this.network,
       peerRouting: this.peerRouting,
       queryManager: this.queryManager,
       routingTable: this.routingTable,
       providers: this.providers,
-      peerStore,
-      lan
+      lan: this.lan
     })
     this.routingTableRefresh = new RoutingTableRefresh({
       peerRouting: this.peerRouting,
       routingTable: this.routingTable,
-      lan
+      lan: this.lan
     })
     this.rpc = new RPC({
-      peerId,
       routingTable: this.routingTable,
       providers: this.providers,
       peerRouting: this.peerRouting,
-      datastore,
       validators: this.validators,
-      keyBook: peerStore.keyBook,
-      addressBook: peerStore.addressBook,
-      lan
+      lan: this.lan
     })
     this.topologyListener = new TopologyListener({
-      registrar,
       protocol: this.protocol,
-      lan
+      lan: this.lan
     })
     this.querySelf = new QuerySelf({
-      peerId,
       peerRouting: this.peerRouting,
       interval: querySelfInterval,
-      lan
+      lan: this.lan
     })
 
     // handle peers being discovered during processing of DHT messages
@@ -233,7 +156,7 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
       const peerId = evt.detail
 
       Promise.resolve().then(async () => {
-        const multiaddrs = await peerStore.addressBook.get(peerId)
+        const multiaddrs = await this.components.getPeerStore().addressBook.get(peerId)
 
         const peerData = {
           id: peerId,
@@ -246,6 +169,22 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
         this.log.error('could not add %p to routing table', peerId, err)
       })
     })
+  }
+
+  init (components: Components): void {
+    this.components = components
+
+    this.routingTable.init(components)
+    this.providers.init(components)
+    this.network.init(components)
+    this.queryManager.init(components)
+    this.peerRouting.init(components)
+    this.contentFetching.init(components)
+    this.contentRouting.init(components)
+    this.routingTableRefresh.init(components)
+    this.rpc.init(components)
+    this.topologyListener.init(components)
+    this.querySelf.init(components)
   }
 
   async onPeerConnect (peerData: PeerData) {
@@ -287,9 +226,7 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
    * If 'server' this node will respond to DHT queries, if 'client' this node will not
    */
   async setMode (mode: 'client' | 'server') {
-    if (this.registrarHandleId != null) {
-      await this.registrar.unhandle(this.registrarHandleId)
-    }
+    await this.components.getRegistrar().unhandle(this.protocol)
 
     if (mode === 'client') {
       this.log('enabling client mode')
@@ -297,7 +234,8 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
     } else {
       this.log('enabling server mode')
       this.clientMode = false
-      this.registrarHandleId = await this.registrar.handle(this.protocol, this.rpc.onIncomingStream.bind(this.rpc))
+
+      await this.components.getRegistrar().handle(this.protocol, this.rpc.onIncomingStream.bind(this.rpc))
     }
   }
 
@@ -318,10 +256,6 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
       this.topologyListener.start(),
       this.querySelf.start()
     ])
-
-    await Promise.all(
-      this.bootstrapPeers.map(async peerData => await this.routingTable.add(peerData.id))
-    )
 
     await this.routingTableRefresh.start()
   }
@@ -364,7 +298,7 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
    * Announce to the network that we can provide given key's value
    */
   async * provide (key: CID, options: QueryOptions = {}) { // eslint-disable-line require-await
-    yield * this.contentRouting.provide(key, this.addressable.multiaddrs, options)
+    yield * this.contentRouting.provide(key, this.components.getAddressManager().getAddresses(), options)
   }
 
   /**

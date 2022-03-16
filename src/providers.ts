@@ -15,11 +15,11 @@ import type { Datastore } from 'interface-datastore'
 import type { Startable } from '@libp2p/interfaces'
 import type { CID } from 'multiformats'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:kad-dht:providers')
 
-export interface ProvidersOptions {
-  datastore: Datastore
+export interface ProvidersInit {
   cacheSize?: number
   /**
    * How often invalid records are cleaned. (in seconds)
@@ -43,8 +43,8 @@ export interface ProvidersOptions {
  * providers are stored in the datastore, but to ensure
  * access is fast there is an LRU cache in front of that.
  */
-export class Providers implements Startable {
-  private readonly datastore: Datastore
+export class Providers implements Startable, Initializable {
+  private components: Components = new Components()
   private readonly cache: ReturnType<typeof cache>
   private readonly cleanupInterval: number
   private readonly provideValidity: number
@@ -52,15 +52,18 @@ export class Providers implements Startable {
   private started: boolean
   private cleaner?: NodeJS.Timer
 
-  constructor (options: ProvidersOptions) {
-    const { datastore, cacheSize, cleanupInterval, provideValidity } = options
+  constructor (init: ProvidersInit = {}) {
+    const { cacheSize, cleanupInterval, provideValidity } = init
 
-    this.datastore = datastore
     this.cleanupInterval = cleanupInterval ?? PROVIDERS_CLEANUP_INTERVAL
     this.provideValidity = provideValidity ?? PROVIDERS_VALIDITY
     this.cache = cache(cacheSize ?? PROVIDERS_LRU_CACHE_SIZE)
     this.syncQueue = new Queue({ concurrency: 1 })
     this.started = false
+  }
+
+  init (components: Components): void {
+    this.components = components
   }
 
   isStarted () {
@@ -109,10 +112,10 @@ export class Providers implements Startable {
       let count = 0
       let deleteCount = 0
       const deleted = new Map<string, Set<string>>()
-      const batch = this.datastore.batch()
+      const batch = this.components.getDatastore().batch()
 
       // Get all provider entries from the datastore
-      const query = this.datastore.query({ prefix: PROVIDER_KEY_PREFIX })
+      const query = this.components.getDatastore().query({ prefix: PROVIDER_KEY_PREFIX })
 
       for await (const entry of query) {
         try {
@@ -176,7 +179,7 @@ export class Providers implements Startable {
     let provs: Map<string, Date> = this.cache.get(cacheKey)
 
     if (provs == null) {
-      provs = await loadProviders(this.datastore, cid)
+      provs = await loadProviders(this.components.getDatastore(), cid)
       this.cache.set(cacheKey, provs)
     }
 
@@ -198,7 +201,7 @@ export class Providers implements Startable {
       const dsKey = makeProviderKey(cid)
       this.cache.set(dsKey, provs)
 
-      await writeProviderEntry(this.datastore, cid, provider, now)
+      await writeProviderEntry(this.components.getDatastore(), cid, provider, now)
     })
   }
 
