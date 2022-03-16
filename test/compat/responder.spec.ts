@@ -3,29 +3,41 @@
 import { expect } from 'aegir/utils/chai.js'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import MDNS from 'multicast-dns'
+import mDNS from 'multicast-dns'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import { Responder } from '../../src/compat/responder.js'
 import { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } from '../../src/compat/constants.js'
-import { base58btc } from 'multiformats/bases/base58'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { ResponsePacket } from 'multicast-dns'
+import { Components } from '@libp2p/interfaces/components'
+import { stubInterface } from 'ts-sinon'
+import { findPeerDataInAnswers } from '../../src/compat/utils.js'
+import type { AddressManager } from '@libp2p/interfaces'
+import type { PeerData } from '@libp2p/interfaces/peer-data'
 
 describe('Responder', () => {
   let responder: Responder
-  let mdns: MDNS.MulticastDNS
-  const peerAddrs = [
-    new Multiaddr('/ip4/127.0.0.1/tcp/20001'),
-    new Multiaddr('/ip4/127.0.0.1/tcp/20002')
-  ]
+  let mdns: mDNS.MulticastDNS
   let peerIds: PeerId[]
+  let components: Components
+  let multiadddrs: Multiaddr[]
 
-  before(async () => {
+  beforeEach(async () => {
     peerIds = await Promise.all([
       createEd25519PeerId(),
       createEd25519PeerId()
     ])
+
+    multiadddrs = [
+      new Multiaddr(`/ip4/127.0.0.1/tcp/20001/p2p/${peerIds[0].toString()}`),
+      new Multiaddr(`/ip4/127.0.0.1/tcp/20002/p2p/${peerIds[0].toString()}`)
+    ]
+
+    const addressManager = stubInterface<AddressManager>()
+    addressManager.getAddresses.returns(multiadddrs)
+
+    components = new Components({ peerId: peerIds[0], addressManager })
   })
 
   afterEach(async () => {
@@ -36,10 +48,8 @@ describe('Responder', () => {
   })
 
   it('should start and stop', async () => {
-    const responder = new Responder({
-      peerId: peerIds[0],
-      multiaddrs: [peerAddrs[0]]
-    })
+    responder = new Responder()
+    responder.init(components)
 
     await responder.start()
     await responder.stop()
@@ -47,11 +57,10 @@ describe('Responder', () => {
 
   it('should not respond to a query if no TCP addresses', async () => {
     const peerId = await createEd25519PeerId()
-    responder = new Responder({
-      peerId,
-      multiaddrs: []
-    })
-    mdns = MDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
+    responder = new Responder()
+    components.getAddressManager().getAddresses = () => []
+    responder.init(components)
+    mdns = mDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
 
     await responder.start()
 
@@ -76,11 +85,9 @@ describe('Responder', () => {
   })
 
   it('should not respond to a query with non matching service tag', async () => {
-    responder = new Responder({
-      peerId: peerIds[0],
-      multiaddrs: [peerAddrs[0]]
-    })
-    mdns = MDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
+    responder = new Responder()
+    responder.init(components)
+    mdns = mDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
 
     await responder.start()
 
@@ -107,43 +114,24 @@ describe('Responder', () => {
   })
 
   it('should respond correctly', async () => {
-    responder = new Responder({
-      peerId: peerIds[0],
-      multiaddrs: [peerAddrs[0]]
-    })
-    mdns = MDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
-
+    responder = new Responder()
+    responder.init(components)
     await responder.start()
-    const defer = pDefer()
+    const defer = pDefer<PeerData>()
 
+    mdns = mDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
     mdns.on('response', event => {
       if (!isResponseFrom(event, peerIds[0])) {
         return
       }
 
-      const srvRecord = event.answers.find(a => a.type === 'SRV')
-      if (srvRecord == null || srvRecord.type !== 'SRV') {
-        return defer.reject(new Error('Missing SRV record'))
+      const peerData = findPeerDataInAnswers(event.answers, peerIds[1])
+
+      if (peerData == null) {
+        return defer.reject(new Error('Could not read PeerData from mDNS query response'))
       }
 
-      const { port } = srvRecord.data ?? {}
-      const protos = { A: 'ip4', AAAA: 'ip6' }
-
-      const addrs = event.answers
-        .filter(a => ['A', 'AAAA'].includes(a.type))
-        .map(a => {
-          if (a.type !== 'A' && a.type !== 'AAAA') {
-            throw new Error('Incorrect type')
-          }
-
-          return `/${protos[a.type]}/${a.data}/tcp/${port}`
-        })
-
-      if (!addrs.includes(peerAddrs[0].toString())) {
-        return defer.reject(new Error(`Missing peer address in response: ${peerAddrs[0].toString()}`))
-      }
-
-      defer.resolve()
+      defer.resolve(peerData)
     })
 
     mdns.query({
@@ -154,7 +142,10 @@ describe('Responder', () => {
       port: MULTICAST_PORT
     })
 
-    await defer.promise
+    const peerData = await defer.promise
+
+    expect(peerData.multiaddrs.map(ma => ma.toString())).to.include(multiadddrs[0].toString())
+    expect(peerData.multiaddrs.map(ma => ma.toString())).to.include(multiadddrs[1].toString())
   })
 })
 
@@ -176,7 +167,9 @@ function isResponseFrom (res: ResponsePacket, fromPeerId: PeerId) {
   }
 
   // Ignore response from someone else
-  if (fromPeerId.toString(base58btc) !== peerIdStr) return false
+  if (fromPeerId.toString() !== peerIdStr) {
+    return false
+  }
 
   return true
 }

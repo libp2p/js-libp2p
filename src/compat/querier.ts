@@ -1,19 +1,16 @@
-import { EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
 import MDNS from 'multicast-dns'
-import { Multiaddr } from '@multiformats/multiaddr'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { logger } from '@libp2p/logger'
 import { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } from './constants.js'
-import { base58btc } from 'multiformats/bases/base58'
-import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
 import type { ResponsePacket } from 'multicast-dns'
 import type { RemoteInfo } from 'dgram'
+import { Components, Initializable } from '@libp2p/interfaces/components'
+import { findPeerDataInAnswers } from './utils.js'
 
 const log = logger('libp2p:mdns:compat:querier')
 
-export interface QuerierOptions {
-  peerId: PeerId
+export interface QuerierInit {
   queryInterval?: number
   queryPeriod?: number
 }
@@ -22,24 +19,17 @@ export interface Handle {
   stop: () => Promise<void>
 }
 
-export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
-  private readonly _peerIdStr: string
-  private readonly _options: Required<QuerierOptions>
+export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Initializable {
+  private readonly _init: Required<QuerierInit>
   private _handle?: Handle
+  private components: Components = new Components()
 
-  constructor (options: QuerierOptions) {
+  constructor (init: QuerierInit = {}) {
     super()
 
-    const { peerId, queryInterval, queryPeriod } = options
+    const { queryInterval, queryPeriod } = init
 
-    if (peerId == null) {
-      throw new Error('missing peerId parameter')
-    }
-
-    this._peerIdStr = peerId.toString(base58btc)
-    this._options = {
-      peerId,
-
+    this._init = {
       // Re-query in leu of network change detection (every 60s by default)
       queryInterval: queryInterval ?? 60000,
       // Time for which the MDNS server will stay alive waiting for responses
@@ -50,6 +40,10 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
       )
     }
     this._onResponse = this._onResponse.bind(this)
+  }
+
+  init (components: Components): void {
+    this.components = components
   }
 
   isStarted () {
@@ -83,76 +77,31 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
         }
       }
     }, {
-      period: this._options.queryPeriod,
-      interval: this._options.queryInterval
+      period: this._init.queryPeriod,
+      interval: this._init.queryInterval
     })
   }
 
   _onResponse (event: ResponsePacket, info: RemoteInfo) {
+    log.trace('received mDNS query response')
     const answers = event.answers ?? []
-    const ptrRecord = answers.find(a => a.type === 'PTR' && a.name === SERVICE_TAG_LOCAL)
 
-    // Only deal with responses for our service tag
-    if (ptrRecord == null) return
+    const peerData = findPeerDataInAnswers(answers, this.components.getPeerId())
 
-    log('got response', event, info)
-
-    const txtRecord = answers.find(a => a.type === 'TXT')
-    if (txtRecord == null || txtRecord.type !== 'TXT') {
-      return log('missing TXT record in response')
+    if (peerData == null) {
+      log('could not read peer data from query response')
+      return
     }
 
-    let peerIdStr
-    try {
-      peerIdStr = txtRecord.data[0].toString()
-    } catch (err) {
-      return log('failed to extract peer ID from TXT record data', txtRecord, err)
+    if (peerData.multiaddrs.length === 0) {
+      log('could not parse multiaddrs from mDNS response')
+      return
     }
 
-    if (this._peerIdStr === peerIdStr) {
-      return log('ignoring reply to myself')
-    }
-
-    let peerId
-    try {
-      peerId = peerIdFromString(peerIdStr)
-    } catch (err) {
-      return log('failed to create peer ID from TXT record data', peerIdStr, err)
-    }
-
-    const srvRecord = answers.find(a => a.type === 'SRV')
-    if (srvRecord == null || srvRecord.type !== 'SRV') {
-      return log('missing SRV record in response')
-    }
-
-    log('peer found', peerIdStr)
-
-    const { port } = srvRecord.data ?? {}
-    const protos = { A: 'ip4', AAAA: 'ip6' }
-
-    const multiaddrs = answers
-      .filter(a => ['A', 'AAAA'].includes(a.type))
-      .reduce<Multiaddr[]>((addrs, a) => {
-      if (a.type !== 'A' && a.type !== 'AAAA') {
-        return addrs
-      }
-
-      const maStr = `/${protos[a.type]}/${a.data}/tcp/${port}`
-      try {
-        addrs.push(new Multiaddr(maStr))
-        log(maStr)
-      } catch (err) {
-        log(`failed to create multiaddr from ${a.type} record data`, maStr, port, err)
-      }
-      return addrs
-    }, [])
+    log('discovered peer in mDNS qeury response %p', peerData.id)
 
     this.dispatchEvent(new CustomEvent('peer', {
-      detail: {
-        id: peerId,
-        multiaddrs,
-        protcols: []
-      }
+      detail: peerData
     }))
   }
 

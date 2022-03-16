@@ -3,38 +3,46 @@ import { expect } from 'aegir/utils/chai.js'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import pDefer from 'p-defer'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { GoMulticastDNS } from '../../src/compat/index.js'
+import { Components } from '@libp2p/interfaces/components'
+import { stubInterface } from 'ts-sinon'
+import type { AddressManager } from '@libp2p/interfaces'
+import type { PeerData } from '@libp2p/interfaces/peer-data'
 
-describe('GoMulticastDNS', () => {
-  const peerAddrs = [
-    new Multiaddr('/ip4/127.0.0.1/tcp/20001'),
-    new Multiaddr('/ip4/127.0.0.1/tcp/20002')
-  ]
-  let peerIds: PeerId[]
+let port = 20000
 
-  before(async () => {
-    peerIds = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId()
-    ])
+async function createGoMulticastDNS () {
+  const peerId = await createEd25519PeerId()
+  const addressManager = stubInterface<AddressManager>()
+  addressManager.getAddresses.returns([
+    new Multiaddr(`/ip4/127.0.0.1/tcp/${port++}/p2p/${peerId.toString()}`),
+    new Multiaddr(`/ip4/127.0.0.1/tcp/${port++}/p2p/${peerId.toString()}`)
+  ])
+
+  const components = new Components({
+    peerId,
+    addressManager
   })
 
+  const mdns = new GoMulticastDNS()
+  mdns.init(components)
+
+  return {
+    mdns,
+    components
+  }
+}
+
+describe('GoMulticastDNS', () => {
   it('should start and stop', async () => {
-    const mdns = new GoMulticastDNS({
-      peerId: peerIds[0],
-      multiaddrs: [peerAddrs[0]]
-    })
+    const { mdns } = await createGoMulticastDNS()
 
     await mdns.start()
     return await mdns.stop()
   })
 
   it('should ignore multiple start calls', async () => {
-    const mdns = new GoMulticastDNS({
-      peerId: peerIds[0],
-      multiaddrs: [peerAddrs[0]]
-    })
+    const { mdns } = await createGoMulticastDNS()
 
     await mdns.start()
     await mdns.start()
@@ -43,46 +51,38 @@ describe('GoMulticastDNS', () => {
   })
 
   it('should ignore unnecessary stop calls', async () => {
-    const mdns = new GoMulticastDNS({
-      peerId: peerIds[0],
-      multiaddrs: [peerAddrs[0]]
-    })
+    const { mdns } = await createGoMulticastDNS()
+
     await mdns.stop()
   })
 
   it('should emit peer data when peer is discovered', async () => {
-    const mdnsA = new GoMulticastDNS({
-      peerId: peerIds[0],
-      multiaddrs: [peerAddrs[0]]
-    })
-    const mdnsB = new GoMulticastDNS({
-      peerId: peerIds[1],
-      multiaddrs: [peerAddrs[1]]
-    })
-    const defer = pDefer()
+    const { mdns: mdnsA } = await createGoMulticastDNS()
+    const { mdns: mdnsB, components: componentsB } = await createGoMulticastDNS()
+    const defer = pDefer<PeerData>()
 
     mdnsA.addEventListener('peer', (evt) => {
-      const { id, multiaddrs } = evt.detail
+      const { id } = evt.detail
 
-      if (!peerIds[1].equals(id)) {
+      if (!componentsB.getPeerId().equals(id)) {
         return
       }
 
-      expect(multiaddrs.some((m) => m.equals(peerAddrs[1]))).to.be.true()
-      defer.resolve()
+      defer.resolve(evt.detail)
     })
 
     // Start in series
-    void Promise.all([
-      mdnsA.start(),
-      mdnsB.start()
-    ])
+    await mdnsA.start()
+    await mdnsB.start()
 
-    await defer.promise
+    const peerData = await defer.promise
 
     await Promise.all([
       mdnsA.stop(),
       mdnsB.stop()
     ])
+
+    expect(peerData.id.equals(componentsB.getPeerId())).to.be.true()
+    expect(peerData.multiaddrs.map(ma => ma.toString())).includes(componentsB.getAddressManager().getAddresses()[1].toString())
   })
 })

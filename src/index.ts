@@ -3,26 +3,23 @@ import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
 import { logger } from '@libp2p/logger'
 import * as query from './query.js'
 import { GoMulticastDNS } from './compat/index.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:mdns')
 
 export interface MulticastDNSOptions {
-  peerId: PeerId
   broadcast?: boolean
   interval?: number
   serviceTag?: string
   port?: number
-  multiaddrs?: Multiaddr[]
   compat?: boolean
   compatQueryPeriod?: number
   compatQueryInterval?: number
 }
 
-export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
+export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Initializable {
   static tag = 'mdns'
 
   public mdns?: multicastDNS.MulticastDNS
@@ -31,24 +28,17 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
   private readonly interval: number
   private readonly serviceTag: string
   private readonly port: number
-  private readonly peerId: PeerId
-  private readonly peerMultiaddrs: Multiaddr[] // TODO: update this when multiaddrs change?
-  private _queryInterval: NodeJS.Timer | null
+  private _queryInterval: ReturnType<typeof setInterval> | null
   private readonly _goMdns?: GoMulticastDNS
+  private components: Components = new Components()
 
-  constructor (options: MulticastDNSOptions) {
+  constructor (options: MulticastDNSOptions = {}) {
     super()
-
-    if (options.peerId == null) {
-      throw new Error('needs own PeerId to work')
-    }
 
     this.broadcast = options.broadcast !== false
     this.interval = options.interval ?? (1e3 * 10)
     this.serviceTag = options.serviceTag ?? 'ipfs.local'
     this.port = options.port ?? 5353
-    this.peerId = options.peerId
-    this.peerMultiaddrs = options.multiaddrs ?? []
     this._queryInterval = null
     this._onPeer = this._onPeer.bind(this)
     this._onMdnsQuery = this._onMdnsQuery.bind(this)
@@ -56,13 +46,17 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
 
     if (options.compat !== false) {
       this._goMdns = new GoMulticastDNS({
-        multiaddrs: this.peerMultiaddrs,
-        peerId: options.peerId,
         queryPeriod: options.compatQueryPeriod,
         queryInterval: options.compatQueryInterval
       })
       this._goMdns.addEventListener('peer', this._onPeer)
     }
+  }
+
+  init (components: Components): void {
+    this.components = components
+
+    this._goMdns?.init(components)
   }
 
   isStarted () {
@@ -95,20 +89,25 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
       return
     }
 
-    query.gotQuery(event, this.mdns, this.peerId, this.peerMultiaddrs, this.serviceTag, this.broadcast)
+    log.trace('received incoming mDNS query')
+    query.gotQuery(event, this.mdns, this.components.getPeerId(), this.components.getAddressManager().getAddresses(), this.serviceTag, this.broadcast)
   }
 
   _onMdnsResponse (event: multicastDNS.ResponsePacket) {
+    log.trace('received mDNS query response')
+
     try {
-      const foundPeer = query.gotResponse(event, this.peerId, this.serviceTag)
+      const foundPeer = query.gotResponse(event, this.components.getPeerId(), this.serviceTag)
 
       if (foundPeer != null) {
-        this.dispatchEvent(new CustomEvent('peer', {
+        log('discovered peer in mDNS qeury response %p', foundPeer.id)
+
+        this.dispatchEvent(new CustomEvent<PeerData>('peer', {
           detail: foundPeer
         }))
       }
     } catch (err) {
-      log('Error processing peer response', err)
+      log.error('Error processing peer response', err)
     }
   }
 
@@ -117,7 +116,7 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
       return
     }
 
-    this.dispatchEvent(new CustomEvent('peer', {
+    this.dispatchEvent(new CustomEvent<PeerData>('peer', {
       detail: evt.detail
     }))
   }

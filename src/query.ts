@@ -1,18 +1,18 @@
 import os from 'os'
 import { logger } from '@libp2p/logger'
-import { Multiaddr, MultiaddrObject } from '@multiformats/multiaddr'
-import { base58btc } from 'multiformats/bases/base58'
+import { Multiaddr, MultiaddrObject, protocols } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
 import type { MulticastDNS, ResponsePacket, QueryPacket } from 'multicast-dns'
 import type { SrvAnswer, StringAnswer, TxtAnswer, Answer } from 'dns-packet'
 
-const log = logger('libp2p:mdns')
+const log = logger('libp2p:mdns:query')
 
 export function queryLAN (mdns: MulticastDNS, serviceTag: string, interval: number) {
   const query = () => {
     log('query', serviceTag)
+
     mdns.query({
       questions: [{
         name: serviceTag,
@@ -82,14 +82,16 @@ export function gotResponse (rsp: ResponsePacket, localPeerId: PeerId, serviceTa
     }
   })
 
-  if (localPeerId.toString(base58btc) === b58Id) {
+  if (localPeerId.toString() === b58Id) {
     return // replied to myself, ignore
   }
 
-  log('peer found -', b58Id)
+  const id = peerIdFromString(b58Id)
+
+  log('peer found %p', id)
 
   return {
-    id: peerIdFromString(b58Id),
+    id,
     multiaddrs,
     protocols: []
   }
@@ -97,11 +99,12 @@ export function gotResponse (rsp: ResponsePacket, localPeerId: PeerId, serviceTa
 
 export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerId: PeerId, multiaddrs: Multiaddr[], serviceTag: string, broadcast: boolean) {
   if (!broadcast) {
+    log('not responding to mDNS query as broadcast mode is false')
     return
   }
 
   const addresses: MultiaddrObject[] = multiaddrs.reduce<MultiaddrObject[]>((acc, addr) => {
-    if (addr.isThinWaistAddress()) {
+    if (addr.decapsulateCode(protocols('p2p').code).isThinWaistAddress()) {
       acc.push(addr.toOptions())
     }
     return acc
@@ -109,6 +112,7 @@ export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerId: PeerId, 
 
   // Only announce TCP for now
   if (addresses.length === 0) {
+    log('no thin waist addresses present, cannot respond to query')
     return
   }
 
@@ -120,14 +124,14 @@ export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerId: PeerId, 
       type: 'PTR',
       class: 'IN',
       ttl: 120,
-      data: peerId.toString(base58btc) + '.' + serviceTag
+      data: peerId.toString() + '.' + serviceTag
     })
 
     // Only announce TCP multiaddrs for now
     const port = addresses[0].port
 
     answers.push({
-      name: peerId.toString(base58btc) + '.' + serviceTag,
+      name: peerId.toString() + '.' + serviceTag,
       type: 'SRV',
       class: 'IN',
       ttl: 120,
@@ -140,11 +144,11 @@ export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerId: PeerId, 
     })
 
     answers.push({
-      name: peerId.toString(base58btc) + '.' + serviceTag,
+      name: peerId.toString() + '.' + serviceTag,
       type: 'TXT',
       class: 'IN',
       ttl: 120,
-      data: peerId.toString(base58btc)
+      data: peerId.toString()
     })
 
     addresses.forEach((addr) => {

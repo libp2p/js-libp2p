@@ -4,25 +4,34 @@ import tests from '@libp2p/interface-compliance-tests/peer-discovery'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { MulticastDNS } from '../src/index.js'
-import { CustomEvent } from '@libp2p/interfaces'
+import { AddressManager, CustomEvent } from '@libp2p/interfaces'
+import { Components } from '@libp2p/interfaces/components'
+import { stubInterface } from 'ts-sinon'
 
 let mdns: MulticastDNS
 
 describe('compliance tests', () => {
-  let intervalId: NodeJS.Timer
+  let intervalId: ReturnType<typeof setInterval>
 
   tests({
     async setup () {
       const peerId1 = await createEd25519PeerId()
       const peerId2 = await createEd25519PeerId()
 
+      const addressManager = stubInterface<AddressManager>()
+      addressManager.getAddresses.returns([
+        new Multiaddr(`/ip4/127.0.0.1/tcp/13921/p2p/${peerId1.toString()}`)
+      ])
+
       mdns = new MulticastDNS({
-        peerId: peerId1,
-        multiaddrs: [],
         broadcast: false,
         port: 50001,
         compat: true
       })
+      mdns.init(new Components({
+        peerId: peerId1,
+        addressManager
+      }))
 
       // Trigger discovery
       const maStr = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/p2p/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooo2d'

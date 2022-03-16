@@ -14,12 +14,12 @@
 ## Usage
 
 ```JavaScript
-const MDNS = require('libp2p-mdns')
+import { MDNS } from '@libp2p/mdns'
 
 const mdns = new MDNS(options)
 
 mdns.on('peer', (peerData) => {
-  console.log('Found a peer in the local network', peerData.id.toString(base58btc), peerData.multiaddrs)
+  console.log('Found a peer in the local network', peerData.id.toString(), peerData.multiaddrs)
 })
 
 // Broadcast for 20 seconds

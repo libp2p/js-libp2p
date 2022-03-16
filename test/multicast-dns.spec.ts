@@ -5,9 +5,18 @@ import { Multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import pWaitFor from 'p-wait-for'
 import { MulticastDNS } from './../src/index.js'
-import { base58btc } from 'multiformats/bases/base58'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
+import { stubInterface } from 'ts-sinon'
+import type { AddressManager } from '@libp2p/interfaces'
+import { Components } from '@libp2p/interfaces/components'
+
+function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]) {
+  const addressManager = stubInterface<AddressManager>()
+  addressManager.getAddresses.returns(multiaddrs)
+
+  return new Components({ peerId, addressManager })
+}
 
 describe('MulticastDNS', () => {
   let pA: PeerId
@@ -56,19 +65,17 @@ describe('MulticastDNS', () => {
     this.timeout(40 * 1000)
 
     const mdnsA = new MulticastDNS({
-      peerId: pA,
-      multiaddrs: aMultiaddrs,
       broadcast: false, // do not talk to ourself
       port: 50001,
       compat: false
     })
+    mdnsA.init(getComponents(pA, aMultiaddrs))
 
     const mdnsB = new MulticastDNS({
-      peerId: pB,
-      multiaddrs: bMultiaddrs,
       port: 50001, // port must be the same
       compat: false
     })
+    mdnsB.init(getComponents(pB, bMultiaddrs))
 
     await mdnsA.start()
     await mdnsB.start()
@@ -77,7 +84,7 @@ describe('MulticastDNS', () => {
       once: true
     }))
 
-    expect(pB.toString(base58btc)).to.eql(id.toString(base58btc))
+    expect(pB.toString()).to.eql(id.toString())
 
     await Promise.all([mdnsA.stop(), mdnsB.stop()])
   })
@@ -86,33 +93,30 @@ describe('MulticastDNS', () => {
     this.timeout(40 * 1000)
 
     const mdnsA = new MulticastDNS({
-      peerId: pA,
-      multiaddrs: aMultiaddrs,
       broadcast: false, // do not talk to ourself
       port: 50003,
       compat: false
     })
+    mdnsA.init(getComponents(pA, aMultiaddrs))
     const mdnsC = new MulticastDNS({
-      peerId: pC,
-      multiaddrs: cMultiaddrs,
       port: 50003, // port must be the same
       compat: false
     })
+    mdnsC.init(getComponents(pC, cMultiaddrs))
     const mdnsD = new MulticastDNS({
-      peerId: pD,
-      multiaddrs: dMultiaddrs,
       port: 50003, // port must be the same
       compat: false
     })
+    mdnsD.init(getComponents(pD, dMultiaddrs))
 
     await mdnsA.start()
     await mdnsC.start()
     await mdnsD.start()
 
     const peers = new Map()
-    const expectedPeer = pC.toString(base58btc)
+    const expectedPeer = pC.toString()
 
-    const foundPeer = (evt: CustomEvent<PeerData>) => peers.set(evt.detail.id.toString(base58btc), evt.detail)
+    const foundPeer = (evt: CustomEvent<PeerData>) => peers.set(evt.detail.id.toString(), evt.detail)
     mdnsA.addEventListener('peer', foundPeer)
 
     await pWaitFor(() => peers.has(expectedPeer))
@@ -131,19 +135,17 @@ describe('MulticastDNS', () => {
     this.timeout(40 * 1000)
 
     const mdnsA = new MulticastDNS({
-      peerId: pA,
-      multiaddrs: aMultiaddrs,
       broadcast: false, // do not talk to ourself
       port: 50001,
       compat: false
     })
+    mdnsA.init(getComponents(pA, aMultiaddrs))
 
     const mdnsB = new MulticastDNS({
-      peerId: pB,
-      multiaddrs: bMultiaddrs,
       port: 50001,
       compat: false
     })
+    mdnsB.init(getComponents(pB, bMultiaddrs))
 
     await mdnsA.start()
     await mdnsB.start()
@@ -152,7 +154,7 @@ describe('MulticastDNS', () => {
       once: true
     }))
 
-    expect(pB.toString(base58btc)).to.eql(id.toString(base58btc))
+    expect(pB.toString()).to.eql(id.toString())
     expect(multiaddrs.length).to.equal(2)
 
     await Promise.all([mdnsA.stop(), mdnsB.stop()])
@@ -162,18 +164,16 @@ describe('MulticastDNS', () => {
     this.timeout(40 * 1000)
 
     const mdnsA = new MulticastDNS({
-      peerId: pA,
-      multiaddrs: aMultiaddrs,
       port: 50004, // port must be the same
       compat: false
     })
+    mdnsA.init(getComponents(pA, aMultiaddrs))
 
     const mdnsC = new MulticastDNS({
-      peerId: pC,
-      multiaddrs: cMultiaddrs,
       port: 50004,
       compat: false
     })
+    mdnsC.init(getComponents(pD, dMultiaddrs))
 
     await mdnsA.start()
     await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -192,10 +192,9 @@ describe('MulticastDNS', () => {
 
   it('should start and stop with go-libp2p-mdns compat', async () => {
     const mdns = new MulticastDNS({
-      peerId: pA,
-      multiaddrs: aMultiaddrs,
       port: 50004
     })
+    mdns.init(getComponents(pA, aMultiaddrs))
 
     await mdns.start()
     await mdns.stop()
@@ -203,10 +202,9 @@ describe('MulticastDNS', () => {
 
   it('should not emit undefined peer ids', async () => {
     const mdns = new MulticastDNS({
-      peerId: pA,
-      multiaddrs: aMultiaddrs,
       port: 50004
     })
+    mdns.init(getComponents(pA, aMultiaddrs))
     await mdns.start()
 
     await new Promise<void>((resolve, reject) => {
