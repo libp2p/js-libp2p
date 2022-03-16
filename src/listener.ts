@@ -4,11 +4,12 @@ import { createServer } from 'it-ws/server'
 import { logger } from '@libp2p/logger'
 import { socketToMaConn } from './socket-to-conn.js'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
-import type { ListenerOptions, Upgrader, Listener, ListenerEvents } from '@libp2p/interfaces/transport'
+import type { Listener, ListenerEvents, CreateListenerOptions } from '@libp2p/interfaces/transport'
 import type { Server } from 'http'
 import type { WebSocketServer } from 'it-ws/server'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces'
+import type { Connection } from '@libp2p/interfaces/connection'
 
 const log = logger('libp2p:websockets:listener')
 
@@ -17,7 +18,7 @@ class WebSocketListener extends EventEmitter<ListenerEvents> implements Listener
   private listeningMultiaddr?: Multiaddr
   private readonly server: WebSocketServer
 
-  constructor (upgrader: Upgrader, options: WebSocketListenerOptions) {
+  constructor (init: WebSocketListenerInit) {
     super()
 
     // Keep track of open connections to destroy when the listener is closed
@@ -26,7 +27,7 @@ class WebSocketListener extends EventEmitter<ListenerEvents> implements Listener
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
     this.server = createServer({
-      ...options,
+      ...init,
       onConnection: (stream: DuplexWebSocket) => {
         const maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0))
         log('new inbound connection %s', maConn.remoteAddr)
@@ -38,15 +39,15 @@ class WebSocketListener extends EventEmitter<ListenerEvents> implements Listener
         })
 
         try {
-          void upgrader.upgradeInbound(maConn)
+          void init.upgrader.upgradeInbound(maConn)
             .then((conn) => {
               log('inbound connection %s upgraded', maConn.remoteAddr)
 
-              if (options?.handler != null) {
-                options?.handler(conn)
+              if (init?.handler != null) {
+                init?.handler(conn)
               }
 
-              self.dispatchEvent(new CustomEvent('connection', {
+              self.dispatchEvent(new CustomEvent<Connection>('connection', {
                 detail: conn
               }))
             })
@@ -149,12 +150,10 @@ class WebSocketListener extends EventEmitter<ListenerEvents> implements Listener
   }
 }
 
-export interface WebSocketListenerOptions extends ListenerOptions {
+export interface WebSocketListenerInit extends CreateListenerOptions {
   server?: Server
 }
 
-export function createListener (upgrader: Upgrader, options?: WebSocketListenerOptions): Listener {
-  options = options ?? {}
-
-  return new WebSocketListener(upgrader, options)
+export function createListener (init: WebSocketListenerInit): Listener {
+  return new WebSocketListener(init)
 }

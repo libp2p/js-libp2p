@@ -18,8 +18,8 @@ describe('libp2p-websockets', () => {
   let conn: Connection
 
   beforeEach(async () => {
-    ws = new WebSockets({ upgrader: mockUpgrader() })
-    conn = await ws.dial(ma)
+    ws = new WebSockets()
+    conn = await ws.dial(ma, { upgrader: mockUpgrader() })
   })
 
   afterEach(async () => {
@@ -86,6 +86,6 @@ describe('libp2p-websockets', () => {
   })
 
   it('.createServer throws in browser', () => {
-    expect(new WebSockets({ upgrader: mockUpgrader() }).createListener).to.throw()
+    expect(new WebSockets().createListener).to.throw()
   })
 })

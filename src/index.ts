@@ -7,35 +7,37 @@ import env from 'wherearewe'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
 import * as filters from './filters.js'
-import type { Transport, Upgrader, MultiaddrFilter } from '@libp2p/interfaces/transport'
+import { Transport, MultiaddrFilter, symbol, CreateListenerOptions, DialOptions } from '@libp2p/interfaces/transport'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { WebSocketListenerOptions } from './listener.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { DuplexWebSocket } from 'it-ws/dist/src/duplex'
+import type { DuplexWebSocket } from 'it-ws/duplex'
+import type { ClientOptions } from 'ws'
+import type { Server } from 'http'
 
 const log = logger('libp2p:websockets')
 
-/**
- * @class WebSockets
- */
-export class WebSockets implements Transport<AbortOptions & WebSocketOptions, WebSocketListenerOptions> {
-  private readonly upgrader: Upgrader
-  private readonly _filter?: MultiaddrFilter
+export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
+  filter?: MultiaddrFilter
+  websocket?: ClientOptions
+  server?: Server
+}
 
-  constructor (opts: { upgrader: Upgrader, filter?: MultiaddrFilter }) {
-    const { upgrader, filter } = opts
+export class WebSockets implements Transport {
+  private readonly init?: WebSocketsInit
 
-    if (upgrader == null) {
-      throw new Error('An upgrader must be provided. See https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#upgrader')
-    }
-
-    this.upgrader = upgrader
-    this._filter = filter
+  constructor (init?: WebSocketsInit) {
+    this.init = init
   }
 
-  [Symbol.toStringTag] = 'WebSockets'
+  get [Symbol.toStringTag] () {
+    return this.constructor.name
+  }
 
-  async dial (ma: Multiaddr, options?: AbortOptions & WebSocketOptions) {
+  get [symbol] (): true {
+    return true
+  }
+
+  async dial (ma: Multiaddr, options: DialOptions) {
     log('dialing %s', ma)
     options = options ?? {}
 
@@ -43,12 +45,12 @@ export class WebSockets implements Transport<AbortOptions & WebSocketOptions, We
     const maConn = socketToMaConn(socket, ma)
     log('new outbound connection %s', maConn.remoteAddr)
 
-    const conn = await this.upgrader.upgradeOutbound(maConn)
+    const conn = await options.upgrader.upgradeOutbound(maConn)
     log('outbound connection %s upgraded', maConn.remoteAddr)
     return conn
   }
 
-  async _connect (ma: Multiaddr, options: AbortOptions & WebSocketOptions): Promise<DuplexWebSocket> {
+  async _connect (ma: Multiaddr, options: AbortOptions): Promise<DuplexWebSocket> {
     if (options?.signal?.aborted === true) {
       throw new AbortError()
     }
@@ -62,7 +64,7 @@ export class WebSockets implements Transport<AbortOptions & WebSocketOptions, We
       errorPromise.reject(err)
     }
 
-    const rawSocket = connect(toUri(ma), options)
+    const rawSocket = connect(toUri(ma), this.init)
 
     if (rawSocket.socket.on != null) {
       rawSocket.socket.on('error', errfn)
@@ -115,8 +117,8 @@ export class WebSockets implements Transport<AbortOptions & WebSocketOptions, We
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`
    */
-  createListener (options?: WebSocketListenerOptions) {
-    return createListener(this.upgrader, options)
+  createListener (options: CreateListenerOptions) {
+    return createListener({ ...this.init, ...options })
   }
 
   /**
@@ -127,8 +129,8 @@ export class WebSockets implements Transport<AbortOptions & WebSocketOptions, We
   filter (multiaddrs: Multiaddr[]) {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
-    if (this._filter != null) {
-      return this._filter(multiaddrs)
+    if (this.init?.filter != null) {
+      return this.init?.filter(multiaddrs)
     }
 
     // Browser
