@@ -1,3 +1,10 @@
+### [1.0.2](https://github.com/libp2p/js-libp2p-mdns/compare/v1.0.1...v1.0.2) (2022-03-16)
+
+
+### Bug Fixes
+
+* update interfaces ([#116](https://github.com/libp2p/js-libp2p-mdns/issues/116)) ([30ec23a](https://github.com/libp2p/js-libp2p-mdns/commit/30ec23a5bc2e983fe01e0e47e46ecedf4c0eab5d))
+
 ### [1.0.1](https://github.com/libp2p/js-libp2p-mdns/compare/v1.0.0...v1.0.1) (2022-02-12)
 
 
