@@ -10,7 +10,7 @@ import { logger } from '@libp2p/logger'
 import type { Message } from './message-types.js'
 import type { Timeline } from '@libp2p/interfaces/connection'
 import type { Source } from 'it-stream-types'
-import type { MplexStream } from './index.js'
+import type { MplexStream } from './mplex.js'
 
 const log = logger('libp2p:mplex:stream')
 
@@ -49,7 +49,7 @@ export function createStream (options: Options): MplexStream {
     }
 
     sourceEnded = true
-    log('%s stream %s source end', type, streamName, err)
+    log.trace('%s stream %s source end', type, streamName, err)
 
     if (err != null && endErr == null) {
       endErr = err
@@ -70,7 +70,7 @@ export function createStream (options: Options): MplexStream {
     }
 
     sinkEnded = true
-    log('%s stream %s sink end - err: %o', type, streamName, err)
+    log.trace('%s stream %s sink end - err: %o', type, streamName, err)
 
     if (err != null && endErr == null) {
       endErr = err
@@ -92,7 +92,7 @@ export function createStream (options: Options): MplexStream {
     },
     // Close for reading and writing (local error)
     abort: (err?: Error) => {
-      log('%s stream %s abort', type, streamName, err)
+      log.trace('%s stream %s abort', type, streamName, err)
       // End the source with the passed error
       stream.source.end(err)
       abortController.abort()
@@ -148,13 +148,13 @@ export function createStream (options: Options): MplexStream {
 
         // Send no more data if this stream was remotely reset
         if (err.code === ERR_MPLEX_STREAM_RESET) {
-          log('%s stream %s reset', type, name)
+          log.trace('%s stream %s reset', type, name)
         } else {
-          log('%s stream %s error', type, name, err)
+          log.trace('%s stream %s error', type, name, err)
           try {
             send({ id, type: Types.RESET })
           } catch (err) {
-            log('%s stream %s error sending reset', type, name, err)
+            log.trace('%s stream %s error sending reset', type, name, err)
           }
         }
 
@@ -166,7 +166,7 @@ export function createStream (options: Options): MplexStream {
       try {
         send({ id, type: Types.CLOSE })
       } catch (err) {
-        log('%s stream %s error sending close', type, name, err)
+        log.trace('%s stream %s error sending close', type, name, err)
       }
 
       onSinkEnd()

@@ -14,7 +14,7 @@ import { MessageTypes, MessageTypeNames } from '../src/message-types.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import { messageWithBytes } from './fixtures/utils.js'
 import type { Message } from '../src/message-types.js'
-import type { MplexStream } from '../src/index.js'
+import type { MplexStream } from '../src/mplex.js'
 
 function randomInput (min = 1, max = 100) {
   return Array.from(Array(randomInt(min, max)), () => randomBytes(randomInt(1, 128)))

@@ -5,8 +5,8 @@ import { Mplex } from '../src/index.js'
 
 describe('compliance', () => {
   tests({
-    async setup (options) {
-      return new Mplex(options)
+    async setup () {
+      return new Mplex()
     },
     async teardown () {}
   })
