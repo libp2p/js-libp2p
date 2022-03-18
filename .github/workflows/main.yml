@@ -5,24 +5,11 @@ on:
       - master
   pull_request:
     branches:
-      - '**'
+      - master
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [16]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-      - uses: ipfs/aegir/actions/cache-node-modules@master
 
   check:
-    needs: build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -30,15 +17,11 @@ jobs:
       with:
         node-version: lts/*
     - uses: ipfs/aegir/actions/cache-node-modules@master
-    - run: npx aegir lint
-    - run: npx aegir dep-check
-    - uses: ipfs/aegir/actions/bundle-size@master
-      name: size
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+    - run: npm run --if-present lint
+    - run: npm run --if-present dep-check
 
   test-node:
-    needs: build
+    needs: check
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -51,14 +34,14 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm run test:node -- --cov --bail
+      - run: npm run --if-present test:node
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
           directory: ./.nyc_output
           flags: node
 
   test-chrome:
-    needs: build
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -66,14 +49,14 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm run test:browser -- -t browser --cov --bail
+      - run: npm run --if-present test:chrome
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
           directory: ./.nyc_output
           flags: chrome
 
   test-chrome-webworker:
-    needs: build
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -81,14 +64,14 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm run test:browser -- -t webworker --bail
+      - run: npm run --if-present test:chrome-webworker
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
           directory: ./.nyc_output
           flags: chrome-webworker
 
   test-firefox:
-    needs: build
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -96,14 +79,14 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm run test:browser -- -t browser --bail -- --browser firefox
+      - run: npm run --if-present test:firefox
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
           directory: ./.nyc_output
           flags: firefox
 
   test-firefox-webworker:
-    needs: build
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -111,14 +94,14 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm run test:browser -- -t webworker --bail -- --browser firefox
+      - run: npm run --if-present test:firefox-webworker
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
           directory: ./.nyc_output
           flags: firefox-webworker
 
-  test-ts:
-    needs: build
+  test-electron-main:
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -126,7 +109,26 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm run test:ts
+      - run: npx xvfb-maybe npm run --if-present test:electron-main
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: electron-main
+
+  test-electron-renderer:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npx xvfb-maybe npm run --if-present test:electron-renderer
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: electron-renderer
 
   test-interop:
     needs: build
