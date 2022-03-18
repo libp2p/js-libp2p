@@ -131,7 +131,7 @@ jobs:
           flags: electron-renderer
 
   test-interop:
-    needs: build
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -143,7 +143,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [test-node, test-chrome, test-chrome-webworker, test-firefox, test-firefox-webworker, test-ts, test-interop]
+    needs: [test-node, test-chrome, test-chrome-webworker, test-firefox, test-firefox-webworker, test-electron-main, test-electron-renderer, test-interop]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2
