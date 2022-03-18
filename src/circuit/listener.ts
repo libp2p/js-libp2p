@@ -1,33 +1,27 @@
-'use strict'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import type { ConnectionManager } from '@libp2p/interfaces/registrar'
+import type { Dialer } from '@libp2p/interfaces/dialer'
+import type { Listener } from '@libp2p/interfaces/transport'
+import { Multiaddr } from '@multiformats/multiaddr'
 
-const { EventEmitter } = require('events')
-const { Multiaddr } = require('multiaddr')
+export interface ListenerOptions {
+  dialer: Dialer
+  connectionManager: ConnectionManager
+}
 
-/**
- * @typedef {import('libp2p-interfaces/src/transport/types').Listener} Listener
- */
-
-/**
- * @param {import('../')} libp2p
- * @returns {Listener} a transport listener
- */
-module.exports = (libp2p) => {
+export function createListener (options: ListenerOptions): Listener {
   const listeningAddrs = new Map()
 
   /**
    * Add swarm handler and listen for incoming connections
-   *
-   * @param {Multiaddr} addr
-   * @returns {Promise<void>}
    */
-  async function listen (addr) {
-    const addrString = String(addr).split('/p2p-circuit').find(a => a !== '')
-
-    const relayConn = await libp2p.dial(new Multiaddr(addrString))
+  async function listen (addr: Multiaddr): Promise<void> {
+    const addrString = addr.toString().split('/p2p-circuit').find(a => a !== '')
+    const relayConn = await options.dialer.dial(new Multiaddr(addrString))
     const relayedAddr = relayConn.remoteAddr.encapsulate('/p2p-circuit')
 
-    listeningAddrs.set(relayConn.remotePeer.toB58String(), relayedAddr)
-    listener.emit('listening')
+    listeningAddrs.set(relayConn.remotePeer.toString(), relayedAddr)
+    listener.dispatchEvent(new CustomEvent('listening'))
   }
 
   /**
@@ -54,20 +48,20 @@ module.exports = (libp2p) => {
     return addrs
   }
 
-  /** @type Listener */
-  const listener = Object.assign(new EventEmitter(), {
-    close: () => Promise.resolve(),
+  const listener: Listener = Object.assign(new EventEmitter(), {
+    close: async () => await Promise.resolve(),
     listen,
     getAddrs
   })
 
   // Remove listeningAddrs when a peer disconnects
-  libp2p.connectionManager.on('peer:disconnect', (connection) => {
-    const deleted = listeningAddrs.delete(connection.remotePeer.toB58String())
+  options.connectionManager.addEventListener('peer:disconnect', (evt) => {
+    const { detail: connection } = evt
+    const deleted = listeningAddrs.delete(connection.remotePeer.toString())
 
     if (deleted) {
       // Announce listen addresses change
-      listener.emit('close')
+      listener.dispatchEvent(new CustomEvent('close'))
     }
   })
 

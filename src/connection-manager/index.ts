@@ -1,25 +1,23 @@
-'use strict'
+import { logger } from '@libp2p/logger'
+import errCode from 'err-code'
+import mergeOptions from 'merge-options'
+import { LatencyMonitor, SummaryObject } from './latency-monitor.js'
+// @ts-expect-error retimer does not have types
+import retimer from 'retimer'
+import { CustomEvent, EventEmitter, Startable } from '@libp2p/interfaces'
+import { trackedMap } from '@libp2p/tracked-map'
+import { codes } from '../errors.js'
+import { isPeerId, PeerId } from '@libp2p/interfaces/peer-id'
+// @ts-expect-error setMaxListeners is missing from the node 16 types
+import { setMaxListeners } from 'events'
+import type { Connection } from '@libp2p/interfaces/connection'
+import type { ConnectionManager } from '@libp2p/interfaces/registrar'
+import type { Components } from '@libp2p/interfaces/components'
+import * as STATUS from '@libp2p/interfaces/connection/status'
 
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:connection-manager'), {
-  error: debug('libp2p:connection-manager:err')
-})
+const log = logger('libp2p:connection-manager')
 
-const errcode = require('err-code')
-const mergeOptions = require('merge-options')
-const LatencyMonitor = require('./latency-monitor')
-// @ts-ignore retimer does not have types
-const retimer = require('retimer')
-
-const { EventEmitter } = require('events')
-const trackedMap = require('../metrics/tracked-map')
-const PeerId = require('peer-id')
-
-const {
-  codes: { ERR_INVALID_PARAMETERS }
-} = require('../errors')
-
-const defaultOptions = {
+const defaultOptions: Partial<ConnectionManagerInit> = {
   maxConnections: Infinity,
   minConnections: 0,
   maxData: Infinity,
@@ -36,133 +34,171 @@ const METRICS_COMPONENT = 'connection-manager'
 const METRICS_PEER_CONNECTIONS = 'peer-connections'
 const METRICS_PEER_VALUES = 'peer-values'
 
-/**
- * @typedef {import('../')} Libp2p
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- */
+export interface ConnectionManagerEvents {
+  'peer:connect': CustomEvent<PeerId>
+  'peer:disconnect': CustomEvent<PeerId>
+}
 
-/**
- * @typedef {Object} ConnectionManagerOptions
- * @property {number} [maxConnections = Infinity] - The maximum number of connections allowed.
- * @property {number} [minConnections = 0] - The minimum number of connections to avoid pruning.
- * @property {number} [maxData = Infinity] - The max data (in and out), per average interval to allow.
- * @property {number} [maxSentData = Infinity] - The max outgoing data, per average interval to allow.
- * @property {number} [maxReceivedData = Infinity] - The max incoming data, per average interval to allow.
- * @property {number} [maxEventLoopDelay = Infinity] - The upper limit the event loop can take to run.
- * @property {number} [pollInterval = 2000] - How often, in milliseconds, metrics and latency should be checked.
- * @property {number} [movingAverageInterval = 60000] - How often, in milliseconds, to compute averages.
- * @property {number} [defaultPeerValue = 1] - The value of the peer.
- * @property {boolean} [autoDial = true] - Should preemptively guarantee connections are above the low watermark.
- * @property {number} [autoDialInterval = 10000] - How often, in milliseconds, it should preemptively guarantee connections are above the low watermark.
- */
-
-/**
- *
- * @fires ConnectionManager#peer:connect Emitted when a new peer is connected.
- * @fires ConnectionManager#peer:disconnect Emitted when a peer is disconnected.
- */
-class ConnectionManager extends EventEmitter {
+export interface ConnectionManagerInit {
   /**
-   * Responsible for managing known connections.
-   *
-   * @class
-   * @param {Libp2p} libp2p
-   * @param {ConnectionManagerOptions} options
+   * The maximum number of connections allowed
    */
-  constructor (libp2p, options = {}) {
+  maxConnections?: number
+
+  /**
+   * The minimum number of connections to avoid pruning
+   */
+  minConnections?: number
+
+  /**
+   * The max data (in and out), per average interval to allow
+   */
+  maxData?: number
+
+  /**
+   * The max outgoing data, per average interval to allow
+   */
+  maxSentData?: number
+
+  /**
+   * The max incoming data, per average interval to allow
+   */
+  maxReceivedData?: number
+
+  /**
+   * The upper limit the event loop can take to run
+   */
+  maxEventLoopDelay?: number
+
+  /**
+   * How often, in milliseconds, metrics and latency should be checked
+   */
+  pollInterval?: number
+
+  /**
+   * How often, in milliseconds, to compute averages
+   */
+  movingAverageInterval?: number
+
+  /**
+   * The value of the peer
+   */
+  defaultPeerValue?: number
+
+  /**
+   * Should preemptively guarantee connections are above the low watermark
+   */
+  autoDial?: boolean
+
+  /**
+   * How often, in milliseconds, it should preemptively guarantee connections are above the low watermark
+   */
+  autoDialInterval?: number
+}
+
+/**
+ * Responsible for managing known connections.
+ */
+export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable {
+  private readonly components: Components
+  private readonly init: Required<ConnectionManagerInit>
+  private readonly peerValues: Map<string, number>
+  private readonly connections: Map<string, Connection[]>
+  private started: boolean
+  private timer?: ReturnType<retimer>
+  private readonly latencyMonitor: LatencyMonitor
+
+  constructor (components: Components, init: ConnectionManagerInit = {}) {
     super()
 
-    this._libp2p = libp2p
-    this._peerId = libp2p.peerId.toB58String()
+    this.components = components
+    this.init = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
 
-    this._options = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, options)
-    if (this._options.maxConnections < this._options.minConnections) {
-      throw errcode(new Error('Connection Manager maxConnections must be greater than minConnections'), ERR_INVALID_PARAMETERS)
+    if (this.init.maxConnections < this.init.minConnections) {
+      throw errCode(new Error('Connection Manager maxConnections must be greater than minConnections'), codes.ERR_INVALID_PARAMETERS)
     }
 
-    log('options: %j', this._options)
+    log('options: %o', this.init)
 
     /**
      * Map of peer identifiers to their peer value for pruning connections.
      *
      * @type {Map<string, number>}
      */
-    this._peerValues = trackedMap({
+    this.peerValues = trackedMap({
       component: METRICS_COMPONENT,
       metric: METRICS_PEER_VALUES,
-      metrics: this._libp2p.metrics
+      metrics: this.components.getMetrics()
     })
 
     /**
      * Map of connections per peer
-     *
-     * @type {Map<string, Connection[]>}
      */
     this.connections = trackedMap({
       component: METRICS_COMPONENT,
       metric: METRICS_PEER_CONNECTIONS,
-      metrics: this._libp2p.metrics
+      metrics: this.components.getMetrics()
     })
 
-    this._started = false
-    this._timer = null
+    this.started = false
     this._checkMetrics = this._checkMetrics.bind(this)
 
-    this._latencyMonitor = new LatencyMonitor({
-      latencyCheckIntervalMs: this._options.pollInterval,
-      dataEmitIntervalMs: this._options.pollInterval
+    this.latencyMonitor = new LatencyMonitor({
+      latencyCheckIntervalMs: init.pollInterval,
+      dataEmitIntervalMs: init.pollInterval
     })
 
-    // This emitter gets listened to a lot
-    this.setMaxListeners(Infinity)
+    try {
+      // This emitter gets listened to a lot
+      setMaxListeners?.(Infinity, this)
+    } catch {}
+
+    this.components.getUpgrader().addEventListener('connection', (evt) => {
+      void this.onConnect(evt).catch(err => {
+        log.error(err)
+      })
+    })
+    this.components.getUpgrader().addEventListener('connectionEnd', this.onDisconnect.bind(this))
   }
 
-  /**
-   * Get current number of open connections.
-   */
-  get size () {
-    return Array.from(this.connections.values())
-      .reduce((accumulator, value) => accumulator + value.length, 0)
+  isStarted () {
+    return this.started
   }
 
   /**
    * Starts the Connection Manager. If Metrics are not enabled on libp2p
    * only event loop and connection limits will be monitored.
    */
-  start () {
-    if (this._libp2p.metrics) {
-      this._timer = this._timer || retimer(this._checkMetrics, this._options.pollInterval)
+  async start () {
+    if (this.components.getMetrics() != null) {
+      this.timer = this.timer ?? retimer(this._checkMetrics, this.init.pollInterval)
     }
 
     // latency monitor
-    this._latencyMonitor.start()
+    this.latencyMonitor.start()
     this._onLatencyMeasure = this._onLatencyMeasure.bind(this)
-    this._latencyMonitor.on('data', this._onLatencyMeasure)
+    this.latencyMonitor.addEventListener('data', this._onLatencyMeasure)
 
-    this._started = true
+    this.started = true
     log('started')
   }
 
   /**
    * Stops the Connection Manager
-   *
-   * @async
    */
   async stop () {
-    this._timer && this._timer.clear()
+    this.timer?.clear()
 
-    this._latencyMonitor.removeListener('data', this._onLatencyMeasure)
-    this._latencyMonitor.stop()
+    this.latencyMonitor.removeEventListener('data', this._onLatencyMeasure)
+    this.latencyMonitor.stop()
 
-    this._started = false
+    this.started = false
     await this._close()
     log('stopped')
   }
 
   /**
    * Cleans up the connections
-   *
-   * @async
    */
   async _close () {
     // Close all connections we're tracking
@@ -173,6 +209,7 @@ class ConnectionManager extends EventEmitter {
       }
     }
 
+    log('closing %d connections', tasks.length)
     await Promise.all(tasks)
     this.connections.clear()
   }
@@ -180,16 +217,13 @@ class ConnectionManager extends EventEmitter {
   /**
    * Sets the value of the given peer. Peers with lower values
    * will be disconnected first.
-   *
-   * @param {PeerId} peerId
-   * @param {number} value - A number between 0 and 1
-   * @returns {void}
    */
-  setPeerValue (peerId, value) {
+  setPeerValue (peerId: PeerId, value: number) {
     if (value < 0 || value > 1) {
       throw new Error('value should be a number between 0 and 1')
     }
-    this._peerValues.set(peerId.toB58String(), value)
+
+    this.peerValues.set(peerId.toString(), value)
   }
 
   /**
@@ -199,126 +233,141 @@ class ConnectionManager extends EventEmitter {
    * @private
    */
   async _checkMetrics () {
-    if (this._libp2p.metrics) {
+    const metrics = this.components.getMetrics()
+
+    if (metrics != null) {
       try {
-        const movingAverages = this._libp2p.metrics.global.movingAverages
-        // @ts-ignore moving averages object types
-        const received = movingAverages.dataReceived[this._options.movingAverageInterval].movingAverage()
+        const movingAverages = metrics.getGlobal().getMovingAverages()
+        const received = movingAverages.dataReceived[this.init.movingAverageInterval].movingAverage
         await this._checkMaxLimit('maxReceivedData', received)
-        // @ts-ignore moving averages object types
-        const sent = movingAverages.dataSent[this._options.movingAverageInterval].movingAverage()
+        const sent = movingAverages.dataSent[this.init.movingAverageInterval].movingAverage
         await this._checkMaxLimit('maxSentData', sent)
         const total = received + sent
         await this._checkMaxLimit('maxData', total)
         log('metrics update', total)
       } finally {
-        this._timer = retimer(this._checkMetrics, this._options.pollInterval)
+        this.timer = retimer(this._checkMetrics, this.init.pollInterval)
       }
     }
   }
 
   /**
    * Tracks the incoming connection and check the connection limit
-   *
-   * @param {Connection} connection
    */
-  async onConnect (connection) {
-    if (!this._started) {
+  async onConnect (evt: CustomEvent<Connection>) {
+    const { detail: connection } = evt
+
+    if (!this.started) {
       // This can happen when we are in the process of shutting down the node
       await connection.close()
       return
     }
 
     const peerId = connection.remotePeer
-    const peerIdStr = peerId.toB58String()
-    const storedConn = this.connections.get(peerIdStr)
+    const peerIdStr = peerId.toString()
+    const storedConns = this.connections.get(peerIdStr)
 
-    this.emit('peer:connect', connection)
+    this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: connection }))
 
-    if (storedConn) {
-      storedConn.push(connection)
+    if (storedConns != null) {
+      storedConns.push(connection)
     } else {
       this.connections.set(peerIdStr, [connection])
     }
 
-    await this._libp2p.peerStore.keyBook.set(peerId, peerId.pubKey)
-
-    if (!this._peerValues.has(peerIdStr)) {
-      this._peerValues.set(peerIdStr, this._options.defaultPeerValue)
+    if (peerId.publicKey != null) {
+      await this.components.getPeerStore().keyBook.set(peerId, peerId.publicKey)
     }
 
-    await this._checkMaxLimit('maxConnections', this.size)
+    if (!this.peerValues.has(peerIdStr)) {
+      this.peerValues.set(peerIdStr, this.init.defaultPeerValue)
+    }
+
+    await this._checkMaxLimit('maxConnections', this.getConnectionList().length)
   }
 
   /**
    * Removes the connection from tracking
-   *
-   * @param {Connection} connection
-   * @returns {void}
    */
-  onDisconnect (connection) {
-    if (!this._started) {
+  onDisconnect (evt: CustomEvent<Connection>) {
+    const { detail: connection } = evt
+
+    if (!this.started) {
       // This can happen when we are in the process of shutting down the node
       return
     }
 
-    const peerId = connection.remotePeer.toB58String()
+    const peerId = connection.remotePeer.toString()
     let storedConn = this.connections.get(peerId)
 
-    if (storedConn && storedConn.length > 1) {
+    if (storedConn != null && storedConn.length > 1) {
       storedConn = storedConn.filter((conn) => conn.id !== connection.id)
       this.connections.set(peerId, storedConn)
-    } else if (storedConn) {
+    } else if (storedConn != null) {
       this.connections.delete(peerId)
-      this._peerValues.delete(connection.remotePeer.toB58String())
-      this.emit('peer:disconnect', connection)
+      this.peerValues.delete(connection.remotePeer.toString())
+      this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: connection }))
 
-      this._libp2p.metrics && this._libp2p.metrics.onPeerDisconnected(connection.remotePeer)
+      this.components.getMetrics()?.onPeerDisconnected(connection.remotePeer)
     }
   }
 
+  getConnectionMap (): Map<string, Connection[]> {
+    return this.connections
+  }
+
+  getConnectionList (): Connection[] {
+    let output: Connection[] = []
+
+    for (const connections of this.connections.values()) {
+      output = output.concat(connections)
+    }
+
+    return output
+  }
+
+  getConnections (peerId: PeerId): Connection[] {
+    return this.connections.get(peerId.toString()) ?? []
+  }
+
   /**
-   * Get a connection with a peer.
-   *
-   * @param {PeerId} peerId
-   * @returns {Connection|null}
+   * Get a connection with a peer
    */
-  get (peerId) {
+  getConnection (peerId: PeerId): Connection | undefined {
     const connections = this.getAll(peerId)
-    if (connections.length) {
+
+    if (connections.length > 0) {
       return connections[0]
     }
-    return null
+
+    return undefined
   }
 
   /**
-   * Get all open connections with a peer.
-   *
-   * @param {PeerId} peerId
-   * @returns {Connection[]}
+   * Get all open connections with a peer
    */
-  getAll (peerId) {
-    if (!PeerId.isPeerId(peerId)) {
-      throw errcode(new Error('peerId must be an instance of peer-id'), ERR_INVALID_PARAMETERS)
+  getAll (peerId: PeerId): Connection[] {
+    if (!isPeerId(peerId)) {
+      throw errCode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
     }
 
-    const id = peerId.toB58String()
+    const id = peerId.toString()
     const connections = this.connections.get(id)
 
     // Return all open connections
-    if (connections) {
-      return connections.filter(connection => connection.stat.status === 'open')
+    if (connections != null) {
+      return connections.filter(connection => connection.stat.status === STATUS.OPEN)
     }
+
     return []
   }
 
   /**
    * If the event loop is slow, maybe close a connection
-   *
-   * @private
-   * @param {*} summary - The LatencyMonitor summary
    */
-  _onLatencyMeasure (summary) {
+  _onLatencyMeasure (evt: CustomEvent<SummaryObject>) {
+    const { detail: summary } = evt
+
     this._checkMaxLimit('maxEventLoopDelay', summary.avgMs)
       .catch(err => {
         log.error(err)
@@ -327,16 +376,12 @@ class ConnectionManager extends EventEmitter {
 
   /**
    * If the `value` of `name` has exceeded its limit, maybe close a connection
-   *
-   * @private
-   * @param {string} name - The name of the field to check limits for
-   * @param {number} value - The current value of the field
    */
-  async _checkMaxLimit (name, value) {
-    const limit = this._options[name]
-    log('checking limit of %s. current value: %d of %d', name, value, limit)
+  async _checkMaxLimit (name: keyof ConnectionManagerInit, value: number) {
+    const limit = this.init[name]
+    log.trace('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
-      log('%s: limit exceeded: %s, %d', this._peerId, name, value)
+      log('%s: limit exceeded: %p, %d', this.components.getPeerId(), name, value)
       await this._maybeDisconnectOne()
     }
   }
@@ -344,25 +389,30 @@ class ConnectionManager extends EventEmitter {
   /**
    * If we have more connections than our maximum, close a connection
    * to the lowest valued peer.
-   *
-   * @private
    */
   async _maybeDisconnectOne () {
-    if (this._options.minConnections < this.connections.size) {
-      const peerValues = Array.from(new Map([...this._peerValues.entries()].sort((a, b) => a[1] - b[1])))
-      log('%s: sorted peer values: %j', this._peerId, peerValues)
+    if (this.init.minConnections < this.connections.size) {
+      const peerValues = Array.from(new Map([...this.peerValues.entries()].sort((a, b) => a[1] - b[1])))
+
+      log('%p: sorted peer values: %j', this.components.getPeerId(), peerValues)
       const disconnectPeer = peerValues[0]
-      if (disconnectPeer) {
+
+      if (disconnectPeer != null) {
         const peerId = disconnectPeer[0]
-        log('%s: lowest value peer is %s', this._peerId, peerId)
-        log('%s: closing a connection to %j', this._peerId, peerId)
+        log('%p: lowest value peer is %s', this.components.getPeerId(), peerId)
+        log('%p: closing a connection to %j', this.components.getPeerId(), peerId)
+
         for (const connections of this.connections.values()) {
-          if (connections[0].remotePeer.toB58String() === peerId) {
-            connections[0].close().catch(err => {
-              log.error(err)
-            })
+          if (connections[0].remotePeer.toString() === peerId) {
+            void connections[0].close()
+              .catch(err => {
+                log.error(err)
+              })
+
             // TODO: should not need to invoke this manually
-            this.onDisconnect(connections[0])
+            this.onDisconnect(new CustomEvent<Connection>('connectionEnd', {
+              detail: connections[0]
+            }))
             break
           }
         }
@@ -370,5 +420,3 @@ class ConnectionManager extends EventEmitter {
     }
   }
 }
-
-module.exports = ConnectionManager

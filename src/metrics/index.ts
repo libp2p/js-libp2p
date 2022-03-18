@@ -1,14 +1,14 @@
-// @ts-nocheck
-'use strict'
+import { pipe } from 'it-pipe'
+import each from 'it-foreach'
+import LRU from 'hashlru'
+import { METRICS as defaultOptions } from '../constants.js'
+import { DefaultStats, StatsInit } from './stats.js'
+import type { ComponentMetricsUpdate, Metrics, Stats, TrackStreamOptions } from '@libp2p/interfaces/metrics'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Startable } from '@libp2p/interfaces'
+import type { Duplex } from 'it-stream-types'
 
-const mergeOptions = require('merge-options')
-const { pipe } = require('it-pipe')
-const { tap } = require('streaming-iterables')
-const oldPeerLRU = require('./old-peers')
-const { METRICS: defaultOptions } = require('../constants')
-const Stats = require('./stats')
-
-const initialCounters = [
+const initialCounters: ['dataReceived', 'dataSent'] = [
   'dataReceived',
   'dataSent'
 ]
@@ -18,89 +18,114 @@ const directionToEvent = {
   out: 'dataSent'
 }
 
-/**
- * @typedef {import('peer-id')} PeerId
- * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
- */
+export interface OnMessageOptions {
+  remotePeer: PeerId
+  protocol?: string
+  direction: 'in' | 'out'
+  dataLength: number
+}
 
-/**
- * @typedef MetricsOptions
- * @property {number} [computeThrottleMaxQueueSize = defaultOptions.computeThrottleMaxQueueSize]
- * @property {number} [computeThrottleTimeout = defaultOptions.computeThrottleTimeout]
- * @property {number[]} [movingAverageIntervals = defaultOptions.movingAverageIntervals]
- * @property {number} [maxOldPeersRetention = defaultOptions.maxOldPeersRetention]
- */
+export interface MetricsInit {
+  enabled: boolean
+  computeThrottleMaxQueueSize: number
+  computeThrottleTimeout: number
+  movingAverageIntervals: number[]
+  maxOldPeersRetention: number
+}
 
-class Metrics {
-  /**
-   * @class
-   * @param {MetricsOptions} options
-   */
-  constructor (options) {
-    this._options = mergeOptions(defaultOptions, options)
-    this._globalStats = new Stats(initialCounters, this._options)
-    this._peerStats = new Map()
-    this._protocolStats = new Map()
-    this._oldPeers = oldPeerLRU(this._options.maxOldPeersRetention)
-    this._running = false
+export class DefaultMetrics implements Metrics, Startable {
+  public globalStats: DefaultStats
+
+  private readonly enabled: boolean
+  private readonly peerStats: Map<string, DefaultStats>
+  private readonly protocolStats: Map<string, DefaultStats>
+  private readonly oldPeers: ReturnType<typeof LRU>
+  private running: boolean
+  private readonly systems: Map<string, Map<string, Map<string, number>>>
+  private readonly statsInit: StatsInit
+
+  constructor (init: MetricsInit) {
+    this.enabled = init.enabled
+    this.statsInit = {
+      ...init,
+      initialCounters
+    }
+    this.globalStats = new DefaultStats(this.statsInit)
+    this.peerStats = new Map()
+    this.protocolStats = new Map()
+    this.oldPeers = LRU(init.maxOldPeersRetention ?? defaultOptions.maxOldPeersRetention)
+    this.running = false
     this._onMessage = this._onMessage.bind(this)
-    this._systems = new Map()
+    this.systems = new Map()
+  }
+
+  isStarted () {
+    return this.running
   }
 
   /**
    * Must be called for stats to saved. Any data pushed for tracking
    * will be ignored.
    */
-  start () {
-    this._running = true
+  async start () {
+    if (!this.enabled) {
+      return
+    }
+
+    this.running = true
   }
 
   /**
    * Stops all averages timers and prevents new data from being tracked.
    * Once `stop` is called, `start` must be called to resume stats tracking.
    */
-  stop () {
-    this._running = false
-    this._globalStats.stop()
-    for (const stats of this._peerStats.values()) {
+  async stop () {
+    if (!this.running) {
+      return
+    }
+
+    this.running = false
+    this.globalStats.stop()
+
+    for (const stats of this.peerStats.values()) {
       stats.stop()
     }
-    for (const stats of this._protocolStats.values()) {
+
+    for (const stats of this.protocolStats.values()) {
       stats.stop()
     }
   }
 
   /**
    * Gets the global `Stats` object
-   *
-   * @returns {Stats}
    */
-  get global () {
-    return this._globalStats
+  getGlobal () {
+    return this.globalStats
   }
 
   /**
    * Returns a list of `PeerId` strings currently being tracked
-   *
-   * @returns {string[]}
    */
-  get peers () {
-    return Array.from(this._peerStats.keys())
+  getPeers () {
+    return Array.from(this.peerStats.keys())
   }
 
-  /**
-   * @returns {Map<string, Map<string, Map<string, any>>>}
-   */
   getComponentMetrics () {
-    return this._systems
+    return this.systems
   }
 
-  updateComponentMetric ({ system = 'libp2p', component, metric, value }) {
-    if (!this._systems.has(system)) {
-      this._systems.set(system, new Map())
+  updateComponentMetric (update: ComponentMetricsUpdate) {
+    const { system = 'libp2p', component, metric, value } = update
+
+    if (!this.systems.has(system)) {
+      this.systems.set(system, new Map())
     }
 
-    const systemMetrics = this._systems.get(system)
+    const systemMetrics = this.systems.get(system)
+
+    if (systemMetrics == null) {
+      throw new Error('Unknown metric system')
+    }
 
     if (!systemMetrics.has(component)) {
       systemMetrics.set(component, new Map())
@@ -108,54 +133,50 @@ class Metrics {
 
     const componentMetrics = systemMetrics.get(component)
 
+    if (componentMetrics == null) {
+      throw new Error('Unknown metric component')
+    }
+
     componentMetrics.set(metric, value)
   }
 
   /**
    * Returns the `Stats` object for the given `PeerId` whether it
    * is a live peer, or in the disconnected peer LRU cache.
-   *
-   * @param {PeerId} peerId
-   * @returns {Stats}
    */
-  forPeer (peerId) {
-    const idString = peerId.toB58String()
-    return this._peerStats.get(idString) || this._oldPeers.get(idString)
+  forPeer (peerId: PeerId): Stats | undefined {
+    const idString = peerId.toString()
+    return this.peerStats.get(idString) ?? this.oldPeers.get(idString)
   }
 
   /**
-   * Returns a list of all protocol strings currently being tracked.
-   *
-   * @returns {string[]}
+   * Returns a list of all protocol strings currently being tracked
    */
-  get protocols () {
-    return Array.from(this._protocolStats.keys())
+  getProtocols (): string[] {
+    return Array.from(this.protocolStats.keys())
   }
 
   /**
-   * Returns the `Stats` object for the given `protocol`.
-   *
-   * @param {string} protocol
-   * @returns {Stats}
+   * Returns the `Stats` object for the given `protocol`
    */
-  forProtocol (protocol) {
-    return this._protocolStats.get(protocol)
+  forProtocol (protocol: string): Stats | undefined {
+    return this.protocolStats.get(protocol)
   }
 
   /**
    * Should be called when all connections to a given peer
    * have closed. The `Stats` collection for the peer will
    * be stopped and moved to an LRU for temporary retention.
-   *
-   * @param {PeerId} peerId
    */
-  onPeerDisconnected (peerId) {
-    const idString = peerId.toB58String()
-    const peerStats = this._peerStats.get(idString)
-    if (peerStats) {
+  onPeerDisconnected (peerId: PeerId) {
+    const idString = peerId.toString()
+    const peerStats = this.peerStats.get(idString)
+
+    if (peerStats != null) {
       peerStats.stop()
-      this._peerStats.delete(idString)
-      this._oldPeers.set(idString, peerStats)
+
+      this.peerStats.delete(idString)
+      this.oldPeers.set(idString, peerStats)
     }
   }
 
@@ -163,37 +184,37 @@ class Metrics {
    * Takes the metadata for a message and tracks it in the
    * appropriate categories. If the protocol is present, protocol
    * stats will also be tracked.
-   *
-   * @private
-   * @param {object} params
-   * @param {PeerId} params.remotePeer - Remote peer
-   * @param {string} [params.protocol] - Protocol string the stream is running
-   * @param {string} params.direction - One of ['in','out']
-   * @param {number} params.dataLength - Size of the message
-   * @returns {void}
    */
-  _onMessage ({ remotePeer, protocol, direction, dataLength }) {
-    if (!this._running) return
+  _onMessage (opts: OnMessageOptions) {
+    if (!this.running) {
+      return
+    }
+
+    const { remotePeer, protocol, direction, dataLength } = opts
 
     const key = directionToEvent[direction]
 
     let peerStats = this.forPeer(remotePeer)
-    if (!peerStats) {
-      peerStats = new Stats(initialCounters, this._options)
-      this._peerStats.set(remotePeer.toB58String(), peerStats)
+    if (peerStats == null) {
+      const stats = new DefaultStats(this.statsInit)
+      this.peerStats.set(remotePeer.toString(), stats)
+      peerStats = stats
     }
 
     // Peer and global stats
     peerStats.push(key, dataLength)
-    this._globalStats.push(key, dataLength)
+    this.globalStats.push(key, dataLength)
 
     // Protocol specific stats
-    if (protocol) {
+    if (protocol != null) {
       let protocolStats = this.forProtocol(protocol)
-      if (!protocolStats) {
-        protocolStats = new Stats(initialCounters, this._options)
-        this._protocolStats.set(protocol, protocolStats)
+
+      if (protocolStats == null) {
+        const stats = new DefaultStats(this.statsInit)
+        this.protocolStats.set(protocol, stats)
+        protocolStats = stats
       }
+
       protocolStats.push(key, dataLength)
     }
   }
@@ -207,23 +228,27 @@ class Metrics {
    * @param {PeerId} peerId
    * @returns {void}
    */
-  updatePlaceholder (placeholder, peerId) {
-    if (!this._running) return
-    const placeholderStats = this.forPeer(placeholder)
-    const peerIdString = peerId.toB58String()
-    const existingStats = this.forPeer(peerId)
+  updatePlaceholder (placeholder: PeerId, peerId: PeerId) {
+    if (!this.running) {
+      return
+    }
+
+    const placeholderString = placeholder.toString()
+    const placeholderStats = this.peerStats.get(placeholderString) ?? this.oldPeers.get(placeholderString)
+    const peerIdString = peerId.toString()
+    const existingStats = this.peerStats.get(peerIdString) ?? this.oldPeers.get(peerIdString)
     let mergedStats = placeholderStats
 
     // If we already have stats, merge the two
-    if (existingStats) {
+    if (existingStats != null) {
       // If existing, merge
-      mergedStats = Metrics.mergeStats(existingStats, mergedStats)
+      mergedStats = mergeStats(existingStats, mergedStats)
       // Attempt to delete from the old peers list just in case it was tracked there
-      this._oldPeers.delete(peerIdString)
+      this.oldPeers.remove(peerIdString)
     }
 
-    this._peerStats.delete(placeholder.toB58String())
-    this._peerStats.set(peerIdString, mergedStats)
+    this.peerStats.delete(placeholder.toString())
+    this.peerStats.set(peerIdString, mergedStats)
     mergedStats.start()
   }
 
@@ -233,58 +258,53 @@ class Metrics {
    * returned. This allows lazy tracking of a peer when the peer is not yet known.
    * When the `PeerId` is known, `Metrics.updatePlaceholder` should be called
    * with the placeholder string returned from here, and the known `PeerId`.
-   *
-   * @param {Object} options
-   * @param {MultiaddrConnection} options.stream - A duplex iterable stream
-   * @param {PeerId} [options.remotePeer] - The id of the remote peer that's connected
-   * @param {string} [options.protocol] - The protocol the stream is running
-   * @returns {MultiaddrConnection} The peerId string or placeholder string
    */
-  trackStream ({ stream, remotePeer, protocol }) {
-    const metrics = this
-    const _source = stream.source
-    stream.source = tap(chunk => metrics._onMessage({
+  trackStream <T extends Duplex<Uint8Array>> (opts: TrackStreamOptions<T>): T {
+    const { stream, remotePeer, protocol } = opts
+
+    if (!this.running) {
+      return stream
+    }
+
+    const source = stream.source
+    stream.source = each(source, chunk => this._onMessage({
       remotePeer,
       protocol,
       direction: 'in',
       dataLength: chunk.length
-    }))(_source)
+    }))
 
-    const _sink = stream.sink
-    stream.sink = source => {
-      return pipe(
+    const sink = stream.sink
+    stream.sink = async source => {
+      return await pipe(
         source,
-        tap(chunk => metrics._onMessage({
-          remotePeer,
-          protocol,
-          direction: 'out',
-          dataLength: chunk.length
-        })),
-        _sink
+        (source) => each(source, chunk => {
+          this._onMessage({
+            remotePeer,
+            protocol,
+            direction: 'out',
+            dataLength: chunk.length
+          })
+        }),
+        sink
       )
     }
 
     return stream
   }
-
-  /**
-   * Merges `other` into `target`. `target` will be modified
-   * and returned.
-   *
-   * @param {Stats} target
-   * @param {Stats} other
-   * @returns {Stats}
-   */
-  static mergeStats (target, other) {
-    target.stop()
-    other.stop()
-
-    // Merge queues
-    target._queue = [...target._queue, ...other._queue]
-
-    // TODO: how to merge moving averages?
-    return target
-  }
 }
 
-module.exports = Metrics
+/**
+ * Merges `other` into `target`. `target` will be modified
+ * and returned
+ */
+function mergeStats (target: DefaultStats, other: DefaultStats) {
+  target.stop()
+  other.stop()
+
+  // Merge queues
+  target.queue = [...target.queue, ...other.queue]
+
+  // TODO: how to merge moving averages?
+  return target
+}

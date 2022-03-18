@@ -20,7 +20,7 @@ js-libp2p-pnet
 ## Usage
 
 ```js
-const Protector = require('libp2p-pnet')
+const Protector from 'libp2p-pnet')
 const protector = new Protector(swarmKeyBuffer)
 const privateConnection = protector.protect(myPublicConnection, (err) => { })
 ```
@@ -63,7 +63,7 @@ node -e "require('libp2p/src/pnet').generate(process.stdout)" > swarm.key
 #### Programmatically
 
 ```js
-const writeKey = require('libp2p/src/pnet').generate
+const writeKey from 'libp2p/src/pnet').generate
 const swarmKey = new Uint8Array(95)
 writeKey(swarmKey)
 fs.writeFileSync('swarm.key', swarmKey)

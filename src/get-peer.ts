@@ -1,49 +1,49 @@
-'use strict'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { Multiaddr } from '@multiformats/multiaddr'
+import errCode from 'err-code'
+import { codes } from './errors.js'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerData } from '@libp2p/interfaces/peer-data'
 
-const PeerId = require('peer-id')
-const { Multiaddr } = require('multiaddr')
-const errCode = require('err-code')
+function peerIdFromMultiaddr (ma: Multiaddr) {
+  const idStr = ma.getPeerId()
 
-const { codes } = require('./errors')
+  if (idStr == null) {
+    throw errCode(
+      new Error(`${ma.toString()} does not have a valid peer type`),
+      codes.ERR_INVALID_MULTIADDR
+    )
+  }
+
+  try {
+    return peerIdFromString(idStr)
+  } catch (err: any) {
+    throw errCode(
+      new Error(`${ma.toString()} is not a valid peer type`),
+      codes.ERR_INVALID_MULTIADDR
+    )
+  }
+}
 
 /**
  * Converts the given `peer` to a `Peer` object.
  * If a multiaddr is received, the addressBook is updated.
- *
- * @param {PeerId|Multiaddr|string} peer
- * @returns {{ id: PeerId, multiaddrs: Multiaddr[]|undefined }}
  */
-function getPeer (peer) {
+export function getPeer (peer: PeerId | Multiaddr | string): PeerData {
   if (typeof peer === 'string') {
     peer = new Multiaddr(peer)
   }
 
   let addr
+
   if (Multiaddr.isMultiaddr(peer)) {
     addr = peer
-    const idStr = peer.getPeerId()
-
-    if (!idStr) {
-      throw errCode(
-        new Error(`${peer} does not have a valid peer type`),
-        codes.ERR_INVALID_MULTIADDR
-      )
-    }
-
-    try {
-      peer = PeerId.createFromB58String(idStr)
-    } catch (/** @type {any} */ err) {
-      throw errCode(
-        new Error(`${peer} is not a valid peer type`),
-        codes.ERR_INVALID_MULTIADDR
-      )
-    }
+    peer = peerIdFromMultiaddr(peer)
   }
 
   return {
     id: peer,
-    multiaddrs: addr ? [addr] : undefined
+    multiaddrs: addr != null ? [addr] : [],
+    protocols: []
   }
 }
-
-module.exports = getPeer

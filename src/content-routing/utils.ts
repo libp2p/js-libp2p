@@ -1,22 +1,14 @@
-'use strict'
-
-const errCode = require('err-code')
-const filter = require('it-filter')
-const map = require('it-map')
-const take = require('it-take')
-
-/**
- * @typedef {import('peer-id')} PeerId
- * @typedef {import('multiaddr').Multiaddr} Multiaddr
- */
+import errCode from 'err-code'
+import filter from 'it-filter'
+import map from 'it-map'
+import type { Source } from 'it-stream-types'
+import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerStore } from '@libp2p/interfaces/peer-store'
 
 /**
  * Store the multiaddrs from every peer in the passed peer store
- *
- * @param {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>} source
- * @param {import('../peer-store/types').PeerStore} peerStore
  */
-async function * storeAddresses (source, peerStore) {
+export async function * storeAddresses (source: Source<PeerData>, peerStore: PeerStore) {
   yield * map(source, async (peer) => {
     // ensure we have the addresses for a given peer
     await peerStore.addressBook.add(peer.id, peer.multiaddrs)
@@ -27,10 +19,8 @@ async function * storeAddresses (source, peerStore) {
 
 /**
  * Filter peers by unique peer id
- *
- * @param {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>} source
  */
-function uniquePeers (source) {
+export function uniquePeers (source: Source<PeerData>) {
   /** @type Set<string> */
   const seen = new Set()
 
@@ -48,11 +38,8 @@ function uniquePeers (source) {
 
 /**
  * Require at least `min` peers to be yielded from `source`
- *
- * @param {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>} source
- * @param {number} min
  */
-async function * requirePeers (source, min = 1) {
+export async function * requirePeers (source: Source<PeerData>, min: number = 1) {
   let seen = 0
 
   for await (const peer of source) {
@@ -64,26 +51,4 @@ async function * requirePeers (source, min = 1) {
   if (seen < min) {
     throw errCode(new Error('not found'), 'NOT_FOUND')
   }
-}
-
-/**
- * If `max` is passed, only take that number of peers from the source
- * otherwise take all the peers
- *
- * @param {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>} source
- * @param {number} [max]
- */
-function maybeLimitSource (source, max) {
-  if (max) {
-    return take(source, max)
-  }
-
-  return source
-}
-
-module.exports = {
-  storeAddresses,
-  uniquePeers,
-  requirePeers,
-  maybeLimitSource
 }

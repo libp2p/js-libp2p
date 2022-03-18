@@ -19,10 +19,16 @@ export class Exchange implements IExchange {
     constructor(p?: IExchange);
 
     /** Exchange id. */
-    public id: Uint8Array;
+    public id?: (Uint8Array|null);
 
     /** Exchange pubkey. */
     public pubkey?: (IPublicKey|null);
+
+    /** Exchange _id. */
+    public _id?: "id";
+
+    /** Exchange _pubkey. */
+    public _pubkey?: "pubkey";
 
     /**
      * Encodes the specified Exchange message. Does not implicitly {@link Exchange.verify|verify} messages.

@@ -1,9 +1,6 @@
-'use strict'
-
-const crypto = require('libp2p-crypto')
-const KEY_LENGTH = 32
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
-const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+import { randomBytes } from '@libp2p/crypto'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 /**
  * Generates a PSK that can be used in a libp2p-pnet private network
@@ -11,23 +8,21 @@ const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
  * @param {Uint8Array} bytes - An object to write the psk into
  * @returns {void}
  */
-function generate (bytes) {
-  const psk = uint8ArrayToString(crypto.randomBytes(KEY_LENGTH), 'base16')
+export function generate (bytes: Uint8Array) {
+  const psk = uint8ArrayToString(randomBytes(KEY_LENGTH), 'base16')
   const key = uint8ArrayFromString('/key/swarm/psk/1.0.0/\n/base16/\n' + psk)
 
   bytes.set(key)
 }
 
-module.exports = generate
-module.exports.NONCE_LENGTH = 24
-module.exports.KEY_LENGTH = KEY_LENGTH
+export const NONCE_LENGTH = 24
+export const KEY_LENGTH = 32
 
 try {
-  // @ts-ignore This condition will always return 'false' since the types 'Module | undefined'
   if (require.main === module) {
-    // @ts-ignore
+    // @ts-expect-error
     generate(process.stdout)
   }
-} catch (/** @type {any} */ error) {
+} catch (error: any) {
 
 }

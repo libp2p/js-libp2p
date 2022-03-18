@@ -1,14 +1,17 @@
-// @ts-nocheck
-/* global document */
-
 /**
  * This code is based on `latency-monitor` (https://github.com/mlucool/latency-monitor) by `mlucool` (https://github.com/mlucool), available under Apache License 2.0 (https://github.com/mlucool/latency-monitor/blob/master/LICENSE)
  */
-'use strict'
 
-const { EventEmitter } = require('events')
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { logger } from '@libp2p/logger'
 
-const debug = require('debug')('latency-monitor:VisibilityChangeEmitter')
+const log = logger('libp2p:connection-manager:latency-monitor:visibility-change-emitter')
+
+interface VisibilityChangeEmitterEvents {
+  'visibilityChange': CustomEvent<boolean>
+}
+
+type Hidden = 'hidden' | 'mozHidden' | 'msHidden' | 'webkitHidden'
 
 /**
  * Listen to page visibility change events (i.e. when the page is focused / blurred) by an event emitter.
@@ -32,20 +35,20 @@ const debug = require('debug')('latency-monitor:VisibilityChangeEmitter')
  *     // To access the visibility state directly, call:
  *     console.log('Am I focused now? ' + myVisibilityEmitter.isVisible());
  */
-class VisibilityChangeEmitter extends EventEmitter {
-  /**
-   * Creates a VisibilityChangeEmitter
-   *
-   * @class
-   */
+export class VisibilityChangeEmitter extends EventEmitter<VisibilityChangeEmitterEvents> {
+  private hidden: Hidden
+  private visibilityChange: string
+
   constructor () {
     super()
-    if (typeof document === 'undefined') {
-      debug('This is not a browser, no "document" found. Stopping.')
-      return
+
+    this.hidden = 'hidden'
+    this.visibilityChange = 'visibilityChange'
+
+    if (globalThis.document != null) {
+      this._initializeVisibilityVarNames()
+      this._addVisibilityChangeListener()
     }
-    this._initializeVisibilityVarNames()
-    this._addVisibilityChangeListener()
   }
 
   /**
@@ -58,23 +61,28 @@ class VisibilityChangeEmitter extends EventEmitter {
    * @private
    */
   _initializeVisibilityVarNames () {
-    let hidden
-    let visibilityChange
-    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
+    let hidden: Hidden = 'hidden'
+    let visibilityChange = 'visibilitychange'
+
+    if (typeof globalThis.document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
       hidden = 'hidden'
       visibilityChange = 'visibilitychange'
-    } else if (typeof document.mozHidden !== 'undefined') {
+      // @ts-expect-error mozHidden is a non-standard field name
+    } else if (typeof globalThis.document.mozHidden !== 'undefined') {
       hidden = 'mozHidden'
       visibilityChange = 'mozvisibilitychange'
-    } else if (typeof document.msHidden !== 'undefined') {
+      // @ts-expect-error msHidden is a non-standard field name
+    } else if (typeof globalThis.document.msHidden !== 'undefined') {
       hidden = 'msHidden'
       visibilityChange = 'msvisibilitychange'
-    } else if (typeof document.webkitHidden !== 'undefined') {
+      // @ts-expect-error webkitHidden is a non-standard field name
+    } else if (typeof globalThis.document.webkitHidden !== 'undefined') {
       hidden = 'webkitHidden'
       visibilityChange = 'webkitvisibilitychange'
     }
-    this._hidden = hidden
-    this._visibilityChange = visibilityChange
+
+    this.hidden = hidden
+    this.visibilityChange = visibilityChange
   }
 
   /**
@@ -84,27 +92,27 @@ class VisibilityChangeEmitter extends EventEmitter {
    * @private
    */
   _addVisibilityChangeListener () {
-    if (typeof document.addEventListener === 'undefined' ||
-            typeof document[this._hidden] === 'undefined') {
-      debug('Checking page visibility requires a browser that supports the Page Visibility API.')
+    // @ts-expect-error cannot index document object with string key
+    if (typeof globalThis.document.addEventListener === 'undefined' || typeof document[this.hidden] === 'undefined') {
+      log('Checking page visibility requires a browser that supports the Page Visibility API.')
     } else {
       // Handle page visibility change
-      document.addEventListener(this._visibilityChange, this._handleVisibilityChange.bind(this), false)
+      globalThis.document.addEventListener(this.visibilityChange, this._handleVisibilityChange.bind(this), false)
     }
   }
 
   /**
    * The function returns ```true``` if the page is visible or ```false``` if the page is not visible and
    * ```undefined``` if the page visibility API is not supported by the browser.
-   *
-   * @returns {boolean | void} whether the page is now visible or not (undefined is unknown)
    */
   isVisible () {
-    if (this._hidden === undefined || document[this._hidden] === undefined) {
+    // @ts-expect-error cannot index document object with string key
+    if (this.hidden === undefined || document[this.hidden] === undefined) {
       return undefined
     }
 
-    return !document[this._hidden]
+    // @ts-expect-error cannot index document object with string key
+    return document[this.hidden] == null
   }
 
   /**
@@ -115,11 +123,13 @@ class VisibilityChangeEmitter extends EventEmitter {
    * @private
    */
   _handleVisibilityChange () {
-    const visible = !document[this._hidden]
-    debug(visible ? 'Page Visible' : 'Page Hidden')
+    // @ts-expect-error cannot index document object with string key
+    const visible = globalThis.document[this.hidden] === false
+    log(visible ? 'Page Visible' : 'Page Hidden')
+
     // Emit the event
-    this.emit('visibilityChange', visible)
+    this.dispatchEvent(new CustomEvent<boolean>('visibilityChange', {
+      detail: visible
+    }))
   }
 }
-
-module.exports = VisibilityChangeEmitter

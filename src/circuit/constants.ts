@@ -1,12 +1,31 @@
-'use strict'
-
 const minute = 60 * 1000
 
-module.exports = {
-  ADVERTISE_BOOT_DELAY: 15 * minute, // Delay before HOP relay service is advertised on the network
-  ADVERTISE_TTL: 30 * minute, // Delay Between HOP relay service advertisements on the network
-  CIRCUIT_PROTO_CODE: 290, // Multicodec code
-  HOP_METADATA_KEY: 'hop_relay', // PeerStore metadaBook key for HOP relay service
-  HOP_METADATA_VALUE: 'true', // PeerStore metadaBook value for HOP relay service
-  RELAY_RENDEZVOUS_NS: '/libp2p/relay' // Relay HOP relay service namespace for discovery
-}
+/**
+ * Delay before HOP relay service is advertised on the network
+ */
+export const ADVERTISE_BOOT_DELAY = 15 * minute
+
+/**
+ * Delay Between HOP relay service advertisements on the network
+ */
+export const ADVERTISE_TTL = 30 * minute
+
+/**
+ * Multicodec code
+ */
+export const CIRCUIT_PROTO_CODE = 290
+
+/**
+ * PeerStore metadaBook key for HOP relay service
+ */
+export const HOP_METADATA_KEY = 'hop_relay'
+
+/**
+ * PeerStore metadaBook value for HOP relay service
+ */
+export const HOP_METADATA_VALUE = 'true'
+
+/**
+ * Relay HOP relay service namespace for discovery
+ */
+export const RELAY_RENDEZVOUS_NS = '/libp2p/relay'

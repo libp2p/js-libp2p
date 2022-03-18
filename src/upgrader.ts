@@ -1,103 +1,102 @@
-'use strict'
+import { logger } from '@libp2p/logger'
+import errCode from 'err-code'
+import { Dialer, Listener } from '@libp2p/multistream-select'
+import { pipe } from 'it-pipe'
+// @ts-expect-error mutable-proxy does not export types
+import mutableProxy from 'mutable-proxy'
+import { codes } from './errors.js'
+import { createConnection } from '@libp2p/connection'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { peerIdFromString } from '@libp2p/peer-id'
+import type { Connection, ProtocolStream, Stream } from '@libp2p/interfaces/connection'
+import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interfaces/connection-encrypter'
+import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interfaces/stream-muxer'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { MultiaddrConnection, Upgrader, UpgraderEvents } from '@libp2p/interfaces/transport'
+import type { Duplex } from 'it-stream-types'
+import type { Components } from '@libp2p/interfaces/components'
 
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:upgrader'), {
-  error: debug('libp2p:upgrader:err')
-})
-const errCode = require('err-code')
-const Multistream = require('multistream-select')
-const { Connection } = require('libp2p-interfaces/src/connection')
-const PeerId = require('peer-id')
-const { pipe } = require('it-pipe')
-// @ts-ignore mutable-proxy does not export types
-const mutableProxy = require('mutable-proxy')
+const log = logger('libp2p:upgrader')
 
-const { codes } = require('./errors')
+interface CreateConectionOptions {
+  cryptoProtocol: string
+  direction: 'inbound' | 'outbound'
+  maConn: MultiaddrConnection
+  upgradedConn: Duplex<Uint8Array>
+  remotePeer: PeerId
+  muxerFactory?: StreamMuxerFactory
+}
 
-/**
- * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
- * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory} MuxerFactory
- * @typedef {import('libp2p-interfaces/src/stream-muxer/types').Muxer} Muxer
- * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('multiaddr').Multiaddr} Multiaddr
- * @typedef {import('./types').ConnectionGater} ConnectionGater
- */
+interface OnStreamOptions {
+  connection: Connection
+  stream: Stream
+  protocol: string
+}
 
-/**
- * @typedef CryptoResult
- * @property {MultiaddrConnection} conn A duplex iterable
- * @property {PeerId} remotePeer
- * @property {string} protocol
- */
+export interface CryptoResult extends SecuredConnection {
+  protocol: string
+}
 
-class Upgrader {
-  /**
-   * @param {object} options
-   * @param {PeerId} options.localPeer
-   * @param {ConnectionGater} options.connectionGater
-   *
-   * @param {import('./metrics')} [options.metrics]
-   * @param {Map<string, Crypto>} [options.cryptos]
-   * @param {Map<string, MuxerFactory>} [options.muxers]
-   * @param {(connection: Connection) => void} options.onConnection - Called when a connection is upgraded
-   * @param {(connection: Connection) => void} options.onConnectionEnd
-   */
-  constructor ({
-    localPeer,
-    metrics,
-    connectionGater,
-    cryptos = new Map(),
-    muxers = new Map(),
-    onConnectionEnd = () => {},
-    onConnection = () => {}
-  }) {
-    this.connectionGater = connectionGater
-    this.localPeer = localPeer
-    this.metrics = metrics
-    this.cryptos = cryptos
-    this.muxers = muxers
-    /** @type {import("./pnet") | null} */
-    this.protector = null
-    this.protocols = new Map()
-    this.onConnection = onConnection
-    this.onConnectionEnd = onConnectionEnd
+export interface UpgraderInit {
+  connectionEncrypters: ConnectionEncrypter[]
+  muxers: StreamMuxerFactory[]
+}
+
+export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upgrader {
+  private readonly components: Components
+  private readonly connectionEncrypters: Map<string, ConnectionEncrypter>
+  private readonly muxers: Map<string, StreamMuxerFactory>
+
+  constructor (components: Components, init: UpgraderInit) {
+    super()
+
+    this.components = components
+    this.connectionEncrypters = new Map()
+
+    init.connectionEncrypters.forEach(encrypter => {
+      this.connectionEncrypters.set(encrypter.protocol, encrypter)
+    })
+
+    this.muxers = new Map()
+
+    init.muxers.forEach(muxer => {
+      this.muxers.set(muxer.protocol, muxer)
+    })
   }
 
   /**
    * Upgrades an inbound connection
-   *
-   * @async
-   * @param {MultiaddrConnection} maConn
-   * @returns {Promise<Connection>}
    */
-  async upgradeInbound (maConn) {
+  async upgradeInbound (maConn: MultiaddrConnection): Promise<Connection> {
     let encryptedConn
     let remotePeer
-    let upgradedConn
-    let Muxer
+    let upgradedConn: Duplex<Uint8Array>
+    let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
     let setPeer
     let proxyPeer
+    const metrics = this.components.getMetrics()
 
-    if (await this.connectionGater.denyInboundConnection(maConn)) {
+    if (await this.components.getConnectionGater().denyInboundConnection(maConn)) {
       throw errCode(new Error('The multiaddr connection is blocked by gater.acceptConnection'), codes.ERR_CONNECTION_INTERCEPTED)
     }
 
-    if (this.metrics) {
+    if (metrics != null) {
       ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
-      const idString = (Math.random() * 1e9).toString(36) + Date.now()
-      setPeer({ toB58String: () => idString })
-      maConn = this.metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
+      const idString = `${(Math.random() * 1e9).toString(36)}${Date.now()}`
+      setPeer({ toString: () => idString })
+      maConn = metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
     }
 
-    log('Starting the inbound connection upgrade')
+    log('starting the inbound connection upgrade')
 
     // Protect
     let protectedConn = maConn
-    if (this.protector) {
-      protectedConn = await this.protector.protect(maConn)
+    const protector = this.components.getConnectionProtector()
+
+    if (protector != null) {
+      log('protecting the inbound connection')
+      protectedConn = await protector.protect(maConn)
     }
 
     try {
@@ -106,30 +105,41 @@ class Upgrader {
         conn: encryptedConn,
         remotePeer,
         protocol: cryptoProtocol
-      } = await this._encryptInbound(this.localPeer, protectedConn, this.cryptos))
+      } = await this._encryptInbound(protectedConn))
 
-      if (await this.connectionGater.denyInboundEncryptedConnection(remotePeer, encryptedConn)) {
+      if (await this.components.getConnectionGater().denyInboundEncryptedConnection(remotePeer, {
+        ...protectedConn,
+        ...encryptedConn
+      })) {
         throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
       }
 
       // Multiplex the connection
-      if (this.muxers.size) {
-        ({ stream: upgradedConn, Muxer } = await this._multiplexInbound(encryptedConn, this.muxers))
+      if (this.muxers.size > 0) {
+        const multiplexed = await this._multiplexInbound({
+          ...protectedConn,
+          ...encryptedConn
+        }, this.muxers)
+        muxerFactory = multiplexed.muxerFactory
+        upgradedConn = multiplexed.stream
       } else {
         upgradedConn = encryptedConn
       }
-    } catch (/** @type {any} */ err) {
+    } catch (err: any) {
       log.error('Failed to upgrade inbound connection', err)
       await maConn.close(err)
       throw err
     }
 
-    if (await this.connectionGater.denyInboundUpgradedConnection(remotePeer, encryptedConn)) {
+    if (await this.components.getConnectionGater().denyInboundUpgradedConnection(remotePeer, {
+      ...protectedConn,
+      ...encryptedConn
+    })) {
       throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
     }
 
-    if (this.metrics) {
-      this.metrics.updatePlaceholder(proxyPeer, remotePeer)
+    if (metrics != null) {
+      metrics.updatePlaceholder(proxyPeer, remotePeer)
       setPeer(remotePeer)
     }
 
@@ -140,27 +150,23 @@ class Upgrader {
       direction: 'inbound',
       maConn,
       upgradedConn,
-      Muxer,
+      muxerFactory,
       remotePeer
     })
   }
 
   /**
    * Upgrades an outbound connection
-   *
-   * @async
-   * @param {MultiaddrConnection} maConn
-   * @returns {Promise<Connection>}
    */
-  async upgradeOutbound (maConn) {
+  async upgradeOutbound (maConn: MultiaddrConnection): Promise<Connection> {
     const idStr = maConn.remoteAddr.getPeerId()
-    if (!idStr) {
+    if (idStr == null) {
       throw errCode(new Error('outbound connection must have a peer id'), codes.ERR_INVALID_MULTIADDR)
     }
 
-    const remotePeerId = PeerId.createFromB58String(idStr)
+    const remotePeerId = peerIdFromString(idStr)
 
-    if (await this.connectionGater.denyOutboundConnection(remotePeerId, maConn)) {
+    if (await this.components.getConnectionGater().denyOutboundConnection(remotePeerId, maConn)) {
       throw errCode(new Error('The multiaddr connection is blocked by connectionGater.denyOutboundConnection'), codes.ERR_CONNECTION_INTERCEPTED)
     }
 
@@ -168,23 +174,26 @@ class Upgrader {
     let remotePeer
     let upgradedConn
     let cryptoProtocol
-    let Muxer
+    let muxerFactory
     let setPeer
     let proxyPeer
+    const metrics = this.components.getMetrics()
 
-    if (this.metrics) {
+    if (metrics != null) {
       ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
-      const idString = (Math.random() * 1e9).toString(36) + Date.now()
+      const idString = `${(Math.random() * 1e9).toString(36)}${Date.now()}`
       setPeer({ toB58String: () => idString })
-      maConn = this.metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
+      maConn = metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
     }
 
     log('Starting the outbound connection upgrade')
 
     // Protect
     let protectedConn = maConn
-    if (this.protector) {
-      protectedConn = await this.protector.protect(maConn)
+    const protector = this.components.getConnectionProtector()
+
+    if (protector != null) {
+      protectedConn = await protector.protect(maConn)
     }
 
     try {
@@ -193,30 +202,41 @@ class Upgrader {
         conn: encryptedConn,
         remotePeer,
         protocol: cryptoProtocol
-      } = await this._encryptOutbound(this.localPeer, protectedConn, remotePeerId, this.cryptos))
+      } = await this._encryptOutbound(protectedConn, remotePeerId))
 
-      if (await this.connectionGater.denyOutboundEncryptedConnection(remotePeer, encryptedConn)) {
+      if (await this.components.getConnectionGater().denyOutboundEncryptedConnection(remotePeer, {
+        ...protectedConn,
+        ...encryptedConn
+      })) {
         throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
       }
 
       // Multiplex the connection
-      if (this.muxers.size) {
-        ({ stream: upgradedConn, Muxer } = await this._multiplexOutbound(encryptedConn, this.muxers))
+      if (this.muxers.size > 0) {
+        const multiplexed = await this._multiplexOutbound({
+          ...protectedConn,
+          ...encryptedConn
+        }, this.muxers)
+        muxerFactory = multiplexed.muxerFactory
+        upgradedConn = multiplexed.stream
       } else {
         upgradedConn = encryptedConn
       }
-    } catch (/** @type {any} */ err) {
+    } catch (err: any) {
       log.error('Failed to upgrade outbound connection', err)
       await maConn.close(err)
       throw err
     }
 
-    if (await this.connectionGater.denyOutboundUpgradedConnection(remotePeer, encryptedConn)) {
+    if (await this.components.getConnectionGater().denyOutboundUpgradedConnection(remotePeer, {
+      ...protectedConn,
+      ...encryptedConn
+    })) {
       throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
     }
 
-    if (this.metrics) {
-      this.metrics.updatePlaceholder(proxyPeer, remotePeer)
+    if (metrics != null) {
+      metrics.updatePlaceholder(proxyPeer, remotePeer)
       setPeer(remotePeer)
     }
 
@@ -227,71 +247,86 @@ class Upgrader {
       direction: 'outbound',
       maConn,
       upgradedConn,
-      Muxer,
+      muxerFactory,
       remotePeer
     })
   }
 
   /**
    * A convenience method for generating a new `Connection`
-   *
-   * @private
-   * @param {object} options
-   * @param {string} options.cryptoProtocol - The crypto protocol that was negotiated
-   * @param {'inbound' | 'outbound'} options.direction - One of ['inbound', 'outbound']
-   * @param {MultiaddrConnection} options.maConn - The transport layer connection
-   * @param {MuxedStream | MultiaddrConnection} options.upgradedConn - A duplex connection returned from multiplexer and/or crypto selection
-   * @param {MuxerFactory} [options.Muxer] - The muxer to be used for muxing
-   * @param {PeerId} options.remotePeer - The peer the connection is with
-   * @returns {Connection}
    */
-  _createConnection ({
-    cryptoProtocol,
-    direction,
-    maConn,
-    upgradedConn,
-    Muxer,
-    remotePeer
-  }) {
-    /** @type {import("libp2p-interfaces/src/stream-muxer/types").Muxer} */
-    let muxer
-    /** @type {import("libp2p-interfaces/src/connection/connection").CreatedMuxedStream | undefined} */
-    let newStream
-    /** @type {Connection} */
-    let connection // eslint-disable-line prefer-const
+  _createConnection (opts: CreateConectionOptions): Connection {
+    const {
+      cryptoProtocol,
+      direction,
+      maConn,
+      upgradedConn,
+      remotePeer,
+      muxerFactory
+    } = opts
 
-    if (Muxer) {
+    let muxer: StreamMuxer | undefined
+    let newStream: ((multicodecs: string[]) => Promise<ProtocolStream>) | undefined
+    let connection: Connection // eslint-disable-line prefer-const
+
+    if (muxerFactory != null) {
       // Create the muxer
-      muxer = new Muxer({
+      muxer = muxerFactory.createStreamMuxer(this.components, {
         // Run anytime a remote stream is created
-        onStream: async muxedStream => {
-          if (!connection) return
-          const mss = new Multistream.Listener(muxedStream)
-          try {
-            const { stream, protocol } = await mss.handle(Array.from(this.protocols.keys()))
-            log('%s: incoming stream opened on %s', direction, protocol)
-            if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
-            connection.addStream(muxedStream, { protocol })
-            this._onStream({ connection, stream: { ...muxedStream, ...stream }, protocol })
-          } catch (/** @type {any} */ err) {
-            log.error(err)
+        onIncomingStream: muxedStream => {
+          if (connection == null) {
+            return
           }
+
+          void Promise.resolve()
+            .then(async () => {
+              const mss = new Listener(muxedStream)
+              const protocols = this.components.getRegistrar().getProtocols()
+              const { stream, protocol } = await mss.handle(protocols)
+              log('%s: incoming stream opened on %s', direction, protocol)
+
+              const metrics = this.components.getMetrics()
+
+              if (metrics != null) {
+                metrics.trackStream({ stream, remotePeer, protocol })
+              }
+
+              if (connection == null) {
+                return
+              }
+
+              connection.addStream(muxedStream, { protocol })
+              this._onStream({ connection, stream: { ...muxedStream, ...stream }, protocol })
+            })
+            .catch(err => {
+              log.error(err)
+            })
         },
         // Run anytime a stream closes
         onStreamEnd: muxedStream => {
-          connection.removeStream(muxedStream.id)
+          connection?.removeStream(muxedStream.id)
         }
       })
 
-      newStream = async (protocols) => {
+      newStream = async (protocols: string[]): Promise<ProtocolStream> => {
+        if (muxer == null) {
+          throw errCode(new Error('Stream is not multiplexed'), codes.ERR_MUXER_UNAVAILABLE)
+        }
+
         log('%s: starting new stream on %s', direction, protocols)
         const muxedStream = muxer.newStream()
-        const mss = new Multistream.Dialer(muxedStream)
+        const mss = new Dialer(muxedStream)
+        const metrics = this.components.getMetrics()
+
         try {
-          const { stream, protocol } = await mss.select(protocols)
-          if (this.metrics) this.metrics.trackStream({ stream, remotePeer, protocol })
+          let { stream, protocol } = await mss.select(protocols)
+
+          if (metrics != null) {
+            stream = metrics.trackStream({ stream, remotePeer, protocol })
+          }
+
           return { stream: { ...muxedStream, ...stream }, protocol }
-        } catch (/** @type {any} */ err) {
+        } catch (err: any) {
           log.error('could not create new stream', err)
           throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
         }
@@ -304,17 +339,19 @@ class Upgrader {
     const _timeline = maConn.timeline
     maConn.timeline = new Proxy(_timeline, {
       set: (...args) => {
-        if (connection && args[1] === 'close' && args[2] && !_timeline.close) {
+        if (connection != null && args[1] === 'close' && args[2] != null && _timeline.close == null) {
           // Wait for close to finish before notifying of the closure
           (async () => {
             try {
-              if (connection.stat.status === 'open') {
+              if (connection.stat.status === 'OPEN') {
                 await connection.close()
               }
-            } catch (/** @type {any} */ err) {
+            } catch (err: any) {
               log.error(err)
             } finally {
-              this.onConnectionEnd(connection)
+              this.dispatchEvent(new CustomEvent<Connection>('connectionEnd', {
+                detail: connection
+              }))
             }
           })().catch(err => {
             log.error(err)
@@ -331,112 +368,94 @@ class Upgrader {
     }
 
     // Create the connection
-    connection = new Connection({
-      localAddr: maConn.localAddr,
+    connection = createConnection({
       remoteAddr: maConn.remoteAddr,
-      localPeer: this.localPeer,
       remotePeer: remotePeer,
       stat: {
+        status: 'OPEN',
         direction,
-        // @ts-ignore
         timeline: maConn.timeline,
-        multiplexer: Muxer && Muxer.multicodec,
+        multiplexer: muxer?.protocol,
         encryption: cryptoProtocol
       },
-      newStream: newStream || errConnectionNotMultiplexed,
-      getStreams: () => muxer ? muxer.streams : errConnectionNotMultiplexed(),
+      newStream: newStream ?? errConnectionNotMultiplexed,
+      getStreams: () => muxer != null ? muxer.streams : errConnectionNotMultiplexed(),
       close: async () => {
         await maConn.close()
         // Ensure remaining streams are aborted
-        if (muxer) {
+        if (muxer != null) {
           muxer.streams.map(stream => stream.abort())
         }
       }
     })
 
-    this.onConnection(connection)
+    this.dispatchEvent(new CustomEvent<Connection>('connection', {
+      detail: connection
+    }))
 
     return connection
   }
 
   /**
    * Routes incoming streams to the correct handler
-   *
-   * @private
-   * @param {object} options
-   * @param {Connection} options.connection - The connection the stream belongs to
-   * @param {MuxedStream} options.stream
-   * @param {string} options.protocol
    */
-  _onStream ({ connection, stream, protocol }) {
-    const handler = this.protocols.get(protocol)
+  _onStream (opts: OnStreamOptions): void {
+    const { connection, stream, protocol } = opts
+    const handler = this.components.getRegistrar().getHandler(protocol)
     handler({ connection, stream, protocol })
   }
 
   /**
-   * Attempts to encrypt the incoming `connection` with the provided `cryptos`.
-   *
-   * @private
-   * @async
-   * @param {PeerId} localPeer - The initiators PeerId
-   * @param {*} connection
-   * @param {Map<string, Crypto>} cryptos
-   * @returns {Promise<CryptoResult>} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
+   * Attempts to encrypt the incoming `connection` with the provided `cryptos`
    */
-  async _encryptInbound (localPeer, connection, cryptos) {
-    const mss = new Multistream.Listener(connection)
-    const protocols = Array.from(cryptos.keys())
+  async _encryptInbound (connection: Duplex<Uint8Array>): Promise<CryptoResult> {
+    const mss = new Listener(connection)
+    const protocols = Array.from(this.connectionEncrypters.keys())
     log('handling inbound crypto protocol selection', protocols)
 
     try {
       const { stream, protocol } = await mss.handle(protocols)
-      const crypto = cryptos.get(protocol)
-      log('encrypting inbound connection...')
+      const encrypter = this.connectionEncrypters.get(protocol)
 
-      if (!crypto) {
+      if (encrypter == null) {
         throw new Error(`no crypto module found for ${protocol}`)
       }
 
+      log('encrypting inbound connection...')
+
       return {
-        ...await crypto.secureInbound(localPeer, stream),
+        ...await encrypter.secureInbound(this.components.getPeerId(), stream),
         protocol
       }
-    } catch (/** @type {any} */ err) {
+    } catch (err: any) {
       throw errCode(err, codes.ERR_ENCRYPTION_FAILED)
     }
   }
 
   /**
-   * Attempts to encrypt the given `connection` with the provided `cryptos`.
-   * The first `Crypto` module to succeed will be used
-   *
-   * @private
-   * @async
-   * @param {PeerId} localPeer - The initiators PeerId
-   * @param {MultiaddrConnection} connection
-   * @param {PeerId} remotePeerId
-   * @param {Map<string, Crypto>} cryptos
-   * @returns {Promise<CryptoResult>} An encrypted connection, remote peer `PeerId` and the protocol of the `Crypto` used
+   * Attempts to encrypt the given `connection` with the provided connection encrypters.
+   * The first `ConnectionEncrypter` module to succeed will be used
    */
-  async _encryptOutbound (localPeer, connection, remotePeerId, cryptos) {
-    const mss = new Multistream.Dialer(connection)
-    const protocols = Array.from(cryptos.keys())
+  async _encryptOutbound (connection: MultiaddrConnection, remotePeerId: PeerId): Promise<CryptoResult> {
+    const mss = new Dialer(connection)
+    const protocols = Array.from(this.connectionEncrypters.keys())
     log('selecting outbound crypto protocol', protocols)
 
     try {
       const { stream, protocol } = await mss.select(protocols)
-      const crypto = cryptos.get(protocol)
-      log('encrypting outbound connection to %j', remotePeerId)
+      const encrypter = this.connectionEncrypters.get(protocol)
 
-      if (!crypto) {
+      if (encrypter == null) {
         throw new Error(`no crypto module found for ${protocol}`)
       }
 
+      log('encrypting outbound connection to %p', remotePeerId)
+
       return {
-        ...await crypto.secureOutbound(localPeer, stream, remotePeerId),
+        ...await encrypter.secureOutbound(this.components.getPeerId(), stream, remotePeerId),
         protocol
       }
-    } catch (/** @type {any} */ err) {
+    } catch (err: any) {
       throw errCode(err, codes.ERR_ENCRYPTION_FAILED)
     }
   }
@@ -444,23 +463,18 @@ class Upgrader {
   /**
    * Selects one of the given muxers via multistream-select. That
    * muxer will be used for all future streams on the connection.
-   *
-   * @private
-   * @async
-   * @param {MultiaddrConnection} connection - A basic duplex connection to multiplex
-   * @param {Map<string, MuxerFactory>} muxers - The muxers to attempt multiplexing with
-   * @returns {Promise<{ stream: MuxedStream, Muxer?: MuxerFactory}>} A muxed connection
    */
-  async _multiplexOutbound (connection, muxers) {
-    const dialer = new Multistream.Dialer(connection)
+  async _multiplexOutbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<Uint8Array>, muxerFactory?: StreamMuxerFactory}> {
+    const dialer = new Dialer(connection)
     const protocols = Array.from(muxers.keys())
     log('outbound selecting muxer %s', protocols)
     try {
       const { stream, protocol } = await dialer.select(protocols)
       log('%s selected as muxer protocol', protocol)
-      const Muxer = muxers.get(protocol)
-      return { stream, Muxer }
-    } catch (/** @type {any} */ err) {
+      const muxerFactory = muxers.get(protocol)
+      return { stream, muxerFactory }
+    } catch (err: any) {
+      log.error('error multiplexing outbound stream', err)
       throw errCode(err, codes.ERR_MUXER_UNAVAILABLE)
     }
   }
@@ -468,25 +482,18 @@ class Upgrader {
   /**
    * Registers support for one of the given muxers via multistream-select. The
    * selected muxer will be used for all future streams on the connection.
-   *
-   * @private
-   * @async
-   * @param {MultiaddrConnection} connection - A basic duplex connection to multiplex
-   * @param {Map<string, MuxerFactory>} muxers - The muxers to attempt multiplexing with
-   * @returns {Promise<{ stream: MuxedStream, Muxer?: MuxerFactory}>} A muxed connection
    */
-  async _multiplexInbound (connection, muxers) {
-    const listener = new Multistream.Listener(connection)
+  async _multiplexInbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<Uint8Array>, muxerFactory?: StreamMuxerFactory}> {
+    const listener = new Listener(connection)
     const protocols = Array.from(muxers.keys())
     log('inbound handling muxers %s', protocols)
     try {
       const { stream, protocol } = await listener.handle(protocols)
-      const Muxer = muxers.get(protocol)
-      return { stream, Muxer }
-    } catch (/** @type {any} */ err) {
+      const muxerFactory = muxers.get(protocol)
+      return { stream, muxerFactory }
+    } catch (err: any) {
+      log.error('error multiplexing inbound stream', err)
       throw errCode(err, codes.ERR_MUXER_UNAVAILABLE)
     }
   }
 }
-
-module.exports = Upgrader

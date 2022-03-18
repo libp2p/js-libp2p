@@ -1,15 +1,13 @@
 /*eslint-disable*/
-"use strict";
-
-var $protobuf = require("protobufjs/minimal");
+import $protobuf from "protobufjs/minimal.js";
 
 // Common aliases
-var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
+const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
 
 // Exported root namespace
-var $root = $protobuf.roots["libp2p-identify"] || ($protobuf.roots["libp2p-identify"] = {});
+const $root = $protobuf.roots["libp2p-identify"] || ($protobuf.roots["libp2p-identify"] = {});
 
-$root.Identify = (function() {
+export const Identify = $root.Identify = (() => {
 
     /**
      * Properties of an Identify.
@@ -43,27 +41,27 @@ $root.Identify = (function() {
 
     /**
      * Identify protocolVersion.
-     * @member {string} protocolVersion
+     * @member {string|null|undefined} protocolVersion
      * @memberof Identify
      * @instance
      */
-    Identify.prototype.protocolVersion = "";
+    Identify.prototype.protocolVersion = null;
 
     /**
      * Identify agentVersion.
-     * @member {string} agentVersion
+     * @member {string|null|undefined} agentVersion
      * @memberof Identify
      * @instance
      */
-    Identify.prototype.agentVersion = "";
+    Identify.prototype.agentVersion = null;
 
     /**
      * Identify publicKey.
-     * @member {Uint8Array} publicKey
+     * @member {Uint8Array|null|undefined} publicKey
      * @memberof Identify
      * @instance
      */
-    Identify.prototype.publicKey = $util.newBuffer([]);
+    Identify.prototype.publicKey = null;
 
     /**
      * Identify listenAddrs.
@@ -75,11 +73,11 @@ $root.Identify = (function() {
 
     /**
      * Identify observedAddr.
-     * @member {Uint8Array} observedAddr
+     * @member {Uint8Array|null|undefined} observedAddr
      * @memberof Identify
      * @instance
      */
-    Identify.prototype.observedAddr = $util.newBuffer([]);
+    Identify.prototype.observedAddr = null;
 
     /**
      * Identify protocols.
@@ -91,11 +89,69 @@ $root.Identify = (function() {
 
     /**
      * Identify signedPeerRecord.
-     * @member {Uint8Array} signedPeerRecord
+     * @member {Uint8Array|null|undefined} signedPeerRecord
      * @memberof Identify
      * @instance
      */
-    Identify.prototype.signedPeerRecord = $util.newBuffer([]);
+    Identify.prototype.signedPeerRecord = null;
+
+    // OneOf field names bound to virtual getters and setters
+    let $oneOfFields;
+
+    /**
+     * Identify _protocolVersion.
+     * @member {"protocolVersion"|undefined} _protocolVersion
+     * @memberof Identify
+     * @instance
+     */
+    Object.defineProperty(Identify.prototype, "_protocolVersion", {
+        get: $util.oneOfGetter($oneOfFields = ["protocolVersion"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Identify _agentVersion.
+     * @member {"agentVersion"|undefined} _agentVersion
+     * @memberof Identify
+     * @instance
+     */
+    Object.defineProperty(Identify.prototype, "_agentVersion", {
+        get: $util.oneOfGetter($oneOfFields = ["agentVersion"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Identify _publicKey.
+     * @member {"publicKey"|undefined} _publicKey
+     * @memberof Identify
+     * @instance
+     */
+    Object.defineProperty(Identify.prototype, "_publicKey", {
+        get: $util.oneOfGetter($oneOfFields = ["publicKey"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Identify _observedAddr.
+     * @member {"observedAddr"|undefined} _observedAddr
+     * @memberof Identify
+     * @instance
+     */
+    Object.defineProperty(Identify.prototype, "_observedAddr", {
+        get: $util.oneOfGetter($oneOfFields = ["observedAddr"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Identify _signedPeerRecord.
+     * @member {"signedPeerRecord"|undefined} _signedPeerRecord
+     * @memberof Identify
+     * @instance
+     */
+    Object.defineProperty(Identify.prototype, "_signedPeerRecord", {
+        get: $util.oneOfGetter($oneOfFields = ["signedPeerRecord"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
 
     /**
      * Encodes the specified Identify message. Does not implicitly {@link Identify.verify|verify} messages.
@@ -256,33 +312,10 @@ $root.Identify = (function() {
             d.listenAddrs = [];
             d.protocols = [];
         }
-        if (o.defaults) {
-            if (o.bytes === String)
-                d.publicKey = "";
-            else {
-                d.publicKey = [];
-                if (o.bytes !== Array)
-                    d.publicKey = $util.newBuffer(d.publicKey);
-            }
-            if (o.bytes === String)
-                d.observedAddr = "";
-            else {
-                d.observedAddr = [];
-                if (o.bytes !== Array)
-                    d.observedAddr = $util.newBuffer(d.observedAddr);
-            }
-            d.protocolVersion = "";
-            d.agentVersion = "";
-            if (o.bytes === String)
-                d.signedPeerRecord = "";
-            else {
-                d.signedPeerRecord = [];
-                if (o.bytes !== Array)
-                    d.signedPeerRecord = $util.newBuffer(d.signedPeerRecord);
-            }
-        }
         if (m.publicKey != null && m.hasOwnProperty("publicKey")) {
             d.publicKey = o.bytes === String ? $util.base64.encode(m.publicKey, 0, m.publicKey.length) : o.bytes === Array ? Array.prototype.slice.call(m.publicKey) : m.publicKey;
+            if (o.oneofs)
+                d._publicKey = "publicKey";
         }
         if (m.listenAddrs && m.listenAddrs.length) {
             d.listenAddrs = [];
@@ -298,15 +331,23 @@ $root.Identify = (function() {
         }
         if (m.observedAddr != null && m.hasOwnProperty("observedAddr")) {
             d.observedAddr = o.bytes === String ? $util.base64.encode(m.observedAddr, 0, m.observedAddr.length) : o.bytes === Array ? Array.prototype.slice.call(m.observedAddr) : m.observedAddr;
+            if (o.oneofs)
+                d._observedAddr = "observedAddr";
         }
         if (m.protocolVersion != null && m.hasOwnProperty("protocolVersion")) {
             d.protocolVersion = m.protocolVersion;
+            if (o.oneofs)
+                d._protocolVersion = "protocolVersion";
         }
         if (m.agentVersion != null && m.hasOwnProperty("agentVersion")) {
             d.agentVersion = m.agentVersion;
+            if (o.oneofs)
+                d._agentVersion = "agentVersion";
         }
         if (m.signedPeerRecord != null && m.hasOwnProperty("signedPeerRecord")) {
             d.signedPeerRecord = o.bytes === String ? $util.base64.encode(m.signedPeerRecord, 0, m.signedPeerRecord.length) : o.bytes === Array ? Array.prototype.slice.call(m.signedPeerRecord) : m.signedPeerRecord;
+            if (o.oneofs)
+                d._signedPeerRecord = "signedPeerRecord";
         }
         return d;
     };
@@ -325,4 +366,4 @@ $root.Identify = (function() {
     return Identify;
 })();
 
-module.exports = $root;
+export { $root as default };

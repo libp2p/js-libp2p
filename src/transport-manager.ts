@@ -1,129 +1,134 @@
-'use strict'
+import { logger } from '@libp2p/logger'
+import pSettle from 'p-settle'
+import { codes } from './errors.js'
+import errCode from 'err-code'
+import type { Listener, Transport, TransportManager, TransportManagerEvents } from '@libp2p/interfaces/transport'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Connection } from '@libp2p/interfaces/connection'
+import { AbortOptions, CustomEvent, EventEmitter, Startable } from '@libp2p/interfaces'
+import type { Components } from '@libp2p/interfaces/components'
+import { trackedMap } from '@libp2p/tracked-map'
 
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:transports'), {
-  error: debug('libp2p:transports:err')
-})
+const log = logger('libp2p:transports')
 
-const pSettle = require('p-settle')
-const { codes } = require('./errors')
-const errCode = require('err-code')
+export interface TransportManagerInit {
+  faultTolerance?: FAULT_TOLERANCE
+}
 
-const { updateSelfPeerRecord } = require('./record/utils')
+export class DefaultTransportManager extends EventEmitter<TransportManagerEvents> implements TransportManager, Startable {
+  private readonly components: Components
+  private readonly transports: Map<string, Transport>
+  private readonly listeners: Map<string, Listener[]>
+  private readonly faultTolerance: FAULT_TOLERANCE
+  private started: boolean
 
-/**
- * @typedef {import('multiaddr').Multiaddr} Multiaddr
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory<any, any>} TransportFactory
- * @typedef {import('libp2p-interfaces/src/transport/types').Transport<any, any>} Transport
- *
- * @typedef {Object} TransportManagerProperties
- * @property {import('./')} libp2p
- * @property {import('./upgrader')} upgrader
- *
- * @typedef {Object} TransportManagerOptions
- * @property {number} [faultTolerance = FAULT_TOLERANCE.FATAL_ALL] - Address listen error tolerance.
- */
+  constructor (components: Components, init: TransportManagerInit = {}) {
+    super()
 
-class TransportManager {
-  /**
-   * @class
-   * @param {TransportManagerProperties & TransportManagerOptions} options
-   */
-  constructor ({ libp2p, upgrader, faultTolerance = FAULT_TOLERANCE.FATAL_ALL }) {
-    this.libp2p = libp2p
-    this.upgrader = upgrader
-    /** @type {Map<string, Transport>} */
-    this._transports = new Map()
-    this._listeners = new Map()
-    this._listenerOptions = new Map()
-    this.faultTolerance = faultTolerance
+    this.components = components
+    this.started = false
+    this.transports = new Map<string, Transport>()
+    this.listeners = trackedMap({
+      component: 'transport-manager',
+      metric: 'listeners',
+      metrics: this.components.getMetrics()
+    })
+    this.faultTolerance = init.faultTolerance ?? FAULT_TOLERANCE.FATAL_ALL
   }
 
   /**
    * Adds a `Transport` to the manager
-   *
-   * @param {string} key
-   * @param {TransportFactory} Transport
-   * @param {*} transportOptions - Additional options to pass to the transport
-   * @returns {void}
    */
-  add (key, Transport, transportOptions = {}) {
-    log('adding %s', key)
-    if (!key) {
-      throw errCode(new Error(`Transport must have a valid key, was given '${key}'`), codes.ERR_INVALID_KEY)
-    }
-    if (this._transports.has(key)) {
-      throw errCode(new Error('There is already a transport with this key'), codes.ERR_DUPLICATE_TRANSPORT)
+  add (transport: Transport) {
+    const tag = transport[Symbol.toStringTag]
+
+    if (tag == null) {
+      throw errCode(new Error('Transport must have a valid tag'), codes.ERR_INVALID_KEY)
     }
 
-    const transport = new Transport({
-      ...transportOptions,
-      libp2p: this.libp2p,
-      upgrader: this.upgrader
-    })
-
-    this._transports.set(key, transport)
-    this._listenerOptions.set(key, transportOptions.listenerOptions || {})
-    if (!this._listeners.has(key)) {
-      this._listeners.set(key, [])
+    if (this.transports.has(tag)) {
+      throw errCode(new Error('There is already a transport with this tag'), codes.ERR_DUPLICATE_TRANSPORT)
     }
+
+    log('adding transport %s', tag)
+
+    this.transports.set(tag, transport)
+
+    if (!this.listeners.has(tag)) {
+      this.listeners.set(tag, [])
+    }
+  }
+
+  isStarted () {
+    return this.started
+  }
+
+  async start () {
+    // Listen on the provided transports for the provided addresses
+    const addrs = this.components.getAddressManager().getListenAddrs()
+
+    await this.listen(addrs)
+
+    this.started = true
   }
 
   /**
    * Stops all listeners
-   *
-   * @async
    */
-  async close () {
+  async stop () {
     const tasks = []
-    for (const [key, listeners] of this._listeners) {
+    for (const [key, listeners] of this.listeners) {
       log('closing listeners for %s', key)
-      while (listeners.length) {
+      while (listeners.length > 0) {
         const listener = listeners.pop()
-        listener.removeAllListeners('listening')
-        listener.removeAllListeners('close')
+
+        if (listener == null) {
+          continue
+        }
+
         tasks.push(listener.close())
       }
     }
 
     await Promise.all(tasks)
     log('all listeners closed')
-    for (const key of this._listeners.keys()) {
-      this._listeners.set(key, [])
+    for (const key of this.listeners.keys()) {
+      this.listeners.set(key, [])
     }
+
+    this.started = false
   }
 
   /**
    * Dials the given Multiaddr over it's supported transport
-   *
-   * @param {Multiaddr} ma
-   * @param {*} options
-   * @returns {Promise<Connection>}
    */
-  async dial (ma, options) {
+  async dial (ma: Multiaddr, options?: AbortOptions): Promise<Connection> {
     const transport = this.transportForMultiaddr(ma)
-    if (!transport) {
+
+    if (transport == null) {
       throw errCode(new Error(`No transport available for address ${String(ma)}`), codes.ERR_TRANSPORT_UNAVAILABLE)
     }
 
     try {
-      return await transport.dial(ma, options)
-    } catch (/** @type {any} */ err) {
-      if (!err.code) err.code = codes.ERR_TRANSPORT_DIAL_FAILED
+      return await transport.dial(ma, {
+        ...options,
+        upgrader: this.components.getUpgrader()
+      })
+    } catch (err: any) {
+      if (err.code == null) {
+        err.code = codes.ERR_TRANSPORT_DIAL_FAILED
+      }
+
       throw err
     }
   }
 
   /**
    * Returns all Multiaddr's the listeners are using
-   *
-   * @returns {Multiaddr[]}
    */
-  getAddrs () {
-    /** @type {Multiaddr[]} */
-    let addrs = []
-    for (const listeners of this._listeners.values()) {
+  getAddrs (): Multiaddr[] {
+    let addrs: Multiaddr[] = []
+    for (const listeners of this.listeners.values()) {
       for (const listener of listeners) {
         addrs = [...addrs, ...listener.getAddrs()]
       }
@@ -132,54 +137,67 @@ class TransportManager {
   }
 
   /**
-   * Returns all the transports instances.
-   *
-   * @returns {IterableIterator<Transport>}
+   * Returns all the transports instances
    */
   getTransports () {
-    return this._transports.values()
+    return Array.of(...this.transports.values())
   }
 
   /**
    * Finds a transport that matches the given Multiaddr
-   *
-   * @param {Multiaddr} ma
-   * @returns {Transport|null}
    */
-  transportForMultiaddr (ma) {
-    for (const transport of this._transports.values()) {
+  transportForMultiaddr (ma: Multiaddr) {
+    for (const transport of this.transports.values()) {
       const addrs = transport.filter([ma])
-      if (addrs.length) return transport
+
+      if (addrs.length > 0) {
+        return transport
+      }
     }
-    return null
   }
 
   /**
-   * Starts listeners for each listen Multiaddr.
-   *
-   * @async
-   * @param {Multiaddr[]} addrs - addresses to attempt to listen on
+   * Starts listeners for each listen Multiaddr
    */
-  async listen (addrs) {
-    if (!addrs || addrs.length === 0) {
+  async listen (addrs: Multiaddr[]) {
+    if (addrs == null || addrs.length === 0) {
       log('no addresses were provided for listening, this node is dial only')
       return
     }
 
     const couldNotListen = []
-    for (const [key, transport] of this._transports.entries()) {
+
+    for (const [key, transport] of this.transports.entries()) {
       const supportedAddrs = transport.filter(addrs)
       const tasks = []
 
       // For each supported multiaddr, create a listener
       for (const addr of supportedAddrs) {
         log('creating listener for %s on %s', key, addr)
-        const listener = transport.createListener(this._listenerOptions.get(key))
-        this._listeners.get(key).push(listener)
+        const listener = transport.createListener({
+          upgrader: this.components.getUpgrader()
+        })
+
+        let listeners = this.listeners.get(key)
+
+        if (listeners == null) {
+          listeners = []
+          this.listeners.set(key, listeners)
+        }
+
+        listeners.push(listener)
 
         // Track listen/close events
-        listener.on('listening', () => updateSelfPeerRecord(this.libp2p))
-        listener.on('close', () => updateSelfPeerRecord(this.libp2p))
+        listener.addEventListener('listening', () => {
+          this.dispatchEvent(new CustomEvent<Listener>('listener:listening', {
+            detail: listener
+          }))
+        })
+        listener.addEventListener('close', () => {
+          this.dispatchEvent(new CustomEvent<Listener>('listener:close', {
+            detail: listener
+          }))
+        })
 
         // We need to attempt to listen on everything
         tasks.push(listener.listen(addr))
@@ -196,16 +214,16 @@ class TransportManager {
       // TODO: we should look at adding a retry (`p-retry`) here to better support
       // listening on remote addresses as they may be offline. We could then potentially
       // just wait for any (`p-any`) listener to succeed on each transport before returning
-      const isListening = results.find(r => r.isFulfilled === true)
-      if (!isListening && this.faultTolerance !== FAULT_TOLERANCE.NO_FATAL) {
+      const isListening = results.find(r => r.isFulfilled)
+      if ((isListening == null) && this.faultTolerance !== FAULT_TOLERANCE.NO_FATAL) {
         throw errCode(new Error(`Transport (${key}) could not listen on any available address`), codes.ERR_NO_VALID_ADDRESSES)
       }
     }
 
     // If no transports were able to listen, throw an error. This likely
     // means we were given addresses we do not have transports for
-    if (couldNotListen.length === this._transports.size) {
-      const message = `no valid addresses were provided for transports [${couldNotListen}]`
+    if (couldNotListen.length === this.transports.size) {
+      const message = `no valid addresses were provided for transports [${couldNotListen.join(', ')}]`
       if (this.faultTolerance === FAULT_TOLERANCE.FATAL_ALL) {
         throw errCode(new Error(message), codes.ERR_NO_VALID_ADDRESSES)
       }
@@ -216,23 +234,17 @@ class TransportManager {
   /**
    * Removes the given transport from the manager.
    * If a transport has any running listeners, they will be closed.
-   *
-   * @async
-   * @param {string} key
    */
-  async remove (key) {
+  async remove (key: string) {
     log('removing %s', key)
-    if (this._listeners.has(key)) {
-      // Close any running listeners
-      for (const listener of this._listeners.get(key)) {
-        listener.removeAllListeners('listening')
-        listener.removeAllListeners('close')
-        await listener.close()
-      }
+
+    // Close any running listeners
+    for (const listener of this.listeners.get(key) ?? []) {
+      await listener.close()
     }
 
-    this._transports.delete(key)
-    this._listeners.delete(key)
+    this.transports.delete(key)
+    this.listeners.delete(key)
   }
 
   /**
@@ -243,7 +255,7 @@ class TransportManager {
    */
   async removeAll () {
     const tasks = []
-    for (const key of this._transports.keys()) {
+    for (const key of this.transports.keys()) {
       tasks.push(this.remove(key))
     }
 
@@ -252,18 +264,16 @@ class TransportManager {
 }
 
 /**
- * Enum Transport Manager Fault Tolerance values.
- * FATAL_ALL should be used for failing in any listen circumstance.
- * NO_FATAL should be used for not failing when not listening.
- *
- * @readonly
- * @enum {number}
+ * Enum Transport Manager Fault Tolerance values
  */
-const FAULT_TOLERANCE = {
-  FATAL_ALL: 0,
-  NO_FATAL: 1
+export enum FAULT_TOLERANCE {
+  /**
+   * should be used for failing in any listen circumstance
+   */
+  FATAL_ALL = 0,
+
+  /**
+   * should be used for not failing when not listening
+   */
+  NO_FATAL
 }
-
-TransportManager.FaultTolerance = FAULT_TOLERANCE
-
-module.exports = TransportManager

@@ -1,36 +1,32 @@
-'use strict'
+import mergeOptions from 'merge-options'
+import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import * as Constants from './constants.js'
+import { AGENT_VERSION } from './identify/consts.js'
+import * as RelayConstants from './circuit/constants.js'
+import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import { FAULT_TOLERANCE } from './transport-manager.js'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Libp2pInit } from './index.js'
+import { codes, messages } from './errors.js'
+import errCode from 'err-code'
+import type { RecursivePartial } from '@libp2p/interfaces'
 
-const mergeOptions = require('merge-options')
-// @ts-ignore no types in multiaddr path
-const { dnsaddrResolver } = require('multiaddr/src/resolvers')
-
-const Constants = require('./constants')
-const { AGENT_VERSION } = require('./identify/consts')
-const RelayConstants = require('./circuit/constants')
-
-const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
-const { FaultTolerance } = require('./transport-manager')
-
-/**
- * @typedef {import('multiaddr').Multiaddr} Multiaddr
- * @typedef {import('./types').ConnectionGater} ConnectionGater
- * @typedef {import('.').Libp2pOptions} Libp2pOptions
- * @typedef {import('.').constructorOptions} constructorOptions
- */
-
-const DefaultConfig = {
+const DefaultConfig: Partial<Libp2pInit> = {
   addresses: {
     listen: [],
     announce: [],
     noAnnounce: [],
-    announceFilter: (/** @type {Multiaddr[]} */ multiaddrs) => multiaddrs
+    announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs
   },
   connectionManager: {
-    minConnections: 25
+    maxConnections: 300,
+    minConnections: 50,
+    autoDialInterval: 10000,
+    autoDial: true
   },
-  connectionGater: /** @type {ConnectionGater} */ {},
+  connectionGater: {},
   transportManager: {
-    faultTolerance: FaultTolerance.FATAL_ALL
+    faultTolerance: FAULT_TOLERANCE.FATAL_ALL
   },
   dialer: {
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
@@ -45,11 +41,15 @@ const DefaultConfig = {
     agentVersion: AGENT_VERSION
   },
   metrics: {
-    enabled: false
-  },
-  peerStore: {
-    persistence: false,
-    threshold: 5
+    enabled: false,
+    computeThrottleMaxQueueSize: 1000,
+    computeThrottleTimeout: 2000,
+    movingAverageIntervals: [
+      60 * 1000, // 1 minute
+      5 * 60 * 1000, // 5 minutes
+      15 * 60 * 1000 // 15 minutes
+    ],
+    maxOldPeersRetention: 50
   },
   peerRouting: {
     refreshManager: {
@@ -58,57 +58,44 @@ const DefaultConfig = {
       bootDelay: 10e3
     }
   },
-  config: {
-    protocolPrefix: 'ipfs',
-    dht: {
+  protocolPrefix: 'ipfs',
+  nat: {
+    enabled: true,
+    ttl: 7200,
+    keepAlive: true
+  },
+  relay: {
+    enabled: true,
+    advertise: {
+      bootDelay: RelayConstants.ADVERTISE_BOOT_DELAY,
       enabled: false,
-      kBucketSize: 20
+      ttl: RelayConstants.ADVERTISE_TTL
     },
-    nat: {
-      enabled: true,
-      ttl: 7200,
-      keepAlive: true,
-      gateway: null,
-      externalIp: null,
-      pmp: {
-        enabled: false
-      }
+    hop: {
+      enabled: false,
+      active: false
     },
-    peerDiscovery: {
-      autoDial: true
-    },
-    pubsub: {
-      enabled: true
-    },
-    relay: {
-      enabled: true,
-      advertise: {
-        bootDelay: RelayConstants.ADVERTISE_BOOT_DELAY,
-        enabled: false,
-        ttl: RelayConstants.ADVERTISE_TTL
-      },
-      hop: {
-        enabled: false,
-        active: false
-      },
-      autoRelay: {
-        enabled: false,
-        maxListeners: 2
-      }
-    },
-    transport: {}
+    autoRelay: {
+      enabled: false,
+      maxListeners: 2
+    }
   }
 }
 
-/**
- * @param {Libp2pOptions} opts
- * @returns {DefaultConfig & Libp2pOptions & constructorOptions}
- */
-module.exports.validate = (opts) => {
-  /** @type {DefaultConfig & Libp2pOptions & constructorOptions} */
-  const resultingOptions = mergeOptions(DefaultConfig, opts)
+export function validateConfig (opts: RecursivePartial<Libp2pInit>): Libp2pInit {
+  const resultingOptions: Libp2pInit = mergeOptions(DefaultConfig, opts)
 
-  if (resultingOptions.modules.transport.length < 1) throw new Error("'options.modules.transport' must contain at least 1 transport")
+  if (resultingOptions.transports.length < 1) {
+    throw errCode(new Error(messages.ERR_TRANSPORTS_REQUIRED), codes.ERR_TRANSPORTS_REQUIRED)
+  }
+
+  if (resultingOptions.connectionEncrypters == null || resultingOptions.connectionEncrypters.length === 0) {
+    throw errCode(new Error(messages.CONN_ENCRYPTION_REQUIRED), codes.CONN_ENCRYPTION_REQUIRED)
+  }
+
+  if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef
+    throw errCode(new Error(messages.ERR_PROTECTOR_REQUIRED), codes.ERR_PROTECTOR_REQUIRED)
+  }
 
   return resultingOptions
 }

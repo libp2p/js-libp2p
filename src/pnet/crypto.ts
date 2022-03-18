@@ -1,29 +1,20 @@
-'use strict'
+import { logger } from '@libp2p/logger'
+import * as Errors from './errors.js'
+import xsalsa20 from 'xsalsa20'
+import { KEY_LENGTH } from './key-generator.js'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import type { Source } from 'it-stream-types'
 
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:pnet'), {
-  trace: debug('libp2p:pnet:trace'),
-  error: debug('libp2p:pnet:err')
-})
-
-const Errors = require('./errors')
-// @ts-ignore xsalsa20 has no types exported
-const xsalsa20 = require('xsalsa20')
-const KEY_LENGTH = require('./key-generator').KEY_LENGTH
-const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const log = logger('libp2p:pnet')
 
 /**
  * Creates a stream iterable to encrypt messages in a private network
- *
- * @param {Uint8Array} nonce - The nonce to use in encryption
- * @param {Uint8Array} psk - The private shared key to use in encryption
- * @returns {*} a through iterable
  */
-module.exports.createBoxStream = (nonce, psk) => {
+export function createBoxStream (nonce: Uint8Array, psk: Uint8Array) {
   const xor = xsalsa20(nonce, psk)
 
-  return (/** @type {AsyncIterable<Uint8Array>} */ source) => (async function * () {
+  return (source: Source<Uint8Array>) => (async function * () {
     for await (const chunk of source) {
       yield Uint8Array.from(xor.update(chunk.slice()))
     }
@@ -32,13 +23,9 @@ module.exports.createBoxStream = (nonce, psk) => {
 
 /**
  * Creates a stream iterable to decrypt messages in a private network
- *
- * @param {Uint8Array} nonce - The nonce of the remote peer
- * @param {Uint8Array} psk - The private shared key to use in decryption
- * @returns {*} a through iterable
  */
-module.exports.createUnboxStream = (nonce, psk) => {
-  return (/** @type {AsyncIterable<Uint8Array>} */ source) => (async function * () {
+export function createUnboxStream (nonce: Uint8Array, psk: Uint8Array) {
+  return (source: Source<Uint8Array>) => (async function * () {
     const xor = xsalsa20(nonce, psk)
     log.trace('Decryption enabled')
 
@@ -50,12 +37,8 @@ module.exports.createUnboxStream = (nonce, psk) => {
 
 /**
  * Decode the version 1 psk from the given Uint8Array
- *
- * @param {Uint8Array} pskBuffer
- * @throws {INVALID_PSK}
- * @returns {{ tag?: string, codecName?: string, psk: Uint8Array }} The PSK metadata (tag, codecName, psk)
  */
-module.exports.decodeV1PSK = (pskBuffer) => {
+export function decodeV1PSK (pskBuffer: Uint8Array) {
   try {
     // This should pull from multibase/multicodec to allow for
     // more encoding flexibility. Ideally we'd consume the codecs
@@ -66,9 +49,9 @@ module.exports.decodeV1PSK = (pskBuffer) => {
     const pskTag = metadata.shift()
     const codec = metadata.shift()
     const pskString = metadata.shift()
-    const psk = pskString && uint8ArrayFromString(pskString, 'base16')
+    const psk = uint8ArrayFromString(pskString ?? '', 'base16')
 
-    if (!psk || psk.byteLength !== KEY_LENGTH) {
+    if (psk.byteLength !== KEY_LENGTH) {
       throw new Error(Errors.INVALID_PSK)
     }
 
@@ -77,7 +60,7 @@ module.exports.decodeV1PSK = (pskBuffer) => {
       codecName: codec,
       psk: psk
     }
-  } catch (/** @type {any} */ err) {
+  } catch (err: any) {
     log.error(err)
     throw new Error(Errors.INVALID_PSK)
   }

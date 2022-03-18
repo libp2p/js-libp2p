@@ -1,8 +1,7 @@
-// @ts-nocheck
-'use strict'
+import 'node-forge/lib/x509.js'
+// @ts-expect-error types are missing
+import forge from 'node-forge/lib/forge.js'
 
-require('node-forge/lib/x509')
-const forge = require('node-forge/lib/forge')
 const pki = forge.pki
 
 /**
@@ -11,19 +10,15 @@ const pki = forge.pki
  * The output Uint8Array contains the PKCS #7 message in DER.
  *
  * TODO: move to libp2p-crypto package
- *
- * @param {KeyInfo} key - The id and name of the key
- * @param {RsaPrivateKey} privateKey - The naked key
- * @returns {Uint8Array}
  */
-const certificateForKey = (key, privateKey) => {
-  const publicKey = pki.setRsaPublicKey(privateKey.n, privateKey.e)
+export const certificateForKey = (key: any, privateKey: forge.pki.rsa.PrivateKey) => {
+  const publicKey = pki.rsa.setPublicKey(privateKey.n, privateKey.e)
   const cert = pki.createCertificate()
   cert.publicKey = publicKey
   cert.serialNumber = '01'
   cert.validity.notBefore = new Date()
   cert.validity.notAfter = new Date()
-  cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10)
+  cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10) // eslint-disable-line @typescript-eslint/restrict-plus-operands
   const attrs = [{
     name: 'organizationName',
     value: 'ipfs'
@@ -79,14 +74,9 @@ const certificateForKey = (key, privateKey) => {
  * @param {Array} array
  * @param {function(*)} asyncCompare - An async function that returns a boolean
  */
-async function findAsync (array, asyncCompare) {
+export async function findAsync <T> (array: T[], asyncCompare: (val: T) => Promise<any>) {
   const promises = array.map(asyncCompare)
   const results = await Promise.all(promises)
   const index = results.findIndex(result => result)
   return array[index]
-}
-
-module.exports = {
-  certificateForKey,
-  findAsync
 }

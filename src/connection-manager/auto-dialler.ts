@@ -1,69 +1,78 @@
-'use strict'
+import { logger } from '@libp2p/logger'
+import mergeOptions from 'merge-options'
+// @ts-expect-error retimer does not have types
+import retimer from 'retimer'
+import all from 'it-all'
+import { pipe } from 'it-pipe'
+import filter from 'it-filter'
+import sort from 'it-sort'
+import type { Startable } from '@libp2p/interfaces'
+import type { Components } from '@libp2p/interfaces/components'
 
-const debug = require('debug')
-const mergeOptions = require('merge-options')
-// @ts-ignore retimer does not have types
-const retimer = require('retimer')
-const all = require('it-all')
-const { pipe } = require('it-pipe')
-const filter = require('it-filter')
-const sort = require('it-sort')
+const log = logger('libp2p:connection-manager:auto-dialler')
 
-const log = Object.assign(debug('libp2p:connection-manager:auto-dialler'), {
-  error: debug('libp2p:connection-manager:auto-dialler:err')
-})
+export interface AutoDiallerInit {
+  /**
+   * Should preemptively guarantee connections are above the low watermark
+   */
+  enabled?: boolean
 
-const defaultOptions = {
+  /**
+   * The minimum number of connections to avoid pruning
+   */
+  minConnections?: number
+
+  /**
+   * How often, in milliseconds, it should preemptively guarantee connections are above the low watermark
+   */
+  autoDialInterval?: number
+}
+
+const defaultOptions: Partial<AutoDiallerInit> = {
   enabled: true,
   minConnections: 0,
   autoDialInterval: 10000
 }
 
-/**
- * @typedef {import('../index')} Libp2p
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- */
+export class AutoDialler implements Startable {
+  private readonly components: Components
+  private readonly options: Required<AutoDiallerInit>
+  private running: boolean
+  private autoDialTimeout?: ReturnType<retimer>
 
-/**
- * @typedef {Object} AutoDiallerOptions
- * @property {boolean} [enabled = true] - Should preemptively guarantee connections are above the low watermark
- * @property {number} [minConnections = 0] - The minimum number of connections to avoid pruning
- * @property {number} [autoDialInterval = 10000] - How often, in milliseconds, it should preemptively guarantee connections are above the low watermark
- */
-
-class AutoDialler {
   /**
    * Proactively tries to connect to known peers stored in the PeerStore.
    * It will keep the number of connections below the upper limit and sort
    * the peers to connect based on wether we know their keys and protocols.
-   *
-   * @class
-   * @param {Libp2p} libp2p
-   * @param {AutoDiallerOptions} options
    */
-  constructor (libp2p, options = {}) {
-    this._options = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, options)
-    this._libp2p = libp2p
-    this._running = false
-    this._autoDialTimeout = null
+  constructor (components: Components, init: AutoDiallerInit) {
+    this.components = components
+    this.options = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
+    this.running = false
     this._autoDial = this._autoDial.bind(this)
 
-    log('options: %j', this._options)
+    log('options: %j', this.options)
+  }
+
+  isStarted () {
+    return this.running
   }
 
   /**
    * Starts the auto dialer
    */
   async start () {
-    if (!this._options.enabled) {
+    if (!this.options.enabled) {
       log('not enabled')
       return
     }
 
-    this._running = true
-    this._autoDial().catch(err => {
+    this.running = true
+
+    void this._autoDial().catch(err => {
       log.error('could start autodial', err)
     })
+
     log('started')
   }
 
@@ -71,62 +80,75 @@ class AutoDialler {
    * Stops the auto dialler
    */
   async stop () {
-    if (!this._options.enabled) {
+    if (!this.options.enabled) {
       log('not enabled')
       return
     }
 
-    this._running = false
-    this._autoDialTimeout && this._autoDialTimeout.clear()
+    this.running = false
+
+    if (this.autoDialTimeout != null) {
+      this.autoDialTimeout.clear()
+    }
+
     log('stopped')
   }
 
   async _autoDial () {
-    const minConnections = this._options.minConnections
+    if (this.autoDialTimeout != null) {
+      this.autoDialTimeout.clear()
+    }
+
+    const minConnections = this.options.minConnections
 
     // Already has enough connections
-    if (this._libp2p.connections.size >= minConnections) {
-      this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
+    if (this.components.getConnectionManager().getConnectionList().length >= minConnections) {
+      this.autoDialTimeout = retimer(this._autoDial, this.options.autoDialInterval)
+
       return
     }
 
-    // Sort peers on whether we know protocols of public keys for them
-    // TODO: assuming the `peerStore.getPeers()` order is stable this will mean
-    // we keep trying to connect to the same peers?
+    // Sort peers on whether we know protocols or public keys for them
+    const allPeers = await this.components.getPeerStore().all()
+
     const peers = await pipe(
-      this._libp2p.peerStore.getPeers(),
-      (source) => filter(source, (peer) => !peer.id.equals(this._libp2p.peerId)),
+      // shuffle the peers
+      allPeers.sort(() => Math.random() > 0.5 ? 1 : -1),
+      (source) => filter(source, (peer) => !peer.id.equals(this.components.getPeerId())),
       (source) => sort(source, (a, b) => {
-        if (b.protocols && b.protocols.length && (!a.protocols || !a.protocols.length)) {
+        if (b.protocols.length > a.protocols.length) {
           return 1
-        } else if (b.id.pubKey && !a.id.pubKey) {
+        } else if (b.id.publicKey != null && a.id.publicKey == null) {
           return 1
         }
         return -1
       }),
-      (source) => all(source)
+      async (source) => await all(source)
     )
 
-    for (let i = 0; this._running && i < peers.length && this._libp2p.connections.size < minConnections; i++) {
+    for (let i = 0; this.running && i < peers.length && this.components.getConnectionManager().getConnectionList().length < minConnections; i++) {
+      // Connection Manager was stopped during async dial
+      if (!this.running) {
+        return
+      }
+
       const peer = peers[i]
 
-      if (!this._libp2p.connectionManager.get(peer.id)) {
-        log('connecting to a peerStore stored peer %s', peer.id.toB58String())
+      if (this.components.getConnectionManager().getConnection(peer.id) == null) {
+        log('connecting to a peerStore stored peer %p', peer.id)
         try {
-          await this._libp2p.dialer.connectToPeer(peer.id)
-        } catch (/** @type {any} */ err) {
+          await this.components.getDialer().dial(peer.id)
+        } catch (err: any) {
           log.error('could not connect to peerStore stored peer', err)
         }
       }
     }
 
     // Connection Manager was stopped
-    if (!this._running) {
+    if (!this.running) {
       return
     }
 
-    this._autoDialTimeout = retimer(this._autoDial, this._options.autoDialInterval)
+    this.autoDialTimeout = retimer(this._autoDial, this.options.autoDialInterval)
   }
 }
-
-module.exports = AutoDialler

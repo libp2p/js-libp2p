@@ -1,84 +1,108 @@
-'use strict'
+import { upnpNat, NatAPI } from '@achingbrain/nat-port-mapper'
+import { logger } from '@libp2p/logger'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { isBrowser } from 'wherearewe'
+import isPrivateIp from 'private-ip'
+import * as pkg from './version.js'
+import errCode from 'err-code'
+import { codes } from './errors.js'
+import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
+import type { Startable } from '@libp2p/interfaces'
+import type { Components } from '@libp2p/interfaces/components'
 
-// @ts-ignore nat-api does not export types
-const NatAPI = require('nat-api')
-const debug = require('debug')
-const { promisify } = require('es6-promisify')
-const { Multiaddr } = require('multiaddr')
-const log = Object.assign(debug('libp2p:nat'), {
-  error: debug('libp2p:nat:err')
-})
-const { isBrowser } = require('wherearewe')
-const retry = require('p-retry')
-const isPrivateIp = require('private-ip')
-const pkg = require('../package.json')
-const errcode = require('err-code')
-const {
-  codes: { ERR_INVALID_PARAMETERS }
-} = require('./errors')
-const isLoopback = require('libp2p-utils/src/multiaddr/is-loopback')
-
+const log = logger('libp2p:nat')
 const DEFAULT_TTL = 7200
-
-/**
- * @typedef {import('peer-id')} PeerId
- * @typedef {import('./transport-manager')} TransportManager
- * @typedef {import('./address-manager')} AddressManager
- */
-
-/**
- * @typedef {Object} NatManagerProperties
- * @property {PeerId} peerId - The peer ID of the current node
- * @property {TransportManager} transportManager - A transport manager
- * @property {AddressManager} addressManager - An address manager
- *
- * @typedef {Object} NatManagerOptions
- * @property {boolean} enabled - Whether to enable the NAT manager
- * @property {string} [externalIp] - Pass a value to use instead of auto-detection
- * @property {string} [description] - A string value to use for the port mapping description on the gateway
- * @property {number} [ttl = DEFAULT_TTL] - How long UPnP port mappings should last for in seconds (minimum 1200)
- * @property {boolean} [keepAlive] - Whether to automatically refresh UPnP port mappings when their TTL is reached
- * @property {string} [gateway] - Pass a value to use instead of auto-detection
- * @property {object} [pmp] - PMP options
- * @property {boolean} [pmp.enabled] - Whether to enable PMP as well as UPnP
- */
 
 function highPort (min = 1024, max = 65535) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-class NatManager {
+export interface PMPOptions {
   /**
-   * @class
-   * @param {NatManagerProperties & NatManagerOptions} options
+   * Whether to enable PMP as well as UPnP
    */
-  constructor ({ peerId, addressManager, transportManager, ...options }) {
-    this._peerId = peerId
-    this._addressManager = addressManager
-    this._transportManager = transportManager
+  enabled?: boolean
+}
 
-    this._enabled = options.enabled
-    this._externalIp = options.externalIp
-    this._options = {
-      description: options.description || `${pkg.name}@${pkg.version} ${this._peerId}`,
-      ttl: options.ttl || DEFAULT_TTL,
-      autoUpdate: options.keepAlive || true,
-      gateway: options.gateway,
-      enablePMP: Boolean(options.pmp && options.pmp.enabled)
-    }
+export interface NatManagerInit {
+  /**
+   * Whether to enable the NAT manager
+   */
+  enabled: boolean
 
-    if (this._options.ttl < DEFAULT_TTL) {
-      throw errcode(new Error(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`), ERR_INVALID_PARAMETERS)
+  /**
+   * Pass a value to use instead of auto-detection
+   */
+  externalAddress?: string
+
+  /**
+   * Pass a value to use instead of auto-detection
+   */
+  localAddress?: string
+
+  /**
+   * A string value to use for the port mapping description on the gateway
+   */
+  description?: string
+
+  /**
+   * How long UPnP port mappings should last for in seconds (minimum 1200)
+   */
+  ttl?: number
+
+  /**
+   * Whether to automatically refresh UPnP port mappings when their TTL is reached
+   */
+  keepAlive: boolean
+
+  /**
+   * Pass a value to use instead of auto-detection
+   */
+  gateway?: string
+}
+
+export class NatManager implements Startable {
+  private readonly components: Components
+  private readonly enabled: boolean
+  private readonly externalAddress?: string
+  private readonly localAddress?: string
+  private readonly description: string
+  private readonly ttl: number
+  private readonly keepAlive: boolean
+  private readonly gateway?: string
+  private started: boolean
+  private client?: NatAPI
+
+  constructor (components: Components, init: NatManagerInit) {
+    this.components = components
+
+    this.started = false
+    this.enabled = init.enabled
+    this.externalAddress = init.externalAddress
+    this.localAddress = init.localAddress
+    this.description = init.description ?? `${pkg.name}@${pkg.version} ${this.components.getPeerId().toString()}`
+    this.ttl = init.ttl ?? DEFAULT_TTL
+    this.keepAlive = init.keepAlive ?? true
+    this.gateway = init.gateway
+
+    if (this.ttl < DEFAULT_TTL) {
+      throw errCode(new Error(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`), codes.ERR_INVALID_PARAMETERS)
     }
+  }
+
+  isStarted () {
+    return this.started
   }
 
   /**
    * Starts the NAT manager
    */
   start () {
-    if (isBrowser || !this._enabled) {
+    if (isBrowser || !this.enabled || this.started) {
       return
     }
+
+    this.started = true
 
     // done async to not slow down startup
     this._start().catch((err) => {
@@ -88,7 +112,7 @@ class NatManager {
   }
 
   async _start () {
-    const addrs = this._transportManager.getAddrs()
+    const addrs = this.components.getTransportManager().getAddrs()
 
     for (const addr of addrs) {
       // try to open uPnP ports for each thin waist address
@@ -111,10 +135,9 @@ class NatManager {
         continue
       }
 
-      const client = this._getClient()
-      const publicIp = this._externalIp || await client.externalIp()
+      const client = await this._getClient()
+      const publicIp = this.externalAddress ?? await client.externalIp()
 
-      // @ts-expect-error types are wrong
       if (isPrivateIp(publicIp)) {
         throw new Error(`${publicIp} is private - please set config.nat.externalIp to an externally routable IP or ensure you are not behind a double NAT`)
       }
@@ -125,11 +148,12 @@ class NatManager {
 
       await client.map({
         publicPort,
-        privatePort: port,
-        protocol: transport.toUpperCase()
+        localPort: port,
+        localAddress: this.localAddress,
+        protocol: transport.toUpperCase() === 'TCP' ? 'TCP' : 'UDP'
       })
 
-      this._addressManager.addObservedAddr(Multiaddr.fromNodeAddress({
+      this.components.getAddressManager().addObservedAddr(Multiaddr.fromNodeAddress({
         family: 4,
         address: publicIp,
         port: publicPort
@@ -137,61 +161,34 @@ class NatManager {
     }
   }
 
-  _getClient () {
-    if (this._client) {
-      return this._client
+  async _getClient () {
+    if (this.client != null) {
+      return this.client
     }
 
-    const client = new NatAPI(this._options)
+    this.client = await upnpNat({
+      description: this.description,
+      ttl: this.ttl,
+      keepAlive: this.keepAlive,
+      gateway: this.gateway
+    })
 
-    /** @type {(...any: any) => any} */
-    const map = promisify(client.map.bind(client))
-    /** @type {(...any: any) => any} */
-    const destroy = promisify(client.destroy.bind(client))
-    /** @type {(...any: any) => any} */
-    const externalIp = promisify(client.externalIp.bind(client))
-
-    // these are all network operations so add a retry
-    this._client = {
-      /**
-       * @param  {...any} args
-       * @returns {Promise<void>}
-       */
-      map: (...args) => retry(() => map(...args), { onFailedAttempt: log.error, unref: true }),
-
-      /**
-       * @param  {...any} args
-       * @returns {Promise<void>}
-       */
-      destroy: (...args) => retry(() => destroy(...args), { onFailedAttempt: log.error, unref: true }),
-
-      /**
-       * @param  {...any} args
-       * @returns {Promise<string>}
-       */
-      externalIp: (...args) => retry(() => externalIp(...args), { onFailedAttempt: log.error, unref: true })
-    }
-
-    return this._client
+    return this.client
   }
 
   /**
    * Stops the NAT manager
-   *
-   * @async
    */
   async stop () {
-    if (isBrowser || !this._client) {
+    if (isBrowser || this.client == null) {
       return
     }
 
     try {
-      await this._client.destroy()
-      this._client = null
-    } catch (/** @type {any} */ err) {
+      await this.client.close()
+      this.client = undefined
+    } catch (err: any) {
       log.error(err)
     }
   }
 }
-
-module.exports = NatManager

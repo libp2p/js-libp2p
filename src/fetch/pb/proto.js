@@ -1,15 +1,13 @@
 /*eslint-disable*/
-"use strict";
-
-var $protobuf = require("protobufjs/minimal");
+import $protobuf from "protobufjs/minimal.js";
 
 // Common aliases
-var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
+const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
 
 // Exported root namespace
-var $root = $protobuf.roots["libp2p-fetch"] || ($protobuf.roots["libp2p-fetch"] = {});
+const $root = $protobuf.roots["libp2p-fetch"] || ($protobuf.roots["libp2p-fetch"] = {});
 
-$root.FetchRequest = (function() {
+export const FetchRequest = $root.FetchRequest = (() => {
 
     /**
      * Properties of a FetchRequest.
@@ -141,7 +139,7 @@ $root.FetchRequest = (function() {
     return FetchRequest;
 })();
 
-$root.FetchResponse = (function() {
+export const FetchResponse = $root.FetchResponse = (() => {
 
     /**
      * Properties of a FetchResponse.
@@ -320,7 +318,7 @@ $root.FetchResponse = (function() {
      * @property {number} ERROR=2 ERROR value
      */
     FetchResponse.StatusCode = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
+        const valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "OK"] = 0;
         values[valuesById[1] = "NOT_FOUND"] = 1;
         values[valuesById[2] = "ERROR"] = 2;
@@ -330,4 +328,4 @@ $root.FetchResponse = (function() {
     return FetchResponse;
 })();
 
-module.exports = $root;
+export { $root as default };

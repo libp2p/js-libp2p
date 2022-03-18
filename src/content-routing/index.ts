@@ -1,59 +1,50 @@
-'use strict'
-
-const errCode = require('err-code')
-const { messages, codes } = require('../errors')
-const {
+import errCode from 'err-code'
+import { messages, codes } from '../errors.js'
+import {
   storeAddresses,
   uniquePeers,
-  requirePeers,
-  maybeLimitSource
-} = require('./utils')
-const drain = require('it-drain')
-const merge = require('it-merge')
-const { pipe } = require('it-pipe')
-const { DHTContentRouting } = require('../dht/dht-content-routing')
+  requirePeers
+} from './utils.js'
+import drain from 'it-drain'
+import merge from 'it-merge'
+import { pipe } from 'it-pipe'
+import type { ContentRouting } from '@libp2p/interfaces/content-routing'
+import type { AbortOptions, Startable } from '@libp2p/interfaces'
+import type { CID } from 'multiformats/cid'
+import type { Components } from '@libp2p/interfaces/components'
 
-/**
- * @typedef {import('peer-id')} PeerId
- * @typedef {import('multiaddr').Multiaddr} Multiaddr
- * @typedef {import('multiformats/cid').CID} CID
- * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
- */
+export interface CompoundContentRoutingInit {
+  routers: ContentRouting[]
+}
 
-/**
- * @typedef {Object} GetData
- * @property {PeerId} from
- * @property {Uint8Array} val
- */
+export class CompoundContentRouting implements ContentRouting, Startable {
+  private readonly routers: ContentRouting[]
+  private started: boolean
+  private readonly components: Components
 
-class ContentRouting {
-  /**
-   * @class
-   * @param {import('..')} libp2p
-   */
-  constructor (libp2p) {
-    this.libp2p = libp2p
-    /** @type {ContentRoutingModule[]} */
-    this.routers = libp2p._modules.contentRouting || []
-    this.dht = libp2p._dht
+  constructor (components: Components, init: CompoundContentRoutingInit) {
+    this.routers = init.routers ?? []
+    this.started = false
+    this.components = components
+  }
 
-    // If we have the dht, add it to the available content routers
-    if (this.dht && libp2p._config.dht.enabled) {
-      this.routers.push(new DHTContentRouting(this.dht))
-    }
+  isStarted () {
+    return this.started
+  }
+
+  async start () {
+    this.started = true
+  }
+
+  async stop () {
+    this.started = false
   }
 
   /**
-   * Iterates over all content routers in parallel to find providers of the given key.
-   *
-   * @param {CID} key - The CID key of the content to find
-   * @param {object} [options]
-   * @param {number} [options.timeout] - How long the query should run
-   * @param {number} [options.maxNumProviders] - maximum number of providers to find
-   * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
+   * Iterates over all content routers in parallel to find providers of the given key
    */
-  async * findProviders (key, options = {}) {
-    if (!this.routers.length) {
+  async * findProviders (key: CID, options: AbortOptions = {}) {
+    if (this.routers.length === 0) {
       throw errCode(new Error('No content this.routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
@@ -61,62 +52,55 @@ class ContentRouting {
       merge(
         ...this.routers.map(router => router.findProviders(key, options))
       ),
-      (source) => storeAddresses(source, this.libp2p.peerStore),
+      (source) => storeAddresses(source, this.components.getPeerStore()),
       (source) => uniquePeers(source),
-      (source) => maybeLimitSource(source, options.maxNumProviders),
       (source) => requirePeers(source)
     )
   }
 
   /**
    * Iterates over all content routers in parallel to notify it is
-   * a provider of the given key.
-   *
-   * @param {CID} key - The CID key of the content to find
-   * @returns {Promise<void>}
+   * a provider of the given key
    */
-  async provide (key) {
-    if (!this.routers.length) {
+  async provide (key: CID, options: AbortOptions = {}) {
+    if (this.routers.length === 0) {
       throw errCode(new Error('No content routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
-    await Promise.all(this.routers.map((router) => router.provide(key)))
+    await Promise.all(this.routers.map(async (router) => await router.provide(key, options)))
   }
 
   /**
-   * Store the given key/value pair in the DHT.
-   *
-   * @param {Uint8Array} key
-   * @param {Uint8Array} value
-   * @param {Object} [options] - put options
-   * @param {number} [options.minPeers] - minimum number of peers required to successfully put
-   * @returns {Promise<void>}
+   * Store the given key/value pair in the available content routings
    */
-  async put (key, value, options) {
-    if (!this.libp2p.isStarted() || !this.dht.isStarted) {
+  async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions) {
+    if (!this.isStarted()) {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
 
-    await drain(this.dht.put(key, value, options))
+    const dht = this.components.getDHT()
+
+    if (dht != null) {
+      await drain(dht.put(key, value, options))
+    }
   }
 
   /**
    * Get the value to the given key.
    * Times out after 1 minute by default.
-   *
-   * @param {Uint8Array} key
-   * @param {Object} [options] - get options
-   * @param {number} [options.timeout] - optional timeout (default: 60000)
-   * @returns {Promise<GetData>}
    */
-  async get (key, options) {
-    if (!this.libp2p.isStarted() || !this.dht.isStarted) {
+  async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
+    if (!this.isStarted()) {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
 
-    for await (const event of this.dht.get(key, options)) {
-      if (event.name === 'VALUE') {
-        return { from: event.peerId, val: event.value }
+    const dht = this.components.getDHT()
+
+    if (dht != null) {
+      for await (const event of dht.get(key, options)) {
+        if (event.name === 'VALUE') {
+          return event.value
+        }
       }
     }
 
@@ -124,32 +108,30 @@ class ContentRouting {
   }
 
   /**
-   * Get the `n` values to the given key without sorting.
-   *
-   * @param {Uint8Array} key
-   * @param {number} nVals
-   * @param {Object} [options] - get options
-   * @param {number} [options.timeout] - optional timeout (default: 60000)
+   * Get the `n` values to the given key without sorting
    */
-  async * getMany (key, nVals, options) { // eslint-disable-line require-await
-    if (!this.libp2p.isStarted() || !this.dht.isStarted) {
+  async * getMany (key: Uint8Array, nVals: number, options: AbortOptions) { // eslint-disable-line require-await
+    if (!this.isStarted()) {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
 
-    if (!nVals) {
+    if (nVals == null || nVals === 0) {
       return
     }
 
     let gotValues = 0
+    const dht = this.components.getDHT()
 
-    for await (const event of this.dht.get(key, options)) {
-      if (event.name === 'VALUE') {
-        yield { from: event.peerId, val: event.value }
+    if (dht != null) {
+      for await (const event of dht.get(key, options)) {
+        if (event.name === 'VALUE') {
+          yield { from: event.from, val: event.value }
 
-        gotValues++
+          gotValues++
 
-        if (gotValues === nVals) {
-          break
+          if (gotValues === nVals) {
+            break
+          }
         }
       }
     }
@@ -159,5 +141,3 @@ class ContentRouting {
     }
   }
 }
-
-module.exports = ContentRouting

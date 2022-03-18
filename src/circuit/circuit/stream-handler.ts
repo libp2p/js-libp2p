@@ -1,45 +1,45 @@
-'use strict'
+import { logger } from '@libp2p/logger'
+import * as lp from 'it-length-prefixed'
+import { Handshake, handshake } from 'it-handshake'
+import { CircuitRelay, ICircuitRelay } from '../pb/index.js'
+import type { Stream } from '@libp2p/interfaces/connection'
+import type { Source } from 'it-stream-types'
 
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:circuit:stream-handler'), {
-  error: debug('libp2p:circuit:stream-handler:err')
-})
+const log = logger('libp2p:circuit:stream-handler')
 
-const lp = require('it-length-prefixed')
-// @ts-ignore it-handshake does not export types
-const handshake = require('it-handshake')
-const { CircuitRelay } = require('../protocol')
-
-/**
- * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {import('../protocol').ICircuitRelay} ICircuitRelay
- */
-
-class StreamHandler {
+export interface StreamHandlerOptions {
   /**
-   * Create a stream handler for connection
-   *
-   * @class
-   * @param {object} options
-   * @param {MuxedStream} options.stream - A duplex iterable
-   * @param {number} [options.maxLength = 4096] - max bytes length of message
+   * A duplex iterable
    */
-  constructor ({ stream, maxLength = 4096 }) {
-    this.stream = stream
+  stream: Stream
 
+  /**
+   * max bytes length of message
+   */
+  maxLength?: number
+}
+
+export class StreamHandler {
+  private readonly stream: Stream
+  private readonly shake: Handshake
+  private readonly decoder: Source<Uint8Array>
+
+  constructor (options: StreamHandlerOptions) {
+    const { stream, maxLength = 4096 } = options
+
+    this.stream = stream
     this.shake = handshake(this.stream)
-    // @ts-ignore options are not optional
     this.decoder = lp.decode.fromReader(this.shake.reader, { maxDataLength: maxLength })
   }
 
   /**
    * Read and decode message
-   *
-   * @async
    */
   async read () {
+    // @ts-expect-error FIXME is a source, needs to be a generator
     const msg = await this.decoder.next()
-    if (msg.value) {
+
+    if (msg.value != null) {
       const value = CircuitRelay.decode(msg.value.slice())
       log('read message type', value.type)
       return value
@@ -52,20 +52,15 @@ class StreamHandler {
 
   /**
    * Encode and write array of buffers
-   *
-   * @param {ICircuitRelay} msg - An unencoded CircuitRelay protobuf message
-   * @returns {void}
    */
-  write (msg) {
+  write (msg: ICircuitRelay) {
     log('write message type %s', msg.type)
-    // @ts-ignore lp.encode expects type type 'Buffer | BufferList', not 'Uint8Array'
+    // @ts-expect-error lp.encode expects type type 'Buffer | BufferList', not 'Uint8Array'
     this.shake.write(lp.encode.single(CircuitRelay.encode(msg).finish()))
   }
 
   /**
    * Return the handshake rest stream and invalidate handler
-   *
-   * @returns {*} A duplex iterable
    */
   rest () {
     this.shake.rest()
@@ -75,20 +70,18 @@ class StreamHandler {
   /**
    * @param {ICircuitRelay} msg - An unencoded CircuitRelay protobuf message
    */
-  end (msg) {
+  end (msg: ICircuitRelay) {
     this.write(msg)
     this.close()
   }
 
   /**
    * Close the stream
-   *
-   * @returns {void}
    */
   close () {
     log('closing the stream')
-    this.rest().sink([])
+    void this.rest().sink([]).catch(err => {
+      log.error(err)
+    })
   }
 }
-
-module.exports = StreamHandler

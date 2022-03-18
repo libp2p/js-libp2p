@@ -1,24 +1,30 @@
-'use strict'
+import { logger } from '@libp2p/logger'
+import errCode from 'err-code'
+import { codes } from '../errors.js'
+import * as lp from 'it-length-prefixed'
+import { FetchRequest, FetchResponse } from './pb/proto.js'
+import { handshake } from 'it-handshake'
+import { PROTOCOL } from './constants.js'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Startable } from '@libp2p/interfaces'
+import type { Stream } from '@libp2p/interfaces/connection'
+import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
+import type { Components } from '@libp2p/interfaces/components'
 
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:fetch'), {
-  error: debug('libp2p:fetch:err')
-})
-const errCode = require('err-code')
-const { codes } = require('../errors')
-const lp = require('it-length-prefixed')
-const { FetchRequest, FetchResponse } = require('./proto')
-// @ts-ignore it-handshake does not export types
-const handshake = require('it-handshake')
-const { PROTOCOL } = require('./constants')
+const log = logger('libp2p:fetch')
 
-/**
- * @typedef {import('../')} Libp2p
- * @typedef {import('multiaddr').Multiaddr} Multiaddr
- * @typedef {import('peer-id')} PeerId
- * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {(key: string) => Promise<Uint8Array | null>} LookupFunction
- */
+export interface FetchInit {
+  protocolPrefix: string
+}
+
+export interface HandleMessageOptions {
+  stream: Stream
+  protocol: string
+}
+
+export interface LookupFunction {
+  (key: string): Promise<Uint8Array | null>
+}
 
 /**
  * A simple libp2p protocol for requesting a value corresponding to a key from a peer.
@@ -26,36 +32,54 @@ const { PROTOCOL } = require('./constants')
  * a given key.  Each lookup function must act on a distinct part of the overall key space, defined
  * by a fixed prefix that all keys that should be routed to that lookup function will start with.
  */
-class FetchProtocol {
-  /**
-   * @param {Libp2p} libp2p
-   */
-  constructor (libp2p) {
-    this._lookupFunctions = new Map() // Maps key prefix to value lookup function
-    this._libp2p = libp2p
+export class FetchService implements Startable {
+  private readonly components: Components
+  private readonly lookupFunctions: Map<string, LookupFunction>
+  private readonly protocol: string
+  private started: boolean
+
+  constructor (components: Components, init: FetchInit) {
+    this.started = false
+    this.components = components
+    this.protocol = PROTOCOL
+    this.lookupFunctions = new Map() // Maps key prefix to value lookup function
     this.handleMessage = this.handleMessage.bind(this)
   }
 
-  /**
-   * Sends a request to fetch the value associated with the given key from the given peer.
-   *
-   * @param {PeerId|Multiaddr} peer
-   * @param {string} key
-   * @returns {Promise<Uint8Array | null>}
-   */
-  async fetch (peer, key) {
-    // @ts-ignore multiaddr might not have toB58String
-    log('dialing %s to %s', this._protocol, peer.toB58String ? peer.toB58String() : peer)
+  async start () {
+    await this.components.getRegistrar().handle(this.protocol, (data) => {
+      void this.handleMessage(data).catch(err => {
+        log.error(err)
+      })
+    })
+    this.started = true
+  }
 
-    const connection = await this._libp2p.dial(peer)
-    const { stream } = await connection.newStream(FetchProtocol.PROTOCOL)
+  async stop () {
+    await this.components.getRegistrar().unhandle(this.protocol)
+    this.started = false
+  }
+
+  isStarted () {
+    return this.started
+  }
+
+  /**
+   * Sends a request to fetch the value associated with the given key from the given peer
+   */
+  async fetch (peer: PeerId, key: string): Promise<Uint8Array | null> {
+    log('dialing %s to %p', this.protocol, peer)
+
+    const connection = await this.components.getDialer().dial(peer)
+    const { stream } = await connection.newStream([this.protocol])
     const shake = handshake(stream)
 
     // send message
     const request = new FetchRequest({ identifier: key })
-    shake.write(lp.encode.single(FetchRequest.encode(request).finish()))
+    shake.write(lp.encode.single(FetchRequest.encode(request).finish()).slice())
 
     // read response
+    // @ts-expect-error fromReader returns a Source which has no .next method
     const response = FetchResponse.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
     switch (response.status) {
       case (FetchResponse.StatusCode.OK): {
@@ -78,21 +102,18 @@ class FetchProtocol {
    * Invoked when a fetch request is received.  Reads the request message off the given stream and
    * responds based on looking up the key in the request via the lookup callback that corresponds
    * to the key's prefix.
-   *
-   * @param {object} options
-   * @param {MuxedStream} options.stream
-   * @param {string} options.protocol
    */
-  async handleMessage (options) {
-    const { stream } = options
+  async handleMessage (data: IncomingStreamData) {
+    const { stream } = data
     const shake = handshake(stream)
+    // @ts-expect-error fromReader returns a Source which has no .next method
     const request = FetchRequest.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
 
     let response
     const lookup = this._getLookupFunction(request.identifier)
-    if (lookup) {
+    if (lookup != null) {
       const data = await lookup(request.identifier)
-      if (data) {
+      if (data != null) {
         response = new FetchResponse({ status: FetchResponse.StatusCode.OK, data })
       } else {
         response = new FetchResponse({ status: FetchResponse.StatusCode.NOT_FOUND })
@@ -102,58 +123,46 @@ class FetchProtocol {
       response = new FetchResponse({ status: FetchResponse.StatusCode.ERROR, data: errmsg })
     }
 
-    shake.write(lp.encode.single(FetchResponse.encode(response).finish()))
+    shake.write(lp.encode.single(FetchResponse.encode(response).finish()).slice())
   }
 
   /**
    * Given a key, finds the appropriate function for looking up its corresponding value, based on
    * the key's prefix.
-   *
-   * @param {string} key
    */
-  _getLookupFunction (key) {
-    for (const prefix of this._lookupFunctions.keys()) {
+  _getLookupFunction (key: string) {
+    for (const prefix of this.lookupFunctions.keys()) {
       if (key.startsWith(prefix)) {
-        return this._lookupFunctions.get(prefix)
+        return this.lookupFunctions.get(prefix)
       }
     }
-    return null
   }
 
   /**
    * Registers a new lookup callback that can map keys to values, for a given set of keys that
-   * share the same prefix.
-   *
-   * @param {string} prefix
-   * @param {LookupFunction} lookup
+   * share the same prefix
    */
-  registerLookupFunction (prefix, lookup) {
-    if (this._lookupFunctions.has(prefix)) {
+  registerLookupFunction (prefix: string, lookup: LookupFunction) {
+    if (this.lookupFunctions.has(prefix)) {
       throw errCode(new Error("Fetch protocol handler for key prefix '" + prefix + "' already registered"), codes.ERR_KEY_ALREADY_EXISTS)
     }
-    this._lookupFunctions.set(prefix, lookup)
+
+    this.lookupFunctions.set(prefix, lookup)
   }
 
   /**
    * Registers a new lookup callback that can map keys to values, for a given set of keys that
    * share the same prefix.
-   *
-   * @param {string} prefix
-   * @param {LookupFunction} [lookup]
    */
-  unregisterLookupFunction (prefix, lookup) {
+  unregisterLookupFunction (prefix: string, lookup?: LookupFunction) {
     if (lookup != null) {
-      const existingLookup = this._lookupFunctions.get(prefix)
+      const existingLookup = this.lookupFunctions.get(prefix)
 
       if (existingLookup !== lookup) {
         return
       }
     }
 
-    this._lookupFunctions.delete(prefix)
+    this.lookupFunctions.delete(prefix)
   }
 }
-
-FetchProtocol.PROTOCOL = PROTOCOL
-
-exports = module.exports = FetchProtocol

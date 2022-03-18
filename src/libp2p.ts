@@ -1,395 +1,287 @@
-'use strict'
+import { logger } from '@libp2p/logger'
+import { AbortOptions, EventEmitter, Startable, CustomEvent, isStartable } from '@libp2p/interfaces'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { MemoryDatastore } from 'datastore-core/memory'
+import { DefaultPeerRouting } from './peer-routing.js'
+import { CompoundContentRouting } from './content-routing/index.js'
+import { getPeer } from './get-peer.js'
+import { codes } from './errors.js'
+import { DefaultAddressManager } from './address-manager/index.js'
+import { DefaultConnectionManager } from './connection-manager/index.js'
+import { AutoDialler } from './connection-manager/auto-dialler.js'
+import { Circuit } from './circuit/transport.js'
+import { Relay } from './circuit/index.js'
+import { DefaultDialer } from './dialer/index.js'
+import { KeyChain } from './keychain/index.js'
+import { DefaultMetrics } from './metrics/index.js'
+import { DefaultTransportManager } from './transport-manager.js'
+import { DefaultUpgrader } from './upgrader.js'
+import { DefaultRegistrar } from './registrar.js'
+import { IdentifyService } from './identify/index.js'
+import { FetchService } from './fetch/index.js'
+import { PingService } from './ping/index.js'
+import { NatManager } from './nat-manager.js'
+import { PeerRecordUpdater } from './peer-record-updater.js'
+import { DHTPeerRouting } from './dht/dht-peer-routing.js'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { DHTContentRouting } from './dht/dht-content-routing.js'
+import { AutoDialer } from './dialer/auto-dialer.js'
+import { Initializable, Components, isInitializable } from '@libp2p/interfaces/components'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Connection } from '@libp2p/interfaces/connection'
+import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
+import type { ContentRouting } from '@libp2p/interfaces/content-routing'
+import type { PubSub } from '@libp2p/interfaces/pubsub'
+import type { StreamHandler } from '@libp2p/interfaces/registrar'
+import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { Libp2p, Libp2pEvents, Libp2pInit, Libp2pOptions } from './index.js'
+import { validateConfig } from './config.js'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import type { PeerStore } from '@libp2p/interfaces/peer-store'
+import type { DualDHT } from '@libp2p/interfaces/dht'
 
-const debug = require('debug')
-const log = Object.assign(debug('libp2p'), {
-  error: debug('libp2p:err')
-})
-const { EventEmitter } = require('events')
+const log = logger('libp2p')
 
-const errCode = require('err-code')
-const PeerId = require('peer-id')
-const { Multiaddr } = require('multiaddr')
-const { MemoryDatastore } = require('datastore-core/memory')
-const PeerRouting = require('./peer-routing')
-const ContentRouting = require('./content-routing')
-const getPeer = require('./get-peer')
-const { validate: validateConfig } = require('./config')
-const { codes, messages } = require('./errors')
+export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
+  public peerId: PeerId
+  public dht?: DualDHT
+  public pubsub?: PubSub
+  public identifyService?: IdentifyService
+  public fetchService: FetchService
+  public pingService: PingService
+  public components: Components
+  public peerStore: PeerStore
+  public contentRouting: ContentRouting
+  public peerRouting: PeerRouting
+  public keychain: KeyChain
 
-const AddressManager = require('./address-manager')
-const ConnectionManager = require('./connection-manager')
-const AutoDialler = require('./connection-manager/auto-dialler')
-const Circuit = require('./circuit/transport')
-const Relay = require('./circuit')
-const Dialer = require('./dialer')
-const Keychain = require('./keychain')
-const Metrics = require('./metrics')
-const TransportManager = require('./transport-manager')
-const Upgrader = require('./upgrader')
-const PeerStore = require('./peer-store')
-const PubsubAdapter = require('./pubsub-adapter')
-const Registrar = require('./registrar')
-const IdentifyService = require('./identify')
-const FetchService = require('./fetch')
-const PingService = require('./ping')
-const NatManager = require('./nat-manager')
-const { updateSelfPeerRecord } = require('./record/utils')
+  private started: boolean
+  private readonly services: Startable[]
+  private readonly initializables: Initializable[]
 
-/**
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {import('libp2p-interfaces/src/transport/types').TransportFactory<any, any>} TransportFactory
- * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxerFactory} MuxerFactory
- * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
- * @typedef {import('libp2p-interfaces/src/peer-discovery/types').PeerDiscoveryFactory} PeerDiscoveryFactory
- * @typedef {import('libp2p-interfaces/src/peer-routing/types').PeerRouting} PeerRoutingModule
- * @typedef {import('libp2p-interfaces/src/crypto/types').Crypto} Crypto
- * @typedef {import('libp2p-interfaces/src/pubsub')} Pubsub
- * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions
- * @typedef {import('interface-datastore').Datastore} Datastore
- * @typedef {import('./pnet')} Protector
- * @typedef {import('./types').ConnectionGater} ConnectionGater
- * @typedef {Object} PersistentPeerStoreOptions
- * @property {number} [threshold]
- */
-
-/**
- * @typedef {Object} HandlerProps
- * @property {Connection} connection
- * @property {MuxedStream} stream
- * @property {string} protocol
- *
- * @typedef {Object} DhtOptions
- * @property {boolean} [enabled = false]
- * @property {number} [kBucketSize = 20]
- * @property {boolean} [clientMode]
- * @property {import('libp2p-interfaces/src/types').DhtSelectors} [selectors]
- * @property {import('libp2p-interfaces/src/types').DhtValidators} [validators]
- *
- * @typedef {Object} KeychainOptions
- * @property {Datastore} [datastore]
- *
- * @typedef {Object} PeerStoreOptions
- * @property {boolean} persistence
- *
- * @typedef {Object} PubsubLocalOptions
- * @property {boolean} enabled
- *
- * @typedef {Object} MetricsOptions
- * @property {boolean} enabled
- *
- * @typedef {Object} RelayOptions
- * @property {boolean} [enabled = true]
- * @property {import('./circuit').RelayAdvertiseOptions} [advertise]
- * @property {import('./circuit').HopOptions} [hop]
- * @property {import('./circuit').AutoRelayOptions} [autoRelay]
- *
- * @typedef {Object} Libp2pConfig
- * @property {DhtOptions} [dht] dht module options
- * @property {import('./nat-manager').NatManagerOptions} [nat]
- * @property {Record<string, Object|boolean>} [peerDiscovery]
- * @property {PubsubLocalOptions & PubsubOptions} [pubsub] pubsub module options
- * @property {RelayOptions} [relay]
- * @property {Record<string, Object>} [transport] transport options indexed by transport key
- *
- * @typedef {Object} Libp2pModules
- * @property {TransportFactory[]} transport
- * @property {MuxerFactory[]} streamMuxer
- * @property {Crypto[]} connEncryption
- * @property {PeerDiscoveryFactory[]} [peerDiscovery]
- * @property {PeerRoutingModule[]} [peerRouting]
- * @property {ContentRoutingModule[]} [contentRouting]
- * @property {Object} [dht]
- * @property {{new(...args: any[]): Pubsub}} [pubsub]
- * @property {Protector} [connProtector]
- *
- * @typedef {Object} Libp2pOptions
- * @property {Libp2pModules} modules libp2p modules to use
- * @property {import('./address-manager').AddressManagerOptions} [addresses]
- * @property {import('./connection-manager').ConnectionManagerOptions} [connectionManager]
- * @property {Partial<import('./types').ConnectionGater>} [connectionGater]
- * @property {Datastore} [datastore]
- * @property {import('./dialer').DialerOptions} [dialer]
- * @property {import('./identify/index').HostProperties} [host] libp2p host
- * @property {KeychainOptions & import('./keychain/index').KeychainOptions} [keychain]
- * @property {MetricsOptions & import('./metrics').MetricsOptions} [metrics]
- * @property {import('./peer-routing').PeerRoutingOptions} [peerRouting]
- * @property {PeerStoreOptions} [peerStore]
- * @property {import('./transport-manager').TransportManagerOptions} [transportManager]
- * @property {Libp2pConfig} [config]
- *
- * @typedef {Object} constructorOptions
- * @property {PeerId} peerId
- *
- * @typedef {Object} CreateOptions
- * @property {PeerId} [peerId]
- *
- * @extends {EventEmitter}
- * @fires Libp2p#error Emitted when an error occurs
- * @fires Libp2p#peer:discovery Emitted when a peer is discovered
- */
-class Libp2p extends EventEmitter {
-  /**
-   * Like `new Libp2p(options)` except it will create a `PeerId`
-   * instance if one is not provided in options.
-   *
-   * @param {Libp2pOptions & CreateOptions} options - Libp2p configuration options
-   * @returns {Promise<Libp2p>}
-   */
-  static async create (options) {
-    if (options.peerId) {
-      // @ts-ignore 'Libp2pOptions & CreateOptions' is not assignable to 'Libp2pOptions & constructorOptions'
-      return new Libp2p(options)
-    }
-
-    const peerId = await PeerId.create()
-
-    options.peerId = peerId
-    // @ts-ignore 'Libp2pOptions & CreateOptions' is not assignable to 'Libp2pOptions & constructorOptions'
-    return new Libp2p(options)
-  }
-
-  /**
-   * Libp2p node.
-   *
-   * @class
-   * @param {Libp2pOptions & constructorOptions} _options
-   */
-  constructor (_options) {
+  constructor (init: Libp2pInit) {
     super()
-    // validateConfig will ensure the config is correct,
-    // and add default values where appropriate
-    this._options = validateConfig(_options)
 
-    /** @type {PeerId} */
-    this.peerId = this._options.peerId
-    this.datastore = this._options.datastore
+    this.services = []
+    this.initializables = []
+    this.started = false
+    this.peerId = init.peerId
+    this.components = new Components({
+      peerId: init.peerId,
+      datastore: init.datastore ?? new MemoryDatastore()
+    })
 
     // Create Metrics
-    if (this._options.metrics.enabled) {
-      const metrics = new Metrics({
-        ...this._options.metrics
-      })
-
-      this.metrics = metrics
+    if (init.metrics.enabled) {
+      this.components.setMetrics(this.configureComponent(new DefaultMetrics(init.metrics)))
     }
 
-    /** @type {ConnectionGater} */
-    this.connectionGater = {
-      denyDialPeer: async () => Promise.resolve(false),
-      denyDialMultiaddr: async () => Promise.resolve(false),
-      denyInboundConnection: async () => Promise.resolve(false),
-      denyOutboundConnection: async () => Promise.resolve(false),
-      denyInboundEncryptedConnection: async () => Promise.resolve(false),
-      denyOutboundEncryptedConnection: async () => Promise.resolve(false),
-      denyInboundUpgradedConnection: async () => Promise.resolve(false),
-      denyOutboundUpgradedConnection: async () => Promise.resolve(false),
-      filterMultiaddrForPeer: async () => Promise.resolve(true),
-      ...this._options.connectionGater
+    this.components.setConnectionGater(this.configureComponent({
+      denyDialPeer: async () => await Promise.resolve(false),
+      denyDialMultiaddr: async () => await Promise.resolve(false),
+      denyInboundConnection: async () => await Promise.resolve(false),
+      denyOutboundConnection: async () => await Promise.resolve(false),
+      denyInboundEncryptedConnection: async () => await Promise.resolve(false),
+      denyOutboundEncryptedConnection: async () => await Promise.resolve(false),
+      denyInboundUpgradedConnection: async () => await Promise.resolve(false),
+      denyOutboundUpgradedConnection: async () => await Promise.resolve(false),
+      filterMultiaddrForPeer: async () => await Promise.resolve(true),
+      ...init.connectionGater
+    }))
+
+    this.peerStore = this.components.setPeerStore(this.configureComponent(new PersistentPeerStore(this.components, init.peerStore)))
+
+    this.peerStore.addEventListener('peer', evt => {
+      const { detail: peerData } = evt
+
+      this.dispatchEvent(new CustomEvent<PeerData>('peer:discovery', { detail: peerData }))
+    })
+
+    // Set up connection protector if configured
+    if (init.connectionProtector != null) {
+      this.components.setConnectionProtector(this.configureComponent(init.connectionProtector))
     }
 
-    /** @type {import('./peer-store/types').PeerStore} */
-    this.peerStore = new PeerStore({
-      peerId: this.peerId,
-      datastore: (this.datastore && this._options.peerStore.persistence) ? this.datastore : new MemoryDatastore(),
-      addressFilter: this.connectionGater.filterMultiaddrForPeer
-    })
-
-    // Addresses {listen, announce, noAnnounce}
-    this.addresses = this._options.addresses
-    this.addressManager = new AddressManager(this.peerId, this._options.addresses)
-
-    // when addresses change, update our peer record
-    this.addressManager.on('change:addresses', () => {
-      updateSelfPeerRecord(this).catch(err => {
-        log.error('Error updating self peer record', err)
-      })
-    })
-
-    this._modules = this._options.modules
-    this._config = this._options.config
-    this._transport = [] // Transport instances/references
-    this._discovery = new Map() // Discovery service instances/references
+    // Set up the Upgrader
+    this.components.setUpgrader(this.configureComponent(new DefaultUpgrader(this.components, {
+      connectionEncrypters: (init.connectionEncrypters ?? []).map(component => this.configureComponent(component)),
+      muxers: (init.streamMuxers ?? []).map(component => this.configureComponent(component))
+    })))
 
     // Create the Connection Manager
-    this.connectionManager = new ConnectionManager(this, {
-      ...this._options.connectionManager
-    })
-    this._autodialler = new AutoDialler(this, {
-      enabled: this._config.peerDiscovery.autoDial,
-      minConnections: this._options.connectionManager.minConnections,
-      autoDialInterval: this._options.connectionManager.autoDialInterval
-    })
-
-    // Create keychain
-    if (this._options.keychain && this._options.keychain.datastore) {
-      log('creating keychain')
-
-      const keychainOpts = Keychain.generateOptions()
-
-      this.keychain = new Keychain(this._options.keychain.datastore, {
-        ...keychainOpts,
-        ...this._options.keychain
-      })
-
-      log('keychain constructed')
-    }
-
-    // Setup the Upgrader
-    this.upgrader = new Upgrader({
-      connectionGater: this.connectionGater,
-      localPeer: this.peerId,
-      metrics: this.metrics,
-      onConnection: (connection) => this.connectionManager.onConnect(connection),
-      onConnectionEnd: (connection) => this.connectionManager.onDisconnect(connection)
-    })
-
-    // Setup the transport manager
-    this.transportManager = new TransportManager({
-      libp2p: this,
-      upgrader: this.upgrader,
-      faultTolerance: this._options.transportManager.faultTolerance
-    })
-
-    // Create the Nat Manager
-    this.natManager = new NatManager({
-      peerId: this.peerId,
-      addressManager: this.addressManager,
-      transportManager: this.transportManager,
-      // @ts-ignore Nat typedef is not understood as Object
-      ...this._options.config.nat
-    })
+    this.components.setConnectionManager(this.configureComponent(new DefaultConnectionManager(this.components, init.connectionManager)))
 
     // Create the Registrar
-    this.registrar = new Registrar({
-      peerStore: this.peerStore,
-      connectionManager: this.connectionManager
+    this.components.setRegistrar(this.configureComponent(new DefaultRegistrar(this.components)))
+
+    // Setup the transport manager
+    this.components.setTransportManager(this.configureComponent(new DefaultTransportManager(this.components, init.transportManager)))
+
+    // Addresses {listen, announce, noAnnounce}
+    this.components.setAddressManager(this.configureComponent(new DefaultAddressManager(this.components, init.addresses)))
+
+    // update our peer record when addresses change
+    this.configureComponent(new PeerRecordUpdater(this.components))
+
+    this.components.setDialer(this.configureComponent(new DefaultDialer(this.components, init.dialer)))
+
+    this.configureComponent(new AutoDialler(this.components, {
+      enabled: init.connectionManager.autoDial,
+      minConnections: init.connectionManager.minConnections,
+      autoDialInterval: init.connectionManager.autoDialInterval
+    }))
+
+    // Create keychain
+    const keychainOpts = KeyChain.generateOptions()
+    this.keychain = this.configureComponent(new KeyChain(this.components, {
+      ...keychainOpts,
+      ...init.keychain
+    }))
+
+    // Create the Nat Manager
+    this.services.push(new NatManager(this.components, init.nat))
+
+    init.transports.forEach((transport) => {
+      this.components.getTransportManager().add(this.configureComponent(transport))
     })
-
-    this.handle = this.handle.bind(this)
-    this.registrar.handle = this.handle
-
-    // Attach crypto channels
-    if (!this._modules.connEncryption || !this._modules.connEncryption.length) {
-      throw errCode(new Error(messages.CONN_ENCRYPTION_REQUIRED), codes.CONN_ENCRYPTION_REQUIRED)
-    }
-    const cryptos = this._modules.connEncryption
-    cryptos.forEach((crypto) => {
-      this.upgrader.cryptos.set(crypto.protocol, crypto)
-    })
-
-    this.dialer = new Dialer({
-      transportManager: this.transportManager,
-      connectionGater: this.connectionGater,
-      peerStore: this.peerStore,
-      metrics: this.metrics,
-      ...this._options.dialer
-    })
-
-    this._modules.transport.forEach((Transport) => {
-      const key = Transport.prototype[Symbol.toStringTag]
-      const transportOptions = this._config.transport[key]
-      this.transportManager.add(key, Transport, transportOptions)
-    })
-
-    if (this._config.relay.enabled) {
-      // @ts-ignore Circuit prototype
-      this.transportManager.add(Circuit.prototype[Symbol.toStringTag], Circuit)
-      this.relay = new Relay(this)
-    }
 
     // Attach stream multiplexers
-    if (this._modules.streamMuxer) {
-      const muxers = this._modules.streamMuxer
-      muxers.forEach((muxer) => {
-        this.upgrader.muxers.set(muxer.multicodec, muxer)
-      })
-
+    if (init.streamMuxers != null && init.streamMuxers.length > 0) {
       // Add the identify service since we can multiplex
-      this.identifyService = new IdentifyService({ libp2p: this })
-    }
-
-    // Attach private network protector
-    if (this._modules.connProtector) {
-      this.upgrader.protector = this._modules.connProtector
-    } else if (globalThis.process !== undefined && globalThis.process.env && globalThis.process.env.LIBP2P_FORCE_PNET) { // eslint-disable-line no-undef
-      throw new Error('Private network is enforced, but no protector was provided')
+      this.identifyService = new IdentifyService(this.components, {
+        protocolPrefix: init.protocolPrefix,
+        host: {
+          agentVersion: init.host.agentVersion
+        }
+      })
+      this.configureComponent(this.identifyService)
     }
 
     // dht provided components (peerRouting, contentRouting, dht)
-    if (this._modules.dht) {
-      const DHT = this._modules.dht
-      // @ts-ignore TODO: types need fixing - DHT is an `object` which has no `create` method
-      this._dht = DHT.create({
-        libp2p: this,
-        ...this._config.dht
-      })
+    if (init.dht != null) {
+      this.dht = this.components.setDHT(this.configureComponent(init.dht))
     }
 
     // Create pubsub if provided
-    if (this._modules.pubsub) {
-      const Pubsub = this._modules.pubsub
-      // using pubsub adapter with *DEPRECATED* handlers functionality
-      /** @type {Pubsub} */
-      this.pubsub = PubsubAdapter(Pubsub, this, this._config.pubsub)
+    if (init.pubsub != null) {
+      this.pubsub = this.components.setPubSub(this.configureComponent(init.pubsub))
     }
 
     // Attach remaining APIs
     // peer and content routing will automatically get modules from _modules and _dht
-    this.peerRouting = new PeerRouting(this)
-    this.contentRouting = new ContentRouting(this)
 
-    this._onDiscoveryPeer = this._onDiscoveryPeer.bind(this)
+    const peerRouters: PeerRouting[] = (init.peerRouters ?? []).map(component => this.configureComponent(component))
 
-    this.fetchService = new FetchService(this)
-    this.pingService = new PingService(this)
+    if (this.dht != null) {
+      // add dht to routers
+      peerRouters.push(this.configureComponent(new DHTPeerRouting(this.dht)))
+    }
+
+    this.peerRouting = this.components.setPeerRouting(this.configureComponent(new DefaultPeerRouting(this.components, {
+      ...init.peerRouting,
+      routers: peerRouters
+    })))
+
+    const contentRouters: ContentRouting[] = (init.contentRouters ?? []).map(component => this.configureComponent(component))
+
+    if (this.dht != null) {
+      // add dht to routers
+      contentRouters.push(this.configureComponent(new DHTContentRouting(this.dht)))
+    }
+
+    this.contentRouting = this.components.setContentRouting(this.configureComponent(new CompoundContentRouting(this.components, {
+      routers: contentRouters
+    })))
+
+    if (init.relay.enabled) {
+      this.components.getTransportManager().add(this.configureComponent(new Circuit()))
+
+      this.configureComponent(new Relay(this.components, {
+        addressSorter: init.dialer.addressSorter,
+        ...init.relay
+      }))
+    }
+
+    this.fetchService = this.configureComponent(new FetchService(this.components, {
+      protocolPrefix: init.protocolPrefix
+    }))
+
+    this.pingService = this.configureComponent(new PingService(this.components, {
+      protocolPrefix: init.protocolPrefix
+    }))
+
+    const autoDialer = this.configureComponent(new AutoDialer(this.components, {
+      enabled: init.connectionManager.autoDial !== false,
+      minConnections: init.connectionManager.minConnections ?? Infinity
+    }))
+
+    this.addEventListener('peer:discovery', evt => {
+      if (!this.isStarted()) {
+        return
+      }
+
+      autoDialer.handle(evt)
+    })
+
+    // Discovery modules
+    for (const service of init.peerDiscoverers ?? []) {
+      this.configureComponent(service)
+
+      service.addEventListener('peer', (evt) => {
+        this.onDiscoveryPeer(evt)
+      })
+    }
   }
 
-  /**
-   * Overrides EventEmitter.emit to conditionally emit errors
-   * if there is a handler. If not, errors will be logged.
-   *
-   * @param {string} eventName
-   * @param  {...any} args
-   * @returns {boolean}
-   */
-  emit (eventName, ...args) {
-    // TODO: do we still need this?
-    // @ts-ignore _events does not exist in libp2p
-    if (eventName === 'error' && !this._events.error) {
-      log.error(args)
-      return false
-    } else {
-      return super.emit(eventName, ...args)
+  private configureComponent <T> (component: T): T {
+    if (isStartable(component)) {
+      this.services.push(component)
     }
+
+    if (isInitializable(component)) {
+      this.initializables.push(component)
+    }
+
+    return component
   }
 
   /**
    * Starts the libp2p node and all its subsystems
-   *
-   * @returns {Promise<void>}
    */
   async start () {
+    if (this.started) {
+      return
+    }
+
+    this.started = true
+
     log('libp2p is starting')
 
-    if (this.identifyService) {
-      await this.handle(Object.values(IdentifyService.getProtocolStr(this)), this.identifyService.handleMessage)
-    }
-
-    if (this.fetchService) {
-      await this.handle(FetchService.PROTOCOL, this.fetchService.handleMessage)
-    }
-
-    if (this.pingService) {
-      await this.handle(PingService.getProtocolStr(this), this.pingService.handleMessage)
-    }
-
     try {
-      await this._onStarting()
-      await this._onDidStart()
+      // Set available components on all modules interested in components
+      this.initializables.forEach(obj => {
+        obj.init(this.components)
+      })
+
+      // start any startables
+      await Promise.all(
+        this.services.map(service => service.start())
+      )
+
       log('libp2p has started')
-    } catch (/** @type {any} */ err) {
-      this.emit('error', err)
+
+      // Once we start, emit any peers we may have already discovered
+      // TODO: this should be removed, as we already discovered these peers in the past
+      await this.components.getPeerStore().forEach(peer => {
+        this.dispatchEvent(new CustomEvent<PeerData>('peer:discovery', {
+          detail: {
+            id: peer.id,
+            multiaddrs: peer.addresses.map(addr => addr.multiaddr),
+            protocols: peer.protocols
+          }
+        }))
+      })
+    } catch (err: any) {
       log.error('An error occurred starting libp2p', err)
       await this.stop()
       throw err
@@ -398,416 +290,140 @@ class Libp2p extends EventEmitter {
 
   /**
    * Stop the libp2p node by closing its listeners and open connections
-   *
-   * @async
-   * @returns {Promise<void>}
    */
   async stop () {
+    if (!this.started) {
+      return
+    }
+
     log('libp2p is stopping')
 
-    try {
-      this._isStarted = false
+    this.started = false
 
-      if (this.identifyService) {
-        await this.identifyService.stop()
-      }
+    await Promise.all(
+      this.services.map(servce => servce.stop())
+    )
 
-      this.relay && this.relay.stop()
-      this.peerRouting.stop()
-      await this._autodialler.stop()
-      await (this._dht && this._dht.stop())
-
-      for (const service of this._discovery.values()) {
-        service.removeListener('peer', this._onDiscoveryPeer)
-      }
-
-      await Promise.all(Array.from(this._discovery.values(), s => s.stop()))
-
-      this._discovery = new Map()
-
-      await this.connectionManager.stop()
-
-      await Promise.all([
-        this.pubsub && this.pubsub.stop(),
-        this.metrics && this.metrics.stop()
-      ])
-
-      await this.natManager.stop()
-      await this.transportManager.close()
-
-      await this.unhandle(FetchService.PROTOCOL)
-      await this.unhandle(PingService.getProtocolStr(this))
-
-      this.dialer.destroy()
-    } catch (/** @type {any} */ err) {
-      if (err) {
-        log.error(err)
-        this.emit('error', err)
-      }
-    }
     log('libp2p has stopped')
   }
 
   /**
    * Load keychain keys from the datastore.
    * Imports the private key as 'self', if needed.
-   *
-   * @async
-   * @returns {Promise<void>}
    */
   async loadKeychain () {
-    if (!this.keychain) {
+    if (this.keychain == null) {
       return
     }
 
     try {
       await this.keychain.findKeyByName('self')
-    } catch (/** @type {any} */ err) {
+    } catch (err: any) {
       await this.keychain.importPeer('self', this.peerId)
     }
   }
 
   isStarted () {
-    return this._isStarted
+    return this.started
   }
 
-  /**
-   * Gets a Map of the current connections. The keys are the stringified
-   * `PeerId` of the peer. The value is an array of Connections to that peer.
-   *
-   * @returns {Map<string, Connection[]>}
-   */
-  get connections () {
-    return this.connectionManager.connections
-  }
-
-  /**
-   * Dials to the provided peer. If successful, the known metadata of the
-   * peer will be added to the nodes `peerStore`
-   *
-   * @param {PeerId|Multiaddr|string} peer - The peer to dial
-   * @param {object} [options]
-   * @param {AbortSignal} [options.signal]
-   * @returns {Promise<Connection>}
-   */
-  dial (peer, options) {
-    return this._dial(peer, options)
-  }
-
-  /**
-   * Dials to the provided peer and tries to handshake with the given protocols in order.
-   * If successful, the known metadata of the peer will be added to the nodes `peerStore`,
-   * and the `MuxedStream` will be returned together with the successful negotiated protocol.
-   *
-   * @async
-   * @param {PeerId|Multiaddr|string} peer - The peer to dial
-   * @param {string[]|string} protocols
-   * @param {object} [options]
-   * @param {AbortSignal} [options.signal]
-   */
-  async dialProtocol (peer, protocols, options) {
-    if (!protocols || !protocols.length) {
-      throw errCode(new Error('no protocols were provided to open a stream'), codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+  getConnections (peerId?: PeerId): Connection[] {
+    if (peerId == null) {
+      return this.components.getConnectionManager().getConnectionList()
     }
 
-    const connection = await this._dial(peer, options)
-    return connection.newStream(protocols)
+    return this.components.getConnectionManager().getConnections(peerId)
   }
 
-  /**
-   * @async
-   * @param {PeerId|Multiaddr|string} peer - The peer to dial
-   * @param {object} [options]
-   * @returns {Promise<Connection>}
-   */
-  async _dial (peer, options) {
-    const { id, multiaddrs } = getPeer(peer)
-
-    if (id.equals(this.peerId)) {
-      throw errCode(new Error('Cannot dial self'), codes.ERR_DIALED_SELF)
-    }
-
-    let connection = this.connectionManager.get(id)
-
-    if (!connection) {
-      connection = await this.dialer.connectToPeer(peer, options)
-    } else if (multiaddrs) {
-      await this.peerStore.addressBook.add(id, multiaddrs)
-    }
-
-    return connection
+  getPeers (): PeerId[] {
+    return this.components.getConnectionManager().getConnectionList()
+      .map(conn => conn.remotePeer)
   }
 
-  /**
-   * Get a deduplicated list of peer advertising multiaddrs by concatenating
-   * the listen addresses used by transports with any configured
-   * announce addresses as well as observed addresses reported by peers.
-   *
-   * If Announce addrs are specified, configured listen addresses will be
-   * ignored though observed addresses will still be included.
-   *
-   * @returns {Multiaddr[]}
-   */
-  get multiaddrs () {
-    let addrs = this.addressManager.getAnnounceAddrs().map(ma => ma.toString())
-
-    if (!addrs.length) {
-      // no configured announce addrs, add configured listen addresses
-      addrs = this.transportManager.getAddrs().map(ma => ma.toString())
-    }
-
-    addrs = addrs.concat(this.addressManager.getObservedAddrs().map(ma => ma.toString()))
-
-    const announceFilter = this._options.addresses.announceFilter
-
-    // dedupe multiaddrs
-    const addrSet = new Set(addrs)
-
-    // Create advertising list
-    return announceFilter(Array.from(addrSet).map(str => new Multiaddr(str)))
+  async dial (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+    return await this.components.getDialer().dial(peer, options)
   }
 
-  /**
-   * Disconnects all connections to the given `peer`
-   *
-   * @param {PeerId|Multiaddr|string} peer - the peer to close connections to
-   * @returns {Promise<void>}
-   */
-  async hangUp (peer) {
+  async dialProtocol (peer: PeerId | Multiaddr, protocols: string | string[], options: AbortOptions = {}) {
+    return await this.components.getDialer().dialProtocol(peer, protocols, options)
+  }
+
+  getMultiaddrs (): Multiaddr[] {
+    return this.components.getAddressManager().getAddresses()
+  }
+
+  async hangUp (peer: PeerId | Multiaddr | string): Promise<void> {
     const { id } = getPeer(peer)
 
-    const connections = this.connectionManager.connections.get(id.toB58String())
-
-    if (!connections) {
-      return
-    }
+    const connections = this.components.getConnectionManager().getConnections(id)
 
     await Promise.all(
-      connections.map(connection => {
-        return connection.close()
+      connections.map(async connection => {
+        return await connection.close()
       })
     )
   }
 
-  /**
-   * Sends a request to fetch the value associated with the given key from the given peer.
-   *
-   * @param {PeerId|Multiaddr} peer
-   * @param {string} key
-   * @returns {Promise<Uint8Array | null>}
-   */
-  fetch (peer, key) {
-    return this.fetchService.fetch(peer, key)
-  }
-
-  /**
-   * Pings the given peer in order to obtain the operation latency.
-   *
-   * @param {PeerId|Multiaddr|string} peer - The peer to ping
-   * @returns {Promise<number>}
-   */
-  ping (peer) {
+  async fetch (peer: PeerId | Multiaddr | string, key: string): Promise<Uint8Array | null> {
     const { id, multiaddrs } = getPeer(peer)
 
-    // If received multiaddr, ping it
-    if (multiaddrs) {
-      return this.pingService.ping(multiaddrs[0])
+    if (multiaddrs != null) {
+      await this.components.getPeerStore().addressBook.add(id, multiaddrs)
     }
 
-    return this.pingService.ping(id)
+    return await this.fetchService.fetch(id, key)
   }
 
-  /**
-   * Registers the `handler` for each protocol
-   *
-   * @param {string[]|string} protocols
-   * @param {(props: HandlerProps) => void} handler
-   */
-  async handle (protocols, handler) {
-    protocols = Array.isArray(protocols) ? protocols : [protocols]
-    protocols.forEach(protocol => {
-      this.upgrader.protocols.set(protocol, handler)
-    })
+  async ping (peer: PeerId | Multiaddr | string): Promise<number> {
+    const { id, multiaddrs } = getPeer(peer)
 
-    // Add new protocols to self protocols in the Protobook
-    await this.peerStore.protoBook.add(this.peerId, protocols)
+    if (multiaddrs.length > 0) {
+      await this.components.getPeerStore().addressBook.add(id, multiaddrs)
+    }
+
+    return await this.pingService.ping(id)
   }
 
-  /**
-   * Removes the handler for each protocol. The protocol
-   * will no longer be supported on streams.
-   *
-   * @param {string[]|string} protocols
-   */
-  async unhandle (protocols) {
-    protocols = Array.isArray(protocols) ? protocols : [protocols]
-    protocols.forEach(protocol => {
-      this.upgrader.protocols.delete(protocol)
-    })
-
-    // Remove protocols from self protocols in the Protobook
-    await this.peerStore.protoBook.remove(this.peerId, protocols)
+  async handle (protocols: string | string[], handler: StreamHandler): Promise<void> {
+    return await this.components.getRegistrar().handle(protocols, handler)
   }
 
-  async _onStarting () {
-    // Listen on the provided transports for the provided addresses
-    const addrs = this.addressManager.getListenAddrs()
-    await this.transportManager.listen(addrs)
-
-    // Manage your NATs
-    this.natManager.start()
-
-    if (this._config.pubsub.enabled) {
-      this.pubsub && await this.pubsub.start()
-    }
-
-    // DHT subsystem
-    if (this._config.dht.enabled) {
-      this._dht && await this._dht.start()
-
-      // TODO: this should be modified once random-walk is used as
-      // the other discovery modules
-      this._dht.on('peer', this._onDiscoveryPeer)
-    }
-
-    // Start metrics if present
-    this.metrics && this.metrics.start()
-
-    if (this.identifyService) {
-      await this.identifyService.start()
-    }
-  }
-
-  /**
-   * Called when libp2p has started and before it returns
-   *
-   * @private
-   */
-  async _onDidStart () {
-    this._isStarted = true
-
-    this.peerStore.on('peer', peerId => {
-      this.emit('peer:discovery', peerId)
-      this._maybeConnect(peerId).catch(err => {
-        log.error(err)
-      })
-    })
-
-    // Once we start, emit any peers we may have already discovered
-    // TODO: this should be removed, as we already discovered these peers in the past
-    for await (const peer of this.peerStore.getPeers()) {
-      this.emit('peer:discovery', peer.id)
-    }
-
-    this.connectionManager.start()
-    await this._autodialler.start()
-
-    // Peer discovery
-    await this._setupPeerDiscovery()
-
-    // Relay
-    this.relay && this.relay.start()
-
-    this.peerRouting.start()
+  async unhandle (protocols: string[] | string): Promise<void> {
+    return await this.components.getRegistrar().unhandle(protocols)
   }
 
   /**
    * Called whenever peer discovery services emit `peer` events.
    * Known peers may be emitted.
-   *
-   * @private
-   * @param {{ id: PeerId, multiaddrs: Multiaddr[], protocols: string[] }} peer
    */
-  _onDiscoveryPeer (peer) {
-    if (peer.id.toB58String() === this.peerId.toB58String()) {
+  onDiscoveryPeer (evt: CustomEvent<PeerData>) {
+    const { detail: peer } = evt
+
+    if (peer.id.toString() === this.peerId.toString()) {
       log.error(new Error(codes.ERR_DISCOVERED_SELF))
       return
     }
 
-    peer.multiaddrs && this.peerStore.addressBook.add(peer.id, peer.multiaddrs).catch(err => log.error(err))
-    peer.protocols && this.peerStore.protoBook.set(peer.id, peer.protocols).catch(err => log.error(err))
-  }
-
-  /**
-   * Will dial to the given `peerId` if the current number of
-   * connected peers is less than the configured `ConnectionManager`
-   * minConnections.
-   *
-   * @private
-   * @param {PeerId} peerId
-   */
-  async _maybeConnect (peerId) {
-    // If auto dialing is on and we have no connection to the peer, check if we should dial
-    if (this._config.peerDiscovery.autoDial === true && !this.connectionManager.get(peerId)) {
-      const minConnections = this._options.connectionManager.minConnections || 0
-      if (minConnections > this.connectionManager.size) {
-        log('connecting to discovered peer %s', peerId.toB58String())
-        try {
-          await this.dialer.connectToPeer(peerId)
-        } catch (/** @type {any} */ err) {
-          log.error(`could not connect to discovered peer ${peerId.toB58String()} with ${err}`)
-        }
-      }
-    }
-  }
-
-  /**
-   * Initializes and starts peer discovery services
-   *
-   * @async
-   * @private
-   */
-  async _setupPeerDiscovery () {
-    /**
-     * @param {PeerDiscoveryFactory} DiscoveryService
-     */
-    const setupService = (DiscoveryService) => {
-      let config = {
-        enabled: true // on by default
-      }
-
-      if (DiscoveryService.tag &&
-        this._config.peerDiscovery &&
-        this._config.peerDiscovery[DiscoveryService.tag]) {
-        // @ts-ignore PeerDiscovery not understood as an Object for spread
-        config = { ...config, ...this._config.peerDiscovery[DiscoveryService.tag] }
-      }
-
-      if (config.enabled &&
-        !this._discovery.has(DiscoveryService.tag)) { // not already added
-        let discoveryService
-
-        if (typeof DiscoveryService === 'function') {
-          // @ts-ignore DiscoveryService has no constructor type inferred
-          discoveryService = new DiscoveryService(Object.assign({}, config, {
-            peerId: this.peerId,
-            libp2p: this
-          }))
-        } else {
-          discoveryService = DiscoveryService
-        }
-
-        discoveryService.on('peer', this._onDiscoveryPeer)
-        this._discovery.set(DiscoveryService.tag, discoveryService)
-      }
+    if (peer.multiaddrs.length > 0) {
+      void this.components.getPeerStore().addressBook.add(peer.id, peer.multiaddrs).catch(err => log.error(err))
     }
 
-    // Discovery modules
-    for (const DiscoveryService of this._modules.peerDiscovery || []) {
-      setupService(DiscoveryService)
+    if (peer.protocols.length > 0) {
+      void this.components.getPeerStore().protoBook.set(peer.id, peer.protocols).catch(err => log.error(err))
     }
 
-    // Transport modules with discovery
-    for (const Transport of this.transportManager.getTransports()) {
-      // @ts-ignore Transport interface does not include discovery
-      if (Transport.discovery) {
-        // @ts-ignore Transport interface does not include discovery
-        setupService(Transport.discovery)
-      }
-    }
-
-    await Promise.all(Array.from(this._discovery.values(), d => d.start()))
+    this.dispatchEvent(new CustomEvent<PeerData>('peer:discovery', { detail: peer }))
   }
 }
 
-module.exports = Libp2p
+/**
+ * Returns a new Libp2pNode instance - this exposes more of the internals than the
+ * libp2p interface and is useful for testing and debugging.
+ */
+export async function createLibp2pNode (options: Libp2pOptions): Promise<Libp2pNode> {
+  if (options.peerId == null) {
+    options.peerId = await createEd25519PeerId()
+  }
+
+  return new Libp2pNode(validateConfig(options))
+}

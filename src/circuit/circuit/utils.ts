@@ -1,20 +1,11 @@
-'use strict'
-
-const { Multiaddr } = require('multiaddr')
-const { CircuitRelay } = require('../protocol')
-
-/**
- * @typedef {import('./stream-handler')} StreamHandler
- * @typedef {import('../protocol').ICircuitRelay} ICircuitRelay
- */
+import { Multiaddr } from '@multiformats/multiaddr'
+import { CircuitRelay, ICircuitRelay } from '../pb/index.js'
+import type { StreamHandler } from './stream-handler.js'
 
 /**
  * Write a response
- *
- * @param {StreamHandler} streamHandler
- * @param {import('../protocol').CircuitRelay.Status} status
  */
-function writeResponse (streamHandler, status) {
+function writeResponse (streamHandler: StreamHandler, status: CircuitRelay.Status) {
   streamHandler.write({
     type: CircuitRelay.Type.STATUS,
     code: status
@@ -23,18 +14,15 @@ function writeResponse (streamHandler, status) {
 
 /**
  * Validate incomming HOP/STOP message
- *
- * @param {ICircuitRelay} msg - A CircuitRelay unencoded protobuf message
- * @param {StreamHandler} streamHandler
  */
-function validateAddrs (msg, streamHandler) {
+export function validateAddrs (msg: ICircuitRelay, streamHandler: StreamHandler) {
   try {
-    if (msg.dstPeer && msg.dstPeer.addrs) {
+    if (msg.dstPeer?.addrs != null) {
       msg.dstPeer.addrs.forEach((addr) => {
         return new Multiaddr(addr)
       })
     }
-  } catch (/** @type {any} */ err) {
+  } catch (err: any) {
     writeResponse(streamHandler, msg.type === CircuitRelay.Type.HOP
       ? CircuitRelay.Status.HOP_DST_MULTIADDR_INVALID
       : CircuitRelay.Status.STOP_DST_MULTIADDR_INVALID)
@@ -42,19 +30,15 @@ function validateAddrs (msg, streamHandler) {
   }
 
   try {
-    if (msg.srcPeer && msg.srcPeer.addrs) {
+    if (msg.srcPeer?.addrs != null) {
       msg.srcPeer.addrs.forEach((addr) => {
         return new Multiaddr(addr)
       })
     }
-  } catch (/** @type {any} */ err) {
+  } catch (err: any) {
     writeResponse(streamHandler, msg.type === CircuitRelay.Type.HOP
       ? CircuitRelay.Status.HOP_SRC_MULTIADDR_INVALID
       : CircuitRelay.Status.STOP_SRC_MULTIADDR_INVALID)
     throw err
   }
-}
-
-module.exports = {
-  validateAddrs
 }

@@ -1,44 +1,43 @@
-'use strict'
-
-const drain = require('it-drain')
-
-/**
- * @typedef {import('peer-id')} PeerId
- * @typedef {import('libp2p-interfaces/src/content-routing/types').ContentRouting} ContentRoutingModule
- * @typedef {import('multiformats/cid').CID} CID
- */
+import drain from 'it-drain'
+import errCode from 'err-code'
+import type { DHT } from '@libp2p/interfaces/dht'
+import type { ContentRouting } from '@libp2p/interfaces/content-routing'
+import type { CID } from 'multiformats/cid'
+import type { AbortOptions } from '@libp2p/interfaces'
 
 /**
  * Wrapper class to convert events into returned values
- *
- * @implements {ContentRoutingModule}
  */
-class DHTContentRouting {
-  /**
-   * @param {import('libp2p-kad-dht').DHT} dht
-   */
-  constructor (dht) {
-    this._dht = dht
+export class DHTContentRouting implements ContentRouting {
+  private readonly dht: DHT
+
+  constructor (dht: DHT) {
+    this.dht = dht
   }
 
-  /**
-   * @param {CID} cid
-   */
-  async provide (cid) {
-    await drain(this._dht.provide(cid))
+  async provide (cid: CID) {
+    await drain(this.dht.provide(cid))
   }
 
-  /**
-   * @param {CID} cid
-   * @param {*} options
-   */
-  async * findProviders (cid, options) {
-    for await (const event of this._dht.findProviders(cid, options)) {
+  async * findProviders (cid: CID, options: AbortOptions = {}) {
+    for await (const event of this.dht.findProviders(cid, options)) {
       if (event.name === 'PROVIDER') {
         yield * event.providers
       }
     }
   }
-}
 
-module.exports = { DHTContentRouting }
+  async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> {
+    await drain(this.dht.put(key, value, options))
+  }
+
+  async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
+    for await (const event of this.dht.get(key, options)) {
+      if (event.name === 'VALUE') {
+        return event.value
+      }
+    }
+
+    throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
+  }
+}

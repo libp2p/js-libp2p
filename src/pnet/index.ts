@@ -1,72 +1,82 @@
-'use strict'
-
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:pnet'), {
-  error: debug('libp2p:pnet:err')
-})
-const { pipe } = require('it-pipe')
-const errcode = require('err-code')
-// @ts-ignore it-pair has no types exported
-const duplexPair = require('it-pair/duplex')
-const crypto = require('libp2p-crypto')
-const Errors = require('./errors')
-const {
-  codes: { ERR_INVALID_PARAMETERS }
-} = require('../errors')
-const {
+import { logger } from '@libp2p/logger'
+import { pipe } from 'it-pipe'
+import errCode from 'err-code'
+import { duplexPair } from 'it-pair/duplex'
+import { randomBytes } from '@libp2p/crypto'
+import * as Errors from './errors.js'
+import { codes } from '../errors.js'
+import {
   createBoxStream,
   createUnboxStream,
   decodeV1PSK
-} = require('./crypto')
-// @ts-ignore it-handshake has no types exported
-const handshake = require('it-handshake')
-const { NONCE_LENGTH } = require('./key-generator')
+} from './crypto.js'
+import { handshake } from 'it-handshake'
+import { NONCE_LENGTH } from './key-generator.js'
+import type { MultiaddrConnection } from '@libp2p/interfaces/transport'
+import type { ConnectionProtector } from '@libp2p/interfaces/connection'
 
-/**
- * @typedef {import('libp2p-interfaces/src/transport/types').MultiaddrConnection} MultiaddrConnection
- */
+const log = logger('libp2p:pnet')
 
-class Protector {
+export interface ProtectorInit {
+  enabled?: boolean
+  psk: Uint8Array
+}
+
+export class PreSharedKeyConnectionProtector implements ConnectionProtector {
+  public tag: string
+  private readonly psk: Uint8Array
+  private readonly enabled: boolean
+
   /**
    * Takes a Private Shared Key (psk) and provides a `protect` method
    * for wrapping existing connections in a private encryption stream.
-   *
-   * @param {Uint8Array} keyBuffer - The private shared key buffer
-   * @class
    */
-  constructor (keyBuffer) {
-    const decodedPSK = decodeV1PSK(keyBuffer)
-    this.psk = decodedPSK.psk
-    this.tag = decodedPSK.tag
+  constructor (init: ProtectorInit) {
+    this.enabled = init.enabled !== false
+
+    if (this.enabled) {
+      const decodedPSK = decodeV1PSK(init.psk)
+      this.psk = decodedPSK.psk
+      this.tag = decodedPSK.tag ?? ''
+    } else {
+      this.psk = new Uint8Array()
+      this.tag = ''
+    }
   }
 
   /**
    * Takes a given Connection and creates a private encryption stream
    * between its two peers from the PSK the Protector instance was
    * created with.
-   *
-   * @param {MultiaddrConnection} connection - The connection to protect
-   * @returns {Promise<MultiaddrConnection>} A protected duplex iterable
    */
-  async protect (connection) {
-    if (!connection) {
-      throw errcode(new Error(Errors.NO_HANDSHAKE_CONNECTION), ERR_INVALID_PARAMETERS)
+  async protect (connection: MultiaddrConnection): Promise<MultiaddrConnection> {
+    if (!this.enabled) {
+      return connection
+    }
+
+    if (connection == null) {
+      throw errCode(new Error(Errors.NO_HANDSHAKE_CONNECTION), codes.ERR_INVALID_PARAMETERS)
     }
 
     // Exchange nonces
     log('protecting the connection')
-    const localNonce = crypto.randomBytes(NONCE_LENGTH)
+    const localNonce = randomBytes(NONCE_LENGTH)
 
     const shake = handshake(connection)
     shake.write(localNonce)
 
     const result = await shake.reader.next(NONCE_LENGTH)
+
+    if (result.value == null) {
+      throw errCode(new Error(Errors.STREAM_ENDED), codes.ERR_INVALID_PARAMETERS)
+    }
+
     const remoteNonce = result.value.slice()
     shake.rest()
 
     // Create the boxing/unboxing pipe
     log('exchanged nonces')
-    const [internal, external] = duplexPair()
+    const [internal, external] = duplexPair<Uint8Array>()
     pipe(
       external,
       // Encrypt all outbound traffic
@@ -77,10 +87,9 @@ class Protector {
       external
     ).catch(log.error)
 
-    return internal
+    return {
+      ...connection,
+      ...internal
+    }
   }
 }
-
-module.exports = Protector
-module.exports.errors = Errors
-module.exports.generate = require('./key-generator')

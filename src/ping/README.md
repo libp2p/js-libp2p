@@ -8,7 +8,7 @@ libp2p-ping JavaScript Implementation
 ## Usage
 
 ```javascript
-var Ping = require('libp2p/src/ping')
+import Ping from 'libp2p/src/ping'
 
 Ping.mount(libp2p) // Enable this peer to echo Ping requests
 

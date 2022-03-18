@@ -12,7 +12,7 @@ The fetch protocol is a simple protocol for requesting a value corresponding to 
 ## Usage
 
 ```javascript
-const Libp2p = require('libp2p')
+import { createLibp2p } from 'libp2p'
 
 /**
  * Given a key (as a string) returns a value (as a Uint8Array), or null if the key isn't found.

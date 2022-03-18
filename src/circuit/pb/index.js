@@ -1,15 +1,13 @@
 /*eslint-disable*/
-"use strict";
-
-var $protobuf = require("protobufjs/minimal");
+import $protobuf from "protobufjs/minimal.js";
 
 // Common aliases
-var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
+const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
 
 // Exported root namespace
-var $root = $protobuf.roots["libp2p-circuit"] || ($protobuf.roots["libp2p-circuit"] = {});
+const $root = $protobuf.roots["libp2p-circuit"] || ($protobuf.roots["libp2p-circuit"] = {});
 
-$root.CircuitRelay = (function() {
+export const CircuitRelay = $root.CircuitRelay = (() => {
 
     /**
      * Properties of a CircuitRelay.
@@ -305,7 +303,7 @@ $root.CircuitRelay = (function() {
      * @property {number} MALFORMED_MESSAGE=400 MALFORMED_MESSAGE value
      */
     CircuitRelay.Status = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
+        const valuesById = {}, values = Object.create(valuesById);
         values[valuesById[100] = "SUCCESS"] = 100;
         values[valuesById[220] = "HOP_SRC_ADDR_TOO_LONG"] = 220;
         values[valuesById[221] = "HOP_DST_ADDR_TOO_LONG"] = 221;
@@ -335,7 +333,7 @@ $root.CircuitRelay = (function() {
      * @property {number} CAN_HOP=4 CAN_HOP value
      */
     CircuitRelay.Type = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
+        const valuesById = {}, values = Object.create(valuesById);
         values[valuesById[1] = "HOP"] = 1;
         values[valuesById[2] = "STOP"] = 2;
         values[valuesById[3] = "STATUS"] = 3;
@@ -527,4 +525,4 @@ $root.CircuitRelay = (function() {
     return CircuitRelay;
 })();
 
-module.exports = $root;
+export { $root as default };

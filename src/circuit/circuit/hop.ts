@@ -1,49 +1,39 @@
-'use strict'
+import { logger } from '@libp2p/logger'
+import errCode from 'err-code'
+import { validateAddrs } from './utils.js'
+import { StreamHandler } from './stream-handler.js'
+import { CircuitRelay as CircuitPB, ICircuitRelay } from '../pb/index.js'
+import { pipe } from 'it-pipe'
+import { codes as Errors } from '../../errors.js'
+import { stop } from './stop.js'
+import { RELAY_CODEC } from '../multicodec.js'
+import type { Connection } from '@libp2p/interfaces/connection'
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import type { Duplex } from 'it-stream-types'
+import type { Circuit } from '../transport.js'
+import type { ConnectionManager } from '@libp2p/interfaces/registrar'
 
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:circuit:hop'), {
-  error: debug('libp2p:circuit:hop:err')
-})
-const errCode = require('err-code')
+const log = logger('libp2p:circuit:hop')
 
-const PeerId = require('peer-id')
-const { validateAddrs } = require('./utils')
-const StreamHandler = require('./stream-handler')
-const { CircuitRelay: CircuitPB } = require('../protocol')
-const { pipe } = require('it-pipe')
-const { codes: Errors } = require('../../errors')
+export interface HopRequest {
+  connection: Connection
+  request: ICircuitRelay
+  streamHandler: StreamHandler
+  circuit: Circuit
+  connectionManager: ConnectionManager
+}
 
-const { stop } = require('./stop')
+export async function handleHop (hopRequest: HopRequest) {
+  const {
+    connection,
+    request,
+    streamHandler,
+    circuit,
+    connectionManager
+  } = hopRequest
 
-const multicodec = require('./../multicodec')
-
-/**
- * @typedef {import('../protocol').ICircuitRelay} ICircuitRelay
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- * @typedef {import('../transport')} Transport
- */
-
-/**
- * @typedef {Object} HopRequest
- * @property {Connection} connection
- * @property {ICircuitRelay} request
- * @property {StreamHandler} streamHandler
- * @property {Transport} circuit
- */
-
-/**
- * @param {HopRequest} options
- * @returns {Promise<void>}
- */
-async function handleHop ({
-  connection,
-  request,
-  streamHandler,
-  circuit
-}) {
   // Ensure hop is enabled
-  if (!circuit._options.hop.enabled) {
+  if (!circuit.hopEnabled()) {
     log('HOP request received but we are not acting as a relay')
     return streamHandler.end({
       type: CircuitPB.Type.STATUS,
@@ -54,20 +44,22 @@ async function handleHop ({
   // Validate the HOP request has the required input
   try {
     validateAddrs(request, streamHandler)
-  } catch (/** @type {any} */ err) {
-    return log.error('invalid hop request via peer %s', connection.remotePeer.toB58String(), err)
+  } catch (err: any) {
+    log.error('invalid hop request via peer %p %o', connection.remotePeer, err)
+
+    return
   }
 
-  if (!request.dstPeer) {
+  if (request.dstPeer == null) {
     log('HOP request received but we do not receive a dstPeer')
     return
   }
 
   // Get the connection to the destination (stop) peer
-  const destinationPeer = new PeerId(request.dstPeer.id)
+  const destinationPeer = peerIdFromBytes(request.dstPeer.id)
 
-  const destinationConnection = circuit._connectionManager.get(destinationPeer)
-  if (!destinationConnection && !circuit._options.hop.active) {
+  const destinationConnection = connectionManager.getConnection(destinationPeer)
+  if (destinationConnection == null && !circuit.hopActive()) {
     log('HOP request received but we are not connected to the destination peer')
     return streamHandler.end({
       type: CircuitPB.Type.STATUS,
@@ -76,7 +68,8 @@ async function handleHop ({
   }
 
   // TODO: Handle being an active relay
-  if (!destinationConnection) {
+  if (destinationConnection == null) {
+    log('did not have connection to remote peer')
     return
   }
 
@@ -87,53 +80,65 @@ async function handleHop ({
     srcPeer: request.srcPeer
   }
 
-  let destinationStream
+  let destinationStream: Duplex<Uint8Array>
   try {
-    destinationStream = await stop({
+    log('performing STOP request')
+    const result = await stop({
       connection: destinationConnection,
       request: stopRequest
     })
-  } catch (/** @type {any} */ err) {
-    return log.error(err)
+
+    if (result == null) {
+      throw new Error('Could not stop')
+    }
+
+    destinationStream = result
+  } catch (err: any) {
+    log.error(err)
+
+    return
   }
 
-  log('hop request from %s is valid', connection.remotePeer.toB58String())
+  log('hop request from %p is valid', connection.remotePeer)
   streamHandler.write({
     type: CircuitPB.Type.STATUS,
     code: CircuitPB.Status.SUCCESS
   })
   const sourceStream = streamHandler.rest()
 
+  log('creating related connections')
   // Short circuit the two streams to create the relayed connection
-  return pipe(
+  return await pipe(
     sourceStream,
     destinationStream,
     sourceStream
   )
 }
 
+export interface HopConfig {
+  connection: Connection
+  request: ICircuitRelay
+}
+
 /**
  * Performs a HOP request to a relay peer, to request a connection to another
  * peer. A new, virtual, connection will be created between the two via the relay.
- *
- * @param {object} options
- * @param {Connection} options.connection - Connection to the relay
- * @param {ICircuitRelay} options.request
- * @returns {Promise<MuxedStream>}
  */
-async function hop ({
-  connection,
-  request
-}) {
+export async function hop (options: HopConfig): Promise<Duplex<Uint8Array>> {
+  const {
+    connection,
+    request
+  } = options
+
   // Create a new stream to the relay
-  const { stream } = await connection.newStream([multicodec.relay])
+  const { stream } = await connection.newStream(RELAY_CODEC)
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })
   streamHandler.write(request)
 
   const response = await streamHandler.read()
 
-  if (!response) {
+  if (response == null) {
     throw errCode(new Error('HOP request had no response'), Errors.ERR_HOP_REQUEST_FAILED)
   }
 
@@ -144,21 +149,25 @@ async function hop ({
 
   log('hop request failed with code %d, closing stream', response.code)
   streamHandler.close()
+
   throw errCode(new Error(`HOP request failed with code ${response.code}`), Errors.ERR_HOP_REQUEST_FAILED)
 }
 
+export interface CanHopOptions {
+  connection: Connection
+}
+
 /**
- * Performs a CAN_HOP request to a relay peer, in order to understand its capabilities.
- *
- * @param {object} options
- * @param {Connection} options.connection - Connection to the relay
- * @returns {Promise<boolean>}
+ * Performs a CAN_HOP request to a relay peer, in order to understand its capabilities
  */
-async function canHop ({
-  connection
-}) {
+export async function canHop (options: CanHopOptions) {
+  const {
+    connection
+  } = options
+
   // Create a new stream to the relay
-  const { stream } = await connection.newStream([multicodec.relay])
+  const { stream } = await connection.newStream(RELAY_CODEC)
+
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })
   streamHandler.write({
@@ -168,38 +177,32 @@ async function canHop ({
   const response = await streamHandler.read()
   await streamHandler.close()
 
-  if (!response || response.code !== CircuitPB.Status.SUCCESS) {
+  if (response == null || response.code !== CircuitPB.Status.SUCCESS) {
     return false
   }
 
   return true
 }
 
+export interface HandleCanHopOptions {
+  connection: Connection
+  streamHandler: StreamHandler
+  circuit: Circuit
+}
+
 /**
  * Creates an unencoded CAN_HOP response based on the Circuits configuration
- *
- * @param {Object} options
- * @param {Connection} options.connection
- * @param {StreamHandler} options.streamHandler
- * @param {Transport} options.circuit
- * @private
  */
-function handleCanHop ({
-  connection,
-  streamHandler,
-  circuit
-}) {
-  const canHop = circuit._options.hop.enabled
-  log('can hop (%s) request from %s', canHop, connection.remotePeer.toB58String())
+export function handleCanHop (options: HandleCanHopOptions) {
+  const {
+    connection,
+    streamHandler,
+    circuit
+  } = options
+  const canHop = circuit.hopEnabled()
+  log('can hop (%s) request from %p', canHop, connection.remotePeer)
   streamHandler.end({
     type: CircuitPB.Type.STATUS,
     code: canHop ? CircuitPB.Status.SUCCESS : CircuitPB.Status.HOP_CANT_SPEAK_RELAY
   })
-}
-
-module.exports = {
-  handleHop,
-  hop,
-  canHop,
-  handleCanHop
 }

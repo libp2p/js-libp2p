@@ -1,88 +1,93 @@
-'use strict'
+import { logger } from '@libp2p/logger'
+import errCode from 'err-code'
+import * as mafmt from '@multiformats/mafmt'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { CircuitRelay as CircuitPB } from './pb/index.js'
+import { codes } from '../errors.js'
+import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
+import { RELAY_CODEC } from './multicodec.js'
+import { createListener } from './listener.js'
+import { handleCanHop, handleHop, hop } from './circuit/hop.js'
+import { handleStop } from './circuit/stop.js'
+import { StreamHandler } from './circuit/stream-handler.js'
+import { symbol } from '@libp2p/interfaces/transport'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { Components, Initializable } from '@libp2p/interfaces/components'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
+import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interfaces/transport'
+import type { Connection } from '@libp2p/interfaces/connection'
 
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:circuit'), {
-  error: debug('libp2p:circuit:err')
-})
+const log = logger('libp2p:circuit')
 
-const errCode = require('err-code')
-const mafmt = require('mafmt')
-const { Multiaddr } = require('multiaddr')
-const PeerId = require('peer-id')
-const { CircuitRelay: CircuitPB } = require('./protocol')
-const { codes } = require('../errors')
+export class Circuit implements Transport, Initializable {
+  private handler?: ConnectionHandler
+  private components: Components = new Components()
 
-const toConnection = require('libp2p-utils/src/stream-to-ma-conn')
-
-const { relay: multicodec } = require('./multicodec')
-const createListener = require('./listener')
-const { handleCanHop, handleHop, hop } = require('./circuit/hop')
-const { handleStop } = require('./circuit/stop')
-const StreamHandler = require('./circuit/stream-handler')
-
-const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
-
-/**
- * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('libp2p-interfaces/src/stream-muxer/types').MuxedStream} MuxedStream
- */
-
-class Circuit {
-  /**
-   * Creates an instance of the Circuit Transport.
-   *
-   * @class
-   * @param {object} options
-   * @param {import('../')} options.libp2p
-   * @param {import('../upgrader')} options.upgrader
-   */
-  constructor ({ libp2p, upgrader }) {
-    this._dialer = libp2p.dialer
-    this._registrar = libp2p.registrar
-    this._connectionManager = libp2p.connectionManager
-    this._upgrader = upgrader
-    this._options = libp2p._config.relay
-    this._libp2p = libp2p
-    this.peerId = libp2p.peerId
-
-    this._registrar.handle(multicodec, this._onProtocol.bind(this))
+  init (components: Components): void {
+    this.components = components
+    void this.components.getRegistrar().handle(RELAY_CODEC, (data) => {
+      void this._onProtocol(data).catch(err => {
+        log.error(err)
+      })
+    })
+      .catch(err => {
+        log.error(err)
+      })
   }
 
-  /**
-   * @param {Object} props
-   * @param {Connection} props.connection
-   * @param {MuxedStream} props.stream
-   */
-  async _onProtocol ({ connection, stream }) {
-    /** @type {import('./circuit/stream-handler')} */
+  hopEnabled () {
+    return true
+  }
+
+  hopActive () {
+    return true
+  }
+
+  get [symbol] (): true {
+    return true
+  }
+
+  get [Symbol.toStringTag] () {
+    return this.constructor.name
+  }
+
+  async _onProtocol (data: IncomingStreamData) {
+    const { connection, stream } = data
     const streamHandler = new StreamHandler({ stream })
     const request = await streamHandler.read()
 
-    if (!request) {
+    if (request == null) {
+      log('request was invalid')
+      streamHandler.write({
+        type: CircuitPB.Type.STATUS,
+        code: CircuitPB.Status.MALFORMED_MESSAGE
+      })
+      streamHandler.close()
       return
     }
 
-    const circuit = this
     let virtualConnection
 
     switch (request.type) {
       case CircuitPB.Type.CAN_HOP: {
-        log('received CAN_HOP request from %s', connection.remotePeer.toB58String())
-        await handleCanHop({ circuit, connection, streamHandler })
+        log('received CAN_HOP request from %p', connection.remotePeer)
+        await handleCanHop({ circuit: this, connection, streamHandler })
         break
       }
       case CircuitPB.Type.HOP: {
-        log('received HOP request from %s', connection.remotePeer.toB58String())
+        log('received HOP request from %p', connection.remotePeer)
         virtualConnection = await handleHop({
           connection,
           request,
           streamHandler,
-          circuit
+          circuit: this,
+          connectionManager: this.components.getConnectionManager()
         })
         break
       }
       case CircuitPB.Type.STOP: {
-        log('received STOP request from %s', connection.remotePeer.toB58String())
+        log('received STOP request from %p', connection.remotePeer)
         virtualConnection = await handleStop({
           connection,
           request,
@@ -92,37 +97,57 @@ class Circuit {
       }
       default: {
         log('Request of type %s not supported', request.type)
+        streamHandler.write({
+          type: CircuitPB.Type.STATUS,
+          code: CircuitPB.Status.MALFORMED_MESSAGE
+        })
+        streamHandler.close()
+        return
       }
     }
 
-    if (virtualConnection) {
-      // @ts-ignore dst peer will not be undefined
-      const remoteAddr = new Multiaddr(request.dstPeer.addrs[0])
-      // @ts-ignore src peer will not be undefined
-      const localAddr = new Multiaddr(request.srcPeer.addrs[0])
-      const maConn = toConnection({
-        stream: virtualConnection,
-        remoteAddr,
-        localAddr
+    if (virtualConnection == null) {
+      log('cound not create virtual connection')
+      streamHandler.write({
+        type: CircuitPB.Type.STATUS,
+        code: CircuitPB.Status.HOP_NO_CONN_TO_DST
       })
-      const type = request.type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
-      log('new %s connection %s', type, maConn.remoteAddr)
+      streamHandler.close()
+      return
+    }
 
-      const conn = await this._upgrader.upgradeInbound(maConn)
-      log('%s connection %s upgraded', type, maConn.remoteAddr)
-      this.handler && this.handler(conn)
+    if (request.dstPeer == null || request.dstPeer.addrs == null || request.dstPeer.addrs[0] == null || request.srcPeer == null || request.srcPeer.addrs == null || request.srcPeer.addrs[0] == null) {
+      log('request was invalid')
+      streamHandler.write({
+        type: CircuitPB.Type.STATUS,
+        code: CircuitPB.Status.MALFORMED_MESSAGE
+      })
+      streamHandler.close()
+      return
+    }
+
+    const remoteAddr = new Multiaddr(request.dstPeer.addrs[0])
+    const localAddr = new Multiaddr(request.srcPeer.addrs[0])
+    const maConn = streamToMaConnection({
+      stream: virtualConnection,
+      remoteAddr,
+      localAddr
+    })
+    const type = request.type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
+    log('new %s connection %s', type, maConn.remoteAddr)
+
+    const conn = await this.components.getUpgrader().upgradeInbound(maConn)
+    log('%s connection %s upgraded', type, maConn.remoteAddr)
+
+    if (this.handler != null) {
+      this.handler(conn)
     }
   }
 
   /**
    * Dial a peer over a relay
-   *
-   * @param {Multiaddr} ma - the multiaddr of the peer to dial
-   * @param {Object} options - dial options
-   * @param {AbortSignal} [options.signal] - An optional abort signal
-   * @returns {Promise<Connection>} - the connection
    */
-  async dial (ma, options) {
+  async dial (ma: Multiaddr, options: AbortOptions = {}): Promise<Connection> {
     // Check the multiaddr to see if it contains a relay and a destination peer
     const addrs = ma.toString().split('/p2p-circuit')
     const relayAddr = new Multiaddr(addrs[0])
@@ -130,19 +155,19 @@ class Circuit {
     const relayId = relayAddr.getPeerId()
     const destinationId = destinationAddr.getPeerId()
 
-    if (!relayId || !destinationId) {
+    if (relayId == null || destinationId == null) {
       const errMsg = 'Circuit relay dial failed as addresses did not have peer id'
       log.error(errMsg)
       throw errCode(new Error(errMsg), codes.ERR_RELAYED_DIAL)
     }
 
-    const relayPeer = PeerId.createFromB58String(relayId)
-    const destinationPeer = PeerId.createFromB58String(destinationId)
+    const relayPeer = peerIdFromString(relayId)
+    const destinationPeer = peerIdFromString(destinationId)
 
     let disconnectOnFailure = false
-    let relayConnection = this._connectionManager.get(relayPeer)
-    if (!relayConnection) {
-      relayConnection = await this._dialer.connectToPeer(relayAddr, options)
+    let relayConnection = this.components.getConnectionManager().getConnection(relayPeer)
+    if (relayConnection == null) {
+      relayConnection = await this.components.getDialer().dial(relayAddr, options)
       disconnectOnFailure = true
     }
 
@@ -152,8 +177,8 @@ class Circuit {
         request: {
           type: CircuitPB.Type.HOP,
           srcPeer: {
-            id: this.peerId.toBytes(),
-            addrs: this._libp2p.multiaddrs.map(addr => addr.bytes)
+            id: this.components.getPeerId().toBytes(),
+            addrs: this.components.getAddressManager().getAddresses().map(addr => addr.bytes)
           },
           dstPeer: {
             id: destinationPeer.toBytes(),
@@ -162,16 +187,16 @@ class Circuit {
         }
       })
 
-      const localAddr = relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toB58String()}`)
-      const maConn = toConnection({
+      const localAddr = relayAddr.encapsulate(`/p2p-circuit/p2p/${this.components.getPeerId().toString()}`)
+      const maConn = streamToMaConnection({
         stream: virtualConnection,
         remoteAddr: ma,
         localAddr
       })
       log('new outbound connection %s', maConn.remoteAddr)
 
-      return this._upgrader.upgradeOutbound(maConn)
-    } catch (/** @type {any} */ err) {
+      return await this.components.getUpgrader().upgradeOutbound(maConn)
+    } catch (err: any) {
       log.error('Circuit relay dial failed', err)
       disconnectOnFailure && await relayConnection.close()
       throw err
@@ -180,21 +205,15 @@ class Circuit {
 
   /**
    * Create a listener
-   *
-   * @param {any} options
-   * @param {Function} handler
-   * @returns {import('libp2p-interfaces/src/transport/types').Listener}
    */
-  createListener (options, handler) {
-    if (typeof options === 'function') {
-      handler = options
-      options = {}
-    }
-
+  createListener (options: CreateListenerOptions): Listener {
     // Called on successful HOP and STOP requests
-    this.handler = handler
+    this.handler = options.handler
 
-    return createListener(this._libp2p)
+    return createListener({
+      dialer: this.components.getDialer(),
+      connectionManager: this.components.getConnectionManager()
+    })
   }
 
   /**
@@ -203,27 +222,11 @@ class Circuit {
    * @param {Multiaddr[]} multiaddrs
    * @returns {Multiaddr[]}
    */
-  filter (multiaddrs) {
+  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     return multiaddrs.filter((ma) => {
       return mafmt.Circuit.matches(ma)
     })
   }
-
-  get [Symbol.toStringTag] () {
-    return 'Circuit'
-  }
-
-  /**
-   * Checks if the given value is a Transport instance.
-   *
-   * @param {any} other
-   * @returns {other is Transport}
-   */
-  static isTransport (other) {
-    return Boolean(other && other[transportSymbol])
-  }
 }
-
-module.exports = Circuit

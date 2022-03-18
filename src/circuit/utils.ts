@@ -1,15 +1,10 @@
-'use strict'
-
-const { CID } = require('multiformats/cid')
-const { sha256 } = require('multiformats/hashes/sha2')
+import { CID } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
 
 /**
- * Convert a namespace string into a cid.
- *
- * @param {string} namespace
- * @returns {Promise<CID>}
+ * Convert a namespace string into a cid
  */
-module.exports.namespaceToCid = async (namespace) => {
+export async function namespaceToCid (namespace: string): Promise<CID> {
   const bytes = new TextEncoder().encode(namespace)
   const hash = await sha256.digest(bytes)
 

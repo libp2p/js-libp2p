@@ -1,28 +1,73 @@
-// @ts-nocheck
-'use strict'
-
 /**
  * This code is based on `latency-monitor` (https://github.com/mlucool/latency-monitor) by `mlucool` (https://github.com/mlucool), available under Apache License 2.0 (https://github.com/mlucool/latency-monitor/blob/master/LICENSE)
  */
 
-const { EventEmitter } = require('events')
-const VisibilityChangeEmitter = require('./visibility-change-emitter')
-const debug = require('debug')('latency-monitor:LatencyMonitor')
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { VisibilityChangeEmitter } from './visibility-change-emitter.js'
+import { logger } from '@libp2p/logger'
 
-/**
- * @typedef {Object} SummaryObject
- * @property {number} events How many events were called
- * @property {number} minMS What was the min time for a cb to be called
- * @property {number} maxMS What was the max time for a cb to be called
- * @property {number} avgMs What was the average time for a cb to be called
- * @property {number} lengthMs How long this interval was in ms
- *
- * @typedef {Object} LatencyMonitorOptions
- * @property {number} [latencyCheckIntervalMs=500] - How often to add a latency check event (ms)
- * @property {number} [dataEmitIntervalMs=5000] - How often to summarize latency check events. null or 0 disables event firing
- * @property {Function} [asyncTestFn] - What cb-style async function to use
- * @property {number} [latencyRandomPercentage=5] - What percent (+/-) of latencyCheckIntervalMs should we randomly use? This helps avoid alignment to other events.
- */
+const log = logger('libp2p:connection-manager:latency-monitor')
+
+export interface LatencyMonitorEvents {
+  'data': CustomEvent<SummaryObject>
+}
+
+export interface LatencyMonitorInit {
+  /**
+   * How often to add a latency check event (ms)
+   */
+  latencyCheckIntervalMs?: number
+
+  /**
+   * How often to summarize latency check events. null or 0 disables event firing
+   */
+  dataEmitIntervalMs?: number
+
+  /**
+   * What cb-style async function to use
+   */
+  asyncTestFn?: (cb: () => void) => void
+
+  /**
+   * What percent (+/-) of latencyCheckIntervalMs should we randomly use? This helps avoid alignment to other events.
+   */
+  latencyRandomPercentage?: number
+}
+
+export interface SummaryObject {
+  /**
+   * How many events were called
+   */
+  events: number
+
+  /**
+   * What was the min time for a cb to be called
+   */
+  minMs: number
+
+  /**
+   * What was the max time for a cb to be called
+   */
+  maxMs: number
+
+  /**
+   * What was the average time for a cb to be called
+   */
+  avgMs: number
+
+  /**
+   * How long this interval was in ms
+   */
+  lengthMs: number
+}
+
+interface LatencyData {
+  startTime: number
+  events: number
+  minMs: number
+  maxMs: number
+  totalMs: number
+}
 
 /**
  * A class to monitor latency of any async function which works in a browser or node. This works by periodically calling
@@ -42,64 +87,77 @@ const debug = require('debug')('latency-monitor:LatencyMonitor')
  * const monitor = new LatencyMonitor({latencyCheckIntervalMs: 1000, dataEmitIntervalMs: 60000, asyncTestFn:ping});
  * monitor.on('data', (summary) => console.log('Ping Pong Latency: %O', summary));
  */
-class LatencyMonitor extends EventEmitter {
-  /**
-   * @class
-   * @param {LatencyMonitorOptions} [options]
-   */
-  constructor ({ latencyCheckIntervalMs, dataEmitIntervalMs, asyncTestFn, latencyRandomPercentage } = {}) {
+export class LatencyMonitor extends EventEmitter<LatencyMonitorEvents> {
+  private readonly latencyCheckIntervalMs: number
+  private readonly latencyRandomPercentage: number
+  private readonly latencyCheckMultiply: number
+  private readonly latencyCheckSubtract: number
+  private readonly dataEmitIntervalMs?: number
+  private readonly asyncTestFn?: (cb: () => void) => void
+
+  private readonly now: (num?: any) => any
+  private readonly getDeltaMS: (num: number) => number
+  private visibilityChangeEmitter?: VisibilityChangeEmitter
+  private latencyData: LatencyData
+  private checkLatencyID?: NodeJS.Timeout
+  private emitIntervalID?: NodeJS.Timeout
+
+  constructor (init: LatencyMonitorInit = {}) {
     super()
-    const that = this
+
+    const { latencyCheckIntervalMs, dataEmitIntervalMs, asyncTestFn, latencyRandomPercentage } = init
 
     // 0 isn't valid here, so its ok to use ||
-    that.latencyCheckIntervalMs = latencyCheckIntervalMs || 500 // 0.5s
-    that.latencyRandomPercentage = latencyRandomPercentage || 10
-    that._latecyCheckMultiply = 2 * (that.latencyRandomPercentage / 100.0) * that.latencyCheckIntervalMs
-    that._latecyCheckSubtract = that._latecyCheckMultiply / 2
+    this.latencyCheckIntervalMs = latencyCheckIntervalMs ?? 500 // 0.5s
+    this.latencyRandomPercentage = latencyRandomPercentage ?? 10
+    this.latencyCheckMultiply = 2 * (this.latencyRandomPercentage / 100.0) * this.latencyCheckIntervalMs
+    this.latencyCheckSubtract = this.latencyCheckMultiply / 2
 
-    that.dataEmitIntervalMs = (dataEmitIntervalMs === null || dataEmitIntervalMs === 0)
+    this.dataEmitIntervalMs = (dataEmitIntervalMs === null || dataEmitIntervalMs === 0)
       ? undefined
-      : dataEmitIntervalMs || 5 * 1000 // 5s
-    debug('latencyCheckIntervalMs: %s dataEmitIntervalMs: %s',
-      that.latencyCheckIntervalMs, that.dataEmitIntervalMs)
-    if (that.dataEmitIntervalMs) {
-      debug('Expecting ~%s events per summary', that.latencyCheckIntervalMs / that.dataEmitIntervalMs)
+      : dataEmitIntervalMs ?? 5 * 1000 // 5s
+    log('latencyCheckIntervalMs: %s dataEmitIntervalMs: %s',
+      this.latencyCheckIntervalMs, this.dataEmitIntervalMs)
+    if (this.dataEmitIntervalMs != null) {
+      log('Expecting ~%s events per summary', this.latencyCheckIntervalMs / this.dataEmitIntervalMs)
     } else {
-      debug('Not emitting summaries')
+      log('Not emitting summaries')
     }
 
-    that.asyncTestFn = asyncTestFn // If there is no asyncFn, we measure latency
-  }
+    this.asyncTestFn = asyncTestFn // If there is no asyncFn, we measure latency
 
-  start () {
     // If process: use high resolution timer
-    if (globalThis.process && globalThis.process.hrtime) { // eslint-disable-line no-undef
-      debug('Using process.hrtime for timing')
+    if (globalThis.process?.hrtime != null) {
+      log('Using process.hrtime for timing')
       this.now = globalThis.process.hrtime // eslint-disable-line no-undef
       this.getDeltaMS = (startTime) => {
         const hrtime = this.now(startTime)
         return (hrtime[0] * 1000) + (hrtime[1] / 1000000)
       }
       // Let's try for a timer that only monotonically increases
-    } else if (typeof window !== 'undefined' && window.performance && window.performance.now) {
-      debug('Using performance.now for timing')
+    } else if (typeof window !== 'undefined' && window.performance?.now != null) {
+      log('Using performance.now for timing')
       this.now = window.performance.now.bind(window.performance)
       this.getDeltaMS = (startTime) => Math.round(this.now() - startTime)
     } else {
-      debug('Using Date.now for timing')
+      log('Using Date.now for timing')
       this.now = Date.now
       this.getDeltaMS = (startTime) => this.now() - startTime
     }
 
-    this._latencyData = this._initLatencyData()
+    this.latencyData = this.initLatencyData()
+  }
 
+  start () {
     // We check for isBrowser because of browsers set max rates of timeouts when a page is hidden,
     // so we fall back to another library
     // See: http://stackoverflow.com/questions/6032429/chrome-timeouts-interval-suspended-in-background-tabs
     if (isBrowser()) {
-      this._visibilityChangeEmitter = new VisibilityChangeEmitter()
+      this.visibilityChangeEmitter = new VisibilityChangeEmitter()
 
-      this._visibilityChangeEmitter.on('visibilityChange', (pageInFocus) => {
+      this.visibilityChangeEmitter.addEventListener('visibilityChange', (evt) => {
+        const { detail: pageInFocus } = evt
+
         if (pageInFocus) {
           this._startTimers()
         } else {
@@ -109,7 +167,7 @@ class LatencyMonitor extends EventEmitter {
       })
     }
 
-    if (!this._visibilityChangeEmitter || this._visibilityChangeEmitter.isVisible()) {
+    if (this.visibilityChangeEmitter?.isVisible() === true) {
       this._startTimers()
     }
   }
@@ -125,14 +183,16 @@ class LatencyMonitor extends EventEmitter {
    */
   _startTimers () {
     // Timer already started, ignore this
-    if (this._checkLatencyID) {
+    if (this.checkLatencyID != null) {
       return
     }
-    this._checkLatency()
-    if (this.dataEmitIntervalMs) {
-      this._emitIntervalID = setInterval(() => this._emitSummary(), this.dataEmitIntervalMs)
-      if (typeof this._emitIntervalID.unref === 'function') {
-        this._emitIntervalID.unref() // Doesn't block exit
+
+    this.checkLatency()
+
+    if (this.dataEmitIntervalMs != null) {
+      this.emitIntervalID = setInterval(() => this._emitSummary(), this.dataEmitIntervalMs)
+      if (typeof this.emitIntervalID.unref === 'function') {
+        this.emitIntervalID.unref() // Doesn't block exit
       }
     }
   }
@@ -143,13 +203,13 @@ class LatencyMonitor extends EventEmitter {
    * @private
    */
   _stopTimers () {
-    if (this._checkLatencyID) {
-      clearTimeout(this._checkLatencyID)
-      this._checkLatencyID = undefined
+    if (this.checkLatencyID != null) {
+      clearTimeout(this.checkLatencyID)
+      this.checkLatencyID = undefined
     }
-    if (this._emitIntervalID) {
-      clearInterval(this._emitIntervalID)
-      this._emitIntervalID = undefined
+    if (this.emitIntervalID != null) {
+      clearInterval(this.emitIntervalID)
+      this.emitIntervalID = undefined
     }
   }
 
@@ -161,76 +221,73 @@ class LatencyMonitor extends EventEmitter {
   _emitSummary () {
     const summary = this.getSummary()
     if (summary.events > 0) {
-      this.emit('data', summary)
+      this.dispatchEvent(new CustomEvent<SummaryObject>('data', {
+        detail: summary
+      }))
     }
   }
 
   /**
    * Calling this function will end the collection period. If a timing event was already fired and somewhere in the queue,
    * it will not count for this time period
-   *
-   * @returns {SummaryObject}
    */
-  getSummary () {
+  getSummary (): SummaryObject {
     // We might want to adjust for the number of expected events
     // Example: first 1 event it comes back, then such a long blocker that the next emit check comes
     // Then this fires - looks like no latency!!
     const latency = {
-      events: this._latencyData.events,
-      minMs: this._latencyData.minMs,
-      maxMs: this._latencyData.maxMs,
-      avgMs: this._latencyData.events
-        ? this._latencyData.totalMs / this._latencyData.events
+      events: this.latencyData.events,
+      minMs: this.latencyData.minMs,
+      maxMs: this.latencyData.maxMs,
+      avgMs: this.latencyData.events > 0
+        ? this.latencyData.totalMs / this.latencyData.events
         : Number.POSITIVE_INFINITY,
-      lengthMs: this.getDeltaMS(this._latencyData.startTime)
+      lengthMs: this.getDeltaMS(this.latencyData.startTime)
     }
-    this._latencyData = this._initLatencyData() // Clear
+    this.latencyData = this.initLatencyData() // Clear
 
-    debug('Summary: %O', latency)
+    log.trace('Summary: %O', latency)
     return latency
   }
 
   /**
    * Randomly calls an async fn every roughly latencyCheckIntervalMs (plus some randomness). If no async fn is found,
    * it will simply report on event loop latency.
-   *
-   * @private
    */
-  _checkLatency () {
-    const that = this
+  checkLatency () {
     // Randomness is needed to avoid alignment by accident to regular things in the event loop
-    const randomness = (Math.random() * that._latecyCheckMultiply) - that._latecyCheckSubtract
+    const randomness = (Math.random() * this.latencyCheckMultiply) - this.latencyCheckSubtract
 
     // We use this to ensure that in case some overlap somehow, we don't take the wrong startTime/offset
     const localData = {
-      deltaOffset: Math.ceil(that.latencyCheckIntervalMs + randomness),
-      startTime: that.now()
+      deltaOffset: Math.ceil(this.latencyCheckIntervalMs + randomness),
+      startTime: this.now()
     }
 
     const cb = () => {
       // We are already stopped, ignore this datapoint
-      if (!this._checkLatencyID) {
+      if (this.checkLatencyID == null) {
         return
       }
-      const deltaMS = that.getDeltaMS(localData.startTime) - localData.deltaOffset
-      that._checkLatency() // Start again ASAP
+      const deltaMS = this.getDeltaMS(localData.startTime) - localData.deltaOffset
+      this.checkLatency() // Start again ASAP
 
       // Add the data point. If this gets complex, refactor it
-      that._latencyData.events++
-      that._latencyData.minMs = Math.min(that._latencyData.minMs, deltaMS)
-      that._latencyData.maxMs = Math.max(that._latencyData.maxMs, deltaMS)
-      that._latencyData.totalMs += deltaMS
-      debug('MS: %s Data: %O', deltaMS, that._latencyData)
+      this.latencyData.events++
+      this.latencyData.minMs = Math.min(this.latencyData.minMs, deltaMS)
+      this.latencyData.maxMs = Math.max(this.latencyData.maxMs, deltaMS)
+      this.latencyData.totalMs += deltaMS
+      log.trace('MS: %s Data: %O', deltaMS, this.latencyData)
     }
-    debug('localData: %O', localData)
+    log.trace('localData: %O', localData)
 
-    this._checkLatencyID = setTimeout(() => {
+    this.checkLatencyID = setTimeout(() => {
       // This gets rid of including event loop
-      if (that.asyncTestFn) {
+      if (this.asyncTestFn != null) {
         // Clear timing related things
         localData.deltaOffset = 0
-        localData.startTime = that.now()
-        that.asyncTestFn(cb)
+        localData.startTime = this.now()
+        this.asyncTestFn(cb)
       } else {
         // setTimeout is not more accurate than 1ms, so this will ensure positive numbers. Add 1 to emitted data to remove.
         // This is not the best, but for now it'll be just fine. This isn't meant to be sub ms accurate.
@@ -241,12 +298,12 @@ class LatencyMonitor extends EventEmitter {
       }
     }, localData.deltaOffset)
 
-    if (typeof this._checkLatencyID.unref === 'function') {
-      this._checkLatencyID.unref() // Doesn't block exit
+    if (typeof this.checkLatencyID.unref === 'function') {
+      this.checkLatencyID.unref() // Doesn't block exit
     }
   }
 
-  _initLatencyData () {
+  initLatencyData (): LatencyData {
     return {
       startTime: this.now(),
       minMs: Number.POSITIVE_INFINITY,
@@ -258,7 +315,5 @@ class LatencyMonitor extends EventEmitter {
 }
 
 function isBrowser () {
-  return typeof window !== 'undefined'
+  return typeof globalThis.window !== 'undefined'
 }
-
-module.exports = LatencyMonitor

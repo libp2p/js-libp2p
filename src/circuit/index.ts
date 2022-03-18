@@ -1,102 +1,120 @@
-'use strict'
-
-const debug = require('debug')
-const log = Object.assign(debug('libp2p:relay'), {
-  error: debug('libp2p:relay:err')
-})
-const { codes } = require('./../errors')
-const {
+import { logger } from '@libp2p/logger'
+import { codes } from '../errors.js'
+import {
   setDelayedInterval,
   clearDelayedInterval
-// @ts-ignore set-delayed-interval does not export types
-} = require('set-delayed-interval')
-
-const AutoRelay = require('./auto-relay')
-const { namespaceToCid } = require('./utils')
-const {
+// @ts-expect-error set-delayed-interval does not export types
+} from 'set-delayed-interval'
+import { AutoRelay } from './auto-relay.js'
+import { namespaceToCid } from './utils.js'
+import {
   RELAY_RENDEZVOUS_NS
-} = require('./constants')
+} from './constants.js'
+import type { AddressSorter } from '@libp2p/interfaces/peer-store'
+import type { Startable } from '@libp2p/interfaces'
+import type { Components } from '@libp2p/interfaces/components'
 
-/**
- * @typedef {import('../')} Libp2p
- *
- * @typedef {Object} RelayAdvertiseOptions
- * @property {number} [bootDelay = ADVERTISE_BOOT_DELAY]
- * @property {boolean} [enabled = true]
- * @property {number} [ttl = ADVERTISE_TTL]
- *
- * @typedef {Object} HopOptions
- * @property {boolean} [enabled = false]
- * @property {boolean} [active = false]
- *
- * @typedef {Object} AutoRelayOptions
- * @property {number} [maxListeners = 2] - maximum number of relays to listen.
- * @property {boolean} [enabled = false]
- */
+const log = logger('libp2p:relay')
 
-class Relay {
+export interface RelayAdvertiseConfig {
+  bootDelay?: number
+  enabled?: boolean
+  ttl?: number
+}
+
+export interface HopConfig {
+  enabled?: boolean
+  active?: boolean
+}
+
+export interface AutoRelayConfig {
+  enabled?: boolean
+
   /**
-   * Creates an instance of Relay.
-   *
-   * @class
-   * @param {Libp2p} libp2p
+   * maximum number of relays to listen
    */
-  constructor (libp2p) {
-    this._libp2p = libp2p
-    this._options = {
-      ...libp2p._config.relay
-    }
+  maxListeners: number
+}
 
+export interface RelayInit {
+  addressSorter?: AddressSorter
+  maxListeners?: number
+  onError?: (error: Error, msg?: string) => void
+  hop: HopConfig
+  advertise: RelayAdvertiseConfig
+  autoRelay: AutoRelayConfig
+}
+
+export class Relay implements Startable {
+  private readonly components: Components
+  private readonly init: RelayInit
+  // @ts-expect-error this field isn't used anywhere?
+  private readonly autoRelay?: AutoRelay
+  private timeout?: any
+  private started: boolean
+
+  /**
+   * Creates an instance of Relay
+   */
+  constructor (components: Components, init: RelayInit) {
+    this.components = components
     // Create autoRelay if enabled
-    this._autoRelay = this._options.autoRelay.enabled && new AutoRelay({ libp2p, ...this._options.autoRelay })
+    this.autoRelay = init.autoRelay?.enabled !== false
+      ? new AutoRelay(components, {
+        addressSorter: init.addressSorter,
+        ...init.autoRelay
+      })
+      : undefined
 
+    this.started = false
+    this.init = init
     this._advertiseService = this._advertiseService.bind(this)
   }
 
-  /**
-   * Start Relay service.
-   *
-   * @returns {void}
-   */
-  start () {
-    // Advertise service if HOP enabled
-    const canHop = this._options.hop.enabled
-
-    if (canHop && this._options.advertise.enabled) {
-      this._timeout = setDelayedInterval(
-        this._advertiseService, this._options.advertise.ttl, this._options.advertise.bootDelay
-      )
-    }
+  isStarted () {
+    return this.started
   }
 
   /**
-   * Stop Relay service.
-   *
-   * @returns {void}
+   * Start Relay service
    */
-  stop () {
-    clearDelayedInterval(this._timeout)
+  async start () {
+    // Advertise service if HOP enabled
+    if (this.init.hop.enabled !== false && this.init.advertise.enabled !== false) {
+      this.timeout = setDelayedInterval(
+        this._advertiseService, this.init.advertise.ttl, this.init.advertise.bootDelay
+      )
+    }
+
+    this.started = true
+  }
+
+  /**
+   * Stop Relay service
+   */
+  async stop () {
+    if (this.timeout != null) {
+      clearDelayedInterval(this.timeout)
+    }
+
+    this.started = false
   }
 
   /**
    * Advertise hop relay service in the network.
-   *
-   * @returns {Promise<void>}
    */
   async _advertiseService () {
     try {
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
-      await this._libp2p.contentRouting.provide(cid)
-    } catch (/** @type {any} */ err) {
+      await this.components.getContentRouting().provide(cid)
+    } catch (err: any) {
       if (err.code === codes.ERR_NO_ROUTERS_AVAILABLE) {
         log.error('a content router, such as a DHT, must be provided in order to advertise the relay service', err)
         // Stop the advertise
-        this.stop()
+        await this.stop()
       } else {
         log.error(err)
       }
     }
   }
 }
-
-module.exports = Relay
