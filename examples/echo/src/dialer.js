@@ -5,9 +5,9 @@
  * Dialer Node
  */
 
-const PeerId = require('peer-id')
-const createLibp2p = require('./libp2p')
-const pipe = require('it-pipe')
+
+import { createLibp2p } from './libp2p.js'
+import { pipe } from 'it-pipe'
 
 async function run() {
   const [dialerId, listenerId] = await Promise.all([

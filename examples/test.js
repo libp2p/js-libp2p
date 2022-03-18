@@ -3,9 +3,9 @@
 process.env.NODE_ENV = 'test'
 process.env.CI = true // needed for some "clever" build tools
 
-const fs = require('fs-extra')
-const path = require('path')
-const execa = require('execa')
+const fs from 'fs-extra')
+import path from 'path'
+import execa from 'execa'
 const dir = path.join(__dirname, process.argv[2])
 
 testExample(dir)
@@ -53,7 +53,7 @@ async function build (dir) {
     return
   }
 
-  const pkg = require(pkgJson)
+  const pkg from pkgJson)
   let build
 
   if (pkg.scripts.bundle) {
@@ -88,7 +88,7 @@ async function runTest (dir) {
     return
   }
 
-  const test = require(testFile)
+  const test from testFile)
 
   await test()
 }

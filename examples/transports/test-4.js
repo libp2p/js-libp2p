@@ -1,7 +1,7 @@
 'use strict'
 
-const path = require('path')
-const { waitForOutput } = require('../utils')
+import path from 'path'
+const { waitForOutput } from '../utils')
 
 async function test () {
   process.stdout.write('4.js\n')

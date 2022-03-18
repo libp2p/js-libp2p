@@ -6,11 +6,11 @@ process.on('unhandedRejection', (err) => {
   process.exit(1)
 })
 
-const path = require('path')
-const fs = require('fs')
+import path from 'path'
+const fs from 'fs')
 const {
   waitForOutput
-} = require('./utils')
+} from './utils')
 
 async function testAll () {
   for (const dir of fs.readdirSync(__dirname)) {

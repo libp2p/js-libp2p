@@ -1,8 +1,8 @@
 'use strict'
 /* eslint-disable no-console */
 
-const pipe = require('it-pipe')
-const lp = require('it-length-prefixed')
+import { pipe } from 'it-pipe'
+import * as lp from 'it-length-prefixed'
 
 function stdinToStream(stream) {
   // Read utf-8 from stdin

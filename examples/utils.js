@@ -1,15 +1,15 @@
 'use strict'
 
-const execa = require('execa')
-const fs = require('fs-extra')
-const which = require('which')
+import execa from 'execa'
+const fs from 'fs-extra')
+const which from 'which')
 
 async function isExecutable (command) {
   try {
     await fs.access(command, fs.constants.X_OK)
 
     return true
-  } catch (/** @type {any} */ err) {
+  } catch (err: any) {
     if (err.code === 'ENOENT') {
       return isExecutable(await which(command))
     }
@@ -49,7 +49,7 @@ async function waitForOutput (expectedOutput, command, args = [], opts = {}) {
 
   try {
     await proc
-  } catch (/** @type {any} */ err) {
+  } catch (err: any) {
     if (!err.killed) {
       throw err
     }

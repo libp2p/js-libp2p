@@ -1,7 +1,7 @@
 'use strict'
 
-const test1 = require('./test-1')
-const testMessageFiltering = require('./message-filtering/test')
+const test1 from './test-1')
+const testMessageFiltering from './message-filtering/test')
 
 async function test() {
   await test1()

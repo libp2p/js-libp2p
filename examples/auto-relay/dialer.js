@@ -1,9 +1,7 @@
-'use strict'
-
-const Libp2p = require('libp2p')
-const Websockets = require('libp2p-websockets')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
 async function main () {
   const autoRelayNodeAddr = process.argv[2]
@@ -11,12 +9,16 @@ async function main () {
     throw new Error('the auto relay node address needs to be specified')
   }
 
-  const node = await Libp2p.create({
-    modules: {
-      transport: [Websockets],
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX]
-    }
+  const node = await createLibp2p({
+    transports: [
+      new WebSockets()
+    ],
+    connEncrypters: [
+      new Noise()
+    ],
+    streamMuxers: [
+      new Mplex()
+    ]
   })
 
   await node.start()

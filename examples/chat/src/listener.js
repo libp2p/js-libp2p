@@ -1,9 +1,7 @@
-'use strict'
 /* eslint-disable no-console */
 
-const PeerId = require('peer-id')
-const createLibp2p = require('./libp2p.js')
-const { stdinToStream, streamToConsole } = require('./stream')
+import { createLibp2p } from './libp2p.js'
+import { stdinToStream, streamToConsole } from './stream.js'
 
 async function run () {
   // Create a new libp2p node with the given multi-address

@@ -1,10 +1,10 @@
 'use strict'
 
-const path = require('path')
-const execa = require('execa')
-const pDefer = require('p-defer')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
-const { chromium } = require('playwright');
+import path from 'path'
+import execa from 'execa'
+import pDefer from 'p-defer'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+const { chromium } from 'playwright');
 
 function startNode (name, args = []) {
     return execa('node', [path.join(__dirname, name), ...args], {
@@ -72,7 +72,7 @@ async function test () {
                   { timeout: 10000 }
                 )
                 await browser.close();
-            } catch (/** @type {any} */ err) {
+            } catch (err: any) {
                 console.error(err)
                 process.exit(1)
             } finally {

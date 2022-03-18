@@ -1,26 +1,24 @@
 /* eslint-disable no-console */
 'use strict'
 
-const Libp2p = require('../..')
-const TCP = require('libp2p-tcp')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from '../../../dist/src/index.js'
+import { TCP } from '@libp2p/tcp'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
-const pipe = require('it-pipe')
-const concat = require('it-concat')
+import { pipe } from 'it-pipe'
+import concat from 'it-concat'
 
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       // To signal the addresses we want to be available, we use
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX]
-    }
+    transports: [new TCP()],
+    connectionEncrypters: [new Noise()],
+    streamMuxers: [new Mplex()]
   })
 
   await node.start()

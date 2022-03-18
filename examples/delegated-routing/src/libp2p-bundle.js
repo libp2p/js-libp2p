@@ -1,15 +1,14 @@
 // eslint-disable-next-line
 'use strict'
 
-const Libp2p = require('libp2p')
-const Websockets = require('libp2p-websockets')
-const WebSocketStar = require('libp2p-websocket-star')
-const WebRTCStar = require('libp2p-webrtc-star')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const KadDHT = require('libp2p-kad-dht')
-const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
-const DelegatedContentRouter = require('libp2p-delegated-content-routing')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import WebSocketStar from 'libp2p-websocket-star'
+import { WebRTCStar } from '@libp2p/webrtc-star'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { DelegatedPeerRouting } from '@libp2p/delegated-peer-routing'
+import { DelegatedContentRouting } from '@libp2p/delegated-content-routing'
 
 export default function Libp2pBundle ({peerInfo, peerBook}) {
   const wrtcstar = new WebRTCStar({id: peerInfo.id})
@@ -20,7 +19,7 @@ export default function Libp2pBundle ({peerInfo, peerBook}) {
     port: '8080'
   }
 
-  return new Libp2p({
+  return createLibp2p({
     peerInfo,
     peerBook,
     // Lets limit the connection managers peers and have it check peer health less frequently
@@ -28,48 +27,30 @@ export default function Libp2pBundle ({peerInfo, peerBook}) {
       maxPeers: 10,
       pollInterval: 5000
     },
-    modules: {
-      contentRouting: [
-        new DelegatedContentRouter(peerInfo.id, delegatedApiOptions)
-      ],
-      peerRouting: [
-        new DelegatedPeerRouter(delegatedApiOptions)
-      ],
-      peerDiscovery: [
-        wrtcstar.discovery,
-        wsstar.discovery
-      ],
-      transport: [
-        wrtcstar,
-        wsstar,
-        Websockets
-      ],
-      streamMuxer: [
-        MPLEX
-      ],
-      connEncryption: [
-        NOISE
-      ],
-      dht: KadDHT
+    contentRouting: [
+      new DelegatedPeerRouting(peerInfo.id, delegatedApiOptions)
+    ],
+    peerRouting: [
+      new DelegatedContentRouting(delegatedApiOptions)
+    ],
+    transports: [
+      wrtcstar,
+      wsstar,
+      new WebSockets()
+    ],
+    streamMuxers: [
+      new Mplex()
+    ],
+    connectionEncrypters: [
+      new Noise()
+    ],
+    connectionManager: {
+      autoDial: false
     },
-    config: {
-      peerDiscovery: {
-        autoDial: false,
-        webrtcStar: {
-          enabled: false
-        },
-        websocketStar: {
-          enabled: false
-        }
-      },
-      dht: {
+    relay: {
+      enabled: true,
+      hop: {
         enabled: false
-      },
-      relay: {
-        enabled: true,
-        hop: {
-          enabled: false
-        }
       }
     }
   })

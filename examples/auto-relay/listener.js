@@ -1,9 +1,7 @@
-'use strict'
-
-const Libp2p = require('libp2p')
-const Websockets = require('libp2p-websockets')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
 async function main () {
   const relayAddr = process.argv[2]
@@ -11,19 +9,21 @@ async function main () {
     throw new Error('the relay address needs to be specified as a parameter')
   }
 
-  const node = await Libp2p.create({
-    modules: {
-      transport: [Websockets],
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX]
-    },
-    config: {
-      relay: {
+  const node = await createLibp2p({
+    transports: [
+      new WebSockets()
+    ],
+    connectionEncrypters: [
+      new Noise()
+    ],
+    streamMuxers: [
+      new Mplex()
+    ],
+    relay: {
+      enabled: true,
+      autoRelay: {
         enabled: true,
-        autoRelay: {
-          enabled: true,
-          maxListeners: 2
-        }
+        maxListeners: 2
       }
     }
   })
@@ -41,7 +41,7 @@ async function main () {
     if (peerId.equals(node.peerId)) {
       console.log(`Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toB58String()}`)
     }
-  })  
+  })
 }
 
 main()

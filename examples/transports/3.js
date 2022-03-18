@@ -1,28 +1,25 @@
 /* eslint-disable no-console */
-'use strict'
 
-const Libp2p = require('../..')
-const TCP = require('libp2p-tcp')
-const WebSockets = require('libp2p-websockets')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from '../../../dist/src/index.js'
+import { TCP } from '@libp2p/tcp'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
-const pipe = require('it-pipe')
+import { pipe } from 'it-pipe'
 
 const createNode = async (transports, addresses = []) => {
   if (!Array.isArray(addresses)) {
     addresses = [addresses]
   }
 
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       listen: addresses
     },
-    modules: {
-      transport: transports,
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX]
-    }
+    transport: transports,
+    connectionEncrypters: [new Noise()],
+    streamMuxers: [new Mplex()]
   })
 
   await node.start()
@@ -81,7 +78,7 @@ function print ({ stream }) {
   // node 3 (listening WebSockets) can dial node 1 (TCP)
   try {
     await node3.dialProtocol(node1.peerId, '/print')
-  } catch (/** @type {any} */ err) {
+  } catch (err: any) {
     console.log('node 3 failed to dial to node 1 with:', err.message)
   }
 })();

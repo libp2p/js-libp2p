@@ -1,13 +1,9 @@
-'use strict'
+import test1 from './test-1.js'
+import test2 from './test-2.js'
+import test3 from './test-3.js'
 
-const test1 = require('./test-1')
-const test2 = require('./test-2')
-const test3 = require('./test-3')
-
-async function test () {
+export default async function test () {
   await test1()
   await test2()
   await test3()
 }
-
-module.exports = test

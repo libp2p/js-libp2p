@@ -21,28 +21,32 @@ Using PubSub is super simple, you only need to provide the implementation of you
 First, let's update our libp2p configuration with a pubsub implementation.
 
 ```JavaScript
-const Libp2p = require('libp2p')
-const Gossipsub = require('libp2p-gossipsub')
+import { createLibp2p } from 'libp2p'
+import { Gossipsub } from 'libp2p-gossipsub'
 
-const node = await Libp2p.create({
+const node = await createLibp2p({
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
-  modules: {
-    transport: [ TCP ],
-    streamMuxer: [ Mplex ],
-    connEncryption: [ NOISE ],
-    // we add the Pubsub module we want
-    pubsub: Gossipsub
-  }
+  transport: [
+    new TCP()
+  ],
+  streamMuxer: [
+    new Mplex()
+  ],
+  connectionEncrypters: [
+    new Noise()
+  ],
+  // we add the Pubsub module we want
+  pubsub: new Gossipsub()
 })
 ```
 
 Once that is done, we only need to create a few libp2p nodes, connect them and everything is ready to start using pubsub.
 
 ```JavaScript
-const { fromString } = require('uint8arrays/from-string')
-const { toString } = require('uint8arrays/to-string')
+const { fromString } from 'uint8arrays/from-string')
+const { toString } from 'uint8arrays/to-string')
 const topic = 'news'
 
 const node1 = nodes[0]

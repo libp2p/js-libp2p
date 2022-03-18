@@ -1,10 +1,10 @@
 /* eslint no-console: ["off"] */
 'use strict'
 
-const { generate } = require('libp2p/src/pnet')
-const privateLibp2pNode = require('./libp2p-node')
+const { generate } from 'libp2p/src/pnet')
+const privateLibp2pNode from './libp2p-node')
 
-const pipe = require('it-pipe')
+import { pipe } from 'it-pipe'
 
 // Create a Uint8Array and write the swarm key to it
 const swarmKey = new Uint8Array(95)

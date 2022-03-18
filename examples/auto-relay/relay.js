@@ -1,31 +1,31 @@
-'use strict'
-
-const Libp2p = require('libp2p')
-const Websockets = require('libp2p-websockets')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
 async function main () {
-  const node = await Libp2p.create({
-    modules: {
-      transport: [Websockets],
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX]
-    },
+  const node = await createLibp2p({
+    transport: [
+      new WebSockets()
+    ],
+    connectionEncrypters: [
+      new Noise()
+    ],
+    streamMuxers: [
+      new Mplex()
+    ],
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0/ws']
       // TODO check "What is next?" section
       // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
     },
-    config: {
-      relay: {
+    relay: {
+      enabled: true,
+      hop: {
+        enabled: true
+      },
+      advertise: {
         enabled: true,
-        hop: {
-          enabled: true
-        },
-        advertise: {
-          enabled: true,
-        }
       }
     }
   })

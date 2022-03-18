@@ -1,17 +1,13 @@
 /* eslint-disable no-console */
-'use strict'
 
-const Libp2p = require('../..')
-const TCP = require('libp2p-tcp')
-const WebSockets = require('libp2p-websockets')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
-
-const fs = require('fs');
-const https = require('https');
-const pipe = require('it-pipe')
-
-const transportKey = WebSockets.prototype[Symbol.toStringTag];
+import { createLibp2p } from '../../../dist/src/index.js'
+import { TCP } from '@libp2p/tcp'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
+import fs from 'fs'
+import https from 'https'
+import { pipe } from 'it-pipe'
 
 const httpServer = https.createServer({
   cert: fs.readFileSync('./test_certs/cert.pem'),
@@ -23,26 +19,22 @@ const createNode = async (addresses = []) => {
     addresses = [addresses]
   }
 
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       listen: addresses
     },
-    modules: {
-      transport: [WebSockets],
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX]
-    },
-    config: {
-      peerDiscovery: {
-        // Disable autoDial as it would fail because we are using a self-signed cert.
-        // `dialProtocol` does not fail because we pass `rejectUnauthorized: false`.
-        autoDial: false
-      },
-      transport: {
-        [transportKey]: {
-          listenerOptions: { server: httpServer },
-        },
-      },
+    transports: [
+      new TCP(),
+      new WebSockets({
+        server: httpServer
+      })
+    ],
+    connectionEncrypters: [new Noise()],
+    streamMuxers: [new Mplex()],
+    connectionManager: {
+      // Disable autoDial as it would fail because we are using a self-signed cert.
+      // `dialProtocol` does not fail because we pass `rejectUnauthorized: false`.
+      autoDial: false
     }
   })
 

@@ -1,8 +1,8 @@
 'use strict'
 
-const test1 = require('./test-1')
-const test2 = require('./test-2')
-const test3 = require('./test-3')
+const test1 from './test-1')
+const test2 from './test-2')
+const test3 from './test-3')
 
 async function test() {
   await test1()

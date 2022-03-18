@@ -1,7 +1,7 @@
 'use strict'
 
-const test1 = require('./test-1')
-const test2 = require('./test-2')
+const test1 from './test-1')
+const test2 from './test-2')
 
 async function test() {
   await test1()

@@ -1,40 +1,32 @@
 /* eslint-disable no-console */
 'use strict'
 
-const Libp2p = require('../../')
-const TCP = require('libp2p-tcp')
-const Mplex = require('libp2p-mplex')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const Gossipsub = require('@achingbrain/libp2p-gossipsub')
-const Bootstrap = require('libp2p-bootstrap')
-const PubsubPeerDiscovery = require('libp2p-pubsub-peer-discovery')
+import { createLibp2p } from '../../dist/src/index.js'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Gossipsub } from '@achingbrain/libp2p-gossipsub'
+import { Bootstrap } from '@libp2p/bootstrap'
+import PubsubPeerDiscovery from 'libp2p-pubsub-peer-discovery'
+import createRelayServer from 'libp2p-relay-server'
 
-const createRelayServer = require('libp2p-relay-server')
-
-const createNode = async (bootstrapers) => {
-  const node = await Libp2p.create({
+const createNode = async (bootstrappers) => {
+  const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      streamMuxer: [Mplex],
-      connEncryption: [NOISE],
-      pubsub: Gossipsub,
-      peerDiscovery: [Bootstrap, PubsubPeerDiscovery]
-    },
-    config: {
-      peerDiscovery: {
-        [PubsubPeerDiscovery.tag]: {
-          interval: 1000,
-          enabled: true
-        },
-        [Bootstrap.tag]: {
-          enabled: true,
-          list: bootstrapers
-        }
-      }
-    }
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncrypters: [new Noise()],
+    pubsub: Gossipsub,
+    peerDiscovery: [
+      new Bootstrap({
+        list: bootstrappers
+      }),
+      new PubsubPeerDiscovery({
+        interval: 1000
+      })
+    ]
   })
 
   return node

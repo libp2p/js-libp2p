@@ -1,7 +1,7 @@
 'use strict'
 
-const execa = require('execa')
-const { chromium } = require('playwright');
+import execa from 'execa'
+const { chromium } from 'playwright');
 
 async function run() {
   let url = ''
@@ -38,7 +38,7 @@ async function run() {
         )
         await browser.close();
 
-      } catch (/** @type {any} */ err) {
+      } catch (err: any) {
         console.error(err)
         process.exit(1)
       } finally {

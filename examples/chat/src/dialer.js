@@ -1,10 +1,8 @@
-'use strict'
 /* eslint-disable no-console */
 
-const PeerId = require('peer-id')
-const { Multiaddr } = require('multiaddr')
-const createLibp2p = require('./libp2p')
-const { stdinToStream, streamToConsole } = require('./stream')
+import { Multiaddr } from '@multiformats/multiaddr'
+import { createLibp2p } from './libp2p.js'
+import { stdinToStream, streamToConsole } from './stream.js'
 
 async function run () {
   const [idDialer, idListener] = await Promise.all([

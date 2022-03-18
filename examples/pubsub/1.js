@@ -1,25 +1,22 @@
 /* eslint-disable no-console */
-'use strict'
 
-const Libp2p = require('../../')
-const TCP = require('libp2p-tcp')
-const Mplex = require('libp2p-mplex')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const Gossipsub = require('@achingbrain/libp2p-gossipsub')
-const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+import { createLibp2p } from '../../dist/src/index.js'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import Gossipsub from '@achingbrain/libp2p-gossipsub'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      streamMuxer: [Mplex],
-      connEncryption: [NOISE],
-      pubsub: Gossipsub
-    }
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncrypters: [new Noise()],
+    pubsub: new Gossipsub()
   })
 
   await node.start()

@@ -1,13 +1,11 @@
-'use strict'
-
-const path = require('path')
-const execa = require('execa')
-const pWaitFor = require('p-wait-for')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+import path from 'path'
+import execa from 'execa'
+import pWaitFor from 'p-wait-for'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 const discoveredCopy = 'Discovered:'
 
-async function test() {
+export default async function test() {
   const discoveredNodes = []
 
   process.stdout.write('2.js\n')
@@ -31,5 +29,3 @@ async function test() {
 
   proc.kill()
 }
-
-module.exports = test
