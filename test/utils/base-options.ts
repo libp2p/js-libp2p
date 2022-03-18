@@ -1,16 +1,20 @@
-'use strict'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Plaintext } from '../../src/insecure/index.js'
+import type { Libp2pOptions } from '../../src'
+import mergeOptions from 'merge-options'
 
-const Transport = require('libp2p-tcp')
-const Muxer = require('libp2p-mplex')
-const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
-
-module.exports = {
-  modules: {
-    transport: [Transport],
-    streamMuxer: [Muxer],
-    connEncryption: [Crypto]
-  },
-  config: {
+export function createBaseOptions (...overrides: Libp2pOptions[]): Libp2pOptions {
+  const options: Libp2pOptions = {
+    transports: [
+      new TCP()
+    ],
+    streamMuxers: [
+      new Mplex()
+    ],
+    connectionEncrypters: [
+      new Plaintext()
+    ],
     relay: {
       enabled: true,
       hop: {
@@ -21,4 +25,6 @@ module.exports = {
       enabled: false
     }
   }
+
+  return mergeOptions(options, ...overrides)
 }

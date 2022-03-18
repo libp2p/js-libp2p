@@ -1,72 +1,104 @@
-'use strict'
-
-const pTimes = require('p-times')
-
-const { Multiaddr } = require('multiaddr')
-const PeerId = require('peer-id')
-
-const Libp2p = require('../../../src')
-const Peers = require('../../fixtures/peers')
-const defaultOptions = require('../base-options.browser')
+import { Multiaddr } from '@multiformats/multiaddr'
+import Peers from '../../fixtures/peers.js'
+import { createBaseOptions } from '../base-options.browser.js'
+import { createEd25519PeerId, createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
+import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
+import type { AddressesConfig, Libp2pOptions } from '../../../src/index.js'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
 
 const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
+export interface CreatePeerOptions {
+  /**
+   * number of peers (default: 1)
+   */
+  number?: number
+
+  /**
+   * fixture index for peer-id generation
+   */
+  fixture?: number
+
+  /**
+   * nodes should start (default: true)
+   */
+  started?: boolean
+
+  config?: Libp2pOptions
+}
+
 /**
  * Create libp2p nodes.
- *
- * @param {Object} [properties]
- * @param {Object} [properties.config]
- * @param {number} [properties.number] - number of peers (default: 1).
- * @param {boolean} [properties.fixture] - use fixture for peer-id generation (default: true)
- * @param {boolean} [properties.started] - nodes should start (default: true)
- * @param {boolean} [properties.populateAddressBooks] - nodes addressBooks should be populated with other peers (default: true)
- * @returns {Promise<Array<Libp2p>>}
  */
-async function createPeer ({ number = 1, fixture = true, started = true, populateAddressBooks = true, config = {} } = {}) {
-  const peerIds = await createPeerId({ number, fixture })
-
-  const addresses = started ? { listen: [listenAddr] } : {}
-  const peers = await pTimes(number, (i) => Libp2p.create({
-    peerId: peerIds[i],
+export async function createNode (options: CreatePeerOptions = {}): Promise<Libp2pNode> {
+  const started = options.started ?? true
+  const config = options.config ?? {}
+  const peerId = await createPeerId({ fixture: options.fixture })
+  const addresses: AddressesConfig = started
+    ? {
+        listen: [listenAddr.toString()],
+        announce: [],
+        noAnnounce: [],
+        announceFilter: (addrs) => addrs
+      }
+    : {
+        listen: [],
+        announce: [],
+        noAnnounce: [],
+        announceFilter: (addrs) => addrs
+      }
+  const peer = await createLibp2pNode(createBaseOptions({
+    peerId,
     addresses,
-    ...defaultOptions,
     ...config
   }))
 
   if (started) {
-    await Promise.all(peers.map((p) => p.start()))
-
-    populateAddressBooks && await _populateAddressBooks(peers)
+    await peer.start()
   }
 
-  return peers
+  return peer
 }
 
-async function _populateAddressBooks (peers) {
+export async function populateAddressBooks (peers: Libp2pNode[]) {
   for (let i = 0; i < peers.length; i++) {
     for (let j = 0; j < peers.length; j++) {
       if (i !== j) {
-        await peers[i].peerStore.addressBook.set(peers[j].peerId, peers[j].multiaddrs)
+        await peers[i].components.getPeerStore().addressBook.set(peers[j].peerId, peers[j].components.getAddressManager().getAddresses())
       }
     }
   }
 }
 
-/**
- * Create Peer-ids.
- *
- * @param {Object} [properties]
- * @param {number} [properties.number] - number of peers (default: 1).
- * @param {boolean} [properties.fixture] - use fixture for peer-id generation (default: true)
- * @param {PeerId.CreateOptions} [properties.opts]
- * @returns {Promise<Array<PeerId>>}
- */
-function createPeerId ({ number = 1, fixture = true, opts = {} } = {}) {
-  return pTimes(number, (i) => fixture
-    ? PeerId.createFromJSON(Peers[i])
-    : PeerId.create(opts)
-  )
+export interface CreatePeerIdOptions {
+  /**
+   * number of peers (default: 1)
+   */
+  number?: number
+
+  /**
+   * fixture index for peer-id generation (default: 0)
+   */
+  fixture?: number
+
+  /**
+   * Options to pass to the PeerId constructor
+   */
+  opts?: {
+    type?: 'rsa' | 'ed25519'
+    bits?: number
+  }
 }
 
-module.exports.createPeer = createPeer
-module.exports.createPeerId = createPeerId
+/**
+ * Create Peer-ids
+ */
+export async function createPeerId (options: CreatePeerIdOptions = {}): Promise<PeerId> {
+  const opts = options.opts ?? {}
+
+  if (options.fixture == null) {
+    return opts.type === 'rsa' ? await createRSAPeerId({ bits: opts.bits ?? 512 }) : await createEd25519PeerId()
+  }
+
+  return await createFromJSON(Peers[options.fixture])
+}

@@ -1,13 +1,15 @@
-'use strict'
 /* eslint-env mocha */
 
-const tests = require('libp2p-interfaces-compliance-tests/src/crypto')
-const plaintext = require('../../src/insecure/plaintext')
+import suite from '@libp2p/interface-compliance-tests/connection-encrypter'
+import { Plaintext } from '../../src/insecure/index.js'
 
 describe('plaintext compliance', () => {
-  tests({
-    setup () {
-      return plaintext
+  suite({
+    async setup () {
+      return new Plaintext()
+    },
+    async teardown () {
+
     }
   })
 })

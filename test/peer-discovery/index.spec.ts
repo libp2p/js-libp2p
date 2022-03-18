@@ -1,137 +1,101 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-const sinon = require('sinon')
-
-const defer = require('p-defer')
-const mergeOptions = require('merge-options')
-
-const { Multiaddr } = require('multiaddr')
-const WebRTCStar = require('libp2p-webrtc-star')
-
-const Libp2p = require('../../src')
-const baseOptions = require('../utils/base-options.browser')
-const { createPeerId } = require('../utils/creators/peer')
+import { expect } from 'aegir/utils/chai.js'
+import sinon from 'sinon'
+import defer from 'p-defer'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { createBaseOptions } from '../utils/base-options.browser.js'
+import { createPeerId } from '../utils/creators/peer.js'
+import { isPeerId, PeerId } from '@libp2p/interfaces/peer-id'
+import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
+import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 
 describe('peer discovery', () => {
   describe('basic functions', () => {
-    let peerId
-    let remotePeerId
-    let libp2p
+    let peerId: PeerId
+    let remotePeerId: PeerId
+    let libp2p: Libp2pNode
 
     before(async () => {
-      [peerId, remotePeerId] = await createPeerId({ number: 2 })
+      [peerId, remotePeerId] = await Promise.all([
+        createPeerId(),
+        createPeerId()
+      ])
     })
 
     afterEach(async () => {
-      libp2p && await libp2p.stop()
+      if (libp2p != null) {
+        await libp2p.stop()
+      }
+
       sinon.reset()
     })
 
-    it('should dial know peers on startup below the minConnections watermark', async () => {
-      libp2p = new Libp2p({
-        ...baseOptions,
+    it('should dial known peers on startup below the minConnections watermark', async () => {
+      libp2p = await createLibp2pNode(createBaseOptions({
         peerId,
         connectionManager: {
           minConnections: 2
         }
-      })
+      }))
 
       await libp2p.peerStore.addressBook.set(remotePeerId, [new Multiaddr('/ip4/165.1.1.1/tcp/80')])
 
       const deferred = defer()
-      sinon.stub(libp2p.dialer, 'connectToPeer').callsFake((remotePeerId) => {
-        expect(remotePeerId).to.equal(remotePeerId)
-        deferred.resolve()
-      })
-      const spy = sinon.spy()
-      libp2p.on('peer:discovery', spy)
+      sinon.stub(libp2p.components.getDialer(), 'dial').callsFake(async (id) => {
+        if (!isPeerId(id)) {
+          throw new Error('Tried to dial something that was not a peer ID')
+        }
 
-      libp2p.start()
+        if (!remotePeerId.equals(id)) {
+          throw new Error('Tried to dial wrong peer ID')
+        }
+
+        deferred.resolve()
+        return mockConnection(mockMultiaddrConnection(mockDuplex(), id))
+      })
+
+      const spy = sinon.spy()
+      libp2p.addEventListener('peer:discovery', spy)
+
+      await libp2p.start()
       await deferred.promise
 
-      expect(spy.calledOnce).to.eql(true)
-      expect(spy.getCall(0).args[0].toString()).to.eql(remotePeerId.toString())
+      expect(spy.calledOnce).to.equal(true)
+      expect(spy.getCall(0).args[0].detail.id.toString()).to.equal(remotePeerId.toString())
     })
 
     it('should stop discovery on libp2p start/stop', async () => {
-      const mockDiscovery = {
-        tag: 'mock',
-        start: () => {},
-        stop: () => {},
-        on: () => {},
-        removeListener: () => {}
+      let started = 0
+      let stopped = 0
+
+      class MockDiscovery {
+        static tag = 'mock'
+        start () {
+          started++
+        }
+
+        stop () {
+          stopped++
+        }
+
+        addEventListener () {}
+        removeEventListener () {}
       }
-      const startSpy = sinon.spy(mockDiscovery, 'start')
-      const stopSpy = sinon.spy(mockDiscovery, 'stop')
 
-      libp2p = new Libp2p(mergeOptions(baseOptions, {
+      libp2p = await createLibp2pNode(createBaseOptions({
         peerId,
-        modules: {
-          peerDiscovery: [mockDiscovery]
-        }
+        peerDiscoverers: [
+          new MockDiscovery()
+        ]
       }))
 
       await libp2p.start()
-      expect(startSpy).to.have.property('callCount', 1)
-      expect(stopSpy).to.have.property('callCount', 0)
+      expect(started).to.equal(1)
+      expect(stopped).to.equal(0)
       await libp2p.stop()
-      expect(startSpy).to.have.property('callCount', 1)
-      expect(stopSpy).to.have.property('callCount', 1)
-    })
-  })
-
-  describe('discovery modules from transports', () => {
-    let peerId, libp2p
-
-    before(async () => {
-      [peerId] = await createPeerId()
-    })
-
-    afterEach(async () => {
-      libp2p && await libp2p.stop()
-    })
-
-    it('should add discovery module if present in transports and enabled', async () => {
-      libp2p = new Libp2p(mergeOptions(baseOptions, {
-        peerId,
-        modules: {
-          transport: [WebRTCStar]
-        },
-        config: {
-          peerDiscovery: {
-            webRTCStar: {
-              enabled: true
-            }
-          }
-        }
-      }))
-
-      await libp2p.start()
-
-      expect(libp2p._discovery.size).to.eql(1)
-      expect(libp2p._discovery.has('webRTCStar')).to.eql(true)
-    })
-
-    it('should not add discovery module if present in transports but disabled', async () => {
-      libp2p = new Libp2p(mergeOptions(baseOptions, {
-        peerId,
-        modules: {
-          transport: [WebRTCStar]
-        },
-        config: {
-          peerDiscovery: {
-            webRTCStar: {
-              enabled: false
-            }
-          }
-        }
-      }))
-
-      await libp2p.start()
-
-      expect(libp2p._discovery.size).to.eql(0)
+      expect(started).to.equal(1)
+      expect(stopped).to.equal(1)
     })
   })
 })

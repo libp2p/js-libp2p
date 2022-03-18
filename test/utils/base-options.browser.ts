@@ -1,29 +1,31 @@
-'use strict'
 
-const Transport = require('libp2p-websockets')
-const filters = require('libp2p-websockets/src/filters')
-const Muxer = require('libp2p-mplex')
-const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
+import { WebSockets } from '@libp2p/websockets'
+import * as filters from '@libp2p/websockets/filters'
+import { Mplex } from '@libp2p/mplex'
+import { Plaintext } from '../../src/insecure/index.js'
+import type { Libp2pOptions } from '../../src'
+import mergeOptions from 'merge-options'
 
-const transportKey = Transport.prototype[Symbol.toStringTag]
-
-module.exports = {
-  modules: {
-    transport: [Transport],
-    streamMuxer: [Muxer],
-    connEncryption: [Crypto]
-  },
-  config: {
+export function createBaseOptions (overrides?: Libp2pOptions): Libp2pOptions {
+  const options: Libp2pOptions = {
+    transports: [
+      new WebSockets({
+        filter: filters.all
+      })
+    ],
+    streamMuxers: [
+      new Mplex()
+    ],
+    connectionEncrypters: [
+      new Plaintext()
+    ],
     relay: {
-      enabled: true,
+      enabled: false,
       hop: {
         enabled: false
       }
-    },
-    transport: {
-      [transportKey]: {
-        filter: filters.all
-      }
     }
   }
+
+  return mergeOptions(options, overrides)
 }

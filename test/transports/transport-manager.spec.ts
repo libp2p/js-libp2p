@@ -1,73 +1,68 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-const sinon = require('sinon')
-
-const { Multiaddr } = require('multiaddr')
-const Transport = require('libp2p-websockets')
-const filters = require('libp2p-websockets/src/filters')
-const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
-const AddressManager = require('../../src/address-manager')
-const TransportManager = require('../../src/transport-manager')
-const mockUpgrader = require('../utils/mockUpgrader')
-const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
-const { codes: ErrorCodes } = require('../../src/errors')
-const Libp2p = require('../../src')
-const { FaultTolerance } = require('../../src/transport-manager')
-
-const Peers = require('../fixtures/peers')
-const PeerId = require('peer-id')
+import { expect } from 'aegir/utils/chai.js'
+import sinon from 'sinon'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { WebSockets } from '@libp2p/websockets'
+import * as filters from '@libp2p/websockets/filters'
+import { NOISE } from '@chainsafe/libp2p-noise'
+import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { DefaultTransportManager, FAULT_TOLERANCE } from '../../src/transport-manager.js'
+import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
+import { codes as ErrorCodes } from '../../src/errors.js'
+import Peers from '../fixtures/peers.js'
+import { Components } from '@libp2p/interfaces/components'
+import { createEd25519PeerId, createFromJSON } from '@libp2p/peer-id-factory'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 
 const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('Transport Manager (WebSockets)', () => {
-  let tm
+  let tm: DefaultTransportManager
+  let components: Components
 
-  before(() => {
-    tm = new TransportManager({
-      libp2p: {
-        addressManager: new AddressManager({ listen: [listenAddr] })
-      },
-      upgrader: mockUpgrader,
-      onConnection: () => {}
+  before(async () => {
+    components = new Components({
+      peerId: await createEd25519PeerId(),
+      upgrader: mockUpgrader()
     })
+    components.setAddressManager(new DefaultAddressManager(components, { listen: [listenAddr.toString()] }))
+
+    tm = new DefaultTransportManager(components)
   })
 
   afterEach(async () => {
     await tm.removeAll()
-    expect(tm._transports.size).to.equal(0)
+    expect(tm.getTransports()).to.be.empty()
   })
 
   it('should be able to add and remove a transport', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
-    expect(tm._transports.size).to.equal(1)
-    await tm.remove(Transport.prototype[Symbol.toStringTag])
-  })
+    const transport = new WebSockets({
+      filter: filters.all
+    })
 
-  it('should not be able to add a transport without a key', async () => {
-    // Chai as promised conflicts with normal `throws` validation,
-    // so wrap the call in an async function
-    await expect((async () => { // eslint-disable-line
-      tm.add(undefined, Transport)
-    })())
-      .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_INVALID_KEY)
+    expect(tm.getTransports()).to.have.lengthOf(0)
+    tm.add(transport)
+
+    expect(tm.getTransports()).to.have.lengthOf(1)
+    await tm.remove(transport.constructor.name)
+    expect(tm.getTransports()).to.have.lengthOf(0)
   })
 
   it('should not be able to add a transport twice', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport)
-    // Chai as promised conflicts with normal `throws` validation,
-    // so wrap the call in an async function
-    await expect((async () => { // eslint-disable-line
-      tm.add(Transport.prototype[Symbol.toStringTag], Transport)
-    })())
-      .to.eventually.be.rejected()
+    tm.add(new WebSockets())
+
+    expect(() => {
+      tm.add(new WebSockets())
+    })
+      .to.throw()
       .and.to.have.property('code', ErrorCodes.ERR_DUPLICATE_TRANSPORT)
   })
 
   it('should be able to dial', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
+    tm.add(new WebSockets({ filter: filters.all }))
     const addr = MULTIADDRS_WEBSOCKETS[0]
     const connection = await tm.dial(addr)
     expect(connection).to.exist()
@@ -75,7 +70,7 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should fail to dial an unsupported address', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
+    tm.add(new WebSockets({ filter: filters.all }))
     const addr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
     await expect(tm.dial(addr))
       .to.eventually.be.rejected()
@@ -83,7 +78,7 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should fail to listen with no valid address', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
+    tm.add(new WebSockets({ filter: filters.all }))
 
     await expect(tm.listen([listenAddr]))
       .to.eventually.be.rejected()
@@ -91,155 +86,71 @@ describe('Transport Manager (WebSockets)', () => {
   })
 })
 
-describe('libp2p.transportManager', () => {
-  let peerId
-  let libp2p
-
-  before(async () => {
-    peerId = await PeerId.createFromJSON(Peers[0])
-  })
-
-  afterEach(async () => {
-    sinon.restore()
-    libp2p && await libp2p.stop()
-    libp2p = null
-  })
-
-  it('should create a TransportManager', () => {
-    libp2p = new Libp2p({
-      peerId,
-      modules: {
-        transport: [Transport],
-        connEncryption: [Crypto]
-      }
-    })
-
-    expect(libp2p.transportManager).to.exist()
-    // Our transport and circuit relay
-    expect(libp2p.transportManager._transports.size).to.equal(2)
-  })
-
-  it('should be able to customize a transport', () => {
-    const spy = sinon.spy()
-    const key = spy.prototype[Symbol.toStringTag] = 'TransportSpy'
-    const customOptions = {
-      another: 'value',
-      listenerOptions: {
-        listen: 'carefully'
-      }
-    }
-    libp2p = new Libp2p({
-      peerId,
-      modules: {
-        transport: [spy],
-        connEncryption: [Crypto]
-      },
-      config: {
-        transport: {
-          [key]: customOptions
-        }
-      }
-    })
-
-    expect(libp2p.transportManager).to.exist()
-    // Our transport and circuit relay
-    expect(libp2p.transportManager._transports.size).to.equal(2)
-    expect(libp2p.transportManager._listenerOptions.size).to.equal(2)
-    expect(spy).to.have.property('callCount', 1)
-    expect(spy.getCall(0)).to.have.deep.property('args', [{
-      ...customOptions,
-      libp2p,
-      upgrader: libp2p.upgrader
-    }])
-  })
-
-  it('starting and stopping libp2p should start and stop TransportManager', async () => {
-    libp2p = new Libp2p({
-      peerId,
-      modules: {
-        transport: [Transport],
-        connEncryption: [Crypto]
-      }
-    })
-
-    // We don't need to listen, stub it
-    sinon.stub(libp2p.transportManager, 'listen').returns(true)
-    sinon.spy(libp2p.transportManager, 'close')
-
-    await libp2p.start()
-    await libp2p.stop()
-
-    expect(libp2p.transportManager.listen.callCount).to.equal(1)
-    expect(libp2p.transportManager.close.callCount).to.equal(1)
-  })
-})
-
 describe('libp2p.transportManager (dial only)', () => {
-  let peerId
-  let libp2p
+  let peerId: PeerId
+  let libp2p: Libp2pNode
 
   before(async () => {
-    peerId = await PeerId.createFromJSON(Peers[0])
+    peerId = await createFromJSON(Peers[0])
   })
 
   afterEach(async () => {
     sinon.restore()
-    libp2p && await libp2p.stop()
+
+    if (libp2p != null) {
+      await libp2p.stop()
+    }
   })
 
   it('fails to start if multiaddr fails to listen', async () => {
-    libp2p = new Libp2p({
+    libp2p = await createLibp2pNode({
       peerId,
       addresses: {
-        listen: [new Multiaddr('/ip4/127.0.0.1/tcp/0')]
+        listen: ['/ip4/127.0.0.1/tcp/0']
       },
-      modules: {
-        transport: [Transport],
-        connEncryption: [Crypto]
-      }
+      transports: [new WebSockets()],
+      connectionEncrypters: [NOISE]
     })
 
-    try {
-      await libp2p.start()
-    } catch (/** @type {any} */ err) {
-      expect(err).to.exist()
-      expect(err.code).to.equal(ErrorCodes.ERR_NO_VALID_ADDRESSES)
-      return
-    }
-    throw new Error('it should fail to start if multiaddr fails to listen')
+    await expect(libp2p.start()).to.eventually.be.rejected
+      .with.property('code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })
 
   it('does not fail to start if provided listen multiaddr are not compatible to configured transports (when supporting dial only mode)', async () => {
-    libp2p = new Libp2p({
+    libp2p = await createLibp2pNode({
       peerId,
       addresses: {
-        listen: [new Multiaddr('/ip4/127.0.0.1/tcp/0')]
+        listen: ['/ip4/127.0.0.1/tcp/0']
       },
       transportManager: {
-        faultTolerance: FaultTolerance.NO_FATAL
+        faultTolerance: FAULT_TOLERANCE.NO_FATAL
       },
-      modules: {
-        transport: [Transport],
-        connEncryption: [Crypto]
-      }
+      transports: [
+        new WebSockets()
+      ],
+      connectionEncrypters: [
+        NOISE
+      ]
     })
 
     await libp2p.start()
   })
 
   it('does not fail to start if provided listen multiaddr fail to listen on configured transports (when supporting dial only mode)', async () => {
-    libp2p = new Libp2p({
+    libp2p = await createLibp2pNode({
       peerId,
       addresses: {
-        listen: [new Multiaddr('/ip4/127.0.0.1/tcp/12345/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3/p2p-circuit')]
+        listen: ['/ip4/127.0.0.1/tcp/12345/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3/p2p-circuit']
       },
       transportManager: {
-        faultTolerance: FaultTolerance.NO_FATAL
+        faultTolerance: FAULT_TOLERANCE.NO_FATAL
       },
-      modules: {
-        transport: [Transport],
-        connEncryption: [Crypto]
-      }
+      transports: [
+        new WebSockets()
+      ],
+      connectionEncrypters: [
+        NOISE
+      ]
     })
 
     await libp2p.start()

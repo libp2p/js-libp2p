@@ -1,35 +1,15 @@
-'use strict'
+import { KadDHT } from '@libp2p/kad-dht'
+import type { Libp2pOptions } from '../../../src/index.js'
+import { createBaseOptions } from '../../utils/base-options.js'
 
-const KadDht = require('libp2p-kad-dht')
-const Crypto = require('../../../src/insecure/plaintext')
-const Muxer = require('libp2p-mplex')
-const Transport = require('libp2p-tcp')
-
-const mergeOptions = require('merge-options')
-
-const baseOptions = {
-  modules: {
-    transport: [Transport],
-    streamMuxer: [Muxer],
-    connEncryption: [Crypto]
-  }
+export function createSubsystemOptions (...overrides: Libp2pOptions[]) {
+  return createBaseOptions({
+    dht: new KadDHT({
+      kBucketSize: 20
+    })
+  }, ...overrides)
 }
 
-module.exports.baseOptions = baseOptions
-
-const subsystemOptions = mergeOptions(baseOptions, {
-  modules: {
-    dht: KadDht
-  },
-  config: {
-    dht: {
-      kBucketSize: 20,
-      enabled: true
-    }
-  }
-})
-
-module.exports.subsystemOptions = subsystemOptions
-module.exports.subsystemMulticodecs = [
+export const subsystemMulticodecs = [
   '/ipfs/lan/kad/1.0.0'
 ]

@@ -1,13 +1,11 @@
 /* eslint-env mocha */
-'use strict'
 
-const { expect } = require('aegir/utils/chai')
-const PeerId = require('peer-id')
-const { base58btc } = require('multiformats/bases/base58')
-const crypto = require('libp2p-crypto')
-const rsaUtils = require('libp2p-crypto/src/keys/rsa-utils')
-const rsaClass = require('libp2p-crypto/src/keys/rsa-class')
-const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+import { expect } from 'aegir/utils/chai.js'
+import { base58btc } from 'multiformats/bases/base58'
+import { supportedKeys, unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import { createFromPrivKey } from '@libp2p/peer-id-factory'
 
 const sample = {
   id: '122019318b6e5e0cf93a2314bf01269a2cc23cd3dcd452d742cdb9379d8646f6e4a9',
@@ -16,32 +14,39 @@ const sample = {
 }
 
 describe('peer ID', () => {
-  let peer
-  let publicKeyDer // a buffer
+  let peer: PeerId
+  let publicKeyDer: Uint8Array // a buffer
 
   before(async () => {
     const encoded = uint8ArrayFromString(sample.privKey, 'base64pad')
-    peer = await PeerId.createFromPrivKey(encoded)
+    peer = await createFromPrivKey(await unmarshalPrivateKey(encoded))
   })
 
   it('decoded public key', async () => {
+    if (peer.publicKey == null) {
+      throw new Error('PublicKey missing from PeerId')
+    }
+
+    if (peer.privateKey == null) {
+      throw new Error('PrivateKey missing from PeerId')
+    }
+
     // get protobuf version of the public key
-    const publicKeyProtobuf = peer.marshalPubKey()
-    const publicKey = crypto.keys.unmarshalPublicKey(publicKeyProtobuf)
+    const publicKeyProtobuf = peer.publicKey
+    const publicKey = unmarshalPublicKey(publicKeyProtobuf)
     publicKeyDer = publicKey.marshal()
 
     // get protobuf version of the private key
-    const privateKeyProtobuf = peer.marshalPrivKey()
-    const key = await crypto.keys.unmarshalPrivateKey(privateKeyProtobuf)
+    const privateKeyProtobuf = peer.privateKey
+    const key = await unmarshalPrivateKey(privateKeyProtobuf)
     expect(key).to.exist()
   })
 
   it('encoded public key with DER', async () => {
-    const jwk = rsaUtils.pkixToJwk(publicKeyDer)
-    const rsa = new rsaClass.RsaPublicKey(jwk)
+    const rsa = await supportedKeys.rsa.unmarshalRsaPublicKey(publicKeyDer)
     const keyId = await rsa.hash()
     const kids = base58btc.encode(keyId).substring(1)
-    expect(kids).to.equal(peer.toB58String())
+    expect(kids).to.equal(peer.toString())
   })
 
   it('encoded public key with JWT', async () => {
@@ -52,16 +57,20 @@ describe('peer ID', () => {
       alg: 'RS256',
       kid: '2011-04-29'
     }
-    const rsa = new rsaClass.RsaPublicKey(jwk)
+    const rsa = new supportedKeys.rsa.RsaPublicKey(jwk)
     const keyId = await rsa.hash()
     const kids = base58btc.encode(keyId).substring(1)
-    expect(kids).to.equal(peer.toB58String())
+    expect(kids).to.equal(peer.toString())
   })
 
   it('decoded private key', async () => {
+    if (peer.privateKey == null) {
+      throw new Error('PrivateKey missing from PeerId')
+    }
+
     // get protobuf version of the private key
-    const privateKeyProtobuf = peer.marshalPrivKey()
-    const key = await crypto.keys.unmarshalPrivateKey(privateKeyProtobuf)
+    const privateKeyProtobuf = peer.privateKey
+    const key = await unmarshalPrivateKey(privateKeyProtobuf)
     expect(key).to.exist()
   })
 })

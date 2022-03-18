@@ -1,30 +1,29 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-const nock = require('nock')
-const sinon = require('sinon')
-
-const pDefer = require('p-defer')
-const mergeOptions = require('merge-options')
-
-const { CID } = require('multiformats/cid')
-const ipfsHttpClient = require('ipfs-http-client')
-const DelegatedContentRouter = require('libp2p-delegated-content-routing')
-const { Multiaddr } = require('multiaddr')
-const drain = require('it-drain')
-const all = require('it-all')
-
-const peerUtils = require('../utils/creators/peer')
-const { baseOptions, routingOptions } = require('./utils')
+import { expect } from 'aegir/utils/chai.js'
+import nock from 'nock'
+import sinon from 'sinon'
+import pDefer from 'p-defer'
+import { CID } from 'multiformats/cid'
+import { create as createIpfsHttpClient } from 'ipfs-http-client'
+import { DelegatedContentRouting } from '@libp2p/delegated-content-routing'
+import { Multiaddr } from '@multiformats/multiaddr'
+import drain from 'it-drain'
+import all from 'it-all'
+import { createNode, createPeerId, populateAddressBooks } from '../utils/creators/peer.js'
+import { createBaseOptions } from '../utils/base-options.js'
+import { createRoutingOptions } from './utils.js'
+import type { Libp2p } from '../../src/index.js'
+import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { Libp2pNode } from '../../src/libp2p.js'
 
 describe('content-routing', () => {
   describe('no routers', () => {
-    let node
+    let node: Libp2p
 
     before(async () => {
-      [node] = await peerUtils.createPeer({
-        config: baseOptions
+      node = await createNode({
+        config: createBaseOptions()
       })
     })
 
@@ -32,15 +31,17 @@ describe('content-routing', () => {
 
     it('.findProviders should return an error', async () => {
       try {
+        // @ts-expect-error invalid params
         for await (const _ of node.contentRouting.findProviders('a cid')) {} // eslint-disable-line
         throw new Error('.findProviders should return an error')
-      } catch (/** @type {any} */ err) {
+      } catch (err: any) {
         expect(err).to.exist()
         expect(err.code).to.equal('ERR_NO_ROUTERS_AVAILABLE')
       }
     })
 
     it('.provide should return an error', async () => {
+      // @ts-expect-error invalid params
       await expect(node.contentRouting.provide('a cid'))
         .to.eventually.be.rejected()
         .and.to.have.property('code', 'ERR_NO_ROUTERS_AVAILABLE')
@@ -49,17 +50,21 @@ describe('content-routing', () => {
 
   describe('via dht router', () => {
     const number = 5
-    let nodes
+    let nodes: Libp2pNode[]
 
     before(async () => {
-      nodes = await peerUtils.createPeer({
-        number,
-        config: routingOptions
-      })
+      nodes = await Promise.all([
+        createNode({ config: createRoutingOptions() }),
+        createNode({ config: createRoutingOptions() }),
+        createNode({ config: createRoutingOptions() }),
+        createNode({ config: createRoutingOptions() }),
+        createNode({ config: createRoutingOptions() })
+      ])
+      await populateAddressBooks(nodes)
 
       // Ring dial
       await Promise.all(
-        nodes.map((peer, i) => peer.dial(nodes[(i + 1) % number].peerId))
+        nodes.map(async (peer, i) => await peer.dial(nodes[(i + 1) % number].peerId))
       )
     })
 
@@ -67,103 +72,107 @@ describe('content-routing', () => {
       sinon.restore()
     })
 
-    after(() => Promise.all(nodes.map((n) => n.stop())))
+    after(async () => await Promise.all(nodes.map(async (n) => await n.stop())))
 
-    it('should use the nodes dht to provide', () => {
+    it('should use the nodes dht to provide', async () => {
       const deferred = pDefer()
 
-      sinon.stub(nodes[0]._dht, 'provide').callsFake(() => {
+      if (nodes[0].dht == null) {
+        throw new Error('DHT was not configured')
+      }
+
+      sinon.stub(nodes[0].dht, 'provide').callsFake(async function * () { // eslint-disable-line require-yield
         deferred.resolve()
       })
 
-      nodes[0].contentRouting.provide()
-      return deferred.promise
+      void nodes[0].contentRouting.provide(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))
+
+      return await deferred.promise
     })
 
     it('should use the nodes dht to find providers', async () => {
       const deferred = pDefer()
-      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
 
-      sinon.stub(nodes[0]._dht, 'findProviders').callsFake(function * () {
-        deferred.resolve()
+      if (nodes[0].dht == null) {
+        throw new Error('DHT was not configured')
+      }
+
+      sinon.stub(nodes[0].dht, 'findProviders').callsFake(async function * () {
         yield {
+          from: nodes[0].peerId,
+          type: 0,
           name: 'PROVIDER',
           providers: [{
-            id: providerPeerId,
-            multiaddrs: []
+            id: nodes[0].peerId,
+            multiaddrs: [],
+            protocols: []
           }]
         }
+        deferred.resolve()
       })
 
-      await nodes[0].contentRouting.findProviders().next()
+      await drain(nodes[0].contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
-      return deferred.promise
+      return await deferred.promise
     })
   })
 
   describe('via delegate router', () => {
-    let node
-    let delegate
+    let node: Libp2pNode
+    let delegate: DelegatedContentRouting
 
     beforeEach(async () => {
-      const [peerId] = await peerUtils.createPeerId({ fixture: true })
-
-      delegate = new DelegatedContentRouter(peerId, ipfsHttpClient.create({
+      delegate = new DelegatedContentRouting(createIpfsHttpClient({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
       }))
 
-      ;[node] = await peerUtils.createPeer({
-        config: mergeOptions(baseOptions, {
-          modules: {
-            contentRouting: [delegate]
-          },
-          config: {
-            dht: {
-              enabled: false
-            }
-          }
+      node = await createNode({
+        config: createBaseOptions({
+          contentRouters: [
+            delegate
+          ],
+          dht: undefined
         })
       })
     })
 
-    afterEach(() => {
+    afterEach(async () => {
+      if (node != null) {
+        await node.stop()
+      }
+
       sinon.restore()
     })
 
-    afterEach(() => node.stop())
-
-    it('should only have one router', () => {
-      expect(node.contentRouting.routers).to.have.lengthOf(1)
-    })
-
-    it('should use the delegate router to provide', () => {
+    it('should use the delegate router to provide', async () => {
       const deferred = pDefer()
 
-      sinon.stub(delegate, 'provide').callsFake(() => {
+      sinon.stub(delegate, 'provide').callsFake(async () => {
         deferred.resolve()
       })
 
-      node.contentRouting.provide()
-      return deferred.promise
+      void node.contentRouting.provide(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))
+
+      return await deferred.promise
     })
 
     it('should use the delegate router to find providers', async () => {
       const deferred = pDefer()
-      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
 
-      sinon.stub(delegate, 'findProviders').callsFake(function * () {
-        deferred.resolve()
+      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
         yield {
-          id: providerPeerId,
-          multiaddrs: []
+          id: node.peerId,
+          multiaddrs: [],
+          protocols: []
         }
+        deferred.resolve()
       })
 
-      await node.contentRouting.findProviders().next()
+      await drain(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
-      return deferred.promise
+      return await deferred.promise
     })
 
     it('should be able to register as a provider', async () => {
@@ -219,13 +228,10 @@ describe('content-routing', () => {
           'X-Chunked-Output', '1'
         ])
 
-      const providers = []
-      for await (const provider of node.contentRouting.findProviders(cid, { timeout: 1000 })) {
-        providers.push(provider)
-      }
+      const providers = await all(node.contentRouting.findProviders(cid))
 
       expect(providers).to.have.length(1)
-      expect(providers[0].id.toB58String()).to.equal(provider)
+      expect(providers[0].id.toString()).to.equal(provider)
       expect(mockApi.isDone()).to.equal(true)
     })
 
@@ -241,7 +247,7 @@ describe('content-routing', () => {
       try {
         for await (const _ of node.contentRouting.findProviders(cid)) { } // eslint-disable-line
         throw new Error('should handle errors when finding providers')
-      } catch (/** @type {any} */ err) {
+      } catch (err: any) {
         expect(err).to.exist()
       }
 
@@ -250,23 +256,19 @@ describe('content-routing', () => {
   })
 
   describe('via dht and delegate routers', () => {
-    let node
-    let delegate
+    let node: Libp2pNode
+    let delegate: DelegatedContentRouting
 
     beforeEach(async () => {
-      const [peerId] = await peerUtils.createPeerId({ fixture: true })
-
-      delegate = new DelegatedContentRouter(peerId, ipfsHttpClient.create({
+      delegate = new DelegatedContentRouting(createIpfsHttpClient({
         host: '0.0.0.0',
         protocol: 'http',
         port: 60197
       }))
 
-      ;[node] = await peerUtils.createPeer({
-        config: mergeOptions(routingOptions, {
-          modules: {
-            contentRouting: [delegate]
-          }
+      node = await createNode({
+        config: createRoutingOptions({
+          contentRouters: [delegate]
         })
       })
     })
@@ -275,25 +277,30 @@ describe('content-routing', () => {
       sinon.restore()
     })
 
-    afterEach(() => node.stop())
+    afterEach(async () => await node.stop())
 
     it('should store the multiaddrs of a peer', async () => {
-      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
-      const result = {
+      const providerPeerId = await createPeerId()
+      const result: PeerData = {
         id: providerPeerId,
         multiaddrs: [
           new Multiaddr('/ip4/123.123.123.123/tcp/49320')
-        ]
+        ],
+        protocols: []
       }
 
-      sinon.stub(node._dht, 'findProviders').callsFake(function * () {})
-      sinon.stub(delegate, 'findProviders').callsFake(function * () {
+      if (node.dht == null) {
+        throw new Error('DHT was not configured')
+      }
+
+      sinon.stub(node.dht, 'findProviders').callsFake(async function * () {})
+      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
         yield result
       })
 
       expect(await node.peerStore.has(providerPeerId)).to.not.be.ok()
 
-      await drain(node.contentRouting.findProviders('a cid'))
+      await drain(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
       expect(await node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
         isCertified: false,
@@ -302,17 +309,22 @@ describe('content-routing', () => {
     })
 
     it('should not wait for routing findProviders to finish before returning results', async () => {
-      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const providerPeerId = await createPeerId()
       const result = {
         id: providerPeerId,
         multiaddrs: [
           new Multiaddr('/ip4/123.123.123.123/tcp/49320')
-        ]
+        ],
+        protocols: []
+      }
+
+      if (node.dht == null) {
+        throw new Error('DHT was not configured')
       }
 
       const defer = pDefer()
 
-      sinon.stub(node._dht, 'findProviders').callsFake(async function * () { // eslint-disable-line require-yield
+      sinon.stub(node.dht, 'findProviders').callsFake(async function * () { // eslint-disable-line require-yield
         await defer.promise
       })
       sinon.stub(delegate, 'findProviders').callsFake(async function * () {
@@ -321,50 +333,70 @@ describe('content-routing', () => {
         await defer.promise
       })
 
-      for await (const provider of node.contentRouting.findProviders('a cid')) {
+      for await (const provider of node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))) {
         expect(provider.id).to.deep.equal(providerPeerId)
         defer.resolve()
       }
     })
 
     it('should dedupe results', async () => {
-      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const providerPeerId = await createPeerId()
       const result = {
         id: providerPeerId,
         multiaddrs: [
           new Multiaddr('/ip4/123.123.123.123/tcp/49320')
-        ]
+        ],
+        protocols: []
       }
 
-      sinon.stub(node._dht, 'findProviders').callsFake(async function * () {
-        yield result
+      if (node.dht == null) {
+        throw new Error('DHT was not configured')
+      }
+
+      sinon.stub(node.dht, 'findProviders').callsFake(async function * () {
+        yield {
+          from: providerPeerId,
+          type: 0,
+          name: 'PROVIDER',
+          providers: [
+            result
+          ]
+        }
       })
       sinon.stub(delegate, 'findProviders').callsFake(async function * () {
         yield result
       })
 
-      const results = await all(node.contentRouting.findProviders('a cid'))
+      const results = await all(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
       expect(results).to.be.an('array').with.lengthOf(1).that.deep.equals([result])
     })
 
     it('should combine multiaddrs when different addresses are returned by different content routers', async () => {
-      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const providerPeerId = await createPeerId()
       const result1 = {
         id: providerPeerId,
         multiaddrs: [
           new Multiaddr('/ip4/123.123.123.123/tcp/49320')
-        ]
+        ],
+        protocols: []
       }
       const result2 = {
         id: providerPeerId,
         multiaddrs: [
           new Multiaddr('/ip4/213.213.213.213/tcp/2344')
-        ]
+        ],
+        protocols: []
       }
 
-      sinon.stub(node._dht, 'findProviders').callsFake(async function * () {
+      if (node.dht == null) {
+        throw new Error('DHT was not configured')
+      }
+
+      sinon.stub(node.dht, 'findProviders').callsFake(async function * () {
         yield {
+          from: providerPeerId,
+          type: 0,
           name: 'PROVIDER',
           providers: [
             result1
@@ -375,7 +407,7 @@ describe('content-routing', () => {
         yield result2
       })
 
-      await drain(node.contentRouting.findProviders('a cid'))
+      await drain(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
       expect(await node.peerStore.addressBook.get(providerPeerId)).to.deep.include({
         isCertified: false,
@@ -390,16 +422,19 @@ describe('content-routing', () => {
       const dhtDeferred = pDefer()
       const delegatedDeferred = pDefer()
 
-      sinon.stub(node._dht, 'provide').callsFake(async function * () {
-        yield
+      if (node.dht == null) {
+        throw new Error('DHT was not configured')
+      }
+
+      sinon.stub(node.dht, 'provide').callsFake(async function * () { // eslint-disable-line require-yield
         dhtDeferred.resolve()
       })
 
-      sinon.stub(delegate, 'provide').callsFake(() => {
+      sinon.stub(delegate, 'provide').callsFake(async function () {
         delegatedDeferred.resolve()
       })
 
-      await node.contentRouting.provide()
+      await node.contentRouting.provide(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))
 
       await Promise.all([
         dhtDeferred.promise,
@@ -408,14 +443,21 @@ describe('content-routing', () => {
     })
 
     it('should use the dht if the delegate fails to find providers', async () => {
-      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const providerPeerId = await createPeerId()
       const results = [{
         id: providerPeerId,
-        multiaddrs: []
+        multiaddrs: [],
+        protocols: []
       }]
 
-      sinon.stub(node._dht, 'findProviders').callsFake(function * () {
+      if (node.dht == null) {
+        throw new Error('DHT was not configured')
+      }
+
+      sinon.stub(node.dht, 'findProviders').callsFake(async function * () {
         yield {
+          from: providerPeerId,
+          type: 0,
           name: 'PROVIDER',
           providers: [
             results[0]
@@ -423,11 +465,11 @@ describe('content-routing', () => {
         }
       })
 
-      sinon.stub(delegate, 'findProviders').callsFake(function * () { // eslint-disable-line require-yield
+      sinon.stub(delegate, 'findProviders').callsFake(async function * () { // eslint-disable-line require-yield
       })
 
       const providers = []
-      for await (const prov of node.contentRouting.findProviders('a cid')) {
+      for await (const prov of node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))) {
         providers.push(prov)
       }
 
@@ -436,20 +478,25 @@ describe('content-routing', () => {
     })
 
     it('should use the delegate if the dht fails to find providers', async () => {
-      const [providerPeerId] = await peerUtils.createPeerId({ fixture: false })
+      const providerPeerId = await createPeerId()
       const results = [{
         id: providerPeerId,
-        multiaddrs: []
+        multiaddrs: [],
+        protocols: []
       }]
 
-      sinon.stub(node._dht, 'findProviders').callsFake(function * () {})
+      if (node.dht == null) {
+        throw new Error('DHT was not configured')
+      }
 
-      sinon.stub(delegate, 'findProviders').callsFake(function * () {
+      sinon.stub(node.dht, 'findProviders').callsFake(async function * () {})
+
+      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
         yield results[0]
       })
 
       const providers = []
-      for await (const prov of node.contentRouting.findProviders('a cid')) {
+      for await (const prov of node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))) {
         providers.push(prov)
       }
 

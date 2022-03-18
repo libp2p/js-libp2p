@@ -1,54 +1,54 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-
-const Transport = require('libp2p-websockets')
-const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
-
-const Libp2p = require('../../src')
-const { codes: ErrorCodes } = require('../../src/errors')
-const { createPeerId } = require('../utils/creators/peer')
+import { expect } from 'aegir/utils/chai.js'
+import { WebSockets } from '@libp2p/websockets'
+import { NOISE } from '@chainsafe/libp2p-noise'
+import { createLibp2p, Libp2pOptions } from '../../src/index.js'
+import { codes as ErrorCodes } from '../../src/errors.js'
+import { createPeerId } from '../utils/creators/peer.js'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
 
 describe('Connection encryption configuration', () => {
-  let peerId
+  let peerId: PeerId
 
   before(async () => {
-    [peerId] = await createPeerId()
+    peerId = await createPeerId()
   })
 
   it('is required', async () => {
     const config = {
       peerId,
-      modules: {
-        transport: [Transport]
-      }
+      transports: [
+        new WebSockets()
+      ]
     }
 
-    await expect(Libp2p.create(config)).to.eventually.be.rejected()
+    await expect(createLibp2p(config)).to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.CONN_ENCRYPTION_REQUIRED)
   })
 
   it('is required and needs at least one module', async () => {
     const config = {
       peerId,
-      modules: {
-        transport: [Transport],
-        connEncryption: []
-      }
+      transports: [
+        new WebSockets()
+      ],
+      connectionEncrypters: []
     }
-    await expect(Libp2p.create(config)).to.eventually.be.rejected()
+    await expect(createLibp2p(config)).to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.CONN_ENCRYPTION_REQUIRED)
   })
 
   it('can be created', async () => {
-    const config = {
+    const config: Libp2pOptions = {
       peerId,
-      modules: {
-        transport: [Transport],
-        connEncryption: [Crypto]
-      }
+      transports: [
+        new WebSockets()
+      ],
+      connectionEncrypters: [
+        NOISE
+      ]
     }
-    await Libp2p.create(config)
+    await createLibp2p(config)
   })
 })

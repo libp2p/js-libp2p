@@ -1,104 +1,78 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-const mergeOptions = require('merge-options')
-const pDefer = require('p-defer')
-const delay = require('delay')
+import { expect } from 'aegir/utils/chai.js'
+import mergeOptions from 'merge-options'
+import pDefer from 'p-defer'
+import delay from 'delay'
+import { createLibp2p, Libp2p } from '../../src/index.js'
+import { baseOptions, pubsubSubsystemOptions } from './utils.js'
+import { createPeerId } from '../utils/creators/peer.js'
+import { CustomEvent } from '@libp2p/interfaces'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { FloodSub } from '@libp2p/floodsub'
+import type { Message, PubSub, PubSubEvents } from '@libp2p/interfaces/pubsub'
 
-const { create } = require('../../src')
-const { baseOptions, pubsubSubsystemOptions } = require('./utils')
-const peerUtils = require('../utils/creators/peer')
+interface PubSubTestEvents extends PubSubEvents {
+  'topic': CustomEvent<Message>
+}
 
 describe('Pubsub subsystem is configurable', () => {
-  let libp2p
+  let libp2p: Libp2p
 
   afterEach(async () => {
-    libp2p && await libp2p.stop()
+    if (libp2p != null) {
+      await libp2p.stop()
+    }
   })
 
   it('should not exist if no module is provided', async () => {
-    libp2p = await create(baseOptions)
+    libp2p = await createLibp2p(baseOptions)
     expect(libp2p.pubsub).to.not.exist()
   })
 
   it('should exist if the module is provided', async () => {
-    libp2p = await create(pubsubSubsystemOptions)
+    libp2p = await createLibp2p(pubsubSubsystemOptions)
     expect(libp2p.pubsub).to.exist()
   })
 
   it('should start and stop by default once libp2p starts', async () => {
-    const [peerId] = await peerUtils.createPeerId()
+    const peerId = await createPeerId()
 
     const customOptions = mergeOptions(pubsubSubsystemOptions, {
       peerId
     })
 
-    libp2p = await create(customOptions)
-    expect(libp2p.pubsub.started).to.equal(false)
+    libp2p = await createLibp2p(customOptions)
+    expect(libp2p.pubsub?.isStarted()).to.equal(false)
 
     await libp2p.start()
-    expect(libp2p.pubsub.started).to.equal(true)
+    expect(libp2p.pubsub?.isStarted()).to.equal(true)
 
     await libp2p.stop()
-    expect(libp2p.pubsub.started).to.equal(false)
-  })
-
-  it('should not start if disabled once libp2p starts', async () => {
-    const [peerId] = await peerUtils.createPeerId()
-
-    const customOptions = mergeOptions(pubsubSubsystemOptions, {
-      peerId,
-      config: {
-        pubsub: {
-          enabled: false
-        }
-      }
-    })
-
-    libp2p = await create(customOptions)
-    expect(libp2p.pubsub.started).to.equal(false)
-
-    await libp2p.start()
-    expect(libp2p.pubsub.started).to.equal(false)
-  })
-
-  it('should allow a manual start', async () => {
-    const [peerId] = await peerUtils.createPeerId()
-
-    const customOptions = mergeOptions(pubsubSubsystemOptions, {
-      peerId,
-      config: {
-        pubsub: {
-          enabled: false
-        }
-      }
-    })
-
-    libp2p = await create(customOptions)
-    await libp2p.start()
-    expect(libp2p.pubsub.started).to.equal(false)
-
-    await libp2p.pubsub.start()
-    expect(libp2p.pubsub.started).to.equal(true)
+    expect(libp2p.pubsub?.isStarted()).to.equal(false)
   })
 })
 
 describe('Pubsub subscription handlers adapter', () => {
-  let libp2p
+  let libp2p: Libp2p
 
   beforeEach(async () => {
-    const [peerId] = await peerUtils.createPeerId()
+    const peerId = await createPeerId()
 
-    libp2p = await create(mergeOptions(pubsubSubsystemOptions, {
-      peerId
+    libp2p = await createLibp2p(mergeOptions(pubsubSubsystemOptions, {
+      peerId,
+      pubsub: new FloodSub({
+        emitSelf: true
+      })
     }))
 
     await libp2p.start()
   })
 
   afterEach(async () => {
-    libp2p && await libp2p.stop()
+    if (libp2p != null) {
+      await libp2p.stop()
+    }
   })
 
   it('extends pubsub with subscribe handler', async () => {
@@ -108,22 +82,29 @@ describe('Pubsub subscription handlers adapter', () => {
 
     const handler = () => {
       countMessages++
-      if (countMessages > 1) {
-        throw new Error('only one message should be received')
-      }
-
       defer.resolve()
     }
 
-    await libp2p.pubsub.subscribe(topic, handler)
+    const pubsub: PubSub<PubSubTestEvents> | undefined = libp2p.pubsub
 
-    libp2p.pubsub.emit(topic, 'useless-data')
+    if (pubsub == null) {
+      throw new Error('Pubsub was not enabled')
+    }
+
+    pubsub.addEventListener(topic, handler)
+    pubsub.dispatchEvent(new CustomEvent<Uint8Array>(topic, {
+      detail: uint8ArrayFromString('useless-data')
+    }))
     await defer.promise
 
-    await libp2p.pubsub.unsubscribe(topic, handler)
-    libp2p.pubsub.emit(topic, 'useless-data')
+    pubsub.removeEventListener(topic, handler)
+    pubsub.dispatchEvent(new CustomEvent<Uint8Array>(topic, {
+      detail: uint8ArrayFromString('useless-data')
+    }))
 
     // wait to guarantee that the handler is not called twice
     await delay(100)
+
+    expect(countMessages).to.equal(1)
   })
 })

@@ -1,21 +1,11 @@
-'use strict'
+import { KadDHT } from '@libp2p/kad-dht'
+import type { Libp2pOptions } from '../../src/index.js'
+import { createBaseOptions } from '../utils/base-options.js'
 
-const KadDht = require('libp2p-kad-dht')
-const mergeOptions = require('merge-options')
-const baseOptions = require('../utils/base-options')
-
-module.exports.baseOptions = baseOptions
-
-const routingOptions = mergeOptions(baseOptions, {
-  modules: {
-    dht: KadDht
-  },
-  config: {
-    dht: {
-      kBucketSize: 20,
-      enabled: true
-    }
-  }
-})
-
-module.exports.routingOptions = routingOptions
+export function createRoutingOptions (...overrides: Libp2pOptions[]): Libp2pOptions {
+  return createBaseOptions({
+    dht: new KadDHT({
+      kBucketSize: 20
+    })
+  }, ...overrides)
+}

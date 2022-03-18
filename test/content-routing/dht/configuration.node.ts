@@ -1,94 +1,27 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-const mergeOptions = require('merge-options')
-
-const { create } = require('../../../src')
-const { baseOptions, subsystemOptions } = require('./utils')
-const peerUtils = require('../../utils/creators/peer')
-
-const listenAddr = '/ip4/127.0.0.1/tcp/0'
+import { expect } from 'aegir/utils/chai.js'
+import { createLibp2p, Libp2p } from '../../../src/index.js'
+import { createSubsystemOptions } from './utils.js'
 
 describe('DHT subsystem is configurable', () => {
-  let libp2p
+  let libp2p: Libp2p
 
   afterEach(async () => {
-    libp2p && await libp2p.stop()
+    if (libp2p != null) {
+      await libp2p.stop()
+    }
   })
 
   it('should not exist if no module is provided', async () => {
-    libp2p = await create(baseOptions)
-    expect(libp2p._dht).to.not.exist()
+    libp2p = await createLibp2p(createSubsystemOptions({
+      dht: undefined
+    }))
+    expect(libp2p.dht).to.not.exist()
   })
 
   it('should exist if the module is provided', async () => {
-    libp2p = await create(subsystemOptions)
-    expect(libp2p._dht).to.exist()
-  })
-
-  it('should start and stop by default once libp2p starts', async () => {
-    const [peerId] = await peerUtils.createPeerId(1)
-
-    const customOptions = mergeOptions(subsystemOptions, {
-      peerId,
-      addresses: {
-        listen: [listenAddr]
-      }
-    })
-
-    libp2p = await create(customOptions)
-    expect(libp2p._dht.isStarted()).to.equal(false)
-
-    await libp2p.start()
-    expect(libp2p._dht.isStarted()).to.equal(true)
-
-    await libp2p.stop()
-    expect(libp2p._dht.isStarted()).to.equal(false)
-  })
-
-  it('should not start if disabled once libp2p starts', async () => {
-    const [peerId] = await peerUtils.createPeerId(1)
-
-    const customOptions = mergeOptions(subsystemOptions, {
-      peerId,
-      addresses: {
-        listen: [listenAddr]
-      },
-      config: {
-        dht: {
-          enabled: false
-        }
-      }
-    })
-
-    libp2p = await create(customOptions)
-    expect(libp2p._dht.isStarted()).to.equal(false)
-
-    await libp2p.start()
-    expect(libp2p._dht.isStarted()).to.equal(false)
-  })
-
-  it('should allow a manual start', async () => {
-    const [peerId] = await peerUtils.createPeerId(1)
-
-    const customOptions = mergeOptions(subsystemOptions, {
-      peerId,
-      addresses: {
-        listen: [listenAddr]
-      },
-      config: {
-        dht: {
-          enabled: false
-        }
-      }
-    })
-
-    libp2p = await create(customOptions)
-    await libp2p.start()
-    expect(libp2p._dht.isStarted()).to.equal(false)
-
-    await libp2p._dht.start()
-    expect(libp2p._dht.isStarted()).to.equal(true)
+    libp2p = await createLibp2p(createSubsystemOptions())
+    expect(libp2p.dht).to.exist()
   })
 })

@@ -1,32 +1,34 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-
-const pTimes = require('p-times')
-const pipe = require('it-pipe')
-
-const peerUtils = require('../utils/creators/peer')
-const baseOptions = require('../utils/base-options')
-const { PROTOCOL } = require('../../src/ping/constants')
+import { expect } from 'aegir/utils/chai.js'
+import pTimes from 'p-times'
+import { pipe } from 'it-pipe'
+import { createNode, populateAddressBooks } from '../utils/creators/peer.js'
+import { createBaseOptions } from '../utils/base-options.js'
+import { PROTOCOL } from '../../src/ping/constants.js'
+import { Multiaddr } from '@multiformats/multiaddr'
+import pDefer from 'p-defer'
+import type { Libp2pNode } from '../../src/libp2p.js'
 
 describe('ping', () => {
-  let nodes
+  let nodes: Libp2pNode[]
 
   beforeEach(async () => {
-    nodes = await peerUtils.createPeer({
-      number: 3,
-      config: baseOptions
-    })
+    nodes = await Promise.all([
+      createNode({ config: createBaseOptions() }),
+      createNode({ config: createBaseOptions() }),
+      createNode({ config: createBaseOptions() })
+    ])
+    await populateAddressBooks(nodes)
 
-    await nodes[0].peerStore.addressBook.set(nodes[1].peerId, nodes[1].multiaddrs)
-    await nodes[1].peerStore.addressBook.set(nodes[0].peerId, nodes[0].multiaddrs)
+    await nodes[0].components.getPeerStore().addressBook.set(nodes[1].peerId, nodes[1].getMultiaddrs())
+    await nodes[1].components.getPeerStore().addressBook.set(nodes[0].peerId, nodes[0].getMultiaddrs())
   })
 
-  afterEach(() => Promise.all(nodes.map(n => n.stop())))
+  afterEach(async () => await Promise.all(nodes.map(async n => await n.stop())))
 
   it('ping once from peer0 to peer1 using a multiaddr', async () => {
-    const ma = `${nodes[2].multiaddrs[0]}/p2p/${nodes[2].peerId.toB58String()}`
+    const ma = new Multiaddr(`${nodes[2].getMultiaddrs()[0].toString()}/p2p/${nodes[2].peerId.toString()}`)
     const latency = await nodes[0].ping(ma)
 
     expect(latency).to.be.a('Number')
@@ -39,39 +41,26 @@ describe('ping', () => {
   })
 
   it('ping several times for getting an average', async () => {
-    const latencies = await pTimes(5, () => nodes[1].ping(nodes[0].peerId))
+    const latencies = await pTimes(5, async () => await nodes[1].ping(nodes[0].peerId))
 
     const averageLatency = latencies.reduce((p, c) => p + c, 0) / latencies.length
     expect(averageLatency).to.be.a('Number')
   })
 
   it('only waits for the first response to arrive', async () => {
-    nodes[1].handle(PROTOCOL, async ({ connection, stream }) => {
-      let firstInvocation = true
+    const defer = pDefer()
 
-      await pipe(
+    await nodes[1].unhandle(PROTOCOL)
+    await nodes[1].handle(PROTOCOL, ({ stream }) => {
+      void pipe(
         stream,
-        function (stream) {
-          const output = {
-            [Symbol.asyncIterator]: () => output,
-            next: async () => {
-              if (firstInvocation) {
-                firstInvocation = false
+        async function * (stream) {
+          for await (const data of stream) {
+            yield data
 
-                // eslint-disable-next-line no-unreachable-loop
-                for await (const data of stream) {
-                  return {
-                    value: data,
-                    done: false
-                  }
-                }
-              } else {
-                return new Promise() // never resolve
-              }
-            }
+            // something longer than the test timeout
+            await defer.promise
           }
-
-          return output
         },
         stream
       )
@@ -80,5 +69,7 @@ describe('ping', () => {
     const latency = await nodes[0].ping(nodes[1].peerId)
 
     expect(latency).to.be.a('Number')
+
+    defer.resolve()
   })
 })

@@ -1,20 +1,22 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-const { MemoryDatastore } = require('datastore-core/memory')
-const AddressManager = require('../../src/address-manager')
-const TransportManager = require('../../src/transport-manager')
-const PeerStore = require('../../src/peer-store')
-const PeerRecord = require('../../src/record/peer-record')
-const Transport = require('libp2p-tcp')
-const PeerId = require('peer-id')
-const { Multiaddr } = require('multiaddr')
-const mockUpgrader = require('../utils/mockUpgrader')
-const sinon = require('sinon')
-const Peers = require('../fixtures/peers')
-const pWaitFor = require('p-wait-for')
-const { mockConnectionGater } = require('../utils/mock-connection-gater')
+import { expect } from 'aegir/utils/chai.js'
+import { MemoryDatastore } from 'datastore-core/memory'
+import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { DefaultTransportManager } from '../../src/transport-manager.js'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { PeerRecord } from '@libp2p/peer-record'
+import { TCP } from '@libp2p/tcp'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { mockUpgrader, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
+import sinon from 'sinon'
+import Peers from '../fixtures/peers.js'
+import pWaitFor from 'p-wait-for'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { Components } from '@libp2p/interfaces/components'
+import { PeerRecordUpdater } from '../../src/peer-record-updater.js'
+
 const addrs = [
   new Multiaddr('/ip4/127.0.0.1/tcp/0'),
   new Multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -22,83 +24,98 @@ const addrs = [
 
 describe('Transport Manager (TCP)', () => {
   const connectionGater = mockConnectionGater()
-  let tm
-  let localPeer
+  let tm: DefaultTransportManager
+  let localPeer: PeerId
+  let components: Components
 
   before(async () => {
-    localPeer = await PeerId.createFromJSON(Peers[0])
+    localPeer = await createFromJSON(Peers[0])
   })
 
   beforeEach(() => {
-    tm = new TransportManager({
-      libp2p: {
-        peerId: localPeer,
-        multiaddrs: addrs,
-        addressManager: new AddressManager({ listen: addrs }),
-        peerStore: new PeerStore({
-          peerId: localPeer,
-          datastore: new MemoryDatastore(),
-          addressFilter: connectionGater.filterMultiaddrForPeer
-        })
-      },
-      upgrader: mockUpgrader,
-      onConnection: () => {}
+    components = new Components({
+      peerId: localPeer,
+      datastore: new MemoryDatastore(),
+      upgrader: mockUpgrader()
     })
+    components.setAddressManager(new DefaultAddressManager(components, { listen: addrs.map(addr => addr.toString()) }))
+    components.setPeerStore(new PersistentPeerStore(components, {
+      addressFilter: connectionGater.filterMultiaddrForPeer
+    }))
+
+    tm = new DefaultTransportManager(components)
+
+    components.setTransportManager(tm)
   })
 
   afterEach(async () => {
     await tm.removeAll()
-    expect(tm._transports.size).to.equal(0)
+    expect(tm.getTransports()).to.be.empty()
   })
 
   it('should be able to add and remove a transport', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport)
-    expect(tm._transports.size).to.equal(1)
-    await tm.remove(Transport.prototype[Symbol.toStringTag])
+    expect(tm.getTransports()).to.have.lengthOf(0)
+    tm.add(new TCP())
+    expect(tm.getTransports()).to.have.lengthOf(1)
+    await tm.remove(TCP.prototype[Symbol.toStringTag])
+    expect(tm.getTransports()).to.have.lengthOf(0)
   })
 
   it('should be able to listen', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport, { listenerOptions: { listen: 'carefully' } })
-    const transport = tm._transports.get(Transport.prototype[Symbol.toStringTag])
+    const transport = new TCP()
+
+    expect(tm.getTransports()).to.be.empty()
+
+    tm.add(transport)
+
+    expect(tm.getTransports()).to.have.lengthOf(1)
+
     const spyListener = sinon.spy(transport, 'createListener')
     await tm.listen(addrs)
-    expect(tm._listeners).to.have.key(Transport.prototype[Symbol.toStringTag])
-    expect(tm._listeners.get(Transport.prototype[Symbol.toStringTag])).to.have.length(addrs.length)
 
     // Ephemeral ip addresses may result in multiple listeners
     expect(tm.getAddrs().length).to.equal(addrs.length)
-    await tm.close()
-    expect(tm._listeners.get(Transport.prototype[Symbol.toStringTag])).to.have.length(0)
-    expect(spyListener.firstCall.firstArg).to.deep.equal({ listen: 'carefully' })
+    await tm.stop()
+    expect(spyListener.called).to.be.true()
   })
 
   it('should create self signed peer record on listen', async () => {
-    let signedPeerRecord = await tm.libp2p.peerStore.addressBook.getRawEnvelope(localPeer)
+    const peerRecordUpdater = new PeerRecordUpdater(components)
+    await peerRecordUpdater.start()
+
+    let signedPeerRecord = await components.getPeerStore().addressBook.getPeerRecord(localPeer)
     expect(signedPeerRecord).to.not.exist()
 
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport)
+    tm.add(new TCP())
     await tm.listen(addrs)
 
     // Should created Self Peer record on new listen address, but it is done async
     // with no event so we have to wait a bit
     await pWaitFor(async () => {
-      signedPeerRecord = await tm.libp2p.peerStore.addressBook.getPeerRecord(localPeer)
+      signedPeerRecord = await components.getPeerStore().addressBook.getPeerRecord(localPeer)
 
       return signedPeerRecord != null
     }, { interval: 100, timeout: 2000 })
 
+    if (signedPeerRecord == null) {
+      throw new Error('Could not get signed peer record')
+    }
+
     const record = PeerRecord.createFromProtobuf(signedPeerRecord.payload)
     expect(record).to.exist()
     expect(record.multiaddrs.length).to.equal(addrs.length)
-    addrs.forEach((a, i) => {
-      expect(record.multiaddrs[i].equals(a)).to.be.true()
-    })
+    await peerRecordUpdater.stop()
   })
 
   it('should be able to dial', async () => {
-    tm.add(Transport.prototype[Symbol.toStringTag], Transport)
+    tm.add(new TCP())
     await tm.listen(addrs)
     const addr = tm.getAddrs().shift()
+
+    if (addr == null) {
+      throw new Error('Could not find addr')
+    }
+
     const connection = await tm.dial(addr)
     expect(connection).to.exist()
     await connection.close()

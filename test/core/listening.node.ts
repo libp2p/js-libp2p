@@ -1,22 +1,20 @@
-'use strict'
 /* eslint-env mocha */
 
-const { expect } = require('aegir/utils/chai')
-
-const Transport = require('libp2p-tcp')
-const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
-
-const { create } = require('../../src')
-const peerUtils = require('../utils/creators/peer')
+import { expect } from 'aegir/utils/chai.js'
+import { TCP } from '@libp2p/tcp'
+import { NOISE } from '@chainsafe/libp2p-noise'
+import { createPeerId } from '../utils/creators/peer.js'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 
 const listenAddr = '/ip4/0.0.0.0/tcp/0'
 
 describe('Listening', () => {
-  let peerId
-  let libp2p
+  let peerId: PeerId
+  let libp2p: Libp2pNode
 
   before(async () => {
-    [peerId] = await peerUtils.createPeerId()
+    peerId = await createPeerId()
   })
 
   after(async () => {
@@ -24,20 +22,22 @@ describe('Listening', () => {
   })
 
   it('should replace wildcard host and port with actual host and port on startup', async () => {
-    libp2p = await create({
+    libp2p = await createLibp2pNode({
       peerId,
       addresses: {
         listen: [listenAddr]
       },
-      modules: {
-        transport: [Transport],
-        connEncryption: [Crypto]
-      }
+      transports: [
+        new TCP()
+      ],
+      connectionEncrypters: [
+        NOISE
+      ]
     })
 
     await libp2p.start()
 
-    const addrs = libp2p.transportManager.getAddrs()
+    const addrs = libp2p.components.getTransportManager().getAddrs()
 
     // Should get something like:
     //   /ip4/127.0.0.1/tcp/50866
