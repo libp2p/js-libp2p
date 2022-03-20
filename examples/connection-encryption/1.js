@@ -11,7 +11,7 @@ const createNode = async () => {
     },
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
-    connectionEncrypters: [new Noise()]
+    connectionEncryption: [new Noise()]
   })
 
   await node.start()

@@ -17,7 +17,7 @@ const createNode = async () => {
     streamMuxers: [
       new Mplex()
     ],
-    connectionEncrypters: [
+    connectionEncryption: [
       new Noise()
     ],
     peerDiscovery: [
@@ -36,8 +36,8 @@ const createNode = async () => {
     createNode()
   ])
 
-  node1.on('peer:discovery', (peerId) => console.log('Discovered:', peerId.toB58String()))
-  node2.on('peer:discovery', (peerId) => console.log('Discovered:', peerId.toB58String()))
+  node1.on('peer:discovery', (peerId) => console.log('Discovered:', peerId.toString()))
+  node2.on('peer:discovery', (peerId) => console.log('Discovered:', peerId.toString()))
 
   await Promise.all([
     node1.start(),

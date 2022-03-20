@@ -39,7 +39,7 @@ describe('peer discovery scenarios', () => {
   it('should ignore self on discovery', async () => {
     libp2p = await createLibp2pNode(createBaseOptions({
       peerId,
-      peerDiscoverers: [
+      peerDiscovery: [
         new MulticastDNS()
       ]
     }))
@@ -76,7 +76,7 @@ describe('peer discovery scenarios', () => {
       connectionManager: {
         autoDial: false
       },
-      peerDiscoverers: [
+      peerDiscovery: [
         new Bootstrap({
           list: bootstrappers
         })
@@ -116,7 +116,7 @@ describe('peer discovery scenarios', () => {
           listenAddr.toString()
         ]
       },
-      peerDiscoverers: [
+      peerDiscovery: [
         new MulticastDNS({
           interval: 200, // discover quickly
           serviceTag

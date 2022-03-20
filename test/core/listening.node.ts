@@ -30,7 +30,7 @@ describe('Listening', () => {
       transports: [
         new TCP()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })

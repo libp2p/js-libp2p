@@ -337,7 +337,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ],
       connectionGater
@@ -360,7 +360,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ],
       dialer: {
@@ -388,7 +388,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -421,7 +421,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -467,7 +467,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -495,7 +495,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -516,7 +516,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -552,7 +552,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -577,7 +577,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })

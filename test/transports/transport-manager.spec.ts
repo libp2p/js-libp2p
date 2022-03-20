@@ -109,7 +109,7 @@ describe('libp2p.transportManager (dial only)', () => {
         listen: ['/ip4/127.0.0.1/tcp/0']
       },
       transports: [new WebSockets()],
-      connectionEncrypters: [NOISE]
+      connectionEncryption: [NOISE]
     })
 
     await expect(libp2p.start()).to.eventually.be.rejected
@@ -128,7 +128,7 @@ describe('libp2p.transportManager (dial only)', () => {
       transports: [
         new WebSockets()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -148,7 +148,7 @@ describe('libp2p.transportManager (dial only)', () => {
       transports: [
         new WebSockets()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })

@@ -81,7 +81,7 @@ import { Noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [new WebSockets()],
-  connectionEncrypters: [new Noise()]
+  connectionEncryption: [new Noise()]
 })
 ```
 
@@ -112,7 +112,7 @@ import { Mplex } from '@libp2p/mplex'
 
 const node = await createLibp2p({
   transports: [new WebSockets()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   streamMuxers: [new Mplex()]
 })
 ```
@@ -140,7 +140,7 @@ const node = await createLibp2p({
     listen: ['/ip4/127.0.0.1/tcp/8000/ws']
   },
   transports: [new WebSockets()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   streamMuxers: [new Mplex()]
 })
 
@@ -203,7 +203,7 @@ const node = await createLibp2p({
   transports: [
     new WebSockets()
   ],
-  connectionEncrypters: [
+  connectionEncryption: [
     new Noise()
   ],
   streamMuxers: [

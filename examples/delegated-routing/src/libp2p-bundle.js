@@ -3,7 +3,6 @@
 
 import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
-import WebSocketStar from 'libp2p-websocket-star'
 import { WebRTCStar } from '@libp2p/webrtc-star'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
@@ -11,8 +10,7 @@ import { DelegatedPeerRouting } from '@libp2p/delegated-peer-routing'
 import { DelegatedContentRouting } from '@libp2p/delegated-content-routing'
 
 export default function Libp2pBundle ({peerInfo, peerBook}) {
-  const wrtcstar = new WebRTCStar({id: peerInfo.id})
-  const wsstar = new WebSocketStar({id: peerInfo.id})
+  const wrtcstar = new WebRTCStar()
   const delegatedApiOptions = {
     host: '0.0.0.0',
     protocol: 'http',
@@ -35,13 +33,12 @@ export default function Libp2pBundle ({peerInfo, peerBook}) {
     ],
     transports: [
       wrtcstar,
-      wsstar,
       new WebSockets()
     ],
     streamMuxers: [
       new Mplex()
     ],
-    connectionEncrypters: [
+    connectionEncryption: [
       new Noise()
     ],
     connectionManager: {

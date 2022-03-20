@@ -18,7 +18,7 @@ const createNode = async (transports, addresses = []) => {
       listen: addresses
     },
     transport: transports,
-    connectionEncrypters: [new Noise()],
+    connectionEncryption: [new Noise()],
     streamMuxers: [new Mplex()]
   })
 
@@ -28,7 +28,7 @@ const createNode = async (transports, addresses = []) => {
 
 function printAddrs(node, number) {
   console.log('node %s is listening on:', number)
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toString()}`))
 }
 
 function print ({ stream }) {

@@ -55,7 +55,7 @@ describe('Upgrader', () => {
       registrar: mockRegistrar()
     })
     localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncrypters: [
+      connectionEncryption: [
         new Plaintext()
       ],
       muxers: [
@@ -69,7 +69,7 @@ describe('Upgrader', () => {
       registrar: mockRegistrar()
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncrypters: [
+      connectionEncryption: [
         new Plaintext()
       ],
       muxers: [
@@ -122,13 +122,13 @@ describe('Upgrader', () => {
 
     // No available muxers
     localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncrypters: [
+      connectionEncryption: [
         new Plaintext()
       ],
       muxers: []
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncrypters: [
+      connectionEncryption: [
         new Plaintext()
       ],
       muxers: []
@@ -199,13 +199,13 @@ describe('Upgrader', () => {
     }
 
     localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncrypters: [
+      connectionEncryption: [
         new BoomCrypto()
       ],
       muxers: []
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncrypters: [
+      connectionEncryption: [
         new BoomCrypto()
       ],
       muxers: []
@@ -248,7 +248,7 @@ describe('Upgrader', () => {
     }
 
     localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncrypters: [
+      connectionEncryption: [
         new Plaintext()
       ],
       muxers: [
@@ -256,7 +256,7 @@ describe('Upgrader', () => {
       ]
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncrypters: [
+      connectionEncryption: [
         new Plaintext()
       ],
       muxers: [
@@ -400,7 +400,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ],
       connectionProtector: new PreSharedKeyConnectionProtector({
@@ -422,7 +422,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -438,7 +438,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -469,7 +469,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -483,7 +483,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })

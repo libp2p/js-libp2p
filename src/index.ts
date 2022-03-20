@@ -115,13 +115,13 @@ export interface RefreshManagerConfig {
 
 export interface Libp2pInit {
   peerId: PeerId
+  host: HostProperties
   addresses: AddressesConfig
   connectionManager: ConnectionManagerConfig
   connectionGater: Partial<ConnectionGater>
   transportManager: TransportManagerConfig
   datastore: Datastore
   dialer: DialerInit
-  host: HostProperties
   metrics: MetricsInit
   peerStore: PeerStoreInit
   peerRouting: PeerRoutingConfig
@@ -132,8 +132,8 @@ export interface Libp2pInit {
 
   transports: Transport[]
   streamMuxers?: StreamMuxerFactory[]
-  connectionEncrypters?: ConnectionEncrypter[]
-  peerDiscoverers?: PeerDiscovery[]
+  connectionEncryption?: ConnectionEncrypter[]
+  peerDiscovery?: PeerDiscovery[]
   peerRouters?: PeerRouting[]
   contentRouters?: ContentRouting[]
   dht?: DualDHT

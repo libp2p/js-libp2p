@@ -16,7 +16,7 @@ const createNode = async () => {
     },
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
-    connectionEncrypters: [new Noise()],
+    connectionEncryption: [new Noise()],
     dht: KadDHT
   })
 
@@ -45,12 +45,12 @@ const createNode = async () => {
   const cid = CID.parse('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL')
   await node1.contentRouting.provide(cid)
 
-  console.log('Node %s is providing %s', node1.peerId.toB58String(), cid.toString())
+  console.log('Node %s is providing %s', node1.peerId.toString(), cid.toString())
 
   // wait for propagation
   await delay(300)
 
   const providers = await all(node3.contentRouting.findProviders(cid, { timeout: 3000 }))
 
-  console.log('Found provider:', providers[0].id.toB58String())
+  console.log('Found provider:', providers[0].id.toString())
 })();

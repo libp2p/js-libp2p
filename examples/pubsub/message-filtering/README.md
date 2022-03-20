@@ -20,7 +20,7 @@ const node = await createLibp2p({
   streamMuxers: [
     new Mplex()
   ],
-  connectionEncrypters: [
+  connectionEncryption: [
     new Noise()
   ],
   pubsub: new Gossipsub()

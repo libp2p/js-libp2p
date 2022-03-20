@@ -22,7 +22,7 @@ async function run() {
 
   // Log a message when we receive a connection
   listenerNode.connectionManager.on('peer:connect', (connection) => {
-    console.log('received dial to me from:', connection.remotePeer.toB58String())
+    console.log('received dial to me from:', connection.remotePeer.toString())
   })
 
   // Handle incoming connections for the protocol by piping from the stream
@@ -34,7 +34,7 @@ async function run() {
 
   console.log('Listener ready, listening on:')
   listenerNode.multiaddrs.forEach((ma) => {
-    console.log(ma.toString() + '/p2p/' + listenerId.toB58String())
+    console.log(ma.toString() + '/p2p/' + listenerId.toString())
   })
 }
 

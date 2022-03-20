@@ -12,8 +12,7 @@
     "execa": "^2.1.0",
     "fs-extra": "^8.1.0",
     "libp2p": "../src",
-    "libp2p-pubsub-peer-discovery": "^4.0.0",
-    "libp2p-relay-server": "^0.3.0",
+    "@libp2p/pubsub-peer-discovery": "^4.0.0",
     "p-defer": "^3.0.0",
     "uint8arrays": "^3.0.0",
     "which": "^2.0.1"

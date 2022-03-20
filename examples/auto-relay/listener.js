@@ -13,7 +13,7 @@ async function main () {
     transports: [
       new WebSockets()
     ],
-    connectionEncrypters: [
+    connectionEncryption: [
       new Noise()
     ],
     streamMuxers: [
@@ -29,7 +29,7 @@ async function main () {
   })
 
   await node.start()
-  console.log(`Node started with id ${node.peerId.toB58String()}`)
+  console.log(`Node started with id ${node.peerId.toString()}`)
 
   const conn = await node.dial(relayAddr)
 
@@ -39,7 +39,7 @@ async function main () {
   node.peerStore.on('change:multiaddrs', ({ peerId }) => {
     // Updated self multiaddrs?
     if (peerId.equals(node.peerId)) {
-      console.log(`Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toB58String()}`)
+      console.log(`Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toString()}`)
     }
   })
 }

@@ -7,8 +7,7 @@ import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Gossipsub } from '@achingbrain/libp2p-gossipsub'
 import { Bootstrap } from '@libp2p/bootstrap'
-import PubsubPeerDiscovery from 'libp2p-pubsub-peer-discovery'
-import createRelayServer from 'libp2p-relay-server'
+import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 
 const createNode = async (bootstrappers) => {
   const node = await createLibp2p({
@@ -17,13 +16,13 @@ const createNode = async (bootstrappers) => {
     },
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
-    connectionEncrypters: [new Noise()],
+    connectionEncryption: [new Noise()],
     pubsub: Gossipsub,
     peerDiscovery: [
       new Bootstrap({
         list: bootstrappers
       }),
-      new PubsubPeerDiscovery({
+      new PubSubPeerDiscovery({
         interval: 1000
       })
     ]
@@ -33,12 +32,27 @@ const createNode = async (bootstrappers) => {
 }
 
 ;(async () => {
-  const relay = await createRelayServer({
-    listenAddresses: ['/ip4/0.0.0.0/tcp/0']
+  const relay = await createLibp2p({
+    listenAddresses: ['/ip4/0.0.0.0/tcp/0'],
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()],
+    pubsub: Gossipsub,
+    peerDiscovery: [
+      new PubSubPeerDiscovery({
+        interval: 1000
+      })
+    ],
+    relay: {
+      enabled: true, // Allows you to dial and accept relayed connections. Does not make you a relay.
+      hop: {
+        enabled: true // Allows you to be a relay for other peers
+      }
+    }
   })
-  console.log(`libp2p relay starting with id: ${relay.peerId.toB58String()}`)
+  console.log(`libp2p relay starting with id: ${relay.peerId.toString()}`)
   await relay.start()
-  const relayMultiaddrs = relay.multiaddrs.map((m) => `${m.toString()}/p2p/${relay.peerId.toB58String()}`)
+  const relayMultiaddrs = relay.multiaddrs.map((m) => `${m.toString()}/p2p/${relay.peerId.toString()}`)
 
   const [node1, node2] = await Promise.all([
     createNode(relayMultiaddrs),
@@ -46,13 +60,13 @@ const createNode = async (bootstrappers) => {
   ])
 
   node1.on('peer:discovery', (peerId) => {
-    console.log(`Peer ${node1.peerId.toB58String()} discovered: ${peerId.toB58String()}`)
+    console.log(`Peer ${node1.peerId.toString()} discovered: ${peerId.toString()}`)
   })
   node2.on('peer:discovery', (peerId) => {
-    console.log(`Peer ${node2.peerId.toB58String()} discovered: ${peerId.toB58String()}`)
+    console.log(`Peer ${node2.peerId.toString()} discovered: ${peerId.toString()}`)
   })
 
-  ;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toB58String()}`))
+  ;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toString()}`))
   await Promise.all([
     node1.start(),
     node2.start()

@@ -89,7 +89,7 @@ export function validateConfig (opts: RecursivePartial<Libp2pInit>): Libp2pInit 
     throw errCode(new Error(messages.ERR_TRANSPORTS_REQUIRED), codes.ERR_TRANSPORTS_REQUIRED)
   }
 
-  if (resultingOptions.connectionEncrypters == null || resultingOptions.connectionEncrypters.length === 0) {
+  if (resultingOptions.connectionEncryption == null || resultingOptions.connectionEncryption.length === 0) {
     throw errCode(new Error(messages.CONN_ENCRYPTION_REQUIRED), codes.CONN_ENCRYPTION_REQUIRED)
   }
 

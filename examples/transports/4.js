@@ -29,7 +29,7 @@ const createNode = async (addresses = []) => {
         server: httpServer
       })
     ],
-    connectionEncrypters: [new Noise()],
+    connectionEncryption: [new Noise()],
     streamMuxers: [new Mplex()],
     connectionManager: {
       // Disable autoDial as it would fail because we are using a self-signed cert.
@@ -44,7 +44,7 @@ const createNode = async (addresses = []) => {
 
 function printAddrs(node, number) {
   console.log('node %s is listening on:', number)
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toString()}`))
 }
 
 function print ({ stream }) {
@@ -70,7 +70,7 @@ function print ({ stream }) {
   node1.handle('/print', print)
   node2.handle('/print', print)
 
-  const targetAddr = `${node1.multiaddrs[0]}/p2p/${node1.peerId.toB58String()}`;
+  const targetAddr = `${node1.multiaddrs[0]}/p2p/${node1.peerId.toString()}`;
 
   // node 2 (Secure WebSockets) dials to node 1 (Secure Websockets)
   const { stream } = await node2.dialProtocol(targetAddr, '/print',  { websocket: { rejectUnauthorized: false } })

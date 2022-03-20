@@ -19,15 +19,15 @@ import { Noise } from '@chainsafe/libp2p-noise'
     },
     transport: [new WebRTCDirect()],
     streamMuxers: [new Mplex()],
-    connectionEncrypters: [new Noise()]
+    connectionEncryption: [new Noise()]
   })
 
   node.connectionManager.on('peer:connect', (connection) => {
-    console.info(`Connected to ${connection.remotePeer.toB58String()}!`)
+    console.info(`Connected to ${connection.remotePeer.toString()}!`)
   })
 
   await node.start()
 
   console.log('Listening on:')
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toString()}`))
 })()

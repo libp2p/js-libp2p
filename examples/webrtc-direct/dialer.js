@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const libp2p = await createLibp2p({
     transports: [WebRTCDirect],
     streamMuxers: [Mplex],
-    connectionEncrypters: [NOISE],
-    peerDiscoverers: [
+    connectionEncryption: [NOISE],
+    peerDiscovery: [
       new Bootstrap({
         list: [`/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct/p2p/${hardcodedPeerId}`]
       })
@@ -31,21 +31,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Listen for new peers
   libp2p.on('peer:discovery', (peerId) => {
-    log(`Found peer ${peerId.toB58String()}`)
+    log(`Found peer ${peerId.toString()}`)
   })
 
   // Listen for new connections to peers
   libp2p.connectionManager.on('peer:connect', (connection) => {
-    log(`Connected to ${connection.remotePeer.toB58String()}`)
+    log(`Connected to ${connection.remotePeer.toString()}`)
   })
 
   // Listen for peers disconnecting
   libp2p.connectionManager.on('peer:disconnect', (connection) => {
-    log(`Disconnected from ${connection.remotePeer.toB58String()}`)
+    log(`Disconnected from ${connection.remotePeer.toString()}`)
   })
 
   await libp2p.start()
   status.innerText = 'libp2p started!'
-  log(`libp2p id is ${libp2p.peerId.toB58String()}`)
+  log(`libp2p id is ${libp2p.peerId.toString()}`)
 
 })

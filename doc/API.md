@@ -129,7 +129,7 @@ async function main () {
   const options = {
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
-    connectionEncrypters: [new Noise()]
+    connectionEncryption: [new Noise()]
   }
 
   // create libp2p
@@ -162,7 +162,7 @@ async function main () {
     peerId,
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
-    connectionEncrypters: [new Noise()]
+    connectionEncryption: [new Noise()]
   }
 
   // create libp2p

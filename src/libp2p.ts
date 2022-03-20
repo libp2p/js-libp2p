@@ -104,7 +104,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     // Set up the Upgrader
     this.components.setUpgrader(this.configureComponent(new DefaultUpgrader(this.components, {
-      connectionEncrypters: (init.connectionEncrypters ?? []).map(component => this.configureComponent(component)),
+      connectionEncryption: (init.connectionEncryption ?? []).map(component => this.configureComponent(component)),
       muxers: (init.streamMuxers ?? []).map(component => this.configureComponent(component))
     })))
 
@@ -224,7 +224,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     })
 
     // Discovery modules
-    for (const service of init.peerDiscoverers ?? []) {
+    for (const service of init.peerDiscovery ?? []) {
       this.configureComponent(service)
 
       service.addEventListener('peer', (evt) => {

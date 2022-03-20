@@ -17,7 +17,7 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [new TCP()],
-    connectionEncrypters: [new Noise()],
+    connectionEncryption: [new Noise()],
     streamMuxers: [new Mplex()]
   })
 
@@ -27,7 +27,7 @@ const createNode = async () => {
 
 function printAddrs (node, number) {
   console.log('node %s is listening on:', number)
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toString()}`))
 }
 
 ;(async () => {

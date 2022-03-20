@@ -10,11 +10,7 @@ import { createPeerId } from '../utils/creators/peer.js'
 import { CustomEvent } from '@libp2p/interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { FloodSub } from '@libp2p/floodsub'
-import type { Message, PubSub, PubSubEvents } from '@libp2p/interfaces/pubsub'
-
-interface PubSubTestEvents extends PubSubEvents {
-  'topic': CustomEvent<Message>
-}
+import type { PubSub } from '@libp2p/interfaces/pubsub'
 
 describe('Pubsub subsystem is configurable', () => {
   let libp2p: Libp2p
@@ -85,7 +81,7 @@ describe('Pubsub subscription handlers adapter', () => {
       defer.resolve()
     }
 
-    const pubsub: PubSub<PubSubTestEvents> | undefined = libp2p.pubsub
+    const pubsub: PubSub | undefined = libp2p.pubsub
 
     if (pubsub == null) {
       throw new Error('Pubsub was not enabled')

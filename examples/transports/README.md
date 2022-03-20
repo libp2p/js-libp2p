@@ -35,7 +35,7 @@ const createNode = async () => {
     transport: [
       new TCP()
     ],
-    connectionEncrypters: [
+    connectionEncryption: [
       new Noise()
     ]
   })
@@ -101,7 +101,7 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [new TCP()],
-    connectionEncrypters: [new Noise()],
+    connectionEncryption: [new Noise()],
     streamMuxers: [new Mplex()] // <--- Add this line
   })
 
@@ -189,7 +189,7 @@ const createNode = async (transports, addresses = []) => {
       listen: addresses
     },
     transport: transports,
-    connectionEncrypters: [new Noise()],
+    connectionEncryption: [new Noise()],
     streamMuxers: [new Mplex()]
   })
 

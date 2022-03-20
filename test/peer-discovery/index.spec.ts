@@ -85,7 +85,7 @@ describe('peer discovery', () => {
 
       libp2p = await createLibp2pNode(createBaseOptions({
         peerId,
-        peerDiscoverers: [
+        peerDiscovery: [
           new MockDiscovery()
         ]
       }))

@@ -20,7 +20,7 @@ const privateLibp2pNode = async (swarmKey) => {
     streamMuxers: [new Mplex()], // We're only using mplex muxing
     // Let's make sure to use identifying crypto in our pnet since the protector doesn't
     // care about node identity, and only the presence of private keys
-    connectionEncrypters: [new Noise()],
+    connectionEncryption: [new Noise()],
     // Leave peer discovery empty, we don't want to find peers. We could omit the property, but it's
     // being left in for explicit readability.
     // We should explicitly dial pnet peers, or use a custom discovery service for finding nodes in our pnet

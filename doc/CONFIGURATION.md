@@ -250,7 +250,7 @@ const node = await createLibp2p({
     new WS() // It can take instances too!
   ],
   streamMuxers: [MPLEX],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   peerDiscovery: [MulticastDNS],
   dht: DHT,
   pubsub: GossipSub
@@ -270,7 +270,7 @@ import { Bootstrap } from '@libp2p/bootstrap'
 const node = await createLibp2p({
   transports: [new TCP()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   peerDiscovery: [
     new MulticastDNS({
       interval: 1000
@@ -309,7 +309,7 @@ const node = await createLibp2p({
   streamMuxer: [
     new Mplex()
   ],
-  connectionEncrypters: [
+  connectionEncryption: [
     new Noise()
   ]
 })
@@ -332,7 +332,7 @@ const node = await createLibp2p({
     streamMuxer: [
       new Mplex()
     ],
-    connectionEncrypters: [
+    connectionEncryption: [
       new Noise()
     ],
     pubsub: new GossipSub({
@@ -359,7 +359,7 @@ const node = await createLibp2p({
   streamMuxer: [
     new Mplex()
   ],
-  connectionEncrypters: [
+  connectionEncryption: [
     new Noise()
   ],
   dht: new KadDHT({
@@ -399,7 +399,7 @@ const delegatedContentRouting = new DelegatedContentRouting(peerId, ipfsHttpClie
 const node = await createLibp2p({
   transports: [new TCP()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   contentRouting: [
     delegatedContentRouting
   ],
@@ -428,7 +428,7 @@ import { Noise } from '@chainsafe/libp2p-noise'
 const node = await createLibp2p({
   transports: [new TCP()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
     enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
     hop: {
@@ -455,7 +455,7 @@ import { Noise } from '@chainsafe/libp2p-noise'
 const node = await createLibp2p({
   transports: [new TCP()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Noise()]
+  connectionEncryption: [new Noise()]
   relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
     enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
     autoRelay: {
@@ -488,7 +488,7 @@ await datastore.open()
 const node = await createLibp2p({
   transports: [new TCP()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   keychain: {
     pass: 'notsafepassword123456789',
     datastore: dsInstant,
@@ -525,7 +525,7 @@ import { publicAddressesFirst } from '@libp2p-utils/address-sort'
 const node = await createLibp2p({
   transports: [new TCP()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   dialer: {
     maxParallelDials: 100,
     maxAddrsToDial: 25,
@@ -551,7 +551,7 @@ import { Noise } from '@chainsafe/libp2p-noise'
 const node = await createLibp2p({
   transports: [new TCP()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   connectionManager: {
     maxConnections: Infinity,
     minConnections: 0,
@@ -703,7 +703,7 @@ const { FaultTolerance } from 'libp2p/src/transport-manager')
 const node = await createLibp2p({
   transports: [new TCP()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   transportManager: {
     faultTolerance: FaultTolerance.NO_FATAL
   }
@@ -733,7 +733,7 @@ import { Noise } from '@chainsafe/libp2p-noise'
 const node = await createLibp2p({
   transports: [new TCP()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Noise()]
+  connectionEncryption: [new Noise()]
   metrics: {
     enabled: true,
     computeThrottleMaxQueueSize: 1000,
@@ -775,7 +775,7 @@ const node = await createLibp2p({
   datastore, // pass the opened datastore
   transports: [new TCP()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   peerStore: {
     persistence: true,
     threshold: 5
@@ -802,7 +802,7 @@ const node = await createLibp2p({
   streamMuxers: [
     new Mplex()
   ],
-  connectionEncrypters: [
+  connectionEncryption: [
     new Noise()
   ],
   config: {
@@ -826,7 +826,7 @@ const node = await createLibp2p({
   streamMuxers: [
     new Mplex()
   ],
-  connectionEncrypters: [
+  connectionEncryption: [
     new Noise()
   ],
   addresses: {

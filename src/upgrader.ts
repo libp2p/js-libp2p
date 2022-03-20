@@ -38,23 +38,23 @@ export interface CryptoResult extends SecuredConnection {
 }
 
 export interface UpgraderInit {
-  connectionEncrypters: ConnectionEncrypter[]
+  connectionEncryption: ConnectionEncrypter[]
   muxers: StreamMuxerFactory[]
 }
 
 export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upgrader {
   private readonly components: Components
-  private readonly connectionEncrypters: Map<string, ConnectionEncrypter>
+  private readonly connectionEncryption: Map<string, ConnectionEncrypter>
   private readonly muxers: Map<string, StreamMuxerFactory>
 
   constructor (components: Components, init: UpgraderInit) {
     super()
 
     this.components = components
-    this.connectionEncrypters = new Map()
+    this.connectionEncryption = new Map()
 
-    init.connectionEncrypters.forEach(encrypter => {
-      this.connectionEncrypters.set(encrypter.protocol, encrypter)
+    init.connectionEncryption.forEach(encrypter => {
+      this.connectionEncryption.set(encrypter.protocol, encrypter)
     })
 
     this.muxers = new Map()
@@ -410,12 +410,12 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    */
   async _encryptInbound (connection: Duplex<Uint8Array>): Promise<CryptoResult> {
     const mss = new Listener(connection)
-    const protocols = Array.from(this.connectionEncrypters.keys())
+    const protocols = Array.from(this.connectionEncryption.keys())
     log('handling inbound crypto protocol selection', protocols)
 
     try {
       const { stream, protocol } = await mss.handle(protocols)
-      const encrypter = this.connectionEncrypters.get(protocol)
+      const encrypter = this.connectionEncryption.get(protocol)
 
       if (encrypter == null) {
         throw new Error(`no crypto module found for ${protocol}`)
@@ -438,12 +438,12 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    */
   async _encryptOutbound (connection: MultiaddrConnection, remotePeerId: PeerId): Promise<CryptoResult> {
     const mss = new Dialer(connection)
-    const protocols = Array.from(this.connectionEncrypters.keys())
+    const protocols = Array.from(this.connectionEncryption.keys())
     log('selecting outbound crypto protocol', protocols)
 
     try {
       const { stream, protocol } = await mss.select(protocols)
-      const encrypter = this.connectionEncrypters.get(protocol)
+      const encrypter = this.connectionEncryption.get(protocol)
 
       if (encrypter == null) {
         throw new Error(`no crypto module found for ${protocol}`)

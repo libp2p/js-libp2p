@@ -23,7 +23,7 @@ import { Mplex } from '@libp2p/mplex'
 
 const node = await createLibp2p({
   transports: [new WebSockets()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   streamMuxers: [new Mplex()]
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0/ws']
@@ -82,7 +82,7 @@ if (!relayAddr) {
 
 const node = await createLibp2p({
   transports: [new WebSockets()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   streamMuxers: [new Mplex()],
   relay: {
     enabled: true,
@@ -149,7 +149,7 @@ if (!autoRelayNodeAddr) {
 
 const node = await createLibp2p({
   transports: [new WebSockets()],
-  connectionEncrypters: [new Noise()],
+  connectionEncryption: [new Noise()],
   streamMuxers: [new Mplex()]
 })
 

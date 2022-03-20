@@ -55,7 +55,7 @@ const node = await createLibp2p({
   streamMuxers: [
     new Mplex()
     ],
-  connectionEncrypters: [
+  connectionEncryption: [
     NOISE
   ]
   },

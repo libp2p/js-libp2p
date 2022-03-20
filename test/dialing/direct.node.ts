@@ -238,7 +238,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -271,7 +271,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -291,7 +291,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -318,7 +318,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -347,7 +347,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -411,7 +411,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -437,7 +437,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -460,7 +460,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ],
       connectionProtector: new PreSharedKeyConnectionProtector({
@@ -498,7 +498,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })
@@ -534,7 +534,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         new Mplex()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     })

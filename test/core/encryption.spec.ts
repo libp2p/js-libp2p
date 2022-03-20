@@ -33,7 +33,7 @@ describe('Connection encryption configuration', () => {
       transports: [
         new WebSockets()
       ],
-      connectionEncrypters: []
+      connectionEncryption: []
     }
     await expect(createLibp2p(config)).to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.CONN_ENCRYPTION_REQUIRED)
@@ -45,7 +45,7 @@ describe('Connection encryption configuration', () => {
       transports: [
         new WebSockets()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     }

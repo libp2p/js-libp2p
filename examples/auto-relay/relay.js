@@ -8,7 +8,7 @@ async function main () {
     transport: [
       new WebSockets()
     ],
-    connectionEncrypters: [
+    connectionEncryption: [
       new Noise()
     ],
     streamMuxers: [
@@ -32,9 +32,9 @@ async function main () {
 
   await node.start()
 
-  console.log(`Node started with id ${node.peerId.toB58String()}`)
+  console.log(`Node started with id ${node.peerId.toString()}`)
   console.log('Listening on:')
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toString()}`))
 }
 
 main()

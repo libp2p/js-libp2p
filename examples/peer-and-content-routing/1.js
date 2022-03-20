@@ -14,7 +14,7 @@ const createNode = async () => {
     },
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
-    connectionEncrypters: [new Noise()],
+    connectionEncryption: [new Noise()],
     dht: KadDHT
   })
 
@@ -43,5 +43,5 @@ const createNode = async () => {
   const peer = await node1.peerRouting.findPeer(node3.peerId)
 
   console.log('Found it, multiaddrs are:')
-  peer.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${peer.id.toB58String()}`))
+  peer.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${peer.id.toString()}`))
 })();

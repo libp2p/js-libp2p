@@ -24,14 +24,14 @@ async function run() {
   })
 
   // Add peer to Dial (the listener) into the PeerStore
-  const listenerMultiaddr = '/ip4/127.0.0.1/tcp/10333/p2p/' + listenerId.toB58String()
+  const listenerMultiaddr = '/ip4/127.0.0.1/tcp/10333/p2p/' + listenerId.toString()
 
   // Start the dialer libp2p node
   await dialerNode.start()
 
   console.log('Dialer ready, listening on:')
   dialerNode.multiaddrs.forEach((ma) => console.log(ma.toString() +
-        '/p2p/' + dialerId.toB58String()))
+        '/p2p/' + dialerId.toString()))
 
   // Dial the listener node
   console.log('Dialing to peer:', listenerMultiaddr)

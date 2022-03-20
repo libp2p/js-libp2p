@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       new Websockets(),
       webRtcStar
     ],
-    connectionEncrypters: [new Noise()],
+    connectionEncryption: [new Noise()],
     streamMuxers: [new Mplex()],
     peerDiscovery: [
       webRtcStar.discovery,
@@ -53,22 +53,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Listen for new peers
   libp2p.on('peer:discovery', (peerId) => {
-    log(`Found peer ${peerId.toB58String()}`)
+    log(`Found peer ${peerId.toString()}`)
   })
 
   // Listen for new connections to peers
   libp2p.connectionManager.on('peer:connect', (connection) => {
-    log(`Connected to ${connection.remotePeer.toB58String()}`)
+    log(`Connected to ${connection.remotePeer.toString()}`)
   })
 
   // Listen for peers disconnecting
   libp2p.connectionManager.on('peer:disconnect', (connection) => {
-    log(`Disconnected from ${connection.remotePeer.toB58String()}`)
+    log(`Disconnected from ${connection.remotePeer.toString()}`)
   })
 
   await libp2p.start()
   status.innerText = 'libp2p started!'
-  log(`libp2p id is ${libp2p.peerId.toB58String()}`)
+  log(`libp2p id is ${libp2p.peerId.toString()}`)
 
   // Export libp2p to the window so you can play with the API
   window.libp2p = libp2p

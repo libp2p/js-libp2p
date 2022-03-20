@@ -17,7 +17,7 @@ export const baseOptions: Partial<Libp2pInit> = {
   peerId: peerIdFromString('12D3KooWJKCJW8Y26pRFNv78TCMGLNTfyN8oKaFswMRYXTzSbSst'),
   transports: [new WebSockets()],
   streamMuxers: [new Mplex()],
-  connectionEncrypters: [new Plaintext()]
+  connectionEncryption: [new Plaintext()]
 }
 
 class MockPubSub extends PubSubBaseProtocol {

@@ -30,7 +30,7 @@ module.exports = {
         streamMuxers: [
           new Mplex()
         ],
-        connectionEncrypters: [
+        connectionEncryption: [
           NOISE,
           new Plaintext()
         ],
@@ -46,7 +46,10 @@ module.exports = {
         }
       })
       // Add the echo protocol
-      await libp2p.handle('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
+      await libp2p.handle('/echo/1.0.0', ({ stream }) => {
+        pipe(stream, stream)
+          .catch() // sometimes connections are closed before multistream-select finishes which causes an error
+      })
       await libp2p.start()
 
       return {

@@ -15,7 +15,7 @@ async function run () {
 
   // Log a message when a remote peer connects to us
   nodeListener.connectionManager.on('peer:connect', (connection) => {
-    console.log('connected to: ', connection.remotePeer.toB58String())
+    console.log('connected to: ', connection.remotePeer.toString())
   })
 
   // Handle messages for the protocol
@@ -32,7 +32,7 @@ async function run () {
   // Output listen addresses to the console
   console.log('Listener ready, listening on:')
   nodeListener.multiaddrs.forEach((ma) => {
-    console.log(ma.toString() + '/p2p/' + idListener.toB58String())
+    console.log(ma.toString() + '/p2p/' + idListener.toString())
   })
 }
 

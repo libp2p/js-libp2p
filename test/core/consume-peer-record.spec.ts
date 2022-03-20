@@ -17,7 +17,7 @@ describe('Consume peer record', () => {
       transports: [
         new WebSockets()
       ],
-      connectionEncrypters: [
+      connectionEncryption: [
         NOISE
       ]
     }

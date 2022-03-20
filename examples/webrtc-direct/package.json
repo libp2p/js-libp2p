@@ -22,12 +22,9 @@
   "dependencies": {
     "@chainsafe/libp2p-noise": "^5.0.2",
     "libp2p": "../../",
-    "libp2p-bootstrap": "^0.14.0",
-    "libp2p-mplex": "^0.10.4",
-    "libp2p-webrtc-direct": "^0.7.0",
+    "@libp2p/bootstrap": "^1.0.1",
+    "@libp2p/mplex": "^1.0.2",
+    "@libp2p/webrtc-direct": "^0.7.1",
     "peer-id": "^0.16.0"
-  },
-  "browser": {
-    "ipfs": "ipfs/dist/index.min.js"
   }
 }

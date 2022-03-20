@@ -206,7 +206,7 @@ describe('registrar', () => {
         streamMuxers: [
           new Mplex()
         ],
-        connectionEncrypters: [
+        connectionEncryption: [
           new Plaintext()
         ]
       })

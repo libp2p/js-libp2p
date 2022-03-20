@@ -22,7 +22,7 @@ async function main () {
   })
 
   await node.start()
-  console.log(`Node started with id ${node.peerId.toB58String()}`)
+  console.log(`Node started with id ${node.peerId.toString()}`)
 
   const conn = await node.dial(autoRelayNodeAddr)
   console.log(`Connected to the auto relay node via ${conn.remoteAddr.toString()}`)

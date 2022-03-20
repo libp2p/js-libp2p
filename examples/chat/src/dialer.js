@@ -24,11 +24,11 @@ async function run () {
   // Output this node's address
   console.log('Dialer ready, listening on:')
   nodeDialer.multiaddrs.forEach((ma) => {
-    console.log(ma.toString() + '/p2p/' + idDialer.toB58String())
+    console.log(ma.toString() + '/p2p/' + idDialer.toString())
   })
 
   // Dial to the remote peer (the "listener")
-  const listenerMa = new Multiaddr(`/ip4/127.0.0.1/tcp/10333/p2p/${idListener.toB58String()}`)
+  const listenerMa = new Multiaddr(`/ip4/127.0.0.1/tcp/10333/p2p/${idListener.toString()}`)
   const { stream } = await nodeDialer.dialProtocol(listenerMa, '/chat/1.0.0')
 
   console.log('Dialer dialed to listener on protocol: /chat/1.0.0')

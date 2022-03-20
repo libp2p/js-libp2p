@@ -21,7 +21,7 @@ async function createNode (peerId: PeerId) {
     streamMuxers: [
       new Mplex()
     ],
-    connectionEncrypters: [
+    connectionEncryption: [
       NOISE
     ]
   })

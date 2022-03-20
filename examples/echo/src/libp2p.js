@@ -14,7 +14,7 @@ export default async function createNode(_options) {
     streamMuxer: [
       new Mplex()
     ],
-    connectionEncrypters: [
+    connectionEncryption: [
       new Noise()
     ]
   }

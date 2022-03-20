@@ -34,7 +34,7 @@ const node = await createLibp2p({
   streamMuxer: [
     new Mplex()
   ],
-  connectionEncrypters: [
+  connectionEncryption: [
     new Noise()
   ],
   // we add the Pubsub module we want

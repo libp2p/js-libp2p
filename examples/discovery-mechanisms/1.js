@@ -14,8 +14,8 @@ import bootstrapers from './bootstrappers.js'
     },
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
-    connectionEncrypters: [new Noise()],
-    peerDiscoverers: [
+    connectionEncryption: [new Noise()],
+    peerDiscovery: [
       new Bootstrap({
         interval: 60e3,
         list: bootstrapers
@@ -24,12 +24,12 @@ import bootstrapers from './bootstrappers.js'
   })
 
   node.connectionManager.on('peer:connect', (connection) => {
-    console.log('Connection established to:', connection.remotePeer.toB58String())	// Emitted when a peer has been found
+    console.log('Connection established to:', connection.remotePeer.toString())	// Emitted when a peer has been found
   })
 
   node.on('peer:discovery', (peerId) => {
     // No need to dial, autoDial is on
-    console.log('Discovered:', peerId.toB58String())
+    console.log('Discovered:', peerId.toString())
   })
 
   await node.start()

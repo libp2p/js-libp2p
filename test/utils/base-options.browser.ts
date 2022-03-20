@@ -16,7 +16,7 @@ export function createBaseOptions (overrides?: Libp2pOptions): Libp2pOptions {
     streamMuxers: [
       new Mplex()
     ],
-    connectionEncrypters: [
+    connectionEncryption: [
       new Plaintext()
     ],
     relay: {

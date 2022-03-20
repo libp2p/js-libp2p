@@ -15,11 +15,11 @@
   "license": "ISC",
   "dependencies": {
     "@chainsafe/libp2p-noise": "^5.0.2",
-    "libp2p": "../../",
-    "libp2p-bootstrap": "^0.14.0",
-    "libp2p-mplex": "^0.10.4",
-    "libp2p-webrtc-star": "^0.25.0",
-    "libp2p-websockets": "^0.16.1"
+    "@libp2p/bootstrap": "^1.0.1",
+    "@libp2pmplex": "^0.1.1",
+    "@libp2p/webrtc-star": "^1.0.6",
+    "@libp2p/websockets": "^1.0.3",
+    "libp2p": "../../"
   },
   "devDependencies": {
     "@babel/cli": "^7.13.10",
