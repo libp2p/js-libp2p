@@ -1,10 +1,10 @@
 /* eslint no-console: ["off"] */
-'use strict'
 
-const { generate } from 'libp2p/src/pnet')
-const privateLibp2pNode from './libp2p-node')
-
+import { generate } from 'libp2p/pnet/generate'
+import { privateLibp2pNode } from './libp2p-node.js'
 import { pipe } from 'it-pipe'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 // Create a Uint8Array and write the swarm key to it
 const swarmKey = new Uint8Array(95)
@@ -29,7 +29,7 @@ generate(otherSwarmKey)
   console.log('nodes started...')
 
   // Add node 2 data to node1's PeerStore
-  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
   await node1.dial(node2.peerId)
 
   node2.handle('/private', ({ stream }) => {
@@ -37,7 +37,7 @@ generate(otherSwarmKey)
       stream,
       async function (source) {
         for await (const msg of source) {
-          console.log(msg.toString())
+          console.log(uint8ArrayToString(msg))
         }
       }
     )
@@ -46,7 +46,7 @@ generate(otherSwarmKey)
   const { stream } = await node1.dialProtocol(node2.peerId, '/private')
 
   await pipe(
-    ['This message is sent on a private network'],
+    [uint8ArrayFromString('This message is sent on a private network')],
     stream
   )
 })()

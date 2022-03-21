@@ -1,9 +1,10 @@
-'use strict'
-
 import path from 'path'
 import execa from 'execa'
 import pDefer from 'p-defer'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const stdout = [
   {
@@ -24,7 +25,7 @@ const stdout = [
   },
 ]
 
-async function test () {
+export async function test () {
   const defer = pDefer()
   let topicCount = 0
   let topicMessageCount = 0
@@ -63,5 +64,3 @@ async function test () {
   await defer.promise
   proc.kill()
 }
-
-module.exports = test

@@ -85,7 +85,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
 export function validateConfig (opts: RecursivePartial<Libp2pInit>): Libp2pInit {
   const resultingOptions: Libp2pInit = mergeOptions(DefaultConfig, opts)
 
-  if (resultingOptions.transports.length < 1) {
+  if (resultingOptions.transports == null || resultingOptions.transports.length < 1) {
     throw errCode(new Error(messages.ERR_TRANSPORTS_REQUIRED), codes.ERR_TRANSPORTS_REQUIRED)
   }
 

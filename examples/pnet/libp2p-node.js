@@ -2,16 +2,13 @@ import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import PreSharedKeyConnectionProtector from 'libp2p/pnet'
+import { PreSharedKeyConnectionProtector } from 'libp2p/pnet'
 
 /**
  * privateLibp2pNode returns a libp2p node function that will use the swarm
  * key with the given `swarmKey` to create the Protector
- *
- * @param {Uint8Array} swarmKey
- * @returns {Promise<libp2p>} Returns a libp2pNode function for use in IPFS creation
  */
-const privateLibp2pNode = async (swarmKey) => {
+export async function privateLibp2pNode (swarmKey) {
   const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
@@ -32,5 +29,3 @@ const privateLibp2pNode = async (swarmKey) => {
 
   return node
 }
-
-module.exports = privateLibp2pNode

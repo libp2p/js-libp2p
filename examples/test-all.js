@@ -1,4 +1,3 @@
-'use strict'
 
 process.on('unhandedRejection', (err) => {
   console.error(err)
@@ -7,10 +6,13 @@ process.on('unhandedRejection', (err) => {
 })
 
 import path from 'path'
-const fs from 'fs')
-const {
+import fs from 'fs'
+import {
   waitForOutput
-} from './utils')
+} from './utils.js'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 async function testAll () {
   for (const dir of fs.readdirSync(__dirname)) {

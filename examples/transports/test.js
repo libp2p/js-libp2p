@@ -1,15 +1,11 @@
-'use strict'
+import { test as test1 } from './test-1.js'
+import { test as test2 } from './test-2.js'
+import { test as test3 } from './test-3.js'
+import { test as test4 } from './test-4.js'
 
-const test1 from './test-1')
-const test2 from './test-2')
-const test3 from './test-3')
-const test4 from './test-4')
-
-async function test() {
+export async function test() {
   await test1()
   await test2()
   await test3()
   await test4()
 }
-
-module.exports = test

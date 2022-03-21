@@ -1,7 +1,6 @@
 import errCode from 'err-code'
 import { anySignal } from 'any-signal'
 import FIFO from 'p-fifo'
-import pAny from 'p-any'
 // @ts-expect-error setMaxListeners is missing from the node 16 types
 import { setMaxListeners } from 'events'
 import { codes } from '../errors.js'
@@ -83,7 +82,7 @@ export class DialRequest {
     let completedDials = 0
 
     try {
-      return await pAny(this.addrs.map(async (addr, i) => {
+      return await Promise.any(this.addrs.map(async (addr, i) => {
         const token = await tokenHolder.shift() // get token
         let conn
         try {

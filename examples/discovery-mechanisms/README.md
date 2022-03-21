@@ -17,13 +17,13 @@ import { createLibp2p } from 'libp2p'
 import { Bootstrap } from '@libp2p/bootstrap'
 
 const node = await createLibp2p({
-  transport: [
+  transports: [
     new TCP()
   ],
-  streamMuxer: [
+  streamMuxers: [
     new Mplex()
   ],
-  connEncryption: [
+  connectionEncryption: [
     new Noise()
   ],
   peerDiscovery: [
@@ -56,13 +56,13 @@ const node = await createLibp2p({
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
-  transport: [
+  transports: [
     new TCP()
   ],
-  streamMuxer: [
+  streamMuxers: [
     new Mplex()
   ],
-  connEncryption: [
+  connectionEncryption: [
     new Noise()
   ],
   peerDiscovery: [
@@ -118,13 +118,13 @@ const createNode = () => {
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transport: [
+    transports: [
       new TCP()
     ],
-    streamMuxer: [
+    streamMuxers: [
       new Mplex()
     ],
-    connEncryption: [
+    connectionEncryption: [
       new Noise()
     ],
     peerDiscovery: [
@@ -183,13 +183,13 @@ const createNode = async (bootstrapers) => {
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transport: [
+    transports: [
     new TCP()
   ],
-  streamMuxer: [
+  streamMuxers: [
     new Mplex()
   ],
-  connEncryption: [
+  connectionEncryption: [
     new Noise()
   ],
   peerDiscovery: [
@@ -210,7 +210,9 @@ We will use the `libp2p-relay-server` as bootstrap nodes for the libp2p nodes, s
 
 ```js
 const relay = await createRelayServer({
-  listenAddresses: ['/ip4/0.0.0.0/tcp/0']
+  addresses: {
+    listen: ['/ip4/0.0.0.0/tcp/0']
+  }
 })
 console.log(`libp2p relay starting with id: ${relay.peerId.toB58String()}`)
 await relay.start()

@@ -16,7 +16,7 @@ import type { ConnectionEncrypter } from '@libp2p/interfaces/connection-encrypte
 import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
 import type { ContentRouting } from '@libp2p/interfaces/content-routing'
 import type { PubSub } from '@libp2p/interfaces/pubsub'
-import type { StreamHandler } from '@libp2p/interfaces/registrar'
+import type { ConnectionManager, StreamHandler } from '@libp2p/interfaces/registrar'
 import type { MetricsInit } from '@libp2p/interfaces/metrics'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
 import type { DialerInit } from '@libp2p/interfaces/dialer'
@@ -151,6 +151,7 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   peerRouting: PeerRouting
   contentRouting: ContentRouting
   keychain: KeyChain
+  connectionManager: ConnectionManager
 
   pubsub?: PubSub
   dht?: DualDHT

@@ -5,7 +5,7 @@ import { Mplex } from '@libp2p/mplex'
 
 async function main () {
   const node = await createLibp2p({
-    transport: [
+    transports: [
       new WebSockets()
     ],
     connectionEncryption: [
@@ -34,7 +34,7 @@ async function main () {
 
   console.log(`Node started with id ${node.peerId.toString()}`)
   console.log('Listening on:')
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toString()}`))
+  node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 }
 
 main()

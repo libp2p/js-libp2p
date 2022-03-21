@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from '../../dist/src/index.js'
+import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
@@ -17,7 +17,7 @@ const createNode = async () => {
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
     connectionEncryption: [new Noise()],
-    dht: KadDHT
+    dht: new KadDHT()
   })
 
   await node.start()
@@ -31,8 +31,8 @@ const createNode = async () => {
     createNode()
   ])
 
-  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-  await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+  await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
 
   await Promise.all([
     node1.dial(node2.peerId),

@@ -1,13 +1,12 @@
-'use strict'
-
 import path from 'path'
-const { waitForOutput } from '../utils')
+import { waitForOutput } from '../utils.js'
+import { fileURLToPath } from 'url'
 
-async function test () {
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+export async function test () {
   await waitForOutput('This message is sent on a private network', 'node', [path.join(__dirname, 'index.js')], {
     cwd: __dirname
   })
 }
-
-module.exports = test
 

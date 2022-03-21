@@ -32,7 +32,7 @@ import type { Connection } from '@libp2p/interfaces/connection'
 import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
 import type { ContentRouting } from '@libp2p/interfaces/content-routing'
 import type { PubSub } from '@libp2p/interfaces/pubsub'
-import type { StreamHandler } from '@libp2p/interfaces/registrar'
+import type { ConnectionManager, StreamHandler } from '@libp2p/interfaces/registrar'
 import type { PeerData } from '@libp2p/interfaces/peer-data'
 import type { Libp2p, Libp2pEvents, Libp2pInit, Libp2pOptions } from './index.js'
 import { validateConfig } from './config.js'
@@ -54,6 +54,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public contentRouting: ContentRouting
   public peerRouting: PeerRouting
   public keychain: KeyChain
+  public connectionManager: ConnectionManager
 
   private started: boolean
   private readonly services: Startable[]
@@ -109,7 +110,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     })))
 
     // Create the Connection Manager
-    this.components.setConnectionManager(this.configureComponent(new DefaultConnectionManager(this.components, init.connectionManager)))
+    this.connectionManager = this.components.setConnectionManager(this.configureComponent(new DefaultConnectionManager(this.components, init.connectionManager)))
 
     // Create the Registrar
     this.components.setRegistrar(this.configureComponent(new DefaultRegistrar(this.components)))
@@ -263,9 +264,25 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
         obj.init(this.components)
       })
 
+      await Promise.all(
+        this.services.map(async service => {
+          if (service.beforeStart != null) {
+            await service.beforeStart()
+          }
+        })
+      )
+
       // start any startables
       await Promise.all(
         this.services.map(service => service.start())
+      )
+
+      await Promise.all(
+        this.services.map(async service => {
+          if (service.afterStart != null) {
+            await service.afterStart()
+          }
+        })
       )
 
       log('libp2p has started')
@@ -301,7 +318,23 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     this.started = false
 
     await Promise.all(
+      this.services.map(async service => {
+        if (service.beforeStop != null) {
+          await service.beforeStop()
+        }
+      })
+    )
+
+    await Promise.all(
       this.services.map(servce => servce.stop())
+    )
+
+    await Promise.all(
+      this.services.map(async service => {
+        if (service.afterStop != null) {
+          await service.afterStop()
+        }
+      })
     )
 
     log('libp2p has stopped')

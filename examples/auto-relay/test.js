@@ -2,6 +2,9 @@ import path from 'path'
 import execa from 'execa'
 import pDefer from 'p-defer'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function startProcess (name, args = []) {
   return execa('node', [path.join(__dirname, name), ...args], {
@@ -10,7 +13,7 @@ function startProcess (name, args = []) {
   })
 }
 
-export default async function test () {
+export async function test () {
   let output1 = ''
   let output2 = ''
   let output3 = ''

@@ -28,10 +28,10 @@ const node = await createLibp2p({
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
-  transport: [
+  transports: [
     new TCP()
   ],
-  streamMuxer: [
+  streamMuxers: [
     new Mplex()
   ],
   connectionEncryption: [

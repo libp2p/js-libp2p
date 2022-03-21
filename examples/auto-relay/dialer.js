@@ -13,7 +13,7 @@ async function main () {
     transports: [
       new WebSockets()
     ],
-    connEncrypters: [
+    connectionEncryption: [
       new Noise()
     ],
     streamMuxers: [

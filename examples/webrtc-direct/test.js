@@ -1,10 +1,11 @@
-'use strict'
-
 import path from 'path'
 import execa from 'execa'
 import pDefer from 'p-defer'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-const { chromium } from 'playwright');
+import { chromium } from 'playwright'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function startNode (name, args = []) {
     return execa('node', [path.join(__dirname, name), ...args], {
@@ -22,7 +23,7 @@ function startBrowser (name, args = []) {
     })
 }
 
-async function test () {
+export async function test () {
     // Step 1, listener process
     const listenerProcReady = pDefer()
     let listenerOutput = ''
@@ -72,7 +73,7 @@ async function test () {
                   { timeout: 10000 }
                 )
                 await browser.close();
-            } catch (err: any) {
+            } catch (err) {
                 console.error(err)
                 process.exit(1)
             } finally {
@@ -91,5 +92,3 @@ async function test () {
         }
     })
 }
-
-module.exports = test

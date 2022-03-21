@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from '../../../dist/src/index.js'
+import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
@@ -8,6 +8,8 @@ import { Mplex } from '@libp2p/mplex'
 import fs from 'fs'
 import https from 'https'
 import { pipe } from 'it-pipe'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 const httpServer = https.createServer({
   cert: fs.readFileSync('./test_certs/cert.pem'),
@@ -26,7 +28,10 @@ const createNode = async (addresses = []) => {
     transports: [
       new TCP(),
       new WebSockets({
-        server: httpServer
+        server: httpServer,
+        websocket: {
+          rejectUnauthorized: false
+        }
       })
     ],
     connectionEncryption: [new Noise()],
@@ -44,7 +49,7 @@ const createNode = async (addresses = []) => {
 
 function printAddrs(node, number) {
   console.log('node %s is listening on:', number)
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toString()}`))
+  node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 }
 
 function print ({ stream }) {
@@ -52,7 +57,7 @@ function print ({ stream }) {
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(msg.toString())
+        console.log(uint8ArrayToString(msg))
       }
     }
   )
@@ -70,12 +75,12 @@ function print ({ stream }) {
   node1.handle('/print', print)
   node2.handle('/print', print)
 
-  const targetAddr = `${node1.multiaddrs[0]}/p2p/${node1.peerId.toString()}`;
+  const targetAddr = node1.getMultiaddrs()[0];
 
   // node 2 (Secure WebSockets) dials to node 1 (Secure Websockets)
-  const { stream } = await node2.dialProtocol(targetAddr, '/print',  { websocket: { rejectUnauthorized: false } })
+  const { stream } = await node2.dialProtocol(targetAddr, '/print')
   await pipe(
-    ['node 2 dialed to node 1 successfully'],
+    [uint8ArrayFromString('node 2 dialed to node 1 successfully')],
     stream
   )
 })();

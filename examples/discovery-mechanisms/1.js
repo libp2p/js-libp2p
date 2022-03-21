@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from '../../dist/index.js'
+import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
@@ -23,13 +23,15 @@ import bootstrapers from './bootstrappers.js'
     ]
   })
 
-  node.connectionManager.on('peer:connect', (connection) => {
+  node.connectionManager.addEventListener('peer:connect', (evt) => {
+    const connection = evt.detail
     console.log('Connection established to:', connection.remotePeer.toString())	// Emitted when a peer has been found
   })
 
-  node.on('peer:discovery', (peerId) => {
+  node.addEventListener('peer:discovery', (evt) => {
+    const peer = evt.detail
     // No need to dial, autoDial is on
-    console.log('Discovered:', peerId.toString())
+    console.log('Discovered:', peer.id.toString())
   })
 
   await node.start()

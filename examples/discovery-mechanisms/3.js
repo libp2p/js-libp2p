@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
-'use strict'
 
-import { createLibp2p } from '../../dist/src/index.js'
+import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
@@ -17,7 +16,7 @@ const createNode = async (bootstrappers) => {
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
     connectionEncryption: [new Noise()],
-    pubsub: Gossipsub,
+    pubsub: new Gossipsub(),
     peerDiscovery: [
       new Bootstrap({
         list: bootstrappers
@@ -33,11 +32,15 @@ const createNode = async (bootstrappers) => {
 
 ;(async () => {
   const relay = await createLibp2p({
-    listenAddresses: ['/ip4/0.0.0.0/tcp/0'],
+    addresses: {
+      listen: [
+        '/ip4/0.0.0.0/tcp/0'
+      ]
+    },
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
     connectionEncryption: [new Noise()],
-    pubsub: Gossipsub,
+    pubsub: new Gossipsub(),
     peerDiscovery: [
       new PubSubPeerDiscovery({
         interval: 1000
@@ -52,18 +55,21 @@ const createNode = async (bootstrappers) => {
   })
   console.log(`libp2p relay starting with id: ${relay.peerId.toString()}`)
   await relay.start()
-  const relayMultiaddrs = relay.multiaddrs.map((m) => `${m.toString()}/p2p/${relay.peerId.toString()}`)
+
+  const relayMultiaddrs = relay.getMultiaddrs().map((m) => m.toString())
 
   const [node1, node2] = await Promise.all([
     createNode(relayMultiaddrs),
     createNode(relayMultiaddrs)
   ])
 
-  node1.on('peer:discovery', (peerId) => {
-    console.log(`Peer ${node1.peerId.toString()} discovered: ${peerId.toString()}`)
+  node1.addEventListener('peer:discovery', (evt) => {
+    const peer = evt.detail
+    console.log(`Peer ${node1.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
-  node2.on('peer:discovery', (peerId) => {
-    console.log(`Peer ${node2.peerId.toString()} discovered: ${peerId.toString()}`)
+  node2.addEventListener('peer:discovery',(evt) => {
+    const peer = evt.detail
+    console.log(`Peer ${node2.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
 
   ;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toString()}`))

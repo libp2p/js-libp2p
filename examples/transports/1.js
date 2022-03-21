@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
-'use strict'
 
-import { createLibp2p } from '../../../dist/src/index.js'
+import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Noise } from '@chainsafe/libp2p-noise'
 
@@ -31,5 +30,5 @@ const createNode = async () => {
 
   console.log('node has started (true/false):', node.isStarted())
   console.log('listening on:')
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toString()}`))
+  node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 })();

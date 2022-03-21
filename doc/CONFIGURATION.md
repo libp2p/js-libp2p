@@ -199,9 +199,9 @@ When [creating a libp2p node](./API.md#create), the modules needed should be spe
 
 ```js
 const modules = {
-  transport: [],
-  streamMuxer: [],
-  connEncryption: [],
+  transports: [],
+  streamMuxers: [],
+  connectionEncryption: [],
   contentRouting: [],
   peerRouting: [],
   peerDiscovery: [],
@@ -249,7 +249,7 @@ const node = await createLibp2p({
     TCP,
     new WS() // It can take instances too!
   ],
-  streamMuxers: [MPLEX],
+  streamMuxers: [new Mplex()],
   connectionEncryption: [new Noise()],
   peerDiscovery: [MulticastDNS],
   dht: DHT,
@@ -306,7 +306,7 @@ const node = await createLibp2p({
     new WebSockets(),
     new WebRTCStar()
   ],
-  streamMuxer: [
+  streamMuxers: [
     new Mplex()
   ],
   connectionEncryption: [
@@ -329,7 +329,7 @@ const node = await createLibp2p({
     transports: [
       new TCP()
     ],
-    streamMuxer: [
+    streamMuxers: [
       new Mplex()
     ],
     connectionEncryption: [
@@ -356,7 +356,7 @@ const node = await createLibp2p({
   transports: [
     new TCP()
   ],
-  streamMuxer: [
+  streamMuxers: [
     new Mplex()
   ],
   connectionEncryption: [
@@ -796,7 +796,7 @@ import wrtc from 'wrtc'
 
 const transportKey = WebRTCStar.prototype[Symbol.toStringTag]
 const node = await createLibp2p({
-  transport: [
+  transports: [
     new WebRTCStar()
   ],
   streamMuxers: [
@@ -820,7 +820,7 @@ During Libp2p startup, transport listeners will be created for the configured li
 ```js
 const transportKey = WebRTCStar.prototype[Symbol.toStringTag]
 const node = await createLibp2p({
-  transport: [
+  transports: [
     new WebRTCStar()
   ],
   streamMuxers: [

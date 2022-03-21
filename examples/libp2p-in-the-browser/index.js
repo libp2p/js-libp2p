@@ -1,10 +1,9 @@
-import 'babel-polyfill'
-import Libp2p from 'libp2p'
-import Websockets from 'libp2p-websockets'
-import WebRTCStar from 'libp2p-webrtc-star'
-import { NOISE } from '@chainsafe/libp2p-noise'
-import Mplex from 'libp2p-mplex'
-import Bootstrap from 'libp2p-bootstrap'
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { WebRTCStar } from '@libp2p/webrtc-star'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
+import { Bootstrap } from '@libp2p/bootstrap'
 
 document.addEventListener('DOMContentLoaded', async () => {
   const webRtcStar = new WebRTCStar()
@@ -20,8 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star'
       ]
     },
-    transport: [
-      new Websockets(),
+    transports: [
+      new WebSockets(),
       webRtcStar
     ],
     connectionEncryption: [new Noise()],
@@ -52,17 +51,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Listen for new peers
-  libp2p.on('peer:discovery', (peerId) => {
-    log(`Found peer ${peerId.toString()}`)
+  libp2p.addEventListener('peer:discovery', (evt) => {
+    const peer = evt.detail
+    log(`Found peer ${peer.id.toString()}`)
   })
 
   // Listen for new connections to peers
-  libp2p.connectionManager.on('peer:connect', (connection) => {
+  libp2p.connectionManager.addEventListener('peer:connect', (evt) => {
+    const connection = evt.detail
     log(`Connected to ${connection.remotePeer.toString()}`)
   })
 
   // Listen for peers disconnecting
-  libp2p.connectionManager.on('peer:disconnect', (connection) => {
+  libp2p.connectionManager.addEventListener('peer:disconnect', (evt) => {
+    const connection = evt.detail
     log(`Disconnected from ${connection.remotePeer.toString()}`)
   })
 

@@ -32,7 +32,7 @@ const createNode = async () => {
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transport: [
+    transports: [
       new TCP()
     ],
     connectionEncryption: [
@@ -80,14 +80,14 @@ Now that we have our `createNode` function, let's create two nodes and make them
 For this step, we will need some more dependencies.
 
 ```bash
-> npm install it-pipe it-concat libp2p-mplex
+> npm install it-pipe it-to-buffer @libp2p/mplex
 ```
 
 And we also need to import the modules on our .js file:
 
 ```js
 import { pipe } from 'it-pipe'
-const concat from 'it-concat')
+import toBuffer from 'it-to-buffer'
 import { Mplex } from '@libp2p/mplex'
 ```
 
@@ -133,7 +133,7 @@ Then add,
   node2.handle('/print', async ({ stream }) => {
     const result = await pipe(
       stream,
-      concat
+      toBuffer
     )
     console.log(result.toString())
   })

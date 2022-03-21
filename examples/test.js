@@ -1,11 +1,12 @@
-'use strict'
-
 process.env.NODE_ENV = 'test'
 process.env.CI = true // needed for some "clever" build tools
 
-const fs from 'fs-extra')
+import fs from 'fs-extra'
 import path from 'path'
 import execa from 'execa'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dir = path.join(__dirname, process.argv[2])
 
 testExample(dir)
@@ -53,7 +54,7 @@ async function build (dir) {
     return
   }
 
-  const pkg from pkgJson)
+  const pkg = JSON.parse(fs.readFileSync(pkgJson))
   let build
 
   if (pkg.scripts.bundle) {
@@ -88,7 +89,7 @@ async function runTest (dir) {
     return
   }
 
-  const test from testFile)
+  const { test } = await import(testFile)
 
   await test()
 }

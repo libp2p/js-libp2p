@@ -3,21 +3,21 @@ import { WebSockets } from '@libp2p/websockets'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import defaultsDeep from '@nodeutils/defaults-deep'
-import { createLibp2p } from '../../../dist/src/index.js'
+import { createLibp2p as create } from 'libp2p'
 
 export async function createLibp2p(_options) {
   const defaults = {
-    transport: [
+    transports: [
       new TCP(),
       new WebSockets()
     ],
-    streamMuxer: [
+    streamMuxers: [
       new Mplex()
     ],
-    connEncryption: [
+    connectionEncryption: [
       new Noise()
     ]
   }
 
-  return createLibp2p(defaultsDeep(_options, defaults))
+  return create(defaultsDeep(_options, defaults))
 }

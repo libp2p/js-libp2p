@@ -1,15 +1,13 @@
-'use strict'
-
 import execa from 'execa'
-const fs from 'fs-extra')
-const which from 'which')
+import fs from 'fs-extra'
+import which from 'which'
 
 async function isExecutable (command) {
   try {
     await fs.access(command, fs.constants.X_OK)
 
     return true
-  } catch (err: any) {
+  } catch (err) {
     if (err.code === 'ENOENT') {
       return isExecutable(await which(command))
     }
@@ -22,7 +20,7 @@ async function isExecutable (command) {
   }
 }
 
-async function waitForOutput (expectedOutput, command, args = [], opts = {}) {
+export async function waitForOutput (expectedOutput, command, args = [], opts = {}) {
   if (!await isExecutable(command)) {
     args.unshift(command)
     command = 'node'
@@ -49,13 +47,9 @@ async function waitForOutput (expectedOutput, command, args = [], opts = {}) {
 
   try {
     await proc
-  } catch (err: any) {
+  } catch (err) {
     if (!err.killed) {
       throw err
     }
   }
-}
-
-module.exports = {
-  waitForOutput
 }

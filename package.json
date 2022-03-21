@@ -53,6 +53,12 @@
     },
     "./insecure": {
       "import": "./dist/src/insecure/index.js"
+    },
+    "./pnet": {
+      "import": "./dist/src/pnet/index.js"
+    },
+    "./pnet/generate": {
+      "import": "./dist/src/pnet/key-generator.js"
     }
   },
   "eslintConfig": {
@@ -176,14 +182,14 @@
     "@achingbrain/nat-port-mapper": "^1.0.0",
     "@libp2p/connection": "^1.1.4",
     "@libp2p/crypto": "^0.22.9",
-    "@libp2p/interfaces": "^1.3.15",
+    "@libp2p/interfaces": "^1.3.17",
     "@libp2p/multistream-select": "^1.0.3",
     "@libp2p/peer-id": "^1.1.8",
     "@libp2p/peer-id-factory": "^1.0.8",
     "@libp2p/peer-store": "^1.0.6",
     "@libp2p/utils": "^1.0.9",
     "@multiformats/mafmt": "^11.0.2",
-    "@multiformats/multiaddr": "^10.1.7",
+    "@multiformats/multiaddr": "^10.1.8",
     "abortable-iterator": "^4.0.2",
     "aggregate-error": "^4.0.0",
     "any-signal": "^3.0.0",
@@ -214,7 +220,6 @@
     "multiformats": "^9.6.3",
     "mutable-proxy": "^1.0.0",
     "node-forge": "^1.2.1",
-    "p-any": "^4.0.0",
     "p-fifo": "^1.0.0",
     "p-retry": "^5.0.0",
     "p-settle": "^5.0.0",
@@ -256,11 +261,8 @@
     "delay": "^5.0.0",
     "into-stream": "^7.0.0",
     "ipfs-http-client": "^56.0.1",
-    "it-concat": "^2.0.0",
     "it-pair": "^2.0.2",
     "it-pushable": "^2.0.1",
-    "libp2p": "^0.36.0",
-    "libp2p-interop": "^0.7.1",
     "nock": "^13.0.3",
     "npm-run-all": "^4.1.5",
     "p-defer": "^4.0.0",

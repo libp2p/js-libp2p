@@ -2,10 +2,12 @@ import path from 'path'
 import execa from 'execa'
 import pWaitFor from 'p-wait-for'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fileURLToPath } from 'url'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const discoveredCopy = 'Discovered:'
 
-export default async function test() {
+export async function test () {
   const discoveredNodes = []
 
   process.stdout.write('2.js\n')

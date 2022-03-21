@@ -1,12 +1,13 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from '../../../dist/src/index.js'
+import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import Gossipsub from '@achingbrain/libp2p-gossipsub'
+import { Gossipsub } from '@achingbrain/libp2p-gossipsub'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { CustomEvent } from '@libp2p/interfaces'
 
 const createNode = async () => {
   const node = await createLibp2p({
@@ -33,28 +34,26 @@ const createNode = async () => {
   ])
 
   // node1 conect to node2 and node2 conect to node3
-  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
   await node1.dial(node2.peerId)
 
-  await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+  await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
   await node2.dial(node3.peerId)
 
   //subscribe
-  node1.pubsub.on(topic, (msg) => {
+  node1.pubsub.addEventListener(topic, (evt) => {
     // Will not receive own published messages by default
-    console.log(`node1 received: ${uint8ArrayToString(msg.data)}`)
+    console.log(`node1 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
   await node1.pubsub.subscribe(topic)
 
-  node2.pubsub.on(topic, (msg) => {
-    console.log(`node2 received: ${uint8ArrayToString(msg.data)}`)
+  node2.pubsub.addEventListener(topic, (evt) => {
+    console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
-  await node2.pubsub.subscribe(topic)
 
-  node3.pubsub.on(topic, (msg) => {
-    console.log(`node3 received: ${uint8ArrayToString(msg.data)}`)
+  node3.pubsub.addEventListener(topic, (evt) => {
+    console.log(`node3 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
-  await node3.pubsub.subscribe(topic)
 
   const validateFruit = (msgTopic, msg) => {
     const fruit = uint8ArrayToString(msg.data)
@@ -76,7 +75,7 @@ const createNode = async () => {
   // car is not a fruit !
   setInterval(() => {
     console.log('############## fruit ' + myFruits[count] + ' ##############')
-    node1.pubsub.publish(topic, uint8ArrayFromString(myFruits[count]))
+    node1.pubsub.dispatchEvent(new CustomEvent<Uint8Array>(topic, { detail: uint8ArrayFromString(myFruits[count]) }))
     count++
     if (count == myFruits.length) {
       count = 0

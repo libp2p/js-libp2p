@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from '../../dist/src/index.js'
+import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
@@ -36,8 +36,8 @@ const createNode = async () => {
     createNode()
   ])
 
-  node1.on('peer:discovery', (peerId) => console.log('Discovered:', peerId.toString()))
-  node2.on('peer:discovery', (peerId) => console.log('Discovered:', peerId.toString()))
+  node1.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
+  node2.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
 
   await Promise.all([
     node1.start(),
