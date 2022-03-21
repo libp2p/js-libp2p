@@ -150,7 +150,7 @@
   "scripts": {
     "lint": "aegir lint",
     "build": "tsc",
-    "postbuild": "mkdir -p dist/src/circuit/pb && mkdir -p dist/src/fetch/pb && mkdir -p dist/src/identify/pb && mkdir -p dist/src/insecure/pb && cp src/circuit/pb/*.js src/circuit/pb/*.d.ts dist/src/circuit/pb && cp src/fetch/pb/*.js src/fetch/pb/*.d.ts dist/src/fetch/pb && cp src/identify/pb/*.js src/identify/pb/*.d.ts dist/src/identify/pb && cp src/insecure/pb/*.js src/insecure/pb/*.d.ts dist/src/insecure/pb",
+    "postbuild": "mkdirp dist/src/circuit/pb dist/src/fetch/pb dist/src/identify/pb dist/src/insecure/pb && cp src/circuit/pb/*.js src/circuit/pb/*.d.ts dist/src/circuit/pb && cp src/fetch/pb/*.js src/fetch/pb/*.d.ts dist/src/fetch/pb && cp src/identify/pb/*.js src/identify/pb/*.d.ts dist/src/identify/pb && cp src/insecure/pb/*.js src/insecure/pb/*.d.ts dist/src/insecure/pb",
     "generate": "run-s generate:proto:* generate:proto-types:*",
     "generate:proto:circuit": "pbjs -t static-module -w es6 -r libp2p-circuit --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/circuit/protocol/index.js ./src/circuit/protocol/index.proto",
     "generate:proto:fetch": "pbjs -t static-module -w es6 -r libp2p-fetch --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/fetch/proto.js ./src/fetch/proto.proto",
