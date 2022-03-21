@@ -83,6 +83,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {import('./circuit').RelayAdvertiseOptions} [advertise]
  * @property {import('./circuit').HopOptions} [hop]
  * @property {import('./circuit').AutoRelayOptions} [autoRelay]
+ * @property {number} [reservationLimit]
  *
  * @typedef {Object} Libp2pConfig
  * @property {DhtOptions} [dht] dht module options

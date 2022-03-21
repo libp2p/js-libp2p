@@ -24,6 +24,7 @@ const { handleHopProtocol } = require('./v2/hop')
 const { handleStop: handleStopV2 } = require('./v2/stop')
 const { Status, HopMessage, StopMessage } = require('./v2/protocol')
 const createError = require('err-code')
+const ReservationStore = require('./v2/reservation-store')
 
 const transportSymbol = Symbol.for('@libp2p/js-libp2p-circuit/circuit')
 
@@ -49,6 +50,7 @@ class Circuit {
     this._options = libp2p._config.relay
     this._libp2p = libp2p
     this.peerId = libp2p.peerId
+    this._reservationStore = new ReservationStore(this._options.reservationLimit)
 
     this._registrar.handle(protocolIDv1, this._onV1Protocol.bind(this))
     this._registrar.handle(protocolIDv2Hop, this._onV2ProtocolHop.bind(this))
@@ -143,12 +145,7 @@ class Circuit {
       circuit: this,
       relayPeer: this._libp2p.peerId,
       relayAddrs: this._libp2p.multiaddrs,
-      // TODO: replace with real reservation store
-      reservationStore: {
-        reserve: async function () { return { status: Status.OK, expire: (new Date().getTime() / 1000 + 21600) } },
-        hasReservation: async function () { return true },
-        removeReservation: async function () { }
-      },
+      reservationStore: this._reservationStore,
       request,
       limit: null,
       acl: null
@@ -321,7 +318,7 @@ class Circuit {
 
       const status = HopMessage.decode(await streamHandler.read())
       if (status.status !== Status.OK) {
-        throw createError(new Error('failed to connect via realy with status ' + status.status), codes.ERR_HOP_REQUEST_FAILED)
+        throw createError(new Error('failed to connect via relay with status ' + status.status), codes.ERR_HOP_REQUEST_FAILED)
       }
 
       // TODO: do something with limit and transient connection

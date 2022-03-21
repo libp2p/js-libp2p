@@ -129,7 +129,7 @@ async function handleConnect ({ connection, streamHandler, request, reservationS
     }
   }
 
-  if (!reservationStore.hasReservation(request.peer)) {
+  if (!await reservationStore.hasReservation(dstPeer)) {
     log.error('hop connect denied for %s with status %s', connection.remotePeer.toB58String(), Status.NO_RESERVATION)
     writeErrorResponse(streamHandler, Status.NO_RESERVATION)
     return

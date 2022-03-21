@@ -60,7 +60,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     const tcpAddrs = dstLibp2p.transportManager.getAddrs()
     sinon.stub(dstLibp2p.addressManager, 'listen').value([new Multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
-
+    await relayLibp2p.transportManager._transports.get('Circuit')._reservationStore.reserve(dstLibp2p.peerId, new Multiaddr())
     await dstLibp2p.transportManager.listen(dstLibp2p.addressManager.getListenAddrs())
     expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
     const connection = await srcLibp2p.dial(dialAddr)
@@ -84,6 +84,24 @@ describe('Dialing (via relay, TCP)', () => {
     )
 
     expect(output.slice()).to.eql(input)
+  })
+
+  it('should fail to connect without reservation', async () => {
+    const relayAddr = relayLibp2p.transportManager.getAddrs()[0]
+    const relayIdString = relayLibp2p.peerId.toB58String()
+
+    const dialAddr = relayAddr
+      .encapsulate(`/p2p/${relayIdString}`)
+      .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerId}`)
+
+    const tcpAddrs = dstLibp2p.transportManager.getAddrs()
+    sinon.stub(dstLibp2p.addressManager, 'listen').value([new Multiaddr(`/p2p-circuit${relayAddr}/p2p/${relayIdString}`)])
+
+    await dstLibp2p.transportManager.listen(dstLibp2p.addressManager.getListenAddrs())
+    expect(dstLibp2p.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
+    await expect(srcLibp2p.dial(dialAddr))
+      .to.eventually.be.rejectedWith(AggregateError)
+      .and.to.have.nested.property('._errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
   })
 
   it('should fail to connect to a peer over a relay with inactive connections', async () => {
