@@ -4,7 +4,7 @@
     "outDir": "dist",
     "emitDeclarationOnly": false,
     "module": "ES2020",
-    "lib": ["ES2021", "ES2021.Promise", "ES2021.String", "ES2020.BigInt", "DOM", "DOM.Iterable"],
+    "lib": ["ES2021", "ES2021.Promise", "ES2021.String", "ES2020.BigInt", "DOM", "DOM.Iterable"]
   },
   "include": [
     "src",
